@@ -1,6 +1,56 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 22,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/603_roadmap_command_generated_from_state/summaries/01_roadmap-generated-from-state-summary.md",
+      "summary": "Seven-phase inversion of specs/ROADMAP.md's ## Next/## Open work into state-backed rendering, deletion of the retention parser, a new /roadmap command/skill/judgment-bearing agent trio, a one-time lossless migration, and both /roadmap forms demonstrated live against this repository."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "specs/ROADMAP.md's ## Next and ## Open work now render wholly from new roadmap_batches/roadmap_notes state.json entries with no retention parser in the path; a new /roadmap [instruction] command/skill/judgment-bearing agent trio maintains those entries (entries via state-write.sh, edges via the existing edge_only arm, rendering via roadmap-integration.sh --regenerate); the live file's prior authored judgment was migrated into state via a one-time script with a hard losslessness accounting gate; and both /roadmap invocation forms were demonstrated end-to-end against this repository's live roadmap, each committed."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/roadmap-agent.md",
+    "agent-system/extensions/core/commands/roadmap.md",
+    "agent-system/extensions/core/context/formats/roadmap-entry-template.md",
+    "agent-system/extensions/core/context/formats/roadmap-format.md",
+    "agent-system/extensions/core/context/patterns/roadmap-update.md",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
+    "agent-system/extensions/core/context/schemas/state-schema.json",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/README.md",
+    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/migrate-roadmap-next-to-state.sh",
+    "agent-system/extensions/core/scripts/roadmap-integration.sh",
+    "agent-system/extensions/core/scripts/tests/test-migrate-roadmap-next-to-state.sh",
+    "agent-system/extensions/core/scripts/tests/test-roadmap-command-registration.sh",
+    "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "agent-system/extensions/core/skills/skill-roadmap/SKILL.md",
+    "specs/ROADMAP.md",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When inverting a generated-artifact's retention model (moving authored judgment from parse-back-out-of-the-rendered-file into a structured state field), test the migration script against the REAL live document before trusting a hand-written fixture: a GFM 'tight' list (no blank line between consecutive bullet items, the common real-world markdown style) will silently merge an entire bullet list into one unsplit paragraph block under a naive 'blank-line-delimited paragraph' splitter, even though a deliberately blank-line-separated test fixture never exercises this. Fix: a block boundary must also fire at the START of a fresh top-level list-item line, not only at a blank line. Separately, when attributing a free-text block to an entity by 'first id token it names', scope that heuristic to blocks that are genuinely list items (bullets) of the enumerating structure -- a plain prose paragraph that merely mentions an id in passing must never be attributed by the same rule, or an unrelated summary paragraph gets silently absorbed into one entity's record.",
+      "category": "PATTERN",
+      "source_artifact": "specs/603_roadmap_command_generated_from_state/summaries/01_roadmap-generated-from-state-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["migration-script", "gfm-tight-list", "paragraph-splitting", "mis-attribution", "losslessness-accounting", "retention-parser-inversion"]
+    },
+    {
+      "content": "A newly-created agent .md file's subagent_type is not recognized by the Agent tool's subagent roster within the same session it was authored in -- there is no mid-session reload of the harness's dispatchable-agent list. To demonstrate or exercise a brand-new agent end-to-end in the same session that created it, dispatch a general-purpose (or similar catch-all) agent with an explicit instruction to read the new agent's .md file in full and follow it as its own operating contract verbatim. This is also the documented 'Self-Execution Fallback' pattern several skills already carry for the case where the Agent tool is unavailable -- the same fallback covers the registration-timing gap.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/603_roadmap_command_generated_from_state/summaries/01_roadmap-generated-from-state-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["agent-tool", "subagent-registration", "same-session-limitation", "self-execution-fallback", "new-agent-demonstration"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794459760_979d1d",
     "agent_type": "general-implementation-agent",
@@ -9,7 +59,9 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
+    ],
+    "phases_completed": 7,
+    "phases_total": 7
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"

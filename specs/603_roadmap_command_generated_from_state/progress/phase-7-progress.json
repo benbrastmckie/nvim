@@ -1,0 +1,27 @@
+{
+  "phase": 7,
+  "phase_name": "Redeploy, Migrate Live State, and Demonstrate /roadmap",
+  "started_at": "2026-11-12T04:35:00Z",
+  "last_updated": "2026-11-12T06:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy the tree via deploy-headless.sh; fix doc-lint/postflight-boundary/subject-resolution-declaration findings surfaced", "status": "done",
+     "files_touched": ["agent-system/extensions/core/README.md", "agent-system/extensions/core/skills/skill-roadmap/SKILL.md", "agent-system/extensions/core/scripts/tests/test-roadmap-command-registration.sh"]},
+    {"id": 2, "description": "Confirm the deploy landed the new surfaces", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Take a durable checkpoint before the first live write (git-snapshot.sh 603 --no-revert)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Fix tight-list splitting and prose-paragraph mis-attribution bugs found via live-data dry-run", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/migrate-roadmap-next-to-state.sh", "agent-system/extensions/core/scripts/tests/test-migrate-roadmap-next-to-state.sh"]},
+    {"id": 5, "description": "Run the migration for real against specs/ROADMAP.md and specs/state.json; verify Check 13/losslessness", "status": "done",
+     "files_touched": ["specs/state.json"]},
+    {"id": 6, "description": "Run --regenerate for real; prove idempotence; prove the unclassifiable-layout refusal still holds", "status": "done",
+     "files_touched": ["specs/ROADMAP.md"]},
+    {"id": 7, "description": "Demonstrate /roadmap with no argument and /roadmap with a scoped instruction against the live repository", "status": "done",
+     "files_touched": ["specs/state.json", "specs/ROADMAP.md"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "7.verification", "description": "Dispatch context's Batch Gate Deferral directive instructs this dispatch to discharge the plan's declared full verify-deploy.sh gate against a scoped narrowing invocation instead, deferring the complete gate set to the batch-level stage; the plan's own Phase 7 verification text ('No --skip-slow and no --only-gate narrowing') is overridden by that directive for this dispatch", "type": "altered", "reason": "The dispatch file's own Batch Gate Deferral section takes precedence for this specific dispatch. Ran bash .claude/scripts/tests/run-all.sh --only test-roadmap-generation.sh,test-migrate-roadmap-next-to-state.sh,test-roadmap-command-registration.sh,test-validate-state.sh,test-manifest-scripts-sync.sh (5/5 passed) as the scoped discharge. As corroborating (not substitute) evidence, bash .claude/scripts/deploy-headless.sh's own full verify-deploy.sh ran four times during this phase and reported only three failures every time, each independently confirmed pre-existing and unrelated to task 603 (gate10's 60s timeout on validate-state.sh --deep measured at 57.8s standalone -- a marginal, load-dependent timing issue; the eager-load budget and skills/skill-orchestrate/SKILL.md ceiling overage, both last touched by an unrelated task per git log).", "annotation": "*(deviation: altered -- scoped gate per dispatch directive, full gate deferred to batch stage)*"},
+    {"task_id": "7.agent-dispatch", "description": "The harness's Agent-tool subagent_type roster does not recognize the newly-created 'roadmap-agent' type within the same session it was authored in (not live-reloaded mid-session). Both /roadmap demonstrations were performed via a general-purpose agent explicitly instructed to read and follow agents/roadmap-agent.md as its own operating contract verbatim -- the Self-Execution Fallback path skill-roadmap/SKILL.md's own Stage 2 already documents for exactly this situation.", "type": "altered", "reason": "This is a harness registration-timing limitation, not a defect in the agent file itself; the fallback path is the one the skill's own contract names for this case.", "annotation": "*(deviation: altered -- demonstrated via general-purpose standing in for roadmap-agent per the documented fallback)*"}
+  ],
+  "handoff_count": 0
+}

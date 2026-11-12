@@ -611,40 +611,40 @@ hand-edited between orchestration runs and the figures move.
 
 ---
 
-### Phase 7: Redeploy, Migrate Live State, and Demonstrate `/roadmap` [NOT STARTED]
+### Phase 7: Redeploy, Migrate Live State, and Demonstrate `/roadmap` [COMPLETED]
 
 **Goal**: the whole thing works on this repository — the live file's judgment is in state, the
 file renders from it idempotently, and both `/roadmap` forms are demonstrated.
 
 **Tasks**:
-- [ ] Regenerate the deployed tree: `bash .claude/scripts/deploy-headless.sh`, so the new
+- [x] Regenerate the deployed tree: `bash .claude/scripts/deploy-headless.sh`, so the new
       command/skill/agent and the edited scripts land in `.claude/`.
-- [ ] Confirm the deploy landed the new surfaces (the three trio files and both new scripts
+- [x] Confirm the deploy landed the new surfaces (the three trio files and both new scripts
       present under the deployed tree, and `/roadmap` visible in the deployed `CLAUDE.md` tables).
-- [ ] Take a durable, non-reverting checkpoint before the first live state write:
+- [x] Take a durable, non-reverting checkpoint before the first live state write:
       `bash .claude/scripts/git-snapshot.sh 603 --no-revert`.
-- [ ] Re-measure the live `## Next` body (line counts, Run-line count, bullet count) and record
+- [x] Re-measure the live `## Next` body (line counts, Run-line count, bullet count) and record
       the figures, then run
       `bash .claude/scripts/migrate-roadmap-next-to-state.sh --dry-run` and read the proposed
       entries and the accounting result before writing anything.
-- [ ] Run the migration for real, then show the accounting gate's own output as the losslessness
+- [x] Run the migration for real, then show the accounting gate's own output as the losslessness
       evidence: every non-blank authored line accounted for, and each condensed description's
       original text present verbatim in its batch's `rationale`.
-- [ ] Run `bash .claude/scripts/roadmap-integration.sh --regenerate --dry-run`, read the diff
+- [x] Run `bash .claude/scripts/roadmap-integration.sh --regenerate --dry-run`, read the diff
       (it will include the 13 `## Open work` lines the retired description override was freezing —
       an intended repair, not a regression), then run `--regenerate` for real.
-- [ ] Prove idempotence: run `--regenerate` a second time and confirm `cmp -s` byte-identity
+- [x] Prove idempotence: run `--regenerate` a second time and confirm `cmp -s` byte-identity
       against the first render, and that the `OUTCOME:` line reports "left ... unchanged".
-- [ ] Prove the refusal still holds: point `--regenerate --roadmap` at a scratch copy whose
+- [x] Prove the refusal still holds: point `--regenerate --roadmap` at a scratch copy whose
       headers match neither vocabulary and confirm a non-zero exit, the named reason on stderr,
       and **no write**.
-- [ ] Demonstrate `/roadmap` with no argument (a full maintenance pass) and
+- [x] Demonstrate `/roadmap` with no argument (a full maintenance pass) and
       `/roadmap "<instruction>"` (the same pass scoped to a stated focus) against this
       repository's live roadmap, and record both outcomes.
-- [ ] Confirm `bash .claude/scripts/validate-state.sh` passes Check 13 against the now-populated
+- [x] Confirm `bash .claude/scripts/validate-state.sh` passes Check 13 against the now-populated
       `roadmap_batches`, and that `specs/ROADMAP.md` remains git-tracked and is committed with the
       state change.
-- [ ] Record, in the task summary, the batch-proposal lint's disposition (superseded in its parse
+- [x] Record, in the task summary, the batch-proposal lint's disposition (superseded in its parse
       layer, wired into no gate, left untouched, decision left to its owner) and the
       `--prune`-dissolves finding that the dependent next-batch-suggestion record needs.
 

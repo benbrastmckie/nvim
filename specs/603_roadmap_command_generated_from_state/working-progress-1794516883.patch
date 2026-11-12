@@ -1,0 +1,3312 @@
+diff --git a/.claude-extensions.json b/.claude-extensions.json
+index c9ce854ac..94baa34fd 100644
+--- a/.claude-extensions.json
++++ b/.claude-extensions.json
+@@ -2,9 +2,67 @@
+   "version": "1.0.0",
+   "extensions": {
+     "email": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/email",
+-      "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:36Z",
++      "data_skeleton_files": [],
++      "merged_sections": {
++        "settings": {
++          "hooks": {
++            "children": {
++              "PreToolUse": {
++                "hook_items": [],
++                "type": "hook_merged",
++                "items": [
++                  {
++                    "matcher": "Bash",
++                    "hooks": [
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/mail-guard.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      }
++                    ]
++                  }
++                ]
++              }
++            },
++            "type": "merged"
++          },
++          "permissions": {
++            "children": {
++              "deny": {
++                "items": [],
++                "type": "appended"
++              }
++            },
++            "type": "merged"
++          }
++        },
++        "index": {
++          "paths": [
++            "project/email/email-preferences.md",
++            "project/email/domain/wrapper-contracts.md",
++            "project/email/domain/safety-invariants.md",
++            "project/email/domain/index-architecture.md",
++            "project/email/domain/staleness-detection.md",
++            "project/email/domain/archive-mode-risk.md",
++            "project/email/patterns/bulk-bucket-review.md",
++            "project/email/patterns/propose-review-confirm-execute.md",
++            "project/email/standards/recall-on-keep-bias.md",
++            "project/email/design/email-to-memory-preferences.md",
++            "project/email/patterns/email-cleanup-all-mode.md"
++          ]
++        },
++        "settings_swept": [
++          {
++            "matcher": "Bash",
++            "hook": {
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/mail-guard.sh 2>/dev/null || echo '{}'",
++              "type": "command"
++            },
++            "event": "PreToolUse"
++          }
++        ]
++      },
++      "installed_dirs": [],
++      "loaded_at": "2026-11-12T20:52:03Z",
+       "status": "active",
+       "installed_files": [
+         ".claude/agents/email-implementation-agent.md",
+@@ -27,1023 +85,140 @@
+         ".claude/hooks/mail-guard.sh",
+         ".claude/extensions/email/manifest.json"
+       ],
++      "version": "1.0.0",
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/email",
++      "source_git_head": "932265e4dc89ac59906e1d8b7e9ef9fdb5ec5ebc"
++    },
++    "nix": {
+       "data_skeleton_files": [],
+       "merged_sections": {
+-        "index": {
+-          "paths": [
+-            "project/email/email-preferences.md",
+-            "project/email/domain/wrapper-contracts.md",
+-            "project/email/domain/safety-invariants.md",
+-            "project/email/domain/index-architecture.md",
+-            "project/email/domain/staleness-detection.md",
+-            "project/email/domain/archive-mode-risk.md",
+-            "project/email/patterns/bulk-bucket-review.md",
+-            "project/email/patterns/propose-review-confirm-execute.md",
+-            "project/email/standards/recall-on-keep-bias.md",
+-            "project/email/design/email-to-memory-preferences.md",
+-            "project/email/patterns/email-cleanup-all-mode.md"
+-          ]
+-        },
+         "settings": {
+           "permissions": {
+-            "type": "merged",
+-            "children": {
+-              "deny": {
+-                "type": "appended",
+-                "items": []
+-              }
+-            }
+-          },
+-          "hooks": {
+-            "type": "merged",
+             "children": {
+-              "PreToolUse": {
+-                "hook_items": [],
++              "allow": {
+                 "items": [],
+-                "type": "hook_merged"
++                "type": "appended"
+               }
+-            }
++            },
++            "type": "merged"
+           }
++        },
++        "index": {
++          "paths": [
++            "project/nix/README.md",
++            "project/nix/domain/nix-language.md",
++            "project/nix/domain/flakes.md",
++            "project/nix/domain/nixos-modules.md",
++            "project/nix/domain/home-manager.md",
++            "project/nix/patterns/module-patterns.md",
++            "project/nix/patterns/overlay-patterns.md",
++            "project/nix/patterns/derivation-patterns.md",
++            "project/nix/standards/nix-style-guide.md",
++            "project/nix/tools/nixos-rebuild-guide.md",
++            "project/nix/tools/home-manager-guide.md",
++            "project/nix/tools/mcp-nixos-integration.md"
++          ]
+         }
+       },
+       "installed_dirs": [],
+-      "source_git_head": "0ba82875c3c8088a1d0ce6944520cb801a1b8a6b"
+-    },
+-    "memory": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/memory",
+-      "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:37Z",
++      "loaded_at": "2026-11-12T20:52:03Z",
+       "status": "active",
+       "installed_files": [
+-        ".claude/commands/learn.md",
+-        ".claude/commands/distill.md",
+-        ".claude/skills/skill-learn/README.md",
+-        ".claude/skills/skill-learn/SKILL.md",
+-        ".claude/skills/skill-distill/README.md",
+-        ".claude/skills/skill-distill/SKILL.md",
+-        ".claude/context/project/memory/README.md",
+-        ".claude/context/project/memory/distill-usage.md",
+-        ".claude/context/project/memory/domain/memory-reference.md",
+-        ".claude/context/project/memory/knowledge-capture-usage.md",
+-        ".claude/context/project/memory/learn-usage.md",
+-        ".claude/context/project/memory/memory-setup.md",
+-        ".claude/context/project/memory/memory-troubleshooting.md",
+-        ".claude/context/project/memory/patterns/distill-compress-submode.md",
+-        ".claude/context/project/memory/patterns/distill-dream-submode.md",
+-        ".claude/context/project/memory/patterns/distill-learn-submode.md",
+-        ".claude/context/project/memory/patterns/distill-merge-submode.md",
+-        ".claude/context/project/memory/patterns/distill-meta-submode.md",
+-        ".claude/context/project/memory/patterns/distill-purge-submode.md",
+-        ".claude/context/project/memory/patterns/distill-refine-submode.md",
+-        ".claude/context/project/memory/patterns/distill-review-submode.md",
+-        ".claude/context/project/memory/patterns/distill-revise-submode.md",
+-        ".claude/context/project/memory/telemetry-guardrails.md",
+-        ".claude/scripts/bootstrap-harvest.sh",
+-        ".claude/scripts/bootstrap-harvest-transcripts.sh",
+-        ".claude/scripts/bootstrap-harvest-history.sh",
+-        ".claude/scripts/bootstrap-harvest-attribution.sh",
+-        ".claude/extensions/memory/manifest.json"
++        ".claude/agents/nix-research-agent.md",
++        ".claude/agents/nix-implementation-agent.md",
++        ".claude/rules/nix.md",
++        ".claude/skills/skill-nix-research/SKILL.md",
++        ".claude/skills/skill-nix-implementation/SKILL.md",
++        ".claude/context/project/nix/README.md",
++        ".claude/context/project/nix/domain/flakes.md",
++        ".claude/context/project/nix/domain/home-manager.md",
++        ".claude/context/project/nix/domain/nix-language.md",
++        ".claude/context/project/nix/domain/nixos-modules.md",
++        ".claude/context/project/nix/patterns/derivation-patterns.md",
++        ".claude/context/project/nix/patterns/module-patterns.md",
++        ".claude/context/project/nix/patterns/overlay-patterns.md",
++        ".claude/context/project/nix/standards/nix-style-guide.md",
++        ".claude/context/project/nix/tools/home-manager-guide.md",
++        ".claude/context/project/nix/tools/mcp-nixos-integration.md",
++        ".claude/context/project/nix/tools/nixos-rebuild-guide.md",
++        ".claude/scripts/nix-preflight.sh",
++        ".claude/scripts/nix-context.sh",
++        ".claude/extensions/nix/manifest.json"
+       ],
++      "version": "1.0.0",
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nix",
++      "source_git_head": "063526255439f6cdb3b418c3dd95a126658a79e9"
++    },
++    "lean": {
+       "data_skeleton_files": [],
+       "merged_sections": {
+         "index": {
+           "paths": [
+-            "project/memory/learn-usage.md",
+-            "project/memory/memory-setup.md",
+-            "project/memory/memory-troubleshooting.md",
+-            "project/memory/domain/memory-reference.md",
+-            "project/memory/knowledge-capture-usage.md",
+-            "project/memory/distill-usage.md",
+-            "project/memory/telemetry-guardrails.md",
+-            "project/memory/README.md",
+-            "project/memory/patterns/distill-dream-submode.md",
+-            "project/memory/patterns/distill-learn-submode.md",
+-            "project/memory/patterns/distill-review-submode.md",
+-            "project/memory/patterns/distill-meta-submode.md",
+-            "project/memory/patterns/distill-revise-submode.md",
+-            "project/memory/patterns/distill-refine-submode.md",
+-            "project/memory/patterns/distill-compress-submode.md",
+-            "project/memory/patterns/distill-merge-submode.md",
+-            "project/memory/patterns/distill-purge-submode.md"
++            "project/lean4/domain/mathlib-overview.md",
++            "project/lean4/domain/dependent-types.md",
++            "project/lean4/domain/key-mathematical-concepts.md",
++            "project/lean4/domain/lean4-syntax.md",
++            "project/lean4/patterns/tactic-patterns.md",
++            "project/lean4/patterns/dependency-tracing.md",
++            "project/lean4/patterns/external-library-dependency-assessment.md",
++            "project/lean4/patterns/measurement-harness-strictness.md",
++            "project/lean4/patterns/plan-authoring-gate-collisions.md",
++            "project/lean4/standards/lean4-style-guide.md",
++            "project/lean4/standards/proof-conventions-lean.md",
++            "project/lean4/standards/proof-debt-policy.md",
++            "project/lean4/standards/proof-readability-criteria.md",
++            "project/lean4/standards/literature-fidelity-policy.md",
++            "project/lean4/tools/mcp-tools-guide.md",
++            "project/lean4/tools/aesop-integration.md",
++            "project/lean4/tools/leansearch-api.md",
++            "project/lean4/tools/loogle-api.md",
++            "project/lean4/tools/lsp-integration.md",
++            "project/lean4/agents/lean-implementation-flow.md",
++            "project/lean4/agents/lean-research-flow.md",
++            "project/lean4/operations/multi-instance-optimization.md",
++            "project/lean4/operations/long-builds.md",
++            "project/lean4/processes/end-to-end-proof-workflow.md",
++            "project/lean4/processes/project-structure-best-practices.md",
++            "project/lean4/templates/definition-template.md",
++            "project/lean4/templates/new-file-template.md",
++            "project/lean4/templates/proof-structure-templates.md",
++            "project/lean4/README.md",
++            "project/lean4/standards/proof-conventions.md",
++            "project/lean4/tools/blocked-mcp-tools.md",
++            "project/lean4/patterns/mcp-fallback-table.md",
++            "contracts/lean4-reference-grounding.md",
++            "contracts/lean4-anti-analysis.md",
++            "contracts/lean4-adversarial-verification.md",
++            "contracts/lean4-context-hygiene.md",
++            "contracts/lean4-sorry-discipline.md",
++            "project/lean4/domain/hard-mode.md",
++            "project/lean4/domain/comparator-integration.md",
++            "project/lean4/tools/comparator-guide.md",
++            "project/lean4/domain/decidability-provenance.md",
++            "project/lean4/domain/metadata-trust-surfaces.md",
++            "project/lean4/domain/challenge-snapshot.md",
++            "project/lean4/domain/sentence-translation-contract.md",
++            "project/lean4/domain/ladder-counter-observables.md"
+           ]
++        },
++        "settings": {
++          "permissions": {
++            "children": {
++              "allow": {
++                "items": [],
++                "type": "appended"
++              }
++            },
++            "type": "merged"
++          }
+         }
+       },
+       "installed_dirs": [],
+-      "source_git_head": "edf9a01d61f9635eeead318ef2eec7ade7d6d4fb"
+-    },
+-    "core": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/core",
+-      "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:36Z",
+-      "status": "active",
+-      "installed_files": [
+-        ".claude/agents/code-reviewer-agent.md",
+-        ".claude/agents/general-implementation-agent.md",
+-        ".claude/agents/general-research-agent.md",
+-        ".claude/agents/meta-builder-agent.md",
+-        ".claude/agents/planner-agent.md",
+-        ".claude/agents/reviser-agent.md",
+-        ".claude/agents/spawn-agent.md",
+-        ".claude/commands/errors.md",
+-        ".claude/commands/fix-it.md",
+-        ".claude/commands/merge.md",
+-        ".claude/commands/meta.md",
+-        ".claude/commands/orchestrate.md",
+-        ".claude/commands/please.md",
+-        ".claude/commands/refresh.md",
+-        ".claude/commands/review.md",
+-        ".claude/commands/revise.md",
+-        ".claude/commands/spawn.md",
+-        ".claude/commands/tag.md",
+-        ".claude/commands/task.md",
+-        ".claude/commands/todo.md",
+-        ".claude/commands/zulip.md",
+-        ".claude/commands/project-overview.md",
+-        ".claude/commands/README.md",
+-        ".claude/rules/artifact-formats.md",
+-        ".claude/rules/error-handling.md",
+-        ".claude/rules/git-workflow.md",
+-        ".claude/rules/plan-format-enforcement.md",
+-        ".claude/rules/pr-prohibition.md",
+-        ".claude/rules/state-management.md",
+-        ".claude/rules/workflows.md",
+-        ".claude/rules/project-overview-detection.md",
+-        ".claude/rules/no-task-references-in-deliverables.md",
+-        ".claude/rules/no-record-versioning-in-deliverables.md",
+-        ".claude/rules/source-store-deploy-boundary.md",
+-        ".claude/skills/skill-fix-it/SKILL.md",
+-        ".claude/skills/skill-git-workflow/SKILL.md",
+-        ".claude/skills/skill-meta/SKILL.md",
+-        ".claude/skills/skill-orchestrate/SKILL.md",
+-        ".claude/skills/skill-refresh/SKILL.md",
+-        ".claude/skills/skill-reviser/SKILL.md",
+-        ".claude/skills/skill-spawn/SKILL.md",
+-        ".claude/skills/skill-status-sync/SKILL.md",
+-        ".claude/skills/skill-tag/SKILL.md",
+-        ".claude/skills/skill-todo/SKILL.md",
+-        ".claude/skills/skill-zulip/SKILL.md",
+-        ".claude/skills/skill-project-overview/SKILL.md",
+-        ".claude/context/README.md",
+-        ".claude/context/routing.md",
+-        ".claude/context/validation.md",
+-        ".claude/context/index.schema.json",
+-        ".claude/context/architecture/component-checklist.md",
+-        ".claude/context/architecture/context-layers.md",
+-        ".claude/context/architecture/generation-guidelines.md",
+-        ".claude/context/architecture/system-overview.md",
+-        ".claude/context/checkpoints/README.md",
+-        ".claude/context/checkpoints/checkpoint-commit.md",
+-        ".claude/context/checkpoints/checkpoint-gate-in.md",
+-        ".claude/context/checkpoints/checkpoint-gate-out.md",
+-        ".claude/context/config/claudemd-size-budget.json",
+-        ".claude/context/config/orchestrator-context-budget.json",
+-        ".claude/context/contracts/adversarial-verification.md",
+-        ".claude/context/contracts/anti-analysis.md",
+-        ".claude/context/contracts/batch-gate-stage.md",
+-        ".claude/context/contracts/conclusion-stage.md",
+-        ".claude/context/contracts/convergence.md",
+-        ".claude/context/contracts/deliverable-file-mandate.md",
+-        ".claude/context/contracts/modified-files-bullet.md",
+-        ".claude/context/contracts/no-task-references-bullet.md",
+-        ".claude/context/contracts/orchestrator-discipline.md",
+-        ".claude/context/contracts/phase-closure.md",
+-        ".claude/context/contracts/plan-status-ownership.md",
+-        ".claude/context/contracts/pre-edit-gate.md",
+-        ".claude/context/contracts/recovery.md",
+-        ".claude/context/contracts/reference-grounding.md",
+-        ".claude/context/contracts/return-meta-artifacts-template.md",
+-        ".claude/context/contracts/territory.md",
+-        ".claude/context/contracts/wrap-up.md",
+-        ".claude/context/formats/command-output.md",
+-        ".claude/context/formats/command-structure.md",
+-        ".claude/context/formats/dispatch-metrics.md",
+-        ".claude/context/formats/errors-format.md",
+-        ".claude/context/formats/events-format.md",
+-        ".claude/context/formats/frontmatter.md",
+-        ".claude/context/formats/handoff-artifact.md",
+-        ".claude/context/formats/issue-log.md",
+-        ".claude/context/formats/plan-format.md",
+-        ".claude/context/formats/progress-file.md",
+-        ".claude/context/formats/report-format.md",
+-        ".claude/context/formats/return-metadata-file.md",
+-        ".claude/context/formats/roadmap-format.md",
+-        ".claude/context/formats/subagent-return.md",
+-        ".claude/context/formats/summary-format.md",
+-        ".claude/context/formats/task-order-format.md",
+-        ".claude/context/guides/extension-development.md",
+-        ".claude/context/guides/hard-mode-routing.md",
+-        ".claude/context/guides/loader-reference.md",
+-        ".claude/context/guides/manifest-routing-schema.md",
+-        ".claude/context/meta/context-revision-guide.md",
+-        ".claude/context/meta/domain-patterns.md",
+-        ".claude/context/meta/meta-guide.md",
+-        ".claude/context/orchestration/architecture.md",
+-        ".claude/context/orchestration/delegation.md",
+-        ".claude/context/orchestration/orchestration-core.md",
+-        ".claude/context/orchestration/orchestration-reference.md",
+-        ".claude/context/orchestration/orchestrator.md",
+-        ".claude/context/orchestration/postflight-pattern.md",
+-        ".claude/context/orchestration/preflight-pattern.md",
+-        ".claude/context/orchestration/sessions.md",
+-        ".claude/context/orchestration/state-management.md",
+-        ".claude/context/orchestration/validation.md",
+-        ".claude/context/patterns/adoption-lint-conventions.md",
+-        ".claude/context/patterns/anti-stop-patterns.md",
+-        ".claude/context/patterns/artifact-linking-todo.md",
+-        ".claude/context/patterns/backlog-reconciliation.md",
+-        ".claude/context/patterns/batch-drain-loop.md",
+-        ".claude/context/patterns/batch-orchestration-guardrails.md",
+-        ".claude/context/patterns/bounded-build-waiter.md",
+-        ".claude/context/patterns/checkpoint-before-overflow.md",
+-        ".claude/context/patterns/checkpoint-execution.md",
+-        ".claude/context/patterns/ci-deploy-tree-bootstrap.md",
+-        ".claude/context/patterns/context-discovery.md",
+-        ".claude/context/patterns/context-exhaustion-detection.md",
+-        ".claude/context/patterns/context-protective-lead.md",
+-        ".claude/context/patterns/deploy-orphan-detection.md",
+-        ".claude/context/patterns/dispatch-report-not-termination.md",
+-        ".claude/context/patterns/early-metadata-pattern.md",
+-        ".claude/context/patterns/external-process-wait.md",
+-        ".claude/context/patterns/file-footprint-overlap.md",
+-        ".claude/context/patterns/file-metadata-exchange.md",
+-        ".claude/context/patterns/infra-failure-discrimination.md",
+-        ".claude/context/patterns/inline-status-update.md",
+-        ".claude/context/patterns/jq-escaping-workarounds.md",
+-        ".claude/context/patterns/lit-stage4a-flow.md",
+-        ".claude/context/patterns/mcp-server-ownership.md",
+-        ".claude/context/patterns/mcp-tool-recovery.md",
+-        ".claude/context/patterns/metadata-file-return.md",
+-        ".claude/context/patterns/mode-gated-section-loading.md",
+-        ".claude/context/patterns/multi-task-operations.md",
+-        ".claude/context/patterns/orchestrate-batch-results-template.md",
+-        ".claude/context/patterns/plan-revision-notification.md",
+-        ".claude/context/patterns/postflight-control.md",
+-        ".claude/context/patterns/regeneration-is-manual-only.md",
+-        ".claude/context/patterns/roadmap-update.md",
+-        ".claude/context/patterns/skill-lifecycle.md",
+-        ".claude/context/patterns/skill-postflight-flow.md",
+-        ".claude/context/patterns/skill-preflight-flow.md",
+-        ".claude/context/patterns/skill-self-execution-fallback.md",
+-        ".claude/context/patterns/subagent-continuation-loop.md",
+-        ".claude/context/patterns/system-defect-discrimination.md",
+-        ".claude/context/patterns/task-abandon-mode.md",
+-        ".claude/context/patterns/task-description-transformation-examples.md",
+-        ".claude/context/patterns/task-expand-mode.md",
+-        ".claude/context/patterns/task-lock.md",
+-        ".claude/context/patterns/task-recover-mode.md",
+-        ".claude/context/patterns/task-review-mode.md",
+-        ".claude/context/patterns/task-sync-mode.md",
+-        ".claude/context/patterns/thin-wrapper-skill.md",
+-        ".claude/context/patterns/todo-archival-reference.md",
+-        ".claude/context/patterns/topic-assignment-pattern.md",
+-        ".claude/context/processes/implementation-workflow.md",
+-        ".claude/context/processes/planning-workflow.md",
+-        ".claude/context/processes/research-workflow.md",
+-        ".claude/context/reference/README.md",
+-        ".claude/context/reference/artifact-numbering-and-versioning.md",
+-        ".claude/context/reference/artifact-templates.md",
+-        ".claude/context/reference/known-consumer-repos.json",
+-        ".claude/context/reference/orchestrator-critical-paths.json",
+-        ".claude/context/reference/skill-agent-mapping.md",
+-        ".claude/context/reference/state-management-schema.md",
+-        ".claude/context/reference/workflow-diagrams.md",
+-        ".claude/context/repo/update-project.md",
+-        ".claude/context/schemas/errors-schema.json",
+-        ".claude/context/schemas/events-schema.json",
+-        ".claude/context/schemas/frontmatter-schema.json",
+-        ".claude/context/schemas/orchestrator-handoff-schema.json",
+-        ".claude/context/schemas/state-schema.json",
+-        ".claude/context/schemas/subagent-frontmatter.yaml",
+-        ".claude/context/standards/analysis-framework.md",
+-        ".claude/context/standards/anchor-pointer-convention.md",
+-        ".claude/context/standards/census-methodology.md",
+-        ".claude/context/standards/ci-workflow.md",
+-        ".claude/context/standards/code-patterns.md",
+-        ".claude/context/standards/context-tier-semantics.md",
+-        ".claude/context/standards/documentation-standards.md",
+-        ".claude/context/standards/error-handling.md",
+-        ".claude/context/standards/error-recovery-strategies.md",
+-        ".claude/context/standards/git-integration.md",
+-        ".claude/context/standards/git-safety.md",
+-        ".claude/context/standards/git-staging-scope.md",
+-        ".claude/context/standards/git-workflow-narrative.md",
+-        ".claude/context/standards/grep-word-boundary-portability.md",
+-        ".claude/context/standards/interactive-selection.md",
+-        ".claude/context/standards/orchestrator-runtime-files.md",
+-        ".claude/context/standards/post-incident-verification-checklist.md",
+-        ".claude/context/standards/postflight-tool-restrictions.md",
+-        ".claude/context/standards/push-consent-relay.md",
+-        ".claude/context/standards/record-version-exemptions.md",
+-        ".claude/context/standards/repo-level-declarations.md",
+-        ".claude/context/standards/shared-worktree-discipline.md",
+-        ".claude/context/standards/shell-script-testing.md",
+-        ".claude/context/standards/shell-strict-mode.md",
+-        ".claude/context/standards/source-store-deploy-boundary-narrative.md",
+-        ".claude/context/standards/status-markers.md",
+-        ".claude/context/standards/task-management.md",
+-        ".claude/context/standards/task-reference-exemptions.md",
+-        ".claude/context/standards/testing.md",
+-        ".claude/context/standards/user-decision-contract.md",
+-        ".claude/context/standards/xml-structure.md",
+-        ".claude/context/templates/agent-template.md",
+-        ".claude/context/templates/command-template.md",
+-        ".claude/context/templates/delegation-context.md",
+-        ".claude/context/templates/orchestrator-template.md",
+-        ".claude/context/templates/subagent-template.md",
+-        ".claude/context/templates/thin-wrapper-skill.md",
+-        ".claude/context/troubleshooting/workflow-interruptions.md",
+-        ".claude/context/workflows/command-lifecycle.md",
+-        ".claude/context/workflows/meta-interview.md",
+-        ".claude/context/workflows/preflight-postflight.md",
+-        ".claude/context/workflows/review-process.md",
+-        ".claude/context/workflows/task-breakdown.md",
+-        ".claude/scripts/assess-repo-health.sh",
+-        ".claude/scripts/audit-deletion-references.sh",
+-        ".claude/scripts/audit-task-proposals.sh",
+-        ".claude/scripts/backfill-file-scope.sh",
+-        ".claude/scripts/census-count.sh",
+-        ".claude/scripts/check-consumer-freshness.sh",
+-        ".claude/scripts/check-deploy-freshness.sh",
+-        ".claude/scripts/check-extension-docs.sh",
+-        ".claude/scripts/check-record-versioning.sh",
+-        ".claude/scripts/check-runtime-file-tracking.sh",
+-        ".claude/scripts/check-task-references.sh",
+-        ".claude/scripts/claude-cleanup.sh",
+-        ".claude/scripts/claude-refresh.sh",
+-        ".claude/scripts/command-gate-in.sh",
+-        ".claude/scripts/command-gate-out.sh",
+-        ".claude/scripts/command-route-agent.sh",
+-        ".claude/scripts/context-reachability.sh",
+-        ".claude/scripts/deploy-headless.sh",
+-        ".claude/scripts/deploy-root-guard.sh",
+-        ".claude/scripts/dispatch-metrics.sh",
+-        ".claude/scripts/dispatch-strand-probe.sh",
+-        ".claude/scripts/errors-append.sh",
+-        ".claude/scripts/events-append.sh",
+-        ".claude/scripts/events-query.sh",
+-        ".claude/scripts/export-to-markdown.sh",
+-        ".claude/scripts/gate-cost-model.csv",
+-        ".claude/scripts/gate-registry.data",
+-        ".claude/scripts/generate-context-line-counts.sh",
+-        ".claude/scripts/generate-task-order.sh",
+-        ".claude/scripts/generate-todo.sh",
+-        ".claude/scripts/git-commit-phase.sh",
+-        ".claude/scripts/git-commit-scoped.sh",
+-        ".claude/scripts/git-push-granted.sh",
+-        ".claude/scripts/git-snapshot.sh",
+-        ".claude/scripts/init-specs.sh",
+-        ".claude/scripts/install-aliases.sh",
+-        ".claude/scripts/install-extension.sh",
+-        ".claude/scripts/install-systemd-timer.sh",
+-        ".claude/scripts/issue-grouping.sh",
+-        ".claude/scripts/issue-record.sh",
+-        ".claude/scripts/lake-build-guard.sh",
+-        ".claude/scripts/lib/common.sh",
+-        ".claude/scripts/lib/continuation-pointer-lib.sh",
+-        ".claude/scripts/lib/deploy-baseline-lib.sh",
+-        ".claude/scripts/lib/deploy-freshness-lib.sh",
+-        ".claude/scripts/lib/deploy-ledger-lib.sh",
+-        ".claude/scripts/lib/derived-artifact-probe-lib.sh",
+-        ".claude/scripts/lib/engine-written-state-paths-lib.sh",
+-        ".claude/scripts/lib/extension-install-lib.sh",
+-        ".claude/scripts/lib/file-scope-overlap.sh",
+-        ".claude/scripts/lib/gate-cache-lib.sh",
+-        ".claude/scripts/lib/gate-registry-lib.sh",
+-        ".claude/scripts/lib/gate-store-fixture-lib.sh",
+-        ".claude/scripts/lib/gate-verdict-extract-lib.sh",
+-        ".claude/scripts/lib/git-corpus-enum-lib.sh",
+-        ".claude/scripts/lib/lint-corpus-scan-lib.sh",
+-        ".claude/scripts/lib/manifest-routing-lib.sh",
+-        ".claude/scripts/lib/phase-heading-patterns.sh",
+-        ".claude/scripts/lib/phase-heartbeat-lib.sh",
+-        ".claude/scripts/lib/plan-status-line.sh",
+-        ".claude/scripts/lib/project-number-inuse.sh",
+-        ".claude/scripts/lib/push-grant-lib.sh",
+-        ".claude/scripts/lib/record-version-patterns.sh",
+-        ".claude/scripts/lib/redeploy-checkpoint-lib.sh",
+-        ".claude/scripts/lib/redeploy-remedy-lib.sh",
+-        ".claude/scripts/lib/return-meta-artifacts-lib.sh",
+-        ".claude/scripts/lib/return-meta-status-vocabulary.sh",
+-        ".claude/scripts/lib/runtime-file-patterns.sh",
+-        ".claude/scripts/lib/state-writer-boundary-patterns-lib.sh",
+-        ".claude/scripts/lib/stash-provenance-lib.sh",
+-        ".claude/scripts/lib/status-vocabulary.sh",
+-        ".claude/scripts/lib/suite-selection-lib.sh",
+-        ".claude/scripts/lib/task-classification-lib.sh",
+-        ".claude/scripts/lib/task-lookup-lib.sh",
+-        ".claude/scripts/lib/task-reference-patterns.sh",
+-        ".claude/scripts/lib/task-type-detect.sh",
+-        ".claude/scripts/lib/territory-contention-lib.sh",
+-        ".claude/scripts/lifecycle-notify.sh",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-cslib-agents-cslib-implementation-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-cslib-agents-cslib-implementation-hard-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-cslib-agents-cslib-research-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-cslib-agents-pr-review-implementation-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-cslib-agents-pr-review-research-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-epidemiology-agents-epi-implement-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-epidemiology-agents-epi-research-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-formal-agents-formal-research-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-formal-agents-logic-research-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-formal-agents-math-research-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-analyze-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-deck-builder-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-deck-planner-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-deck-research-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-finance-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-financial-analysis-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-founder-implement-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-founder-plan-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-founder-spreadsheet-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-legal-analysis-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-legal-council-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-market-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-meeting-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-project-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-strategy-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-lean-implementation-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-lean-research-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-neovim-implementation-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-nix-implementation-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-nix-research-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-nvim-agents-neovim-research-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-budget-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-funds-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-grant-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-pptx-assembly-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-slide-critic-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-slides-research-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-slidev-assembly-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-timeline-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-web-agents-web-implementation-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-web-agents-web-research-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/literature-organization-complete-entry-literature-agent.txt",
+-        ".claude/scripts/lint/collapsed-blocks/registry.tsv",
+-        ".claude/scripts/lint/collapsed-blocks/row17-core-context-formats-progress-file.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row22-core-context-patterns-metadata-file-return.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-core-skills-skill-reviser-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-epidemiology-skills-skill-epi-implement-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-epidemiology-skills-skill-epi-research-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-analyze-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-deck-plan-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-deck-research-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-finance-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-financial-analysis-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-founder-spreadsheet-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-legal-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-market-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-meeting-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-project-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-strategy-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-present-skills-skill-budget-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-present-skills-skill-funds-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-present-skills-skill-grant-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-present-skills-skill-slides-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row3-present-skills-skill-timeline-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-books-skills-skill-books-implementation-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-cslib-skills-skill-cslib-implementation-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-cslib-skills-skill-pr-implementation-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-epidemiology-skills-skill-epi-implement-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-founder-skills-skill-deck-implement-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-founder-skills-skill-founder-implement-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-latex-skills-skill-latex-implementation-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-lean-skills-skill-lean-implementation-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-nix-skills-skill-nix-implementation-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-nvim-skills-skill-neovim-implementation-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-python-skills-skill-python-implementation-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-rust-skills-skill-rust-implementation-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-typst-skills-skill-typst-implementation-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-web-skills-skill-web-implementation-SKILL.txt",
+-        ".claude/scripts/lint/collapsed-blocks/row7-z3-skills-skill-z3-implementation-SKILL.txt",
+-        ".claude/scripts/lint/lint-agent-contracts.sh",
+-        ".claude/scripts/lint/lint-anchor-pointer-collapse.sh",
+-        ".claude/scripts/lint/lint-branch-gated-sections.sh",
+-        ".claude/scripts/lint/lint-contract-compliance.sh",
+-        ".claude/scripts/lint/lint-dead-command-recommendations.sh",
+-        ".claude/scripts/lint/lint-directory-pathspec-boundary.sh",
+-        ".claude/scripts/lint/lint-extension-readme-table.sh",
+-        ".claude/scripts/lint/lint-gate-registry.sh",
+-        ".claude/scripts/lint/lint-hook-registration-paths.sh",
+-        ".claude/scripts/lint/lint-json-channel-discipline.sh",
+-        ".claude/scripts/lint/lint-lifecycle-status-var.sh",
+-        ".claude/scripts/lint/lint-postflight-boundary.sh",
+-        ".claude/scripts/lint/lint-routing-wiring.sh",
+-        ".claude/scripts/lint/lint-scoped-commit-boundary.sh",
+-        ".claude/scripts/lint/lint-shellcheck.sh",
+-        ".claude/scripts/lint/lint-state-writer-boundary.sh",
+-        ".claude/scripts/lint/lint-subject-resolution-declaration.sh",
+-        ".claude/scripts/lint/lint-task-lookup-adoption.sh",
+-        ".claude/scripts/lint/lint-test-harness-adoption.sh",
+-        ".claude/scripts/lint/lint-unit-integration-boundary.sh",
+-        ".claude/scripts/lint/lint-verdict-extraction-anchoring.sh",
+-        ".claude/scripts/manage-topics.sh",
+-        ".claude/scripts/measure-eager-context.sh",
+-        ".claude/scripts/measure-eager-surface.sh",
+-        ".claude/scripts/measure-gate-costs.sh",
+-        ".claude/scripts/memory-harvest.sh",
+-        ".claude/scripts/memory-retrieve.sh",
+-        ".claude/scripts/migrate-directory-padding.sh",
+-        ".claude/scripts/migrate-state-legacy-fields.sh",
+-        ".claude/scripts/orchestrate-batch-admit.sh",
+-        ".claude/scripts/orchestrate-batch-gate.sh",
+-        ".claude/scripts/orchestrate-build-aux-dispatch.sh",
+-        ".claude/scripts/orchestrate-build-dispatch.sh",
+-        ".claude/scripts/orchestrate-churn.sh",
+-        ".claude/scripts/orchestrate-conclusion-aggregate.sh",
+-        ".claude/scripts/orchestrate-cycle-plan.sh",
+-        ".claude/scripts/orchestrate-cycle-postflight.sh",
+-        ".claude/scripts/orchestrate-loop-guard-init.sh",
+-        ".claude/scripts/orchestrate-predispatch-review.sh",
+-        ".claude/scripts/orchestrate-record-decision.sh",
+-        ".claude/scripts/orchestrate-recover-message-findings.sh",
+-        ".claude/scripts/orchestrate-recover-outcome.sh",
+-        ".claude/scripts/orchestrate-stage5-gates.sh",
+-        ".claude/scripts/orchestrate-stage5-postflight.sh",
+-        ".claude/scripts/orchestrate-suggest-next-batch.sh",
+-        ".claude/scripts/orchestrate-triage-classify.sh",
+-        ".claude/scripts/orchestrate-unwind-dispatch.sh",
+-        ".claude/scripts/orchestrator-postflight.sh",
+-        ".claude/scripts/parse-command-args.sh",
+-        ".claude/scripts/plan-file-scope-harvest.sh",
+-        ".claude/scripts/reap-session-runtime-files.sh",
+-        ".claude/scripts/reconcile-artifacts.sh",
+-        ".claude/scripts/reconcile-task-status.sh",
+-        ".claude/scripts/roadmap-integration.sh",
+-        ".claude/scripts/run-task-observers.sh",
+-        ".claude/scripts/script-inventory.sh",
+-        ".claude/scripts/skill-base.sh",
+-        ".claude/scripts/state-write.sh",
+-        ".claude/scripts/sweep-invalidated-claims.sh",
+-        ".claude/scripts/sync-manifest-scripts.sh",
+-        ".claude/scripts/system-defect-record.sh",
+-        ".claude/scripts/task-lock.sh",
+-        ".claude/scripts/test-conflict-predicate.sh",
+-        ".claude/scripts/test-four-tier-conflict.sh",
+-        ".claude/scripts/test-session-registry.sh",
+-        ".claude/scripts/test-session-runtime-files.sh",
+-        ".claude/scripts/test-state-write-concurrency.sh",
+-        ".claude/scripts/test-state-write-large-payload.sh",
+-        ".claude/scripts/test-state-write-regen-timing.sh",
+-        ".claude/scripts/test-state-write-spill-names.sh",
+-        ".claude/scripts/test-task-lock-reap.sh",
+-        ".claude/scripts/tests/known-failures.txt",
+-        ".claude/scripts/tests/run-all.sh",
+-        ".claude/scripts/tests/suite-classification.data",
+-        ".claude/scripts/tests/suite-cost-hints.txt",
+-        ".claude/scripts/tests/test-askuserquestion-rehome.sh",
+-        ".claude/scripts/tests/test-assess-repo-health.sh",
+-        ".claude/scripts/tests/test-audit-task-proposals.sh",
+-        ".claude/scripts/tests/test-backfill-file-scope.sh",
+-        ".claude/scripts/tests/test-census-count.sh",
+-        ".claude/scripts/tests/test-check-record-versioning.sh",
+-        ".claude/scripts/tests/test-check-task-references.sh",
+-        ".claude/scripts/tests/test-claude-refresh-matcher.sh",
+-        ".claude/scripts/tests/test-common-lib.sh",
+-        ".claude/scripts/tests/test-consumer-freshness.sh",
+-        ".claude/scripts/tests/test-context-reachability.sh",
+-        ".claude/scripts/tests/test-corroborate-phase-counts.sh",
+-        ".claude/scripts/tests/test-deploy-baseline-lib.sh",
+-        ".claude/scripts/tests/test-deploy-freshness.sh",
+-        ".claude/scripts/tests/test-deploy-ledger-lib.sh",
+-        ".claude/scripts/tests/test-deploy-orphans.sh",
+-        ".claude/scripts/tests/test-deploy-propagation.sh",
+-        ".claude/scripts/tests/test-deploy-root-guard.sh",
+-        ".claude/scripts/tests/test-deploy-verify-overlap.sh",
+-        ".claude/scripts/tests/test-deploy-verify-wiring.sh",
+-        ".claude/scripts/tests/test-derived-artifact-probe-lib.sh",
+-        ".claude/scripts/tests/test-detect-noop-bash.sh",
+-        ".claude/scripts/tests/test-dispatch-metrics.sh",
+-        ".claude/scripts/tests/test-dispatch-strand-probe.sh",
+-        ".claude/scripts/tests/test-double-loading-check.sh",
+-        ".claude/scripts/tests/test-engine-written-state-paths-lib.sh",
+-        ".claude/scripts/tests/test-errors-append.sh",
+-        ".claude/scripts/tests/test-force-phases.sh",
+-        ".claude/scripts/tests/test-gate-cache-equivalence.sh",
+-        ".claude/scripts/tests/test-gate-cache-lib.sh",
+-        ".claude/scripts/tests/test-gate-lock.sh",
+-        ".claude/scripts/tests/test-gate-out-derived-staleness.sh",
+-        ".claude/scripts/tests/test-gate-out-repair-reporting.sh",
+-        ".claude/scripts/tests/test-gate-out-self-attribution.sh",
+-        ".claude/scripts/tests/test-gate-registry-resolution.sh",
+-        ".claude/scripts/tests/test-gate3-parallel-equivalence.sh",
+-        ".claude/scripts/tests/test-gate3-strict-equivalence.sh",
+-        ".claude/scripts/tests/test-generate-task-order.sh",
+-        ".claude/scripts/tests/test-git-commit-phase.sh",
+-        ".claude/scripts/tests/test-git-commit-scoped.sh",
+-        ".claude/scripts/tests/test-git-corpus-enum-lib.sh",
+-        ".claude/scripts/tests/test-git-snapshot.sh",
+-        ".claude/scripts/tests/test-guard-destructive-git.sh",
+-        ".claude/scripts/tests/test-guard-git-push.sh",
+-        ".claude/scripts/tests/test-handoff-dispatch-identity.sh",
+-        ".claude/scripts/tests/test-handoff-reader-parity.sh",
+-        ".claude/scripts/tests/test-index-entries-schema.sh",
+-        ".claude/scripts/tests/test-init-specs.sh",
+-        ".claude/scripts/tests/test-install-uninstall-extension.sh",
+-        ".claude/scripts/tests/test-issue-record.sh",
+-        ".claude/scripts/tests/test-lake-build-guard.sh",
+-        ".claude/scripts/tests/test-lint-agent-contracts-await-notification.sh",
+-        ".claude/scripts/tests/test-lint-agent-contracts-handoff-section.sh",
+-        ".claude/scripts/tests/test-lint-agent-contracts-heartbeat.sh",
+-        ".claude/scripts/tests/test-lint-agent-contracts.sh",
+-        ".claude/scripts/tests/test-lint-anchor-pointer-collapse.sh",
+-        ".claude/scripts/tests/test-lint-branch-gated-sections.sh",
+-        ".claude/scripts/tests/test-lint-corpus-scan-lib.sh",
+-        ".claude/scripts/tests/test-lint-dead-command-recommendations.sh",
+-        ".claude/scripts/tests/test-lint-deploy-caller-wrap.sh",
+-        ".claude/scripts/tests/test-lint-directory-pathspec-boundary.sh",
+-        ".claude/scripts/tests/test-lint-extension-readme-table.sh",
+-        ".claude/scripts/tests/test-lint-hook-registration-paths.sh",
+-        ".claude/scripts/tests/test-lint-json-channel-discipline.sh",
+-        ".claude/scripts/tests/test-lint-lifecycle-status-var.sh",
+-        ".claude/scripts/tests/test-lint-postflight-boundary.sh",
+-        ".claude/scripts/tests/test-lint-scoped-commit-boundary.sh",
+-        ".claude/scripts/tests/test-lint-shellcheck-parallel.sh",
+-        ".claude/scripts/tests/test-lint-shellcheck.sh",
+-        ".claude/scripts/tests/test-lint-state-writer-boundary.sh",
+-        ".claude/scripts/tests/test-lint-subject-resolution-declaration.sh",
+-        ".claude/scripts/tests/test-lint-task-lookup-adoption.sh",
+-        ".claude/scripts/tests/test-lint-test-harness-adoption.sh",
+-        ".claude/scripts/tests/test-lint-unit-integration-boundary.sh",
+-        ".claude/scripts/tests/test-lint-verdict-extraction-anchoring.sh",
+-        ".claude/scripts/tests/test-manage-topics-create-order.sh",
+-        ".claude/scripts/tests/test-manifest-scripts-sync.sh",
+-        ".claude/scripts/tests/test-mcp-merge-target.sh",
+-        ".claude/scripts/tests/test-measure-gate-costs.sh",
+-        ".claude/scripts/tests/test-mint-dispatch-seq.sh",
+-        ".claude/scripts/tests/test-orchestrate-batch-admit.sh",
+-        ".claude/scripts/tests/test-orchestrate-batch-gate.sh",
+-        ".claude/scripts/tests/test-orchestrate-build-aux-dispatch.sh",
+-        ".claude/scripts/tests/test-orchestrate-build-dispatch.sh",
+-        ".claude/scripts/tests/test-orchestrate-churn.sh",
+-        ".claude/scripts/tests/test-orchestrate-conclusion-aggregate.sh",
+-        ".claude/scripts/tests/test-orchestrate-context-growth.sh",
+-        ".claude/scripts/tests/test-orchestrate-cycle-plan.sh",
+-        ".claude/scripts/tests/test-orchestrate-cycle-postflight.sh",
+-        ".claude/scripts/tests/test-orchestrate-predispatch-review.sh",
+-        ".claude/scripts/tests/test-orchestrate-record-decision.sh",
+-        ".claude/scripts/tests/test-orchestrate-recover-message-findings.sh",
+-        ".claude/scripts/tests/test-orchestrate-recover-outcome.sh",
+-        ".claude/scripts/tests/test-orchestrate-suggest-next-batch.sh",
+-        ".claude/scripts/tests/test-orchestrate-triage-classify.sh",
+-        ".claude/scripts/tests/test-orchestrate-unwind-dispatch.sh",
+-        ".claude/scripts/tests/test-phase-heading-patterns.sh",
+-        ".claude/scripts/tests/test-phase-heartbeat.sh",
+-        ".claude/scripts/tests/test-plan-file-scope-harvest.sh",
+-        ".claude/scripts/tests/test-please-grant.sh",
+-        ".claude/scripts/tests/test-postflight-deploy-gate.sh",
+-        ".claude/scripts/tests/test-postflight-marker-schema.sh",
+-        ".claude/scripts/tests/test-reconcile-demote-stranded.sh",
+-        ".claude/scripts/tests/test-reconcile-handoff-status.sh",
+-        ".claude/scripts/tests/test-record-stash-provenance.sh",
+-        ".claude/scripts/tests/test-record-version-patterns.sh",
+-        ".claude/scripts/tests/test-redeploy-checkpoint-promotion.sh",
+-        ".claude/scripts/tests/test-redeploy-remedy-lib.sh",
+-        ".claude/scripts/tests/test-resume-scan-nonconformance.sh",
+-        ".claude/scripts/tests/test-return-meta-status-vocabulary.sh",
+-        ".claude/scripts/tests/test-roadmap-generation.sh",
+-        ".claude/scripts/tests/test-routing-resolution.sh",
+-        ".claude/scripts/tests/test-run-all-failure-reporting.sh",
+-        ".claude/scripts/tests/test-run-all-parallel.sh",
+-        ".claude/scripts/tests/test-run-all-selection.sh",
+-        ".claude/scripts/tests/test-run-all-shared-fixture.sh",
+-        ".claude/scripts/tests/test-run-task-observers.sh",
+-        ".claude/scripts/tests/test-runtime-file-tracking.sh",
+-        ".claude/scripts/tests/test-script-inventory.sh",
+-        ".claude/scripts/tests/test-skill-base-lifecycle.sh",
+-        ".claude/scripts/tests/test-stall-reprompt-wiring.sh",
+-        ".claude/scripts/tests/test-status-vocabulary.sh",
+-        ".claude/scripts/tests/test-subagent-postflight-marker.sh",
+-        ".claude/scripts/tests/test-sweep-invalidated-claims.sh",
+-        ".claude/scripts/tests/test-task-lock-liveness.sh",
+-        ".claude/scripts/tests/test-task-lock-queue.sh",
+-        ".claude/scripts/tests/test-task-reference-patterns-lib.sh",
+-        ".claude/scripts/tests/test-task-type-detect.sh",
+-        ".claude/scripts/tests/test-todo-move-pair-staging.sh",
+-        ".claude/scripts/tests/test-update-plan-status.sh",
+-        ".claude/scripts/tests/test-update-task-status.sh",
+-        ".claude/scripts/tests/test-validate-artifact.sh",
+-        ".claude/scripts/tests/test-validate-bounded-waiter.sh",
+-        ".claude/scripts/tests/test-validate-handoff-location.sh",
+-        ".claude/scripts/tests/test-validate-handoff.sh",
+-        ".claude/scripts/tests/test-validate-no-python-state-write.sh",
+-        ".claude/scripts/tests/test-validate-no-record-versioning.sh",
+-        ".claude/scripts/tests/test-validate-no-task-references.sh",
+-        ".claude/scripts/tests/test-validate-return-meta.sh",
+-        ".claude/scripts/tests/test-validate-state.sh",
+-        ".claude/scripts/tests/test-validate-task-creation-audit.sh",
+-        ".claude/scripts/tests/test-validate-wiring.sh",
+-        ".claude/scripts/tests/test-verify-deploy-context-budget.sh",
+-        ".claude/scripts/tests/test-verify-deploy-gate-selection-crash-net.sh",
+-        ".claude/scripts/tests/test-verify-deploy-gate-selection.sh",
+-        ".claude/scripts/tier-selection.sh",
+-        ".claude/scripts/uninstall-extension.sh",
+-        ".claude/scripts/update-phase-status.sh",
+-        ".claude/scripts/update-plan-status.sh",
+-        ".claude/scripts/update-task-status.sh",
+-        ".claude/scripts/validate-artifact.sh",
+-        ".claude/scripts/validate-context-budgets.sh",
+-        ".claude/scripts/validate-context-index.sh",
+-        ".claude/scripts/validate-handoff.sh",
+-        ".claude/scripts/validate-index.sh",
+-        ".claude/scripts/validate-return-meta.sh",
+-        ".claude/scripts/validate-state.sh",
+-        ".claude/scripts/validate-wiring.sh",
+-        ".claude/scripts/verify-deploy.sh",
+-        ".claude/hooks/claude-stop-notify.sh",
+-        ".claude/hooks/detect-noop-bash.sh",
+-        ".claude/hooks/events-log-artifact.sh",
+-        ".claude/hooks/events-log-lifecycle.sh",
+-        ".claude/hooks/guard-destructive-git.sh",
+-        ".claude/hooks/guard-git-push.sh",
+-        ".claude/hooks/log-session.sh",
+-        ".claude/hooks/memory-nudge.sh",
+-        ".claude/hooks/please-grant.sh",
+-        ".claude/hooks/post-command.sh",
+-        ".claude/hooks/record-stash-provenance.sh",
+-        ".claude/hooks/subagent-postflight.sh",
+-        ".claude/hooks/tts-notify.sh",
+-        ".claude/hooks/validate-bounded-waiter.sh",
+-        ".claude/hooks/validate-handoff-location.sh",
+-        ".claude/hooks/validate-meta-write.sh",
+-        ".claude/hooks/validate-no-python-state-write.sh",
+-        ".claude/hooks/validate-no-record-versioning.sh",
+-        ".claude/hooks/validate-no-task-references.sh",
+-        ".claude/hooks/validate-plan-write.sh",
+-        ".claude/hooks/validate-state-sync.sh",
+-        ".claude/hooks/validate-task-creation-audit.sh",
+-        ".claude/hooks/wezterm-clear-task-number.sh",
+-        ".claude/hooks/wezterm-notify.sh",
+-        ".claude/hooks/wezterm-preflight-status.sh",
+-        ".claude/hooks/wezterm-task-number.sh",
+-        ".claude/hooks/wezterm-utils.sh",
+-        ".claude/docs/docs-README.md",
+-        ".claude/docs/architecture/batch-admit-schema.md",
+-        ".claude/docs/architecture/extension-system.md",
+-        ".claude/docs/architecture/handoff-schema.md",
+-        ".claude/docs/architecture/orchestrate-cycle-postflight.md",
+-        ".claude/docs/architecture/orchestrate-state-machine.md",
+-        ".claude/docs/architecture/system-overview.md",
+-        ".claude/docs/examples/fix-it-flow-example.md",
+-        ".claude/docs/examples/research-flow-example.md",
+-        ".claude/docs/guides/adding-domains.md",
+-        ".claude/docs/guides/component-selection.md",
+-        ".claude/docs/guides/context-loading-best-practices.md",
+-        ".claude/docs/guides/copy-claude-directory.md",
+-        ".claude/docs/guides/creating-agents.md",
+-        ".claude/docs/guides/creating-commands.md",
+-        ".claude/docs/guides/creating-extensions.md",
+-        ".claude/docs/guides/creating-skills.md",
+-        ".claude/docs/guides/development/context-index-migration.md",
+-        ".claude/docs/guides/permission-configuration.md",
+-        ".claude/docs/guides/user-guide.md",
+-        ".claude/docs/guides/user-installation.md",
+-        ".claude/docs/reference/standards/agent-frontmatter-standard.md",
+-        ".claude/docs/reference/standards/extension-slim-standard.md",
+-        ".claude/docs/reference/standards/multi-task-creation-standard.md",
+-        ".claude/docs/reference/utility-scripts-inventory.md",
+-        ".claude/docs/templates/README.md",
+-        ".claude/docs/templates/agent-template.md",
+-        ".claude/docs/templates/command-template.md",
+-        ".claude/templates/claudemd-header.md",
+-        ".claude/templates/extension-readme-template.md",
+-        ".claude/templates/settings.json",
+-        ".claude/systemd/claude-refresh.service",
+-        ".claude/systemd/claude-refresh.timer",
+-        ".claude/.gitignore",
+-        ".claude/extensions/core/manifest.json"
+-      ],
+-      "data_skeleton_files": [],
+-      "merged_sections": {
+-        "index": {
+-          "paths": [
+-            "architecture/component-checklist.md",
+-            "architecture/context-layers.md",
+-            "architecture/generation-guidelines.md",
+-            "architecture/system-overview.md",
+-            "checkpoints/checkpoint-commit.md",
+-            "checkpoints/checkpoint-gate-in.md",
+-            "checkpoints/checkpoint-gate-out.md",
+-            "checkpoints/README.md",
+-            "formats/command-output.md",
+-            "formats/command-structure.md",
+-            "formats/errors-format.md",
+-            "formats/events-format.md",
+-            "formats/frontmatter.md",
+-            "formats/handoff-artifact.md",
+-            "formats/plan-format.md",
+-            "formats/progress-file.md",
+-            "formats/report-format.md",
+-            "formats/return-metadata-file.md",
+-            "formats/roadmap-format.md",
+-            "formats/subagent-return.md",
+-            "formats/summary-format.md",
+-            "formats/task-order-format.md",
+-            "guides/extension-development.md",
+-            "guides/loader-reference.md",
+-            "meta/context-revision-guide.md",
+-            "meta/domain-patterns.md",
+-            "meta/meta-guide.md",
+-            "orchestration/architecture.md",
+-            "orchestration/delegation.md",
+-            "orchestration/orchestration-core.md",
+-            "orchestration/orchestration-reference.md",
+-            "orchestration/orchestrator.md",
+-            "orchestration/postflight-pattern.md",
+-            "orchestration/preflight-pattern.md",
+-            "orchestration/sessions.md",
+-            "orchestration/state-management.md",
+-            "orchestration/validation.md",
+-            "patterns/anti-stop-patterns.md",
+-            "patterns/artifact-linking-todo.md",
+-            "patterns/checkpoint-execution.md",
+-            "patterns/context-discovery.md",
+-            "patterns/early-metadata-pattern.md",
+-            "patterns/external-process-wait.md",
+-            "patterns/bounded-build-waiter.md",
+-            "patterns/file-metadata-exchange.md",
+-            "patterns/inline-status-update.md",
+-            "patterns/jq-escaping-workarounds.md",
+-            "patterns/infra-failure-discrimination.md",
+-            "patterns/system-defect-discrimination.md",
+-            "patterns/mcp-tool-recovery.md",
+-            "patterns/mcp-server-ownership.md",
+-            "patterns/metadata-file-return.md",
+-            "patterns/multi-task-operations.md",
+-            "patterns/postflight-control.md",
+-            "patterns/roadmap-update.md",
+-            "patterns/skill-lifecycle.md",
+-            "patterns/thin-wrapper-skill.md",
+-            "processes/implementation-workflow.md",
+-            "processes/planning-workflow.md",
+-            "processes/research-workflow.md",
+-            "README.md",
+-            "reference/artifact-numbering-and-versioning.md",
+-            "reference/artifact-templates.md",
+-            "reference/README.md",
+-            "reference/skill-agent-mapping.md",
+-            "reference/state-management-schema.md",
+-            "reference/workflow-diagrams.md",
+-            "repo/project-overview.md",
+-            "repo/update-project.md",
+-            "routing.md",
+-            "schemas/errors-schema.json",
+-            "schemas/events-schema.json",
+-            "schemas/state-schema.json",
+-            "schemas/frontmatter-schema.json",
+-            "schemas/subagent-frontmatter.yaml",
+-            "standards/analysis-framework.md",
+-            "standards/census-methodology.md",
+-            "standards/ci-workflow.md",
+-            "standards/code-patterns.md",
+-            "standards/documentation-standards.md",
+-            "standards/error-handling.md",
+-            "standards/git-integration.md",
+-            "standards/git-safety.md",
+-            "standards/interactive-selection.md",
+-            "standards/anchor-pointer-convention.md",
+-            "standards/postflight-tool-restrictions.md",
+-            "standards/shell-script-testing.md",
+-            "standards/shell-strict-mode.md",
+-            "standards/status-markers.md",
+-            "standards/task-management.md",
+-            "standards/testing.md",
+-            "standards/xml-structure.md",
+-            "templates/agent-template.md",
+-            "templates/command-template.md",
+-            "templates/delegation-context.md",
+-            "templates/orchestrator-template.md",
+-            "templates/subagent-template.md",
+-            "templates/thin-wrapper-skill.md",
+-            "troubleshooting/workflow-interruptions.md",
+-            "validation.md",
+-            "workflows/command-lifecycle.md",
+-            "workflows/preflight-postflight.md",
+-            "workflows/review-process.md",
+-            "workflows/task-breakdown.md",
+-            "workflows/meta-interview.md",
+-            "index.schema.json",
+-            "contracts/adversarial-verification.md",
+-            "contracts/anti-analysis.md",
+-            "contracts/convergence.md",
+-            "contracts/orchestrator-discipline.md",
+-            "contracts/recovery.md",
+-            "contracts/reference-grounding.md",
+-            "contracts/territory.md",
+-            "contracts/phase-closure.md",
+-            "contracts/pre-edit-gate.md",
+-            "contracts/conclusion-stage.md",
+-            "contracts/batch-gate-stage.md",
+-            "contracts/wrap-up.md",
+-            "contracts/plan-status-ownership.md",
+-            "contracts/no-task-references-bullet.md",
+-            "contracts/modified-files-bullet.md",
+-            "contracts/deliverable-file-mandate.md",
+-            "patterns/regeneration-is-manual-only.md",
+-            "patterns/batch-orchestration-guardrails.md",
+-            "patterns/file-footprint-overlap.md",
+-            "reference/orchestrator-critical-paths.json",
+-            "guides/hard-mode-routing.md",
+-            "guides/manifest-routing-schema.md",
+-            "patterns/batch-drain-loop.md",
+-            "patterns/checkpoint-before-overflow.md",
+-            "patterns/dispatch-report-not-termination.md",
+-            "patterns/context-exhaustion-detection.md",
+-            "patterns/context-protective-lead.md",
+-            "patterns/lit-stage4a-flow.md",
+-            "patterns/skill-preflight-flow.md",
+-            "patterns/skill-postflight-flow.md",
+-            "patterns/skill-self-execution-fallback.md",
+-            "patterns/subagent-continuation-loop.md",
+-            "patterns/task-lock.md",
+-            "patterns/topic-assignment-pattern.md",
+-            "standards/git-staging-scope.md",
+-            "standards/orchestrator-runtime-files.md",
+-            "standards/user-decision-contract.md",
+-            "standards/push-consent-relay.md",
+-            "standards/context-tier-semantics.md",
+-            "standards/task-reference-exemptions.md",
+-            "standards/record-version-exemptions.md",
+-            "standards/git-workflow-narrative.md",
+-            "standards/source-store-deploy-boundary-narrative.md",
+-            "standards/error-recovery-strategies.md",
+-            "patterns/todo-archival-reference.md",
+-            "patterns/orchestrate-batch-results-template.md",
+-            "patterns/deploy-orphan-detection.md",
+-            "contracts/return-meta-artifacts-template.md",
+-            "patterns/ci-deploy-tree-bootstrap.md",
+-            "patterns/adoption-lint-conventions.md",
+-            "patterns/mode-gated-section-loading.md",
+-            "standards/grep-word-boundary-portability.md",
+-            "patterns/task-recover-mode.md",
+-            "patterns/task-expand-mode.md",
+-            "patterns/task-sync-mode.md",
+-            "patterns/task-review-mode.md",
+-            "patterns/task-abandon-mode.md",
+-            "patterns/task-description-transformation-examples.md",
+-            "formats/issue-log.md",
+-            "formats/dispatch-metrics.md",
+-            "standards/post-incident-verification-checklist.md",
+-            "standards/shared-worktree-discipline.md",
+-            "patterns/plan-revision-notification.md",
+-            "standards/repo-level-declarations.md",
+-            "patterns/backlog-reconciliation.md"
+-          ]
+-        },
+-        "settings": {
+-          "hooks": {
+-            "type": "merged",
+-            "children": {
+-              "Notification": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              },
+-              "PreToolUse": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              },
+-              "UserPromptSubmit": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              },
+-              "PostToolUse": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              },
+-              "SessionStart": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              },
+-              "Stop": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              },
+-              "SubagentStop": {
+-                "hook_items": [],
+-                "items": [],
+-                "type": "hook_merged"
+-              }
+-            }
+-          }
+-        }
+-      },
+-      "installed_dirs": [],
+-      "source_git_head": "fe7966ab06314392973bfed428d7f4108361c780"
+-    },
+-    "lean": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/lean",
+-      "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:37Z",
++      "loaded_at": "2026-11-12T20:52:03Z",
+       "status": "active",
+       "installed_files": [
+         ".claude/agents/lean-research-agent.md",
+         ".claude/agents/lean-implementation-agent.md",
+-        ".claude/agents/lean-research-hard-agent.md",
+-        ".claude/agents/lean-implementation-hard-agent.md",
+         ".claude/commands/lake.md",
+         ".claude/commands/lean.md",
+         ".claude/rules/lean4.md",
+@@ -1052,8 +227,6 @@
+         ".claude/skills/skill-lean-implementation/SKILL.md",
+         ".claude/skills/skill-lake-repair/SKILL.md",
+         ".claude/skills/skill-lean-version/SKILL.md",
+-        ".claude/skills/skill-lean-research-hard/SKILL.md",
+-        ".claude/skills/skill-lean-implementation-hard/SKILL.md",
+         ".claude/context/project/lean4/README.md",
+         ".claude/context/project/lean4/agents/lean-implementation-flow.md",
+         ".claude/context/project/lean4/agents/lean-research-flow.md",
+@@ -1071,6 +244,7 @@
+         ".claude/context/project/lean4/operations/long-builds.md",
+         ".claude/context/project/lean4/operations/multi-instance-optimization.md",
+         ".claude/context/project/lean4/patterns/dependency-tracing.md",
++        ".claude/context/project/lean4/patterns/external-library-dependency-assessment.md",
+         ".claude/context/project/lean4/patterns/mcp-fallback-table.md",
+         ".claude/context/project/lean4/patterns/measurement-harness-strictness.md",
+         ".claude/context/project/lean4/patterns/plan-authoring-gate-collisions.md",
+@@ -1093,10 +267,11 @@
+         ".claude/context/project/lean4/tools/loogle-api.md",
+         ".claude/context/project/lean4/tools/lsp-integration.md",
+         ".claude/context/project/lean4/tools/mcp-tools-guide.md",
+-        ".claude/context/contracts/adversarial-verification.md",
+-        ".claude/context/contracts/anti-analysis.md",
+-        ".claude/context/contracts/context-hygiene.md",
+-        ".claude/context/contracts/reference-grounding.md",
++        ".claude/context/contracts/lean4-adversarial-verification.md",
++        ".claude/context/contracts/lean4-anti-analysis.md",
++        ".claude/context/contracts/lean4-context-hygiene.md",
++        ".claude/context/contracts/lean4-reference-grounding.md",
++        ".claude/context/contracts/lean4-sorry-discipline.md",
+         ".claude/scripts/lean-sorry-census.sh",
+         ".claude/scripts/tests/fixtures/challenge/plan_keyword_noise.md",
+         ".claude/scripts/tests/fixtures/challenge/plan_list_item_goals.md",
+@@ -1153,74 +328,48 @@
+         ".claude/hooks/lean-lsp-register-project.sh",
+         ".claude/extensions/lean/manifest.json"
+       ],
++      "version": "1.0.0",
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/lean",
++      "source_git_head": "7635cdcb2cab833bd11e6195832057e1bae50263"
++    },
++    "literature": {
+       "data_skeleton_files": [],
+       "merged_sections": {
+         "index": {
+           "paths": [
+-            "project/lean4/domain/mathlib-overview.md",
+-            "project/lean4/domain/dependent-types.md",
+-            "project/lean4/domain/key-mathematical-concepts.md",
+-            "project/lean4/domain/lean4-syntax.md",
+-            "project/lean4/patterns/tactic-patterns.md",
+-            "project/lean4/patterns/dependency-tracing.md",
+-            "project/lean4/patterns/measurement-harness-strictness.md",
+-            "project/lean4/patterns/plan-authoring-gate-collisions.md",
+-            "project/lean4/standards/lean4-style-guide.md",
+-            "project/lean4/standards/proof-conventions-lean.md",
+-            "project/lean4/standards/proof-debt-policy.md",
+-            "project/lean4/standards/proof-readability-criteria.md",
+-            "project/lean4/standards/literature-fidelity-policy.md",
+-            "project/lean4/tools/mcp-tools-guide.md",
+-            "project/lean4/tools/aesop-integration.md",
+-            "project/lean4/tools/leansearch-api.md",
+-            "project/lean4/tools/loogle-api.md",
+-            "project/lean4/tools/lsp-integration.md",
+-            "project/lean4/agents/lean-implementation-flow.md",
+-            "project/lean4/agents/lean-research-flow.md",
+-            "project/lean4/operations/multi-instance-optimization.md",
+-            "project/lean4/operations/long-builds.md",
+-            "project/lean4/processes/end-to-end-proof-workflow.md",
+-            "project/lean4/processes/project-structure-best-practices.md",
+-            "project/lean4/templates/definition-template.md",
+-            "project/lean4/templates/new-file-template.md",
+-            "project/lean4/templates/proof-structure-templates.md",
+-            "project/lean4/README.md",
+-            "project/lean4/standards/proof-conventions.md",
+-            "project/lean4/tools/blocked-mcp-tools.md",
+-            "project/lean4/patterns/mcp-fallback-table.md",
+-            "contracts/reference-grounding.md",
+-            "contracts/anti-analysis.md",
+-            "contracts/adversarial-verification.md",
+-            "contracts/context-hygiene.md",
+-            "project/lean4/domain/hard-mode.md",
+-            "project/lean4/domain/comparator-integration.md",
+-            "project/lean4/tools/comparator-guide.md",
+-            "project/lean4/domain/decidability-provenance.md",
+-            "project/lean4/domain/metadata-trust-surfaces.md",
+-            "project/lean4/domain/challenge-snapshot.md",
+-            "project/lean4/domain/sentence-translation-contract.md",
+-            "project/lean4/domain/ladder-counter-observables.md"
++            "project/literature/domain/literature-index.md",
++            "project/literature/patterns/agent-exploration.md",
++            "project/literature/patterns/adhoc-navigation-directive.md",
++            "project/literature/patterns/zotero-pdf-resolution.md",
++            "project/literature/domain/format-decision.md",
++            "project/literature/patterns/zotero-item-creation.md",
++            "project/literature/domain/extension-dependencies.md",
++            "project/literature/domain/sparse-coverage.md",
++            "project/literature/domain/zotero-integration.md",
++            "project/literature/patterns/literature-command-modes.md",
++            "project/literature/patterns/cite-workflow.md",
++            "project/literature/tools/literature-dir-config.md",
++            "project/literature/tools/zotero-scripts.md",
++            "guides/literature-organization.md",
++            "project/literature/patterns/chunk-file-conventions.md",
++            "project/literature/domain/pymupdf4llm-fragmentation.md",
++            "project/literature/domain/corpus-directory-conventions.md",
++            "project/literature/patterns/shared-module-extraction-for-gate-checks.md",
++            "project/literature/patterns/provenance-fidelity.md",
++            "project/literature/domain/fts5-query-semantics.md",
++            "project/literature/domain/tier3-provider-fallback.md",
++            "project/literature/patterns/literature-rebuild-mode.md",
++            "project/literature/patterns/literature-import-pipeline-mode.md",
++            "project/literature/patterns/literature-search-mode.md",
++            "project/literature/patterns/literature-index-mode.md",
++            "project/literature/patterns/literature-convert-mode.md",
++            "project/literature/patterns/literature-validate-mode.md",
++            "project/literature/patterns/literature-ingest-mode.md"
+           ]
+-        },
+-        "settings": {
+-          "permissions": {
+-            "type": "merged",
+-            "children": {
+-              "allow": {
+-                "type": "appended",
+-                "items": []
+-              }
+-            }
+-          }
+         }
+       },
+       "installed_dirs": [],
+-      "source_git_head": "6ffc0f22735d986d36e6483f3b657df20ff5e07b"
+-    },
+-    "literature": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/literature",
+-      "version": "2.0.0",
+-      "loaded_at": "2026-11-07T20:21:37Z",
++      "loaded_at": "2026-11-12T20:52:03Z",
+       "status": "active",
+       "installed_files": [
+         ".claude/agents/literature-agent.md",
+@@ -1314,182 +463,1415 @@
+         ".claude/scripts/tests/fixtures/tier3-unpaywall-200.json",
+         ".claude/extensions/literature/manifest.json"
+       ],
++      "version": "2.0.0",
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/literature",
++      "source_git_head": "5acfd93a43c21ea035af0d5725c391861be6602e"
++    },
++    "core": {
+       "data_skeleton_files": [],
+       "merged_sections": {
++        "settings": {
++          "hooks": {
++            "children": {
++              "SessionStart": {
++                "hook_items": [],
++                "type": "hook_merged",
++                "items": [
++                  {
++                    "matcher": "*",
++                    "hooks": [
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      }
++                    ]
++                  },
++                  {
++                    "matcher": "startup",
++                    "hooks": [
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/log-session.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      }
++                    ]
++                  }
++                ]
++              },
++              "SubagentStop": {
++                "hook_items": [],
++                "type": "hook_merged",
++                "items": [
++                  {
++                    "matcher": "*",
++                    "hooks": [
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/subagent-postflight.sh 2>/dev/null || echo '{}'",
++                        "type": "command",
++                        "timeout": 30000
++                      },
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      }
++                    ]
++                  }
++                ]
++              },
++              "PostToolUse": {
++                "hook_items": [],
++                "type": "hook_merged",
++                "items": [
++                  {
++                    "matcher": "Write",
++                    "hooks": [
++                      {
++                        "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"specs/state.json\"* ]]; then bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-state-sync.sh 2>/dev/null || echo \"{}\"; else echo \"{}\"; fi'",
++                        "type": "command"
++                      }
++                    ]
++                  },
++                  {
++                    "matcher": "Write|Edit",
++                    "hooks": [
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-handoff-location.sh",
++                        "type": "command"
++                      },
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-meta-write.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      },
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-plan-write.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      },
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-artifact.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      }
++                    ]
++                  },
++                  {
++                    "matcher": "Bash",
++                    "hooks": [
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-noop-bash.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      },
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/record-stash-provenance.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      }
++                    ]
++                  }
++                ]
++              },
++              "UserPromptSubmit": {
++                "hook_items": [
++                  {
++                    "matcher": "*",
++                    "hook": {
++                      "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/please-grant.sh",
++                      "type": "command"
++                    }
++                  }
++                ],
++                "type": "hook_merged",
++                "items": [
++                  {
++                    "matcher": "*",
++                    "hooks": [
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      },
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      },
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/please-grant.sh",
++                        "type": "command"
++                      }
++                    ]
++                  }
++                ]
++              },
++              "Notification": {
++                "hook_items": [],
++                "type": "hook_merged",
++                "items": [
++                  {
++                    "matcher": "permission_prompt|elicitation_dialog",
++                    "hooks": [
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      }
++                    ]
++                  }
++                ]
++              },
++              "PreToolUse": {
++                "hook_items": [],
++                "type": "hook_merged",
++                "items": [
++                  {
++                    "matcher": "Write|Edit",
++                    "hooks": [
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-task-references.sh",
++                        "type": "command"
++                      },
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-record-versioning.sh",
++                        "type": "command"
++                      }
++                    ]
++                  },
++                  {
++                    "matcher": "Bash",
++                    "hooks": [
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-destructive-git.sh",
++                        "type": "command"
++                      },
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-bounded-waiter.sh",
++                        "type": "command"
++                      },
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-task-creation-audit.sh",
++                        "type": "command"
++                      },
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-python-state-write.sh",
++                        "type": "command"
++                      }
++                    ]
++                  },
++                  {
++                    "matcher": "Bash|Write|Edit",
++                    "hooks": [
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-git-push.sh",
++                        "type": "command"
++                      }
++                    ]
++                  }
++                ]
++              },
++              "Stop": {
++                "hook_items": [],
++                "type": "hook_merged",
++                "items": [
++                  {
++                    "matcher": "*",
++                    "hooks": [
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-command.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      },
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      },
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/memory-nudge.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      },
++                      {
++                        "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'",
++                        "type": "command"
++                      }
++                    ]
++                  }
++                ]
++              }
++            },
++            "type": "merged"
++          }
++        },
+         "index": {
+           "paths": [
+-            "project/literature/domain/literature-index.md",
+-            "project/literature/patterns/agent-exploration.md",
+-            "project/literature/patterns/adhoc-navigation-directive.md",
+-            "project/literature/patterns/zotero-pdf-resolution.md",
+-            "project/literature/domain/format-decision.md",
+-            "project/literature/patterns/zotero-item-creation.md",
+-            "project/literature/domain/extension-dependencies.md",
+-            "project/literature/domain/sparse-coverage.md",
+-            "project/literature/domain/zotero-integration.md",
+-            "project/literature/patterns/literature-command-modes.md",
+-            "project/literature/patterns/cite-workflow.md",
+-            "project/literature/tools/literature-dir-config.md",
+-            "project/literature/tools/zotero-scripts.md",
+-            "guides/literature-organization.md",
+-            "project/literature/patterns/chunk-file-conventions.md",
+-            "project/literature/domain/pymupdf4llm-fragmentation.md",
+-            "project/literature/domain/corpus-directory-conventions.md",
+-            "project/literature/patterns/shared-module-extraction-for-gate-checks.md",
+-            "project/literature/patterns/provenance-fidelity.md",
+-            "project/literature/domain/fts5-query-semantics.md",
+-            "project/literature/domain/tier3-provider-fallback.md",
+-            "project/literature/patterns/literature-rebuild-mode.md",
+-            "project/literature/patterns/literature-import-pipeline-mode.md",
+-            "project/literature/patterns/literature-search-mode.md",
+-            "project/literature/patterns/literature-index-mode.md",
+-            "project/literature/patterns/literature-convert-mode.md",
+-            "project/literature/patterns/literature-validate-mode.md",
+-            "project/literature/patterns/literature-ingest-mode.md"
++            "architecture/component-checklist.md",
++            "architecture/context-layers.md",
++            "architecture/generation-guidelines.md",
++            "architecture/system-overview.md",
++            "checkpoints/checkpoint-commit.md",
++            "checkpoints/checkpoint-gate-in.md",
++            "checkpoints/checkpoint-gate-out.md",
++            "checkpoints/README.md",
++            "formats/command-output.md",
++            "formats/command-structure.md",
++            "formats/errors-format.md",
++            "formats/events-format.md",
++            "formats/frontmatter.md",
++            "formats/handoff-artifact.md",
++            "formats/plan-format.md",
++            "formats/progress-file.md",
++            "formats/report-format.md",
++            "formats/return-metadata-file.md",
++            "formats/roadmap-entry-template.md",
++            "formats/roadmap-format.md",
++            "formats/subagent-return.md",
++            "formats/summary-format.md",
++            "formats/task-order-format.md",
++            "guides/extension-development.md",
++            "guides/loader-reference.md",
++            "meta/context-revision-guide.md",
++            "meta/domain-patterns.md",
++            "meta/meta-guide.md",
++            "orchestration/architecture.md",
++            "orchestration/delegation.md",
++            "orchestration/orchestration-core.md",
++            "orchestration/orchestration-reference.md",
++            "orchestration/orchestrator.md",
++            "orchestration/postflight-pattern.md",
++            "orchestration/preflight-pattern.md",
++            "orchestration/sessions.md",
++            "orchestration/state-management.md",
++            "orchestration/validation.md",
++            "patterns/anti-stop-patterns.md",
++            "patterns/artifact-linking-todo.md",
++            "patterns/checkpoint-execution.md",
++            "patterns/context-discovery.md",
++            "patterns/early-metadata-pattern.md",
++            "patterns/external-process-wait.md",
++            "patterns/bounded-build-waiter.md",
++            "patterns/file-metadata-exchange.md",
++            "patterns/inline-status-update.md",
++            "patterns/jq-escaping-workarounds.md",
++            "patterns/infra-failure-discrimination.md",
++            "patterns/system-defect-discrimination.md",
++            "patterns/mcp-tool-recovery.md",
++            "patterns/mcp-server-ownership.md",
++            "patterns/metadata-file-return.md",
++            "patterns/multi-task-operations.md",
++            "patterns/postflight-control.md",
++            "patterns/roadmap-update.md",
++            "patterns/skill-lifecycle.md",
++            "patterns/thin-wrapper-skill.md",
++            "processes/implementation-workflow.md",
++            "processes/planning-workflow.md",
++            "processes/research-workflow.md",
++            "README.md",
++            "reference/artifact-numbering-and-versioning.md",
++            "reference/artifact-templates.md",
++            "reference/README.md",
++            "reference/skill-agent-mapping.md",
++            "reference/state-management-schema.md",
++            "reference/workflow-diagrams.md",
++            "repo/project-overview.md",
++            "repo/update-project.md",
++            "routing.md",
++            "schemas/errors-schema.json",
++            "schemas/events-schema.json",
++            "schemas/state-schema.json",
++            "schemas/frontmatter-schema.json",
++            "schemas/subagent-frontmatter.yaml",
++            "standards/analysis-framework.md",
++            "standards/census-methodology.md",
++            "standards/ci-workflow.md",
++            "standards/code-patterns.md",
++            "standards/documentation-standards.md",
++            "standards/error-handling.md",
++            "standards/git-integration.md",
++            "standards/git-safety.md",
++            "standards/interactive-selection.md",
++            "standards/anchor-pointer-convention.md",
++            "standards/postflight-tool-restrictions.md",
++            "standards/shell-script-testing.md",
++            "standards/shell-strict-mode.md",
++            "standards/status-markers.md",
++            "standards/task-management.md",
++            "standards/testing.md",
++            "standards/xml-structure.md",
++            "templates/agent-template.md",
++            "templates/command-template.md",
++            "templates/delegation-context.md",
++            "templates/orchestrator-template.md",
++            "templates/subagent-template.md",
++            "templates/thin-wrapper-skill.md",
++            "troubleshooting/workflow-interruptions.md",
++            "validation.md",
++            "workflows/command-lifecycle.md",
++            "workflows/preflight-postflight.md",
++            "workflows/review-process.md",
++            "workflows/task-breakdown.md",
++            "workflows/meta-interview.md",
++            "index.schema.json",
++            "contracts/adversarial-verification.md",
++            "contracts/anti-analysis.md",
++            "contracts/convergence.md",
++            "contracts/orchestrator-discipline.md",
++            "contracts/recovery.md",
++            "contracts/reference-grounding.md",
++            "contracts/territory.md",
++            "contracts/phase-closure.md",
++            "contracts/pre-edit-gate.md",
++            "contracts/conclusion-stage.md",
++            "contracts/batch-gate-stage.md",
++            "contracts/wrap-up.md",
++            "contracts/plan-status-ownership.md",
++            "contracts/no-task-references-bullet.md",
++            "contracts/modified-files-bullet.md",
++            "contracts/deliverable-file-mandate.md",
++            "patterns/regeneration-is-manual-only.md",
++            "patterns/batch-orchestration-guardrails.md",
++            "patterns/file-footprint-overlap.md",
++            "reference/orchestrator-critical-paths.json",
++            "guides/hard-mode-routing.md",
++            "guides/manifest-routing-schema.md",
++            "patterns/batch-drain-loop.md",
++            "patterns/checkpoint-before-overflow.md",
++            "patterns/dispatch-report-not-termination.md",
++            "patterns/context-exhaustion-detection.md",
++            "patterns/context-protective-lead.md",
++            "patterns/lit-stage4a-flow.md",
++            "patterns/skill-preflight-flow.md",
++            "patterns/skill-postflight-flow.md",
++            "patterns/skill-self-execution-fallback.md",
++            "patterns/subagent-continuation-loop.md",
++            "patterns/task-lock.md",
++            "patterns/topic-assignment-pattern.md",
++            "standards/git-staging-scope.md",
++            "standards/orchestrator-runtime-files.md",
++            "standards/user-decision-contract.md",
++            "standards/push-consent-relay.md",
++            "standards/context-tier-semantics.md",
++            "standards/task-reference-exemptions.md",
++            "standards/record-version-exemptions.md",
++            "standards/git-workflow-narrative.md",
++            "standards/source-store-deploy-boundary-narrative.md",
++            "standards/error-recovery-strategies.md",
++            "patterns/todo-archival-reference.md",
++            "patterns/orchestrate-batch-results-template.md",
++            "patterns/deploy-orphan-detection.md",
++            "contracts/return-meta-artifacts-template.md",
++            "patterns/ci-deploy-tree-bootstrap.md",
++            "patterns/adoption-lint-conventions.md",
++            "patterns/mode-gated-section-loading.md",
++            "standards/grep-word-boundary-portability.md",
++            "patterns/task-recover-mode.md",
++            "patterns/task-expand-mode.md",
++            "patterns/task-sync-mode.md",
++            "patterns/task-review-mode.md",
++            "patterns/task-abandon-mode.md",
++            "patterns/task-description-transformation-examples.md",
++            "formats/issue-log.md",
++            "formats/dispatch-metrics.md",
++            "standards/post-incident-verification-checklist.md",
++            "standards/shared-worktree-discipline.md",
++            "patterns/plan-revision-notification.md",
++            "standards/repo-level-declarations.md",
++            "patterns/backlog-reconciliation.md",
++            "patterns/cross-repo-task-migration.md",
++            "standards/telemetry-guardrails.md",
++            "patterns/telemetry-meta-submode.md",
++            "patterns/telemetry-review-submode.md",
++            "patterns/telemetry-dream-submode.md"
+           ]
+-        }
++        },
++        "settings_swept": [
++          {
++            "matcher": "*",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "SessionStart"
++          },
++          {
++            "matcher": "startup",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/log-session.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "SessionStart"
++          },
++          {
++            "matcher": "*",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/subagent-postflight.sh 2>/dev/null || echo '{}'",
++              "timeout": 30000
++            },
++            "event": "SubagentStop"
++          },
++          {
++            "matcher": "*",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "SubagentStop"
++          },
++          {
++            "matcher": "Write",
++            "hook": {
++              "type": "command",
++              "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"specs/state.json\"* ]]; then bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-state-sync.sh 2>/dev/null || echo \"{}\"; else echo \"{}\"; fi'"
++            },
++            "event": "PostToolUse"
++          },
++          {
++            "matcher": "Write|Edit",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-handoff-location.sh"
++            },
++            "event": "PostToolUse"
++          },
++          {
++            "matcher": "Write|Edit",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-meta-write.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "PostToolUse"
++          },
++          {
++            "matcher": "Write|Edit",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-plan-write.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "PostToolUse"
++          },
++          {
++            "matcher": "Write|Edit",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-artifact.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "PostToolUse"
++          },
++          {
++            "matcher": "Bash",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-noop-bash.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "PostToolUse"
++          },
++          {
++            "matcher": "Bash",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/record-stash-provenance.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "PostToolUse"
++          },
++          {
++            "matcher": "*",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "UserPromptSubmit"
++          },
++          {
++            "matcher": "*",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "UserPromptSubmit"
++          },
++          {
++            "matcher": "*",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/please-grant.sh"
++            },
++            "event": "UserPromptSubmit"
++          },
++          {
++            "matcher": "permission_prompt|elicitation_dialog",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "Notification"
++          },
++          {
++            "matcher": "Write|Edit",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-task-references.sh"
++            },
++            "event": "PreToolUse"
++          },
++          {
++            "matcher": "Write|Edit",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-record-versioning.sh"
++            },
++            "event": "PreToolUse"
++          },
++          {
++            "matcher": "Bash",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-destructive-git.sh"
++            },
++            "event": "PreToolUse"
++          },
++          {
++            "matcher": "Bash",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-bounded-waiter.sh"
++            },
++            "event": "PreToolUse"
++          },
++          {
++            "matcher": "Bash",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-task-creation-audit.sh"
++            },
++            "event": "PreToolUse"
++          },
++          {
++            "matcher": "Bash",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-python-state-write.sh"
++            },
++            "event": "PreToolUse"
++          },
++          {
++            "matcher": "Bash|Write|Edit",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-git-push.sh"
++            },
++            "event": "PreToolUse"
++          },
++          {
++            "matcher": "*",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-command.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "Stop"
++          },
++          {
++            "matcher": "*",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "Stop"
++          },
++          {
++            "matcher": "*",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/memory-nudge.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "Stop"
++          },
++          {
++            "matcher": "*",
++            "hook": {
++              "type": "command",
++              "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'"
++            },
++            "event": "Stop"
++          }
++        ]
+       },
+       "installed_dirs": [],
+-      "source_git_head": "eae45beaccc460531e8e63fec74b3ac5b6882b2b"
+-    },
+-    "sapience": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/sapience",
+-      "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:37Z",
++      "loaded_at": "2026-11-12T20:52:02Z",
+       "status": "active",
+       "installed_files": [
+-        ".claude/context/project/sapience/README.md",
+-        ".claude/context/project/sapience/domain/review-gate-boundary.md",
+-        ".claude/context/project/sapience/domain/subagent-orientation.md",
+-        ".claude/context/project/sapience/domain/transcript-filter-ceiling.md",
+-        ".claude/context/project/sapience/domain/vault-model.md",
+-        ".claude/extensions/sapience/manifest.json"
++        ".claude/agents/code-reviewer-agent.md",
++        ".claude/agents/general-implementation-agent.md",
++        ".claude/agents/general-research-agent.md",
++        ".claude/agents/meta-builder-agent.md",
++        ".claude/agents/planner-agent.md",
++        ".claude/agents/reviser-agent.md",
++        ".claude/agents/roadmap-agent.md",
++        ".claude/agents/spawn-agent.md",
++        ".claude/commands/errors.md",
++        ".claude/commands/fix-it.md",
++        ".claude/commands/merge.md",
++        ".claude/commands/meta.md",
++        ".claude/commands/orchestrate.md",
++        ".claude/commands/please.md",
++        ".claude/commands/refresh.md",
++        ".claude/commands/review.md",
++        ".claude/commands/revise.md",
++        ".claude/commands/roadmap.md",
++        ".claude/commands/spawn.md",
++        ".claude/commands/tag.md",
++        ".claude/commands/task.md",
++        ".claude/commands/telemetry.md",
++        ".claude/commands/todo.md",
++        ".claude/commands/zulip.md",
++        ".claude/commands/project-overview.md",
++        ".claude/commands/README.md",
++        ".claude/rules/artifact-formats.md",
++        ".claude/rules/error-handling.md",
++        ".claude/rules/git-workflow.md",
++        ".claude/rules/plan-format-enforcement.md",
++        ".claude/rules/pr-prohibition.md",
++        ".claude/rules/state-management.md",
++        ".claude/rules/workflows.md",
++        ".claude/rules/project-overview-detection.md",
++        ".claude/rules/no-task-references-in-deliverables.md",
++        ".claude/rules/no-record-versioning-in-deliverables.md",
++        ".claude/rules/source-store-deploy-boundary.md",
++        ".claude/skills/skill-fix-it/SKILL.md",
++        ".claude/skills/skill-git-workflow/SKILL.md",
++        ".claude/skills/skill-meta/SKILL.md",
++        ".claude/skills/skill-orchestrate/SKILL.md",
++        ".claude/skills/skill-refresh/SKILL.md",
++        ".claude/skills/skill-reviser/SKILL.md",
++        ".claude/skills/skill-roadmap/SKILL.md",
++        ".claude/skills/skill-spawn/SKILL.md",
++        ".claude/skills/skill-status-sync/SKILL.md",
++        ".claude/skills/skill-tag/SKILL.md",
++        ".claude/skills/skill-telemetry/SKILL.md",
++        ".claude/skills/skill-todo/SKILL.md",
++        ".claude/skills/skill-zulip/SKILL.md",
++        ".claude/skills/skill-project-overview/SKILL.md",
++        ".claude/context/README.md",
++        ".claude/context/routing.md",
++        ".claude/context/validation.md",
++        ".claude/context/index.schema.json",
++        ".claude/context/architecture/component-checklist.md",
++        ".claude/context/architecture/context-layers.md",
++        ".claude/context/architecture/generation-guidelines.md",
++        ".claude/context/architecture/system-overview.md",
++        ".claude/context/checkpoints/README.md",
++        ".claude/context/checkpoints/checkpoint-commit.md",
++        ".claude/context/checkpoints/checkpoint-gate-in.md",
++        ".claude/context/checkpoints/checkpoint-gate-out.md",
++        ".claude/context/config/claudemd-size-budget.json",
++        ".claude/context/config/orchestrator-context-budget.json",
++        ".claude/context/contracts/adversarial-verification.md",
++        ".claude/context/contracts/anti-analysis.md",
++        ".claude/context/contracts/batch-gate-stage.md",
++        ".claude/context/contracts/conclusion-stage.md",
++        ".claude/context/contracts/convergence.md",
++        ".claude/context/contracts/deliverable-file-mandate.md",
++        ".claude/context/contracts/modified-files-bullet.md",
++        ".claude/context/contracts/no-task-references-bullet.md",
++        ".claude/context/contracts/orchestrator-discipline.md",
++        ".claude/context/contracts/phase-closure.md",
++        ".claude/context/contracts/plan-status-ownership.md",
++        ".claude/context/contracts/pre-edit-gate.md",
++        ".claude/context/contracts/recovery.md",
++        ".claude/context/contracts/reference-grounding.md",
++        ".claude/context/contracts/return-meta-artifacts-template.md",
++        ".claude/context/contracts/territory.md",
++        ".claude/context/contracts/wrap-up.md",
++        ".claude/context/formats/command-output.md",
++        ".claude/context/formats/command-structure.md",
++        ".claude/context/formats/dispatch-metrics.md",
++        ".claude/context/formats/errors-format.md",
++        ".claude/context/formats/events-format.md",
++        ".claude/context/formats/frontmatter.md",
++        ".claude/context/formats/handoff-artifact.md",
++        ".claude/context/formats/issue-log.md",
++        ".claude/context/formats/plan-format.md",
++        ".claude/context/formats/progress-file.md",
++        ".claude/context/formats/report-format.md",
++        ".claude/context/formats/return-metadata-file.md",
++        ".claude/context/formats/roadmap-entry-template.md",
++        ".claude/context/formats/roadmap-format.md",
++        ".claude/context/formats/subagent-return.md",
++        ".claude/context/formats/summary-format.md",
++        ".claude/context/formats/task-order-format.md",
++        ".claude/context/guides/extension-development.md",
++        ".claude/context/guides/hard-mode-routing.md",
++        ".claude/context/guides/loader-reference.md",
++        ".claude/context/guides/manifest-routing-schema.md",
++        ".claude/context/meta/context-revision-guide.md",
++        ".claude/context/meta/domain-patterns.md",
++        ".claude/context/meta/meta-guide.md",
++        ".claude/context/orchestration/architecture.md",
++        ".claude/context/orchestration/delegation.md",
++        ".claude/context/orchestration/orchestration-core.md",
++        ".claude/context/orchestration/orchestration-reference.md",
++        ".claude/context/orchestration/orchestrator.md",
++        ".claude/context/orchestration/postflight-pattern.md",
++        ".claude/context/orchestration/preflight-pattern.md",
++        ".claude/context/orchestration/sessions.md",
++        ".claude/context/orchestration/state-management.md",
++        ".claude/context/orchestration/validation.md",
++        ".claude/context/patterns/adoption-lint-conventions.md",
++        ".claude/context/patterns/anti-stop-patterns.md",
++        ".claude/context/patterns/artifact-linking-todo.md",
++        ".claude/context/patterns/backlog-reconciliation.md",
++        ".claude/context/patterns/batch-drain-loop.md",
++        ".claude/context/patterns/batch-orchestration-guardrails.md",
++        ".claude/context/patterns/bounded-build-waiter.md",
++        ".claude/context/patterns/checkpoint-before-overflow.md",
++        ".claude/context/patterns/checkpoint-execution.md",
++        ".claude/context/patterns/ci-deploy-tree-bootstrap.md",
++        ".claude/context/patterns/context-discovery.md",
++        ".claude/context/patterns/context-exhaustion-detection.md",
++        ".claude/context/patterns/context-protective-lead.md",
++        ".claude/context/patterns/cross-repo-task-migration.md",
++        ".claude/context/patterns/deploy-orphan-detection.md",
++        ".claude/context/patterns/dispatch-report-not-termination.md",
++        ".claude/context/patterns/early-metadata-pattern.md",
++        ".claude/context/patterns/external-process-wait.md",
++        ".claude/context/patterns/file-footprint-overlap.md",
++        ".claude/context/patterns/file-metadata-exchange.md",
++        ".claude/context/patterns/infra-failure-discrimination.md",
++        ".claude/context/patterns/inline-status-update.md",
++        ".claude/context/patterns/jq-escaping-workarounds.md",
++        ".claude/context/patterns/lit-stage4a-flow.md",
++        ".claude/context/patterns/mcp-server-ownership.md",
++        ".claude/context/patterns/mcp-tool-recovery.md",
++        ".claude/context/patterns/metadata-file-return.md",
++        ".claude/context/patterns/mode-gated-section-loading.md",
++        ".claude/context/patterns/multi-task-operations.md",
++        ".claude/context/patterns/orchestrate-batch-results-template.md",
++        ".claude/context/patterns/plan-revision-notification.md",
++        ".claude/context/patterns/postflight-control.md",
++        ".claude/context/patterns/regeneration-is-manual-only.md",
++        ".claude/context/patterns/roadmap-update.md",
++        ".claude/context/patterns/skill-lifecycle.md",
++        ".claude/context/patterns/skill-postflight-flow.md",
++        ".claude/context/patterns/skill-preflight-flow.md",
++        ".claude/context/patterns/skill-self-execution-fallback.md",
++        ".claude/context/patterns/subagent-continuation-loop.md",
++        ".claude/context/patterns/system-defect-discrimination.md",
++        ".claude/context/patterns/task-abandon-mode.md",
++        ".claude/context/patterns/task-description-transformation-examples.md",
++        ".claude/context/patterns/task-expand-mode.md",
++        ".claude/context/patterns/task-lock.md",
++        ".claude/context/patterns/task-recover-mode.md",
++        ".claude/context/patterns/task-review-mode.md",
++        ".claude/context/patterns/task-sync-mode.md",
++        ".claude/context/patterns/telemetry-dream-submode.md",
++        ".claude/context/patterns/telemetry-meta-submode.md",
++        ".claude/context/patterns/telemetry-review-submode.md",
++        ".claude/context/patterns/thin-wrapper-skill.md",
++        ".claude/context/patterns/todo-archival-reference.md",
++        ".claude/context/patterns/topic-assignment-pattern.md",
++        ".claude/context/processes/implementation-workflow.md",
++        ".claude/context/processes/planning-workflow.md",
++        ".claude/context/processes/research-workflow.md",
++        ".claude/context/reference/README.md",
++        ".claude/context/reference/artifact-numbering-and-versioning.md",
++        ".claude/context/reference/artifact-templates.md",
++        ".claude/context/reference/known-consumer-repos.json",
++        ".claude/context/reference/orchestrator-critical-paths.json",
++        ".claude/context/reference/skill-agent-mapping.md",
++        ".claude/context/reference/state-management-schema.md",
++        ".claude/context/reference/workflow-diagrams.md",
++        ".claude/context/repo/update-project.md",
++        ".claude/context/schemas/errors-schema.json",
++        ".claude/context/schemas/events-schema.json",
++        ".claude/context/schemas/frontmatter-schema.json",
++        ".claude/context/schemas/orchestrator-handoff-schema.json",
++        ".claude/context/schemas/state-schema.json",
++        ".claude/context/schemas/subagent-frontmatter.yaml",
++        ".claude/context/standards/analysis-framework.md",
++        ".claude/context/standards/anchor-pointer-convention.md",
++        ".claude/context/standards/census-methodology.md",
++        ".claude/context/standards/ci-workflow.md",
++        ".claude/context/standards/code-patterns.md",
++        ".claude/context/standards/context-tier-semantics.md",
++        ".claude/context/standards/documentation-standards.md",
++        ".claude/context/standards/error-handling.md",
++        ".claude/context/standards/error-recovery-strategies.md",
++        ".claude/context/standards/git-integration.md",
++        ".claude/context/standards/git-safety.md",
++        ".claude/context/standards/git-staging-scope.md",
++        ".claude/context/standards/git-workflow-narrative.md",
++        ".claude/context/standards/grep-word-boundary-portability.md",
++        ".claude/context/standards/interactive-selection.md",
++        ".claude/context/standards/orchestrator-runtime-files.md",
++        ".claude/context/standards/post-incident-verification-checklist.md",
++        ".claude/context/standards/postflight-tool-restrictions.md",
++        ".claude/context/standards/push-consent-relay.md",
++        ".claude/context/standards/record-version-exemptions.md",
++        ".claude/context/standards/repo-level-declarations.md",
++        ".claude/context/standards/shared-worktree-discipline.md",
++        ".claude/context/standards/shell-script-testing.md",
++        ".claude/context/standards/shell-strict-mode.md",
++        ".claude/context/standards/source-store-deploy-boundary-narrative.md",
++        ".claude/context/standards/status-markers.md",
++        ".claude/context/standards/task-management.md",
++        ".claude/context/standards/task-reference-exemptions.md",
++        ".claude/context/standards/telemetry-guardrails.md",
++        ".claude/context/standards/testing.md",
++        ".claude/context/standards/user-decision-contract.md",
++        ".claude/context/standards/xml-structure.md",
++        ".claude/context/templates/agent-template.md",
++        ".claude/context/templates/command-template.md",
++        ".claude/context/templates/delegation-context.md",
++        ".claude/context/templates/orchestrator-template.md",
++        ".claude/context/templates/subagent-template.md",
++        ".claude/context/templates/thin-wrapper-skill.md",
++        ".claude/context/troubleshooting/workflow-interruptions.md",
++        ".claude/context/workflows/command-lifecycle.md",
++        ".claude/context/workflows/meta-interview.md",
++        ".claude/context/workflows/preflight-postflight.md",
++        ".claude/context/workflows/review-process.md",
++        ".claude/context/workflows/task-breakdown.md",
++        ".claude/scripts/assess-repo-health.sh",
++        ".claude/scripts/audit-deletion-references.sh",
++        ".claude/scripts/audit-task-proposals.sh",
++        ".claude/scripts/backfill-file-scope.sh",
++        ".claude/scripts/census-count.sh",
++        ".claude/scripts/check-consumer-freshness.sh",
++        ".claude/scripts/check-deploy-freshness.sh",
++        ".claude/scripts/check-extension-docs.sh",
++        ".claude/scripts/check-record-versioning.sh",
++        ".claude/scripts/check-runtime-file-tracking.sh",
++        ".claude/scripts/check-task-references.sh",
++        ".claude/scripts/claude-cleanup.sh",
++        ".claude/scripts/claude-refresh.sh",
++        ".claude/scripts/command-gate-in.sh",
++        ".claude/scripts/command-gate-out.sh",
++        ".claude/scripts/command-route-agent.sh",
++        ".claude/scripts/commit-source-store-path.sh",
++        ".claude/scripts/context-reachability.sh",
++        ".claude/scripts/deploy-headless.sh",
++        ".claude/scripts/deploy-root-guard.sh",
++        ".claude/scripts/dispatch-metrics.sh",
++        ".claude/scripts/dispatch-strand-probe.sh",
++        ".claude/scripts/errors-append.sh",
++        ".claude/scripts/events-append.sh",
++        ".claude/scripts/events-query.sh",
++        ".claude/scripts/export-to-markdown.sh",
++        ".claude/scripts/gate-cost-model.csv",
++        ".claude/scripts/gate-registry.data",
++        ".claude/scripts/generate-context-line-counts.sh",
++        ".claude/scripts/generate-task-order.sh",
++        ".claude/scripts/generate-todo.sh",
++        ".claude/scripts/git-commit-phase.sh",
++        ".claude/scripts/git-commit-scoped.sh",
++        ".claude/scripts/git-push-granted.sh",
++        ".claude/scripts/git-snapshot.sh",
++        ".claude/scripts/init-specs.sh",
++        ".claude/scripts/install-aliases.sh",
++        ".claude/scripts/install-extension.sh",
++        ".claude/scripts/install-systemd-timer.sh",
++        ".claude/scripts/issue-grouping.sh",
++        ".claude/scripts/issue-record.sh",
++        ".claude/scripts/lake-build-guard.sh",
++        ".claude/scripts/lib/central-log-lib.sh",
++        ".claude/scripts/lib/common.sh",
++        ".claude/scripts/lib/continuation-pointer-lib.sh",
++        ".claude/scripts/lib/deploy-baseline-lib.sh",
++        ".claude/scripts/lib/deploy-freshness-lib.sh",
++        ".claude/scripts/lib/deploy-ledger-lib.sh",
++        ".claude/scripts/lib/derived-artifact-probe-lib.sh",
++        ".claude/scripts/lib/engine-written-state-paths-lib.sh",
++        ".claude/scripts/lib/extension-install-lib.sh",
++        ".claude/scripts/lib/file-scope-overlap.sh",
++        ".claude/scripts/lib/gate-cache-lib.sh",
++        ".claude/scripts/lib/gate-registry-lib.sh",
++        ".claude/scripts/lib/gate-store-fixture-lib.sh",
++        ".claude/scripts/lib/gate-verdict-extract-lib.sh",
++        ".claude/scripts/lib/git-corpus-enum-lib.sh",
++        ".claude/scripts/lib/lint-corpus-scan-lib.sh",
++        ".claude/scripts/lib/manifest-routing-lib.sh",
++        ".claude/scripts/lib/phase-heading-patterns.sh",
++        ".claude/scripts/lib/phase-heartbeat-lib.sh",
++        ".claude/scripts/lib/plan-status-line.sh",
++        ".claude/scripts/lib/project-number-inuse.sh",
++        ".claude/scripts/lib/push-grant-lib.sh",
++        ".claude/scripts/lib/record-version-patterns.sh",
++        ".claude/scripts/lib/redeploy-checkpoint-lib.sh",
++        ".claude/scripts/lib/redeploy-remedy-lib.sh",
++        ".claude/scripts/lib/return-meta-artifacts-lib.sh",
++        ".claude/scripts/lib/return-meta-status-vocabulary.sh",
++        ".claude/scripts/lib/runtime-file-patterns.sh",
++        ".claude/scripts/lib/source-store-path-lib.sh",
++        ".claude/scripts/lib/state-writer-boundary-patterns-lib.sh",
++        ".claude/scripts/lib/stash-provenance-lib.sh",
++        ".claude/scripts/lib/status-vocabulary.sh",
++        ".claude/scripts/lib/suite-selection-lib.sh",
++        ".claude/scripts/lib/task-classification-lib.sh",
++        ".claude/scripts/lib/task-lookup-lib.sh",
++        ".claude/scripts/lib/task-reference-patterns.sh",
++        ".claude/scripts/lib/task-type-detect.sh",
++        ".claude/scripts/lib/territory-contention-lib.sh",
++        ".claude/scripts/lifecycle-notify.sh",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-cslib-agents-cslib-implementation-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-cslib-agents-cslib-research-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-cslib-agents-pr-review-implementation-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-cslib-agents-pr-review-research-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-epidemiology-agents-epi-implement-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-epidemiology-agents-epi-research-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-formal-agents-formal-research-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-formal-agents-logic-research-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-formal-agents-math-research-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-analyze-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-deck-builder-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-deck-planner-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-deck-research-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-finance-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-financial-analysis-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-founder-implement-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-founder-plan-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-founder-spreadsheet-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-legal-analysis-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-legal-council-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-market-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-meeting-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-project-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-founder-agents-strategy-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-lean-implementation-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-lean-research-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-neovim-implementation-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-nix-implementation-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-nix-research-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-nvim-agents-neovim-research-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-budget-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-funds-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-grant-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-pptx-assembly-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-slide-critic-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-slides-research-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-slidev-assembly-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-present-agents-timeline-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-python-agents-python-implementation-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-web-agents-web-implementation-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/early-metadata-stage0-web-agents-web-research-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/literature-organization-complete-entry-literature-agent.txt",
++        ".claude/scripts/lint/collapsed-blocks/registry.tsv",
++        ".claude/scripts/lint/collapsed-blocks/row17-core-context-formats-progress-file.txt",
++        ".claude/scripts/lint/collapsed-blocks/row22-core-context-patterns-metadata-file-return.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-core-skills-skill-reviser-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-epidemiology-skills-skill-epi-implement-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-epidemiology-skills-skill-epi-research-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-analyze-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-deck-plan-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-deck-research-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-finance-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-financial-analysis-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-founder-spreadsheet-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-legal-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-market-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-meeting-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-project-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-founder-skills-skill-strategy-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-present-skills-skill-budget-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-present-skills-skill-funds-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-present-skills-skill-grant-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-present-skills-skill-slides-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row3-present-skills-skill-timeline-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-books-skills-skill-books-implementation-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-cslib-skills-skill-cslib-implementation-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-cslib-skills-skill-pr-implementation-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-epidemiology-skills-skill-epi-implement-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-founder-skills-skill-deck-implement-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-founder-skills-skill-founder-implement-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-latex-skills-skill-latex-implementation-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-lean-skills-skill-lean-implementation-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-nix-skills-skill-nix-implementation-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-nvim-skills-skill-neovim-implementation-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-python-skills-skill-python-implementation-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-rust-skills-skill-rust-implementation-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-typst-skills-skill-typst-implementation-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-web-skills-skill-web-implementation-SKILL.txt",
++        ".claude/scripts/lint/collapsed-blocks/row7-z3-skills-skill-z3-implementation-SKILL.txt",
++        ".claude/scripts/lint/lint-agent-contracts.sh",
++        ".claude/scripts/lint/lint-anchor-pointer-collapse.sh",
++        ".claude/scripts/lint/lint-branch-gated-sections.sh",
++        ".claude/scripts/lint/lint-contract-compliance.sh",
++        ".claude/scripts/lint/lint-dead-command-recommendations.sh",
++        ".claude/scripts/lint/lint-deliberate-break-residue.sh",
++        ".claude/scripts/lint/lint-directory-pathspec-boundary.sh",
++        ".claude/scripts/lint/lint-extension-readme-table.sh",
++        ".claude/scripts/lint/lint-gate-registry.sh",
++        ".claude/scripts/lint/lint-hook-registration-paths.sh",
++        ".claude/scripts/lint/lint-json-channel-discipline.sh",
++        ".claude/scripts/lint/lint-lifecycle-status-var.sh",
++        ".claude/scripts/lint/lint-postflight-boundary.sh",
++        ".claude/scripts/lint/lint-roadmap-batch-proposals.sh",
++        ".claude/scripts/lint/lint-routing-wiring.sh",
++        ".claude/scripts/lint/lint-scoped-commit-boundary.sh",
++        ".claude/scripts/lint/lint-shellcheck.sh",
++        ".claude/scripts/lint/lint-state-writer-boundary.sh",
++        ".claude/scripts/lint/lint-subject-resolution-declaration.sh",
++        ".claude/scripts/lint/lint-task-lookup-adoption.sh",
++        ".claude/scripts/lint/lint-test-harness-adoption.sh",
++        ".claude/scripts/lint/lint-test-root-resolution.sh",
++        ".claude/scripts/lint/lint-unit-integration-boundary.sh",
++        ".claude/scripts/lint/lint-verdict-extraction-anchoring.sh",
++        ".claude/scripts/manage-topics.sh",
++        ".claude/scripts/measure-eager-context.sh",
++        ".claude/scripts/measure-eager-surface.sh",
++        ".claude/scripts/measure-gate-costs.sh",
++        ".claude/scripts/migrate-directory-padding.sh",
++        ".claude/scripts/migrate-roadmap-next-to-state.sh",
++        ".claude/scripts/migrate-state-legacy-fields.sh",
++        ".claude/scripts/orchestrate-batch-admit.sh",
++        ".claude/scripts/orchestrate-batch-gate.sh",
++        ".claude/scripts/orchestrate-build-aux-dispatch.sh",
++        ".claude/scripts/orchestrate-build-dispatch.sh",
++        ".claude/scripts/orchestrate-churn.sh",
++        ".claude/scripts/orchestrate-conclusion-aggregate.sh",
++        ".claude/scripts/orchestrate-cycle-plan.sh",
++        ".claude/scripts/orchestrate-cycle-postflight.sh",
++        ".claude/scripts/orchestrate-loop-guard-init.sh",
++        ".claude/scripts/orchestrate-predispatch-review.sh",
++        ".claude/scripts/orchestrate-record-decision.sh",
++        ".claude/scripts/orchestrate-recover-message-findings.sh",
++        ".claude/scripts/orchestrate-recover-outcome.sh",
++        ".claude/scripts/orchestrate-stage5-gates.sh",
++        ".claude/scripts/orchestrate-stage5-postflight.sh",
++        ".claude/scripts/orchestrate-suggest-next-batch.sh",
++        ".claude/scripts/orchestrate-triage-classify.sh",
++        ".claude/scripts/orchestrate-unwind-dispatch.sh",
++        ".claude/scripts/orchestrator-postflight.sh",
++        ".claude/scripts/parse-command-args.sh",
++        ".claude/scripts/plan-file-scope-harvest.sh",
++        ".claude/scripts/reap-session-runtime-files.sh",
++        ".claude/scripts/reconcile-artifacts.sh",
++        ".claude/scripts/reconcile-task-status.sh",
++        ".claude/scripts/roadmap-integration.sh",
++        ".claude/scripts/run-task-observers.sh",
++        ".claude/scripts/script-inventory.sh",
++        ".claude/scripts/skill-base.sh",
++        ".claude/scripts/state-write.sh",
++        ".claude/scripts/sweep-invalidated-claims.sh",
++        ".claude/scripts/sync-manifest-scripts.sh",
++        ".claude/scripts/system-defect-record.sh",
++        ".claude/scripts/task-lock.sh",
++        ".claude/scripts/test-conflict-predicate.sh",
++        ".claude/scripts/test-four-tier-conflict.sh",
++        ".claude/scripts/test-session-registry.sh",
++        ".claude/scripts/test-session-runtime-files.sh",
++        ".claude/scripts/test-state-write-concurrency.sh",
++        ".claude/scripts/test-state-write-large-payload.sh",
++        ".claude/scripts/test-state-write-regen-timing.sh",
++        ".claude/scripts/test-state-write-spill-names.sh",
++        ".claude/scripts/test-task-lock-reap.sh",
++        ".claude/scripts/tests/known-failures.txt",
++        ".claude/scripts/tests/run-all.sh",
++        ".claude/scripts/tests/suite-classification.data",
++        ".claude/scripts/tests/suite-cost-hints.txt",
++        ".claude/scripts/tests/test-askuserquestion-rehome.sh",
++        ".claude/scripts/tests/test-assess-repo-health.sh",
++        ".claude/scripts/tests/test-audit-task-proposals.sh",
++        ".claude/scripts/tests/test-backfill-file-scope.sh",
++        ".claude/scripts/tests/test-census-count.sh",
++        ".claude/scripts/tests/test-central-log-lib.sh",
++        ".claude/scripts/tests/test-check-record-versioning.sh",
++        ".claude/scripts/tests/test-check-task-references.sh",
++        ".claude/scripts/tests/test-claude-refresh-matcher.sh",
++        ".claude/scripts/tests/test-commit-source-store-path.sh",
++        ".claude/scripts/tests/test-common-lib.sh",
++        ".claude/scripts/tests/test-consumer-freshness.sh",
++        ".claude/scripts/tests/test-context-reachability.sh",
++        ".claude/scripts/tests/test-corroborate-phase-counts.sh",
++        ".claude/scripts/tests/test-deploy-baseline-lib.sh",
++        ".claude/scripts/tests/test-deploy-freshness.sh",
++        ".claude/scripts/tests/test-deploy-ledger-lib.sh",
++        ".claude/scripts/tests/test-deploy-orphans.sh",
++        ".claude/scripts/tests/test-deploy-propagation.sh",
++        ".claude/scripts/tests/test-deploy-root-guard.sh",
++        ".claude/scripts/tests/test-deploy-verify-overlap.sh",
++        ".claude/scripts/tests/test-deploy-verify-wiring.sh",
++        ".claude/scripts/tests/test-derived-artifact-probe-lib.sh",
++        ".claude/scripts/tests/test-detect-noop-bash.sh",
++        ".claude/scripts/tests/test-dispatch-metrics.sh",
++        ".claude/scripts/tests/test-dispatch-strand-probe.sh",
++        ".claude/scripts/tests/test-double-loading-check.sh",
++        ".claude/scripts/tests/test-engine-written-state-paths-lib.sh",
++        ".claude/scripts/tests/test-errors-append.sh",
++        ".claude/scripts/tests/test-force-phases.sh",
++        ".claude/scripts/tests/test-gate-cache-equivalence.sh",
++        ".claude/scripts/tests/test-gate-cache-lib.sh",
++        ".claude/scripts/tests/test-gate-lock.sh",
++        ".claude/scripts/tests/test-gate-out-derived-staleness.sh",
++        ".claude/scripts/tests/test-gate-out-repair-reporting.sh",
++        ".claude/scripts/tests/test-gate-out-self-attribution.sh",
++        ".claude/scripts/tests/test-gate-registry-resolution.sh",
++        ".claude/scripts/tests/test-gate3-parallel-equivalence.sh",
++        ".claude/scripts/tests/test-gate3-strict-equivalence.sh",
++        ".claude/scripts/tests/test-gate8-expected-new-distinction.sh",
++        ".claude/scripts/tests/test-generate-task-order.sh",
++        ".claude/scripts/tests/test-git-commit-phase.sh",
++        ".claude/scripts/tests/test-git-commit-scoped.sh",
++        ".claude/scripts/tests/test-git-corpus-enum-lib.sh",
++        ".claude/scripts/tests/test-git-snapshot.sh",
++        ".claude/scripts/tests/test-guard-destructive-git.sh",
++        ".claude/scripts/tests/test-guard-git-push.sh",
++        ".claude/scripts/tests/test-handoff-dispatch-identity.sh",
++        ".claude/scripts/tests/test-handoff-reader-parity.sh",
++        ".claude/scripts/tests/test-index-entries-schema.sh",
++        ".claude/scripts/tests/test-init-specs.sh",
++        ".claude/scripts/tests/test-install-uninstall-extension.sh",
++        ".claude/scripts/tests/test-issue-record.sh",
++        ".claude/scripts/tests/test-lake-build-guard.sh",
++        ".claude/scripts/tests/test-lint-agent-contracts-await-notification.sh",
++        ".claude/scripts/tests/test-lint-agent-contracts-handoff-section.sh",
++        ".claude/scripts/tests/test-lint-agent-contracts-heartbeat.sh",
++        ".claude/scripts/tests/test-lint-agent-contracts.sh",
++        ".claude/scripts/tests/test-lint-anchor-pointer-collapse.sh",
++        ".claude/scripts/tests/test-lint-branch-gated-sections.sh",
++        ".claude/scripts/tests/test-lint-corpus-scan-lib.sh",
++        ".claude/scripts/tests/test-lint-dead-command-recommendations.sh",
++        ".claude/scripts/tests/test-lint-deliberate-break-residue.sh",
++        ".claude/scripts/tests/test-lint-deploy-caller-wrap.sh",
++        ".claude/scripts/tests/test-lint-directory-pathspec-boundary.sh",
++        ".claude/scripts/tests/test-lint-extension-readme-table.sh",
++        ".claude/scripts/tests/test-lint-hook-registration-paths.sh",
++        ".claude/scripts/tests/test-lint-json-channel-discipline.sh",
++        ".claude/scripts/tests/test-lint-lifecycle-status-var.sh",
++        ".claude/scripts/tests/test-lint-postflight-boundary.sh",
++        ".claude/scripts/tests/test-lint-roadmap-batch-proposals.sh",
++        ".claude/scripts/tests/test-lint-scoped-commit-boundary.sh",
++        ".claude/scripts/tests/test-lint-shellcheck-parallel.sh",
++        ".claude/scripts/tests/test-lint-shellcheck.sh",
++        ".claude/scripts/tests/test-lint-state-writer-boundary.sh",
++        ".claude/scripts/tests/test-lint-subject-resolution-declaration.sh",
++        ".claude/scripts/tests/test-lint-task-lookup-adoption.sh",
++        ".claude/scripts/tests/test-lint-test-harness-adoption.sh",
++        ".claude/scripts/tests/test-lint-test-root-resolution.sh",
++        ".claude/scripts/tests/test-lint-unit-integration-boundary.sh",
++        ".claude/scripts/tests/test-lint-verdict-extraction-anchoring.sh",
++        ".claude/scripts/tests/test-manage-topics-create-order.sh",
++        ".claude/scripts/tests/test-manifest-scripts-sync.sh",
++        ".claude/scripts/tests/test-mcp-merge-target.sh",
++        ".claude/scripts/tests/test-measure-gate-costs.sh",
++        ".claude/scripts/tests/test-migrate-roadmap-next-to-state.sh",
++        ".claude/scripts/tests/test-mint-dispatch-seq.sh",
++        ".claude/scripts/tests/test-orchestrate-batch-admit.sh",
++        ".claude/scripts/tests/test-orchestrate-batch-gate.sh",
++        ".claude/scripts/tests/test-orchestrate-build-aux-dispatch.sh",
++        ".claude/scripts/tests/test-orchestrate-build-dispatch.sh",
++        ".claude/scripts/tests/test-orchestrate-churn.sh",
++        ".claude/scripts/tests/test-orchestrate-conclusion-aggregate.sh",
++        ".claude/scripts/tests/test-orchestrate-context-growth.sh",
++        ".claude/scripts/tests/test-orchestrate-cycle-plan.sh",
++        ".claude/scripts/tests/test-orchestrate-cycle-postflight.sh",
++        ".claude/scripts/tests/test-orchestrate-predispatch-review.sh",
++        ".claude/scripts/tests/test-orchestrate-record-decision.sh",
++        ".claude/scripts/tests/test-orchestrate-recover-message-findings.sh",
++        ".claude/scripts/tests/test-orchestrate-recover-outcome.sh",
++        ".claude/scripts/tests/test-orchestrate-suggest-next-batch.sh",
++        ".claude/scripts/tests/test-orchestrate-triage-classify.sh",
++        ".claude/scripts/tests/test-orchestrate-unwind-dispatch.sh",
++        ".claude/scripts/tests/test-phase-heading-patterns.sh",
++        ".claude/scripts/tests/test-phase-heartbeat.sh",
++        ".claude/scripts/tests/test-plan-file-scope-harvest.sh",
++        ".claude/scripts/tests/test-please-grant.sh",
++        ".claude/scripts/tests/test-postflight-deploy-gate.sh",
++        ".claude/scripts/tests/test-postflight-marker-schema.sh",
++        ".claude/scripts/tests/test-reconcile-demote-stranded.sh",
++        ".claude/scripts/tests/test-reconcile-handoff-status.sh",
++        ".claude/scripts/tests/test-record-stash-provenance.sh",
++        ".claude/scripts/tests/test-record-version-patterns.sh",
++        ".claude/scripts/tests/test-redeploy-checkpoint-promotion.sh",
++        ".claude/scripts/tests/test-redeploy-remedy-lib.sh",
++        ".claude/scripts/tests/test-resume-scan-nonconformance.sh",
++        ".claude/scripts/tests/test-return-meta-status-vocabulary.sh",
++        ".claude/scripts/tests/test-roadmap-command-registration.sh",
++        ".claude/scripts/tests/test-roadmap-generation.sh",
++        ".claude/scripts/tests/test-routing-resolution.sh",
++        ".claude/scripts/tests/test-run-all-failure-reporting.sh",
++        ".claude/scripts/tests/test-run-all-parallel.sh",
++        ".claude/scripts/tests/test-run-all-selection.sh",
++        ".claude/scripts/tests/test-run-all-shared-fixture.sh",
++        ".claude/scripts/tests/test-run-task-observers.sh",
++        ".claude/scripts/tests/test-runtime-file-tracking.sh",
++        ".claude/scripts/tests/test-script-inventory.sh",
++        ".claude/scripts/tests/test-skill-base-lifecycle.sh",
++        ".claude/scripts/tests/test-source-store-path-lib.sh",
++        ".claude/scripts/tests/test-stall-reprompt-wiring.sh",
++        ".claude/scripts/tests/test-status-vocabulary.sh",
++        ".claude/scripts/tests/test-subagent-postflight-marker.sh",
++        ".claude/scripts/tests/test-sweep-invalidated-claims.sh",
++        ".claude/scripts/tests/test-task-lock-liveness.sh",
++        ".claude/scripts/tests/test-task-lock-queue.sh",
++        ".claude/scripts/tests/test-task-reference-patterns-lib.sh",
++        ".claude/scripts/tests/test-task-type-detect.sh",
++        ".claude/scripts/tests/test-todo-move-pair-staging.sh",
++        ".claude/scripts/tests/test-update-plan-status.sh",
++        ".claude/scripts/tests/test-update-task-status.sh",
++        ".claude/scripts/tests/test-validate-artifact.sh",
++        ".claude/scripts/tests/test-validate-bounded-waiter.sh",
++        ".claude/scripts/tests/test-validate-handoff-location.sh",
++        ".claude/scripts/tests/test-validate-handoff.sh",
++        ".claude/scripts/tests/test-validate-no-python-state-write.sh",
++        ".claude/scripts/tests/test-validate-no-record-versioning.sh",
++        ".claude/scripts/tests/test-validate-no-task-references.sh",
++        ".claude/scripts/tests/test-validate-return-meta.sh",
++        ".claude/scripts/tests/test-validate-state.sh",
++        ".claude/scripts/tests/test-validate-task-creation-audit.sh",
++        ".claude/scripts/tests/test-validate-wiring.sh",
++        ".claude/scripts/tests/test-verify-deploy-context-budget.sh",
++        ".claude/scripts/tests/test-verify-deploy-gate-selection-crash-net.sh",
++        ".claude/scripts/tests/test-verify-deploy-gate-selection.sh",
++        ".claude/scripts/tier-selection.sh",
++        ".claude/scripts/uninstall-extension.sh",
++        ".claude/scripts/update-phase-status.sh",
++        ".claude/scripts/update-plan-status.sh",
++        ".claude/scripts/update-task-status.sh",
++        ".claude/scripts/validate-artifact.sh",
++        ".claude/scripts/validate-context-budgets.sh",
++        ".claude/scripts/validate-context-index.sh",
++        ".claude/scripts/validate-handoff.sh",
++        ".claude/scripts/validate-index.sh",
++        ".claude/scripts/validate-return-meta.sh",
++        ".claude/scripts/validate-state.sh",
++        ".claude/scripts/validate-wiring.sh",
++        ".claude/scripts/verify-deploy.sh",
++        ".claude/hooks/claude-stop-notify.sh",
++        ".claude/hooks/detect-noop-bash.sh",
++        ".claude/hooks/events-log-artifact.sh",
++        ".claude/hooks/events-log-lifecycle.sh",
++        ".claude/hooks/guard-destructive-git.sh",
++        ".claude/hooks/guard-git-push.sh",
++        ".claude/hooks/log-session.sh",
++        ".claude/hooks/memory-nudge.sh",
++        ".claude/hooks/please-grant.sh",
++        ".claude/hooks/post-command.sh",
++        ".claude/hooks/record-stash-provenance.sh",
++        ".claude/hooks/subagent-postflight.sh",
++        ".claude/hooks/tts-notify.sh",
++        ".claude/hooks/validate-bounded-waiter.sh",
++        ".claude/hooks/validate-handoff-location.sh",
++        ".claude/hooks/validate-meta-write.sh",
++        ".claude/hooks/validate-no-python-state-write.sh",
++        ".claude/hooks/validate-no-record-versioning.sh",
++        ".claude/hooks/validate-no-task-references.sh",
++        ".claude/hooks/validate-plan-write.sh",
++        ".claude/hooks/validate-state-sync.sh",
++        ".claude/hooks/validate-task-creation-audit.sh",
++        ".claude/hooks/wezterm-clear-task-number.sh",
++        ".claude/hooks/wezterm-notify.sh",
++        ".claude/hooks/wezterm-preflight-status.sh",
++        ".claude/hooks/wezterm-task-number.sh",
++        ".claude/hooks/wezterm-utils.sh",
++        ".claude/docs/docs-README.md",
++        ".claude/docs/architecture/batch-admit-schema.md",
++        ".claude/docs/architecture/extension-system.md",
++        ".claude/docs/architecture/handoff-schema.md",
++        ".claude/docs/architecture/orchestrate-cycle-postflight.md",
++        ".claude/docs/architecture/orchestrate-state-machine.md",
++        ".claude/docs/architecture/system-overview.md",
++        ".claude/docs/examples/fix-it-flow-example.md",
++        ".claude/docs/examples/research-flow-example.md",
++        ".claude/docs/guides/adding-domains.md",
++        ".claude/docs/guides/component-selection.md",
++        ".claude/docs/guides/context-loading-best-practices.md",
++        ".claude/docs/guides/copy-claude-directory.md",
++        ".claude/docs/guides/creating-agents.md",
++        ".claude/docs/guides/creating-commands.md",
++        ".claude/docs/guides/creating-extensions.md",
++        ".claude/docs/guides/creating-skills.md",
++        ".claude/docs/guides/development/context-index-migration.md",
++        ".claude/docs/guides/permission-configuration.md",
++        ".claude/docs/guides/user-guide.md",
++        ".claude/docs/guides/user-installation.md",
++        ".claude/docs/reference/standards/agent-frontmatter-standard.md",
++        ".claude/docs/reference/standards/extension-slim-standard.md",
++        ".claude/docs/reference/standards/multi-task-creation-standard.md",
++        ".claude/docs/reference/utility-scripts-inventory.md",
++        ".claude/docs/templates/README.md",
++        ".claude/docs/templates/agent-template.md",
++        ".claude/docs/templates/command-template.md",
++        ".claude/templates/claudemd-header.md",
++        ".claude/templates/extension-readme-template.md",
++        ".claude/templates/settings.json",
++        ".claude/systemd/claude-refresh.service",
++        ".claude/systemd/claude-refresh.timer",
++        ".claude/.gitignore",
++        ".claude/extensions/core/manifest.json"
+       ],
+-      "data_skeleton_files": [],
+-      "merged_sections": {
+-        "settings": {
+-          "permissions": {
+-            "type": "merged",
+-            "children": {
+-              "allow": {
+-                "type": "appended",
+-                "items": []
+-              }
+-            }
+-          }
+-        },
+-        "index": {
+-          "paths": [
+-            "project/sapience/README.md",
+-            "project/sapience/domain/vault-model.md",
+-            "project/sapience/domain/review-gate-boundary.md",
+-            "project/sapience/domain/transcript-filter-ceiling.md",
+-            "project/sapience/domain/subagent-orientation.md"
+-          ]
+-        }
+-      },
+-      "installed_dirs": [],
+-      "source_git_head": "b2e67d392494c0835efb5f7c396dcc55684ab948"
+-    },
+-    "approvals": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/approvals",
+       "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:36Z",
+-      "status": "active",
+-      "installed_files": [
+-        ".claude/commands/approve.md",
+-        ".claude/skills/skill-approve/SKILL.md",
+-        ".claude/context/project/approvals/README.md",
+-        ".claude/context/project/approvals/patterns/approve-interaction-design.md",
+-        ".claude/context/project/approvals/standards/approval-artifact-convention.md",
+-        ".claude/context/project/approvals/standards/confidence-vocabulary.md",
+-        ".claude/scripts/approve-classify.sh",
+-        ".claude/scripts/approve-guard.sh",
+-        ".claude/scripts/approve-paths.sh",
+-        ".claude/scripts/tests/test-approve-classify.sh",
+-        ".claude/scripts/tests/test-approve-paths.sh",
+-        ".claude/scripts/tests/test-approve-refusals.sh",
+-        ".claude/scripts/tests/test-approve-structural.sh",
+-        ".claude/extensions/approvals/manifest.json"
+-      ],
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/core",
++      "source_git_head": "5537a7306f90b0cb868c8785f0d59c3101cef9f9"
++    },
++    "memory": {
+       "data_skeleton_files": [],
+       "merged_sections": {
+         "index": {
+           "paths": [
+-            "project/approvals/README.md",
+-            "project/approvals/standards/approval-artifact-convention.md",
+-            "project/approvals/standards/confidence-vocabulary.md",
+-            "project/approvals/patterns/approve-interaction-design.md"
++            "project/memory/learn-usage.md",
++            "project/memory/memory-setup.md",
++            "project/memory/memory-troubleshooting.md",
++            "project/memory/domain/memory-reference.md",
++            "project/memory/knowledge-capture-usage.md",
++            "project/memory/distill-usage.md",
++            "project/memory/README.md",
++            "project/memory/patterns/distill-learn-submode.md",
++            "project/memory/patterns/distill-revise-submode.md"
+           ]
+         }
+       },
+       "installed_dirs": [],
+-      "source_git_head": "bd580e406218b4c277217e8bdcc2be34b46274ea"
+-    },
+-    "nix": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nix",
+-      "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:37Z",
++      "loaded_at": "2026-11-12T20:52:03Z",
+       "status": "active",
+       "installed_files": [
+-        ".claude/agents/nix-research-agent.md",
+-        ".claude/agents/nix-implementation-agent.md",
+-        ".claude/rules/nix.md",
+-        ".claude/skills/skill-nix-research/SKILL.md",
+-        ".claude/skills/skill-nix-implementation/SKILL.md",
+-        ".claude/context/project/nix/README.md",
+-        ".claude/context/project/nix/domain/flakes.md",
+-        ".claude/context/project/nix/domain/home-manager.md",
+-        ".claude/context/project/nix/domain/nix-language.md",
+-        ".claude/context/project/nix/domain/nixos-modules.md",
+-        ".claude/context/project/nix/patterns/derivation-patterns.md",
+-        ".claude/context/project/nix/patterns/module-patterns.md",
+-        ".claude/context/project/nix/patterns/overlay-patterns.md",
+-        ".claude/context/project/nix/standards/nix-style-guide.md",
+-        ".claude/context/project/nix/tools/home-manager-guide.md",
+-        ".claude/context/project/nix/tools/mcp-nixos-integration.md",
+-        ".claude/context/project/nix/tools/nixos-rebuild-guide.md",
+-        ".claude/scripts/nix-preflight.sh",
+-        ".claude/scripts/nix-context.sh",
+-        ".claude/extensions/nix/manifest.json"
++        ".claude/commands/learn.md",
++        ".claude/commands/distill.md",
++        ".claude/skills/skill-learn/README.md",
++        ".claude/skills/skill-learn/SKILL.md",
++        ".claude/skills/skill-distill/README.md",
++        ".claude/skills/skill-distill/SKILL.md",
++        ".claude/context/project/memory/README.md",
++        ".claude/context/project/memory/distill-usage.md",
++        ".claude/context/project/memory/domain/memory-reference.md",
++        ".claude/context/project/memory/knowledge-capture-usage.md",
++        ".claude/context/project/memory/learn-usage.md",
++        ".claude/context/project/memory/memory-setup.md",
++        ".claude/context/project/memory/memory-troubleshooting.md",
++        ".claude/context/project/memory/patterns/distill-learn-submode.md",
++        ".claude/context/project/memory/patterns/distill-revise-submode.md",
++        ".claude/scripts/bootstrap-harvest.sh",
++        ".claude/scripts/bootstrap-harvest-transcripts.sh",
++        ".claude/scripts/bootstrap-harvest-history.sh",
++        ".claude/scripts/bootstrap-harvest-attribution.sh",
++        ".claude/extensions/memory/manifest.json"
+       ],
++      "version": "1.0.0",
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/memory",
++      "source_git_head": "3f5ef54eea60dc76e3733357d4090081e77f5f61"
++    },
++    "nvim": {
+       "data_skeleton_files": [],
+       "merged_sections": {
+-        "settings": {
+-          "permissions": {
+-            "type": "merged",
+-            "children": {
+-              "allow": {
+-                "type": "appended",
+-                "items": []
+-              }
+-            }
+-          }
+-        },
+         "index": {
+           "paths": [
+-            "project/nix/README.md",
+-            "project/nix/domain/nix-language.md",
+-            "project/nix/domain/flakes.md",
+-            "project/nix/domain/nixos-modules.md",
+-            "project/nix/domain/home-manager.md",
+-            "project/nix/patterns/module-patterns.md",
+-            "project/nix/patterns/overlay-patterns.md",
+-            "project/nix/patterns/derivation-patterns.md",
+-            "project/nix/standards/nix-style-guide.md",
+-            "project/nix/tools/nixos-rebuild-guide.md",
+-            "project/nix/tools/home-manager-guide.md",
+-            "project/nix/tools/mcp-nixos-integration.md"
++            "project/neovim/README.md",
++            "project/neovim/domain/lua-patterns.md",
++            "project/neovim/domain/neovim-api.md",
++            "project/neovim/domain/plugin-ecosystem.md",
++            "project/neovim/domain/lsp-overview.md",
++            "project/neovim/patterns/autocommand-patterns.md",
++            "project/neovim/patterns/ftplugin-patterns.md",
++            "project/neovim/patterns/keymap-patterns.md",
++            "project/neovim/patterns/plugin-spec.md",
++            "project/neovim/standards/lua-style-guide.md",
++            "project/neovim/standards/testing-patterns.md",
++            "project/neovim/templates/ftplugin-template.md",
++            "project/neovim/templates/plugin-template.md",
++            "project/neovim/tools/lazy-nvim-guide.md",
++            "project/neovim/tools/telescope-guide.md",
++            "project/neovim/tools/treesitter-guide.md",
++            "project/neovim/standards/box-drawing-guide.md",
++            "project/neovim/standards/documentation-policy.md",
++            "project/neovim/standards/emoji-policy.md",
++            "project/neovim/standards/lua-assertion-patterns.md",
++            "project/neovim/hooks/wezterm-integration.md",
++            "project/neovim/guides/neovim-integration.md",
++            "project/neovim/guides/tts-stt-integration.md",
++            "project/neovim/domain/extension-deploy-modes.md"
+           ]
+         }
+       },
+       "installed_dirs": [],
+-      "source_git_head": "0ee0f6dddb2a07a429c9adf7d2a35e15ab67c447"
+-    },
+-    "nvim": {
+-      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nvim",
+-      "version": "1.0.0",
+-      "loaded_at": "2026-11-07T20:21:37Z",
++      "loaded_at": "2026-11-12T20:52:03Z",
+       "status": "active",
+       "installed_files": [
+         ".claude/agents/neovim-research-agent.md",
+@@ -1524,39 +1906,88 @@
+         ".claude/scripts/nvim-context.sh",
+         ".claude/extensions/nvim/manifest.json"
+       ],
++      "version": "1.0.0",
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/nvim",
++      "source_git_head": "6d43f32d746abe8bdfb2a00b3edd2aec5dfd209c"
++    },
++    "sapience": {
+       "data_skeleton_files": [],
+       "merged_sections": {
++        "settings": {
++          "permissions": {
++            "children": {
++              "allow": {
++                "items": [],
++                "type": "appended"
++              }
++            },
++            "type": "merged"
++          }
++        },
+         "index": {
+           "paths": [
+-            "project/neovim/README.md",
+-            "project/neovim/domain/lua-patterns.md",
+-            "project/neovim/domain/neovim-api.md",
+-            "project/neovim/domain/plugin-ecosystem.md",
+-            "project/neovim/domain/lsp-overview.md",
+-            "project/neovim/patterns/autocommand-patterns.md",
+-            "project/neovim/patterns/ftplugin-patterns.md",
+-            "project/neovim/patterns/keymap-patterns.md",
+-            "project/neovim/patterns/plugin-spec.md",
+-            "project/neovim/standards/lua-style-guide.md",
+-            "project/neovim/standards/testing-patterns.md",
+-            "project/neovim/templates/ftplugin-template.md",
+-            "project/neovim/templates/plugin-template.md",
+-            "project/neovim/tools/lazy-nvim-guide.md",
+-            "project/neovim/tools/telescope-guide.md",
+-            "project/neovim/tools/treesitter-guide.md",
+-            "project/neovim/standards/box-drawing-guide.md",
+-            "project/neovim/standards/documentation-policy.md",
+-            "project/neovim/standards/emoji-policy.md",
+-            "project/neovim/standards/lua-assertion-patterns.md",
+-            "project/neovim/hooks/wezterm-integration.md",
+-            "project/neovim/guides/neovim-integration.md",
+-            "project/neovim/guides/tts-stt-integration.md",
+-            "project/neovim/domain/extension-deploy-modes.md"
++            "project/sapience/README.md",
++            "project/sapience/domain/vault-model.md",
++            "project/sapience/domain/review-gate-boundary.md",
++            "project/sapience/domain/per-repo-scoping.md",
++            "project/sapience/domain/transcript-filter-ceiling.md",
++            "project/sapience/domain/subagent-orientation.md"
++          ]
++        }
++      },
++      "installed_dirs": [],
++      "loaded_at": "2026-11-12T20:52:03Z",
++      "status": "active",
++      "installed_files": [
++        ".claude/context/project/sapience/README.md",
++        ".claude/context/project/sapience/domain/per-repo-scoping.md",
++        ".claude/context/project/sapience/domain/review-gate-boundary.md",
++        ".claude/context/project/sapience/domain/subagent-orientation.md",
++        ".claude/context/project/sapience/domain/transcript-filter-ceiling.md",
++        ".claude/context/project/sapience/domain/vault-model.md",
++        ".claude/scripts/sapience-remember.sh",
++        ".claude/scripts/sapience-retrieve.sh",
++        ".claude/scripts/tests/test-sapience-capture.sh",
++        ".claude/extensions/sapience/manifest.json"
++      ],
++      "version": "1.0.0",
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/sapience",
++      "source_git_head": "32581c0609ac06dbd90f193d0002b0b89888557a"
++    },
++    "approvals": {
++      "data_skeleton_files": [],
++      "merged_sections": {
++        "index": {
++          "paths": [
++            "project/approvals/README.md",
++            "project/approvals/standards/approval-artifact-convention.md",
++            "project/approvals/standards/confidence-vocabulary.md",
++            "project/approvals/patterns/approve-interaction-design.md"
+           ]
+         }
+       },
+       "installed_dirs": [],
+-      "source_git_head": "81dc3cb287c243cf35c41fd8797bc01544cc3015"
++      "loaded_at": "2026-11-12T20:52:03Z",
++      "status": "active",
++      "installed_files": [
++        ".claude/commands/approve.md",
++        ".claude/skills/skill-approve/SKILL.md",
++        ".claude/context/project/approvals/README.md",
++        ".claude/context/project/approvals/patterns/approve-interaction-design.md",
++        ".claude/context/project/approvals/standards/approval-artifact-convention.md",
++        ".claude/context/project/approvals/standards/confidence-vocabulary.md",
++        ".claude/scripts/approve-classify.sh",
++        ".claude/scripts/approve-guard.sh",
++        ".claude/scripts/approve-paths.sh",
++        ".claude/scripts/tests/test-approve-classify.sh",
++        ".claude/scripts/tests/test-approve-paths.sh",
++        ".claude/scripts/tests/test-approve-refusals.sh",
++        ".claude/scripts/tests/test-approve-structural.sh",
++        ".claude/extensions/approvals/manifest.json"
++      ],
++      "version": "1.0.0",
++      "source_dir": "/home/benjamin/.config/nvim/agent-system/extensions/approvals",
++      "source_git_head": "bd580e406218b4c277217e8bdcc2be34b46274ea"
+     }
+   }
+ }
+diff --git a/.memory/memory-index.json b/.memory/memory-index.json
+index ad7dffe7d..4eaf19307 100644
+--- a/.memory/memory-index.json
++++ b/.memory/memory-index.json
+@@ -21,8 +21,8 @@
+       "token_count": 302,
+       "created": "2026-04-13",
+       "modified": "2026-04-13",
+-      "last_retrieved": "2026-11-07",
+-      "retrieval_count": 120
++      "last_retrieved": "2026-11-10",
++      "retrieval_count": 124
+     },
+     {
+       "id": "MEM-config-nextcord-discord-nixos",
+@@ -150,8 +150,8 @@
+       "token_count": 90,
+       "created": "2026-05-22",
+       "modified": "2026-05-22",
+-      "last_retrieved": "2026-11-07",
+-      "retrieval_count": 186
++      "last_retrieved": "2026-11-10",
++      "retrieval_count": 193
+     },
+     {
+       "id": "MEM-technique-validate-context-budgets-budget",
+diff --git a/agent-system/extensions/lean/EXTENSION.md b/agent-system/extensions/lean/EXTENSION.md
+index 55c0df489..d07ac1187 100644
+--- a/agent-system/extensions/lean/EXTENSION.md
++++ b/agent-system/extensions/lean/EXTENSION.md
+@@ -35,6 +35,7 @@ Rules (both apply to `**/*.lean`): `lean4.md` — Lean 4 conventions and MCP too
+ - `.claude/context/project/lean4/tools/blocked-mcp-tools.md` - Blocked tools and alternatives
+ - `.claude/context/project/lean4/patterns/mcp-fallback-table.md` - MCP tool fallback strategies
+ - `.claude/context/project/lean4/patterns/dependency-tracing.md` - Mechanically tracing declaration dependencies; why `#print axioms` cannot answer it
++- `.claude/context/project/lean4/patterns/external-library-dependency-assessment.md` - Checklist for assessing an external Lean library as a candidate dependency: upstream claims, two-way rev-list, toolchain-before-Mathlib comparison, build-cache freshness, import closure
+ - `.claude/context/project/lean4/patterns/plan-authoring-gate-collisions.md` - Gate collisions for plan authoring
+ - `.claude/context/project/lean4/tools/comparator-guide.md` - Comparator trust model: what a green result does and does not certify
+ - `.claude/context/project/lean4/domain/metadata-trust-surfaces.md` - Trust surfaces of Lean metadata on v4.31.0: what extension rows are not checked by, the public extension and linter registries, and the verified command-kind table for a syntax-level refusal
+diff --git a/agent-system/extensions/lean/context/project/lean4/domain/metadata-trust-surfaces.md b/agent-system/extensions/lean/context/project/lean4/domain/metadata-trust-surfaces.md
+index 52644a7fe..7831a796e 100644
+--- a/agent-system/extensions/lean/context/project/lean4/domain/metadata-trust-surfaces.md
++++ b/agent-system/extensions/lean/context/project/lean4/domain/metadata-trust-surfaces.md
+@@ -177,7 +177,40 @@ Two things such a gate does **not** reach. `set_option` has no per-option comman
+ replay catches it. And a construct in a scope the gate's own predicate admits is admitted, by
+ construction: the gate narrows where elaboration-time code may be mounted, and never closes it.
+ 
+-## 6. Practical consequences
++## 6. `proof_wanted` is a trust surface distinct from `sorry`
++
++A Lean file can declare a theorem's name and type while linking against a marker that neither
++elaborates nor discharges a proof obligation — `proof_wanted`, used upstream and in forks of
++external libraries as a "this signature is promised, not yet proved" placeholder. It is not a
++member of the `sorry` family and is invisible to both of the checks a reviewer reaches for
++first:
++
++- `grep -c sorry` returns 0, because no `sorry` token is present anywhere in the file.
++- `#print axioms <name>` cannot even be run, because `<name>` was never added to the
++  environment — a `proof_wanted` marker is not a declared constant, so there is no axiom
++  profile to inspect in the first place.
++
++**Measured consequence**: a module consisting entirely of `proof_wanted` declarations reports as
++sorry-free by both standard checks while declaring nothing at all — no term, no registered
++constant, no axiom profile. One observed instance found five named-but-absent theorems this way
++across two files in an external library fork (three naming theorems in one file, two in
++another), in a tree whose own accompanying description characterized it as "all reported
++sorry-free". A reviewer trusting either check alone counts such names as landed when they are
++not.
++
++**The only reliable detector**: `grep -c '^proof_wanted'` (anchored at line start, matching the
++marker's own declaration syntax) over the source file. This is a textual check, not a semantic
++one — it answers "how many `proof_wanted` markers does this file contain", not "what do they
++mean" — but unlike `grep sorry` or `#print axioms`, it does not silently return a clean result
++in the presence of this specific marker.
++
++**Practical rule**: before trusting a sorry count or an axiom profile as evidence that a target
++module's claimed theorems are proved, grep the module for `^proof_wanted` first. A nonzero count
++there invalidates "zero sorry, clean axioms" as evidence of anything beyond "no sorry and no
++axiom were found among the declarations that actually elaborated" — a set that `proof_wanted`
++can make a strict, silent subset of the names the file appears to promise.
++
++## 7. Practical consequences
+ 
+ - **Refuse in an attribute handler or a command elaborator.** Those run where the module under
+   inspection cannot reach them. A `Linter` reports; a registry-based check can be cleared.
+@@ -192,3 +225,5 @@ construction: the gate narrows where elaboration-time code may be mounted, and n
+   structurally unreachable rather than that nothing was wrong.
+ - **Write down which level each reader uses**, and never change an export function's level
+   asymmetry without checking every reader against it.
++- **Treat a clean `grep sorry` and a clean `#print axioms` as non-evidence against `proof_wanted`.**
++  Grep `^proof_wanted` separately (§6); neither of the other two checks can see it.
+diff --git a/agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md b/agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md
+index 4ef4ab92f..1e800314a 100644
+--- a/agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md
++++ b/agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md
+@@ -227,3 +227,11 @@ Every code block above is a complete, standalone template with placeholder names
+ (`YourProject.*`) rather than a pointer into any specific repository's source tree — replace the
+ import and the name lists with your own project's targets/suspects/entry points and the probes
+ run as written. No path outside this file is the sole carrier of a probe's content.
++
++## See Also
++
++- `context/project/lean4/patterns/external-library-dependency-assessment.md` — applies this same
++  import-closure technique to a different question: not "what does this one declaration depend
++  on inside my own repository" but "how much of an external library's source would actually need
++  verifying if I depended on it," measured over the target modules' import closure rather than
++  the candidate repository's total line count.
+diff --git a/agent-system/extensions/lean/index-entries.json b/agent-system/extensions/lean/index-entries.json
+index 7471b4493..8ff81ab74 100644
+--- a/agent-system/extensions/lean/index-entries.json
++++ b/agent-system/extensions/lean/index-entries.json
+@@ -404,7 +404,7 @@
+     },
+     {
+       "path": "project/lean4/agents/lean-implementation-flow.md",
+-      "line_count": 224,
++      "line_count": 261,
+       "load_when": {
+         "agents": [
+           "lean-implementation-agent"
+diff --git a/specs/402_conclusion_channels_become_evidence_only/.return-meta.json b/specs/402_conclusion_channels_become_evidence_only/.return-meta.json
+index fa9ba83af..15ee3bf2c 100644
+--- a/specs/402_conclusion_channels_become_evidence_only/.return-meta.json
++++ b/specs/402_conclusion_channels_become_evidence_only/.return-meta.json
+@@ -59,7 +59,5 @@
+     ],
+     "phases_completed": 3,
+     "phases_total": 3
+-  },
+-  "deploy_pending": true,
+-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
++  }
+ }
+diff --git a/specs/402_conclusion_channels_become_evidence_only/plans/01_conclusion-channels-evidence-only.md b/specs/402_conclusion_channels_become_evidence_only/plans/01_conclusion-channels-evidence-only.md
+index 46f46004f..a2ee82d8e 100644
+--- a/specs/402_conclusion_channels_become_evidence_only/plans/01_conclusion-channels-evidence-only.md
++++ b/specs/402_conclusion_channels_become_evidence_only/plans/01_conclusion-channels-evidence-only.md
+@@ -1,7 +1,7 @@
+ # Implementation Plan: Task #402
+ 
+ - **Task**: 402 - Conclusion channels (b) and (c) become evidence-only
+-- **Status**: [IMPLEMENTING]
++- **Status**: [COMPLETED]
+ - **Effort**: 3.5 hours
+ - **Dependencies**: 391, 400 (both archived/landed — confirmed absent from `specs/state.json`'s `active_projects`)
+ - **Research Inputs**: specs/402_conclusion_channels_become_evidence_only/reports/01_conclusion-channels-evidence-only.md
+diff --git a/specs/531_file_scope_declaration_hygiene_remediation/.return-meta.json b/specs/531_file_scope_declaration_hygiene_remediation/.return-meta.json
+index 99d6bfbfd..9594ae833 100644
+--- a/specs/531_file_scope_declaration_hygiene_remediation/.return-meta.json
++++ b/specs/531_file_scope_declaration_hygiene_remediation/.return-meta.json
+@@ -61,7 +61,5 @@
+   },
+   "proposed_file_scope": [
+     "agent-system/extensions/core/index-entries.json"
+-  ],
+-  "deploy_pending": true,
+-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
++  ]
+ }
+diff --git a/specs/531_file_scope_declaration_hygiene_remediation/plans/01_file-scope-declaration-hygiene.md b/specs/531_file_scope_declaration_hygiene_remediation/plans/01_file-scope-declaration-hygiene.md
+index 81ab29451..045ddcbc5 100644
+--- a/specs/531_file_scope_declaration_hygiene_remediation/plans/01_file-scope-declaration-hygiene.md
++++ b/specs/531_file_scope_declaration_hygiene_remediation/plans/01_file-scope-declaration-hygiene.md
+@@ -1,7 +1,7 @@
+ # Implementation Plan: Task #531
+ 
+ - **Task**: 531 - file_scope declaration hygiene remediation for the admission gate
+-- **Status**: [IMPLEMENTING]
++- **Status**: [COMPLETED]
+ - **Effort**: 3.0 hours
+ - **Dependencies**: None
+ - **Research Inputs**: specs/531_file_scope_declaration_hygiene_remediation/reports/01_file-scope-hygiene-remediation.md
+diff --git a/specs/597_coupled_generated_surfaces_in_plan_authoring/.return-meta.json b/specs/597_coupled_generated_surfaces_in_plan_authoring/.return-meta.json
+index 766689404..c7ccb842a 100644
+--- a/specs/597_coupled_generated_surfaces_in_plan_authoring/.return-meta.json
++++ b/specs/597_coupled_generated_surfaces_in_plan_authoring/.return-meta.json
+@@ -59,7 +59,5 @@
+     ],
+     "phases_completed": 6,
+     "phases_total": 6
+-  },
+-  "deploy_pending": true,
+-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
++  }
+ }
+diff --git a/specs/597_coupled_generated_surfaces_in_plan_authoring/plans/01_coupled-generated-surfaces-plan-authoring.md b/specs/597_coupled_generated_surfaces_in_plan_authoring/plans/01_coupled-generated-surfaces-plan-authoring.md
+index 79270bd78..980142b5e 100644
+--- a/specs/597_coupled_generated_surfaces_in_plan_authoring/plans/01_coupled-generated-surfaces-plan-authoring.md
++++ b/specs/597_coupled_generated_surfaces_in_plan_authoring/plans/01_coupled-generated-surfaces-plan-authoring.md
+@@ -1,7 +1,7 @@
+ # Implementation Plan: Task #597
+ 
+ - **Task**: 597 - Coupled generated surfaces in plan authoring
+-- **Status**: [IMPLEMENTING]
++- **Status**: [COMPLETED]
+ - **Effort**: 7 hours
+ - **Dependencies**: None (task 596 `generated_file_scope_vs_readonly_risk` depends ON this task; task 599 shares `plan-format.md` territory with no dependency edge)
+ - **Research Inputs**: specs/597_coupled_generated_surfaces_in_plan_authoring/reports/01_coupled-generated-surfaces-plan-authoring.md
+diff --git a/specs/600_sapience_retrieve_cold_start_retry/.return-meta.json b/specs/600_sapience_retrieve_cold_start_retry/.return-meta.json
+index 7b91ec61d..0d33aef69 100644
+--- a/specs/600_sapience_retrieve_cold_start_retry/.return-meta.json
++++ b/specs/600_sapience_retrieve_cold_start_retry/.return-meta.json
+@@ -72,7 +72,5 @@
+     "phases_completed": 5,
+     "phases_total": 5
+   },
+-  "dispatch_seq": 20,
+-  "deploy_pending": true,
+-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
++  "dispatch_seq": 20
+ }
+diff --git a/specs/600_sapience_retrieve_cold_start_retry/plans/01_sapience-retrieve-cold-start-retry.md b/specs/600_sapience_retrieve_cold_start_retry/plans/01_sapience-retrieve-cold-start-retry.md
+index 3667cffa2..4b6f0ff07 100644
+--- a/specs/600_sapience_retrieve_cold_start_retry/plans/01_sapience-retrieve-cold-start-retry.md
++++ b/specs/600_sapience_retrieve_cold_start_retry/plans/01_sapience-retrieve-cold-start-retry.md
+@@ -1,7 +1,7 @@
+ # Implementation Plan: Task #600
+ 
+ - **Task**: 600 - Sapience retrieve cold-start retry
+-- **Status**: [IMPLEMENTING]
++- **Status**: [COMPLETED]
+ - **Effort**: 4 hours
+ - **Dependencies**: None
+ - **Research Inputs**: specs/600_sapience_retrieve_cold_start_retry/reports/01_sapience-retrieve-cold-start-retry.md
+diff --git a/specs/601_root_walkup_class_closure_lint/.return-meta.json b/specs/601_root_walkup_class_closure_lint/.return-meta.json
+index 10098f834..70802ddcf 100644
+--- a/specs/601_root_walkup_class_closure_lint/.return-meta.json
++++ b/specs/601_root_walkup_class_closure_lint/.return-meta.json
+@@ -77,7 +77,5 @@
+   },
+   "proposed_file_scope": [
+     "agent-system/extensions/core/manifest.json"
+-  ],
+-  "deploy_pending": true,
+-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
++  ]
+ }
+diff --git a/specs/601_root_walkup_class_closure_lint/plans/01_root-walkup-closure-lint.md b/specs/601_root_walkup_class_closure_lint/plans/01_root-walkup-closure-lint.md
+index b91ca91bb..315980110 100644
+--- a/specs/601_root_walkup_class_closure_lint/plans/01_root-walkup-closure-lint.md
++++ b/specs/601_root_walkup_class_closure_lint/plans/01_root-walkup-closure-lint.md
+@@ -1,7 +1,7 @@
+ # Implementation Plan: Task #601
+ 
+ - **Task**: 601 - Close the class of invocation-path-dependent repo-root resolution in test suites with a durable lint
+-- **Status**: [IMPLEMENTING]
++- **Status**: [COMPLETED]
+ - **Effort**: 5.75 hours
+ - **Dependencies**: None
+ - **Research Inputs**: specs/601_root_walkup_class_closure_lint/reports/01_root-walkup-closure-lint.md
+diff --git a/specs/603_roadmap_command_generated_from_state/plans/01_roadmap-generated-from-state.md b/specs/603_roadmap_command_generated_from_state/plans/01_roadmap-generated-from-state.md
+index 28a17f8e5..f1e25e5cd 100644
+--- a/specs/603_roadmap_command_generated_from_state/plans/01_roadmap-generated-from-state.md
++++ b/specs/603_roadmap_command_generated_from_state/plans/01_roadmap-generated-from-state.md
+@@ -611,7 +611,7 @@ hand-edited between orchestration runs and the figures move.
+ 
+ ---
+ 
+-### Phase 7: Redeploy, Migrate Live State, and Demonstrate `/roadmap` [NOT STARTED]
++### Phase 7: Redeploy, Migrate Live State, and Demonstrate `/roadmap` [IN PROGRESS]
+ 
+ **Goal**: the whole thing works on this repository — the live file's judgment is in state, the
+ file renders from it idempotently, and both `/roadmap` forms are demonstrated.
+diff --git a/specs/events.jsonl b/specs/events.jsonl
+index ad72163c1..eb235964a 100644
+--- a/specs/events.jsonl
++++ b/specs/events.jsonl
+@@ -8535,3 +8535,20 @@
+ {"event_id":"evt_1794507635830_crh3Ru","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-12T18:20:35.833Z","duration_seconds":11.783,"session_id":"sess_1794459760_979d1d","task":531,"checkpoint":"preflight","message":"Preflight stage completed for implement","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
+ {"event_id":"evt_1794507663529_FgbesI","event_type":"session_stop","category":"milestone","timestamp":"2026-11-12T18:21:03.534Z","duration_seconds":null,"session_id":"sess_1794459760_979d1d","task":600,"checkpoint":null,"message":"Session stop observed for task 600","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"bcf6c1fd-779d-4bb3-9f55-41766209f1cb"}
+ {"event_id":"evt_1794507669300_UteMlV","event_type":"artifact_write","category":"milestone","timestamp":"2026-11-12T18:21:09.304Z","duration_seconds":null,"session_id":"sess_1794459760_979d1d","task":600,"checkpoint":null,"message":"Artifact metadata written with status 'in_progress'","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"bcf6c1fd-779d-4bb3-9f55-41766209f1cb"}
++{"event_id":"evt_1794507890637_ZfcNsi","event_type":"artifact_write","category":"milestone","timestamp":"2026-11-12T18:24:50.641Z","duration_seconds":null,"session_id":"sess_1794459760_979d1d","task":600,"checkpoint":null,"message":"Artifact metadata written with status 'in_progress'","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"bcf6c1fd-779d-4bb3-9f55-41766209f1cb"}
++{"event_id":"evt_1794507943827_bsiych","event_type":"artifact_write","category":"success","timestamp":"2026-11-12T18:25:43.831Z","duration_seconds":null,"session_id":"sess_1794459760_979d1d","task":531,"checkpoint":null,"message":"Artifact metadata written with status 'implemented'","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"bcf6c1fd-779d-4bb3-9f55-41766209f1cb"}
++{"event_id":"evt_1794507989230_rdd03f","event_type":"session_stop","category":"milestone","timestamp":"2026-11-12T18:26:29.235Z","duration_seconds":null,"session_id":"sess_1794459760_979d1d","task":600,"checkpoint":null,"message":"Session stop observed for task 600","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"bcf6c1fd-779d-4bb3-9f55-41766209f1cb"}
++{"event_id":"evt_1794507990887_Pgooi9","event_type":"session_stop","category":"milestone","timestamp":"2026-11-12T18:26:30.891Z","duration_seconds":null,"session_id":"sess_1794459760_979d1d","task":600,"checkpoint":null,"message":"Session stop observed for task 600","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"bcf6c1fd-779d-4bb3-9f55-41766209f1cb"}
++{"event_id":"evt_1794508145955_drZZWT","event_type":"artifact_write","category":"milestone","timestamp":"2026-11-12T18:29:05.959Z","duration_seconds":null,"session_id":"sess_1794459760_979d1d","task":600,"checkpoint":null,"message":"Artifact metadata written with status 'in_progress'","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"bcf6c1fd-779d-4bb3-9f55-41766209f1cb"}
++{"event_id":"evt_1794508499413_6TBdnt","event_type":"artifact_write","category":"milestone","timestamp":"2026-11-12T18:34:59.417Z","duration_seconds":null,"session_id":"sess_1794459760_979d1d","task":600,"checkpoint":null,"message":"Artifact metadata written with status 'in_progress'","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"bcf6c1fd-779d-4bb3-9f55-41766209f1cb"}
++{"event_id":"evt_1794508717787_WOTjkL","event_type":"artifact_write","category":"milestone","timestamp":"2026-11-12T18:38:37.792Z","duration_seconds":null,"session_id":"sess_1794459760_979d1d","task":600,"checkpoint":null,"message":"Artifact metadata written with status 'in_progress'","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"bcf6c1fd-779d-4bb3-9f55-41766209f1cb"}
++{"event_id":"evt_1794508904607_aJjUb8","event_type":"artifact_write","category":"success","timestamp":"2026-11-12T18:41:44.611Z","duration_seconds":null,"session_id":"sess_1794459760_979d1d","task":597,"checkpoint":null,"message":"Artifact metadata written with status 'implemented'","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"bcf6c1fd-779d-4bb3-9f55-41766209f1cb"}
++{"event_id":"evt_1794510495853_oNhSRi","event_type":"artifact_write","category":"milestone","timestamp":"2026-11-12T19:08:15.858Z","duration_seconds":null,"session_id":"sess_1794459760_979d1d","task":600,"checkpoint":null,"message":"Artifact metadata written with status 'in_progress'","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"bcf6c1fd-779d-4bb3-9f55-41766209f1cb"}
++{"event_id":"evt_1794510606597_UQPpBs","event_type":"artifact_write","category":"success","timestamp":"2026-11-12T19:10:06.602Z","duration_seconds":null,"session_id":"sess_1794459760_979d1d","task":600,"checkpoint":null,"message":"Artifact metadata written with status 'implemented'","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"bcf6c1fd-779d-4bb3-9f55-41766209f1cb"}
++{"event_id":"evt_1794511706087_eZ6qym","event_type":"session_stop","category":"milestone","timestamp":"2026-11-12T19:28:26.091Z","duration_seconds":null,"session_id":"sess_1794459760_979d1d","task":600,"checkpoint":null,"message":"Session stop observed for task 600","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"bcf6c1fd-779d-4bb3-9f55-41766209f1cb"}
++{"event_id":"evt_1794511717337_VYP9l9","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-12T19:28:37.341Z","duration_seconds":0.720,"session_id":"sess_1794459760_979d1d","task":597,"checkpoint":"postflight","message":"Postflight stage completed for implement (status: implemented)","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794511734764_PtesS1","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-12T19:28:54.768Z","duration_seconds":0.737,"session_id":"sess_1794459760_979d1d","task":600,"checkpoint":"postflight","message":"Postflight stage completed for implement (status: implemented)","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794511751664_M6IxJ0","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-12T19:29:11.668Z","duration_seconds":0.672,"session_id":"sess_1794459760_979d1d","task":531,"checkpoint":"postflight","message":"Postflight stage completed for implement (status: implemented)","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794511983795_gYiKkf","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-12T19:33:03.799Z","duration_seconds":12.250,"session_id":"sess_1794459760_979d1d","task":531,"checkpoint":"preflight","message":"Preflight stage completed for implement","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794512066724_1y6cjv","event_type":"lifecycle_stage","category":"milestone","timestamp":"2026-11-12T19:34:26.728Z","duration_seconds":11.600,"session_id":"sess_1794459760_979d1d","task":603,"checkpoint":"preflight","message":"Preflight stage completed for implement","detail":{},"error_ref":null,"cwd":null,"cc_session_id":null}
++{"event_id":"evt_1794512082121_ipZssj","event_type":"session_stop","category":"milestone","timestamp":"2026-11-12T19:34:42.125Z","duration_seconds":null,"session_id":"sess_1794459760_979d1d","task":603,"checkpoint":null,"message":"Session stop observed for task 603","detail":{},"error_ref":null,"cwd":"/home/benjamin/.config/nvim","cc_session_id":"bcf6c1fd-779d-4bb3-9f55-41766209f1cb"}

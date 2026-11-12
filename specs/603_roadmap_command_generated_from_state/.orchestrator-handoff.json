@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 7,
   "phases_total": 7,
-  "summary": "Wrote a seven-phase plan making specs/ROADMAP.md wholly generated from two new state.json keys (roadmap_batches, array position = priority; roadmap_notes for the non-batch authored prose), deleting the retention parser and the ## Next verbatim passthrough, and adding the /roadmap command, skill, and judgment-bearing agent with writes routed through state-write.sh and the existing edge_only arm. Plan-time measurement redirected two decisions: the ## Next authored body is 193 lines (178 non-blank, 9 Run lines) so a batch rationale field alone cannot hold it, and 13 of 137 ## Open work lines are frozen stale truncations rather than authored prose, making the per-task description override a zero-loss deletion. Three carried figures in the dispatch description failed re-derivation and are corrected in the plan's premise table.",
+  "summary": "Inverted specs/ROADMAP.md's ## Next and ## Open work into rendering wholly from new roadmap_batches/roadmap_notes state.json entries (plus per-task roadmap_annotation/roadmap_ext_blocked), deleted the retention parser and all six prune-mode functions (--prune is now a one-line deprecated alias for --regenerate), and added a /roadmap [instruction] command/skill/judgment-bearing agent trio (entries via state-write.sh, edges via the existing edge_only arm, rendering invoked by the agent itself). Migrated the live file's prior authored judgment into state via a new one-time script with a hard line-level losslessness accounting gate, fixing two real bugs the live data surfaced (GFM tight-list block splitting, prose-paragraph mis-attribution). Redeployed, ran the live migration and a real --regenerate (idempotence and the unclassifiable-layout refusal both re-confirmed), and demonstrated both /roadmap invocation forms against this repository's live roadmap, each committed.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/603_roadmap_command_generated_from_state/plans/01_roadmap-generated-from-state.md",
-      "summary": "Seven-phase plan: schema+validator, generation contract and concise template, state-backed ## Next rendering, retention-parser deletion plus --prune deprecation, the /roadmap trio with registration and a structural test companion, a one-time migration script with a hard losslessness gate, and a final redeploy/migrate/demonstrate phase."
+      "type": "summary",
+      "path": "specs/603_roadmap_command_generated_from_state/summaries/01_roadmap-generated-from-state-summary.md",
+      "summary": "Full implementation summary: schema/validator, generation contract and template, state-backed rendering, retention-parser deletion, the /roadmap trio, the migration script, and the live redeploy/migrate/demonstrate phase."
     }
   ],
-  "dispatch_seq": 8
+  "dispatch_seq": 22
 }
