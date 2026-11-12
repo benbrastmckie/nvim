@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/603_roadmap_command_generated_from_state/reports/01_roadmap-generated-artifact-research.md",
+      "summary": "Settles the state.json batch-entry schema shape, the per-section authored/generated ruling for ROADMAP.md's six non-batch sections, the write-path answer (state-write.sh + edge_only), and task 313's disposition (superseded parse layer, not edited)."
+    }
+  ],
+  "next_steps": "Run /orchestrate 603 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1794459760_979d1d_603",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "In this codebase's state.json writer (state-write.sh), the audit-evidence gate (--audit-verdict/--audit-override) fires ONLY when a write's jq transform introduces a genuinely new active_projects project_number. Every other write -- status updates, artifact links, file_scope edits, and any non-active_projects top-level field (e.g. a new roadmap_batches array) -- is byte-for-byte unaffected by the gate. A new feature that edits existing task fields or adds a sibling top-level array never needs audit plumbing.",
+      "category": "PATTERN",
+      "source_artifact": "specs/603_roadmap_command_generated_from_state/reports/01_roadmap-generated-artifact-research.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["state-write.sh", "audit-evidence-gate", "state.json", "active_projects", "new-entry-only"]
+    },
+    {
+      "content": "When a system already has a per-item enum field for one axis (e.g. a task's own critical/high/medium/low priority, written by a severity mapping) and a NEW feature needs a different, group-level ordering axis (e.g. batch run order), avoid manufacturing a second priority-shaped field. Use the new entry's own array position as its ordinal -- the same way a hand-authored ordered list's line order already functions as its priority signal before any schema existed. This avoids a 'third unused axis' when two existing fields already disagree on which one should carry ordering.",
+      "category": "PATTERN",
+      "source_artifact": "specs/603_roadmap_command_generated_from_state/reports/01_roadmap-generated-artifact-research.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["schema-design", "ordering", "priority-field", "array-position", "avoid-duplicate-axis"]
+    }
+  ],
+  "dispatch_seq": 1
+}
