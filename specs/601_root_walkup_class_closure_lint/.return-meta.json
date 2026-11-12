@@ -1,32 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794459760_979d1d_601",
-  "dispatch_seq": 6,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/601_root_walkup_class_closure_lint/reports/01_root-walkup-closure-lint.md",
-      "summary": "Research for a durable lint (lint-test-root-resolution.sh) closing the invocation-path-dependent repo-root walk-up class: names the exact model (lint-test-harness-adoption.sh), the sanctioned/forbidden discriminator, the one known false-positive case needing an allowlist entry, and three newly-found live violation instances to fix before the lint lands."
+      "type": "plan",
+      "path": "specs/601_root_walkup_class_closure_lint/plans/01_root-walkup-closure-lint.md",
+      "summary": "5-phase plan (~5.75h, 4 waves) building lint-test-root-resolution.sh, migrating three live violating suites onto common_test_repo_root, and registering the lint as gate 29."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "In this repo's shell test-suite corpus, a fixed-depth repo-root walk-up (`cd \"$DIR/../../../..\"`) is SANCTIONED only when it sits behind a git-first (`git rev-parse --show-toplevel`) or validated-candidate (check the resolved path exists/matches a sentinel before accepting it) guard; it is FORBIDDEN as the sole, unconditional computation because source-store vs. deployed invocation paths differ in nesting depth. This rule (settled by task 589's plan Non-Goals) is the detection rule for a planned lint-test-root-resolution.sh modeled on lint-test-harness-adoption.sh.",
-      "category": "PATTERN",
-      "source_artifact": "specs/601_root_walkup_class_closure_lint/reports/01_root-walkup-closure-lint.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["repo-root", "walk-up", "common_test_repo_root", "lint", "invocation-path"]
-    },
-    {
-      "content": "lint-test-harness-adoption.sh (agent-system/extensions/core/scripts/lint/) is a reusable structural template for a new corpus-wide shell lint: shared test-file scan-scope definition (tests/ dir or test- prefix, matching script-inventory.sh's classification), line-oriented regex detection with a documented KNOWN LIMITATION, --verbose/--help/[path...] usage, exit 0/1/2, and a per-path:line directly-inspected ALLOWLIST array for confirmed false positives. It is itself NOT wired into verify-deploy.sh/gate-registry.data as a deploy gate -- only a standalone script with its own sibling fixture test (test-lint-test-harness-adoption.sh, classified unit).",
-      "category": "PATTERN",
-      "source_artifact": "specs/601_root_walkup_class_closure_lint/reports/01_root-walkup-closure-lint.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["lint-test-harness-adoption", "lint template", "gate-registry", "verify-deploy", "shell lint"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 601 to create implementation plan"
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 601 to execute the plan",
+  "metadata": {
+    "session_id": "sess_1794459760_979d1d_601",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 5.75,
+    "dependency_waves": 4
+  },
+  "dispatch_seq": 13
 }

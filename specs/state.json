@@ -102961,7 +102961,7 @@
     {
       "project_number": 601,
       "project_name": "root_walkup_class_closure_lint",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.\n\nClose the class of invocation-path-dependent repo-root resolution in test suites with a durable lint, instead of re-sweeping it by hand each time an instance surfaces.\n\nTHE SHAPE TO FORBID: a test suite computing its repo root as an unconditional fixed-depth parent walk, e.g. \"$CORE_DIR/../../../..\" or \"$CORE_DIR/../..\". Measured: four levels up from agent-system/extensions/core/scripts/tests yields the repository root, but four levels up from the deployed .claude/scripts/tests yields /home/benjamin -- outside the repository entirely. A suite computed that way passes from one invocation path and fails from the other, and the resulting wrong root can also MASK a real failure behind a CANNOT_COMPUTE sentinel rather than surfacing it.\n\nTHE CANONICAL REPLACEMENT ALREADY EXISTS: common_test_repo_root (git-first strategy) in scripts/lib/common.sh, already used by roughly 80 core suites, plus common_test_ext_root for the extensions-root case. The remedy that found this class needed no new helper -- only migration. So the lint enforces use of existing, proven machinery; it invents nothing.\n\nWHY A LINT RATHER THAN ANOTHER SWEEP: the remedy named five suites. A bounded measure-first sweep phase found two MORE carrying the identical shape that nobody had named (test-verify-deploy-gate-selection-crash-net.sh at four levels, test-gate-cache-equivalence.sh at three), and one of the five turned out to be a production defect in orchestrate-build-aux-dispatch.sh rather than a test-only one. The class is demonstrably wider than any hand-assembled list, which is the standing argument for mechanical closure. That remedy declared this lint an explicit Non-Goal and follow-up candidate rather than absorbing it.\n\nSCOPE NOTES / OPEN QUESTIONS FOR THE IMPLEMENTER:\n- Discriminate the genuinely-passes-both case before failing it. The sweep confirmed one candidate (test-verify-deploy-gate-selection-crash-net.sh) legitimately passes from both paths despite carrying the shape, and correctly received no edit. A lint that fails it would be a false positive.\n- Decide whether this is a new standalone lint script or an assertion inside an existing one, and whether it registers as its own gate or folds into an existing gate. gate-registry.data is declared in file_scope for that reason; note task 584 also declares that file, so coordinate or serialize rather than colliding.\n- A zero-violation result after the lint lands is a valid completion: the remedy already migrated the known instances, so this task's deliverable is the durable guard, not a fresh batch of fixes.\n\nCHANNEL: /orchestrate conclusion channel (c), follow-up task, session sess_1794381614_02261f.\nCITATION: {task 589, iss_1794382098954_Zl7lZg}, class \"scope boundary\".",
       "effort": "medium",
@@ -102969,17 +102969,31 @@
       "topic": "core-agent-system",
       "dependencies": [],
       "file_scope": [
-        "agent-system/extensions/core/scripts/lint-test-root-resolution.sh",
+        "__WHOLE_TREE__",
+        "agent-system/extensions/core/context/standards/shell-script-testing.md",
         "agent-system/extensions/core/scripts/gate-registry.data",
-        "agent-system/extensions/core/scripts/lib/common.sh"
+        "agent-system/extensions/core/scripts/lib/common.sh",
+        "agent-system/extensions/core/scripts/lint-test-root-resolution.sh",
+        "agent-system/extensions/core/scripts/lint/lint-test-root-resolution.sh",
+        "agent-system/extensions/core/scripts/test-state-write-spill-names.sh",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data",
+        "agent-system/extensions/core/scripts/tests/test-lint-test-root-resolution.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
+        "agent-system/extensions/core/scripts/tests/test-source-store-path-lib.sh",
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
       "created": "2026-11-11T12:34:20Z",
-      "last_updated": "2026-11-12T05:50:20Z",
+      "last_updated": "2026-11-12T06:12:29Z",
       "artifacts": [
         {
           "path": "specs/601_root_walkup_class_closure_lint/reports/01_root-walkup-closure-lint.md",
           "type": "report",
           "summary": "Research for a durable lint (lint-test-root-resolution.sh) closing the invocation-path-dependent repo-root walk-up class: names the exact model (lint-test-harness-adoption.sh), the sanctioned/forbidden discriminator, the one known false-positive case needing an allowlist entry, and three newly-found live violation instances to fix before the lint lands."
+        },
+        {
+          "path": "specs/601_root_walkup_class_closure_lint/plans/01_root-walkup-closure-lint.md",
+          "type": "plan",
+          "summary": "5-phase plan (~5.75h, 4 waves) building lint-test-root-resolution.sh, migrating three live instances, and registering it as gate 29."
         }
       ],
       "audit_verdict": {
@@ -104478,7 +104492,7 @@
         ]
       },
       "title": "Add a lint closing the repo-root walk-up defect class",
-      "session_id": "sess_1794459760_979d1d_601",
+      "session_id": "sess_1794459760_979d1d",
       "next_artifact_number": 2
     },
     {

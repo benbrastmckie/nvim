@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase plan to close the invocation-path-dependent repo-root class with a durable lint: migrate the three currently-live violating suites onto common_test_repo_root, author lint-test-root-resolution.sh under scripts/lint/ modeled on lint-test-harness-adoption.sh, add a both-polarities fixture suite plus its suite-classification row and a zero-violation live run, register as gate 29 (registry row + gate29_run), then document the discriminator, redeploy, and run the full gate set. Premise re-validation measured every carried figure live: the 4-level walk resolves to the repo root from the source store and to /home/benjamin from the deployed tree; next free gate id is 29; all three cited violating lines still carry the shape. Two scope corrections recorded: the lint belongs under scripts/lint/ (not scripts/ as file_scope declares), and the task-584 gate-registry.data collision the dispatch warned about is not live this cycle.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/601_root_walkup_class_closure_lint/plans/01_root-walkup-closure-lint.md",
+      "summary": "5-phase plan (~5.75h, 4 waves) building lint-test-root-resolution.sh, migrating three live instances, and registering it as gate 29."
+    }
+  ],
+  "dispatch_seq": 13
+}
