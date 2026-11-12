@@ -8,6 +8,8 @@ next_project_number: 610
 
 *Updated 2026-11-12. Generated from state.json dependency graph.*
 
+**Goal**: Make specs/ROADMAP.md generated (306, 307, 308, 313) so planning stops drifting, then push consent and admission posture.
+
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|

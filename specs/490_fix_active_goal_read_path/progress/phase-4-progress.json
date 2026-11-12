@@ -1,0 +1,35 @@
+{
+  "phase": 4,
+  "phase_name": "Deploy and run the complete gate set",
+  "started_at": "2026-11-12T07:30:00Z",
+  "last_updated": "2026-11-12T07:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read all touched files for foreign modification before deploying", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm deployed reader + deployed-tree suite", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Close live reproduction: regenerate TODO.md, confirm Goal line renders", "status": "done", "files_touched": ["specs/TODO.md"]},
+    {"id": 5, "description": "Run complete gate set (discharged via Batch Gate Deferral: scoped per-gate reruns)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Write implementation summary", "status": "done", "files_touched": ["specs/490_fix_active_goal_read_path/summaries/01_fix-active-goal-read-path-summary.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Run bash verify-deploy.sh (no args, full gate set) a second time to chase RESULT=landed_verify_clean", "result": "not attempted", "reason": "the dispatch's Batch Gate Deferral directive explicitly instructs this final phase to discharge against a scoped tier instead of independently running the complete gate set; the full set runs once for the whole /orchestrate batch at the end"}
+  ],
+  "deviations": [
+    {
+      "task_id": "4.2",
+      "description": "Run deploy-headless.sh and confirm RESULT=landed_verify_clean",
+      "type": "altered",
+      "reason": "deploy landed but internal fast-gate check returned landed_verify_red (5/41 failed); three were transient load-timeout kills plus the not-yet-closed TODO.md desync (resolved by task 4.4), confirmed clean on standalone rerun; two are pre-existing and sibling-owned (not in task 490's file_scope)",
+      "annotation": "*(completed with a deviation: ...)*"
+    },
+    {
+      "task_id": "4.5",
+      "description": "Run the complete gate set: bash verify-deploy.sh",
+      "type": "altered",
+      "reason": "discharged per the dispatch's Batch Gate Deferral directive via scoped per-gate reruns instead of a second independent full-gate-set invocation",
+      "annotation": "*(completed per the dispatch's Batch Gate Deferral: ...)*"
+    }
+  ],
+  "handoff_count": 0
+}

@@ -355,34 +355,61 @@ sibling edits.
 
 ---
 
-### Phase 4: Deploy and run the complete gate set [NOT STARTED]
+### Phase 4: Deploy and run the complete gate set [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Carry the source-store change into the deployed `.claude/` tree, confirm the live
 reproduction is closed end to end, and close the task against the full gate set.
 
+**Batch Gate Deferral (dispatch directive)**: this dispatch's `.dispatch/16.md` names this phase's
+declared `**Verification Tier**: full` and directs that it be discharged against a SCOPED tier
+instead of independently running the complete gate set, since the full set runs once for the
+whole `/orchestrate` batch at the end. The "Run the complete gate set" task below is therefore
+discharged via the scoped per-gate reruns recorded in the Reasoned Exclusions section, not via a
+second bare `verify-deploy.sh` invocation.
+
 **Tasks**:
-- [ ] Re-read every file this task touched immediately before deploying — siblings are dispatched
+- [x] Re-read every file this task touched immediately before deploying — siblings are dispatched
       on this same working tree this cycle — and confirm no foreign modification is present in
       them. If one is, stop and report it after checking `git log`, rather than deploying over it.
-- [ ] Run `bash /home/benjamin/.config/nvim/.claude/scripts/deploy-headless.sh` and confirm
-      `RESULT=landed_verify_clean` with exit 0.
-- [ ] Confirm the deployed copy carries the reader:
+      *(completed: `git status --porcelain --` on all six touched files returned empty; no
+      foreign modification present)*
+- [x] Run `bash /home/benjamin/.config/nvim/.claude/scripts/deploy-headless.sh` and confirm
+      `RESULT=landed_verify_clean` with exit 0. *(completed with a deviation: the run reported
+      `RESULT=landed_verify_red`, not `landed_verify_clean` — see Reasoned Exclusions below. The
+      deploy itself landed; the tree's content is correct, confirmed by the next task and by the
+      scoped gate reruns)*
+- [x] Confirm the deployed copy carries the reader:
       `grep -n active_goal /home/benjamin/.config/nvim/.claude/scripts/generate-task-order.sh`
       returns the resolver's read, and
       `bash /home/benjamin/.config/nvim/.claude/scripts/tests/run-all.sh --only test-generate-task-order.sh`
-      passes from the deployed tree.
-- [ ] Close the live reproduction end to end: `specs/state.json` carries a non-empty `active_goal`
+      passes from the deployed tree. *(completed: both confirmed)*
+- [x] Close the live reproduction end to end: `specs/state.json` carries a non-empty `active_goal`
       while `specs/TODO.md`'s `## Task Order` section carries no `**Goal**:` line. Regenerate
       `TODO.md` through the sanctioned path (`bash .claude/scripts/generate-todo.sh`, the same
       `--print`-driven rebuild that `state-write.sh --regen-todo` performs) and confirm the Goal
       line now renders with the `active_goal` text. Do not hand-edit `TODO.md` and do not write
-      `active_goal` — the field is already populated; only the render was missing.
-- [ ] Run the complete gate set: `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh`.
+      `active_goal` — the field is already populated; only the render was missing. *(completed:
+      pre-regen, `specs/TODO.md`'s Task Order section had no Goal line while `active_goal` was
+      non-empty, reproducing the gap live; post-regen via `generate-todo.sh`, the Goal line
+      renders and its text is byte-identical to `jq -r .active_goal specs/state.json`;
+      `specs/state.json` shows no diff at all)*
+- [x] Run the complete gate set: `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh`.
       Record any failure that is demonstrably pre-existing or owned by a concurrent sibling as a
       Reasoned Exclusion with its evidence, rather than absorbing it into this task's scope.
-- [ ] Write the implementation summary: the captured red-then-green evidence for Outcome #4, the
+      *(completed per the dispatch's Batch Gate Deferral: discharged via the scoped per-gate
+      reruns below rather than a second full `verify-deploy.sh` invocation; see Reasoned
+      Exclusions)*
+- [x] Write the implementation summary: the captured red-then-green evidence for Outcome #4, the
       recorded conflict-rule decision, the Outcome #5 confirmation for `commands/review.md`, the
       `**Status**:`-line finding noted as out of scope, and the measured gate outcome.
+      *(completed: specs/490_fix_active_goal_read_path/summaries/01_fix-active-goal-read-path-summary.md)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `deploy-headless.sh`'s internal fast-gate check reported gate3 (`check-extension-docs.sh`), gate4 (`check-task-references.sh`), and gate10 (`validate-state.sh --deep`) as `[FAIL] ... exceeded its 60s timeout and was killed`, yielding `RESULT=landed_verify_red` instead of `landed_verify_clean` | Transient load artifact under this `/orchestrate` batch's concurrent sibling dispatches, not a content regression; gate10's failure was additionally the active_goal/TODO.md desync this task exists to close, not yet closed at the moment deploy-headless.sh ran its internal check | Standalone reruns immediately after: `check-extension-docs.sh --quiet` exit 0 in 35s (`PASS: all extensions OK`); `check-task-references.sh --quiet` exit 0 in 37s (`PASS: 0 unexempted task-reference occurrences`); `validate-state.sh --deep` exit 0 in 100s after `generate-todo.sh` regenerated TODO.md (`Passed: 20, Warnings: 8, Failed: 0`, `TODO.md is in sync with ... state.json`) |
+| `deploy-headless.sh`'s internal fast-gate check also reported eager-load context-budget total (71712B > 70400B baseline) and `skills/skill-orchestrate/SKILL.md` (25510B > 25000B ceiling) as `[FAIL]` | Pre-existing, sibling-owned: `skill-orchestrate/SKILL.md` is not in task 490's declared `file_scope` and this task never touched it | `git log --oneline -3 -- agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` shows the file last touched by "task 609: stop a pending user question..." and "task 450 phase 5.4-6: fix shellcheck SC2034 and SKILL.md context-budget overage..."; `jq -r '.active_projects[] | select(.project_number==490) | .file_scope[]'` confirms the path is absent from task 490's `file_scope` |
 
 **Timing**: 1 hour
 
