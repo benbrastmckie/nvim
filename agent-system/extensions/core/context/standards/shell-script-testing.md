@@ -109,6 +109,78 @@ the harness, so there is no reasoned-exemption list to carry here: a future suit
 `pass()`/`fail()`/`info()` locally is a regression against this now-closed migration, not a
 holdout awaiting its turn.
 
+## The root-resolution discriminator: which fixed-depth walk is sanctioned, and which is forbidden
+
+`common_test_repo_root` / `common_test_ext_root` (above) are the canonical replacement for a
+hand-rolled repo-root or extensions-root computation, but a suite still occasionally needs to
+reason about a fixed-depth parent walk directly — most commonly an intermediate anchor like
+`CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"` used to locate a sibling script, or a candidate probe
+that must try more than one depth before accepting one. The discriminator below states which
+shapes of that reasoning are sanctioned and which are forbidden, mechanically enforced by
+`lint-test-root-resolution.sh` (gate 29).
+
+**Why the shape fails at all**: the deployed tree (`.claude/scripts/...`) sits two directory
+levels SHALLOWER than its source-store mirror
+(`agent-system/extensions/core/scripts/...`) — the deploy step flattens the per-extension
+`core/` wrapper and the `agent-system/extensions/` container, neither of which exists in the
+deployed copy. A test suite's own directory under `scripts/`, `scripts/tests/`, or
+`scripts/lint/` is identical in both trees, but any walk that tries to reach PAST the
+extension-root boundary (the directory holding `scripts/`, `hooks/`, `context/`, etc. as
+siblings — `core/` in the source store, `.claude/` deployed) lands at two DIFFERENT depths
+depending on which copy ran it. An unconditional fixed walk tuned to one depth is therefore
+correct from at most one invocation path and silently wrong from the other — landing outside the
+repository entirely, on some unrelated ancestor directory, or (worse) producing a plausible-
+looking wrong root that masks a real downstream failure behind a false PASS rather than erroring
+loudly.
+
+A walk that only reaches the extension-root boundary itself (e.g. `$SCRIPT_DIR/../..` from
+`scripts/tests/`, which lands on `core/` in the source store and `.claude/` deployed — the SAME
+relative depth in both trees) is safe and does not trigger the lint; it is specifically a walk
+reaching FURTHER than that boundary, toward `agent-system/extensions/` or the repository root,
+that is in scope below.
+
+**Sanctioned shape (a) — first-attempt-then-fallback**: the fixed-depth walk sits inside an
+enclosing `if [[ -z "$VAR" ]]` (or `[ -z "$VAR" ]`) block, run only because an earlier resolution
+attempt for that same variable already failed. The common case is a `git rev-parse
+--show-toplevel` probe tried first:
+
+```bash
+REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel 2>/dev/null || true)"
+if [[ -z "$REPO_ROOT" ]]; then
+  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+fi
+```
+
+An ancestor-directory-search loop guarded the same way is equally sanctioned — what makes either
+safe is that the walk never runs unconditionally, not which specific earlier attempt populated
+the variable.
+
+**Sanctioned shape (b) — validated candidate**: the computed path is tested with `[ -d ... ]` /
+`[ -f ... ]` against the same variable before being accepted, with a differently-shaped
+fallthrough on failure:
+
+```bash
+CANDIDATE_EXT_ROOT="$(cd "$SCRIPT_DIR/../../.." 2>/dev/null && pwd || true)"
+if [ -n "$CANDIDATE_EXT_ROOT" ] && [ -f "$CANDIDATE_EXT_ROOT/core/manifest.json" ]; then
+  EXTENSIONS_ROOT="$CANDIDATE_EXT_ROOT"
+fi
+```
+
+For a bare literal used inline with no assignment step at all, the identical literal being the
+direct subject of a `[ -f ... ]` / `[ -d ... ]` test on the same line is the bare-literal
+analogue of this same shape, and is sanctioned the same way.
+
+**Forbidden shape — unconditional fixed-depth walk**: any of the above, with no git-first (or
+other first-attempt) guard and no validated-candidate check — whether assigned via a single-line
+`VAR="$(cd "<path>" && pwd)"`, the two-statement `cd "<path>"` followed by `VAR=$(pwd)`, or a
+bare literal consumed directly as a command or path argument. This is the shape that masked a
+real downstream defect behind a false PASS before being migrated onto
+`common_test_repo_root` / `common_test_ext_root` in the instances `lint-test-root-resolution.sh`
+closed. Use `common_test_repo_root` / `common_test_ext_root` instead; if a fixed walk is
+genuinely required (an intermediate anchor like `CORE_DIR` used for its own distinct purpose,
+never reaching past the extension-root boundary), keep it within that boundary rather than
+reaching further.
+
 ## Explicit deployed/source-store subject resolution (mode + mandatory declaration)
 
 A suite under `scripts/tests/` that resolves its own subject-under-test between the deployed

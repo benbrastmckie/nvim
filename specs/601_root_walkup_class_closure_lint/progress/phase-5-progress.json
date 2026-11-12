@@ -1,0 +1,19 @@
+{
+  "phase": 5,
+  "phase_name": "Document the Discriminator, Redeploy, and Run the Full Gate Set",
+  "started_at": "2026-11-12T13:45:00Z",
+  "last_updated": "2026-11-12T14:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add discriminator subsection to shell-script-testing.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 2, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run scoped verification per Batch Gate Deferral directive", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "run deploy-headless.sh with no explicit TARGET_REPO from cwd agent-system/extensions/core/", "result": "failed", "reason": "default target resolution took that cwd as TARGET_REPO, creating a stray nested .claude/ tree instead of updating the real deployed tree; caught via impossible all-SKIP output, cleaned up, re-run with explicit repo-root TARGET_REPO argument"}
+  ],
+  "deviations": [
+    {"task_id": "5.verification", "description": "Run the complete gate set and require green", "type": "altered", "reason": "discharged via the dispatch's Batch Gate Deferral directive against a scoped selector narrowing instead of an independent full verify-deploy.sh run"}
+  ],
+  "handoff_count": 0
+}

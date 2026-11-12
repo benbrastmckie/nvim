@@ -450,24 +450,29 @@ neither caused by this task.
 
 ---
 
-### Phase 5: Document the Discriminator, Redeploy, and Run the Full Gate Set [NOT STARTED]
+### Phase 5: Document the Discriminator, Redeploy, and Run the Full Gate Set [COMPLETED]
 
 **Goal**: Make the sanctioned-vs-forbidden rule discoverable in prose for a future suite author,
 regenerate the deployed tree from the source store, and close the task against the complete gate
 set.
 
 **Tasks**:
-- [ ] Add a subsection to
+- [x] Add a subsection to
       `agent-system/extensions/core/context/standards/shell-script-testing.md`, alongside the
       existing `common_test_repo_root` / `common_test_ext_root` guidance, stating the rule in prose:
       git-first-guarded fallback = sanctioned; validated-candidate-with-fallthrough = sanctioned;
       unconditional fixed-depth walk = forbidden and caught by gate 29. Cite the lint by filename
       and the helpers by name; cite no task numbers (deliverable files outside `specs/**`).
-- [ ] Note in that subsection why the shape fails: the deployed `.claude/scripts/` tree sits two
+      *(completed: sited immediately after the "Required structural model for a new suite"
+      section, adjacent to the existing `common_test_repo_root` guidance)*
+- [x] Note in that subsection why the shape fails: the deployed `.claude/scripts/` tree sits two
       levels shallower than its source-store mirror, so an identical walk lands outside the
-      repository and can silently degrade a real guard into a false PASS.
-- [ ] Redeploy the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`.
-- [ ] Run the complete gate set and require green.
+      repository and can silently degrade a real guard into a false PASS. *(completed)*
+- [x] Redeploy the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`.
+      *(completed; see completion note below for a deviation this task bullet's own invocation
+      required)*
+- [x] Run the complete gate set and require green. *(completed via the Batch Gate Deferral
+      directive's scoped narrowing rather than an independent full run -- see completion note)*
 
 **Timing**: 0.75 hours
 
@@ -486,13 +491,46 @@ subsection adjacent to it rather than creating a second, competing location.
 **Verification**:
 - `bash agent-system/extensions/core/scripts/deploy-headless.sh` completes without error and the
   new lint plus fixture suite appear in the deployed `.claude/scripts/lint/` and
-  `.claude/scripts/tests/`.
+  `.claude/scripts/tests/`. *(confirmed: the deploy landed and both new files are present at
+  their deployed paths, with `manifest.json`'s own entries also deployed)*
 - `bash .claude/scripts/verify-deploy.sh` (the complete gate set, gates 1-29, no `--skip-slow` and
-  no `--only-gate` narrowing) exits green.
-- Gate 29 reports a pass within that full run, not a SKIP.
+  no `--only-gate` narrowing) exits green. *(discharged against the dispatch's Batch Gate
+  Deferral directive instead: the scoped selector for this phase's touched doc file -- 35 suites
+  via `suite_selection_select` -- exits "34 passed, 1 failed (1 expected, 0 NEW)"; the full gate
+  set runs once at the batch level per the directive. See completion note.)*
+- Gate 29 reports a pass within that full run, not a SKIP. *(confirmed independently via
+  `--only-gate 29` against the deployed target: PASS. Also observed as an explicit PASS line
+  inside `deploy-headless.sh`'s own inline post-deploy verification.)*
 - The new lint, run from the DEPLOYED copy
   (`bash .claude/scripts/lint/lint-test-root-resolution.sh --verbose`), exits 0 — i.e. the lint
-  itself is invocation-path-independent, the property it exists to enforce.
+  itself is invocation-path-independent, the property it exists to enforce. *(confirmed: 0
+  violations across 195 files)*
+
+**Phase 5 completion note**:
+- **Deviation in invoking `deploy-headless.sh`**: the plan's own task bullet names the bare
+  invocation `bash agent-system/extensions/core/scripts/deploy-headless.sh` with no explicit
+  `TARGET_REPO`. Run verbatim from inside `agent-system/extensions/core/` (the natural cwd after
+  this phase's own doc edit), the script's default-target resolution took that cwd itself as
+  `TARGET_REPO` -- not the repository root -- and deployed a nested, erroneous
+  `agent-system/extensions/core/.claude/` tree instead of updating the real
+  `/home/benjamin/.config/nvim/.claude/` tree. Caught immediately (the inline verify step
+  reported every gate as `[SKIP] ... is a deploy consumer, not the source store`, an impossible
+  result for the real target), the stray nested tree was removed (untracked, never committed),
+  and the deploy was re-run with the explicit repository-root `TARGET_REPO` argument from the
+  repository root, landing correctly. A future invocation of this exact task bullet should pass
+  the explicit `TARGET_REPO` argument rather than relying on cwd-relative default resolution.
+- **Batch Gate Deferral discharge**: this dispatch's own directive constrains this phase (its
+  declared `**Verification Tier**: full`) to a scoped narrowing rather than an independent full
+  `verify-deploy.sh` run. The scoped selector for `shell-script-testing.md` (35 suites) exits
+  clean modulo one pre-existing, `known-failures.txt`-adjacent EXPECTED/0-NEW failure
+  (`test-verify-deploy-context-budget.sh`'s eager-load-baseline/gate24 finding, unrelated to this
+  task -- see Phase 4's own completion note for the full account). `deploy-headless.sh`'s own
+  inline `verify-deploy.sh --skip-slow` run (not a substitute for the deferred full run, but
+  informative) additionally surfaced a transient gate10 (`validate-state.sh --deep`) 60s timeout
+  under heavy concurrent system load; re-run in isolation immediately after, gate10 passed
+  cleanly, confirming this was a load artifact, not a regression. The complete gate set runs once
+  for the whole batch at the end of this `/orchestrate` invocation and is attributed back to this
+  task via its own `modified_files`, per the dispatch file's own stated contract.
 
 ---
 
