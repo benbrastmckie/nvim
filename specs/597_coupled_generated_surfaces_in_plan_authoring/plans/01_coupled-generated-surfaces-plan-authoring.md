@@ -1,7 +1,7 @@
 # Implementation Plan: Task #597
 
 - **Task**: 597 - Coupled generated surfaces in plan authoring
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None (task 596 `generated_file_scope_vs_readonly_risk` depends ON this task; task 599 shares `plan-format.md` territory with no dependency edge)
 - **Research Inputs**: specs/597_coupled_generated_surfaces_in_plan_authoring/reports/01_coupled-generated-surfaces-plan-authoring.md
@@ -156,7 +156,7 @@ phase, whose `deploy-headless.sh` run auto-repairs `line_count` as a documented 
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Coupled-Generated-Surface Obligation in plan-format.md [NOT STARTED]
+### Phase 1: Coupled-Generated-Surface Obligation in plan-format.md [COMPLETED]
 
 **Goal**: The `Files to modify` contract states a repo-agnostic obligation to declare and
 schedule a coupled generated surface, with the commit-blocking / advisory asymmetry as its
@@ -164,10 +164,11 @@ load-bearing clause, plus the paired enforcement-level subsection the later advi
 advisory-side of.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/formats/plan-format.md`'s `Files to modify`
+- [x] Re-read `agent-system/extensions/core/context/formats/plan-format.md`'s `Files to modify`
       block (currently the region holding "Correction-target existence obligation" and
       "Whole-tree-claim declaration rule") immediately before editing, per the territory contract.
-- [ ] Add a subsection **immediately after** the "Whole-tree-claim declaration rule" paragraph and
+      *(completed)*
+- [x] Add a subsection **immediately after** the "Whole-tree-claim declaration rule" paragraph and
       **before** "**Consumers of this heading contract**", titled
       `**Coupled-generated-surface declaration obligation.**`, matching the shape of its two
       siblings (plain-language rule, worked consequence, pointer to the enforcement subsection).
@@ -177,29 +178,31 @@ advisory-side of.
       phase MUST also schedule the regeneration step in that same phase, never in a later
       reconciliation phase. A check that is advisory-only or later-verification-only may
       legitimately be reconciled in a later phase, but the DECLARATION is owed either way.
-- [ ] State the two facts that make the rule non-obvious, without naming any one repository's
+      *(completed)*
+- [x] State the two facts that make the rule non-obvious, without naming any one repository's
       paths as the rule's content: (a) a prose-only edit can be enough to move a derived quantity
       (a docstring addition changes a line count), so "I changed no code" is not a reason to skip
       the declaration; (b) the asymmetry is per-surface, so a phase touching two coupled surfaces
-      can owe same-phase regeneration for one and legitimate deferral for the other.
-- [ ] Add one worked illustration drawn from THIS repository rather than from any consumer repo,
+      can owe same-phase regeneration for one and legitimate deferral for the other. *(completed)*
+- [x] Add one worked illustration drawn from THIS repository rather than from any consumer repo,
       so the subsection is self-demonstrating and repo-agnostic at once: an edit to an indexed
       `context/**` file moves that entry's `index-entries.json` `line_count`, which
       `check-extension-docs.sh` Rule R checks and `deploy-headless.sh` auto-repairs; it is not
-      commit-blocking here, so it is declared with the reconciliation phase.
-- [ ] Add `### Enforcement level (Coupled generated surfaces)` immediately after the existing
+      commit-blocking here, so it is declared with the reconciliation phase. *(completed)*
+- [x] Add `### Enforcement level (Coupled generated surfaces)` immediately after the existing
       `### Enforcement level (Files to modify authoring shape)` subsection, following the same
       advisory-first template the four enforcement subsections on that page already use: warning
       via `log_warn` only, `--strict` promotion through the existing
       `total_issues = errors + warnings` branch, no new strictness logic, a named promotion
       criterion, and an honest statement that the residue is UNMEASURED at authoring time because
-      no repository declares the key yet (do not invent a measured count).
-- [ ] Cross-reference `context/standards/repo-level-declarations.md` as the declaration point and
+      no repository declares the key yet (do not invent a measured count). *(completed)*
+- [x] Cross-reference `context/standards/repo-level-declarations.md` as the declaration point and
       `scripts/validate-artifact.sh` as the enforcing consumer, by name, so the three parts are
-      navigable from any one of them.
-- [ ] Verify the added prose cites no task number and carries no draft-lineage/version language
+      navigable from any one of them. *(completed)*
+- [x] Verify the added prose cites no task number and carries no draft-lineage/version language
       (`.claude/rules/no-task-references-in-deliverables.md`,
-      `.claude/rules/no-record-versioning-in-deliverables.md`).
+      `.claude/rules/no-record-versioning-in-deliverables.md`). *(completed: check-task-references.sh
+      and check-record-versioning.sh both report zero findings for the new prose)*
 
 **Timing**: 1 hour 15 minutes
 

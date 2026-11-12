@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/597_coupled_generated_surfaces_in_plan_authoring/plans/01_coupled-generated-surfaces-plan-authoring.md",
-      "summary": "Six-phase plan adding a repo-agnostic coupled-generated-surface declaration obligation to plan-format.md, a task_type-gated domain-gotchas lookup in planner-agent.md, an advisory repo-declared coupled_generated_surfaces check in validate-artifact.sh, and a corrected longFile Condition 7 in the lean gate-collisions checklist."
-    }
-  ],
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 17,
   "metadata": {
-    "session_id": "sess_1794459760_979d1d_597",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7,
-    "dependency_waves": 4
-  },
-  "next_steps": "Run /orchestrate 597 to execute the plan",
-  "dispatch_seq": 11
+    "session_id": "sess_1794459760_979d1d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

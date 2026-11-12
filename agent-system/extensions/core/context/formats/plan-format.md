@@ -244,6 +244,38 @@ detection signal the admission dimension reads to recognize a same-claim pair. S
 `context/patterns/batch-orchestration-guardrails.md`'s whole-tree-claim subsection for the full
 mechanism and hazard rationale.
 
+**Coupled-generated-surface declaration obligation.** A phase whose steps move a quantity that
+some generated artifact DERIVES — a line count, a module inventory, a status block — MUST
+declare that generated artifact's own path as an entry in the SAME phase's `Files to modify`
+block, not merely the source file the phase edits directly. When the check that detects the
+resulting drift is COMMIT-BLOCKING (a pre-commit hook or an equivalent gate that refuses the
+commit outright), that same phase MUST also schedule the regeneration step that reconciles the
+derived artifact — never deferred to a later reconciliation phase. A check that is advisory-only,
+or that only runs at a later verification stage with no commit-time refusal, MAY legitimately be
+reconciled in a later phase; but the DECLARATION itself is owed in the phase that moves the
+quantity regardless of which side of that asymmetry the check falls on.
+
+Two facts make this rule non-obvious enough to need stating explicitly, independent of any one
+repository's particular coupled pair: (a) a prose-only edit is sufficient to move a derived
+quantity — adding a sentence to a docstring changes a line count exactly as a code change does,
+so "I changed no code" is never a reason to skip the declaration; (b) the commit-blocking /
+advisory asymmetry above is evaluated PER SURFACE, not per phase, so a single phase that touches
+two differently-coupled generated surfaces can legitimately owe same-phase regeneration for one
+of them while deferring the other to a later reconciliation phase.
+
+One self-demonstrating illustration, drawn from this repository rather than from any consumer
+repository: editing an indexed `context/**` file moves that file's own entry in
+`index-entries.json`'s `line_count` field, which `check-extension-docs.sh` Rule R checks and
+`deploy-headless.sh` auto-repairs as a side effect of regeneration. That check is not
+commit-blocking in this repository (no `pre-commit` hook is installed), so the obligation above
+permits declaring `index-entries.json` here and reconciling it in a later phase — the declaration
+is still owed in the phase that moved the line count, even though the regeneration itself lands
+elsewhere.
+
+See `context/standards/repo-level-declarations.md` for the declaration schema a repository uses
+to name its own coupled pairs, and `scripts/validate-artifact.sh` for the enforcing consumer that
+reads it — see "Enforcement level (Coupled generated surfaces)" below.
+
 **Consumers of this heading contract**: the exact `### Phase N: {name} [STATUS]` shape above is
 parsed by three independent mechanisms, so a future change to the format must account for all
 three: `update-phase-status.sh` (mutates a single phase's status in place), `update-plan-status.sh`
@@ -745,6 +777,34 @@ See `scripts/plan-file-scope-harvest.sh`'s "Deployed-tree refusal" header subsec
 harvest-time enforcement this check is advisory-side of, and `test-validate-artifact.sh` for the
 fixture pinning each shape's warning, its `--strict` promotion, and the no-false-positive
 negative case for a correctly-authored block.
+
+### Enforcement level (Coupled generated surfaces)
+
+Distinct from the authoring-shape check immediately above: this check reads a repository's own
+`coupled_generated_surfaces` declarations (see `context/standards/repo-level-declarations.md`)
+and warns when a phase's `Files to modify` entries match a declared trigger but omit one of that
+entry's generated paths. advisory-first, by the same pattern as every other check on this page:
+each hit emits a warning via `log_warn`, never an error, so default-mode validation exits 0 on
+these warnings alone; `--strict` mode promotes it today through the same
+`total_issues = errors + warnings` branch, with no new strictness logic added.
+
+The check is FAIL-OPEN on absence: no `.claude-extensions.json`, no `jq`, an absent
+`coupled_generated_surfaces` key, an empty array, or a malformed entry each produce zero effect
+on validation, at most one named warning per dropped malformed entry. No repository declares this
+key as of this check's introduction, so the check is provably inert everywhere it runs today —
+see `scripts/validate-artifact.sh` for the fail-open reader this statement is about.
+
+**Promotion criterion**: promote the warning to an error once at least one repository has
+declared a non-empty `coupled_generated_surfaces` list and a plan-time sweep of its active-plan
+corpus finds no occurrence of the declared-and-missing shape outside deliberate fixtures. The
+residue is UNMEASURED at this check's introduction, honestly: no repository declares the key yet,
+so there is no corpus to measure against. Re-measure once a consumer opts in, rather than
+inventing a count now.
+
+See `context/standards/repo-level-declarations.md`'s `coupled_generated_surfaces` schema section
+for the declaration contract, and `test-validate-artifact.sh` for the fixtures pinning the
+matched-and-missing warning, the no-false-positive case, the absent-key fail-open case, the
+malformed-entry drop, `--strict` promotion, and the no-trigger-match case.
 
 ### Enforcement level (Tier Justification measurement)
 
