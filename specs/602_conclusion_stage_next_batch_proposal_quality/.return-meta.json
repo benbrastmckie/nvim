@@ -1,32 +1,22 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794459760_979d1d_602",
-  "dispatch_seq": 23,
-  "findings_count": 6,
-  "next_steps": "Run /orchestrate 602 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/602_conclusion_stage_next_batch_proposal_quality/reports/01_conclusion-stage-next-batch-proposal-quality.md",
-      "summary": "Confirms Defects 1-3 live exactly as described in orchestrate-suggest-next-batch.sh; finds Defect 4's premise moot (roadmap-integration.sh --prune is now a deprecated no-op alias for --regenerate, which already renders wholly from state.json); finds the Territory Note's 'three other open records' stale by one (task 391 completed and archived 2026-11-11, leaving only tasks 558 and 562 as current co-declarers of conclusion-stage.md); recommends an additive joint-batch render, a multi-option loop bounded by the shared MAX_PROBE_INVOCATIONS budget, an approval-gated --write-edges invocation at Step 7, and a documentation-only disposition for Defect 4."
+      "type": "plan",
+      "path": "specs/602_conclusion_stage_next_batch_proposal_quality/plans/01_next-batch-proposal-quality.md",
+      "summary": "Six-phase plan making collision pairs additive to a probe-verified joint batch, rendering up to three labelled batch options, gating the existing --write-edges path behind a dedicated fail-closed approval key, and landing the roadmap-prune ruling."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "agent-system/extensions/core/scripts/roadmap-integration.sh's --prune flag was converted into a deprecated no-op alias for --regenerate once --regenerate began rendering ## Next/## Open work wholly from specs/state.json (no retention parser reads authored content back out of the file) -- a file built from live state can never accumulate terminal cruft, so there is nothing left for a separate prune pass to remove. Any task reasoning about whether to add/exclude a roadmap prune step should check the script's current header first rather than assuming --prune is still a distinct, more-aggressive operation.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/602_conclusion_stage_next_batch_proposal_quality/reports/01_conclusion-stage-next-batch-proposal-quality.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["roadmap-integration.sh", "prune", "regenerate", "deprecated-alias", "conclusion-stage"]
-    },
-    {
-      "content": "orchestrate-suggest-next-batch.sh's suggest_from_pool() renders a plain joint /orchestrate batch line ONLY when a probe round has zero file_scope_collision pairs and zero other defers at all; any in_batch collision pair consumes both its members via handled_pair_members[] before the joint-batch branch is ever reached, so a dense ready pool with several collision pairs can return success (any_sequence_rendered=true) having rendered nothing but ordered-sequence lines. Fix shape: render the joint batch for the admitted non-paired remainder ADDITIVELY alongside the sequence lines, not only on a collision-free round.",
-      "category": "PATTERN",
-      "source_artifact": "specs/602_conclusion_stage_next_batch_proposal_quality/reports/01_conclusion-stage-next-batch-proposal-quality.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["orchestrate-suggest-next-batch.sh", "suggest_from_pool", "file_scope_collision", "batch-proposal", "edge-proposing-pass"]
-    }
-  ]
+  "metadata": {
+    "session_id": "sess_1794459760_979d1d_602",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 7,
+    "dependency_waves": [[1, 3], [2, 4], [5], [6]]
+  },
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 602 to execute the plan",
+  "dispatch_seq": 24
 }
