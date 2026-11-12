@@ -4,10 +4,11 @@
 
 `.claude-extensions.json`'s top level is open to hand-authored sibling keys beyond the two the
 loader itself owns (`extensions`, `version`). This document names the declaration point
-generically, documents its survival guarantee, and records the one declaration schema the agent
+generically, documents its survival guarantee, and records the declaration schemas the agent
 system currently reads from it: `derived_artifact_probes`, the repo-declared, build-free
 derived-artifact staleness probe (see `scripts/lib/derived-artifact-probe-lib.sh` for the reader
-and the two call sites that consume it).
+and the two call sites that consume it), and `coupled_generated_surfaces`, the repo-declared,
+advisory plan-authoring completeness check described below.
 
 ## Why `.claude-extensions.json` Survives a Hand-Authored Sibling Key
 
@@ -50,6 +51,69 @@ derived-artifact probe describes the REPOSITORY's own components, not any one ta
   treated as in-scope derived output rather than a `file_scope` excursion, so it is committed
   with the change that caused it instead of being silently dropped (see "Containment and the
   Derived-Output Exemption" below).
+
+## The `coupled_generated_surfaces` Entry Schema
+
+```json
+{
+  "coupled_generated_surfaces": [
+    {
+      "trigger_glob": "<repo-root-relative glob identifying the SOURCE paths whose edits move a derived quantity>",
+      "generated_paths": ["<repo-root-relative path that goes stale>", "..."],
+      "commit_blocking": true,
+      "note": "<diagnostic output only, never interpreted>"
+    }
+  ]
+}
+```
+
+- `trigger_glob` (string, required) — a repo-root-relative glob identifying the SOURCE paths
+  whose edits move a derived quantity.
+- `generated_paths` (array of strings, required) — the derived artifacts that go stale when a
+  matching source path is edited.
+- `commit_blocking` (boolean, optional, default `true`) — whether the detecting check refuses the
+  commit outright.
+- `note` (string, optional) — diagnostic output only, never interpreted.
+
+**Matching semantics are bash glob matching, not POSIX pathname expansion.** A phase path matches
+`trigger_glob` when bash's `[[ path == glob ]]` matches, under which `*` CROSSES `/`.
+`FormalSystem/**/*.lean` and `FormalSystem/*.lean` are therefore equally broad under this
+matcher; write the simplest glob that expresses the intent and expect directory-crossing rather
+than relying on POSIX pathname-expansion intuition.
+
+**Fail-open-on-absence guarantee** (same shape as `derived_artifact_probes` above):
+
+| Condition | Result |
+|-----------|--------|
+| No `.claude-extensions.json` file | `[]` entries, zero effect |
+| `jq` unavailable | `[]` entries, zero effect |
+| Key absent | `[]` entries, zero effect |
+| Key present, empty array | `[]` entries, zero effect |
+| One entry missing/empty `trigger_glob`, or `generated_paths` absent or not an array of non-empty strings | that one entry is DROPPED, with at most one named warning; every other valid entry still applies |
+
+A repository that declares nothing — this repository included — is byte-for-byte unaffected: no
+warning, no behaviour change, no new output.
+
+**The one asymmetry against `derived_artifact_probes`.** This declaration is read at
+PLAN-ACCEPTANCE time by an ADVISORY check (`scripts/validate-artifact.sh`'s per-phase `plan`
+loop) and never executes a command of its own — it only compares declared strings against a
+phase's own `Files to modify` entries. It therefore has no timeout, no privilege posture, and no
+blocking behaviour; the blocking promotion `derived_artifact_probes` carries at
+implement-postflight does not extend to it.
+
+**Why the two schemas are not unified.** `derived_artifact_probes` has no trigger-pattern field
+because it answers "is this derived artifact stale NOW?" at implement-postflight, by running a
+command; `coupled_generated_surfaces` has no command field because it answers "did the plan
+AUTHOR declare this derived artifact?" at plan-acceptance time, by reading the phase's own prose.
+Both questions are kept as two separate schemas rather than folded into one, so a future reader
+does not conflate a staleness probe with an authoring-completeness check.
+
+**Single-consumer inline-reader decision.** As of this schema's introduction,
+`coupled_generated_surfaces` has exactly one reader: an inline helper in
+`scripts/validate-artifact.sh`, modeled on `derived-artifact-probe-lib.sh`'s own
+`_derived_probe_load_entries_json` fail-open shape. It is implemented inline rather than
+promoted to a shared library file because it has exactly one consumer; a second consumer is the
+recorded trigger to promote it to `scripts/lib/`.
 
 ## Fail-Open-on-Absence Guarantee
 
@@ -122,6 +186,9 @@ general advisory-to-blocking migration.
 ## See Also
 
 - `scripts/lib/derived-artifact-probe-lib.sh` — the reader and probe-runner this document backs.
+- `scripts/validate-artifact.sh` — the sole current reader of `coupled_generated_surfaces`, and
+  the enforcing consumer `context/formats/plan-format.md`'s "Coupled-generated-surface
+  declaration obligation" cross-references.
 - `context/standards/postflight-tool-restrictions.md`'s Exceptions section — the narrowly-scoped
   Bash exception this mechanism's `check_command` invocation requires.
 - `docs/guides/creating-extensions.md`'s Lifecycle Hooks section — why a lifecycle hook is the

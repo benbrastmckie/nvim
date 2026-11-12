@@ -383,45 +383,49 @@ where the next author will look for it.
 
 ---
 
-### Phase 4: Document the coupled_generated_surfaces Declaration Schema [NOT STARTED]
+### Phase 4: Document the coupled_generated_surfaces Declaration Schema [COMPLETED]
 
 **Goal**: `repo-level-declarations.md` documents a second sibling top-level key with its own
 schema, matching behaviour, and fail-open-on-absence guarantee, so the check implemented in
 Phase 5 has a declaration contract to read rather than invent.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/standards/repo-level-declarations.md`
-      immediately before editing.
-- [ ] Generalize the document's framing minimally: its Overview currently records
+- [x] Re-read `agent-system/extensions/core/context/standards/repo-level-declarations.md`
+      immediately before editing. *(completed)*
+- [x] Generalize the document's framing minimally: its Overview currently records
       `derived_artifact_probes` as "the one declaration schema the agent system currently reads".
       Update that to name two, without restructuring the page or renarrating its history.
-- [ ] Add a `## The coupled_generated_surfaces Entry Schema` section after the existing
+      *(completed)*
+- [x] Add a `## The coupled_generated_surfaces Entry Schema` section after the existing
       `derived_artifact_probes` schema section, with the fielded contract:
       `trigger_glob` (string, required — a repo-root-relative glob identifying the SOURCE paths
       whose edits move a derived quantity), `generated_paths` (array of repo-root-relative
       strings, required — the derived artifacts that go stale), `commit_blocking` (boolean,
       optional, default `true` — whether the detecting check refuses the commit), `note` (string,
-      optional, diagnostic output only, never interpreted).
-- [ ] State the matching semantics exactly, because they are not POSIX pathname expansion: a
+      optional, diagnostic output only, never interpreted). *(completed)*
+- [x] State the matching semantics exactly, because they are not POSIX pathname expansion: a
       phase path matches when bash's `[[ path == glob ]]` matches, where `*` CROSSES `/`. So
       `FormalSystem/**/*.lean` and `FormalSystem/*.lean` are equally broad; write the simplest
-      glob that expresses the intent and expect directory-crossing.
-- [ ] State the fail-open-on-absence guarantee in the same table shape the page already uses for
+      glob that expresses the intent and expect directory-crossing. *(completed)*
+- [x] State the fail-open-on-absence guarantee in the same table shape the page already uses for
       `derived_artifact_probes`: no file, no `jq`, absent key, empty array, or a malformed entry
       each yield zero effect, with at most one named warning per dropped entry; a repository that
-      declares nothing — this one included — is byte-for-byte unaffected.
-- [ ] State the one asymmetry against `derived_artifact_probes` explicitly: this declaration is
+      declares nothing — this one included — is byte-for-byte unaffected. *(completed)*
+- [x] State the one asymmetry against `derived_artifact_probes` explicitly: this declaration is
       read at PLAN-ACCEPTANCE time by an ADVISORY check and never executes a command, so it has
       no timeout, no privilege posture, and no blocking behaviour; the blocking promotion
-      `derived_artifact_probes` carries does not extend to it.
-- [ ] Record why the two schemas are not unified: `derived_artifact_probes` has no
+      `derived_artifact_probes` carries does not extend to it. *(completed)*
+- [x] Record why the two schemas are not unified: `derived_artifact_probes` has no
       trigger-pattern field because it answers "is this derived artifact stale now?" at
       postflight, whereas this one answers "did the author declare this derived artifact?" at
       plan acceptance. Keep both, and say so, so a future reader does not fold one into the other.
-- [ ] Record the single-consumer inline-reader decision and its promotion trigger (a second
+      *(completed)*
+- [x] Record the single-consumer inline-reader decision and its promotion trigger (a second
       consumer), pointing at `scripts/validate-artifact.sh` as the reader's current home.
-- [ ] Add the new section to the page's `## See Also` list where appropriate, and verify the added
-      prose cites no task number and carries no draft-lineage/version language.
+      *(completed)*
+- [x] Add the new section to the page's `## See Also` list where appropriate, and verify the added
+      prose cites no task number and carries no draft-lineage/version language. *(completed:
+      check-task-references.sh and check-record-versioning.sh both report zero new findings)*
 
 **Timing**: 45 minutes
 

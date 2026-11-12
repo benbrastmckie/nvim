@@ -1,0 +1,13 @@
+{
+  "phase": 4,
+  "phase_name": "Document the coupled_generated_surfaces Declaration Schema",
+  "started_at": "2026-11-12T07:13:49Z",
+  "last_updated": "2026-11-12T07:13:49Z",
+  "objectives": [
+    {"id": 1, "description": "Document coupled_generated_surfaces schema in repo-level-declarations.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/repo-level-declarations.md"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
