@@ -86,7 +86,7 @@ next_project_number: 610
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-600 [PLANNING] — Honor the Sapience 503 cold-start retry\_after hint with one...
+600 [PLANNED] — Honor the Sapience 503 cold-start retry\_after hint with one...
   └─ 606 [NOT STARTED] — Scope Sapience context injection to the current repository so...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
@@ -848,11 +848,12 @@ CITATION: {task 589, iss_1794382098954_Zl7lZg}, class "scope boundary".
 ---
 
 ### 600. Honor the Sapience 503 cold-start retry_after hint with one bounded retry instead of degrading on first contact
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [600_sapience_retrieve_cold_start_retry/reports/01_sapience-retrieve-cold-start-retry.md]
+- **Plan**: [600_sapience_retrieve_cold_start_retry/plans/01_sapience-retrieve-cold-start-retry.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a five-phase plan for the Sapience cold-start retry. Re-verified every carried figure against live files: the single-curl/single-catch-all-exit-2 root cause (line numbers moved to ~124 and ~137-145), the retry-opaque Stage 3.5 caller at orchestrate-build-dispatch.sh:351-379, the source_dir resolution, the four-case single-shot test harness, and #519's non-overlapping file_scope. Settled the two choices research left open: fixed (not env-overridable) clamp constants for consistency with the file's existing TOKEN_BUDGET/MAX_ENTRIES, and testability through a PATH-shadowed sleep stub rather than a test-only hook in production code. Phase ordering puts the additive harness extension first because the existing 503 case would otherwise perform a real 15s sleep under the new code.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/600_sapience_retrieve_cold_start_retry/plans/01_sapience-retrieve-cold-start-retry.md",
+      "summary": "Five-phase plan: harness stub extension, bounded retry implementation, five new test cases, per-repo-scoping.md retry contract, redeploy plus full gate set."
+    }
+  ],
+  "dispatch_seq": 10
+}
