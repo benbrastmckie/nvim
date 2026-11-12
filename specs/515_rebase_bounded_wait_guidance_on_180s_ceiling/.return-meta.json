@@ -1,10 +1,59 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 15,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/515_rebase_bounded_wait_guidance_on_180s_ceiling/summaries/01_rebase-bounded-wait-ceiling-summary.md",
+      "summary": "No-numeric-change implementation: recorded the measured 600s ceiling (harness Claude Code 2.1.322) and the unraised-parameter misattribution diagnostic as dated provenance in external-process-wait.md and bounded-build-waiter.md; confirmed zero removed lines, byte-identical copied bullet across all 24 carriers, and the same nine 600000-bearing files, with the full gate set deferred to the batch stage per the dispatch's Batch Gate Deferral directive."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a dated, harness-versioned measurement record and a misattribution diagnostic to external-process-wait.md and bounded-build-waiter.md, closing the record as no-change-with-measurement; redeployed, confirmed lint-agent-contracts.sh (Checks H and K) and all named regression suites green, and re-derived the carrier (24) and 600000-bearing-file (9) counts unchanged."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/external-process-wait.md",
+    "agent-system/extensions/core/context/patterns/bounded-build-waiter.md",
+    "specs/515_rebase_bounded_wait_guidance_on_180s_ceiling/summaries/01_rebase-bounded-wait-ceiling-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When appending a cross-reference sentence to the end of an existing paragraph in a markdown pattern file where a plan or lint requires 'zero removed lines' in the diff, add the new text as new trailing line(s) after the paragraph's existing final line rather than concatenating onto that line's text. Concatenating causes git to represent the existing line as replaced (one '-' plus one '+'), failing a strict addition-only verification even though no prior content was semantically changed.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/515_rebase_bounded_wait_guidance_on_180s_ceiling/summaries/01_rebase-bounded-wait-ceiling-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "git diff",
+        "pure-addition edit",
+        "zero removed lines",
+        "markdown prose edit",
+        "scope hypothesis"
+      ]
+    },
+    {
+      "content": "A test suite explicitly marked by the test runner as 'load-sensitive: serialized, not in the parallel pool' (e.g. test-lake-build-guard.sh in this repo's run-all.sh) can report a spurious failure when bundled into a single --only invocation alongside other suites that run concurrently, even though the suite is unrelated to the files under test. Before attributing such a failure to one's own edit, re-run the flagged suite alone via --only <suite> to rule out transient resource contention under concurrent load.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/515_rebase_bounded_wait_guidance_on_180s_ceiling/summaries/01_rebase-bounded-wait-ceiling-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "run-all.sh",
+        "load-sensitive suite",
+        "flaky test",
+        "transient failure",
+        "concurrent dispatch"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794459760_979d1d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 15
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
+  }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #515
 
 - **Task**: 515 - Rebase the bounded-wait guidance on the measured foreground-backgrounding ceiling
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: 507 (recorded in state.json; admitted for this dispatch by the orchestrator)
 - **Research Inputs**: specs/515_rebase_bounded_wait_guidance_on_180s_ceiling/reports/01_rebase-bounded-wait-ceiling.md

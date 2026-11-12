@@ -1,28 +1,22 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 515,
-  "phase": "plan",
-  "phases_completed": 0,
+  "phase": "implement",
+  "phases_completed": 3,
   "phases_total": 3,
-  "summary": "Research refuted the carried ~180s backgrounding figure: the measured boundary is exactly 600s on harness 2.1.322, so both bounded-wait pattern files' numeric model is correct and the propagation obligation never activates. The plan therefore makes no numeric change and no carrier change, and instead implements the 'with the measurement recorded' half of the dispatch's own no-change disposition in three phases: a harness-versioned measurement-provenance subsection plus an unraised-parameter diagnostic in external-process-wait.md, a one-line cross-reference from bounded-build-waiter.md's sizing subsection, then redeploy, lint (Checks H and K as the byte-identity pin), full gates and a scoped commit. Premise re-validation confirmed the source store, Rule 1's content, the hook and liveness primitive, both sibling edges, and task 392's deliberate delivery of the 600000 instruction; it re-derived the carrier count as 24 rather than 29 and found nine 600000-bearing markdown files rather than the eight the description implies.",
+  "summary": "Implemented the plan's no-numeric-change disposition in three phases: added a dated, harness-versioned measurement-provenance subsection ('The 600s Ceiling Is Measured, Not Assumed') plus an unraised-parameter misattribution diagnostic to external-process-wait.md, added one cross-reference sentence to bounded-build-waiter.md's sizing subsection, then redeployed and verified. lint-agent-contracts.sh passed (Checks H and K both all-PASS, pinning byte-identity of the copied bullet across all 24 carriers); the five named regression suites plus test-detect-noop-bash.sh, test-orchestrate-build-dispatch.sh and test-lake-build-guard.sh all passed; the carrier (24) and 600000-bearing-file (9) counts re-derived unchanged. The full verify-deploy.sh aggregator was deferred to the batch stage per the dispatch's Batch Gate Deferral directive rather than run independently.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/515_rebase_bounded_wait_guidance_on_180s_ceiling/summaries/01_rebase-bounded-wait-ceiling-summary.md",
+      "summary": "No-numeric-change implementation summary: measurement-provenance and misattribution-diagnostic additions, verification results, and the deferred-full-gate disposition."
+    },
     {
       "type": "plan",
       "path": "specs/515_rebase_bounded_wait_guidance_on_180s_ceiling/plans/01_rebase-bounded-wait-ceiling.md",
-      "summary": "Three-phase no-numeric-change plan recording the measured 600s ceiling and proving the no-change half."
+      "summary": "Three-phase no-numeric-change plan recording the measured 600s ceiling and proving the no-change half; all three phases COMPLETED."
     }
   ],
   "blockers": [],
-  "user_decision": {
-    "question": "The dependency edges making tasks 454 and 439 follow this record were added on the premise that this record would correct a wrong ceiling figure before they build on it; the measurement refutes the wrong-figure premise, so there is no correction for either to wait on. Should those two edges be lifted?",
-    "options": [
-      "Lift both edges via update-task-status.sh --depends-on-remove, once the operator confirms the shared files (bounded-build-waiter.md, external-process-wait.md, lint-agent-contracts.sh) are not contested",
-      "Keep both edges purely as sequencing hygiene, so 439's propagation-architecture audit and 454's shape-taxonomy addition still operate after this record lands",
-      "Lift the edge onto 454 only, since its stated objection (that raising the timeout parameter is inert) is exactly what the measurement refutes, and keep 439's for file-contention serialization"
-    ],
-    "recommended": "Keep both edges purely as sequencing hygiene, so 439's propagation-architecture audit and 454's shape-taxonomy addition still operate after this record lands",
-    "blocking": false,
-    "obligation": "Both edges also serve as file-contention serialization over bounded-build-waiter.md and external-process-wait.md, which this plan's Phases 1 and 2 edit; keeping them discharges that serialization at no cost, whereas lifting them is an operator-only action requiring confirmation that those files are uncontested."
-  },
-  "dispatch_seq": 9
+  "dispatch_seq": 15
 }

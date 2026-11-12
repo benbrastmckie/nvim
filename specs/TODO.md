@@ -13,8 +13,8 @@ next_project_number: 610
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,510,511,512,514,515,519,520,521,522,523,525,526,527,529,530,531,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,603,604,607 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,457,458,462,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,602,605,606 | 383,390,398,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563,597,600,603,604 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,476,477,479,484,490,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,531,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,601,603,604,607 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,457,458,462,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,602,605,606 | 383,390,398,431,451,452,455,459,472,476,479,484,491,504,505,534,535,538,539,548,549,563,597,600,603,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,588,592,593 | 439,451,458,472,476,486,509,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,594 | 438,479,492,501,547,552,580,593 | core-agent-system, agent-system |
 | 5 | 595,609 | 539,577,594 | agent-system |
@@ -55,9 +55,6 @@ next_project_number: 610
     └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
   └─ 584 [NOT STARTED] — Wire covering-suite selection into Gate 8 so an extension...
 506 [PLANNED] — Stop the bounded-waiter hook refusing a write whose prose...
-515 [IMPLEMENTING] — Rebase the bounded-wait guidance on the measured...
-  └─ 439 [NOT STARTED] — Rule on the propagation model for the bounded-wait agent contract (see above)
-  └─ 517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
 519 [NOT STARTED] — Infra exempt transport error dispatch deaths
 520 [NOT STARTED] — Emit deploy ordering in implement dispatch body
 521 [NOT STARTED] — Fix the agent glob to match the -implement-agent.md variant
@@ -77,6 +74,7 @@ next_project_number: 610
   └─ 602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
+517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
 
@@ -6599,12 +6597,13 @@ DUPLICATE CHECK PERFORMED against the full open backlog and the closed corpus vi
 ---
 
 ### 515. Rebase the bounded-wait guidance on the measured foreground-backgrounding ceiling
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 507
 - **Research**: [515_rebase_bounded_wait_guidance_on_180s_ceiling/reports/01_rebase-bounded-wait-ceiling.md]
 - **Plan**: [515_rebase_bounded_wait_guidance_on_180s_ceiling/plans/01_rebase-bounded-wait-ceiling.md]
+- **Summary**: [515_rebase_bounded_wait_guidance_on_180s_ceiling/summaries/01_rebase-bounded-wait-ceiling-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/**` and `agent-system/extensions/lean/**` in THIS repository (never a deployed `.claude/**` tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see `rules/source-store-deploy-boundary.md`; a hand-authored file under `.claude/**` is silently wiped by the next regeneration, so the edit appears to succeed and has no lasting effect). Re-derive the store rather than trusting this note: `source_dir` lives PER-EXTENSION at `.extensions.<name>.source_dir` in a consumer repo's `<project-root>/.claude-extensions.json`, NOT as a top-level key, so a top-level `jq -r '.source_dir'` returning null must not be read as the key being absent. Edit at the path mirroring the deployed one, then REDEPLOY via `deploy-headless.sh`. No task-number references and no record-versioning language in any file landing under `agent-system/**` (`rules/no-task-references-in-deliverables.md`, `rules/no-record-versioning-in-deliverables.md`); both are permitted in this description and elsewhere in `specs/**`.
 
