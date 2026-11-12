@@ -212,6 +212,21 @@ scan_file() {
   [[ -f "$file" ]] || return 0
   FILES_SCANNED=$((FILES_SCANNED + 1))
 
+  # Fast path: skip the expensive two-pass, per-line bash-regex analysis entirely for the large
+  # majority of candidate files that never reference either tracked anchor at all. A single
+  # `grep -q` pre-check is orders of magnitude cheaper than reading every line into a bash array
+  # and running several `[[ =~ ]]` matches (several with their own nested lookback/lookahead
+  # loops) against each one -- this is what keeps a 150-200 file corpus run comfortably inside
+  # gate 29's declared timeout budget.
+  # The narrower 2+-level pre-check (rather than any anchor+dotdot reference at all) is safe
+  # because a SINGLE-level reference ($SCRIPT_DIR/.. or $CORE_DIR/..) can never exceed any
+  # file's SAFE_LEVELS boundary (minimum value 1) and so can never be flagged by any of the
+  # three shapes below -- see safe_levels_for's own minimum.
+  if ! grep -qE '\$(SCRIPT_DIR|CORE_DIR)(/\.\.){2,}' "$file" 2>/dev/null; then
+    log_info "OK (no 2+-level anchor walk): $file"
+    return 0
+  fi
+
   local relpath="$file"
   case "$file" in
     "$REPO_ROOT"/*) relpath="${file#"$REPO_ROOT"/}" ;;
