@@ -282,7 +282,7 @@ observe this change.
 
 ---
 
-### Phase 3: Lua Wiring and Fallback [NOT STARTED]
+### Phase 3: Lua Wiring and Fallback [COMPLETED]
 
 **Goal**: Extend `init.lua` with a validated `styling` option and self-relative proxy-path
 resolution so `_command()` invokes the proxy, falling back to the current bare `sf1` string
@@ -290,30 +290,31 @@ whenever the proxy cannot run.
 
 **Tasks**:
 
-- [ ] Add `styling = { enabled = true, separator = "blank" }` to `init.lua`'s default `config`
+- [x] Add `styling = { enabled = true, separator = "blank" }` to `init.lua`'s default `config`
       table and to the `SapienceConfig` LuaDoc class block, and add matching `vim.validate`
       predicates in `setup()` in the same style as the existing `_is_valid_position` /
       `_is_valid_size` helpers (`enabled` a boolean; `separator` one of `"blank"`, `"rule"`,
-      `"none"`).
-- [ ] Add a private `_proxy_path()` that derives the proxy's absolute path from
+      `"none"`). *(completed)*
+- [x] Add a private `_proxy_path()` that derives the proxy's absolute path from
       `debug.getinfo(1, "S").source` (strip the leading `@`, take `:h`, append
       `/sf1_proxy.py`). Do not use `vim.fn.stdpath('config')`: a self-relative derivation is what
       keeps this directory liftable into a standalone repository, the property both existing
-      module headers state explicitly.
-- [ ] Extend `_command()` so that when styling is enabled, the proxy file is readable
+      module headers state explicitly. *(completed)*
+- [x] Extend `_command()` so that when styling is enabled, the proxy file is readable
       (`vim.fn.filereadable`), and `vim.fn.executable("python3") == 1`, it returns
       `python3 <shellescaped proxy> --separator <sep> -- <existing sf1 command string>`; otherwise
       it returns today's string unchanged. Keep the existing `shellescape` on the project name and
-      add one on the proxy path.
-- [ ] Emit exactly one `vim.notify(..., vim.log.levels.WARN)` per session when styling was
+      add one on the proxy path. *(completed)*
+- [x] Emit exactly one `vim.notify(..., vim.log.levels.WARN)` per session when styling was
       requested but is unavailable, naming which precondition failed. Latch it in a module-local
-      boolean so a repeated `toggle()` does not spam the user.
-- [ ] Create `lua/neotex/plugins/ai/sapience/init_spec.lua` following the repo's existing
+      boolean so a repeated `toggle()` does not spam the user. *(completed)*
+- [x] Create `lua/neotex/plugins/ai/sapience/init_spec.lua` following the repo's existing
       `*_spec.lua` convention (see `lua/neotex/plugins/ai/shared/picker/config_spec.lua`,
       including its run-command header comment), asserting: the default command contains the proxy
       path and `--separator blank`; `styling.enabled = false` yields the bare `sf1 --project ...`
       string byte-for-byte as today; an invalid `separator` value is rejected by `setup()`; and the
-      `--` terminator precedes the sf1 argv so `--project` lands on the child.
+      `--` terminator precedes the sf1 argv so `--project` lands on the child. *(completed: 5
+      specs, all passing)*
 
 **Timing**: 1 hour
 

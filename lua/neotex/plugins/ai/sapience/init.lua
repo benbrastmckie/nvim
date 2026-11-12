@@ -13,6 +13,10 @@ local M = {}
 
 local backend = require("neotex.plugins.ai.sapience.terminal")
 
+--- @class SapienceStyling
+--- @field enabled boolean Proxy sf1 through sf1_proxy.py to insert turn separators
+--- @field separator "blank"|"rule"|"none" Separator rendering passed to the proxy
+
 --- @class SapienceConfig
 --- @field cmd string Executable name used to launch sf1
 --- @field position "bottom"|"right"|"left"|"float" Window placement
@@ -20,6 +24,7 @@ local backend = require("neotex.plugins.ai.sapience.terminal")
 --- @field project "cwd"|"git"|false|fun():string|nil Project-scoping strategy
 --- @field on_open fun()|nil Called immediately before a hidden window is shown
 --- @field on_close fun()|nil Called immediately after a visible window is hidden
+--- @field styling SapienceStyling Pane-separator proxy configuration
 
 ---@type SapienceConfig
 local config = {
@@ -31,9 +36,18 @@ local config = {
   project = "cwd",
   on_open = nil,
   on_close = nil,
+  styling = {
+    enabled = true,
+    separator = "blank",
+  },
 }
 
 local VALID_POSITIONS = { bottom = true, right = true, left = true, float = true }
+local VALID_SEPARATORS = { blank = true, rule = true, none = true }
+
+-- Latches the one-shot styling-unavailable warning so a repeated `toggle()` (or any other
+-- lifecycle call) never spams the user more than once per session.
+local _styling_warned = false
 
 ---@param v any
 ---@return boolean
@@ -63,6 +77,43 @@ local function _is_valid_project(v)
     return true
   end
   return v == "cwd" or v == "git"
+end
+
+---@param v any
+---@return boolean
+local function _is_valid_styling(v)
+  if type(v) ~= "table" then
+    return false
+  end
+  if type(v.enabled) ~= "boolean" then
+    return false
+  end
+  return type(v.separator) == "string" and VALID_SEPARATORS[v.separator] == true
+end
+
+--- Derive `sf1_proxy.py`'s absolute path from this file's own source location, never from
+--- `vim.fn.stdpath('config')`: a self-relative derivation is what keeps this directory
+--- liftable into a standalone repository, the property the module header above and
+--- `terminal.lua`'s own header both already state.
+---@return string path
+local function _proxy_path()
+  local source = debug.getinfo(1, "S").source
+  local dir = vim.fn.fnamemodify(source:gsub("^@", ""), ":h")
+  return dir .. "/sf1_proxy.py"
+end
+
+--- Warn once per session that styling was requested but is unavailable, naming which
+--- precondition failed. A no-op after the first call.
+---@param reason string
+local function _warn_styling_unavailable(reason)
+  if _styling_warned then
+    return
+  end
+  _styling_warned = true
+  vim.notify(
+    "sf1: styling requested but unavailable (" .. reason .. "); falling back to unstyled sf1",
+    vim.log.levels.WARN
+  )
 end
 
 --- Resolve the configured `project` strategy into a project-name string.
@@ -102,10 +153,31 @@ end
 ---@return string command
 local function _command()
   local name = _resolve_project()
-  if name == nil then
-    return config.cmd
+  local sf1_cmd = config.cmd
+  if name ~= nil then
+    sf1_cmd = sf1_cmd .. " --project " .. vim.fn.shellescape(name)
   end
-  return config.cmd .. " --project " .. vim.fn.shellescape(name)
+
+  if not config.styling.enabled then
+    return sf1_cmd
+  end
+
+  local proxy_path = _proxy_path()
+  if vim.fn.filereadable(proxy_path) == 0 then
+    _warn_styling_unavailable("sf1_proxy.py not found at " .. proxy_path)
+    return sf1_cmd
+  end
+  if vim.fn.executable("python3") == 0 then
+    _warn_styling_unavailable("python3 not found on PATH")
+    return sf1_cmd
+  end
+
+  return "python3 "
+    .. vim.fn.shellescape(proxy_path)
+    .. " --separator "
+    .. config.styling.separator
+    .. " -- "
+    .. sf1_cmd
 end
 
 --- Configure the sf1 integration. Safe to call with no arguments.
@@ -130,6 +202,12 @@ function M.setup(opts)
   )
   vim.validate("on_open", config.on_open, _is_valid_hook, "a function or nil")
   vim.validate("on_close", config.on_close, _is_valid_hook, "a function or nil")
+  vim.validate(
+    "styling",
+    config.styling,
+    _is_valid_styling,
+    'a table with enabled:boolean and separator one of "blank", "rule", "none"'
+  )
 end
 
 --- Run one of the two lifecycle hooks, if configured. A hook that errors
