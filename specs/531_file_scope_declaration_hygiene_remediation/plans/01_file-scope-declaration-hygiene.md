@@ -187,21 +187,21 @@ the commit message rather than forcing the predicted count.
 
 ---
 
-### Phase 2: Backfill the three absent declarations and correct this task's own stale entry [NOT STARTED]
+### Phase 2: Backfill the three absent declarations and correct this task's own stale entry [COMPLETED]
 
 **Goal**: No non-terminal task declares an absent `file_scope`, and task 531's own declaration
 names the files this plan actually edits.
 
 **Tasks**:
 
-- [ ] Re-confirm the absent set is still exactly {567, 568, 607}: `bash .claude/scripts/validate-state.sh specs/state.json 2>&1 | grep 'file_scope missing_key'`. If a task has appeared or disappeared, handle the live set and record the delta.
-- [ ] Re-confirm each backfill path exists on disk with a `test -f` loop over the three lists below. Declare only paths that exist; drop and report any that do not rather than declaring a path that is not there.
-- [ ] Backfill 567 with `scripts/git-commit-scoped.sh`, `scripts/tests/test-git-commit-scoped.sh`, `scripts/tests/test-git-commit-phase.sh` (all under `agent-system/extensions/core/`), via one `state-write.sh` call scoped to `project_number == 567`.
-- [ ] Backfill 568 with `scripts/tests/test-orchestrate-cycle-postflight.sh`, `scripts/orchestrate-cycle-postflight.sh`, `scripts/orchestrator-postflight.sh`, `scripts/update-task-status.sh` (all under `agent-system/extensions/core/`), scoped to `project_number == 568`.
-- [ ] Backfill 607 with `commands/orchestrate.md`, `skills/skill-orchestrate/SKILL.md`, `context/config/orchestrator-context-budget.json`, `scripts/gate-registry.data`, `scripts/verify-deploy.sh` (all under `agent-system/extensions/core/`), scoped to `project_number == 607`.
-- [ ] Correct task 531's own stale `file_scope`: it currently declares `agent-system/extensions/core/scripts/validate-state.sh`, which this plan does not modify. Replace it with the four paths this plan actually edits (`specs/state.json`, `specs/TODO.md`, and Phase 3's two source-store markdown files). This is the same class of defect the task exists to fix, applied to itself.
-- [ ] Confirm Check 10 now reports `0 missing-key, 0 literal-null, 0 empty-array` and that Check 8 still names no project.
-- [ ] Commit: `task 531: backfill absent file_scope declarations (567, 568, 607)`, staging `specs/state.json specs/TODO.md`, after reviewing `git diff --staged`.
+- [x] Re-confirm the absent set is still exactly {567, 568, 607}: `bash .claude/scripts/validate-state.sh specs/state.json 2>&1 | grep 'file_scope missing_key'`. If a task has appeared or disappeared, handle the live set and record the delta. *(completed: live set unchanged)*
+- [x] Re-confirm each backfill path exists on disk with a `test -f` loop over the three lists below. Declare only paths that exist; drop and report any that do not rather than declaring a path that is not there. *(completed: all 12 paths confirmed present)*
+- [x] Backfill 567 with `scripts/git-commit-scoped.sh`, `scripts/tests/test-git-commit-scoped.sh`, `scripts/tests/test-git-commit-phase.sh` (all under `agent-system/extensions/core/`), via one `state-write.sh` call scoped to `project_number == 567`. *(completed)*
+- [x] Backfill 568 with `scripts/tests/test-orchestrate-cycle-postflight.sh`, `scripts/orchestrate-cycle-postflight.sh`, `scripts/orchestrator-postflight.sh`, `scripts/update-task-status.sh` (all under `agent-system/extensions/core/`), scoped to `project_number == 568`. *(completed)*
+- [x] Backfill 607 with `commands/orchestrate.md`, `skills/skill-orchestrate/SKILL.md`, `context/config/orchestrator-context-budget.json`, `scripts/gate-registry.data`, `scripts/verify-deploy.sh` (all under `agent-system/extensions/core/`), scoped to `project_number == 607`. *(completed)*
+- [x] Correct task 531's own stale `file_scope`: it currently declares `agent-system/extensions/core/scripts/validate-state.sh`, which this plan does not modify. Replace it with the four paths this plan actually edits (`specs/state.json`, `specs/TODO.md`, and Phase 3's two source-store markdown files). This is the same class of defect the task exists to fix, applied to itself. *(deviation: altered -- wrote 5 paths, not 4: Phase 3 also required a scoped one-line companion fix to agent-system/extensions/core/index-entries.json (its line_count entry for task-abandon-mode.md), which git-commit-phase.sh's own Containment Self-Check flagged as out-of-scope and proposed back via proposed_file_scope; folding it into this self-correction directly resolves that proposal in the same phase rather than leaving it dangling)*
+- [x] Confirm Check 10 now reports `0 missing-key, 0 literal-null, 0 empty-array` and that Check 8 still names no project. *(completed)*
+- [x] Commit: `task 531: backfill absent file_scope declarations (567, 568, 607)`, staging `specs/state.json specs/TODO.md`, after reviewing `git diff --staged`. *(completed: commit 807cc7f88; TODO.md had no diff since file_scope is not rendered there)*
 
 **Timing**: 0.75 hours
 

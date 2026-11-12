@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Backfill the three absent declarations and correct this task's own stale entry",
+  "started_at": "2026-11-12T07:21:00Z",
+  "last_updated": "2026-11-12T07:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Backfill 567, 568, 607 and correct 531's own file_scope", "status": "done", "files_touched": ["specs/state.json"]}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.5",
+      "description": "Correct task 531's own stale file_scope with the four paths this plan actually edits",
+      "type": "altered",
+      "reason": "Wrote 5 paths instead of the plan's literal 4: folded in agent-system/extensions/core/index-entries.json, the Phase-3 companion fix git-commit-phase.sh's Containment Self-Check flagged as out-of-scope and proposed via proposed_file_scope, resolving that proposal in this same phase.",
+      "annotation": "*(deviation: altered -- see Phase 2 Task list annotation)*"
+    }
+  ]
+}
