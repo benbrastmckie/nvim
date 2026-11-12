@@ -1,17 +1,22 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 597,
-  "phase": "plan",
-  "phases_completed": 0,
+  "phase": "implement",
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Authored a six-phase plan for both plan-authoring defects. Defect A is remedied by a repo-agnostic coupled-generated-surface declaration obligation in plan-format.md, a task_type-gated domain-gotchas lookup plus a coupled-surface checklist item in planner-agent.md (the index-entries option was rejected on OR-semantics grounds), a documented coupled_generated_surfaces declaration schema, and an advisory fail-open check in validate-artifact.sh with six fixtures. Defect B's Condition 7 is corrected against the originating repository's own pinned Mathlib checkout, which was readable this session and closes the research report's master-vs-pinned risk without a re-check phase. The plan also declares the two coupled surfaces this task's own edits trip in this repository (index-entries.json line_count via Gate 3 Rule R; deployed-tree content-hash equality via Gate 5), reconciled in the final phase with a __WHOLE_TREE__ declaration.",
+  "summary": "Implemented both plan-authoring defects. Defect A: a repo-agnostic coupled-generated-surface declaration obligation landed in plan-format.md, a task_type-gated reach mechanism and coupled-surface checklist item landed in planner-agent.md with a named cross-domain-shared-agent hazard in context-discovery.md, a coupled_generated_surfaces schema landed in repo-level-declarations.md, and an advisory fail-open check landed in validate-artifact.sh with seven fixtures (a real defect in the first draft -- a required-argument guard that crashed the script on the ordinary empty-repo_root case -- was caught and fixed before landing). Defect B's Condition 7 was corrected against the pinned toolchain's own Mathlib source, confirming both cited measurements. The deployed tree was regenerated and all six edited source-store files confirmed present. The complete gate set reports 4 of 44 checks failed; all four are attributed as pre-existing or unrelated to this task (none name a file this task touched) -- see the issue log for the full per-finding account.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/597_coupled_generated_surfaces_in_plan_authoring/summaries/01_coupled-generated-surfaces-plan-authoring-summary.md",
+      "summary": "Implementation summary covering all six phases, the field-by-field Phase 4/5 cross-check fix, the self-caught _cgs_entries() crash fix, and the full gate-set attribution."
+    },
+    {
       "type": "plan",
       "path": "specs/597_coupled_generated_surfaces_in_plan_authoring/plans/01_coupled-generated-surfaces-plan-authoring.md",
-      "summary": "Six-phase plan: plan-format.md obligation, lean Condition 7 correction, planner-agent reach mechanism, declaration schema, advisory validate-artifact check, deploy and full-gate reconciliation."
+      "summary": "Six-phase plan, all phases [COMPLETED]."
     }
   ],
-  "dispatch_seq": 11
+  "dispatch_seq": 17
 }

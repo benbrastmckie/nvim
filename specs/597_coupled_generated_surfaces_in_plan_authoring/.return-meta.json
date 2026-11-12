@@ -1,10 +1,47 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 17,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/597_coupled_generated_surfaces_in_plan_authoring/summaries/01_coupled-generated-surfaces-plan-authoring-summary.md",
+      "summary": "Both plan-authoring defects fixed: a repo-agnostic coupled-generated-surface declaration obligation, a task_type-gated reach mechanism, a documented declaration schema, an advisory fail-open validate-artifact.sh check with seven fixtures, and a corrected longFile Condition 7 verified against the pinned toolchain's own Mathlib source."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed both plan-authoring guidance defects in the source store: Defect A (coupled-generated-surface declaration gap) via a new plan-format.md obligation, a task_type-gated reach mechanism in planner-agent.md, a documented repo-level-declarations.md schema, and an advisory fail-open check in validate-artifact.sh with seven fixtures; Defect B (wrong longFile acceptance window) via a corrected Condition 7 in the lean gate-collisions checklist, verified against the pinned toolchain's own Mathlib source. All six phases committed and deployed; the complete gate set's four remaining findings are all attributed as pre-existing or unrelated to this task."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/context/patterns/context-discovery.md",
+    "agent-system/extensions/core/context/standards/repo-level-declarations.md",
+    "agent-system/extensions/core/scripts/validate-artifact.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-artifact.sh",
+    "agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A reach mechanism for domain-specific plan-authoring guidance (a gotchas/checklist file under context/project/<domain>/) should be a task_type-gated lookup performed INSIDE a shared agent's own file (e.g. planner-agent.md Stage 4), never an agents[] entry added to the domain's context index entry. context-discovery.md's adaptive query ORs the agent/task_type/command dimensions, so a cross-domain shared agent (planner-agent, general-implementation-agent, general-research-agent) named in a domain-specific entry's agents[] leaks that domain's content into every other domain's dispatch of that agent. Domain-exclusive agents tolerate the same OR semantics harmlessly since they never run for a non-domain task.",
+      "category": "PATTERN",
+      "source_artifact": "specs/597_coupled_generated_surfaces_in_plan_authoring/summaries/01_coupled-generated-surfaces-plan-authoring-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["context-discovery", "agents[]", "reach-mechanism", "cross-domain", "planner-agent"]
+    },
+    {
+      "content": "A bash fail-open reader function parameterized on a repo_root that is legitimately empty in the ordinary absence case must use ${1:-} for that parameter, never a required-argument guard like ${1:?msg} -- the colon-form treats an empty string the same as unset, so under set -euo pipefail a required-argument guard aborts the whole calling script outright on the ordinary fail-open path instead of degrading gracefully. Caught via the phase's own named test suites (not narrow unit fixtures alone), which exercise the reader end-to-end via a real subprocess invocation in an isolated fixture root with no repo marker up to filesystem root.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/597_coupled_generated_surfaces_in_plan_authoring/summaries/01_coupled-generated-surfaces-plan-authoring-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["bash", "set -euo pipefail", "fail-open", "required-argument-guard", "shellscript-defect"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794459760_979d1d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
