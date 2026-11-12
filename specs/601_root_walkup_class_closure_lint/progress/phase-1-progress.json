@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Migrate the Three Live Violating Instances",
+  "started_at": "2026-11-11T00:00:00Z",
+  "last_updated": "2026-11-11T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read and measure pre-migration roots for the three files", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Migrate test-state-write-spill-names.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/test-state-write-spill-names.sh"]},
+    {"id": 3, "description": "Migrate test-source-store-path-lib.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-source-store-path-lib.sh"]},
+    {"id": 4, "description": "Migrate test-orchestrate-context-growth.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh"]},
+    {"id": 5, "description": "Run migrated suites both paths, diff tallies", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

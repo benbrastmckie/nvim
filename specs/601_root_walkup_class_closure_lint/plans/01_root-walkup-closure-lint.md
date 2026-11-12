@@ -1,7 +1,7 @@
 # Implementation Plan: Task #601
 
 - **Task**: 601 - Close the class of invocation-path-dependent repo-root resolution in test suites with a durable lint
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/601_root_walkup_class_closure_lint/reports/01_root-walkup-closure-lint.md
@@ -129,31 +129,31 @@ No `roadmap_path` was provided in this dispatch; no roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Migrate the Three Live Violating Instances [NOT STARTED]
+### Phase 1: Migrate the Three Live Violating Instances [COMPLETED]
 
 **Goal**: Bring the three currently-live unconditional-walk instances onto
 `common_test_repo_root` / `common_test_ext_root`, so the lint can launch at zero violations rather
 than needing allowlist entries for genuine, understood defects.
 
 **Tasks**:
-- [ ] Re-read each of the three files immediately before editing (concurrent-sibling territory rule).
-- [ ] For each file, record the pre-migration measured root from BOTH the source-store and the
-      deployed invocation path, before changing anything.
-- [ ] `scripts/test-state-write-spill-names.sh:74`: replace
+- [x] Re-read each of the three files immediately before editing (concurrent-sibling territory rule). *(completed)*
+- [x] For each file, record the pre-migration measured root from BOTH the source-store and the
+      deployed invocation path, before changing anything. *(completed: source-store walk resolves to repo root; deployed walk resolved to /home/benjamin, outside the repo)*
+- [x] `scripts/test-state-write-spill-names.sh:74`: replace
       `REAL_REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"` with the
       `common_test_repo_root "$SCRIPT_DIR"` call, confirming the file already sources
-      `lib/common.sh` (add the source if it does not).
-- [ ] `scripts/tests/test-source-store-path-lib.sh:136`: replace the five-level
+      `lib/common.sh` (add the source if it does not). *(completed: added source line + `common_test_repo_root "$SCRIPT_DIR" 4`, since this file lives one level shallower than scripts/tests/)*
+- [x] `scripts/tests/test-source-store-path-lib.sh:136`: replace the five-level
       `REAL_REPO_ROOT` walk with `common_test_repo_root "$SCRIPT_DIR"`; keep the existing
-      `[ -f "$REAL_REPO_ROOT/.claude-extensions.json" ]` guard and its visible-skip `else` branch.
-- [ ] `scripts/tests/test-orchestrate-context-growth.sh`: replace the three bare
+      `[ -f "$REAL_REPO_ROOT/.claude-extensions.json" ]` guard and its visible-skip `else` branch. *(completed)*
+- [x] `scripts/tests/test-orchestrate-context-growth.sh`: replace the three bare
       `"$CORE_DIR/../../../.."` / `"$CORE_DIR/../../../../specs/..."` uses (lines 308, 313-314) with
       a single `common_test_repo_root`-derived variable; leave `CORE_DIR` itself alone where it is
-      used for its actual purpose (locating sibling scripts).
-- [ ] Run each migrated suite from the source-store path AND from the deployed path; diff the
-      pass/fail tallies against the pre-migration run.
-- [ ] If a migration unmasks a previously-silent real failure (the prior remedy hit this), fix it in
-      this phase rather than deferring — the masked assertion is the point of the migration.
+      used for its actual purpose (locating sibling scripts). *(completed: added `REAL_REPO_ROOT`)*
+- [x] Run each migrated suite from the source-store path AND from the deployed path; diff the
+      pass/fail tallies against the pre-migration run. *(completed: 5/5, 21/21, 6/6 respectively, matching on both paths; deployed copies updated in place ahead of Phase 5's full redeploy to make this check meaningful)*
+- [x] If a migration unmasks a previously-silent real failure (the prior remedy hit this), fix it in
+      this phase rather than deferring — the masked assertion is the point of the migration. *(completed: no previously-silent failure was unmasked; all tallies matched pre-migration)*
 
 **Timing**: 1.25 hours
 

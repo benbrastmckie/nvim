@@ -42,6 +42,8 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "$SCRIPT_DIR/lib/common.sh"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -71,7 +73,10 @@ info() {
 # so invoking a copy correctly rooted under $TMPROOT is safe -- but this assertion catches a
 # fixture-construction mistake that would not be). Never depends on being run from inside a git
 # work tree with a clean state.json already -- it only compares before/after within this run.
-REAL_REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+# This file lives directly under scripts/ (one level shallower than scripts/tests/), so the
+# git-first probe falls back to a 4-level walk here, not common_test_repo_root's scripts/tests/
+# default of 5.
+REAL_REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR" 4)"
 REAL_STATE_FILE="$REAL_REPO_ROOT/specs/state.json"
 real_state_before=""
 if [ -f "$REAL_STATE_FILE" ]; then

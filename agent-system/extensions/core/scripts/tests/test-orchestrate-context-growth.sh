@@ -44,6 +44,11 @@ set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+# Git-first repo-root probe (falls back to the fixed-depth walk only outside a git work tree) --
+# replaces the three bare "$CORE_DIR/../../../.." uses below, which land outside the repository
+# entirely when run from the deployed .claude/scripts/ tree (one level shallower than the
+# source-store mirror).
+REAL_REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 
 PASSED=0
 FAILED=0
@@ -305,13 +310,13 @@ else
 fi
 
 # ─── No real orchestrator state touched ────────────────────────────────────────────────────────
-if git -C "$CORE_DIR/../../../.." status --porcelain -- specs/ 2>/dev/null | grep -qE '\.orchestrator-multi-state-sess_growth_probe|801_growth_probe|802_growth_probe|803_growth_probe'; then
+if git -C "$REAL_REPO_ROOT" status --porcelain -- specs/ 2>/dev/null | grep -qE '\.orchestrator-multi-state-sess_growth_probe|801_growth_probe|802_growth_probe|803_growth_probe'; then
   common_test_fail "fixture leaked into the real specs/ tree"
 else
   common_test_pass "no real specs/ state was created or mutated by this probe"
 fi
-if compgen -G "$CORE_DIR/../../../../specs/.orchestration/.orchestrator-multi-state-*.json" > /dev/null 2>&1 \
-   || compgen -G "$CORE_DIR/../../../../specs/.orchestrator-multi-state-*.json" > /dev/null 2>&1; then
+if compgen -G "$REAL_REPO_ROOT/specs/.orchestration/.orchestrator-multi-state-*.json" > /dev/null 2>&1 \
+   || compgen -G "$REAL_REPO_ROOT/specs/.orchestrator-multi-state-*.json" > /dev/null 2>&1; then
   common_test_info "note: pre-existing real multi-state files present, at specs/.orchestration/ and/or the legacy specs/ root (unrelated to this probe; not asserted against)"
 fi
 

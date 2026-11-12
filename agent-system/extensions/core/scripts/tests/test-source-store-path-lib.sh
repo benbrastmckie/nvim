@@ -133,7 +133,7 @@ fi
 
 # Direct real-repository check: this repository itself (the actual fixture the research/plan
 # requires -- not a synthetic stand-in), per Premise Re-Validation item 1.
-REAL_REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
+REAL_REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
 if [ -f "$REAL_REPO_ROOT/.claude-extensions.json" ]; then
   out5b="$(source_store_classify "$REAL_REPO_ROOT" "agent-system/extensions/core/manifest.json")"
   if [ "$out5b" = "IN_REPO" ]; then
