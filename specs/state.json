@@ -96931,6 +96931,11 @@
           "path": "specs/597_coupled_generated_surfaces_in_plan_authoring/plans/01_coupled-generated-surfaces-plan-authoring.md",
           "type": "plan",
           "summary": "Six-phase plan: plan-format.md obligation, lean Condition 7 correction, planner-agent reach mechanism, declaration schema, advisory validate-artifact check, deploy and full-gate reconciliation."
+        },
+        {
+          "path": "specs/597_coupled_generated_surfaces_in_plan_authoring/summaries/01_coupled-generated-surfaces-plan-authoring-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all six phases, the field-by-field Phase 4/5 cross-check fix, the self-caught _cgs_entries() crash fix, and the full gate-set attribution."
         }
       ],
       "created": "2026-11-10T12:10:22Z",
@@ -98708,7 +98713,8 @@
         ]
       },
       "session_id": "sess_1794459760_979d1d",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed both plan-authoring guidance defects in the source store: Defect A (coupled-generated-surface declaration gap) via a new plan-format.md obligation, a task_type-gated reach mechanism in planner-agent.md, a documented repo-level-declarations.md schema, and an advisory fail-open check in validate-artifact.sh with seven fixtures; Defect B (wrong longFile acceptance window) via a corrected Condition 7 in the lean gate-collisions checklist, verified against the pinned toolchain's own Mathlib source. All six phases committed and deployed; the complete gate set's four remaining findings are all attributed as pre-existing or unrelated to this task."
     },
     {
       "project_number": 598,

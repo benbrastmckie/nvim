@@ -1099,6 +1099,7 @@ record's subject," and that ruling stands independently of its status.
 - **Dependencies**: None
 - **Research**: [597_coupled_generated_surfaces_in_plan_authoring/reports/01_coupled-generated-surfaces-plan-authoring.md]
 - **Plan**: [597_coupled_generated_surfaces_in_plan_authoring/plans/01_coupled-generated-surfaces-plan-authoring.md]
+- **Summary**: [597_coupled_generated_surfaces_in_plan_authoring/summaries/01_coupled-generated-surfaces-plan-authoring-summary.md]
 
 **Description**: META TASK. Source store resolved from .claude-extensions.json: /home/benjamin/.config/nvim/agent-system/extensions. All edits land there, never under .claude/** (rules/source-store-deploy-boundary.md).
 
