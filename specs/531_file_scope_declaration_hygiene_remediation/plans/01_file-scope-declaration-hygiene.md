@@ -321,6 +321,24 @@ and the task closes with its deviations recorded.
 - `bash .claude/scripts/validate-artifact.sh <this plan> plan` passes.
 - The two out-of-scope Check 4 WARNs (`audit_override`, `audit_verdict`) are still present and are reported as out of scope, not treated as a failure of this task.
 
+#### Reasoned Exclusions (dispatch 21 re-confirmation)
+
+A later inter-cycle redeploy checkpoint withheld this task from reconcile, self-attributing
+`FINDING gate20 orchestrator context budget: skills/skill-orchestrate/SKILL.md over ceiling` to
+this task. Re-examined with evidence:
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `FINDING gate20 ... skills/skill-orchestrate/SKILL.md over ceiling` | Not caused by this task. The finding is a pre-existing over-ceiling condition on `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` (25,510 B vs. a 25,000 B ceiling), last modified by an unrelated task, long before this task's own commits. The checkpoint's `deploy_baseline_self_attributable_findings` screen matches findings to a task's `modified_files` **by basename only**; this task's own `modified_files` includes `agent-system/extensions/core/skills/skill-todo/SKILL.md` — a different file that happens to share the basename `SKILL.md` with the actually-over-ceiling file. The basename collision produced a false-positive self-attribution. | `git log --oneline -- agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` shows the most recent commit touching that file is `9be017d79 task 609: stop a pending user question charging its own task into failed_tasks`; no task-531 commit (`dc7b6f262`, `6042e39f1`, `211c042bb`, `807cc7f88`, `7e40bafc8`, `c1e875d44`, `1bf2d866a`, `eae98ae75`) appears in that file's history. `wc -c agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` = 25510; `jq '.files["skills/skill-orchestrate/SKILL.md"].ceiling_bytes' agent-system/extensions/core/context/config/orchestrator-context-budget.json` = 25000. This task's own `.return-meta.json` (dispatch_seq 19) `modified_files` lists `agent-system/extensions/core/skills/skill-todo/SKILL.md`, not `skill-orchestrate/SKILL.md`. |
+
+This task does not fix the pre-existing `skill-orchestrate/SKILL.md` ceiling overage (out of
+this task's declared `file_scope` and unrelated to file_scope declaration hygiene); that remains
+whichever task next touches that file's content. The basename-collision false-positive in the
+self-attribution screen's matching logic is recorded as an orchestration-defect issue
+(`issue-record.sh`, class `orchestration defect`) for a future task to consider tightening the
+matcher (e.g. to compare full repo-relative paths, or paths scoped to the same skill directory)
+rather than fixed here, since that script is outside this task's own declared scope.
+
 ---
 
 ## Testing & Validation
