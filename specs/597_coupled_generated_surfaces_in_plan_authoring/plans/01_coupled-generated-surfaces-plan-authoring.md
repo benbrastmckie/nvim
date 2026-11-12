@@ -230,43 +230,47 @@ advisory-side of.
 
 ---
 
-### Phase 2: Correct Condition 7 and Link Condition 1 to the General Rule [NOT STARTED]
+### Phase 2: Correct Condition 7 and Link Condition 1 to the General Rule [COMPLETED]
 
 **Goal**: Condition 7 states the pinned `longFile` linter's real arithmetic and the incremental
 re-tightening consequence; Condition 1 points at the new general obligation so the Lean instance
 and the repo-agnostic rule are navigable from each other.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md`
+- [x] Re-read `agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md`
       immediately before editing (the file carries uncommitted foreign modifications in its own
       extension tree; confirm via `git status --short` that this specific file is not among them,
-      and STOP and report if it is).
-- [ ] Replace Condition 7's wrong acceptance-window sentence (`the linter accepts a baseline N
+      and STOP and report if it is). *(completed: `git status --short` showed the file clean)*
+- [x] Replace Condition 7's wrong acceptance-window sentence (`the linter accepts a baseline N
       only when N - 200 <= lines < N`) with the verified rule: `candidate = max(defValue,
       (lines / 100) * 100 + 200)` where `defValue` is `linter.style.longFileDefValue`
       (1500 by default), and the declared baseline `N` is accepted without warning only when
       `N == candidate` or `N + 100 == candidate` — i.e. exactly the two values
       `{candidate - 100, candidate}`. Any other value produces
-      "The current limit is {N}, but it is expected to be {candidate}".
-- [ ] State the two reproductions as evidence, not as the derivation: 2967 lines against a 3400
+      "The current limit is {N}, but it is expected to be {candidate}". *(completed)*
+- [x] State the two reproductions as evidence, not as the derivation: 2967 lines against a 3400
       baseline yields `candidate = 3100`; 3200 lines against a 3200 baseline yields
       `candidate = 3400` (not 3300). Name the source the rule was read from — the pinned
       toolchain's own Mathlib checkout, `Mathlib/Tactic/Linter/Style.lean` at the rev the
       originating repository's `lake-manifest.json` pins for `leanprover/lean4:v4.33.0-rc1` — and
       note that the linter's internals can drift with a toolchain bump, so a plan author on a
       different pin re-reads the source rather than trusting the arithmetic quoted here.
-- [ ] Correct the `longFile 0` sentence only if it is wrong (it is not: the pinned source returns
+      *(completed: both reproductions verified by hand against the pinned checkout's source)*
+- [x] Correct the `longFile 0` sentence only if it is wrong (it is not: the pinned source returns
       early when `linterBound == 0`, so "turns the linter off rather than recording a ceiling" is
-      accurate and stays). Do not rewrite accurate text.
-- [ ] Rewrite the "Plan-authoring consequence" clause to carry the incremental consequence
+      accurate and stays). Do not rewrite accurate text. *(completed: left unchanged, confirmed
+      accurate)*
+- [x] Rewrite the "Plan-authoring consequence" clause to carry the incremental consequence
       explicitly: because `candidate` is a function of the file's CURRENT length, a single early
       bump to the final expected value is itself a new warning, so each phase that moves the
-      file's line count owns its own re-tightening to that phase's own `candidate`.
-- [ ] Add one sentence to Condition 1, after its "Plan-authoring consequence" paragraph, pointing
+      file's line count owns its own re-tightening to that phase's own `candidate`. *(completed)*
+- [x] Add one sentence to Condition 1, after its "Plan-authoring consequence" paragraph, pointing
       at `context/formats/plan-format.md`'s "Coupled-generated-surface declaration obligation" as
       the repo-agnostic statement of the same rule, with Condition 1 as this repository's
-      instance of it. Do not restate the general rule here.
-- [ ] Verify the added prose cites no task number and carries no draft-lineage/version language.
+      instance of it. Do not restate the general rule here. *(completed)*
+- [x] Verify the added prose cites no task number and carries no draft-lineage/version language.
+      *(completed: check-task-references.sh and check-record-versioning.sh both report zero
+      findings for the new prose)*
 
 **Timing**: 45 minutes
 

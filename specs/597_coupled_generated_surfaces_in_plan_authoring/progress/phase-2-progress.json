@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "Correct Condition 7 and Link Condition 1 to the General Rule",
+  "started_at": "2026-11-12T07:03:45Z",
+  "last_updated": "2026-11-12T07:03:45Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite Condition 7 with verified longFile arithmetic", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md"]},
+    {"id": 2, "description": "Add Condition 1 pointer to the general obligation", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.verification",
+      "description": "Phase 2's Verification bullet claims a declared 3300 against 3200 lines is rejected by the corrected formula",
+      "type": "altered",
+      "reason": "Hand-computation shows 3300 IS accepted (candidate-100 for candidate=3400), contradicting the plan's own illustrative claim; recorded via issue-record.sh rather than silently treated as passing or hand-edited in the plan",
+      "annotation": "*(deviation: verification bullet's 3300 example is incorrect; see issue log)*"
+    }
+  ]
+}

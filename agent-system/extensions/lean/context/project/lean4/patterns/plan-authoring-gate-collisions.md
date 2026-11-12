@@ -45,6 +45,10 @@ Three further mechanical facts change what a plan author must do:
 `--fix` run and carries `typst/generated/status.typ` in its own file scope, in the same phase as
 the line-count change — not deferred to a reconciliation phase, because surface (b) cannot wait.
 
+See `context/formats/plan-format.md`'s "Coupled-generated-surface declaration obligation" for the
+repo-agnostic statement of this same rule, with this condition as this repository's instance of
+it.
+
 ## Condition 2 — `verify-deploy.sh`'s Target Argument Is a Deploy-Tree Root
 
 State the correct shape positively: the target argument is a repository root that holds a
@@ -162,14 +166,29 @@ The package-level `longFile` lint ceiling is 1500 lines. Per
 turns the linter off rather than recording a ceiling and is rejected for that reason, not a
 shortcut.
 
-**The trap is the acceptance window**: the linter accepts a baseline `N` only when `N - 200 <=
-lines < N`. A baseline set in an early phase becomes WRONG as later phases grow or shrink the
-file, so the final phase touching that file must RE-TIGHTEN `N` in the same change, not leave the
-earlier phase's value in place.
+**The trap is the acceptance window, and it is not a flat `N - 200 <= lines < N` margin.** The
+linter computes `candidate = max(defValue, (lines / 100) * 100 + 200)` from the file's CURRENT
+line count (`defValue` is `linter.style.longFileDefValue`, 1500 by default), and accepts a
+declared baseline `N` without warning only when `N == candidate` or `N + 100 == candidate` —
+exactly the two values `{candidate - 100, candidate}`. Any other declared `N` produces "This file
+is {lines} lines long. The current limit is {N}, but it is expected to be {candidate}." Two
+reproductions, read from the pinned toolchain's own Mathlib checkout
+(`Mathlib/Tactic/Linter/Style.lean` at the revision the originating repository's
+`lake-manifest.json` pins for `leanprover/lean4:v4.33.0-rc1`), confirm the arithmetic rather than
+deriving it: 2967 lines against a declared baseline of 3400 yields `candidate = 3100` (the
+message names 3100, not 3400); 3200 lines against a declared baseline of 3200 yields `candidate =
+3400` (the message names 3400, never 3300, even though 3300 is also a member of the
+accepted-if-declared set for that `candidate`). The linter's own internals can drift with a
+toolchain bump, so a plan author on a different pin re-reads the source rather than trusting this
+arithmetic.
 
-**Plan-authoring consequence**: a plan whose file will cross 1500 lines schedules both the
-baseline and its re-tightening as named phase work, rather than leaving either to be discovered
-when a gate fails.
+**Plan-authoring consequence**: because `candidate` is a function of the file's CURRENT length,
+not of any eventual target length, the baseline is bumped INCREMENTALLY as the file grows across
+phases — a single early bump to the final expected value is itself a new warning, since that
+value will not equal the smaller `candidate` the linter computes for a shorter intermediate
+length. Each phase that moves the file's line count therefore owns its own re-tightening to that
+phase's own `candidate`, scheduled as named phase work rather than discovered when the gate
+fails.
 
 ## Condition 8 — The `show` Tactic Is Linted, and CI Builds With `--wfail`
 
