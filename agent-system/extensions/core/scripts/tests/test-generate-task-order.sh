@@ -120,13 +120,24 @@ mk_fixture() {
      + (if $topic != "" then {topic: $topic}        else {} end)'
 }
 
+# build_state_goal <scratch> <active_topics_json> <active_goal_json> <fixture_json...> --
+# writes state.json from fixture project objects (one per remaining positional arg).
+# <active_goal_json> is a raw JSON value: the literal string `null` omits the `active_goal` key
+# entirely, `""` writes an empty string, any other JSON string writes it verbatim.
+build_state_goal() {
+  local scratch="$1" active_topics="$2" active_goal_json="$3"; shift 3
+  printf '%s\n' "$@" | jq -s --argjson at "$active_topics" --argjson ag "$active_goal_json" \
+    '{next_project_number: 9999, active_topics: $at, active_projects: .}
+     + (if $ag == null then {} else {active_goal: $ag} end)' \
+    > "$scratch/specs/state.json"
+}
+
 # build_state <scratch> <active_topics_json> <fixture_json...> -- writes state.json from
-# fixture project objects (one per remaining positional arg).
+# fixture project objects (one per remaining positional arg). Thin wrapper over
+# build_state_goal with active_goal omitted, so every pre-existing call site is untouched.
 build_state() {
   local scratch="$1" active_topics="$2"; shift 2
-  printf '%s\n' "$@" | jq -s --argjson at "$active_topics" \
-    '{next_project_number: 9999, active_topics: $at, active_projects: .}' \
-    > "$scratch/specs/state.json"
+  build_state_goal "$scratch" "$active_topics" 'null' "$@"
 }
 
 # run_gto <scratch> -- runs the script under test in --update-todo mode against the scratch
@@ -137,6 +148,48 @@ run_gto() {
   bash "$scratch/.claude/scripts/generate-task-order.sh" \
     --update-todo "$scratch/specs/TODO.md" "$scratch/specs/state.json" \
     >"$scratch/stdout.log" 2>"$scratch/stderr.log"
+}
+
+# run_gto_print <scratch> -- runs the script under test in --print mode against the scratch
+# fixture. No positional file arguments: print mode resolves TODO_FILE/STATE_FILE from
+# PROJECT_ROOT, which common_repo_root derives from the scratch tree's own .claude/scripts
+# location, so the scratch fixture is already the target. stdout/stderr captured to files.
+run_gto_print() {
+  local scratch="$1"
+  bash "$scratch/.claude/scripts/generate-task-order.sh" \
+    --print \
+    >"$scratch/print-stdout.log" 2>"$scratch/print-stderr.log"
+}
+
+# goal_line_from <file-or-text-source> -- prints the captured group of the first
+# "^**Goal**: (.+)$" line within the "## Task Order" section of <source>, or empty if none.
+# <source> may be a path to an existing file (its contents are read) or raw text passed
+# directly (used against print-mode stdout, which has no backing file).
+goal_line_from() {
+  local source="$1" text
+  if [[ -f "$source" ]]; then
+    text="$(cat "$source")"
+  else
+    text="$source"
+  fi
+  awk '
+    /^## Task Order$/ { insec=1; next }
+    insec && /^## / { exit }
+    insec && /^\*\*Goal\*\*: / { sub(/^\*\*Goal\*\*: /, ""); print; exit }
+  ' <<< "$text"
+}
+
+# seed_goal_line <scratch> <text> -- inserts a "**Goal**: <text>" line into the scratch
+# TODO.md's "## Task Order" section, for the preserve-behavior cases. build_scratch()'s default
+# fixture is left Goal-line-free; call this only from cases that need a pre-existing hand-written
+# line to preserve.
+seed_goal_line() {
+  local scratch="$1" text="$2" todo_file
+  todo_file="$scratch/specs/TODO.md"
+  awk -v goal="$text" '
+    /^## Task Order$/ { print; print "**Goal**: " goal; next }
+    { print }
+  ' "$todo_file" > "$todo_file.tmp" && mv "$todo_file.tmp" "$todo_file"
 }
 
 # extract_grouped <scratch> -- prints the "Grouped by Topic" section body (heading line through

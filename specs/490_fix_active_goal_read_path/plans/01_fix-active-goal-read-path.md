@@ -1,7 +1,7 @@
 # Implementation Plan: Task #490
 
 - **Task**: 490 - Fix active_goal read path
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/490_fix_active_goal_read_path/reports/01_fix-active-goal-read-path.md
@@ -128,32 +128,34 @@ resolver, and the deploy gate must observe all three.
 
 ---
 
-### Phase 1: Extend the test harness for Goal-line cases [NOT STARTED]
+### Phase 1: Extend the test harness for Goal-line cases [COMPLETED]
 
 **Goal**: Give `test-generate-task-order.sh` the two things its Goal-resolution cases need — a
 fixture builder that can emit `active_goal` in all three states (absent, empty, non-empty) and a
 `--print`-mode runner — without altering any existing case.
 
 **Tasks**:
-- [ ] Refactor `build_state()` into a thin wrapper over a new
+- [x] Refactor `build_state()` into a thin wrapper over a new
       `build_state_goal <scratch> <active_topics_json> <active_goal_json> <fixture_json...>`, where
       `<active_goal_json>` is a raw JSON value: `null` omits the key entirely, `""` writes an empty
       string, any other JSON string writes it verbatim. `build_state` delegates with `null`, so
       every existing call site is untouched and the `jq -s` construction stays single-source.
-- [ ] Add `run_gto_print <scratch>`: runs `bash "$scratch/.claude/scripts/generate-task-order.sh"
+      *(completed)*
+- [x] Add `run_gto_print <scratch>`: runs `bash "$scratch/.claude/scripts/generate-task-order.sh"
       --print`, capturing stdout to `$scratch/print-stdout.log` and stderr to
       `$scratch/print-stderr.log`. No positional file arguments — print mode resolves
       `TODO_FILE`/`STATE_FILE` from `PROJECT_ROOT`, which `common_repo_root` derives from the
       scratch tree's own `.claude/scripts` location, so the scratch fixture is already the target.
-- [ ] Add `goal_line_from <file-or-text-source>`: prints the captured group of the first
+      *(completed)*
+- [x] Add `goal_line_from <file-or-text-source>`: prints the captured group of the first
       `^\*\*Goal\*\*: (.+)$` line within the `## Task Order` section, or empty if none. Use it from
-      the new cases rather than re-deriving the regex per case.
-- [ ] Add a `seed_goal_line <scratch> <text>` helper that inserts a `**Goal**: <text>` line into
+      the new cases rather than re-deriving the regex per case. *(completed)*
+- [x] Add a `seed_goal_line <scratch> <text>` helper that inserts a `**Goal**: <text>` line into
       the scratch `TODO.md`'s `## Task Order` section, for the preserve-behavior cases. Leave
       `build_scratch()`'s default fixture Goal-line-free, which is the no-prior-line condition
-      Outcome #4 requires.
-- [ ] Run the suite from the source store and confirm the assertion count and outcome are
-      unchanged.
+      Outcome #4 requires. *(completed)*
+- [x] Run the suite from the source store and confirm the assertion count and outcome are
+      unchanged. *(completed: Results: 18 passed, 0 failed — byte-identical to pre-phase)*
 
 **Timing**: 0.75 hours
 

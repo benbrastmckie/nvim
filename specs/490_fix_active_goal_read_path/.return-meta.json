@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/490_fix_active_goal_read_path/plans/01_fix-active-goal-read-path.md",
-      "summary": "4-phase plan (4.25h) fixing the active_goal dead write: unified Goal-resolution chain across --print and --update-todo, red-then-green regression cases, precedence and conflict-rule documentation, deploy plus full gate set."
-    }
-  ],
-  "next_steps": "Run /orchestrate 490 to execute the plan",
-  "phase_count": 4,
-  "estimated_hours": 4.25,
-  "dependency_waves": 4,
-  "memory_candidates": [
-    {
-      "content": "scripts/lib/suite-selection-lib.sh's suite_selection_select collapses a MIXED path set to the single __FULL_SWEEP__ sentinel as soon as any one path has no mapped suite -- it does not return the union of per-path answers. A plan phase whose Files to modify mix a suite-covered path (e.g. a .json schema) with an unmapped guidance markdown path therefore must justify its tier with the sentinel's gate-subset form (verify-deploy.sh --skip-slow --only-gate 3,4 <repo_root>), not with the suite list that the covered path returns on its own. validate-artifact.sh's Tier Justification honesty check detects the per-path form as a fabricated claim, so the aggregation must be run over the whole set before authoring the line.",
-      "category": "PATTERN",
-      "source_artifact": "specs/490_fix_active_goal_read_path/plans/01_fix-active-goal-read-path.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["suite_selection_select", "__FULL_SWEEP__", "Tier Justification", "validate-artifact.sh", "verification tier", "plan authoring"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1794459760_979d1d_490",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1794459760_979d1d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 12
+  "dispatch_seq": 16
 }

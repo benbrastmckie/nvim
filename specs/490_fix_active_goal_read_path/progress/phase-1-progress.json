@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Extend the test harness for Goal-line cases",
+  "started_at": "2026-11-12T06:30:00Z",
+  "last_updated": "2026-11-12T06:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Refactor build_state() into a wrapper over build_state_goal()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-generate-task-order.sh"]},
+    {"id": 2, "description": "Add run_gto_print helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-generate-task-order.sh"]},
+    {"id": 3, "description": "Add goal_line_from helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-generate-task-order.sh"]},
+    {"id": 4, "description": "Add seed_goal_line helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-generate-task-order.sh"]},
+    {"id": 5, "description": "Run suite from source store, confirm assertion count/outcome unchanged", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
