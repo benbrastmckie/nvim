@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Document the precedence, the conflict rule, and the field's live readers",
+  "started_at": "2026-11-12T07:00:00Z",
+  "last_updated": "2026-11-12T07:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "task-order-format.md Goal Statement section: full chain + conflict rule + rationale", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/task-order-format.md"]},
+    {"id": 2, "description": "task-order-format.md Script Usage section: --print/--update-todo parity note", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/task-order-format.md"]},
+    {"id": 3, "description": "task-order-format.md Generation Algorithm: Resolve Goal text step inserted", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/task-order-format.md"]},
+    {"id": 4, "description": "state-schema.json active_goal description clause corrected", "status": "done", "files_touched": ["agent-system/extensions/core/context/schemas/state-schema.json"]},
+    {"id": 5, "description": "state-management-schema.md active_goal row clause corrected (shared with task 603, one row only)", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/state-management-schema.md"]},
+    {"id": 6, "description": "review.md Section 6.7.3: confirm no functional change needed; comment added", "status": "done", "files_touched": ["agent-system/extensions/core/commands/review.md"]},
+    {"id": 7, "description": "Leave Optional Status Summary claim alone (Non-Goal); note finding separately", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Edit agent-system/extensions/core/index-entries.json's task-order-format.md line_count entry directly to fix a doc-lint Rule R mismatch", "result": "reverted", "reason": "index-entries.json is a shared file already carrying many unrelated uncommitted line_count hunks from concurrent sibling work; git-commit-scoped.sh stages whole files, so committing it would sweep in unrelated changes. deploy-headless.sh's Phase-4 call to generate-context-line-counts.sh --write auto-repairs this (and every other stale entry) from wc -l before the deploy copy step, so no manual edit is needed."}
+  ],
+  "handoff_count": 0
+}

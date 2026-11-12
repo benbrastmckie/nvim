@@ -163,7 +163,7 @@
     },
     "active_goal": {
       "type": "string",
-      "description": "Documented-optional. A free-prose statement of the repository's current overall aim, used for human orientation. No script in the agent system writes or reads it; it is authored by a repo owner or by a task that owns the repository's framing. Modelled rather than retired so that a repo carrying a real goal string does not fail validation for holding it; a repo is equally free to omit it."
+      "description": "Documented-optional. A free-prose statement of the repository's current overall aim, used for human orientation. It is authored by a repo owner or by a task that owns the repository's framing, written via /review's goal-update flow (commands/review.md Section 6.7.3), and read by generate-task-order.sh's Goal-line resolution (resolve_goal_text()), which gives a non-empty active_goal precedence over an existing TODO.md Goal line. Modelled rather than retired so that a repo carrying a real goal string does not fail validation for holding it; a repo is equally free to omit it."
     }
   },
   "additionalProperties": false,

@@ -265,13 +265,13 @@ stop and reconsider rather than widening.
 
 ---
 
-### Phase 3: Document the precedence, the conflict rule, and the field's live readers [NOT STARTED]
+### Phase 3: Document the precedence, the conflict rule, and the field's live readers [COMPLETED]
 
 **Goal**: Make the written record match the implemented resolver, state the conflict rule and its
 rationale explicitly, and retire the now-false claim that no script reads `active_goal`.
 
 **Tasks**:
-- [ ] `context/formats/task-order-format.md`, **Goal Statement** section (~line 53 today —
+- [x] `context/formats/task-order-format.md`, **Goal Statement** section (~line 53 today —
       re-read before editing): replace "the generation script reads the existing Goal line from
       TODO.md and retains it unless `--goal` is passed explicitly" with the full four-tier chain
       (`--goal` > non-empty `state.json` `.active_goal` > existing `TODO.md` Goal line > omit the
@@ -281,32 +281,36 @@ rationale explicitly, and retire the now-false claim that no script reads `activ
       authoritative store and `TODO.md` a generated render target, so the field, not a hand edit,
       is the deliberate way to change the goal — and name the accepted trade-off (a stale
       `active_goal` overwrites a hand edit; it self-corrects through the goal-update flow, whereas
-      the reverse rule would make that flow silently fail).
-- [ ] Same file, **Generation → Script Usage** section (~lines 299-310): note that `--print` and
+      the reverse rule would make that flow silently fail). *(completed)*
+- [x] Same file, **Generation → Script Usage** section (~lines 299-310): note that `--print` and
       `--update-todo` resolve the Goal line identically, both reading the same target `TODO.md` for
-      the fallback tier — the parity is the behavior, not an implementation detail.
-- [ ] Same file, **Generation Algorithm** section (~lines 312-330): insert a "Resolve Goal text"
+      the fallback tier — the parity is the behavior, not an implementation detail. *(completed)*
+- [x] Same file, **Generation Algorithm** section (~lines 312-330): insert a "Resolve Goal text"
       step before "Build wave table", naming the three sources in precedence order. This section
       currently enumerates everything the script reads from `state.json` and omits Goal resolution
-      entirely, which is what Outcome #3 names.
-- [ ] `context/schemas/state-schema.json`, the `active_goal` description (lines 164-167 today):
+      entirely, which is what Outcome #3 names. *(completed: inserted as new step 6, renumbering
+      the two subsequent steps to 7-9)*
+- [x] `context/schemas/state-schema.json`, the `active_goal` description (lines 164-167 today):
       correct the clause "No script in the agent system writes or reads it" — `/review`'s
       goal-update flow writes it and `generate-task-order.sh`'s Goal resolution reads it. Change
       that clause only; leave the rest of the description, and the `{"type": "string"}` shape,
-      exactly as they are.
-- [ ] `context/reference/state-management-schema.md`, the `active_goal` table row (~line 77
+      exactly as they are. *(completed)*
+- [x] `context/reference/state-management-schema.md`, the `active_goal` table row (~line 77
       today): the same one-clause correction. **Territory**: sibling task 603 declares this file in
       its own `file_scope`. Re-read the file immediately before editing, confine the change to that
       single table row, and stage only that hunk with an explicit file-list `git add` — never a
-      directory or glob pathspec.
-- [ ] `commands/review.md` Section 6.7.3 (Outcome #5): confirm no functional change is needed —
+      directory or glob pathspec. *(completed: re-read immediately before editing, confirmed no
+      foreign modification present, confined to the single active_goal row)*
+- [x] `commands/review.md` Section 6.7.3 (Outcome #5): confirm no functional change is needed —
       its `--regen-todo` rationale becomes literally accurate once the reader exists — and record
       that confirmation in the implementation summary. Optionally add a single comment line above
       the `state-write.sh` call noting that `--regen-todo`'s `generate-todo.sh` call now renders
       `active_goal` through `generate-task-order.sh --print`'s Goal resolution. Touch no other
-      caller: the report's survey confirms this is the sole writer.
-- [ ] Leave `task-order-format.md`'s "Optional Status Summary" preserved-across-regenerations
+      caller: the report's survey confirms this is the sole writer. *(completed: no functional
+      change needed; added the single comment line)*
+- [x] Leave `task-order-format.md`'s "Optional Status Summary" preserved-across-regenerations
       claim alone (explicit Non-Goal) and note the separate finding in the summary instead.
+      *(completed: left unedited; finding recorded in the implementation summary)*
 
 **Timing**: 1 hour
 

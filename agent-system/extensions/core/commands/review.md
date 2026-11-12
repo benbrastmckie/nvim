@@ -731,7 +731,9 @@ Apply selected goal by writing to state.json and regenerating TODO.md, both via 
 the write that triggered it (this write is immediately followed by nothing but the regen, so it
 is safe to fold in):
 ```bash
-# Write active_goal to state.json, regenerating TODO.md inside the same mutex
+# Write active_goal to state.json, regenerating TODO.md inside the same mutex. The --regen-todo
+# call's generate-todo.sh invocation now renders active_goal through generate-task-order.sh
+# --print's Goal resolution (resolve_goal_text()), so this write's intent reaches TODO.md.
 bash .claude/scripts/state-write.sh \
   '.active_goal = $goal' \
   --session-id "$session_id" \
