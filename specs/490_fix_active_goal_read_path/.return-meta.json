@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794459760_979d1d_490",
-  "dispatch_seq": 5,
-  "findings_count": 5,
-  "next_steps": "Run /orchestrate 490 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/490_fix_active_goal_read_path/reports/01_fix-active-goal-read-path.md",
-      "summary": "Confirms active_goal is never read by generate-task-order.sh, and reproduces a deeper, previously-unflagged gap: --print mode (the dominant TODO.md regen path, including review.md Section 6.7.3's own caller) never renders any Goal line at all regardless of source. Recommends a unified precedence chain applied to both --print and --update-todo, a conflict rule (active_goal wins over a hand-edited TODO.md line when non-empty), the three task-order-format.md doc edits, and a regression-test shape covering both code paths."
+      "type": "plan",
+      "path": "specs/490_fix_active_goal_read_path/plans/01_fix-active-goal-read-path.md",
+      "summary": "4-phase plan (4.25h) fixing the active_goal dead write: unified Goal-resolution chain across --print and --update-todo, red-then-green regression cases, precedence and conflict-rule documentation, deploy plus full gate set."
     }
   ],
+  "next_steps": "Run /orchestrate 490 to execute the plan",
+  "phase_count": 4,
+  "estimated_hours": 4.25,
+  "dependency_waves": 4,
   "memory_candidates": [
     {
-      "content": "generate-task-order.sh's Goal-line resolution is split across two modes: --update-todo calls read_existing_goal() to preserve a hand-written **Goal**: line, but --print (the mode generate-todo.sh always uses for full TODO.md rebuilds, invoked by state-write.sh --regen-todo, orchestrator-postflight.sh, and skill-base.sh) skips Goal resolution entirely -- its GOAL_TEXT branch is gated to MODE==\"update\" only. Any caller relying on --print-driven regeneration to preserve or render a Goal line (hand-written or from a future state.json field) will silently lose it on every regen. Verified by live reproduction in an isolated scratch tree.",
+      "content": "scripts/lib/suite-selection-lib.sh's suite_selection_select collapses a MIXED path set to the single __FULL_SWEEP__ sentinel as soon as any one path has no mapped suite -- it does not return the union of per-path answers. A plan phase whose Files to modify mix a suite-covered path (e.g. a .json schema) with an unmapped guidance markdown path therefore must justify its tier with the sentinel's gate-subset form (verify-deploy.sh --skip-slow --only-gate 3,4 <repo_root>), not with the suite list that the covered path returns on its own. validate-artifact.sh's Tier Justification honesty check detects the per-path form as a fabricated claim, so the aggregation must be run over the whole set before authoring the line.",
       "category": "PATTERN",
-      "source_artifact": "specs/490_fix_active_goal_read_path/reports/01_fix-active-goal-read-path.md",
+      "source_artifact": "specs/490_fix_active_goal_read_path/plans/01_fix-active-goal-read-path.md",
       "confidence": 0.85,
-      "suggested_keywords": ["generate-task-order.sh", "generate-todo.sh", "TODO.md", "Goal line", "active_goal", "regeneration"]
-    },
-    {
-      "content": "The repo's validate-task-creation-audit.sh PreToolUse Bash hook blocks any Bash command whose text looks like a hand-rolled write to a state.json-shaped path mentioning active_projects, even in a scratch/test directory unrelated to the real specs/state.json -- it is a text-pattern backstop, not a path-aware check. Workaround for scratch/test fixture construction: use the Write tool (not a Bash heredoc/cat) to create the synthetic state.json file, which is not intercepted by this hook.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/490_fix_active_goal_read_path/reports/01_fix-active-goal-read-path.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["validate-task-creation-audit.sh", "hook", "scratch fixture", "state.json", "Write tool"]
+      "suggested_keywords": ["suite_selection_select", "__FULL_SWEEP__", "Tier Justification", "validate-artifact.sh", "verification tier", "plan authoring"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1794459760_979d1d_490",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 12
 }

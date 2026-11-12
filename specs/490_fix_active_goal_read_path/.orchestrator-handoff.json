@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase plan for the active_goal read path: harness extension, red-then-green regression cases plus a unified resolve_goal_text() chain covering both --print and --update-todo, documentation of the precedence and conflict rule, then deploy and the full gate set. Premise re-validation confirmed every cited line and reproduced the defect live in this repository (non-empty active_goal, no Goal line in specs/TODO.md). The plan carries the research report's settled conflict rule (non-empty active_goal wins over a hand-edited TODO.md line) and the report's finding that --print mode renders no Goal line from any source today, which is why the mode gate must go.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/490_fix_active_goal_read_path/plans/01_fix-active-goal-read-path.md",
+      "summary": "4-phase plan: test harness extension, regression cases + unified Goal resolver in generate-task-order.sh, precedence/conflict-rule documentation, deploy and full gate set."
+    }
+  ],
+  "dispatch_seq": 12
+}
