@@ -1,6 +1,6 @@
 {
   "status": "implemented",
-  "dispatch_seq": 19,
+  "dispatch_seq": 21,
   "artifacts": [
     {
       "type": "summary",
@@ -9,7 +9,7 @@
     }
   ],
   "completion_data": {
-    "completion_summary": "Remediated both file_scope declaration-hygiene defects (two coarse whole-directory entries narrowed to measured files; three absent declarations backfilled plus task 531's own stale entry corrected), and corrected two source-store citations of a nonexistent evidence-probe script. All four plan phases COMPLETED; validate-state.sh Checks 8/9/10/11 all PASS; the full verify-deploy.sh and run-all.sh gates ran and every non-pre-registered finding was attributed to sibling task 601's in-flight uncommitted work, not this task."
+    "completion_summary": "Remediated both file_scope declaration-hygiene defects (two coarse whole-directory entries narrowed to measured files; three absent declarations backfilled plus task 531's own stale entry corrected), and corrected two source-store citations of a nonexistent evidence-probe script. All four plan phases COMPLETED; validate-state.sh Checks 8/9/10/11 all PASS; the full verify-deploy.sh and run-all.sh gates ran and every non-pre-registered finding was attributed to sibling task 601's in-flight uncommitted work, not this task. This re-dispatch (seq 21) resolved the Outstanding Gate Finding (gate20 skills/skill-orchestrate/SKILL.md over ceiling): git log on that file shows it was last touched by task 609, not 531; the finding was falsely self-attributed because the redeploy checkpoint's basename-only matcher collided this task's own modified skills/skill-todo/SKILL.md against the unrelated over-ceiling skills/skill-orchestrate/SKILL.md. Recorded as a Reasoned Exclusion in plan Phase 4 with full evidence, and as an 'orchestration defect' issue-log entry describing the basename-collision matcher gap for future attention; no fix applied to the matcher itself (outside this task's declared file_scope)."
   },
   "modified_files": [
     "specs/state.json",
@@ -17,7 +17,8 @@
     "agent-system/extensions/core/context/patterns/task-abandon-mode.md",
     "agent-system/extensions/core/index-entries.json",
     "agent-system/extensions/core/skills/skill-todo/SKILL.md",
-    "specs/531_file_scope_declaration_hygiene_remediation/summaries/01_file-scope-declaration-hygiene-summary.md"
+    "specs/531_file_scope_declaration_hygiene_remediation/summaries/01_file-scope-declaration-hygiene-summary.md",
+    "specs/531_file_scope_declaration_hygiene_remediation/plans/01_file-scope-declaration-hygiene.md"
   ],
   "memory_candidates": [
     {

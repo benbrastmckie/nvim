@@ -1,9 +1,9 @@
 {
   "status": "implemented",
-  "dispatch_seq": 19,
+  "dispatch_seq": 21,
   "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Narrowed two coarse whole-directory file_scope declarations (projects 473, 518) to measured file-level entries, backfilled three absent declarations (567, 568, 607) plus task 531's own stale entry, and corrected two source-store citations of a nonexistent check-evidence-probes.sh script. All four plan phases COMPLETED; validate-state.sh Checks 8/9/10/11 all PASS; the full verify-deploy.sh and run-all.sh gates ran and every non-pre-registered finding was attributed to sibling task 601's in-flight uncommitted work.",
+  "summary": "Narrowed two coarse whole-directory file_scope declarations (projects 473, 518) to measured file-level entries, backfilled three absent declarations (567, 568, 607) plus task 531's own stale entry, and corrected two source-store citations of a nonexistent check-evidence-probes.sh script. All four plan phases COMPLETED; validate-state.sh Checks 8/9/10/11 all PASS; the full verify-deploy.sh and run-all.sh gates ran. This re-dispatch (seq 21) resolved the Outstanding Gate Finding (gate20 skills/skill-orchestrate/SKILL.md over ceiling): confirmed via git log that this file was last touched by task 609, not 531 -- the finding was falsely self-attributed via a basename collision between skills/skill-orchestrate/SKILL.md (actually over ceiling) and this task's own modified skills/skill-todo/SKILL.md (same basename, different file). Recorded as a Reasoned Exclusion in plan Phase 4 with evidence and as an 'orchestration defect' issue-log entry; the matcher itself was not fixed (outside this task's declared file_scope).",
   "blockers": [],
   "artifacts": [
     {
