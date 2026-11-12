@@ -9,18 +9,17 @@ invokes which, when, and what each promises. The authored-vs-generated split its
 
 ## Responsibility Split
 
-- **`--prune` is the `/todo`-shaped operation**: remove terminal tasks from `## Open work` and
-  drop a whole Run line under `## Next` once every task it names is terminal. `/todo` already
-  does the equivalent housekeeping for `TODO.md`/`state.json`; this extends the same cleanup to
-  `specs/ROADMAP.md`.
 - **`--regenerate` is the `/review`-shaped operation, and is also called directly by
-  `/orchestrate`'s own conclusion stage**: rebuild `## Open work` and `## Next`'s coverage
-  appendix wholly from `state.json`, including each topic block's membership and every per-task
-  status token. `/review` already re-derives system state from scratch; this is the mechanical
-  analogue for `specs/ROADMAP.md` — but `/review`'s own command body does not call this script
-  (see "## Live Callers" below). The conclusion stage (Move 5, Step 5 — see
+  `/orchestrate`'s own conclusion stage**: render `## Open work` and `## Next` wholly from
+  `state.json`, including each topic block's membership, every per-task status token, and every
+  `roadmap_batches` entry. `/review` already re-derives system state from scratch; this is the
+  mechanical analogue for `specs/ROADMAP.md` — but `/review`'s own command body does not call
+  this script (see "## Live Callers" below). The conclusion stage (Move 5, Step 5 — see
   `context/contracts/conclusion-stage.md`) does call it, once per batch run, immediately after
   Move 4 finalizes.
+- **`--prune` is now a deprecated alias for `--regenerate`** (see its Per-Mode Contract entry
+  below) — a file rendered wholly from live state cannot accumulate terminal cruft, so there is
+  no separate `/todo`-shaped cleanup operation left to describe here.
 
 ---
 
@@ -52,14 +51,16 @@ invokes which, when, and what each promises. The authored-vs-generated split its
 
 - **Invocation**: `bash scripts/roadmap-integration.sh --regenerate [--roadmap PATH]
   [--state PATH] [--dry-run] [--max-tasks N]`
-- **Promises**: rebuilds `## Open work` and the `## Next` coverage appendix from `state.json`,
-  retaining every authored value named in `roadmap-format.md`'s Authored vs. Generated table
-  (the six whole authored-verbatim sections, `## Next`'s Run lines with their rationale and the
-  "Why this order:" prose, each task's `<- {annotation}` suffix, an authored `EXT-BLOCKED`
-  token, and the Open work trailer — a free-standing paragraph that follows the last fenced
-  topic block). Idempotent: running it twice in a row with no intervening state change produces
-  a byte-identical file.
-- **Never touches**: any of the retained values above.
+- **Promises**: renders `## Next` and `## Open work` **wholly from state** —
+  `roadmap_batches`/`roadmap_notes` for `## Next`, `active_projects`/`roadmap_annotation`/
+  `roadmap_ext_blocked`/`roadmap_notes.open_work_trailer` for `## Open work` (see
+  `roadmap-format.md`'s Authored vs. Generated table). There is no retained authored content in
+  the rendering path at all — every value either comes from state or is one of the six
+  authored-verbatim sections `--regenerate` never touches. Idempotent: running it twice in a row
+  with no intervening state change produces a byte-identical file.
+- **Never touches**: the six authored-verbatim/measured-by-hand sections (`## Goal`, `## Gate
+  state`, `## Checks before and after every call`, `## Settled decisions`, `## Standing rules`,
+  `## Unfiled observations`).
 - **Exit codes**: 0 on success, including the supported no-op when `--roadmap` names a path
   that does not exist (nothing is read, nothing is written); 1 on a malformed input.
 - **`--dry-run`**: prints a unified diff to stdout and writes nothing — the review-before-write
@@ -69,23 +70,20 @@ invokes which, when, and what each promises. The authored-vs-generated split its
   did-it-change answer the frozen marker cannot give. The absent-`--roadmap` no-op above is
   exempt: it returns before a write is attempted, so it emits no `OUTCOME:` line.
 
-### `--prune`
+### `--prune` (deprecated alias)
 
 - **Invocation**: `bash scripts/roadmap-integration.sh --prune [--roadmap PATH] [--state PATH]
   [--dry-run]`
-- **Promises**: drops a terminal task's line from `## Open work`, dropping the whole topic block
-  if every task in it becomes terminal; drops a task number from a `## Next` Run line, dropping
-  the whole line once every task it named is terminal. Corrects the affected block's `(count)`
-  header. An unaffected line is left **byte-identical**, not just content-equivalent (original
-  column spacing included).
-- **Never touches**: everything `--regenerate` never touches, **plus** the `## Next` coverage
-  appendix (left exactly as found, even if it has gone stale) and every Open work block/line
-  that names no terminal task.
-- **Exit codes**: same as `--regenerate`, including the same supported-no-op behavior for an
-  absent `--roadmap` target.
-- **`--dry-run`**: composes identically to `--regenerate --dry-run`.
-- **Emits an `OUTCOME:` line** identically to `--regenerate` (same four shapes, `--prune`
-  substituted for `--regenerate`), with the same absent-`--roadmap` exemption.
+- **Promises**: prints one named stderr deprecation note, then performs `--regenerate`. A file
+  rendered wholly from live state accumulates no terminal cruft: a batch or Open work entry
+  naming only terminal members is simply never rendered by `--regenerate` in the first place, so
+  there is nothing left for a separate prune pass to do. Measured on this repository before this
+  change landed: `--prune` reported `pruned=0`.
+- **Caller contract unchanged**: the flag is still accepted, and the stderr marker's `pruned=`
+  field is still present (always `0`), so every existing caller — including the conclusion
+  stage's documented invocation, if any repo wires one — keeps working unchanged.
+- **Exit codes / `--dry-run` / `OUTCOME:` line**: identical to `--regenerate`, since `--prune` is
+  now that same code path.
 
 ---
 
@@ -114,16 +112,25 @@ Step 5 — see `context/contracts/conclusion-stage.md`), which invokes it once p
 immediately after Move 4 finalizes, and commits `specs/ROADMAP.md` alone. Neither `/todo`'s
 skill (`skills/skill-todo/SKILL.md`) nor `/review` (`commands/review.md`) invokes this script.
 
-`--prune` has no live caller. The safe interim invocation, until one exists, is `--dry-run` by
-hand.
+`--prune` has no live caller, and is now a deprecated alias for `--regenerate` (see above) —
+there is no longer a distinct behavior for a caller to adopt.
 
-**Ruling**: wiring `/todo` to `--prune` and `/review` to `--regenerate` is acknowledged as an
+**Ruling**: wiring `/todo` to `--regenerate` and `/review` to `--regenerate` is acknowledged as an
 open gap and is deliberately left unwired. A mode is not wired into a command merely to make
 this contract's caller table symmetric with the conclusion stage's own live call. If a concrete
 operational need for that wiring arises, file it via `/task` or `/spawn` rather than wiring it
-preemptively here. A separate, advisory lint over hand-authored `## Next` batch proposals exists
-at `.claude/scripts/lint/lint-roadmap-batch-proposals.sh`, invoked from the conclusion stage's
-Step 5 (see `context/contracts/conclusion-stage.md`) immediately after `--regenerate` runs.
+preemptively here.
+
+**The advisory batch-proposal lint's disposition.** A separate record owns an advisory lint over
+hand-authored `## Next` batch blocks (`.claude/scripts/lint/lint-roadmap-batch-proposals.sh`,
+invoked from the conclusion stage's Step 5 — see `context/contracts/conclusion-stage.md`),
+carrying a hard constraint that it must never author, suggest, or rank a batch. Now that `##
+Next` is rendered wholly from `roadmap_batches` rather than hand-authored, that lint's subject
+matter — a hand-authored Run line to check — no longer exists in the shape it was written
+against. Its disposition is **superseded in its parse layer, not merely narrowed**: the lint is
+wired into no gate (zero references in `verify-deploy.sh`, `gate-registry.data`, or
+`tests/run-all.sh`), so nothing breaks mechanically in the interim, but its parse target is gone.
+The rescoping-or-retirement decision is left to that lint's own owner and is **not made here**.
 
 ---
 

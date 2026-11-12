@@ -51,9 +51,10 @@ header text has already been observed to drift by rename (e.g. `## Run order at 
 
 Every `## ` section in a stage layout is retained **byte-for-byte**, in its original order, with
 one exception: the **run-order section** -- the first section whose body matches the fenced-block
-predicate above -- has its coverage appendix (see "Next Grammar" below) stripped and
-freshly rebuilt by `--regenerate`, and has terminal task ids dropped from its Run lines by
-`--prune` (the same per-line logic the classic layout's `## Next` uses). No section is invented,
+predicate above -- has its body replaced wholly by `render_next()`'s output (see "Next Grammar"
+below) under `--regenerate`, which already omits a batch whose members are all terminal (the
+same per-batch logic the classic layout's `## Next` uses, so `--prune`'s now-deprecated alias
+needs no separate stage-layout logic of its own). No section is invented,
 no section is dropped, and no fixed per-section template is applied -- unlike the classic
 layout's `assemble_roadmap`, the stage layout's `assemble_stage_roadmap` has no section list of
 its own; it only replays whatever sections the file already had, in order.
@@ -66,12 +67,12 @@ layout's per-section behaviour. A stage layout has no `## Open work` section at 
 follows the same Next Grammar appendix rule below applied to that section's retained body
 (see "Stage layout" above).
 
-| Section | Class | Retention key |
+| Section | Class | State field |
 |---------|-------|----------------|
 | `## Goal` | authored-verbatim | — (whole section) |
 | `## Gate state` | measured-by-hand | — (whole section; requires running checks, not reading state) |
-| `## Next` | mixed: generated skeleton + authored-retained prose | `next:run:{i}:rationale`, `next:why-this-order` |
-| `## Open work` | generated, with per-task authored overrides | `task:{N}:description`, `task:{N}:annotation`, `task:{N}:ext-blocked` |
+| `## Next` | **generated**, wholly from state | `roadmap_batches[]` (batches, in array order) plus `roadmap_notes.next_preamble` / `.next_postamble` |
+| `## Open work` | **generated**, wholly from state | `active_projects[]` (`title`, `status`, `dependencies`) plus `roadmap_annotation` / `roadmap_ext_blocked` plus `roadmap_notes.open_work_trailer` |
 | `## Checks before and after every call` | authored-verbatim | — (whole section) |
 | `## Settled decisions (do not re-litigate)` | authored-verbatim | — (whole section) |
 | `## Standing rules` | authored-verbatim | — (whole section) |
@@ -79,9 +80,25 @@ follows the same Next Grammar appendix rule below applied to that section's reta
 
 `authored-verbatim` and `measured-by-hand` sections are never rewritten by either mode; the
 distinction is only *why* a human owns the text (prose vs. a measurement this task does not
-compute). A `generated`/`mixed` section's authored sub-parts are extracted by a retention parser
-(mirroring `generate-task-order.sh`'s `read_existing_goal`) before the section is rebuilt, then
-re-spliced in.
+compute). `## Next` and `## Open work` are rendered wholly from the state fields named above —
+there is no retention parser anywhere in the path: nothing in `roadmap-integration.sh` reads
+authored content back out of the file it is about to overwrite. A second consecutive
+`--regenerate` is byte-identical, the same idempotence property the generator already held.
+
+### Per-Section Ruling
+
+Every section's disposition, settled explicitly rather than left implicit:
+
+| Section | Ruling | Why |
+|---|---|---|
+| `## Goal` | authored-verbatim | A standing mission statement; no structured shape an agent would revise. |
+| `## Gate state` | **cannot be generated at all** | Every bullet cites a freshly-run suite count, a probe result, or a lock-contention observation — measured by running checks, not derived from any field a state entry could hold. |
+| `## Next` | generated | Sourced from `roadmap_batches` + `roadmap_notes.next_preamble`/`.next_postamble`; see `render_next()`. |
+| `## Open work` | generated | Sourced from `active_projects` + `roadmap_annotation`/`roadmap_ext_blocked` + `roadmap_notes.open_work_trailer`; see `render_open_work()`. |
+| `## Checks before and after every call` | authored-verbatim | A fixed procedural checklist; no per-item structured shape. |
+| `## Settled decisions (do not re-litigate)` | authored-verbatim | Owner rulings; no per-task shape to generate from. |
+| `## Standing rules` | authored-verbatim | Same shape as Settled decisions — owner-authored, not per-task. |
+| `## Unfiled observations (none worth a task yet)` | authored-verbatim | A scratch list, deliberately unstructured. |
 
 ## Open work Grammar
 
@@ -103,20 +120,21 @@ task with no `topic` field at all falls into a trailing `Uncategorized` block, s
   the live file: `core-agent-system` -> `Core agent system`, `orchestrator` -> `Orchestrator` —
   **not** `task-order-format.md`'s per-word title case), `{count}` is the number of non-terminal
   tasks in the block.
-- Any free-standing authored prose following the LAST fenced block (e.g. a `**342's hold**: ...`
-  explanatory paragraph that is not itself inside a fence) is an **Open work trailer**: retained
-  verbatim by `--regenerate` (appended after the freshly rebuilt blocks) and left untouched by
-  `--prune` (which only ever edits lines inside a fence).
+- Free-standing prose following the LAST fenced block (e.g. a `**342's hold**: ...` explanatory
+  paragraph that is not itself inside a fence) is the **Open work trailer**, rendered from
+  `roadmap_notes.open_work_trailer` (one paragraph per array entry) and appended after the
+  freshly rebuilt blocks. `--prune` (a deprecated alias for `--regenerate`) renders the same way.
 - Task line: `^(\d+) (\S+)\s{2,}(.+?)(\s{3}<- (.+))?$` — task number, one space, status token,
   padded with at least two spaces to a target column (minimum two when the token overflows the
   column), description, optional `   <- {annotation}` suffix.
 - Within-block ordering: status-token class first (closed-vocabulary tokens before `blocked:N`
   tokens, ascending precedence order below), then task number ascending.
-- `{description}` is the authored override at `task:{N}:description` when present, else
-  `state.json`'s `title`, truncated with a trailing `...` so the rendered line (task number
-  through description, excluding any `<- {annotation}` suffix) stays at or under 100 characters.
-- `{annotation}` (the `<- {text}` suffix) is the authored override at `task:{N}:annotation`,
-  dropped entirely (no suffix) when absent.
+- `{description}` is always rendered from `state.json`'s `title` (the sole source — there is no
+  per-task description override), truncated with a trailing `...` so the rendered line (task
+  number through description, excluding any `<- {annotation}` suffix) stays at or under 100
+  characters.
+- `{annotation}` (the `<- {text}` suffix) is rendered from the task entry's `roadmap_annotation`
+  field, dropped entirely (no suffix) when absent.
 
 ## Status Tokens
 
@@ -128,7 +146,7 @@ A closed vocabulary with a precedence rule. The first matching row wins:
 | 2 | `IN FLIGHT` | `status == "implementing"` |
 | 3 | `BLOCKED` | `status == "blocked"` |
 | 4 | `PARTIAL` | `status == "partial"` |
-| 5 | `EXT-BLOCKED` | authored override at `task:{N}:ext-blocked`; **no schema support** — never derived, always retained verbatim from the existing file when present |
+| 5 | `EXT-BLOCKED` | the task entry's `roadmap_ext_blocked` field (boolean, schema-backed) |
 | 6 | `blocked:N[,M...]` | `dependencies[]` intersected with the non-terminal task set is non-empty; sorted ascending comma list |
 | 7 | `ready` | `dependencies[]` intersected with the non-terminal task set is empty |
 
@@ -138,34 +156,41 @@ externally-blocked task may otherwise read `ready` or `blocked:N` against in-rep
 
 ## Next Grammar
 
+This is now a **rendering contract**, not a parsing one: `render_next()` builds `## Next` from
+`roadmap_batches` and `roadmap_notes`; nothing here is read back out of the existing file.
+
 ```
-/orchestrate {task_list} {flags}   # {rationale}
+/orchestrate {task_list} {flags}   # {description}
 ```
 
-- Fenced block, one line per batch: `^/orchestrate ([\d, ]+)(\s+(-\S.*?))?(\s{3}# (.+))?$`.
-  `{flags}` is an optional, authored CLI flag segment (e.g. `--hard`, `--hard --lit`) — anchored
-  on the first whitespace-preceded `-` after `{task_list}`, never on the first run of whitespace
-  (which would mis-split a grammar-legal intra-list space such as `716, 714 --hard`). No
-  arbitrary trailing text is admitted beyond this flag segment. `{rationale}` is authored,
-  retained at `next:run:{i}:rationale` (`{i}` = 0-based line position).
-- `--prune` preserves an authored `{flags}` segment verbatim in every outcome: a Run line with at
-  least one surviving (non-terminal) id keeps `{flags}` exactly as authored, and a Run line this
-  parser cannot fully classify (a non-numeric id token) passes through completely unchanged
-  rather than being dropped.
-- Below the fence: `Why this order:` followed by a bullet list, entirely authored, retained
-  verbatim at `next:why-this-order`.
+- `roadmap_notes.next_preamble` paragraphs render first (one entry per paragraph), then a fence
+  containing one line per `roadmap_batches` entry **in array order**: `{task_list}` is that
+  entry's `task_ids` joined by `, `, `{flags}` is its optional authored CLI flag segment (e.g.
+  `--hard`, `--hard --lit`), and `{description}` is its bounded `description` field (see
+  `context/formats/roadmap-entry-template.md` for the <= 100-character bound and the worked
+  example pair). Line shape: `^/orchestrate ([\d, ]+)(\s+(-\S.*?))?(\s{3}# (.+))?$`.
+- A batch all of whose `task_ids` members are now terminal renders with that line **omitted
+  entirely** — the behaviour `--prune` used to provide, now a property of rendering from live
+  state rather than a separate pass. A batch with a mix of terminal and non-terminal members
+  renders its still-live members only.
+- Below the fence: `Why this order:` followed by one bullet per `roadmap_batches` entry carrying
+  a non-empty `rationale` (a multi-paragraph `rationale` renders as one bullet with two-space-
+  indented continuation lines); an entry with no `rationale` emits no bullet. Then
+  `roadmap_notes.next_postamble` paragraphs.
 - A generated **coverage appendix** follows: any currently-dispatchable task (status not in the
   precedence table's rows 1-5, and `blocked:`/`ready` per row 6/7 evaluates `ready`) not named by
-  any retained Run line, rendered as additional `/orchestrate` lines chunked at `--max-tasks`
-  (default 8, matching `commands/orchestrate.md`'s `MAX_TASKS`) per wave. Header:
-  `**Coverage appendix (uncovered tasks)**:`. Omitted entirely when empty.
-- A Run line's `{task_list}` MAY name tasks carrying `dependencies[]` edges among themselves:
+  any `roadmap_batches` entry, rendered as additional `/orchestrate` lines chunked at
+  `--max-tasks` (default 8, matching `commands/orchestrate.md`'s `MAX_TASKS`) per wave. Header:
+  `**Coverage appendix (uncovered tasks)**:`. Omitted entirely when empty. `covered_ids_json` is
+  computed directly from `roadmap_batches[].task_ids`, not by re-parsing the rendered fence.
+- A batch's `task_ids` MAY name tasks carrying `dependencies[]` edges among themselves:
   `/orchestrate` dispatches dependency-aware waves, so an intra-batch edge sequences the two
   tasks into successive waves rather than disqualifying either one. Whether a dependent joins
-  its predecessor's batch is the author's judgment; a dependency edge is never grounds for
-  REMOVING a task from a batch. See `context/patterns/batch-orchestration-guardrails.md`'s Gate
-  Catalogue, which already classifies an unmet predecessor as an ORDERING CONSTRAINT, cleared
-  automatically once the predecessor reaches a terminal state.
+  its predecessor's batch is the author's (the `/roadmap` agent's) judgment; a dependency edge is
+  never grounds for REMOVING a task from a batch. See
+  `context/patterns/batch-orchestration-guardrails.md`'s Gate Catalogue, which already classifies
+  an unmet predecessor as an ORDERING CONSTRAINT, cleared automatically once the predecessor
+  reaches a terminal state.
 
 ## Generation
 
@@ -174,14 +199,16 @@ Generated by `scripts/roadmap-integration.sh`, three modes plus a composable fla
 - `--print` (default): emits the generated sections to stdout; mutates nothing. Structurally
   independent of the existing file's layout -- it never reads an existing `specs/ROADMAP.md`, so
   `detect_layout` and the refusal gate below do not apply to it.
-- `--regenerate`: on a **classic** layout, rebuilds `## Open work` and `## Next`'s generated
-  parts wholly from state, retaining every authored key above; idempotent (a second consecutive
-  run is byte-identical). On a **stage** layout, retains every section byte-for-byte except the
+- `--regenerate`: on a **classic** layout, rebuilds `## Open work` and `## Next` wholly from
+  `state.json` (`render_open_work()` and `render_next()`); idempotent (a second consecutive run
+  is byte-identical). On a **stage** layout, retains every section byte-for-byte except the
   run-order section's coverage appendix, which is stripped and freshly rebuilt; also idempotent.
-- `--prune`: narrower — on a **classic** layout, drops terminal tasks from `## Open work` and
-  drops a whole Run line once every task it names is terminal, without re-rendering the coverage
-  appendix. On a **stage** layout, applies the same Run-line-dropping rule to the run-order
-  section's body only; every other section (there is no `## Open work` to prune) is untouched.
+- `--prune`: **deprecated alias** for `--regenerate`. A file rendered wholly from live state
+  cannot accumulate terminal cruft — a batch or Open work line naming only terminal members is
+  simply never rendered (see Next Grammar and Open work Grammar above) — so there is nothing left
+  for a separate prune pass to remove. Prints one named stderr deprecation note, then dispatches
+  to `--regenerate`. Still accepted, and the stderr marker's `pruned=` field is still present
+  (always `0`), so every existing caller keeps working unchanged.
 - `--dry-run` (composable with the two write modes): prints a diff, writes nothing.
 
 Reuse ledger: `generate-task-order.sh --print`'s `**Dependency Waves**:` table supplies wave
@@ -201,6 +228,13 @@ and **no write attempted** -- `--dry-run` or not. This is a permanent property o
 not a transitional guard pending wider layout support: a vocabulary this script cannot
 round-trip is never guessed at or silently overwritten with a fixed template, however the
 recognised vocabulary set grows in the future.
+
+Now that `## Next` and `## Open work` are both wholly generated, this refusal is **more**
+important than it was under the old retention-parser model, not less: with no authored content
+left in the rendering path, a bad render's blast radius is the whole document rather than a
+single mis-retained field, so refusing to guess at an unrecognised layout is the only thing
+standing between a confident classification and overwriting a file this script cannot actually
+round-trip.
 
 **Settled layout ruling**: both recognised vocabularies are taught and round-tripped --
 `classic` (the eight literal `CLASSIC_HEADERS`) and `stage` (a `## Stage N` header plus a fenced

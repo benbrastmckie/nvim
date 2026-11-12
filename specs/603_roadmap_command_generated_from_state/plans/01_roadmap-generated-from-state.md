@@ -257,53 +257,53 @@ edit by a sibling record.
 
 ---
 
-### Phase 2: The Generation Contract and the Concise Entry Template [NOT STARTED]
+### Phase 2: The Generation Contract and the Concise Entry Template [COMPLETED]
 
 **Goal**: the rendered shape, the entry shape, the anti-fluff bound, and the per-section ruling
 for all six authored sections are all written down before any renderer changes.
 
 **Tasks**:
-- [ ] Create `context/formats/roadmap-entry-template.md`: the concise template the dispatch asks
+- [x] Create `context/formats/roadmap-entry-template.md`: the concise template the dispatch asks
       for. It specifies **both** the entry shape (a `roadmap_batches` object, field by field) and
       the rendered shape (`/orchestrate {ids} {flags}   # {description}` plus the `Why this
       order:` bullet rendered from `rationale`), states the **hard bound — `description` <= 100
       characters** — and gives the anti-fluff rule: one line stating what the batch accomplishes
       and why those members belong together, never a paragraph, never a restatement of each
       member's own title.
-- [ ] In that file, write the two worked examples the dispatch requires, with character counts
+- [x] In that file, write the two worked examples the dispatch requires, with character counts
       shown so the bound is checkable rather than aspirational:
       - **Compliant** (76 chars): `Make the roadmap generated and close the two costs that measurement surfaced`
       - **Non-compliant** (112 chars): `Fixes the roadmap generator, the next-batch suggester, the backgrounding ceiling, and the memory-retrieval retry` — over the bound *and* a per-member title restatement, which is why it fails on two counts rather than one.
-- [ ] State in the template that the 100-character bound is deliberately on `description` alone,
+- [x] State in the template that the 100-character bound is deliberately on `description` alone,
       not on the whole rendered line, and why (a long `task_list` already consumes ~51 characters
       of a Run line, so a whole-line bound would be unsatisfiable).
-- [ ] Rewrite `roadmap-format.md`'s **Authored vs. Generated** table: `## Next` becomes
+- [x] Rewrite `roadmap-format.md`'s **Authored vs. Generated** table: `## Next` becomes
       `generated` (sourced from `roadmap_batches` + `roadmap_notes.next_preamble` /
       `.next_postamble`); `## Open work` becomes `generated` (sourced from `active_projects` +
       `roadmap_annotation` / `roadmap_ext_blocked` + `roadmap_notes.open_work_trailer`); the
       retention-key column is replaced by a state-field column.
-- [ ] Rewrite `roadmap-format.md`'s **Next Grammar** section as a rendering contract rather than a
+- [x] Rewrite `roadmap-format.md`'s **Next Grammar** section as a rendering contract rather than a
       parsing one, and its **Open work Grammar** `{description}` bullet to name `title` as the sole
       source (the authored override is retired). Keep the `EXT-BLOCKED` precedence row but change
       its Source cell from "authored override ... no schema support" to the new
       `roadmap_ext_blocked` field.
-- [ ] Record the **per-section ruling** the dispatch requires, as its own subsection: `## Goal`
+- [x] Record the **per-section ruling** the dispatch requires, as its own subsection: `## Goal`
       (authored-verbatim — a standing mission statement, no structured shape an agent would
       revise); `## Gate state` (**cannot be generated at all** — measured by running suites, not
       derived from any field); `## Checks before and after every call` (authored-verbatim — a
       fixed procedural checklist); `## Settled decisions (do not re-litigate)` (authored-verbatim
       — owner rulings, no per-task shape); `## Standing rules` (authored-verbatim — same shape);
       `## Unfiled observations` (authored-verbatim — a scratch list, deliberately unstructured).
-- [ ] Leave the **Destructive-Overwrite Refusal** subsection unchanged, and add one sentence
+- [x] Leave the **Destructive-Overwrite Refusal** subsection unchanged, and add one sentence
       recording why a fully generated file makes it *more* important: the blast radius of a bad
       render is now the whole document.
-- [ ] Update `context/patterns/roadmap-update.md`'s per-mode contract: `--regenerate`'s "retaining
+- [x] Update `context/patterns/roadmap-update.md`'s per-mode contract: `--regenerate`'s "retaining
       every authored value" promise is replaced by "renders `## Next` and `## Open work` wholly
       from state"; `--prune` is documented as a **deprecated alias** that prints a named note and
       performs `--regenerate` (a file rendered from live state cannot accumulate terminal cruft —
       measured: `--prune` reports `pruned=0` on this repository), with its caller contract
       unbroken.
-- [ ] Record the batch-proposal lint's disposition in `roadmap-update.md`'s own cross-reference:
+- [x] Record the batch-proposal lint's disposition in `roadmap-update.md`'s own cross-reference:
       its parse layer's subject matter (hand-authored `## Next` Run lines) ceases to exist, so it
       is **superseded, not narrowed**; the lint is wired into no gate, so nothing breaks
       mechanically; the rescoping-or-retirement decision is left to its owner and **that record is

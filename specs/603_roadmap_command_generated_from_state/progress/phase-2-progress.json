@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "The Generation Contract and the Concise Entry Template",
+  "started_at": "2026-11-12T00:15:00Z",
+  "last_updated": "2026-11-12T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create roadmap-entry-template.md with entry/rendered shape, bound, worked examples", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/formats/roadmap-entry-template.md"]},
+    {"id": 2, "description": "Rewrite roadmap-format.md's Authored vs Generated table, grammars, per-section ruling, Destructive-Overwrite sentence", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/formats/roadmap-format.md"]},
+    {"id": 3, "description": "Update roadmap-update.md per-mode contract, --prune deprecation, lint disposition cross-reference", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/patterns/roadmap-update.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "2.verification", "description": "verify-deploy.sh --skip-slow --only-gate 3,4 exits non-zero at this point in the sequence", "type": "deferred", "reason": "The FAILs are index-entries.json line_count drift for files this phase edited (remedied by Phase 5's own task, which refreshes line_count/summary for roadmap-format.md and roadmap-update.md plus adds the new template's entry) and deployed-script content drift for validate-state.sh/test-validate-state.sh (remedied by Phase 7's redeploy). Confirmed the diff is prose-only and the new template carries the required bound and worked-example pair; the gate-3/4 numeric pass is deferred to Phase 7's full verify-deploy.sh run, consistent with this plan's own phase ordering.", "annotation": "*(deviation: deferred to phase 5/7)*"}
+  ],
+  "handoff_count": 0
+}
