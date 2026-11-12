@@ -287,21 +287,21 @@ before editing.
 
 ---
 
-### Phase 4: Final verification and completion [NOT STARTED]
+### Phase 4: Final verification and completion [COMPLETED]
 
 **Goal**: The full gate set passes, every acceptance criterion is confirmed against live output,
 and the task closes with its deviations recorded.
 
 **Tasks**:
 
-- [ ] Run the full aggregator: `bash .claude/scripts/verify-deploy.sh`. Read every finding and attribute each one to this task or to pre-existing/sibling state before proceeding.
-- [ ] Run the shell test suite: `bash .claude/scripts/tests/run-all.sh`.
-- [ ] Run `bash .claude/scripts/validate-state.sh specs/state.json` and capture the Check 8, 9 and 10 lines verbatim as the acceptance evidence.
-- [ ] Run `bash .claude/scripts/validate-artifact.sh specs/531_file_scope_declaration_hygiene_remediation/plans/01_file-scope-declaration-hygiene.md plan` to confirm this plan's own authoring shape.
-- [ ] Re-run `bash .claude/scripts/backfill-file-scope.sh --dry-run` and confirm it now reports 0 plan-less tasks (or names only tasks created after this task began, which are out of scope).
-- [ ] Record, in the task summary, the three premise corrections this task made to its own dispatch description (project 177 does not exist here; 3 absent not 28; the absent-declaration defect is Check 10, not Check 9), and the deliberate non-goal around the evidence-probe detector.
-- [ ] Record the follow-up recommendation: resolve whether this repository should have a `WIRED_REPO`/evidence-probe detector at all, now that both citing files no longer claim one exists.
-- [ ] Write the implementation summary and close the task.
+- [x] Run the full aggregator: `bash .claude/scripts/verify-deploy.sh`. Read every finding and attribute each one to this task or to pre-existing/sibling state before proceeding. *(completed: 12 of 85 checks FAIL; every one attributed to sibling task 601's in-flight uncommitted lint-script files (scripts/lint/lint-test-root-resolution.sh, scripts/tests/test-lint-test-root-resolution.sh, not yet registered in manifest.json), to a since-resolved sibling 597 doc-lint mismatch, to an unrelated pre-existing SKILL.md context-budget overage (last touched by task 609), or to a transient gate10 timeout that passed cleanly (54.7s) on direct re-run. None fall within task 531's declared file_scope. This dispatch ran the full, non-narrowed gate per the Batch Gate Deferral directive's own Unmappable Criterion carve-out, since Phase 4's declared criteria explicitly forbid --only-gate/--skip-slow narrowing.)*
+- [x] Run the shell test suite: `bash .claude/scripts/tests/run-all.sh`. *(completed: 182 passed, 6 failed (5 EXPECTED pre-registered, 1 NEW), 0 skipped, 188 total. The 1 NEW failure (test-manifest-scripts-sync.sh) is the same task-601 manifest-registration gap identified above.)*
+- [x] Run `bash .claude/scripts/validate-state.sh specs/state.json` and capture the Check 8, 9 and 10 lines verbatim as the acceptance evidence. *(completed: '[PASS] No coarse (blast radius >= 3) file_scope declarations found'; '[PASS] No duplicate file_scope entries found (exact or normalization-equivalent)'; '[PASS] No missing/null/empty file_scope found among 135 non-terminal task(s)'; '[PASS] No glob-shaped file_scope entries found'. Only the pre-existing, out-of-scope Check 4 audit_override/audit_verdict WARNs remain.)*
+- [x] Run `bash .claude/scripts/validate-artifact.sh specs/531_file_scope_declaration_hygiene_remediation/plans/01_file-scope-declaration-hygiene.md plan` to confirm this plan's own authoring shape. *(completed: [PASS] plan artifact is valid (0 warnings))*
+- [x] Re-run `bash .claude/scripts/backfill-file-scope.sh --dry-run` and confirm it now reports 0 plan-less tasks (or names only tasks created after this task began, which are out of scope). *(completed: Tasks backfilled: 0, already covered (skipped): 142, Plan-less tasks (left absent): 0)*
+- [x] Record, in the task summary, the three premise corrections this task made to its own dispatch description (project 177 does not exist here; 3 absent not 28; the absent-declaration defect is Check 10, not Check 9), and the deliberate non-goal around the evidence-probe detector. *(completed, see summary)*
+- [x] Record the follow-up recommendation: resolve whether this repository should have a `WIRED_REPO`/evidence-probe detector at all, now that both citing files no longer claim one exists. *(completed, see summary; also recorded 3 further pre-existing check-evidence-probes citations left untouched, out of this phase's own scope)*
+- [x] Write the implementation summary and close the task. *(completed)*
 
 **Timing**: 0.5 hours
 
