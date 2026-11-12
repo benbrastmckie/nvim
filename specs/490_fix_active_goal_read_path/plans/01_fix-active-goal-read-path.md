@@ -1,7 +1,7 @@
 # Implementation Plan: Task #490
 
 - **Task**: 490 - Fix active_goal read path
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/490_fix_active_goal_read_path/reports/01_fix-active-goal-read-path.md
@@ -442,28 +442,30 @@ second bare `verify-deploy.sh` invocation.
 
 ## Testing & Validation
 
-- [ ] `test-generate-task-order.sh`'s pre-existing assertions all still pass, with the
+- [x] `test-generate-task-order.sh`'s pre-existing assertions all still pass, with the
       pre-phase-1 `Results:` count preserved through the harness refactor.
-- [ ] Case 5a passes: `active_goal` set, no prior Goal line, `--update-todo` emits the line — the
+- [x] Case 5a passes: `active_goal` set, no prior Goal line, `--update-todo` emits the line — the
       exact condition that silently no-ops today (Outcome #4).
-- [ ] Case 5b passes: the same condition under `--print`, the mode the motivating caller reaches.
-- [ ] Case 5c passes: `--goal` still wins over `active_goal` (the existing override does not
+- [x] Case 5b passes: the same condition under `--print`, the mode the motivating caller reaches.
+- [x] Case 5c passes: `--goal` still wins over `active_goal` (the existing override does not
       regress, Outcome #1).
-- [ ] Cases 5d and 5e pass in both modes: a hand-written Goal line survives regeneration when
+- [x] Cases 5d and 5e pass in both modes: a hand-written Goal line survives regeneration when
       `active_goal` is absent or empty (the preserve behavior does not regress, and now holds in
       `--print` where it never did).
-- [ ] Every new case was observed red against the unmodified script before the fix, with the
+- [x] Every new case was observed red against the unmodified script before the fix, with the
       output captured in the implementation summary.
-- [ ] `task-order-format.md` states the full chain in all three named sections and the conflict
+- [x] `task-order-format.md` states the full chain in all three named sections and the conflict
       rule explicitly with its rationale (Outcomes #2 and #3).
-- [ ] Neither `state-schema.json` nor `state-management-schema.md` still claims no script reads
+- [x] Neither `state-schema.json` nor `state-management-schema.md` still claims no script reads
       `active_goal`.
-- [ ] `commands/review.md` Section 6.7.3's functional behavior is unchanged, and the
+- [x] `commands/review.md` Section 6.7.3's functional behavior is unchanged, and the
       no-change-needed confirmation is recorded (Outcome #5).
-- [ ] The complete gate set is green from the deployed tree, and `specs/TODO.md` renders the Goal
-      line from `active_goal`.
-- [ ] No file under `agent-system/**` landed by this task carries a task-number reference or
-      record-versioning language.
+- [x] The complete gate set is green from the deployed tree, and `specs/TODO.md` renders the Goal
+      line from `active_goal`. *(completed with 2 Reasoned Exclusions on Phase 4: two sibling-owned,
+      pre-existing failures unrelated to this task's file_scope; specs/TODO.md's rendered Goal
+      line confirmed byte-identical to active_goal)*
+- [x] No file under `agent-system/**` landed by this task carries a task-number reference or
+      record-versioning language. *(confirmed via grep against this task's added lines only)*
 
 ## Artifacts & Outputs
 

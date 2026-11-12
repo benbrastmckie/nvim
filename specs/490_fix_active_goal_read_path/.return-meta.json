@@ -1,10 +1,66 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 16,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/490_fix_active_goal_read_path/summaries/01_fix-active-goal-read-path-summary.md",
+      "summary": "4-phase implementation closed: unified resolve_goal_text() precedence chain shared by --print and --update-todo, red-then-green regression evidence, documented precedence/conflict rule, and deploy with the live active_goal/TODO.md gap closed end to end. Phase 4 closed [COMPLETED WITH EXCLUSIONS] for two sibling-owned, pre-existing deploy-gate failures unrelated to this task."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed generate-task-order.sh's dead active_goal read path by adding a unified resolve_goal_text() precedence chain (--goal override > non-empty active_goal > existing TODO.md Goal line > omit) shared by --print and --update-todo, removing the mode gate that previously made --print never render a Goal line at all. Added five red-then-green regression cases, documented the precedence and conflict rule in task-order-format.md/state-schema.json/state-management-schema.md, and deployed the fix, closing the live active_goal/TODO.md reproduction end to end."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/generate-task-order.sh",
+    "agent-system/extensions/core/scripts/tests/test-generate-task-order.sh",
+    "agent-system/extensions/core/context/formats/task-order-format.md",
+    "agent-system/extensions/core/context/schemas/state-schema.json",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
+    "agent-system/extensions/core/commands/review.md",
+    "specs/TODO.md",
+    "specs/490_fix_active_goal_read_path/summaries/01_fix-active-goal-read-path-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan edit grows a markdown file whose line_count is tracked in an extension's index-entries.json, and that index file already carries unrelated uncommitted line_count hunks from concurrent sibling tasks, do not hand-edit the index row: git-commit-scoped.sh stages whole files (no hunk-level staging), so committing it would sweep in the siblings' unrelated changes. deploy-headless.sh automatically runs generate-context-line-counts.sh --write against the SOURCE index-entries.json (not just the deployed copy) before the deploy copy step, auto-repairing every stale entry from wc -l. Let that mechanism fix it rather than editing index-entries.json directly mid-task.",
+      "category": "PATTERN",
+      "source_artifact": "specs/490_fix_active_goal_read_path/summaries/01_fix-active-goal-read-path-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "index-entries.json",
+        "line_count",
+        "deploy-headless.sh",
+        "shared file",
+        "hunk-level staging",
+        "git-commit-scoped.sh"
+      ]
+    },
+    {
+      "content": "deploy-headless.sh's internal fast-gate verification (the 60s-per-gate wrapper around verify-deploy.sh's quick checks) can report a transient [FAIL] ... exceeded its 60s timeout and was killed under heavy concurrent /orchestrate batch load, even when the underlying check genuinely passes. Before writing a Reasoned Exclusion or treating it as a real regression, rerun the specific failed gate's own underlying command standalone (e.g. check-extension-docs.sh --quiet, check-task-references.sh --quiet, validate-state.sh --deep) outside the 60s wrapper; a clean standalone pass confirms the timeout was load-induced, not a content defect.",
+      "category": "PATTERN",
+      "source_artifact": "specs/490_fix_active_goal_read_path/summaries/01_fix-active-goal-read-path-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "deploy-headless.sh",
+        "fast-gate",
+        "60s timeout",
+        "transient",
+        "batch concurrency",
+        "Reasoned Exclusion"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794459760_979d1d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 16
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }
