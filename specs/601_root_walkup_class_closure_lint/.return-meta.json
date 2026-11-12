@@ -1,16 +1,60 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 18,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/601_root_walkup_class_closure_lint/summaries/01_root-walkup-closure-lint-summary.md",
+      "summary": "Built and registered lint-test-root-resolution.sh (gate 29), migrated the three known violating instances, added its fixture suite, and documented the discriminator. All 5 plan phases COMPLETED; full corpus scan exits 0 across 195 files."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the invocation-path-dependent repo-root/extensions-root parent-walk defect class with a durable, deploy-time-enforced lint (gate 29). Migrated the three known violating suites onto common_test_repo_root/common_test_ext_root, built lint-test-root-resolution.sh with a file-location-aware safe-depth boundary and two sanctioned guard shapes (generalized beyond the plan's literal prose after corpus dry runs surfaced real cross-extension false-positive risks), added its fixture suite and classification row, registered gate 29 and both new scripts in manifest.json, documented the discriminator rule, and redeployed. Full corpus scan: 0 violations across 195 files, both source-store and deployed copies."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/gate-registry.data",
+    "agent-system/extensions/core/scripts/lint/lint-test-root-resolution.sh",
+    "agent-system/extensions/core/scripts/test-state-write-spill-names.sh",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/tests/test-lint-test-root-resolution.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
+    "agent-system/extensions/core/scripts/tests/test-source-store-path-lib.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "specs/state.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When writing a shell lint that must flag an invocation-path-dependent fixed-depth parent walk (common in a source-store/deployed-tree dual-layout corpus), a naive 'any N+-level walk is forbidden' rule false-positives on real, safe walks that only reach the shallower, invocation-independent boundary (e.g. the extension-root level, which sits at the SAME relative depth below a suite's own directory in both trees). Compute a per-file SAFE_LEVELS boundary from the candidate file's own location instead (e.g. 1 for a flat scripts/*.sh file, 2 for scripts/tests/*.sh), and flag only a walk whose effective depth exceeds that boundary.",
+      "category": "PATTERN",
+      "source_artifact": "specs/601_root_walkup_class_closure_lint/summaries/01_root-walkup-closure-lint-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lint design", "shell test suites", "source-store deploy boundary", "fixed-depth walk", "false positive"]
+    },
+    {
+      "content": "A per-line bash-regex lint over a large corpus can approach or exceed its gate timeout budget under concurrent system load even when fast in isolation. Add a cheap `grep -qE` pre-filter per file (matching only the minimal pattern that COULD trigger a violation) before the expensive per-line array-based analysis; this can cut runtime by 5-6x by skipping the vast majority of files that reference the anchor pattern loosely but never the specific violating shape.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/601_root_walkup_class_closure_lint/summaries/01_root-walkup-closure-lint-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["bash performance", "lint", "fast-path pre-filter", "gate timeout"]
+    },
+    {
+      "content": "deploy-headless.sh's TARGET_REPO defaults to the invoking shell's cwd when no explicit argument is given. Invoking it bare from a non-repository-root cwd (e.g. agent-system/extensions/core/) silently deploys into a stray nested .claude/ tree under that cwd instead of the real repository's .claude/ tree, rather than erroring. Always pass the explicit repository-root TARGET_REPO argument, or invoke from the repository root.",
+      "category": "CONFIG",
+      "source_artifact": "specs/601_root_walkup_class_closure_lint/summaries/01_root-walkup-closure-lint-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["deploy-headless.sh", "TARGET_REPO", "cwd-relative default", "deploy mishap"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794459760_979d1d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   },
-  "dispatch_seq": 18,
   "proposed_file_scope": [
     "agent-system/extensions/core/manifest.json"
   ]

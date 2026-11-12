@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a 5-phase plan to close the invocation-path-dependent repo-root class with a durable lint: migrate the three currently-live violating suites onto common_test_repo_root, author lint-test-root-resolution.sh under scripts/lint/ modeled on lint-test-harness-adoption.sh, add a both-polarities fixture suite plus its suite-classification row and a zero-violation live run, register as gate 29 (registry row + gate29_run), then document the discriminator, redeploy, and run the full gate set. Premise re-validation measured every carried figure live: the 4-level walk resolves to the repo root from the source store and to /home/benjamin from the deployed tree; next free gate id is 29; all three cited violating lines still carry the shape. Two scope corrections recorded: the lint belongs under scripts/lint/ (not scripts/ as file_scope declares), and the task-584 gate-registry.data collision the dispatch warned about is not live this cycle.",
+  "summary": "Implemented the full 5-phase plan: migrated the three known live invocation-path-dependent root-walk instances onto common_test_repo_root; authored lint-test-root-resolution.sh (gate 29) with a file-location-aware safe-depth boundary and two sanctioned guard shapes, generalized mid-phase after a cross-extension corpus dry run surfaced real false-positive risk beyond the plan's literal prose; added its fixture suite and classification row; registered gate 29 plus both new scripts in manifest.json (a gap the plan did not name, caught by test-verify-deploy-context-budget.sh); documented the discriminator and redeployed. Full corpus scan: 0 violations across 195 files, both source-store and deployed copies. Two pre-existing, unrelated EXPECTED/0-NEW gate failures observed and recorded, not fixed (out of scope).",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/601_root_walkup_class_closure_lint/summaries/01_root-walkup-closure-lint-summary.md",
+      "summary": "Full implementation summary: all 5 phases completed, decisions, deviations, and verification results."
+    },
+    {
       "type": "plan",
       "path": "specs/601_root_walkup_class_closure_lint/plans/01_root-walkup-closure-lint.md",
-      "summary": "5-phase plan (~5.75h, 4 waves) building lint-test-root-resolution.sh, migrating three live instances, and registering it as gate 29."
+      "summary": "5-phase plan, now fully checked off with per-phase completion notes recording deviations and verification evidence."
     }
   ],
-  "dispatch_seq": 13
+  "dispatch_seq": 18
 }

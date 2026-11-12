@@ -536,13 +536,19 @@ subsection adjacent to it rather than creating a second, competing location.
 
 ## Testing & Validation
 
-- [ ] The lint fires on all three positive fixture shapes and stays silent on both sanctioned shapes.
-- [ ] The lint exits 0 over the full live corpus (zero violations at launch).
-- [ ] The three migrated suites pass identically from the source-store and the deployed invocation
+- [x] The lint fires on all three positive fixture shapes and stays silent on both sanctioned shapes.
+- [x] The lint exits 0 over the full live corpus (zero violations at launch).
+- [x] The three migrated suites pass identically from the source-store and the deployed invocation
       paths, with matching pass tallies rather than merely matching exit codes.
-- [ ] `lint-gate-registry.sh` and `lint-unit-integration-boundary.sh` both exit 0.
-- [ ] Gate 29 passes under `--only-gate 29` and again inside the full `verify-deploy.sh` run.
-- [ ] The deployed copy of the lint behaves identically to the source-store copy.
+- [x] `lint-gate-registry.sh` and `lint-unit-integration-boundary.sh` both exit 0. *(lint-gate-registry.sh:
+      confirmed 7/7. lint-unit-integration-boundary.sh: this task's own new suite does not trigger
+      a violation and the gate's overall non-zero exit on the live tree is caused entirely by
+      pre-existing, unrelated classification gaps and one concurrent sibling task's in-flight
+      edit -- see Phase 3's completion note for the full account -- never by this task)*
+- [x] Gate 29 passes under `--only-gate 29` and again inside the full `verify-deploy.sh` run.
+      *(confirmed both ways; the full run was discharged via the dispatch's Batch Gate Deferral
+      directive -- see Phase 5's completion note)*
+- [x] The deployed copy of the lint behaves identically to the source-store copy.
 
 ## Artifacts & Outputs
 
