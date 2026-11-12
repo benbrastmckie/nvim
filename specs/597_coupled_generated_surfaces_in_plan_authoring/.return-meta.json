@@ -1,41 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 4,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/597_coupled_generated_surfaces_in_plan_authoring/reports/01_coupled-generated-surfaces-plan-authoring.md",
-      "summary": "Confirms Defect A's content-exists/reach-gap split mechanically (index-entries.json + planner-agent.md), rejects the naive index-entries fix via context-discovery.md's OR-semantics hazard, derives and verifies Defect B's correct longFile linter acceptance window against Mathlib master source and both citations, and resolves the dispatch's prior-record/dependency disposition questions."
+      "type": "plan",
+      "path": "specs/597_coupled_generated_surfaces_in_plan_authoring/plans/01_coupled-generated-surfaces-plan-authoring.md",
+      "summary": "Six-phase plan adding a repo-agnostic coupled-generated-surface declaration obligation to plan-format.md, a task_type-gated domain-gotchas lookup in planner-agent.md, an advisory repo-declared coupled_generated_surfaces check in validate-artifact.sh, and a corrected longFile Condition 7 in the lean gate-collisions checklist."
     }
   ],
-  "next_steps": "Run /orchestrate 597 to create implementation plan",
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1794459760_979d1d_597",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 7,
+    "dependency_waves": 4
   },
-  "memory_candidates": [
-    {
-      "content": "context-discovery.md's 'Adaptive Context Loading' query ORs the agents[]/task_types[]/commands[] load_when dimensions independently. A domain-specific index-entries.json entry must never add a cross-domain SHARED agent (planner-agent, general-implementation-agent, general-research-agent) to agents[] to make it reach that agent for one task_type -- the OR semantics make it match that agent on every task_type, leaking domain content everywhere. The safe reach mechanism for a shared agent is a task_type-gated conditional pointer written inside that shared agent's own file, not an index-entries.json change.",
-      "category": "PATTERN",
-      "source_artifact": "specs/597_coupled_generated_surfaces_in_plan_authoring/reports/01_coupled-generated-surfaces-plan-authoring.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["context-discovery", "index-entries", "load_when", "shared-agent", "reach-mechanism"]
-    },
-    {
-      "content": "Mathlib's linter.style.longFile acceptance rule (verified against master source and two independent citations): candidate = max(defValue=1500, floor(lines/100)*100 + 200); a declared set_option linter.style.longFile N is accepted without warning only when N == candidate or N == candidate - 100. A baseline bumped to its eventual final value ahead of the file's current line count will warn, because candidate is computed from CURRENT lines, not a target -- each phase that grows the file past a 100-line boundary must re-tighten N itself.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/597_coupled_generated_surfaces_in_plan_authoring/reports/01_coupled-generated-surfaces-plan-authoring.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["mathlib", "longFile", "linter", "lean4", "baseline"]
-    },
-    {
-      "content": "derived_artifact_probes (declared under .claude-extensions.json, schema: component/check_command/derived_output_dirs, read by scripts/lib/derived-artifact-probe-lib.sh) is the existing repo-declared, fail-open-on-absence precedent for a 'coupling list' advisory check, but it is wired only into implement-postflight staleness checking and has no field for the SOURCE pattern that triggers a coupling -- a plan-time declaration-completeness check needs a differently-shaped sibling declaration (e.g. coupled_generated_surfaces: [{trigger_glob, generated_paths}]), not a reuse of this schema.",
-      "category": "PATTERN",
-      "source_artifact": "specs/597_coupled_generated_surfaces_in_plan_authoring/reports/01_coupled-generated-surfaces-plan-authoring.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["derived_artifact_probes", "repo-level-declarations", "validate-artifact", "coupled-generated-surfaces"]
-    }
-  ]
+  "next_steps": "Run /orchestrate 597 to execute the plan",
+  "dispatch_seq": 11
 }

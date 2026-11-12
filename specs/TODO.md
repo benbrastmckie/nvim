@@ -172,7 +172,7 @@ next_project_number: 610
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
 562 [NOT STARTED] — conclusion stage drops null-resolution issue-log entries
 572 [NOT STARTED] — Make the full verification tier honorable under batch concurrency
-597 [PLANNING] — Make the coupled-generated-surface and longFile-baseline...
+597 [PLANNED] — Make the coupled-generated-surface and longFile-baseline...
   └─ 598 [NOT STARTED] — Provide a sanctioned in-dispatch remedy for a mechanically... (see above)
   └─ 599 [NOT STARTED] — Give the batch-gate-deferral directive a narrowing form that...
     └─ 592 [NOT STARTED] — Re-verify or timestamp a task recorded starting position at...
@@ -1034,11 +1034,12 @@ record's subject," and that ruling stands independently of its status.
 
 ### 597. Make the coupled-generated-surface and longFile-baseline plan-authoring conditions reach the plan author, and correct the longFile acceptance window
 - **Effort**: medium
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [597_coupled_generated_surfaces_in_plan_authoring/reports/01_coupled-generated-surfaces-plan-authoring.md]
+- **Plan**: [597_coupled_generated_surfaces_in_plan_authoring/plans/01_coupled-generated-surfaces-plan-authoring.md]
 
 **Description**: META TASK. Source store resolved from .claude-extensions.json: /home/benjamin/.config/nvim/agent-system/extensions. All edits land there, never under .claude/** (rules/source-store-deploy-boundary.md).
 
