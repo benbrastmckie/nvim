@@ -143,6 +143,9 @@ correctly into this sequence (sub-case 3a in `external-process-wait.md` Rule 1's
 NOT, by itself, resolve a job whose single unsized attempt would exceed 600s even before this
 subsection's own sharding is applied (sub-case 3b) — that is exactly why this subsection's
 sequencing exists in the first place.
+For the measurement grounding the 600s figure itself, and the diagnostic for a call backgrounded
+well short of it, see `external-process-wait.md`'s "The 600s Ceiling Is Measured, Not Assumed"
+subsection.
 
 ## Canonical Agent-Contract Bullet (Generated-Copy Source)
 

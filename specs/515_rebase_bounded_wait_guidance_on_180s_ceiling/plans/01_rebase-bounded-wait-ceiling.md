@@ -202,30 +202,32 @@ hypothesis failed and the edit must be redone as a pure addition.
 
 ---
 
-### Phase 2: Point the per-call pairing at the measurement record [NOT STARTED]
+### Phase 2: Point the per-call pairing at the measurement record [COMPLETED]
 
 **Goal**: a reader of `bounded-build-waiter.md`'s sizing subsection can reach the measurement
 record without re-deriving it, and the file's own `600000` statements are visibly grounded.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/context/patterns/bounded-build-waiter.md`'s
+- [x] Re-read `agent-system/extensions/core/context/patterns/bounded-build-waiter.md`'s
       `### Sizing a Wait Near the Per-Call Ceiling` subsection immediately before editing, and
-      confirm `git diff --stat` for the file is empty.
-- [ ] Append a single sentence to the subsection's final paragraph (the "same tool-`timeout`-
+      confirm `git diff --stat` for the file is empty. *(completed)*
+- [x] Append a single sentence to the subsection's final paragraph (the "same tool-`timeout`-
       parameter pairing applies to each call" paragraph) pointing at
       `external-process-wait.md`'s new `The 600s Ceiling Is Measured, Not Assumed` subsection as
       the provenance for the 600s figure and for the unraised-parameter diagnostic. Reference the
-      **section title**, not a line number.
-- [ ] Do not touch the `## Canonical Agent-Contract Bullet (Generated-Copy Source)` section, the
+      **section title**, not a line number. *(completed: added as new trailing lines rather than
+      rewriting the existing final line, so the diff carries zero removed lines)*
+- [x] Do not touch the `## Canonical Agent-Contract Bullet (Generated-Copy Source)` section, the
       `### Copy this exact text` block, the `### Forbidden-Shape Lint Anchor` section, or the four
       Check K anchor lines (`NOTIFICATION_PHRASE`, `BACKGROUND_PHRASE_1`, `BACKGROUND_PHRASE_2`,
-      `PROHIBITIVE_MARKER_PATTERN`).
-- [ ] Pin bullet byte-identity rather than asserting it: confirm `git diff -- <file>` contains no
+      `PROHIBITIVE_MARKER_PATTERN`). *(completed: verified untouched)*
+- [x] Pin bullet byte-identity rather than asserting it: confirm `git diff -- <file>` contains no
       hunk inside the "Copy this exact text" block, and that
       `grep -c 'canonical idiom VERBATIM' <file>` is unchanged from its pre-edit value.
-- [ ] Grep the added line for task-number references and record-versioning phrasing, as in
-      Phase 1.
+      *(completed: count unchanged at 1, diff has exactly one hunk outside that block)*
+- [x] Grep the added line for task-number references and record-versioning phrasing, as in
+      Phase 1. *(completed: zero matches)*
 
 **Timing**: 0.3 hours
 

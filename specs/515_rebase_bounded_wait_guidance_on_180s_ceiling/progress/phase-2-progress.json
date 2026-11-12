@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Point the per-call pairing at the measurement record",
+  "started_at": "2026-11-11T00:15:00Z",
+  "last_updated": "2026-11-11T00:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read bounded-build-waiter.md's Sizing subsection; confirm git diff --stat empty", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Append one cross-reference sentence to the final paragraph pointing at external-process-wait.md's new subsection", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/bounded-build-waiter.md"]},
+    {"id": 3, "description": "Confirm Copy-this-exact-text block and Check K anchors untouched", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Grep added line for task-ref/record-versioning phrasing", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
