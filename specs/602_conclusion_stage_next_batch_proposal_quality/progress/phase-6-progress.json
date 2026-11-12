@@ -1,0 +1,33 @@
+{
+  "phase": 6,
+  "phase_name": "Deploy, Full Gate, and End-to-End Approval Proof",
+  "started_at": "2026-11-12T00:00:00Z",
+  "last_updated": "2026-11-12T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "record pre-run specs/state.json blob hash", "status": "done", "files_touched": []},
+    {"id": 2, "description": "deploy-headless.sh run (9x across dispatch); scoped-tier discharge per Batch Gate Deferral directive", "status": "done", "files_touched": []},
+    {"id": 3, "description": "complete gate set discharged via scoped --only-gate 3,4 (PASS 3/3)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "full shell suite discharged via scoped --only test-orchestrate-suggest-next-batch.sh,test-orchestrate-conclusion-aggregate.sh (18/18, 15/15)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "end-to-end declined/approved edge-write proof via scratch harness (cases b/b-not-started/g-edges), not the live specs/state.json", "status": "done", "files_touched": []},
+    {"id": 6, "description": "every red finding attributed (3 pre-existing, unrelated, recorded via issue-record.sh and a Reasoned Exclusions table)", "status": "done", "files_touched": ["specs/602_conclusion_stage_next_batch_proposal_quality/plans/01_next-batch-proposal-quality.md"]},
+    {"id": 7, "description": "confirm next_project_number unchanged (611)", "status": "done", "files_touched": []},
+    {"id": 8, "description": "net line count recorded (+788/-186, net +602 across 8 files)", "status": "done", "files_touched": ["specs/602_conclusion_stage_next_batch_proposal_quality/summaries/01_next-batch-proposal-quality-summary.md"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "6.x",
+      "description": "The literal Phase 6 verification (independent full deploy-headless.sh/verify-deploy.sh/run-all.sh) was discharged against a scoped tier per this dispatch's own Batch Gate Deferral directive (the plan's final phase declares Verification Tier: full, and this dispatch is one of several implement-phase dispatches inside one multi-task /orchestrate batch invocation). The complete gate set runs once for the whole batch at the end of the invocation instead.",
+      "type": "altered",
+      "reason": "Dispatch-mandated: see .dispatch/25.md's Batch Gate Deferral section."
+    },
+    {
+      "task_id": "6.x",
+      "description": "The end-to-end declined/approved edge-write proof was exercised against a disposable scratch specs/state.json via the real deployed scripts, rather than against the live, production specs/state.json, to avoid a genuinely destructive real edge write against this repository's own task graph.",
+      "type": "altered",
+      "reason": "Safety: the plan's own literal instruction would have risked mutating live task dependencies had an approval accidentally fired against production data."
+    }
+  ],
+  "handoff_count": 0
+}
