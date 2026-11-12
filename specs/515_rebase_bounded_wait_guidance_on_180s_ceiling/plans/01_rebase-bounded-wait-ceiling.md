@@ -257,7 +257,7 @@ block, before closing the phase.
 
 ---
 
-### Phase 3: Redeploy, prove the no-change half, and close [NOT STARTED]
+### Phase 3: Redeploy, prove the no-change half, and close [COMPLETED]
 
 **Goal**: the source-store edits are deployed, the lint and gate set confirm nothing the plan
 promised to leave alone has moved, the commit is scoped, and the no-change disposition is
@@ -265,37 +265,53 @@ recorded with its unactivated obligations named explicitly.
 
 **Tasks**:
 
-- [ ] Redeploy from the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`
+- [x] Redeploy from the source store: `bash agent-system/extensions/core/scripts/deploy-headless.sh`
       (the source store is the edit target; the deployed `.claude/` tree is regenerated, never
-      hand-authored).
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` and confirm it
+      hand-authored). *(completed: deploy landed; `.claude/` is gitignored in this repository, so
+      no deploy path is tracked by git)*
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` and confirm it
       passes, Checks H and K included. Record Check H's own verdict as the **pin** that the copied
       bullet is byte-identical across all carriers, rather than asserting byte-identity.
-- [ ] Re-derive and record the carrier set rather than trusting a count:
+      *(completed: 377 passed, 12 warnings, 0 failed; Check H and Check K both all-PASS — Check
+      H pins byte-identity of the copied bullet across all 24 carriers)*
+- [x] Re-derive and record the carrier set rather than trusting a count:
       `cd agent-system/extensions && grep -rln 'bounded-build-waiter.md.*canonical idiom VERBATIM' --include='*.md' .`
       and `cd agent-system && grep -rln '600000' --include='*.md' extensions/`. Confirm the first
       returns the same 24 paths as before the change and the second the same nine.
-- [ ] Run the named regression suites green:
+      *(completed: re-derived counts are 24 and 9 respectively, matching the plan's expected
+      sets exactly, including `lean/agents/lean-implementation-agent.md` in the nine)*
+- [x] Run the named regression suites green:
       `bash agent-system/extensions/core/scripts/tests/test-lint-agent-contracts.sh`,
       `test-lint-agent-contracts-heartbeat.sh`, `test-lint-agent-contracts-handoff-section.sh`,
       `test-lint-agent-contracts-await-notification.sh`, and
-      `test-validate-bounded-waiter.sh`.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store entry
+      `test-validate-bounded-waiter.sh`. *(completed: all 5 green via run-all.sh --only)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store entry
       point: `agent-system/extensions/core/scripts/verify-deploy.sh`), resolving whichever entry
-      point exists in this repository.
-- [ ] Commit with the scoped narrowing, not the full aggregator, naming only this task's own two
+      point exists in this repository. *(deviation: altered — per the dispatch's Batch Gate
+      Deferral directive for this final `Verification Tier: full` phase, this task's own
+      narrowing invocations above (lint-agent-contracts.sh + the five named suites, which already
+      are the suite set `suite_selection_select` returns for the two touched files) were run
+      instead of the complete aggregator; the full set is deferred to the once-per-batch stage.
+      Incidentally, `deploy-headless.sh`'s own internal fast-gate pass did run and reported 6 of
+      41 checks failing — all on an unrelated orchestrator eager-load/context-budget ceiling
+      (`skills/skill-orchestrate/SKILL.md` over its configured byte ceiling) that this phase's two
+      markdown-only edits cannot have caused and do not touch; not independently chased here per
+      the deferral directive)*
+- [x] Commit with the scoped narrowing, not the full aggregator, naming only this task's own two
       source-store files plus the regenerated deploy paths and this task's `specs/**` artifacts:
       `bash .claude/scripts/git-commit-scoped.sh --message "task 515: complete implementation" --session <session_id> --task 515 -- <explicit file list>`.
-- [ ] Record in the summary, explicitly and as outcomes rather than omissions: (a) the measured
+      *(completed; see commit below)*
+- [x] Record in the summary, explicitly and as outcomes rather than omissions: (a) the measured
       600s result and the refuted ~180s figure; (b) that no numeric correction was made anywhere
       and the propagation obligation never activated; (c) that the "exercise the newly documented
       poll idiom end to end" verification is inapplicable because no new idiom was documented,
       with the research phase's 590s/620s bracket standing as the live exercise of the existing
       idiom's boundary; (d) the two re-derived count corrections (24 carriers, nine
       `600000`-bearing files including `lean/agents/lean-implementation-agent.md`).
-- [ ] Record a `kind: win` issue-log entry for the carried-figure refutation (a bracketed
+      *(completed: see summary artifact)*
+- [x] Record a `kind: win` issue-log entry for the carried-figure refutation (a bracketed
       re-measurement overturning a carried incident figure before any edit was made), and an
-      `issue` entry for anything that arose during the phases; non-fatal either way.
+      `issue` entry for anything that arose during the phases; non-fatal either way. *(completed)*
 
 **Timing**: 0.7 hours
 
