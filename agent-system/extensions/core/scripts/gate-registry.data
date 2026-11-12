@@ -148,3 +148,4 @@
 26	Extension README table lint (lint-extension-readme-table.sh)	gate26_run	-	true	30	free	false	@extensions
 27	Subject-resolution declaration lint (lint-subject-resolution-declaration.sh)	gate27_run	-	true	30	free	false	agent-system/extensions/core/scripts/tests/*.sh
 28	Deliberate-break residue lint (lint-deliberate-break-residue.sh)	gate28_run	-	true	30	free	false	@extensions
+29	Test-suite root-resolution lint (lint-test-root-resolution.sh)	gate29_run	-	true	30	free	false	agent-system/extensions/core/scripts/tests/*.sh,agent-system/extensions/*/scripts/tests/*.sh,agent-system/extensions/*/scripts/test-*.sh

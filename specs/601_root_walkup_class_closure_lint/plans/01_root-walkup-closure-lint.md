@@ -360,28 +360,39 @@ the existing harness-adoption lint and fixture pair during planning).
 
 ---
 
-### Phase 4: Register as Gate 29 [NOT STARTED]
+### Phase 4: Register as Gate 29 [COMPLETED]
 
 **Goal**: Give the lint deploy-time enforcement — the difference between a script someone may run
 and a durable guard.
 
 **Tasks**:
-- [ ] Re-read `scripts/gate-registry.data` immediately before editing (tasks 584 and 604 both
+- [x] Re-read `scripts/gate-registry.data` immediately before editing (tasks 584 and 604 both
       declare it; both are `not_started` and not dispatched this cycle, but the rule stands).
-- [ ] Append one 9-field TAB-separated row:
+      *(completed: re-read confirmed no collision)*
+- [x] Append one 9-field TAB-separated row:
       `29`, `Test-suite root-resolution lint (lint-test-root-resolution.sh)`, `gate29_run`, `-`,
       `true`, `30`, `free`, `false`, and an `input_corpus` scoped to the test-suite shell globs only
       — `agent-system/extensions/core/scripts/tests/*.sh,agent-system/extensions/*/scripts/tests/*.sh,agent-system/extensions/*/scripts/test-*.sh`
-      — never `@extensions`.
-- [ ] Add a `gate29_run()` function to `scripts/verify-deploy.sh`, copying `gate28_run()`'s shape
+      — never `@extensions`. *(completed)*
+- [x] Add a `gate29_run()` function to `scripts/verify-deploy.sh`, copying `gate28_run()`'s shape
       exactly: `gate_selected 29` wrapper, the `say "29. ..."` line, `CURRENT_GATE="gate29"`, the
       deploy-consumer `[ ! -d "$TARGET/agent-system/extensions" ]` SKIP branch, the
       lint-script-missing `fail` branch, the `cd "$TARGET" && REPO_ROOT="$TARGET" bash ... --verbose`
       invocation, pass/fail reporting, and the `FINDINGS_LIST` population via
-      `verify_deploy_extract_verdict_lines '[VIOLATION]'`.
-- [ ] Confirm no separate call-site list needs updating: the registry's own executor
+      `verify_deploy_extract_verdict_lines '[VIOLATION]'`. *(completed)*
+- [x] Confirm no separate call-site list needs updating: the registry's own executor
       (`gate_registry_execute` in `lib/gate-registry-lib.sh`) looks up and calls the `invoke`
-      function, and gate 28 has exactly two touch points (its row and its function).
+      function, and gate 28 has exactly two touch points (its row and its function). *(completed:
+      re-confirmed grep for "gate28" outside scripts/tests/ returns exactly its row and function
+      body, matching the same two-touch-point pattern gate29 now follows)*
+- [x] **Added, beyond the plan's named two files**: registered both of Phase 2/3's new scripts
+      (`lint/lint-test-root-resolution.sh`, `tests/test-lint-test-root-resolution.sh`) in
+      `agent-system/extensions/core/manifest.json`'s `provides.scripts` list (and its deployed
+      `.claude/extensions/core/manifest.json` mirror, ahead of Phase 5's redeploy). Required
+      because `test-verify-deploy-context-budget.sh`'s own full-battery run surfaced real gate3
+      (manifest-match) and gate13 (orphan-detection) failures against both new, previously-
+      unregistered files -- an omission from Phases 2-3, caught here rather than left for Phase
+      5's full gate set to discover. Confirmed resolved via a direct `--only-gate 3,13` re-run.
 
 **Timing**: 0.75 hours
 
@@ -402,15 +413,40 @@ covers the aggregator change at a fraction of a `full` run's cost.
 **Files to modify**:
 - `agent-system/extensions/core/scripts/gate-registry.data` - one appended row for gate 29
 - `agent-system/extensions/core/scripts/verify-deploy.sh` - new `gate29_run()` function
+- `agent-system/extensions/core/manifest.json` - registered both of Phase 2/3's new scripts in
+  `provides.scripts` (not named in the original plan; see completion note below)
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/lint/lint-gate-registry.sh` exits 0 (contiguous ids
-  1-29, 9 fields, valid `invoke` name).
+  1-29, 9 fields, valid `invoke` name). *(confirmed: 7/7 checks pass)*
 - `bash .claude/scripts/verify-deploy.sh --only-gate 29 /home/benjamin/.config/nvim` reports gate 29
   as a pass (not SKIP, since that TARGET holds both the deployed tree and the source store).
+  *(confirmed: PASS, 1 check, 0 failures -- required copying the updated gate-registry.data,
+  verify-deploy.sh, and the Phase 2/3 lint/fixture/classification files to the deployed
+  `.claude/scripts/` tree ahead of Phase 5's own redeploy, mirroring the same precedent Phase 1
+  established, since this criterion names the DEPLOYED copy specifically)*
 - `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-check-task-references.sh,test-claude-refresh-matcher.sh,test-deploy-baseline-lib.sh,test-deploy-orphans.sh,test-deploy-verify-overlap.sh,test-deploy-verify-wiring.sh,test-gate3-strict-equivalence.sh,test-gate8-expected-new-distinction.sh,test-gate-cache-equivalence.sh,test-gate-cache-lib.sh,test-gate-lock.sh,test-gate-out-self-attribution.sh,test-gate-registry-resolution.sh,test-lint-branch-gated-sections.sh,test-lint-hook-registration-paths.sh,test-lint-json-channel-discipline.sh,test-lint-shellcheck-parallel.sh,test-lint-task-lookup-adoption.sh,test-lint-unit-integration-boundary.sh,test-lint-verdict-extraction-anchoring.sh,test-measure-gate-costs.sh,test-orchestrate-batch-gate.sh,test-orchestrate-build-dispatch.sh,test-orchestrate-cycle-plan.sh,test-run-all-failure-reporting.sh,test-run-all-parallel.sh,test-run-all-selection.sh,test-validate-artifact.sh,test-verify-deploy-context-budget.sh,test-verify-deploy-gate-selection-crash-net.sh,test-verify-deploy-gate-selection.sh`
   exits 0 (regenerate this list from `suite_selection_select` rather than trusting it verbatim if
-  the touched-path set changes).
+  the touched-path set changes). *(confirmed, via a bisected run due to heavy concurrent-task
+  system load during this dispatch: all 31 suites individually/in small batches pass or are
+  pre-existing, documented EXPECTED/0-NEW failures unrelated to this task -- see Phase 4
+  completion note below for the full account. A final consolidated 30-suite run, excluding only
+  the one suite independently re-confirmed with its own documented ~543s runtime, exits 0: "28
+  passed, 2 failed (2 expected, 0 NEW)".)*
+
+**Phase 4 completion note**: `test-verify-deploy-context-budget.sh`'s own full-battery run
+surfaced a REAL, task-caused finding -- gate3 and gate13 flagged both of Phase 2/3's new scripts
+as undeclared/orphaned, because they were never added to `manifest.json`'s `provides.scripts`.
+Fixed in this phase (see the added "Files to modify" entry above) and confirmed resolved via a
+direct `--only-gate 3,13` re-run. That suite's one REMAINING failure (an eager-load/baseline
+mismatch plus a gate24 finding against `memory-setup.md`/`memory-troubleshooting.md`) is
+pre-existing, documented in `scripts/tests/known-failures.txt`, and unrelated to task 601 --
+confirmed via `git log` that `skill-orchestrate/SKILL.md` was last touched by unrelated tasks
+450 and 609. `test-gate-cache-equivalence.sh` (543s-hinted cost; also `known-failures.txt`-
+documented as load-sensitive, specifically gate10's 30s timeout under load) and
+`test-lint-unit-integration-boundary.sh` (pre-existing/foreign classification gaps, see Phase 3's
+own completion note) are the two remaining EXPECTED/0-NEW failures in the full 31-suite set,
+neither caused by this task.
 
 ---
 

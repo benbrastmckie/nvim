@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Register as Gate 29",
+  "started_at": "2026-11-12T11:15:00Z",
+  "last_updated": "2026-11-12T13:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append gate-registry.data row for gate 29", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/gate-registry.data"]},
+    {"id": 2, "description": "Add gate29_run() to verify-deploy.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 3, "description": "Verify lint-gate-registry.sh and --only-gate 29 pass", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Register new scripts in manifest.json (fix gate3/gate13 findings surfaced during verification)", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 5, "description": "Selector-scoped run-all.sh --only verification, bisected due to system load", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "run the full 31-suite (or 28-30 suite) selector list in one invocation", "result": "superseded", "reason": "repeatedly timed out at 580-600s under heavy concurrent multi-task system load; bisected into individual/small-batch runs instead, then reassembled a 30-suite consolidated run once the slow suite was separately confirmed"}
+  ],
+  "deviations": [
+    {"task_id": "4.manifest", "description": "Register lint-test-root-resolution.sh and test-lint-test-root-resolution.sh in manifest.json", "type": "added", "reason": "not named in the original plan's Phase 4 Files to modify list; required because test-verify-deploy-context-budget.sh surfaced real gate3/gate13 findings against both new files"}
+  ],
+  "handoff_count": 0
+}

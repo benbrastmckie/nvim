@@ -2103,6 +2103,34 @@ say ""
 fi
 }
 
+gate29_run() {
+if gate_selected 29; then
+say "29. Test-suite root-resolution lint (lint-test-root-resolution.sh)"
+CURRENT_GATE="gate29"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- test-suite root-resolution lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-test-root-resolution.sh" ]; then
+  fail "lint-test-root-resolution.sh not found in source store"
+else
+  test_root_resolution_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-test-root-resolution.sh" --verbose 2>&1)
+  test_root_resolution_lint_status=$?
+  if [ "$test_root_resolution_lint_status" -eq 0 ]; then
+    pass "test-suite root-resolution lint reports no unconditional fixed-depth repo-root/extensions-root walk"
+  else
+    fail "test-suite root-resolution lint reported a violation" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-test-root-resolution.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r test_root_resolution_lint_line; do
+        FINDINGS_LIST+=("FINDING gate29 $test_root_resolution_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$test_root_resolution_lint_output")
+    fi
+  fi
+fi
+
+say ""
+fi
+}
+
 # Per-gate bounded execution (Phase 6, "Uniform Bounded Timeouts Per Gate and Per Suite"): each
 # gate's declared `timeout_s` (gate-registry.data) is now enforced via
 # gate_registry_exec_bounded, which runs the gate's invoke function and, on a clean finish,
