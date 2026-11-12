@@ -1,0 +1,28 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/515_rebase_bounded_wait_guidance_on_180s_ceiling/reports/01_rebase-bounded-wait-ceiling.md",
+      "summary": "Direct timed measurement refutes the carried ~180s backgrounding figure and confirms the documented 600s foreground Bash ceiling exactly; recommends closing as no-change to external-process-wait.md and bounded-build-waiter.md."
+    }
+  ],
+  "dispatch_seq": 2,
+  "next_steps": "Run /orchestrate 515 to create implementation plan (expected to be a no-op record-and-close plan per the research finding)",
+  "metadata": {
+    "session_id": "sess_1794459760_979d1d_515",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 2
+  },
+  "memory_candidates": [
+    {
+      "content": "This harness's (Claude Code 2.1.322) foreground Bash call backgrounding ceiling measures at exactly 600s when the tool's own timeout parameter is raised to 600000, not ~180s as one self-reported incident in a different repository/session claimed. Calls at 170s/190s/350s/590s with timeout=600000 all completed synchronously with exact elapsed-time match; a 620s call was backgrounded with the harness message explicitly naming '600s timeout'. Before trusting a carried ceiling figure from an incident report, re-measure directly with bracketed sleep calls at several durations rather than assuming the self-report's number is a calibrated measurement.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/515_rebase_bounded_wait_guidance_on_180s_ceiling/reports/01_rebase-bounded-wait-ceiling.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash-timeout", "foreground-backgrounding", "600s-ceiling", "harness-behavior", "bounded-wait"]
+    }
+  ]
+}
