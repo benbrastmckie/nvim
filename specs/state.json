@@ -15258,7 +15258,7 @@
     {
       "project_number": 490,
       "project_name": "fix_active_goal_read_path",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "title": "Make generate-task-order.sh read active_goal so the field stops being a dead write",
       "description": "Make generate-task-order.sh read `active_goal` from state.json so the field stops being a dead write: it is declared, documented, validated, and written, but no consumer ever reads it.\n\nTHE GAP, VERIFIED (2026-11-05):\n- Declared: context/schemas/state-schema.json:164 defines `active_goal`.\n- Documented: context/reference/state-management-schema.md:77 describes it as a free-prose statement of the repository's current goal.\n- Validated: scripts/validate-state.sh:858 lists `active_goal` among recognized widened fields, so writing it passes validation cleanly.\n- Written: commands/review.md:734-740 (Section 6.7.3) writes `.active_goal` via `state-write.sh ... --regen-todo`, explicitly so the TODO.md regeneration happens inside the same mutex as the write that triggered it.\n- NEVER READ: scripts/generate-task-order.sh resolves the Goal line only from (a) an explicit `--goal TEXT` override (GOAL_OVERRIDE, lines ~92, 110-112, 1040-1042) or (b) read_existing_goal() (lines ~909-931), which greps the existing `**Goal**: ` line back out of TODO.md. `grep -n active_goal scripts/generate-task-order.sh` returns nothing.\n\nREPRODUCED: in a consumer repo, writing active_goal via `state-write.sh ... --regen-todo` succeeded (state.json updated) but TODO.md was left byte-identical with no Goal line, because TODO.md had no prior Goal line for read_existing_goal() to recover. The line rendered only after manually passing `--goal \"$(jq -r .active_goal specs/state.json)\"` to `generate-task-order.sh --update-todo`. Any caller that sets active_goal expecting it to render hits the same silent no-op; /review Section 6.7.3 is the one in-tree caller that does.\n\n--- REQUIRED OUTCOMES ---\n\n1. generate-task-order.sh resolves the Goal line from a defined precedence: explicit `--goal` override first, then state.json `active_goal`, then the existing TODO.md Goal line (current read_existing_goal behavior), then omit the line entirely. The existing `--goal` and preserve-across-regeneration behaviors must not regress.\n\n2. Decide and record the conflict rule between a state.json `active_goal` and a hand-edited TODO.md Goal line. The preserve-from-TODO behavior exists so regeneration does not clobber a human edit; giving active_goal higher precedence means a stale active_goal silently overwrites hand edits. State the chosen rule and its rationale rather than leaving it implicit in the code.\n\n3. context/formats/task-order-format.md documents the full precedence. Its Goal Statement section currently documents only the preserve-from-TODO and `--goal` behaviors; the Generation and Generation Algorithm sections, which enumerate what the script reads, also need the new source listed.\n\n4. A regression case in scripts/tests/test-generate-task-order.sh: with `active_goal` set in state.json and no Goal line present in TODO.md, `--update-todo` must emit the Goal line. That is the exact condition which silently no-ops today, so the test must fail against the current script.\n\n5. Confirm whether commands/review.md Section 6.7.3 needs any change once the reader exists. Its `--regen-todo` rationale becomes accurate rather than aspirational, so a comment or no change may suffice. Do not widen scope to other callers unless they are found to write active_goal.\n\nSOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, never in a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md.",
@@ -15274,8 +15274,14 @@
         "agent-system/extensions/core/commands/review.md"
       ],
       "created": "2026-11-05T19:09:48Z",
-      "last_updated": "2026-11-12T05:05:13Z",
-      "artifacts": [],
+      "last_updated": "2026-11-12T05:45:56Z",
+      "artifacts": [
+        {
+          "path": "specs/490_fix_active_goal_read_path/reports/01_fix-active-goal-read-path.md",
+          "type": "report",
+          "summary": "Confirms active_goal is never read by generate-task-order.sh, and reproduces a deeper, previously-unflagged gap: --print mode (the dominant TODO.md regen path, including review.md Section 6.7.3's own caller) never renders any Goal line at all regardless of source. Recommends a unified precedence chain applied to both --print and --update-todo, a conflict rule (active_goal wins over a hand-edited TODO.md line when non-empty), the three task-order-format.md doc edits, and a regression-test shape covering both code paths."
+        }
+      ],
       "audit_verdict": {
         "proposal": {
           "id": "fix_active_goal_read_path",
@@ -16227,7 +16233,8 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "session_id": "sess_1794459760_979d1d_490"
+      "session_id": "sess_1794459760_979d1d",
+      "next_artifact_number": 2
     },
     {
       "project_number": 491,
