@@ -164,6 +164,41 @@
     "active_goal": {
       "type": "string",
       "description": "Documented-optional. A free-prose statement of the repository's current overall aim, used for human orientation. It is authored by a repo owner or by a task that owns the repository's framing, written via /review's goal-update flow (commands/review.md Section 6.7.3), and read by generate-task-order.sh's Goal-line resolution (resolve_goal_text()), which gives a non-empty active_goal precedence over an existing TODO.md Goal line. Modelled rather than retired so that a repo carrying a real goal string does not fail validation for holding it; a repo is equally free to omit it."
+    },
+    "roadmap_batches": {
+      "type": "array",
+      "description": "Documented-optional. Ordered batches rendered into specs/ROADMAP.md's '## Next' section by roadmap-integration.sh's render_next(). Array position IS the batch's priority -- there is no separate priority field here, and the per-task priority enum (definitions.projectEntry.properties.priority) is never read for batch ordering. Maintained by the /roadmap command (roadmap-agent decides, roadmap-integration.sh renders); absent or empty means no batches, a clean pass, not a warning.",
+      "items": {
+        "$ref": "#/definitions/roadmapBatchEntry"
+      }
+    },
+    "roadmap_notes": {
+      "type": "object",
+      "description": "Documented-optional. Non-batch authored prose for specs/ROADMAP.md's '## Next' and '## Open work' sections, so nothing authored has to live inside the file roadmap-integration.sh regenerates. Absent or empty means no such prose, a clean pass.",
+      "properties": {
+        "next_preamble": {
+          "type": "array",
+          "description": "Paragraphs rendered before the '## Next' orchestrate-fence block, one entry per rendered paragraph.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "next_postamble": {
+          "type": "array",
+          "description": "Paragraphs rendered after the 'Why this order:' bullet list, one entry per rendered paragraph.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "open_work_trailer": {
+          "type": "array",
+          "description": "Free-standing paragraphs rendered after the last '## Open work' fence, one entry per rendered paragraph.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false,
@@ -376,6 +411,14 @@
             "type": "string"
           }
         },
+        "roadmap_annotation": {
+          "type": "string",
+          "description": "Documented-optional. The schema-backed successor to '## Open work's authored '<- ' suffix annotation (previously a retention-parser override with no schema home). Rendered by render_open_work() as a '<- {text}' suffix on this task's Open work line."
+        },
+        "roadmap_ext_blocked": {
+          "type": "boolean",
+          "description": "Documented-optional. The schema-backed successor to '## Open work's authored EXT-BLOCKED token (previously a retention-parser override with no schema home). When true, render_open_work() renders the EXT-BLOCKED token at its existing position-5 precedence, ahead of the dependency-derived token."
+        },
         "memory_candidates": {
           "type": "array",
           "description": "Documented-optional. Structured memory candidates emitted by agents; append-only during the task lifecycle, consumed and removed during archival.",
@@ -453,6 +496,37 @@
               "description": "Migration date."
             }
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    "roadmapBatchEntry": {
+      "type": "object",
+      "required": [
+        "task_ids",
+        "description"
+      ],
+      "properties": {
+        "task_ids": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Member task (project_number) ids, in the order rendered on the batch's /orchestrate line.",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "One bounded line (<=100 chars, the anti-fluff field): what the batch accomplishes and why those members belong together. Never a paragraph, never a restatement of each member's own title. See context/formats/roadmap-entry-template.md for the worked compliant/non-compliant example pair."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Optional, unbounded. The lossless home for the batch's full 'Why this order:' prose -- rendered as one bullet (with indented continuation lines for a multi-paragraph rationale)."
+        },
+        "flags": {
+          "type": "string",
+          "description": "Optional authored CLI flag segment (e.g. '--hard') appended to this batch's rendered /orchestrate line."
         }
       },
       "additionalProperties": false

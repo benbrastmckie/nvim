@@ -87,6 +87,9 @@ resolve_content_gated ARCHIVE_VALIDATOR "validate-state.sh (--archive mode, Chec
 # --- Check 12 (archive-aware next_project_number staleness, base mode) validator resolution ---
 resolve_content_gated C12_VALIDATOR "validate-state.sh (Check 12)" "Check 12"
 
+# --- Check 13 (roadmap_batches entry integrity, base mode) validator resolution ---
+resolve_content_gated C13_VALIDATOR "validate-state.sh (Check 13)" "Check 13"
+
 PASSED=0
 FAILED=0
 
@@ -496,6 +499,157 @@ JSON
     common_test_pass "Fixture (h-ii): the reported repair value for the same trap shape is the dense 847, never a recycled low gap"
   else
     common_test_fail "Fixture (h-ii): smallest-unused-number trap fixture did not produce the expected FAIL + dense repair value (rc=$rc)"
+    common_test_info "$out"
+  fi
+fi
+
+# =====================================================================
+# Check 13 (roadmap_batches entry integrity, base mode) fixtures
+# =====================================================================
+if [[ -z "$C13_VALIDATOR" ]]; then
+  common_test_info "SKIPPING Check 13 fixtures: no candidate validator (source-store or deployed)"
+  common_test_info "contains \"Check 13\" (grepped). Candidates checked:"
+  common_test_info "  $VSTATE_STORE"
+  common_test_info "  $VSTATE_DEPLOYED"
+else
+  common_test_info "Check 13 fixtures running against: $C13_VALIDATOR (confirmed to contain Check 13)"
+
+  # --- clean pass: one well-formed batch, every sub-condition satisfied ---
+  cat > "$WORKDIR/c13-clean.json" <<'JSON'
+{
+  "next_project_number": 3,
+  "active_projects": [
+    {"project_number": 1, "project_name": "a", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"},
+    {"project_number": 2, "project_name": "b", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"}
+  ],
+  "roadmap_batches": [
+    {"task_ids": [1, 2], "description": "A short, bounded description of this batch"}
+  ]
+}
+JSON
+  out=$(bash "$C13_VALIDATOR" "$WORKDIR/c13-clean.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && grep -q "Check 13: roadmap_batches entries are well-formed" <<< "$out"; then
+    common_test_pass "Check 13 clean-pass fixture: a well-formed batch produces the Check 13 PASS line, exit 0"
+  else
+    common_test_fail "Check 13 clean-pass fixture: expected exit 0 with the Check 13 PASS line (rc=$rc)"
+    common_test_info "$out"
+  fi
+
+  # --- absent key: no roadmap_batches at all -> clean pass, not a warning ---
+  cat > "$WORKDIR/c13-absent.json" <<'JSON'
+{
+  "next_project_number": 2,
+  "active_projects": [
+    {"project_number": 1, "project_name": "a", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"}
+  ]
+}
+JSON
+  out=$(bash "$C13_VALIDATOR" "$WORKDIR/c13-absent.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && grep -q "Check 13: roadmap_batches entries are well-formed" <<< "$out"; then
+    common_test_pass "Check 13 absent-key fixture: no roadmap_batches key -> clean pass, not a warning"
+  else
+    common_test_fail "Check 13 absent-key fixture: expected exit 0 with the Check 13 PASS line (rc=$rc)"
+    common_test_info "$out"
+  fi
+
+  # --- terminal member: a batch names an already-terminal task_ids member -> WARN, exit 0 (WARN-only, base mode) ---
+  cat > "$WORKDIR/c13-terminal.json" <<'JSON'
+{
+  "next_project_number": 2,
+  "active_projects": [
+    {"project_number": 1, "project_name": "a", "status": "completed", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"}
+  ],
+  "roadmap_batches": [
+    {"task_ids": [1], "description": "names an already-terminal member"}
+  ]
+}
+JSON
+  out=$(bash "$C13_VALIDATOR" "$WORKDIR/c13-terminal.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] \
+      && grep -q "Check 13: roadmap_batches\[0\] names task_ids member 1, which is already terminal" <<< "$out" \
+      && grep -q "STATE VALIDATION PASSED WITH WARNINGS" <<< "$out"; then
+    common_test_pass "Check 13 terminal-member fixture: a terminal task_ids member fires the named WARN, exit 0"
+  else
+    common_test_fail "Check 13 terminal-member fixture: expected exit 0 with the named WARN (rc=$rc)"
+    common_test_info "$out"
+  fi
+
+  # --- duplicated member: the same id appears in two batches -> WARN naming the id ---
+  cat > "$WORKDIR/c13-duplicate.json" <<'JSON'
+{
+  "next_project_number": 2,
+  "active_projects": [
+    {"project_number": 1, "project_name": "a", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"}
+  ],
+  "roadmap_batches": [
+    {"task_ids": [1], "description": "first batch holding member one"},
+    {"task_ids": [1], "description": "second batch, also holding member one"}
+  ]
+}
+JSON
+  out=$(bash "$C13_VALIDATOR" "$WORKDIR/c13-duplicate.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && grep -q "Check 13: task id 1 appears in more than one roadmap_batches entry" <<< "$out"; then
+    common_test_pass "Check 13 duplicate-member fixture: a shared id across two batches fires the named WARN"
+  else
+    common_test_fail "Check 13 duplicate-member fixture: expected the named duplicate-member WARN (rc=$rc)"
+    common_test_info "$out"
+  fi
+
+  # --- over-long description: a description over 100 characters -> WARN naming the length ---
+  cat > "$WORKDIR/c13-overlong.json" <<'JSON'
+{
+  "next_project_number": 2,
+  "active_projects": [
+    {"project_number": 1, "project_name": "a", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"}
+  ],
+  "roadmap_batches": [
+    {"task_ids": [1], "description": "This description is deliberately written to run well past the one hundred character bound that Check 13 enforces on every batch"}
+  ]
+}
+JSON
+  out=$(bash "$C13_VALIDATOR" "$WORKDIR/c13-overlong.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && grep -qE "Check 13: roadmap_batches\[0\]\.description is [0-9]+ characters, over the 100-character bound" <<< "$out"; then
+    common_test_pass "Check 13 over-long-description fixture: a >100-char description fires the named WARN with its length"
+  else
+    common_test_fail "Check 13 over-long-description fixture: expected the named over-long WARN (rc=$rc)"
+    common_test_info "$out"
+  fi
+
+  # --- schema-to-validator drift case for the four new field names (roadmap_batches,
+  # roadmap_notes, roadmap_annotation, roadmap_ext_blocked) -- a minimal fixture using all four
+  # must not itself produce an "Unknown ... field" WARN (Check 3/4), independent of the general
+  # drift test further below ---
+  cat > "$WORKDIR/c13-drift-fields.json" <<'JSON'
+{
+  "next_project_number": 2,
+  "active_projects": [
+    {"project_number": 1, "project_name": "a", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z",
+     "roadmap_annotation": "blocked on review", "roadmap_ext_blocked": true}
+  ],
+  "roadmap_batches": [
+    {"task_ids": [1], "description": "exercises all four new field names at once"}
+  ],
+  "roadmap_notes": {"next_preamble": ["p1"], "next_postamble": ["p2"], "open_work_trailer": []}
+}
+JSON
+  out=$(bash "$C13_VALIDATOR" "$WORKDIR/c13-drift-fields.json" 2>&1)
+  rc=$?
+  if [[ "$rc" -eq 0 ]] && ! grep -q "Unknown top-level field\|Unknown entry field" <<< "$out"; then
+    common_test_pass "Check 13 field-drift fixture: all four new field names recognized, no Unknown-field WARN"
+  else
+    common_test_fail "Check 13 field-drift fixture: expected no Unknown-field WARN for the four new names (rc=$rc)"
     common_test_info "$out"
   fi
 fi

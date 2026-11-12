@@ -855,7 +855,7 @@ fi
 KNOWN_TOP_LEVEL_FIELDS=(
   next_project_number default_task_type active_projects active_topics completed_projects
   repository_health memory_health version vault_count vault_history
-  deployment_versions active_goal
+  deployment_versions active_goal roadmap_batches roadmap_notes
 )
 unknown_top=$(jq -r 'keys[]' "$STATE_FILE" 2>/dev/null | while IFS= read -r k; do
   known=0
@@ -893,6 +893,7 @@ KNOWN_ENTRY_FIELDS=(
   completion_summary roadmap_items memory_candidates
   hold_reason held_at prior_status research_questions
   blockers previous_status resume_phase researched migrated_from
+  roadmap_annotation roadmap_ext_blocked
 )
 unknown_entry=$(jq -r '.active_projects[] | keys[]' "$STATE_FILE" 2>/dev/null | sort -u | while IFS= read -r k; do
   known=0
@@ -1213,6 +1214,52 @@ elif [[ "$_c12_loc" != "FREE" ]]; then
   log_fail "Check 12: next_project_number ($_c12_counter) is already in use in $_c12_loc -- a counter naming an in-use number can issue a DUPLICATE project_number. The correct value is $_c12_next_free. Repair: $_c12_repair"
 else
   log_pass "Check 12: next_project_number ($_c12_counter) names a free number"
+fi
+
+# ─── Check 13: roadmap_batches entry integrity (WARN-only, base mode) ──────────────────────────
+# PROMOTION CRITERION: identical shape to Checks 8-11's (see above) -- promote to FAIL once
+# roadmap-agent/skill-roadmap has been the sole writer of roadmap_batches across two consecutive
+# /roadmap runs with zero WARN-level findings from this check. --strict promotes it to
+# exit-blocking today for an opt-in caller, same as Checks 8-11.
+# Three sub-conditions, each independently reportable:
+#   (a) task_ids non-empty and every member an existing, non-terminal project_number
+#   (b) no task id appears in more than one batch
+#   (c) description present, non-empty, and <= 100 characters
+_check13_prog='
+def is_terminal: . == "completed" or . == "abandoned" or . == "expanded";
+(.active_projects) as $all |
+([$all[] | .project_number]) as $all_ids |
+([$all[] | select((.status // "") | is_terminal) | .project_number]) as $terminal_ids |
+(.roadmap_batches // []) as $batches |
+[
+  range(0; $batches | length) as $i |
+  ($batches[$i]) as $b |
+  (($b.task_ids // [])) as $ids |
+  (
+    (if ($ids | length) == 0 then ["roadmap_batches[\($i)] has an empty or missing task_ids array"] else [] end)
+    +
+    [ $ids[] | select((. as $id | ($all_ids | index($id))) == null) | "roadmap_batches[\($i)] names task_ids member \(.), which is not an existing project_number" ]
+    +
+    [ $ids[] | select(. as $id | $terminal_ids | index($id) != null) | "roadmap_batches[\($i)] names task_ids member \(.), which is already terminal (completed/abandoned/expanded)" ]
+    +
+    (if (($b.description // "") | length) == 0 then ["roadmap_batches[\($i)].description is missing or empty"]
+     elif (($b.description // "") | length) > 100 then ["roadmap_batches[\($i)].description is \((($b.description // "") | length)) characters, over the 100-character bound"]
+     else [] end)
+  )
+] | add // []
+as $direct |
+(
+  [$batches[] | (.task_ids // [])[]] | group_by(.) | map(select(length > 1) | .[0])
+) as $dup_ids |
+($direct + ($dup_ids | map("task id \(.) appears in more than one roadmap_batches entry")))[]'
+check13_findings=$(jq -r "$_check13_prog" "$STATE_FILE" 2>/dev/null)
+if [[ -z "$check13_findings" ]]; then
+  log_pass "Check 13: roadmap_batches entries are well-formed (or absent/empty)"
+else
+  while IFS= read -r _c13_msg; do
+    [[ -z "$_c13_msg" ]] && continue
+    log_warn "Check 13: $_c13_msg"
+  done <<< "$check13_findings"
 fi
 
 # ─── project_number uniqueness (promoted from --deep-only Check D1 to base mode) ───────────────

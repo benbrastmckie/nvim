@@ -13,7 +13,7 @@ next_project_number: 611
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,476,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,531,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,599,603,604,606,607,610 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,476,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,599,603,604,606,607,610 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,458,462,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,592,593,598,602,605 | 383,390,398,431,451,452,455,459,472,476,479,484,491,504,505,534,535,538,539,548,549,563,599,603,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,588,594 | 439,458,472,476,486,509,518,519,542,543,564,593 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,595 | 438,479,492,501,539,547,552,580,594 | core-agent-system, agent-system |
@@ -67,7 +67,7 @@ next_project_number: 611
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
 591 [RESEARCHED] — Decide the fate of the errors.json triage surface
-603 [PLANNED] — Make ROADMAP.md a generated artifact rendered from state.json
+603 [IMPLEMENTING] — Make ROADMAP.md a generated artifact rendered from state.json
   └─ 602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
@@ -177,10 +177,6 @@ next_project_number: 611
 607 [NOT STARTED] — Resolve the gate 20 orchestrator context-budget overage and...
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
-
-### Repo Hygiene
-
-531 [IMPLEMENTING] — Narrow whole-directory file\_scope declarations so the...
 
 ### Decidability
 
@@ -618,7 +614,7 @@ repairs but deliberately built no detector, and #418 made lint-FIXTURE subject r
 
 ### 603. Make ROADMAP.md a generated artifact rendered from state.json
 - **Effort**: large
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 313, Task 528, Task 532
@@ -5821,7 +5817,7 @@ surface, and that rationale does not survive into this repository.
 ---
 
 ### 531. Narrow whole-directory file_scope declarations so the admission overlap gate can see collisions
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: repo-hygiene
 - **Dependencies**: None

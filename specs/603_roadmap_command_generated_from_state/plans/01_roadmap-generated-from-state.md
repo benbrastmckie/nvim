@@ -2,7 +2,7 @@
 
 - **Task**: 603 - Make specs/ROADMAP.md a wholly generated artifact backed by state.json roadmap
   entries, and add a `/roadmap [instruction]` command/skill/agent that maintains them
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 13 hours
 - **Dependencies**: None declared on this record. Task 602 carries a declared edge running
   *behind* 603 (its `--prune`-wiring question is answered differently once this lands).
@@ -183,44 +183,44 @@ Phases within the same wave can execute in parallel. Phases 5 and 6 both edit
 
 ---
 
-### Phase 1: Schema and Validator for `roadmap_batches` and `roadmap_notes` [NOT STARTED]
+### Phase 1: Schema and Validator for `roadmap_batches` and `roadmap_notes` [COMPLETED]
 
 **Goal**: `specs/state.json` gains two optional top-level keys with a modelled, validated,
 documented shape, and the schema reference stops omitting fields it already models.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/validate-state.sh` immediately before editing
+- [x] Re-read `agent-system/extensions/core/scripts/validate-state.sh` immediately before editing
       (task 531 declares this same file; see Risks).
-- [ ] Add `roadmap_batches` to `state-schema.json`'s top-level `properties`: an array of objects,
+- [x] Add `roadmap_batches` to `state-schema.json`'s top-level `properties`: an array of objects,
       each with `task_ids` (array of integers, required, non-empty), `description` (string,
       required, `maxLength: 100`), `rationale` (string, optional, unbounded), `flags` (string,
       optional). Document in the field description that **array position is the batch's
       priority** and that no separate priority field exists.
-- [ ] Add `roadmap_notes` to `state-schema.json`'s top-level `properties`: an object with
+- [x] Add `roadmap_notes` to `state-schema.json`'s top-level `properties`: an object with
       `next_preamble`, `next_postamble`, and `open_work_trailer`, each an optional array of
       strings (one entry per rendered paragraph), `additionalProperties: false`.
-- [ ] Add `roadmap_annotation` (string, optional) and `roadmap_ext_blocked` (boolean, optional) to
+- [x] Add `roadmap_annotation` (string, optional) and `roadmap_ext_blocked` (boolean, optional) to
       `definitions.projectEntry.properties` — the schema-backed successors to the `<- ` annotation
       and `EXT-BLOCKED` token, which have had no schema home at all. Do **not** add a description
       override field: the title is the sole source (see Overview addition 3).
-- [ ] Add all four names to `validate-state.sh`'s `KNOWN_TOP_LEVEL_FIELDS` / `KNOWN_ENTRY_FIELDS`
+- [x] Add all four names to `validate-state.sh`'s `KNOWN_TOP_LEVEL_FIELDS` / `KNOWN_ENTRY_FIELDS`
       arrays in the same commit as the schema change, per the drift-test convention Check 3 and
       Check 4 document.
-- [ ] Add **Check 13** to `validate-state.sh` (next free number; Check 12 is the current highest):
+- [x] Add **Check 13** to `validate-state.sh` (next free number; Check 12 is the current highest):
       for every `roadmap_batches` entry, assert (a) `task_ids` is non-empty and every member is an
       existing, non-terminal `project_number`; (b) no task id appears in more than one batch;
       (c) `description` is present, non-empty, and <= 100 characters. Land it at the same
       **WARN-only, `--strict`-enforcing** level as Checks 8-11, with a PROMOTION CRITERION comment
       in the same shape those checks already carry.
-- [ ] Extend `tests/test-validate-state.sh` with fixtures for each Check 13 sub-condition (clean
+- [x] Extend `tests/test-validate-state.sh` with fixtures for each Check 13 sub-condition (clean
       pass, terminal member, duplicated member, over-long description, absent key as a clean
       pass), plus the schema-to-validator drift case for the four new names.
-- [ ] Update `context/reference/state-management-schema.md`: add `roadmap_batches` and
+- [x] Update `context/reference/state-management-schema.md`: add `roadmap_batches` and
       `roadmap_notes` rows to the Top-Level Fields table, `roadmap_annotation` /
       `roadmap_ext_blocked` rows to the Project Entry Fields table, and — the directly adjacent
       gap the research pass found — a **`priority`** row, which that table omits today although
       the schema models it and the validator references it.
-- [ ] Record the two field rulings in that same file: `priority` is kept as-is and is **never**
+- [x] Record the two field rulings in that same file: `priority` is kept as-is and is **never**
       read for batch ordering; `roadmap_items` (array, documented-optional, **0 live entries, no
       writer, no reader**) is explicitly **not** the batch carrier and is named a dead field whose
       retirement belongs to `migrate-state-legacy-fields.sh`'s purview, not this task.
