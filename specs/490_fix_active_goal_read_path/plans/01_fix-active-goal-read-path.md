@@ -188,38 +188,44 @@ narrowed.
 
 ---
 
-### Phase 2: Add the failing Goal-resolution cases, then implement the unified resolver [NOT STARTED]
+### Phase 2: Add the failing Goal-resolution cases, then implement the unified resolver [COMPLETED]
 
 **Goal**: Pin the precedence chain with cases that fail against today's script, then implement
 `resolve_goal_text()` and remove the mode gate so every case passes.
 
 **Tasks**:
-- [ ] Case 5a (Outcome #4, literal): `active_goal` = `"Finish the widget migration"`, scratch
+- [x] Case 5a (Outcome #4, literal): `active_goal` = `"Finish the widget migration"`, scratch
       `TODO.md` with no Goal line, `run_gto` (`--update-todo`) must leave
-      `**Goal**: Finish the widget migration` in the `## Task Order` section.
-- [ ] Case 5b: same fixture, `run_gto_print` must emit that same Goal line on stdout. This is the
-      mode the task's motivating caller actually reaches.
-- [ ] Case 5c: `--goal "Explicit override"` passed alongside a non-empty `active_goal` — the
+      `**Goal**: Finish the widget migration` in the `## Task Order` section. *(completed)*
+- [x] Case 5b: same fixture, `run_gto_print` must emit that same Goal line on stdout. This is the
+      mode the task's motivating caller actually reaches. *(completed)*
+- [x] Case 5c: `--goal "Explicit override"` passed alongside a non-empty `active_goal` — the
       override wins in `--update-todo`, and the `active_goal` text appears nowhere in the output.
-- [ ] Case 5d: `active_goal` absent (`null`) plus a seeded hand-written
+      *(completed)*
+- [x] Case 5d: `active_goal` absent (`null`) plus a seeded hand-written
       `**Goal**: Pre-existing hand-written goal line` — the seeded line survives in **both**
       `--update-todo` and `--print`. The print half is the preserve-across-regeneration guarantee
-      that Outcome #1 forbids regressing and that does not hold today.
-- [ ] Case 5e: `active_goal` = `""` plus the same seeded line — the chain treats the empty string
-      as absent and preserves the hand-written line, in both modes.
-- [ ] Run the suite against the **unmodified** script and capture the `Results:` line and each new
+      that Outcome #1 forbids regressing and that does not hold today. *(completed)*
+- [x] Case 5e: `active_goal` = `""` plus the same seeded line — the chain treats the empty string
+      as absent and preserves the hand-written line, in both modes. *(completed)*
+- [x] Run the suite against the **unmodified** script and capture the `Results:` line and each new
       case's failure text verbatim into the implementation summary. This is Outcome #4's "the test
       must fail against the current script" evidence; expect 5a, 5b, 5d's print half, and 5e's
       print half red, and record whichever cases actually fail rather than asserting this list.
-- [ ] Add `resolve_goal_text()` to `generate-task-order.sh`, adjacent to `read_existing_goal()`:
+      *(completed: Results: 22 passed, 4 failed — failures were exactly 5a, 5b, 5d-print-half,
+      5e-print-half, matching the predicted set exactly)*
+- [x] Add `resolve_goal_text()` to `generate-task-order.sh`, adjacent to `read_existing_goal()`:
       echo `$GOAL_OVERRIDE` if non-empty; else `jq -r '.active_goal // empty' "$STATE_FILE"
       2>/dev/null` and echo it if non-empty; else `read_existing_goal`; else echo `""`. Guard the
       `jq` read so an absent or malformed `STATE_FILE` yields empty rather than a hard failure.
-- [ ] Replace the `if/elif [[ "$MODE" == "update" ]]/else` block at the "Determine goal text" site
+      *(completed)*
+- [x] Replace the `if/elif [[ "$MODE" == "update" ]]/else` block at the "Determine goal text" site
       (lines ~1040-1046 today — re-read before editing, the number may have drifted) with a single
       unconditional `GOAL_TEXT="$(resolve_goal_text)"`, so `--print` and `--update-todo` share one
-      chain. Leave argument parsing and `generate_section()` untouched.
-- [ ] Re-run the suite and confirm every existing assertion plus every new one passes.
+      chain. Leave argument parsing and `generate_section()` untouched. *(completed: resolution
+      block was at lines 1040-1046 as predicted)*
+- [x] Re-run the suite and confirm every existing assertion plus every new one passes. *(completed:
+      Results: 26 passed, 0 failed)*
 
 **Timing**: 1.5 hours
 

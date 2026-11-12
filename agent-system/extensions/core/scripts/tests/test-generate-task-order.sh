@@ -572,6 +572,124 @@ fi
 }
 
 # ═════════════════════════════════════════════════════════════════════════════════════════════
+# Case group 5: active_goal precedence chain (Outcomes #1, #4) -- --goal override > non-empty
+# state.json active_goal > existing TODO.md Goal line > omit, applied identically in
+# --update-todo and --print.
+# ═════════════════════════════════════════════════════════════════════════════════════════════
+
+# --- 5a: active_goal set, no prior Goal line -- --update-todo must render it ---
+{
+  g_text="Finish the widget migration"
+  scratch="$(build_scratch)"
+  build_state_goal "$scratch" '[]' "$(jq -n --arg g "$g_text" '$g')" \
+    "$(mk_fixture 920 not_started "fixture for case 5a" "" "" '[]')"
+  run_gto "$scratch"
+  rendered="$(goal_line_from "$scratch/specs/TODO.md")"
+  if [[ "$rendered" == "$g_text" ]]; then
+    common_test_pass "5a-actual: --update-todo renders the Goal line from active_goal when no prior Goal line exists: $rendered"
+  else
+    common_test_fail "5a-actual: --update-todo did not render active_goal as the Goal line (expected '$g_text', got '$rendered')"
+  fi
+}
+
+# --- 5b: same condition under --print -- the mode the motivating caller actually reaches ---
+{
+  g_text="Finish the widget migration"
+  scratch="$(build_scratch)"
+  build_state_goal "$scratch" '[]' "$(jq -n --arg g "$g_text" '$g')" \
+    "$(mk_fixture 921 not_started "fixture for case 5b" "" "" '[]')"
+  run_gto_print "$scratch"
+  rendered="$(goal_line_from "$scratch/print-stdout.log")"
+  if [[ "$rendered" == "$g_text" ]]; then
+    common_test_pass "5b-actual: --print renders the Goal line from active_goal when no prior Goal line exists: $rendered"
+  else
+    common_test_fail "5b-actual: --print did not render active_goal as the Goal line (expected '$g_text', got '$rendered')"
+  fi
+}
+
+# --- 5c: --goal override wins over a non-empty active_goal; active_goal text leaks nowhere ---
+{
+  g_text="SHOULD_NOT_RENDER_ACTIVE_GOAL_TEXT_5c"
+  override_text="Explicit override"
+  scratch="$(build_scratch)"
+  build_state_goal "$scratch" '[]' "$(jq -n --arg g "$g_text" '$g')" \
+    "$(mk_fixture 922 not_started "fixture for case 5c" "" "" '[]')"
+  bash "$scratch/.claude/scripts/generate-task-order.sh" \
+    --update-todo "$scratch/specs/TODO.md" "$scratch/specs/state.json" --goal "$override_text" \
+    >"$scratch/stdout.log" 2>"$scratch/stderr.log"
+  rendered="$(goal_line_from "$scratch/specs/TODO.md")"
+  if [[ "$rendered" == "$override_text" ]]; then
+    common_test_pass "5c-actual: --goal override wins over a non-empty active_goal: $rendered"
+  else
+    common_test_fail "5c-actual: --goal override did not win (expected '$override_text', got '$rendered')"
+  fi
+  if grep -q "$g_text" "$scratch/specs/TODO.md"; then
+    common_test_fail "5c-actual: active_goal text leaked into TODO.md despite --goal override"
+  else
+    common_test_pass "5c-actual: active_goal text does not appear anywhere in the output"
+  fi
+}
+
+# --- 5d: active_goal absent (null) plus a seeded hand-written Goal line -- the seeded line
+#     survives in BOTH modes; the print half is the preserve-across-regeneration guarantee that
+#     does not hold today ---
+{
+  seeded="Pre-existing hand-written goal line"
+
+  scratch="$(build_scratch)"
+  seed_goal_line "$scratch" "$seeded"
+  build_state "$scratch" '[]' "$(mk_fixture 923 not_started "fixture for case 5d update" "" "" '[]')"
+  run_gto "$scratch"
+  rendered_update="$(goal_line_from "$scratch/specs/TODO.md")"
+  if [[ "$rendered_update" == "$seeded" ]]; then
+    common_test_pass "5d-actual: --update-todo preserves a hand-written Goal line when active_goal is absent: $rendered_update"
+  else
+    common_test_fail "5d-actual: --update-todo did not preserve the hand-written Goal line (expected '$seeded', got '$rendered_update')"
+  fi
+
+  scratch2="$(build_scratch)"
+  seed_goal_line "$scratch2" "$seeded"
+  build_state "$scratch2" '[]' "$(mk_fixture 924 not_started "fixture for case 5d print" "" "" '[]')"
+  run_gto_print "$scratch2"
+  rendered_print="$(goal_line_from "$scratch2/print-stdout.log")"
+  if [[ "$rendered_print" == "$seeded" ]]; then
+    common_test_pass "5d-actual: --print preserves a hand-written Goal line when active_goal is absent: $rendered_print"
+  else
+    common_test_fail "5d-actual: --print did not preserve the hand-written Goal line (expected '$seeded', got '$rendered_print')"
+  fi
+}
+
+# --- 5e: active_goal = "" plus the same seeded line -- empty string treated as absent, in
+#     BOTH modes ---
+{
+  seeded="Pre-existing hand-written goal line for case 5e"
+
+  scratch="$(build_scratch)"
+  seed_goal_line "$scratch" "$seeded"
+  build_state_goal "$scratch" '[]' '""' \
+    "$(mk_fixture 925 not_started "fixture for case 5e update" "" "" '[]')"
+  run_gto "$scratch"
+  rendered_update="$(goal_line_from "$scratch/specs/TODO.md")"
+  if [[ "$rendered_update" == "$seeded" ]]; then
+    common_test_pass "5e-actual: --update-todo treats an empty-string active_goal as absent and preserves the hand-written Goal line: $rendered_update"
+  else
+    common_test_fail "5e-actual: --update-todo did not preserve the hand-written Goal line with empty active_goal (expected '$seeded', got '$rendered_update')"
+  fi
+
+  scratch2="$(build_scratch)"
+  seed_goal_line "$scratch2" "$seeded"
+  build_state_goal "$scratch2" '[]' '""' \
+    "$(mk_fixture 926 not_started "fixture for case 5e print" "" "" '[]')"
+  run_gto_print "$scratch2"
+  rendered_print="$(goal_line_from "$scratch2/print-stdout.log")"
+  if [[ "$rendered_print" == "$seeded" ]]; then
+    common_test_pass "5e-actual: --print treats an empty-string active_goal as absent and preserves the hand-written Goal line: $rendered_print"
+  else
+    common_test_fail "5e-actual: --print did not preserve the hand-written Goal line with empty active_goal (expected '$seeded', got '$rendered_print')"
+  fi
+}
+
+# ═════════════════════════════════════════════════════════════════════════════════════════════
 # Environment / isolation checks
 # ═════════════════════════════════════════════════════════════════════════════════════════════
 

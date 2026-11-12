@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Add the failing Goal-resolution cases, then implement the unified resolver",
+  "started_at": "2026-11-12T06:40:00Z",
+  "last_updated": "2026-11-12T06:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Case 5a: active_goal set, no prior Goal line, --update-todo must emit it", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-generate-task-order.sh"]},
+    {"id": 2, "description": "Case 5b: same fixture under --print", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-generate-task-order.sh"]},
+    {"id": 3, "description": "Case 5c: --goal override wins over active_goal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-generate-task-order.sh"]},
+    {"id": 4, "description": "Case 5d: absent active_goal preserves seeded hand-written line in both modes", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-generate-task-order.sh"]},
+    {"id": 5, "description": "Case 5e: empty-string active_goal treated as absent, both modes", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-generate-task-order.sh"]},
+    {"id": 6, "description": "Run suite against unmodified script, capture red evidence verbatim", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Add resolve_goal_text() adjacent to read_existing_goal()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/generate-task-order.sh"]},
+    {"id": 8, "description": "Replace mode-gated resolution block with unconditional resolve_goal_text() call", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/generate-task-order.sh"]},
+    {"id": 9, "description": "Re-run suite, confirm all assertions pass", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

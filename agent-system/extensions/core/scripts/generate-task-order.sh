@@ -931,6 +931,28 @@ read_existing_goal() {
   echo "$goal_line"
 }
 
+# resolve_goal_text: the single Goal-line precedence chain, applied identically in --print and
+# --update-todo. Precedence: explicit --goal override > non-empty state.json .active_goal >
+# existing TODO.md Goal line (read_existing_goal) > omit (empty string). unset/null/"" active_goal
+# all fall through to the TODO.md preserve behavior, by design -- see
+# context/formats/task-order-format.md's Goal Statement section for the conflict rule and its
+# rationale.
+resolve_goal_text() {
+  if [[ -n "$GOAL_OVERRIDE" ]]; then
+    echo "$GOAL_OVERRIDE"
+    return
+  fi
+
+  local from_state
+  from_state=$(jq -r '.active_goal // empty' "$STATE_FILE" 2>/dev/null)
+  if [[ -n "$from_state" ]]; then
+    echo "$from_state"
+    return
+  fi
+
+  read_existing_goal
+}
+
 # ============================================================================
 # Generate Complete Section
 # ============================================================================
@@ -1037,14 +1059,8 @@ compute_waves
 # Compute connected components (used for implicit grouping within topic sections)
 compute_connected_components
 
-# Determine goal text
-if [[ -n "$GOAL_OVERRIDE" ]]; then
-  GOAL_TEXT="$GOAL_OVERRIDE"
-elif [[ "$MODE" == "update" ]]; then
-  GOAL_TEXT=$(read_existing_goal)
-else
-  GOAL_TEXT=""
-fi
+# Determine goal text: one unconditional chain shared by --print and --update-todo.
+GOAL_TEXT="$(resolve_goal_text)"
 
 # Generate the section content
 SECTION_CONTENT=$(generate_section "$GOAL_TEXT")
