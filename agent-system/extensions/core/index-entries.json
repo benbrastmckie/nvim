@@ -3741,7 +3741,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Complete specification for /task's Abandon Mode (--abandon): archiving tasks",
-      "line_count": 76,
+      "line_count": 77,
       "keywords": [
         "patterns",
         "task",

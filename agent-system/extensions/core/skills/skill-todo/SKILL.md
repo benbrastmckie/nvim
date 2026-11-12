@@ -484,9 +484,10 @@ Direct execution skill for archiving tasks, updating CHANGE_LOG.md, and suggesti
             target_dir="specs/archive/$(basename "$source_dir")"
             # specs/archive/ is gitignored: this mv removes every file under the directory from
             # version control (still on disk locally, absent from every fresh clone), so any
-            # guard citing a file by its task-directory path -- the evidence-probe gate's
-            # WIRED_REPO form in scripts/check-evidence-probes.sh -- must be re-pointed, or the
-            # file promoted into specs/evidence/, before the task is archived.
+            # guard or probe citing a file by its task-directory path -- a WIRED_REPO reference --
+            # breaks once the task is archived. No mechanical detector in this repository catches
+            # this today; the file must be re-pointed, or promoted into specs/evidence/, before
+            # archival, and that discipline is manual.
             mv "$source_dir" "$target_dir"
             # Pair both endpoints so `git add` records the source's removal -- see
             # context/standards/git-staging-scope.md's "Rename and Directory-Move Staging".
