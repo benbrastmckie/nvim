@@ -52650,12 +52650,11 @@
       "created": "2026-10-09T21:24:21Z",
       "last_updated": "2026-11-12T06:51:58Z",
       "file_scope": [
-        "agent-system/extensions/core/context/patterns/task-abandon-mode.md",
-        "agent-system/extensions/core/scripts/validate-state.sh",
-        "agent-system/extensions/core/skills/skill-todo/SKILL.md",
-        "specs/531_file_scope_declaration_hygiene_remediation/summaries/01_file-scope-declaration-hygiene-summary.md",
+        "specs/state.json",
         "specs/TODO.md",
-        "specs/state.json"
+        "agent-system/extensions/core/context/patterns/task-abandon-mode.md",
+        "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+        "agent-system/extensions/core/index-entries.json"
       ],
       "dependencies": [],
       "title": "Narrow whole-directory file_scope declarations so the admission overlap gate can see collisions",
@@ -61191,7 +61190,12 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "title": "Port the deployed-tree containment strip into git-commit-scoped.sh"
+      "title": "Port the deployed-tree containment strip into git-commit-scoped.sh",
+      "file_scope": [
+        "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+        "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+        "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"
+      ]
     },
     {
       "project_number": 568,
@@ -63105,7 +63109,13 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "title": "Fix failing assertions in the orchestrate-cycle-postflight suite"
+      "title": "Fix failing assertions in the orchestrate-cycle-postflight suite",
+      "file_scope": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+        "agent-system/extensions/core/scripts/update-task-status.sh"
+      ]
     },
     {
       "project_number": 570,
@@ -113898,7 +113908,14 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "file_scope": [
+        "agent-system/extensions/core/commands/orchestrate.md",
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+        "agent-system/extensions/core/scripts/gate-registry.data",
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
     },
     {
       "project_number": 609,
