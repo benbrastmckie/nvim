@@ -387,7 +387,7 @@ run together with the `local` row's diff read-through.
 
 ---
 
-### Phase 5: Land the Prune Ruling and the Render Contract [NOT STARTED]
+### Phase 5: Land the Prune Ruling and the Render Contract [COMPLETED]
 
 **Goal**: The roadmap-prune ruling is recorded with its current grounds, and the report template
 describes the additive, multi-option, gated-edge-write render instead of the superseded
@@ -395,25 +395,25 @@ either/or behavior.
 
 **Tasks**:
 
-- [ ] Replace Step 5's recorded rationale for excluding `--prune` with the current fact (D4):
+- [x] Replace Step 5's recorded rationale for excluding `--prune` with the current fact (D4):
       `--regenerate` renders `## Next` and `## Open work` wholly from `specs/state.json`, so no
       terminal task is ever written into the file and `--prune` is a deprecated alias for
       `--regenerate` — there is nothing left for a prune pass to remove, which is why this stage
       calls `--regenerate` alone. Cite `roadmap-integration.sh`'s own header as the source of
-      truth.
-- [ ] Rewrite `orchestrate-batch-results-template.md`'s `**Suggested next batch**:` block: a
+      truth. *(completed)*
+- [x] Rewrite `orchestrate-batch-results-template.md`'s `**Suggested next batch**:` block: a
       colliding pair renders as its own ordered-sequence line **in addition to**, never instead
       of, a joint batch line; up to three labelled options render, each naming its coherence
       criterion and carrying its own admission evidence; the cap-reached line appears verbatim
       when the shared probe budget cuts the option list short; the proposed edges and the
       approval outcome (approved-and-written with re-probe evidence, declined, or
       not-asked-because-empty) are rendered; the no-suggestible-batch case is still omitted with
-      an explicit reason rather than left blank.
-- [ ] Add one sentence to `context/patterns/roadmap-update.md` recording the
+      an explicit reason rather than left blank. *(completed)*
+- [x] Add one sentence to `context/patterns/roadmap-update.md` recording the
       `--prune`/`--regenerate` equivalence and pointing at `roadmap-integration.sh`'s header as
-      the source of truth, so the next reader does not re-derive it from the script.
-- [ ] Re-read the three edited files for record-versioning language and task-number references,
-      both prohibited under `agent-system/**`.
+      the source of truth, so the next reader does not re-derive it from the script. *(completed)*
+- [x] Re-read the three edited files for record-versioning language and task-number references,
+      both prohibited under `agent-system/**`. *(completed)*
 
 **Timing**: 1 hour
 

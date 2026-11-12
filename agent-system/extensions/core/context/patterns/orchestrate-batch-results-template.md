@@ -227,13 +227,36 @@ only.
 
 **Roadmap**: regenerated (`specs/ROADMAP.md`).
 
-**Suggested next batch**: `/orchestrate {suggested_task_numbers}` — from
-`orchestrate-suggest-next-batch.sh --next-batch` (`context/contracts/conclusion-stage.md`'s
-Step 7). A colliding pair renders as its own ordered-sequence line with the proposed
-`--depends-on-add` command instead of a plain joint list; every suggestion states it was
-admissible when suggested and should be re-verified at actual dispatch time. When the
-suggester finds nothing suggestible, this line is OMITTED WITH AN EXPLICIT REASON (the
-suggester's own "no suggestible batch" line, quoted here) rather than left blank.
+**Suggested next batch**: from `orchestrate-suggest-next-batch.sh --next-batch`
+(`context/contracts/conclusion-stage.md`'s Step 7). Up to `MAX_BATCH_OPTIONS` (3) distinct,
+labelled, probe-verified options render — one per selection-doctrine criterion (shared
+territory / topic cohesion / graph width) — each under its own `Option N -- {criterion}:`
+header naming why it coheres, each carrying its own admission evidence
+(`render_verdict_evidence()`'s `task N: admit`/`defer (reason)` lines). A criterion whose own
+candidate pool is empty is skipped; an option whose task set duplicates an already-rendered
+option's is skipped rather than printed twice.
+
+A `file_scope`-colliding pair is ADDITIVE information alongside a probe-verified joint batch,
+NEVER a replacement for one: it renders as its own ordered-sequence line
+(`/orchestrate A, then B (ordered sequence -- file_scope collision)`) with the proposed
+`--depends-on-add` command, in the SAME option's output as any joint batch line that option's
+own conflict-free-subset second pass admits. Every suggestion states it was admissible when
+suggested and should be re-verified at actual dispatch time.
+
+**Proposed edges and the edge-write approval outcome**: `{edge_write_outcome}` — one of
+`approved — written` (lists each written edge and its post-write re-probe evidence, both
+members now `admit`), `declined` (`specs/state.json` is byte-identical to before this stage
+ran), or `not asked — no proposed edges` (Step 7 found no colliding pair this invocation, so
+the `edges` approval gate was never reached). The `edges` key is an independent, non-channel
+approval key (`context/contracts/conclusion-stage.md`'s Step 7) — it is never satisfied by any
+channel's own approval, and no channel is ever satisfied by it.
+
+The shared probe-invocation cap (`MAX_PROBE_INVOCATIONS`) is honored across every option in one
+invocation; reaching it mid-render is rendered EXPLICITLY (the suggester's own cap-reached
+line, plus the stage's "cut short by the cap" line), retaining every option already rendered
+rather than silently truncating the list. When the suggester finds nothing suggestible at all,
+this whole block is OMITTED WITH AN EXPLICIT REASON (the suggester's own "no suggestible batch"
+line, quoted here) rather than left blank.
 
 ### Next Steps
 - Re-run failed tasks: /orchestrate {failed_task_numbers}

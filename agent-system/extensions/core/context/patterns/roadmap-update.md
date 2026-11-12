@@ -84,6 +84,10 @@ invokes which, when, and what each promises. The authored-vs-generated split its
   stage's documented invocation, if any repo wires one — keeps working unchanged.
 - **Exit codes / `--dry-run` / `OUTCOME:` line**: identical to `--regenerate`, since `--prune` is
   now that same code path.
+- **Source of truth**: `roadmap-integration.sh`'s own `mode_prune()` header comment and its
+  `--prune`/`--regenerate` usage lines document this equivalence directly in the script; a
+  future reader should cite that header rather than re-deriving the equivalence from this file
+  or from the script's behavior alone.
 
 ---
 

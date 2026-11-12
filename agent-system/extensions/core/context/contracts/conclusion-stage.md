@@ -348,9 +348,13 @@ Invoke the existing roadmap generator's regenerate mode — never reimplementing
 bash .claude/scripts/roadmap-integration.sh --regenerate
 ```
 
-Per this task's D3: `--prune` is deliberately out of scope for this stage (it removes content
-outright, a stronger unattended action than an idempotent regenerate). Commit
-`specs/ROADMAP.md` alone:
+`--prune` is deliberately out of scope for this stage, not because it is a stronger unattended
+action than an idempotent regenerate, but because `--regenerate` already renders `## Next` and
+`## Open work` wholly from `specs/state.json`: a terminal task is never written into the file in
+the first place, so there is nothing left for a prune pass to remove. `--prune` is therefore a
+DEPRECATED ALIAS for `--regenerate` — see `roadmap-integration.sh`'s own `mode_prune()` header
+comment and its `--prune`/`--regenerate` usage lines for the source of truth. This stage calls
+`--regenerate` alone for that reason. Commit `specs/ROADMAP.md` alone:
 
 ```bash
 bash .claude/scripts/git-commit-scoped.sh --session "$session_id" \
