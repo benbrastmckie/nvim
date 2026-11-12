@@ -16,31 +16,47 @@ transcribe one here. As of 2026-11-11: **137 open (2 held), 5 awaiting `/todo` a
 
 ## Gate state
 
-Measured 2026-11-05 unless marked.
+Every bullet carries its own measurement date. A CARRIED-UNVERIFIED figure must be re-derived
+before it is cited (standing rule 5).
 
-- **Gate 8 is red: 5 shell suites**, re-measured 2026-11-11 by a batch-level `verify-deploy.sh`
-  run and narrowed again after a redeploy the same day. The live roster:
-  `test-double-loading-check.sh`, `test-gate-cache-equivalence.sh`, `test-gate-lock.sh`,
-  `test-lint-unit-integration-boundary.sh`, `test-orchestrate-cycle-postflight.sh`. The four
-  root causes that produced most of the earlier red have all landed: `589` (hardcoded repo-root
-  walk-up depth resolving outside the repository from the deployed invocation, failing open with
-  an unrelated stated cause, spanning five suites), `569` (each fixture's dependency-copy list
-  missing `lib/project-number-inuse.sh`, which `state-write.sh` gained in commit 918c9a031, so
-  every fixture `state.json` write aborted and each caller reported its own generic write
-  failure — three suites), `573` (two single-assertion failures `589` had already closed) and
-  `500`. `test-verify-deploy-context-budget.sh` came off the roster on 2026-11-11 as well, and
-  **its `known-failures.txt` row is now stale and removable**: the row's own retirement condition
-  was "once gate 24 reports no finding against the fixture", gate 24 now passes, and the suite
-  re-measures 15 passed / 0 failed. Of the five remaining, `568` owns
-  `test-orchestrate-cycle-postflight.sh` (25 of 304 assertions, status-name and `persisted_status`
-  drift, confirmed pre-existing); `test-gate-lock.sh` carries **no roster row at all**, so it is
-  an undeclared failure; and `test-double-loading-check.sh` (case 5 bucket-classification) and
-  `test-lint-unit-integration-boundary.sh` (two suites with no `suite-classification.data` row:
-  `test-mcp-merge-target.sh`, `test-validate-no-python-state-write.sh`) are both needs-owner.
-  `476` owns the residue and **must be re-measured, not sized** — its title still says seven, the
-  roster was never stable run-to-run, and two of the five above were not on the 2026-11-05 roster
-  at all. A standing red Gate 8 destroys the signal value of the full gate for every later task,
-  which is the real cost.
+- **Gate 8 is red: 5 declared suites**, re-measured 2026-11-11 by a full
+  `tests/run-all.sh --jobs 4`: **178 passed, 7 failed (5 expected, 2 NEW), 2 skipped, 187
+  total**. The declared roster is `test-double-loading-check.sh`,
+  `test-gate-cache-equivalence.sh`, `test-lint-unit-integration-boundary.sh`,
+  `test-orchestrate-cycle-postflight.sh`, `test-verify-deploy-context-budget.sh`. The four
+  records that accounted for most of the earlier red have all landed, and none of their failures
+  was about what the suites test — a hardcoded repo-root walk-up depth across five suites, a
+  missing `lib/project-number-inuse.sh` dependency-copy line in three fixtures, and two
+  single-assertion failures the first of those had already closed. `568` owns
+  `test-orchestrate-cycle-postflight.sh` (25 of 304 assertions, status-name and
+  `persisted_status` drift, confirmed pre-existing); `test-double-loading-check.sh` (case 5
+  bucket-classification) and `test-lint-unit-integration-boundary.sh` (6 violations across 170
+  discovered suites, suites with no `suite-classification.data` row) are both needs-owner.
+  `476` owns the residue and **must be re-measured, not sized** — its title still says seven, and
+  the roster has never been stable run-to-run. A standing red Gate 8 destroys the signal value of
+  the full gate for every later task, which is the real cost.
+- **Two roster claims this re-measure overturned.** (a) **`test-gate-lock.sh` now passes** — it
+  was the undeclared failure (red, no `known-failures.txt` row) and is off the roster. (b)
+  **`test-verify-deploy-context-budget.sh` is red again and declared EXPECTED**, so its row is
+  *not* stale and *must not* be removed; the earlier reading that gate 24 passing retired the
+  row's condition was wrong. The roster now also carries one genuinely stale row:
+  **`test-run-all-parallel.sh` has a row and passes**, which is exactly the instance `605` exists
+  to flag.
+- **Both NEW failures are contention artefacts, not defects — measured in the same pass.**
+  `test-lake-build-guard.sh` failed one of 51 assertions ("case 3: command-substitution
+  mismatch") and `test-roadmap-generation.sh` failed under load; re-run in isolation immediately
+  afterwards they returned **51 passed / 0 failed** and **105 passed / 0 failed**. The
+  `test-roadmap-generation.sh` failure is self-explaining: it carries a "live-tree isolation"
+  assertion over the real `specs/ROADMAP.md`, and this pass was rewriting that file while the
+  battery ran. This is a concrete instance of the cost `572` owns — **two of seven failures in a
+  full battery run were false** — and the mechanism is cheap to state: a suite asserting over a
+  live tracked file false-fails whenever anything else writes it.
+- **The re-measure was also blocked before it could start: another live session held
+  `specs/.gate-lock` for its own Gate 8.** The lock was correctly held — the registered owner pid
+  was dead but its parent `verify-deploy.sh` was alive, so this was contention, not a leak, and
+  releasing the token would have been wrong. The `gate-acquire` waiter blocked for over two
+  minutes before the lane cleared. The ~11-minute serialization `584` exists to remove is
+  therefore observable from an unrelated session, not only from a batch's own run.
 - **Gate 16 needs re-measuring** (last measured red 2026-11-04). The record that owned it —
   retiring `routing_hard`/`routing_agents_hard` in favour of `hard_contracts` — has landed, and
   nothing open owns the gate. Do not carry the red forward on this entry's authority; re-run the
@@ -97,8 +113,10 @@ it does not choose the order.**
 
 **The verification-substrate objective has landed.** The four records that accounted for most of
 a red Gate 8 have all closed, and none of their failures was about what the suites test. What
-remains is `568` (25 of 304 assertions in `test-orchestrate-cycle-postflight.sh`, status-name and
-`persisted_status` drift) plus the undeclared and needs-owner rows on the Gate 8 bullet above.
+remains, re-measured 2026-11-11, is `568` (25 of 304 assertions in
+`test-orchestrate-cycle-postflight.sh`, status-name and `persisted_status` drift), two
+needs-owner rows, and one suite whose row was wrongly read as retired — see the Gate 8 bullet
+above. The undeclared failure is gone: `test-gate-lock.sh` now passes.
 Until that residue lands, a gate sweep still cannot fully distinguish a real finding from
 substrate noise, which is the cost `572` records as contention that "manufactures false findings
 that then require manual triage".
@@ -178,15 +196,17 @@ Why this order:
   which is on `476`'s roster — plus `orchestrator-postflight.sh` and `update-task-status.sh`.
   Declare the scope first, then edge `476` behind `568`. That edge is semantic until the
   declaration lands; it is not mechanically discoverable today.
-- **`476` has already shrunk, and must be re-measured rather than sized.** Its title still says
-  seven suites; the last measured Gate 8 roster is five, of which `568` owns one, and two of the
-  five were not on the roster its description was written against at all. **Re-measure before
-  sizing**, and note that two of the five (`test-double-loading-check.sh`,
+- **`476` has already shrunk, and its roster membership moved again on the day of writing.** Its
+  title still says seven suites; the roster re-measured 2026-11-11 is five, of which `568` owns
+  one. Two of the five (`test-double-loading-check.sh`,
   `test-lint-unit-integration-boundary.sh`) are named root causes rather than open questions, so
-  the residue is smaller than the count suggests. `476` against `586` collides on
-  `tests/run-all.sh` and is already declared; `605` joins them because it declares both
-  `tests/run-all.sh` and `tests/known-failures.txt`, the roster `476` is editing, and `604`
-  precedes `605` by a declared edge.
+  the residue is smaller than the count suggests — but the record's description was written
+  against a roster that has since both lost a suite (`test-gate-lock.sh`, now green) and regained
+  one (`test-verify-deploy-context-budget.sh`). **Re-measure before sizing.** `476` against `586`
+  collides on `tests/run-all.sh` and is already declared; `605` joins them because it declares
+  both `tests/run-all.sh` and `tests/known-failures.txt`, the roster `476` is editing, and it has
+  a live instance to flag (`test-run-all-parallel.sh` has a row and passes). `604` precedes `605`
+  by a declared edge.
 - **`584` is the largest structural lever on the board and it is gated by a claimant.** 17 of 28
   gates declare `@extensions` as their corpus, so a one-file edit re-runs the whole battery
   behind a mutex that serialises Gate 8 at roughly 11 minutes — observed again during this pass,
@@ -289,7 +309,7 @@ actually being dispatched, not a backfill across every record a coarse entry hap
 **Core agent system (50)**
 ```
 436 blocked:458,459 Add the /orient executive-orientation command with a read-only scout age...
-439 blocked:431,515 audit_cross_extension_bounded_wait_duplication
+439 blocked:431,515 Rule on the propagation model for the bounded-wait agent contract
 454 blocked:439,515 State the result-needed-this-turn criterion for choosing the foreground ...
 458 blocked:459     Consolidate the duplicated /todo implementation
 474 blocked:431     Repair the broken relative links in agent-frontmatter-standard.md
@@ -471,9 +491,15 @@ actually being dispatched, not a backfill across every record a coarse entry hap
 
 - `orchestrate-cycle-plan.sh --dry-run --state-file specs/state.json <tasks>` — space-separated.
   Admits what you expect; `md5sum specs/state.json` unchanged.
-- `validate-state.sh --deep` — measure before your work too; today's baseline is 0 failed, 7 warnings (2026-11-11).
+- `validate-state.sh --deep` — measure before your work too; today's baseline is 0 failed, 8 warnings (2026-11-11).
 - `tests/run-all.sh --jobs 4` — read the `EXPECTED`/`NEW` split and the roster, not the tally; read
-  the exit code directly, never through `tail`/`head`.
+  the exit code directly, never through `tail`/`head`. Baseline 2026-11-11: **178 passed, 7
+  failed (5 expected, 2 NEW), 2 skipped, 187 total**; the 2 skipped were an exec-bit regression
+  since repaired, and both pass standalone, so a fresh run should read 180 passed / 0 skipped.
+  **Read the skipped count too** — it is not in the `EXPECTED`/`NEW` split and a skip is silent.
+  **Re-run every `NEW` row in isolation before treating it as a finding** — both NEW rows in that
+  run were green standalone. **Do not write a tracked file while the battery runs**: a suite
+  asserting over the live tree false-fails.
 - `verify-deploy.sh --skip-slow` — before and after, and compare. **Never concurrently with the
   battery.** A standing red is not permission to ignore a new one.
 - A completion postflight refused with exit 6 self-clears on the next redeploy checkpoint, but the
@@ -541,16 +567,23 @@ actually being dispatched, not a backfill across every record a coarse entry hap
   roughly one extra cycle per meta task that touches `agent-system/extensions/**`. Re-asking that
   record's question is duplication; challenging its premise with the frequency data is not. Owner
   call, unfiled.
-- **`test-orchestrate-cycle-plan.sh`'s budget failure is real and uncharacterized** — reproduced in
-  isolation, no `known-failures.txt` row, no record.
-- **A record's `file_scope` can be wrong or go stale, and nothing detects it.** Two measured
-  instances, 2026-11-11. (a) `590` declares
+- **A shell suite committed without its exec bit is skipped, not failed, and nothing detects it.**
+  Measured 2026-11-11: two suites were committed mode 644 on 2026-11-10 and `run-all.sh` reported
+  both as `[SKIP] not executable (exec-bit regression?)`, counting them in its skipped column
+  rather than its failures — 41 assertions that had never run. Restoring the bit was a one-line
+  `chmod +x` and both pass (21 passed / 0 failed and 20 passed / 0 failed). The gap is
+  structural, not instance-specific: `known-failures.txt` cannot carry a skip (decision 13 scopes
+  it to failing suites), the discovery predicate names the condition in its own message without
+  failing on it, and a skipped suite is invisible in the `EXPECTED`/`NEW` split the battery is
+  read by. A gate that fails on any non-zero skip count, or a creation-time mode check, would
+  close it. (`test-orchestrate-cycle-plan.sh`'s previously uncharacterized budget failure is
+  resolved: it passed in the same run.)
+- **A record's `file_scope` can be wrong or go stale, and nothing detects it.** Re-confirmed
+  2026-11-11: `590` declares
   `agent-system/extensions/core/scripts/lint-dead-command-recommendations.sh`, which does not
   exist — the `lint/` path segment is missing — so its real collision with `512` over that lint is
   invisible to the admission gate, and a wrong path is indistinguishable from a path the task will
-  create. (b) The motivating instance is now repaired by hand: `421` has been retargeted onto
-  `context/patterns/telemetry-meta-submode.md` and `skills/skill-telemetry/SKILL.md`, both of which
-  exist. The detection gap is untouched. `plan-file-scope-harvest.sh` widens a scope at plan
+  create. The detection gap is untouched. `plan-file-scope-harvest.sh` widens a scope at plan
   postflight but never prunes a path that has since vanished, and no check compares a non-terminal
   record's declared scope against the filesystem (`file_scope` is documented as descriptive and not
   filesystem-validated, which is the design, not the gap). Cheap probe: for every non-terminal
@@ -567,17 +600,24 @@ actually being dispatched, not a backfill across every record a coarse entry hap
   alike**: an agent waiting on its own live child still takes tool rounds, so a message recovers
   it; a stranded agent takes none, so recovery is stop, postflight, re-dispatch at the same
   `dispatch_seq`. Check for a live child first. Detector: `dispatch-strand-probe.sh`.
-- **Twenty-four open records have no `title` key at all** (338, 412, 421, 439, 456, 502, 503,
-  504, 510, 511, 512, 521, 522, 567, 568, 569, 572, 573, 589, 590, 591, 601, 602, 603 —
-  re-measured 2026-11-11), so renderers fall back to `project_name` and TODO.md shows a slug.
-  **The count is rising, not falling by attrition**: it was 21 earlier the same day, and three
-  more records (601, 602, 603) were filed without the field, so creation is still producing them
-  faster than archival removes them. `528` owns adding
-  purpose-written titles; nothing owns the creation-time gap that keeps refilling the set.
-  **Not a literal null — there are zero of those**, which is why
-  `orchestrate-predispatch-review.sh` Class B correctly reports 0 findings: it tests for a
-  literal-null field, and an absent key is a different state. Any record filed for this must
-  target the absent-key case, or widen Class B's predicate to cover both.
+- **`roadmap-integration.sh --regenerate` cannot refresh an authored Open-work label, and silently
+  pinned twenty stale ones.** Measured 2026-11-11: every open record now carries a `title` (0
+  missing out of 137, re-measured directly against `state.json`), yet this file's Open work block
+  still rendered `project_name` slugs for twenty of them — `sweep_task_support_file_tracked_or_ignored`
+  where the title reads "Classify every task-support file as tracked or ignored". The cause is the
+  retention parser: an authored line "wins verbatim, no truncation", and `.title // .project_name`
+  is consulted only for a record with no authored line at all, so a label authored while the
+  record had no title is never revisited. The remedy applied by hand was to delete the twenty
+  lines and re-run `--regenerate`, which re-rendered all of them from `.title`. **Nothing detects
+  this**, and the same mechanism pins any other authored annotation whose underlying record has
+  moved on. Also relevant to the record making this file generated: a retention parser that
+  cannot tell a deliberate override from a stale one is what that record has to replace, not
+  inherit.
+- **`orchestrate-predispatch-review.sh` Class B tests for a literal-null `title`, not an absent
+  key.** There are zero literal nulls, which is why it correctly reports 0 findings even when the
+  absent-key count is high. Any record filed against title coverage must target the absent-key
+  case, or widen Class B's predicate to cover both. The creation-time gap that refills the set is
+  still unowned, even though the current count is 0.
 - **Neither `/todo` nor `/review` wires the roadmap generator to its own command.** `--prune` and
   `--regenerate` are still run by hand. Note 436 retires `/review`, so whatever wires
   `--regenerate` should wire it to the survivor.
@@ -618,10 +658,10 @@ actually being dispatched, not a backfill across every record a coarse entry hap
   land against whichever answer holds. The generalizable gap, independent of this instance:
   postflight verifies phase completion, not that a record's *stated deletions* actually landed, so
   a retirement record can close with its target still in place.
-- **Two topics are not meaningfully distinguishable.** `core-agent-system` (55 records) and
-  `agent-system` (54) together carry 109 of the 150 open records (re-measured 2026-11-11), and no
+- **Two topics are not meaningfully distinguishable.** `core-agent-system` (50 records) and
+  `agent-system` (50) together carry 100 of the 137 open records (re-measured 2026-11-11), and no
   document states a boundary between them. Every record filed into either is a coin flip, which
-  degrades every topic-grouped rendering. Two further topics — `repo-hygiene` (2) and
+  degrades every topic-grouped rendering. Two further topics — `repo-hygiene` (1) and
   `decidability` (1) — are not declared in `active_topics` at all, so the generator warns and
   appends them after the curated blocks, and 3 records (584, 585, 586) carry no topic and render
   under Uncategorized. Needs a documented boundary or a merge, plus a declaration pass on the
