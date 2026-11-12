@@ -70,7 +70,7 @@ next_project_number: 610
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
 591 [RESEARCHED] — Decide the fate of the errors.json triage surface
-601 [RESEARCHING] — Add a lint closing the repo-root walk-up defect class
+601 [RESEARCHED] — Add a lint closing the repo-root walk-up defect class
 603 [RESEARCHED] — Make ROADMAP.md a generated artifact rendered from state.json
   └─ 602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
@@ -819,11 +819,12 @@ to exclude them. Decide at dispatch time, not here.
 
 ### 601. Add a lint closing the repo-root walk-up defect class
 - **Effort**: medium
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Parent**: Task 589
+- **Research**: [601_root_walkup_class_closure_lint/reports/01_root-walkup-closure-lint.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
 
