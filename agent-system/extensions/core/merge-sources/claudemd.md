@@ -118,6 +118,7 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 | `/merge` | `/merge` | Create pull/merge request for current branch (user-only) |
 | `/please` | `/please push origin feature-x` | Authorize one blocked push (user-only) |
 | `/telemetry` | `/telemetry --meta\|--review "<question>"\|--dream` | Cross-repo agent-system improvement proposals, read-only ad hoc telemetry inquiry, and speculative prompt-history theme surfacing |
+| `/roadmap` | `/roadmap [instruction]` | Maintain the `roadmap_batches`/`roadmap_notes` entries `specs/ROADMAP.md` renders from -- full pass with no argument, scoped to a quoted instruction otherwise |
 
 ### Batching
 
@@ -165,6 +166,7 @@ keeps only the Skill -> Agent pairing, which the harness does not provide.
 | skill-tag | (user-only) |
 | skill-reviser | reviser-agent |
 | skill-spawn | spawn-agent |
+| skill-roadmap | roadmap-agent |
 | skill-orchestrate | (direct execution) |
 | skill-git-workflow | (direct execution) |
 | skill-fix-it | (direct execution) |

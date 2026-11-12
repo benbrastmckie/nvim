@@ -31,6 +31,7 @@
       "meta-builder-agent.md",
       "planner-agent.md",
       "reviser-agent.md",
+      "roadmap-agent.md",
       "spawn-agent.md"
     ],
     "commands": [
@@ -43,6 +44,7 @@
       "refresh.md",
       "review.md",
       "revise.md",
+      "roadmap.md",
       "spawn.md",
       "tag.md",
       "task.md",
@@ -72,6 +74,7 @@
       "skill-orchestrate",
       "skill-refresh",
       "skill-reviser",
+      "skill-roadmap",
       "skill-spawn",
       "skill-status-sync",
       "skill-tag",
@@ -433,6 +436,7 @@
       "tests/test-redeploy-remedy-lib.sh",
       "tests/test-resume-scan-nonconformance.sh",
       "tests/test-return-meta-status-vocabulary.sh",
+      "tests/test-roadmap-command-registration.sh",
       "tests/test-roadmap-generation.sh",
       "tests/test-routing-resolution.sh",
       "tests/test-run-all-failure-reporting.sh",

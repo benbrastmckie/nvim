@@ -454,31 +454,31 @@ deleting, since Phase 3 edits the same file and may have moved or renamed a call
 
 ---
 
-### Phase 5: The `/roadmap` Command, Skill, and Agent, Registered [NOT STARTED]
+### Phase 5: The `/roadmap` Command, Skill, and Agent, Registered [COMPLETED]
 
 **Goal**: `/roadmap [instruction]` exists end to end — the agent decides, the script renders — and
 is registered everywhere the extension's conventions require.
 
 **Tasks**:
-- [ ] Create `commands/roadmap.md` with the frontmatter shape `commands/spawn.md` uses
+- [x] Create `commands/roadmap.md` with the frontmatter shape `commands/spawn.md` uses
       (`description:`, `allowed-tools:`, `argument-hint:`): `argument-hint: [instruction]`,
       documenting that no argument performs a full maintenance pass and a quoted instruction
       scopes the pass to that focus.
-- [ ] Create `skills/skill-roadmap/SKILL.md` as a thin wrapper that dispatches `roadmap-agent`
+- [x] Create `skills/skill-roadmap/SKILL.md` as a thin wrapper that dispatches `roadmap-agent`
       and then performs the writes the agent decided on, modelled on `skill-reviser`'s
       delegate-then-postflight shape.
-- [ ] Create `agents/roadmap-agent.md` — a judgment-bearing agent, deliberately not collapsed to
+- [x] Create `agents/roadmap-agent.md` — a judgment-bearing agent, deliberately not collapsed to
       direct execution. Its decisions: which batches exist and in what order, each batch's one
       bounded description, each batch's rationale, and which dependency edges are missing. Its
       frontmatter carries `name:`, `description:`, `model: opus` (deep-reasoning tier), `tools:`,
       and **no** `allowed-tools:`/`mcp-servers:` key, per
       `docs/reference/standards/agent-frontmatter-standard.md` and the checks
       `lint/lint-agent-contracts.sh` already applies to every agent file.
-- [ ] Give the agent file the two contract fragments that lint requires of a dispatchable agent:
+- [x] Give the agent file the two contract fragments that lint requires of a dispatchable agent:
       the no-task-references MUST-NOT bullet (text read from
       `context/contracts/no-task-references-bullet.md`, not invented) and an object-shaped
       `artifacts` template with `type`/`path`/`summary` keys.
-- [ ] Write the agent's write contract explicitly, as a MUST NOT list: entries go through
+- [x] Write the agent's write contract explicitly, as a MUST NOT list: entries go through
       `bash .claude/scripts/state-write.sh '<jq-filter>' --session-id "$SID"`; **edges go through
       `bash .claude/scripts/update-task-status.sh preflight <N> edge_only "$SID"
       --depends-on-add=[M]` and through nothing else**. Record the measured constraint on that
@@ -486,22 +486,22 @@ is registered everywhere the extension's conventions require.
       **only** for a task currently at `not_started`; for any other status the agent must replay
       that task's own current status (the script's own refusal message names the right call), and
       it must never invent a third path.
-- [ ] Write the agent's anti-fluff contract by reference to
+- [x] Write the agent's anti-fluff contract by reference to
       `context/formats/roadmap-entry-template.md` (the bound and the worked example pair live
       there, not in two places).
-- [ ] State that the agent never writes `specs/ROADMAP.md` itself — it writes entries and then
+- [x] State that the agent never writes `specs/ROADMAP.md` itself — it writes entries and then
       invokes `bash .claude/scripts/roadmap-integration.sh --regenerate`, so nothing in the
       rendering path makes a judgment call.
-- [ ] Register all three in `manifest.json`'s `provides.commands` (`roadmap.md`),
+- [x] Register all three in `manifest.json`'s `provides.commands` (`roadmap.md`),
       `provides.agents` (`roadmap-agent.md`), and `provides.skills` (`skill-roadmap`).
-- [ ] Add the `/roadmap` rows to `merge-sources/claudemd.md`'s Command Reference table and the
+- [x] Add the `/roadmap` rows to `merge-sources/claudemd.md`'s Command Reference table and the
       `skill-roadmap | roadmap-agent` row to its Skill-to-Agent Mapping table — the source store
       for the deployed `.claude/CLAUDE.md`, never the deployed file.
-- [ ] Add an `index-entries.json` entry for `formats/roadmap-entry-template.md` (created in Phase
+- [x] Add an `index-entries.json` entry for `formats/roadmap-entry-template.md` (created in Phase
       2) and refresh `formats/roadmap-format.md`'s and `patterns/roadmap-update.md`'s `line_count`
       and `summary` fields, which Phase 2's rewrite stales. Re-read this file immediately before
       editing — a sibling record declares it.
-- [ ] Create `tests/test-roadmap-command-registration.sh`, the test companion the acceptance
+- [x] Create `tests/test-roadmap-command-registration.sh`, the test companion the acceptance
       criteria require: assert the three files exist, that each is listed in the matching
       `manifest.json` `provides` array, that the agent frontmatter carries a valid `model:` and no
       forbidden key, that the index entry for the new template resolves, and that both

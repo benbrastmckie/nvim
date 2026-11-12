@@ -402,11 +402,37 @@
       }
     },
     {
+      "path": "formats/roadmap-entry-template.md",
+      "domain": "core",
+      "subdomain": "formats",
+      "summary": "The roadmap_batches entry/rendered-shape template for /roadmap: field reference, the 100-character description bound, and a worked compliant/non-compliant example pair",
+      "line_count": 94,
+      "keywords": [
+        "anti-fluff",
+        "batch",
+        "entry-template",
+        "roadmap",
+        "roadmap-agent"
+      ],
+      "topics": [
+        "planning"
+      ],
+      "load_when": {
+        "agents": [
+          "roadmap-agent"
+        ],
+        "task_types": [],
+        "commands": [
+          "/roadmap"
+        ]
+      }
+    },
+    {
       "path": "formats/roadmap-format.md",
       "domain": "core",
       "subdomain": "formats",
-      "summary": "Generation contract for specs/ROADMAP.md: section order, the authored-vs-generated split, Open work and Next grammar, the status-token precedence table, and the parsing-pattern summary roadmap-integration.sh implements",
-      "line_count": 268,
+      "summary": "Generation contract for specs/ROADMAP.md: section order, the authored-vs-generated split, Open work and Next grammar rendered wholly from state, the per-section ruling, and the parsing-pattern summary roadmap-integration.sh implements",
+      "line_count": 302,
       "keywords": [
         "authored-vs-generated",
         "format",
@@ -1199,8 +1225,8 @@
       "path": "patterns/roadmap-update.md",
       "domain": "core",
       "subdomain": "patterns",
-      "summary": "Caller contract for roadmap-integration.sh: the --print/--regenerate/--prune mode contracts, the /todo-prunes-vs-/review-regenerates responsibility split, and the stderr marker",
-      "line_count": 135,
+      "summary": "Caller contract for roadmap-integration.sh: the --print/--regenerate mode contracts, --prune as a deprecated --regenerate alias, the batch-proposal lint's disposition, and the stderr marker",
+      "line_count": 142,
       "keywords": [
         "caller-contract",
         "patterns",
@@ -1442,7 +1468,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Schema for state.json and TODO.md",
-      "line_count": 782,
+      "line_count": 796,
       "keywords": [
         "reference",
         "state",
@@ -1600,7 +1626,7 @@
       "domain": "core",
       "subdomain": "schemas",
       "summary": "Draft-07 JSON Schema for specs/state.json, and the single machine-readable anchor for the closed 13-value task-status enum",
-      "line_count": 493,
+      "line_count": 567,
       "keywords": [
         "state",
         "schema",

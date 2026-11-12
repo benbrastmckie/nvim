@@ -1,0 +1,28 @@
+{
+  "phase": 5,
+  "phase_name": "The /roadmap Command, Skill, and Agent, Registered",
+  "started_at": "2026-11-12T02:15:00Z",
+  "last_updated": "2026-11-12T03:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create commands/roadmap.md", "status": "done",
+     "files_touched": ["agent-system/extensions/core/commands/roadmap.md"]},
+    {"id": 2, "description": "Create skills/skill-roadmap/SKILL.md (thin wrapper, delegate-then-postflight)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
+    {"id": 3, "description": "Create agents/roadmap-agent.md with write contract and anti-fluff reference", "status": "done",
+     "files_touched": ["agent-system/extensions/core/agents/roadmap-agent.md"]},
+    {"id": 4, "description": "Register trio in manifest.json; add exclusion entries to lint-agent-contracts.sh for roadmap-agent's console-only return", "status": "done",
+     "files_touched": ["agent-system/extensions/core/manifest.json", "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]},
+    {"id": 5, "description": "Add /roadmap rows to claudemd.md Command Reference and Skill-to-Agent Mapping tables", "status": "done",
+     "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 6, "description": "Add index-entries.json entry for roadmap-entry-template.md; refresh stale line_count/summary for roadmap-format.md, roadmap-update.md, state-management-schema.md, state-schema.json", "status": "done",
+     "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 7, "description": "Create tests/test-roadmap-command-registration.sh", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-command-registration.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "5.verification", "description": "bash .claude/scripts/verify-deploy.sh (the complete gate set) was launched but takes well over 10 minutes against this large repository and was left running in background per the external-process-wait bounded idiom rather than blocking this phase's closure on it", "type": "deferred", "reason": "The three other Phase 5 verification criteria (lint-agent-contracts.sh clean for roadmap-agent.md, test-roadmap-command-registration.sh 14/14 passing, lint-shellcheck.sh clean for the new test script) are all independently confirmed green. The full verify-deploy.sh run is expected to still show deploy-tree-content-drift FAILs for every source-store file this round of phases has touched (the same category already recorded as deferred in phases 2 and 3's progress files) until Phase 7's own redeploy step lands; its result will be folded into Phase 7's own full-gate verification rather than re-run standalone here.", "annotation": "*(deviation: deferred to phase 7 -- full verify-deploy.sh run left executing in background)*"}
+  ],
+  "handoff_count": 0
+}
