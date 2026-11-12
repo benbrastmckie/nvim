@@ -121,6 +121,63 @@ write_state_fixture() {
 EOF
 }
 
+# write_state_fixture_annotated SCRATCH -- same shape as write_state_fixture, plus the
+# schema-backed successors to the old authored <- annotation / EXT-BLOCKED / Open-work-trailer
+# retention overrides: item one carries roadmap_annotation, item two carries roadmap_ext_blocked,
+# and roadmap_notes.open_work_trailer holds a free-standing trailer paragraph. Used wherever a
+# test needs to exercise these three state-sourced fields instead of the retired retention path.
+write_state_fixture_annotated() {
+  local scratch="$1"
+  cat >"$scratch/specs/state.json" <<'EOF'
+{
+  "active_topics": ["alpha"],
+  "active_projects": [
+    {"project_number": 1, "status": "not_started", "title": "Item one description", "topic": "alpha", "dependencies": [], "roadmap_annotation": "fixture-annotation"},
+    {"project_number": 2, "status": "not_started", "title": "Item two description", "topic": "alpha", "dependencies": [1], "roadmap_ext_blocked": true},
+    {"project_number": 3, "status": "not_started", "title": "Item three description", "topic": "alpha", "dependencies": [1, 2]},
+    {"project_number": 4, "status": "implementing", "title": "Item four description", "topic": "alpha", "dependencies": []},
+    {"project_number": 5, "status": "hold", "title": "Item five description", "topic": "alpha", "dependencies": [], "hold_reason": "fixture hold reason"},
+    {"project_number": 6, "status": "completed", "title": "Item six description (terminal)", "topic": "alpha", "dependencies": []},
+    {"project_number": 7, "status": "not_started", "title": "Item seven description", "topic": "alpha", "dependencies": [6]},
+    {"project_number": 8, "status": "not_started", "title": "Item eight description", "topic": "beta-topic-undeclared", "dependencies": []}
+  ],
+  "roadmap_notes": {
+    "open_work_trailer": ["**Trailer note**: this authored paragraph must survive --regenerate."]
+  }
+}
+EOF
+}
+
+# write_state_fixture_batches SCRATCH -- a state fixture carrying roadmap_batches/roadmap_notes
+# (Phase 3/4's inversion): two live batches (one two-member, one single-member with no
+# rationale), one all-terminal batch that must be omitted entirely, and a next_preamble/
+# next_postamble pair. Used by both the --prune-is-an-alias coverage (Case group 3) and the
+# render_next() coverage (Case group 6) below.
+write_state_fixture_batches() {
+  local scratch="$1"
+  cat >"$scratch/specs/state.json" <<'EOF'
+{
+  "active_topics": ["alpha"],
+  "active_projects": [
+    {"project_number": 1, "status": "not_started", "title": "Item one description", "topic": "alpha", "dependencies": []},
+    {"project_number": 2, "status": "not_started", "title": "Item two description", "topic": "alpha", "dependencies": []},
+    {"project_number": 3, "status": "completed", "title": "Item three description (terminal)", "topic": "alpha", "dependencies": []},
+    {"project_number": 4, "status": "not_started", "title": "Item four description", "topic": "alpha", "dependencies": []}
+  ],
+  "roadmap_batches": [
+    {"task_ids": [1, 2], "description": "Batch one bounded description", "rationale": "Batch one rationale bullet text."},
+    {"task_ids": [3], "description": "Batch two, all-terminal, must be omitted"},
+    {"task_ids": [4], "description": "Batch three, no rationale, no bullet expected"}
+  ],
+  "roadmap_notes": {
+    "next_preamble": ["Preamble paragraph, authored, must render before the fence."],
+    "next_postamble": ["Postamble paragraph, authored, must render after the bullets."],
+    "open_work_trailer": []
+  }
+}
+EOF
+}
+
 # write_roadmap_fixture SCRATCH -- a full 8-section ROADMAP.md fixture with authored prose in
 # every authored section, an authored <- annotation suffix, an authored EXT-BLOCKED token, a
 # Run line naming only a terminal item (prune target), and an Open work trailer paragraph.
@@ -333,23 +390,26 @@ for section in "## Goal" "## Gate state" "## Checks before and after every call"
   write_roadmap_fixture "$scratch2"
 done
 
+# roadmap_annotation / roadmap_ext_blocked / roadmap_notes.open_work_trailer are state fields,
+# not retention overrides -- swap in the annotated state fixture before exercising them.
+write_state_fixture_annotated "$scratch2"
 run_ri "$scratch2" --regenerate >/dev/null 2>/dev/null
 if grep -qE '^1 ready.*<- fixture-annotation$' "$scratch2/specs/ROADMAP.md"; then
-  common_test_pass "authored <- annotation suffix survives --regenerate"
+  common_test_pass "roadmap_annotation renders as a <- suffix"
 else
-  common_test_fail "authored <- annotation suffix did not survive --regenerate"
+  common_test_fail "roadmap_annotation did not render as a <- suffix"
 fi
 
 if grep -qE '^2 EXT-BLOCKED' "$scratch2/specs/ROADMAP.md"; then
-  common_test_pass "authored EXT-BLOCKED token survives --regenerate"
+  common_test_pass "roadmap_ext_blocked renders the EXT-BLOCKED token"
 else
-  common_test_fail "authored EXT-BLOCKED token did not survive --regenerate"
+  common_test_fail "roadmap_ext_blocked did not render the EXT-BLOCKED token"
 fi
 
 if grep -q "Trailer note" "$scratch2/specs/ROADMAP.md"; then
-  common_test_pass "Open work trailer paragraph survives --regenerate"
+  common_test_pass "roadmap_notes.open_work_trailer renders as the Open work trailer paragraph"
 else
-  common_test_fail "Open work trailer paragraph did not survive --regenerate"
+  common_test_fail "roadmap_notes.open_work_trailer did not render"
 fi
 
 cp "$scratch2/specs/ROADMAP.md" "$scratch2/specs/ROADMAP.round1.md"
@@ -376,24 +436,46 @@ else
   common_test_fail "stderr marker missing or incorrect for --regenerate ($(cat "$scratch2/stderr-regen.txt"))"
 fi
 
-# ─── Case group 3: --prune drops an all-terminal Run line, --dry-run writes nothing,
-# absent --roadmap target is a supported no-op ────────────────────────────────────────────────
+# ─── Case group 3: --prune is a deprecated alias for --regenerate (Phase 4 inversion) --
+# it prints a named deprecation note, exits 0, and produces the SAME file --regenerate would
+# (a file rendered wholly from live state accumulates no terminal cruft, so there is nothing
+# left for a distinct prune pass to do), plus the absent --roadmap target no-op ────────────────
 
 scratch3="$(build_scratch)"
-write_state_fixture "$scratch3"
+write_state_fixture_batches "$scratch3"
 write_roadmap_fixture "$scratch3"
 
 run_ri "$scratch3" --prune >/dev/null 2>"$scratch3/stderr-prune.txt"
-if grep -q '/orchestrate 6' "$scratch3/specs/ROADMAP.md"; then
-  common_test_fail "--prune should have dropped the all-terminal '/orchestrate 6' Run line"
+prune_rc=$?
+if [[ "$prune_rc" -eq 0 ]]; then
+  common_test_pass "--prune (deprecated alias) exits 0"
 else
-  common_test_pass "--prune drops a Run line naming only a terminal item"
+  common_test_fail "--prune (deprecated alias) should exit 0 (got $prune_rc)"
 fi
 
-if grep -qE '^/orchestrate 1\s' "$scratch3/specs/ROADMAP.md"; then
-  common_test_pass "--prune leaves an unaffected Run line (item 1, non-terminal) in place"
+if grep -qF 'NOTE: --prune is deprecated' "$scratch3/stderr-prune.txt"; then
+  common_test_pass "--prune emits its named deprecation note"
 else
-  common_test_fail "--prune should have left the '/orchestrate 1' Run line in place"
+  common_test_fail "--prune did not emit the named deprecation note ($(cat "$scratch3/stderr-prune.txt"))"
+fi
+
+if grep -qFx -- '/orchestrate 1, 2   # Batch one bounded description' "$scratch3/specs/ROADMAP.md"; then
+  common_test_pass "--prune renders ## Next from roadmap_batches, exactly like --regenerate"
+else
+  common_test_fail "--prune did not render ## Next from roadmap_batches"
+fi
+
+# Prove the two produce byte-identical files: write the fixture again, run --regenerate, and
+# diff against --prune's own output above.
+write_roadmap_fixture "$scratch3"
+run_ri "$scratch3" --regenerate >/dev/null 2>/dev/null
+cp "$scratch3/specs/ROADMAP.md" "$scratch3/specs/ROADMAP.regenerate-copy.md"
+write_roadmap_fixture "$scratch3"
+run_ri "$scratch3" --prune >/dev/null 2>/dev/null
+if diff -q "$scratch3/specs/ROADMAP.regenerate-copy.md" "$scratch3/specs/ROADMAP.md" >/dev/null; then
+  common_test_pass "--prune produces the same file --regenerate would"
+else
+  common_test_fail "--prune's output differs from --regenerate's own output"
 fi
 
 write_roadmap_fixture "$scratch3"
@@ -404,6 +486,12 @@ if [[ "$sum_before" == "$sum_after" ]]; then
   common_test_pass "--prune --dry-run writes nothing"
 else
   common_test_fail "--prune --dry-run modified the file"
+fi
+
+if grep -qE '^<!-- roadmap-generation mode=regenerate .* pruned=0 ' "$scratch3/stderr-prune.txt"; then
+  common_test_pass "--prune's stderr marker reports mode=regenerate and pruned=0 (the dispatch-to-regenerate contract)"
+else
+  common_test_fail "--prune's stderr marker did not report mode=regenerate/pruned=0 ($(cat "$scratch3/stderr-prune.txt"))"
 fi
 
 scratch4="$(build_scratch)"
@@ -419,133 +507,6 @@ if [[ "$absent_rc" -eq 0 ]]; then
   fi
 else
   common_test_fail "--regenerate against an absent --roadmap target should exit 0, not crash (got $absent_rc)"
-fi
-
-# ─── Case group 3b: --prune flag-bearing Run lines -- a trailing CLI flag segment (e.g.
-# "--hard", "--hard --lit") survives every output branch verbatim, a single active flagged
-# task never vanishes, grammar-legal intra-list spacing ("1, 2") is preserved, and an
-# unparseable id token fails safe (line unchanged + stderr warning) instead of being silently
-# dropped ────────────────────────────────────────────────────────────────────────────────────
-
-write_roadmap_fixture_prune_flags() {
-  local scratch="$1"
-  cat >"$scratch/specs/ROADMAP.md" <<'EOF'
-# Roadmap
-
-*Fixture preamble for test-roadmap-generation.sh.*
-
-## Goal
-
-Fixture goal text, authored, must survive byte-identical.
-
-## Gate state
-
-Fixture gate-state text, authored, must survive byte-identical.
-
-## Next
-
-Fixture intro prose for Next, authored.
-
-```
-/orchestrate 1   # fixture rationale for item 1
-/orchestrate 6   # names only a terminal item
-/orchestrate 1,6 --hard   # mixed active and terminal
-/orchestrate 1,2 --hard   # all active flagged
-/orchestrate 1,2 --hard
-/orchestrate 1,2   # unflagged regression guard
-/orchestrate 1,2 --hard --lit   # multiple flags
-/orchestrate 1 --hard   # single active flagged
-/orchestrate 1, 2 --hard   # intra list space
-/orchestrate 6 --hard   # all-terminal flagged line
-/orchestrate 1,abc --hard   # unparseable id fail-safe
-```
-
-Why this order:
-
-- Fixture rationale bullet, authored.
-
-## Open work
-
-**Alpha (6)**
-```
-1 ready               item one description   <- fixture-annotation
-2 EXT-BLOCKED         item two description
-4 IN FLIGHT           item four description
-5 HOLD                item five description
-7 ready               item seven description
-3 blocked:1,2         item three description
-```
-
-**Trailer note**: this authored paragraph must survive --regenerate, exactly like the real
-file's "342's hold" paragraph.
-
-## Checks before and after every call
-
-Fixture checks text, authored, must survive byte-identical.
-
-## Settled decisions (do not re-litigate)
-
-Fixture decisions text, authored, must survive byte-identical.
-
-## Standing rules
-
-Fixture rules text, authored, must survive byte-identical.
-
-## Unfiled observations (none worth a task yet)
-
-Fixture observations text, authored, must survive byte-identical.
-EOF
-}
-
-scratch3b="$(build_scratch)"
-write_state_fixture "$scratch3b"
-write_roadmap_fixture_prune_flags "$scratch3b"
-
-run_ri "$scratch3b" --prune >/dev/null 2>"$scratch3b/stderr-prune-flags.txt"
-
-for survivor in \
-  '/orchestrate 1 --hard   # mixed active and terminal' \
-  '/orchestrate 1,2 --hard   # all active flagged' \
-  '/orchestrate 1,2 --hard' \
-  '/orchestrate 1,2   # unflagged regression guard' \
-  '/orchestrate 1,2 --hard --lit   # multiple flags' \
-  '/orchestrate 1 --hard   # single active flagged' \
-  '/orchestrate 1, 2 --hard   # intra list space' \
-  '/orchestrate 1,abc --hard   # unparseable id fail-safe'
-do
-  if grep -qFx "$survivor" "$scratch3b/specs/ROADMAP.md"; then
-    common_test_pass "classic --prune flag coverage: exact survivor retained: ${survivor:0:50}..."
-  else
-    common_test_fail "classic --prune flag coverage: MISSING exact survivor: ${survivor:0:50}..."
-  fi
-done
-
-if grep -qFx '/orchestrate 6   # names only a terminal item' "$scratch3b/specs/ROADMAP.md"; then
-  common_test_fail "classic --prune flag coverage: all-terminal unflagged line should have been dropped"
-else
-  common_test_pass "classic --prune flag coverage: all-terminal unflagged line absent"
-fi
-
-if grep -qFx '/orchestrate 6 --hard   # all-terminal flagged line' "$scratch3b/specs/ROADMAP.md"; then
-  common_test_fail "classic --prune flag coverage: all-terminal FLAGGED line should have been dropped, not merely the id"
-else
-  common_test_pass "classic --prune flag coverage: all-terminal flagged line absent (flag presence does not rescue it)"
-fi
-
-if grep -qFx '/orchestrate 1,6 --hard   # mixed active and terminal' "$scratch3b/specs/ROADMAP.md"; then
-  common_test_fail "classic --prune flag coverage: mixed active/terminal flagged line should have been rewritten, not left verbatim"
-fi
-
-if grep -qE '^<!-- roadmap-generation mode=prune tasks=7 topics=2 runs=0 pruned=3 retained=0 -->$' "$scratch3b/stderr-prune-flags.txt"; then
-  common_test_pass "classic --prune flag coverage: pruned=3 marker matches hand-computed expectation (2 all-terminal lines + 1 dropped id from the mixed line)"
-else
-  common_test_fail "classic --prune flag coverage: pruned=/retained= marker did not match hand-computed expectation ($(cat "$scratch3b/stderr-prune-flags.txt"))"
-fi
-
-if grep -qF "unparseable task id [abc]" "$scratch3b/stderr-prune-flags.txt"; then
-  common_test_pass "classic --prune flag coverage: fail-safe guard names the unparseable id on stderr"
-else
-  common_test_fail "classic --prune flag coverage: fail-safe guard did not emit the expected stderr warning"
 fi
 
 # ─── Case group 4: layout detection / permanent destructive-overwrite refusal (Phase 2) ────────
@@ -661,10 +622,14 @@ if [[ "$sum_before" == "$sum_after" ]]; then
 else
   common_test_fail "unknown vocabulary: --prune modified the file (the destructive-overwrite near-miss)"
 fi
-if grep -qE '^ERROR: --prune refuses to write' "$scratch5/stderr-unknown-prune.txt"; then
-  common_test_pass "unknown vocabulary: --prune names a refusal reason on stderr"
+# --prune dispatches to --regenerate internally (the deprecated-alias contract), so the
+# refusal's own named reason is printed with "--regenerate" in the message, preceded by
+# --prune's own deprecation note -- both are asserted.
+if grep -qF 'NOTE: --prune is deprecated' "$scratch5/stderr-unknown-prune.txt" \
+    && grep -qE '^ERROR: --regenerate refuses to write' "$scratch5/stderr-unknown-prune.txt"; then
+  common_test_pass "unknown vocabulary: --prune prints its deprecation note, then names the (now --regenerate) refusal reason on stderr"
 else
-  common_test_fail "unknown vocabulary: expected a named refusal reason ($(cat "$scratch5/stderr-unknown-prune.txt"))"
+  common_test_fail "unknown vocabulary: expected the deprecation note and a named refusal reason ($(cat "$scratch5/stderr-unknown-prune.txt"))"
 fi
 
 scratch6="$(build_scratch)"
@@ -755,53 +720,33 @@ else
   common_test_fail "stage layout round-trip: --regenerate --dry-run modified the file"
 fi
 
-# ─── Phase 5: --prune now handles the stage layout for real (dropping only all-terminal Run
-# lines from the run-order section's fenced block; every other section retained byte-for-byte).
-# write_state_fixture's items 1/2/3 are all non-terminal, which wouldn't exercise a drop at all,
-# so this case uses its own minimal state fixture where item 1 is terminal and items 2/3 are not
-# -- the stage analogue of write_roadmap_fixture's "names only a terminal item" Run line. ───────
-
-write_state_fixture_prune_stage() {
-  local scratch="$1"
-  cat >"$scratch/specs/state.json" <<'EOF'
-{
-  "active_topics": ["alpha"],
-  "active_projects": [
-    {"project_number": 2, "status": "not_started", "title": "Item two description", "topic": "alpha", "dependencies": []},
-    {"project_number": 3, "status": "not_started", "title": "Item three description", "topic": "alpha", "dependencies": []}
-  ]
-}
-EOF
-}
+# ─── Phase 5: --prune is a deprecated alias for --regenerate on the stage layout too -- it
+# prints the same deprecation note, exits 0, and produces byte-identical output to a direct
+# --regenerate run (render_next() renders the run-order section wholly from roadmap_batches
+# regardless of layout; the all-terminal-omission behavior comes from render_next() itself, not
+# from a separate layout-specific prune pass). ─────────────────────────────────────────────────
 
 scratch10="$(build_scratch)"
-write_state_fixture_prune_stage "$scratch10"
+write_state_fixture_batches "$scratch10"
 write_stage_vocabulary_fixture "$scratch10"
 run_ri "$scratch10" --prune >/dev/null 2>"$scratch10/stderr-stage-prune.txt"
 stage_prune_rc=$?
 if [[ "$stage_prune_rc" -eq 0 ]]; then
-  common_test_pass "stage layout: --prune now succeeds (Phase 5 round-trip support)"
+  common_test_pass "stage layout: --prune (deprecated alias) exits 0"
 else
-  common_test_fail "stage layout: --prune should succeed (got $stage_prune_rc; $(cat "$scratch10/stderr-stage-prune.txt"))"
+  common_test_fail "stage layout: --prune should exit 0 (got $stage_prune_rc; $(cat "$scratch10/stderr-stage-prune.txt"))"
 fi
 
-if grep -qE '^/orchestrate 1\s' "$scratch10/specs/ROADMAP.md"; then
-  common_test_fail "stage layout --prune: should have dropped the all-terminal '/orchestrate 1' Run line"
+if grep -qF 'NOTE: --prune is deprecated' "$scratch10/stderr-stage-prune.txt"; then
+  common_test_pass "stage layout: --prune emits its named deprecation note"
 else
-  common_test_pass "stage layout --prune: drops a Run line naming only a terminal item"
+  common_test_fail "stage layout: --prune did not emit the named deprecation note"
 fi
 
-if grep -qF '/orchestrate 2,3' "$scratch10/specs/ROADMAP.md"; then
-  common_test_pass "stage layout --prune: leaves an unaffected Run line (items 2,3, non-terminal) in place"
+if grep -qFx -- '/orchestrate 1, 2   # Batch one bounded description' "$scratch10/specs/ROADMAP.md"; then
+  common_test_pass "stage layout: --prune renders the run-order section from roadmap_batches, exactly like --regenerate"
 else
-  common_test_fail "stage layout --prune: should have left the '/orchestrate 2,3' Run line in place"
-fi
-
-if grep -qF '# Stage 1 -- first stage, fixture comment line' "$scratch10/specs/ROADMAP.md" \
-  && grep -qF '# Stage 2 -- second stage, fixture comment line' "$scratch10/specs/ROADMAP.md"; then
-  common_test_pass "stage layout --prune: in-fence '# Stage N' comment lines survive intact"
-else
-  common_test_fail "stage layout --prune: an in-fence '# Stage N' comment line was dropped or altered"
+  common_test_fail "stage layout: --prune did not render the run-order section from roadmap_batches"
 fi
 
 for needle in \
@@ -818,6 +763,18 @@ do
   fi
 done
 
+# Prove byte-identity with a direct --regenerate run on the same fixture.
+write_stage_vocabulary_fixture "$scratch10"
+run_ri "$scratch10" --regenerate >/dev/null 2>/dev/null
+cp "$scratch10/specs/ROADMAP.md" "$scratch10/specs/ROADMAP.regenerate-copy.md"
+write_stage_vocabulary_fixture "$scratch10"
+run_ri "$scratch10" --prune >/dev/null 2>/dev/null
+if diff -q "$scratch10/specs/ROADMAP.regenerate-copy.md" "$scratch10/specs/ROADMAP.md" >/dev/null; then
+  common_test_pass "stage layout: --prune produces the same file --regenerate would"
+else
+  common_test_fail "stage layout: --prune's output differs from --regenerate's own output"
+fi
+
 write_stage_vocabulary_fixture "$scratch10"
 sum_before="$(sha256sum "$scratch10/specs/ROADMAP.md" | awk '{print $1}')"
 run_ri "$scratch10" --prune --dry-run >/dev/null 2>/dev/null
@@ -826,116 +783,6 @@ if [[ "$sum_before" == "$sum_after" ]]; then
   common_test_pass "stage layout --prune --dry-run writes nothing"
 else
   common_test_fail "stage layout --prune --dry-run modified the file"
-fi
-
-# ─── Phase 5b: --prune flag-bearing Run lines, stage layout -- mirrors Case group 3b's
-# classic-layout coverage: a trailing CLI flag segment survives every output branch verbatim,
-# a single active flagged task never vanishes, intra-list spacing is preserved, and an
-# unparseable id token fails safe instead of being silently dropped ─────────────────────────────
-
-write_stage_vocabulary_fixture_prune_flags() {
-  local scratch="$1"
-  cat >"$scratch/specs/ROADMAP.md" <<'EOF'
-# Roadmap
-
-*Fixture preamble for stage-layout testing.*
-
-## Run order at a glance
-
-```bash
-# Stage 1 -- first stage, fixture comment line
-/orchestrate 1   # fixture rationale for item 1
-# Stage 2 -- second stage, fixture comment line
-/orchestrate 2,3
-/orchestrate 1,2 --hard   # mixed active and terminal
-/orchestrate 2,3 --hard   # all active flagged
-/orchestrate 2,3 --hard
-/orchestrate 2,3   # unflagged regression guard
-/orchestrate 2,3 --hard --lit   # multiple flags
-/orchestrate 2 --hard   # single active flagged
-/orchestrate 2, 3 --hard   # intra list space
-/orchestrate 1 --hard   # all-terminal flagged line
-/orchestrate 2,abc --hard   # unparseable id fail-safe
-```
-
-## Stage 1 -- First Stage
-
-- [ ] Stage 1 bullet prose, authored, must survive byte-identical.
-
-## Stage 2 -- Second Stage
-
-- [ ] Stage 2 bullet prose, authored, must survive byte-identical.
-
-## Not scoped as tasks
-
-Fixture not-scoped prose, authored, must survive byte-identical.
-
-## Maintenance
-
-Fixture maintenance prose, authored, must survive byte-identical.
-
-## Related
-
-Fixture related prose, authored, must survive byte-identical.
-EOF
-}
-
-scratch10b="$(build_scratch)"
-write_state_fixture_prune_stage "$scratch10b"
-write_stage_vocabulary_fixture_prune_flags "$scratch10b"
-
-run_ri "$scratch10b" --prune >/dev/null 2>"$scratch10b/stderr-stage-prune-flags.txt"
-
-for survivor in \
-  '/orchestrate 2 --hard   # mixed active and terminal' \
-  '/orchestrate 2,3 --hard   # all active flagged' \
-  '/orchestrate 2,3 --hard' \
-  '/orchestrate 2,3   # unflagged regression guard' \
-  '/orchestrate 2,3 --hard --lit   # multiple flags' \
-  '/orchestrate 2 --hard   # single active flagged' \
-  '/orchestrate 2, 3 --hard   # intra list space' \
-  '/orchestrate 2,abc --hard   # unparseable id fail-safe'
-do
-  if grep -qFx "$survivor" "$scratch10b/specs/ROADMAP.md"; then
-    common_test_pass "stage layout --prune flag coverage: exact survivor retained: ${survivor:0:50}..."
-  else
-    common_test_fail "stage layout --prune flag coverage: MISSING exact survivor: ${survivor:0:50}..."
-  fi
-done
-
-if grep -qFx '/orchestrate 1   # fixture rationale for item 1' "$scratch10b/specs/ROADMAP.md"; then
-  common_test_fail "stage layout --prune flag coverage: all-terminal unflagged line should have been dropped"
-else
-  common_test_pass "stage layout --prune flag coverage: all-terminal unflagged line absent"
-fi
-
-if grep -qFx '/orchestrate 1 --hard   # all-terminal flagged line' "$scratch10b/specs/ROADMAP.md"; then
-  common_test_fail "stage layout --prune flag coverage: all-terminal FLAGGED line should have been dropped, not merely the id"
-else
-  common_test_pass "stage layout --prune flag coverage: all-terminal flagged line absent (flag presence does not rescue it)"
-fi
-
-if grep -qFx '/orchestrate 1,2 --hard   # mixed active and terminal' "$scratch10b/specs/ROADMAP.md"; then
-  common_test_fail "stage layout --prune flag coverage: mixed active/terminal flagged line should have been rewritten, not left verbatim"
-fi
-
-if grep -qF '# Stage 1 -- first stage, fixture comment line' "$scratch10b/specs/ROADMAP.md" \
-  && grep -qF '# Stage 2 -- second stage, fixture comment line' "$scratch10b/specs/ROADMAP.md"; then
-  common_test_pass "stage layout --prune flag coverage: in-fence '# Stage N' comment lines survive intact"
-else
-  common_test_fail "stage layout --prune flag coverage: an in-fence '# Stage N' comment line was dropped or altered"
-fi
-
-if grep -qE '^<!-- roadmap-generation mode=prune tasks=2 topics=1 runs=0 pruned=3 retained=0 -->$' "$scratch10b/stderr-stage-prune-flags.txt"; then
-  common_test_pass "stage layout --prune flag coverage: pruned=3 marker matches hand-computed expectation (2 all-terminal lines + 1 dropped id from the mixed line)"
-else
-  common_test_fail "stage layout --prune flag coverage: pruned=/retained= marker did not match hand-computed expectation ($(cat "$scratch10b/stderr-stage-prune-flags.txt"))"
-fi
-
-if grep -qF "unparseable task id [abc]" "$scratch10b/stderr-stage-prune-flags.txt"; then
-  common_test_pass "stage layout --prune flag coverage: fail-safe guard names the unparseable id on stderr"
-else
-  common_test_fail "stage layout --prune flag coverage: fail-safe guard did not emit the expected stderr warning"
 fi
 
 scratch7="$(build_scratch)"
@@ -1092,14 +939,16 @@ else
   common_test_fail "OUTCOME: line missing/wrong for a no-change --dry-run ($(cat "$scratch11/stderr-outcome-dry-2.txt"))"
 fi
 
-# --prune carries its own mode token in the OUTCOME: line.
+# --prune dispatches to --regenerate, so its OUTCOME: line carries the --regenerate mode token
+# (the deprecated-alias contract), preceded by --prune's own deprecation note.
 scratch12="$(build_scratch)"
 write_state_fixture "$scratch12"
 write_roadmap_fixture "$scratch12"
 run_ri "$scratch12" --prune >/dev/null 2>"$scratch12/stderr-outcome-prune.txt"
-if grep -qE '^OUTCOME: --prune rewrote .*/specs/ROADMAP\.md \(layout=classic, content changed\)$' \
-  "$scratch12/stderr-outcome-prune.txt"; then
-  common_test_pass "OUTCOME: line names the --prune mode token (layout=classic)"
+if grep -qF 'NOTE: --prune is deprecated' "$scratch12/stderr-outcome-prune.txt" \
+    && grep -qE '^OUTCOME: --regenerate rewrote .*/specs/ROADMAP\.md \(layout=classic, content changed\)$' \
+      "$scratch12/stderr-outcome-prune.txt"; then
+  common_test_pass "OUTCOME: line names the --regenerate mode token for a --prune invocation (dispatch-to-regenerate contract)"
 else
   common_test_fail "OUTCOME: line missing/wrong for --prune ($(cat "$scratch12/stderr-outcome-prune.txt"))"
 fi
@@ -1160,32 +1009,9 @@ fi
 # rationale emits no bullet, an all-terminal batch is omitted entirely, next_preamble/
 # next_postamble render in the right positions, and a second consecutive --regenerate is
 # byte-identical. Classic layout; write_roadmap_fixture's existing ## Next body content is
-# irrelevant here since the section is now rendered wholly from state, not retention-parsed. ──
-
-write_state_fixture_batches() {
-  local scratch="$1"
-  cat >"$scratch/specs/state.json" <<'EOF'
-{
-  "active_topics": ["alpha"],
-  "active_projects": [
-    {"project_number": 1, "status": "not_started", "title": "Item one description", "topic": "alpha", "dependencies": []},
-    {"project_number": 2, "status": "not_started", "title": "Item two description", "topic": "alpha", "dependencies": []},
-    {"project_number": 3, "status": "completed", "title": "Item three description (terminal)", "topic": "alpha", "dependencies": []},
-    {"project_number": 4, "status": "not_started", "title": "Item four description", "topic": "alpha", "dependencies": []}
-  ],
-  "roadmap_batches": [
-    {"task_ids": [1, 2], "description": "Batch one bounded description", "rationale": "Batch one rationale bullet text."},
-    {"task_ids": [3], "description": "Batch two, all-terminal, must be omitted"},
-    {"task_ids": [4], "description": "Batch three, no rationale, no bullet expected"}
-  ],
-  "roadmap_notes": {
-    "next_preamble": ["Preamble paragraph, authored, must render before the fence."],
-    "next_postamble": ["Postamble paragraph, authored, must render after the bullets."],
-    "open_work_trailer": []
-  }
-}
-EOF
-}
+# irrelevant here since the section is now rendered wholly from state, not retention-parsed.
+# (write_state_fixture_batches itself is defined earlier, alongside the other state fixtures,
+# since Case group 3 above also needs it.) ─────────────────────────────────────────────────────
 
 scratch14="$(build_scratch)"
 write_state_fixture_batches "$scratch14"

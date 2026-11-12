@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "Delete the Retention Parser and Deprecate --prune",
+  "started_at": "2026-11-12T01:15:00Z",
+  "last_updated": "2026-11-12T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Delete parse_retention() and RETAIN_* globals; rewrite status_token()/render_open_work() to read roadmap_annotation/roadmap_ext_blocked from state", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 2, "description": "Replace extract_open_work_trailer() with open_work_trailer_from_notes() reading roadmap_notes", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 3, "description": "Make --prune a deprecated alias dispatching to mode_regenerate; delete the six prune-mode functions", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 4, "description": "Update header-comment usage block and --help sed range", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 5, "description": "Extend test-roadmap-generation.sh: annotation/ext-blocked/trailer state-sourced fixtures; replace obsolete prune-specific fixtures with deprecated-alias coverage", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "4.extra", "description": "Also deleted strip_coverage_appendix() and covered_ids_from(), which the plan's task list did not explicitly name but which became genuinely dead code once mode_regenerate_classic/stage stopped reading the existing ## Next body", "type": "altered", "reason": "Leaving two unreferenced functions that read authored content out of the existing file would have contradicted the 'no retention parser anywhere in the path' acceptance criterion in spirit, even though nothing called them.", "annotation": "*(deviation: altered -- also removed two now-dead functions beyond the plan's named list)*"}
+  ],
+  "handoff_count": 0
+}

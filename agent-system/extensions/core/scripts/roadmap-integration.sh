@@ -6,8 +6,12 @@
 #
 # Usage:
 #   roadmap-integration.sh [--print]                 Emit generated sections to stdout (default)
-#   roadmap-integration.sh --regenerate [--dry-run]   Rebuild ## Open work and ## Next in place
-#   roadmap-integration.sh --prune [--dry-run]        Drop terminal tasks / all-terminal Run lines
+#   roadmap-integration.sh --regenerate [--dry-run]   Render ## Next and ## Open work wholly
+#                                                      from state.json in place
+#   roadmap-integration.sh --prune [--dry-run]        DEPRECATED alias for --regenerate: a file
+#                                                      rendered from live state accumulates no
+#                                                      terminal cruft, so there is nothing left
+#                                                      for a separate prune pass to remove
 #
 # Options:
 #   --roadmap PATH     Path to ROADMAP.md (default: specs/ROADMAP.md under the repo root)
@@ -17,9 +21,11 @@
 #   --dry-run          With --regenerate/--prune: print a diff, write nothing
 #   --help             Show this usage and exit 0
 #
-# --print never touches disk; it has no authored-retention input (it does not read an existing
-# ROADMAP.md), so its EXT-BLOCKED tokens are never emitted -- that token is authored-only and
-# surfaces only via --regenerate/--prune's retention parser.
+# ## Next and ## Open work are both rendered wholly from state.json (roadmap_batches/
+# roadmap_notes for ## Next; active_projects/roadmap_annotation/roadmap_ext_blocked/
+# roadmap_notes.open_work_trailer for ## Open work) in every mode that emits them, including
+# --print -- there is no retention parser anywhere in this script: nothing here reads authored
+# content back out of the file it is about to overwrite.
 #
 # Every invocation that reaches mode dispatch -- i.e. passes argument validation -- prints one
 # always-present machine-readable stderr marker, on success AND on failure:
@@ -52,7 +58,7 @@ DRY_RUN=0
 MAX_TASKS=8
 
 usage() {
-  sed -n '2,20p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,22p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 while [[ $# -gt 0 ]]; do
@@ -181,21 +187,13 @@ if [[ "$wave_header_found" -eq 0 ]]; then
   exit 1
 fi
 
-# ─── Retention maps, populated by --regenerate's retention parser only (stay empty for
-# --print, which has no authored-retention input). Declared here, globally, so status_token
-# and render_open_work can consult them uniformly in every mode. ───────────────────────────────
-declare -A RETAIN_DESC=()
-declare -A RETAIN_ANNOT=()
-declare -A RETAIN_EXT=()
-
 # ─── status_token <project_number> ──────────────────────────────────────────────────────────
 # Precedence: HOLD > IN FLIGHT > BLOCKED > PARTIAL > EXT-BLOCKED > blocked:N[,M...] > ready
-# EXT-BLOCKED has no schema source; it is only ever produced from RETAIN_EXT (populated by
-# --regenerate's retention parser from the existing file). --print leaves RETAIN_EXT empty, so
-# it never emits EXT-BLOCKED, exactly as documented.
+# EXT-BLOCKED is schema-backed (the task entry's roadmap_ext_blocked boolean field) -- rendered
+# in every mode, including --print, since it is a state field like any other, not an
+# authored-only retention value.
 status_token() {
-  local task_json="$1" tn status blocked_csv
-  tn="$(jq -r '.project_number' <<<"$task_json")"
+  local task_json="$1" status blocked_csv ext_blocked
   status="$(jq -r '.status' <<<"$task_json")"
   case "$status" in
     hold) echo "HOLD"; return ;;
@@ -203,7 +201,8 @@ status_token() {
     blocked) echo "BLOCKED"; return ;;
     partial) echo "PARTIAL"; return ;;
   esac
-  if [[ -n "${RETAIN_EXT[$tn]+set}" ]]; then
+  ext_blocked="$(jq -r '.roadmap_ext_blocked // false' <<<"$task_json")"
+  if [[ "$ext_blocked" == "true" ]]; then
     echo "EXT-BLOCKED"
     return
   fi
@@ -290,19 +289,22 @@ render_open_work() {
     echo "**${title} (${count})**"
     echo '```'
 
-    # Compute (rank, task_number, token, description) rows, sort, then render each line.
-    local tn task_json tok rank desc
+    # Compute (rank, task_number, token, description, annotation) rows, sort, then render each
+    # line. description is always title-derived (the title is the sole source -- there is no
+    # per-task description override); annotation is the task entry's roadmap_annotation field,
+    # empty when absent.
+    local tn task_json tok rank desc annot
     while IFS= read -r tn; do
       task_json="$(jq -c --argjson n "$tn" '.[] | select(.project_number == $n)' <<<"$active_tasks_json")"
       tok="$(status_token "$task_json")"
       rank="$(token_rank "$tok")"
       desc="$(jq -r '.title // .project_name' <<<"$task_json")"
-      printf '%s|%s|%s|%s\n' "$rank" "$tn" "$tok" "$desc"
+      annot="$(jq -r '.roadmap_annotation // ""' <<<"$task_json")"
+      printf '%s|%s|%s|%s|%s\n' "$rank" "$tn" "$tok" "$desc" "$annot"
     done < <(jq -r '.[].project_number' <<<"$tasks_in_topic") | sort -t'|' -k1,1n -k2,2n | \
-    while IFS='|' read -r _rank num tok desc; do
-      # Authored override (retained from the existing file) wins verbatim, no truncation;
-      # otherwise truncate the title-derived fallback so "{num} {tok}  {desc}" stays <= 100
-      # chars before any annotation.
+    while IFS='|' read -r _rank num tok desc annot; do
+      # Truncate the title-derived description so "{num} {tok}  {desc}" stays <= 100 chars
+      # before any annotation suffix.
       local prefix width avail trimmed
       prefix="$(printf '%s %s' "$num" "$tok")"
       width=${#prefix}
@@ -311,17 +313,13 @@ render_open_work() {
       else
         prefix="${prefix}  "
       fi
-      if [[ -n "${RETAIN_DESC[$num]+set}" ]]; then
-        trimmed="${RETAIN_DESC[$num]}"
-      else
-        avail=$((100 - ${#prefix}))
-        trimmed="$desc"
-        if [[ "${#trimmed}" -gt "$avail" && "$avail" -gt 3 ]]; then
-          trimmed="${trimmed:0:$((avail - 3))}..."
-        fi
+      avail=$((100 - ${#prefix}))
+      trimmed="$desc"
+      if [[ "${#trimmed}" -gt "$avail" && "$avail" -gt 3 ]]; then
+        trimmed="${trimmed:0:$((avail - 3))}..."
       fi
-      if [[ -n "${RETAIN_ANNOT[$num]+set}" ]]; then
-        printf '%s%s   <- %s\n' "$prefix" "$trimmed" "${RETAIN_ANNOT[$num]}"
+      if [[ -n "$annot" ]]; then
+        printf '%s%s   <- %s\n' "$prefix" "$trimmed" "$annot"
       else
         printf '%s%s\n' "$prefix" "$trimmed"
       fi
@@ -500,35 +498,12 @@ extract_preamble() {
   awk 'NR == 1 { next } /^## / { exit } { print }' "$file"
 }
 
-# strip_coverage_appendix -> reads a ## Next body on stdin, prints it back with any
-# previously-generated coverage appendix (and the single blank line preceding it) removed, so
-# --regenerate always rebuilds that block fresh rather than accumulating stale copies.
-strip_coverage_appendix() {
-  awk '
-    /^\*\*Coverage appendix \(uncovered tasks\)\*\*:$/ { exit }
-    { buf[NR] = $0 }
-    END {
-      n = NR
-      if (n > 0 && buf[n] == "") n--
-      for (i = 1; i <= n; i++) print buf[i]
-    }
-  '
-}
-
-# covered_ids_from BODY -> JSON array of every task number named in a "/orchestrate ..." line
-# within BODY (used to compute which ready tasks are NOT yet covered by a retained Run line).
-# No-match (an empty or /orchestrate-free BODY) is the normal, expected case for a classic
-# ## Next body with no authored Run lines yet -- not a failure. The trailing `|| true` makes
-# this pipeline's exit status always 0 (matching the pattern two lines below for RUNS_COUNT);
-# jq still prints "[]" correctly from empty grep/sort output regardless of their own exit codes,
-# since command substitution captures stdout independent of the exit status that `|| true`
-# overrides. THE CRASH SITE: under `set -euo pipefail`, the leading grep's exit 1 on no-match
-# previously propagated through this whole command substitution and killed the script.
-covered_ids_from() {
-  local body="$1"
-  grep -E '^/orchestrate ' <<<"$body" | grep -oE '[0-9]+' | sort -nu | jq -R -s -c \
-    'split("\n") | map(select(length > 0) | tonumber)' || true
-}
+# NOTE: strip_coverage_appendix() and covered_ids_from() (both read a ## Next body for its
+# existing authored Run lines) were removed here -- ## Next is now rendered wholly from state
+# (render_next(), covered_ids_from_batches()), so there is no "existing ## Next body" to read
+# at all. The historical pipeline-exit-status hazard they guarded against (grep's exit 1 on
+# no-match propagating under set -euo pipefail) no longer applies: covered_ids_from_batches()
+# is a single jq invocation over $STATE_PATH with no grep pipeline to crash.
 
 # render_next -> emits the ## Next body (no section header) to stdout, wholly from
 # roadmap_batches/roadmap_notes in $STATE_PATH. No authored content is read back from the
@@ -667,223 +642,30 @@ write_or_diff() {
   fi
 }
 
-# parse_retention OPEN_WORK_BODY -> populates the global RETAIN_DESC/RETAIN_ANNOT/RETAIN_EXT
-# maps from the EXISTING file's task lines. A task's description is treated as an authored
-# override whenever it already has a line in the existing file at all (first-appearance is the
-# only case that falls back to the title-derived render) -- see roadmap-format.md's Open work
-# Grammar for the operational definition this implements.
-parse_retention() {
-  local body="$1" line num rest2 tok desc rest annot
-  RETAIN_DESC=(); RETAIN_ANNOT=(); RETAIN_EXT=()
-  while IFS= read -r line; do
-    [[ "$line" =~ ^[0-9]+\  ]] || continue
-    if [[ "$line" == *"   <- "* ]]; then
-      annot="${line##*   <- }"
-      rest="${line%   <- *}"
-    else
-      annot=""
-      rest="$line"
-    fi
-    read -r num rest2 <<<"$rest"
-    [[ -n "$num" ]] || continue
-    # "IN FLIGHT" is the one two-word token in the closed vocabulary; every other token is a
-    # single word (ready, HOLD, BLOCKED, PARTIAL, EXT-BLOCKED, blocked:N[,M...]).
-    if [[ "$rest2" == "IN FLIGHT"[[:space:]]* ]]; then
-      tok="IN FLIGHT"
-      read -r desc <<<"${rest2#IN FLIGHT}"
-    else
-      read -r tok desc <<<"$rest2"
-    fi
-    RETAIN_DESC["$num"]="$desc"
-    [[ -n "$annot" ]] && RETAIN_ANNOT["$num"]="$annot"
-    [[ "$tok" == "EXT-BLOCKED" ]] && RETAIN_EXT["$num"]=1
-  done <<<"$body"
-}
-
-# count_terminal_task_lines BODY -> number of task lines in BODY whose task number is NOT in
-# the active (non-terminal) set -- i.e. how many --prune would remove from ## Open work.
-count_terminal_task_lines() {
-  local body="$1" count=0 line tn
-  while IFS= read -r line; do
-    if [[ "$line" =~ ^([0-9]+)\  ]]; then
-      tn="${BASH_REMATCH[1]}"
-      if ! jq -e --argjson n "$tn" '. as $a | $a | index($n) != null' <<<"$active_ids_json" >/dev/null 2>&1; then
-        count=$((count + 1))
-      fi
-    fi
-  done <<<"$body"
-  echo "$count"
-}
-
-# count_pruned_next_ids BODY -> number of task-id occurrences across ## Next's Run lines that
-# --prune would drop (terminal ids named in a /orchestrate line).
-count_pruned_next_ids() {
-  local body="$1" count=0 line ids_csv id
-  while IFS= read -r line; do
-    [[ "$line" =~ ^/orchestrate\  ]] || continue
-    ids_csv="${line#/orchestrate }"
-    ids_csv="${ids_csv%%   #*}"
-    ids_csv="${ids_csv%% -*}"
-    ids_csv="${ids_csv%"${ids_csv##*[![:space:]]}"}"
-    ids_csv="${ids_csv//[[:space:]]/}"
-    IFS=',' read -ra __ids <<<"$ids_csv"
-    for id in "${__ids[@]}"; do
-      [[ -n "$id" ]] || continue
-      if [[ ! "$id" =~ ^[0-9]+$ ]]; then
-        echo "WARNING: count_pruned_next_ids: unparseable task id '$id'; skipped" >&2
-        continue
-      fi
-      if ! jq -e --argjson n "$id" '. as $a | $a | index($n) != null' <<<"$active_ids_json" >/dev/null 2>&1; then
-        count=$((count + 1))
-      fi
-    done
-  done <<<"$body"
-  echo "$count"
-}
-
-# prune_open_work_body BODY -> BODY with every terminal task line removed, each surviving
-# block's "(count)" header corrected, and any block left with zero surviving tasks dropped
-# entirely (header + fences). Touches nothing else.
-prune_open_work_body() {
-  local body="$1" active_csv
-  active_csv="$(jq -r 'join(",")' <<<"$active_ids_json")"
-  awk -v active_csv="$active_csv" '
-    BEGIN {
-      n = split(active_csv, arr, ",")
-      for (i = 1; i <= n; i++) active[arr[i]] = 1
-    }
-    { lines[++total] = $0 }
-    END {
-      out_n = 0
-      i = 1
-      while (i <= total) {
-        line = lines[i]
-        if (line == "```") {
-          j = i + 1
-          fence_n = 0
-          kept = 0
-          while (j <= total && lines[j] != "```") {
-            if (match(lines[j], /^[0-9]+ /)) {
-              tn = lines[j]
-              sub(/ .*/, "", tn)
-              if (tn in active) {
-                fence[++fence_n] = lines[j]
-                kept++
-              }
-            } else {
-              fence[++fence_n] = lines[j]
-            }
-            j++
-          }
-          if (kept > 0) {
-            if (out_n > 0 && match(out[out_n], /\([0-9]+\)\*\*$/)) {
-              hdr = out[out_n]
-              sub(/\([0-9]+\)\*\*$/, "(" kept ")**", hdr)
-              out[out_n] = hdr
-            }
-            out[++out_n] = "```"
-            for (k = 1; k <= fence_n; k++) out[++out_n] = fence[k]
-            out[++out_n] = "```"
-          } else if (out_n > 0) {
-            out_n--
-          }
-          i = j + 1
-          continue
-        }
-        out[++out_n] = line
-        i++
-      }
-      for (k = 1; k <= out_n; k++) print out[k]
-    }
-  ' <<<"$body"
-}
-
-# prune_next_body BODY -> BODY with terminal task ids removed from each Run line's task list
-# (dropping the whole line if every task it names is terminal); every other line (intro prose,
-# why-this-order, an existing coverage appendix) passes through completely unchanged.
-prune_next_body() {
-  local body="$1" active_csv
-  active_csv="$(jq -r 'join(",")' <<<"$active_ids_json")"
-  awk -v active_csv="$active_csv" '
-    BEGIN {
-      n = split(active_csv, arr, ",")
-      for (i = 1; i <= n; i++) active[arr[i]] = 1
-    }
-    {
-      line = $0
-      if (match(line, /^\/orchestrate /)) {
-        rationale = ""
-        core = line
-        pos = index(line, "   # ")
-        if (pos > 0) {
-          rationale = substr(line, pos)
-          core = substr(line, 1, pos - 1)
-        }
-        sub(/[ \t]+$/, "", core)
-        tasklist = core
-        sub(/^\/orchestrate /, "", tasklist)
-        flags = ""
-        if (match(tasklist, /[ \t]+-/)) {
-          flags = substr(tasklist, RSTART + RLENGTH - 1)
-          tasklist = substr(tasklist, 1, RSTART - 1)
-        }
-        gsub(/[ \t]/, "", tasklist)
-        n2 = split(tasklist, ids, ",")
-        bad_id = ""
-        for (k = 1; k <= n2; k++) {
-          if (ids[k] !~ /^[0-9]+$/) { bad_id = ids[k]; break }
-        }
-        if (bad_id != "") {
-          print line
-          print "WARNING: prune_next_body: unparseable task id [" bad_id "]; Run line left unchanged" > "/dev/stderr"
-          next
-        }
-        joined = ""
-        kept = 0
-        for (k = 1; k <= n2; k++) {
-          if (ids[k] in active) {
-            if (joined != "") joined = joined ", "
-            joined = joined ids[k]
-            kept++
-          }
-        }
-        tail = (flags != "" ? " " flags : "") rationale
-        if (kept == n2) {
-          print line
-        } else if (kept > 0) {
-          print "/orchestrate " joined tail
-        }
-        next
-      }
-      print line
-    }
-  ' <<<"$body"
-}
-
-# extract_open_work_trailer BODY -> any free-standing authored prose that follows the LAST
-# fenced topic block in ## Open work (e.g. a "**342's hold**: ..." explanatory paragraph that
-# is not itself inside a fence). --regenerate rebuilds the fenced blocks from scratch but must
-# not discard this trailing prose; --prune's line-level pass already preserves it for free
-# since it only ever touches lines inside a fence.
-extract_open_work_trailer() {
-  local body="$1"
-  awk '
-    { lines[++n] = $0; if ($0 == "```") last_fence = n }
-    END {
-      if (last_fence == 0 || last_fence >= n) { exit }
-      for (i = last_fence + 1; i <= n; i++) print lines[i]
-    }
-  ' <<<"$body"
+# open_work_trailer_from_notes -> the ## Open work trailer, rendered from
+# roadmap_notes.open_work_trailer (one paragraph per array entry, blank-line separated). There
+# is no retention parser any more -- this reads $STATE_PATH directly, never the existing file.
+open_work_trailer_from_notes() {
+  local notes_json count i p first=1
+  notes_json="$(jq -c '.roadmap_notes // {}' "$STATE_PATH")"
+  count="$(jq -r '(.open_work_trailer // []) | length' <<<"$notes_json")"
+  for ((i = 0; i < count; i++)); do
+    p="$(jq -r --argjson i "$i" '.open_work_trailer[$i]' <<<"$notes_json")"
+    [[ "$first" -eq 1 ]] || echo
+    first=0
+    printf '%s\n' "$p"
+  done
 }
 
 # load_existing_sections -> extracts every section of $ROADMAP_PATH into the globals
-# RM_PREAMBLE/RM_GOAL/RM_GATE/RM_NEXT/RM_OPEN_WORK/RM_CHECKS/RM_DECISIONS/RM_RULES/RM_OBS.
+# RM_PREAMBLE/RM_GOAL/RM_GATE/RM_CHECKS/RM_DECISIONS/RM_RULES/RM_OBS. ## Next and ## Open work
+# are deliberately NOT extracted here -- both are rendered wholly from state (render_next(),
+# render_open_work()), and reading them back out of the existing file would reintroduce exactly
+# the retention-parser path this phase removes.
 load_existing_sections() {
   RM_PREAMBLE="$(extract_preamble "$ROADMAP_PATH")"
   RM_GOAL="$(extract_section "$ROADMAP_PATH" "## Goal")"
   RM_GATE="$(extract_section "$ROADMAP_PATH" "## Gate state")"
-  RM_NEXT="$(extract_section "$ROADMAP_PATH" "## Next")"
-  RM_OPEN_WORK="$(extract_section "$ROADMAP_PATH" "## Open work")"
   RM_CHECKS="$(extract_section "$ROADMAP_PATH" "## Checks before and after every call")"
   RM_DECISIONS="$(extract_section "$ROADMAP_PATH" "## Settled decisions (do not re-litigate)")"
   RM_RULES="$(extract_section "$ROADMAP_PATH" "## Standing rules")"
@@ -1011,15 +793,18 @@ mode_regenerate_stage() {
 mode_regenerate_classic() {
   load_existing_sections
 
-  parse_retention "$RM_OPEN_WORK"
-  RETAINED_COUNT=$(( ${#RETAIN_DESC[@]} + ${#RETAIN_ANNOT[@]} + ${#RETAIN_EXT[@]} ))
+  # RETAINED_COUNT -- the six authored-verbatim sections classic --regenerate never touches
+  # (Goal, Gate state, Checks, Settled decisions, Standing rules, Unfiled observations). There
+  # is no retention parser any more; ## Next and ## Open work are both rendered wholly from
+  # state (see render_next()/render_open_work()), so nothing is "retained" in the old sense.
+  RETAINED_COUNT=6
 
   local covered_ids_json new_coverage new_open_work new_next new_content
   covered_ids_json="$(covered_ids_from_batches)"
   RUNS_COUNT="$(jq -r '(.roadmap_batches // []) | length' "$STATE_PATH")"
 
   local open_work_trailer
-  open_work_trailer="$(extract_open_work_trailer "$RM_OPEN_WORK")"
+  open_work_trailer="$(open_work_trailer_from_notes)"
   new_open_work=$'\n'"$(render_open_work)"
   if [[ -n "$open_work_trailer" ]]; then
     new_open_work="${new_open_work}"$'\n'"${open_work_trailer}"
@@ -1036,77 +821,20 @@ mode_regenerate_classic() {
   write_or_diff "$new_content"
 }
 
+# mode_prune -- DEPRECATED ALIAS for --regenerate. A file rendered wholly from live state
+# cannot accumulate terminal cruft (a batch or Open work entry naming only terminal members is
+# simply never rendered by render_next()/render_open_work() in the first place -- see
+# roadmap-format.md's Generation section), so there is nothing left for a separate prune pass to
+# remove. Prints one named stderr deprecation note, then reassigns $MODE to "regenerate" and
+# dispatches to mode_regenerate -- every downstream message (the stderr marker's mode= field,
+# the OUTCOME: line, a refusal's named reason) is therefore indistinguishable from a direct
+# --regenerate invocation, which is the literal meaning of "dispatches to --regenerate". The
+# flag itself stays accepted and the stderr marker's pruned= field stays present (always 0), so
+# every existing caller keeps working unchanged.
 mode_prune() {
-  if [[ ! -f "$ROADMAP_PATH" ]]; then
-    echo "NOTE: no roadmap tracked at ${ROADMAP_PATH}; --prune is a supported no-op." >&2
-    RUNS_COUNT=0; PRUNED_COUNT=0; RETAINED_COUNT=0
-    return 0
-  fi
-
-  local layout
-  layout="$(detect_layout "$ROADMAP_PATH")"
-  ROADMAP_LAYOUT="$layout"
-  case "$layout" in
-    classic) mode_prune_classic ;;
-    stage) mode_prune_stage ;;
-    *)
-      refuse_unrecognised_layout prune unknown
-      return 1
-      ;;
-  esac
-}
-
-# mode_prune_stage -- drops terminal task ids from the run-order section's Run lines only
-# (reusing prune_next_body unmodified: it only ever touches lines matching ^/orchestrate , so
-# an in-fence "# Stage N" comment line passes through untouched, confirmed by this phase's test
-# cases). Every other section is retained byte-for-byte. A stage layout has no "## Open work"
-# section, so the Open-work half of classic --prune is a documented no-op here.
-mode_prune_stage() {
-  split_sections "$ROADMAP_PATH"
-
-  local run_order_idx=-1 i
-  for ((i = 0; i < ${#RM_SECTION_HEADERS[@]}; i++)); do
-    if body_has_orchestrate_fence "${RM_SECTION_BODIES[$i]}"; then
-      run_order_idx="$i"
-      break
-    fi
-  done
-
-  if [[ "$run_order_idx" -ge 0 ]]; then
-    PRUNED_COUNT="$(count_pruned_next_ids "${RM_SECTION_BODIES[$run_order_idx]}")"
-    RM_SECTION_BODIES[$run_order_idx]="$(prune_next_body "${RM_SECTION_BODIES[$run_order_idx]}")"
-  else
-    PRUNED_COUNT=0
-  fi
-
-  RUNS_COUNT=0
-  RETAINED_COUNT=0
-
-  local new_content
-  new_content="$(assemble_stage_roadmap)"
-  new_content="$(cat -s <<<"$new_content")"
-
-  write_or_diff "$new_content"
-}
-
-mode_prune_classic() {
-  load_existing_sections
-
-  local pruned_ow pruned_next new_open_work new_next new_content
-  pruned_ow="$(count_terminal_task_lines "$RM_OPEN_WORK")"
-  pruned_next="$(count_pruned_next_ids "$RM_NEXT")"
-  PRUNED_COUNT=$((pruned_ow + pruned_next))
-  RUNS_COUNT=0
-  RETAINED_COUNT=0
-
-  new_open_work=$'\n'"$(prune_open_work_body "$RM_OPEN_WORK")"
-  new_next=$'\n'"$(prune_next_body "$RM_NEXT")"
-
-  new_content="$(assemble_roadmap "$RM_PREAMBLE" "$RM_GOAL" "$RM_GATE" "$new_next" \
-    "$new_open_work" "$RM_CHECKS" "$RM_DECISIONS" "$RM_RULES" "$RM_OBS")"
-  new_content="$(cat -s <<<"$new_content")"
-
-  write_or_diff "$new_content"
+  echo "NOTE: --prune is deprecated: a file rendered from live state accumulates no terminal cruft; running --regenerate instead." >&2
+  MODE="regenerate"
+  mode_regenerate
 }
 
 case "$MODE" in

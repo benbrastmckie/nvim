@@ -397,30 +397,30 @@ returns exactly three suites, so the covering check is
 
 ---
 
-### Phase 4: Delete the Retention Parser and Deprecate `--prune` [NOT STARTED]
+### Phase 4: Delete the Retention Parser and Deprecate `--prune` [COMPLETED]
 
 **Goal**: the net deletion — no code path in the generator reads authored content out of the file
 it is about to overwrite.
 
 **Tasks**:
-- [ ] Delete `parse_retention()` and the `RETAIN_DESC` / `RETAIN_ANNOT` / `RETAIN_EXT` globals.
-- [ ] Rewrite `render_open_work()`'s per-line branch: the description is always the
+- [x] Delete `parse_retention()` and the `RETAIN_DESC` / `RETAIN_ANNOT` / `RETAIN_EXT` globals.
+- [x] Rewrite `render_open_work()`'s per-line branch: the description is always the
       `title`-derived render (truncated so `{num} {tok}  {desc}` stays at or under 100
       characters); the `<- ` suffix comes from `roadmap_annotation`; the `EXT-BLOCKED` token comes
       from `roadmap_ext_blocked` and keeps its position 5 precedence, ahead of the dependency
       filter.
-- [ ] Replace `extract_open_work_trailer()` with a read of `roadmap_notes.open_work_trailer`, and
+- [x] Replace `extract_open_work_trailer()` with a read of `roadmap_notes.open_work_trailer`, and
       delete the function.
-- [ ] Make `--prune` a deprecated alias: print one named stderr note ("--prune is deprecated: a
+- [x] Make `--prune` a deprecated alias: print one named stderr note ("--prune is deprecated: a
       file rendered from live state accumulates no terminal cruft; running --regenerate instead")
       and dispatch to `mode_regenerate`. Delete `count_terminal_task_lines()`,
       `count_pruned_next_ids()`, `prune_open_work_body()`, `prune_next_body()`,
       `mode_prune_classic()`, and `mode_prune_stage()`. Keep the flag accepted and the stderr
       marker's `pruned=` field present (always `0`) so every existing caller — the conclusion
       stage's documented invocation included — keeps working unchanged.
-- [ ] Update the script's own header-comment usage block and the `--help` output it `sed`s out of
+- [x] Update the script's own header-comment usage block and the `--help` output it `sed`s out of
       itself, so `--help` does not drift from the new behaviour.
-- [ ] Extend `tests/test-roadmap-generation.sh`: an `## Open work` line whose live file holds a
+- [x] Extend `tests/test-roadmap-generation.sh`: an `## Open work` line whose live file holds a
       stale truncated description re-renders from the current `title` (the drift repair); a task
       with `roadmap_annotation` renders the `<- ` suffix; a task with `roadmap_ext_blocked: true`
       renders `EXT-BLOCKED` and takes precedence over its dependency-derived token; `--prune`
