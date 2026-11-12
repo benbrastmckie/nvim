@@ -229,10 +229,39 @@ scan_file() {
   done < "$file"
   local n_lines=${#lines[@]}
 
+  # ── Heredoc-body exclusion ───────────────────────────────────────────────────────────────────
+  # A line inside a `<<[-]TOKEN ... TOKEN` heredoc body is DATA being written out (most often a
+  # synthetic fixture under this very lint's own test suite, which necessarily embeds literal
+  # example text shaped exactly like the forbidden walk), never live code in the file doing the
+  # scanning -- skip the whole body, both shapes (quoted and unquoted delimiter), to avoid
+  # scanning a fixture suite's own fixture text as if it were a real violation in that suite
+  # itself. KNOWN LIMITATION: this also skips an unquoted heredoc's body, which IS live,
+  # variable-expanding code in principle -- no instance of a root-resolution walk written inside
+  # an unquoted heredoc exists in this corpus today, so this is a bounded, not unbounded, blind
+  # spot, consistent with this lint's other line-oriented limitations.
+  local -A in_heredoc=()
+  local hd_terminator="" hd_active=false
+  for ((i = 0; i < n_lines; i++)); do
+    local hl="${lines[$i]}"
+    if $hd_active; then
+      in_heredoc["$i"]=1
+      if [[ "$hl" =~ ^[[:space:]]*${hd_terminator}[[:space:]]*$ ]]; then
+        hd_active=false
+        hd_terminator=""
+      fi
+      continue
+    fi
+    if [[ "$hl" =~ \<\<-?[[:space:]]*[\'\"]?([A-Za-z_][A-Za-z0-9_]*)[\'\"]? ]]; then
+      hd_terminator="${BASH_REMATCH[1]}"
+      hd_active=true
+    fi
+  done
+
   # ── PASS 1: anchor-offset discovery (the single recognized CORE_DIR idiom) ──────────────────
   local -A anchor_offset=()
   local i
   for ((i = 0; i < n_lines; i++)); do
+    [[ -n "${in_heredoc[$i]:-}" ]] && continue
     local l="${lines[$i]}"
     [[ "$l" =~ ^[[:space:]]*# ]] && continue
     if [[ "$l" =~ ^[[:space:]]*([A-Za-z_][A-Za-z0-9_]*)=\"\$\(cd[[:space:]]+\"\$SCRIPT_DIR/\.\.\"[[:space:]]*\&\&[[:space:]]*pwd[^\)]*\)\" ]]; then
@@ -284,6 +313,7 @@ scan_file() {
   }
 
   for ((i = 0; i < n_lines; i++)); do
+    [[ -n "${in_heredoc[$i]:-}" ]] && continue
     local l="${lines[$i]}"
     local lineno=$((i + 1))
     [[ "$l" =~ ^[[:space:]]*# ]] && continue

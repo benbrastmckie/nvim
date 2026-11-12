@@ -273,30 +273,59 @@ single-module lint: `bash -n` plus a `lint-shellcheck.sh --verbose` pass over th
 
 ---
 
-### Phase 3: Fixture Suite, Classification Row, and Zero-Violation Live Run [NOT STARTED]
+### Phase 3: Fixture Suite, Classification Row, and Zero-Violation Live Run [COMPLETED]
 
 **Goal**: Prove both polarities against synthetic fixtures, register the fixture suite so the
 unit/integration boundary lint cannot fail on it, and establish that the lint runs clean over the
 entire live corpus before it is given gate authority.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-lint-test-root-resolution.sh`,
+- [x] Create `agent-system/extensions/core/scripts/tests/test-lint-test-root-resolution.sh`,
       modeled on `test-lint-test-harness-adoption.sh`: synthetic fixtures written into a scratch
-      directory, never the live tree.
-- [ ] Positive cases (lint MUST fire): an unconditional single-line `VAR="$(cd "$DIR/../../../.." && pwd)"`;
+      directory, never the live tree. *(completed)*
+- [x] Positive cases (lint MUST fire): an unconditional single-line `VAR="$(cd "$DIR/../../../.." && pwd)"`;
       the two-statement `cd`-then-`$(pwd)` variant; a bare `"$VAR/../../../.."` consumed inline.
-- [ ] Negative cases (lint MUST stay silent): the git-first-guarded fallback shape; the
+      *(completed: cases 1-3)*
+- [x] Negative cases (lint MUST stay silent): the git-first-guarded fallback shape; the
       validated-candidate shape; a file outside the test-suite scan scope carrying the shape; an
-      allowlisted `path:line`.
-- [ ] Assert the exit-code contract (0/1/2) and that an explicit path argument replaces the default
-      corpus rather than adding to it.
-- [ ] Add the row `test-lint-test-root-resolution.sh<TAB>unit<TAB>-` to
+      allowlisted `path:line`. *(completed: cases 4-6b, the latter two driven through the lint's
+      default-corpus scan via a synthetic `REPO_ROOT` override, since an explicit path argument
+      bypasses scope classification entirely by design and cannot exercise either)*
+- [x] Assert the exit-code contract (0/1/2) and that an explicit path argument replaces the default
+      corpus rather than adding to it. *(completed: case 7, including a same-synthetic-tree
+      sanity check proving the "replace" assertion is not vacuous)*
+- [x] Add the row `test-lint-test-root-resolution.sh<TAB>unit<TAB>-` to
       `scripts/tests/suite-classification.data`, matching `test-lint-test-harness-adoption.sh`'s own
       row. This is required, not cosmetic: `lint-unit-integration-boundary.sh` fails loudly on an
-      unclassified discovered suite.
-- [ ] Run the lint over the full default corpus and require exit 0. If it fires on anything not
+      unclassified discovered suite. *(completed)*
+- [x] Run the lint over the full default corpus and require exit 0. If it fires on anything not
       already migrated in Phase 1, triage each hit as either a real defect (fix it, or re-scope) or
       a false positive (fix the detection rule) — do NOT add allowlist entries to reach green.
+      *(completed, but required an additional detection fix discovered mid-phase: the lint's own
+      new fixture suite necessarily writes synthetic violating examples into its own source via
+      heredocs and a quoted literal, and the lint — which scans its own source as a normal
+      corpus member, since it is itself a `test-*.sh` file — initially mis-flagged that embedded
+      fixture TEXT as 6 real violations. Fixed by excluding heredoc bodies from detection and by
+      building the one non-heredoc literal dynamically rather than writing it as a static
+      quoted substring; see completion note below. Final default-corpus run: 0 violations across
+      195 files.)*
+
+**Phase 3 completion note (lint-unit-integration-boundary.sh's own exit code, and why it is not
+a regression here)**: this phase's own classification-row addition is correct and sufficient on
+its own merits -- `test-lint-test-root-resolution.sh` is no longer flagged by
+`lint-unit-integration-boundary.sh` once its row is present. Running that boundary lint directly
+against the live tree still exits non-zero, but for six violations, none of which this task
+caused: five are pre-existing, unrelated suites missing a classification row entirely
+(`test-commit-source-store-path.sh`, `test-lint-roadmap-batch-proposals.sh`,
+`test-mcp-merge-target.sh`, `test-source-store-path-lib.sh`,
+`test-validate-no-python-state-write.sh` -- confirmed via `git log`/`git status` to be
+long-committed and untouched by this task), and one is a concurrently-dispatched sibling task's
+own in-flight, uncommitted edit (`test-validate-artifact.sh`, declared in that task's own
+territory `file_scope` this cycle). The selector-scoped `run-all.sh --only` check below
+independently confirms this: it reports the suite as a pre-existing `(EXPECTED)` failure with
+`0 NEW`, i.e. nothing this phase touched introduced a new regression. Recorded in the task's
+issue log rather than fixed here, since fixing five unrelated classification gaps across the
+corpus is a different defect class than this task's own root-walkup closure scope.
 
 **Timing**: 1.0 hour
 
