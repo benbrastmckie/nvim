@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 6,
-  "summary": "Wrote a six-phase plan for the conclusion stage's next-batch proposal quality. Defect 1 is fixed by a conflict-free-subset second pass that probes one member per reported collision pair, so a joint batch renders additively alongside the sequences; Defect 2 by a bounded three-option loop (one per selection-doctrine criterion) sharing the unchanged probe cap; Defect 3 by a dedicated fail-closed 'edges' approval key plus a gated Step 7 that re-invokes the existing --write-edges path; Defect 4 as a reasoned no, since --prune is now a deprecated alias for --regenerate. Two findings beyond the research: the aggregate script's approval vocabulary needs the new key, and the Move 5 allowed-tool table permits neither the new AskUserQuestion nor the suggester it already invokes.",
+  "status": "implemented",
+  "dispatch_seq": 25,
+  "summary": "Implemented all six plan phases for the conclusion stage's next-batch proposal quality fix: a file_scope-colliding pair is now additive to a real probe-verified joint batch rather than replacing it, Mode A renders up to three labelled probe-verified batch options, a dedicated fail-closed 'edges' approval key gates the existing --write-edges path at Step 7, and the roadmap-prune exclusion's rationale is corrected to its current fact. All new and existing tests pass (18/18, 15/15); shellcheck clean. The three red findings from the full deploy gate (gate10 timeout, eager-load total, SKILL.md ceiling) are pre-existing, unrelated to this task's files, and attributed via issue-record.sh and a Reasoned Exclusions table.",
   "blockers": [],
+  "phases_completed": 6,
+  "phases_total": 6,
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/602_conclusion_stage_next_batch_proposal_quality/plans/01_next-batch-proposal-quality.md",
-      "summary": "Six-phase implementation plan, 7 hours, waves [1,3] -> [2,4] -> [5] -> [6]."
+      "summary": "Six-phase implementation plan, all phases completed."
+    },
+    {
+      "type": "summary",
+      "path": "specs/602_conclusion_stage_next_batch_proposal_quality/summaries/01_next-batch-proposal-quality-summary.md",
+      "summary": "Full implementation summary with decisions, deviations, and verification evidence."
     }
-  ],
-  "dispatch_seq": 24
+  ]
 }

@@ -1,21 +1,74 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 25,
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/602_conclusion_stage_next_batch_proposal_quality/plans/01_next-batch-proposal-quality.md",
       "summary": "Six-phase plan making collision pairs additive to a probe-verified joint batch, rendering up to three labelled batch options, gating the existing --write-edges path behind a dedicated fail-closed approval key, and landing the roadmap-prune ruling."
+    },
+    {
+      "type": "summary",
+      "path": "specs/602_conclusion_stage_next_batch_proposal_quality/summaries/01_next-batch-proposal-quality-summary.md",
+      "summary": "All six phases implemented and verified: additive joint-batch render alongside colliding pairs, up to three labelled probe-verified batch options, a dedicated fail-closed edges approval key gating the existing --write-edges path, and the roadmap-prune rationale corrected to its current fact."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed orchestrate-suggest-next-batch.sh so a file_scope-colliding pair is additive to a real probe-verified joint batch rather than replacing it, added a multi-option render (up to 3 labelled, probe-verified options per the territory/topic/width selection doctrine), added a dedicated fail-closed 'edges' approval key to orchestrate-conclusion-aggregate.sh, gated the conclusion stage's Step 7 edge write behind that key, and corrected the roadmap-prune exclusion's stale rationale. Also fixed a latent pre-existing tab-collapse parsing bug uncovered while building the per-criterion selector."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh",
+    "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/context/patterns/roadmap-update.md",
+    "specs/602_conclusion_stage_next_batch_proposal_quality/plans/01_next-batch-proposal-quality.md",
+    "specs/602_conclusion_stage_next_batch_proposal_quality/summaries/01_next-batch-proposal-quality-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In bash, `IFS=$'\\t' read -r a b c` silently COLLAPSES consecutive tab delimiters (tab, like space and newline, is an IFS-whitespace character, not a plain field separator) -- an empty middle field between two tabs vanishes and the next field's value shifts left. Confirmed: `IFS=$'\\t' read -r a b c <<< $'x\\t\\tz'` yields a=x b=z c=(empty), not a=x b=(empty) c=z. This silently corrupts any tab-delimited jq/@tsv + bash `read` pipeline whenever a middle field can be empty (e.g. a nullable `topic` field). Fix: use a non-whitespace IFS character (ASCII 0x1F unit separator, or comma) instead of tab -- `read` preserves an empty field for any non-whitespace-class delimiter.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/602_conclusion_stage_next_batch_proposal_quality/summaries/01_next-batch-proposal-quality-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "bash",
+        "IFS",
+        "read",
+        "tab-delimited",
+        "@tsv",
+        "field-collapse"
+      ]
+    },
+    {
+      "content": "When refactoring a selection/engine function to support BOTH a single composed call (preserving exact pre-refactor behavior) and several independent per-criterion calls within the same script invocation (e.g. a multi-option batch render), any invocation-scoped dedup set (like a 'reported pairs' set meant to fire at most once per whole script run) must be a script-level global, not a function-local re-declared on every call -- otherwise each independent call gets its own fresh set and the dedup silently stops working across calls. Pair this with a SEPARATE per-call local subset (populated alongside the global) when a later per-call computation (e.g. a conflict-free-subset second pass) must only see what THIS call discovered, not everything the global has accumulated across all calls so far.",
+      "category": "PATTERN",
+      "source_artifact": "specs/602_conclusion_stage_next_batch_proposal_quality/summaries/01_next-batch-proposal-quality-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "bash",
+        "scoping",
+        "dedup",
+        "multi-option",
+        "global-vs-local"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794459760_979d1d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7,
-    "dependency_waves": [[1, 3], [2, 4], [5], [6]]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
   },
-  "memory_candidates": [],
-  "dispatch_seq": 25
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
