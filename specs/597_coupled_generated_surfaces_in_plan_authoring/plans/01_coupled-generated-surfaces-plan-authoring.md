@@ -541,7 +541,7 @@ branch.
 
 ---
 
-### Phase 6: Reconcile the Coupled Surfaces, Deploy, and Run the Complete Gate Set [NOT STARTED]
+### Phase 6: Reconcile the Coupled Surfaces, Deploy, and Run the Complete Gate Set [IN PROGRESS]
 
 **Goal**: The deployed tree is regenerated from the source store, both coupled generated surfaces
 this task trips are reconciled, and the complete gate set is green or every red finding is
