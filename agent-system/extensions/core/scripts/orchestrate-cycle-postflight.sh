@@ -2159,7 +2159,28 @@ if [ -z "$loop_guard_file" ]; then
       jq --argjson t "$task_number" '.completed_tasks = ((.completed_tasks // []) + [$t] | unique)' \
         "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
     fi
-    if [ "$dispatch_status" = "failed" ] || [ "$dispatch_status" = "blocked" ] || [ "$offschema_dispatch_status" = "true" ]; then
+    # A PENDING USER QUESTION IS NOT A FAILURE. The verdict resolution above resolves `ask_user`
+    # whenever a user_decision payload is present, and that verdict deliberately takes precedence
+    # over every other signal -- including the very dispatch_status this charge reads. Charging
+    # such a task here is wrong twice over: the loop's own Move 4 is about to relay the question
+    # and record the answer, and NOTHING on that path ever retracts a failed_tasks entry (the
+    # decision writer is single-responsibility and touches no multi-state file). The entry
+    # therefore outlives the question it was raised by, and the next cycle filters the task out as
+    # failed and declares every dependent unreachable -- so answering a blocking question is what
+    # kills the task that asked it, together with everything downstream.
+    #
+    # A question that is never answered still gets charged, one cycle later and by the right
+    # actor: orchestrate-triage-classify.sh classifies a still-blocked task `needs_human` and
+    # orchestrate-cycle-plan.sh charges failed_tasks in that branch. This site is not the safety
+    # net, so declining to charge here loses nothing.
+    #
+    # OFF-SCHEMA IS EXEMPT FROM THIS EXEMPTION, and is checked first precisely so a user_decision
+    # riding along cannot suppress it: offschema_dispatch_status IS `halt` (see the return-shape
+    # block below), meaning the dispatch reported something outside the status vocabulary and its
+    # outcome cannot be trusted at all. That is a protocol violation, not a resumable question.
+    if [ "$offschema_dispatch_status" = "true" ] \
+       || { [ "$verdict" != "ask_user" ] \
+            && { [ "$dispatch_status" = "failed" ] || [ "$dispatch_status" = "blocked" ]; }; }; then
       jq --argjson t "$task_number" '.failed_tasks = ((.failed_tasks // []) + [$t] | unique)' \
         "$mt_state_file" > "${mt_state_file}.tmp" && mv "${mt_state_file}.tmp" "$mt_state_file"
     fi

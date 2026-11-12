@@ -2445,6 +2445,112 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Regression: a PENDING USER QUESTION must not be charged into the multi-state failed_tasks array.
+#
+# The charge site reads dispatch_status only. A `blocked` dispatch that produced an answerable
+# user_decision resolves verdict=ask_user, the loop relays the question and records the answer --
+# and nothing on that path ever retracts a failed_tasks entry. So the entry outlives the question,
+# the next cycle filters the task out as failed, and every dependent is declared unreachable:
+# answering a blocking question is what kills the task that asked it.
+#
+# Three cases, because the exemption must be exactly as wide as the defect and no wider:
+#   (a) blocked + user_decision -> EXEMPT (the defect)
+#   (b) blocked, no question    -> CHARGED (the exemption must not swallow a real failure)
+#   (c) off-schema + user_decision -> CHARGED (off-schema IS `halt`; a user_decision riding along
+#       must not suppress it, since the outcome cannot be trusted at all)
+# Multi-task path throughout (no --loop-guard-file) -- failed_tasks exists only on that engine.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Regression: a pending user_decision is not charged into failed_tasks (and off-schema still is)"
+
+# ─── (a) blocked + user_decision -> must NOT be charged ───────────────────────────────────────
+setup_sandbox
+mkdir -p "$WORKDIR/specs/720_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 720, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #720", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_720.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "failed_tasks": [], "dispatch_seq": {"720": 1}, "dispatch_start_ts": {}}
+EOF
+cat > "$WORKDIR/specs/720_candidate/.return-meta.json" <<'EOF'
+{"status":"blocked","dispatch_seq":1,"blockers":[{"target":"a choice only the operator can make","verbatim_goal":"pick a disposition","why_it_failed":"two defensible routes, no local tie-breaker"}],"user_decision":{"question":"Route A or route B?","options":["A","B"]}}
+EOF
+run_sut specs/720_candidate --session sess_720 --phase implement --task-type general   --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 720
+
+ask_mt_720="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_720.json"
+if [ "$(jqf '.verdict')" = "ask_user" ]; then
+  common_test_pass "regression (ask_user charge): verdict=ask_user on a blocked dispatch carrying a user_decision"
+else
+  common_test_fail "regression (ask_user charge): expected verdict=ask_user, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+if jq -e '(.failed_tasks // []) | index(720) | not' "$ask_mt_720" >/dev/null 2>&1; then
+  common_test_pass "regression (ask_user charge): a pending user question is NOT charged into failed_tasks"
+else
+  common_test_fail "regression (ask_user charge): candidate #720 was charged into failed_tasks despite a pending user_decision: $(jq -c '.failed_tasks' "$ask_mt_720")"
+fi
+
+# ─── (b) blocked, NO user_decision -> must still be charged ──────────────────────────────────
+setup_sandbox
+mkdir -p "$WORKDIR/specs/721_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 721, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #721", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_721.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "failed_tasks": [], "dispatch_seq": {"721": 1}, "dispatch_start_ts": {}}
+EOF
+cat > "$WORKDIR/specs/721_candidate/.return-meta.json" <<'EOF'
+{"status":"blocked","dispatch_seq":1,"blockers":[{"target":"an upstream asset","verbatim_goal":"download it","why_it_failed":"upstream does not publish it"}]}
+EOF
+run_sut specs/721_candidate --session sess_721 --phase implement --task-type general   --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 721
+
+ask_mt_721="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_721.json"
+if jq -e '(.failed_tasks // []) | index(721)' "$ask_mt_721" >/dev/null 2>&1; then
+  common_test_pass "regression (ask_user charge): a blocked dispatch with NO pending question is still charged"
+else
+  common_test_fail "regression (ask_user charge): the exemption swallowed a real blocked failure: $(jq -c '.failed_tasks' "$ask_mt_721")"
+fi
+
+# ─── (c) off-schema + user_decision -> must still be charged (halt is not suppressible) ──────
+setup_sandbox
+mkdir -p "$WORKDIR/specs/722_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 722, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #722", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_722.json" <<'EOF'
+{"detected_defects": [], "infra_failures": {}, "failed_tasks": [], "dispatch_seq": {"722": 1}, "dispatch_start_ts": {}}
+EOF
+# A HANDOFF, not a .return-meta.json: the off-schema catch-all lives INSIDE the have_outcome=true
+# branch, and only a present/fresh/correctly-seq'd handoff gets there. An unrecognized status in
+# .return-meta.json is rejected by orchestrate-recover-outcome.sh's own vocabulary check, leaving
+# have_outcome=false -- a different path that never sets offschema_dispatch_status at all, so a
+# .return-meta.json fixture would silently NOT exercise this case. Shape mirrors the halt
+# invariant above, minus its --loop-guard-file (failed_tasks exists only on the multi-task engine).
+cat > "$WORKDIR/specs/722_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "garbage-not-in-vocabulary", "dispatch_seq": 1, "user_decision": {"question": "Route A or route B?", "options": ["A", "B"]}}
+EOF
+run_sut specs/722_candidate --session sess_722 --phase implement --task-type general \
+  --agent general-implementation-agent --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 722
+
+ask_mt_722="$WORKDIR/specs/.orchestration/.orchestrator-multi-state-sess_722.json"
+# Guard the fixture itself: if this stops reaching the off-schema arm, the charge assertion below
+# would pass vacuously for the wrong reason.
+if [ "$(jqf '.halt')" = "true" ]; then
+  common_test_pass "regression (ask_user charge): a user_decision does not suppress halt on an off-schema dispatch"
+else
+  common_test_fail "regression (ask_user charge): fixture no longer reaches the off-schema arm (expected halt=true), got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+if jq -e '(.failed_tasks // []) | index(722)' "$ask_mt_722" >/dev/null 2>&1; then
+  common_test_pass "regression (ask_user charge): an OFF-SCHEMA dispatch is charged even with a user_decision riding along"
+else
+  common_test_fail "regression (ask_user charge): a user_decision suppressed an off-schema charge: $(jq -c '.failed_tasks' "$ask_mt_722")"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Invariant: the stray-handoff sweep (Phase 7 addition, absorbed from the single-task-only
 # orchestrate-stage5-gates.sh) fires for BOTH engines -- exercised here via the multi-task path
 # (no --loop-guard-file), since the single-task path already had this coverage historically.

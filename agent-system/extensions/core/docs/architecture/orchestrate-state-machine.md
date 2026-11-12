@@ -830,6 +830,25 @@ is the same defer-not-exclude gate `file_scope_collision` already uses.
 
 If a predecessor is `failed`, the dependent task is immediately moved to `failed_tasks` with status `blocked`.
 
+**What may be charged to `failed_tasks`, and by whom.** Because the rule above propagates a
+`failed_tasks` entry to every dependent, a spurious entry is not a local inaccuracy — it kills a
+whole dependency subtree for the rest of the invocation. Two constraints follow, and both are
+load-bearing:
+
+- **A pending user question is not a failure.** When a dispatch returns a `user_decision` payload,
+  the verdict is `ask_user` and `orchestrate-cycle-postflight.sh` does NOT charge the task, even
+  though the underlying `dispatch_status` may be `failed` or `blocked`. The reason is asymmetry of
+  retraction: Move 4 relays the question and records the answer, but no step on that path ever
+  removes a `failed_tasks` entry, so charging at dispatch time would make *answering* a blocking
+  question the act that kills the task which asked it. An OFF-SCHEMA `dispatch_status` is exempt
+  from this exemption and stays charged — `halt` means the outcome cannot be trusted at all, which
+  is a protocol violation rather than a resumable question.
+- **A never-answered question is still charged, one cycle later and by a different actor.** If the
+  question goes unanswered (a non-interactive run, a declined relay, an invocation that ends), the
+  next cycle's `orchestrate-triage-classify.sh` classifies the still-blocked task `needs_human` and
+  `orchestrate-cycle-plan.sh` charges it there. Postflight is therefore not the safety net for this
+  case, and declining to charge at dispatch time forfeits nothing.
+
 If a predecessor is still in-progress (e.g., `researched`, `planned`), the dependent task waits until the next cycle when the predecessor reaches terminal state.
 
 ### Forced Phases on a Terminal or Archived Task
