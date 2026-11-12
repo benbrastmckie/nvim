@@ -22,7 +22,7 @@ Core is not a domain extension and is never loaded via the extension picker. It 
 
 ## Commands
 
-All 18 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (skill/agent) -> GATE OUT (postflight) -> COMMIT. (`/please` is the one exception: it is a direct-execution, user-only confirmation surface with no GATE IN/OUT lifecycle of its own — see its own doc.)
+All 19 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (skill/agent) -> GATE OUT (postflight) -> COMMIT. (`/please` is the one exception: it is a direct-execution, user-only confirmation surface with no GATE IN/OUT lifecycle of its own — see its own doc.)
 
 | Command | Usage | Description |
 |---------|-------|-------------|
@@ -39,6 +39,7 @@ All 18 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE 
 | `/fix-it` | `/fix-it [PATH...]` | Scan for FIX:/NOTE:/TODO:/QUESTION: tags |
 | `/refresh` | `/refresh` | Clean orphaned processes and old files |
 | `/spawn` | `/spawn N` | Spawn new tasks to unblock a blocked task |
+| `/roadmap` | `/roadmap [instruction]` | Maintain the roadmap_batches/roadmap_notes entries specs/ROADMAP.md renders from |
 | `/telemetry` | `/telemetry --meta\|--review "<question>"\|--dream` | Cross-repo improvement proposals, ad hoc telemetry inquiry, and prompt-history theme surfacing |
 | `/merge` | `/merge` | Create pull/merge request for current branch |
 | `/project-overview` | `/project-overview` | Interactive repo scan and project-overview.md generation |

@@ -99,6 +99,25 @@ commit -- do not force an empty one -- and say so plainly in the returned summar
 
 ---
 
+## MUST NOT (Postflight Boundary)
+
+After `roadmap-agent` returns, this skill MUST NOT:
+
+1. **Perform the roadmap-maintenance judgment itself** - deciding batch membership, order,
+   descriptions, rationale, or missing edges is `roadmap-agent`'s job, not this skill's.
+2. **Write `specs/state.json`'s `roadmap_batches`/`roadmap_notes` entries** - the agent already
+   wrote them through `state-write.sh` before returning.
+3. **Invoke `roadmap-integration.sh --regenerate`** - the agent already invoked it as its own
+   final step; this skill only verifies the result (Stage 3), never re-renders it.
+4. **Modify any file outside `specs/state.json` and `specs/ROADMAP.md`** - both already live
+   under `specs/`, and no third file is ever in scope for `/roadmap`.
+
+The postflight phase is LIMITED TO:
+- Running `validate-state.sh` and a `--regenerate --dry-run` sanity check (Stage 3)
+- Reviewing `git status`/`git diff --staged` for the two in-scope files
+- A single scoped `git-commit-scoped.sh` commit of `specs/state.json`/`specs/ROADMAP.md` (or
+  skipping it, reported, when nothing changed)
+
 ## Output
 
 Return the agent's own summary text directly (what changed and why), followed by this skill's
