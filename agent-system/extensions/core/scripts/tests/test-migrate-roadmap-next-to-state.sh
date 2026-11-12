@@ -7,7 +7,7 @@
 # without --force refuses.
 #
 # Structural model: test-roadmap-generation.sh (build_scratch constructing a mock deployed
-# scripts/ tree, source-store-first resolution via common_test_resolve_subject).
+# scripts/ tree, source-store-first subject resolution -- see the declared MIGRATE_SRC below).
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error.
 
