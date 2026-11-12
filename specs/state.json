@@ -5757,7 +5757,11 @@
       "topic": "core-agent-system",
       "dependencies": [],
       "file_scope": [
-        "agent-system/extensions/core/docs/architecture/"
+        "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
+        "agent-system/extensions/core/docs/architecture/extension-system.md",
+        "agent-system/extensions/core/docs/architecture/handoff-schema.md",
+        "agent-system/extensions/core/docs/architecture/orchestrate-cycle-postflight.md",
+        "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
       ],
       "artifacts": [],
       "created": "2026-11-04T06:55:48Z",
@@ -52615,12 +52619,12 @@
     {
       "project_number": 531,
       "project_name": "file_scope_declaration_hygiene_remediation",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "**DECLARATION-HYGIENE REMEDIATION FOR THE ADMISSION GATE.** Two defects make the overlap gate unable to see collisions. (1) Task 177 declares `FormalSystem/Metalogic/Decidability/` as a WHOLE-DIRECTORY `file_scope` entry, overlapping every non-terminal task that touches that subtree — narrow it to the files it actually touches. (2) Of the non-terminal tasks, a large majority (28 of 52 at the time this was detected) declare NO `file_scope` at all — backfill them. `bash .claude/scripts/validate-state.sh specs/state.json` already enumerates both defects as Check 8 (coarse whole-directory-root declarations) and Check 9 (duplicates); the detector exists, the remediation does not. ALSO IN SCOPE if not landed first elsewhere: the recurring mechanism by which `/task --abandon` and `/todo` archival un-track a `WIRED_REPO` gate target (`.claude/context/patterns/task-abandon-mode.md:58-65`), whose detector is a one-line `git ls-files --error-unmatch` beside the `-f` test at `scripts/check-evidence-probes.sh:717-720`. Read the live validator output rather than trusting the counts above; they are a snapshot, not a contract.\n\n=== MIGRATION PROVENANCE (appended on migration; every line above this marker is the record verbatim) ===\nMigrated from the BimodalLogic repository, where this record was #751 (project_name `file_scope_declaration_hygiene_remediation`), on 2026-11-08, under the ruling that all meta records live in this repository, following\ncontext/patterns/cross-repo-task-migration.md.\n\nCITATION RESOLVABILITY (procedure step 3): no iss_* ids cited; nothing to re-point.\nFILE SCOPE (procedure step 6, DERIVED): this record declared none, or declared only deployed paths. The scope\nabove was derived from the edit targets its own text names, and each path was verified to exist in this\nrepository before being written.\n",
       "topic": "repo-hygiene",
       "created": "2026-10-09T21:24:21Z",
-      "last_updated": "2026-11-12T06:13:12Z",
+      "last_updated": "2026-11-12T06:51:58Z",
       "file_scope": [
         "agent-system/extensions/core/context/patterns/task-abandon-mode.md",
         "agent-system/extensions/core/scripts/validate-state.sh",
@@ -96826,7 +96830,7 @@
       "project_number": 597,
       "project_name": "coupled_generated_surfaces_in_plan_authoring",
       "title": "Make the coupled-generated-surface and longFile-baseline plan-authoring conditions reach the plan author, and correct the longFile acceptance window",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "agent-system",
       "effort": "medium",
@@ -96859,7 +96863,7 @@
         }
       ],
       "created": "2026-11-10T12:10:22Z",
-      "last_updated": "2026-11-12T06:11:06Z",
+      "last_updated": "2026-11-12T06:51:09Z",
       "parent_task": null,
       "priority": "medium",
       "audit_verdict": {
@@ -102983,7 +102987,7 @@
     {
       "project_number": 601,
       "project_name": "root_walkup_class_closure_lint",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.\n\nClose the class of invocation-path-dependent repo-root resolution in test suites with a durable lint, instead of re-sweeping it by hand each time an instance surfaces.\n\nTHE SHAPE TO FORBID: a test suite computing its repo root as an unconditional fixed-depth parent walk, e.g. \"$CORE_DIR/../../../..\" or \"$CORE_DIR/../..\". Measured: four levels up from agent-system/extensions/core/scripts/tests yields the repository root, but four levels up from the deployed .claude/scripts/tests yields /home/benjamin -- outside the repository entirely. A suite computed that way passes from one invocation path and fails from the other, and the resulting wrong root can also MASK a real failure behind a CANNOT_COMPUTE sentinel rather than surfacing it.\n\nTHE CANONICAL REPLACEMENT ALREADY EXISTS: common_test_repo_root (git-first strategy) in scripts/lib/common.sh, already used by roughly 80 core suites, plus common_test_ext_root for the extensions-root case. The remedy that found this class needed no new helper -- only migration. So the lint enforces use of existing, proven machinery; it invents nothing.\n\nWHY A LINT RATHER THAN ANOTHER SWEEP: the remedy named five suites. A bounded measure-first sweep phase found two MORE carrying the identical shape that nobody had named (test-verify-deploy-gate-selection-crash-net.sh at four levels, test-gate-cache-equivalence.sh at three), and one of the five turned out to be a production defect in orchestrate-build-aux-dispatch.sh rather than a test-only one. The class is demonstrably wider than any hand-assembled list, which is the standing argument for mechanical closure. That remedy declared this lint an explicit Non-Goal and follow-up candidate rather than absorbing it.\n\nSCOPE NOTES / OPEN QUESTIONS FOR THE IMPLEMENTER:\n- Discriminate the genuinely-passes-both case before failing it. The sweep confirmed one candidate (test-verify-deploy-gate-selection-crash-net.sh) legitimately passes from both paths despite carrying the shape, and correctly received no edit. A lint that fails it would be a false positive.\n- Decide whether this is a new standalone lint script or an assertion inside an existing one, and whether it registers as its own gate or folds into an existing gate. gate-registry.data is declared in file_scope for that reason; note task 584 also declares that file, so coordinate or serialize rather than colliding.\n- A zero-violation result after the lint lands is a valid completion: the remedy already migrated the known instances, so this task's deliverable is the durable guard, not a fresh batch of fixes.\n\nCHANNEL: /orchestrate conclusion channel (c), follow-up task, session sess_1794381614_02261f.\nCITATION: {task 589, iss_1794382098954_Zl7lZg}, class \"scope boundary\".",
       "effort": "medium",
@@ -103005,7 +103009,7 @@
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
       "created": "2026-11-11T12:34:20Z",
-      "last_updated": "2026-11-12T06:12:29Z",
+      "last_updated": "2026-11-12T06:51:33Z",
       "artifacts": [
         {
           "path": "specs/601_root_walkup_class_closure_lint/reports/01_root-walkup-closure-lint.md",

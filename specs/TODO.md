@@ -68,7 +68,7 @@ next_project_number: 610
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
 591 [RESEARCHED] — Decide the fate of the errors.json triage surface
-601 [PLANNED] — Add a lint closing the repo-root walk-up defect class
+601 [IMPLEMENTING] — Add a lint closing the repo-root walk-up defect class
 603 [PLANNED] — Make ROADMAP.md a generated artifact rendered from state.json
   └─ 602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
@@ -171,7 +171,7 @@ next_project_number: 610
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
 562 [NOT STARTED] — conclusion stage drops null-resolution issue-log entries
 572 [NOT STARTED] — Make the full verification tier honorable under batch concurrency
-597 [PLANNED] — Make the coupled-generated-surface and longFile-baseline...
+597 [IMPLEMENTING] — Make the coupled-generated-surface and longFile-baseline...
   └─ 598 [NOT STARTED] — Provide a sanctioned in-dispatch remedy for a mechanically... (see above)
   └─ 599 [NOT STARTED] — Give the batch-gate-deferral directive a narrowing form that...
     └─ 592 [NOT STARTED] — Re-verify or timestamp a task recorded starting position at...
@@ -184,7 +184,7 @@ next_project_number: 610
 
 ### Repo Hygiene
 
-531 [PLANNED] — Narrow whole-directory file\_scope declarations so the...
+531 [IMPLEMENTING] — Narrow whole-directory file\_scope declarations so the...
 
 ### Decidability
 
@@ -819,7 +819,7 @@ to exclude them. Decide at dispatch time, not here.
 
 ### 601. Add a lint closing the repo-root walk-up defect class
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -1034,7 +1034,7 @@ record's subject," and that ruling stands independently of its status.
 
 ### 597. Make the coupled-generated-surface and longFile-baseline plan-authoring conditions reach the plan author, and correct the longFile acceptance window
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -5765,7 +5765,7 @@ surface, and that rationale does not survive into this repository.
 ---
 
 ### 531. Narrow whole-directory file_scope declarations so the admission overlap gate can see collisions
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: repo-hygiene
 - **Dependencies**: None
