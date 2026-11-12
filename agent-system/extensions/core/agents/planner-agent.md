@@ -295,6 +295,30 @@ Apply task-breakdown.md guidelines:
       `context/formats/plan-format.md`'s "Correction-target existence obligation" subsection for
       the full mechanism.
 
+13. **Surface This Domain's Plan-Authoring Gotchas Before Decomposing**
+    - Before decomposing phases, query the deployed context index (`.claude/context/index.json`)
+      for a `project/**` entry whose `load_when.task_types[]` contains this dispatch's own
+      `task_type` AND whose `keywords[]` (or `topics[]`) name `plan-authoring`. `Read` every hit
+      before decomposing phases, and treat each enumerated condition in such a file as an
+      additional checklist item for this plan. Zero hits is the normal case for most task types
+      and is not an error — most task types have no such file.
+    - **MUST NOT**: do not resolve this by adding `planner-agent` to a domain entry's
+      `load_when.agents[]`. The adaptive query ORs the agent, task-type, and command dimensions,
+      so a cross-domain shared agent named in a domain entry's `agents[]` loads that domain's
+      content into every other domain's plan dispatch, not only the intended one. See
+      `context/patterns/context-discovery.md`'s "Cross-Domain-Shared-Agent Hazard in `agents[]`"
+      subsection for the full hazard.
+
+14. **Declare a Coupled Generated Surface in the Phase That Moves Its Input**
+    - When a phase's edits move a quantity that some generated artifact derives, declare that
+      generated artifact's own path as an entry in the SAME phase's `**Files to modify**:` block,
+      and schedule its regeneration step in that same phase when the check that detects the
+      drift is commit-blocking.
+    - **MUST NOT**: do not defer a commit-blocking surface's regeneration to a later
+      reconciliation phase, and do not omit the declaration for a non-blocking one — the
+      declaration is owed either way. See `context/formats/plan-format.md`'s
+      "Coupled-generated-surface declaration obligation" subsection for the full mechanism.
+
 ### Stage 5: Create Plan File
 
 Create directory if needed:
@@ -643,3 +667,8 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
     message as satisfying this contract's deliverable requirement -- it does not, however
     complete or well-organized the message is. The file is the deliverable; the message is not
     a substitute for it.
+14. Write a phase whose edits move a quantity some generated artifact derives without declaring
+    that artifact's path in the same phase's `Files to modify` block, or defer a commit-blocking
+    surface's regeneration to a later reconciliation phase -- see Stage 4 item 14 and
+    `context/formats/plan-format.md`'s "Coupled-generated-surface declaration obligation"
+    subsection.

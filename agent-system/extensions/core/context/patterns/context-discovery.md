@@ -296,6 +296,29 @@ informational only, never silently folded into "legitimate"). See that script's 
 command roster, and bucket definitions -- this document states the authoring policy those buckets
 exist to enforce, not a second copy of the criterion itself.
 
+## Cross-Domain-Shared-Agent Hazard in `agents[]`
+
+A domain-specific `project/**` entry must NOT add a cross-domain shared agent —
+`planner-agent`, `general-implementation-agent`, `general-research-agent` — to its own
+`load_when.agents[]`. The adaptive query ORs the agent, task-type, and command dimensions (see
+"Hook-Shape Policy" above), so a single shared agent named in one domain entry's `agents[]` is,
+on its own, sufficient to load that domain's content into EVERY dispatch of that agent,
+regardless of the dispatch's own `task_type` — a `lean4` entry naming `planner-agent` in
+`agents[]` would load lean content into a `meta` or `nix` plan dispatch just as readily as into a
+`lean4` one.
+
+The sanctioned alternative is a `task_type`-gated pointer authored INSIDE the shared agent's own
+file, keyed on the dispatch's own `task_type` rather than on a hard-coded domain name — never a
+reach hook on the index entry. This is why reaching a domain's plan-authoring gotchas from a
+shared agent's dispatch is a lookup the shared agent performs itself, not an `agents[]` edit on
+the domain's context entry.
+
+Domain-EXCLUSIVE agents (`lean-research-agent`, `lean-implementation-agent`, and their
+per-domain counterparts) tolerate the same OR semantics harmlessly: they never run for a
+non-domain task in the first place, so naming one in a domain entry's `agents[]` adds no
+cross-domain leak. The hazard is specific to a SHARED agent appearing in a domain-specific
+entry's `agents[]`, not to the OR semantics themselves.
+
 ## Validation
 
 ### Validate Index with Script

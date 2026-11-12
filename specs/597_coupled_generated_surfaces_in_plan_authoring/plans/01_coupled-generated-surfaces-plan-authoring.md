@@ -297,7 +297,7 @@ and the repo-agnostic rule are navigable from each other.
 
 ---
 
-### Phase 3: Reach Mechanism in planner-agent.md, and the Named agents[] Hazard [NOT STARTED]
+### Phase 3: Reach Mechanism in planner-agent.md, and the Named agents[] Hazard [COMPLETED]
 
 **Goal**: A `lean4` (or any future domain's) plan dispatch surfaces that domain's
 plan-authoring gotchas file before phase decomposition, via a `task_type`-gated lookup the plan
@@ -305,10 +305,11 @@ agent itself performs; and the reason the index-entries alternative was rejected
 where the next author will look for it.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/agents/planner-agent.md`'s Stage 4 checklist (items
+- [x] Re-read `agent-system/extensions/core/agents/planner-agent.md`'s Stage 4 checklist (items
       1-12) and `agent-system/extensions/core/context/patterns/context-discovery.md`'s
       "Hook-Shape Policy" and "Check Command Scope" sections immediately before editing.
-- [ ] Add Stage 4 checklist item 13, `**Surface This Domain's Plan-Authoring Gotchas Before
+      *(completed)*
+- [x] Add Stage 4 checklist item 13, `**Surface This Domain's Plan-Authoring Gotchas Before
       Decomposing**`, written GENERICALLY — keyed on the dispatch's own `task_type`, never on the
       literal string `lean4`: query the deployed context index
       (`.claude/context/index.json`) for a `project/**` entry whose `load_when.task_types[]`
@@ -316,22 +317,24 @@ where the next author will look for it.
       `plan-authoring`; `Read` every hit before decomposing phases; treat each enumerated
       condition in such a file as an additional checklist item for this plan. State the fallback
       explicitly: zero hits is the normal case for most task types and is not an error.
-- [ ] Give item 13 a `**MUST NOT**` clause in the same shape as items 9-12: do not resolve this
+      *(completed)*
+- [x] Give item 13 a `**MUST NOT**` clause in the same shape as items 9-12: do not resolve this
       by adding `planner-agent` to a domain entry's `load_when.agents[]` — the adaptive query ORs
       the agent, task-type and command dimensions, so a cross-domain shared agent in `agents[]`
       loads that domain's content into every other domain's plan dispatch. Point at
-      `context/patterns/context-discovery.md` for the hazard.
-- [ ] Add Stage 4 checklist item 14, `**Declare a Coupled Generated Surface in the Phase That
+      `context/patterns/context-discovery.md` for the hazard. *(completed)*
+- [x] Add Stage 4 checklist item 14, `**Declare a Coupled Generated Surface in the Phase That
       Moves Its Input**`, mirroring items 9-12's shape: when a phase's edits move a quantity a
       generated artifact derives, declare that artifact's path in the same phase's `Files to
       modify`, and schedule its regeneration in that same phase when the detecting check is
       commit-blocking. `**MUST NOT**`: do not defer a commit-blocking surface's regeneration to a
       later reconciliation phase, and do not omit the declaration for a non-blocking one. Point
       at `context/formats/plan-format.md`'s "Coupled-generated-surface declaration obligation".
-- [ ] Add a matching `**MUST NOT**` entry to the agent's `## Critical Requirements` list for the
+      *(completed)*
+- [x] Add a matching `**MUST NOT**` entry to the agent's `## Critical Requirements` list for the
       coupled-surface omission, consistent with how items 8-13 of that list already mirror
-      Stage 4's obligations.
-- [ ] Add a short subsection to `context-discovery.md`, immediately after "Hook-Shape Policy:
+      Stage 4's obligations. *(completed: added as MUST NOT item 14)*
+- [x] Add a short subsection to `context-discovery.md`, immediately after "Hook-Shape Policy:
       `agents[]` vs. `commands[]` vs. Both" (its nearest sibling in subject matter), naming the
       cross-domain-shared-agent hazard for the `agents[]` dimension: a domain-specific
       `project/**` entry must not add a cross-domain shared agent (`planner-agent`,
@@ -340,12 +343,15 @@ where the next author will look for it.
       dispatch of that agent regardless of `task_type`; the sanctioned alternative is a
       `task_type`-gated pointer inside the shared agent's own file. Note why
       domain-exclusive agents (`lean-research-agent`, `lean-implementation-agent`) tolerate the
-      OR harmlessly — they never run for a non-domain task.
-- [ ] Confirm `lean/index-entries.json` needs NO edit: its
+      OR harmlessly — they never run for a non-domain task. *(completed)*
+- [x] Confirm `lean/index-entries.json` needs NO edit: its
       `project/lean4/patterns/plan-authoring-gate-collisions.md` entry already carries
       `task_types: ["lean4"]` and the `plan-authoring` keyword the new lookup keys on. Record
-      that confirmation rather than editing the file.
-- [ ] Verify the added prose cites no task number and carries no draft-lineage/version language.
+      that confirmation rather than editing the file. *(completed: confirmed via jq query; no
+      edit made)*
+- [x] Verify the added prose cites no task number and carries no draft-lineage/version language.
+      *(completed: check-task-references.sh and check-record-versioning.sh both report zero new
+      findings)*
 
 **Timing**: 1 hour 15 minutes
 
