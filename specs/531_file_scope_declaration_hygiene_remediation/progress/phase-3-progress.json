@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Correct the two citations to a non-existent evidence-probe script",
+  "started_at": "2026-11-12T07:06:00Z",
+  "last_updated": "2026-11-12T07:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Correct task-abandon-mode.md citation and matching index-entries.json line_count", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-abandon-mode.md", "agent-system/extensions/core/index-entries.json"]},
+    {"id": 2, "description": "Correct skill-todo/SKILL.md citation", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.scope",
+      "description": "Testing & Validation criterion 'grep -rn check-evidence-probes agent-system/ returns no hits'",
+      "type": "altered",
+      "reason": "Three further pre-existing occurrences of the literal string exist outside this phase's own Tasks/Scope Hypothesis (which scoped narrowly to the two WIRED_REPO citations): two domain files (formal/lean) asserting the script backs a substantive logic claim, and one manifest.json external_scripts dependency declaration. Recorded as a follow-up recommendation (issue log) rather than executed -- fixing the domain claims requires domain judgment, not mechanical correction, and is outside the plan's declared Non-Goals boundary.",
+      "annotation": "*(deviation: altered -- see issue log and summary follow-up recommendation)*"
+    }
+  ]
+}

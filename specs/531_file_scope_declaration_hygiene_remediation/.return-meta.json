@@ -4,7 +4,14 @@
     "session_id": "sess_1794459760_979d1d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
   },
-  "dispatch_seq": 19
+  "dispatch_seq": 19,
+  "proposed_file_scope": [
+    "agent-system/extensions/core/index-entries.json"
+  ]
 }

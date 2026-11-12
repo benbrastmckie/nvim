@@ -237,20 +237,20 @@ re-running the first two tasks above before writing.
 
 ---
 
-### Phase 3: Correct the two citations to a non-existent evidence-probe script [NOT STARTED]
+### Phase 3: Correct the two citations to a non-existent evidence-probe script [COMPLETED]
 
 **Goal**: Neither citing file claims a mechanical `WIRED_REPO` detector exists in this repository,
 while both still state the underlying hazard.
 
 **Tasks**:
 
-- [ ] Re-confirm the citation sites: `grep -rn "WIRED_REPO" agent-system/` must return exactly the two source-store occurrences (`context/patterns/task-abandon-mode.md` and `skills/skill-todo/SKILL.md` under `agent-system/extensions/core/`). If either has already been corrected by another task, skip it and say so in the commit message; if both are already corrected, close this phase as a no-op with that finding recorded.
-- [ ] Re-confirm the script is still absent: `test -e .claude/scripts/check-evidence-probes.sh` fails, and `git log --all --oneline -- '**/check-evidence-probes.sh'` is empty. If it has since appeared, stop and report — the dispatch's original one-line-addition scope becomes live again and this phase's premise is void.
-- [ ] Re-read `agent-system/extensions/core/context/patterns/task-abandon-mode.md` around the archive-`mv` note (line 71 as measured) and rewrite the clause so it states the real hazard — archiving into the gitignored `specs/archive/` removes every file under the directory from version control, so a guard or probe citing a file by its task-directory path breaks, and such a file must be promoted into `specs/evidence/` before archival — without asserting that any script enforces it. Note plainly that no mechanical detector exists in this repository and the discipline is manual.
-- [ ] Re-read `agent-system/extensions/core/skills/skill-todo/SKILL.md` around line 488 and apply the same correction to the `#` comment there, keeping it a comment inside its fenced block.
-- [ ] Read the resulting diff hunk by hunk and confirm every change lies inside markdown prose or a `#` comment, with no edit crossing into executable shell.
-- [ ] Run the doc and task-reference lints over the source store: `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`.
-- [ ] Commit: `task 531: correct citations to a non-existent evidence-probe script`, staging only the two source-store markdown files.
+- [x] Re-confirm the citation sites: `grep -rn "WIRED_REPO" agent-system/` must return exactly the two source-store occurrences (`context/patterns/task-abandon-mode.md` and `skills/skill-todo/SKILL.md` under `agent-system/extensions/core/`). If either has already been corrected by another task, skip it and say so in the commit message; if both are already corrected, close this phase as a no-op with that finding recorded. *(completed: exactly 2 live hits, neither pre-corrected)*
+- [x] Re-confirm the script is still absent: `test -e .claude/scripts/check-evidence-probes.sh` fails, and `git log --all --oneline -- '**/check-evidence-probes.sh'` is empty. If it has since appeared, stop and report — the dispatch's original one-line-addition scope becomes live again and this phase's premise is void. *(completed: confirmed absent)*
+- [x] Re-read `agent-system/extensions/core/context/patterns/task-abandon-mode.md` around the archive-`mv` note (line 71 as measured) and rewrite the clause so it states the real hazard — archiving into the gitignored `specs/archive/` removes every file under the directory from version control, so a guard or probe citing a file by its task-directory path breaks, and such a file must be promoted into `specs/evidence/` before archival — without asserting that any script enforces it. Note plainly that no mechanical detector exists in this repository and the discipline is manual. *(completed)*
+- [x] Re-read `agent-system/extensions/core/skills/skill-todo/SKILL.md` around line 488 and apply the same correction to the `#` comment there, keeping it a comment inside its fenced block. *(completed)*
+- [x] Read the resulting diff hunk by hunk and confirm every change lies inside markdown prose or a `#` comment, with no edit crossing into executable shell. *(completed)*
+- [x] Run the doc and task-reference lints over the source store: `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`. *(completed: own index-entries.json line_count entry for task-abandon-mode.md corrected (76->77); one remaining doc-lint FAIL for formats/plan-format.md's line_count is attributable to sibling task 597's landed commit 98da0bd50, confirmed via git log, not this task's regression)*
+- [x] Commit: `task 531: correct citations to a non-existent evidence-probe script`, staging only the two source-store markdown files. *(completed: commit 211c042bb; also carried a scoped single-hunk fix to index-entries.json's own task-abandon-mode.md line_count entry via git apply --cached, since index-entries.json had pre-existing unrelated uncommitted hunks from other in-flight work that were deliberately left unstaged and untouched)*
 
 **Timing**: 0.5 hours
 
