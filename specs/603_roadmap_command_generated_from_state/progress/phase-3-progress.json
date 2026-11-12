@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Render ## Next Wholly from roadmap_batches and roadmap_notes",
+  "started_at": "2026-11-12T00:35:00Z",
+  "last_updated": "2026-11-12T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add render_next() and covered_ids_from_batches()", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 2, "description": "Rewrite mode_regenerate_classic() and mode_regenerate_stage() to use render_next()", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 3, "description": "Extend test-roadmap-generation.sh with state-backed Next rendering fixtures", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "3.verification", "description": "run-all.sh --only test-roadmap-generation.sh,... resolves the deployed .claude/scripts/tests copy, which is stale (pre-Phase-7-redeploy) and reports 4 failures for assertions the source-store copy no longer carries", "type": "deferred", "reason": "test-roadmap-generation.sh's own RI_SRC resolution is source-store-first (the script under test is correctly picked up from the edit), but the TEST FILE itself, when invoked via the deployed path run-all.sh resolves by default, is the stale pre-edit deployed copy. Ran the source-store copy directly instead (bash agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh): 115 passed, 0 failed. The deployed-copy staleness is resolved by Phase 7's redeploy, consistent with Phase 2's identical deferral.", "annotation": "*(deviation: verified via source-store direct invocation; deployed-copy recheck deferred to phase 7)*"}
+  ],
+  "handoff_count": 0
+}

@@ -101,6 +101,9 @@ fi
 # --help and the argument-validation errors above already print their own message and exit
 # before this point, so they are deliberately out of scope (Decision 3). ─────────────────────
 MARKER_EMITTED=0
+# RUNS_COUNT -- for --regenerate (classic layout), the count of roadmap_batches entries in
+# $STATE_PATH (not a parse of rendered Run lines; ## Next is rendered wholly from state, see
+# render_next()). Other modes/layouts set it per their own documented meaning below.
 RUNS_COUNT=0
 PRUNED_COUNT=0
 RETAINED_COUNT=0
@@ -527,6 +530,94 @@ covered_ids_from() {
     'split("\n") | map(select(length > 0) | tonumber)' || true
 }
 
+# render_next -> emits the ## Next body (no section header) to stdout, wholly from
+# roadmap_batches/roadmap_notes in $STATE_PATH. No authored content is read back from the
+# existing file -- this is a rendering contract, not a parsing one (see roadmap-format.md's Next
+# Grammar). A batch all of whose task_ids members are now terminal is omitted entirely; a batch
+# with a mix of terminal and non-terminal members renders its still-live members only. Callers
+# append render_coverage_appendix's own output afterward.
+render_next() {
+  local batches_json notes_json
+  batches_json="$(jq -c '.roadmap_batches // []' "$STATE_PATH")"
+  notes_json="$(jq -c '.roadmap_notes // {}' "$STATE_PATH")"
+
+  local first_block=1
+
+  local preamble_count i p
+  preamble_count="$(jq -r '(.next_preamble // []) | length' <<<"$notes_json")"
+  for ((i = 0; i < preamble_count; i++)); do
+    p="$(jq -r --argjson i "$i" '.next_preamble[$i]' <<<"$notes_json")"
+    [[ "$first_block" -eq 1 ]] || echo
+    first_block=0
+    printf '%s\n' "$p"
+  done
+
+  local batch_count
+  batch_count="$(jq -r 'length' <<<"$batches_json")"
+  if [[ "$batch_count" -gt 0 ]]; then
+    [[ "$first_block" -eq 1 ]] || echo
+    first_block=0
+    echo '```'
+    for ((i = 0; i < batch_count; i++)); do
+      local entry live_ids_csv flags desc line
+      entry="$(jq -c --argjson i "$i" '.[$i]' <<<"$batches_json")"
+      live_ids_csv="$(jq -r --argjson active "$active_ids_json" \
+        '[(.task_ids // [])[] | select(. as $t | $active | index($t) != null)] | join(", ")' <<<"$entry")"
+      [[ -n "$live_ids_csv" ]] || continue
+      flags="$(jq -r '.flags // ""' <<<"$entry")"
+      desc="$(jq -r '.description // ""' <<<"$entry")"
+      line="/orchestrate ${live_ids_csv}"
+      [[ -n "$flags" ]] && line="${line} ${flags}"
+      [[ -n "$desc" ]] && line="${line}   # ${desc}"
+      printf '%s\n' "$line"
+    done
+    echo '```'
+  fi
+
+  local -a rationale_bullets=()
+  for ((i = 0; i < batch_count; i++)); do
+    local entry rationale
+    entry="$(jq -c --argjson i "$i" '.[$i]' <<<"$batches_json")"
+    rationale="$(jq -r '.rationale // ""' <<<"$entry")"
+    [[ -n "$rationale" ]] && rationale_bullets+=("$rationale")
+  done
+  if [[ "${#rationale_bullets[@]}" -gt 0 ]]; then
+    [[ "$first_block" -eq 1 ]] || echo
+    first_block=0
+    echo "Why this order:"
+    local r rline rfirst
+    for r in "${rationale_bullets[@]}"; do
+      rfirst=1
+      while IFS= read -r rline; do
+        if [[ "$rfirst" -eq 1 ]]; then
+          printf -- '- %s\n' "$rline"
+          rfirst=0
+        elif [[ -z "$rline" ]]; then
+          echo
+        else
+          printf '  %s\n' "$rline"
+        fi
+      done <<<"$r"
+    done
+  fi
+
+  local postamble_count
+  postamble_count="$(jq -r '(.next_postamble // []) | length' <<<"$notes_json")"
+  for ((i = 0; i < postamble_count; i++)); do
+    p="$(jq -r --argjson i "$i" '.next_postamble[$i]' <<<"$notes_json")"
+    [[ "$first_block" -eq 1 ]] || echo
+    first_block=0
+    printf '%s\n' "$p"
+  done
+}
+
+# covered_ids_from_batches -> JSON array of every task_ids member across every roadmap_batches
+# entry in $STATE_PATH, used by mode_regenerate_classic/stage to compute the coverage appendix's
+# "already covered" set directly from state rather than by re-parsing render_next()'s own output.
+covered_ids_from_batches() {
+  jq -c '[(.roadmap_batches // [])[].task_ids[]?] | unique' "$STATE_PATH"
+}
+
 # assemble_roadmap PREAMBLE GOAL GATE NEXT OPENWORK CHECKS DECISIONS RULES OBS -> the full file.
 assemble_roadmap() {
   cat <<'_RM_ASSEMBLE_EOF_'
@@ -898,12 +989,12 @@ mode_regenerate_stage() {
   done
 
   if [[ "$run_order_idx" -ge 0 ]]; then
-    local authored_run covered_ids_json new_coverage
-    authored_run="$(strip_coverage_appendix <<<"${RM_SECTION_BODIES[$run_order_idx]}")"
-    covered_ids_json="$(covered_ids_from "$authored_run")"
-    RUNS_COUNT="$(grep -cE '^/orchestrate ' <<<"$authored_run" || true)"
+    local covered_ids_json new_coverage rendered_run
+    covered_ids_json="$(covered_ids_from_batches)"
+    RUNS_COUNT="$(jq -r '(.roadmap_batches // []) | length' "$STATE_PATH")"
     new_coverage="$(render_coverage_appendix "$covered_ids_json")"
-    RM_SECTION_BODIES[$run_order_idx]="${authored_run}${new_coverage}"
+    rendered_run=$'\n'"$(render_next)"
+    RM_SECTION_BODIES[$run_order_idx]="${rendered_run}${new_coverage}"
   else
     RUNS_COUNT=0
   fi
@@ -923,10 +1014,9 @@ mode_regenerate_classic() {
   parse_retention "$RM_OPEN_WORK"
   RETAINED_COUNT=$(( ${#RETAIN_DESC[@]} + ${#RETAIN_ANNOT[@]} + ${#RETAIN_EXT[@]} ))
 
-  local authored_next covered_ids_json new_coverage new_open_work new_next new_content
-  authored_next="$(strip_coverage_appendix <<<"$RM_NEXT")"
-  covered_ids_json="$(covered_ids_from "$authored_next")"
-  RUNS_COUNT="$(grep -cE '^/orchestrate ' <<<"$authored_next" || true)"
+  local covered_ids_json new_coverage new_open_work new_next new_content
+  covered_ids_json="$(covered_ids_from_batches)"
+  RUNS_COUNT="$(jq -r '(.roadmap_batches // []) | length' "$STATE_PATH")"
 
   local open_work_trailer
   open_work_trailer="$(extract_open_work_trailer "$RM_OPEN_WORK")"
@@ -935,7 +1025,7 @@ mode_regenerate_classic() {
     new_open_work="${new_open_work}"$'\n'"${open_work_trailer}"
   fi
   new_coverage="$(render_coverage_appendix "$covered_ids_json")"
-  new_next="${authored_next}${new_coverage}"
+  new_next=$'\n'"$(render_next)""${new_coverage}"
 
   PRUNED_COUNT=0
 

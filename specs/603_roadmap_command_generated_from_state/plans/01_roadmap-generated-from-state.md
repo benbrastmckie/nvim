@@ -342,33 +342,33 @@ reports `pruned=0`); re-run both before writing the ruling subsection in case a 
 
 ---
 
-### Phase 3: Render `## Next` Wholly from `roadmap_batches` and `roadmap_notes` [NOT STARTED]
+### Phase 3: Render `## Next` Wholly from `roadmap_batches` and `roadmap_notes` [COMPLETED]
 
 **Goal**: `## Next` is built from state instead of being passed through verbatim, under both
 layouts, with the refusal gate and the coverage appendix unchanged.
 
 **Tasks**:
-- [ ] Add `render_next()` to `roadmap-integration.sh`: emit `roadmap_notes.next_preamble`
+- [x] Add `render_next()` to `roadmap-integration.sh`: emit `roadmap_notes.next_preamble`
       paragraphs, then a fence containing one `/orchestrate {ids} {flags}   # {description}` line
       per `roadmap_batches` entry **in array order**, then `Why this order:` and one bullet per
       entry carrying a non-empty `rationale` (a multi-paragraph rationale renders as one bullet
       with continuation lines indented two spaces), then `roadmap_notes.next_postamble`
       paragraphs.
-- [ ] Rewrite `mode_regenerate_classic()` to call `render_next()` instead of
+- [x] Rewrite `mode_regenerate_classic()` to call `render_next()` instead of
       `strip_coverage_appendix <<<"$RM_NEXT"`, keeping `render_coverage_appendix()`'s input
       contract intact by computing `covered_ids_json` from `roadmap_batches[].task_ids` directly
       rather than by grepping the rendered block.
-- [ ] Rewrite `mode_regenerate_stage()` to replace the run-order section's body with
+- [x] Rewrite `mode_regenerate_stage()` to replace the run-order section's body with
       `render_next()`'s output plus the fresh coverage appendix, locating that section with the
       existing `body_has_orchestrate_fence` predicate and leaving every other section
       byte-for-byte. Keep the existing stage round-trip test cases green.
-- [ ] Leave `detect_layout()`, `refuse_unrecognised_layout()`, `write_or_diff()`, and the stderr
+- [x] Leave `detect_layout()`, `refuse_unrecognised_layout()`, `write_or_diff()`, and the stderr
       marker's six count fields untouched. `runs=` now counts `roadmap_batches` entries; state
       that in the header comment rather than changing the field set.
-- [ ] Make a batch naming a now-terminal task render with that id dropped and the whole line
+- [x] Make a batch naming a now-terminal task render with that id dropped and the whole line
       omitted once every member is terminal — the behaviour `--prune` used to provide, now a
       property of rendering from live state rather than a separate pass.
-- [ ] Extend `tests/test-roadmap-generation.sh`: a fixture state with two batches renders both Run
+- [x] Extend `tests/test-roadmap-generation.sh`: a fixture state with two batches renders both Run
       lines in array order with their descriptions; an entry with no `rationale` emits no bullet;
       a batch whose members are all terminal is omitted; `next_preamble`/`next_postamble` render
       in the right positions; a second consecutive `--regenerate` is byte-identical; the

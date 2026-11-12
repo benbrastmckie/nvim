@@ -683,11 +683,25 @@ else
   common_test_fail "stage layout: --regenerate should succeed (got $stage_regen_rc; $(cat "$scratch6/stderr-stage-regen.txt"))"
 fi
 
+# The run-order section's authored fence content (comment lines, Run lines) is no longer
+# retention-parsed -- the whole section is rendered wholly from roadmap_batches/roadmap_notes
+# (render_next()), per this phase's inversion. write_state_fixture carries no roadmap_batches,
+# so the fence disappears entirely and only the coverage appendix remains; this is the intended
+# behavior, not a regression, so these authored fence lines must now be ABSENT.
 for needle in \
   '# Stage 1 -- first stage, fixture comment line' \
   '# Stage 2 -- second stage, fixture comment line' \
-  '/orchestrate 1   # fixture rationale for item 1' \
-  '/orchestrate 2,3' \
+  '/orchestrate 1   # fixture rationale for item 1'
+do
+  if grep -qF "$needle" "$scratch6/specs/ROADMAP.md"; then
+    common_test_fail "stage layout round-trip: authored fence content should NOT survive a wholly-generated run-order section: ${needle:0:40}..."
+  else
+    common_test_pass "stage layout round-trip: authored fence content correctly absent (wholly generated): ${needle:0:40}..."
+  fi
+done
+
+# Every other section (outside the run-order section) is still retained byte-for-byte.
+for needle in \
   'Stage 1 bullet prose, authored, must survive byte-identical.' \
   'Stage 2 bullet prose, authored, must survive byte-identical.' \
   'Fixture not-scoped prose, authored, must survive byte-identical.' \
@@ -1139,6 +1153,129 @@ if diff -q "$scratch11/specs/ROADMAP.idempotence-check.md" "$scratch11/specs/ROA
   common_test_pass "--regenerate file-level idempotence retained alongside the OUTCOME: line"
 else
   common_test_fail "--regenerate file-level idempotence broke alongside the OUTCOME: line"
+fi
+
+# ─── Case group 6 (Phase 3): render_next() renders ## Next wholly from roadmap_batches and
+# roadmap_notes -- two batches in array order with their descriptions, an entry with no
+# rationale emits no bullet, an all-terminal batch is omitted entirely, next_preamble/
+# next_postamble render in the right positions, and a second consecutive --regenerate is
+# byte-identical. Classic layout; write_roadmap_fixture's existing ## Next body content is
+# irrelevant here since the section is now rendered wholly from state, not retention-parsed. ──
+
+write_state_fixture_batches() {
+  local scratch="$1"
+  cat >"$scratch/specs/state.json" <<'EOF'
+{
+  "active_topics": ["alpha"],
+  "active_projects": [
+    {"project_number": 1, "status": "not_started", "title": "Item one description", "topic": "alpha", "dependencies": []},
+    {"project_number": 2, "status": "not_started", "title": "Item two description", "topic": "alpha", "dependencies": []},
+    {"project_number": 3, "status": "completed", "title": "Item three description (terminal)", "topic": "alpha", "dependencies": []},
+    {"project_number": 4, "status": "not_started", "title": "Item four description", "topic": "alpha", "dependencies": []}
+  ],
+  "roadmap_batches": [
+    {"task_ids": [1, 2], "description": "Batch one bounded description", "rationale": "Batch one rationale bullet text."},
+    {"task_ids": [3], "description": "Batch two, all-terminal, must be omitted"},
+    {"task_ids": [4], "description": "Batch three, no rationale, no bullet expected"}
+  ],
+  "roadmap_notes": {
+    "next_preamble": ["Preamble paragraph, authored, must render before the fence."],
+    "next_postamble": ["Postamble paragraph, authored, must render after the bullets."],
+    "open_work_trailer": []
+  }
+}
+EOF
+}
+
+scratch14="$(build_scratch)"
+write_state_fixture_batches "$scratch14"
+write_roadmap_fixture "$scratch14"
+run_ri "$scratch14" --regenerate >/dev/null 2>"$scratch14/stderr-batches-regen.txt"
+batches_regen_rc=$?
+
+if [[ "$batches_regen_rc" -eq 0 ]]; then
+  common_test_pass "roadmap_batches fixture: --regenerate succeeds"
+else
+  common_test_fail "roadmap_batches fixture: --regenerate should succeed (got $batches_regen_rc; $(cat "$scratch14/stderr-batches-regen.txt"))"
+fi
+
+if grep -qFx '/orchestrate 1, 2   # Batch one bounded description' "$scratch14/specs/ROADMAP.md"; then
+  common_test_pass "roadmap_batches fixture: batch one renders its Run line with task_ids joined and its description"
+else
+  common_test_fail "roadmap_batches fixture: MISSING batch one's Run line"
+fi
+
+if grep -qFx '/orchestrate 4   # Batch three, no rationale, no bullet expected' "$scratch14/specs/ROADMAP.md"; then
+  common_test_pass "roadmap_batches fixture: batch three (array position 2) renders in array order after batch one"
+else
+  common_test_fail "roadmap_batches fixture: MISSING batch three's Run line"
+fi
+
+if grep -qF 'Batch two, all-terminal, must be omitted' "$scratch14/specs/ROADMAP.md"; then
+  common_test_fail "roadmap_batches fixture: an all-terminal batch should be omitted entirely"
+else
+  common_test_pass "roadmap_batches fixture: an all-terminal batch (task_ids: [3]) is omitted entirely"
+fi
+
+if grep -qFx -- '- Batch one rationale bullet text.' "$scratch14/specs/ROADMAP.md"; then
+  common_test_pass "roadmap_batches fixture: batch one's rationale renders as a bullet"
+else
+  common_test_fail "roadmap_batches fixture: MISSING batch one's rationale bullet"
+fi
+
+next_body_batches="$(section_body "$scratch14/specs/ROADMAP.md" "## Next")"
+bullet_count_batches="$(grep -c '^- ' <<<"$next_body_batches")"
+if [[ "$bullet_count_batches" -eq 1 ]]; then
+  common_test_pass "roadmap_batches fixture: exactly one rationale bullet (batch three, with no rationale, emits none)"
+else
+  common_test_fail "roadmap_batches fixture: expected exactly 1 rationale bullet, found $bullet_count_batches"
+fi
+
+if grep -qF 'Preamble paragraph, authored, must render before the fence.' "$scratch14/specs/ROADMAP.md"; then
+  common_test_pass "roadmap_batches fixture: next_preamble paragraph renders"
+else
+  common_test_fail "roadmap_batches fixture: MISSING next_preamble paragraph"
+fi
+
+if grep -qF 'Postamble paragraph, authored, must render after the bullets.' "$scratch14/specs/ROADMAP.md"; then
+  common_test_pass "roadmap_batches fixture: next_postamble paragraph renders"
+else
+  common_test_fail "roadmap_batches fixture: MISSING next_postamble paragraph"
+fi
+
+preamble_line_batches="$(grep -n 'Preamble paragraph, authored' "$scratch14/specs/ROADMAP.md" | head -1 | cut -d: -f1)"
+fence_line_batches="$(grep -n '^/orchestrate 1, 2   # Batch one bounded description$' "$scratch14/specs/ROADMAP.md" | head -1 | cut -d: -f1)"
+postamble_line_batches="$(grep -n 'Postamble paragraph, authored' "$scratch14/specs/ROADMAP.md" | head -1 | cut -d: -f1)"
+bullet_line_batches="$(grep -n '^- Batch one rationale bullet text\.$' "$scratch14/specs/ROADMAP.md" | head -1 | cut -d: -f1)"
+if [[ -n "$preamble_line_batches" && -n "$fence_line_batches" && -n "$bullet_line_batches" && -n "$postamble_line_batches" \
+    && "$preamble_line_batches" -lt "$fence_line_batches" \
+    && "$fence_line_batches" -lt "$bullet_line_batches" \
+    && "$bullet_line_batches" -lt "$postamble_line_batches" ]]; then
+  common_test_pass "roadmap_batches fixture: preamble/fence/bullet/postamble render in the right relative order"
+else
+  common_test_fail "roadmap_batches fixture: preamble/fence/bullet/postamble out of order (preamble=$preamble_line_batches fence=$fence_line_batches bullet=$bullet_line_batches postamble=$postamble_line_batches)"
+fi
+
+cp "$scratch14/specs/ROADMAP.md" "$scratch14/specs/ROADMAP.batches-round1.md"
+run_ri "$scratch14" --regenerate >/dev/null 2>/dev/null
+if diff -q "$scratch14/specs/ROADMAP.batches-round1.md" "$scratch14/specs/ROADMAP.md" >/dev/null; then
+  common_test_pass "roadmap_batches fixture: a second consecutive --regenerate is byte-identical"
+else
+  common_test_fail "roadmap_batches fixture: a second consecutive --regenerate is NOT byte-identical"
+fi
+
+# The unrecognised-layout refusal still refuses even when the state carries roadmap_batches
+# (confirming the refusal gate runs before any state-derived render is attempted).
+write_unknown_vocabulary_fixture "$scratch14"
+sum_before_batches_unknown="$(sha256sum "$scratch14/specs/ROADMAP.md" | awk '{print $1}')"
+run_ri "$scratch14" --regenerate >/dev/null 2>"$scratch14/stderr-batches-unknown.txt"
+batches_unknown_rc=$?
+sum_after_batches_unknown="$(sha256sum "$scratch14/specs/ROADMAP.md" | awk '{print $1}')"
+if [[ "$batches_unknown_rc" -ne 0 && "$sum_before_batches_unknown" == "$sum_after_batches_unknown" ]] \
+    && grep -qE '^ERROR: --regenerate refuses to write' "$scratch14/stderr-batches-unknown.txt"; then
+  common_test_pass "roadmap_batches fixture: unrecognised-layout refusal still refuses (exit non-zero, no write) with roadmap_batches present"
+else
+  common_test_fail "roadmap_batches fixture: unrecognised-layout refusal did not hold with roadmap_batches present (rc=$batches_unknown_rc)"
 fi
 
 # ─── Live-tree isolation guard ─────────────────────────────────────────────────────────────
