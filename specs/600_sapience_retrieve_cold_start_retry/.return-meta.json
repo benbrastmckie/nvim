@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794459760_979d1d_600",
+  "dispatch_seq": 3,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/600_sapience_retrieve_cold_start_retry/reports/01_sapience-retrieve-cold-start-retry.md",
+      "summary": "Confirms the status-case collapse point in sapience-retrieve.sh, finds all 11 cited cold-start occurrences carry an identical retry_after:15 hint, recommends a single bounded retry with floor 1s/ceiling 20s/default 15s clamp, confirms orchestrate-build-dispatch.sh needs no change, and flags the test curl stub needs an additive two-response extension."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "The Sapience vault's cold-start 503 body (`{\"error\":\"your Sapience is starting, try again in a minute\",\"starting\":true,\"retry_after\":15,\"db_mb\":0}`) was measured identically across 11 occurrences spanning two independent sessions 4 hours apart -- retry_after is a constant 15s hint for this vault, not a shrinking countdown, so a single retry at that delay is well-grounded rather than an arbitrary guess.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/600_sapience_retrieve_cold_start_retry/reports/01_sapience-retrieve-cold-start-retry.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["sapience", "cold-start", "503", "retry_after", "memory-context"]
+    },
+    {
+      "content": "task-lock.sh establishes an env-overridable retry-constant convention (VAR=\"${VAR:-default}\", e.g. TASK_LOCK_RETRY_BUDGET_MS) as an alternative to a plain fixed constant for new retry/timeout tunables in this codebase -- a precedent to reuse when adding a new bounded-retry constant to a shell script that already has fixed constants of its own.",
+      "category": "PATTERN",
+      "source_artifact": "specs/600_sapience_retrieve_cold_start_retry/reports/01_sapience-retrieve-cold-start-retry.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["shell", "retry-constant", "env-override", "convention", "task-lock"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 600 to create implementation plan"
+}
