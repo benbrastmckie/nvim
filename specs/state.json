@@ -103055,6 +103055,11 @@
           "path": "specs/601_root_walkup_class_closure_lint/plans/01_root-walkup-closure-lint.md",
           "type": "plan",
           "summary": "5-phase plan (~5.75h, 4 waves) building lint-test-root-resolution.sh, migrating three live instances, and registering it as gate 29."
+        },
+        {
+          "path": "specs/601_root_walkup_class_closure_lint/summaries/01_root-walkup-closure-lint-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: all 5 phases completed, decisions, deviations, and verification results."
         }
       ],
       "audit_verdict": {
@@ -104554,7 +104559,8 @@
       },
       "title": "Add a lint closing the repo-root walk-up defect class",
       "session_id": "sess_1794459760_979d1d",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Closed the invocation-path-dependent repo-root/extensions-root parent-walk defect class with a durable, deploy-time-enforced lint (gate 29). Migrated the three known violating suites onto common_test_repo_root/common_test_ext_root, built lint-test-root-resolution.sh with a file-location-aware safe-depth boundary and two sanctioned guard shapes (generalized beyond the plan's literal prose after corpus dry runs surfaced real cross-extension false-positive risks), added its fixture suite and classification row, registered gate 29 and both new scripts in manifest.json, documented the discriminator rule, and redeployed. Full corpus scan: 0 violations across 195 files, both source-store and deployed copies."
     },
     {
       "project_number": 602,
