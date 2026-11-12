@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "PTY Harness",
+  "started_at": "2026-11-12T01:26:00Z",
+  "last_updated": "2026-11-12T01:26:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add argv handling: --separator and -- terminator", "status": "done", "files_touched": ["lua/neotex/plugins/ai/sapience/sf1_proxy.py"]},
+    {"id": 2, "description": "Implement child startup: pty.openpty, fork, setsid, TIOCSCTTY, execvp", "status": "done", "files_touched": ["lua/neotex/plugins/ai/sapience/sf1_proxy.py"]},
+    {"id": 3, "description": "Implement parent loop: raw mode stdin, select, forwarding, note_submit trigger", "status": "done", "files_touched": ["lua/neotex/plugins/ai/sapience/sf1_proxy.py"]},
+    {"id": 4, "description": "Propagate window size: TIOCGWINSZ/TIOCSWINSZ, SIGWINCH", "status": "done", "files_touched": ["lua/neotex/plugins/ai/sapience/sf1_proxy.py"]},
+    {"id": 5, "description": "Restore termios, waitpid, exit status passthrough", "status": "done", "files_touched": ["lua/neotex/plugins/ai/sapience/sf1_proxy.py"]},
+    {"id": 6, "description": "Implement degradation paths", "status": "done", "files_touched": ["lua/neotex/plugins/ai/sapience/sf1_proxy.py"]},
+    {"id": 7, "description": "Add stub-child pty smoke test", "status": "done", "files_touched": ["lua/neotex/plugins/ai/sapience/sf1_proxy_test.py"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "last_updated": "2026-11-12T01:55:00Z"
+}

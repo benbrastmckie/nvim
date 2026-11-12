@@ -80,7 +80,17 @@ exactly this reason). The failure mode for a vendor text change is therefore alw
 dividers", never a crash or a corrupted pane.
 """
 
+import errno
+import fcntl
+import os
+import pty
 import re
+import select
+import signal
+import struct
+import sys
+import termios
+import tty
 
 # ---------------------------------------------------------------------------
 # Marker constants (kept next to the class that uses them, not duplicated).
@@ -256,3 +266,272 @@ class SeparatorFilter:
                 out += b
 
         return bytes(out)
+
+
+# ---------------------------------------------------------------------------
+# PTY harness -- wraps SeparatorFilter around a real child process.
+#
+# Deliberately a pty, never a pipe: a shell pipe turns the child's stdout into
+# a non-tty, which disables both sf1's own color detection and GNU readline's
+# line editing. `pty.openpty()` + `setsid()` + `TIOCSCTTY` gives the child a
+# real controlling terminal instead.
+# ---------------------------------------------------------------------------
+
+_READ_CHUNK = 65536
+
+
+def _color_wanted():
+    """Mirrors sf1's own `color_wanted()` in `~/.sapience/sf1.py` exactly, so the proxy's
+    `rule` separator is colored (or not) consistently with sf1's own output."""
+    if os.environ.get("NO_COLOR") or os.environ.get("SF1_NO_COLOR") or "--no-color" in sys.argv:
+        return False
+    if os.environ.get("SF1_COLOR") == "1":
+        return True
+    return (
+        hasattr(sys.stdout, "isatty")
+        and sys.stdout.isatty()
+        and os.environ.get("TERM") != "dumb"
+    )
+
+
+def _winsize(fd):
+    """Read the terminal size of `fd` via `TIOCGWINSZ`. Returns `(rows, cols)`, falling back to
+    `(24, 80)` when `fd` is not a tty (e.g. redirected stdin) or the ioctl otherwise fails."""
+    try:
+        packed = fcntl.ioctl(fd, termios.TIOCGWINSZ, struct.pack("HHHH", 0, 0, 0, 0))
+        rows, cols, _, _ = struct.unpack("HHHH", packed)
+        if rows > 0 and cols > 0:
+            return rows, cols
+    except Exception:
+        pass
+    return 24, 80
+
+
+def parse_argv(argv):
+    """Parse `--separator {blank,rule,none}` (default `blank`) followed by a `--` terminator
+    and the child command. Everything after `--` is the child's own argv, untouched -- so sf1's
+    own `--project` is never consumed by this proxy."""
+    separator = "blank"
+    i = 0
+    n = len(argv)
+    while i < n:
+        a = argv[i]
+        if a == "--":
+            i += 1
+            break
+        if a == "--separator":
+            if i + 1 >= n:
+                raise SystemExit("sf1_proxy: --separator requires a value")
+            separator = argv[i + 1]
+            i += 2
+            continue
+        if a.startswith("--separator="):
+            separator = a.split("=", 1)[1]
+            i += 1
+            continue
+        raise SystemExit("sf1_proxy: unrecognized argument: %s" % a)
+    else:
+        # Reached end of argv without a `--` terminator at all.
+        i = n
+
+    child_argv = list(argv[i:])
+    if separator not in ("blank", "rule", "none"):
+        raise SystemExit(
+            "sf1_proxy: --separator must be one of blank, rule, none (got %r)" % separator
+        )
+    if not child_argv:
+        raise SystemExit("sf1_proxy: missing child command after `--`")
+    return separator, child_argv
+
+
+def _exec_child_in_place(child_argv):
+    """Degradation path: pty allocation or termios setup failed. `exec` the child directly in
+    the proxy's own process, in place of proxying it -- an unstyled but fully working session,
+    never a broken one."""
+    try:
+        os.execvp(child_argv[0], child_argv)
+    except FileNotFoundError:
+        sys.stderr.write("sf1_proxy: %s: command not found\n" % child_argv[0])
+        sys.exit(127)
+    except Exception as exc:  # pragma: no cover - defensive
+        sys.stderr.write("sf1_proxy: exec failed: %s\n" % exc)
+        sys.exit(126)
+
+
+def run_proxy(separator, child_argv):
+    """Run `child_argv` under a pty, filtering its merged stdout/stderr through a
+    `SeparatorFilter`, and return the exit code to propagate (`128 + signal` on a signal
+    death). Degrades to a direct in-place `exec` of the child -- unstyled, never broken -- on
+    any pty/termios setup failure."""
+    stdin_fd = sys.stdin.fileno() if hasattr(sys.stdin, "fileno") else 0
+    stdin_is_tty = os.isatty(stdin_fd)
+
+    try:
+        master_fd, slave_fd = pty.openpty()
+    except Exception:
+        _exec_child_in_place(child_argv)
+        return 126  # unreachable unless execvp itself failed oddly
+
+    saved_attrs = None
+    if stdin_is_tty:
+        try:
+            saved_attrs = termios.tcgetattr(stdin_fd)
+        except Exception:
+            saved_attrs = None
+
+    pid = os.fork()
+    if pid == 0:
+        # Child: new session, new controlling terminal, then exec.
+        os.close(master_fd)
+        try:
+            os.setsid()
+        except Exception:
+            pass
+        try:
+            fcntl.ioctl(slave_fd, termios.TIOCSCTTY, 0)
+        except Exception:
+            pass
+        os.dup2(slave_fd, 0)
+        os.dup2(slave_fd, 1)
+        os.dup2(slave_fd, 2)
+        if slave_fd > 2:
+            os.close(slave_fd)
+        try:
+            os.execvp(child_argv[0], child_argv)
+        except FileNotFoundError:
+            sys.stderr.write("sf1_proxy: %s: command not found\n" % child_argv[0])
+            os._exit(127)
+        except Exception as exc:  # pragma: no cover - defensive
+            sys.stderr.write("sf1_proxy: exec failed: %s\n" % exc)
+            os._exit(126)
+        os._exit(127)  # pragma: no cover - unreachable
+
+    # Parent.
+    os.close(slave_fd)
+
+    if stdin_is_tty and saved_attrs is not None:
+        try:
+            tty.setraw(stdin_fd)
+        except Exception:
+            saved_attrs = None  # nothing to restore if raw-mode setup itself failed
+
+    rows, cols = _winsize(stdin_fd if stdin_is_tty else 1)
+    sep_filter = SeparatorFilter(separator=separator, width=cols, color=_color_wanted())
+
+    def _apply_winsize():
+        try:
+            packed = struct.pack("HHHH", rows, cols, 0, 0)
+            fcntl.ioctl(master_fd, termios.TIOCSWINSZ, packed)
+        except Exception:
+            pass
+
+    _apply_winsize()
+
+    def _on_winch(signum, frame):
+        nonlocal rows, cols
+        rows, cols = _winsize(stdin_fd if stdin_is_tty else 1)
+        sep_filter.set_width(cols)
+        _apply_winsize()
+
+    old_winch = signal.getsignal(signal.SIGWINCH) if hasattr(signal, "SIGWINCH") else None
+    if hasattr(signal, "SIGWINCH"):
+        signal.signal(signal.SIGWINCH, _on_winch)
+
+    exit_code = 1
+    try:
+        stdin_open = True
+        while True:
+            watch_fds = [master_fd] + ([stdin_fd] if stdin_open else [])
+            try:
+                rlist, _, _ = select.select(watch_fds, [], [], 1.0)
+            except InterruptedError:
+                continue
+            except OSError as exc:
+                if exc.errno == errno.EINTR:
+                    continue
+                break
+
+            if master_fd in rlist:
+                try:
+                    data = os.read(master_fd, _READ_CHUNK)
+                except OSError:
+                    data = b""
+                if not data:
+                    break
+                filtered = sep_filter.feed(data)
+                if filtered:
+                    _write_all(1, filtered)
+
+            if stdin_open and stdin_fd in rlist:
+                try:
+                    data = os.read(stdin_fd, _READ_CHUNK)
+                except OSError:
+                    data = b""
+                if not data:
+                    stdin_open = False
+                else:
+                    if b"\r" in data or b"\n" in data:
+                        sep_filter.note_submit()
+                    _write_all(master_fd, data)
+
+            # Reap a child that exited while we were still draining its pty output.
+            try:
+                reaped_pid, status = os.waitpid(pid, os.WNOHANG)
+            except ChildProcessError:
+                reaped_pid, status = pid, None
+            if reaped_pid == pid and status is not None:
+                exit_code = _status_to_exit_code(status)
+                # Drain any remaining buffered output before returning.
+                try:
+                    while True:
+                        data = os.read(master_fd, _READ_CHUNK)
+                        if not data:
+                            break
+                        _write_all(1, sep_filter.feed(data))
+                except OSError:
+                    pass
+                return exit_code
+    finally:
+        if hasattr(signal, "SIGWINCH") and old_winch is not None:
+            signal.signal(signal.SIGWINCH, old_winch)
+        if saved_attrs is not None:
+            try:
+                termios.tcsetattr(stdin_fd, termios.TCSADRAIN, saved_attrs)
+            except Exception:
+                pass
+        try:
+            os.close(master_fd)
+        except OSError:
+            pass
+
+    try:
+        _, status = os.waitpid(pid, 0)
+        exit_code = _status_to_exit_code(status)
+    except ChildProcessError:
+        pass
+    return exit_code
+
+
+def _status_to_exit_code(status):
+    if os.WIFEXITED(status):
+        return os.WEXITSTATUS(status)
+    if os.WIFSIGNALED(status):
+        return 128 + os.WTERMSIG(status)
+    return 1
+
+
+def _write_all(fd, data):
+    view = memoryview(data)
+    while view:
+        n = os.write(fd, view)
+        view = view[n:]
+
+
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    separator, child_argv = parse_argv(argv)
+    return run_proxy(separator, child_argv)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

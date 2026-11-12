@@ -10,6 +10,7 @@ appended later in this same file.
 """
 
 import os
+import subprocess
 import sys
 import unittest
 
@@ -205,6 +206,85 @@ class ChunkBoundarySplitTest(unittest.TestCase):
         for i in range(len(prompt)):
             out += f.feed(prompt[i:i + 1])
         self.assertEqual(bytes(out), b"\n" + prompt)
+
+
+_PROXY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sf1_proxy.py")
+
+# A deliberately tiny, scripted "sf1-shaped" transcript -- never the real sf1 binary, so this
+# test suite has no network dependency and no vendor dependency in its test path. It asserts
+# its own stdout is a real tty (proving the pty path is genuinely in use, not a pipe), prints a
+# banner, a prompt, reads one line, echoes it with a trailing sources-shaped line, prints a
+# second prompt, then exits 42 immediately (never waiting on a second `input()`: this process's
+# own stdin reaching EOF -- as `communicate()` deliberately does below -- stops forwarding into
+# the child's pty but, exactly like a real terminal, does not itself deliver EOF to the child's
+# still-open pty slave; a stub that waited on a second line would hang forever on exactly that
+# real-terminal property, which is not what this smoke test is exercising).
+_STUB_CHILD_SRC = (
+    "import sys\n"
+    "assert sys.stdout.isatty(), 'stub child expected a real tty, pty path is not in use'\n"
+    "sys.stderr.write('sf1 1.0 on host. /help for commands, Ctrl-D to quit.\\n')\n"
+    "sys.stderr.flush()\n"
+    "sys.stdout.write('sf1 > ')\n"
+    "sys.stdout.flush()\n"
+    "try:\n"
+    "    line = input()\n"
+    "except EOFError:\n"
+    "    sys.exit(0)\n"
+    "sys.stdout.write('you said: ' + line + '\\n')\n"
+    "sys.stdout.write('sources: [1] Example Source\\n')\n"
+    "sys.stdout.write('sf1 > ')\n"
+    "sys.stdout.flush()\n"
+    "sys.exit(42)\n"
+)
+
+
+def _run_proxy(stub_src, stdin_bytes, separator="blank", timeout=10):
+    proc = subprocess.Popen(
+        [sys.executable, _PROXY_PATH, "--separator", separator, "--", sys.executable, "-c", stub_src],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    out, err = proc.communicate(input=stdin_bytes, timeout=timeout)
+    return proc.returncode, out, err
+
+
+class StubChildPtySmokeTest(unittest.TestCase):
+    """Exercises the real pty harness (fork, setsid, TIOCSCTTY, select loop, winsize, exit
+    status) against a stub child -- never against real sf1."""
+
+    def test_separators_appear_and_output_reaches_this_process(self):
+        code, out, err = _run_proxy(_STUB_CHILD_SRC, b"hello\n")
+        self.assertEqual(err, b"", "stub child's own stderr must come back via the pty, not leak")
+        # Separator before the first (fresh) prompt, reached via \n from the banner line.
+        self.assertIn(b"\n\nsf1 > ", out)
+        # Separator after the submitted "hello" line (B2).
+        self.assertIn(b"hello\r\n\n", out)
+        # A second, later "sf1 > " occurrence also got its own fresh-prompt separator.
+        self.assertEqual(out.count(b"sf1 > "), 2)
+        self.assertEqual(code, 42, "stub child's own exit code must reach the proxy's exit code")
+
+    def test_stdin_forwarding_reaches_the_stub(self):
+        code, out, _err = _run_proxy(_STUB_CHILD_SRC, b"a distinctive line\n")
+        self.assertIn(b"you said: a distinctive line", out)
+        self.assertEqual(code, 42)
+
+    def test_signal_death_propagates_as_128_plus_signum(self):
+        import signal
+
+        stub = (
+            "import os, signal, sys\n"
+            "sys.stdout.write('sf1 > ')\n"
+            "sys.stdout.flush()\n"
+            "os.kill(os.getpid(), signal.SIGTERM)\n"
+        )
+        code, _out, _err = _run_proxy(stub, b"")
+        self.assertEqual(code, 128 + signal.SIGTERM)
+
+    def test_separator_none_leaves_prompt_unseparated(self):
+        code, out, _err = _run_proxy(_STUB_CHILD_SRC, b"hi\n", separator="none")
+        self.assertNotIn(b"\n\nsf1 > ", out)
+        self.assertEqual(code, 42)
 
 
 if __name__ == "__main__":

@@ -213,7 +213,7 @@ in the commit message rather than forced back into this plan's count.
 
 ---
 
-### Phase 2: PTY Harness [NOT STARTED]
+### Phase 2: PTY Harness [COMPLETED]
 
 **Goal**: Wrap the Phase 1 filter in a pseudo-terminal harness that launches `sf1` with a real
 controlling tty, forwards input verbatim, propagates window size and signals, and exits with the
@@ -221,34 +221,36 @@ child's status.
 
 **Tasks**:
 
-- [ ] Add argv handling to `sf1_proxy.py`: `--separator {blank,rule,none}` (default `blank`) and a
+- [x] Add argv handling to `sf1_proxy.py`: `--separator {blank,rule,none}` (default `blank`) and a
       `--` terminator after which every remaining argument is the child command and its own
       arguments (so sf1's `--project` is never consumed by the proxy). Keep this to stdlib
-      parsing; add no dependency.
-- [ ] Implement child startup: `pty.openpty()`, `fork`, and in the child `setsid()`,
+      parsing; add no dependency. *(completed)*
+- [x] Implement child startup: `pty.openpty()`, `fork`, and in the child `setsid()`,
       `ioctl(TIOCSCTTY)` on the slave, `dup2` the slave onto fds 0/1/2, then `execvp` the child
       command. A merged stdout/stderr is the intended consequence and is what makes one filter
-      sufficient.
-- [ ] Implement the parent loop: put the proxy's own stdin into raw mode via
+      sufficient. *(completed)*
+- [x] Implement the parent loop: put the proxy's own stdin into raw mode via
       `termios.tcgetattr`/`tty.setraw`, `select` over stdin and the pty master, forward
       stdin -> master byte-for-byte (calling the filter's `note_submit()` whenever a forwarded
       chunk contains CR or LF, which is boundary B2's trigger), and forward
-      master -> `filter.feed()` -> stdout with an immediate flush.
-- [ ] Propagate window size: read the proxy's own `TIOCGWINSZ` at startup and apply it to the
+      master -> `filter.feed()` -> stdout with an immediate flush. *(completed; raw mode is
+      skipped gracefully when the proxy's own stdin is not a tty)*
+- [x] Propagate window size: read the proxy's own `TIOCGWINSZ` at startup and apply it to the
       master with `TIOCSWINSZ`, re-applying on `SIGWINCH`, and update the filter's rule width so a
-      `rule` separator tracks a resized pane.
-- [ ] Restore the saved termios state in a `finally` block on every exit path, reap the child with
+      `rule` separator tracks a resized pane. *(completed)*
+- [x] Restore the saved termios state in a `finally` block on every exit path, reap the child with
       `waitpid`, and exit with the child's exit code, or `128 + signal` when it died of a signal,
-      so snacks sees a clean terminal close.
-- [ ] Implement the three degradation paths: child executable not found -> emit the same
+      so snacks sees a clean terminal close. *(completed)*
+- [x] Implement the three degradation paths: child executable not found -> emit the same
       not-found message and exit 127; pty allocation or termios setup failure -> `execvp` the
       child directly in place of the proxy, giving an unstyled but fully working session; a
-      `separator` value of `none` -> still proxy, but with the identity filter.
-- [ ] Add a pty smoke test exercising the harness against a *stub* child (a small inline
+      `separator` value of `none` -> still proxy, but with the identity filter. *(completed)*
+- [x] Add a pty smoke test exercising the harness against a *stub* child (a small inline
       `python3 -c` script that prints a scripted sf1-shaped transcript and reads one line), never
       against the real `sf1` binary — no network, no token, no vendor dependency in the test
       path. Assert that the separators appear, that the stub's exit code reaches the proxy's exit
-      code, and that the proxy's stdin forwarding reaches the stub.
+      code, and that the proxy's stdin forwarding reaches the stub. *(completed: 4 smoke-test
+      cases, including an additional signal-death exit-code case beyond the plan's minimum)*
 
 **Timing**: 2 hours
 
