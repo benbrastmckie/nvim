@@ -76,6 +76,26 @@ authoritative source this table glosses).
 | `deployment_versions` | object | No | Documented-optional, confirmed live. Semantic-version deployment record written by `skill-tag` (the `/tag` command): `last_deployed`, `last_deployed_at`, and a `deployment_history` array of `{version, deployed_at, commit_sha}` capped at ten most-recent-first entries. Modelled because the agent system writes it itself -- until it was added here, `additionalProperties: false` rejected a field one of its own skills produces, so every repo that had run `/tag` failed the unknown-top-level-field check |
 | `active_goal` | string | No | Documented-optional. Free-prose statement of the repository's current overall aim, for human orientation. Authored by a repo owner or by whichever task owns the repository's framing, written via `/review`'s goal-update flow, and read by `generate-task-order.sh`'s Goal-line resolution (non-empty `active_goal` takes precedence over an existing TODO.md Goal line). Modelled rather than retired so a repo holding a real goal string does not fail validation for it; omitting it is equally valid |
 
+### Archive Numbers Above next_project_number
+
+An archive `project_number` greater than the live `next_project_number` is a correct, expected
+steady state, not a counter defect. `scripts/lib/project-number-inuse.sh` defines the allocation
+bound both `state-write.sh`'s `--allocate-into` prefix and `validate-state.sh`'s Check 12
+consume: the allocator searches upward from the maximum *active* `project_number` for the
+smallest number absent from the in-use set (the union of `active_projects[].project_number` with
+the sibling archive's terminal arrays, excluding `specs/vault/**`), and issues that number
+regardless of how high any individual archived or completed row's own number happens to sit.
+Check 12 passes deliberately whenever `next_project_number` names a number not already in that
+in-use set — it never requires the counter to exceed every archived number.
+
+A handful of isolated archive rows sitting well above a dense, continuously-occupied range below
+them does not mean the counter "lost track of" that higher range: the allocator was never
+required to occupy it continuously, and nothing in the invariant depends on continuity. Raising
+`next_project_number` past the highest archived number, to "repair" this appearance, strands the
+dense free range still sitting below it (every number the allocator would otherwise have issued
+there) without satisfying any invariant the allocator actually enforces — the membership bound,
+not a maximum bound, is what Check 12 and `--allocate-into` both check against.
+
 ### Retired Top-Level Fields
 
 These three top-level fields are **deliberately NOT modelled** in `state-schema.json` and are

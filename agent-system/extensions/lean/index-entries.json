@@ -176,7 +176,7 @@
     },
     {
       "path": "project/lean4/patterns/plan-authoring-gate-collisions.md",
-      "line_count": 209,
+      "line_count": 228,
       "load_when": {
         "agents": [
           "lean-research-agent",

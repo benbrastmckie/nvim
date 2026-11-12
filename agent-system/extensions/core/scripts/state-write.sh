@@ -492,7 +492,8 @@ if [ "$ALLOCATE_INTO_SET" = true ]; then
   # operation (commands/todo.md Step 5.7) recycles the vacated number space by renumbering active
   # tasks down and resetting the counter, and counting vaulted numbers would make every post-vault
   # state permanently unable to allocate. Sibling expression that must stay in sync:
-  # scripts/validate-state.sh's Check 12 computes this identical combined max.
+  # scripts/lib/project-number-inuse.sh is the single shared definition both this prefix and
+  # scripts/validate-state.sh's Check 12 consume for their notion of "in use."
   ALLOC_ARCHIVE_FILE="$(dirname "$STATE_FILE")/archive/state.json"
   if [ -f "$ALLOC_ARCHIVE_FILE" ]; then
     JQ_ARGS+=(--slurpfile __alloc_archive_raw "$ALLOC_ARCHIVE_FILE")
