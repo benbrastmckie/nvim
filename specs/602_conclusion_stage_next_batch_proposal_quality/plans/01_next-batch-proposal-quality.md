@@ -1,7 +1,7 @@
 # Implementation Plan: Task #602
 
 - **Task**: 602 - Improve the conclusion stage's next-batch proposal quality
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/602_conclusion_stage_next_batch_proposal_quality/reports/01_conclusion-stage-next-batch-proposal-quality.md
@@ -157,39 +157,39 @@ roadmap flag is not set).
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Additive Joint Batch Alongside Pair Sequences [NOT STARTED]
+### Phase 1: Additive Joint Batch Alongside Pair Sequences [COMPLETED]
 
 **Goal**: A pool whose selected candidates are entirely collision pairs renders at least one
 probe-verified joint batch line in addition to the ordered-sequence lines.
 
 **Tasks**:
 
-- [ ] In `suggest_from_pool()`, add an invocation-scoped reported-pairs set (an associative
+- [x] In `suggest_from_pool()`, add an invocation-scoped reported-pairs set (an associative
       array keyed by `"${lower}:${higher}"`) consulted before every `propose_edge_for_pair()`
       call, so no pair is reported twice across the rounds and the second pass below, and none is
-      silently dropped (D5).
-- [ ] Replace the fall-through `[ "$any_sequence_rendered" = true ] && return 0` with a
+      silently dropped (D5). *(completed)*
+- [x] Replace the fall-through `[ "$any_sequence_rendered" = true ] && return 0` with a
       **conflict-free-subset second pass**: when the round loop exits having rendered sequences
       but no joint batch, build the candidate subset from (a) every member admitted in any round
-      and (b) the LOWER member of each reported pair, deduped and ascending.
-- [ ] Probe that subset through the existing `probe_candidate_set()` — never a local overlap
+      and (b) the LOWER member of each reported pair, deduped and ascending. *(completed)*
+- [x] Probe that subset through the existing `probe_candidate_set()` — never a local overlap
       comparison — and render it as a joint `/orchestrate a, b, c` line with
       `render_verdict_evidence()` and the existing time-stamped-claim footer once every verdict
-      is `admit`.
-- [ ] When the subset's own probe still defers a member: shrink by the same rule the main loop
+      is `admit`. *(completed)*
+- [x] When the subset's own probe still defers a member: shrink by the same rule the main loop
       uses (drop the deferred member) and re-probe; report any NEW in_batch collision pair
       through `propose_edge_for_pair()` (subject to the reported-pairs set) rather than dropping
-      it silently.
-- [ ] Wire the reserved return code 9 (cap reached) from the new probe calls to the same explicit
-      cap-reached line the main loop already prints, retaining anything already rendered.
-- [ ] Return 0 when any sequence line and/or any joint batch line was rendered; return 1 only
-      when nothing at all could be suggested from the pool.
-- [ ] Extend `test-orchestrate-suggest-next-batch.sh` with case (h): a ready pool whose selected
+      it silently. *(completed)*
+- [x] Wire the reserved return code 9 (cap reached) from the new probe calls to the same explicit
+      cap-reached line the main loop already prints, retaining anything already rendered. *(completed)*
+- [x] Return 0 when any sequence line and/or any joint batch line was rendered; return 1 only
+      when nothing at all could be suggested from the pool. *(completed)*
+- [x] Extend `test-orchestrate-suggest-next-batch.sh` with case (h): a ready pool whose selected
       candidates are exactly four exact-`file_scope`-colliding pairs. Assert four ordered-sequence
       lines AND at least one `/orchestrate` joint-batch line in the same output, and assert the
-      joint line's members are all `admit` in the rendered evidence.
-- [ ] Assert in case (h) that `specs/state.json` in the scratch tree is byte-identical before and
-      after the default (non-`--write-edges`) run.
+      joint line's members are all `admit` in the rendered evidence. *(completed)*
+- [x] Assert in case (h) that `specs/state.json` in the scratch tree is byte-identical before and
+      after the default (non-`--write-edges`) run. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -221,38 +221,41 @@ changed script and observing at least one.
 
 ---
 
-### Phase 2: Several Labelled, Probe-Verified Batch Options [NOT STARTED]
+### Phase 2: Several Labelled, Probe-Verified Batch Options [COMPLETED]
 
 **Goal**: Mode A renders up to three distinct batch options, each labelled with its coherence
 criterion and carrying its own admission evidence, within the unchanged shared probe budget.
 
 **Tasks**:
 
-- [ ] Refactor `select_candidates()`'s three passes into one parameterized helper
+- [x] Refactor `select_candidates()`'s three passes into one parameterized helper
       (`select_candidates_for_criterion <territory|topic|width> <ready...>`) emitting that
       criterion's own ordered, `MAX_TASKS`-truncated candidate list. `select_candidates()` keeps
-      its current behavior by composing the three — no pass logic is duplicated.
-- [ ] Add the named constant `MAX_BATCH_OPTIONS=3` with a comment recording D1 (one option per
-      doctrine criterion; bounded; each independently probe-verified).
-- [ ] In `mode_next_batch()`, loop the three criteria in doctrine order (shared territory, topic
+      its current behavior by composing the three — no pass logic is duplicated. *(completed)*
+- [x] Add the named constant `MAX_BATCH_OPTIONS=3` with a comment recording D1 (one option per
+      doctrine criterion; bounded; each independently probe-verified). *(completed)*
+- [x] In `mode_next_batch()`, loop the three criteria in doctrine order (shared territory, topic
       cohesion, graph width), calling the Phase 1 engine once per criterion with that criterion's
       label, and print each rendered option under a header naming the criterion and why it
-      coheres.
-- [ ] Skip a criterion whose candidate pool is empty, and skip an option whose rendered task set
-      is identical to an already-rendered option's set (D1's duplicate guard).
-- [ ] Keep `PROBE_INVOCATION_COUNT` / `MAX_PROBE_INVOCATIONS` as the one shared counter across
+      coheres. *(completed)*
+- [x] Skip a criterion whose candidate pool is empty, and skip an option whose rendered task set
+      is identical to an already-rendered option's set (D1's duplicate guard). *(completed)*
+- [x] Keep `PROBE_INVOCATION_COUNT` / `MAX_PROBE_INVOCATIONS` as the one shared counter across
       all three options; on reaching the cap mid-render, print the existing explicit cap-reached
       line, state that the option list was cut short by the cap, retain the options already
-      rendered, and stop (D2).
-- [ ] Leave `mode_alternatives()` on the single-pool path, with a comment recording that the
-      multi-option loop is deliberately Mode A only.
-- [ ] Extend the test suite with case (i): a ready pool shaped so that the territory, topic, and
+      rendered, and stop (D2). *(completed)*
+- [x] Leave `mode_alternatives()` on the single-pool path, with a comment recording that the
+      multi-option loop is deliberately Mode A only. *(completed)*
+- [x] Extend the test suite with case (i): a ready pool shaped so that the territory, topic, and
       width criteria yield different sets; assert two or more distinct labelled options render,
-      each with its own `admit` evidence, and no two options carry the identical task list.
-- [ ] Extend the test suite with case (j): drive the shared cap to exhaustion during a
+      each with its own `admit` evidence, and no two options carry the identical task list. *(completed)*
+- [x] Extend the test suite with case (j): drive the shared cap to exhaustion during a
       multi-option render (a low `--max-tasks` with many candidates, mirroring existing case
       (g)'s technique) and assert the cap-reached line appears verbatim while the
-      already-rendered options remain in the output.
+      already-rendered options remain in the output. *(completed: used case (g)'s own
+      MAX_PROBE_INVOCATIONS sed-override technique directly, set to 1, rather than a low
+      --max-tasks -- a more direct and deterministic way to exhaust the cap mid-multi-option
+      render with a 4-task fixture; the acceptance behavior asserted is identical)*
 
 **Timing**: 2 hours
 

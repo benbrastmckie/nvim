@@ -1,0 +1,27 @@
+{
+  "phase": 2,
+  "phase_name": "Several Labelled, Probe-Verified Batch Options",
+  "started_at": "2026-11-12T00:00:00Z",
+  "last_updated": "2026-11-12T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "select_candidates_for_criterion(territory|topic|width) parameterized helper; select_candidates() composes via chained exclude_csv", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 2, "description": "MAX_BATCH_OPTIONS=3 named constant", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 3, "description": "mode_next_batch() loops the 3 criteria in doctrine order, labels each option", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 4, "description": "skip empty-criterion pools and duplicate-set options", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 5, "description": "shared PROBE_INVOCATION_COUNT/MAX_PROBE_INVOCATIONS across all 3 options; explicit cap-cut-short line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 6, "description": "mode_alternatives() left on the single-pool path (comment recorded)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 7, "description": "test case (i): distinct labelled options, own admit evidence, no duplicate sets", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh"]},
+    {"id": 8, "description": "test case (j): shared cap exhaustion mid-multi-option-render", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "2.x",
+      "description": "While implementing select_candidates_for_criterion(), discovered a latent pre-existing bug (not introduced by this phase, present in the original select_candidates()): `while IFS=$'\\t' read -r t topic fs` silently collapses an empty middle field (bash treats tab as an IFS-whitespace character, which merges consecutive delimiters), corrupting topic_of/fs_of for any task with an empty `topic`. This made the territory criterion return empty and the topic criterion wrongly include non-topic tasks whenever a fixture had topic=null (the common case) -- which defeats Phase 2's own deliverable. Fixed by switching the jq/read field separator from @tsv (tab) to ASCII 0x1F (unit separator), which bash never collapses.",
+      "type": "fixed-in-scope",
+      "reason": "Required for Phase 2's criteria to produce correct, distinct candidate pools; the plan's own Scope Hypothesis anticipated verifying this at implementation time."
+    }
+  ],
+  "handoff_count": 0
+}

@@ -129,6 +129,24 @@ add_task() {
   mv "$tmp" "$scratch/specs/state.json"
 }
 
+# add_task_topic <scratch> <number> <status> <file_scope_json> <dependencies_json> <topic_str>
+# -- same as add_task(), but with an explicit non-null `topic` field, for Case (i)'s
+# topic-cohesion-criterion fixture (every other case's tasks deliberately use add_task()'s
+# topic: null, so this helper is scoped to Case (i) alone rather than widening add_task()).
+add_task_topic() {
+  local scratch="$1" num="$2" status="$3" fs="$4" deps="$5" topic="$6"
+  local dir tmp
+  dir=$(printf '%03d' "$num")
+  mkdir -p "$scratch/specs/${dir}_t${num}"
+  tmp="$(mktemp)"
+  jq --argjson n "$num" --arg st "$status" --argjson fs "$fs" --argjson deps "$deps" --arg topic "$topic" \
+    '.active_projects += [{
+      project_number: $n, project_name: ("t" + ($n|tostring)), status: $st,
+      file_scope: $fs, dependencies: $deps, topic: $topic
+    }]' "$scratch/specs/state.json" > "$tmp"
+  mv "$tmp" "$scratch/specs/state.json"
+}
+
 # add_queue_entry <scratch> <orchestration_id> <task_numbers_json> <file_scope_json> -- writes
 # one LIVE (pid=$$, fresh heartbeat) orchestration-queue entry, matching task-lock.sh's own
 # queue-register schema closely enough for queue-list to parse and compute live=true.
@@ -367,6 +385,91 @@ SID="sess_test_$$_suggest"
     common_test_pass "(g) probe-invocation cap: reaching the cap is rendered explicitly and exits 0, never a silent truncation"
   else
     common_test_fail "(g) probe-invocation cap: rc=$rc -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (h): Defect 1 acceptance -- a ready pool whose selected candidates are exactly four
+# exact-file_scope-colliding pairs. Asserts four ordered-sequence lines AND at least one
+# /orchestrate joint-batch line in the same output (never the measured defect's
+# 4-sequences/0-joint-batches shape), with the joint line's members all admit, AND that the
+# default (non---write-edges) run leaves specs/state.json byte-identical.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  for i in 1 2 3 4; do
+    lo=$((i * 10)); hi=$((i * 10 + 1))
+    add_task "$scratch" "$lo" not_started "[\"agent-system/extensions/core/h-pair${i}\"]" '[]'
+    add_task "$scratch" "$hi" not_started "[\"agent-system/extensions/core/h-pair${i}\"]" '[]'
+  done
+  before_sha="$(sha256sum "$scratch/specs/state.json" | awk '{print $1}')"
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
+  rc=$?
+  after_sha="$(sha256sum "$scratch/specs/state.json" | awk '{print $1}')"
+  seq_count=$(echo "$out" | grep -cE ', then [0-9]+  \(ordered sequence -- file_scope collision\)')
+  joint_count=$(echo "$out" | grep -cE '^/orchestrate [0-9]+(,[0-9]+)+$')
+  if [ "$rc" -eq 0 ] && [ "$seq_count" -eq 4 ] && [ "$joint_count" -ge 1 ] \
+    && ! echo "$out" | grep -qE 'task [0-9]+: defer'; then
+    common_test_pass "(h.1) Defect 1: an all-collision-pairs pool renders all 4 ordered sequences AND at least one joint batch line, every rendered member admit"
+  else
+    common_test_fail "(h.1) Defect 1: rc=$rc seq_count=$seq_count joint_count=$joint_count -- $out"
+  fi
+  if [ "$before_sha" = "$after_sha" ]; then
+    common_test_pass "(h.2) the default (non---write-edges) run leaves scratch state.json byte-identical"
+  else
+    common_test_fail "(h.2) scratch state.json changed under the default run: before=$before_sha after=$after_sha"
+  fi
+}
+
+# =====================================================================================
+# Case (i): Defect 2 acceptance -- a ready pool shaped so the territory, topic, and width
+# criteria each select a different candidate set. Asserts two or more distinct labelled
+# options render, each carrying its own admit evidence, and no two options render the
+# identical task list.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  add_task "$scratch" 60 not_started '["agent-system/extensions/core/i-territory"]' '[]'
+  add_task "$scratch" 61 not_started '["agent-system/extensions/core/i-territory"]' '[]'
+  add_task_topic "$scratch" 62 not_started '["agent-system/extensions/core/i-topic-62"]' '[]' 'topic-i'
+  add_task_topic "$scratch" 63 not_started '["agent-system/extensions/core/i-topic-63"]' '[]' 'topic-i'
+  add_task_topic "$scratch" 64 not_started '["agent-system/extensions/core/i-topic-64"]' '[]' 'topic-i'
+  add_task "$scratch" 65 not_started '["agent-system/extensions/core/i-width-65"]' '[]'
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
+  rc=$?
+  option_count=$(echo "$out" | grep -cE '^Option [0-9]+ -- ')
+  admit_count=$(echo "$out" | grep -cE 'task [0-9]+: admit')
+  dup_joint=false
+  joint_lines="$(echo "$out" | grep -E '^/orchestrate [0-9]+(,[0-9]+)*$' | sort -u | wc -l)"
+  joint_lines_raw="$(echo "$out" | grep -cE '^/orchestrate [0-9]+(,[0-9]+)*$')"
+  [ "$joint_lines" -lt "$joint_lines_raw" ] && dup_joint=true
+  if [ "$rc" -eq 0 ] && [ "$option_count" -ge 2 ] && [ "$admit_count" -ge 1 ] && [ "$dup_joint" = false ]; then
+    common_test_pass "(i) Defect 2: two or more distinct labelled options render, each with its own admit evidence, no two carrying an identical joint-line task list"
+  else
+    common_test_fail "(i) Defect 2: rc=$rc option_count=$option_count admit_count=$admit_count dup_joint=$dup_joint -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (j): Defect 2's budget constraint -- the shared probe-invocation cap, driven to
+# exhaustion mid-multi-option-render, produces the existing explicit cap-reached line AND the
+# multi-option loop's own "cut short by the cap" line, retaining whatever already rendered.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  add_task "$scratch" 70 not_started '["agent-system/extensions/core/j-territory"]' '[]'
+  add_task "$scratch" 71 not_started '["agent-system/extensions/core/j-territory"]' '[]'
+  add_task_topic "$scratch" 72 not_started '["agent-system/extensions/core/j-topic-72"]' '[]' 'topic-j'
+  add_task_topic "$scratch" 73 not_started '["agent-system/extensions/core/j-topic-73"]' '[]' 'topic-j'
+  sed -i 's/MAX_PROBE_INVOCATIONS=20/MAX_PROBE_INVOCATIONS=1/' "$scratch/.claude/scripts/orchestrate-suggest-next-batch.sh"
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
+  rc=$?
+  if [ "$rc" -eq 0 ] && echo "$out" | grep -q 'probe-invocation cap' \
+    && echo "$out" | grep -q 'Batch-option search stopped' \
+    && echo "$out" | grep -q '70, then 71'; then
+    common_test_pass "(j) Defect 2 budget: the shared probe cap, exhausted mid-multi-option-render, is rendered explicitly and retains the option(s) already rendered"
+  else
+    common_test_fail "(j) Defect 2 budget: rc=$rc -- $out"
   fi
 }
 

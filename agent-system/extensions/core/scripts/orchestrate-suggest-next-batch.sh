@@ -215,6 +215,10 @@ fi
 #    run_capture_stdout: keeps a collaborator's stdout payload and stderr diagnostics apart, and
 #    preserves its exit status) ──────────────────────────────────────────────────────────────────
 CAPTURE_DIAG=""
+# ROUND_LAST_VERDICTS: set by run_candidate_round() (below) on a stable all-admit round --
+# the raw NDJSON verdicts for that round, for the caller to render via render_verdict_evidence().
+# A plain script-level global, same convention as CAPTURE_DIAG above.
+ROUND_LAST_VERDICTS=""
 run_capture_stdout() {
   local __outvar="$1"; shift
   local __diag_file __out __rc=0
@@ -236,6 +240,34 @@ run_capture_stdout() {
 # return code 9, checked by every caller) — never a silent truncation of the search.
 MAX_PROBE_INVOCATIONS=20
 PROBE_INVOCATION_COUNT=0
+
+# MAX_BATCH_OPTIONS (D1, Defect 2): the hard cap on how many distinct, labelled batch options
+# mode_next_batch() (Mode A only -- Mode B's mode_alternatives() keeps its existing single-pool
+# behavior, per the plan's Non-Goals) renders in one invocation. Set to 3, one per
+# selection-doctrine criterion (shared territory, topic cohesion, graph width) that
+# select_candidates_for_criterion() implements. Bounded, more than one, each independently
+# probe-verified through the shared MAX_PROBE_INVOCATIONS budget below -- this constant never
+# raises that budget, it only bounds how many criteria get a turn at it.
+MAX_BATCH_OPTIONS=3
+
+# PROBE_CAP_HIT: set true by run_candidate_round() the moment MAX_PROBE_INVOCATIONS is reached
+# (it already prints the explicit cap-reached line at that point). mode_next_batch()'s
+# multi-option loop below checks this after every option to stop issuing further options once
+# the shared probe budget is exhausted, rather than silently truncating the option list.
+PROBE_CAP_HIT=false
+
+# REPORTED_PAIRS (D5): a script-level, INVOCATION-scoped associative set of every file_scope-
+# colliding pair ("${lower}:${higher}" keys) already reported via propose_edge_for_pair() --
+# "invocation" meaning this one run of orchestrate-suggest-next-batch.sh, never just one
+# suggest_from_candidates() call. This is deliberately a plain script global rather than a
+# `local` declared inside suggest_from_candidates(): mode_next_batch()'s Phase 2 multi-option
+# loop (below) calls suggest_from_candidates() once per criterion within the SAME script
+# invocation, and a pair spanning two different criteria' candidate sets (e.g. a
+# territory-colliding pair that also appears inside the "width" option's wider pool) must still
+# be reported only once across every option -- never once per option. Reset is never needed:
+# each script invocation starts with this empty and exits before any second invocation could
+# reuse the process.
+declare -A REPORTED_PAIRS=()
 
 # ── probe_candidate_set(): the ONE shared admission-probe function. Both Mode A and Mode B call
 #    this and only this to establish admissibility — never a local re-derivation. Populates the
@@ -330,108 +362,172 @@ derive_phase_map() {
   echo "${__pairs[*]}"
 }
 
-# ── select_candidates(): the selection doctrine from
+# ── select_candidates_for_criterion(): the ONE parameterized implementation of each of the
+#    three selection-doctrine passes from
 #    context/patterns/batch-orchestration-guardrails.md's "Batching Is the Default" — shared
-#    file territory > topic cohesion > graph width — applied to an already-READY pool (see
-#    build_ready_pool() above). Emits an ordered candidate list, one per line, truncated to
-#    MAX_TASKS with territory-mandatory members ordered first so a trim never splits a
-#    mandatory group off the end. NOTE: within a ready pool, two ready tasks can never be
-#    connected by a dependencies[] edge to each other (a predecessor would have to be
-#    "completed" -- terminal, hence excluded from readiness), so the width-vs-chain nuance of
-#    the doctrine's third criterion never actually applies to a ready-pool-only selection; the
-#    remaining, ungrouped candidates are therefore left in the pool's own ascending order. The
-#    territory grouping below is a SELECTION pre-filter only (exact file_scope string-set
-#    intersection, grouped by transitive closure) — never the directory-prefix overlap
-#    predicate that actually establishes admissibility; that determination always comes from
-#    probe_candidate_set() / orchestrate-batch-admit.sh. ─────────────────────────────────────────
-select_candidates() {
+#    file territory, topic cohesion, graph width — applied to an already-READY pool (see
+#    build_ready_pool() above). select_candidates() below composes all three (chaining each
+#    pass's own assigned members forward as the next pass's $exclude_csv, exactly reproducing
+#    its pre-refactor behavior) to build ONE combined candidate list; Phase 2's multi-option
+#    Mode A render (mode_next_batch()) calls this directly, once per criterion, with
+#    exclude_csv="" each time -- so each criterion stands on its own as a complete, independent
+#    selection over the WHOLE ready pool, never a remainder-after-other-passes slice. No pass's
+#    algorithm is implemented twice.
+#
+#    $1 criterion: territory|topic|width. $2 exclude_csv: comma-separated task numbers to omit
+#    from this pass's own output (used only by select_candidates()'s internal chaining; the
+#    standalone per-option caller always passes ""). Remaining args: the ready pool.
+#
+#    territory: territory-mandatory groups (exact file_scope string-set intersection, grouped
+#    by transitive closure -- a SELECTION pre-filter only, never the directory-prefix overlap
+#    predicate that actually establishes admissibility; that always comes from
+#    probe_candidate_set() / orchestrate-batch-admit.sh), size > 1, roots visited ascending,
+#    members sorted ascending within each group.
+#    topic: topic-cohesion groups (by the `topic` field), size > 1, same ordering convention.
+#    width: the plain ready pool in ascending order, no grouping at all -- "graph width" taken
+#    at face value, since (per the ORIGINAL Pass 3 comment this preserves) two ready tasks can
+#    never be connected by a dependencies[] edge to each other within a ready-only pool (a
+#    predecessor would have to be "completed" -- terminal, hence excluded from readiness), so
+#    the width-vs-chain nuance of the doctrine's third criterion never actually applies here.
+#
+#    Every branch truncates its OWN output to MAX_TASKS before returning. This is exactly what
+#    a standalone per-option caller wants; it is also safe for select_candidates()'s composed
+#    use, because the composed list only ever draws its own first MAX_TASKS entries overall, a
+#    span that can never run past the first MAX_TASKS entries of any one pass's own (already
+#    MAX_TASKS-truncated) output. ─────────────────────────────────────────────────────────────
+select_candidates_for_criterion() {
+  local criterion="$1"; shift
+  local exclude_csv="$1"; shift
   local -a ready=("$@")
   [ "${#ready[@]}" -eq 0 ] && return 0
+
+  declare -A excluded=()
+  if [ -n "$exclude_csv" ]; then
+    local -a __excl_arr=()
+    IFS=',' read -ra __excl_arr <<< "$exclude_csv"
+    local __e
+    for __e in "${__excl_arr[@]}"; do
+      [ -n "$__e" ] && excluded[$__e]=1
+    done
+  fi
+
+  if [ "$criterion" = "width" ]; then
+    local t count=0
+    for t in "${ready[@]}"; do
+      [ -n "${excluded[$t]:-}" ] && continue
+      [ "$count" -ge "$MAX_TASKS" ] && break
+      echo "$t"
+      count=$((count + 1))
+    done
+    return 0
+  fi
+
+  if [ "$criterion" != "territory" ] && [ "$criterion" != "topic" ]; then
+    echo "ERROR: orchestrate-suggest-next-batch.sh: select_candidates_for_criterion: unknown criterion '$criterion' (expected territory|topic|width)." >&2
+    return 1
+  fi
 
   local ready_csv
   ready_csv=$(printf '%s\n' "${ready[@]}" | jq -R -s -c 'split("\n") | map(select(length>0) | tonumber)')
 
-  declare -A fs_of=() topic_of=() parent=()
+  # NOTE: the record separator here is 0x1F (ASCII unit separator), NOT @tsv's tab -- `read`
+  # treats tab (like space and newline) as an IFS-WHITESPACE character, which COLLAPSES
+  # consecutive delimiters and silently swallows an empty middle field (bash's documented
+  # behavior for an IFS whitespace character, confirmed: `IFS=$'\t' read -r a b c <<< $'x\t\tz'`
+  # yields a="x" b="z" c="" -- b absorbs z, the empty middle field vanishes). A task with an
+  # empty topic (common: `topic` is frequently null) would otherwise misalign topic_of/fs_of
+  # whenever it sits between two populated fields. 0x1F is never whitespace to `read`, so an
+  # empty field is preserved exactly like any non-whitespace IFS character (e.g. comma) would.
+  declare -A fs_of=() topic_of=()
   local t topic fs
-  while IFS=$'\t' read -r t topic fs; do
+  while IFS=$'\x1f' read -r t topic fs; do
     [ -z "$t" ] && continue
-    parent[$t]="$t"
     topic_of[$t]="$topic"
     fs_of[$t]="$fs"
   done < <(jq -r --argjson ready "$ready_csv" '
     .active_projects[]
     | select(([.project_number] - $ready | length) == 0)
     | [.project_number, (.topic // ""), ((.file_scope // []) | join(","))]
-    | @tsv
+    | map(tostring)
+    | join("\u001f")
   ' "$STATE_FILE")
 
-  uf_find() {
-    local x="$1"
-    while [ "${parent[$x]}" != "$x" ]; do
-      x="${parent[$x]}"
-    done
-    echo "$x"
-  }
-  uf_union() {
-    local a b
-    a="$(uf_find "$1")"
-    b="$(uf_find "$2")"
-    [ "$a" = "$b" ] && return 0
-    parent[$a]="$b"
-  }
-
-  local i j found a_entry
-  for i in "${ready[@]}"; do
-    [ -z "${fs_of[$i]:-}" ] && continue
-    for j in "${ready[@]}"; do
-      [ "$i" = "$j" ] && continue
-      [ -z "${fs_of[$j]:-}" ] && continue
-      found=false
-      local -a arr_i=()
-      IFS=',' read -ra arr_i <<< "${fs_of[$i]}"
-      for a_entry in "${arr_i[@]}"; do
-        [ -z "$a_entry" ] && continue
-        case ",${fs_of[$j]}," in
-          *",${a_entry},"*) found=true; break ;;
-        esac
+  if [ "$criterion" = "territory" ]; then
+    declare -A parent=()
+    local i
+    for i in "${ready[@]}"; do parent[$i]="$i"; done
+    uf_find() {
+      local x="$1"
+      while [ "${parent[$x]}" != "$x" ]; do
+        x="${parent[$x]}"
       done
-      [ "$found" = true ] && uf_union "$i" "$j"
+      echo "$x"
+    }
+    uf_union() {
+      local a b
+      a="$(uf_find "$1")"
+      b="$(uf_find "$2")"
+      [ "$a" = "$b" ] && return 0
+      parent[$a]="$b"
+    }
+
+    local j found a_entry
+    for i in "${ready[@]}"; do
+      [ -z "${fs_of[$i]:-}" ] && continue
+      for j in "${ready[@]}"; do
+        [ "$i" = "$j" ] && continue
+        [ -z "${fs_of[$j]:-}" ] && continue
+        found=false
+        local -a arr_i=()
+        IFS=',' read -ra arr_i <<< "${fs_of[$i]}"
+        for a_entry in "${arr_i[@]}"; do
+          [ -z "$a_entry" ] && continue
+          case ",${fs_of[$j]}," in
+            *",${a_entry},"*) found=true; break ;;
+          esac
+        done
+        [ "$found" = true ] && uf_union "$i" "$j"
+      done
     done
-  done
 
-  declare -A group_members=()
-  local r
-  for t in "${ready[@]}"; do
-    r="$(uf_find "$t")"
-    group_members[$r]="${group_members[$r]:-}${group_members[$r]:+ }$t"
-  done
+    declare -A group_members=()
+    local r
+    for t in "${ready[@]}"; do
+      r="$(uf_find "$t")"
+      group_members[$r]="${group_members[$r]:-}${group_members[$r]:+ }$t"
+    done
 
-  local -a ordered=()
-  declare -A seen=()
-
-  # Pass 1: territory-mandatory groups (size > 1), roots visited in ascending order.
-  for r in $(printf '%s\n' "${!group_members[@]}" | sort -n); do
-    local -a members=()
-    read -ra members <<< "${group_members[$r]}"
-    [ "${#members[@]}" -le 1 ] && continue
-    local -a sorted_members=()
-    while IFS= read -r m; do sorted_members+=("$m"); done < <(printf '%s\n' "${members[@]}" | sort -n)
-    for t in "${sorted_members[@]}"; do
-      if [ -z "${seen[$t]:-}" ]; then
+    local -a ordered=()
+    for r in $(printf '%s\n' "${!group_members[@]}" | sort -n); do
+      local -a members=()
+      read -ra members <<< "${group_members[$r]}"
+      [ "${#members[@]}" -le 1 ] && continue
+      local -a sorted_members=()
+      while IFS= read -r m; do sorted_members+=("$m"); done < <(printf '%s\n' "${members[@]}" | sort -n)
+      for t in "${sorted_members[@]}"; do
+        [ -n "${excluded[$t]:-}" ] && continue
         ordered+=("$t")
-        seen[$t]=1
-      fi
+      done
     done
-  done
 
-  # Pass 2: topic-cohesion groups among remaining, unassigned ready tasks.
+    local count=0
+    for t in "${ordered[@]}"; do
+      [ "$count" -ge "$MAX_TASKS" ] && break
+      echo "$t"
+      count=$((count + 1))
+    done
+    return 0
+  fi
+
+  # criterion == topic
   declare -A topic_members=()
   for t in "${ready[@]}"; do
-    [ -n "${seen[$t]:-}" ] && continue
+    [ -n "${excluded[$t]:-}" ] && continue
     topic="${topic_of[$t]:-}"
     [ -z "$topic" ] && continue
     topic_members[$topic]="${topic_members[$topic]:-}${topic_members[$topic]:+ }$t"
   done
+  local -a ordered=()
   for topic in "${!topic_members[@]}"; do
     local -a tmembers=()
     read -ra tmembers <<< "${topic_members[$topic]}"
@@ -439,15 +535,52 @@ select_candidates() {
     local -a sorted_tmembers=()
     while IFS= read -r m; do sorted_tmembers+=("$m"); done < <(printf '%s\n' "${tmembers[@]}" | sort -n)
     for t in "${sorted_tmembers[@]}"; do
-      if [ -z "${seen[$t]:-}" ]; then
-        ordered+=("$t")
-        seen[$t]=1
-      fi
+      ordered+=("$t")
     done
   done
 
-  # Pass 3: everything else, pool-ascending order (see function header note on why no
-  # width-vs-chain distinction applies within a ready-only pool).
+  local count=0
+  for t in "${ordered[@]}"; do
+    [ "$count" -ge "$MAX_TASKS" ] && break
+    echo "$t"
+    count=$((count + 1))
+  done
+}
+
+# ── select_candidates(): composes select_candidates_for_criterion()'s three passes -- shared
+#    file territory > topic cohesion > graph width -- into ONE combined, ordered candidate
+#    list, territory-mandatory members ordered first so a trim never splits a mandatory group
+#    off the end. Byte-for-byte the same selection this function produced before the Phase 2
+#    refactor: each pass's own newly-assigned members are chained forward as the next pass's
+#    exclude_csv, exactly reproducing the original "remaining, unassigned ready tasks only"
+#    behavior pass 2 and pass 3 depended on. Used by suggest_from_pool() (both Mode A's
+#    single-selection callers and Mode B, which keeps this single-pool behavior
+#    unchanged -- see the plan's Non-Goals). ─────────────────────────────────────────────────────
+select_candidates() {
+  local -a ready=("$@")
+  [ "${#ready[@]}" -eq 0 ] && return 0
+
+  local -a ordered=()
+  declare -A seen=()
+  local t exclude_csv
+
+  while IFS= read -r t; do
+    [ -z "$t" ] && continue
+    if [ -z "${seen[$t]:-}" ]; then
+      ordered+=("$t")
+      seen[$t]=1
+    fi
+  done < <(select_candidates_for_criterion territory "" "${ready[@]}")
+
+  exclude_csv="$(printf '%s\n' "${!seen[@]}" | paste -sd, -)"
+  while IFS= read -r t; do
+    [ -z "$t" ] && continue
+    if [ -z "${seen[$t]:-}" ]; then
+      ordered+=("$t")
+      seen[$t]=1
+    fi
+  done < <(select_candidates_for_criterion topic "$exclude_csv" "${ready[@]}")
+
   for t in "${ready[@]}"; do
     if [ -z "${seen[$t]:-}" ]; then
       ordered+=("$t")
@@ -575,105 +708,261 @@ propose_edge_for_pair() {
   return 1
 }
 
-# ── suggest_from_pool(): the ONE shared selection+probe+render engine. Both Mode A (the full
-#    ready pool) and Mode B (the ready pool minus every task covered by a live queue entry)
-#    call this with their own input pool. Applies select_candidates()'s doctrine, then probes
-#    the result through probe_candidate_set() -- handling any in_batch file_scope_collision
-#    pair via propose_edge_for_pair() before falling back to the plain shrink-and-retry for
-#    every other defer reason -- until either a stable all-admit set is found, the pool is
-#    exhausted, or MAX_PROBE_INVOCATIONS is reached (reserved return code 9, rendered
-#    explicitly, never a silent truncation). Returns 0 when at least one sequence block and/or a final
-#    joint batch line was rendered; 1 when nothing could be suggested from this pool at all. ───
-suggest_from_pool() {
-  local -a pool=("$@")
-  [ "${#pool[@]}" -eq 0 ] && return 1
+# ── run_candidate_round(): one probe + edge-proposing-pass + admit/defer bucketing round --
+#    the single shared body suggest_from_candidates()'s main shrink-and-retry loop AND its
+#    Defect-1 conflict-free-subset second pass (below) both call, so the edge-proposing logic
+#    (and D5's reported-pairs dedup) exists in exactly one place rather than twice. Reads/writes
+#    the script-global associative set REPORTED_PAIRS (declared once near
+#    MAX_PROBE_INVOCATIONS above -- D5 needs this shared across every suggest_from_candidates()
+#    call within one script invocation, including mode_next_batch()'s Phase 2 multi-option
+#    loop, so a pair is never reported twice even when it surfaces inside two different
+#    options' candidate sets), plus the CALLER's own `local` variables `ever_admitted`
+#    (associative, task_number keys), `pairs_this_call` (associative, "${lower}:${higher}"
+#    keys -- a PER-CALL subset of REPORTED_PAIRS, so one option's conflict-free-subset second
+#    pass never pulls in a lower member reported by some OTHER option earlier in the same
+#    script invocation) and `any_sequence_rendered`, by bash's ordinary dynamic variable
+#    visibility across a call stack -- this function is only ever called from inside
+#    suggest_from_candidates(), where all three of the latter are declared `local` before any
+#    call site, and this function never redeclares any of them locally itself.
+#
+#    On a stable all-admit round (nothing deferred, no pair handled this round), leaves the
+#    round's raw verdicts in the script-global ROUND_LAST_VERDICTS for the caller to render via
+#    render_verdict_evidence() and returns 2 -- the caller renders the joint `/orchestrate` line
+#    itself, since the exact wording differs between the main loop's primary suggestion and the
+#    second pass's additive one. On a probe-invocation-cap hit, prints the existing explicit
+#    cap-reached line itself (so both call sites render it identically) and returns 9 with the
+#    outvar empty. On a hard admit-script failure, prints the existing ERROR line and exits 3
+#    directly (as the pre-refactor inline body did). Otherwise (some non-pair defer happened,
+#    or a pair was handled but candidates remain) writes this round's admitted-but-not-yet-
+#    stable set to the caller-named outvar $1 (newline-separated, possibly empty) and returns
+#    0 -- the caller shrinks to this set and probes again, exactly as the pre-refactor inline
+#    loop body did. ───────────────────────────────────────────────────────────────────────────
+run_candidate_round() {
+  local __next_outvar="$1"; shift
+  local -a __round_candidates=("$@")
+  local verdicts phase_map probe_rc
+  phase_map="$(derive_phase_map "${__round_candidates[@]}")"
+  probe_candidate_set verdicts "$phase_map" "${__round_candidates[@]}"
+  probe_rc=$?
+  if [ "$probe_rc" -eq 9 ]; then
+    echo "Alternatives/batch search stopped: the probe-invocation cap (MAX_PROBE_INVOCATIONS=${MAX_PROBE_INVOCATIONS}) was reached before this candidate set stabilized. Re-run the suggester to continue from a fresh cap budget."
+    PROBE_CAP_HIT=true
+    printf -v "$__next_outvar" '%s' ""
+    return 9
+  elif [ "$probe_rc" -ne 0 ]; then
+    echo "ERROR: orchestrate-suggest-next-batch.sh: orchestrate-batch-admit.sh failed while probing candidate set [${__round_candidates[*]}]." >&2
+    exit 3
+  fi
 
-  local -a candidates=()
-  while IFS= read -r t; do
-    [ -n "$t" ] && candidates+=("$t")
-  done < <(select_candidates "${pool[@]}")
+  # Edge-proposing pass: handle every in_batch file_scope_collision pair in this round's
+  # verdicts BEFORE the plain admit/defer bucketing below. The reported_pairs check makes this
+  # loop safe to run again from the second pass over a subset that may re-surface the same
+  # pair's lower member (D5: a pair is never reported twice in one invocation).
+  local -a handled_pair_members=()
+  local line tn decision defer_reason collision_scope colliding already h lower higher
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    decision=$(echo "$line" | jq -r '.decision')
+    [ "$decision" != "defer" ] && continue
+    tn=$(echo "$line" | jq -r '.task_number')
+    defer_reason=$(echo "$line" | jq -r '.defer_reason // ""')
+    [ "$defer_reason" != "file_scope_collision" ] && continue
+    collision_scope=$(echo "$line" | jq -r '.collision_scope // ""')
+    [ "$collision_scope" != "in_batch" ] && continue
+    colliding=$(echo "$line" | jq -r '.colliding_task_number // ""')
+    [ -z "$colliding" ] && continue
+    already=false
+    for h in "${handled_pair_members[@]:-}"; do
+      [ "$h" = "$tn" ] && already=true
+    done
+    [ "$already" = true ] && continue
+    if [ "$tn" -lt "$colliding" ]; then lower="$tn"; higher="$colliding"; else lower="$colliding"; higher="$tn"; fi
+    if [ -n "${REPORTED_PAIRS["${lower}:${higher}"]:-}" ]; then
+      continue
+    fi
+    propose_edge_for_pair "$lower" "$higher"
+    any_sequence_rendered=true
+    REPORTED_PAIRS["${lower}:${higher}"]=1
+    # pairs_this_call (CALLER's own `local`, distinct from the script-global REPORTED_PAIRS
+    # above): tracks only the pairs reported during THIS suggest_from_candidates() call, so its
+    # own conflict-free-subset second pass below never pulls in a lower member from some OTHER
+    # option's candidate set merely because that unrelated pair happened to be reported earlier
+    # in this same script invocation.
+    pairs_this_call["${lower}:${higher}"]=1
+    handled_pair_members+=("$tn" "$colliding")
+  done <<< "$verdicts"
+
+  local -a next_remaining=() dropped_other=()
+  local in_handled
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    tn=$(echo "$line" | jq -r '.task_number')
+    decision=$(echo "$line" | jq -r '.decision')
+    in_handled=false
+    for h in "${handled_pair_members[@]:-}"; do
+      [ "$h" = "$tn" ] && in_handled=true
+    done
+    [ "$in_handled" = true ] && continue
+    if [ "$decision" = "admit" ]; then
+      next_remaining+=("$tn")
+    else
+      dropped_other+=("$tn")
+    fi
+  done <<< "$verdicts"
+
+  if [ "${#dropped_other[@]}" -eq 0 ] && [ "${#handled_pair_members[@]}" -eq 0 ]; then
+    ROUND_LAST_VERDICTS="$verdicts"
+    printf -v "$__next_outvar" '%s' ""
+    return 2
+  fi
+
+  for tn in "${next_remaining[@]:-}"; do
+    [ -n "$tn" ] && ever_admitted["$tn"]=1
+  done
+  printf -v "$__next_outvar" '%s' "$(printf '%s\n' "${next_remaining[@]:-}")"
+  return 0
+}
+
+# ── suggest_from_candidates(): the ONE shared probe+render engine, over an ALREADY-SELECTED
+#    candidate list (the caller has already applied whatever selection doctrine it wants --
+#    select_candidates()'s composed three-pass doctrine for suggest_from_pool() below, or
+#    select_candidates_for_criterion()'s single-criterion selection for mode_next_batch()'s
+#    Phase 2 multi-option loop). Probes the result through run_candidate_round() -- handling
+#    any in_batch file_scope_collision pair via propose_edge_for_pair() before falling back to
+#    the plain shrink-and-retry for every other defer reason -- until either a stable all-admit
+#    set is found, the pool is exhausted, or MAX_PROBE_INVOCATIONS is reached (reserved return
+#    code 9, rendered explicitly, never a silent truncation).
+#
+#    Defect 1 fix: a colliding pair handled by the main loop is now ADDITIVE information
+#    alongside a probe-verified joint batch, never a replacement for one. When the main loop's
+#    shrink-and-retry exhausts the pool (every remaining candidate consumed into a reported
+#    pair, nothing left to probe as a stable set) WITHOUT ever reaching a stable all-admit
+#    round, a conflict-free-subset second pass probes the union of (a) every member admitted in
+#    ANY main-loop round and (b) the LOWER member of each reported pair (per Decision 1's
+#    rendering convention) through the same run_candidate_round() -- never a local overlap
+#    comparison -- so the ordered-sequence suggestion(s) already rendered are joined by a real,
+#    probe-verified joint batch whenever one is admissible. Returns 0 when at least one sequence
+#    line and/or a joint batch line was rendered; 1 only when nothing at all could be suggested
+#    from this candidate list. ─────────────────────────────────────────────────────────────────
+suggest_from_candidates() {
+  local -a candidates=("$@")
   [ "${#candidates[@]}" -eq 0 ] && return 1
 
   local any_sequence_rendered=false
-  local verdicts phase_map probe_rc
-  local -a remaining=("${candidates[@]}")
+  declare -A ever_admitted=()
+  declare -A pairs_this_call=()
+  local round_rc next_list
+  local -a remaining=("${candidates[@]}") next_arr=()
+
   while [ "${#remaining[@]}" -gt 0 ]; do
-    phase_map="$(derive_phase_map "${remaining[@]}")"
-    probe_candidate_set verdicts "$phase_map" "${remaining[@]}"
-    probe_rc=$?
-    if [ "$probe_rc" -eq 9 ]; then
-      echo "Alternatives/batch search stopped: the probe-invocation cap (MAX_PROBE_INVOCATIONS=${MAX_PROBE_INVOCATIONS}) was reached before this candidate set stabilized. Re-run the suggester to continue from a fresh cap budget."
-      return 1
-    elif [ "$probe_rc" -ne 0 ]; then
-      echo "ERROR: orchestrate-suggest-next-batch.sh: orchestrate-batch-admit.sh failed while probing candidate set [${remaining[*]}]." >&2
-      exit 3
-    fi
-
-    # Edge-proposing pass: handle every in_batch file_scope_collision pair in this round's
-    # verdicts BEFORE the plain admit/defer bucketing below.
-    local -a handled_pair_members=()
-    local line tn decision defer_reason collision_scope colliding already h lower higher
-    while IFS= read -r line; do
-      [ -z "$line" ] && continue
-      decision=$(echo "$line" | jq -r '.decision')
-      [ "$decision" != "defer" ] && continue
-      tn=$(echo "$line" | jq -r '.task_number')
-      defer_reason=$(echo "$line" | jq -r '.defer_reason // ""')
-      [ "$defer_reason" != "file_scope_collision" ] && continue
-      collision_scope=$(echo "$line" | jq -r '.collision_scope // ""')
-      [ "$collision_scope" != "in_batch" ] && continue
-      colliding=$(echo "$line" | jq -r '.colliding_task_number // ""')
-      [ -z "$colliding" ] && continue
-      already=false
-      for h in "${handled_pair_members[@]:-}"; do
-        [ "$h" = "$tn" ] && already=true
-      done
-      [ "$already" = true ] && continue
-      if [ "$tn" -lt "$colliding" ]; then lower="$tn"; higher="$colliding"; else lower="$colliding"; higher="$tn"; fi
-      propose_edge_for_pair "$lower" "$higher"
-      any_sequence_rendered=true
-      handled_pair_members+=("$tn" "$colliding")
-    done <<< "$verdicts"
-
-    local -a next_remaining=() dropped_other=()
-    local in_handled
-    while IFS= read -r line; do
-      [ -z "$line" ] && continue
-      tn=$(echo "$line" | jq -r '.task_number')
-      decision=$(echo "$line" | jq -r '.decision')
-      in_handled=false
-      for h in "${handled_pair_members[@]:-}"; do
-        [ "$h" = "$tn" ] && in_handled=true
-      done
-      [ "$in_handled" = true ] && continue
-      if [ "$decision" = "admit" ]; then
-        next_remaining+=("$tn")
-      else
-        dropped_other+=("$tn")
-      fi
-    done <<< "$verdicts"
-
-    if [ "${#dropped_other[@]}" -eq 0 ] && [ "${#handled_pair_members[@]}" -eq 0 ]; then
+    run_candidate_round next_list "${remaining[@]}"
+    round_rc=$?
+    if [ "$round_rc" -eq 2 ]; then
       local IFS=', '
-      echo "/orchestrate ${next_remaining[*]}"
+      echo "/orchestrate ${remaining[*]}"
       unset IFS
-      render_verdict_evidence "$verdicts"
+      render_verdict_evidence "$ROUND_LAST_VERDICTS"
       echo "  (verified admissible when suggested, against the current queue/registry;"
       echo "   re-run this suggester, or re-dispatch and let the real admission check at"
       echo "   dispatch time, to re-verify before acting)"
       return 0
+    elif [ "$round_rc" -eq 9 ]; then
+      return 1
     fi
-    remaining=("${next_remaining[@]}")
+    next_arr=()
+    while IFS= read -r t; do
+      [ -n "$t" ] && next_arr+=("$t")
+    done <<< "$next_list"
+    remaining=("${next_arr[@]}")
   done
+
+  # Defect-1 conflict-free-subset second pass (see function header above): only reached when
+  # the main loop above exhausted the pool without rendering a stable joint batch.
+  if [ "$any_sequence_rendered" = true ]; then
+    local -a lowers=()
+    local key
+    if [ "${#pairs_this_call[@]}" -gt 0 ]; then
+      for key in "${!pairs_this_call[@]}"; do
+        lowers+=("${key%%:*}")
+      done
+    fi
+    local -a admitted_members=()
+    if [ "${#ever_admitted[@]}" -gt 0 ]; then
+      for key in "${!ever_admitted[@]}"; do
+        admitted_members+=("$key")
+      done
+    fi
+    local -a subset=()
+    if [ "${#admitted_members[@]}" -gt 0 ] || [ "${#lowers[@]}" -gt 0 ]; then
+      while IFS= read -r t; do
+        [ -n "$t" ] && subset+=("$t")
+      done < <(printf '%s\n' "${admitted_members[@]:-}" "${lowers[@]:-}" | sort -n -u)
+    fi
+
+    while [ "${#subset[@]}" -gt 0 ]; do
+      run_candidate_round next_list "${subset[@]}"
+      round_rc=$?
+      if [ "$round_rc" -eq 2 ]; then
+        local IFS=', '
+        echo "/orchestrate ${subset[*]}"
+        unset IFS
+        render_verdict_evidence "$ROUND_LAST_VERDICTS"
+        echo "  (additive to the ordered sequence(s) above -- a colliding pair is never a"
+        echo "   replacement for a joint batch. Verified admissible when suggested, against"
+        echo "   the current queue/registry; re-run this suggester, or re-dispatch and let"
+        echo "   the real admission check at dispatch time, to re-verify before acting)"
+        return 0
+      elif [ "$round_rc" -eq 9 ]; then
+        break
+      fi
+      next_arr=()
+      while IFS= read -r t; do
+        [ -n "$t" ] && next_arr+=("$t")
+      done <<< "$next_list"
+      subset=("${next_arr[@]}")
+    done
+  fi
 
   [ "$any_sequence_rendered" = true ] && return 0
   return 1
 }
 
+# ── suggest_from_pool(): thin wrapper preserving the pre-Phase-2 entry point -- applies
+#    select_candidates()'s composed three-pass doctrine to the given pool, then hands the
+#    result to suggest_from_candidates(). Used by mode_alternatives() (Mode B keeps its
+#    existing single-pool behavior unchanged, per the plan's Non-Goals) and by this script's
+#    own test suite's expectations for the single-selection entry point. ───────────────────────
+suggest_from_pool() {
+  local -a pool=("$@")
+  [ "${#pool[@]}" -eq 0 ] && return 1
+
+  local -a candidates=()
+  local t
+  while IFS= read -r t; do
+    [ -n "$t" ] && candidates+=("$t")
+  done < <(select_candidates "${pool[@]}")
+  [ "${#candidates[@]}" -eq 0 ] && return 1
+
+  suggest_from_candidates "${candidates[@]}"
+}
+
 # ── mode_next_batch(): Mode A. Pool = the full ready pool. Read-only: specs/state.json is
-#    never written in this default (non-`--write-edges`) form. ─────────────────────────────────
+#    never written in this default (non-`--write-edges`) form.
+#
+#    Defect 2 fix: renders up to MAX_BATCH_OPTIONS distinct, labelled, probe-verified batch
+#    options -- one per selection-doctrine criterion (shared territory, topic cohesion, graph
+#    width), each independently selected via select_candidates_for_criterion() (criterion-only,
+#    no cross-criterion exclusion -- see that function's header) and independently probed via
+#    suggest_from_candidates(). A criterion whose own candidate pool is empty is skipped; an
+#    option whose candidate SET duplicates an already-rendered option's set is skipped rather
+#    than printed twice (D1). PROBE_INVOCATION_COUNT/MAX_PROBE_INVOCATIONS stay the one shared
+#    counter and cap across all three options (D2); reaching the cap mid-render prints the
+#    existing explicit cap-reached line (from inside run_candidate_round) plus one additional
+#    line stating the option list was cut short by the cap, retains whatever already rendered,
+#    and stops -- never a silent truncation of the option list. ───────────────────────────────
 mode_next_batch() {
   local -a ready=()
+  local t
   while IFS= read -r t; do
     [ -n "$t" ] && ready+=("$t")
   done < <(build_ready_pool)
@@ -684,9 +973,57 @@ mode_next_batch() {
     exit 0
   fi
 
-  if ! suggest_from_pool "${ready[@]}"; then
+  declare -A criterion_label=(
+    [territory]="shared territory -- a file_scope territory-mandatory group"
+    [topic]="topic cohesion -- a shared-topic group"
+    [width]="graph width -- the widest independent set in the ready pool"
+  )
+  local -a criteria=(territory topic width)
+  local -a rendered_set_csvs=()
+  local criterion options_rendered=0 any_option_rendered=false
+  local -a crit_candidates=()
+
+  for criterion in "${criteria[@]}"; do
+    [ "$options_rendered" -ge "$MAX_BATCH_OPTIONS" ] && break
+
+    crit_candidates=()
+    while IFS= read -r t; do
+      [ -n "$t" ] && crit_candidates+=("$t")
+    done < <(select_candidates_for_criterion "$criterion" "" "${ready[@]}")
+    [ "${#crit_candidates[@]}" -eq 0 ] && continue
+
+    local csv dup=false seen_csv
+    csv="$(printf '%s\n' "${crit_candidates[@]}" | sort -n -u | paste -sd, -)"
+    for seen_csv in "${rendered_set_csvs[@]:-}"; do
+      [ "$seen_csv" = "$csv" ] && dup=true
+    done
+    if [ "$dup" = true ]; then
+      continue
+    fi
+
+    echo ""
+    echo "Option $((options_rendered + 1)) -- ${criterion_label[$criterion]}:"
+    if suggest_from_candidates "${crit_candidates[@]}"; then
+      any_option_rendered=true
+      rendered_set_csvs+=("$csv")
+      options_rendered=$((options_rendered + 1))
+    fi
+
+    if [ "$PROBE_CAP_HIT" = true ]; then
+      echo ""
+      echo "Batch-option search stopped: the shared probe-invocation cap was reached while"
+      echo "rendering option $((options_rendered)); the option list is cut short by the cap"
+      echo "rather than silently truncated. ${options_rendered} option(s) above were rendered"
+      echo "before the cap was reached. Re-run the suggester to continue from a fresh cap"
+      echo "budget."
+      break
+    fi
+  done
+
+  if [ "$any_option_rendered" = false ]; then
     echo "No suggestible batch: every candidate drawn from a ready pool of ${#ready[@]} task(s)"
-    echo "deferred this round; re-run after the deferring condition(s) clear."
+    echo "deferred this round, for every selection-doctrine criterion tried; re-run after the"
+    echo "deferring condition(s) clear."
   fi
   exit 0
 }
