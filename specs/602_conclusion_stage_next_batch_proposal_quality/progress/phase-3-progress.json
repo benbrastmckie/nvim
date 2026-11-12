@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "A Dedicated Fail-Closed Approval Key for the Edge Write",
+  "started_at": "2026-11-12T00:00:00Z",
+  "last_updated": "2026-11-12T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "extend closed --channel vocabulary to a|b|c|edges in both case arms and error messages", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 2, "description": "usage header and ledger-shape comment updated to describe the key set and edges' non-channel standing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 3, "description": "fail-closed read semantics unchanged for edges", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 4, "description": "approval-isolation case extended with edges cross-key assertions in both directions plus unrecorded/no/malformed", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"]},
+    {"id": 5, "description": "invalid --channel value rejected with documented exit status (1 for --record-approval, 2 for --check-approval)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

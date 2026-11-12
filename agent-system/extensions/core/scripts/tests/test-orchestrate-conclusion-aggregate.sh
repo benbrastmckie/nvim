@@ -286,6 +286,76 @@ SID="sess_test_$$_aggregate"
 }
 
 # =====================================================================================
+# Case (g-edges) [ACCEPTANCE-CRITICAL]: the "edges" approval key (Step 7's next-batch
+# edge-write gate, NOT a fourth channel) is cross-isolated from a/b/c in BOTH directions,
+# and shares the identical fail-closed posture (unrecorded/no/malformed) case (g) already
+# proves for a/b/c. An invalid --channel value is still rejected with the documented exit
+# status for both --record-approval (1) and --check-approval (2).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+
+  # "edges" yes leaves a/b/c not-approved.
+  gesid="${SID}_ge1"
+  run_agg "$scratch" --record-approval --session "$gesid" --channel edges --answer yes >/dev/null 2>&1
+  run_agg "$scratch" --check-approval --session "$gesid" --channel edges >/dev/null 2>&1; edges_ok=$?
+  run_agg "$scratch" --check-approval --session "$gesid" --channel a >/dev/null 2>&1; ea_ok=$?
+  run_agg "$scratch" --check-approval --session "$gesid" --channel b >/dev/null 2>&1; eb_ok=$?
+  run_agg "$scratch" --check-approval --session "$gesid" --channel c >/dev/null 2>&1; ec_ok=$?
+  case_ge1=false
+  if [ "$edges_ok" -eq 0 ] && [ "$ea_ok" -ne 0 ] && [ "$eb_ok" -ne 0 ] && [ "$ec_ok" -ne 0 ]; then
+    case_ge1=true
+  fi
+
+  # Channel (a) yes leaves "edges" not-approved (the OPPOSITE direction), fresh session.
+  gesid2="${SID}_ge2"
+  run_agg "$scratch" --record-approval --session "$gesid2" --channel a --answer yes >/dev/null 2>&1
+  run_agg "$scratch" --check-approval --session "$gesid2" --channel edges >/dev/null 2>&1; edges2_ok=$?
+  case_ge2=false
+  [ "$edges2_ok" -ne 0 ] && case_ge2=true
+
+  # Unrecorded "edges" on a brand-new session reads not-approved.
+  gesid3="${SID}_ge3"
+  run_agg "$scratch" --check-approval --session "$gesid3" --channel edges >/dev/null 2>&1; edges3_ok=$?
+  case_ge3=false
+  [ "$edges3_ok" -ne 0 ] && case_ge3=true
+
+  # A "no" answer for "edges" reads not-approved.
+  gesid4="${SID}_ge4"
+  run_agg "$scratch" --record-approval --session "$gesid4" --channel edges --answer no >/dev/null 2>&1
+  run_agg "$scratch" --check-approval --session "$gesid4" --channel edges >/dev/null 2>&1; edges4_ok=$?
+  case_ge4=false
+  [ "$edges4_ok" -ne 0 ] && case_ge4=true
+
+  # A malformed ledger reads "edges" as not-approved too.
+  gesid5="${SID}_ge5"
+  mkdir -p "$scratch/specs/.orchestration"
+  echo "{ not valid json" > "$scratch/specs/.orchestration/.conclusion-approval-${gesid5}.json"
+  run_agg "$scratch" --check-approval --session "$gesid5" --channel edges >/dev/null 2>&1; edges5_ok=$?
+  case_ge5=false
+  [ "$edges5_ok" -ne 0 ] && case_ge5=true
+
+  # An invalid --channel value is still rejected, with the documented exit status, for both
+  # --record-approval (1) and --check-approval (2).
+  gesid6="${SID}_ge6"
+  run_agg "$scratch" --record-approval --session "$gesid6" --channel bogus --answer yes >/dev/null 2>&1
+  invalid_record_rc=$?
+  run_agg "$scratch" --check-approval --session "$gesid6" --channel bogus >/dev/null 2>&1
+  invalid_check_rc=$?
+  case_ge6=false
+  if [ "$invalid_record_rc" -eq 1 ] && [ "$invalid_check_rc" -eq 2 ]; then
+    case_ge6=true
+  fi
+
+  if [ "$case_ge1" = "true" ] && [ "$case_ge2" = "true" ] && [ "$case_ge3" = "true" ] \
+    && [ "$case_ge4" = "true" ] && [ "$case_ge5" = "true" ] && [ "$case_ge6" = "true" ]; then
+    common_test_pass "(g-edges) [ACCEPTANCE-CRITICAL] the edges approval key is cross-isolated from a/b/c in both directions, shares the fail-closed posture, and an invalid --channel value is still rejected with the documented exit status"
+  else
+    common_test_fail "(g-edges) edges cross-key isolation: ge1=$case_ge1 ge2=$case_ge2 ge3=$case_ge3 ge4=$case_ge4 ge5=$case_ge5 ge6=$case_ge6 (invalid_record_rc=$invalid_record_rc invalid_check_rc=$invalid_check_rc)"
+  fi
+}
+
+# =====================================================================================
 # Case (h): --help exits 0 from the deployed copy but refuses from the source store
 # (deploy-root-guard applies to every flag, including --help).
 # =====================================================================================

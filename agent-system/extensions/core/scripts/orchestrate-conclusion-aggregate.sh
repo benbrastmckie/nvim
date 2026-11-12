@@ -18,10 +18,10 @@
 #       `"open"`, so it enters classification rather than being silently dropped; the output's
 #       `implicit_open_count` field reports how many candidates arrived that way, informational
 #       only. Emits one JSON document on stdout.
-#   orchestrate-conclusion-aggregate.sh --record-approval --session SID --channel a|b|c --answer yes|no
-#       Writes one independent record for that channel into this invocation's approval ledger.
-#   orchestrate-conclusion-aggregate.sh --check-approval --session SID --channel a|b|c
-#       Exits 0 only when that channel's own ledger record says "yes". FAIL CLOSED: exits
+#   orchestrate-conclusion-aggregate.sh --record-approval --session SID --channel a|b|c|edges --answer yes|no
+#       Writes one independent record for that key into this invocation's approval ledger.
+#   orchestrate-conclusion-aggregate.sh --check-approval --session SID --channel a|b|c|edges
+#       Exits 0 only when that key's own ledger record says "yes". FAIL CLOSED: exits
 #       non-zero for "no", an absent record, a malformed ledger, or any internal error -- the one
 #       deliberate exception to this codebase's usual fail-open guard posture, because a
 #       mis-firing channel gate is strictly worse than a channel that fails to fire when it
@@ -30,10 +30,20 @@
 #   orchestrate-conclusion-aggregate.sh --help
 #       Show this usage and exit 0.
 #
+# The closed `--channel` key vocabulary is `a|b|c|edges`. Keys "a", "b", "c" are the three
+# conclusion-stage CHANNELS (fix-now, agent-system change, follow-up task). "edges" is NOT a
+# fourth channel -- it is an independent, non-channel approval key for the conclusion stage's
+# Step 7 next-batch edge write (see context/contracts/conclusion-stage.md). It is gated and read
+# through the exact same fail-closed `--record-approval`/`--check-approval` mechanism as a
+# channel, under its own key, so no channel's approval ever satisfies "edges" and an "edges"
+# approval never satisfies any channel -- see the approval-isolation test for the cross-key proof
+# in both directions.
+#
 # The approval ledger lives at specs/.orchestration/.conclusion-approval-{session_id}.json (the
 # existing **/.orchestration/ ephemeral, gitignored runtime-file class -- see
 # context/standards/orchestrator-runtime-files.md), one JSON object per invocation with up to
-# three keys ("a", "b", "c"), each "yes" or "no". Read-merge-write under flock, lazily created.
+# four keys ("a", "b", "c", "edges"), each "yes" or "no". Read-merge-write under flock, lazily
+# created.
 #
 # NOT RUNNABLE FROM THE SOURCE STORE: deploy-root-guard.sh (sourced below) fails loudly when
 # invoked from agent-system/extensions/core/scripts/. Deploy first (bash
@@ -112,8 +122,8 @@ if [ "$MODE" = "record-approval" ]; then
     exit 1
   fi
   case "$channel_arg" in
-    a|b|c) ;;
-    *) echo "error: invalid --channel '$channel_arg' (must be one of: a|b|c)" >&2; exit 1 ;;
+    a|b|c|edges) ;;
+    *) echo "error: invalid --channel '$channel_arg' (must be one of: a|b|c|edges)" >&2; exit 1 ;;
   esac
   case "$answer_arg" in
     yes|no) ;;
@@ -142,8 +152,8 @@ if [ "$MODE" = "check-approval" ]; then
     exit 2
   fi
   case "$channel_arg" in
-    a|b|c) ;;
-    *) echo "error: invalid --channel '$channel_arg' (must be one of: a|b|c)" >&2; exit 2 ;;
+    a|b|c|edges) ;;
+    *) echo "error: invalid --channel '$channel_arg' (must be one of: a|b|c|edges)" >&2; exit 2 ;;
   esac
 
   if [ ! -s "$LEDGER_FILE" ]; then

@@ -287,26 +287,26 @@ claiming three.
 
 ---
 
-### Phase 3: A Dedicated Fail-Closed Approval Key for the Edge Write [NOT STARTED]
+### Phase 3: A Dedicated Fail-Closed Approval Key for the Edge Write [COMPLETED]
 
 **Goal**: `orchestrate-conclusion-aggregate.sh` accepts and gates a dedicated `edges` approval
 key, fully isolated from channels (a), (b), and (c) in both directions.
 
 **Tasks**:
 
-- [ ] Extend the closed `--channel` vocabulary in both `--record-approval` and
+- [x] Extend the closed `--channel` vocabulary in both `--record-approval` and
       `--check-approval` from `a|b|c` to `a|b|c|edges`, updating the two `case` arms and both
-      error messages so an unrecognized value still fails loudly.
-- [ ] Update the script's usage header and its ledger-shape comment to describe the key set,
+      error messages so an unrecognized value still fails loudly. *(completed)*
+- [x] Update the script's usage header and its ledger-shape comment to describe the key set,
       stating explicitly that `edges` is a non-channel approval key for the conclusion stage's
-      next-batch edge write and NOT a fourth channel.
-- [ ] Leave the fail-closed read semantics untouched: an absent record, a `no`, or a malformed
-      ledger all read as not approved for `edges` exactly as for `a`/`b`/`c`.
-- [ ] Extend `test-orchestrate-conclusion-aggregate.sh`'s approval-isolation case with the
+      next-batch edge write and NOT a fourth channel. *(completed)*
+- [x] Leave the fail-closed read semantics untouched: an absent record, a `no`, or a malformed
+      ledger all read as not approved for `edges` exactly as for `a`/`b`/`c`. *(completed)*
+- [x] Extend `test-orchestrate-conclusion-aggregate.sh`'s approval-isolation case with the
       `edges` key: recording `yes` for `edges` leaves `a`, `b`, `c` not-approved; recording `yes`
       for `a` leaves `edges` not-approved; an unrecorded `edges`, a recorded `no`, and a
-      malformed ledger each read as not-approved.
-- [ ] Assert an invalid `--channel` value is still rejected with the documented exit status.
+      malformed ledger each read as not-approved. *(completed)*
+- [x] Assert an invalid `--channel` value is still rejected with the documented exit status. *(completed)*
 
 **Timing**: 45 minutes
 
