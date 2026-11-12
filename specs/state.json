@@ -103040,7 +103040,8 @@
         "agent-system/extensions/core/scripts/tests/test-lint-test-root-resolution.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
         "agent-system/extensions/core/scripts/tests/test-source-store-path-lib.sh",
-        "agent-system/extensions/core/scripts/verify-deploy.sh"
+        "agent-system/extensions/core/scripts/verify-deploy.sh",
+        "agent-system/extensions/core/manifest.json"
       ],
       "created": "2026-11-11T12:34:20Z",
       "last_updated": "2026-11-12T06:51:33Z",
