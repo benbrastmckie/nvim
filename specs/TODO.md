@@ -1,5 +1,5 @@
 ---
-next_project_number: 609
+next_project_number: 610
 ---
 
 # TODO
@@ -15,7 +15,7 @@ next_project_number: 609
 | 2 | 384,399,439,457,458,462,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,602,605,606 | 383,390,398,431,451,452,455,459,472,476,479,484,491,504,505,515,534,535,538,539,548,549,563,597,600,603,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,588,592,593 | 439,451,458,472,476,486,509,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,594 | 438,479,492,501,547,552,580,593 | core-agent-system, agent-system |
-| 5 | 595 | 539,594 | agent-system |
+| 5 | 595,609 | 539,577,594 | agent-system |
 | 6 | 596 | 595 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -143,6 +143,7 @@ next_project_number: 609
   └─ 543 [NOT STARTED] — Tell the re-prompted dispatch to distrust the error count it...
     └─ 547 [NOT STARTED] — Confirm the blocker-research aux carrier landed, and refuse...
       └─ 577 [NOT STARTED] — Make a blocker-triggered aux plan-revision consumable by...
+        └─ 609 [NOT STARTED] — Stop a pending user question from charging its own task into...
     └─ 570 [NOT STARTED] — Stop the stall signal firing on commits it cannot attribute...
 535 [NOT STARTED] — Carve a task's own specs/ artifacts out of...
   └─ 541 [NOT STARTED] — Stop git-snapshot.sh --no-revert artifacts from contaminating...
@@ -196,6 +197,53 @@ next_project_number: 609
 585 [NOT STARTED] — Make the batch-gate deferral binding and cache repeat gate...
 
 ## Tasks
+
+### 609. Stop a pending user question from charging its own task into failed_tasks and killing its dependents
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 577
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: an /orchestrate --hard --lit run over BimodalLogic tasks 925 and 924, session sess_1794425759_f1ad4f. Defect class ASK_USER_CHARGED_TO_FAILED_TASKS.
+
+## Goal
+
+A pending user question is not a task failure. Today it is recorded as one, and the record is never retracted, so answering a blocking question is what kills the task that asked it.
+
+## The mechanism, measured end to end -- RE-DERIVE rather than trusting this snapshot
+
+1. `scripts/orchestrate-cycle-postflight.sh` resolves `verdict` at roughly line 1719. `ask_user` takes precedence over every other signal there: when a `user_decision` payload is present on the handoff or `.return-meta.json`, the verdict is `ask_user` regardless of what the status ladder did with `dispatch_status`.
+2. The same script then charges `failed_tasks` at roughly line 2162, under `if [ "$dispatch_status" = "failed" ] || [ "$dispatch_status" = "blocked" ] || [ "$offschema_dispatch_status" = "true" ]`. That condition never consults `verdict`. So a `blocked` dispatch that produced a pending, answerable question is charged exactly like a dispatch that genuinely failed.
+3. `skills/skill-orchestrate/SKILL.md`'s Move 3 routes the `ask_user` verdict into `pending_ask_user[]` for Move 4's batched `AskUserQuestion` relay, and Move 4 records the answer via `scripts/orchestrate-record-decision.sh`. Nothing in that path clears a `failed_tasks` entry -- the decision writer is documented as single-responsibility (append one entry to `.decisions.json`) and touches no multi-state file.
+4. The next cycle's `scripts/orchestrate-cycle-plan.sh` filters an already-`failed_tasks` task out of the eligible set, and emits for each dependent "a predecessor dependency reached a non-completed terminal status or is itself failed; this task can never proceed".
+
+OBSERVED LIVE: task 925 returned `dispatch_status=blocked` with a blocking `user_decision`; postflight returned `verdict=ask_user` AND charged 925 into `failed_tasks`. The relay asked the question, the user answered, the answer was recorded. The following cycle then produced `dispatch: []`, `blocked: [{task: 924, reason: "a predecessor dependency reached a non-completed terminal status or is itself failed; this task can never proceed"}]`, with `failed_tasks: [924, 925]` -- 924 charged by the `has_failed_pred` branch in cycle-plan.sh on the strength of 925's bogus entry. Zero dispatches. Both tasks dead for the run until `failed_tasks` was cleared by hand, after which both completed normally in the same invocation.
+
+GENERALIZATION: this is not specific to those tasks or that question. Every blocking `AskUserQuestion` in this system kills its own task and every dependent at the moment the human answers it.
+
+## Candidate remedies -- EVALUATE, do not assume one
+
+(i) Gate the charge on the verdict: skip it when `verdict = "ask_user"` AND the dispatch is not off-schema. Preserve the off-schema charge -- `halt` is literally `offschema_dispatch_status` (see the script's own return-shape block), and an off-schema status is a protocol violation whose outcome cannot be trusted, not a resumable condition.
+(ii) Clear the entry when the corresponding `pending_ask_user` entry is answered, in Move 4 or in `orchestrate-record-decision.sh`. Weigh against that script's stated single-responsibility contract before extending it.
+(iii) Settle explicitly what happens when a question is NEVER answered (non-interactive run, user declines, run ends). Verify the claim that a safety net already exists: the next cycle's `scripts/orchestrate-triage-classify.sh` should classify the still-blocked task `needs_human`, and `scripts/orchestrate-cycle-plan.sh`'s `needs_human` branch charges `failed_tasks` there. If that holds, postflight pre-charging is not merely harmful but redundant, and the division of labour is the argument for (i).
+
+ALSO IN SCOPE -- the unblocking half: clearing `failed_tasks` was necessary but not sufficient in the observed instance. The plan's Phase 2 marker was left `[BLOCKED]` by the escalating dispatch and nothing in the loop clears it once the question is answered, so it had to be flipped to `[NOT STARTED]` by hand too. Decide whether answering a blocking question should also retract the phase marker the escalation set, and where that belongs. Note `scripts/orchestrate-cycle-plan.sh` and `scripts/orchestrate-build-dispatch.sh` contain no `BLOCKED` phase-marker handling at all today.
+
+## Relationship to adjacent records -- SHARED TERRITORY, READ BEFORE STARTING
+
+Task 577 closes the INVERSE cascade-amplifier failure on the `needs_human` triage path, where an aux plan-revision remedy is in flight. Its `file_scope` excludes `scripts/orchestrate-cycle-postflight.sh` and its trigger is a `partial` status with non-empty handoff `blockers[]`, so this is a genuinely distinct write site, not a duplicate. But the two share `skills/skill-orchestrate/SKILL.md` and `docs/architecture/orchestrate-state-machine.md`, and 577's own "ALSO IN SCOPE" paragraph states the same underlying principle: a dependent must not be written off while its predecessor's remedy is in flight. Per the "Batching Is the Default" guardrail the overlap is handled with a dependency edge and a sequence, not an exclusion -- hence the edge on 577. Consider whether both records should converge on one stated rule about when `failed_tasks` may be charged at all, rather than two independent patches.
+
+## Acceptance
+
+A regression test under `scripts/tests/` that FAILS on today's code: a `blocked` dispatch carrying a `user_decision` payload must NOT appear in the multi-state `failed_tasks` array, while an off-schema dispatch still must. Plus a case proving a dependent is not declared unreachable while its predecessor's user question is pending. State the chosen rule in `docs/architecture/orchestrate-state-machine.md` (its "Consolidated Output and Exit-Status Resolution" section is where `failed_tasks` semantics are described) and in `skills/skill-orchestrate/SKILL.md`'s Move 3 bookkeeping block.
+
+NOTE ON THE ORIGINATING INSTANCE: the charge site was already corrected in the source store during the originating session, and the originating tasks were unblocked by hand and completed. This record is about the REMAINING hardening -- the regression test, the documented rule, remedy (iii)'s never-answered case, and the phase-marker half -- not about recovering any particular task. Re-derive the current state of the charge site rather than assuming either the pre-fix or post-fix shape.
+
+DURABLE EVIDENCE (in the BimodalLogic repo, /home/benjamin/Projects/BimodalLogic): specs/events.jsonl; specs/.orchestration/.return-meta-multi-sess_1794425759_f1ad4f.json (metadata.detected_defects[0], class ASK_USER_CHARGED_TO_FAILED_TASKS).
+
+---
 
 ### 608. Improve leaderas chat pane styling
 - **Status**: [NOT STARTED]
