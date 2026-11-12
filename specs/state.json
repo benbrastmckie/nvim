@@ -52681,9 +52681,15 @@
           "path": "specs/531_file_scope_declaration_hygiene_remediation/plans/01_file-scope-declaration-hygiene.md",
           "type": "plan",
           "summary": "4-phase plan: narrow 473 and 518, backfill 567/568/607 plus 531's own stale entry, correct two evidence-probe citations, final full-gate verification."
+        },
+        {
+          "path": "specs/531_file_scope_declaration_hygiene_remediation/summaries/01_file-scope-declaration-hygiene-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all four phases, premise corrections, and the evidence-probe-detector follow-up recommendation."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Remediated both file_scope declaration-hygiene defects (two coarse whole-directory entries narrowed to measured files; three absent declarations backfilled plus task 531's own stale entry corrected), and corrected two source-store citations of a nonexistent evidence-probe script. All four plan phases COMPLETED; validate-state.sh Checks 8/9/10/11 all PASS; the full verify-deploy.sh and run-all.sh gates ran and every non-pre-registered finding was attributed to sibling task 601's in-flight uncommitted work, not this task."
     },
     {
       "project_number": 533,

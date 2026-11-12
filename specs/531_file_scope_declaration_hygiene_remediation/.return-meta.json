@@ -1,5 +1,51 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/531_file_scope_declaration_hygiene_remediation/summaries/01_file-scope-declaration-hygiene-summary.md",
+      "summary": "Narrowed projects 473/518's coarse file_scope declarations, backfilled 567/568/607's absent ones plus task 531's own stale entry, corrected two false check-evidence-probes.sh citations, and confirmed validate-state.sh Checks 8/9/10/11 all PASS via the full verify-deploy.sh/run-all.sh gate set."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Remediated both file_scope declaration-hygiene defects (two coarse whole-directory entries narrowed to measured files; three absent declarations backfilled plus task 531's own stale entry corrected), and corrected two source-store citations of a nonexistent evidence-probe script. All four plan phases COMPLETED; validate-state.sh Checks 8/9/10/11 all PASS; the full verify-deploy.sh and run-all.sh gates ran and every non-pre-registered finding was attributed to sibling task 601's in-flight uncommitted work, not this task."
+  },
+  "modified_files": [
+    "specs/state.json",
+    "specs/TODO.md",
+    "agent-system/extensions/core/context/patterns/task-abandon-mode.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+    "specs/531_file_scope_declaration_hygiene_remediation/summaries/01_file-scope-declaration-hygiene-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a shared, concurrently-written file (e.g. index-entries.json, state.json) already carries pre-existing foreign uncommitted hunks unrelated to your own edit, do not pass it to git-commit-scoped.sh/git-commit-phase.sh -- both wholesale `git add` a named pathspec, sweeping foreign hunks into your commit. Instead: extract only your own hunk from `git diff` (locate it via its `@@` header), apply it to the index alone with `git apply --cached <patch>`, then commit with a bare `git commit -m ...` (no pathspec) alongside any other fully-clean files added normally via `git add`. This leaves the foreign hunks untouched and unstaged for their owning task.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/531_file_scope_declaration_hygiene_remediation/summaries/01_file-scope-declaration-hygiene-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "git",
+        "partial-staging",
+        "concurrency",
+        "git-apply-cached",
+        "shared-file"
+      ]
+    },
+    {
+      "content": "git-commit-phase.sh's Containment Self-Check mechanically drops any files_touched path not in the task's own declared file_scope and deposits it into .return-meta.json's proposed_file_scope array. This proposal can be resolved directly within the same dispatch (not just left as a follow-up) by folding the proposed path into the task's own file_scope the next time that task's file_scope is itself being edited -- e.g. during a dedicated file_scope-correction phase.",
+      "category": "PATTERN",
+      "source_artifact": "specs/531_file_scope_declaration_hygiene_remediation/summaries/01_file-scope-declaration-hygiene-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "file_scope",
+        "proposed_file_scope",
+        "containment-check",
+        "git-commit-phase"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794459760_979d1d",
     "agent_type": "general-implementation-agent",
@@ -8,10 +54,13 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
   },
-  "dispatch_seq": 19,
   "proposed_file_scope": [
     "agent-system/extensions/core/index-entries.json"
-  ]
+  ],
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

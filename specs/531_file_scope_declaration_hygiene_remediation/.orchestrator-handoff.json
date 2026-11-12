@@ -1,17 +1,20 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Planned the file_scope declaration-hygiene remediation in 4 phases (3.0h, 3 dependency waves). Re-validated every carried figure in the dispatch description against live state: project 177 does not exist in this repository, the absent-declaration count is 3 of 137 (not 28 of 52), the absent-declaration defect is validate-state.sh Check 10 (not Check 9, which is duplicates and already PASS), and scripts/check-evidence-probes.sh exists nowhere in the tree or history. Also found that scripts/backfill-file-scope.sh already exists and declines the three remaining tasks by design (plan-less), so Phase 2 is a hand declaration, not a script run. Phase 3 corrects the two false citations instead of building a detector, which is named as an explicit non-goal with a follow-up recommendation.",
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "phases_completed": 4,
+  "phases_total": 4,
+  "summary": "Narrowed two coarse whole-directory file_scope declarations (projects 473, 518) to measured file-level entries, backfilled three absent declarations (567, 568, 607) plus task 531's own stale entry, and corrected two source-store citations of a nonexistent check-evidence-probes.sh script. All four plan phases COMPLETED; validate-state.sh Checks 8/9/10/11 all PASS; the full verify-deploy.sh and run-all.sh gates ran and every non-pre-registered finding was attributed to sibling task 601's in-flight uncommitted work.",
+  "blockers": [],
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/531_file_scope_declaration_hygiene_remediation/summaries/01_file-scope-declaration-hygiene-summary.md",
+      "summary": "Full implementation summary covering all four phases, premise corrections, and the evidence-probe-detector follow-up recommendation."
+    },
     {
       "type": "plan",
       "path": "specs/531_file_scope_declaration_hygiene_remediation/plans/01_file-scope-declaration-hygiene.md",
-      "summary": "4-phase plan: narrow 473 and 518, backfill 567/568/607 plus 531's own stale entry, correct two evidence-probe citations, final full-gate verification."
+      "summary": "4-phase plan, all phases now [COMPLETED]."
     }
-  ],
-  "phases_completed": 0,
-  "phases_total": 4,
-  "blockers": [],
-  "next_action_hint": "Dispatch implementation. Note that validate-state.sh --strict cannot be the acceptance bar: it additionally promotes two out-of-scope Check 4 WARNs (audit_override, audit_verdict). The plan's bar is per-check cleanliness on Checks 8/9/10 in base mode.",
-  "dispatch_seq": 14
+  ]
 }
