@@ -41,14 +41,27 @@
       "category": "PATTERN",
       "source_artifact": "specs/603_roadmap_command_generated_from_state/summaries/01_roadmap-generated-from-state-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["migration-script", "gfm-tight-list", "paragraph-splitting", "mis-attribution", "losslessness-accounting", "retention-parser-inversion"]
+      "suggested_keywords": [
+        "migration-script",
+        "gfm-tight-list",
+        "paragraph-splitting",
+        "mis-attribution",
+        "losslessness-accounting",
+        "retention-parser-inversion"
+      ]
     },
     {
       "content": "A newly-created agent .md file's subagent_type is not recognized by the Agent tool's subagent roster within the same session it was authored in -- there is no mid-session reload of the harness's dispatchable-agent list. To demonstrate or exercise a brand-new agent end-to-end in the same session that created it, dispatch a general-purpose (or similar catch-all) agent with an explicit instruction to read the new agent's .md file in full and follow it as its own operating contract verbatim. This is also the documented 'Self-Execution Fallback' pattern several skills already carry for the case where the Agent tool is unavailable -- the same fallback covers the registration-timing gap.",
       "category": "INSIGHT",
       "source_artifact": "specs/603_roadmap_command_generated_from_state/summaries/01_roadmap-generated-from-state-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["agent-tool", "subagent-registration", "same-session-limitation", "self-execution-fallback", "new-agent-demonstration"]
+      "suggested_keywords": [
+        "agent-tool",
+        "subagent-registration",
+        "same-session-limitation",
+        "self-execution-fallback",
+        "new-agent-demonstration"
+      ]
     }
   ],
   "metadata": {

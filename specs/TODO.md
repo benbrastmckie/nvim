@@ -13,10 +13,10 @@ next_project_number: 611
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,476,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,599,603,604,606,607,610 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,457,458,462,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,592,593,598,602,605 | 383,390,398,431,451,452,455,459,472,476,479,484,491,504,505,534,535,538,539,548,549,563,599,603,604 | core-agent-system, extensions, neovim, ... |
-| 3 | 436,438,454,501,508,547,552,570,571,579,588,594 | 439,458,472,476,486,509,518,519,542,543,564,593 | core-agent-system, file-scope-lifecycle, agent-system |
-| 4 | 524,561,577,581,595 | 438,479,492,501,539,547,552,580,594 | core-agent-system, agent-system |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,602,604,606,607,610 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,572,576,583,584,592,593,598,605 | 383,390,398,431,451,452,455,459,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604 | core-agent-system, extensions, neovim, ... |
+| 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594 | 439,458,472,476,486,509,518,519,542,543,564,572,593 | core-agent-system, file-scope-lifecycle, agent-system |
+| 4 | 524,561,577,581,595 | 438,492,501,539,547,552,580,594 | core-agent-system, agent-system |
 | 5 | 596,609 | 577,595 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -38,14 +38,12 @@ next_project_number: 611
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
-476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
-  └─ 586 [NOT STARTED] — Stand up the suite and gate wall-clock cost consumer: delete,...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
   └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
-  └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt...
-491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
   └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the...
-    └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
+    └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt...
+491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
+  └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the... (see above)
 502 [NOT STARTED] — Require research reports to enumerate generated doc-sync surfaces
 503 [NOT STARTED] — Document /revise's unavailability to a dispatched agent
 505 [PLANNED] — Make covering-suite selection resolve a non-core extension's...
@@ -66,14 +64,15 @@ next_project_number: 611
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
-591 [RESEARCHED] — Decide the fate of the errors.json triage surface
-603 [IMPLEMENTING] — Make ROADMAP.md a generated artifact rendered from state.json
-  └─ 602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality
+602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
+476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
+  └─ 586 [NOT STARTED] — Stand up the suite and gate wall-clock cost consumer: delete,...
 517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
+591 [RESEARCHED] — Decide the fate of the errors.json triage surface
 
 ### Extensions
 
@@ -168,7 +167,6 @@ next_project_number: 611
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
 562 [NOT STARTED] — conclusion stage drops null-resolution issue-log entries
-572 [NOT STARTED] — Make the full verification tier honorable under batch concurrency
 599 [NOT STARTED] — Give the batch-gate-deferral directive a narrowing form that...
   └─ 592 [NOT STARTED] — Re-verify or timestamp a task recorded starting position at...
   └─ 593 [NOT STARTED] — Require pinned Lean Challenge signatures to be measured at...
@@ -177,6 +175,7 @@ next_project_number: 611
 607 [NOT STARTED] — Resolve the gate 20 orchestrator context-budget overage and...
 438 [NOT STARTED] — Dependency edges conflate semantic and serialization...
 571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
+572 [NOT STARTED] — Make the full verification tier honorable under batch concurrency
 
 ### Decidability
 
@@ -185,6 +184,7 @@ next_project_number: 611
 ### Uncategorized
 
 585 [NOT STARTED] — Make the batch-gate deferral binding and cache repeat gate...
+  └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
 
@@ -614,12 +614,13 @@ repairs but deliberately built no detector, and #418 made lint-FIXTURE subject r
 
 ### 603. Make ROADMAP.md a generated artifact rendered from state.json
 - **Effort**: large
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 313, Task 528, Task 532
 - **Research**: [603_roadmap_command_generated_from_state/reports/01_roadmap-generated-artifact-research.md]
 - **Plan**: [603_roadmap_command_generated_from_state/plans/01_roadmap-generated-from-state.md]
+- **Summary**: [603_roadmap_command_generated_from_state/summaries/01_roadmap-generated-from-state-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md).
 
@@ -1733,7 +1734,7 @@ repository's own space.
 - **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 572, Task 585
 - **Parent**: Task 587
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
@@ -2484,7 +2485,7 @@ NON-GOALS: no change to how the budget is computed, clamped, charged, or enforce
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 585
 
 **Description**: Make a declared 'Verification Tier: full' actually honorable inside a multi-task /orchestrate batch. Measured this run: task 497 abandoned one unscoped 'bash verify-deploy.sh' after roughly 10 minutes and a second after roughly 18 minutes (test-gate-cache-equivalence.sh alone exceeded 10 minutes against a normal cost far below that), and the batch gate stage itself took roughly 28 minutes at load average 10.4. Both batch tasks therefore substituted scoped --only-gate runs for their plans' declared full tier and recorded the deviation. Gate timeouts in this state are indistinguishable from real failures at the call site: several suites that time out under load pass cleanly standalone (test-gate-lock.sh 16/16, test-lint-state-writer-boundary.sh 28/0), so contention manufactures false findings that then require manual triage. Candidate directions: a shared gate lock or admission token so sibling dispatches serialize their gate runs rather than multiplying them; per-gate cost budgets with an explicit contention-detected outcome distinct from FAIL; gate-level parallelism caps; or making the batch gate stage the single sanctioned full-gate run per invocation with per-task tiers downgraded by contract rather than by each agent's own judgment. Scope deliberately includes the tier-declaration contract, since the present situation has agents routinely deviating from a tier the environment cannot deliver.
 
@@ -7701,7 +7702,7 @@ Whichever is chosen, preserve: the exact-key (not fuzzy) dedup semantics for the
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 491
+- **Dependencies**: Task 479, Task 491
 
 **Description**: Key the backlog-audit confirmation prompt to corroboration rather than to the verdict label, and define that bar once instead of re-deriving it at each consumer.
 
@@ -8452,7 +8453,7 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_d
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 423, Task 445
+- **Dependencies**: Task 423, Task 445, Task 568
 - **Parent**: Task 275
 
 **Description**: Seven shell suites fail in Gate 8 of verify-deploy.sh with no open task tracking them. Make each one green, or make its remaining failure an explicitly declared and attributed baseline expectation, so that a full Gate 8 run regains its value as a binary signal.

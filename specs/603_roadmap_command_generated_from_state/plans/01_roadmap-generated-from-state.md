@@ -2,7 +2,7 @@
 
 - **Task**: 603 - Make specs/ROADMAP.md a wholly generated artifact backed by state.json roadmap
   entries, and add a `/roadmap [instruction]` command/skill/agent that maintains them
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 13 hours
 - **Dependencies**: None declared on this record. Task 602 carries a declared edge running
   *behind* 603 (its `--prune`-wiring question is answered differently once this lands).
