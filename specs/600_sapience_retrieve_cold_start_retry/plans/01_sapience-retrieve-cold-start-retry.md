@@ -370,24 +370,28 @@ read-through.
 
 ---
 
-### Phase 5: Redeploy and run the full gate set [NOT STARTED]
+### Phase 5: Redeploy and run the full gate set [COMPLETED]
 
 **Goal**: Regenerate the deployed `.claude/` tree from the source store and confirm the complete
 repository gate set is green with all of this task's work observable.
 
 **Tasks**:
-- [ ] Confirm the working tree holds only this task's own changes among its declared
+- [x] Confirm the working tree holds only this task's own changes among its declared
       `file_scope`, and that no sibling's in-flight edit is being carried (check `git status
       --short` and `git log` before proceeding; if a foreign commit or modification appears,
-      STOP and report).
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree from the
-      source store.
-- [ ] Confirm the three deployed mirrors now carry the new content:
+      STOP and report). *(completed)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree from the
+      source store. *(completed)*
+- [x] Confirm the three deployed mirrors now carry the new content:
       `.claude/scripts/sapience-retrieve.sh`, `.claude/scripts/tests/test-sapience-capture.sh`,
-      and `.claude/context/project/sapience/domain/per-repo-scoping.md`.
-- [ ] Run the complete gate set and confirm green.
-- [ ] Stage and commit only this task's own files with an explicit file list (never a directory
-      or glob pathspec), via `.claude/scripts/git-commit-scoped.sh`.
+      and `.claude/context/project/sapience/domain/per-repo-scoping.md`. *(completed)*
+- [x] Run the complete gate set and confirm green. *(deviation: altered — per this dispatch's
+      Batch Gate Deferral directive, discharged via the scoped narrowing instead: the four-suite
+      `run-all.sh --only` set and `verify-deploy.sh --skip-slow --only-gate 3,4`, both green
+      against the redeployed tree; the complete gate set was additionally run once for direct
+      observation and showed only pre-existing, unrelated failures -- see Verification below)*
+- [x] Stage and commit only this task's own files with an explicit file list (never a directory
+      or glob pathspec), via `.claude/scripts/git-commit-scoped.sh`. *(completed)*
 
 **Timing**: 0.75 hours
 
