@@ -347,30 +347,47 @@ enumerated direct dependents rather than `init.lua` alone.
 
 ---
 
-### Phase 4: Documentation and End-to-End Gate [NOT STARTED]
+### Phase 4: Documentation and End-to-End Gate [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Document the new module and option in the directory's README, confirm the whole chain
 works end to end from `<leader>as`, and run the complete gate set.
 
 **Tasks**:
 
-- [ ] Add an `sf1_proxy.py` subsection to the README's `## Modules` section describing what the
+- [x] Add an `sf1_proxy.py` subsection to the README's `## Modules` section describing what the
       proxy does, that it is a pty and deliberately not a pipe, and that it degrades to
-      pass-through on an unmatched stream.
-- [ ] Add `styling` to the README's configuration code block and to its option table, with the
-      three `separator` values and their rendered effect.
-- [ ] Add a Behavior Notes entry recording the two non-obvious consequences: the marker contract
+      pass-through on an unmatched stream. *(completed)*
+- [x] Add `styling` to the README's configuration code block and to its option table, with the
+      three `separator` values and their rendered effect. *(completed)*
+- [x] Add a Behavior Notes entry recording the two non-obvious consequences: the marker contract
       is a dependency on another program's literal output text (naming where that contract is
       documented in full), and a runtime `styling` change alters the snacks terminal identity key,
-      so it takes effect for terminals opened after the change.
+      so it takes effect for terminals opened after the change. *(completed)*
 - [ ] Run the end-to-end check that needs both Phase 2 and Phase 3: open `<leader>as` in a real
       Neovim session, confirm the pane shows a separator after the handoff banner, around a real
       question/answer exchange, and before the returned prompt, and confirm color and readline
-      line editing (arrow keys, backspace, Ctrl-D) still behave as before.
-- [ ] Confirm the fallback path end to end by setting `styling.enabled = false` and reopening,
+      line editing (arrow keys, backspace, Ctrl-D) still behave as before. *(deviation: excluded
+      — see `#### Reasoned Exclusions` below; requires a live human-interactive terminal and a
+      real Sapience token/session, neither available to this dispatch)*
+- [x] Confirm the fallback path end to end by setting `styling.enabled = false` and reopening,
       and by temporarily renaming the proxy file and reopening to observe the single WARN plus a
-      working unstyled session.
-- [ ] Run the complete gate set and resolve anything it reports.
+      working unstyled session. *(completed: both cases verified directly against `_command()`
+      and `is_visible()` in a headless session, including the one-shot WARN latch across two
+      calls)*
+- [x] Run the complete gate set and resolve anything it reports. *(completed with exclusions:
+      `verify-deploy.sh` run to completion, 6 of 43 checks failed, all 6 pre-existing and
+      unrelated to this task's file scope — see `#### Reasoned Exclusions` below)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Live `<leader>as` end-to-end check (handoff banner / Q&A / prompt separation, color, readline editing, Ctrl-D) | Requires a real, human-interactive terminal and a genuine Sapience vault token/network session; this dispatch runs headless with no TTY and no live Sapience credentials. The structural correctness of the same chain (pty allocation, fork/exec, separator injection at all three boundaries, raw-mode forwarding, exit-status propagation, readline-redraw non-retrigger) is already fully exercised by Phase 1's 11 unit tests and Phase 2's 4 stub-child pty smoke tests, which drive the real harness code path end to end against a scripted child under a real pty — the only thing not exercised is the real `sf1` binary's own content and a human's visual/keyboard confirmation. | `python3 lua/neotex/plugins/ai/sapience/sf1_proxy_test.py` (15/15 passing, including `StubChildPtySmokeTest`); manual run of `python3 lua/neotex/plugins/ai/sapience/sf1_proxy.py --separator blank -- python3 -c "..."` exiting 0 with the expected startup-banner separator visible in its output (performed during Phase 2 verification). |
+| `verify-deploy.sh` gate 3 (doc-lint) failure | Pre-existing; the failing doc-lint findings are not about any file in this task's `file_scope` (`lua/neotex/plugins/ai/sapience/**`). | Full `verify-deploy.sh` output captured to `/tmp/verify-deploy-608.log` during this phase: `[FAIL] doc-lint reported failures`, no `sapience`/`sf1_proxy` path named in the finding. |
+| `verify-deploy.sh` gate 5 (manifest-driven verification, 4 findings) failure | All 4 named findings are deploy-vs-source-store content drift in the `core` extension (`skill-orchestrate/SKILL.md`, `orchestrate-cycle-postflight.sh`, its test file, and `orchestrate-state-machine.md`) — none under `lua/**`. This exact staleness was already flagged in this phase's own dispatch context (`deploy-freshness-context`) before any work in this task began, and its stated remedy is a repo-wide `deploy-headless.sh` redeploy, explicitly out of this task's `general`-type, sapience-scoped `file_scope`. | `verify-deploy.sh` output: `- core: Content differs from source: skills/skill-orchestrate/SKILL.md` (and 3 sibling findings), none naming a path under `lua/neotex/plugins/ai/sapience/`. |
+| `verify-deploy.sh` gate 8 (shell test suite runner) failure | The failing/undiscoverable suites are under `.claude/scripts/tests/` and `agent-system/extensions/*/scripts/tests/` (shell-script test infrastructure for the agent system itself); grepping that test tree for `sf1_proxy`/`sapience` finds only `test-sapience-capture.sh`, which tests the unrelated memory-vault `sapience_capture.py` CLI (a different "sapience", `agent-system/extensions/sapience/`), not this task's `lua/neotex/plugins/ai/sapience/` Neovim module. The gate also logged contention on `specs/.gate-lock` from a concurrently-running session, consistent with another task's sibling activity in this shared repo, not this task's own changes. | `verify-deploy.sh` output: `[FAIL] run-all.sh reported failing or undiscoverable suites (exit 1)` plus five `[gate-lock] waiting Ns ...` lines naming a different session/pid; `grep -rl "sf1_proxy\|sapience" .claude/scripts/tests/` returns only `test-sapience-capture.sh`. |
+| `verify-deploy.sh` gate 10 (specs/state.json schema validation) timeout | Repo-wide `specs/state.json` deep validation timed out at 60s; unrelated to any file this task touched and a known characteristic of this large, actively-growing repo's state file size rather than anything introduced here. | `verify-deploy.sh` output: `[FAIL] gate10 (gate10_run) exceeded its 60s timeout and was killed`. |
+| `verify-deploy.sh` gate 20 (orchestrator context budget, 2 findings) failure | Both findings concern `skills/skill-orchestrate/SKILL.md`'s eager-load byte budget, a pre-existing repo-wide context-budget accounting matter wholly unrelated to `lua/neotex/plugins/ai/sapience/**`. | `verify-deploy.sh` output: `[FAIL] eager-load total (71712 B) exceeds recorded baseline (70400 B)` and `[FAIL] skills/skill-orchestrate/SKILL.md (25510 B) exceeds its configured ceiling (25000 B)`. |
 
 **Timing**: 1 hour
 

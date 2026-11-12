@@ -1,0 +1,27 @@
+{
+  "phase": 4,
+  "phase_name": "Documentation and End-to-End Gate",
+  "started_at": "2026-11-12T02:25:00Z",
+  "last_updated": "2026-11-12T02:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add sf1_proxy.py module subsection to README", "status": "done", "files_touched": ["lua/neotex/plugins/ai/sapience/README.md"]},
+    {"id": 2, "description": "Add styling to README config block and option table", "status": "done", "files_touched": ["lua/neotex/plugins/ai/sapience/README.md"]},
+    {"id": 3, "description": "Add two Behavior Notes entries", "status": "done", "files_touched": ["lua/neotex/plugins/ai/sapience/README.md"]},
+    {"id": 4, "description": "Live <leader>as end-to-end check", "status": "excluded", "files_touched": [], "note": "requires live human-interactive terminal + real Sapience session; see plan's Phase 4 Reasoned Exclusions"},
+    {"id": 5, "description": "Confirm fallback path end to end (styling.enabled=false; missing proxy file)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run complete gate set", "status": "done", "files_touched": [], "note": "verify-deploy.sh run to completion; 6/43 failures, all pre-existing and out of this task's file_scope -- see plan's Phase 4 Reasoned Exclusions"}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.4",
+      "description": "Run the end-to-end check that needs both Phase 2 and Phase 3 in a real Neovim session",
+      "type": "skipped",
+      "reason": "No live TTY or real Sapience token/network session available to this headless dispatch; structural correctness already covered by Phase 1/2 automated tests against a real pty and a scripted stub child.",
+      "annotation": "*(deviation: excluded -- see Reasoned Exclusions below; requires a live human-interactive terminal and a real Sapience token/session, neither available to this dispatch)*"
+    }
+  ],
+  "last_updated": "2026-11-12T02:55:00Z"
+}

@@ -21,6 +21,20 @@ The window backend: `open`, `show`, `close`, `find`, `visible`, and `reposition`
 `snacks.terminal`. All `snacks` access is wrapped in `pcall`, so a missing `snacks.nvim`
 degrades to a single warning rather than an error.
 
+### sf1_proxy.py
+A pty-proxying wrapper, invoked in place of the bare `sf1` command whenever `styling.enabled`
+is true: it launches sf1 under its own pseudo-terminal and rewrites the merged output byte
+stream to insert a separator (a blank line by default, or a dim horizontal rule) between
+message parts, so the pane reads like Claude Code's turn-separated output instead of one
+unbroken block of text. It is deliberately a pty, not a pipe — a plain shell pipe would turn
+sf1's stdout into a non-tty, disabling both its color output and GNU readline's line editing.
+The filter is pattern-matching, never patch-applying: it keys on a small set of sf1's own
+literal output strings (documented in full in the module's own docblock), and degrades to
+pass-through — "no dividers", never a crash or a corrupted pane — the moment any of that text
+no longer matches. Its own `sf1_proxy_test.py` suite (stdlib `unittest`, no network, no vendor
+dependency) covers the filter logic as a pure byte-chunk function and the pty harness itself
+against a scripted stub child.
+
 ## Configuration
 
 ```lua
@@ -31,6 +45,10 @@ require("neotex.plugins.ai.sapience.init").setup({
   project = "cwd",    -- "cwd" | "git" | false | function
   on_open = nil,      -- optional function, called just before a hidden window is shown
   on_close = nil,     -- optional function, called just after a visible window is hidden
+  styling = {         -- see Modules > sf1_proxy.py above
+    enabled = true,       -- proxy sf1 through sf1_proxy.py to insert turn separators
+    separator = "blank",  -- "blank" | "rule" | "none"
+  },
 })
 ```
 
@@ -42,6 +60,8 @@ require("neotex.plugins.ai.sapience.init").setup({
 | `project`  | `"cwd"\|"git"\|false\|function`      | `"cwd"`    | `--project` scoping strategy |
 | `on_open`  | `function\|nil`                     | `nil`      | Called before a hidden window is shown |
 | `on_close` | `function\|nil`                     | `nil`      | Called after a visible window is hidden |
+| `styling.enabled`   | `boolean`                 | `true`     | Proxy sf1 through `sf1_proxy.py` for turn separation |
+| `styling.separator` | `"blank"\|"rule"\|"none"` | `"blank"`  | `"blank"`: one blank line; `"rule"`: a dim horizontal rule; `"none"`: identity pass-through (proxied, but unstyled) |
 
 The `project` strategies:
 - `"cwd"` — the current working directory's basename.
@@ -96,12 +116,29 @@ or closing.
   will answer differently than an unscoped `sf1` launched from a GNOME launcher or a bare
   shell. This is expected, not a defect — set `project = false` to get the same unscoped
   behavior.
+- **The separator styling is a dependency on sf1's own literal output text.** `sf1_proxy.py`
+  keys on a handful of exact strings sf1 writes (the `picked up:` handoff line, the turn
+  prompt, the transient status indicator) — see that file's own module docblock for the full
+  marker contract and what happens to each boundary if the vendor changes its text. The vendor
+  payload (`~/.sapience/sf1.py`) is untracked and can auto-update at any time; the failure mode
+  for a text change is always "no dividers appear", never a crash or a corrupted pane.
+- **A runtime `styling` change takes effect only for terminals opened after it.**
+  `snacks.terminal`'s identity key is derived from the full command string passed to it, which
+  now includes the proxy invocation when styling is enabled. Calling `setup()` again with a
+  different `styling` value mid-session therefore does not retroactively restyle an
+  already-open sf1 terminal — exactly the same "take effect for terminals opened after it"
+  property `position`/`size` already have, documented above. The previously-open terminal
+  remains fully usable and closable; nothing is broken by the change, it simply keyed a
+  different underlying terminal object.
 
 ## Dependencies
 
 - [`folke/snacks.nvim`](https://github.com/folke/snacks.nvim) — provides the terminal window
   backend (`snacks.terminal`).
 - The `sf1` binary on `$PATH`.
+- `python3` on `$PATH`, for `sf1_proxy.py` (stdlib only, no pip dependency). Entirely optional:
+  when `python3` is missing, `styling.enabled = true` degrades to the bare `sf1` command with a
+  single WARN notification rather than failing to open.
 
 ## Extraction Constraint
 
