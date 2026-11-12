@@ -64,7 +64,7 @@ next_project_number: 611
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
-602 [NOT STARTED] — Improve the conclusion stage's next-batch proposal quality
+602 [RESEARCHED] — Improve the conclusion stage's next-batch proposal quality
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
@@ -746,10 +746,11 @@ to its owner.
 
 ### 602. Improve the conclusion stage's next-batch proposal quality
 - **Effort**: large
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 313, Task 402, Task 532, Task 603
+- **Research**: [602_conclusion_stage_next_batch_proposal_quality/reports/01_conclusion-stage-next-batch-proposal-quality.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 
