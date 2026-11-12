@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Author lint-test-root-resolution.sh",
+  "started_at": "2026-11-12T07:00:00Z",
+  "last_updated": "2026-11-12T09:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create lint-test-root-resolution.sh with header, detection model, scan scope, usage, exit codes", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-test-root-resolution.sh"]},
+    {"id": 2, "description": "bash -n and shellcheck verification", "status": "done", "files_touched": []},
+    {"id": 3, "description": "--help and unknown-arg checks", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Manual spot-run against known-sanctioned suites, and full cross-extension corpus dry run", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "git-specific guard (a) requiring literal 'git rev-parse --show-toplevel' near the target assignment", "result": "superseded", "reason": "false-positived on literature/test-lit-pipeline.sh's ancestor-search-then-fallback shape, which is guarded but not git-based; generalized to a structural 'enclosing if [[ -z $VAR ]]' check instead"},
+    {"approach": "same-line-only validated-candidate check for Shape 3 bare inline uses", "result": "superseded", "reason": "missed sapience/test-sapience-capture.sh's assign-then-validate-shortly-after and validate-then-assign-moments-ago variants; added nearby-line literal/target lookback and lookahead"}
+  ],
+  "deviations": [],
+  "handoff_count": 0
+}

@@ -189,39 +189,62 @@ is the cheapest check that covers the whole edit.
 
 ---
 
-### Phase 2: Author lint-test-root-resolution.sh [NOT STARTED]
+### Phase 2: Author lint-test-root-resolution.sh [COMPLETED]
 
 **Goal**: A standalone lint that flags the unconditional fixed-depth root walk in
 test-suite-classified shell files and stays silent on both sanctioned guarded shapes.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lint/lint-test-root-resolution.sh`, structurally
+- [x] Create `agent-system/extensions/core/scripts/lint/lint-test-root-resolution.sh`, structurally
       mirroring `lint-test-harness-adoption.sh`: WHY THIS EXISTS header, the two-valid-shapes
       section, DETECTION MODEL, an explicit KNOWN LIMITATION paragraph, SCAN SCOPE, usage block,
-      exit-code block.
-- [ ] Reuse the shared test-suite scan scope verbatim (a `*.sh` file is in scope when it lives under
+      exit-code block. *(completed)*
+- [x] Reuse the shared test-suite scan scope verbatim (a `*.sh` file is in scope when it lives under
       a `tests/` directory anywhere in its path, OR its basename starts with `test-`), matching
-      `script-inventory.sh`'s classification so the two stay in lockstep.
-- [ ] Resolve the lint's OWN root git-first with a fixed-depth fallback — the lint practices what it
-      polices.
-- [ ] Implement the detection rule: flag an assignment of the shape
+      `script-inventory.sh`'s classification so the two stay in lockstep. *(completed)*
+- [x] Resolve the lint's OWN root git-first with a fixed-depth fallback — the lint practices what it
+      polices. *(completed)*
+- [x] Implement the detection rule: flag an assignment of the shape
       `VAR="$(cd "<path-expr with one or more literal ../ segments>" [2>/dev/null] && pwd [|| true])"`
       (and the two-statement `cd ...; VAR=$(pwd)` variant) UNLESS the same variable's assignment is
       guarded by either (a) a `git rev-parse --show-toplevel` / `git -C ... rev-parse --show-toplevel`
       attempt tried first (typically the fixed-depth `cd` sitting inside an `if [[ -z "$VAR" ]]`
       fallback block), or (b) a validated candidate — the computed path tested with
       `[ -d ... ]` / `[ -f ... ]` before being accepted, with a differently-shaped fallthrough.
-- [ ] Skip full-line comments from the scan, as the model lint does.
-- [ ] Seed a `declare -A ALLOWLIST` with exactly one entry, keyed
+      *(completed: additionally computes a file-location-aware SAFE_LEVELS boundary per candidate
+      and generalized guard (a) to any enclosing `if [[ -z "$VAR" ]]` fallback, not only a
+      git-rev-parse-specific one — both extensions were required to avoid false positives
+      discovered against the live, cross-extension corpus; see Phase 2 completion note below)*
+- [x] Skip full-line comments from the scan, as the model lint does. *(completed)*
+- [x] Seed a `declare -A ALLOWLIST` with exactly one entry, keyed
       `agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection-crash-net.sh:51`,
       carrying a one-line justification: the suite's sole assertion is a crash net (no registered
       gate crashes), insensitive to fixture correctness by design, so a wrong root cannot change its
       verdict. Document in the array's header comment that an entry is a deliberate, inspected,
-      per-instance act and never the default response to a failing run.
-- [ ] Implement `[--verbose] [--help] [path...]` with explicit paths REPLACING the default corpus
+      per-instance act and never the default response to a failing run. *(completed)*
+- [x] Implement `[--verbose] [--help] [path...]` with explicit paths REPLACING the default corpus
       (used only by the fixture suite), and exit codes 0 clean / 1 violations / 2 environment-usage.
-- [ ] Emit findings as `[VIOLATION] <relpath>:<line>: <reason>` lines so
-      `verify_deploy_extract_verdict_lines '[VIOLATION]'` can harvest them in Phase 4.
+      *(completed; an unknown flag-shaped argument now exits 2 per this phase's own Verification
+      block, rather than silently falling through as a path the way the model lint does)*
+- [x] Emit findings as `[VIOLATION] <relpath>:<line>: <reason>` lines so
+      `verify_deploy_extract_verdict_lines '[VIOLATION]'` can harvest them in Phase 4. *(completed,
+      matching the model lint's own precedent exactly: the anchored `[VIOLATION] <file>:<line>`
+      line is the harvested finding; multi-line explanation text below it is not anchored and is
+      not itself harvested, exactly as gate28_run's existing consumer expects)*
+
+**Phase 2 completion note (scope discovered beyond the plan's three named instances)**: running
+the drafted lint over the FULL cross-extension corpus (not just core) during this phase's own
+Phase-3-style dry run surfaced two previously-unnamed candidates outside the core extension:
+`agent-system/extensions/literature/scripts/test-lit-pipeline.sh` (an ancestor-directory-search
+fallback, correctly guarded, but via a non-git first attempt the initial git-specific guard
+regex did not recognize) and `agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh`
+(a validated-candidate shape expressed as a bare literal inline-tested via `[ -f ... ]`, and a
+second assign-then-validate variant, neither of which the initial guard checks covered). Both are
+genuinely SAFE, existing, correct suites -- confirmed by reading each in context -- not instances
+requiring migration. The detection/guard design was generalized (not narrowed) to correctly
+recognize both as sanctioned without losing the crash-net instance's own correct flag, rather than
+either leaving a false positive unresolved or quietly narrowing the scan scope to core only. The
+full cross-extension corpus run (194 files) now exits 0 with zero violations.
 
 **Timing**: 1.5 hours
 
