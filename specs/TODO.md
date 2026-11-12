@@ -53,7 +53,7 @@ next_project_number: 610
     └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
   └─ 584 [NOT STARTED] — Wire covering-suite selection into Gate 8 so an extension...
 506 [PLANNED] — Stop the bounded-waiter hook refusing a write whose prose...
-515 [PLANNING] — Rebase the bounded-wait guidance on the measured...
+515 [PLANNED] — Rebase the bounded-wait guidance on the measured...
   └─ 439 [NOT STARTED] — Rule on the propagation model for the bounded-wait agent contract (see above)
   └─ 517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
 519 [NOT STARTED] — Infra exempt transport error dispatch deaths
@@ -6593,11 +6593,12 @@ DUPLICATE CHECK PERFORMED against the full open backlog and the closed corpus vi
 ---
 
 ### 515. Rebase the bounded-wait guidance on the measured foreground-backgrounding ceiling
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 507
 - **Research**: [515_rebase_bounded_wait_guidance_on_180s_ceiling/reports/01_rebase-bounded-wait-ceiling.md]
+- **Plan**: [515_rebase_bounded_wait_guidance_on_180s_ceiling/plans/01_rebase-bounded-wait-ceiling.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/**` and `agent-system/extensions/lean/**` in THIS repository (never a deployed `.claude/**` tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see `rules/source-store-deploy-boundary.md`; a hand-authored file under `.claude/**` is silently wiped by the next regeneration, so the edit appears to succeed and has no lasting effect). Re-derive the store rather than trusting this note: `source_dir` lives PER-EXTENSION at `.extensions.<name>.source_dir` in a consumer repo's `<project-root>/.claude-extensions.json`, NOT as a top-level key, so a top-level `jq -r '.source_dir'` returning null must not be read as the key being absent. Edit at the path mirroring the deployed one, then REDEPLOY via `deploy-headless.sh`. No task-number references and no record-versioning language in any file landing under `agent-system/**` (`rules/no-task-references-in-deliverables.md`, `rules/no-record-versioning-in-deliverables.md`); both are permitted in this description and elsewhere in `specs/**`.
 

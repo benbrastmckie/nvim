@@ -1,28 +1,33 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/515_rebase_bounded_wait_guidance_on_180s_ceiling/reports/01_rebase-bounded-wait-ceiling.md",
-      "summary": "Direct timed measurement refutes the carried ~180s backgrounding figure and confirms the documented 600s foreground Bash ceiling exactly; recommends closing as no-change to external-process-wait.md and bounded-build-waiter.md."
+      "type": "plan",
+      "path": "specs/515_rebase_bounded_wait_guidance_on_180s_ceiling/plans/01_rebase-bounded-wait-ceiling.md",
+      "summary": "Three-phase no-numeric-change plan: record the measured 600s ceiling and the unraised-parameter diagnostic in the two bounded-wait pattern files, then redeploy and prove the no-change half (byte-identical copied bullet, 24 carriers and nine 600000-bearing files untouched)."
     }
   ],
-  "dispatch_seq": 2,
-  "next_steps": "Run /orchestrate 515 to create implementation plan (expected to be a no-op record-and-close plan per the research finding)",
+  "next_steps": "Run /orchestrate 515 to execute the plan",
   "metadata": {
     "session_id": "sess_1794459760_979d1d_515",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 2
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 1.5,
+    "dependency_waves": 3
   },
-  "memory_candidates": [
-    {
-      "content": "This harness's (Claude Code 2.1.322) foreground Bash call backgrounding ceiling measures at exactly 600s when the tool's own timeout parameter is raised to 600000, not ~180s as one self-reported incident in a different repository/session claimed. Calls at 170s/190s/350s/590s with timeout=600000 all completed synchronously with exact elapsed-time match; a 620s call was backgrounded with the harness message explicitly naming '600s timeout'. Before trusting a carried ceiling figure from an incident report, re-measure directly with bracketed sleep calls at several durations rather than assuming the self-report's number is a calibrated measurement.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/515_rebase_bounded_wait_guidance_on_180s_ceiling/reports/01_rebase-bounded-wait-ceiling.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["bash-timeout", "foreground-backgrounding", "600s-ceiling", "harness-behavior", "bounded-wait"]
-    }
-  ]
+  "user_decision": {
+    "question": "The dependency edges making tasks 454 and 439 follow this record were added on the premise that this record would correct a wrong ceiling figure before they build on it; the measurement refutes the wrong-figure premise, so there is no correction for either to wait on. Should those two edges be lifted?",
+    "options": [
+      "Lift both edges via update-task-status.sh --depends-on-remove, once the operator confirms the shared files (bounded-build-waiter.md, external-process-wait.md, lint-agent-contracts.sh) are not contested",
+      "Keep both edges purely as sequencing hygiene, so 439's propagation-architecture audit and 454's shape-taxonomy addition still operate after this record lands",
+      "Lift the edge onto 454 only, since its stated objection (that raising the timeout parameter is inert) is exactly what the measurement refutes, and keep 439's for file-contention serialization"
+    ],
+    "recommended": "Keep both edges purely as sequencing hygiene, so 439's propagation-architecture audit and 454's shape-taxonomy addition still operate after this record lands",
+    "blocking": false,
+    "obligation": "Both edges also serve as file-contention serialization over bounded-build-waiter.md and external-process-wait.md, which this plan's Phases 1 and 2 edit; keeping them discharges that serialization at no cost, whereas lifting them is an operator-only action requiring confirmation that those files are uncontested."
+  },
+  "memory_candidates": [],
+  "dispatch_seq": 9
 }
