@@ -26,30 +26,53 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/600_sapience_retrieve_cold_start_retry/summaries/01_sapience-retrieve-cold-start-retry-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "test-stub", "PATH-shadowing", "curl-stub", "STUB_DIR"]
+      "suggested_keywords": [
+        "bash",
+        "test-stub",
+        "PATH-shadowing",
+        "curl-stub",
+        "STUB_DIR"
+      ]
     },
     {
       "content": "A test suite whose common_test_resolve_subject call defaults to deploy-tree-first mode will silently exercise the STALE deployed copy of a script under test when verifying a source-store-only change made before the task's own redeploy phase. Override with CORE_TEST_SUBJECT_MODE=source-store for mid-task verification against the real edit, then let the final redeploy phase's own scoped check confirm parity against the deployed copy.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/600_sapience_retrieve_cold_start_retry/summaries/01_sapience-retrieve-cold-start-retry-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["CORE_TEST_SUBJECT_MODE", "deploy-tree-first", "source-store", "test-verification", "redeploy-ordering"]
+      "suggested_keywords": [
+        "CORE_TEST_SUBJECT_MODE",
+        "deploy-tree-first",
+        "source-store",
+        "test-verification",
+        "redeploy-ordering"
+      ]
     },
     {
       "content": "When mechanically checking off a plan phase's checklist items by locating the phase's section boundary, never bound the section with a bare '---' substring search -- a phase's own body text can legitimately contain a literal '---' (e.g. inside a quoted shell comment block like `# --- Constants ---`), which truncates the section early and corrupts unrelated text. Anchor on the next '\\n---\\n' horizontal-rule line (or the next '### Phase' heading) instead.",
       "category": "PATTERN",
       "source_artifact": "specs/600_sapience_retrieve_cold_start_retry/summaries/01_sapience-retrieve-cold-start-retry-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["plan-checklist", "section-boundary", "markdown-parsing", "horizontal-rule"]
+      "suggested_keywords": [
+        "plan-checklist",
+        "section-boundary",
+        "markdown-parsing",
+        "horizontal-rule"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794459760_979d1d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   },
-  "dispatch_seq": 20
+  "dispatch_seq": 20,
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

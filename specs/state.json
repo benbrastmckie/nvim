@@ -102201,14 +102201,14 @@
           "summary": "Confirms the status-case collapse point in sapience-retrieve.sh, finds all 11 cited cold-start occurrences carry an identical retry_after:15 hint, recommends a single bounded retry with floor 1s/ceiling 20s/default 15s clamp, confirms orchestrate-build-dispatch.sh needs no change, and flags the test curl stub needs an additive two-response extension."
         },
         {
-          "path": "specs/600_sapience_retrieve_cold_start_retry/plans/01_sapience-retrieve-cold-start-retry.md",
-          "type": "plan",
-          "summary": "Five-phase plan: harness stub extension, bounded retry implementation, five new test cases, per-repo-scoping.md retry contract, redeploy plus full gate set."
-        },
-        {
           "path": "specs/600_sapience_retrieve_cold_start_retry/summaries/01_sapience-retrieve-cold-start-retry-summary.md",
           "type": "summary",
           "summary": "All five phases completed: bounded single-shot cold-start retry added to sapience-retrieve.sh, five new test cases (29/29 passing), per-repo-scoping.md documents the retry contract, redeployed with zero drift across all three mirrors."
+        },
+        {
+          "path": "specs/600_sapience_retrieve_cold_start_retry/plans/01_sapience-retrieve-cold-start-retry.md",
+          "type": "plan",
+          "summary": "Five-phase plan: harness stub extension, bounded retry implementation, five new test cases, per-repo-scoping.md retry contract, redeploy plus full gate set."
         }
       ],
       "audit_verdict": {
@@ -103064,7 +103064,8 @@
       },
       "last_updated": "2026-11-12T18:20:08Z",
       "session_id": "sess_1794459760_979d1d",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a bounded, single-shot cold-start retry to sapience-retrieve.sh (503 + parseable JSON + strict-boolean .starting==true, retry_after clamped to [1,20] defaulting to 15), extended test-sapience-capture.sh with a sequenced curl/sleep stub and five new cases (29/29 passing), documented the retry contract in per-repo-scoping.md, and redeployed with all three source-store/deployed mirrors confirmed byte-identical."
     },
     {
       "project_number": 601,
