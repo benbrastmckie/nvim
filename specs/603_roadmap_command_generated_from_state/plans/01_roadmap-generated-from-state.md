@@ -542,39 +542,39 @@ corpus turns over.
 
 ---
 
-### Phase 6: The One-Time Migration Script [NOT STARTED]
+### Phase 6: The One-Time Migration Script [COMPLETED]
 
 **Goal**: a script that reads the current `specs/ROADMAP.md` once, seeds the state entries from
 it, and **proves** the read was lossless rather than reporting success.
 
 **Tasks**:
-- [ ] Create `scripts/migrate-roadmap-next-to-state.sh`: parse the existing `## Next` body (before
+- [x] Create `scripts/migrate-roadmap-next-to-state.sh`: parse the existing `## Next` body (before
       the coverage appendix) into one `roadmap_batches` entry per `/orchestrate` line — `task_ids`
       from the id list, `flags` from the authored flag segment, `description` from the trailing
       `   # ` comment **condensed to <= 100 characters**, and `rationale` seeded with the original
       trailing comment verbatim followed by the matching `Why this order:` bullet.
-- [ ] Assign each `Why this order:` bullet to a batch when it names that batch (by position or by
+- [x] Assign each `Why this order:` bullet to a batch when it names that batch (by position or by
       first-named task id) and to `roadmap_notes.next_postamble` otherwise; assign the pre-fence
       paragraphs to `roadmap_notes.next_preamble` and the interleaved free-standing paragraph
       blocks after the bullet list to `next_postamble`, in file order.
-- [ ] Implement the **losslessness accounting** as a hard gate, not a report: every non-blank line
+- [x] Implement the **losslessness accounting** as a hard gate, not a report: every non-blank line
       of the pre-migration `## Next` body must be accounted for in exactly one of a
       `roadmap_notes` slot, a batch `rationale`, a reconstructed `/orchestrate` line, or the two
       fence markers. **Exit non-zero and name every unaccounted line** on any shortfall. The
       deliberate exception is the condensed `description`, whose original text is required to
       appear verbatim inside its own batch's `rationale` — assert that too.
-- [ ] Also seed `roadmap_notes.open_work_trailer` from any free-standing prose after the last
+- [x] Also seed `roadmap_notes.open_work_trailer` from any free-standing prose after the last
       `## Open work` fence (measured as **empty** in the live file, so the expected result is an
       empty array — the code path still exists and is tested).
-- [ ] Write exclusively through `bash .claude/scripts/state-write.sh` with an explicit
+- [x] Write exclusively through `bash .claude/scripts/state-write.sh` with an explicit
       `--session-id`, never a hand-rolled `jq ... > tmp && mv`, following the discipline
       `validate-state.sh --fix` and `migrate-state-legacy-fields.sh` already use. Refuse (exit 2)
       when `roadmap_batches` is already non-empty unless `--force`, and support `--dry-run`
       printing the proposed entries plus the accounting result while writing nothing.
-- [ ] Source `lib/common.sh` and the deploy-root guard the same way its sibling scripts do, and
+- [x] Source `lib/common.sh` and the deploy-root guard the same way its sibling scripts do, and
       register the script in `manifest.json`'s `provides.scripts` in the same commit it is
       created (`test-manifest-scripts-sync.sh` enforces both directions).
-- [ ] Create `tests/test-migrate-roadmap-next-to-state.sh`: a fixture `## Next` with two batches,
+- [x] Create `tests/test-migrate-roadmap-next-to-state.sh`: a fixture `## Next` with two batches,
       one preamble paragraph, two bullets (one batch-attributable, one not) and one postamble
       paragraph migrates to the expected entries; an over-long description fails the bound unless
       condensed; a deliberately dropped line makes the accounting gate exit non-zero naming that

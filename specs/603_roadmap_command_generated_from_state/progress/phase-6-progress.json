@@ -1,0 +1,18 @@
+{
+  "phase": 6,
+  "phase_name": "The One-Time Migration Script",
+  "started_at": "2026-11-12T03:35:00Z",
+  "last_updated": "2026-11-12T04:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create migrate-roadmap-next-to-state.sh with the hard losslessness accounting gate", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/migrate-roadmap-next-to-state.sh"]},
+    {"id": 2, "description": "Create test-migrate-roadmap-next-to-state.sh fixture suite", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-migrate-roadmap-next-to-state.sh"]},
+    {"id": 3, "description": "Register both new scripts in manifest.json provides.scripts", "status": "done",
+     "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
