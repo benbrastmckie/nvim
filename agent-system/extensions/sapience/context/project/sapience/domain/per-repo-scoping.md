@@ -47,8 +47,21 @@ arbitrary `provenance` string verbatim — this is what `sapience-remember.sh` d
   from the same request via `curl --write-out` -- no second network call and no added latency on
   the success path. `orchestrate-build-dispatch.sh`'s Stage 3.5 `memory_context` block captures
   this exit code and, only on exit 2, records an `infrastructure/transport unavailable` entry
-  non-fatally via `issue-record.sh` carrying the stderr diagnostic; retrieval still never blocks
-  or retries the dispatch on any exit code.
+  non-fatally via `issue-record.sh` carrying the stderr diagnostic; retrieval never blocks the
+  dispatch, and retries the dispatch's own request only on the narrow cold-start signal
+  described next.
+
+  **Bounded cold-start retry**: a response is retried exactly once when, and only when, it is
+  HTTP 503 with a body that parses as JSON and carries a strict-boolean `.starting == true` (a
+  truthy string does not qualify). On that match, the script honors the server's own
+  `retry_after` hint, clamped into `[RETRY_DELAY_MIN, RETRY_DELAY_MAX]` = `[1, 20]` seconds with
+  `RETRY_DELAY_DEFAULT = 15` used when the hint is missing or non-numeric, sleeps that many
+  seconds, and issues one more request. A 4xx, a non-JSON body, and a curl transport error are
+  never retried. Worst-case added wall clock on the cold-start path is therefore ~36s (8s first
+  `--max-time` + 20s clamp ceiling + 8s second `--max-time`), versus ~8s on every other path.
+  Whether or not a retry fires, the terminal behavior on a second failure (or on any
+  non-retried genuine failure) is the unchanged exit-2 fail-open degrade: `issue-record.sh`
+  records the failure non-fatally and the dispatch proceeds with an empty `memory_context`.
 - **`sapience-remember.sh --subject S --value V [...]`** — a repo-tagged, `explicit: true` write
   via `POST /ingest-kos`. `explicit: true` is mandatory, not an optional flag: a realistically
   worded note posted without it is silently discarded by the server's noise gate, returning

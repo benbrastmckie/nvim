@@ -1,0 +1,23 @@
+{
+  "phase": 4,
+  "phase_name": "Document the retry contract in per-repo-scoping.md",
+  "started_at": "2026-11-12T18:55:00Z",
+  "last_updated": "2026-11-12T19:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read per-repo-scoping.md before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Amend the never-retries clause and state the retry contract", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 3, "description": "Note 4xx/non-JSON/transport error are not retried", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.verification",
+      "description": "Phase 4's declared scoped check (verify-deploy.sh --skip-slow --only-gate 3,4) fails Gate 3 with three sapience findings, all structurally expected pre-redeploy: deployed-content drift for two phase-2/3 files not yet redeployed, and an index-entries.json line_count mismatch that generate-context-line-counts.sh auto-fixes inside deploy-headless.sh (and refuses to run standalone pre-deploy).",
+      "type": "deferred",
+      "reason": "Content correctness was independently confirmed by diff read-through (no task-ref, no record-versioning language, stale clause removed). The gate-3 failure is resolved by Phase 5's redeploy, which this implementation will re-check explicitly.",
+      "annotation": "*(deviation: deferred — gate 3 drift resolves at Phase 5 redeploy, re-verified there)*"
+    }
+  ],
+  "handoff_count": 0
+}

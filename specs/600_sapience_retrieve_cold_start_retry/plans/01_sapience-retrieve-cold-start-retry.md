@@ -321,28 +321,28 @@ the latter by observing the pre-existing assertions still pass unchanged in the 
 
 ---
 
-### Phase 4: Document the retry contract in `per-repo-scoping.md` [NOT STARTED]
+### Phase 4: Document the retry contract in `per-repo-scoping.md` [COMPLETED]
 
 **Goal**: State the settled retry condition, the clamp bounds, the one-attempt budget, the capped
 worst-case wait, and the unchanged terminal degrade at the source-store documentation path.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`
-      immediately before editing.
-- [ ] In the `## The Two Scripts` section's `sapience-retrieve.sh` bullet, amend the clause that
+- [x] Re-read `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`
+      immediately before editing. *(completed)*
+- [x] In the `## The Two Scripts` section's `sapience-retrieve.sh` bullet, amend the clause that
       currently reads that retrieval "never blocks or retries the dispatch on any exit code" so
       it describes the current design accurately: one bounded retry on the narrow cold-start
-      signal, and never a block.
-- [ ] State the retry contract: the predicate (503 + parseable JSON + `.starting == true`), the
+      signal, and never a block. *(completed)*
+- [x] State the retry contract: the predicate (503 + parseable JSON + `.starting == true`), the
       honored `retry_after` hint, the clamp (`default 15`, band `[1, 20]`), the one-attempt
       budget, the capped worst case (`<=36s` on the cold-start path versus `<=8s` on every other
       path), and that the terminal behavior after the retry is exhausted is the unchanged exit-2
       fail-open degrade with the caller recording non-fatally and proceeding with an empty
-      `memory_context`.
-- [ ] Note that a 4xx, a non-JSON body, and a curl transport error are explicitly not retried.
-- [ ] State the current design only — no task-number references, no "previously"/"no longer"/
+      `memory_context`. *(completed)*
+- [x] Note that a 4xx, a non-JSON body, and a curl transport error are explicitly not retried. *(completed)*
+- [x] State the current design only — no task-number references, no "previously"/"no longer"/
       "this replaces" framing (`rules/no-task-references-in-deliverables.md`,
-      `rules/no-record-versioning-in-deliverables.md`).
+      `rules/no-record-versioning-in-deliverables.md`). *(completed)*
 
 **Timing**: 0.5 hours
 
