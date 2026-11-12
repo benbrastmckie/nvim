@@ -97,7 +97,7 @@ next_project_number: 610
 
 ### Neovim
 
-608 [PLANNED] — Improve chat pane styling for <leader>as to match Claude...
+608 [IMPLEMENTING] — Improve chat pane styling for <leader>as to match Claude...
 583 [NOT STARTED] — Add a settings-defaults surface to the agent system loader picker
 
 ### File Scope Lifecycle
@@ -246,7 +246,7 @@ DURABLE EVIDENCE (in the BimodalLogic repo, /home/benjamin/Projects/BimodalLogic
 ---
 
 ### 608. Improve leaderas chat pane styling
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: general
 - **Topic**: neovim
 - **Dependencies**: None

@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/608_improve_leaderas_chat_pane_styling/plans/01_sf1-pane-styling-proxy.md",
-      "summary": "4-phase plan building a PTY-proxying wrapper in lua/neotex/plugins/ai/sapience/ that inserts separators into sf1's output stream, with a validated styling option and graceful fallback to the bare sf1 command."
-    }
-  ],
-  "next_steps": "Run /orchestrate 608 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "When a Neovim config owns only a terminal window's placement and the content comes from an untracked, self-updating vendor CLI, a PTY-proxying wrapper (pty.openpty + setsid + TIOCSCTTY + raw-mode stdin forwarding) is the only interposition point that is both durable (versioned in the consuming repo) and non-destructive (never writes to the vendor payload). A shell pipe is NOT a substitute: it turns the child's stdout into a non-tty, disabling color detection and readline line editing. Two non-obvious hazards govern the filter design: (1) GNU readline re-emits the prompt on every line edit, so prompt-pattern matching must count a prompt as fresh only when reached via \\n, never via \\r, with a one-shot latch; (2) a transient \\r\\033[2K status indicator must suppress injection until cleared. The robust design for the question/answer boundary avoids output pattern matching entirely by keying on the input side (the forwarded CR/LF keystroke). Failure mode must be pass-through-on-no-match, so a vendor output change yields 'no dividers' rather than a broken pane.",
-      "category": "PATTERN",
-      "source_artifact": "specs/608_improve_leaderas_chat_pane_styling/plans/01_sf1-pane-styling-proxy.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["pty-proxy", "vendor-payload-interposition", "readline-prompt-redraw", "terminal-stream-filter", "neovim-terminal-styling"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1794444265_6d92a6_608",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 5.5,
-    "dependency_waves": 3
-  },
-  "dispatch_seq": 2
+    "session_id": "sess_1794444265_6d92a6",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

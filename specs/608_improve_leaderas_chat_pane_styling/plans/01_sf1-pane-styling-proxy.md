@@ -1,7 +1,7 @@
 # Implementation Plan: Task #608
 
 - **Task**: 608 - Improve chat pane styling for `<leader>as` to match Claude Code's appearance, with blank lines or divider lines between message parts so they don't run together
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/608_improve_leaderas_chat_pane_styling/reports/01_chat-pane-styling-scope.md
@@ -130,7 +130,7 @@ functional; the end-to-end check that needs both lands in Phase 4.
 
 ---
 
-### Phase 1: Marker Contract and Pure Stream Filter [NOT STARTED]
+### Phase 1: Marker Contract and Pure Stream Filter [COMPLETED]
 
 **Goal**: Establish the re-verified marker contract and implement the separator-insertion logic
 as a pure, pty-free function over byte chunks, with unit tests covering the redraw and
@@ -138,41 +138,45 @@ transient-status hazards.
 
 **Tasks**:
 
-- [ ] Re-read the live `~/.sapience/sf1.py` and re-confirm every row of the Research Integration
+- [x] Re-read the live `~/.sapience/sf1.py` and re-confirm every row of the Research Integration
       marker table above: the `picked up:` write in `Session.start`, the startup banner in
       `main`, the `_prompt` format string and its documented plain-text (uncolored) property, the
       `sources:` write in `Session.ask`, and the `\r\033[2K` transient indicator. Record any
       divergence from the table in this phase's commit message and update the proxy's docblock to
-      match what the file actually says, not what this plan says.
-- [ ] Create `lua/neotex/plugins/ai/sapience/sf1_proxy.py` with a module docblock that states, as
+      match what the file actually says, not what this plan says. *(completed: re-read sf1.py
+      (653 lines, mtime 2026-11-03, unchanged) -- every row of the marker table confirmed
+      byte-for-byte with no divergence)*
+- [x] Create `lua/neotex/plugins/ai/sapience/sf1_proxy.py` with a module docblock that states, as
       its primary content, the marker contract: each literal string the filter keys on, which
-      stream it arrives on, and the one-line consequence if the vendor changes it.
-- [ ] Implement a `SeparatorFilter` class with a single `feed(chunk: bytes) -> bytes` method and
+      stream it arrives on, and the one-line consequence if the vendor changes it. *(completed)*
+- [x] Implement a `SeparatorFilter` class with a single `feed(chunk: bytes) -> bytes` method and
       no I/O, no global state, and no pty dependency, holding: at-line-start state, a pending
       partial-line tail, transient-indicator-active state, and the one-shot
-      already-injected-for-this-prompt latch.
-- [ ] Implement the three boundary rules: (B1) one separator after the newline that terminates
+      already-injected-for-this-prompt latch. *(completed)*
+- [x] Implement the three boundary rules: (B1) one separator after the newline that terminates
       the `picked up:` handoff line; (B2) one separator after the echoed newline that follows a
       user-submitted line, driven by a `note_submit()` call the harness makes when it forwards a
       CR/LF from stdin, so this boundary needs no output pattern matching at all; (B3) one
-      separator immediately before a *fresh* prompt occurrence.
-- [ ] Implement the fresh-prompt discrimination rule: a prompt match is fresh only when the
+      separator immediately before a *fresh* prompt occurrence. *(completed)*
+- [x] Implement the fresh-prompt discrimination rule: a prompt match is fresh only when the
       filter is at line start having arrived there via `\n`, never via `\r`, and never when the
-      latch is already set; the latch clears on the next child-emitted `\n`.
-- [ ] Implement separator rendering for the three `separator` values: `blank` (a single `\n`),
+      latch is already set; the latch clears on the next child-emitted `\n`. *(completed)*
+- [x] Implement separator rendering for the three `separator` values: `blank` (a single `\n`),
       `rule` (`\n`, a dim `─` run sized from the `COLUMNS`/winsize value passed in at
       construction, `\n`), and `false`/`none` (the filter becomes an identity pass-through).
       Suppress the dim ANSI wrapper when any of `NO_COLOR`, `SF1_NO_COLOR` is set or `SF1_COLOR`
-      is explicitly off, matching sf1's own `color_wanted()` behavior.
-- [ ] Guarantee pass-through-on-no-match: any byte sequence that matches nothing is returned
+      is explicitly off, matching sf1's own `color_wanted()` behavior. *(completed: the `color`
+      constructor param is the hook Phase 2's argv/env handling will drive this from)*
+- [x] Guarantee pass-through-on-no-match: any byte sequence that matches nothing is returned
       unchanged, and a chunk boundary splitting a marker mid-string must not drop or duplicate
       bytes. Cover this with a test that feeds the same transcript one byte at a time and asserts
-      the concatenated result equals the whole-transcript result.
-- [ ] Create `lua/neotex/plugins/ai/sapience/sf1_proxy_test.py` as a stdlib `unittest` module
+      the concatenated result equals the whole-transcript result. *(completed)*
+- [x] Create `lua/neotex/plugins/ai/sapience/sf1_proxy_test.py` as a stdlib `unittest` module
       (runnable as `python3 lua/neotex/plugins/ai/sapience/sf1_proxy_test.py`) with at minimum:
       a full-turn transcript test, a readline-redraw test (repeated `\r`-prefixed prompt
       re-emissions yield exactly one separator), a transient-indicator test, the byte-at-a-time
-      equivalence test, a `separator = false` identity test, and a no-color test.
+      equivalence test, a `separator = false` identity test, and a no-color test. *(completed:
+      11 tests, including both the redraw test and a dedicated chunk-boundary-split test)*
 
 **Timing**: 1.5 hours
 
