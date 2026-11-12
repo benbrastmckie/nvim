@@ -1,0 +1,10 @@
+[
+  {
+    "question": "The dependency edges making tasks 454 and 439 follow this record were added on the premise that this record would correct a wrong ceiling figure before they build on it; the measurement refutes the wrong-figure premise, so there is no correction for either to wait on. Should those two edges be lifted?",
+    "answer": "Keep both edges purely as sequencing hygiene, so 439's propagation-architecture audit and 454's shape-taxonomy addition still operate after this record lands",
+    "cycle": 2,
+    "timestamp": "2026-11-12T06:14:03Z",
+    "description_fingerprint": "1bcd48e5ca9f13c8e51d70495bef1b95a096968ed49c7300c744a33b3e75c75e",
+    "obligation": "Both edges also serve as file-contention serialization over bounded-build-waiter.md and external-process-wait.md, which this plan's Phases 1 and 2 edit; keeping them discharges that serialization at no cost, whereas lifting them is an operator-only action requiring confirmation that those files are uncontested."
+  }
+]

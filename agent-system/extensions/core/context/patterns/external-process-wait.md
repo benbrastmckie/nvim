@@ -81,6 +81,25 @@ so the pair reliably completes and reports before the harness would otherwise in
 paragraph explains only the 60-second margin between the two numbers; it does not carry the
 obligation itself, which is stated in full as step (2) above.
 
+#### The 600s Ceiling Is Measured, Not Assumed
+
+On harness Claude Code 2.1.322, measured 2026-11-12 (UTC): foreground Bash calls of 10s, 170s,
+190s, 350s, and 590s, each issued with the tool's own `timeout` parameter raised to `600000`,
+all completed synchronously with elapsed time matching the requested duration exactly. A 620s
+call under the same parameter was moved to the background at the 600s mark, with the harness's
+own message naming "600s" verbatim. The `timeout` parameter is honoured by the harness, not
+inert: step (2) above is a live remedy, and the 600s figure throughout this file is this
+measured boundary, not an inferred one.
+
+**Diagnostic for a sub-600s backgrounding.** A call backgrounded well short of 600s is evidence
+that *that call's own* `timeout` parameter was not actually raised from its `120000`ms default —
+it is not evidence of a lower ceiling. The correct response is to check the offending call's own
+parameter value; inferring a lower ceiling from the stall and rebasing this file's figures on it
+is the mis-derivation this measurement exists to head off. One such inference — a roughly 180s
+ceiling with the parameter characterized as ignored outright — was recorded as an after-the-fact
+stall explanation in issue entry `iss_1793996881041_SDZX8Y` in a consumer repository named
+`BimodalLogic`, and did not reproduce under the bracketed measurement above.
+
 ### 2. No no-op filler
 
 Do not issue `:`, `true`, `date`, `echo waiting`-style Bash calls, or any other call whose sole

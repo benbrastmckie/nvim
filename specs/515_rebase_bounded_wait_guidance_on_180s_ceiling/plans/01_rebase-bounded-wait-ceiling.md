@@ -1,7 +1,7 @@
 # Implementation Plan: Task #515
 
 - **Task**: 515 - Rebase the bounded-wait guidance on the measured foreground-backgrounding ceiling
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: 507 (recorded in state.json; admitted for this dispatch by the orchestrator)
 - **Research Inputs**: specs/515_rebase_bounded_wait_guidance_on_180s_ceiling/reports/01_rebase-bounded-wait-ceiling.md
@@ -131,7 +131,7 @@ stated even where they only confirm the description.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Record the measured ceiling and the misattribution diagnostic [NOT STARTED]
+### Phase 1: Record the measured ceiling and the misattribution diagnostic [COMPLETED]
 
 **Goal**: `external-process-wait.md` carries a dated, harness-versioned record that the 600s
 ceiling is measured, and the diagnostic that a sub-600s backgrounding means an unraised
@@ -139,24 +139,24 @@ parameter — with every existing figure and the copied bullet untouched.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/context/patterns/external-process-wait.md` in full
+- [x] Re-read `agent-system/extensions/core/context/patterns/external-process-wait.md` in full
       immediately before editing (concurrency re-read obligation), and confirm Rule 1 step (2),
       the two-sub-case paragraph, and the "Why 540 < 600" paragraph are still as this plan
-      describes.
-- [ ] Record the pre-edit state: `git diff --stat -- agent-system/extensions/core/context/patterns/external-process-wait.md`
+      describes. *(completed)*
+- [x] Record the pre-edit state: `git diff --stat -- agent-system/extensions/core/context/patterns/external-process-wait.md`
       must be empty before starting (if not, a sibling touched it — stop and report per the
-      concurrency note).
-- [ ] Add one new subsection to Rule 1, placed **after** the "Why 540 < 600" paragraph and before
+      concurrency note). *(completed: confirmed empty)*
+- [x] Add one new subsection to Rule 1, placed **after** the "Why 540 < 600" paragraph and before
       `### 2. No no-op filler`, titled `#### The 600s Ceiling Is Measured, Not Assumed`. Do not
-      renumber Rule 1-5 and do not reword any existing paragraph.
-- [ ] In that subsection, state: the harness version measured (Claude Code 2.1.322), the
+      renumber Rule 1-5 and do not reword any existing paragraph. *(completed)*
+- [x] In that subsection, state: the harness version measured (Claude Code 2.1.322), the
       measurement date (2026-11-12, UTC), and the bracketed result — calls at 10s, 170s, 190s,
       350s and 590s issued with the tool `timeout` parameter at `600000` all returned
       synchronously with elapsed time matching the request exactly; a 620s call was moved to the
       background at the 600s mark with the harness's own message naming "600s". Conclude the one
       load-bearing fact: the `timeout` parameter is honoured, so step (2) is a live remedy and the
-      600s figure in this file is the measured boundary, not an inferred one.
-- [ ] In the same subsection, add the diagnostic: **a call backgrounded well short of 600s is
+      600s figure in this file is the measured boundary, not an inferred one. *(completed)*
+- [x] In the same subsection, add the diagnostic: **a call backgrounded well short of 600s is
       evidence that this call's own `timeout` parameter was not raised from its `120000`ms
       default, not evidence of a lower ceiling.** The remedy is to check the offending call's own
       parameter value; characterising a lower ceiling from a stall and rebasing this file's
@@ -164,13 +164,14 @@ parameter — with every existing figure and the copied bullet untouched.
       characterization — a ~180s ceiling with the parameter allegedly ignored — was recorded in a
       consumer repository's issue log (entry `iss_1793996881041_SDZX8Y`) as an after-the-fact
       stall explanation, and did not reproduce under the bracketed measurement above. Cite the
-      entry id and the repository name only.
-- [ ] Verify no `600000`, `120000`, `540`, or `600` figure elsewhere in the file changed:
+      entry id and the repository name only. *(completed)*
+- [x] Verify no `600000`, `120000`, `540`, or `600` figure elsewhere in the file changed:
       `git diff -- <file> | grep -E '^[-+].*(600000|120000|540|600)'` must show only added lines
-      from the new subsection and **no `-` (removed) lines at all**.
-- [ ] Verify the file carries no task-number reference and no record-versioning phrasing in the
+      from the new subsection and **no `-` (removed) lines at all**. *(completed: verified, zero
+      removed lines)*
+- [x] Verify the file carries no task-number reference and no record-versioning phrasing in the
       added hunk (grep the added lines for `task [0-9]`, `previously`, `no longer`, `formerly`,
-      `supersede`, `v1`, `v2`).
+      `supersede`, `v1`, `v2`). *(completed: verified, zero matches)*
 
 **Timing**: 0.5 hours
 
