@@ -199,9 +199,14 @@ if [[ "$batch_count" -eq 0 ]]; then
   exit 1
 fi
 
-# ─── Step 4: paragraph-block splitter (maximal non-blank-line runs) ──────────────────────────
+# ─── Step 4: paragraph-block splitter ─────────────────────────────────────────────────────────
 # split_blocks SRC_FILE OUT_DIR -> writes one file per block (0000, 0001, ...) to OUT_DIR,
-# echoes the block count.
+# echoes the block count. A block boundary occurs at a blank line (as usual), OR at the START
+# of a fresh top-level "- " bullet line when the buffer already holds content -- GFM "tight"
+# lists (the live ROADMAP.md's own style) pack consecutive bullets with NO blank line between
+# them, so a blank-line-only splitter would merge an entire bullet list into one giant block. A
+# bullet's own wrapped continuation lines (which never start with "- ") still accumulate into
+# the same block as usual.
 split_blocks() {
   local src="$1" outdir="$2"
   mkdir -p "$outdir"
@@ -217,6 +222,7 @@ split_blocks() {
       }
     }
     /^[[:space:]]*$/ { flush(); next }
+    /^- / { if (buf != "") flush() }
     {
       if (buf == "") buf = $0
       else buf = buf "\n" $0
@@ -238,28 +244,39 @@ awk '
 ' "$WORKDIR/after.txt" > "$WORKDIR/after_stripped.txt"
 after_block_count="$(split_blocks "$WORKDIR/after_stripped.txt" "$WORKDIR/after_blocks")"
 
-# ─── Step 5: attribute each after-fence block to a batch (first bare integer token), else
-# append it to next_postamble, in file order ──────────────────────────────────────────────────
+# ─── Step 5: attribute each after-fence BULLET block (one starting with "- ") to a batch (the
+# first integer token in the block that actually NAMES a live batch's own task_ids member --
+# not merely the first digit run in the text, which would false-match an incidental number
+# like a date "2026-11-11" or a suite count before ever reaching the real task id); every other
+# block -- a plain prose paragraph, or a bullet naming no live batch -- becomes a
+# next_postamble entry, in file order. Attribution applies ONLY to bullet blocks: a free-
+# standing prose paragraph always goes to next_postamble, even if it happens to mention a
+# batch's task id in passing (e.g. "the claimant roster is five: 431, 459, 505, ..."), since it
+# was never one of the "Why this order:" bullets the plan's own migration rule scopes
+# attribution to. ──────────────────────────────────────────────────────────────────────────────
 postamble_count=0
 for ((i = 0; i < after_block_count; i++)); do
   bf="$WORKDIR/after_blocks/$(printf '%04d' "$i")"
   block_text="$(cat "$bf")"
-  first_id="$(grep -oE '[0-9]+' "$bf" | head -n1 || true)"
   attributed=0
-  if [[ -n "$first_id" ]]; then
-    for ((b = 0; b < batch_count; b++)); do
-      bnum="$(printf '%03d' "$b")"
-      if grep -qxF "$first_id" "$WORKDIR/batch_${bnum}_idlist.txt"; then
-        # Append this block to batch b's rationale, as a new paragraph.
-        {
-          printf '%s' "$(cat "$WORKDIR/batch_${bnum}_rationale.txt")"
-          printf '\n\n%s' "$block_text"
-        } > "$WORKDIR/batch_${bnum}_rationale.txt.new"
-        mv "$WORKDIR/batch_${bnum}_rationale.txt.new" "$WORKDIR/batch_${bnum}_rationale.txt"
-        attributed=1
-        break
-      fi
-    done
+  if [[ "$block_text" == "- "* ]]; then
+    while IFS= read -r candidate_id; do
+      [[ -n "$candidate_id" ]] || continue
+      for ((b = 0; b < batch_count; b++)); do
+        bnum="$(printf '%03d' "$b")"
+        if grep -qxF "$candidate_id" "$WORKDIR/batch_${bnum}_idlist.txt"; then
+          # Append this block to batch b's rationale, as a new paragraph.
+          {
+            printf '%s' "$(cat "$WORKDIR/batch_${bnum}_rationale.txt")"
+            printf '\n\n%s' "$block_text"
+          } > "$WORKDIR/batch_${bnum}_rationale.txt.new"
+          mv "$WORKDIR/batch_${bnum}_rationale.txt.new" "$WORKDIR/batch_${bnum}_rationale.txt"
+          attributed=1
+          break
+        fi
+      done
+      [[ "$attributed" -eq 1 ]] && break
+    done < <(grep -oE '[0-9]+' "$bf" || true)
   fi
   if [[ "$attributed" -eq 0 ]]; then
     pnum="$(printf '%04d' "$postamble_count")"

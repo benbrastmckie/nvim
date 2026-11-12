@@ -419,6 +419,122 @@ else
   common_test_fail "--force should permit a second run to succeed (got $force_rc; $(cat "$scratch5/stderr-force.txt"))"
 fi
 
+# ─── Case 6: GFM "tight" list -- consecutive bullets with NO blank line between them (the live
+# specs/ROADMAP.md's own style) must still split into separate blocks, each independently
+# attributable; a free-standing prose paragraph that merely MENTIONS a batch's task id in
+# passing (not a "- " bullet) must still land in next_postamble, never mis-attributed to that
+# batch's rationale ───────────────────────────────────────────────────────────────────────────
+write_roadmap_fixture_tight_list() {
+  local scratch="$1"
+  cat > "$scratch/specs/ROADMAP.md" <<'EOF'
+# Roadmap
+
+*Fixture preamble.*
+
+## Goal
+
+Fixture goal text.
+
+## Gate state
+
+Fixture gate text.
+
+## Next
+
+```
+/orchestrate 1   # batch one comment
+/orchestrate 2   # batch two comment
+```
+
+Why this order:
+
+- Bullet naming item 1, tight-listed with no blank line before the next bullet.
+- Bullet naming item 2, also tight-listed, immediately following the one above.
+
+A free-standing prose paragraph that merely mentions item 1 and item 2 in passing must not be
+mis-attributed to either batch's rationale -- it names no live claim on them, it is plain prose.
+
+## Open work
+
+**Alpha (1)**
+```
+1 ready               item one description
+```
+
+## Checks before and after every call
+
+Fixture checks text.
+
+## Settled decisions (do not re-litigate)
+
+Fixture decisions text.
+
+## Standing rules
+
+Fixture rules text.
+
+## Unfiled observations (none worth a task yet)
+
+Fixture observations text.
+EOF
+}
+
+write_state_fixture_tight_list() {
+  local scratch="$1"
+  cat > "$scratch/specs/state.json" <<'EOF'
+{
+  "active_topics": ["alpha"],
+  "active_projects": [
+    {"project_number": 1, "status": "not_started", "title": "Item one description", "topic": "alpha", "dependencies": []},
+    {"project_number": 2, "status": "not_started", "title": "Item two description", "topic": "alpha", "dependencies": []}
+  ]
+}
+EOF
+}
+
+scratch6="$(build_scratch)"
+write_state_fixture_tight_list "$scratch6"
+write_roadmap_fixture_tight_list "$scratch6"
+out6="$(run_migrate "$scratch6" --dry-run 2>&1)"
+rc6=$?
+
+if [[ "$rc6" -eq 0 ]] && grep -qF "Losslessness accounting PASSED" <<<"$out6"; then
+  common_test_pass "tight-list fixture: --dry-run exits 0 with the losslessness-passed line"
+else
+  common_test_fail "tight-list fixture: expected exit 0 with the losslessness-passed line (rc=$rc6)"
+  common_test_info "$out6"
+fi
+
+if grep -qF 'Bullet naming item 1, tight-listed' <<<"$out6" && grep -qF 'Bullet naming item 2, also tight-listed' <<<"$out6"; then
+  common_test_pass "tight-list fixture: both tight-packed bullets are present (not merged into one block)"
+else
+  common_test_fail "tight-list fixture: expected both tight-packed bullets present in the output"
+  common_test_info "$out6"
+fi
+
+if grep -qF 'merely mentions item 1 and item 2 in passing' <<<"$out6"; then
+  common_test_pass "tight-list fixture: the free-standing prose paragraph is present in the output"
+else
+  common_test_fail "tight-list fixture: expected the free-standing prose paragraph present in the output"
+fi
+
+# The prose paragraph must appear under roadmap_notes (next_postamble), never inside either
+# batch's own rationale -- assert by checking the notes section specifically.
+notes_section="$(sed -n '/=== Proposed roadmap_notes/,$p' <<<"$out6")"
+if grep -qF 'merely mentions item 1 and item 2 in passing' <<<"$notes_section"; then
+  common_test_pass "tight-list fixture: the free-standing prose paragraph lands in roadmap_notes, not a batch rationale"
+else
+  common_test_fail "tight-list fixture: the free-standing prose paragraph should be in roadmap_notes (next_postamble)"
+  common_test_info "$out6"
+fi
+
+batches_section="$(sed -n '/=== Proposed roadmap_batches/,/=== Proposed roadmap_notes/p' <<<"$out6")"
+if grep -qF 'merely mentions item 1 and item 2 in passing' <<<"$batches_section"; then
+  common_test_fail "tight-list fixture: the free-standing prose paragraph leaked into a batch's rationale"
+else
+  common_test_pass "tight-list fixture: the free-standing prose paragraph did NOT leak into any batch's rationale"
+fi
+
 echo
 echo "Results: $PASSED passed, $FAILED failed"
 if [[ "$FAILED" -eq 0 ]]; then
