@@ -11,6 +11,25 @@
 # directory prepended to PATH, dispatched by env vars, since the script under test calls bare
 # `curl`, never an absolute path or `command curl`).
 #
+# Stub dispatch contract (sequenced curl + recording sleep, for the cold-start retry path):
+#   - `build_curl_stub` writes both `curl` and `sleep` into its returned stub directory, plus two
+#     empty recorder files: `.curl_call_count` (one line appended per `curl` invocation) and
+#     `.sleep_durations` (one line appended per `sleep` invocation, the bare requested duration).
+#   - `run_sr` exports `STUB_DIR` (the stub directory) alongside the `PATH` shadow, so both stubs
+#     always know where their own recorder files live regardless of how `$0` resolves.
+#   - The `curl` stub determines its 1-based call index from `.curl_call_count`'s line count
+#     *after* recording the current call, then picks its response: for call 1, it prefers
+#     `CURL_STUB_CODE_1`/`CURL_STUB_BODY_1`/`CURL_STUB_EXIT_1`; for call 2 and beyond, it prefers
+#     `CURL_STUB_CODE_2`/`CURL_STUB_BODY_2`/`CURL_STUB_EXIT_2`. Either tier falls back to the
+#     existing unsuffixed `CURL_STUB_CODE`/`CURL_STUB_BODY`/`CURL_STUB_EXIT`, and then to the
+#     original defaults (`200`, `{}`, `0`) -- so every pre-existing single-shot case (which sets
+#     only the unsuffixed vars and never calls `curl` a second time) is byte-identical in
+#     behavior.
+#   - The `sleep` stub records its first argument and exits 0 immediately -- it never actually
+#     sleeps, so the suite stays fast on every retry path.
+#   - Readback helpers `curl_call_count <stub_dir>` and `sleep_durations <stub_dir>` let a case
+#     assert on these directly instead of inferring them from timing.
+#
 # Bootstrap note: this suite lives under a DIFFERENT extension (sapience) than the shared
 # lib/common.sh it needs (core). Post-deploy, every extension's scripts/tests/ and scripts/lib/
 # are flattened into one shared .claude/scripts/ tree, so the same-extension-relative path
@@ -79,17 +98,36 @@ build_scratch() {
   echo "$scratch"
 }
 
-# --- build_curl_stub -- installs a minimal PATH-shadowing curl stub into a fresh scratch
-#     directory (under $TOP_WORKDIR), dispatched by CURL_STUB_CODE / CURL_STUB_BODY /
-#     CURL_STUB_EXIT env vars. Echoes the directory to prepend to PATH. ---
+# --- build_curl_stub -- installs a minimal PATH-shadowing curl stub, plus a companion recording
+#     sleep stub, into a fresh scratch directory (under $TOP_WORKDIR). The curl stub supports both
+#     the original single-shot dispatch (CURL_STUB_CODE / CURL_STUB_BODY / CURL_STUB_EXIT, applied
+#     to every call) and a sequenced two-response dispatch (the _1-suffixed vars for the first
+#     call, the _2-suffixed vars for the second call and beyond), each falling back to the
+#     unsuffixed var and then to the original default. See the header comment block above for the
+#     full dispatch contract. Echoes the stub directory (to prepend to PATH, and to pass as
+#     STUB_DIR so both stubs can find their recorder files). ---
 build_curl_stub() {
   local stub_dir
   stub_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  : > "$stub_dir/.curl_call_count"
+  : > "$stub_dir/.sleep_durations"
   cat > "$stub_dir/curl" <<'STUB'
 #!/usr/bin/env bash
-code="${CURL_STUB_CODE:-200}"
-body="${CURL_STUB_BODY:-{\}}"
-exitcode="${CURL_STUB_EXIT:-0}"
+counter_file="${STUB_DIR:-$(dirname "$0")}/.curl_call_count"
+echo x >> "$counter_file" 2>/dev/null || true
+call_index="$(wc -l < "$counter_file" 2>/dev/null | tr -d ' ')"
+[ -z "$call_index" ] && call_index=1
+
+if [ "$call_index" -ge 2 ]; then
+  code="${CURL_STUB_CODE_2:-${CURL_STUB_CODE:-200}}"
+  body="${CURL_STUB_BODY_2:-${CURL_STUB_BODY:-{\}}}"
+  exitcode="${CURL_STUB_EXIT_2:-${CURL_STUB_EXIT:-0}}"
+else
+  code="${CURL_STUB_CODE_1:-${CURL_STUB_CODE:-200}}"
+  body="${CURL_STUB_BODY_1:-${CURL_STUB_BODY:-{\}}}"
+  exitcode="${CURL_STUB_EXIT_1:-${CURL_STUB_EXIT:-0}}"
+fi
+
 if [ "$exitcode" != "0" ]; then
   echo "curl: (7) Failed to connect to host" >&2
   exit "$exitcode"
@@ -99,14 +137,44 @@ printf '\n%s' "$code"
 exit 0
 STUB
   chmod +x "$stub_dir/curl"
+
+  cat > "$stub_dir/sleep" <<'STUB'
+#!/usr/bin/env bash
+recorder_file="${STUB_DIR:-$(dirname "$0")}/.sleep_durations"
+echo "$1" >> "$recorder_file" 2>/dev/null || true
+exit 0
+STUB
+  chmod +x "$stub_dir/sleep"
+
   echo "$stub_dir"
 }
 
-# run_sr <scratch> <stub_dir> [args...] -- invokes sapience-retrieve.sh with the stub curl
-# shadowing PATH and a fixed SAPIENCE_TOKEN so host/token resolution always succeeds.
+# curl_call_count <stub_dir> -- echoes the number of curl invocations recorded so far.
+curl_call_count() {
+  local stub_dir="$1"
+  if [ -f "$stub_dir/.curl_call_count" ]; then
+    wc -l < "$stub_dir/.curl_call_count" | tr -d ' '
+  else
+    echo 0
+  fi
+}
+
+# sleep_durations <stub_dir> -- echoes the recorded sleep durations, one per line (empty if none).
+sleep_durations() {
+  local stub_dir="$1"
+  if [ -f "$stub_dir/.sleep_durations" ]; then
+    cat "$stub_dir/.sleep_durations"
+  else
+    printf ''
+  fi
+}
+
+# run_sr <scratch> <stub_dir> [args...] -- invokes sapience-retrieve.sh with the stub curl/sleep
+# shadowing PATH (STUB_DIR exported so both stubs resolve their recorder files) and a fixed
+# SAPIENCE_TOKEN so host/token resolution always succeeds.
 run_sr() {
   local scratch="$1" stub_dir="$2"; shift 2
-  env PATH="$stub_dir:$PATH" SAPIENCE_TOKEN="test-token-fixture" \
+  env PATH="$stub_dir:$PATH" STUB_DIR="$stub_dir" SAPIENCE_TOKEN="test-token-fixture" \
     bash "$scratch/.claude/scripts/sapience-retrieve.sh" "$@"
 }
 

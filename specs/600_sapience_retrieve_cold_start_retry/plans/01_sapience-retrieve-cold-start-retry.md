@@ -1,7 +1,7 @@
 # Implementation Plan: Task #600
 
 - **Task**: 600 - Sapience retrieve cold-start retry
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/600_sapience_retrieve_cold_start_retry/reports/01_sapience-retrieve-cold-start-retry.md
@@ -155,28 +155,28 @@ No `roadmap_path` was provided in this dispatch; no roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Extend the test harness stubs (additive, no new assertions) [NOT STARTED]
+### Phase 1: Extend the test harness stubs (additive, no new assertions) [COMPLETED]
 
 **Goal**: Give `test-sapience-capture.sh` the ability to represent a two-response `curl` sequence
 and an instant, recorded `sleep`, without changing any existing case's behavior.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh`
-      immediately before editing (concurrent siblings are dispatched this same cycle).
-- [ ] Extend `build_curl_stub`'s inline stub to keep a call counter in a file inside the stub
+- [x] Re-read `agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh`
+      immediately before editing (concurrent siblings are dispatched this same cycle). *(completed)*
+- [x] Extend `build_curl_stub`'s inline stub to keep a call counter in a file inside the stub
       directory (incremented on every invocation) and to select its response by call index:
       prefer `CURL_STUB_CODE_1`/`CURL_STUB_BODY_1`/`CURL_STUB_EXIT_1` for the first call and
       `CURL_STUB_CODE_2`/`CURL_STUB_BODY_2`/`CURL_STUB_EXIT_2` for the second and beyond, each
       falling back to the existing unsuffixed `CURL_STUB_CODE`/`CURL_STUB_BODY`/`CURL_STUB_EXIT`
       and then to the current defaults. This keeps every existing unsuffixed invocation
-      byte-identical in behavior.
-- [ ] Add a `build_sleep_stub`-style companion (or extend `build_curl_stub` to also write a
+      byte-identical in behavior. *(completed)*
+- [x] Add a `build_sleep_stub`-style companion (or extend `build_curl_stub` to also write a
       `sleep` executable into the same directory) that appends each requested duration to a
-      recorder file in that directory and exits 0 immediately.
-- [ ] Add two small helpers for reading back the recorded state: the `curl` call count and the
-      recorded sleep durations, so later cases assert rather than infer.
-- [ ] Document the stub's dispatch contract in the file's header comment block (the suffixed
-      vars, the fallback chain, the counter and recorder files).
+      recorder file in that directory and exits 0 immediately. *(completed)*
+- [x] Add two small helpers for reading back the recorded state: the `curl` call count and the
+      recorded sleep durations, so later cases assert rather than infer. *(completed)*
+- [x] Document the stub's dispatch contract in the file's header comment block (the suffixed
+      vars, the fallback chain, the counter and recorder files). *(completed)*
 
 **Timing**: 0.75 hours
 

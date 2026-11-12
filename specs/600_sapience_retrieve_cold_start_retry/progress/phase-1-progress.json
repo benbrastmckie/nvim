@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Extend the test harness stubs (additive, no new assertions)",
+  "started_at": "2026-11-12T18:21:45Z",
+  "last_updated": "2026-11-12T18:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-sapience-capture.sh before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Extend build_curl_stub for sequenced responses (call counter, suffixed env vars)", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 3, "description": "Add a recording sleep stub", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 4, "description": "Add readback helpers for call count and sleep durations", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 5, "description": "Document the stub contract in the header comment block", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

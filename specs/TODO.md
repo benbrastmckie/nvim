@@ -84,7 +84,7 @@ next_project_number: 610
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-600 [PLANNED] — Honor the Sapience 503 cold-start retry\_after hint with one...
+600 [IMPLEMENTING] — Honor the Sapience 503 cold-start retry\_after hint with one...
   └─ 606 [NOT STARTED] — Scope Sapience context injection to the current repository so...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
@@ -848,7 +848,7 @@ CITATION: {task 589, iss_1794382098954_Zl7lZg}, class "scope boundary".
 ---
 
 ### 600. Honor the Sapience 503 cold-start retry_after hint with one bounded retry instead of degrading on first contact
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
