@@ -96901,7 +96901,7 @@
       "project_number": 597,
       "project_name": "coupled_generated_surfaces_in_plan_authoring",
       "title": "Make the coupled-generated-surface and longFile-baseline plan-authoring conditions reach the plan author, and correct the longFile acceptance window",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "agent-system",
       "effort": "medium",
@@ -96939,7 +96939,7 @@
         }
       ],
       "created": "2026-11-10T12:10:22Z",
-      "last_updated": "2026-11-12T06:51:09Z",
+      "last_updated": "2026-11-12T19:32:31Z",
       "parent_task": null,
       "priority": "medium",
       "audit_verdict": {
