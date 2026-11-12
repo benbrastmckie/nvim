@@ -453,7 +453,7 @@ Phase 5 has a declaration contract to read rather than invent.
 
 ---
 
-### Phase 5: Advisory coupled_generated_surfaces Check in validate-artifact.sh [NOT STARTED]
+### Phase 5: Advisory coupled_generated_surfaces Check in validate-artifact.sh [COMPLETED]
 
 **Goal**: `validate-artifact.sh`'s per-phase `plan` loop warns when a phase's `Files to modify`
 entries match a declared `trigger_glob` but omit one of that entry's `generated_paths`, reading
@@ -461,36 +461,41 @@ the repo's own declaration and failing open when there is none, with fixtures pi
 branch.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/validate-artifact.sh`'s per-phase `plan` loop
+- [x] Re-read `agent-system/extensions/core/scripts/validate-artifact.sh`'s per-phase `plan` loop
       (the `Files to modify` presence check, the authoring-shape advisory scan, and the Tier
       Justification measurement check) and
       `agent-system/extensions/core/scripts/lib/derived-artifact-probe-lib.sh`'s
       `_derived_probe_load_entries_json` / `derived_probe_entries` pair immediately before
-      editing.
-- [ ] Add an inline reader near the script's other lazy, fail-soft helpers, modeled on
+      editing. *(completed)*
+- [x] Add an inline reader near the script's other lazy, fail-soft helpers, modeled on
       `_derived_probe_load_entries_json`: resolve the repo root by walking upward from the
       artifact path's directory and then from `$(pwd)` looking for `.claude-extensions.json`;
       read `.coupled_generated_surfaces // []`, coerce a non-array to `[]`, and return `[]` for
       every absence case (no file, no `jq`, unparseable JSON, absent key). Drop a malformed entry
       (missing/empty `trigger_glob`, `generated_paths` absent or not an array of non-empty
-      strings) with ONE named warning naming the entry, never aborting the read.
-- [ ] Add a header comment recording: the single-consumer inline decision, its promotion trigger
+      strings) with ONE named warning naming the entry, never aborting the read. *(completed; a
+      hard-crash-on-empty-repo_root defect in the first draft was caught and fixed during
+      verification -- see the issue log)*
+- [x] Add a header comment recording: the single-consumer inline decision, its promotion trigger
       (a second consumer promotes this to `scripts/lib/`), the fail-open posture, and the
       declaration point with a pointer to `context/standards/repo-level-declarations.md`.
-- [ ] Reuse the EXISTING `_ftm_block` body capture from the authoring-shape scan for the phase's
+      *(completed)*
+- [x] Reuse the EXISTING `_ftm_block` body capture from the authoring-shape scan for the phase's
       entry lines rather than adding a second capture grammar; extract each entry's first
-      backtick-delimited token with the same `sed -E` extraction already used there.
-- [ ] For each validated declaration entry, warn once per phase when at least one of the phase's
+      backtick-delimited token with the same `sed -E` extraction already used there. *(completed)*
+- [x] For each validated declaration entry, warn once per phase when at least one of the phase's
       extracted paths matches `trigger_glob` under `[[ path == glob ]]` and at least one of that
       entry's `generated_paths` is absent from the phase's extracted path set. The warning names
       the phase number, the matched trigger, every missing generated path, and — when
       `commit_blocking` is `true` — that same-phase regeneration is owed, not merely the
-      declaration. Emit via `log_warn` only.
-- [ ] Skip the whole check, silently, when the reader yields `[]` — the state of every repository
-      today, including this one. No warning, no info line, no behaviour change.
-- [ ] Update the script's usage/exit-code header only if the new check changes an exit code (it
+      declaration. Emit via `log_warn` only. *(completed)*
+- [x] Skip the whole check, silently, when the reader yields `[]` — the state of every repository
+      today, including this one. No warning, no info line, no behaviour change. *(completed,
+      confirmed via byte-identical pre/post-change comparison)*
+- [x] Update the script's usage/exit-code header only if the new check changes an exit code (it
       must not: advisory-only, `log_warn`, no new exit path, no `--fix` participation).
-- [ ] Add fixtures to `agent-system/extensions/core/scripts/tests/test-validate-artifact.sh`
+      *(completed: no header change, since no exit code changed)*
+- [x] Add fixtures to `agent-system/extensions/core/scripts/tests/test-validate-artifact.sh`
       following the file's existing helper/fixture idiom: (a) a declared trigger matched with the
       generated path MISSING warns; (b) the same declaration with the generated path PRESENT is
       silent (no false positive); (c) no declaration key at all is silent; (d) a malformed entry
@@ -498,11 +503,14 @@ branch.
       warning is promoted by `--strict` through the existing `total_issues` branch; (f) a phase
       whose paths match no trigger is silent. Each fixture synthesizes its own temporary repo root
       holding a `.claude-extensions.json` — this repository declares nothing and must not be
-      edited to make a test pass.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` and confirm
-      every pre-existing assertion still passes alongside the new ones.
-- [ ] Run `bash /home/benjamin/.config/nvim/.claude/scripts/lint-shellcheck.sh --verbose` scoped to the
+      edited to make a test pass. *(completed: all six CGS fixtures added and passing)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` and confirm
+      every pre-existing assertion still passes alongside the new ones. *(completed: 145 passed,
+      0 failed, up from 136 pre-change)*
+- [x] Run `bash /home/benjamin/.config/nvim/.claude/scripts/lint-shellcheck.sh --verbose` scoped to the
       two edited scripts and confirm no new finding relative to their pre-change output.
+      *(completed: 0 findings after adding one deliberate `shellcheck disable=SC2053` for the
+      intentional unquoted glob match)*
 
 **Timing**: 2 hours
 
