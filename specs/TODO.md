@@ -13,8 +13,8 @@ next_project_number: 611
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,476,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,531,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,600,603,604,607,610 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,457,458,462,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,602,605,606 | 383,390,398,431,451,452,455,459,472,476,479,484,491,504,505,534,535,538,539,548,549,563,597,600,603,604 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,476,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,531,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,572,574,575,580,585,590,591,597,603,604,606,607,610 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,457,458,462,474,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,576,583,584,586,598,599,602,605 | 383,390,398,431,451,452,455,459,472,476,479,484,491,504,505,534,535,538,539,548,549,563,597,603,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,588,592,593 | 439,451,458,472,476,486,509,518,519,542,543,564,599 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,594 | 438,479,492,501,547,552,580,593 | core-agent-system, agent-system |
 | 5 | 595,609 | 539,577,594 | agent-system |
@@ -84,8 +84,7 @@ next_project_number: 611
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-600 [IMPLEMENTING] — Honor the Sapience 503 cold-start retry\_after hint with one...
-  └─ 606 [NOT STARTED] — Scope Sapience context injection to the current repository so...
+606 [NOT STARTED] — Scope Sapience context injection to the current repository so...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
@@ -906,7 +905,7 @@ CITATION: {task 589, iss_1794382098954_Zl7lZg}, class "scope boundary".
 ---
 
 ### 600. Honor the Sapience 503 cold-start retry_after hint with one bounded retry instead of degrading on first contact
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
