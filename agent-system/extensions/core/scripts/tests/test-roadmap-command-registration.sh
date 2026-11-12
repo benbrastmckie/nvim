@@ -3,8 +3,10 @@
 # command/skill/agent trio: existence, manifest.json registration, agent frontmatter validity,
 # the new entry-template index entry, and the two claudemd.md table rows.
 #
-# Structural model: test-validate-state.sh (pass()/fail() counters via common_test_pass/fail,
-# source-store-first resolution via common_test_resolve_subject/common_test_repo_root).
+# Structural model: test-validate-state.sh (pass()/fail() counters via common_test_pass/fail).
+# This suite is always source-store-scoped (see CORE_EXT_ROOT below) rather than using the
+# deploy-tree-first/source-store-fallback subject resolver, since the trio under test lives only
+# in the source store until a redeploy lands.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error.
 
