@@ -384,9 +384,14 @@ check_c_no_task_references_bullet() {
 #   - core/agents/code-reviewer-agent.md: console-only bullet-summary return, no file-based
 #     metadata exchange anywhere in the file.
 #   - literature/agents/literature-agent.md: zero occurrences of ".return-meta.json" anywhere.
+#   - core/agents/roadmap-agent.md: dispatched directly by skill-roadmap via the Agent tool
+#     (never through skill-orchestrate's dispatch table, never under orchestrator_mode), with no
+#     task directory to write .return-meta.json into; reports via its own console-only text
+#     return instead, same shape as code-reviewer-agent.md above.
 EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS=(
   "agent-system/extensions/core/agents/code-reviewer-agent.md"
   "agent-system/extensions/literature/agents/literature-agent.md"
+  "agent-system/extensions/core/agents/roadmap-agent.md"
 )
 
 is_excluded_from_artifacts_template() {
@@ -514,7 +519,7 @@ check_f_artifacts_template() {
 # The same reasoning keeps `founder/agents/project-agent.md` and `present/agents/grant-agent.md`
 # off this list: both carry a passing `"researched"` example alongside their agent-local values.
 #
-# Only 5 files genuinely carry NO canonical-vocabulary status anywhere in the file (confirmed by
+# Only 6 files genuinely carry NO canonical-vocabulary status anywhere in the file (confirmed by
 # a full `"status":` occurrence grep against each, not by routing-registration inference):
 EXCLUDED_TERMINAL_STATUS_RELATIVE_PATHS=(
   "agent-system/extensions/core/agents/meta-builder-agent.md"
@@ -522,6 +527,7 @@ EXCLUDED_TERMINAL_STATUS_RELATIVE_PATHS=(
   "agent-system/extensions/present/agents/slidev-assembly-agent.md"
   "agent-system/extensions/core/agents/code-reviewer-agent.md"
   "agent-system/extensions/literature/agents/literature-agent.md"
+  "agent-system/extensions/core/agents/roadmap-agent.md"
 )
 
 is_excluded_from_terminal_status() {
