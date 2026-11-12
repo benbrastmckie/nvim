@@ -13,7 +13,7 @@ next_project_number: 611
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,602,604,606,607,610 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,606,607,610 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,572,576,583,584,592,593,598,605 | 383,390,398,431,451,452,455,459,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594 | 439,458,472,476,486,509,518,519,542,543,564,572,593 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,595 | 438,492,501,539,547,552,580,594 | core-agent-system, agent-system |
@@ -64,7 +64,6 @@ next_project_number: 611
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
-602 [IMPLEMENTING] — Improve the conclusion stage's next-batch proposal quality
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
@@ -746,12 +745,13 @@ to its owner.
 
 ### 602. Improve the conclusion stage's next-batch proposal quality
 - **Effort**: large
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 313, Task 402, Task 532, Task 603
 - **Research**: [602_conclusion_stage_next_batch_proposal_quality/reports/01_conclusion-stage-next-batch-proposal-quality.md]
 - **Plan**: [602_conclusion_stage_next_batch_proposal_quality/plans/01_next-batch-proposal-quality.md]
+- **Summary**: [602_conclusion_stage_next_batch_proposal_quality/summaries/01_next-batch-proposal-quality-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 
