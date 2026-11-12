@@ -2,7 +2,11 @@
 # test-sapience-capture.sh - Regression suite for sapience-retrieve.sh's exit-code split: a
 # genuine transport/HTTP failure (exit 2, with the HTTP status and a length-bounded body excerpt
 # on stderr) versus a benign no-match (exit 1, nothing on stderr, exactly as before) versus
-# success (exit 0, the <memory-context> envelope on stdout).
+# success (exit 0, the <memory-context> envelope on stdout). Cases 1-4 cover the original split;
+# cases 5-9 cover the bounded cold-start retry (503 + JSON + `.starting == true`): a retry that
+# succeeds (5), a second 503 that still ends in the unchanged exit-2 degrade (6), a 4xx that is
+# never retried (7), a non-JSON 503 body that is never retried (8), and a `retry_after` outside
+# [1, 20] that is clamped to the ceiling rather than honored verbatim (9).
 #
 # Follows the core shell-test convention: common_test_pass/_fail/_info from lib/common.sh,
 # PASSED/FAILED integer counters, a mktemp -d workdir with a trap EXIT cleanup. `curl` is
@@ -286,6 +290,177 @@ run_sr() {
     common_test_pass "(4) curl transport failure: stderr names the transport failure"
   else
     common_test_fail "(4) curl transport failure: stderr names the transport failure" "err=$err"
+  fi
+}
+
+# =====================================================================================
+# Case 5: a cold-start 503 (starting: true, retry_after: 15) followed by a 200 with a hit
+# yields exactly one retry, honors the hinted delay, and succeeds.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  out="$(CURL_STUB_CODE_1=503 CURL_STUB_BODY_1='{"error": "your Sapience is starting, try again in a minute", "starting": true, "retry_after": 15, "db_mb": 0}' \
+    CURL_STUB_CODE_2=200 CURL_STUB_BODY_2='{"results":[{"subject":"keybinding fault","predicate":"root cause","object_value":"stale cache","score":0.9}]}' \
+    run_sr "$scratch" "$stub_dir" "diagnosing a keybinding fault" "general" 2>/dev/null)"
+  rc=$?
+  count="$(curl_call_count "$stub_dir")"
+  sleeps="$(sleep_durations "$stub_dir")"
+
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(5) cold start then success: exit 0"
+  else
+    common_test_fail "(5) cold start then success: exit 0" "got rc=$rc"
+  fi
+  if echo "$out" | grep -q "<memory-context>" && echo "$out" | grep -q "keybinding fault"; then
+    common_test_pass "(5) cold start then success: populated memory-context"
+  else
+    common_test_fail "(5) cold start then success: populated memory-context" "out=$out"
+  fi
+  if [ "$count" = "2" ]; then
+    common_test_pass "(5) cold start then success: exactly one retry (curl call count 2)"
+  else
+    common_test_fail "(5) cold start then success: exactly one retry (curl call count 2)" "count=$count"
+  fi
+  if [ "$sleeps" = "15" ]; then
+    common_test_pass "(5) cold start then success: honored the hinted 15s delay"
+  else
+    common_test_fail "(5) cold start then success: honored the hinted 15s delay" "sleeps=$sleeps"
+  fi
+}
+
+# =====================================================================================
+# Case 6: a second 503 (still starting: true) after the retry ends in the unchanged
+# exit-2 degrade -- never a second retry.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  err_file="$(mktemp -p "$TOP_WORKDIR")"
+  out="$(CURL_STUB_CODE_1=503 CURL_STUB_BODY_1='{"error": "your Sapience is starting, try again in a minute", "starting": true, "retry_after": 15, "db_mb": 0}' \
+    CURL_STUB_CODE_2=503 CURL_STUB_BODY_2='{"error": "your Sapience is starting, try again in a minute", "starting": true, "retry_after": 15, "db_mb": 0}' \
+    run_sr "$scratch" "$stub_dir" "diagnosing a keybinding fault" "general" 2>"$err_file")"
+  rc=$?
+  err="$(cat "$err_file")"
+  count="$(curl_call_count "$stub_dir")"
+
+  if [ "$rc" -eq 2 ]; then
+    common_test_pass "(6) second 503 after retry: genuine-failure exit code 2"
+  else
+    common_test_fail "(6) second 503 after retry: genuine-failure exit code 2" "got rc=$rc"
+  fi
+  if [ -z "$out" ]; then
+    common_test_pass "(6) second 503 after retry: empty stdout"
+  else
+    common_test_fail "(6) second 503 after retry: empty stdout" "stdout=$out"
+  fi
+  if echo "$err" | grep -q "503" && echo "$err" | grep -q "your Sapience is starting"; then
+    common_test_pass "(6) second 503 after retry: unchanged diagnostic (status + body excerpt)"
+  else
+    common_test_fail "(6) second 503 after retry: unchanged diagnostic (status + body excerpt)" "err=$err"
+  fi
+  if [ "$count" = "2" ]; then
+    common_test_pass "(6) second 503 after retry: no second retry (curl call count 2)"
+  else
+    common_test_fail "(6) second 503 after retry: no second retry (curl call count 2)" "count=$count"
+  fi
+}
+
+# =====================================================================================
+# Case 7: a 4xx is never retried.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  err_file="$(mktemp -p "$TOP_WORKDIR")"
+  out="$(CURL_STUB_CODE=401 CURL_STUB_BODY='{"error": "unauthorized"}' \
+    run_sr "$scratch" "$stub_dir" "diagnosing a keybinding fault" "general" 2>"$err_file")"
+  rc=$?
+  err="$(cat "$err_file")"
+  count="$(curl_call_count "$stub_dir")"
+  sleeps="$(sleep_durations "$stub_dir")"
+
+  if [ "$rc" -eq 2 ]; then
+    common_test_pass "(7) 4xx: genuine-failure exit code 2"
+  else
+    common_test_fail "(7) 4xx: genuine-failure exit code 2" "got rc=$rc"
+  fi
+  if [ "$count" = "1" ]; then
+    common_test_pass "(7) 4xx: never retried (curl call count 1)"
+  else
+    common_test_fail "(7) 4xx: never retried (curl call count 1)" "count=$count"
+  fi
+  if [ -z "$sleeps" ]; then
+    common_test_pass "(7) 4xx: no sleep recorded"
+  else
+    common_test_fail "(7) 4xx: no sleep recorded" "sleeps=$sleeps"
+  fi
+  if echo "$err" | grep -q "401"; then
+    common_test_pass "(7) 4xx: unchanged diagnostic carries the status"
+  else
+    common_test_fail "(7) 4xx: unchanged diagnostic carries the status" "err=$err"
+  fi
+}
+
+# =====================================================================================
+# Case 8: a 503 with a non-JSON body is never retried (the predicate requires a parseable
+# JSON body before it ever inspects `.starting`).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  err_file="$(mktemp -p "$TOP_WORKDIR")"
+  out="$(CURL_STUB_CODE=503 CURL_STUB_BODY='<html>Service Unavailable</html>' \
+    run_sr "$scratch" "$stub_dir" "diagnosing a keybinding fault" "general" 2>"$err_file")"
+  rc=$?
+  err="$(cat "$err_file")"
+  count="$(curl_call_count "$stub_dir")"
+  sleeps="$(sleep_durations "$stub_dir")"
+
+  if [ "$rc" -eq 2 ]; then
+    common_test_pass "(8) 503 non-JSON body: genuine-failure exit code 2"
+  else
+    common_test_fail "(8) 503 non-JSON body: genuine-failure exit code 2" "got rc=$rc"
+  fi
+  if [ "$count" = "1" ]; then
+    common_test_pass "(8) 503 non-JSON body: never retried (curl call count 1)"
+  else
+    common_test_fail "(8) 503 non-JSON body: never retried (curl call count 1)" "count=$count"
+  fi
+  if [ -z "$sleeps" ]; then
+    common_test_pass "(8) 503 non-JSON body: no sleep recorded"
+  else
+    common_test_fail "(8) 503 non-JSON body: no sleep recorded" "sleeps=$sleeps"
+  fi
+  if echo "$err" | grep -q "503"; then
+    common_test_pass "(8) 503 non-JSON body: unchanged diagnostic carries the status"
+  else
+    common_test_fail "(8) 503 non-JSON body: unchanged diagnostic carries the status" "err=$err"
+  fi
+}
+
+# =====================================================================================
+# Case 9: a retry_after hint outside [1, 20] is clamped to the ceiling, never honored
+# verbatim.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  out="$(CURL_STUB_CODE_1=503 CURL_STUB_BODY_1='{"error": "your Sapience is starting, try again in a minute", "starting": true, "retry_after": 9999, "db_mb": 0}' \
+    CURL_STUB_CODE_2=200 CURL_STUB_BODY_2='{"results":[{"subject":"keybinding fault","predicate":"root cause","object_value":"stale cache","score":0.9}]}' \
+    run_sr "$scratch" "$stub_dir" "diagnosing a keybinding fault" "general" 2>/dev/null)"
+  rc=$?
+  sleeps="$(sleep_durations "$stub_dir")"
+
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(9) retry_after 9999 clamped: exit 0"
+  else
+    common_test_fail "(9) retry_after 9999 clamped: exit 0" "got rc=$rc"
+  fi
+  if [ "$sleeps" = "20" ]; then
+    common_test_pass "(9) retry_after 9999 clamped: slept the clamp ceiling (20), not 9999"
+  else
+    common_test_fail "(9) retry_after 9999 clamped: slept the clamp ceiling (20), not 9999" "sleeps=$sleeps"
   fi
 }
 

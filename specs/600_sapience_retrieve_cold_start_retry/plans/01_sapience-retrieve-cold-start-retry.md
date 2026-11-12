@@ -271,30 +271,30 @@ report rather than refactoring more widely.
 
 ---
 
-### Phase 3: Add the four required cold-start test cases [NOT STARTED]
+### Phase 3: Add the four required cold-start test cases [COMPLETED]
 
 **Goal**: Drive the cold-start path with no live vault and assert each of the four behaviors the
 dispatch's VERIFICATION section names, plus the honored delay.
 
 **Tasks**:
-- [ ] Re-read the harness file immediately before editing.
-- [ ] Case: first call 503 + `{"starting": true, "retry_after": 15, ...}`, second call 200 with
+- [x] Re-read the harness file immediately before editing. *(completed)*
+- [x] Case: first call 503 + `{"starting": true, "retry_after": 15, ...}`, second call 200 with
       one real hit. Assert exit 0, a populated `<memory-context>` envelope on stdout, the `curl`
       call counter is exactly 2 (exactly one retry attempted, never more), and the recorded sleep
-      is exactly one entry of 15.
-- [ ] Case: both calls 503 + `starting: true`. Assert exit 2, empty stdout, the unchanged
+      is exactly one entry of 15. *(completed)*
+- [x] Case: both calls 503 + `starting: true`. Assert exit 2, empty stdout, the unchanged
       diagnostic carrying the status and the body excerpt on stderr, and a `curl` call count of
-      exactly 2 (no second retry).
-- [ ] Case: a 4xx (e.g. 401) on the first call. Assert exit 2, the unchanged diagnostic, a `curl`
-      call count of exactly 1, and an empty sleep recorder — never retried.
-- [ ] Case: a 503 with a non-JSON body (e.g. `<html>Service Unavailable</html>`). Assert exit 2,
+      exactly 2 (no second retry). *(completed)*
+- [x] Case: a 4xx (e.g. 401) on the first call. Assert exit 2, the unchanged diagnostic, a `curl`
+      call count of exactly 1, and an empty sleep recorder — never retried. *(completed)*
+- [x] Case: a 503 with a non-JSON body (e.g. `<html>Service Unavailable</html>`). Assert exit 2,
       the unchanged diagnostic, a `curl` call count of exactly 1, and an empty sleep recorder —
-      never retried.
-- [ ] Add one clamp case asserting a hint outside the band is clamped rather than honored
+      never retried. *(completed)*
+- [x] Add one clamp case asserting a hint outside the band is clamped rather than honored
       verbatim: first call 503 with `"retry_after": 9999`, second call 200 with a hit; assert the
-      recorded sleep is exactly `20`, not `9999`.
-- [ ] Extend the header comment block to describe the retry cases alongside the existing
-      exit-code-split description.
+      recorded sleep is exactly `20`, not `9999`. *(completed)*
+- [x] Extend the header comment block to describe the retry cases alongside the existing
+      exit-code-split description. *(completed)*
 
 **Timing**: 1 hour
 

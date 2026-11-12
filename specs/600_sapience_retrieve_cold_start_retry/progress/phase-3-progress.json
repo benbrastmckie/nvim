@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Add the four required cold-start test cases",
+  "started_at": "2026-11-12T18:30:00Z",
+  "last_updated": "2026-11-12T18:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read the harness file before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Case: 503 then 200, exit 0, call count 2, sleep 15", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 3, "description": "Case: 503 then 503, exit 2, call count 2, no second retry", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 4, "description": "Case: 4xx, never retried, call count 1, empty sleep", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 5, "description": "Case: non-JSON 503 body, never retried, call count 1, empty sleep", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 6, "description": "Clamp case: retry_after 9999 clamped to 20", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 7, "description": "Extend header comment block for the retry cases", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
