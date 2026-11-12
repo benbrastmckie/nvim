@@ -1,11 +1,54 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/600_sapience_retrieve_cold_start_retry/summaries/01_sapience-retrieve-cold-start-retry-summary.md",
+      "summary": "All five phases completed: bounded single-shot cold-start retry added to sapience-retrieve.sh, five new test cases (29/29 passing), per-repo-scoping.md documents the retry contract, redeployed with zero drift across all three mirrors."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a bounded, single-shot cold-start retry to sapience-retrieve.sh (503 + parseable JSON + strict-boolean .starting==true, retry_after clamped to [1,20] defaulting to 15), extended test-sapience-capture.sh with a sequenced curl/sleep stub and five new cases (29/29 passing), documented the retry contract in per-repo-scoping.md, and redeployed with all three source-store/deployed mirrors confirmed byte-identical."
+  },
+  "modified_files": [
+    "agent-system/extensions/sapience/scripts/sapience-retrieve.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh",
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/index-entries.json",
+    "specs/600_sapience_retrieve_cold_start_retry/plans/01_sapience-retrieve-cold-start-retry.md",
+    "specs/600_sapience_retrieve_cold_start_retry/summaries/01_sapience-retrieve-cold-start-retry-summary.md",
+    "specs/state.json",
+    "specs/TODO.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a PATH-shadowed stub script needs to persist state between invocations (a call counter, a recorded argument) but another PATH-shadowed stub needs to read the same state, do not have each stub self-locate its own directory via `dirname \"$0\"` -- `$0` resolves to the bare command name, not a full path, when the executable is found via a PATH search. Instead have the invoking harness export an explicit directory env var (e.g. STUB_DIR) alongside the PATH prepend, and have every stub read that var (falling back to dirname \"$0\" only as a last resort).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/600_sapience_retrieve_cold_start_retry/summaries/01_sapience-retrieve-cold-start-retry-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash", "test-stub", "PATH-shadowing", "curl-stub", "STUB_DIR"]
+    },
+    {
+      "content": "A test suite whose common_test_resolve_subject call defaults to deploy-tree-first mode will silently exercise the STALE deployed copy of a script under test when verifying a source-store-only change made before the task's own redeploy phase. Override with CORE_TEST_SUBJECT_MODE=source-store for mid-task verification against the real edit, then let the final redeploy phase's own scoped check confirm parity against the deployed copy.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/600_sapience_retrieve_cold_start_retry/summaries/01_sapience-retrieve-cold-start-retry-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["CORE_TEST_SUBJECT_MODE", "deploy-tree-first", "source-store", "test-verification", "redeploy-ordering"]
+    },
+    {
+      "content": "When mechanically checking off a plan phase's checklist items by locating the phase's section boundary, never bound the section with a bare '---' substring search -- a phase's own body text can legitimately contain a literal '---' (e.g. inside a quoted shell comment block like `# --- Constants ---`), which truncates the section early and corrupts unrelated text. Anchor on the next '\\n---\\n' horizontal-rule line (or the next '### Phase' heading) instead.",
+      "category": "PATTERN",
+      "source_artifact": "specs/600_sapience_retrieve_cold_start_retry/summaries/01_sapience-retrieve-cold-start-retry-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["plan-checklist", "section-boundary", "markdown-parsing", "horizontal-rule"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794459760_979d1d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 4,
+    "phases_completed": 5,
     "phases_total": 5
   },
   "dispatch_seq": 20

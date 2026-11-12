@@ -102167,6 +102167,11 @@
           "path": "specs/600_sapience_retrieve_cold_start_retry/plans/01_sapience-retrieve-cold-start-retry.md",
           "type": "plan",
           "summary": "Five-phase plan: harness stub extension, bounded retry implementation, five new test cases, per-repo-scoping.md retry contract, redeploy plus full gate set."
+        },
+        {
+          "path": "specs/600_sapience_retrieve_cold_start_retry/summaries/01_sapience-retrieve-cold-start-retry-summary.md",
+          "type": "summary",
+          "summary": "All five phases completed: bounded single-shot cold-start retry added to sapience-retrieve.sh, five new test cases (29/29 passing), per-repo-scoping.md documents the retry contract, redeployed with zero drift across all three mirrors."
         }
       ],
       "audit_verdict": {

@@ -40,7 +40,7 @@
       "topics": ["sapience", "per-repo-scoping", "provenance", "ingest-kos"],
       "keywords": ["provenance", "source=", "repo tag", "sapience-retrieve.sh", "sapience-remember.sh", "explicit", "gated", "set_aside"],
       "summary": "The provenance repo-tag scoping mechanism, why project= and source_loc are dead ends, the two scripts' contracts, and the no-delete-API / unreviewed-write / two-population hazards",
-      "line_count": 140,
+      "line_count": 153,
       "load_when": {},
       "on_demand": true
     },

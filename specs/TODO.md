@@ -854,6 +854,7 @@ CITATION: {task 589, iss_1794382098954_Zl7lZg}, class "scope boundary".
 - **Dependencies**: None
 - **Research**: [600_sapience_retrieve_cold_start_retry/reports/01_sapience-retrieve-cold-start-retry.md]
 - **Plan**: [600_sapience_retrieve_cold_start_retry/plans/01_sapience-retrieve-cold-start-retry.md]
+- **Summary**: [600_sapience_retrieve_cold_start_retry/summaries/01_sapience-retrieve-cold-start-retry-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
