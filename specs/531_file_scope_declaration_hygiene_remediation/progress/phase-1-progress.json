@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Narrow the two coarse file_scope declarations",
+  "started_at": "2026-11-12T06:51:00Z",
+  "last_updated": "2026-11-12T07:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive and narrow project 473 file_scope", "status": "done", "files_touched": ["specs/state.json", "specs/TODO.md"]},
+    {"id": 2, "description": "Re-derive and narrow project 518 file_scope", "status": "done", "files_touched": ["specs/state.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

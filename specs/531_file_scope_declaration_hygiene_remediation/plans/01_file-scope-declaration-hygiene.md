@@ -1,7 +1,7 @@
 # Implementation Plan: Task #531
 
 - **Task**: 531 - file_scope declaration hygiene remediation for the admission gate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.0 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/531_file_scope_declaration_hygiene_remediation/reports/01_file-scope-hygiene-remediation.md
@@ -132,23 +132,23 @@ and a clean one-commit-per-phase boundary requires the earlier write to be commi
 
 ---
 
-### Phase 1: Narrow the two coarse `file_scope` declarations [NOT STARTED]
+### Phase 1: Narrow the two coarse `file_scope` declarations [COMPLETED]
 
 **Goal**: Projects 473 and 518 declare file-level scope only, and `validate-state.sh` Check 8
 names no project.
 
 **Tasks**:
 
-- [ ] Re-derive 473's file list live: `bash .claude/scripts/check-record-versioning.sh agent-system/extensions/core/docs/architecture/`, and collect the distinct files carrying findings. Expect 5. If the set differs from the five named below, use the live set and say so in the commit message.
-- [ ] Re-derive 518's file list live: `grep -rl "BOTH required top-level fields" agent-system/extensions/*/agents/ | grep -v '^agent-system/extensions/core/' | sort`. Expect 40. If the count differs, use the live set and say so in the commit message.
-- [ ] Re-read project 473's current entry (`jq '.active_projects[] | select(.project_number==473) | .file_scope' specs/state.json`) to confirm it still holds exactly the one directory entry.
-- [ ] Replace 473's `file_scope` with the 5 live-derived files via a single `state-write.sh` call, passing the array as `--argjson` and scoping the filter to `project_number == 473`: `bash .claude/scripts/state-write.sh '.active_projects |= map(if .project_number == 473 then .file_scope = $scope else . end)' --session-id "$SESSION_ID" --argjson scope "$SCOPE_JSON" --regen-todo`. Run it once with `--dry-run` first and read the proposed diff.
-- [ ] Confirm Check 8 no longer names 473: `bash .claude/scripts/validate-state.sh specs/state.json 2>&1 | grep -E 'Coarse file_scope'`.
-- [ ] Commit this sub-step: `bash .claude/scripts/git-commit-scoped.sh --message "task 531: narrow project 473 file_scope to measured files" --session "$SESSION_ID" --task 531 -- specs/state.json specs/TODO.md`, after reviewing `git diff --staged`.
-- [ ] Re-read project 518's current entry and confirm it still holds 7 file entries plus 16 `<extension>/agents/` directory entries.
-- [ ] Replace 518's `file_scope` with its 7 existing file entries plus the 40 live-derived files, via the same single-call `state-write.sh` shape scoped to `project_number == 518`. Preserve the 7 existing entries verbatim; do not re-derive or re-word them.
-- [ ] Confirm Check 8 now names no project at all, and that Check 9 still reports `[PASS] No duplicate file_scope entries found`.
-- [ ] Commit this sub-step: `task 531: narrow project 518 file_scope to measured files`, staging `specs/state.json specs/TODO.md`.
+- [x] Re-derive 473's file list live: `bash .claude/scripts/check-record-versioning.sh agent-system/extensions/core/docs/architecture/`, and collect the distinct files carrying findings. Expect 5. If the set differs from the five named below, use the live set and say so in the commit message. *(completed: live set matched the predicted 5 files exactly)*
+- [x] Re-derive 518's file list live: `grep -rl "BOTH required top-level fields" agent-system/extensions/*/agents/ | grep -v '^agent-system/extensions/core/' | sort`. Expect 40. If the count differs, use the live set and say so in the commit message. *(completed: live set matched the predicted 40 files exactly)*
+- [x] Re-read project 473's current entry (`jq '.active_projects[] | select(.project_number==473) | .file_scope' specs/state.json`) to confirm it still holds exactly the one directory entry. *(completed)*
+- [x] Replace 473's `file_scope` with the 5 live-derived files via a single `state-write.sh` call, passing the array as `--argjson` and scoping the filter to `project_number == 473`: `bash .claude/scripts/state-write.sh '.active_projects |= map(if .project_number == 473 then .file_scope = $scope else . end)' --session-id "$SESSION_ID" --argjson scope "$SCOPE_JSON" --regen-todo`. Run it once with `--dry-run` first and read the proposed diff. *(completed: used --argjson-file instead of --argjson since the array was file-backed)*
+- [x] Confirm Check 8 no longer names 473: `bash .claude/scripts/validate-state.sh specs/state.json 2>&1 | grep -E 'Coarse file_scope'`. *(completed)*
+- [x] Commit this sub-step: `bash .claude/scripts/git-commit-scoped.sh --message "task 531: narrow project 473 file_scope to measured files" --session "$SESSION_ID" --task 531 -- specs/state.json specs/TODO.md`, after reviewing `git diff --staged`. *(completed: commit dc7b6f262; diff also carried concurrent sibling status transitions for projects 531 and 597 written by other in-flight dispatches, reviewed and left intact per the Territory concurrency note, not reverted)*
+- [x] Re-read project 518's current entry and confirm it still holds 7 file entries plus 16 `<extension>/agents/` directory entries. *(completed)*
+- [x] Replace 518's `file_scope` with its 7 existing file entries plus the 40 live-derived files, via the same single-call `state-write.sh` shape scoped to `project_number == 518`. Preserve the 7 existing entries verbatim; do not re-derive or re-word them. *(completed: 47 entries total)*
+- [x] Confirm Check 8 now names no project at all, and that Check 9 still reports `[PASS] No duplicate file_scope entries found`. *(completed)*
+- [x] Commit this sub-step: `task 531: narrow project 518 file_scope to measured files`, staging `specs/state.json specs/TODO.md`. *(completed: commit 6042e39f1; TODO.md had no diff this sub-step since file_scope is not rendered there)*
 
 **Timing**: 1.25 hours
 
