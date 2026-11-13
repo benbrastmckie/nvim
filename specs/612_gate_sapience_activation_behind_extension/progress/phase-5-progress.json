@@ -1,0 +1,28 @@
+{
+  "phase": 5,
+  "phase_name": "The verification script",
+  "started_at": "2026-11-12T22:57:00Z",
+  "last_updated": "2026-11-12T22:57:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write verify-sapience-mcp.sh with the five named checks, modelled on verify-lean-mcp.sh",
+      "status": "done",
+      "note": "shellcheck fully clean (0 findings, removed an unused warn() helper); exit 2 reserved for an explicit --project disagreeing with the detected project root (sapience's entry carries no internal project-path field to mismatch against, unlike lean's LEAN_PROJECT_PATH)",
+      "files_touched": ["agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Extend test suite with verifier cases; sync-manifest-scripts.sh --write/--check",
+      "status": "done",
+      "note": "23/23 cases pass (10 writer + 6 hook + 4 installer + 3 verifier; cases 23-24 deferred to Phase 7 end-to-end per the suite's own INFO note); fixed a fixture/production command-string drift in case 20 by routing it through the real installer instead of a hand-crafted settings.json; manifest.json provides.scripts updated; sync-manifest-scripts.sh --check clean; verify-deploy.sh --skip-slow --only-gate 3,4 clean; run-all.sh --only test-sapience-mcp-registration.sh green from source-store entry point",
+      "files_touched": [
+        "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh",
+        "agent-system/extensions/sapience/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

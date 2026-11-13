@@ -434,14 +434,19 @@ else
   PROJ20="$WORKDIR/case20/repo"
   mkdir -p "$HOME20/.claude" "$HOME20/.sapience" "$PROJ20"
   echo '{}' > "$HOME20/.sapience/config.json"
+  echo '{}' > "$HOME20/.claude/settings.json"
   jq -n '{"extensions": {"sapience": {"status": "active"}}}' > "$PROJ20/.claude-extensions.json"
+  # Use the real installer (not a hand-crafted fixture) so case 20 exercises the exact same
+  # command string the installer itself registers -- avoiding fixture/production drift.
+  if [ -f "$INSTALLER_SRC" ]; then
+    HOME="$HOME20" bash "$INSTALLER_SRC" > /dev/null 2>&1
+  else
+    mkdir -p "$HOME20/.claude/hooks" "$HOME20/.claude/scripts"
+    cp "$HOOK_SRC" "$HOME20/.claude/hooks/sapience-mcp-register-project.sh" 2>/dev/null
+    cp "$WRITER_SRC" "$HOME20/.claude/scripts/setup-sapience-mcp.sh" 2>/dev/null
+    chmod +x "$HOME20/.claude/hooks/sapience-mcp-register-project.sh" "$HOME20/.claude/scripts/setup-sapience-mcp.sh" 2>/dev/null
+  fi
   HOME="$HOME20" bash "$WRITER_SRC" --project "$PROJ20" --scope project > /dev/null 2>&1
-  touch "$HOME20/.claude/hooks_marker" 2>/dev/null || true
-  mkdir -p "$HOME20/.claude/hooks" "$HOME20/.claude/scripts"
-  cp "$HOOK_SRC" "$HOME20/.claude/hooks/sapience-mcp-register-project.sh" 2>/dev/null
-  cp "$WRITER_SRC" "$HOME20/.claude/scripts/setup-sapience-mcp.sh" 2>/dev/null
-  chmod +x "$HOME20/.claude/hooks/sapience-mcp-register-project.sh" "$HOME20/.claude/scripts/setup-sapience-mcp.sh" 2>/dev/null
-  jq -n '{"hooks": {"SessionStart": [{"hooks": [{"type": "command", "command": "bash $HOME/.claude/hooks/sapience-mcp-register-project.sh 2>/dev/null || echo \"{}\""}]}]}}' > "$HOME20/.claude/settings.json"
 
   RC20=0
   (cd "$PROJ20" && HOME="$HOME20" bash "$VERIFIER_SRC" --project "$PROJ20" --quiet) > /dev/null 2>&1 || RC20=$?

@@ -15,7 +15,8 @@
       "sapience-retrieve.sh",
       "setup-sapience-mcp.sh",
       "tests/test-sapience-capture.sh",
-      "tests/test-sapience-mcp-registration.sh"
+      "tests/test-sapience-mcp-registration.sh",
+      "verify-sapience-mcp.sh"
     ],
     "hooks": [
       "sapience-mcp-register-project.sh"
