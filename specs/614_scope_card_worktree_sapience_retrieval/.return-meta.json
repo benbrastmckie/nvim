@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/614_scope_card_worktree_sapience_retrieval/plans/01_card-worktree-sapience-retrieval.md",
-      "summary": "Six-phase plan resolving a linked git worktree to its parent checkout for Sapience MCP registration, slug derivation, and verification, with worktree regression coverage and a domain-note record of the deliberate hook-channel absence."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 12,
   "metadata": {
-    "session_id": "sess_1794588346_94d92d_614",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7,
-    "dependency_waves": [[1], [2, 3], [4, 5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a helper block is needed by a script that is INSTALLED to a stable user-level path (e.g. a SessionStart hook copied to ~/.claude/hooks/ so it works in a repo with no deploy tree), prefer inlining the block over sourcing a shared library -- a library becomes a third file the installer must copy, and a partially-updated install (old installer, new consumer) breaks a surface whose contract promises never to fail. The duplication cost is then converted into a mechanically checked invariant rather than a prose 'keep in lockstep' comment: bracket each copy with a begin/end marker comment pair and add a regression case that extracts the marker-delimited block from every copy and asserts byte-identity, naming the divergent file on failure. This generalizes any existing prose lockstep promise between two files into a test.",
-      "category": "PATTERN",
-      "source_artifact": "specs/614_scope_card_worktree_sapience_retrieval/plans/01_card-worktree-sapience-retrieval.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["lockstep", "installed hook", "inline vs sourced", "marker-delimited block", "regression guard"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 614 to execute the plan",
-  "dispatch_seq": 11
+    "session_id": "sess_1794588346_94d92d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

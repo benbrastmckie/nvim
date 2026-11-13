@@ -1,7 +1,7 @@
 # Implementation Plan: Task #614
 
 - **Task**: 614 - Resolve a SF-1 card worktree to its parent checkout so card sessions get repo-scoped Sapience retrieval without hook-injected context
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None blocking (shares the sapience extension surface with tasks 615, 616, 617 -- see Risks)
 - **Research Inputs**: specs/614_scope_card_worktree_sapience_retrieval/reports/01_card-worktree-sapience-retrieval.md
@@ -124,33 +124,39 @@ No `roadmap_path` was provided in this dispatch; no roadmap phases are added.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Worktree-aware checkout resolution in the registration hook [NOT STARTED]
+### Phase 1: Worktree-aware checkout resolution in the registration hook [COMPLETED]
 
 **Goal**: The SessionStart registration hook resolves a linked worktree to its parent checkout
 and decides activation, the extensions-file location, and the `--project` key from that
 checkout.
 
 **Tasks**:
-- [ ] Verify the measured truth table against a live scratch fixture before writing code: create
+- [x] Verify the measured truth table against a live scratch fixture before writing code: create
       a disposable `git init` checkout plus `git worktree add --detach`, and confirm
       `git rev-parse --git-dir` vs `--git-common-dir` differ at the worktree root and at a nested
       worktree subdirectory, are equal at the checkout root, and both fail on a non-git path.
       Note which form `--git-common-dir` returns (relative at the checkout root, absolute from a
       worktree) -- the implementation must absolutize before comparing or taking the parent.
-- [ ] Add a marker-delimited `resolve_checkout_toplevel` helper to
+      *(completed: matched exactly -- relative ".git" equal at checkout root; absolute,
+      unequal at worktree root and nested subdir; both calls fail with no output on a non-git
+      path)*
+- [x] Add a marker-delimited `resolve_checkout_toplevel` helper to
       `agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh`, inlined (not
       sourced -- see Decisions), bracketed by a begin/end marker comment pair naming the lockstep
       obligation. Contract: given a directory (default `.`), echo the parent checkout's toplevel
       for a linked worktree, the `--show-toplevel` result otherwise, and return non-zero with no
-      output on a non-git path.
-- [ ] Replace the existing `GIT_ROOT="$(git rev-parse --show-toplevel ...)"` line (currently at
+      output on a non-git path. *(completed)*
+- [x] Replace the existing `GIT_ROOT="$(git rev-parse --show-toplevel ...)"` line (currently at
       line 48) with a call to the helper, leaving every downstream branch -- the
       `.claude-extensions.json` CWD/git-root lookup, `PROJECT_PATH`, the writer invocation, the
-      `HAS_EXISTING_ENTRY` probe, and the removal branch -- structurally unchanged.
-- [ ] Update the hook's header comment block to state that the git root is the parent checkout
+      `HAS_EXISTING_ENTRY` probe, and the removal branch -- structurally unchanged. *(completed)*
+- [x] Update the hook's header comment block to state that the git root is the parent checkout
       for a linked worktree, and that registration is keyed on the checkout exclusively.
-- [ ] Confirm by inspection that the `.claude-extensions.json`-at-CWD branch still wins over the
+      *(completed)*
+- [x] Confirm by inspection that the `.claude-extensions.json`-at-CWD branch still wins over the
       git-root branch, so a worktree that genuinely carries its own extensions file is unaffected.
+      *(completed: that branch is checked first and unconditionally short-circuits before
+      GIT_ROOT is ever consulted)*
 
 **Timing**: 1 hour
 

@@ -83,7 +83,7 @@ next_project_number: 619
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-614 [PLANNED] — Resolve a SF-1 card worktree to its parent checkout so card...
+614 [IMPLEMENTING] — Resolve a SF-1 card worktree to its parent checkout so card...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
@@ -642,7 +642,7 @@ ACCEPTANCE.
 ---
 
 ### 614. Resolve a SF-1 card worktree to its parent checkout so card sessions get repo-scoped Sapience retrieval without hook-injected context
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 606, Task 612, Task 617

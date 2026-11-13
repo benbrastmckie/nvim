@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Worktree-aware checkout resolution in the registration hook",
+  "started_at": "2026-11-13T00:00:00Z",
+  "last_updated": "2026-11-13T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Verify measured truth table against live scratch fixture",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add marker-delimited resolve_checkout_toplevel helper; derive GIT_ROOT from it; update header",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
