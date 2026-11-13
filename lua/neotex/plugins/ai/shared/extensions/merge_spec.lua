@@ -647,7 +647,9 @@ describe("shared.extensions.merge orphan sweep for hook registrations", function
       assert.equals(1, removed_count)
 
       local result = vim.json.decode(table.concat(vim.fn.readfile(target_path), "\n"))
-      assert.is_nil(result.hooks.Notification) -- the only block under this event was pruned
+      -- The only block under this event was pruned; that emptied `hooks` entirely, so the
+      -- key is dropped rather than written as `[]`.
+      assert.is_nil(result.hooks)
       vim.fn.delete(target_path)
     end
   )
@@ -682,7 +684,8 @@ describe("shared.extensions.merge orphan sweep for hook registrations", function
       assert.equals(1, removed_count)
 
       local result = vim.json.decode(table.concat(vim.fn.readfile(target_path), "\n"))
-      assert.is_nil(result.hooks.PostToolUse)
+      -- Pruning the only event emptied `hooks`, so the key is dropped (never `[]`).
+      assert.is_nil(result.hooks)
       vim.fn.delete(target_path)
     end
   )
@@ -740,8 +743,52 @@ describe("shared.extensions.merge orphan sweep for hook registrations", function
     assert.is_true(ok)
     assert.equals(1, removed_count)
 
-    local result = vim.json.decode(table.concat(vim.fn.readfile(target_path), "\n"))
-    assert.is_nil(result.hooks.Stop) -- the whole event array was pruned, not left as {}
+    local raw = table.concat(vim.fn.readfile(target_path), "\n")
+    local result = vim.json.decode(raw)
+    -- The whole event array was pruned, not left as {}; and with Stop gone the `hooks`
+    -- object itself is empty, so the key is dropped rather than written as `[]` (Lua
+    -- cannot encode an empty object, and Claude Code rejects `"hooks": []`).
+    assert.is_nil(result.hooks)
+    assert.is_nil(raw:match('"hooks"%s*:%s*%[%]'))
+    vim.fn.delete(target_path)
+  end)
+
+  it("never writes `hooks` back as an empty array when every event is pruned", function()
+    local target_path = vim.fn.tempname()
+    vim.fn.writefile({
+      vim.json.encode({
+        model = "opus",
+        hooks = {
+          Stop = { { matcher = "*", hooks = { { type = "command", command = "bash .claude/hooks/a.sh" } } } },
+          PreToolUse = { { matcher = "Bash", hooks = { { type = "command", command = "bash .claude/hooks/b.sh" } } } },
+        },
+      }),
+    }, target_path)
+
+    local ok, removed_count = merge.remove_orphaned_hook_registrations(target_path, {})
+    assert.is_true(ok)
+    assert.equals(2, removed_count)
+
+    local raw = table.concat(vim.fn.readfile(target_path), "\n")
+    assert.is_nil(raw:match('"hooks"%s*:%s*%[%]'))
+    local result = vim.json.decode(raw)
+    assert.is_nil(result.hooks)
+    assert.equals("opus", result.model) -- untouched keys carried through
+    vim.fn.delete(target_path)
+  end)
+
+  it("merge_settings self-heals a pre-existing `\"hooks\": []` left by an earlier run", function()
+    local target_path = vim.fn.tempname()
+    vim.fn.writefile({ '{"hooks": [], "model": "opus"}' }, target_path)
+
+    local ok = merge.merge_settings(target_path, { permissions = { allow = { "Bash(echo:*)" } } })
+    assert.is_true(ok)
+
+    local raw = table.concat(vim.fn.readfile(target_path), "\n")
+    assert.is_nil(raw:match('"hooks"%s*:%s*%[%]'))
+    local result = vim.json.decode(raw)
+    assert.is_nil(result.hooks)
+    assert.equals("opus", result.model)
     vim.fn.delete(target_path)
   end)
 
@@ -765,7 +812,8 @@ describe("shared.extensions.merge orphan sweep for hook registrations", function
       assert.is_true(ok)
       assert.equals(1, removed_count)
       local wiped = vim.json.decode(table.concat(vim.fn.readfile(target_path), "\n"))
-      assert.is_nil(wiped.hooks.Stop)
+      -- The sweep emptied `hooks`, so the key is dropped entirely; restore recreates it.
+      assert.is_nil(wiped.hooks)
 
       local restore_ok = merge.restore_removed_hook_registrations(target_path, removed_entries)
       assert.is_true(restore_ok)

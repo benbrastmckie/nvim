@@ -176,6 +176,26 @@ function M.remove_section(target_path, section_id)
   return true
 end
 
+--- Drop a `hooks` key that pruning or unmerging has emptied.
+---
+--- Lua cannot distinguish an empty object from an empty array, so `vim.json.encode`
+--- serializes an emptied `settings.hooks` table as `[]`. Claude Code rejects that shape
+--- ('"hooks" must be an object mapping event names to matcher arrays; received array.
+--- This field was ignored.') and warns on every session start until the key is repaired.
+--- Removing the key entirely is the equivalent, valid representation of "no hooks here",
+--- and keeps the file self-healing: any later write through merge_settings drops a `[]`
+--- left behind by an earlier run.
+--- @param settings table|nil Decoded settings table, modified in place
+local function prune_empty_hooks(settings)
+  if
+    type(settings) == "table"
+    and type(settings.hooks) == "table"
+    and vim.tbl_isempty(settings.hooks)
+  then
+    settings.hooks = nil
+  end
+end
+
 --- Check whether an array is shaped like a Claude Code hook-event array
 --- (e.g. the value of settings.json's "Stop", "PreToolUse", etc.): a
 --- non-empty array in which every item is a table carrying both a `matcher`
@@ -451,6 +471,9 @@ function M.merge_settings(target_path, fragment, opts)
   -- Deep merge
   deep_merge(target, fragment, tracked)
 
+  -- An emptied `hooks` table encodes as `[]`, which Claude Code rejects -- drop the key.
+  prune_empty_hooks(target)
+
   -- Validate result is valid JSON by re-encoding
   local ok = pcall(vim.json.encode, target)
   if not ok then
@@ -555,6 +578,7 @@ function M.unmerge_settings(target_path, tracked_entries)
   end
 
   remove_tracked(target, tracked_entries)
+  prune_empty_hooks(target)
 
   local success = M.write_json(target_path, target)
   if not success then
@@ -922,6 +946,9 @@ function M.remove_orphaned_hook_registrations(target_path, valid_set)
   if removed_count == 0 then
     return true, 0, {}
   end
+
+  -- Every event may have been pruned above; never write `hooks` back as `[]`.
+  prune_empty_hooks(settings)
 
   local ok = M.write_json(target_path, settings)
   if not ok then
