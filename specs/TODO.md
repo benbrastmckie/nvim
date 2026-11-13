@@ -1,5 +1,5 @@
 ---
-next_project_number: 619
+next_project_number: 624
 ---
 
 # TODO
@@ -13,11 +13,11 @@ next_project_number: 619
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,614,618 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604 | core-agent-system, extensions, neovim, ... |
-| 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594 | 439,458,472,476,486,509,518,519,542,543,564,572,593 | core-agent-system, file-scope-lifecycle, agent-system |
-| 4 | 524,561,577,581,595 | 438,492,501,539,547,552,580,594 | core-agent-system, agent-system |
-| 5 | 596,609 | 577,595 | agent-system |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,614,618,619 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605,620 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604,619 | core-agent-system, extensions, neovim, ... |
+| 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594,621 | 439,458,472,476,486,509,518,519,542,543,564,572,593,620 | core-agent-system, file-scope-lifecycle, agent-system, ... |
+| 4 | 524,561,577,581,595,622 | 438,492,501,539,547,552,580,594,621 | core-agent-system, agent-system, typescript-extension |
+| 5 | 596,609,623 | 577,595,622 | agent-system, typescript-extension |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -178,6 +178,14 @@ next_project_number: 619
 571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
 572 [NOT STARTED] — Make the full verification tier honorable under batch concurrency
 
+### Typescript Extension
+
+619 [NOT STARTED] — Research the extension contract and the 2026 TypeScript...
+  └─ 620 [NOT STARTED] — Design the typescript extension: file manifest, agents, hard...
+    └─ 621 [NOT STARTED] — Implement the typescript extension in the source store with...
+      └─ 622 [NOT STARTED] — Validate the typescript extension's generic toolchain...
+        └─ 623 [NOT STARTED] — Make the web extension depend on the typescript extension and...
+
 ### Decidability
 
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
@@ -188,6 +196,194 @@ next_project_number: 619
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 623. Make the web extension depend on the typescript extension and split the shared TypeScript context down a layer
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: typescript-extension
+- **Dependencies**: Task 622
+
+**Description**: GOAL. Make the `web` extension depend on the new `typescript` extension, and split the shared
+TypeScript context down a layer.
+
+WHAT TO DO.
+1. Add `typescript` to the `web` extension's `manifest.json` `dependencies` array, so Astro work
+   auto-loads the base TypeScript context.
+2. Execute the line-level `typescript-web.md` split designed in the plan: generic TypeScript
+   material moves DOWN into the typescript extension's context tree; Astro/browser/
+   Cloudflare-specific TypeScript material STAYS in `web`.
+3. Update BOTH extensions' `index-entries.json` to match the moved files.
+4. Re-verify that each extension deploys cleanly alone and together, and confirm the dependency
+   auto-load path behaves -- including circular detection and the depth limit of 5.
+
+HARD CONSTRAINT. ALL writes go to the source store under `agent-system/extensions/`. NEVER
+write to any repository's `.claude/` deploy tree -- see
+`.claude/rules/source-store-deploy-boundary.md`.
+
+---
+
+### 622. Validate the typescript extension's generic toolchain detection against a real no-tsconfig node:test repository
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: typescript-extension
+- **Dependencies**: Task 621
+
+**Description**: GOAL. This is the falsifiability check on the strictly-generic grounding decision made for the
+new `typescript` extension.
+
+WHAT TO DO. Load the typescript extension into `/home/benjamin/Projects/Sapience/sf1-engine`
+(which currently loads `core`, `python`, `sapience`) and validate it end-to-end against that
+repo's TypeScript codebase at `sf1-v2/opencode-plugin/`.
+
+TARGET PROFILE (the point of the test -- a deliberately unusual stack).
+- ESM (`"type": "module"`)
+- Test script `node --test test/*.test.ts`
+- NO `tsconfig.json` anywhere
+- No bundler
+- 86 test suites
+
+PASS CONDITION. The extension's detection logic must correctly identify that profile and run
+the verification gate appropriately, WITHOUT any repo-specific content having been added to the
+extension.
+
+HARD CONSTRAINT. Any detection defect this exposes is fixed in the extension's own source-store
+files under `agent-system/extensions/typescript/`, NEVER by special-casing the repo.
+
+---
+
+### 621. Implement the typescript extension in the source store with parity plus a verification-stage gate
+- **Effort**: large
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: typescript-extension
+- **Dependencies**: Task 620
+
+**Description**: GOAL. Create `/home/benjamin/.config/nvim/agent-system/extensions/typescript/` in full, per the
+implementation plan.
+
+PARITY WITH THE `python` EXTENSION'S SHAPE.
+- `manifest.json` -- `task_type: "typescript"`, `dependencies: ["core"]`, full `provides` block,
+  `routing_agents` for research/plan/implement, and `merge_targets` for claudemd/index/
+  opencode_json with `section_id: extension_typescript`.
+- `agents/typescript-research-agent.md`
+- `agents/typescript-implementation-agent.md`
+- `skills/skill-typescript-research/SKILL.md`
+- `skills/skill-typescript-implementation/SKILL.md`
+- The strictly-generic `context/project/typescript/` tree.
+- `index-entries.json` with accurate per-file `line_count`, `load_when`, `domain`, `subdomain`,
+  `summary`, and `keywords`.
+- `EXTENSION.md`
+- `opencode-agents.json`
+- `README.md`
+
+PLUS THE FOUR THINGS `python` LACKS.
+- A `hard_contracts` routing entry.
+- `keyword_overrides` in the manifest.
+- `rules/typescript-rules.md`
+- The verification-stage lifecycle hook.
+
+HARD CONSTRAINT. ALL writes go to the source store under
+`agent-system/extensions/typescript/`. NEVER write to any repository's `.claude/` deploy tree --
+see `.claude/rules/source-store-deploy-boundary.md`.
+
+VERIFICATION. Deploy the extension into a repository via the loader and confirm it produces the
+expected `.claude/` files, the merged `CLAUDE.md` section, and the merged `index.json` entries.
+
+---
+
+### 620. Design the typescript extension: file manifest, agents, hard contracts, verification hook, and the typescript-web split
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: typescript-extension
+- **Dependencies**: Task 619
+
+**Description**: GOAL. Produce the implementation plan for the new `typescript` extension from the research
+report, covering its file manifest, both agents, hard contracts, the verification hook, and the
+typescript/web content split.
+
+REQUIRED OUTCOMES.
+1. Full file manifest with per-file purpose and line budget.
+2. The `context/project/typescript/` tree layout (README.md plus `standards/`, `patterns/`,
+   `domain/`, `tools/` subdirectories), STRICTLY GENERIC -- no repo-specific content anywhere
+   in it.
+3. Both agents' workflow stages, tool grants, and model tier per the agent-frontmatter standard.
+4. The `hard_contracts` contract text for TypeScript work.
+5. A `keyword_overrides` keyword set, with an EXPLICIT collision check against the `web`
+   extension's own `keyword_overrides` (and against every other loaded extension's) documented
+   in the plan.
+6. The `rules/typescript-rules.md` `paths:` frontmatter glob, covering `**/*.ts`, `**/*.tsx`,
+   `package.json`, and `tsconfig*.json`.
+7. The verification-stage lifecycle hook's full contract: inputs, the toolchain detection logic
+   it runs, its exit codes, and its honest-degrade behaviour -- it MUST skip with a stated
+   reason rather than report a false pass when a repository has no typecheck or test command to
+   run.
+8. The line-level split of
+   `agent-system/extensions/web/context/project/web/domain/typescript-web.md`, naming which
+   content moves down into the generic typescript extension and which stays as
+   Astro/browser/Cloudflare-specific.
+
+CONSTRAINT TO CARRY INTO THE PLAN. The `web` extension already has a known duplicate-file
+problem: `astro-framework.md` and `tailwind-v4.md` each exist both at `context/project/web/`
+root AND under `context/project/web/domain/`. Do NOT expand scope to fix it, but do not make it
+worse.
+
+DELIVERABLE. An implementation plan.
+
+---
+
+### 619. Research the extension contract and the 2026 TypeScript toolchain for a new typescript extension
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: typescript-extension
+- **Dependencies**: None
+
+**Description**: GOAL. Survey the source store's REAL extension file contract -- not the documented-only one --
+by diffing the `python`, `rust`, `web`, `nix` and `lean` extensions under
+`/home/benjamin/.config/nvim/agent-system/extensions/`, and establish the TypeScript toolchain
+detection matrix the new extension's agents must branch on.
+
+SITING. This task and its four successors belong in /home/benjamin/.config/nvim because every
+downstream edit target lives under this repo's `agent-system/extensions/` source store, per
+`.claude/rules/source-store-deploy-boundary.md`'s Task Siting subsection.
+
+READ FIRST.
+- `context/guides/extension-development.md`
+- `docs/guides/creating-extensions.md` (especially its `#lifecycle-hooks` section)
+- `context/guides/manifest-routing-schema.md`
+- `context/guides/hard-mode-routing.md`
+- `docs/reference/standards/agent-frontmatter-standard.md`
+
+REQUIRED OUTCOMES.
+1. The exact required file inventory for a working extension, distinguishing files the loader
+   actually consumes from files that are convention-only.
+2. Every `manifest.json` and `index-entries.json` schema field paired with its actual consumer
+   (which script or merge step reads it).
+3. The lifecycle-hook execution contract -- the top-level `hooks` object, its four stages, how
+   `skill-base.sh` invokes a hook, what a hook receives, and what its exit codes mean.
+4. The `keyword_overrides` and `hard_contracts` schemas as the routing library
+   (`scripts/lib/manifest-routing-lib.sh`'s `routing_lookup_flat()`) actually resolves them.
+5. How `index.json` merging and the `<leader>al` loader's deploy step consume each file.
+6. A current (2026) TypeScript toolchain detection matrix covering: runtimes (Node, Bun, Deno);
+   package managers (npm, pnpm, yarn, bun -- via lockfile); test runners (`node:test`, vitest,
+   jest, `bun:test`); typecheck/build (`tsc --noEmit`, tsgo, esbuild, tsup, rolldown, swc);
+   lint/format (eslint flat config, biome, oxlint, prettier); and module resolution modes
+   (`bundler`, `node16`/`nodenext`, nodenext with `.js` specifiers). Each matrix row MUST name
+   the detection SIGNAL (file presence, lockfile name, package.json script, devDependency)
+   rather than assuming a stack.
+
+PRIOR ART ALREADY CLOSED IN THIS BACKLOG -- confirm the current state of each rather than
+reinventing it: the hard-contracts injection mechanism exists (durable project names
+`build_hard_contracts_injection`, `deliver_hard_mode_contracts_across_extensions`,
+`retire_routing_agents_hard_for_hard_contracts`), and a keyword-override false-positive hazard
+was already addressed (`fix_task_type_keyword_false_positives`).
+
+DELIVERABLE. A research report.
+
+---
 
 ### 618. Working tree residue disposition policy
 - **Status**: [NOT STARTED]
