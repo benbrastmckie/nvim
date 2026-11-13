@@ -180,7 +180,7 @@ next_project_number: 625
 
 ### Typescript Extension
 
-619 [NOT STARTED] — Research the extension contract and the 2026 TypeScript...
+619 [RESEARCHED] — Research the extension contract and the 2026 TypeScript...
   └─ 620 [NOT STARTED] — Design the typescript extension: file manifest, agents, hard...
     └─ 621 [NOT STARTED] — Implement the typescript extension in the source store with...
       └─ 622 [NOT STARTED] — Validate the typescript extension's generic toolchain...
@@ -212,7 +212,7 @@ next_project_number: 625
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: typescript-extension
-- **Dependencies**: Task 622
+- **Dependencies**: Task 621, Task 622
 
 **Description**: GOAL. Make the `web` extension depend on the new `typescript` extension, and split the shared
 TypeScript context down a layer.
@@ -346,10 +346,11 @@ DELIVERABLE. An implementation plan.
 
 ### 619. Research the extension contract and the 2026 TypeScript toolchain for a new typescript extension
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: typescript-extension
 - **Dependencies**: None
+- **Research**: [619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md]
 
 **Description**: GOAL. Survey the source store's REAL extension file contract -- not the documented-only one --
 by diffing the `python`, `rust`, `web`, `nix` and `lean` extensions under
