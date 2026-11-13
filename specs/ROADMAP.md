@@ -130,7 +130,7 @@ owns the suggestion half and the unwired `--write-edges`; `603` owns the deeper 
 file generated from `state.json` so there is no cruft to clear and no prose to hand-maintain.
 
 ```
-/orchestrate 603, 602   # the roadmap-as-generated-artifact objective and the next-batch suggester it supersedes
+/orchestrate 611, 606   # Close Sapience per-repo scoping end to end: tag the writes, then filter the reads
 /orchestrate 585, 572, 591   # the verify-deploy.sh lane, serialized on shared territory
 /orchestrate 568, 476, 586, 604, 605   # Gate 8's residual roster and the two lints over it, serialized on the postflight suite
 /orchestrate 505   # whole-tree claimant: runs alone
@@ -143,6 +143,19 @@ file generated from `state.json` so there is no cruft to clear and no prose to h
 ```
 
 Why this order:
+- the Sapience per-repo scoping pair, write side before read side; minimal by construction
+
+  - **One defect, split across two sides of the same field.** Per-repo scoping on this vault works through exactly one mechanism: a literal `[repo:<slug>]` substring in a knowledge object's `provenance`, filtered on read by `GET /v1/search`'s `source=` parameter (`project=` is silently ignored and `source_loc` is not matched -- both settled dead ends). `611` owns the WRITE side: make every write path the source store owns emit that tag, so the tagged population grows past postflight wrapup alone. `606` owns the READ side: scope injection at the three vendor hooks that reach the PRIMARY session's context. Each record states that fixing one leg alone leaves the defect reproducible, which is why they belong in one batch rather than two.
+
+  - **`611` runs first because a read-side filter has nothing to filter until the writes are tagged.** The edge is declared (`606` depends on `611`) and the member order above matches it. `606`'s acceptance criterion 4 concedes the dependency in its own words -- the local half of the write leg must be "actually CLOSED, not merely described: every write path the source store owns is repo-tagged (delivered here or by the sibling write-side task)" -- and `611`'s description names the same sequencing from the other end. Landing `606` first would apply a `source=` filter against a vault whose agent-system writes are still untagged, suppressing the channel instead of scoping it.
+
+  - **The territory overlap is real and already covered by that one edge.** Both records edit `agent-system/extensions/sapience/**`, and both end at the same two context files: `606` declares `context/project/sapience/domain/per-repo-scoping.md` and `611`'s acceptance criterion 6 requires updating that same file plus `review-gate-boundary.md`. `606` additionally declares `scripts/` in directory form, which covers `sapience-remember.sh` -- the script `611` converts every call site onto. Shared territory is a reason to batch and serialize, never to separate, so the pair runs as a two-wave sequence rather than as an exclusion.
+
+  - **The batch is deliberately just the two records.** `600` was `606`'s other declared predecessor and has completed, so that dependency is discharged and it is not pulled in. No other open record declares a path under `agent-system/extensions/sapience/**`: the three other open records whose text mentions Sapience are unrelated -- `579` and `583` only cite `sapience-plugin.lua` or core's `root-files/settings.local.json`, neither inside this extension, and `498` is held pending an owner decision with nothing depending on it. Neither member declares `__WHOLE_TREE__`, so the batch never contends for the claimant lane the postamble names as the binding constraint on width.
+
+  - **Admission-probed, and the probe reflects the edge rather than hiding it.** `orchestrate-cycle-plan.sh --dry-run --state-file specs/state.json 611 606` returns 0 deferred, 0 blocked, would proceed, with `specs/state.json`'s md5 unchanged; cycle 0 dispatches `611` at research alone and `606` follows on its declared edge. As with every probe recorded in this file, the result is weaker than it looks -- the cycle-0 row is a research dispatch, which is exempt from both the claim gate and the collision gate -- but here the implement-wave overlap is already carried by a direct declared edge, which is the one form the collision scan exempts.
+
+  - **One declaration defect worth clearing before the implement wave, not an edge.** `611` carries no `file_scope` key at all (it was created through Create Task Mode, which does not set one), so the collision gate cannot see its territory against any record outside this batch. Inside the batch it does not matter -- the direct edge to `606` is what exempts the pair -- but it makes `611` invisible to a cross-batch scan, and it is the only open record in that condition as of this pass.
 - the roadmap-as-generated-artifact objective, the two costs it measured, and the widest fan-out gate; probe-verified clean at MAX_TASKS
 
   - **Run 1's objective is to stop maintaining this file by hand.** `603` moves the roadmap's
@@ -334,14 +347,13 @@ dispatched, not a backfill across every record a coarse entry happens to touch.
 /orchestrate 530,533,534,535,536,537,538,539
 /orchestrate 545,546,548,549,550,551,556,557
 /orchestrate 558,559,560,562,563,565,567,574
-/orchestrate 575,599,606,607,610
+/orchestrate 575,599,607,610
 ```
 
 ## Open work
 
-**Core agent system (47)**
+**Core agent system (45)**
 ```
-603 IN FLIGHT       Make ROADMAP.md a generated artifact rendered from state.json
 436 blocked:458,459 Add the /orient executive-orientation command with a read-only scout agent, a...
 439 blocked:431     Rule on the propagation model for the bounded-wait agent contract
 454 blocked:439     State the result-needed-this-turn criterion for choosing the foreground form,...
@@ -358,7 +370,6 @@ dispatched, not a backfill across every record a coarse entry happens to touch.
 581 blocked:438,479,492,580  Extract one shared AskUserQuestion option renderer and adopt it acro...
 588 blocked:509     Bar a pre-redeploy plan step from naming a deploy-tree-resolved subject unles...
 591 blocked:572,585 Decide the fate of the errors.json triage surface
-602 blocked:603     Improve the conclusion stage's next-batch proposal quality
 605 blocked:604     Flag an advisory known-failures roster row whose named suite now passes
 338 ready           Classify every task-support file as tracked or ignored
 410 ready           Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on ...
@@ -390,16 +401,17 @@ dispatched, not a backfill across every record a coarse entry happens to touch.
 604 ready           Lint-time detector for drifted test-fixture dependency declarations, in both ...
 ```
 
-**Extensions (8)**
+**Extensions (9)**
 ```
 342 HOLD            Refactor the books extension's context corpus against the settled convention:...
 498 HOLD            Replace the email preference harvest tally substrate
 384 blocked:383     Adjudicate whether a books reconciliation postflight lifecycle hook is warran...
 457 blocked:455     Repo-specific content has leaked into the shared agent-system source store
+606 blocked:611     Scope Sapience context injection to the current repository so a session stops...
 383 ready           Add a /reconcile command to the books extension: aggregate docs-stage.sh and ...
 522 ready           Fix report/summary heading-skeleton conformance across agents
 563 ready           Make the extension repo registry usable for deploy enumeration: rule between ...
-606 ready           Scope Sapience context injection to the current repository so a session stops...
+611 ready           Repo-tag every Sapience write path the source store owns so untagged knowledg...
 ```
 
 **Literature (2)**
