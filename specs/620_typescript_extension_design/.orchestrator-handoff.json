@@ -1,15 +1,16 @@
 {
-  "status": "planned",
-  "dispatch_seq": 5,
-  "phases_completed": 0,
-  "phases_total": 6,
-  "summary": "Wrote the six-phase implementation plan for a new generic typescript extension, with an embedded Design Specification section covering all eight required outcomes: the 20-file manifest with line budgets, the strictly-generic context/project/typescript/ tree, both Sonnet-tier agents' stages and tool grants, the hard_contracts block plus its domain-prefixed override contract text, the keyword_overrides set with a first-hand collision check re-derived across all 24 extension manifests and the core weak-signal table, the four-glob rules paths frontmatter, the verification-stage hook's full input/detection/exit-code/honest-degrade contract, and the line-level split of web's typescript-web.md. Waves are [1,2,3,4] / [5] / [6]; 9 hours estimated. Re-deriving the research report's carried figures corrected five errors in it (missing skills pair, wrong provides.scripts form, missing extensions README table row, 303-vs-304 line count, and an astro/zod import inside the range the report called pure Zod). The plan passes validate-artifact.sh in --strict mode with zero warnings, and plan-file-scope-harvest.sh yields 21 concrete paths with no coarse glob.",
-  "blockers": [],
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "phase": "implement",
+  "summary": "Built the complete generic typescript extension in the source store (20 new files: manifest, both agents, both skills, rules file, verification-stage hook, hard_contracts override, 8-file context tree, merge sources) plus one corrected registry row. All six plan phases closed; agent-system/extensions/web/ confirmed untouched throughout.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/620_typescript_extension_design/plans/01_typescript-extension-build.md",
-      "summary": "Six-phase implementation plan plus embedded design specification for the new generic typescript extension."
+      "type": "summary",
+      "path": "specs/620_typescript_extension_design/summaries/01_typescript-extension-build-summary.md",
+      "summary": "Full implementation summary for the typescript extension build: file manifest, decisions, plan deviations, verification evidence, and the three evidenced Reasoned Exclusions on Phase 5."
     }
-  ]
+  ],
+  "phases_completed": 6,
+  "phases_total": 6,
+  "blockers": []
 }

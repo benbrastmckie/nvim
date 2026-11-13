@@ -1,15 +1,71 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/620_typescript_extension_design/summaries/01_typescript-extension-build-summary.md",
+      "summary": "Built the complete generic typescript extension (20 new files: manifest, 2 agents, 2 skills, rules file, verification hook, hard_contracts override, 8-file context tree, merge sources) plus one corrected registry row; all six plan phases closed (five COMPLETED, one COMPLETED WITH EXCLUSIONS against three evidenced pre-existing/environmental gate findings)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Built a complete, framework-agnostic typescript extension in the agent-system source store (20 new files: manifest, both agents, both skills, rules file, verification-stage hook, hard_contracts override contract, 8-file generic context tree, merge sources) plus one corrected registry row in agent-system/extensions/README.md. All six plan phases closed; agent-system/extensions/web/ confirmed untouched throughout."
+  },
+  "modified_files": [
+    "agent-system/extensions/README.md",
+    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-heartbeat.sh",
+    "agent-system/extensions/typescript/EXTENSION.md",
+    "agent-system/extensions/typescript/README.md",
+    "agent-system/extensions/typescript/agents/typescript-implementation-agent.md",
+    "agent-system/extensions/typescript/agents/typescript-research-agent.md",
+    "agent-system/extensions/typescript/context/contracts/typescript-adversarial-verification.md",
+    "agent-system/extensions/typescript/context/project/typescript/README.md",
+    "agent-system/extensions/typescript/context/project/typescript/domain/module-systems.md",
+    "agent-system/extensions/typescript/context/project/typescript/domain/tsconfig-reference.md",
+    "agent-system/extensions/typescript/context/project/typescript/patterns/path-alias-patterns.md",
+    "agent-system/extensions/typescript/context/project/typescript/patterns/zod-validation-patterns.md",
+    "agent-system/extensions/typescript/context/project/typescript/standards/typescript-style-guide.md",
+    "agent-system/extensions/typescript/context/project/typescript/tools/package-manager-detection.md",
+    "agent-system/extensions/typescript/context/project/typescript/tools/tsc-cli-guide.md",
+    "agent-system/extensions/typescript/index-entries.json",
+    "agent-system/extensions/typescript/manifest.json",
+    "agent-system/extensions/typescript/opencode-agents.json",
+    "agent-system/extensions/typescript/rules/typescript-rules.md",
+    "agent-system/extensions/typescript/scripts/typescript-verify.sh",
+    "agent-system/extensions/typescript/skills/skill-typescript-implementation/SKILL.md",
+    "agent-system/extensions/typescript/skills/skill-typescript-research/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When registering a new agent in this source store's lint-agent-contracts.sh, several checks (C, G, H, L, M) rely on HAND-MAINTAINED, curated arrays, not auto-discovery -- a new implementation agent must be added to Check C's IN_SCOPE_RELATIVE_PATHS (no-task-references bullet), Check G's OWNERSHIP_IN_SCOPE_RELATIVE_PATHS (plan-status-ownership bullet, which also drives Check I's heartbeat check), and ideally Check H/L's bounded-wait/modified_files arrays if the agent carries that content; a new research agent with read-only Bash probes (no build/test command) belongs in Check M's CHECK_M_EXCLUDED_RELATIVE_PATHS with a reason comment, not its in-scope array. CRITICALLY, a SEPARATE regression-test fixture (test-lint-agent-contracts-heartbeat.sh) maintains its OWN independent, hand-copied mirror of Check G's array specifically so a drift between it and the real script surfaces as a test failure -- updating the lint script alone is not enough; the test's own OWNERSHIP_PATHS list and build_fixture_tree's per-file compliant/non-compliant branch must be updated too, or a newly-registered, genuinely-compliant agent will spuriously FAIL the test's fixture for lacking a file that was never built.",
+      "category": "PATTERN",
+      "source_artifact": "specs/620_typescript_extension_design/summaries/01_typescript-extension-build-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lint-agent-contracts", "curated-arrays", "heartbeat-check", "fixture-drift", "extension-authoring"]
+    },
+    {
+      "content": "In this environment, the harness auto-backgrounds a Bash tool call once it runs past roughly 100-180 seconds of wall-clock time, REGARDLESS of a raised `timeout` parameter on the tool call itself (observed: a 540000ms parameter still auto-backgrounded at ~180s). For a genuinely long-running local command (e.g. a full verify-deploy.sh/run-all.sh gate sweep taking 10+ minutes), the reliable pattern is: launch it yourself with `nohup cmd > log 2>&1 & echo $! > pidfile; disown`, then poll liveness in repeated short Bash calls using `kill -0 \"$(cat pidfile)\"` (never `ps | grep` or `pgrep -f`, which self-match the waiter's own argv and never resolve), each poll call itself kept under ~100s so it never triggers the harness's own auto-backgrounding. Checking `ps -ef` once to discover a PID when none was captured via `$!` is an acceptable one-off exception to the never-ps-grep rule, but the repeated liveness LOOP must use kill -0 on a captured PID.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/620_typescript_extension_design/summaries/01_typescript-extension-build-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["bounded-wait", "background-task", "kill-0", "nohup", "harness-auto-backgrounding"]
+    },
+    {
+      "content": "When a full verify-deploy.sh / run-all.sh gate run shows a FAIL unrelated to the task at hand, triage before excluding: (1) re-run the SAME specific failing suite standalone -- if it passes cleanly in isolation, the failure is parallel-execution contention under --jobs auto, not a content regression (confirmed by observing a DIFFERENT suite fail on each successive full-batch run while each one individually passes); (2) for a flagged file with no local edits, run `git log -1 --oneline -- <file>` and `git status --short -- <file>` -- an empty status plus a commit predating this dispatch's start proves the finding is pre-existing, inherited history, not something this task caused; (3) for a gate that times out, re-run the underlying check directly with `time` -- if it reports zero failures but exceeds the gate's own wall-clock ceiling even standalone, it's a ceiling/scale mismatch (e.g. specs/state.json growing past what a 60s budget assumed), not a correctness defect. Each of these three evidence types is sufficient to support a Reasoned Exclusion on an otherwise-full-tier phase.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/620_typescript_extension_design/summaries/01_typescript-extension-build-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["gate-triage", "reasoned-exclusion", "flaky-tests", "pre-existing-regression", "verify-deploy"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794603202_55566e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
