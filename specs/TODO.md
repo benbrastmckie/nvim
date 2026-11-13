@@ -1,5 +1,5 @@
 ---
-next_project_number: 614
+next_project_number: 615
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 614
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,614 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594 | 439,458,472,476,486,509,518,519,542,543,564,572,593 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,595 | 438,492,501,539,547,552,580,594 | core-agent-system, agent-system |
@@ -82,6 +82,7 @@ next_project_number: 614
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
+614 [NOT STARTED] — Resolve a SF-1 card worktree to its parent checkout so card...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
@@ -186,6 +187,125 @@ next_project_number: 614
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 614. Resolve a SF-1 card worktree to its parent checkout so card sessions get repo-scoped Sapience retrieval without hook-injected context
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 612, Task 606
+
+**Description**: GOAL. Make a SF-1 hub-runner card worktree resolve to its parent checkout for Sapience
+registration, so a card session gets the card repo's REPO-SCOPED retrieval while continuing to
+receive no hook-injected context.
+
+SITING. This task belongs in /home/benjamin/.config/nvim because every edit target is in this
+repository's agent-system source store: the per-project registration writer
+`agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh`, the SessionStart hook
+`agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh`, their installer and
+verifier, and the domain notes under
+`agent-system/extensions/sapience/context/project/sapience/`. Per
+`.claude/rules/source-store-deploy-boundary.md`'s Task Siting subsection, a task is filed in the
+repository whose filesystem holds its edit target. The companion in /home/benjamin/.dotfiles
+(`retire_machine_wide_sapience_surface`) records this gap and explicitly does NOT close it.
+
+=== THE TWO CHANNELS, AND WHY ONLY ONE IS WANTED IN A CARD WORKTREE ===
+
+A SF-1 hub-runner card runs in a throwaway git worktree under
+~/.local/state/sf1-hub-ben/hub/runner/work/, executing a task card another person wrote, with
+its commit events posting back to a shared room. Two distinct Sapience channels reach a session,
+and they must be treated differently here.
+
+CHANNEL 1 -- HOOK-INJECTED CONTEXT (SessionStart, UserPromptSubmit, PreToolUse). MUST NOT reach
+a card worktree, and already does not. `context/project/sapience/domain/injection-site-scoping.md`
+records the measured foreclosure: `POST /v1/cli/context` ignores the `project` field
+UserPromptSubmit already sends, and its response carries no per-item attribution a local wrapper
+could filter or label by, so this channel cannot be scoped from this side at all. A card session
+firing those hooks would receive cross-repo and personal vault content inside work driven by
+someone else's task card. This is already structurally guaranteed: hooks and permission grants
+arrive via the extension's `settings-fragment.json` merged into a repo's
+`.claude/settings.local.json`, `.claude/` is untracked in the card repo, and a fresh worktree
+therefore has no `.claude/` tree at all. This task MUST NOT create a path by which that changes.
+
+CHANNEL 2 -- MCP RETRIEVAL (`sapience_search`, and the dispatch-time `sapience-retrieve.sh`).
+SHOULD reach a card worktree, scoped to the card repo, and currently does not.
+`scripts/sapience-retrieve.sh` builds `GET {host}/v1/search?q=...&source=[repo:<slug>]&...`, a
+hard pre-filter on the literal `[repo:<slug>]` provenance substring (`&project=` is a dead end,
+silently ignored -- that script's own header says so). Repo-tagged knowledge objects for the card
+repo are exactly the accumulated decisions and findings about that repo, which is what a card
+doing work there should draw on.
+
+=== WHY THE USEFUL HALF IS CURRENTLY LOST ===
+
+Per-project MCP registration keys on a repo's absolute path and on whether that repo's extension
+is active. A card worktree matches no registered project path and carries no
+`.claude-extensions.json`, so `hooks/sapience-mcp-register-project.sh` sees an inactive repo and
+registers nothing. The result is no tools at all -- the unsafe half and the useful half lost
+together, by accident rather than design.
+
+=== THE MECHANISM, AND ITS EXISTING PRECEDENT ===
+
+The resolution is one call: `git rev-parse --git-common-dir` yields a worktree's shared git
+directory, whose parent is the checkout. The SF-1 runner already demonstrates the same mapping
+for a different purpose -- its memory sync writes room rulings to
+`projects/<checkout path>/memory`, keyed on the CHECKOUT rather than the worktree, so rulings
+land in the card repo's own Claude Code memory directory. The information and the precedent both
+exist; nothing currently applies either to Sapience registration.
+
+=== SCOPE ===
+
+1. Teach the registration path to recognise a git worktree and resolve it to its parent
+   checkout, then decide activation and repo slug from the CHECKOUT, not the worktree. The
+   bidirectional register/remove contract must survive: a worktree whose checkout does not load
+   the extension must still get no registration, and an existing entry must still be retracted.
+
+2. Keep the retrieval scope keyed to the checkout's slug, so a card session querying
+   `source=[repo:<slug>]` gets the card repo's knowledge objects and nothing else. Confirm the
+   slug the worktree resolves to matches the slug the checkout itself would produce.
+
+3. Do NOT give a worktree the extension's hooks or permission grants. Verify this explicitly
+   rather than relying on the worktree's emptiness continuing to hold.
+
+4. Extend `scripts/verify-sapience-mcp.sh` with a check covering the worktree case, and the
+   regression suite `scripts/tests/test-sapience-mcp-registration.sh` with cases for: a worktree
+   of a loaded checkout (registers, correct slug), a worktree of an unloaded checkout (does not
+   register), an existing entry whose checkout has since unloaded (retracts), and a worktree path
+   that is not a git worktree at all (no-op, no error).
+
+5. Record the two-channel asymmetry in
+   `context/project/sapience/domain/per-repo-scoping.md`, so a future reader does not "fix" the
+   missing hooks in a worktree and reopen the unscoped-injection hazard this task deliberately
+   preserves.
+
+=== OPEN QUESTIONS FOR RESEARCH ===
+
+- Does a card session's Claude Code invocation read `~/.claude.json` project entries by cwd, or
+  by some other resolution that a worktree path would defeat even once registered? Measure rather
+  than assume.
+- `~/.claude.json` would gain an entry per worktree if registration keys on the worktree path.
+  Worktrees are throwaway, so decide whether to register the worktree path (and retract on
+  teardown) or to find a resolution that needs no new entry. An unbounded accumulation of dead
+  project entries is a failure, not an acceptable cost.
+- Does the SF-1 runner expose the checkout path to the card session in the environment already?
+  If so, that is cheaper and more direct than deriving it from git.
+
+=== ACCEPTANCE CRITERIA ===
+
+1. A session in a worktree of a loaded checkout can call `sapience_search` and receives only
+   knowledge objects carrying the checkout's `[repo:<slug>]` provenance tag -- verified against a
+   live query, with a second repo's tagged object confirmed absent.
+2. A session in that same worktree fires no Sapience hooks and carries no Sapience permission
+   grants -- verified against the live merged settings for that session, not inferred from the
+   worktree lacking a `.claude/` tree.
+3. A worktree whose checkout does not load the extension gets no registration; an entry whose
+   checkout has since unloaded is retracted.
+4. `~/.claude.json` carries no dead project entry after a card worktree is torn down.
+5. The regression suite covers all four cases in scope item 4 and passes; `verify-sapience-mcp.sh`
+   reports its new check; `bash -n` and `shellcheck` clean on every edited script.
+6. `per-repo-scoping.md` records the two-channel asymmetry and why the hook channel is
+   deliberately absent from a worktree.
+7. Files outside specs/** carry no task-number references and no record-versioning language.
+
+---
 
 ### 613. Session liveness same process orphan lock
 - **Status**: [NOT STARTED]
