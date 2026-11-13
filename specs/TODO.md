@@ -1,5 +1,5 @@
 ---
-next_project_number: 624
+next_project_number: 625
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 624
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,619 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,619,624 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605,620 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604,619 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594,621 | 439,458,472,476,486,509,518,519,542,543,564,572,593,620 | core-agent-system, file-scope-lifecycle, agent-system, ... |
 | 4 | 524,561,577,581,595,622 | 438,492,501,539,547,552,580,594,621 | core-agent-system, agent-system, typescript-extension |
@@ -122,6 +122,7 @@ next_project_number: 624
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+624 [NOT STARTED] — Make system-defect-record.sh able to attribute a...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 
 ### Agent System
@@ -195,6 +196,16 @@ next_project_number: 624
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 624. Defect record unresolvable in deploy consumer
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Make system-defect-record.sh able to attribute a dispatched-agent defect from a deploy-consumer repository. Signal B attribution resolves --dispatched-agent by globbing PROJECT_ROOT/agent-system/extensions/*/agents/NAME.md (system-defect-record.sh around line 233), a path that exists only in the repository holding the source store. In any deploy consumer (a repo carrying only the regenerated .claude/** mirror and a .claude-extensions.json) that glob can never match, so the recorder refuses with exit 3 and the message "Signal B attribution unresolvable ... did not resolve to a path under agent-system/extensions/**", and the defect is lost to a non-fatal log line. Reproduced directly: invoking the deployed recorder with --defect-class RECOVERY_DECLINED --dispatched-agent general-research-agent from a consumer repo exits 3 with that message. Observed in the wild twice in one orchestration run, where cycle postflight printed "Note: system-defect recording failed (non-fatal)" for two RECOVERY_DECLINED detections that consequently never reached any durable store. Candidate directions: resolve the source store through .claude-extensions.json source_dir the way the source-store boundary rule already prescribes for edit targets; accept a bare agent name as attribution when no source store is reachable locally; or record the defect against the deployed .claude/agents/NAME.md path. Note the nearest closed records settled adjacent questions and not this one: 258 fixed which defect class and which attribution target apply to a declined recovery, and 426 separated stall from agent fault; neither addresses the resolver being structurally unable to find an agent file outside the source-store repository.
+
+---
 
 ### 623. Make the web extension depend on the typescript extension and split the shared TypeScript context down a layer
 - **Effort**: medium

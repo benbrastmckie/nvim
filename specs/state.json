@@ -1,7 +1,33 @@
 {
   "version": "1.1.0",
-  "next_project_number": 624,
+  "next_project_number": 625,
   "active_projects": [
+    {
+      "project_number": 624,
+      "project_name": "defect_record_unresolvable_in_deploy_consumer",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Make system-defect-record.sh able to attribute a dispatched-agent defect from a deploy-consumer repository. Signal B attribution resolves --dispatched-agent by globbing PROJECT_ROOT/agent-system/extensions/*/agents/NAME.md (system-defect-record.sh around line 233), a path that exists only in the repository holding the source store. In any deploy consumer (a repo carrying only the regenerated .claude/** mirror and a .claude-extensions.json) that glob can never match, so the recorder refuses with exit 3 and the message \"Signal B attribution unresolvable ... did not resolve to a path under agent-system/extensions/**\", and the defect is lost to a non-fatal log line. Reproduced directly: invoking the deployed recorder with --defect-class RECOVERY_DECLINED --dispatched-agent general-research-agent from a consumer repo exits 3 with that message. Observed in the wild twice in one orchestration run, where cycle postflight printed \"Note: system-defect recording failed (non-fatal)\" for two RECOVERY_DECLINED detections that consequently never reached any durable store. Candidate directions: resolve the source store through .claude-extensions.json source_dir the way the source-store boundary rule already prescribes for edit targets; accept a bare agent name as attribution when no source store is reachable locally; or record the defect against the deployed .claude/agents/NAME.md path. Note the nearest closed records settled adjacent questions and not this one: 258 fixed which defect class and which attribution target apply to a declined recovery, and 426 separated stall from agent fault; neither addresses the resolver being structurally unable to find an agent file outside the source-store repository.",
+      "topic": "orchestrator",
+      "file_scope": [
+        "agent-system/extensions/core/scripts/system-defect-record.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+      ],
+      "created": "2026-11-13T20:24:28Z",
+      "last_updated": "2026-11-13T20:24:28Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "defect_record_unresolvable_in_deploy_consumer"
+        },
+        "verdict": "genuinely-new",
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "note": "Nearest closed records (258 fix_postflight_recovery_decline_attribution, 426 recovery_declined_cannot_tell_stall_from_agent_fault) settled which defect class and which attribution target apply; neither addresses the resolver being structurally unable to find any agent file outside the source-store repository.",
+        "semantic_match_count": 426
+      }
+    },
     {
       "project_number": 618,
       "project_name": "working_tree_residue_disposition_policy",
