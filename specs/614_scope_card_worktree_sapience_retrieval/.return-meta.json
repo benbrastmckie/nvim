@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794588346_94d92d_614",
+  "dispatch_seq": 10,
+  "findings_count": 6,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/614_scope_card_worktree_sapience_retrieval/reports/01_card-worktree-sapience-retrieval.md",
+      "summary": "Measures git worktree-to-checkout resolution and Claude Code's own ~/.claude.json per-project MCP lookup; shows the lookup already resolves a worktree to its checkout's registration (closing the dispatch's open questions on where to key registration and whether accumulation is a risk), identifies the matching sapience-retrieve.sh slug bug, and flags that the SF-1 runner's own --strict-mcp-config card-exec invocation is out-of-scope vendor code that stays unreachable regardless of this fix."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "Claude Code's ~/.claude.json per-project config lookup (including .projects[<path>].mcpServers) already resolves a linked git worktree, and any subdirectory inside it, to its main checkout's entry -- measured via a fabricated HOME + `claude mcp list` from checkout root, worktree root, a nested worktree subdir, an unrelated repo, and a plain non-git dir, with key-order and unrelated-second-entry controls ruling out coincidence. No cross-repo bleed, no false match when the checkout itself has no entry. Consequence for any per-project registration scheme (MCP servers or similar): key registration on the checkout path only -- never create a worktree-specific entry -- since Claude Code's own lookup already finds the checkout's entry from any of its worktrees. This eliminates the need for a worktree-teardown retraction mechanism, because nothing worktree-specific is ever written.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/614_scope_card_worktree_sapience_retrieval/reports/01_card-worktree-sapience-retrieval.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["git worktree", "claude.json", "mcp registration", "per-project", "checkout resolution"]
+    },
+    {
+      "content": "Robust, shellcheck-clean bash test for 'is this path a linked git worktree, and if so what is its checkout': compare `git rev-parse --git-dir` against `git rev-parse --git-common-dir`. Equal (including both empty/failed on a non-git path) means not a linked worktree -- behave as before. Unequal means a linked worktree; resolve --git-common-dir to an absolute path (prefix with pwd if relative) and take its parent directory as the checkout root. Measured correct at the checkout root, the worktree root, and a nested worktree subdirectory. Same technique already used in production by the SF-1 hub-runner's guard_bound() (runner.py) for a different purpose (locating a checkout-scoped guard config from a card worktree).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/614_scope_card_worktree_sapience_retrieval/reports/01_card-worktree-sapience-retrieval.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["git worktree", "git-common-dir", "git-dir", "bash", "checkout resolution"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 614 to create implementation plan"
+}
