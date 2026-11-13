@@ -362,6 +362,7 @@ ACCEPTANCE.
 - **Dependencies**: None
 - **Research**: [617_reconcile_sapience_source_store_surfaces/reports/01_reconcile-sapience-source-store.md]
 - **Plan**: [617_reconcile_sapience_source_store_surfaces/plans/01_reconcile-sapience-source-store.md]
+- **Summary**: [617_reconcile_sapience_source_store_surfaces/summaries/01_reconcile-sapience-source-store-summary.md]
 
 **Description**: GOAL. Reconcile the sapience extension's source store with the machine-wide surfaces the
 companion work in /home/benjamin/.dotfiles removes, so that three documents and one script stop

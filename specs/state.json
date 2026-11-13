@@ -2316,6 +2316,11 @@
           "path": "specs/617_reconcile_sapience_source_store_surfaces/plans/01_reconcile-sapience-source-store.md",
           "type": "plan",
           "summary": "4-phase plan reconciling the remaining sapience source-store surfaces with the landed machine-wide retirement, plus deploy and acceptance sweep."
+        },
+        {
+          "path": "specs/617_reconcile_sapience_source_store_surfaces/summaries/01_reconcile-sapience-source-store-summary.md",
+          "type": "summary",
+          "summary": "Reconciled the two remaining companion-gated sapience scripts and EXTENSION.md's registration-hook sentence; redeployed and recorded the acceptance properties."
         }
       ],
       "next_artifact_number": 2,
@@ -2324,7 +2329,8 @@
         "agent-system/extensions/sapience/EXTENSION.md",
         "agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh",
         "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh"
-      ]
+      ],
+      "completion_summary": "Rewrote comment blocks in verify-sapience-mcp.sh and setup-sapience-mcp.sh and EXTENSION.md's registration-hook sentence to state the current post-companion arrangement, redeployed, and confirmed the installer no-op and verify-sapience-mcp.sh check (d) PASS acceptance properties."
     },
     {
       "project_number": 616,

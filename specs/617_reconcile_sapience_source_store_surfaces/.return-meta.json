@@ -23,21 +23,39 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/617_reconcile_sapience_source_store_surfaces/summaries/01_reconcile-sapience-source-store-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["EXTENSION.md", "check-extension-docs.sh", "Rule U", "60-line limit", "doc-lint"]
+      "suggested_keywords": [
+        "EXTENSION.md",
+        "check-extension-docs.sh",
+        "Rule U",
+        "60-line limit",
+        "doc-lint"
+      ]
     },
     {
       "content": "When a plan's final phase declares Verification Tier: full under a dispatch's Batch Gate Deferral directive, `verify-deploy.sh --only-gate N1,N2 --skip-slow` (naming the specific gates that cover the phase's own touched-file class, e.g. gate3 doc-lint + gate26 extension-README-table-lint for an EXTENSION.md edit) is the correct scoped discharge -- it is both fast and directly traceable to the files actually touched, unlike re-running the whole 43-gate battery or skipping verification entirely.",
       "category": "PATTERN",
       "source_artifact": "specs/617_reconcile_sapience_source_store_surfaces/summaries/01_reconcile-sapience-source-store-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["Batch Gate Deferral", "verify-deploy.sh", "--only-gate", "scoped verification", "Verification Tier: full"]
+      "suggested_keywords": [
+        "Batch Gate Deferral",
+        "verify-deploy.sh",
+        "--only-gate",
+        "scoped verification",
+        "Verification Tier: full"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794588346_94d92d",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
