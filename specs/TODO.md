@@ -1,20 +1,20 @@
 ---
-next_project_number: 611
+next_project_number: 612
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-11-12. Generated from state.json dependency graph.*
+*Updated 2026-11-13. Generated from state.json dependency graph.*
 
 **Goal**: Make specs/ROADMAP.md generated (306, 307, 308, 313) so planning stops drifting, then push consent and admission posture.
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,606,607,610 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,572,576,583,584,592,593,598,605 | 383,390,398,431,451,452,455,459,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,611 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,572,576,583,584,592,593,598,605,606 | 383,390,398,431,451,452,455,459,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604,611 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594 | 439,458,472,476,486,509,518,519,542,543,564,572,593 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,595 | 438,492,501,539,547,552,580,594 | core-agent-system, agent-system |
 | 5 | 596,609 | 577,595 | agent-system |
@@ -81,7 +81,8 @@ next_project_number: 611
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-606 [NOT STARTED] — Scope Sapience context injection to the current repository so...
+611 [NOT STARTED] — Repo-tag every Sapience write path the source store owns so...
+  └─ 606 [NOT STARTED] — Scope Sapience context injection to the current repository so...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
@@ -186,6 +187,78 @@ next_project_number: 611
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 611. Repo-tag every Sapience write path the source store owns so untagged knowledge objects stop being created
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+GOAL. Make every Sapience write path this source store owns emit a repo-tagged knowledge object, so that the tagged population grows to cover all agent-system-originated writes rather than postflight wrapup alone.
+
+=== WHY: THE TAG IS THE ONLY WORKING FILTER, AND MOST WRITES DO NOT CARRY IT ===
+
+Per-repo scoping on this vault works through exactly one field: a literal `[repo:<slug>]` substring embedded in a knowledge object's `provenance` string, filtered on read by `GET /v1/search`'s `source=` parameter. `project=` is silently ignored by that endpoint and `source_loc` is not matched by it -- both are settled dead ends, documented in context/project/sapience/domain/per-repo-scoping.md.
+
+Measured at task-creation time, the vault holds four differently-shaped populations and only ONE carries the tag:
+
+1. TAGGED. `scripts/sapience-remember.sh` writes `provenance = "[repo:<slug>] via sapience-remember.sh (Claude Code dispatch)"` (its own line 156) through `POST /ingest-kos`, which accepts an arbitrary provenance string verbatim. Called from EXTENSION.md's postflight wrapup instruction at the [IMPLEMENTING] -> [COMPLETED] transition.
+
+2. UNTAGGED, AGENT-EDITABLE -- THIS TASK'S SCOPE. The MCP write tools `sapience_remember`, `sapience_wrapup` and `sapience_handoff`. The vendor connector hardcodes their provenance: `remember_provenance()` in ~/.sapience/mcp.py returns a fixed `"<Name> via <Client> session (MCP)"` shape with no injectable repo marker, and the tool's `user_asked` argument only appends a fixed `', asked by the user'` literal. No argument to these tools can produce a tagged write. They are nonetheless reachable from this system's own instruction surfaces, which is what makes this leg agent-editable: the fix is to stop naming them as the write path, not to change them.
+
+3. UNTAGGED, VENDOR-OWNED -- EXPLICITLY OUT OF SCOPE HERE. Transcript extraction via ~/.sapience/upload.py. Its `_chunk()` (line 236) already sends `'project': m['project']` per chunk, so the repo identity does reach the server; the server-authored provenance then drops it. Measured provenance on live session-extracted rows: `local extraction (ollama) 2026-11-04 | Claude Code session capture 2026-11-03 |`, carrying no project or repo name. Only the curated-memory-file branch sets provenance locally (upload.py:1781, via `memory_provenance()`). This is the largest population and cannot be fixed from this repository.
+
+4. BELONGS TO NO REPOSITORY. Documents shared by other people, with provenance of the form `people oliver-zahn | shared by Oliver Zahn 2026-11-12T07:27:02Z | doc {...}`. Named here only so the scope boundary is unambiguous: this task does not attempt to tag them.
+
+=== THE CONCRETE LEAK: THE SYSTEM CURRENTLY INSTRUCTS AGENTS TO WRITE UNTAGGED ===
+
+The SessionStart briefing text injected into every session in this repository ends with a standing instruction of the form "when a decision, finding, or correction lands, save it with sapience_remember -- don't wait to be asked". That nudge produces an UNTAGGED write, per population 2 above.
+
+It also contradicts this extension's own settled ruling. context/project/sapience/domain/review-gate-boundary.md states that a per-agent instruction to call `sapience_remember` proactively mid-run is "the shape this extension deliberately does not add", because the MCP write path bypasses the `auto_approve: false` review gate entirely: every such call is a permanent, unreviewed write, and a per-decision instruction would produce one per decision per agent across a whole /orchestrate batch, with no staging step. EXTENSION.md already carries the matching prohibition ("Do NOT call `sapience_remember` proactively mid-run").
+
+So there are two independent defects in one place: the writes are untagged AND they are unbounded in a way the extension's own design rejects.
+
+=== WHAT THIS TASK MUST DELIVER ===
+
+a. Every Sapience write named by any instruction surface in agent-system/extensions/sapience/** (EXTENSION.md, skills, agents, context files, merge sources) routes through `scripts/sapience-remember.sh`, never through an MCP write tool. `sapience_wrapup` and `sapience_handoff` in particular are session-closing writes whose notes carry exactly the kind of content a repo filter needs to scope; they must be re-expressed as `sapience-remember.sh` calls honoring the existing 3-8-note-per-completed-task bound, or their use must be ruled out and the reason recorded.
+
+b. A standing, checkable rule that no agent-system instruction surface may name an untagged MCP write tool as a write path. Decide and record where this rule lives (a rules/ file, a lint, or an EXTENSION.md contract section) and whether it is advisory or enforced. If a lint is the verdict, it must distinguish naming a tool AS A WRITE PATH from merely documenting that the tool exists and why it is not used -- per-repo-scoping.md and review-gate-boundary.md both legitimately name all four MCP write tools in exactly that discussing-not-prescribing sense, and a lint that flags them is wrong.
+
+c. A ruling on the SessionStart briefing nudge. Its text is vendor-authored and arrives through a hook this repository does not own, so it cannot be edited here. State explicitly whether the remedy is a counter-instruction inside this extension's own surfaces (which agents read), an owner action handed to the user, or an accepted residual -- and if a counter-instruction, make sure it does not merely suppress the write but redirects it to the tagged path, so the knowledge is still captured.
+
+d. Verification that a tagged write actually lands. `sapience-remember.sh --dry-run` exits 0 and prints the request body with provenance carrying `[repo:<slug>]` and the token redacted, without a network call; the existing scripts/tests/test-sapience-capture.sh is the precedent for test siting and style. Assert the tag is present in the provenance of what each converted call site would send -- not merely that the call site was edited.
+
+=== BOUNDARY: AGENT EDIT VS OWNER ACTION ===
+
+Deliverables resolve through the source store at /home/benjamin/.config/nvim/agent-system/extensions/sapience/.
+
+Both ~/.claude/settings.json and ~/.sapience/** are OUTSIDE the source store and outside any repo's deploy tree. A change to either is an OWNER ACTION to be stated as an exact, runnable instruction and handed to the user, NEVER an agent edit. Note that mcp.py SELF-UPDATES DAILY, so a hand-patch there would be overwritten.
+
+=== RELATIONSHIP TO THE READ-SIDE TASK ===
+
+The sibling task `scope_sapience_injection_to_current_repo` owns the READ side: no read-side filter is applied at any of the three vendor hooks that reach the PRIMARY session's context, and the untagged-population leg as it bears on what gets injected. This task owns the WRITE side only. They share file territory under agent-system/extensions/sapience/**, so they are sequenced rather than run concurrently, with this task first: a read-side filter is only worth applying once the writes it will filter are actually tagged.
+
+Do NOT attempt the read-side filter, the hook narrowing, or the vendor ask here.
+
+=== CONSTRAINTS THAT SHAPE ANY SOLUTION ===
+
+- There is no delete API. `DELETE /v1/ko/<hash>`, `DELETE /v1/kos/<hash>` and `POST /v1/ko/<hash>/delete` all return 404 on this vault. Every write is permanent; the only remedy is manual removal in the web app. This is why the 3-8-note-per-completed-task bound is load-bearing rather than a style preference, and why any new call site must inherit a bound rather than write per decision.
+- Writes through `POST /ingest-kos` bypass the `auto_approve: false` review gate, so a converted call site gains the tag but stays unreviewed. Converting a call site must not silently increase write VOLUME; state the per-site bound explicitly.
+- `explicit: true` is mandatory on every `POST /ingest-kos` write. Without it a realistically worded note is silently discarded by the server's noise gate, returning a success-shaped `{"ok": true, "written": 0, "gated": 1}`. `sapience-remember.sh` already sets it unconditionally and treats `gated >= 1`, a non-empty `set_aside`, or an absent/zero `written` as a loud non-zero exit; any new call site must keep that loudness rather than swallow it.
+- The existing degrade rule is unchanged: a failed `sapience-remember.sh` call is mirrored non-fatally via issue-record.sh (`--class "infrastructure/transport unavailable"`) and never blocks a status transition.
+
+=== ACCEPTANCE CRITERIA ===
+
+1. No instruction surface under agent-system/extensions/sapience/** names an MCP write tool as the path a write SHOULD take; every prescribed write routes through `sapience-remember.sh`.
+2. Each converted call site carries an explicit note bound, and the total unreviewed write volume per completed task does not increase relative to the current postflight-only contract.
+3. The standing rule from deliverable (b) exists, its advisory-or-enforced status is recorded, and -- if mechanized -- it does not flag the legitimate discussing-not-prescribing mentions in per-repo-scoping.md and review-gate-boundary.md.
+4. A test asserts `[repo:<slug>]` is present in the provenance each converted call site would send, driven without a live vault.
+5. The SessionStart-nudge ruling from deliverable (c) is recorded, and any owner action is written out as an exact, runnable instruction rather than a description of one.
+6. context/project/sapience/domain/per-repo-scoping.md and review-gate-boundary.md are updated to state the resulting contract, including which populations remain untagged and why.
+
+---
 
 ### 610. Full gate verification ceiling and stall
 - **Status**: [NOT STARTED]
@@ -328,7 +401,7 @@ CHANNEL: /orchestrate conclusion channel (c), follow-up task.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 600
+- **Dependencies**: Task 600, Task 611
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 
@@ -362,7 +435,7 @@ The valuable class is PRECISELY the cross-corpus abstraction that belongs to no 
 - UserPromptSubmit -> `python3 "$HOME/.sapience/sapience_cli.py" hook prompt`
 - PreToolUse       -> `python3 "$HOME/.sapience/sapience_cli.py" hook tool`
 
-None takes a repository argument. `sapience_cli.py --help` documents only quiet|normal|rich verbosity and visible block|line.
+No site takes a repository argument on its command line, and `sapience_cli.py --help` documents only quiet|normal|rich verbosity and visible block|line. The three sites are NOT a uniform surface, however: two of them resolve the current repository from cwd and transmit it internally, and the third sends no project field at all. See `=== WHAT IS MEASURED ABOUT THE TRANSPORT ===` below. Acceptance criterion 3's enumeration must record that asymmetry rather than treating the three hooks as one surface.
 
 === NOT A DUPLICATE -- READ THIS BEFORE CLOSING IT AS ONE ===
 
@@ -372,22 +445,36 @@ The open task `sapience_retrieve_cold_start_retry` is a different concern (503 c
 
 === ROOT CAUSE: TWO INDEPENDENT LEGS, NEITHER SUFFICIENT ALONE ===
 
-Leg 1 -- the untagged population. The only functioning filter is a literal `[repo:<slug>]` tag in a KO's provenance string, filtered on read via `source=` (`project=` and `source_loc` are settled dead ends on this vault). Transcript-extracted KOs carry no such tag, so the LARGEST population is unfilterable by construction.
+Leg 1 -- the untagged population, dropped server-side rather than never sent. The only functioning filter is a literal `[repo:<slug>]` tag in a KO's provenance string, filtered on read via `source=` (`project=` and `source_loc` are settled dead ends on this vault). The repo identity is NOT absent from the extraction path: `upload.py`'s `_chunk()` (line 236) already sends `'project': m['project']` from `capture_meta()` on every transcript chunk, so the asking repository reaches the server there too. It is then DROPPED from the one field the only working filter reads. Provenance measured on live session-extracted KOs takes the form `local extraction (ollama) 2026-11-04 | Claude Code session capture 2026-11-03 |` -- carrying no project or repo name. Only the curated-memory-file branch sets provenance locally (`upload.py:1781`, via `memory_provenance()`); session chunks do not. Consequence: the LARGEST population is unfilterable by construction, and that remainder cannot be closed by any read-side `source=` filter, nor by any local edit, because the provenance string is server-authored.
 
-Leg 2 -- no read-side filter at all. `~/.sapience/config.json`'s `capture.projects` is a 10-entry list, so one vault legitimately holds ten projects' knowledge; the three hook commands apply no filter on read.
+Leg 2 -- no read-side filter at all, although the server is already told which repo is asking. `~/.sapience/config.json`'s `capture.projects` is a 10-entry list, so one vault legitimately holds ten projects' knowledge. Two of the three hooks transmit the asking repository today: `sapience_cli.py:457` (the `session` branch) sends `project=pj` and returns early when the resolved project is empty, and `sapience_cli.py:466` (the `prompt` branch) sends `project=project_of(cwd)`, where `project_of()` (`sapience_cli.py:133-148`) resolves cwd against `config.json`'s `capture.projects` and falls back to `basename(cwd)`. The server therefore receives the current repository on every SessionStart and every UserPromptSubmit and returns cross-project items anyway. The `tool` branch (`sapience_cli.py:467-477`) populates only `file=<file_path>` and sends no project field -- the one genuinely project-blind site. The filtering decision is SERVER-SIDE.
 
 Fixing one leg without the other leaves the defect reproducible.
 
-=== CANDIDATE LEVERS -- research chooses among these on merit, and does not assume one ===
+=== WHAT IS MEASURED ABOUT THE TRANSPORT ===
 
-a. An undocumented vendor config key or CLI option. CHEAPEST if it exists; `mcp.py` is 137 KB and was NOT read.
-b. An agent-system-owned wrapper filtering vendor stdout before it reaches context. Viable ONLY if the output carries recoverable source attribution -- establish that before costing it.
-c. Retagging or re-extracting the untagged population. Constrained by there being no delete API.
-d. Narrowing the hooks and relying on the already-scoped retrieval path. LIKELY FATAL ALONE: that path feeds only dispatched subagents, so the primary session would lose Sapience context entirely.
+Measured fact, verified against `~/.sapience/sapience_cli.py`, `~/.sapience/upload.py` and a live vault query -- not open questions for research to rediscover:
+
+- There is NO missing local vendor config key or CLI option to find. The project identity is already transmitted on the `session` hook, on the `prompt` hook, and on the transcript-extraction path; the server declines to filter on it and declines to reflect it into authored provenance. Searching for an undocumented key is REFUTED as a lever, not deferred.
+- `tool` (PreToolUse) is the single site that sends no project at all.
+- Server-authored provenance on transcript extraction discards the project it was sent.
+
+LIVE OPTIONS, to be chosen among on merit:
+
+- An agent-system-owned wrapper filtering or labelling vendor stdout before it reaches context. Viable ONLY if the output carries recoverable source attribution -- establish that before costing it.
+- Retagging or re-extracting the untagged population. Constrained by there being no delete API.
+
+REFUTED AS A STANDALONE FIX:
+
+- Narrowing the hooks and relying on the already-scoped retrieval path. LIKELY FATAL ALONE: that path feeds only dispatched subagents, so the primary session would lose Sapience context entirely.
+
+=== CONSEQUENCE THAT CONSTRAINS THE DESIGN ===
+
+The ~2262 knowledge objects already in the vault are permanently unfilterable: there is no delete API and no retag path for server-authored provenance. Any fix therefore tags FUTURE writes only. A hard `source=[repo:<slug>]` read filter applied today would suppress nearly the entire vault -- including exactly the cross-corpus abstraction class that acceptance criterion 2 requires to survive. The labelling-versus-suppression ruling is load-bearing, not a detail.
 
 === DESIGN QUESTIONS TO SETTLE RATHER THAN ASSUME ===
 
-- An unattributable item: suppressed, passed through LABELLED with its source project, or passed through only when it makes no repo-specific factual claim?
+- An unattributable item: suppressed, passed through LABELLED with its source project, or passed through only when it makes no repo-specific factual claim? The ruling must cover the shared-document population EXPLICITLY, not only untagged transcript KOs: beyond repo-tagged live writes and untagged transcript extraction, the vault holds documents shared by other people, with provenance of the form `people oliver-zahn | shared by Oliver Zahn 2026-11-12T07:27:02Z | doc {...}`. These belong to no repository at all and are already being injected into sessions in this repo.
 - Should items keep being framed as the reader's own prior conclusions?
 
 === BOUNDARY: WHAT IS AN AGENT EDIT AND WHAT IS AN OWNER ACTION ===
@@ -396,12 +483,18 @@ Deliverables resolve through the source store at `/home/benjamin/.config/nvim/ag
 
 Both `~/.claude/settings.json` and `~/.sapience/**` are OUTSIDE the source store and outside any repo's deploy tree. A change to either is an OWNER ACTION to be stated and handed to the user, NEVER an agent edit. Note also that `mcp.py` SELF-UPDATES DAILY, so a hand-patch there would be overwritten.
 
+=== SCOPE: WHAT THIS TASK OWNS AND WHAT IT HANDS OFF ===
+
+- WRITE paths are a separate sibling task. The agent-system-owned write side -- retiring the mid-run untagged `sapience_remember` nudge, and routing `sapience_wrapup` / `sapience_handoff` through `sapience-remember.sh` -- is split out. This task keeps the read-side / injection concern and REFERENCES that sibling rather than absorbing it; acceptance criterion 4's local half is satisfied jointly with it.
+- THE VENDOR ASK, stated concretely, belongs under acceptance criterion 5: reflect the `project` field that `/extract` already receives into each KO's authored provenance, OR honor `project=` as a real filter on `GET /v1/search`. Because `mcp.py` self-updates daily, a local hand-patch is not an alternative to the ask.
+- THE EXISTING ~2262 OBJECTS are out of reach by construction (see `=== CONSEQUENCE THAT CONSTRAINS THE DESIGN ===`). No part of this task may be costed on the assumption that they can be retagged or deleted.
+
 === ACCEPTANCE CRITERIA ===
 
 1. A session in one repository receives no item making a factual claim about another repository -- or receives it labelled with its source project, per the ruling made on the design questions above.
 2. The cross-corpus abstraction class is demonstrably STILL DELIVERED after the change. A fix that silences the channel is a regression, not a fix.
 3. Every injection site is covered AND ENUMERATED BY NAME -- not only the already-fixed dispatch path.
-4. The untagged-population leg (Leg 1) is resolved, or its residual exposure is stated precisely, acknowledging the no-delete-API constraint.
+4. The LOCAL half of Leg 1 is actually CLOSED, not merely described: every write path the source store owns is repo-tagged (delivered here or by the sibling write-side task named under SCOPE above). A precise statement of residual exposure, acknowledging the no-delete-API constraint, suffices ONLY for the genuinely vendor-owned remainder -- server-authored provenance on transcript extraction -- and never for an agent-editable write path.
 5. Any owner action is written out as an exact, runnable instruction rather than a description of one.
 
 === RESEARCH POINTER ===
