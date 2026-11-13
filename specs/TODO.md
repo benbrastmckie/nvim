@@ -1,5 +1,5 @@
 ---
-next_project_number: 617
+next_project_number: 618
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 617
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,614,615,616 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,614,615,616,617 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594 | 439,458,472,476,486,509,518,519,542,543,564,572,593 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,595 | 438,492,501,539,547,552,580,594 | core-agent-system, agent-system |
@@ -85,6 +85,7 @@ next_project_number: 617
 614 [NOT STARTED] — Resolve a SF-1 card worktree to its parent checkout so card...
 615 [NOT STARTED] — GOAL. Make an extension's permissions.allow grants retract on...
 616 [NOT STARTED] — GOAL. Narrow the sapience extension's MCP write-tool...
+617 [NOT STARTED] — GOAL. Reconcile the sapience extension's source store with...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
@@ -189,6 +190,96 @@ next_project_number: 617
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 617. Reconcile sapience source store surfaces
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: GOAL. Reconcile the sapience extension's source store with the machine-wide surfaces the
+companion work in /home/benjamin/.dotfiles removes, so that three documents and one script stop
+asserting gaps that no longer exist once that work lands.
+
+TRIGGER. The companion task sited in /home/benjamin/.dotfiles under the durable project name
+`retire_machine_wide_sapience_surface` does two things this repository's source store currently
+contradicts: it removes the five machine-wide Sapience hooks and seven read-tool grants from
+`config/claude/settings.json` and the top-level `mcpServers.sapience` entry from
+`~/.claude.json`, AND it adds a durable user-level `SessionStart` entry invoking this
+extension's own per-project MCP-registration hook. The second half is the part that makes the
+documents below wrong, because each of them was written on the premise that no durable owner for
+that entry existed.
+
+THE FOUR SURFACES, each verified present in the source store on 2026-11-13:
+
+1. `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`'s
+   Hazards section opens with "The `SessionStart` MCP-registration hook is NOT durable across a
+   `home-manager switch` -- accepted residual", explains that `hooks` is a home-manager ENFORCED
+   key so the registration is wiped on every switch, and names "a companion task (or a
+   follow-up) taking ownership of a durable user-level `SessionStart` entry for this hook" as
+   its escape valve. Once the companion lands, that owner exists and the hazard is discharged.
+   The same file's "Deliberate divergence from the lean model" paragraph and its
+   "One-session-start removal lag" note both need re-reading against the landed arrangement --
+   the removal lag survives, the durability divergence does not.
+
+2. `agent-system/extensions/sapience/scripts/install-sapience-mcp-session-hook.sh` prints a loud
+   WARNING on every run naming the non-durability. After the companion lands, the installer's
+   own `$HOME/.claude/settings.json` registration is no longer the only one, and the warning
+   either becomes wrong or needs rewording to describe the real post-landing relationship
+   between the two writers. The companion's description also asks for a specific property to be
+   confirmed from this side: re-running this installer against the live file must report a
+   NO-OP rather than double-registering, since the durable entry now arrives from a different
+   writer than the one whose idempotency check it must satisfy. The installer's check keys off
+   the exact command string `bash $HOME/.claude/hooks/sapience-mcp-register-project.sh
+   2>/dev/null || echo '{}'`, so this is a real, checkable property and not a formality.
+
+3. `agent-system/extensions/sapience/context/project/sapience/domain/injection-site-scoping.md`'s
+   "Owner Action 2 -- The Machine-Wide Duplicate Hook Surface" section states that the five hook
+   commands "currently fire from `$HOME/.claude/settings.json` in every repository on this
+   machine, regardless of any one repository's own per-repo extension activation state", and
+   hands the owner four `jq` inspection commands. The companion retires exactly that duplicate.
+   Owner Action 1 (the vendor ask about `project` being ignored on `POST /v1/cli/context`) is
+   NOT discharged by the companion and must survive this edit intact, along with the
+   `scripts/verify-sapience-context-scoping.sh` pointer that detects the day it lands.
+
+4. `agent-system/extensions/sapience/merge-sources/claudemd.md` (the text merged into
+   `.claude/CLAUDE.md`'s Sapience Extension section) describes the six hook surfaces and the
+   per-repo activation story. Check it against the landed arrangement; it may need only the
+   registration-hook sentence adjusted, or nothing at all.
+
+CONSTRAINTS.
+
+- EDIT THE SOURCE STORE, NEVER THE DEPLOY. Every path above is under
+  `agent-system/extensions/sapience/`; the mirrored `.claude/context/project/sapience/**` copies
+  are regenerated and a hand-edit there is wiped by the next deploy
+  (`.claude/rules/source-store-deploy-boundary.md`).
+- DO NOT EDIT /home/benjamin/.dotfiles from this task. Its surfaces are that repository's to
+  own, per the same rule's task-siting subsection.
+- STATE THE CURRENT ARRANGEMENT, never its draft history
+  (`.claude/rules/no-record-versioning-in-deliverables.md`): these edits describe how
+  registration durability works now, not what it used to be or which task changed it.
+
+PRECONDITION. Confirm the companion has actually landed before editing -- read its artifacts in
+/home/benjamin/.dotfiles and inspect the live `$HOME/.claude/settings.json` for the registration
+entry -- rather than editing on the assumption that it will. If it has not landed, the correct
+action is to stop and report. Discharging a hazard that is still live would be worse than
+leaving the text alone.
+
+SCOPE. Rewrite surfaces 1-4 above to match the landed arrangement; run the installer against the
+live file and confirm the no-op property the companion asks for; leave Owner Action 1 and the
+one-session-start removal lag standing.
+
+ACCEPTANCE.
+
+- No surface in the source store asserts the registration entry is wiped by a `home-manager
+  switch` when it no longer is.
+- Re-running `install-sapience-mcp-session-hook.sh` against the live file reports a no-op, and
+  that result is recorded.
+- `injection-site-scoping.md` retains Owner Action 1, its Foreclosure 1 and 2 measurements, and
+  the `verify-sapience-context-scoping.sh` pointer.
+- `verify-sapience-mcp.sh`'s check (d) passes for this repository after the change.
+
+---
 
 ### 616. Narrow sapience write tool grants
 - **Status**: [NOT STARTED]
