@@ -180,7 +180,7 @@ next_project_number: 625
 
 ### Typescript Extension
 
-619 [PLANNED] — Research the extension contract and the 2026 TypeScript...
+619 [IMPLEMENTING] — Research the extension contract and the 2026 TypeScript...
   └─ 620 [NOT STARTED] — Design the typescript extension: file manifest, agents, hard...
     └─ 621 [NOT STARTED] — Implement the typescript extension in the source store with...
       └─ 622 [NOT STARTED] — Validate the typescript extension's generic toolchain...
@@ -346,7 +346,7 @@ DELIVERABLE. An implementation plan.
 
 ### 619. Research the extension contract and the 2026 TypeScript toolchain for a new typescript extension
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: typescript-extension
 - **Dependencies**: None

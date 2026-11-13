@@ -1,7 +1,7 @@
 # Implementation Plan: Task #619
 
 - **Task**: 619 - Survey the real extension file contract and establish the 2026 TypeScript toolchain detection matrix
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None (head of the `typescript-extension` chain: 619 -> 620 -> 621 -> 622 -> 623)
 - **Research Inputs**: specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md
@@ -110,34 +110,34 @@ Phases within the same wave can execute in parallel. This plan is deliberately f
 phase edits the same single file (`reports/01_typescript-extension-contract-research.md`), so no two
 phases may run concurrently.
 
-### Phase 1: Re-verify load-bearing claims and enumerate residual gaps [NOT STARTED]
+### Phase 1: Re-verify load-bearing claims and enumerate residual gaps [COMPLETED]
 
 **Goal**: Establish that each mechanical claim the downstream chain will build on still holds against
 live source, and produce a confirmed, closed list of residual coverage gaps.
 
 **Tasks**:
-- [ ] Re-run both completeness-discharge sweeps the report cites verbatim and compare against its
+- [x] Re-run both completeness-discharge sweeps the report cites verbatim and compare against its
       stated results: `grep -l "hard_contracts" agent-system/extensions/*/manifest.json` (report
       claims exactly `lean` and `cslib`) and a sweep of `specs/archive/` for any directory name
-      containing `deliver_hard_mode` or `hard_mode_contracts` (report claims none).
-- [ ] Re-derive the loader's hard requirement: confirm `REQUIRED_FIELDS` in
+      containing `deliver_hard_mode` or `hard_mode_contracts` (report claims none). *(completed: both sweeps re-run verbatim, both matched the report exactly)*
+- [x] Re-derive the loader's hard requirement: confirm `REQUIRED_FIELDS` in
       `lua/neotex/plugins/ai/shared/extensions/manifest.lua` is exactly `name`/`version`/`description`
       and that `validate_provides` / `validate_merge_targets` each return early when their key is
-      absent.
-- [ ] Re-derive the lifecycle-hook contract against `agent-system/extensions/core/scripts/lib/skill-base.sh`:
+      absent. *(completed: confirmed at manifest.lua lines 7, 43-53, 59-85, 91-113)*
+- [x] Re-derive the lifecycle-hook contract against `agent-system/extensions/core/scripts/lib/skill-base.sh`:
       the `task_type` string-equality gate in `skill_get_extension_dir()`, the five positional args
       passed to a hook script, and that `skill_run_extension_hook`'s terminal statement is
-      unconditionally `return 0`.
-- [ ] Re-derive `routing_lookup_flat()`'s four-step ladder in
+      unconditionally `return 0`. *(completed: confirmed at agent-system/extensions/core/scripts/skill-base.sh -- actual path has no /lib/ segment; the task text above names a non-existent `scripts/lib/skill-base.sh`, the real file is `scripts/skill-base.sh`)*
+- [x] Re-derive `routing_lookup_flat()`'s four-step ladder in
       `agent-system/extensions/core/scripts/lib/manifest-routing-lib.sh` and confirm it is a sibling
-      of `routing_lookup()` rather than a wrapper over it.
-- [ ] Re-derive `append_index_entries()`'s upsert-by-exact-`path` behavior in
-      `lua/neotex/plugins/ai/shared/extensions/merge.lua`.
-- [ ] Sweep the five surveyed manifests for any top-level or `merge_targets` sub-field key that has
+      of `routing_lookup()` rather than a wrapper over it. *(completed: confirmed sibling, not wrapper, per the function's own source comment)*
+- [x] Re-derive `append_index_entries()`'s upsert-by-exact-`path` behavior in
+      `lua/neotex/plugins/ai/shared/extensions/merge.lua`. *(completed: confirmed at merge.lua lines 687-738)*
+- [x] Sweep the five surveyed manifests for any top-level or `merge_targets` sub-field key that has
       no row in the report's Outcome 2 table, and record the resulting unlisted-key list for Phase 2
-      to consume: `for e in python rust web nix lean; do jq -r 'keys[]' agent-system/extensions/$e/manifest.json; done | sort -u`.
-- [ ] Apply an in-place correction to the report for any claim found not to hold, and record each
-      such correction via `issue-record.sh` as it is found.
+      to consume: `for e in python rust web nix lean; do jq -r 'keys[]' agent-system/extensions/$e/manifest.json; done | sort -u`. *(completed: unlisted-key list is empty -- every top-level and merge_targets-entry key already has a report row; the only gap is the merge_targets.{entry}.{source,target,section_id} sub-field rows Phase 2 is already tasked with adding)*
+- [x] Apply an in-place correction to the report for any claim found not to hold, and record each
+      such correction via `issue-record.sh` as it is found. *(completed: no claim failed re-derivation, so no correction was applied; recorded as a win via issue-record.sh)*
 
 **Timing**: 0.5 hours
 
