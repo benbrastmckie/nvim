@@ -1,7 +1,7 @@
 # Implementation Plan: Task #616
 
 - **Task**: 616 - Narrow sapience write tool grants
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/616_narrow_sapience_write_tool_grants/reports/01_narrow-sapience-write-tool-grants.md
@@ -123,30 +123,32 @@ No `roadmap_path` provided in this dispatch; `specs/ROADMAP.md` was not consulte
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Narrow the Grant and Retarget Its Verification Probe [NOT STARTED]
+### Phase 1: Narrow the Grant and Retarget Its Verification Probe [COMPLETED]
 
 **Goal**: `permissions.allow` carries exactly the 7 non-write entries, and the probe that checks
 the merged result expects 7, not 11.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/sapience/settings-fragment.json` immediately before
-      editing (sibling-task concurrency).
-- [ ] Delete exactly these four entries from `permissions.allow`:
+- [x] Re-read `agent-system/extensions/sapience/settings-fragment.json` immediately before
+      editing (sibling-task concurrency). *(completed)*
+- [x] Delete exactly these four entries from `permissions.allow`:
       `mcp__sapience__sapience_remember`, `mcp__sapience__sapience_wrapup`,
-      `mcp__sapience__sapience_handoff`, `mcp__sapience__sapience_adddoc`.
-- [ ] Leave the remaining seven entries untouched and in their current relative order, including
-      the inert `mcp__sapience__sapience` entry (explicitly out of scope).
-- [ ] Leave the `hooks` block entirely unchanged.
-- [ ] Confirm the file is still valid JSON and the array length is 7:
+      `mcp__sapience__sapience_handoff`, `mcp__sapience__sapience_adddoc`. *(completed)*
+- [x] Leave the remaining seven entries untouched and in their current relative order, including
+      the inert `mcp__sapience__sapience` entry (explicitly out of scope). *(completed)*
+- [x] Leave the `hooks` block entirely unchanged. *(completed)*
+- [x] Confirm the file is still valid JSON and the array length is 7:
       `jq '.permissions.allow | length' agent-system/extensions/sapience/settings-fragment.json`.
-- [ ] Re-read `agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh`, then update
+      *(completed: returns 7)*
+- [x] Re-read `agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh`, then update
       check (e) to expect 7: the `-eq 11` comparison (line 242), the header comment (line 35),
       and the pass/fail message strings (lines 243, 245) — including the `$GRANT_COUNT/11`
-      denominator in the failure message.
-- [ ] Add a short note at check (e) recording that a repository which loaded sapience BEFORE this
+      denominator in the failure message. *(completed)*
+- [x] Add a short note at check (e) recording that a repository which loaded sapience BEFORE this
       narrowing keeps its already-merged write-tool entries (the merge engine is additive-only),
       so a count above 7 there is a known pre-existing residual rather than new drift.
-- [ ] Commit this phase's two files with an explicit file list.
+      *(completed)*
+- [x] Commit this phase's two files with an explicit file list. *(completed)*
 
 **Timing**: 0.5 hours
 

@@ -32,8 +32,11 @@
 #   (c) both installed user-level files exist and are executable
 #   (d) the SessionStart entry is present in $HOME/.claude/settings.json (catches a post-switch
 #       durability loss)
-#   (e) the merged .claude/settings.local.json carries all 11 permission grants and all 5 hooks,
-#       when the extension is loaded in this project
+#   (e) the merged .claude/settings.local.json carries all 7 permission grants and all 5 hooks,
+#       when the extension is loaded in this project. A repository that loaded sapience BEFORE
+#       the grant was narrowed to 7 keeps its already-merged write-tool entries (the merge
+#       engine is additive-only), so a count above 7 there is a known pre-existing residual, not
+#       new drift.
 #
 # Exit codes:
 #   0 - Configuration valid (all applicable checks pass)
@@ -239,10 +242,15 @@ if [ -f "$MERGED_SETTINGS" ]; then
         GRANT_COUNT=$(jq '[.permissions.allow[]? | select(startswith("mcp__sapience__"))] | length' "$MERGED_SETTINGS" 2>/dev/null || echo 0)
         HOOK_KEYS=$(jq -c '[.hooks | keys[]? | select(. == "SessionStart" or . == "UserPromptSubmit" or . == "PreToolUse" or . == "SessionEnd" or . == "Stop")] | sort' "$MERGED_SETTINGS" 2>/dev/null || echo "[]")
         EXPECTED_HOOK_KEYS='["PreToolUse","SessionEnd","SessionStart","Stop","UserPromptSubmit"]'
-        if [ "$GRANT_COUNT" -eq 11 ] && [ "$HOOK_KEYS" = "$EXPECTED_HOOK_KEYS" ]; then
-            pass "(e) merged $MERGED_SETTINGS carries all 11 permission grants and all 5 hooks"
+        if [ "$GRANT_COUNT" -eq 7 ] && [ "$HOOK_KEYS" = "$EXPECTED_HOOK_KEYS" ]; then
+            pass "(e) merged $MERGED_SETTINGS carries all 7 permission grants and all 5 hooks"
         else
-            fail "(e) merged $MERGED_SETTINGS has $GRANT_COUNT/11 sapience grants and hook keys $HOOK_KEYS (expected $EXPECTED_HOOK_KEYS)"
+            fail "(e) merged $MERGED_SETTINGS has $GRANT_COUNT/7 sapience grants and hook keys $HOOK_KEYS (expected $EXPECTED_HOOK_KEYS)"
+            log ""
+            log "  NOTE: a repository that loaded sapience before the grant was narrowed to 7"
+            log "  keeps its already-merged write-tool entries (the merge engine is"
+            log "  additive-only); a count above 7 there is a known pre-existing residual, not"
+            log "  new drift introduced by this check."
             OVERALL_OK=false
         fi
     else

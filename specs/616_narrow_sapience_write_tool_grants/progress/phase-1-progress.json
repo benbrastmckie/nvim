@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "Narrow the Grant and Retarget Its Verification Probe",
+  "started_at": "2026-11-13T00:00:00Z",
+  "last_updated": "2026-11-13T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Delete four write-tool grant entries from settings-fragment.json permissions.allow", "status": "done", "files_touched": ["agent-system/extensions/sapience/settings-fragment.json"]},
+    {"id": 2, "description": "Retarget verify-sapience-mcp.sh check (e) from 11 to 7, with additive-merge residual note", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

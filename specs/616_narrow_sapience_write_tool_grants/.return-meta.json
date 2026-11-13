@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/616_narrow_sapience_write_tool_grants/plans/01_narrow-sapience-write-tool-grants.md",
-      "summary": "5-phase plan narrowing the sapience MCP write-tool grants from 11 to 7 entries and reconciling nine coupled surfaces across the sapience and core source stores."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "When a plan narrows a configuration value that a verification script asserts by literal (e.g. a permission-grant count hardcoded as `-eq 11` in a probe script), the probe is a functional coupled surface, not a prose one: left unedited it reports FAILURE against the correctly-changed configuration, and it is frequently the very tool the task's own acceptance criterion relies on. A research pass that greps only for prose statements of the fact will miss it. The reliable detection move at plan time is to grep the literal value across the whole source store (including scripts/ and JSON metadata like manifest.json and index-entries.json), not only the markdown surfaces the dispatch names.",
-      "category": "PATTERN",
-      "source_artifact": "specs/616_narrow_sapience_write_tool_grants/plans/01_narrow-sapience-write-tool-grants.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["coupled-surface", "verification-script", "hardcoded-literal", "consistency-sweep", "plan-sizing", "grant-count"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 8,
   "metadata": {
-    "session_id": "sess_1794588346_94d92d_616",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 3.25,
-    "dependency_waves": 4
-  },
-  "next_steps": "Run /orchestrate 616 to execute the plan",
-  "dispatch_seq": 6
+    "session_id": "sess_1794588346_94d92d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 5
+  }
 }
