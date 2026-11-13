@@ -1,0 +1,26 @@
+{
+  "phase": 2,
+  "phase_name": "Record every fragment item in deep_merge's plain-array branch",
+  "started_at": "2026-11-13T17:22:00Z",
+  "last_updated": "2026-11-13T17:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Move tracked[key].items insert outside the dedup guard", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 2, "description": "Rewrite comment on the array arm", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 3, "description": "Extend unmerge_settings with opts.retained_fragments", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 4, "description": "Thread retained fragments through remove_tracked recursion", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 5, "description": "Skip removal when item matches a retained fragment (appended + hook_merged items)", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]},
+    {"id": 6, "description": "Update doc comments on unmerge_settings and deep_merge", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.extra",
+      "description": "merge_spec.lua requirement (c) for mcpServers (merging the same fragment twice is a true unmerge no-op)",
+      "type": "altered",
+      "reason": "The test asserted the old dedup-before-track behavior for a nested array field (mcpServers.fixture.args), which reaches the SAME plain-array arm as permissions.allow on a second merge. The Phase 2 fix correctly changes this behavior engine-wide, so the test's assertion was corrected (not worked around) with an explanatory comment, pulled forward from Phase 4 because Phase 2's own verification gate requires a clean 24/0/0 spec baseline before Phase 3.",
+      "annotation": "*(deviation: altered -- corrected merge_spec.lua's pre-existing mcpServers requirement (c) test, pulled forward from Phase 4; see issue log)*"
+    }
+  ]
+}

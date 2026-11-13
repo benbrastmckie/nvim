@@ -216,19 +216,20 @@ failure hard to attribute.
 
 ---
 
-### Phase 2: Record every fragment item in deep_merge's plain-array branch [NOT STARTED]
+### Phase 2: Record every fragment item in deep_merge's plain-array branch [COMPLETED]
 
 **Goal**: Make the tracking record complete — an item already present in the target is recorded
 even though it is not re-inserted — and give `unmerge_settings` the parameter it needs to honor a
 retained set.
 
 **Tasks**:
-- [ ] In `deep_merge`'s `else -- Array: append elements, track what we added` arm, move `table.insert(tracked[key].items, item)` out of the `if not exists` guard so it runs for every fragment item, leaving the `table.insert(target[key], item)` insert guarded exactly as it is today.
-- [ ] Rewrite that arm's comment to state what is now true ("record every fragment item; insert only those not already present") and why, citing the unload-retraction consequence rather than describing the diff.
-- [ ] Extend `M.unmerge_settings(target_path, tracked_entries)` with a third optional `opts` argument carrying `opts.retained_fragments`: an array of decoded fragment tables belonging to other currently-loaded extensions. Omitting it must behave exactly as today.
-- [ ] In `remove_tracked`, thread the parallel sub-tables of each retained fragment down the recursion alongside `t[key]` / `info.children`, so that at any key path the function can see the sibling fragments' value at that same path.
-- [ ] Before removing an item in the `appended` branch (and in `hook_merged`'s `items` branch), skip the removal when the item is `vim.deep_equal` to any item in any retained fragment's array at the same key path. Compare with `vim.deep_equal` against a flat list — never an encoded-string set, whose key ordering is not stable for table items.
-- [ ] Update the doc comments on `M.unmerge_settings` and `deep_merge` to describe the new parameter and the guard.
+- [x] In `deep_merge`'s `else -- Array: append elements, track what we added` arm, move `table.insert(tracked[key].items, item)` out of the `if not exists` guard so it runs for every fragment item, leaving the `table.insert(target[key], item)` insert guarded exactly as it is today. *(completed)*
+- [x] Rewrite that arm's comment to state what is now true ("record every fragment item; insert only those not already present") and why, citing the unload-retraction consequence rather than describing the diff. *(completed)*
+- [x] Extend `M.unmerge_settings(target_path, tracked_entries)` with a third optional `opts` argument carrying `opts.retained_fragments`: an array of decoded fragment tables belonging to other currently-loaded extensions. Omitting it must behave exactly as today. *(completed: also added opts.skip_array_removal, the fail-safe signal Phase 3's builder needs)*
+- [x] In `remove_tracked`, thread the parallel sub-tables of each retained fragment down the recursion alongside `t[key]` / `info.children`, so that at any key path the function can see the sibling fragments' value at that same path. *(completed via the `descend` helper)*
+- [x] Before removing an item in the `appended` branch (and in `hook_merged`'s `items` branch), skip the removal when the item is `vim.deep_equal` to any item in any retained fragment's array at the same key path. Compare with `vim.deep_equal` against a flat list — never an encoded-string set, whose key ordering is not stable for table items. *(completed via the `retained_at` helper)*
+- [x] Update the doc comments on `M.unmerge_settings` and `deep_merge` to describe the new parameter and the guard. *(completed)*
+- [x] *(deviation: altered)* Corrected `merge_spec.lua`'s pre-existing mcpServers "requirement (c)" test, pulled forward from Phase 4: it asserted the old dedup-before-track behavior for a nested array field (`mcpServers.fixture.args`), which reaches the same plain-array arm as `permissions.allow` on a second merge and is therefore affected by this fix too. Corrected with an explanatory comment rather than worked around; flagged for Phase 5's mcpServers re-confirmation task that the "immune" verdict needs qualifying (top-level key insertion is immune, a nested array field within an already-existing key is not).
 
 **Timing**: 1.5 hours
 

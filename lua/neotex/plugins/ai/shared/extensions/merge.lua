@@ -404,7 +404,14 @@ local function deep_merge(target, source, tracked)
             hook_items = hook_tracked.hook_items,
           }
         else
-          -- Array: append elements, track what we added
+          -- Array: record every fragment item (whether or not it is newly inserted), insert
+          -- only those not already present. Recording every item -- not only the ones this
+          -- merge actually appended -- is load-bearing for unload: on a resync, an item the
+          -- extension declared on an EARLIER load is already present in the target, so a
+          -- dedup-before-track shape would record nothing for it and `M.unmerge_settings`
+          -- would then have nothing to remove, leaving a permanently stale (empty) tracking
+          -- record after the very first reload. Insertion into the target still dedups, so the
+          -- on-disk array is never duplicated.
           if target[key] == nil then
             target[key] = {}
             tracked[key] = { type = "new_array", items = {} }
@@ -413,7 +420,8 @@ local function deep_merge(target, source, tracked)
           end
 
           for _, item in ipairs(value) do
-            -- Deduplicate
+            table.insert(tracked[key].items, item)
+
             local exists = false
             for _, existing in ipairs(target[key]) do
               if vim.deep_equal(existing, item) then
@@ -423,7 +431,6 @@ local function deep_merge(target, source, tracked)
             end
             if not exists then
               table.insert(target[key], item)
-              table.insert(tracked[key].items, item)
             end
           end
         end
@@ -491,29 +498,83 @@ end
 --- Remove entries that were added by merge_settings
 --- @param target_path string Path to settings file
 --- @param tracked_entries table Tracking data from merge_settings
+--- @param opts table|nil Options:
+---   `opts.retained_fragments`: array of decoded settings-shaped fragment tables belonging to
+---     OTHER currently-loaded extensions that share this merge target. A tracked array item is
+---     RETAINED (not removed) when it is `vim.deep_equal` to an item in any retained fragment's
+---     array at the same key path -- so an unload never strips a grant a sibling extension's own
+---     fragment still declares. Descended into alongside `t[key]`/`info.children` as the
+---     recursion walks deeper, so a nested path (e.g. `permissions.allow`, `hooks.PreToolUse`)
+---     is checked against the matching nested sub-table of each retained fragment, never the
+---     fragment's top level. Omitting `opts` (or passing `{}`/an empty array) behaves exactly as
+---     it did before this parameter existed.
+---   `opts.skip_array_removal`: boolean. When true, no tracked array item is removed by the
+---     "appended" or "hook_merged" branches at all -- every candidate is treated as retained.
+---     This is the fail-safe signal a caller passes when it could not reliably build
+---     `opts.retained_fragments` (e.g. an unreadable manifest or an unparseable sibling
+---     fragment): an uncertain retained set must widen protection, never narrow it.
 --- @return boolean success True if unmerge succeeded
-function M.unmerge_settings(target_path, tracked_entries)
+function M.unmerge_settings(target_path, tracked_entries, opts)
+  opts = opts or {}
+  local retained_fragments = opts.retained_fragments or {}
+
   if vim.fn.filereadable(target_path) ~= 1 then
     return true
   end
 
   local target = read_json(target_path) or {}
 
-  -- Recursive function to remove tracked entries
-  local function remove_tracked(t, track)
+  --- Is `item` present in any of `fragments`' array at `key`, or is removal globally
+  --- suppressed via `opts.skip_array_removal`?
+  local function retained_at(fragments, key, item)
+    if opts.skip_array_removal then
+      return true
+    end
+    for _, frag in ipairs(fragments) do
+      local frag_value = type(frag) == "table" and frag[key] or nil
+      if type(frag_value) == "table" and vim.isarray(frag_value) then
+        for _, frag_item in ipairs(frag_value) do
+          if vim.deep_equal(frag_item, item) then
+            return true
+          end
+        end
+      end
+    end
+    return false
+  end
+
+  --- The parallel sub-tables of `fragments` at `key`, for recursion into a nested object path.
+  --- A fragment with no table at `key` contributes nothing at the next level -- it simply does
+  --- not declare anything there, which is not a reason to widen or narrow the retained set.
+  local function descend(fragments, key)
+    local result = {}
+    for _, frag in ipairs(fragments) do
+      local frag_value = type(frag) == "table" and frag[key] or nil
+      if type(frag_value) == "table" then
+        table.insert(result, frag_value)
+      end
+    end
+    return result
+  end
+
+  -- Recursive function to remove tracked entries. `fragments` carries the sibling fragments'
+  -- sub-tables at this same recursion depth (see `descend` above).
+  local function remove_tracked(t, track, fragments)
     for key, info in pairs(track) do
       if type(info) == "table" and info.type then
         if info.type == "new_array" or info.type == "new_object" or info.type == "new_value" then
           -- Remove entirely
           t[key] = nil
         elseif info.type == "appended" and info.items then
-          -- Remove only appended items
+          -- Remove only appended items not retained by a sibling extension's fragment
           if t[key] and vim.isarray(t[key]) then
             for _, item in ipairs(info.items) do
-              for i = #t[key], 1, -1 do
-                if vim.deep_equal(t[key][i], item) then
-                  table.remove(t[key], i)
-                  break
+              if not retained_at(fragments, key, item) then
+                for i = #t[key], 1, -1 do
+                  if vim.deep_equal(t[key][i], item) then
+                    table.remove(t[key], i)
+                    break
+                  end
                 end
               end
             end
@@ -521,20 +582,23 @@ function M.unmerge_settings(target_path, tracked_entries)
         elseif info.type == "merged" and info.children then
           -- Recurse
           if t[key] then
-            remove_tracked(t[key], info.children)
+            remove_tracked(t[key], info.children, descend(fragments, key))
           end
         elseif info.type == "hook_merged" then
           -- Hook-event array (Stop, PreToolUse, etc.) merged by matcher via
           -- merge_hook_event_array(). Reverse both halves of what it tracked:
           if t[key] and vim.isarray(t[key]) then
             -- 1. Whole matcher blocks appended because no matching target
-            --    block existed -- same removal as the "appended" branch.
+            --    block existed -- same removal as the "appended" branch, and
+            --    the same sibling-retention guard applies.
             if info.items then
               for _, item in ipairs(info.items) do
-                for i = #t[key], 1, -1 do
-                  if vim.deep_equal(t[key][i], item) then
-                    table.remove(t[key], i)
-                    break
+                if not retained_at(fragments, key, item) then
+                  for i = #t[key], 1, -1 do
+                    if vim.deep_equal(t[key][i], item) then
+                      table.remove(t[key], i)
+                      break
+                    end
                   end
                 end
               end
@@ -571,13 +635,13 @@ function M.unmerge_settings(target_path, tracked_entries)
       elseif type(info) == "table" then
         -- Old format or nested tracking
         if t[key] then
-          remove_tracked(t[key], info)
+          remove_tracked(t[key], info, descend(fragments, key))
         end
       end
     end
   end
 
-  remove_tracked(target, tracked_entries)
+  remove_tracked(target, tracked_entries, retained_fragments)
   prune_empty_hooks(target)
 
   local success = M.write_json(target_path, target)
