@@ -31,9 +31,14 @@
 # Outcomes (each printed on its own line, exactly one per run):
 #   RESIDUAL_HOLDS   - the two calls returned byte-identical text/visible bodies. project= is
 #                       still ignored on this endpoint. Exit 0.
-#   RESIDUAL_LIFTED  - the two calls returned DIFFERENT text/visible bodies. The vendor ask may
-#                       have landed -- see context/project/sapience/domain/injection-site-scoping.md
-#                       before relying on this alone. Exit 0 (this is good news, not a failure).
+#   RESIDUAL_LIFTED  - the two calls returned DIFFERENT text/visible bodies. Two explanations are
+#                       possible, and this probe cannot distinguish them on one run: the vendor
+#                       ask may have landed (see context/project/sapience/domain/injection-site-scoping.md),
+#                       OR the server's own repeat-suppression (see "session_id MUST be unique"
+#                       above) hid content on one call for a reason unrelated to `project`. Treat
+#                       a single RESIDUAL_LIFTED run as inconclusive-leaning and re-run before
+#                       concluding the gap has closed. Exit 0 either way (this outcome is not a
+#                       failure of the probe).
 #   INCONCLUSIVE     - a non-200 status, an empty body, or a network failure on either call.
 #                       Exit 2. Never asserts RESIDUAL_HOLDS or RESIDUAL_LIFTED on partial data.
 #
@@ -138,10 +143,20 @@ SENTINEL_PROJECT="zzz-nonexistent-sentinel-project-probe"
 
 post_context() {
   # $1 = project value, $2 = session_id suffix
-  local project="$1" sid="$2" body
+  #
+  # session_id MUST be unique per invocation, never a fixed literal: the server tracks
+  # already-shown content per session_id (its own response's status.overnight field reports
+  # "N repeats hidden") and suppresses a repeated delivery to the SAME session_id across runs.
+  # A fixed session_id reused on every invocation of this script accumulates that per-session
+  # suppression over repeated runs, which can make the real-project and sentinel-project calls
+  # look different for a reason that has nothing to do with the `project` field -- a false
+  # RESIDUAL_LIFTED. $$ (this process's PID) plus the current epoch second makes each run's
+  # pair of session_ids novel, so this suppression state starts empty every time.
+  local project="$1" sid="$2" body run_tag
+  run_tag="$$-$(date +%s)"
   body="$(jq -n \
     --arg event "prompt" \
-    --arg session_id "verify-sapience-context-scoping-${sid}" \
+    --arg session_id "verify-sapience-context-scoping-${sid}-${run_tag}" \
     --arg level "rich" \
     --argjson view_lines 15 \
     --arg prompt "$PROMPT_TEXT" \
@@ -202,7 +217,7 @@ if [ "$text_real" = "$text_sentinel" ] && [ "$visible_real" = "$visible_sentinel
   fi
   exit 0
 else
-  echo "RESIDUAL_LIFTED -- the real-project and sentinel-project calls returned DIFFERENT text/visible bodies. The vendor ask in context/project/sapience/domain/injection-site-scoping.md may have landed -- re-verify before relying on this alone (a single differing call is not proof of a hard pre-filter)."
+  echo "RESIDUAL_LIFTED -- the real-project and sentinel-project calls returned DIFFERENT text/visible bodies. Either the vendor ask in context/project/sapience/domain/injection-site-scoping.md has landed, or the server's own repeat-suppression hid content on one call for a reason unrelated to project= -- this probe cannot tell which from one run. Re-run before concluding either way (a single differing call is not proof of a hard pre-filter)."
   if [ "$PRINT_BLOCK" = "true" ]; then
     echo ""
     echo "--- returned text block (real-project call) ---"

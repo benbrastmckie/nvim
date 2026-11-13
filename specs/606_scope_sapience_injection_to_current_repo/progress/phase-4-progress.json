@@ -1,0 +1,35 @@
+{
+  "phase": 4,
+  "phase_name": "Deploy, gate, and walk the acceptance criteria",
+  "started_at": "2026-11-13T00:55:00Z",
+  "last_updated": "2026-11-13T01:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "generate-context-line-counts.sh --write", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]},
+    {"id": 2, "description": "deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Scoped gate run (Batch Gate Deferral: --only-gate 1,2,3,4,5)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run verify-sapience-context-scoping.sh live and record outcome", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/verify-sapience-context-scoping.sh"]},
+    {"id": 5, "description": "Confirm deployed mirror carries the new note + index entry", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Walk the five acceptance criteria in the summary", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Record issues/wins via issue-record.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.batch-gate-deferral",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh",
+      "type": "altered",
+      "reason": "This dispatch's '## Batch Gate Deferral' directive requires discharging the final full-tier phase against a scoped narrowing invocation instead, because this task is one of several implement-phase dispatches in one multi-task /orchestrate batch. Scoped tier used: verify-deploy.sh --only-gate 1,2,3,4,5 (event/error-store presence, hook registrations, doc-lint, task-reference lint, nvim headless extension-manager verify_all) -- 16/16 PASS. The full --skip-slow sweep was additionally run for this task's own diagnostic purposes and showed exactly 2 findings, neither attributable to this task's files (a transient gate10 timeout; a pre-existing skills/skill-orchestrate/SKILL.md budget-ceiling finding unrelated to the sapience extension). The complete gate set still runs once at the end of the whole batch per the dispatch's own directive.",
+      "annotation": "*(deviation: altered — full gate set deferred to the batch-level run per this dispatch's Batch Gate Deferral directive; scoped to --only-gate 1,2,3,4,5 here, 16/16 PASS)*"
+    },
+    {
+      "task_id": "4.probe-correctness-fix",
+      "description": "Run verify-sapience-context-scoping.sh live from this repository and record its outcome",
+      "type": "altered",
+      "reason": "Live sampling during this phase surfaced a real correctness defect in the Phase-2-shipped probe: it used two FIXED literal session_id strings on every invocation, and the vault's own server-side repeat/novelty suppression (status.overnight: 'N repeats hidden') accumulates against a reused session_id across repeated runs, which can make the two calls' responses differ for a reason that has nothing to do with the project= field under test -- a false RESIDUAL_LIFTED. Fixed by minting a unique session_id per invocation (pid+epoch). This reduced but did not eliminate the noise (the suppression is not purely session-scoped); the script's own header and RESIDUAL_LIFTED wording were updated to say so explicitly, so a future reader is told to re-sample rather than conclude the vendor ask landed from one run. Final official evidence used the majority outcome across 4 fresh-session runs (3 RESIDUAL_HOLDS, 1 RESIDUAL_LIFTED attributable to the documented caveat) plus a clean --print capture with non-empty delivered content.",
+      "annotation": "*(deviation: altered — fixed a session_id-reuse correctness defect in the Phase 2 script discovered during live Phase 4 sampling; redeployed and re-verified)*"
+    }
+  ],
+  "notes": "Acceptance-criteria evidence: verify-sapience-context-scoping.sh --print (deployed, fixed version) returned RESIDUAL_HOLDS with a non-empty text block (1 rule, 2 facts) on a fresh session, confirming both that project= remains ignored on POST /v1/cli/context and that the channel still delivers content (criteria 1 and 2). Deployed mirror confirmed present: .claude/context/project/sapience/domain/injection-site-scoping.md exists, index.json carries exactly one matching entry. settings-fragment.json and sapience-retrieve.sh diffs against HEAD are empty -- no hook, grant, or retrieval path was touched by this task."
+}

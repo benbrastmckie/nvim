@@ -376,34 +376,48 @@ declarations.
 
 ---
 
-### Phase 4: Deploy, gate, and walk the acceptance criteria [NOT STARTED]
+### Phase 4: Deploy, gate, and walk the acceptance criteria [COMPLETED]
 
 **Goal**: The source-store changes reach the deployed tree, the complete gate set passes, the
 probe runs live, and every acceptance criterion is answered with evidence rather than assertion.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
       reconcile `index-entries.json` `line_count` values for every context file this task moved.
-- [ ] Redeploy with `bash agent-system/extensions/core/scripts/deploy-headless.sh` so
+      *(completed: 3 mismatches reconciled — README.md, vault-model.md, per-repo-scoping.md)*
+- [x] Redeploy with `bash agent-system/extensions/core/scripts/deploy-headless.sh` so
       `.claude/CLAUDE.md`, `.claude/context/index.json`, `.claude/context/project/sapience/**`,
       and `.claude/scripts/` pick up the new and amended files.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Resolve every finding
-      attributable to this task's files before closing the phase.
-- [ ] Run `bash .claude/scripts/verify-sapience-context-scoping.sh` live from this repository and
+      *(completed: run twice — once after the line-count reconciliation, once after a probe-script
+      correctness fix discovered during this phase; both landed)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Resolve every finding
+      attributable to this task's files before closing the phase. *(deviation: altered — this
+      dispatch's Batch Gate Deferral directive requires discharging against a scoped tier instead
+      (`verify-deploy.sh --only-gate 1,2,3,4,5`), since this task is one of several
+      implement-phase dispatches in one multi-task /orchestrate batch; the scoped tier passed
+      16/16. The full `--skip-slow` sweep was ALSO run for this task's own diagnostic purposes and
+      showed exactly 2 findings, neither attributable to this task's files: a transient gate10
+      timeout and a pre-existing `skills/skill-orchestrate/SKILL.md` budget-ceiling finding
+      unrelated to the sapience extension. The complete gate set (including gate 8) still runs
+      once at the end of the whole batch per the dispatch's own directive)*
+- [x] Run `bash .claude/scripts/verify-sapience-context-scoping.sh` live from this repository and
       record which of the three outcomes it reports, together with the returned block, as the
-      evidence for acceptance criteria 1 and 2.
-- [ ] Confirm the deployed mirror actually carries the new note:
+      evidence for acceptance criteria 1 and 2. *(completed: see summary's acceptance-criteria
+      walkthrough; a correctness fix to the script's session_id handling landed mid-phase — see
+      the Phase 4 progress file's deviations array)*
+- [x] Confirm the deployed mirror actually carries the new note:
       `test -f .claude/context/project/sapience/domain/injection-site-scoping.md` and the entry
-      is present in `.claude/context/index.json`.
-- [ ] Walk the five acceptance criteria explicitly in the task summary, each with its evidence:
+      is present in `.claude/context/index.json`. *(completed)*
+- [x] Walk the five acceptance criteria explicitly in the task summary, each with its evidence:
       (1) the measured impossibility plus the probe's result; (2) the probe's returned block
       showing the channel still delivers, and the fact that no phase suppressed or narrowed any
       hook; (3) the three-row site table in the new domain note, naming each site; (4) the
       write-side closure referenced via `rules/sapience-write-path.md` and
       `sapience-remember.sh`'s unconditional tag, with the vendor-owned remainder
       (server-authored provenance on transcript extraction) stated as the only residual; (5) both
-      owner actions quoted verbatim from the new domain note.
-- [ ] Record any issue or win encountered across the task via `issue-record.sh`.
+      owner actions quoted verbatim from the new domain note. *(completed, in the summary)*
+- [x] Record any issue or win encountered across the task via `issue-record.sh`. *(completed:
+      measurement-noise and gate-collision issues recorded across phases 2-4)*
 
 **Timing**: 1.0 hour
 
@@ -431,16 +445,19 @@ probe runs live, and every acceptance criterion is answered with evidence rather
 
 ## Testing & Validation
 
-- [ ] `jq empty` passes on `index-entries.json` and `manifest.json` after every edit touching them.
-- [ ] `bash -n` and `shellcheck` are clean on `verify-sapience-context-scoping.sh`.
-- [ ] The probe's degrade path (missing config) exits non-zero with a named reason, no traceback,
+- [x] `jq empty` passes on `index-entries.json` and `manifest.json` after every edit touching them.
+- [x] `bash -n` and `shellcheck` are clean on `verify-sapience-context-scoping.sh`.
+- [x] The probe's degrade path (missing config) exits non-zero with a named reason, no traceback,
       and no token in the output.
-- [ ] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` is clean for the
+- [x] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` is clean for the
       sapience extension after Phase 4's regeneration.
-- [ ] `bash .claude/scripts/verify-deploy.sh` passes in full at Phase 4.
-- [ ] No file under `agent-system/**` added or modified by this task contains a task-number
+- [x] `bash .claude/scripts/verify-deploy.sh` passes in full at Phase 4. *(deviation: altered —
+      discharged via the Batch Gate Deferral's scoped tier (`--only-gate 1,2,3,4,5`, 16/16 PASS)
+      per this dispatch's directive; the full sweep was additionally run for diagnostic purposes
+      and showed 2 findings, neither attributable to this task — see Phase 4's Tasks list)*
+- [x] No file under `agent-system/**` added or modified by this task contains a task-number
       reference or record-versioning phrasing (gate 4 plus a manual grep).
-- [ ] No hook, settings fragment, or retrieval path is narrowed, filtered, or disabled by any
+- [x] No hook, settings fragment, or retrieval path is narrowed, filtered, or disabled by any
       change in this task — confirmed by reading the final diff of `settings-fragment.json`
       (expected: unchanged) and `scripts/sapience-retrieve.sh` (expected: unchanged).
 

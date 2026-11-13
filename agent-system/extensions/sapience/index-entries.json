@@ -7,7 +7,7 @@
       "topics": ["sapience", "navigation", "index"],
       "keywords": ["sapience", "vault", "on-demand", "index"],
       "summary": "Navigation index for the Sapience extension's domain notes, all read-on-demand with no eager load hook",
-      "line_count": 18,
+      "line_count": 19,
       "load_when": {},
       "on_demand": true
     },
@@ -18,7 +18,7 @@
       "topics": ["sapience", "vault-model", "mcp", "cli"],
       "keywords": ["app.spnc.ai", "mcp.py", "sapience_cli.py", "sf1", "sapience_ask", "briefing-text", "statusline", "POST /v1/cli/context"],
       "summary": "Hosted vault model, the MCP thin client, mcp.py's exact CLI mode inventory (no --search, no --ask), and sapience_cli.py's hook session|prompt|tool|stop modes sharing POST /v1/cli/context",
-      "line_count": 40,
+      "line_count": 55,
       "load_when": {},
       "on_demand": true
     },
@@ -40,7 +40,7 @@
       "topics": ["sapience", "per-repo-scoping", "provenance", "ingest-kos", "mcp-registration"],
       "keywords": ["provenance", "source=", "repo tag", "sapience-retrieve.sh", "sapience-remember.sh", "explicit", "gated", "set_aside", "setup-sapience-mcp.sh", "SessionStart", "primary-session hook"],
       "summary": "The provenance repo-tag scoping mechanism, the per-project MCP-registration triad (writer, bidirectional hook, installer, verifier) and its stable-user-level-path invariant, and the no-delete-API / unreviewed-write / four-population / registration-durability / primary-session-hook-has-no-scoping hazards",
-      "line_count": 229,
+      "line_count": 239,
       "load_when": {},
       "on_demand": true
     },
