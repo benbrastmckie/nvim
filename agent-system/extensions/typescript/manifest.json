@@ -1,0 +1,80 @@
+{
+  "name": "typescript",
+  "version": "1.0.0",
+  "description": "Generic TypeScript language, tooling, and configuration support with tsc-based type-checking and toolchain-aware verification",
+  "task_type": "typescript",
+  "dependencies": [
+    "core"
+  ],
+  "provides": {
+    "agents": [
+      "typescript-research-agent.md",
+      "typescript-implementation-agent.md"
+    ],
+    "skills": [
+      "skill-typescript-research",
+      "skill-typescript-implementation"
+    ],
+    "commands": [],
+    "rules": [
+      "typescript-rules.md"
+    ],
+    "context": [
+      "project/typescript",
+      "contracts"
+    ],
+    "scripts": [
+      "typescript-verify.sh"
+    ],
+    "hooks": []
+  },
+  "routing_agents": {
+    "research": {
+      "typescript": "typescript-research-agent"
+    },
+    "plan": {
+      "typescript": "planner-agent"
+    },
+    "implement": {
+      "typescript": "typescript-implementation-agent"
+    }
+  },
+  "hard_contracts": {
+    "typescript": [
+      "typescript-adversarial-verification.md"
+    ]
+  },
+  "merge_targets": {
+    "claudemd": {
+      "source": "EXTENSION.md",
+      "target": ".claude/CLAUDE.md",
+      "section_id": "extension_typescript"
+    },
+    "index": {
+      "source": "index-entries.json",
+      "target": ".claude/context/index.json"
+    },
+    "opencode_json": {
+      "source": "opencode-agents.json",
+      "target": "opencode.json"
+    }
+  },
+  "keyword_overrides": {
+    "typescript": {
+      "keywords": [
+        "typescript",
+        "tsconfig",
+        "tsc compile",
+        "type error",
+        "tsx file",
+        ".ts file",
+        "npm package",
+        "type-safe"
+      ],
+      "aliases": ["ts"]
+    }
+  },
+  "hooks": {
+    "verification": "scripts/typescript-verify.sh"
+  }
+}

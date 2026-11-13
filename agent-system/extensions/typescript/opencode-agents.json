@@ -1,0 +1,32 @@
+{
+  "agent": {
+    "typescript-research": {
+      "description": "Research generic TypeScript language, tooling, and configuration topics",
+      "mode": "subagent",
+      "prompt": "{file:.claude/agents/typescript-research-agent.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "glob": true,
+        "grep": true,
+        "bash": true,
+        "webfetch": true,
+        "websearch": true
+      }
+    },
+    "typescript-implementation": {
+      "description": "Implement generic TypeScript configuration, types, and module changes",
+      "mode": "subagent",
+      "prompt": "{file:.claude/agents/typescript-implementation-agent.md}",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "glob": true,
+        "grep": true,
+        "bash": true
+      }
+    }
+  }
+}

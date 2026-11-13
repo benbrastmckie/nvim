@@ -30,6 +30,7 @@ Extensions add domain-specific elements:
 | rust | rust | Rust development | [README](rust/README.md) |
 | nix | nix | NixOS and Home Manager configuration | [README](nix/README.md) |
 | web | web | Astro/Tailwind web development | [README](web/README.md) |
+| typescript | typescript | Generic TypeScript language, tooling, and configuration support | [README](typescript/README.md) |
 | z3 | z3 | Z3 SMT solver | [README](z3/README.md) |
 | epidemiology | epi, epi:study | Epidemiology research with R, /epi command | [README](epidemiology/README.md) |
 | formal | formal, logic, math, physics | Formal verification domains | [README](formal/README.md) |

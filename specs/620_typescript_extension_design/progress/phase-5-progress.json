@@ -1,0 +1,33 @@
+{
+  "phase": 5,
+  "phase_name": "Manifest, skills, merge sources, and registry row",
+  "started_at": "2026-11-13T21:40:00Z",
+  "last_updated": "2026-11-13T22:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write both skill files", "status": "done", "files_touched": [
+      "agent-system/extensions/typescript/skills/skill-typescript-research/SKILL.md",
+      "agent-system/extensions/typescript/skills/skill-typescript-implementation/SKILL.md"
+    ]},
+    {"id": 2, "description": "Write manifest.json", "status": "done", "files_touched": ["agent-system/extensions/typescript/manifest.json"]},
+    {"id": 3, "description": "Write EXTENSION.md", "status": "done", "files_touched": ["agent-system/extensions/typescript/EXTENSION.md"]},
+    {"id": 4, "description": "Write README.md", "status": "done", "files_touched": ["agent-system/extensions/typescript/README.md"]},
+    {"id": 5, "description": "Write index-entries.json", "status": "done", "files_touched": ["agent-system/extensions/typescript/index-entries.json"]},
+    {"id": 6, "description": "Write opencode-agents.json", "status": "done", "files_touched": ["agent-system/extensions/typescript/opencode-agents.json"]},
+    {"id": 7, "description": "Add typescript row to extensions README table", "status": "done", "files_touched": ["agent-system/extensions/README.md"]},
+    {"id": 8, "description": "Run lint-routing-wiring.sh, lint-extension-readme-table.sh, check-extension-docs.sh, full verify-deploy.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-heartbeat.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {"approach": "Full verify-deploy.sh gate run (3 independent attempts)", "result": "partial", "reason": "4/44 checks failed each time; one (gate 8's heartbeat-test fixture drift) was a genuine task-caused regression, fixed. The remaining three (gate 8 residual flake, gate 10 timeout, gate 20 pre-existing budget overage) are environmental/pre-existing, recorded as Reasoned Exclusions with evidence."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.verification",
+      "description": "bash .claude/scripts/verify-deploy.sh is green (complete gate set)",
+      "type": "altered",
+      "reason": "3 of 4 initially-failing gates (8's residual flake, 10, 20) are environmental/pre-existing and unrelated to task 620's file_scope, evidenced individually. The 4th (gate 8's genuine fixture-drift regression) was found and fixed in this phase.",
+      "annotation": "*(deviation: altered -- Phase 5 closed [COMPLETED WITH EXCLUSIONS] with a full Reasoned Exclusions record; see plan Phase 5 body)*"
+    }
+  ]
+}

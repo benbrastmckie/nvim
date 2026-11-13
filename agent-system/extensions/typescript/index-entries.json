@@ -1,0 +1,207 @@
+{
+  "entries": [
+    {
+      "path": "project/typescript/README.md",
+      "line_count": 53,
+      "load_when": {
+        "agents": [
+          "typescript-implementation-agent",
+          "typescript-research-agent"
+        ],
+        "task_types": [
+          "typescript"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "typescript",
+      "summary": "TypeScript extension pointer index: directory structure, loading strategy, scope boundary against framework-specific content",
+      "keywords": [
+        "typescript",
+        "overview",
+        "navigation",
+        "generic"
+      ]
+    },
+    {
+      "path": "project/typescript/standards/typescript-style-guide.md",
+      "line_count": 96,
+      "load_when": {
+        "agents": [
+          "typescript-implementation-agent",
+          "typescript-research-agent"
+        ],
+        "task_types": [
+          "typescript"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "typescript",
+      "summary": "Naming conventions, strict-mode flags, interface vs type, type-only imports, unknown over any, explicit return types",
+      "keywords": [
+        "typescript",
+        "style-guide",
+        "strict-mode",
+        "naming",
+        "interface",
+        "unknown"
+      ]
+    },
+    {
+      "path": "project/typescript/patterns/zod-validation-patterns.md",
+      "line_count": 98,
+      "load_when": {
+        "agents": [
+          "typescript-implementation-agent",
+          "typescript-research-agent"
+        ],
+        "task_types": [
+          "typescript"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "typescript",
+      "summary": "Generic runtime-validation (Zod) vocabulary: schema primitives, z.infer, parse vs safeParse, composition, common pitfalls",
+      "keywords": [
+        "typescript",
+        "zod",
+        "validation",
+        "runtime-types",
+        "schema"
+      ]
+    },
+    {
+      "path": "project/typescript/patterns/path-alias-patterns.md",
+      "line_count": 62,
+      "load_when": {
+        "agents": [
+          "typescript-implementation-agent",
+          "typescript-research-agent"
+        ],
+        "task_types": [
+          "typescript"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "typescript",
+      "summary": "tsconfig.json paths alias convention: defining aliases, runtime-resolution caveat, conventions",
+      "keywords": [
+        "typescript",
+        "tsconfig",
+        "paths",
+        "aliases",
+        "imports"
+      ]
+    },
+    {
+      "path": "project/typescript/domain/tsconfig-reference.md",
+      "line_count": 81,
+      "load_when": {
+        "agents": [
+          "typescript-implementation-agent",
+          "typescript-research-agent"
+        ],
+        "task_types": [
+          "typescript"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "typescript",
+      "summary": "compilerOptions reference, project references, config inheritance (extends), include/exclude",
+      "keywords": [
+        "typescript",
+        "tsconfig",
+        "compileroptions",
+        "project-references"
+      ]
+    },
+    {
+      "path": "project/typescript/domain/module-systems.md",
+      "line_count": 67,
+      "load_when": {
+        "agents": [
+          "typescript-implementation-agent",
+          "typescript-research-agent"
+        ],
+        "task_types": [
+          "typescript"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "typescript",
+      "summary": "ESM vs CJS, package.json \"type\" field, tsconfig module agreement, exports map, interop pitfalls",
+      "keywords": [
+        "typescript",
+        "esm",
+        "cjs",
+        "module-systems",
+        "package.json"
+      ]
+    },
+    {
+      "path": "project/typescript/tools/tsc-cli-guide.md",
+      "line_count": 66,
+      "load_when": {
+        "agents": [
+          "typescript-implementation-agent",
+          "typescript-research-agent"
+        ],
+        "task_types": [
+          "typescript"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "typescript",
+      "summary": "tsc --noEmit / --watch / --build, useful flags, exit codes, isolatedModules",
+      "keywords": [
+        "typescript",
+        "tsc",
+        "cli",
+        "build",
+        "exit-codes"
+      ]
+    },
+    {
+      "path": "project/typescript/tools/package-manager-detection.md",
+      "line_count": 64,
+      "load_when": {
+        "agents": [
+          "typescript-implementation-agent",
+          "typescript-research-agent"
+        ],
+        "task_types": [
+          "typescript"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "typescript",
+      "summary": "Lockfile-based npm/pnpm/yarn/bun detection, script-running conventions, npm placeholder-test rejection",
+      "keywords": [
+        "typescript",
+        "npm",
+        "pnpm",
+        "yarn",
+        "bun",
+        "package-manager"
+      ]
+    },
+    {
+      "path": "contracts/typescript-adversarial-verification.md",
+      "line_count": 57,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true,
+      "domain": "project",
+      "subdomain": "typescript",
+      "summary": "TypeScript H4 override: the compiler is the oracle, call-site exercising, claim-weakening constructs named, subset honesty. Injected via hard_contracts, not loaded at agent spawn",
+      "keywords": [
+        "typescript",
+        "hard-mode",
+        "adversarial-verification",
+        "contracts",
+        "H4"
+      ]
+    }
+  ]
+}

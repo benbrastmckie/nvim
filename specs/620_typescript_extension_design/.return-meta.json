@@ -12,6 +12,7 @@
     ]
   },
   "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"
+    "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-heartbeat.sh"
   ]
 }
