@@ -557,25 +557,25 @@ tree can reach.
 
 ---
 
-### Phase 2: Both agent definitions [NOT STARTED]
+### Phase 2: Both agent definitions [COMPLETED]
 
 **Goal**: Write `typescript-research-agent.md` and `typescript-implementation-agent.md` per Design
 Specification §3, each satisfying every `lint-agent-contracts.sh` check.
 
 **Tasks**:
-- [ ] Read `rust-research-agent.md` and `rust-implementation-agent.md` as the structural model for
-      a two-agent language extension at this tier.
-- [ ] Read `context/contracts/no-task-references-bullet.md`,
+- [x] Read `rust-research-agent.md` and `rust-implementation-agent.md` as the structural model for
+      a two-agent language extension at this tier. *(completed)*
+- [x] Read `context/contracts/no-task-references-bullet.md`,
       `context/contracts/return-meta-artifacts-template.md`, and
       `context/contracts/plan-status-ownership.md` and copy their required bullets/templates
-      verbatim rather than paraphrasing them.
-- [ ] Write `agents/typescript-research-agent.md` with the §3 frontmatter, tool grants, and
-      Stage 0-7 sequence.
-- [ ] Write `agents/typescript-implementation-agent.md` with the §3 frontmatter, tool grants, and
+      verbatim rather than paraphrasing them. *(completed)*
+- [x] Write `agents/typescript-research-agent.md` with the §3 frontmatter, tool grants, and
+      Stage 0-7 sequence. *(completed: 188 lines)*
+- [x] Write `agents/typescript-implementation-agent.md` with the §3 frontmatter, tool grants, and
       Stage 0-8 sequence, including the phase-heading nonconformance check before any filtered
-      resume scan.
-- [ ] Run `bash .claude/scripts/lint/lint-agent-contracts.sh --verbose` and resolve every finding
-      against the two new files.
+      resume scan. *(completed: 261 lines)*
+- [x] Run `bash .claude/scripts/lint/lint-agent-contracts.sh --verbose` and resolve every finding
+      against the two new files. *(completed: 0 FAIL, 12 pre-existing WARN; required editing lint-agent-contracts.sh's curated in-scope/exclusion arrays -- see phase notes)*
 
 **Timing**: 1.5 hours
 

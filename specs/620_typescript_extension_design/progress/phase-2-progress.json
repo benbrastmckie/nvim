@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Both agent definitions",
+  "started_at": "2026-11-13T20:15:00Z",
+  "last_updated": "2026-11-13T20:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read rust agents as structural model", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Read context/contracts templates", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Write typescript-research-agent.md", "status": "done", "files_touched": ["agent-system/extensions/typescript/agents/typescript-research-agent.md"]},
+    {"id": 4, "description": "Write typescript-implementation-agent.md", "status": "done", "files_touched": ["agent-system/extensions/typescript/agents/typescript-implementation-agent.md"]},
+    {"id": 5, "description": "Run lint-agent-contracts.sh and resolve findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.5",
+      "description": "Run lint-agent-contracts.sh --verbose and resolve every finding",
+      "type": "altered",
+      "reason": "lint-agent-contracts.sh carries curated, hand-maintained in-scope/exclusion arrays (Checks C, G, H, L, M, and the dated heartbeat inventory) that do not auto-discover new agent files. Registering the two new agents required editing agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh (added typescript-implementation-agent.md to Check C/G/H/L in-scope arrays; added typescript-research-agent.md to Check M's exclusion array with a reason comment, since its Bash grant is read-shaped-probes-only). Also switched typescript-implementation-agent.md's phase-marking steps from the legacy raw-Edit-tool pattern to update-phase-status.sh invocations (matching general-implementation-agent.md's modern convention) because Check I requires a genuinely new phase-heading-owning agent to invoke update-phase-status.sh directly rather than rely on the dated 2026-10-08 grandfathered migration inventory.",
+      "annotation": "*(deviation: altered -- lint-agent-contracts.sh's curated arrays updated in the source store to register the two new agent files; see phase notes)*"
+    }
+  ]
+}
