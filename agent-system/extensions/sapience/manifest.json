@@ -16,7 +16,9 @@
       "tests/test-sapience-capture.sh",
       "tests/test-sapience-mcp-registration.sh"
     ],
-    "hooks": [],
+    "hooks": [
+      "sapience-mcp-register-project.sh"
+    ],
     "data": [],
     "context": ["project/sapience"]
   },

@@ -321,41 +321,44 @@ which covers the derived `provides.scripts` insertion (Rule Q) and the task-refe
 
 ---
 
-### Phase 3: The bidirectional `SessionStart` hook [NOT STARTED]
+### Phase 3: The bidirectional `SessionStart` hook [COMPLETED]
 
 **Goal**: a `SessionStart` hook that registers the per-project entry when the session's repo has
 the sapience extension active, and removes it again when it does not.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh`, modelled
-      on `agent-system/extensions/lean/hooks/lean-lsp-register-project.sh`.
-- [ ] Detection, as the Sapience analogue of lean's lakefile test: resolve the project root from
+- [x] Write `agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh`, modelled
+      on `agent-system/extensions/lean/hooks/lean-lsp-register-project.sh`. *(completed)*
+- [x] Detection, as the Sapience analogue of lean's lakefile test: resolve the project root from
       `.claude-extensions.json` at CWD or at the git root, and read
       `.extensions.sapience.status == "active"` from it. `.claude-extensions.json` is **tracked**
       and `.claude/` is **gitignored** (both verified), so this gate works in a fresh worktree
-      with no deploy — which is exactly why the install target must be user-level.
-- [ ] Resolve the writer from the stable user-level path
+      with no deploy — which is exactly why the install target must be user-level. *(completed)*
+- [x] Resolve the writer from the stable user-level path
       `$HOME/.claude/scripts/setup-sapience-mcp.sh`, never from the calling repository's own
       (possibly nonexistent) `.claude/` tree. Record the invariant and its citation
-      (`mcp-server-ownership.md`'s `.claude/`-path boundary) in the header.
-- [ ] Active -> invoke the writer with `--project <root> --scope project --quiet`.
-- [ ] NOT active (status absent, not `"active"`, or `.claude-extensions.json` missing) **and** a
+      (`mcp-server-ownership.md`'s `.claude/`-path boundary) in the header. *(completed)*
+- [x] Active -> invoke the writer with `--project <root> --scope project --quiet`. *(completed)*
+- [x] NOT active (status absent, not `"active"`, or `.claude-extensions.json` missing) **and** a
       `.projects[<root>].mcpServers.sapience` entry exists -> invoke the writer with
       `--project <root> --scope project --remove --quiet`. This is the only mechanism that can
       satisfy verification item 3's per-project-entry clause, since the merge engine governs only
-      in-tree merge targets. Document the one-session-start lag.
-- [ ] Keep lean's measured behavior: silent (`{}`) on an already-correct session; an
+      in-tree merge targets. Document the one-session-start lag. *(completed)*
+- [x] Keep lean's measured behavior: silent (`{}`) on an already-correct session; an
       `additionalContext` notice ONLY when it actually writes or removes, because a SessionStart
       hook's own write is not reliably visible within the same session. Always exit 0; always
       emit exactly one line of valid JSON; degrade to a silent `{}` on every failure path
       (unwritable `~/.claude.json`, missing `jq`, writer error, writer not installed).
-- [ ] Extend `tests/test-sapience-mcp-registration.sh` with hook-level cases: active repo
+      *(completed: a one-line-JSON divergence from the lean model was caught and fixed -- `jq
+      -Rs` pretty-prints; switched to `jq -cRs`)*
+- [x] Extend `tests/test-sapience-mcp-registration.sh` with hook-level cases: active repo
       registers; already-correct repo is silent with `{}`; inactive repo with an existing entry
       removes it and emits a notice; inactive repo with no entry is silent; missing writer is
-      silent; and every path emits exactly one line of parseable JSON.
-- [ ] Declare the hook in `manifest.json`'s `provides.hooks` (today `[]`), so it deploys to
+      silent; and every path emits exactly one line of parseable JSON. *(completed: 6/6 hook
+      cases pass)*
+- [x] Declare the hook in `manifest.json`'s `provides.hooks` (today `[]`), so it deploys to
       `.claude/hooks/` exactly as lean's does. Re-run
-      `bash .claude/scripts/sync-manifest-scripts.sh --check`.
+      `bash .claude/scripts/sync-manifest-scripts.sh --check`. *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,28 @@
+{
+  "phase": 3,
+  "phase_name": "The bidirectional SessionStart hook",
+  "started_at": "2026-11-12T22:33:00Z",
+  "last_updated": "2026-11-12T22:33:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write sapience-mcp-register-project.sh bidirectional SessionStart hook, modelled on lean-lsp-register-project.sh",
+      "status": "done",
+      "note": "bash -n and shellcheck both clean (0 findings, unlike the writer's inherited info-level SC2016s); fixed a one-line-JSON contract bug relative to the lean model (jq -Rs pretty-prints; switched to jq -cRs) caught by the suite's own case 15",
+      "files_touched": ["agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Extend test suite with hook-level cases, declare hook in manifest.json provides.hooks",
+      "status": "done",
+      "note": "16/16 cases pass (10 writer + 6 hook); manifest.json provides.hooks now lists the hook; sync-manifest-scripts.sh --check clean; verify-deploy.sh --skip-slow --only-gate 3,4 clean; run-all.sh --only test-sapience-mcp-registration.sh green from the source-store entry point",
+      "files_touched": [
+        "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh",
+        "agent-system/extensions/sapience/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
