@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Restore merge_spec's host fixture and establish a green baseline",
+  "started_at": "2026-11-13T17:09:16Z",
+  "last_updated": "2026-11-13T17:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run spec headless, record pre-change baseline", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Recover fixture from git commit fc8cca3f0", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Write fixture as sibling file to merge_spec.lua", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/host_settings_fixture.json"]},
+    {"id": 4, "description": "Repoint read_host_fixture at new sibling path", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"]},
+    {"id": 5, "description": "Confirm no other specs/ path remains under extensions dir", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Re-run spec headless, confirm 24/0/0", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

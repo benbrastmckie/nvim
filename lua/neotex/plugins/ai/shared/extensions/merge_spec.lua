@@ -524,9 +524,15 @@ describe("shared.extensions.merge orphan sweep for hook registrations", function
     return vim.json.decode(table.concat(vim.fn.readfile(path), "\n"))
   end
 
+  -- Resolved relative to this spec file's own on-disk location (via debug.getinfo, the same
+  -- arg[0]-independent idiom hook_identity_cli.lua uses) rather than vim.fn.getcwd(): the
+  -- fixture now lives beside the spec as host_settings_fixture.json (recovered verbatim from
+  -- commit fc8cca3f0, siting it exactly as hook_identity_fixtures.json already is), so it no
+  -- longer depends on an archived specs/ task directory surviving on disk.
   local function read_host_fixture()
-    local path = vim.fn.getcwd()
-      .. "/specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/host-settings.json"
+    local this_file = debug.getinfo(1, "S").source:match("^@(.*)$")
+    local this_dir = this_file:match("^(.*)/[^/]+$")
+    local path = this_dir .. "/host_settings_fixture.json"
     return vim.json.decode(table.concat(vim.fn.readfile(path), "\n"))
   end
 

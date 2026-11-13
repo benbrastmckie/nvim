@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/615_retract_extension_grants_on_unload/plans/01_retract-extension-grants-unload.md",
-      "summary": "Six-phase plan: repair merge_spec's broken host fixture to a green baseline, move deep_merge's tracking insert outside the dedup guard, add a still-declared-by-another-loaded-extension guard to unmerge_settings and plumb it through manager.unload, add six spec cases, document the tracking contract and real repair route, then repair the four stale records via a plain redeploy under the full gate set."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 7,
   "metadata": {
-    "session_id": "sess_1794588346_94d92d_615",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 6,
-    "dependency_waves": [[1], [2], [3], [4, 5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "finding is: manager.wipe/[Regenerate] does NOT repair a stale merge-tracking record in .claude-extensions.json, contrary to a prior research finding. manager.wipe snapshots settings.json and settings.local.json (settings_backup.BACKUP_FILES) before rm -rf .claude, and manager.regenerate calls settings_backup.restore BEFORE manager.resync_all. The restored settings.local.json reinstates every already-present grant as the merge base, so deep_merge's dedup-before-track check fires exactly as it does on an ordinary resync and the tracking record comes back empty. The real repair for a stale record is a plain redeploy (bash .claude/scripts/deploy-headless.sh, bootstrap load + resync_all) run AFTER the deep_merge tracking fix lands -- the engine fix is itself the repair mechanism.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/615_retract_extension_grants_on_unload/plans/01_retract-extension-grants-unload.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["manager.wipe", "manager.regenerate", "settings_backup", "merge-tracking-repair", "deploy-headless", "extension-unload"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 615 to execute the plan",
-  "dispatch_seq": 5
+    "session_id": "sess_1794588346_94d92d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 6
+  }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #615
 
 - **Task**: 615 - Retract extension grants on unload
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/615_retract_extension_grants_on_unload/reports/01_retract-extension-grants-unload.md
@@ -181,19 +181,19 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Restore merge_spec's host fixture and establish a green baseline [NOT STARTED]
+### Phase 1: Restore merge_spec's host fixture and establish a green baseline [COMPLETED]
 
 **Goal**: Bring `merge_spec.lua` from its current 21-pass/3-fail state to fully green, and remove
 the task-numbered `specs/**` path the spec depends on, before any engine change makes a new
 failure hard to attribute.
 
 **Tasks**:
-- [ ] Run `nvim --headless -c "PlenaryBustedFile lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"` and record the exact pass/fail counts as the pre-change baseline.
-- [ ] Recover the fixture: `git show fc8cca3f0:specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/host-settings.json`.
-- [ ] Write it to `lua/neotex/plugins/ai/shared/extensions/host_settings_fixture.json`, siting it beside the spec exactly as `hook_identity_fixtures.json` already is.
-- [ ] Point `read_host_fixture` (around `merge_spec.lua:528`) at the new sibling path, resolved relative to the spec rather than to `vim.fn.getcwd()` where that is practical.
-- [ ] Confirm no other `specs/` path remains in any file under `lua/neotex/plugins/ai/shared/extensions/` (`grep -rn "specs/" lua/neotex/plugins/ai/shared/extensions/`).
-- [ ] Re-run the spec headless and confirm all three previously-failing cases now pass with zero new failures.
+- [x] Run `nvim --headless -c "PlenaryBustedFile lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"` and record the exact pass/fail counts as the pre-change baseline. *(completed: confirmed 21 passed, 3 failed, 0 errors -- matches the plan's measured premise)*
+- [x] Recover the fixture: `git show fc8cca3f0:specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/host-settings.json`. *(completed)*
+- [x] Write it to `lua/neotex/plugins/ai/shared/extensions/host_settings_fixture.json`, siting it beside the spec exactly as `hook_identity_fixtures.json` already is. *(completed)*
+- [x] Point `read_host_fixture` (around `merge_spec.lua:528`) at the new sibling path, resolved relative to the spec rather than to `vim.fn.getcwd()` where that is practical. *(completed: used the same debug.getinfo(1, "S").source arg[0]-independent idiom hook_identity_cli.lua already uses)*
+- [x] Confirm no other `specs/` path remains in any file under `lua/neotex/plugins/ai/shared/extensions/` (`grep -rn "specs/" lua/neotex/plugins/ai/shared/extensions/`). *(completed: remaining hits are a comment and fixture-content string literal, not path dependencies)*
+- [x] Re-run the spec headless and confirm all three previously-failing cases now pass with zero new failures. *(completed: 24 passed, 0 failed, 0 errors)*
 
 **Timing**: 0.5 hours
 
