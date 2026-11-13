@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794536113_e68c60_611",
+  "dispatch_seq": 1,
+  "findings_count": 9,
+  "next_steps": "Run /orchestrate 611 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/611_repo_tag_sapience_write_paths/reports/01_repo-tag-sapience-write-paths.md",
+      "summary": "Inventories every instruction surface under agent-system/extensions/sapience/**, finds most of deliverable (a) already implemented by a prior task, identifies two stale domain-doc passages still describing the old untagged sapience_wrapup call site, confirms sapience-remember.sh's --dry-run already satisfies deliverable (d) functionally but has zero test coverage, and surfaces open plan-level tradeoffs for deliverables (b) and (c)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When auditing an extension's instruction surfaces for 'does X name tool Y as a prescribed write path,' check whether the corpus already has a marker-suppression lint precedent (this codebase's task-reference-patterns.sh / record-version-patterns.sh use a <token>-ok marker to let a legitimate discussing-not-prescribing mention suppress an otherwise-correct grep hit) before building a new mechanized lint from scratch. For a small, static corpus (~12 files), an advisory rules/*.md file stating the contract in prose is proportionate; a new lint is only worth it if the corpus is large or churns often.",
+      "category": "PATTERN",
+      "source_artifact": "specs/611_repo_tag_sapience_write_paths/reports/01_repo-tag-sapience-write-paths.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["lint", "marker-suppression", "advisory-rule", "false-positive", "prescriptive-vs-discussing"]
+    },
+    {
+      "content": "A script's own test file name does not guarantee coverage of every sibling script with a related name: scripts/tests/test-sapience-capture.sh (sapience extension) tests only sapience-retrieve.sh despite its generic 'capture' name; sapience-remember.sh (the actual write/capture script) has zero cases there. Before assuming a named test file covers a related script, grep the file for the script's own basename.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/611_repo_tag_sapience_write_paths/reports/01_repo-tag-sapience-write-paths.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["test-coverage", "naming-mismatch", "sapience", "verification"]
+    }
+  ]
+}
