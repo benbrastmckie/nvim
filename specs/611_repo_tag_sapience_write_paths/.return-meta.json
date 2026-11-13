@@ -28,22 +28,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/611_repo_tag_sapience_write_paths/summaries/01_repo-tag-sapience-write-paths-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["deployed-layout-fixture", "lib-common-sh", "shell-test-scratch", "deploy-root-guard", "common_repo_root"]
+      "suggested_keywords": [
+        "deployed-layout-fixture",
+        "lib-common-sh",
+        "shell-test-scratch",
+        "deploy-root-guard",
+        "common_repo_root"
+      ]
     },
     {
       "content": "When a Batch Gate Deferral directive permits discharging a plan phase's full-tier verification against a scoped --only-gate N[,...] invocation, map the phase's own declared criteria to the actual gate numbering deploy-headless.sh/verify-deploy.sh prints at run time (e.g. '3. Doc-lint', '13. Whole-tree orphan detection') rather than guessing numbers from memory -- the numbering is not fixed across repository states and an unnarrowed run's own output is the authoritative source for which gate number covers which concern.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/611_repo_tag_sapience_write_paths/summaries/01_repo-tag-sapience-write-paths-summary.md",
       "confidence": 0.65,
-      "suggested_keywords": ["batch-gate-deferral", "only-gate", "verify-deploy", "scoped-verification"]
+      "suggested_keywords": [
+        "batch-gate-deferral",
+        "only-gate",
+        "verify-deploy",
+        "scoped-verification"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794536113_e68c60",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

@@ -36,6 +36,11 @@
           "path": "specs/611_repo_tag_sapience_write_paths/plans/01_repo-tag-sapience-write-paths.md",
           "type": "plan",
           "summary": "Four-phase implementation plan, 4.5h estimate, three dependency waves, final phase carrying the full gate set and the __WHOLE_TREE__ redeploy claim."
+        },
+        {
+          "path": "specs/611_repo_tag_sapience_write_paths/summaries/01_repo-tag-sapience-write-paths-summary.md",
+          "type": "summary",
+          "summary": "Four-phase implementation closing all five durability gaps in the already-working tagged Sapience write path."
         }
       ],
       "next_artifact_number": 2,
@@ -49,7 +54,8 @@
         "agent-system/extensions/sapience/manifest.json",
         "agent-system/extensions/sapience/rules/sapience-write-path.md",
         "agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"
-      ]
+      ],
+      "completion_summary": "Corrected three stale sapience domain docs to a four-population census and a four-tool write-path disposition table, added an EXTENSION.md counter-instruction redirecting the vendor SessionStart nudge to the tagged path, added three write-side dry-run test cases to test-sapience-capture.sh asserting [repo:<slug>]/token-redaction/explicit:true (each confirmed to fail correctly under inversion), and landed a new advisory rules/sapience-write-path.md registered in manifest.json and verified end-to-end after a redeploy."
     },
     {
       "project_number": 610,
