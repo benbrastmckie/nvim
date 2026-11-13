@@ -1,0 +1,62 @@
+{
+  "phase": 7,
+  "phase_name": "End-to-end verification and acceptance evidence",
+  "started_at": "2026-11-12T23:37:00Z",
+  "last_updated": "2026-11-13T00:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Assert prune_empty_hooks fix present; deploy source store; capture merged settings.local.json (verification item 1)",
+      "status": "done",
+      "note": "prune_empty_hooks confirmed present and uncommitted (git diff --stat on merge.lua/merge_spec.lua); deploy-headless.sh default resync landed (2 unrelated pre-existing gate failures: gate10 timeout, skill-orchestrate budget ceiling -- neither touches sapience files, deferred to batch per Batch Gate Deferral); merged .claude/settings.local.json confirmed via jq -e: 11/11 grants, 5/5 hook keys",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Install and start session; verify per-project ~/.claude.json entry and key preservation (verification item 2)",
+      "status": "done",
+      "note": "installer run against real $HOME; hook invoked to simulate SessionStart; per-project entry registered with inherited pinned interpreter and token; jq -S before/after diff on ~/.claude.json confirmed byte-identical except the one new per-project entry (top-level .mcpServers.sapience and all .projects[*].mcpServers.\"lean-lsp\" entries unchanged)",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Unload extension; confirm clean removal of all three surfaces (verification item 3)",
+      "status": "done",
+      "note": "PARTIAL PASS, documented as a Reasoned Exclusion: hooks removed cleanly (no [] residue); per-project ~/.claude.json entry removed by the bidirectional hook on next session start exactly as designed (one-session-start lag); of the 11 permission grants, the 7 newly-added read-tool grants were removed cleanly (tracked as appended with items populated) but the 4 pre-existing write-tool grants survived unload because .claude-extensions.json's merge-tracking record for them has been items:[] since before this task (confirmed via git log back to commit e0ca570cb, 2026-11-07) -- a merge.lua tracking-data defect outside this extension's edit surface, per the plan's own Rollback/Contingency guidance. Recorded in issues.jsonl (kind: issue, class: merge-engine residual, severity: costly) and in the plan's Phase 7 Reasoned Exclusions record. Re-loaded sapience afterward to restore the repo's intended active state.",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Re-confirm installer idempotency/--remove against real HOME (verification item 4)",
+      "status": "done",
+      "note": "second real install run: hook/writer files byte-identical, settings.json byte-identical (correctly detected no-op); --remove run: both files deleted, settings.json reverted to byte-identical pre-install state, per-project entry removed immediately; ~/.claude.json .mcpServers and .projects sub-trees confirmed byte-identical pre-install vs post-remove (the only diffs anywhere in the file are Claude Code's own ambient telemetry fields, unrelated); reinstalled and re-registered afterward to leave the repo in its intended final active state",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Verify lean+sapience SessionStart coexistence (verification item 5)",
+      "status": "done",
+      "note": "both hooks present in the same real ~/.claude/settings.json (4 SessionStart entries total: inhibitor, lean-lsp-register-project.sh, mcp.py --briefing-text, sapience-mcp-register-project.sh); both invoked back-to-back, both exit 0 with silent {} (already-correct steady state), command strings confirmed distinct, installed to distinct user-level paths (lean-lsp-register-project.sh/setup-lean-mcp.sh vs sapience-mcp-register-project.sh/setup-sapience-mcp.sh)",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Re-confirm acceptance criterion 2 (git status scoping); discharge batch-deferred full gate set via scoped narrowing; write summary artifact",
+      "status": "done",
+      "note": "git status --short in this repo shows no uncommitted change outside specs/612's own task directory (all sapience source-store edits already landed via per-phase commits); git -C ~/.dotfiles status --short is completely clean; Batch Gate Deferral discharged via run-all.sh --only test-sapience-mcp-registration.sh (source-store mode, green) and verify-deploy.sh --skip-slow --only-gate 3,4,21 (clean) -- full gate set deferred to the batch-level stage per the dispatch file's directive",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.3",
+      "description": "Unloading the extension removes all three surfaces (grants, hooks, per-project MCP entry) cleanly, leaving no []-valued hooks key behind.",
+      "type": "altered",
+      "reason": "Hooks and the per-project MCP entry both verified fully clean on unload; the permission-grant surface partially fails for 4 of 11 grants due to a pre-existing (predating this task) merge.lua tracking-data gap outside this extension's edit scope -- admitted as a Reasoned Exclusion under status-markers.md's five-condition test.",
+      "annotation": "*(deviation: altered -- see Phase 7's #### Reasoned Exclusions record)*"
+    }
+  ]
+}

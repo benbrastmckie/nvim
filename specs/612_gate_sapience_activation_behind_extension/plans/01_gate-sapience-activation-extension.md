@@ -630,51 +630,74 @@ the whole set), so no suite is claimed; this is the source-store markdown sub-ca
 
 ---
 
-### Phase 7: End-to-end verification and acceptance evidence [NOT STARTED]
+### Phase 7: End-to-end verification and acceptance evidence [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: all five of this task's verification items evidenced empirically against a real deploy,
 and the complete gate set green.
 
 **Tasks**:
-- [ ] Assert the `prune_empty_hooks` fix is present in
+- [x] Assert the `prune_empty_hooks` fix is present in
       `lua/neotex/plugins/ai/shared/extensions/merge.lua` before the unload check (Risk 5). If it
       is absent, report that loudly and do not attribute a `[]` residue to this task's fragment.
-- [ ] Deploy the source store so the extension's new surfaces reach a tree, then load the
+      *(completed: confirmed present and uncommitted via `git diff --stat`)*
+- [x] Deploy the source store so the extension's new surfaces reach a tree, then load the
       sapience extension into a repo and capture the merged `.claude/settings.local.json`.
-- [ ] **Verification item 1**: the merged `.claude/settings.local.json` carries all 11 permission
-      grants and all 5 hooks. Assert with `jq`, not by eye.
-- [ ] Run `install-sapience-mcp-session-hook.sh`, then start a session in that repo.
+      *(completed: `deploy-headless.sh` default resync)*
+- [x] **Verification item 1**: the merged `.claude/settings.local.json` carries all 11 permission
+      grants and all 5 hooks. Assert with `jq`, not by eye. *(completed: `jq -e` both assertions
+      true)*
+- [x] Run `install-sapience-mcp-session-hook.sh`, then start a session in that repo.
       **Verification item 2**: `.projects["<that repo's abs path>"].mcpServers.sapience` is
       present in `~/.claude.json`, AND no other key in that file was disturbed. Evidence the
       second clause by diffing a `jq -S` snapshot taken before against one taken after and
       confirming the per-project entry is the only addition — the top-level
       `.mcpServers.sapience` entry and all four `.projects[*].mcpServers."lean-lsp"` entries
-      included.
-- [ ] **Verification item 3**: unload the extension and confirm all three surfaces are gone —
+      included. *(completed: `jq -S` before/after diff against the real `~/.claude.json`
+      confirmed byte-identical except the one new per-project entry)*
+- [x] **Verification item 3**: unload the extension and confirm all three surfaces are gone —
       the 11 grants and 5 hooks removed from `.claude/settings.local.json` with **no `[]`-valued
       `hooks` key** left behind, and the per-project `~/.claude.json` entry removed (by the
       bidirectional hook on the next session start, or immediately via
       `install-sapience-mcp-session-hook.sh --remove`). Note which mechanism produced it.
-- [ ] **Verification item 4**: the installer is idempotent and `--remove` fully reverses it,
+      *(completed with exclusion -- see `#### Reasoned Exclusions` below: hooks and the
+      per-project entry both verified fully clean; 7 of 11 grants verified fully clean; the other
+      4 grants survive unload due to a pre-existing merge-tracking gap outside this extension's
+      edit scope)*
+- [x] **Verification item 4**: the installer is idempotent and `--remove` fully reverses it,
       re-confirmed outside the fixture, against the real `$HOME`, using the Phase 4
-      `sha256sum`-manifest method.
-- [ ] **Verification item 5**: in a repo loading **both** lean and sapience, both `SessionStart`
+      `sha256sum`-manifest method. *(completed: byte-identical files/settings on a second real
+      install run; `--remove` reverted `~/.claude/settings.json` and `.mcpServers`/`.projects`
+      byte-identically; reinstalled afterward to leave the repo in its intended active state)*
+- [x] **Verification item 5**: in a repo loading **both** lean and sapience, both `SessionStart`
       hooks run and neither displaces the other — verified **empirically**, not inferred from the
       dedup implementation. Record where each entry lives (lean's in `~/.claude/settings.json`,
       Sapience's five in `.claude/settings.local.json`, the registration hook's in
       `~/.claude/settings.json` alongside lean's) and assert both command strings are present and
-      distinct after the install.
-- [ ] Do **not** run `setup-sapience-mcp.sh --retire-global` (Phase 2's ruling): it would be
+      distinct after the install. *(completed: both hooks invoked back-to-back against the real
+      `~/.claude/settings.json`, both exit 0, command strings and installed paths confirmed
+      distinct)*
+- [x] Do **not** run `setup-sapience-mcp.sh --retire-global` (Phase 2's ruling): it would be
       undone by the next `home-manager switch` and would disable Sapience in every repo still
-      relying on the machine-wide entry.
-- [ ] Re-confirm acceptance criterion 2 mechanically: `git status --short` shows every change
+      relying on the machine-wide entry. *(completed: not run)*
+- [x] Re-confirm acceptance criterion 2 mechanically: `git status --short` shows every change
       under `agent-system/extensions/sapience/` (plus `specs/**` artifacts), and
       `git -C /home/benjamin/.dotfiles status --short` shows no change attributable to this task.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (all gates, no
+      *(completed: confirmed)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (all gates, no
       `--skip-slow`, no `--only-gate`), plus `bash .claude/scripts/tests/run-all.sh` and
-      `bash .claude/scripts/validate-state.sh`.
-- [ ] Record all five verification items' evidence in this task's own summary artifact
-      (acceptance criterion 1).
+      `bash .claude/scripts/validate-state.sh`. *(deviation: altered -- per this dispatch's Batch
+      Gate Deferral directive, discharged against the scoped narrowing invocation instead:
+      `run-all.sh --only test-sapience-mcp-registration.sh` (source-store mode) and
+      `verify-deploy.sh --skip-slow --only-gate 3,4,21`, both green; the complete gate set is
+      deferred to the batch-level stage at the end of this /orchestrate invocation)*
+- [x] Record all five verification items' evidence in this task's own summary artifact
+      (acceptance criterion 1). *(completed)*
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Verification item 3's grant-removal clause, for 4 of the 11 `settings-fragment.json` permission grants (`mcp__sapience__sapience_remember`, `_wrapup`, `_handoff`, `_adddoc`) | `.claude-extensions.json`'s `merged_sections.settings.permissions.children.allow.items` tracking array for sapience has been `[]` since at least commit `e0ca570cb` (2026-11-07), predating this task. `merge.lua`'s `deep_merge` dedup only records an item as "appended" when it was NOT already present in the merge target; these 4 grants were already present in `.claude/settings.local.json` before this task touched anything, so they were never tracked as appended at their original (pre-task) load and `unmerge_settings`'s `remove_tracked` (which removes only tracked `appended.items`) cannot retract them. This is a `merge.lua` tracking-data gap, not a defect in this extension's own files, and fixing `merge.lua`'s tracking semantics is explicitly outside this task's declared edit scope (see this plan's own Rollback/Contingency section). | A fresh `manager.load('sapience', ...)` in this session produced a NEW tracking record listing only the 7 newly-added read-tool grants as `appended.items`, confirmed via `jq '.extensions.sapience.merged_sections.settings.permissions.children.allow'`; a live unload/reload cycle showed exactly those 7 (plus all 5 hooks, plus the per-project MCP entry via the bidirectional hook) removed cleanly, while the other 4 grants survived unchanged. Recorded in `issues.jsonl` (kind: issue, class: "merge-engine residual", severity: costly). |
 
 **Timing**: 2 hours
 
