@@ -404,7 +404,7 @@
     },
     {
       "path": "project/lean4/agents/lean-implementation-flow.md",
-      "line_count": 224,
+      "line_count": 261,
       "load_when": {
         "agents": [
           "lean-implementation-agent"

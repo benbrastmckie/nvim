@@ -227,3 +227,11 @@ Every code block above is a complete, standalone template with placeholder names
 (`YourProject.*`) rather than a pointer into any specific repository's source tree — replace the
 import and the name lists with your own project's targets/suspects/entry points and the probes
 run as written. No path outside this file is the sole carrier of a probe's content.
+
+## See Also
+
+- `context/project/lean4/patterns/external-library-dependency-assessment.md` — applies this same
+  import-closure technique to a different question: not "what does this one declaration depend
+  on inside my own repository" but "how much of an external library's source would actually need
+  verifying if I depended on it," measured over the target modules' import closure rather than
+  the candidate repository's total line count.

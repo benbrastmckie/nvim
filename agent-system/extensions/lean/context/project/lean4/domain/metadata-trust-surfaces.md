@@ -177,7 +177,40 @@ Two things such a gate does **not** reach. `set_option` has no per-option comman
 replay catches it. And a construct in a scope the gate's own predicate admits is admitted, by
 construction: the gate narrows where elaboration-time code may be mounted, and never closes it.
 
-## 6. Practical consequences
+## 6. `proof_wanted` is a trust surface distinct from `sorry`
+
+A Lean file can declare a theorem's name and type while linking against a marker that neither
+elaborates nor discharges a proof obligation — `proof_wanted`, used upstream and in forks of
+external libraries as a "this signature is promised, not yet proved" placeholder. It is not a
+member of the `sorry` family and is invisible to both of the checks a reviewer reaches for
+first:
+
+- `grep -c sorry` returns 0, because no `sorry` token is present anywhere in the file.
+- `#print axioms <name>` cannot even be run, because `<name>` was never added to the
+  environment — a `proof_wanted` marker is not a declared constant, so there is no axiom
+  profile to inspect in the first place.
+
+**Measured consequence**: a module consisting entirely of `proof_wanted` declarations reports as
+sorry-free by both standard checks while declaring nothing at all — no term, no registered
+constant, no axiom profile. One observed instance found five named-but-absent theorems this way
+across two files in an external library fork (three naming theorems in one file, two in
+another), in a tree whose own accompanying description characterized it as "all reported
+sorry-free". A reviewer trusting either check alone counts such names as landed when they are
+not.
+
+**The only reliable detector**: `grep -c '^proof_wanted'` (anchored at line start, matching the
+marker's own declaration syntax) over the source file. This is a textual check, not a semantic
+one — it answers "how many `proof_wanted` markers does this file contain", not "what do they
+mean" — but unlike `grep sorry` or `#print axioms`, it does not silently return a clean result
+in the presence of this specific marker.
+
+**Practical rule**: before trusting a sorry count or an axiom profile as evidence that a target
+module's claimed theorems are proved, grep the module for `^proof_wanted` first. A nonzero count
+there invalidates "zero sorry, clean axioms" as evidence of anything beyond "no sorry and no
+axiom were found among the declarations that actually elaborated" — a set that `proof_wanted`
+can make a strict, silent subset of the names the file appears to promise.
+
+## 7. Practical consequences
 
 - **Refuse in an attribute handler or a command elaborator.** Those run where the module under
   inspection cannot reach them. A `Linter` reports; a registry-based check can be cleared.
@@ -192,3 +225,5 @@ construction: the gate narrows where elaboration-time code may be mounted, and n
   structurally unreachable rather than that nothing was wrong.
 - **Write down which level each reader uses**, and never change an export function's level
   asymmetry without checking every reader against it.
+- **Treat a clean `grep sorry` and a clean `#print axioms` as non-evidence against `proof_wanted`.**
+  Grep `^proof_wanted` separately (§6); neither of the other two checks can see it.
