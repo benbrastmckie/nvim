@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 5,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a six-phase implementation plan for retracting extension permission grants on unload. The plan selects shape (i) (track every fragment item) extended with a still-declared-by-another-loaded-extension guard, rejecting the research report's shape (ii) because its provenance flag would classify all four existing stale records' items as pre-existing and retract nothing. Two prior-artifact premises were corrected during planning: manager.wipe/[Regenerate] does NOT repair stale records (regenerate restores settings.local.json as the merge base before resyncing), and merge_spec.lua is already 3-failed headless because its host fixture points at an archived specs/ directory. Every measured figure in the dispatch was re-verified live, and a fourth stale record (email's permissions.deny, 7 entries) is confirmed.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/615_retract_extension_grants_on_unload/plans/01_retract-extension-grants-unload.md",
+      "summary": "Six-phase plan covering the fixture repair, the deep_merge tracking fix, the retained-set guard and its unload plumbing, six new spec cases, the defect-class sweep plus documentation, and the stale-record repair under the full gate set."
+    }
+  ]
+}

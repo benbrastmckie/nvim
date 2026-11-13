@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794588346_94d92d_615",
-  "dispatch_seq": 2,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/615_retract_extension_grants_on_unload/reports/01_retract-extension-grants-unload.md",
-      "summary": "Confirms the dedup-before-track defect in deep_merge's plain-array branch, shows it also covers non-matcher hook-event arrays and a fourth stale record (email's permissions.deny) not named in the dispatch, weighs the three tracking-decision shapes and recommends shape (ii) plus a still-needed-by-another-loaded-extension guard, confirms [Regenerate] as the correct repair for stale records, and states the measured contradiction of the companion .dotfiles task's claim that seven of eleven sapience grants retract cleanly."
+      "type": "plan",
+      "path": "specs/615_retract_extension_grants_on_unload/plans/01_retract-extension-grants-unload.md",
+      "summary": "Six-phase plan: repair merge_spec's broken host fixture to a green baseline, move deep_merge's tracking insert outside the dedup guard, add a still-declared-by-another-loaded-extension guard to unmerge_settings and plumb it through manager.unload, add six spec cases, document the tracking contract and real repair route, then repair the four stale records via a plain redeploy under the full gate set."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1794588346_94d92d_615",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 6,
+    "dependency_waves": [[1], [2], [3], [4, 5], [6]]
+  },
   "memory_candidates": [
     {
-      "content": "finding is: lua/neotex/plugins/ai/shared/extensions/merge.lua's deep_merge plain-array branch dedups against the target array BEFORE recording anything, so a fragment item already present in the target is neither re-inserted nor tracked. manager.resync_all ([Reload All]/[Global Update]) calls manager.load(name, {force=true}) once per already-loaded extension without unloading first, so any such reload re-merges a fragment whose items are already present and overwrites that extension's merged_sections with an empty tracking record. The empty record is the expected steady state after one reload, not a one-off corruption. The defect also covers hook-event arrays whose blocks lack a matcher key (is_hook_event_array requires matcher on every block to route through the immune merge_hook_event_array path); mcpServers (object-keyed) and append_index_entries (unconditional per-path tracking) are not vulnerable.",
-      "category": "PATTERN",
-      "source_artifact": "specs/615_retract_extension_grants_on_unload/reports/01_retract-extension-grants-unload.md",
+      "content": "finding is: manager.wipe/[Regenerate] does NOT repair a stale merge-tracking record in .claude-extensions.json, contrary to a prior research finding. manager.wipe snapshots settings.json and settings.local.json (settings_backup.BACKUP_FILES) before rm -rf .claude, and manager.regenerate calls settings_backup.restore BEFORE manager.resync_all. The restored settings.local.json reinstates every already-present grant as the merge base, so deep_merge's dedup-before-track check fires exactly as it does on an ordinary resync and the tracking record comes back empty. The real repair for a stale record is a plain redeploy (bash .claude/scripts/deploy-headless.sh, bootstrap load + resync_all) run AFTER the deep_merge tracking fix lands -- the engine fix is itself the repair mechanism.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/615_retract_extension_grants_on_unload/plans/01_retract-extension-grants-unload.md",
       "confidence": 0.9,
-      "suggested_keywords": ["merge-engine", "deep_merge", "permissions.allow", "extension-unload", "tracking-staleness", "resync_all"]
-    },
-    {
-      "content": "finding is: manager.wipe (-> delete .claude/, keep project-root .claude-extensions.json state, -> manager.regenerate) is a mechanically correct repair for a stale/empty merge-tracking record, because regenerate re-loads every recorded extension into an empty target where the dedup-before-track check trivially passes and every item gets tracked. A plain [Reload All] (manager.resync_all, no wipe) does NOT repair staleness -- it is the mechanism that produces it.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/615_retract_extension_grants_on_unload/reports/01_retract-extension-grants-unload.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["manager.wipe", "regenerate", "merge-tracking-repair", "extensions-state"]
+      "suggested_keywords": ["manager.wipe", "manager.regenerate", "settings_backup", "merge-tracking-repair", "deploy-headless", "extension-unload"]
     }
   ],
-  "next_steps": "Run /orchestrate 615 to create implementation plan"
+  "next_steps": "Run /orchestrate 615 to execute the plan",
+  "dispatch_seq": 5
 }
