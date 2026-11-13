@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 7,
+  "summary": "Wrote a 7-phase, 12-hour plan for the extension-side per-repo Sapience activation surface, all edits confined to agent-system/extensions/sapience/ plus two user-level install paths. Phases: settings-fragment grants+hooks; the setup-sapience-mcp.sh writer plus a new test suite; a bidirectional SessionStart registration hook; the installer; the verifier; docs; end-to-end acceptance. Verified every carried figure in the description against live state (all hold) and confirmed the prior decision's description-correction obligation was discharged by commit a45f1cd17. Two findings established by reading code rather than assuming: four of the five Sapience hooks carry no matcher so they merge via deep_merge's tracked generic-array path (still cleanly reversible, so no matcher must be invented), and a user-level-only hook registration is wiped by home-manager because hooks is an enforced key - planned as a named residual since lean's fix writes .dotfiles, which this task may not.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/612_gate_sapience_activation_behind_extension/plans/01_gate-sapience-activation-extension.md",
+      "summary": "7-phase plan (12h) building the per-repo Sapience activation surface: MCP-registration triad, 11 permission grants, 5 hooks, docs, and end-to-end acceptance of all five verification items."
+    }
+  ],
+  "dispatch_seq": 2
+}
