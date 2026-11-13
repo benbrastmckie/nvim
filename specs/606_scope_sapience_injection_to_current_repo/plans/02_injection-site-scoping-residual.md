@@ -227,14 +227,14 @@ the edited `index-entries.json`.
 
 ---
 
-### Phase 2: Ship the residual-monitor probe script [NOT STARTED]
+### Phase 2: Ship the residual-monitor probe script [COMPLETED]
 
 **Goal**: A read-only, source-store-owned script that replays the two-call `project`-honoring
 comparison on demand, reports whether the residual still holds, and shows that the channel still
 delivers content — making the vendor ask falsifiable rather than open-ended.
 
 **Tasks**:
-- [ ] Create `scripts/verify-sapience-context-scoping.sh` under the source store, modeled on
+- [x] Create `scripts/verify-sapience-context-scoping.sh` under the source store, modeled on
       `scripts/verify-sapience-mcp.sh`'s header/exit-code style, with:
   - A header block stating what it probes, that it is read-only (no vault write, no local
     mutation), and that a green "still ignored" result is the expected state until the vendor ask
@@ -252,10 +252,10 @@ delivers content — making the vendor ask falsifiable rather than open-ended.
     delivered (acceptance criterion 2's non-regression evidence), and a `--help`.
   - The token read into a variable, passed only in the `Authorization` header, never echoed,
     never written to a file, and never included in any error message.
-- [ ] Add `verify-sapience-context-scoping.sh` to `manifest.json`'s `provides.scripts` array,
+- [x] Add `verify-sapience-context-scoping.sh` to `manifest.json`'s `provides.scripts` array,
       keeping the array's existing alphabetical order.
-- [ ] Run `bash -n` and, if available, `shellcheck` on the new script; fix every finding.
-- [ ] Exercise the degrade path (point the config lookup at a nonexistent file) and confirm a
+- [x] Run `bash -n` and, if available, `shellcheck` on the new script; fix every finding.
+- [x] Exercise the degrade path (point the config lookup at a nonexistent file) and confirm a
       named non-zero exit with no stack trace and no token in the output.
 
 **Timing**: 1.0 hour
