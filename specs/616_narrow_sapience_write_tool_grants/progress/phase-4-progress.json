@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Reconcile review-gate-boundary.md",
+  "started_at": "2026-11-13T01:05:00Z",
+  "last_updated": "2026-11-13T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Correct grant-count statements to seven and rewrite the carve-out / Coming-staleness paragraphs", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.x",
+      "description": "Phase 4's edit made the deployed context mirror stale against gate 3's doc-lint check.",
+      "type": "altered",
+      "reason": "Ran an idempotent deploy-headless.sh pass (third time this dispatch) so this phase's own named gate 3,4 could pass as written.",
+      "annotation": "*(deviation: altered — ran an idempotent deploy-headless.sh pass to clear deployed-context drift ahead of Phase 5's own planned redeploy)*"
+    }
+  ]
+}

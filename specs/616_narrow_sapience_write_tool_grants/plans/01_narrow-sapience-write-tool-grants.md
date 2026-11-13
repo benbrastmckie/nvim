@@ -295,37 +295,42 @@ markdown sub-case (b):
 
 ---
 
-### Phase 4: Reconcile `review-gate-boundary.md` [NOT STARTED]
+### Phase 4: Reconcile `review-gate-boundary.md` [COMPLETED]
 
 **Goal**: The sapience domain's own permission-grant disclosure states the seven-tool grant, and
 its "Coming staleness" paragraph no longer rests on a premise Phase 2 made false.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md`
-      immediately before editing; Phase 2's `core` text must already be in place.
-- [ ] `## The Permission Grant's Repository-Scoped Tradeoff` (line 49): state the grant as the
+- [x] Re-read `agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md`
+      immediately before editing; Phase 2's `core` text must already be in place. *(completed)*
+- [x] `## The Permission Grant's Repository-Scoped Tradeoff` (line 49): state the grant as the
       seven read-shaped tools at project scope, not "all 11 ... (the 4 write tools plus 7 read
-      tools)".
-- [ ] Same section, lines 73 and 75: correct "an interactive permission prompt on all 11 tools"
+      tools)". *(completed)*
+- [x] Same section, lines 73 and 75: correct "an interactive permission prompt on all 11 tools"
       and "adding the same 11 entries to `~/.dotfiles/config/claude/settings.json`" to the
-      seven-tool figure.
-- [ ] Rewrite the carve-out paragraph (lines ~60-79) so it no longer claims this extension is
+      seven-tool figure. *(completed)*
+- [x] Rewrite the carve-out paragraph (lines ~60-79) so it no longer claims this extension is
       "the worked example the subsection names by path" — Phase 2 removed that naming. Keep the
       substantive point that the project-scope placement is what a nix-enforced user-scope
       settings file leaves available, and keep the "enlarging the blast radius machine-wide is
-      the WRONG fix" reasoning.
-- [ ] Rewrite the `**Coming staleness of core's worked example.**` paragraph (lines 81-92): its
+      the WRONG fix" reasoning. *(completed: the write-tool-specific "mutating, unreviewed"
+      framing was generalized to "this extension's tools", since the grant no longer includes
+      any write tool)*
+- [x] Rewrite the `**Coming staleness of core's worked example.**` paragraph (lines 81-92): its
       premise (that `core` cites this extension by path) is false after Phase 2. Preserve the
       separate, still-open dotfiles-level read-grant question it records, restated so it does not
-      depend on `core` naming sapience.
-- [ ] `## Explicit Grants, Not a Wildcard` (lines 93-101): the enumeration now lists seven names
+      depend on `core` naming sapience. *(completed: retitled
+      "**The dotfiles-level read-grant question remains open, independent of core's wording.**")*
+- [x] `## Explicit Grants, Not a Wildcard` (lines 93-101): the enumeration now lists seven names
       (`sapience`, `sapience_search`, `_briefing`, `_context`, `_ask`, `_outstanding`,
       `_papers`); the "matches the dotfiles allow-list's own convention for the same seven read
-      tools" sentence and the auto-grant tradeoff both still hold.
-- [ ] Leave `## Write-Tool Disposition` (lines 103-117) entirely unchanged — it is sanctioned
-      discussion, and research Recommendation 5 says explicitly not to touch it.
-- [ ] Per `no-record-versioning-in-deliverables.md`, state the current arrangement only.
-- [ ] Commit this phase's file with an explicit file list.
+      tools" sentence and the auto-grant tradeoff both still hold. *(completed)*
+- [x] Leave `## Write-Tool Disposition` (lines 103-117) entirely unchanged — it is sanctioned
+      discussion, and research Recommendation 5 says explicitly not to touch it. *(completed:
+      confirmed byte-identical in diff)*
+- [x] Per `no-record-versioning-in-deliverables.md`, state the current arrangement only.
+      *(completed)*
+- [x] Commit this phase's file with an explicit file list. *(completed)*
 
 **Timing**: 0.75 hours
 
