@@ -3807,6 +3807,11 @@
           "path": "specs/615_retract_extension_grants_on_unload/plans/01_retract-extension-grants-unload.md",
           "type": "plan",
           "summary": "Six-phase plan covering the fixture repair, the deep_merge tracking fix, the retained-set guard and its unload plumbing, six new spec cases, the defect-class sweep plus documentation, and the stale-record repair under the full gate set."
+        },
+        {
+          "path": "specs/615_retract_extension_grants_on_unload/summaries/01_retract-extension-grants-unload-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all six phases, the tracking-shape and repair-route decisions, plan deviations, verification results, and follow-ups (including the correction the companion dotfiles task needs)."
         }
       ],
       "next_artifact_number": 2,
@@ -3820,7 +3825,8 @@
         "lua/neotex/plugins/ai/shared/extensions/init.lua",
         "lua/neotex/plugins/ai/shared/extensions/merge.lua",
         "lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"
-      ]
+      ],
+      "completion_summary": "Fixed deep_merge's array-tracking defect (dedup-before-track) in merge.lua, added a sibling-extension-retention guard to unmerge_settings plumbed through init.lua's manager.unload, covered it with six new merge_spec.lua cases (30/0/0 green), documented the decision in a new pattern file, and repaired the four stale permission-grant records (sapience, nix, lean, email) in this repository via a plain redeploy."
     },
     {
       "project_name": "scope_card_worktree_sapience_retrieval",

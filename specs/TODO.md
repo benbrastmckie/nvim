@@ -541,6 +541,7 @@ ACCEPTANCE.
 - **Dependencies**: None
 - **Research**: [615_retract_extension_grants_on_unload/reports/01_retract-extension-grants-unload.md]
 - **Plan**: [615_retract_extension_grants_on_unload/plans/01_retract-extension-grants-unload.md]
+- **Summary**: [615_retract_extension_grants_on_unload/summaries/01_retract-extension-grants-unload-summary.md]
 
 **Description**: GOAL. Make an extension's `permissions.allow` grants retract on unload the way its hooks already
 do, so that loading an extension into a repo is genuinely the only thing that grants its tools

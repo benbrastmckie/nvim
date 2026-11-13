@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 5,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 7,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a six-phase implementation plan for retracting extension permission grants on unload. The plan selects shape (i) (track every fragment item) extended with a still-declared-by-another-loaded-extension guard, rejecting the research report's shape (ii) because its provenance flag would classify all four existing stale records' items as pre-existing and retract nothing. Two prior-artifact premises were corrected during planning: manager.wipe/[Regenerate] does NOT repair stale records (regenerate restores settings.local.json as the merge base before resyncing), and merge_spec.lua is already 3-failed headless because its host fixture points at an archived specs/ directory. Every measured figure in the dispatch was re-verified live, and a fourth stale record (email's permissions.deny, 7 entries) is confirmed.",
+  "summary": "Fixed deep_merge's dedup-before-track defect in merge.lua (every fragment item is now recorded unconditionally, insertion stays deduped), added a sibling-extension-retention guard to unmerge_settings (opts.retained_fragments/opts.skip_array_removal) and plumbed it through init.lua's manager.unload, and covered the chosen shape with six new merge_spec.lua cases plus a corrected pre-existing mcpServers test -- full spec is green at 30/0/0. Documented the decision, its rejected alternatives, the array-path enumeration, and a known wholesale-removal scope boundary in a new pattern file. Repaired the four stale tracking records in this repository (sapience allow 11, nix allow 2, lean allow 1, email deny 7, plus sapience's four non-matcher hook events) via a plain redeploy, confirmed via a batch-deferred scoped gate set (verify-deploy.sh --only-gate 3,4,5,13, all passing) per the dispatch's Batch Gate Deferral directive.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/615_retract_extension_grants_on_unload/plans/01_retract-extension-grants-unload.md",
-      "summary": "Six-phase plan covering the fixture repair, the deep_merge tracking fix, the retained-set guard and its unload plumbing, six new spec cases, the defect-class sweep plus documentation, and the stale-record repair under the full gate set."
+      "type": "summary",
+      "path": "specs/615_retract_extension_grants_on_unload/summaries/01_retract-extension-grants-unload-summary.md",
+      "summary": "Implementation summary covering all six phases, the tracking-shape and repair-route decisions, plan deviations, verification results, and follow-ups (including the correction the companion dotfiles task needs)."
+    },
+    {
+      "type": "pattern",
+      "path": "agent-system/extensions/nvim/context/project/neovim/patterns/merge-tracking-contract.md",
+      "summary": "The merge tracking contract: the defect, the fix, the tracking-shape decision, the accepted residual, the array-path enumeration, and the real repair route for a stale record."
     }
   ]
 }

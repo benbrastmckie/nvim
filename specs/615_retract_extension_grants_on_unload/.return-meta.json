@@ -1,6 +1,67 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 7,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/615_retract_extension_grants_on_unload/summaries/01_retract-extension-grants-unload-summary.md",
+      "summary": "All six plan phases completed: moved deep_merge's tracking insert outside the dedup guard, added a sibling-extension-retention guard to unmerge_settings and plumbed it through manager.unload, added six merge_spec.lua cases, documented the decision in a new pattern file, and repaired the four stale tracking records via a plain redeploy under a batch-deferred scoped gate."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed deep_merge's array-tracking defect (dedup-before-track) in merge.lua, added a sibling-extension-retention guard to unmerge_settings plumbed through init.lua's manager.unload, covered it with six new merge_spec.lua cases (30/0/0 green), documented the decision in a new pattern file, and repaired the four stale permission-grant records (sapience, nix, lean, email) in this repository via a plain redeploy."
+  },
+  "modified_files": [
+    ".claude-extensions.json",
+    "agent-system/extensions/nvim/context/project/neovim/patterns/merge-tracking-contract.md",
+    "agent-system/extensions/nvim/index-entries.json",
+    "agent-system/extensions/sapience/index-entries.json",
+    "lua/neotex/plugins/ai/shared/extensions/host_settings_fixture.json",
+    "lua/neotex/plugins/ai/shared/extensions/init.lua",
+    "lua/neotex/plugins/ai/shared/extensions/merge.lua",
+    "lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"
+  ],
+  "memory_candidates": [
+    {
+      "content": "finding is: in a settings-merge engine that must support idempotent re-merge AND clean retraction, a tracking record built by recording an item only when it is newly inserted into the target (dedup-before-track) silently goes empty the moment the same fragment is re-merged over an already-populated target -- which happens on every ordinary resync of an already-loaded extension, not just a corruption path. The fix is to always record every source item into the tracking record, and dedup ONLY the insertion into the target array (two separate steps, not one guarded step). A naive unconditional-record fix then needs a companion guard at removal time (an opts.retained_fragments-style check against OTHER currently-active owners' own declared items) so a retraction does not strip an item a sibling owner still legitimately declares.",
+      "category": "PATTERN",
+      "source_artifact": "specs/615_retract_extension_grants_on_unload/summaries/01_retract-extension-grants-unload-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "deep_merge",
+        "dedup-before-track",
+        "idempotent-merge",
+        "retraction",
+        "tracking-record"
+      ]
+    },
+    {
+      "content": "finding is: a wholesale-removal tracked type (e.g. deep_merge's \"new_array\"/\"new_object\"/\"new_value\", used when a key did not exist in the target before this merge) is a DIFFERENT removal shape from a per-item tracked type (e.g. \"appended\"), and a sibling-retention guard added only to the per-item removal branches does NOT protect a wholesale-removal branch's unconditional `t[key] = nil`. This only bites when the FIRST-ever contributor to a shared key is retracted while a later contributor's own addition still sits in that same key -- a narrow but real gap, worth stating explicitly as a documented scope boundary rather than silently assuming a per-item guard covers every removal shape.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/615_retract_extension_grants_on_unload/summaries/01_retract-extension-grants-unload-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "wholesale-removal",
+        "new_array",
+        "sibling-retention",
+        "scope-boundary",
+        "merge-engine"
+      ]
+    },
+    {
+      "content": "finding is: to resolve a path relative to a Lua spec/script file's own on-disk location rather than vim.fn.getcwd() (which breaks when the test runner's CWD differs from the repo root, or when a referenced path like an archived specs/ task directory no longer exists), use `local this_file = debug.getinfo(1, \"S\").source:match(\"^@(.*)$\"); local this_dir = this_file:match(\"^(.*)/[^/]+$\")` inside the function that needs it -- debug.getinfo resolves against where the code is DEFINED, not the dynamic call stack, so this works correctly even when the function is called from elsewhere. This is the same arg[0]-independent idiom hook_identity_cli.lua already uses for a standalone `nvim -l` script.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/615_retract_extension_grants_on_unload/summaries/01_retract-extension-grants-unload-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "debug.getinfo",
+        "spec-relative-path",
+        "fixture-resolution",
+        "plenary-busted",
+        "lua"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794588346_94d92d",
     "agent_type": "general-implementation-agent",
@@ -10,10 +71,12 @@
       "implement",
       "general-implementation-agent"
     ],
-    "phases_completed": 5,
+    "phases_completed": 6,
     "phases_total": 6
   },
   "proposed_file_scope": [
     "agent-system/extensions/sapience/index-entries.json"
-  ]
+  ],
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
