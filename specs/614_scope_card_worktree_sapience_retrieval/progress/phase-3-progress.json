@@ -1,0 +1,36 @@
+{
+  "phase": 3,
+  "phase_name": "Slug consistency across the three [repo:<slug>] provenance sites",
+  "started_at": "2026-11-13T00:35:00Z",
+  "last_updated": "2026-11-13T01:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Copy helper into sapience-retrieve.sh (read side); derive repo_toplevel from it",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/sapience/scripts/sapience-retrieve.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Apply identical change to sapience-remember.sh (write side)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/sapience/scripts/sapience-remember.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Apply identical change to verify-sapience-context-scoping.sh (both call sites); update slug-derivation comments at all three sites",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/sapience/scripts/verify-sapience-context-scoping.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

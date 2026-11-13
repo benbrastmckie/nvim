@@ -235,29 +235,31 @@ before editing.
 
 ---
 
-### Phase 3: Slug consistency across the three `[repo:<slug>]` provenance sites [NOT STARTED]
+### Phase 3: Slug consistency across the three `[repo:<slug>]` provenance sites [COMPLETED]
 
 **Goal**: The repo slug a worktree derives is identical to the slug its checkout derives, on the
 read side, the write side, and the scoping probe -- so a worktree-originated write and a
 worktree-originated query address the same `[repo:<slug>]` objects the checkout does.
 
 **Tasks**:
-- [ ] Copy the Phase 1 marker-delimited helper byte-for-byte into
+- [x] Copy the Phase 1 marker-delimited helper byte-for-byte into
       `agent-system/extensions/sapience/scripts/sapience-retrieve.sh` and derive `repo_toplevel`
       (currently line 101) from it before `basename`, preserving every existing empty-value guard
-      and exit code.
-- [ ] Apply the identical change to `agent-system/extensions/sapience/scripts/sapience-remember.sh`
+      and exit code. *(completed)*
+- [x] Apply the identical change to `agent-system/extensions/sapience/scripts/sapience-remember.sh`
       (currently line 121). This is the write side: an untreated worktree would tag an object
       `[repo:<throwaway-worktree-name>]`, which neither the checkout's nor the worktree's query
       can ever retrieve. Acceptance criterion 1 ("receives only knowledge objects carrying the
       checkout's `[repo:<slug>]` provenance tag") cannot hold if the two sides disagree, which is
       why the write side is in scope here even though the research named only the read side.
-- [ ] Apply the identical change to
+      *(completed)*
+- [x] Apply the identical change to
       `agent-system/extensions/sapience/scripts/verify-sapience-context-scoping.sh` (currently
       line 101, with its line 103 bare-`git` fallback), whose header states it mirrors
-      `sapience-remember.sh`'s resolution -- the mirror must stay true.
-- [ ] Update the three sites' slug-derivation comments to say "basename of the parent checkout's
-      git toplevel" rather than "basename of the git toplevel".
+      `sapience-remember.sh`'s resolution -- the mirror must stay true. *(completed: both the
+      primary call and its bare-`git` fallback now route through the helper)*
+- [x] Update the three sites' slug-derivation comments to say "basename of the parent checkout's
+      git toplevel" rather than "basename of the git toplevel". *(completed)*
 
 **Timing**: 1 hour
 

@@ -96,9 +96,38 @@ if [ -z "$keywords" ]; then
   exit 1
 fi
 
-# --- Repo slug: basename of the git toplevel, so the same script works unmodified in every repo
-# the system deploys into ---
-repo_toplevel="$(git -C "$PROJECT_ROOT" rev-parse --show-toplevel 2>/dev/null)" || exit 1
+# === BEGIN sapience-worktree-checkout-resolution (byte-identical in every copy: this hook,
+# verify-sapience-mcp.sh, sapience-retrieve.sh, sapience-remember.sh, and
+# verify-sapience-context-scoping.sh -- test-sapience-mcp-registration.sh's lockstep case
+# extracts this marker-delimited block from each copy and asserts they are all byte-identical).
+# Resolves a directory (default: cwd) to its git toplevel, following a linked worktree to its
+# PARENT CHECKOUT rather than the worktree itself. Echoes the toplevel path and returns 0, or
+# returns 1 with no output when the directory is not inside a git repository at all.
+#
+# Detection: compare `git rev-parse --git-dir` against `--git-common-dir`. Equal (including
+# both failing, on a non-git path) means "not a linked worktree -- behave exactly like a bare
+# `git rev-parse --show-toplevel`". Unequal means "linked worktree -- the common dir's PARENT
+# directory is the checkout". `--git-common-dir` returns a relative path at a checkout root but
+# an absolute path from inside a worktree, so it is absolutized before its parent is taken.
+resolve_checkout_toplevel() {
+    local dir="${1:-.}" git_dir common_dir
+    git_dir="$(git -C "$dir" rev-parse --git-dir 2>/dev/null)" || return 1
+    common_dir="$(git -C "$dir" rev-parse --git-common-dir 2>/dev/null)" || return 1
+    if [ "$git_dir" = "$common_dir" ]; then
+        git -C "$dir" rev-parse --show-toplevel 2>/dev/null
+        return $?
+    fi
+    case "$common_dir" in
+        /*) : ;;
+        *) common_dir="$(cd "$dir" 2>/dev/null && pwd)/$common_dir" ;;
+    esac
+    (cd "$common_dir/.." 2>/dev/null && pwd)
+}
+# === END sapience-worktree-checkout-resolution ===
+
+# --- Repo slug: basename of the parent checkout's git toplevel, so the same script works
+# unmodified in every repo the system deploys into, and in every linked worktree of one ---
+repo_toplevel="$(resolve_checkout_toplevel "$PROJECT_ROOT" 2>/dev/null)" || exit 1
 if [ -z "$repo_toplevel" ]; then
   exit 1
 fi

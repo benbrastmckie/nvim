@@ -26,7 +26,7 @@
 #   and no stack trace (exit 3) -- this is a probe, never a gate anything depends on.
 #
 # The repository slug sent as the "real project" value is resolved the same way
-# sapience-remember.sh resolves it: basename of `git rev-parse --show-toplevel`.
+# sapience-remember.sh resolves it: basename of the parent checkout's git toplevel.
 #
 # Outcomes (each printed on its own line, exactly one per run):
 #   RESIDUAL_HOLDS   - the two calls returned byte-identical text/visible bodies. project= is
@@ -97,10 +97,40 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 
-# --- Repo slug (same resolution as sapience-remember.sh: basename of git toplevel) ---
-repo_toplevel="$(git -C "${PROJECT_ROOT:-.}" rev-parse --show-toplevel 2>/dev/null)" || repo_toplevel=""
+# === BEGIN sapience-worktree-checkout-resolution (byte-identical in every copy: this hook,
+# verify-sapience-mcp.sh, sapience-retrieve.sh, sapience-remember.sh, and
+# verify-sapience-context-scoping.sh -- test-sapience-mcp-registration.sh's lockstep case
+# extracts this marker-delimited block from each copy and asserts they are all byte-identical).
+# Resolves a directory (default: cwd) to its git toplevel, following a linked worktree to its
+# PARENT CHECKOUT rather than the worktree itself. Echoes the toplevel path and returns 0, or
+# returns 1 with no output when the directory is not inside a git repository at all.
+#
+# Detection: compare `git rev-parse --git-dir` against `--git-common-dir`. Equal (including
+# both failing, on a non-git path) means "not a linked worktree -- behave exactly like a bare
+# `git rev-parse --show-toplevel`". Unequal means "linked worktree -- the common dir's PARENT
+# directory is the checkout". `--git-common-dir` returns a relative path at a checkout root but
+# an absolute path from inside a worktree, so it is absolutized before its parent is taken.
+resolve_checkout_toplevel() {
+    local dir="${1:-.}" git_dir common_dir
+    git_dir="$(git -C "$dir" rev-parse --git-dir 2>/dev/null)" || return 1
+    common_dir="$(git -C "$dir" rev-parse --git-common-dir 2>/dev/null)" || return 1
+    if [ "$git_dir" = "$common_dir" ]; then
+        git -C "$dir" rev-parse --show-toplevel 2>/dev/null
+        return $?
+    fi
+    case "$common_dir" in
+        /*) : ;;
+        *) common_dir="$(cd "$dir" 2>/dev/null && pwd)/$common_dir" ;;
+    esac
+    (cd "$common_dir/.." 2>/dev/null && pwd)
+}
+# === END sapience-worktree-checkout-resolution ===
+
+# --- Repo slug (same resolution as sapience-remember.sh: basename of the parent checkout's git
+# toplevel -- this mirrors sapience-remember.sh's resolution, and the mirror must stay true) ---
+repo_toplevel="$(resolve_checkout_toplevel "${PROJECT_ROOT:-.}" 2>/dev/null)" || repo_toplevel=""
 if [ -z "$repo_toplevel" ]; then
-  repo_toplevel="$(git rev-parse --show-toplevel 2>/dev/null)" || repo_toplevel=""
+  repo_toplevel="$(resolve_checkout_toplevel . 2>/dev/null)" || repo_toplevel=""
 fi
 if [ -z "$repo_toplevel" ]; then
   echo "verify-sapience-context-scoping.sh: could not resolve a git toplevel (run from inside a git repository)" >&2
