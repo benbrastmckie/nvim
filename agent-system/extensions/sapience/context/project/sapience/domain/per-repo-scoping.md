@@ -163,6 +163,47 @@ home-manager activation and merged into the enforced `hooks` key on every switch
 independent writer converging on the identical command string, rather than this extension's own
 installer taking on a second write target. See the durability detail below.
 
+## Worktree Resolution and the Two-Channel Asymmetry
+
+A session running in a LINKED GIT WORKTREE (for example a throwaway automated checkout of a
+repository, used to execute one isolated unit of work against it) reaches two structurally
+different Sapience channels, and this extension treats them asymmetrically on purpose.
+
+**Channel 2 (MCP retrieval) is deliberately made to reach a worktree.** Registration keys on the
+PARENT CHECKOUT, never the worktree: the hook, the verifier, and the three
+`[repo:<slug>]` provenance sites (`scripts/sapience-retrieve.sh`, `scripts/sapience-remember.sh`,
+`scripts/verify-sapience-context-scoping.sh`) all resolve a linked worktree to its checkout's
+git toplevel before deciding activation or deriving the repo slug. Claude Code's own
+`~/.claude.json` per-project lookup already resolves a worktree path (at any nesting depth) to
+its checkout's `.projects[<checkout>]` entry, so no worktree-keyed entry is ever written and
+none ever needs retracting at teardown — there is nothing worktree-specific to retract, by
+construction, not by a teardown mechanism this extension had to build. A query or a write issued
+from inside the worktree therefore addresses exactly the same `[repo:<slug>]` knowledge objects
+the checkout itself would.
+
+**Channel 1 (hook-injected context: `SessionStart`, `UserPromptSubmit`, `PreToolUse`) is
+deliberately left absent from a worktree, and this is a PROHIBITION, not a known gap awaiting a
+fix.** Every hook and permission grant this extension owns reaches a repository only through
+`settings-fragment.json` merged into THAT repository's own `.claude/settings.local.json`,
+rendered by the regular deploy/merge mechanism. A fresh linked worktree has no `.claude/` tree
+of its own at all, so this channel is already structurally absent there — nothing in this
+extension may be changed to extend the merge engine, the hooks, or the permission grants into a
+worktree. The reason is not merely that the channel is inconvenient to scope: `Foreclosure 2` in
+`injection-site-scoping.md` establishes that `POST /v1/cli/context`'s response carries no
+per-item attribution a local wrapper could filter or label by, so even a hypothetical
+project-aware filter on that endpoint would have nothing to key on. A session driven by someone
+else's work item, firing those hooks, would receive cross-repository and personal-vault content
+inside work it did not originate — reopening that hazard to "fix" the worktree's missing hooks
+would defeat the reason this channel is scoped at all.
+
+**The `--strict-mcp-config` caveat.** An automated card-execution subprocess that passes
+`--strict-mcp-config` together with an empty `--mcp-config` sees zero MCP servers regardless of
+what this extension registers, because that flag combination refuses every MCP server before
+`~/.claude.json` is ever consulted. The worktree-resolution fix above is necessary and sufficient
+for every OTHER session shape started in that worktree; the automated subprocess's own exclusion
+is a property of how it invokes its own session, is vendor-owned and out of this repository's
+filesystem, and is recorded here rather than closed.
+
 ## Hazards
 
 **The `SessionStart` MCP-registration hook is durable across a `home-manager switch`.** `hooks`

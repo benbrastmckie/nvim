@@ -1,0 +1,28 @@
+{
+  "phase": 5,
+  "phase_name": "Record the two-channel asymmetry in the domain notes",
+  "started_at": "2026-11-13T02:00:00Z",
+  "last_updated": "2026-11-13T02:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Worktree Resolution and Two-Channel Asymmetry section with the --strict-mcp-config caveat",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Reconcile index-entries.json line_count (240 -> 281); verify gate 3,4 and schema test",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/sapience/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

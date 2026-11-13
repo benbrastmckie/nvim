@@ -348,38 +348,40 @@ highest existing case number with `grep -n "^# Case\|Case 2[0-9]" ` on the file 
 
 ---
 
-### Phase 5: Record the two-channel asymmetry in the domain notes [NOT STARTED]
+### Phase 5: Record the two-channel asymmetry in the domain notes [COMPLETED]
 
 **Goal**: `per-repo-scoping.md` states why MCP retrieval is deliberately made to reach a worktree
 while the hook/permission-grant channel is deliberately left absent, so a future reader does not
 "fix" the missing hooks and reopen the unscoped-injection hazard.
 
 **Tasks**:
-- [ ] Add a `## Worktree Resolution and the Two-Channel Asymmetry` section to
+- [x] Add a `## Worktree Resolution and the Two-Channel Asymmetry` section to
       `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`,
-      placed after `## The MCP-Registration Triad` and before `## Hazards`.
-- [ ] State Channel 2 (MCP retrieval): registration keys on the parent checkout; Claude Code's
+      placed after `## The MCP-Registration Triad` and before `## Hazards`. *(completed)*
+- [x] State Channel 2 (MCP retrieval): registration keys on the parent checkout; Claude Code's
       own `~/.claude.json` per-project lookup resolves a worktree to that checkout entry, so no
-      worktree-keyed entry is created and none needs retracting at teardown.
-- [ ] State Channel 1 (hook-injected context): absent from a worktree by construction (hooks and
+      worktree-keyed entry is created and none needs retracting at teardown. *(completed)*
+- [x] State Channel 1 (hook-injected context): absent from a worktree by construction (hooks and
       grants reach a repo only through `settings-fragment.json` merged into that repo's own
       `.claude/settings.local.json`, and a fresh worktree has no `.claude/` tree), and
       deliberately kept absent -- cross-reference `injection-site-scoping.md`'s Foreclosure 2,
       which establishes that the response carries no per-item attribution a local wrapper could
       filter or label by, so this channel cannot be scoped from this side at all. Phrase it as a
       prohibition on extending the merge engine into worktrees, not as a known gap awaiting a fix.
-- [ ] Record the `--strict-mcp-config` caveat: the SF-1 runner's own automated card-exec
+      *(completed)*
+- [x] Record the `--strict-mcp-config` caveat: the SF-1 runner's own automated card-exec
       subprocess passes `--strict-mcp-config` with an empty `--mcp-config` and therefore sees zero
       MCP servers regardless of registration; the fix is necessary and sufficient for every other
       session shape in that worktree, and the automated subprocess's own gap is vendor-owned,
-      out-of-repo, and deliberately not closed.
-- [ ] Reconcile the coupled generated surface: run
+      out-of-repo, and deliberately not closed. *(completed)*
+- [x] Reconcile the coupled generated surface: run
       `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` (or the
       equivalent `--check` first) so this file's `line_count` entry in
       `agent-system/extensions/sapience/index-entries.json` (240 at authoring time) matches the
-      edited file.
-- [ ] Carry no task-number references and no record-versioning language in either file (both lie
-      outside `specs/**`).
+      edited file. *(completed: 240 -> 281)*
+- [x] Carry no task-number references and no record-versioning language in either file (both lie
+      outside `specs/**`). *(completed: checked by inspection; gate 4 confirms no task-reference
+      findings)*
 
 **Timing**: 1 hour
 
