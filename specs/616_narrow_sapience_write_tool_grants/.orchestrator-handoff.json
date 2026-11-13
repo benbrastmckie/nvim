@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase plan applying research decision (i): delete all four MCP write-tool grants from the sapience settings-fragment, leaving the seven read-shaped entries. Plan sizing found four coupled surfaces the research report missed -- verify-sapience-mcp.sh hardcodes the grant count as `-eq 11` and would report failure against a correct narrowing, permission-configuration.md names the sapience worked example by name, and manifest.json plus index-entries.json both state the 11-grant figure. Phases 1-4 land the narrowing and the prose reconciliation; Phase 5 folds in the merge-source and metadata edits, redeploys, and verifies the fresh-load acceptance criterion. All three Carried-Figure premises were re-validated against live state and confirmed unchanged.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/616_narrow_sapience_write_tool_grants/plans/01_narrow-sapience-write-tool-grants.md",
+      "summary": "5-phase plan narrowing the sapience MCP write-tool grants and reconciling nine coupled surfaces."
+    }
+  ],
+  "dispatch_seq": 6
+}

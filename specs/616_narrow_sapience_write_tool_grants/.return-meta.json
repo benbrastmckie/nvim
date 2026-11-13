@@ -1,37 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/616_narrow_sapience_write_tool_grants/reports/01_narrow-sapience-write-tool-grants.md",
-      "summary": "Decides to remove all four sapience MCP write-tool grants (shape i), identifies the exact edits needed to settings-fragment.json, core/mcp-server-ownership.md's carve-out worked example, sapience-write-path.md's Accepted Residual section, plus three additional in-scope sapience-domain files (review-gate-boundary.md, EXTENSION.md, README.md) that also state the stale 11-tool/4-write-tool fact, and flags the pre-existing merge-additivity limitation that leaves this repo's own settings.local.json unchanged by a source-only edit."
+      "type": "plan",
+      "path": "specs/616_narrow_sapience_write_tool_grants/plans/01_narrow-sapience-write-tool-grants.md",
+      "summary": "5-phase plan narrowing the sapience MCP write-tool grants from 11 to 7 entries and reconciling nine coupled surfaces across the sapience and core source stores."
     }
   ],
-  "dispatch_seq": 3,
-  "next_steps": "Run /orchestrate 616 to create implementation plan",
-  "metadata": {
-    "session_id": "sess_1794588346_94d92d_616",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
-  },
   "memory_candidates": [
     {
-      "content": "When narrowing or closing a permission-grant residual recorded by a rule's own 'Accepted Residual' section, check the full edit surface before concluding only the two files the task description names are enough: grep the extension's whole source tree (every file inside the task's own edit surface) for the same fact the residual states, not just the one worked example named as THE coupling. In this case the dispatch named settings-fragment.json + core/mcp-server-ownership.md's worked example explicitly, but 3 more files inside the same extension's source tree (review-gate-boundary.md, EXTENSION.md, README.md) independently restated the same now-stale tool-count fact and would have gone stale too.",
+      "content": "When a plan narrows a configuration value that a verification script asserts by literal (e.g. a permission-grant count hardcoded as `-eq 11` in a probe script), the probe is a functional coupled surface, not a prose one: left unedited it reports FAILURE against the correctly-changed configuration, and it is frequently the very tool the task's own acceptance criterion relies on. A research pass that greps only for prose statements of the fact will miss it. The reliable detection move at plan time is to grep the literal value across the whole source store (including scripts/ and JSON metadata like manifest.json and index-entries.json), not only the markdown surfaces the dispatch names.",
       "category": "PATTERN",
-      "source_artifact": "specs/616_narrow_sapience_write_tool_grants/reports/01_narrow-sapience-write-tool-grants.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["permission-grant", "consistency", "worked-example", "residual", "mcp-settings-fragment"]
-    },
-    {
-      "content": "An MCP server's settings-fragment.json permissions.allow entry can be well-formed JSON but match no real tool (e.g. mcp__sapience__sapience, which matches no tool in a 12-tool live surface) -- distinct from the documented 'bare mcp__{server} grants nothing' footgun. This kind of entry is inert cruft that silently survives review because it looks like a normal grant line; worth a dedicated drift-detection check (diff the server's live tool list against the fragment's enumeration) as a future, separately-scoped task.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/616_narrow_sapience_write_tool_grants/reports/01_narrow-sapience-write-tool-grants.md",
-      "confidence": 0.6,
-      "suggested_keywords": ["mcp", "permissions", "drift-detection", "settings-fragment", "enumeration"]
+      "source_artifact": "specs/616_narrow_sapience_write_tool_grants/plans/01_narrow-sapience-write-tool-grants.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["coupled-surface", "verification-script", "hardcoded-literal", "consistency-sweep", "plan-sizing", "grant-count"]
     }
   ],
-  "modified_files": [
-    "specs/616_narrow_sapience_write_tool_grants/reports/01_narrow-sapience-write-tool-grants.md"
-  ]
+  "metadata": {
+    "session_id": "sess_1794588346_94d92d_616",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 3.25,
+    "dependency_waves": 4
+  },
+  "next_steps": "Run /orchestrate 616 to execute the plan",
+  "dispatch_seq": 6
 }
