@@ -549,6 +549,7 @@ CHANNEL: /orchestrate conclusion channel (c), follow-up task.
 - **Dependencies**: Task 600, Task 611, Task 612
 - **Research**: [606_scope_sapience_injection_to_current_repo/reports/02_injection-site-scoping-findings.md]
 - **Plan**: [606_scope_sapience_injection_to_current_repo/plans/02_injection-site-scoping-residual.md]
+- **Summary**: [606_scope_sapience_injection_to_current_repo/summaries/02_injection-site-scoping-residual-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 

@@ -1,11 +1,69 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/606_scope_sapience_injection_to_current_repo/summaries/02_injection-site-scoping-residual-summary.md",
+      "summary": "All four plan phases completed: a new source-store domain note recording the measured, vendor-owned content-scoping residual and both owner actions verbatim, a falsifiable read-only probe script, amended existing domain/README/EXTENSION docs, and a deploy+gate+five-criterion acceptance walkthrough."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Scoped Sapience's primary-session content-scoping gap into durable source-store record: a new domain note (agent-system/extensions/sapience/context/project/sapience/domain/injection-site-scoping.md) names all three injection sites and both measured foreclosures on POST /v1/cli/context, a new read-only probe script (verify-sapience-context-scoping.sh) makes the residual falsifiable, and both owner actions (the vendor ask; the machine-wide duplicate-hook inspection) are written out verbatim. No hook was suppressed, filtered, or narrowed."
+  },
+  "modified_files": [
+    "agent-system/extensions/sapience/context/project/sapience/domain/injection-site-scoping.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/vault-model.md",
+    "agent-system/extensions/sapience/context/project/sapience/README.md",
+    "agent-system/extensions/sapience/EXTENSION.md",
+    "agent-system/extensions/sapience/index-entries.json",
+    "agent-system/extensions/sapience/manifest.json",
+    "agent-system/extensions/sapience/README.md",
+    "agent-system/extensions/sapience/scripts/verify-sapience-context-scoping.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A vault-backed probe script that replays a two-call comparison (varying only one field) to detect server-side behavior should mint a UNIQUE session_id per invocation, never a fixed literal. Sapience's /v1/cli/context (and likely similar endpoints) applies server-side repeat/novelty suppression keyed partly by session_id (its response's status.overnight field reports 'N repeats hidden'), so reusing a fixed session_id across repeated manual test runs accumulates suppression state that can make two calls' responses differ for a reason unrelated to the field actually under test -- a false positive. Even with a unique session_id per run, residual noise can remain (the suppression may not be purely session-scoped), so a probe comparing live server responses should document a single differing run as inconclusive-leaning in its own output, never as proof a change landed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/606_scope_sapience_injection_to_current_repo/summaries/02_injection-site-scoping-residual-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "sapience",
+        "probe-script",
+        "session_id",
+        "repeat-suppression",
+        "false-positive",
+        "live-comparison-testing"
+      ]
+    },
+    {
+      "content": "check-extension-docs.sh's Rule U (EXTENSION.md 60-line limit) is a HARD fail() by default (SCHEMA_CONFORMANCE_GATE_MODE=hard), not advisory -- adding even one substantive paragraph to an extension's EXTENSION.md can trip it, requiring a compression pass across unrelated existing paragraphs rather than just the new one. Check the file's line count with `wc -l` immediately after any EXTENSION.md edit, before running the full gate suite, to catch this early.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/606_scope_sapience_injection_to_current_repo/summaries/02_injection-site-scoping-residual-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "check-extension-docs.sh",
+        "Rule U",
+        "EXTENSION.md",
+        "60-line limit",
+        "gate-collision"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794548508_b5c160",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
     "phases_total": 4
-  }
+  },
+  "next_steps": "Task ready for completion postflight. Both owner actions (the vendor ask in domain/injection-site-scoping.md, and the ~/.claude/settings.json jq inspection for the machine-wide duplicate hook surface) require the user's own follow-through outside this repository.",
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

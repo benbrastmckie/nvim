@@ -111786,6 +111786,11 @@
           "path": "specs/606_scope_sapience_injection_to_current_repo/plans/02_injection-site-scoping-residual.md",
           "type": "plan",
           "summary": "Four-phase plan: new injection-site domain note, residual-monitor probe script, domain/README/EXTENSION amendments, deploy + full gate + acceptance walkthrough."
+        },
+        {
+          "path": "specs/606_scope_sapience_injection_to_current_repo/summaries/02_injection-site-scoping-residual-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary with the five-criterion acceptance walkthrough, plan deviations, and both owner actions restated."
         }
       ],
       "audit_verdict": {
@@ -112577,7 +112582,8 @@
       },
       "last_updated": "2026-11-13T07:23:45Z",
       "session_id": "sess_1794548508_b5c160",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Scoped Sapience's primary-session content-scoping gap into durable source-store record: a new domain note (agent-system/extensions/sapience/context/project/sapience/domain/injection-site-scoping.md) names all three injection sites and both measured foreclosures on POST /v1/cli/context, a new read-only probe script (verify-sapience-context-scoping.sh) makes the residual falsifiable, and both owner actions (the vendor ask; the machine-wide duplicate-hook inspection) are written out verbatim. No hook was suppressed, filtered, or narrowed."
     },
     {
       "project_number": 607,
