@@ -4,8 +4,8 @@ Permission grants, per-repo activation surface, and orientation docs for Sapienc
 vault at app.spnc.ai. See `~/.dotfiles/docs/sapience.md` for the machine configuration.
 
 **Per-repo activation**: loading this extension into a repo is the ONLY thing that turns
-Sapience on there; unloading it turns it off again. `settings-fragment.json` carries 11
-permission grants (7 read tools + 4 write tools) and five hooks (`SessionStart`,
+Sapience on there; unloading it turns it off again. `settings-fragment.json` carries 7
+permission grants (the read-shaped tools) and five hooks (`SessionStart`,
 `UserPromptSubmit`, `PreToolUse`, `SessionEnd`, `Stop`), merged only while loaded. A separate,
 user-level `SessionStart` hook (installed by `scripts/install-sapience-mcp-session-hook.sh`)
 registers or removes this project's own `~/.claude.json` MCP entry -- six hook surfaces in

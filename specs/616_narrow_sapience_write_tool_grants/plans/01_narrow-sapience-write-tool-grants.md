@@ -364,7 +364,7 @@ paragraphs in full rather than editing by line number.
 
 ---
 
-### Phase 5: Merge Sources, Extension Metadata, Redeploy, and Fresh-Load Verification [NOT STARTED]
+### Phase 5: Merge Sources, Extension Metadata, Redeploy, and Fresh-Load Verification [IN PROGRESS]
 
 **Goal**: Every remaining surface states the seven-tool grant, the deployed tree is regenerated
 from the narrowed source, and a fresh load is confirmed to produce the narrowed set.

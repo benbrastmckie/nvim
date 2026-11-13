@@ -27,9 +27,9 @@
       "domain": "project",
       "subdomain": "sapience",
       "topics": ["sapience", "review-gate", "permissions", "staging"],
-      "keywords": ["auto_approve", "sapience_remember", "sapience_wrapup", "sapience_handoff", "sapience_adddoc", "settings-fragment", "ingest-kos", "11 grants", "scope-matched"],
-      "summary": "Staged-and-reviewed transcript-extraction path vs. direct-and-unreviewed MCP write tools and sapience-remember.sh, the now-scope-matched 11-grant/per-project-registration tradeoff, and the four write-tool disposition table",
-      "line_count": 117,
+      "keywords": ["auto_approve", "sapience_remember", "sapience_wrapup", "sapience_handoff", "sapience_adddoc", "settings-fragment", "ingest-kos", "7 grants", "scope-matched"],
+      "summary": "Staged-and-reviewed transcript-extraction path vs. direct-and-unreviewed MCP write tools and sapience-remember.sh, the now-scope-matched 7-grant/per-project-registration tradeoff, and the four write-tool disposition table",
+      "line_count": 114,
       "load_when": {},
       "on_demand": true
     },

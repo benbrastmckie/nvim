@@ -12,7 +12,7 @@ documents the vault's own model.
 | File | Role |
 |------|------|
 | `manifest.json` | Extension declaration: no `task_type`, no `routing_agents`, `routing_exempt: true`; three merge targets (`claudemd`, `index`, `settings`) |
-| `settings-fragment.json` | `permissions.allow` grant for all 11 `mcp__sapience__*` tools (7 read + 4 write) and five of the six total hook surfaces -- `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `SessionEnd`, `Stop` (gaps 1 and 4's payload); the sixth, a separate user-level MCP-registration `SessionStart` hook, is installed below, not merged by this fragment |
+| `settings-fragment.json` | `permissions.allow` grant for the 7 read-shaped `mcp__sapience__*` tools and five of the six total hook surfaces -- `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `SessionEnd`, `Stop` (gaps 1 and 4's payload); the sixth, a separate user-level MCP-registration `SessionStart` hook, is installed below, not merged by this fragment |
 | `scripts/setup-sapience-mcp.sh` | Per-project writer: registers/repairs/removes `.projects["<abs path>"].mcpServers.sapience` in `~/.claude.json` |
 | `hooks/sapience-mcp-register-project.sh` | Bidirectional `SessionStart` hook: invokes the writer when this repo's `.claude-extensions.json` shows the extension active, removes the entry when it does not |
 | `scripts/install-sapience-mcp-session-hook.sh` | Idempotent, `--remove`-capable installer seeding the hook and the writer to `$HOME/.claude/{hooks,scripts}/` and registering the `SessionStart` entry in `$HOME/.claude/settings.json` |
@@ -24,10 +24,10 @@ documents the vault's own model.
 
 ## The Gaps This Extension Closes
 
-**Gap 1 -- missing permission grants, now fully per-repo.** `settings-fragment.json` grants all
-11 `mcp__sapience__*` tools (the 7 read tools plus the 4 write tools) at this repository's own
-project scope, merged into `.claude/settings.local.json`. Loading this extension is what grants
-them here; unloading it removes them. See
+**Gap 1 -- missing permission grants, now fully per-repo.** `settings-fragment.json` grants the
+7 read-shaped `mcp__sapience__*` tools at this repository's own project scope, merged into
+`.claude/settings.local.json`. Loading this extension is what grants them here; unloading it
+removes them. See
 `context/project/sapience/domain/review-gate-boundary.md`.
 
 **Gap 2 -- postflight knowledge capture.** `EXTENSION.md`'s wrapup instruction is
