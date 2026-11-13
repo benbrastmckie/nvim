@@ -261,31 +261,43 @@ Phase 4's deploy plus merged-section comparison supplies the mechanical one.
 
 ---
 
-### Phase 4: Deploy, sweep, and record the acceptance properties [NOT STARTED]
+### Phase 4: Deploy, sweep, and record the acceptance properties [COMPLETED]
 
 **Goal**: Mirror the reconciled source store into the deployed tree and demonstrate every
 acceptance criterion against the landed result.
 
 **Tasks**:
-- [ ] Redeploy with the bounded-wait idiom:
+- [x] Redeploy with the bounded-wait idiom:
       `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool `timeout` parameter raised
       to 600000, per `context/patterns/external-process-wait.md` Rule 1). This regenerates the
       whole deployed tree, including `.claude/context/project/sapience/**` and
-      `.claude/CLAUDE.md`'s Sapience Extension section.
-- [ ] Confirm the deployed `.claude/CLAUDE.md` Sapience Extension section matches `EXTENSION.md`
-      after the Phase 3 edit.
-- [ ] Sweep the whole source store: `grep -rn "home-manager switch" agent-system/extensions/sapience/`
-      and read every hit, confirming none asserts the registration entry is wiped.
-- [ ] Re-run `bash agent-system/extensions/sapience/scripts/install-sapience-mcp-session-hook.sh`
-      against the live file and record the no-op result verbatim.
-- [ ] Re-run `bash agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh` and record
-      check (d)'s `[PASS]` line verbatim.
-- [ ] Confirm `injection-site-scoping.md` still carries Owner Action 1, the Foreclosure 1 and 2
-      measurements, and the `verify-sapience-context-scoping.sh` pointer.
-- [ ] Confirm `per-repo-scoping.md` still carries the one-session-start removal lag note.
-- [ ] Record the `verify-sapience-mcp.sh` / `setup-sapience-mcp.sh` scope judgment (see Decisions)
+      `.claude/CLAUDE.md`'s Sapience Extension section. *(completed: ran twice, second time after
+      an EXTENSION.md line-count fix -- see deviation note; RESULT=landed_verify_red both times
+      on the fast-gate battery, unrelated to sapience -- see Deviations)*
+- [x] Confirm the deployed `.claude/CLAUDE.md` Sapience Extension section matches `EXTENSION.md`
+      after the Phase 3 edit. *(completed: byte-identical Sapience Extension section confirmed
+      in the post-redeploy `.claude/CLAUDE.md`)*
+- [x] Sweep the whole source store: `grep -rn "home-manager switch" agent-system/extensions/sapience/`
+      and read every hit, confirming none asserts the registration entry is wiped. *(completed:
+      5 hits across verify-sapience-mcp.sh, per-repo-scoping.md (x2), and
+      install-sapience-mcp-session-hook.sh (x2); all read and confirmed to state the current
+      arrangement -- the companion-owned dotfiles entry restores/preserves the registration
+      across a switch, none asserts a wipe)*
+- [x] Re-run `bash agent-system/extensions/sapience/scripts/install-sapience-mcp-session-hook.sh`
+      against the live file and record the no-op result verbatim. *(completed: "(no-op)
+      /home/benjamin/.claude/settings.json already has the sapience SessionStart hook")*
+- [x] Re-run `bash agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh` and record
+      check (d)'s `[PASS]` line verbatim. *(completed: "[PASS] (d) SessionStart entry present in
+      /home/benjamin/.claude/settings.json"; check (e) FAILs on a pre-existing, unrelated 11/7
+      grant residual -- see Deviations)*
+- [x] Confirm `injection-site-scoping.md` still carries Owner Action 1, the Foreclosure 1 and 2
+      measurements, and the `verify-sapience-context-scoping.sh` pointer. *(completed: all three
+      present)*
+- [x] Confirm `per-repo-scoping.md` still carries the one-session-start removal lag note.
+      *(completed: present at line 150)*
+- [x] Record the `verify-sapience-mcp.sh` / `setup-sapience-mcp.sh` scope judgment (see Decisions)
       explicitly in the task summary, so a reader sees why the edit set is larger than the
-      dispatch's four named surfaces.
+      dispatch's four named surfaces. *(completed: see summary's "Scope Judgment" section)*
 
 **Timing**: 0.5 hours
 

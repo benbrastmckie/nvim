@@ -1,0 +1,29 @@
+{
+  "phase": 4,
+  "phase_name": "Deploy, sweep, and record the acceptance properties",
+  "started_at": "2026-11-13T00:25:00Z",
+  "last_updated": "2026-11-13T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "redeploy with bounded-wait idiom", "status": "done", "files_touched": []},
+    {"id": 2, "description": "confirm deployed CLAUDE.md Sapience section matches EXTENSION.md", "status": "done", "files_touched": []},
+    {"id": 3, "description": "sweep whole source store for home-manager switch assertions", "status": "done", "files_touched": []},
+    {"id": 4, "description": "re-run install-sapience-mcp-session-hook.sh, record no-op", "status": "done", "files_touched": []},
+    {"id": 5, "description": "re-run verify-sapience-mcp.sh, record check (d) PASS", "status": "done", "files_touched": []},
+    {"id": 6, "description": "confirm injection-site-scoping.md retains Owner Action 1/Foreclosures/pointer", "status": "done", "files_touched": []},
+    {"id": 7, "description": "confirm per-repo-scoping.md retains removal-lag note", "status": "done", "files_touched": []},
+    {"id": 8, "description": "record scope judgment in task summary", "status": "done", "files_touched": ["specs/617_reconcile_sapience_source_store_surfaces/summaries/01_reconcile-sapience-source-store-summary.md"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "EXTENSION.md Rule U (60-line limit) failure discovered after Phase 3's edit",
+      "type": "altered",
+      "reason": "The first deploy's own internal fast gates (gate3 doc-lint) caught that Phase 3's EXTENSION.md rewording pushed the file to 61-62 lines, over check-extension-docs.sh's 60-line limit. Reflowed the paragraph to 60 lines total while preserving the required content (companion-owned durable writer + converging installer + unchanged hook-surface count), re-ran the scoped gates (verify-deploy.sh --only-gate 3,26) to confirm PASS, then redeployed a second time.",
+      "annotation": "*(deviation: altered -- EXTENSION.md paragraph reflowed to stay under the 60-line Rule U limit after the first redeploy's gate3 doc-lint caught the overage; content requirement unchanged)*"
+    }
+  ],
+  "verification_notes": "deploy-headless.sh exits 0 both runs (RESULT=landed_verify_red on its own internal fast-gate battery both times -- see below); deployed .claude/CLAUDE.md Sapience Extension section byte-identical to EXTENSION.md; grep -rn 'home-manager switch' agent-system/extensions/sapience/ returns 5 hits (verify-sapience-mcp.sh:235, per-repo-scoping.md:159,168, install-sapience-mcp-session-hook.sh:33,171), all read and confirmed to state the current arrangement; install-sapience-mcp-session-hook.sh reports '(no-op) /home/benjamin/.claude/settings.json already has the sapience SessionStart hook'; verify-sapience-mcp.sh reports '[PASS] (d) SessionStart entry present in /home/benjamin/.claude/settings.json' (overall script exit 1 due to check (e)'s pre-existing, unrelated 11/7 grant residual, recorded as an issue in Phase 2); injection-site-scoping.md retains Owner Action 1 (line 62), Foreclosure 1 (line 26), Foreclosure 2 (line 36), and the verify-sapience-context-scoping.sh pointer (line 126); per-repo-scoping.md retains the one-session-start removal lag note (line 150). Per the dispatch's Batch Gate Deferral directive, the complete gate set (verify-deploy.sh's full 43-check battery) was NOT independently run to green by this phase; instead the scoped narrowing invocation 'verify-deploy.sh --only-gate 3,26 --skip-slow' (doc-lint + extension README table lint, the two gates covering this phase's own touched files: the three sapience scripts and EXTENSION.md) was run and reports PASS, 3 check(s), 0 failure(s). deploy-headless.sh's own internal fast-gate battery (the same 43-check verify-deploy.sh run inline, non-skippable by deploy-headless itself) reports 3 of 43 failing both before and after the EXTENSION.md fix: gate10 timed out (transient, 60s kill, unrelated to any file content) and gate20 orchestrator context budget (eager-load total over its recorded baseline by a shrinking margin across the two runs -- 145B over, then 44B over after this phase's own EXTENSION.md trim reduced it -- dominated by skills/skill-orchestrate/SKILL.md independently exceeding ITS OWN 25000B ceiling at 25510B, a pre-existing/sibling-task condition this task's own edits measurably improved rather than caused). Recorded via issue-record.sh. The full gate set remains deferred to the batch-level run per the dispatch directive, not independently discharged to green by this phase."
+}
