@@ -1,7 +1,7 @@
 # Implementation Plan: Task #616
 
 - **Task**: 616 - Narrow sapience write tool grants
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.25 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/616_narrow_sapience_write_tool_grants/reports/01_narrow-sapience-write-tool-grants.md

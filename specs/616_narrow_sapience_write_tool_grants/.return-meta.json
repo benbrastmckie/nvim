@@ -30,21 +30,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/616_narrow_sapience_write_tool_grants/summaries/01_narrow-sapience-write-tool-grants-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["doc-lint", "deploy-drift", "line-count", "scoped-gate", "intermediate-redeploy", "idempotent"]
+      "suggested_keywords": [
+        "doc-lint",
+        "deploy-drift",
+        "line-count",
+        "scoped-gate",
+        "intermediate-redeploy",
+        "idempotent"
+      ]
     },
     {
       "content": "To verify a 'fresh extension load produces grant set X' acceptance criterion without polluting the current repository's own merged settings (which may carry a pre-existing additive-merge residual from before a narrowing), drive the extension manager's Lua API directly in a throwaway scratch git repo: `nvim --headless -c \"lua local ext_config = require('neotex.plugins.ai.shared.extensions.config'); local ext_init = require('neotex.plugins.ai.shared.extensions.init'); local manager = ext_init.create(ext_config.claude()); local ok, err = manager.load('EXTNAME', { project_dir = 'SCRATCH_DIR', confirm = false }); print(ok)\" -c \"qa!\"`. This writes only into SCRATCH_DIR's own .claude/ and .claude-extensions.json, never touching the real repo's ~/.claude.json project registry (confirmed: no scratch-repo key appeared there). Precedent for this call pattern already existed in test-mcp-merge-target.sh's run_lua/do_load helpers.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/616_narrow_sapience_write_tool_grants/summaries/01_narrow-sapience-write-tool-grants-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["extension-loader", "manager.load", "scratch-repo", "fresh-load-verification", "headless-nvim", "acceptance-criterion"]
+      "suggested_keywords": [
+        "extension-loader",
+        "manager.load",
+        "scratch-repo",
+        "fresh-load-verification",
+        "headless-nvim",
+        "acceptance-criterion"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794588346_94d92d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   },
