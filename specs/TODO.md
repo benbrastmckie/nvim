@@ -320,8 +320,30 @@ CONSTRAINTS.
   for ephemeral orchestrator files and an "Untracking Already-Committed Ephemeral Files"
   section. Read it before proposing any new classification; this task extends that policy's
   reach, it does not replace it.
-- Do not delete or commit Class 5's genuine work as part of this task -- it is evidence of the
-  problem, and its disposal belongs to whoever authored it.
+- THE CENSUS ABOVE HAS ALREADY BEEN DISPOSED OF BY HAND; the tree is no longer the evidence.
+  On 2026-11-13 Classes 1, 2, 3 (`central-errors.jsonl`, `.memory/memory-index.json`) and 5 were
+  committed in four commits: `merge: drop an emptied hooks key instead of writing it back as []`,
+  `lean: add the external-library dependency-assessment checklist and extend two trust-surface
+  notes`, `sync: regenerated deploy manifest, context index line counts and memory retrieval
+  counters`, and `specs: commit the postflight status-rewrite residue eight completed tasks left
+  uncommitted`. Read those commits for the per-file evidence rather than expecting to find it
+  in `git status`. TWO ENTRIES WERE DELIBERATELY LEFT ON DISK, uncommitted and un-ignored,
+  because committing a defect's output would enshrine it: the root `.pid` (whose process id was
+  already dead and for which no writer could be found anywhere under `.claude/scripts/` or
+  `lua/`) and `agent-system/extensions/core/.claude-extensions.json` (Class 4). Both are still
+  there to inspect.
+- A FIFTH FINDING, uncovered while disposing of the census and belonging to this task's subject:
+  `lua/neotex/plugins/ai/shared/extensions/merge_spec.lua`'s `read_host_fixture` (its line 530)
+  reads
+  `specs/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/host-settings.json`,
+  a path that no longer exists -- `/todo` archived that task and the fixture now lives under
+  `specs/archive/369_orphan_sweep_for_removed_merge_target_entries/records/fixtures/`. Three
+  specs in that file fail with `Vim:E484: Can't open file` as a result, and they fail on a clean
+  checkout, independent of any working-tree change. This is the same policy question from the
+  other direction: a durable test fixture was filed inside a task directory that a lifecycle
+  operation later moved. The disposition table must rule on where a fixture a test depends on
+  belongs, and the broken reference must be repaired (repoint the spec, or relocate the fixture
+  out of `specs/`) as part of this task.
 
 ACCEPTANCE.
 
