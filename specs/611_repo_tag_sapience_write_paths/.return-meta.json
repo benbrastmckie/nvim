@@ -1,9 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/611_repo_tag_sapience_write_paths/summaries/01_repo-tag-sapience-write-paths-summary.md",
+      "summary": "Four-phase implementation closing all five durability gaps in the already-working tagged Sapience write path: corrected domain docs with a four-population census and a four-tool write-path disposition table, an EXTENSION.md counter-instruction superseding the vendor SessionStart nudge, three new write-side dry-run test cases asserting [repo:<slug>]/redaction/explicit:true, and a registered advisory rules/sapience-write-path.md landed with a redeploy and a scoped gate pass."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Corrected three stale sapience domain docs to a four-population census and a four-tool write-path disposition table, added an EXTENSION.md counter-instruction redirecting the vendor SessionStart nudge to the tagged path, added three write-side dry-run test cases to test-sapience-capture.sh asserting [repo:<slug>]/token-redaction/explicit:true (each confirmed to fail correctly under inversion), and landed a new advisory rules/sapience-write-path.md registered in manifest.json and verified end-to-end after a redeploy."
+  },
+  "modified_files": [
+    "agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/transcript-filter-ceiling.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/index-entries.json",
+    "agent-system/extensions/sapience/EXTENSION.md",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh",
+    "agent-system/extensions/sapience/rules/sapience-write-path.md",
+    "agent-system/extensions/sapience/manifest.json",
+    "specs/611_repo_tag_sapience_write_paths/summaries/01_repo-tag-sapience-write-paths-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a shell script sources ${SCRIPT_DIR}/lib/common.sh, it cannot run from a source-store checkout at all (lib/ only exists in the post-deploy flattened .claude/scripts/ tree). Its test suite needs a deployed-layout scratch fixture: copy the script plus deploy-root-guard.sh and lib/common.sh into <scratch>/.claude/scripts/ (and lib/), git init the scratch dir with a seed commit, and let common_repo_root resolve PROJECT_ROOT to the scratch root. When a sibling script in the same suite already has this exact fixture (e.g. a read-side script's build_scratch helper), clone its shape verbatim for a new write-side script's fixture rather than inventing a different one -- the two fixtures should differ only in which extra files they copy.",
+      "category": "PATTERN",
+      "source_artifact": "specs/611_repo_tag_sapience_write_paths/summaries/01_repo-tag-sapience-write-paths-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["deployed-layout-fixture", "lib-common-sh", "shell-test-scratch", "deploy-root-guard", "common_repo_root"]
+    },
+    {
+      "content": "When a Batch Gate Deferral directive permits discharging a plan phase's full-tier verification against a scoped --only-gate N[,...] invocation, map the phase's own declared criteria to the actual gate numbering deploy-headless.sh/verify-deploy.sh prints at run time (e.g. '3. Doc-lint', '13. Whole-tree orphan detection') rather than guessing numbers from memory -- the numbering is not fixed across repository states and an unnarrowed run's own output is the authoritative source for which gate number covers which concern.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/611_repo_tag_sapience_write_paths/summaries/01_repo-tag-sapience-write-paths-summary.md",
+      "confidence": 0.65,
+      "suggested_keywords": ["batch-gate-deferral", "only-gate", "verify-deploy", "scoped-verification"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794536113_e68c60",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
