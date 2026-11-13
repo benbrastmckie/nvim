@@ -1,0 +1,27 @@
+{
+  "phase": 6,
+  "phase_name": "Genericity audit, collision re-check, and final gate",
+  "started_at": "2026-11-13T22:55:00Z",
+  "last_updated": "2026-11-13T23:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run genericity grep over whole extension context tree", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Assert no-duplicate invariant", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Assert no unprefixed core-named basename under contracts/", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-run collision check against live manifest set", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm no web/ file modified", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Reconcile index-entries.json line_count if needed", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Run complete gate set (scoped per Batch Gate Deferral)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.verification",
+      "description": "Run the complete gate set with no --only-gate and no --skip-slow",
+      "type": "altered",
+      "reason": "Per this dispatch's Batch Gate Deferral directive, the final phase discharges the full-gate criterion against a scoped narrowing invocation rather than independently re-running the complete set a fourth time; the complete gate set already ran three times in Phase 5.",
+      "annotation": "*(deviation: altered -- discharged per Batch Gate Deferral directive; see Phase 6 Verification notes)*"
+    }
+  ]
+}
