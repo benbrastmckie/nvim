@@ -281,21 +281,22 @@ retained set.
 
 ---
 
-### Phase 4: Test coverage in merge_spec.lua [NOT STARTED]
+### Phase 4: Test coverage in merge_spec.lua [COMPLETED]
 
 **Goal**: Assert the chosen shape's behavior explicitly — including the accepted residual — rather
 than leaving it implicit, covering all five cases the dispatch's scope item 3 names plus the
 sibling-retention case the chosen shape requires.
 
 **Tasks**:
-- [ ] Add a `describe("shared.extensions.merge permission array tracking", ...)` block following the existing scratch-dir `before_each`/`after_each` and `write_target`/`read_target` conventions.
-- [ ] Case 1 — fresh merge: merge a fragment with a `permissions.allow` array into a target that has none; assert the target holds every grant and the returned `tracked` records every one of them.
-- [ ] Case 2 — re-merge over already-present grants: merge the same fragment a second time into the now-populated target; assert the target is unchanged (no duplication) **and** the second merge's `tracked` records every grant, not an empty array. This is the regression test for the defect.
-- [ ] Case 3 — unmerge after each: run `unmerge_settings` with each of the two tracked results and assert the target's `permissions.allow` returns to its pre-merge content in both cases.
-- [ ] Case 4 — coinciding user grant: seed the target with a hand-added grant string that the fragment also declares, merge, then unmerge; assert the grant **is** removed, and comment the case to state that this is the selected shape's accepted residual, not an oversight.
-- [ ] Case 5 — sibling-extension retention: unmerge with `opts.retained_fragments` carrying a second fragment that declares one of the same grants; assert that grant survives and the rest are removed.
-- [ ] Case 6 — hooks non-regression: assert a matcher-bearing hook event still produces `type = "hook_merged"` and round-trips as it does today, and that a non-`matcher` hook event array (sapience's `SessionStart` shape) now records its blocks under `appended` and is retracted by unmerge.
-- [ ] Re-run the full spec headless and confirm zero failures.
+- [x] Add a `describe("shared.extensions.merge permission array tracking", ...)` block following the existing scratch-dir `before_each`/`after_each` and `write_target`/`read_target` conventions. *(completed)*
+- [x] Case 1 — fresh merge: merge a fragment with a `permissions.allow` array into a target that has none; assert the target holds every grant and the returned `tracked` records every one of them. *(completed)*
+- [x] Case 2 — re-merge over already-present grants: merge the same fragment a second time into the now-populated target; assert the target is unchanged (no duplication) **and** the second merge's `tracked` records every grant, not an empty array. This is the regression test for the defect. *(completed)*
+- [x] Case 3 — unmerge after each: run `unmerge_settings` with each of the two tracked results and assert the target's `permissions.allow` returns to its pre-merge content in both cases. *(completed: the wrapper "permissions" key itself survives as an empty object after the second scenario, since it was only created fresh by the FIRST merge; the grants are fully retracted either way, which is the actual point)*
+- [x] Case 4 — coinciding user grant: seed the target with a hand-added grant string that the fragment also declares, merge, then unmerge; assert the grant **is** removed, and comment the case to state that this is the selected shape's accepted residual, not an oversight. *(completed)*
+- [x] Case 5 — sibling-extension retention: unmerge with `opts.retained_fragments` carrying a second fragment that declares one of the same grants; assert that grant survives and the rest are removed. *(completed: seeded the target with a pre-existing unrelated grant so the tracked type is "appended", the shape the guard is actually scoped to -- see deviation note below)*
+- [x] Case 6 — hooks non-regression: assert a matcher-bearing hook event still produces `type = "hook_merged"` and round-trips as it does today, and that a non-`matcher` hook event array (sapience's `SessionStart` shape) now records its blocks under `appended` and is retracted by unmerge. *(completed: likewise seeded a pre-existing SessionStart block for the same reason)*
+- [x] Re-run the full spec headless and confirm zero failures. *(completed: 30 successes, 0 failures, 0 errors)*
+- [x] *(deviation: altered)* Case 5 and Case 6 were initially written against a fresh/empty target, which produced `"new_array"`-tracked types. Discovered mid-authoring that `opts.retained_fragments` only guards the `"appended"`/`"hook_merged"` branches (exactly as the plan's own task wording above specifies), not the wholesale-removal `"new_array"`/`"new_object"`/`"new_value"` types, which unconditionally delete the key regardless of `opts`. Re-seeded both cases with a pre-existing entry so the tracked type matches the realistic, plan-scoped `"appended"` shape -- also the shape this repository's actual sapience/nix/lean/email records are already in (none of the four stale records this task repairs is a fresh, never-before-populated array). Recorded as a known scope boundary for Phase 5's documentation via `issue-record.sh`, rather than extending the guard to the wholesale-removal types, which would be a larger, separate change affecting other merge targets (e.g. `mcpServers.<name>`) not requested by this plan.
 
 **Timing**: 1.5 hours
 

@@ -901,33 +901,50 @@ describe("shared.extensions.merge .mcp.json fragment shape", function()
     assert.equals("stdio", result.mcpServers.fixture.type)
   end)
 
-  it("requirement (c): merging the same fragment twice yields identical decoded content and the second merge's tracked result adds nothing new", function()
-    local fragment = {
-      mcpServers = {
-        fixture = {
-          type = "stdio",
-          command = "node",
-          args = { "fixture-server.js" },
+  it(
+    "requirement (c): merging the same fragment twice yields identical decoded content, "
+      .. "and the second merge's tracked result now records (but does not re-insert) the "
+      .. "already-present nested array item -- the deep_merge tracking fix applies uniformly, "
+      .. "not only to permissions.allow",
+    function()
+      local fragment = {
+        mcpServers = {
+          fixture = {
+            type = "stdio",
+            command = "node",
+            args = { "fixture-server.js" },
+          },
         },
-      },
-    }
+      }
 
-    local ok1 = merge.merge_settings(target_path, fragment)
-    assert.is_true(ok1)
-    local first = read_target(target_path)
+      local ok1 = merge.merge_settings(target_path, fragment)
+      assert.is_true(ok1)
+      local first = read_target(target_path)
 
-    local ok2, tracked2 = merge.merge_settings(target_path, fragment)
-    assert.is_true(ok2)
-    local second = read_target(target_path)
+      local ok2, tracked2 = merge.merge_settings(target_path, fragment)
+      assert.is_true(ok2)
+      local second = read_target(target_path)
 
-    assert.are.same(first, second)
-    -- deep_merge only adds keys/items not already present, so re-merging an unchanged
-    -- fragment adds nothing new: unmerging the SECOND merge's tracked result must be a
-    -- true no-op (the file is unchanged), since nothing it tracked was actually new.
-    merge.unmerge_settings(target_path, tracked2)
-    local after_second_unmerge = read_target(target_path)
-    assert.are.same(second, after_second_unmerge)
-  end)
+      assert.are.same(first, second)
+
+      -- Before the deep_merge tracking fix, an array item already present in the target was
+      -- neither re-inserted nor recorded, so the second merge's tracked result was empty and
+      -- unmerging it was a true no-op. After the fix, deep_merge records EVERY fragment item
+      -- regardless of pre-existence (see merge.lua's comment on the array arm), so that a
+      -- re-merge on resync can still be retracted on unload -- this is the whole point of the
+      -- fix, and it is not special-cased to permissions.allow: mcpServers.fixture.args is a
+      -- nested array field reached through the SAME plain-array arm on this second merge
+      -- (mcpServers.fixture itself already exists, so deep_merge recurses into it as "merged"
+      -- rather than re-inserting it as "new_object"), so unmerging the second merge's tracked
+      -- result now removes the previously-merged args item, leaving an empty array behind
+      -- while the fixture entry's other fields survive untouched.
+      merge.unmerge_settings(target_path, tracked2)
+      local after_second_unmerge = read_target(target_path)
+      assert.same({}, after_second_unmerge.mcpServers.fixture.args)
+      assert.equals("stdio", after_second_unmerge.mcpServers.fixture.type)
+      assert.equals("node", after_second_unmerge.mcpServers.fixture.command)
+    end
+  )
 
   it("requirement (b): unmerge_settings with the first merge's tracked data removes the extension's own server and leaves the hand-written entry intact", function()
     write_target(target_path, {
@@ -958,4 +975,252 @@ describe("shared.extensions.merge .mcp.json fragment shape", function()
     assert.is_nil(result.mcpServers.fixture)
     assert.equals("my-own-server", result.mcpServers["hand-written"].command)
   end)
+end)
+
+-- Coverage for the deep_merge tracking fix: `permissions.allow` (and the structurally
+-- identical non-matcher `hooks` arrays) are dedup-before-track in `deep_merge`'s plain-array
+-- arm, so an item already present in the target used to be neither re-inserted NOR recorded --
+-- leaving `tracked[key].items` empty for it and `M.unmerge_settings` with nothing to remove.
+-- Because `manager.resync_all` re-merges every already-loaded extension's fragment on every
+-- reload, this made the tracking record go empty (and an unload retract nothing) after the
+-- very first reload. These specs assert the fixed behavior directly: every fragment item is
+-- now recorded regardless of pre-existence, `M.unmerge_settings`'s `opts.retained_fragments`
+-- guard protects a grant a sibling extension's fragment still declares, and the selected
+-- shape's accepted residual (a coinciding hand-added user grant IS removed on unload) is
+-- asserted explicitly rather than left implicit.
+describe("shared.extensions.merge permission array tracking", function()
+  local scratch_dir
+  local target_path
+
+  before_each(function()
+    scratch_dir = vim.fn.tempname()
+    vim.fn.mkdir(scratch_dir, "p")
+    target_path = scratch_dir .. "/settings.json"
+  end)
+
+  after_each(function()
+    if scratch_dir and vim.fn.isdirectory(scratch_dir) == 1 then
+      vim.fn.delete(scratch_dir, "rf")
+    end
+  end)
+
+  it("case 1 -- fresh merge: a fragment's permissions.allow array merges into a target with none, and tracked records every grant", function()
+    local fragment = {
+      permissions = {
+        allow = { "mcp__sapience__sapience", "mcp__sapience__sapience_search" },
+      },
+    }
+
+    local ok, tracked = merge.merge_settings(target_path, fragment)
+    assert.is_true(ok)
+
+    local result = read_target(target_path)
+    assert.same(fragment.permissions.allow, result.permissions.allow)
+    assert.same(fragment.permissions.allow, tracked.permissions.children.allow.items)
+  end)
+
+  it(
+    "case 2 -- re-merge over already-present grants: merging the same fragment a second time "
+      .. "does not duplicate the target array, but the second merge's tracked result records "
+      .. "every grant again rather than an empty array (the regression test for the defect)",
+    function()
+      local fragment = {
+        permissions = {
+          allow = { "mcp__sapience__sapience", "mcp__sapience__sapience_search" },
+        },
+      }
+
+      local ok1 = merge.merge_settings(target_path, fragment)
+      assert.is_true(ok1)
+      local first = read_target(target_path)
+
+      local ok2, tracked2 = merge.merge_settings(target_path, fragment)
+      assert.is_true(ok2)
+      local second = read_target(target_path)
+
+      -- No duplication.
+      assert.same(first, second)
+      assert.equals(2, #second.permissions.allow)
+
+      -- Before the fix, deep_merge recorded a tracked item only when newly inserted, so the
+      -- second merge's tracked.permissions.children.allow.items would be {} here -- exactly
+      -- the empty record this task exists to eliminate.
+      assert.same(fragment.permissions.allow, tracked2.permissions.children.allow.items)
+    end
+  )
+
+  it(
+    "case 3 -- unmerge after each: unmerge_settings with either the first merge's tracked "
+      .. "result, or the SECOND merge's tracked result alone, returns permissions.allow to its "
+      .. "pre-merge content (nil)",
+    function()
+      local fragment = {
+        permissions = {
+          allow = { "mcp__sapience__sapience", "mcp__sapience__sapience_search" },
+        },
+      }
+
+      -- First tracked result, applied alone.
+      local ok1, tracked1 = merge.merge_settings(target_path, fragment)
+      assert.is_true(ok1)
+      merge.unmerge_settings(target_path, tracked1)
+      local after_first = read_target(target_path)
+      assert.is_nil(after_first.permissions)
+
+      -- Merge twice, then unmerge with ONLY the second merge's tracked result -- it alone must
+      -- be complete enough to retract the whole grant set, since it is the only record that
+      -- would still exist after a resync re-merges an already-loaded extension. The wrapper
+      -- "permissions" key itself survives as an empty object here (unlike the first scenario
+      -- above): it was created fresh by the FIRST merge (tracked1.type == "new_object", which
+      -- removes the key entirely on unmerge), but the SECOND merge instead recurses into it
+      -- as "merged" (the key already existed by then), and a "merged" entry's own unmerge
+      -- never deletes the wrapper key -- only its tracked children. The grants themselves are
+      -- still fully retracted either way, which is what this task is about.
+      local ok2 = merge.merge_settings(target_path, fragment)
+      assert.is_true(ok2)
+      local ok3, tracked2 = merge.merge_settings(target_path, fragment)
+      assert.is_true(ok3)
+      merge.unmerge_settings(target_path, tracked2)
+      local after_second = read_target(target_path)
+      assert.same({}, after_second.permissions.allow)
+    end
+  )
+
+  it(
+    "case 4 -- coinciding user grant: a hand-added grant equal to one the fragment declares IS "
+      .. "removed on unload -- the selected shape's accepted residual, asserted explicitly "
+      .. "rather than left as an oversight",
+    function()
+      write_target(target_path, {
+        permissions = {
+          allow = { "mcp__sapience__sapience" },
+        },
+      })
+
+      local fragment = {
+        permissions = {
+          allow = { "mcp__sapience__sapience", "mcp__sapience__sapience_search" },
+        },
+      }
+
+      local ok, tracked = merge.merge_settings(target_path, fragment)
+      assert.is_true(ok)
+      local merged = read_target(target_path)
+      -- No duplication of the coinciding grant.
+      assert.equals(2, #merged.permissions.allow)
+
+      merge.unmerge_settings(target_path, tracked)
+      local after_unmerge = read_target(target_path)
+      -- ACCEPTED RESIDUAL: the hand-added grant is removed along with the fragment's own --
+      -- shape (i) cannot distinguish "the user added this independently" from "this extension
+      -- added it on an earlier load, and it is merely already present now". A grant meant to
+      -- survive an unload belongs in .claude/settings.json, which no merge path touches.
+      assert.same({}, after_unmerge.permissions.allow)
+    end
+  )
+
+  it(
+    "case 5 -- sibling-extension retention: opts.retained_fragments carrying a second "
+      .. "extension's fragment that declares one of the same grants protects that grant from "
+      .. "removal, while the rest are still retracted",
+    function()
+      -- Seed a pre-existing, unrelated grant so permissions.allow already exists before this
+      -- merge -- the realistic shape (this repository's settings.local.json already carries
+      -- grants from other extensions before sapience/nix/lean ever merge in), and the shape
+      -- the retained-fragments guard is scoped to (the "appended" branch's per-item removal;
+      -- see merge.lua's unmerge_settings doc comment for the "new_array"/"new_object" scope
+      -- boundary this does not cover).
+      write_target(target_path, {
+        permissions = {
+          allow = { "existing-other-grant" },
+        },
+      })
+
+      local fragment = {
+        permissions = {
+          allow = { "mcp__sapience__sapience", "mcp__sapience__sapience_search" },
+        },
+      }
+
+      local ok, tracked = merge.merge_settings(target_path, fragment)
+      assert.is_true(ok)
+
+      local sibling_fragment = {
+        permissions = {
+          allow = { "mcp__sapience__sapience" },
+        },
+      }
+
+      merge.unmerge_settings(target_path, tracked, { retained_fragments = { sibling_fragment } })
+
+      local result = read_target(target_path)
+      assert.same(
+        { "existing-other-grant", "mcp__sapience__sapience" },
+        result.permissions.allow
+      )
+    end
+  )
+
+  it(
+    "case 6 -- hooks non-regression: a matcher-bearing hook event still produces "
+      .. "type = hook_merged and round-trips as before, and a non-matcher hook event array "
+      .. "(sapience's SessionStart shape) now records its blocks under 'appended' and is "
+      .. "retracted by unmerge",
+    function()
+      -- Seed a pre-existing SessionStart block (another extension's or core's own hook) so
+      -- this merge's SessionStart tracking is "appended", not "new_array" -- the shape
+      -- measured live in this repository (sapience's SessionStart/SessionEnd/UserPromptSubmit/
+      -- Stop all record "appended" with empty items today, never "new_array", because
+      -- .claude/settings.local.json already carries other extensions' hook registrations
+      -- before sapience ever merges in).
+      write_target(target_path, {
+        hooks = {
+          SessionStart = {
+            { hooks = { { type = "command", command = "echo pre-existing" } } },
+          },
+        },
+      })
+
+      local fragment = {
+        hooks = {
+          -- Matcher-bearing: routes through merge_hook_event_array, immune to the
+          -- dedup-before-track defect (it tracks explicitly rather than skipping).
+          PreToolUse = {
+            {
+              matcher = "Edit|Write",
+              hooks = { { type = "command", command = "echo pretooluse" } },
+            },
+          },
+          -- Non-matcher: is_hook_event_array rejects it (no `matcher` field on the block), so
+          -- it falls through to the SAME plain-array arm permissions.allow uses.
+          SessionStart = {
+            { hooks = { { type = "command", command = "echo sessionstart" } } },
+          },
+        },
+      }
+
+      local ok, tracked = merge.merge_settings(target_path, fragment)
+      assert.is_true(ok)
+
+      assert.equals("hook_merged", tracked.hooks.children.PreToolUse.type)
+      assert.equals("appended", tracked.hooks.children.SessionStart.type)
+      assert.same(fragment.hooks.SessionStart, tracked.hooks.children.SessionStart.items)
+
+      local merged = read_target(target_path)
+      assert.equals(1, #merged.hooks.PreToolUse)
+      assert.equals(2, #merged.hooks.SessionStart)
+
+      merge.unmerge_settings(target_path, tracked)
+      local after_unmerge = read_target(target_path)
+      -- The matcher-bearing PreToolUse block this merge appended wholesale is gone (leaving an
+      -- empty array, not a deleted key: hook_merged's own unmerge never removes the per-event
+      -- key itself); the non-matcher SessionStart block this merge appended is gone too,
+      -- leaving only the pre-existing seeded one. Neither event key is deleted outright -- the
+      -- "hooks" wrapper and SessionStart are "merged"/"appended" entries here (both already
+      -- existed before this merge ran), which never delete the key, only its tracked contents.
+      assert.same({}, after_unmerge.hooks.PreToolUse)
+      assert.equals(1, #after_unmerge.hooks.SessionStart)
+      assert.equals("echo pre-existing", after_unmerge.hooks.SessionStart[1].hooks[1].command)
+    end
+  )
 end)

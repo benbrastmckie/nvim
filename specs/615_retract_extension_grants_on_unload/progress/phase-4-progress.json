@@ -1,0 +1,28 @@
+{
+  "phase": 4,
+  "phase_name": "Test coverage in merge_spec.lua",
+  "started_at": "2026-11-13T18:00:00Z",
+  "last_updated": "2026-11-13T18:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add describe block for permission array tracking", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"]},
+    {"id": 2, "description": "Case 1 fresh merge", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"]},
+    {"id": 3, "description": "Case 2 re-merge over already-present grants", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"]},
+    {"id": 4, "description": "Case 3 unmerge after each", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"]},
+    {"id": 5, "description": "Case 4 coinciding user grant", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"]},
+    {"id": 6, "description": "Case 5 sibling-extension retention", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"]},
+    {"id": 7, "description": "Case 6 hooks non-regression", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge_spec.lua"]},
+    {"id": 8, "description": "Re-run full spec headless, confirm zero failures", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.extra",
+      "description": "Case 5 and Case 6 initially written against a fresh/empty target, which produced 'new_array' tracked types rather than the 'appended' type the retained-fragments guard is scoped to",
+      "type": "altered",
+      "reason": "Discovered mid-authoring that opts.retained_fragments only guards the 'appended'/'hook_merged' branches (per the plan's own Phase 2 task wording), not the wholesale-removal 'new_array'/'new_object'/'new_value' types. Re-seeded both cases with a pre-existing array entry so the tracked type matches the realistic, plan-scoped 'appended' shape (also the shape this repository's actual sapience/nix/lean/email records are already in). Recorded the wholesale-removal scope boundary via issue-record.sh for Phase 5's documentation.",
+      "annotation": "*(deviation: altered -- seeded Case 5/6 targets with a pre-existing entry so tracked type is appended, matching the guard's actual scope; see issue log)*"
+    }
+  ]
+}
