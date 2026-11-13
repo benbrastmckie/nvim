@@ -184,26 +184,29 @@ before editing and reports any additional site rather than silently editing only
 
 ---
 
-### Phase 2: Lockstep copy in the verifier, plus a worktree check [NOT STARTED]
+### Phase 2: Lockstep copy in the verifier, plus a worktree check [COMPLETED]
 
 **Goal**: `verify-sapience-mcp.sh` resolves a worktree the same way the hook does, and reports a
 new named check asserting that a worktree carries none of the extension's hooks or permission
 grants.
 
 **Tasks**:
-- [ ] Copy the Phase 1 marker-delimited helper byte-for-byte into
+- [x] Copy the Phase 1 marker-delimited helper byte-for-byte into
       `agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh` and derive `GIT_ROOT`
       (currently line 98) from it, preserving the file's existing "kept in lockstep with
       sapience-mcp-register-project.sh's own copy" comment and extending it to name the markers.
-- [ ] Add check **(f)**: when the detected project root was resolved from a linked worktree,
+      *(completed)*
+- [x] Add check **(f)**: when the detected project root was resolved from a linked worktree,
       assert that the worktree itself carries no `.claude/settings.local.json` with any
       `mcp__sapience__*` permission grant and none of the five Sapience hook keys. Report it by
       name like the existing checks; when the CWD is not a worktree, log a skip line rather than
-      passing vacuously.
-- [ ] Extend the script's header `Checks (each reported by name)` block with (f), and state in
+      passing vacuously. *(completed)*
+- [x] Extend the script's header `Checks (each reported by name)` block with (f), and state in
       the usage/comment text that the detected project path is the parent checkout for a worktree.
-- [ ] Leave checks (a)-(e) untouched -- in particular check (e)'s grant count, which task 615
-      owns.
+      *(completed)*
+- [x] Leave checks (a)-(e) untouched -- in particular check (e)'s grant count, which task 615
+      owns. *(completed: verified unchanged except for the already-expected pre-existing 11/7
+      residual noted by check (e)'s own documented NOTE)*
 
 **Timing**: 1 hour
 

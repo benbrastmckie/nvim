@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "Lockstep copy in the verifier, plus a worktree check",
+  "started_at": "2026-11-13T00:15:00Z",
+  "last_updated": "2026-11-13T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Copy marker-delimited helper into verify-sapience-mcp.sh; derive GIT_ROOT from it",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add check (f) for worktree hook/grant absence; extend header; leave (a)-(e) untouched",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

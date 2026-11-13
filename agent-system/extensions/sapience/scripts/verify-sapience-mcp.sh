@@ -38,6 +38,14 @@
 #       the grant was narrowed to 7 keeps its already-merged write-tool entries (the merge
 #       engine is additive-only), so a count above 7 there is a known pre-existing residual, not
 #       new drift.
+#   (f) when CWD is a linked git worktree, asserts the worktree itself carries NO
+#       mcp__sapience__* permission grant and none of the five sapience hook keys -- the
+#       hook/permission-grant channel is deliberately absent from a worktree even though MCP
+#       retrieval (checks a/b above) is resolved to the parent checkout. Logs a skip line, never
+#       a pass or a fail, when CWD is not a linked worktree.
+#
+# The project root detected above (and used for checks a/b) is the PARENT CHECKOUT for a linked
+# worktree, never the worktree itself -- see the marker-delimited resolution block below.
 #
 # Exit codes:
 #   0 - Configuration valid (all applicable checks pass)
@@ -93,9 +101,39 @@ fail() {
     fi
 }
 
-# Detect project root from .claude-extensions.json at CWD or git root -- kept in lockstep with
-# sapience-mcp-register-project.sh's own copy.
-GIT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+# === BEGIN sapience-worktree-checkout-resolution (byte-identical in every copy: this hook,
+# verify-sapience-mcp.sh, sapience-retrieve.sh, sapience-remember.sh, and
+# verify-sapience-context-scoping.sh -- test-sapience-mcp-registration.sh's lockstep case
+# extracts this marker-delimited block from each copy and asserts they are all byte-identical).
+# Resolves a directory (default: cwd) to its git toplevel, following a linked worktree to its
+# PARENT CHECKOUT rather than the worktree itself. Echoes the toplevel path and returns 0, or
+# returns 1 with no output when the directory is not inside a git repository at all.
+#
+# Detection: compare `git rev-parse --git-dir` against `--git-common-dir`. Equal (including
+# both failing, on a non-git path) means "not a linked worktree -- behave exactly like a bare
+# `git rev-parse --show-toplevel`". Unequal means "linked worktree -- the common dir's PARENT
+# directory is the checkout". `--git-common-dir` returns a relative path at a checkout root but
+# an absolute path from inside a worktree, so it is absolutized before its parent is taken.
+resolve_checkout_toplevel() {
+    local dir="${1:-.}" git_dir common_dir
+    git_dir="$(git -C "$dir" rev-parse --git-dir 2>/dev/null)" || return 1
+    common_dir="$(git -C "$dir" rev-parse --git-common-dir 2>/dev/null)" || return 1
+    if [ "$git_dir" = "$common_dir" ]; then
+        git -C "$dir" rev-parse --show-toplevel 2>/dev/null
+        return $?
+    fi
+    case "$common_dir" in
+        /*) : ;;
+        *) common_dir="$(cd "$dir" 2>/dev/null && pwd)/$common_dir" ;;
+    esac
+    (cd "$common_dir/.." 2>/dev/null && pwd)
+}
+# === END sapience-worktree-checkout-resolution ===
+
+# Detect project root from .claude-extensions.json at CWD or git root -- the git root resolved
+# below is the PARENT CHECKOUT for a linked worktree (never the worktree itself). Kept in
+# lockstep with sapience-mcp-register-project.sh's own copy (see the marker block above).
+GIT_ROOT="$(resolve_checkout_toplevel 2>/dev/null || true)"
 DETECTED_PROJECT_PATH=""
 EXTENSIONS_FILE=""
 if [ -f ".claude-extensions.json" ]; then
@@ -262,6 +300,30 @@ if [ -f "$MERGED_SETTINGS" ]; then
     fi
 else
     log "  (e) $MERGED_SETTINGS not found; skipping merged-settings grant/hook check (no deploy in this tree)"
+fi
+
+# Check (f): a linked worktree must carry no sapience hooks or permission grants, even though
+# MCP retrieval (checks a/b) is resolved to the parent checkout. Recomputes the git-dir /
+# git-common-dir comparison directly (rather than reusing GIT_ROOT, which already followed the
+# worktree to its checkout) so this check is keyed on CWD's own worktree-ness.
+WT_GIT_DIR="$(git rev-parse --git-dir 2>/dev/null || true)"
+WT_COMMON_DIR="$(git rev-parse --git-common-dir 2>/dev/null || true)"
+if [ -n "$WT_GIT_DIR" ] && [ -n "$WT_COMMON_DIR" ] && [ "$WT_GIT_DIR" != "$WT_COMMON_DIR" ]; then
+    WT_SETTINGS="$(pwd)/.claude/settings.local.json"
+    if [ -f "$WT_SETTINGS" ]; then
+        WT_GRANT_COUNT=$(jq '[.permissions.allow[]? | select(startswith("mcp__sapience__"))] | length' "$WT_SETTINGS" 2>/dev/null || echo 0)
+        WT_HOOK_COUNT=$(jq '[.hooks | keys[]? | select(. == "SessionStart" or . == "UserPromptSubmit" or . == "PreToolUse" or . == "SessionEnd" or . == "Stop")] | length' "$WT_SETTINGS" 2>/dev/null || echo 0)
+        if [ "$WT_GRANT_COUNT" -eq 0 ] && [ "$WT_HOOK_COUNT" -eq 0 ]; then
+            pass "(f) linked worktree carries no sapience permission grants or hooks"
+        else
+            fail "(f) linked worktree's $WT_SETTINGS carries $WT_GRANT_COUNT sapience grant(s) and $WT_HOOK_COUNT sapience hook key(s) -- the hook/grant channel must stay absent from a worktree"
+            OVERALL_OK=false
+        fi
+    else
+        pass "(f) linked worktree carries no .claude/settings.local.json at all (no sapience grants or hooks possible)"
+    fi
+else
+    log "  (f) CWD is not a linked worktree; skipping worktree hook/grant-absence check"
 fi
 
 # Note: this machine's home-manager activation no longer creates a top-level
