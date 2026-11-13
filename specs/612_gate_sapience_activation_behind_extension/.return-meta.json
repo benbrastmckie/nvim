@@ -1,29 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/612_gate_sapience_activation_behind_extension/plans/01_gate-sapience-activation-extension.md",
-      "summary": "7-phase plan (12h) building the per-repo Sapience activation surface: MCP-registration triad, 11 permission grants, 5 hooks, docs, and end-to-end acceptance of all five verification items."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 3,
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1794548508_b5c160_612",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 12,
-    "dependency_waves": 6
-  },
-  "memory_candidates": [
-    {
-      "content": "When a plan mirrors an existing extension's shipped script triad, check whether the model achieves its durability by writing a file the new task is forbidden to touch. The lean extension's install-lean-lsp-session-hook.sh registers its SessionStart hook in BOTH ~/.claude/settings.json and ~/.dotfiles/config/claude/settings.json, because `hooks` is a home-manager ENFORCED key (the set is [_NOTE,env,hooks,model,permissions,statusLine] in modules/home/core/dotfiles.nix) that is reset from the .dotfiles source on every switch whenever that source carries a `hooks` key. A task scoped to forbid .dotfiles edits therefore inherits a silent durability gap from the precedent it is told to mirror: the user-level registration works until the next `home-manager switch` and then vanishes with no error. The reset is conditional on `$src | has($k)`, so the gap closes only if the source drops the key entirely - which it will not when other entries (an inhibitor hook, another extension's hook) still live there. Plan it as a named residual with an installer warning plus verifier detection, not as a working mechanism.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/612_gate_sapience_activation_behind_extension/plans/01_gate-sapience-activation-extension.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["home-manager", "enforced-keys", "session-hook", "durability", "precedent-mirroring", "settings.json"]
-    }
-  ],
-  "dispatch_seq": 2
+    "session_id": "sess_1794548508_b5c160",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

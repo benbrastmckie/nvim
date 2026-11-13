@@ -4,7 +4,71 @@
       "mcp__sapience__sapience_remember",
       "mcp__sapience__sapience_wrapup",
       "mcp__sapience__sapience_handoff",
-      "mcp__sapience__sapience_adddoc"
+      "mcp__sapience__sapience_adddoc",
+      "mcp__sapience__sapience",
+      "mcp__sapience__sapience_search",
+      "mcp__sapience__sapience_briefing",
+      "mcp__sapience__sapience_context",
+      "mcp__sapience__sapience_ask",
+      "mcp__sapience__sapience_outstanding",
+      "mcp__sapience__sapience_papers"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -f \"$HOME/.sapience/mcp.py\" ] && python3 \"$HOME/.sapience/mcp.py\" --briefing-text 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -f \"$HOME/.sapience/sapience_cli.py\" ] && python3 \"$HOME/.sapience/sapience_cli.py\" hook prompt 2>/dev/null || true",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -f \"$HOME/.sapience/sapience_cli.py\" ] && python3 \"$HOME/.sapience/sapience_cli.py\" hook tool 2>/dev/null || true",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -f \"$HOME/.sapience/mcp.py\" ] && python3 \"$HOME/.sapience/mcp.py\" --receipt 2>/dev/null || true",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -f \"$HOME/.sapience/mcp.py\" ] && python3 \"$HOME/.sapience/mcp.py\" --effect-line 2>/dev/null || true",
+            "timeout": 3
+          }
+        ]
+      }
     ]
   }
 }

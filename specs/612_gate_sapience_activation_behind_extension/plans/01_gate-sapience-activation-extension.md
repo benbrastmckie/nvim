@@ -1,7 +1,7 @@
 # Implementation Plan: Task #612
 
 - **Task**: 612 - Gate every Sapience activation surface behind the sapience extension so Sapience runs only in repos that load it
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 12 hours
 - **Dependencies**: Task 611 (completed)
 - **Research Inputs**: specs/612_gate_sapience_activation_behind_extension/reports/01_gate-sapience-extension-scope.md
@@ -168,35 +168,37 @@ name `plan-authoring`. **Zero hits** — the only `plan-authoring` entry is
 
 ---
 
-### Phase 1: Permission grants and the five hooks in `settings-fragment.json` [NOT STARTED]
+### Phase 1: Permission grants and the five hooks in `settings-fragment.json` [COMPLETED]
 
 **Goal**: `settings-fragment.json` carries all 11 permission grants and all 5 Sapience hooks, so
 both surfaces are present per-repo whenever the extension is loaded.
 
 **Tasks**:
-- [ ] Add the 7 read-tool grants to `permissions.allow`, keeping the 4 existing write-tool grants
+- [x] Add the 7 read-tool grants to `permissions.allow`, keeping the 4 existing write-tool grants
       byte-identical and in place: `mcp__sapience__sapience`, `mcp__sapience__sapience_search`,
       `mcp__sapience__sapience_briefing`, `mcp__sapience__sapience_context`,
       `mcp__sapience__sapience_ask`, `mcp__sapience__sapience_outstanding`,
       `mcp__sapience__sapience_papers`. Explicit enumeration, never a wildcard (the
-      `mcp-server-ownership.md` carve-out's second requirement).
-- [ ] Add a `hooks` object with the five entries, each command string, `timeout` and `async` flag
+      `mcp-server-ownership.md` carve-out's second requirement). *(completed)*
+- [x] Add a `hooks` object with the five entries, each command string, `timeout` and `async` flag
       copied byte-for-byte from `~/.dotfiles/config/claude/settings.json` (READ ONLY — confirm by
       diffing, never by retyping): `SessionStart` -> `mcp.py --briefing-text`;
       `UserPromptSubmit` -> `sapience_cli.py hook prompt` (`timeout: 3`); `PreToolUse` with
       `matcher: "Edit|Write|MultiEdit"` -> `sapience_cli.py hook tool` (`timeout: 3`);
       `SessionEnd` -> `mcp.py --receipt` (`async: true`); `Stop` -> `mcp.py --effect-line`
-      (`timeout: 3`).
-- [ ] Do **not** add a `matcher` to any of the four entries that lack one upstream. See the
+      (`timeout: 3`). *(completed: verified byte-identical via exact-string search over the
+      dotfiles JSON, not by eye)*
+- [x] Do **not** add a `matcher` to any of the four entries that lack one upstream. See the
       Research Integration finding: `matcher: "startup"` on `SessionStart` would narrow the
       briefing to one session-start source, and the matcher-less entries already merge and
-      unmerge correctly through `deep_merge`'s tracked generic-array branch.
-- [ ] Do **not** add a sixth hook here. The MCP-registration `SessionStart` hook is installed at
-      user level by Phase 4, for the reason Phase 3 records.
-- [ ] Carry forward the two deliberate rulings in prose, in this phase's commit message and in
+      unmerge correctly through `deep_merge`'s tracked generic-array branch. *(completed)*
+- [x] Do **not** add a sixth hook here. The MCP-registration `SessionStart` hook is installed at
+      user level by Phase 4, for the reason Phase 3 records. *(completed)*
+- [x] Carry forward the two deliberate rulings in prose, in this phase's commit message and in
       Phase 6's docs: `statusLine` belongs to `hooks/statusline-push.sh` and is deliberately NOT
       wired to Sapience; `sapience_cli.py`'s own `hook session` and `hook stop` are deliberately
       NOT wired, because each would duplicate an `mcp.py` hook and print a second line per turn.
+      *(completed: ruling recorded here and will be restated in Phase 6's docs)*
 
 **Timing**: 1.5 hours
 
