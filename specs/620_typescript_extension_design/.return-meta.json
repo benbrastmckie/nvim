@@ -1,0 +1,36 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/620_typescript_extension_design/reports/01_typescript-extension-design-research.md",
+      "summary": "Full design research for a new generic typescript extension: file manifest with line budgets, context/project/typescript/ tree, both agents' stages/tools/model tier, hard_contracts recommendation, keyword_overrides set with an explicit collision check against web and 6 other manifests (none found), the typescript-rules.md paths glob, the verification hook's toolchain-detection and honest-degrade contract, and a line-level split of web's typescript-web.md."
+    }
+  ],
+  "next_steps": "Run /orchestrate 620 to create the implementation plan from this research report",
+  "dispatch_seq": 4,
+  "metadata": {
+    "session_id": "sess_1794603202_55566e_620",
+    "agent_type": "general-research-agent",
+    "duration_seconds": 3000,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 8
+  },
+  "memory_candidates": [
+    {
+      "content": "When designing a new domain extension's keyword_overrides, the collision check needs two separate sources, not one: (1) read every OTHER loaded/source-store extension manifest's own keyword_overrides block directly (jq/python dump), and (2) read the core weak-signal fallback table in scripts/lib/task-type-detect.sh's DTD_WEAK_SIGNAL_TABLE, since a sibling extension with zero keyword_overrides (e.g. web) can still have a weak-signal row in the SAME core table that a naive 'does the sibling manifest declare keyword_overrides' check would miss entirely.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/620_typescript_extension_design/reports/01_typescript-extension-design-research.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["keyword_overrides", "collision-check", "task-type-detect", "extension-design", "weak-signal-table"]
+    },
+    {
+      "content": "No extension in this repository's source store currently declares a verification-stage lifecycle hook (only nix and nvim use preflight/context_injection). The closest structural precedent, nix-preflight.sh, only ever warns-and-continues and never has to distinguish 'ran a check and it passed' from 'had nothing to check' -- a genuinely new design requirement (honest-degrade: SKIP with a stated reason, never a silent pass) has no adaptable precedent in-repo and must state its own three-state vocabulary (ran_pass/ran_fail/skipped_no_command) from scratch.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/620_typescript_extension_design/reports/01_typescript-extension-design-research.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["lifecycle-hooks", "verification-hook", "honest-degrade", "extension-design"]
+    }
+  ]
+}

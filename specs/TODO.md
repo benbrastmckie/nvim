@@ -180,7 +180,7 @@ next_project_number: 625
 
 ### Typescript Extension
 
-620 [NOT STARTED] — Design the typescript extension: file manifest, agents, hard...
+620 [RESEARCHED] — Design the typescript extension: file manifest, agents, hard...
   └─ 621 [NOT STARTED] — Implement the typescript extension in the source store with...
     └─ 622 [NOT STARTED] — Validate the typescript extension's generic toolchain...
       └─ 623 [NOT STARTED] — Make the web extension depend on the typescript extension and...
@@ -304,10 +304,11 @@ expected `.claude/` files, the merged `CLAUDE.md` section, and the merged `index
 
 ### 620. Design the typescript extension: file manifest, agents, hard contracts, verification hook, and the typescript-web split
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: typescript-extension
 - **Dependencies**: Task 619
+- **Research**: [620_typescript_extension_design/reports/01_typescript-extension-design-research.md]
 
 **Description**: GOAL. Produce the implementation plan for the new `typescript` extension from the research
 report, covering its file manifest, both agents, hard contracts, the verification hook, and the
