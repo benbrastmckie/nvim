@@ -13,8 +13,8 @@ next_project_number: 619
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,614,615,616,617,618 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,615,616,617,618 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605,614 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604,617 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594 | 439,458,472,476,486,509,518,519,542,543,564,572,593 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,595 | 438,492,501,539,547,552,580,594 | core-agent-system, agent-system |
 | 5 | 596,609 | 577,595 | agent-system |
@@ -83,10 +83,10 @@ next_project_number: 619
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-614 [NOT STARTED] — Resolve a SF-1 card worktree to its parent checkout so card...
-615 [NOT STARTED] — GOAL. Make an extension's permissions.allow grants retract on...
-616 [NOT STARTED] — GOAL. Narrow the sapience extension's MCP write-tool...
-617 [NOT STARTED] — GOAL. Reconcile the sapience extension's source store with...
+615 [RESEARCHING] — GOAL. Make an extension's permissions.allow grants retract on...
+616 [RESEARCHING] — GOAL. Narrow the sapience extension's MCP write-tool...
+617 [RESEARCHED] — GOAL. Reconcile the sapience extension's source store with...
+  └─ 614 [NOT STARTED] — Resolve a SF-1 card worktree to its parent checkout so card...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
@@ -358,10 +358,11 @@ ACCEPTANCE.
 ---
 
 ### 617. Reconcile sapience source store surfaces
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [617_reconcile_sapience_source_store_surfaces/reports/01_reconcile-sapience-source-store.md]
 
 **Description**: GOAL. Reconcile the sapience extension's source store with the machine-wide surfaces the
 companion work in /home/benjamin/.dotfiles removes, so that three documents and one script stop
@@ -448,7 +449,7 @@ ACCEPTANCE.
 ---
 
 ### 616. Narrow sapience write tool grants
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -531,7 +532,7 @@ ACCEPTANCE.
 ---
 
 ### 615. Retract extension grants on unload
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -639,7 +640,7 @@ ACCEPTANCE.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: extensions
-- **Dependencies**: Task 612, Task 606
+- **Dependencies**: Task 606, Task 612, Task 617
 
 **Description**: GOAL. Make a SF-1 hub-runner card worktree resolve to its parent checkout for Sapience
 registration, so a card session gets the card repo's REPO-SCOPED retrieval while continuing to
