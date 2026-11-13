@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Outcome-coverage attestation and final gate",
+  "started_at": "2026-11-13T02:10:00Z",
+  "last_updated": "2026-11-13T02:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Walk the six REQUIRED OUTCOMES and map to report headings", "status": "done", "files_touched": [], "note": "All six report headings already carry explicit (Outcome N) tags; mapping recorded in the phase-4 handoff."},
+    {"id": 2, "description": "Confirm Recommendations section still carries task 620's four inputs", "status": "done", "files_touched": [], "note": "Re-read lines 258-284; all four bullets (nix precedent, keyword_overrides modeled on rust, routing_agents-before-keyword_overrides ordering, decline hard_contracts per books) intact and unaffected by Phases 2-3 edits."},
+    {"id": 3, "description": "Re-read the report end to end for internal consistency", "status": "done", "files_touched": ["specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md"], "note": "Found and corrected a third instance of the loader.lua/init.lua conflation (already fixed twice in Phase 2 for merge_targets): the dependencies row attributed manager.load()'s recursive resolution to loader.lua; confirmed via grep that manager.load() is a local function inside init.lua's M.create(config). The provides.* row's loader.lua attribution (M.copy_category) was independently re-verified and found correct."},
+    {"id": 4, "description": "Run validate-artifact.sh and resolve any finding", "status": "done", "files_touched": [], "note": "Exits 0, 0 warnings, after the Phase 4 correction."},
+    {"id": 5, "description": "Run the complete gate set (verify-deploy.sh)", "status": "done", "files_touched": [], "note": "Discharged per the dispatch's Batch Gate Deferral directive rather than run independently -- see handoff's Batch Gate Deferral Discharge note. Confirmed via git diff --stat HEAD~3..HEAD that every file this task touched across all four phases lives under specs/619_typescript_extension_contract_research/** (plus the fixed TODO.md/state.json phase-marker writes); none of verify-deploy.sh's 29+ gates targets specs/** content (they target agent-system/extensions/**-vs-.claude/** deploy consistency and shell/lua lint), so no gate/suite narrowing (--only-gate / run-all.sh --only) can express coverage for this task's edits at all -- an UNMAPPABLE CRITERION per the dispatch's own carve-out. The scoped discharge is validate-artifact.sh (objective 4), which does cover and does pass."},
+    {"id": 6, "description": "Attest in the handoff whether anything was recorded in the issue log", "status": "done", "files_touched": [], "note": "7 entries total across the task's lifecycle (2 pre-implement, 5 during this implement dispatch): 3 win entries (research efficiency, Phase 1 clean re-derivation, Phase 3 verified toolchain state) and 4 issue entries (1 minor design-record gap found at plan-authoring, 1 minor documentation-drift path typo, 1 costly incorrect-claim correction on section_id/process_merge_targets in Phase 2, 1 minor incorrect-claim correction on manager.load() in Phase 4)."}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.5",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh ... Resolve every non-skip failure attributable to this task's own edits.",
+      "type": "altered",
+      "reason": "The dispatch file's own Batch Gate Deferral section directs this phase to discharge against a scoped tier rather than independently run the complete gate set, since this is one of several implement-phase dispatches inside one multi-task /orchestrate batch. Neither run-all.sh --only nor verify-deploy.sh --only-gate can express coverage for a specs/**-only edit (no suite/gate targets specs/** content), making this an UNMAPPABLE CRITERION per the dispatch's own carve-out; the named, scoped-capable check (validate-artifact.sh) was run instead and passes.",
+      "annotation": "*(deviation: altered — discharged per the dispatch's Batch Gate Deferral directive; see progress file task 4.5 and handoff)*"
+    }
+  ]
+}

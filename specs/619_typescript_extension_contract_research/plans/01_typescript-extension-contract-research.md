@@ -282,27 +282,23 @@ without the number.
 
 ---
 
-### Phase 4: Outcome-coverage attestation and final gate [NOT STARTED]
+### Phase 4: Outcome-coverage attestation and final gate [COMPLETED]
 
 **Goal**: Attest that all six required outcomes are answered, and close the task against the full
 gate set.
 
 **Tasks**:
-- [ ] Walk the dispatch's six REQUIRED OUTCOMES one at a time and record, for each, the report
+- [x] Walk the dispatch's six REQUIRED OUTCOMES one at a time and record, for each, the report
       section and heading that answers it — a one-line mapping, six entries, no gaps and no
-      "partially".
-- [ ] Confirm the report's Recommendations section still carries all four inputs task 620 consumes,
-      and that nothing added in Phases 2-3 contradicts them.
-- [ ] Re-read the report end to end once for internal consistency between the sections the three
-      prior phases edited.
-- [ ] Run `bash .claude/scripts/validate-artifact.sh specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md report` and resolve any finding.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (source-store entry point
-      `bash agent-system/extensions/core/scripts/verify-deploy.sh` if the deployed path does not
-      resolve), from this repository's own root so both the deployed `.claude/` tree and the
-      `agent-system/extensions` source store are present for the gates that need both. Resolve
-      every non-skip failure attributable to this task's own edits.
-- [ ] Attest in the handoff whether anything was recorded in the issue log during this task, rather
-      than silently recording nothing.
+      "partially". *(completed: see handoff's Outcome-Coverage Mapping; all six report H2/H3 headings already carry explicit "(Outcome N)" tags)*
+- [x] Confirm the report's Recommendations section still carries all four inputs task 620 consumes,
+      and that nothing added in Phases 2-3 contradicts them. *(completed: re-read lines 258-284; all four bullets intact and unaffected by Phases 2-3)*
+- [x] Re-read the report end to end once for internal consistency between the sections the three
+      prior phases edited. *(completed: full end-to-end read surfaced and corrected a third instance of the loader.lua/init.lua conflation -- the dependencies row's manager.load() attribution)*
+- [x] Run `bash .claude/scripts/validate-artifact.sh specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md report` and resolve any finding. *(completed: exits 0, 0 warnings, after the Phase 4 correction)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` ... *(deviation: altered — discharged per the dispatch's Batch Gate Deferral directive instead of run independently; see handoff's Batch Gate Deferral Discharge note)*
+- [x] Attest in the handoff whether anything was recorded in the issue log during this task, rather
+      than silently recording nothing. *(completed: see handoff's Issue Log Attestation)*
 
 **Timing**: 0.4 hours
 
