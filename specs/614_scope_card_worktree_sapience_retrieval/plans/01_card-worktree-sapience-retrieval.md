@@ -290,32 +290,36 @@ leaving it.
 
 ---
 
-### Phase 4: Regression coverage for the worktree cases [NOT STARTED]
+### Phase 4: Regression coverage for the worktree cases [COMPLETED]
 
 **Goal**: `test-sapience-mcp-registration.sh` covers the four worktree scenarios the dispatch
 enumerates, plus a mechanical guard that the resolution block has not drifted between its copies.
 
 **Tasks**:
-- [ ] Add a worktree fixture builder alongside the existing `git init -q` repo fixtures: a
+- [x] Add a worktree fixture builder alongside the existing `git init -q` repo fixtures: a
       checkout with `.claude-extensions.json`, plus `git worktree add --detach` of it. Guard the
       whole block on `git worktree` being usable, degrading to an `info` skip line in the suite's
-      existing idiom rather than a failure.
-- [ ] Case (a): a worktree of a **loaded** checkout registers an entry keyed on the **checkout's**
+      existing idiom rather than a failure. *(completed: cases 25-30)*
+- [x] Case (a): a worktree of a **loaded** checkout registers an entry keyed on the **checkout's**
       path, with no entry keyed on the worktree path, and emits an `additionalContext` notice.
-- [ ] Case (b): a worktree of an **unloaded** checkout registers nothing and is silent (`{}`).
-- [ ] Case (c): an existing checkout-keyed entry is **retracted** when the checkout's
+      *(completed: case 25)*
+- [x] Case (b): a worktree of an **unloaded** checkout registers nothing and is silent (`{}`).
+      *(completed: case 26)*
+- [x] Case (c): an existing checkout-keyed entry is **retracted** when the checkout's
       `.claude-extensions.json` flips to inactive, exercised from inside the worktree -- the
-      bidirectional contract surviving the worktree path.
-- [ ] Case (d): a worktree-shaped path that is not a git worktree (and a plain non-git directory)
-      is a silent, error-free no-op.
-- [ ] Case (e): after cases (a)-(d), assert the fixture `~/.claude.json` carries **exactly** the
+      bidirectional contract surviving the worktree path. *(completed: case 27)*
+- [x] Case (d): a worktree-shaped path that is not a git worktree (and a plain non-git directory)
+      is a silent, error-free no-op. *(completed: case 28, using a stale/broken `.git` file to
+      model a worktree-shaped-but-not-actually-a-worktree path)*
+- [x] Case (e): after cases (a)-(d), assert the fixture `~/.claude.json` carries **exactly** the
       checkout key and **no** worktree-derived key -- the mechanical form of acceptance
-      criterion 4.
-- [ ] Case (f): lockstep guard -- extract the marker-delimited block from every copy (the hook,
+      criterion 4. *(completed: case 29)*
+- [x] Case (f): lockstep guard -- extract the marker-delimited block from every copy (the hook,
       the verifier, and the three Phase 3 scripts) and assert all are byte-identical; fail naming
       the divergent file. This replaces the prose-only "keep in lockstep" comment with a check.
-- [ ] Extend the suite's header case inventory with the new case numbers and one-line
-      descriptions, matching the existing numbered-comment convention.
+      *(completed: case 30)*
+- [x] Extend the suite's header case inventory with the new case numbers and one-line
+      descriptions, matching the existing numbered-comment convention. *(completed)*
 
 **Timing**: 1.5 hours
 

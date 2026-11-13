@@ -1,0 +1,28 @@
+{
+  "phase": 4,
+  "phase_name": "Regression coverage for the worktree cases",
+  "started_at": "2026-11-13T01:05:00Z",
+  "last_updated": "2026-11-13T01:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Worktree fixture builder, usability guard, and cases 25-30 (a-f)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Header case inventory update; discriminative mutation check (reverted hook fails cases 25/27/29)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

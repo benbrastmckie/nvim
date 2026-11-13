@@ -43,6 +43,20 @@
 #   (23) Missing SessionStart registration fails with exit 1.
 #   (24) Inactive extension is reported distinctly.
 #
+# Worktree cases (added once worktree-aware checkout resolution lands; skipped if `git worktree`
+# is unusable or the hook/verifier sources do not exist yet):
+#   (25) A worktree of a LOADED checkout registers an entry keyed on the checkout's path, with
+#        no worktree-keyed entry, and emits an additionalContext notice.
+#   (26) A worktree of an UNLOADED checkout registers nothing and is silent ({}).
+#   (27) An existing checkout-keyed entry is RETRACTED, exercised from inside the worktree, once
+#        the checkout's extension unloads -- the bidirectional contract surviving the worktree.
+#   (28) A worktree-shaped path that is not a git worktree at all (a stale/broken `.git` file),
+#        and a plain non-git directory, are each a silent, error-free no-op.
+#   (29) After cases (25)-(28), ~/.claude.json carries EXACTLY the checkout key and no
+#        worktree-derived key.
+#   (30) Lockstep guard: the marker-delimited worktree-checkout-resolution block is
+#        byte-identical across the hook, the verifier, and the three slug-derivation scripts.
+#
 # Falsifiability / mutation check: a mutated copy of setup-sapience-mcp.sh with the whole-entry
 # comparison (`$a == $b`) replaced by an always-true predicate is run against case (3)'s
 # divergent-entry fixture, proving case (3) actually depends on a real comparison.
@@ -484,6 +498,153 @@ else
 
   info "Case 23 (missing SessionStart registration) and case 24 (inactive extension) are covered"
   info "by the verifier's own named checks; exercised at Phase 7 end-to-end against the real HOME."
+fi
+
+# =====================================================================
+# Worktree cases: a linked git worktree must resolve registration and slug derivation to its
+# PARENT CHECKOUT, never to the worktree itself. Skipped with an INFO line if `git worktree` is
+# not usable in this environment, or if the hook/verifier sources do not exist yet.
+# =====================================================================
+WT_PROBE_DIR="$WORKDIR/wt_probe"
+WT_PROBE_LINK="$WORKDIR/wt_probe-link"
+mkdir -p "$WT_PROBE_DIR"
+WT_USABLE=true
+(
+  cd "$WT_PROBE_DIR" || exit 1
+  git init -q || exit 1
+  git -c user.email="t@t.t" -c user.name="t" commit --allow-empty -q -m init || exit 1
+  git worktree add -q --detach "$WT_PROBE_LINK" >/dev/null 2>&1 || exit 1
+) || WT_USABLE=false
+rm -rf "$WT_PROBE_DIR" "$WT_PROBE_LINK" 2>/dev/null
+
+if ! $WT_USABLE; then
+  info "Worktree cases (25-30) skipped: 'git worktree add' is not usable in this environment"
+elif [ ! -f "$HOOK_SRC" ] || [ ! -f "$VERIFIER_SRC" ]; then
+  info "Worktree cases (25-30) skipped: hook or verifier source does not exist yet"
+else
+  HOMEWT="$WORKDIR/casewt/home"
+  CHECKOUTWT="$WORKDIR/casewt/checkout"
+  mkdir -p "$HOMEWT/.sapience" "$CHECKOUTWT" "$HOMEWT/.claude/scripts"
+  echo '{}' > "$HOMEWT/.claude.json"
+  echo '{}' > "$HOMEWT/.sapience/config.json"
+  cp "$WRITER_SRC" "$HOMEWT/.claude/scripts/setup-sapience-mcp.sh"
+  chmod +x "$HOMEWT/.claude/scripts/setup-sapience-mcp.sh"
+
+  (cd "$CHECKOUTWT" && git init -q && git -c user.email="t@t.t" -c user.name="t" commit --allow-empty -q -m init) >/dev/null 2>&1
+  # Deliberately UNTRACKED, mirroring the hook/writer fixtures in cases 10-14 above: a
+  # worktree's own working directory receives only TRACKED content from its checked-out commit,
+  # so an untracked .claude-extensions.json in the checkout never materializes in the worktree.
+  jq -n '{"extensions": {"sapience": {"status": "active"}}}' > "$CHECKOUTWT/.claude-extensions.json"
+
+  WORKTREEWT="$WORKDIR/casewt/wt1"
+  (cd "$CHECKOUTWT" && git worktree add -q --detach "$WORKTREEWT") >/dev/null 2>&1
+
+  # Case 25: a worktree of a LOADED checkout registers an entry keyed on the checkout's path,
+  # with NO entry keyed on the worktree path, and emits an additionalContext notice.
+  OUT25=$(cd "$WORKTREEWT" && HOME="$HOMEWT" bash "$HOOK_SRC" 2>&1)
+  ENTRY_CHECKOUT25=$(jq -c --arg p "$CHECKOUTWT" '.projects[$p].mcpServers.sapience // "ABSENT"' "$HOMEWT/.claude.json")
+  ENTRY_WT25=$(jq -c --arg p "$WORKTREEWT" '.projects[$p].mcpServers.sapience // "ABSENT"' "$HOMEWT/.claude.json")
+
+  if [ "$ENTRY_CHECKOUT25" != '"ABSENT"' ] && [ "$ENTRY_WT25" = '"ABSENT"' ] && printf '%s' "$OUT25" | jq -e '.additionalContext' > /dev/null 2>&1; then
+    pass "Case 25: a worktree of a loaded checkout registers an entry keyed on the checkout's path, with no worktree-keyed entry, and emits a notice"
+  else
+    fail "Case 25: checkout_entry=$ENTRY_CHECKOUT25 wt_entry=$ENTRY_WT25 output=$OUT25"
+  fi
+
+  # Case 26: a worktree of an UNLOADED checkout registers nothing and is silent ({}).
+  HOMEWT2="$WORKDIR/casewt2/home"
+  CHECKOUTWT2="$WORKDIR/casewt2/checkout"
+  mkdir -p "$HOMEWT2/.sapience" "$CHECKOUTWT2" "$HOMEWT2/.claude/scripts"
+  echo '{}' > "$HOMEWT2/.claude.json"
+  echo '{}' > "$HOMEWT2/.sapience/config.json"
+  cp "$WRITER_SRC" "$HOMEWT2/.claude/scripts/setup-sapience-mcp.sh"
+  chmod +x "$HOMEWT2/.claude/scripts/setup-sapience-mcp.sh"
+  (cd "$CHECKOUTWT2" && git init -q && git -c user.email="t@t.t" -c user.name="t" commit --allow-empty -q -m init) >/dev/null 2>&1
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$CHECKOUTWT2/.claude-extensions.json"
+  WORKTREEWT2="$WORKDIR/casewt2/wt1"
+  (cd "$CHECKOUTWT2" && git worktree add -q --detach "$WORKTREEWT2") >/dev/null 2>&1
+
+  OUT26=$(cd "$WORKTREEWT2" && HOME="$HOMEWT2" bash "$HOOK_SRC" 2>&1)
+  if [ "$OUT26" = '{}' ]; then
+    pass "Case 26: a worktree of an unloaded checkout registers nothing and is silent ({})"
+  else
+    fail "Case 26: expected {}, got: $OUT26"
+  fi
+
+  # Case 27: an existing checkout-keyed entry is RETRACTED when the checkout's
+  # .claude-extensions.json flips to inactive, exercised from inside the worktree -- the
+  # bidirectional register/remove contract surviving the worktree path.
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$CHECKOUTWT/.claude-extensions.json"
+  OUT27=$(cd "$WORKTREEWT" && HOME="$HOMEWT" bash "$HOOK_SRC" 2>&1)
+  ENTRY_CHECKOUT27=$(jq -c --arg p "$CHECKOUTWT" '.projects[$p].mcpServers.sapience // "ABSENT"' "$HOMEWT/.claude.json")
+
+  if [ "$ENTRY_CHECKOUT27" = '"ABSENT"' ] && printf '%s' "$OUT27" | jq -e '.additionalContext' > /dev/null 2>&1; then
+    pass "Case 27: an existing checkout-keyed entry is retracted, exercised from inside the worktree, once the checkout's extension unloads"
+  else
+    fail "Case 27: expected checkout entry removed and a notice; entry=$ENTRY_CHECKOUT27 output=$OUT27"
+  fi
+
+  # Case 28: a worktree-shaped path that is not actually a git worktree at all (a stale/broken
+  # `.git` file left behind by a torn-down worktree), and a plain non-git directory, are each a
+  # silent, error-free no-op.
+  BROKENWT28="$WORKDIR/casewt/broken-worktree-shaped"
+  mkdir -p "$BROKENWT28"
+  echo "gitdir: $WORKDIR/casewt/nonexistent-gitdir" > "$BROKENWT28/.git"
+  OUT28A=$(cd "$BROKENWT28" && HOME="$HOMEWT" bash "$HOOK_SRC" 2>&1); RC28A=$?
+  NONGIT28="$WORKDIR/casewt/plain-nongit-dir"
+  mkdir -p "$NONGIT28"
+  OUT28B=$(cd "$NONGIT28" && HOME="$HOMEWT" bash "$HOOK_SRC" 2>&1); RC28B=$?
+
+  if [ "$RC28A" -eq 0 ] && [ "$OUT28A" = '{}' ] && [ "$RC28B" -eq 0 ] && [ "$OUT28B" = '{}' ]; then
+    pass "Case 28: a worktree-shaped path that is not a git worktree, and a plain non-git directory, are each a silent, error-free no-op"
+  else
+    fail "Case 28: broken-worktree-shaped rc=$RC28A out=$OUT28A; non-git rc=$RC28B out=$OUT28B"
+  fi
+
+  # Case 29: after cases 25-28, the fixture ~/.claude.json carries EXACTLY the checkout key and
+  # NO worktree-derived key -- the mechanical form of the no-dead-entry acceptance criterion.
+  PROJECT_KEYS29=$(jq -r '.projects | keys[]' "$HOMEWT/.claude.json" 2>/dev/null | sort)
+  EXPECTED_KEYS29=$(printf '%s\n' "$CHECKOUTWT" | sort)
+  if [ "$PROJECT_KEYS29" = "$EXPECTED_KEYS29" ]; then
+    pass "Case 29: ~/.claude.json carries exactly the checkout key and no worktree-derived key"
+  else
+    fail "Case 29: expected keys [$EXPECTED_KEYS29], got [$PROJECT_KEYS29]"
+  fi
+
+  # Case 30: lockstep guard -- the marker-delimited worktree-checkout-resolution block is
+  # byte-identical across every copy (the hook, the verifier, and the three slug-derivation
+  # scripts). Replaces the prose-only "keep in lockstep" comment with a mechanical check.
+  LOCKSTEP_FILES=(
+    "$HOOK_SRC"
+    "$VERIFIER_SRC"
+    "$SCRIPT_DIR/../sapience-retrieve.sh"
+    "$SCRIPT_DIR/../sapience-remember.sh"
+    "$SCRIPT_DIR/../verify-sapience-context-scoping.sh"
+  )
+  LOCKSTEP_REFERENCE=""
+  LOCKSTEP_OK=true
+  LOCKSTEP_DIVERGENT=""
+  for lf in "${LOCKSTEP_FILES[@]}"; do
+    LOCKSTEP_BLOCK=$(sed -n '/^# === BEGIN sapience-worktree-checkout-resolution/,/^# === END sapience-worktree-checkout-resolution ===$/p' "$lf")
+    if [ -z "$LOCKSTEP_BLOCK" ]; then
+      LOCKSTEP_OK=false
+      LOCKSTEP_DIVERGENT="$lf (marker-delimited block not found)"
+      break
+    fi
+    if [ -z "$LOCKSTEP_REFERENCE" ]; then
+      LOCKSTEP_REFERENCE="$LOCKSTEP_BLOCK"
+    elif [ "$LOCKSTEP_BLOCK" != "$LOCKSTEP_REFERENCE" ]; then
+      LOCKSTEP_OK=false
+      LOCKSTEP_DIVERGENT="$lf"
+      break
+    fi
+  done
+
+  if $LOCKSTEP_OK; then
+    pass "Case 30: the marker-delimited worktree-checkout-resolution block is byte-identical across all five copies"
+  else
+    fail "Case 30: the worktree-checkout-resolution block diverges in $LOCKSTEP_DIVERGENT"
+  fi
 fi
 
 # =====================================================================
