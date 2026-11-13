@@ -1,5 +1,5 @@
 ---
-next_project_number: 612
+next_project_number: 613
 ---
 
 # TODO
@@ -14,7 +14,7 @@ next_project_number: 612
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,611 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,572,576,583,584,592,593,598,605,606 | 383,390,398,431,451,452,455,459,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604,611 | core-agent-system, extensions, neovim, ... |
+| 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,572,576,583,584,592,593,598,605,606,612 | 383,390,398,431,451,452,455,459,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604,611 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594 | 439,458,472,476,486,509,518,519,542,543,564,572,593 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,595 | 438,492,501,539,547,552,580,594 | core-agent-system, agent-system |
 | 5 | 596,609 | 577,595 | agent-system |
@@ -81,8 +81,9 @@ next_project_number: 612
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-611 [RESEARCHED] — Repo-tag every Sapience write path the source store owns so...
+611 [PLANNING] — Repo-tag every Sapience write path the source store owns so...
   └─ 606 [NOT STARTED] — Scope Sapience context injection to the current repository so...
+  └─ 612 [NOT STARTED] — Gate every Sapience activation surface behind the sapience...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
@@ -188,8 +189,148 @@ next_project_number: 612
 
 ## Tasks
 
+### 612. Gate every Sapience activation surface behind the sapience extension so Sapience runs only in repos that load it
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: Task 611
+
+**Description**: GOAL. Remove every machine-wide Sapience activation surface this repository owns, so that loading
+the sapience extension into a repo is the ONLY thing that turns Sapience on there, and unloading
+it is the only thing that turns it off.
+
+SITING. This task belongs in /home/benjamin/.dotfiles because every one of its edit targets is
+owned by this repository's own tree, not by the agent-system source store:
+`modules/home/services/sapience.nix`, `config/claude/settings.json` and `docs/sapience.md`. Per
+`.claude/rules/source-store-deploy-boundary.md`'s Task Siting subsection, a task is filed in the
+repository whose local filesystem contains its edit target. The companion extension-side task is
+sited in /home/benjamin/.config/nvim because its targets live under that repo's
+`agent-system/extensions/sapience/` source store.
+
+ORDERING CONSTRAINT, HARD. This is the second half of a two-part change. The first half, sited in
+/home/benjamin/.config/nvim under the project name `gate_sapience_activation_behind_extension`,
+builds the per-repo activation surface in the extension's source store. This task MUST NOT land
+before that companion task has landed and been verified. Removing the machine-wide surface first
+leaves Sapience off in EVERY repository, including the two that should have it. The constraint
+cannot be expressed as a state.json dependency edge, because the companion lives in a different
+repository's numbering space -- so it is recorded here in prose and the companion is referred to
+by its durable project name. Before starting implementation, confirm the companion has completed;
+if it has not, the correct action is to stop and report, not to proceed.
+
+=== WHAT IS BEING REMOVED, AND WHY EACH IS SAFE TO REMOVE ONLY AFTER THE COMPANION LANDS ===
+
+1. TOP-LEVEL MCP REGISTRATION. `modules/home/services/sapience.nix`'s `claudeMcpServers`
+   activation entry (around lines 787-1055) merges `mcpServers.sapience` into the TOP LEVEL of
+   ~/.claude.json, so all nine `sapience_*` tools load in every session in every directory. The
+   option that controls it is documented at that file's line ~787 ("Merge mcpServers.sapience
+   into ~/.claude.json at user scope ... Set false to leave ~/.claude.json untouched"), and the
+   activation entry is deliberately ordered against the token-shape repair entry that writes the
+   same file (see that file's comment at line ~1017) -- preserve that ordering relationship in
+   whatever replaces it. Note that the same file already contains a worked precedent for the
+   per-project shape: ~/.claude.json's `.projects[<path>].mcpServers` carries `lean-lsp` for four
+   Lean repos today.
+
+2. SEVEN READ-TOOL GRANTS. `config/claude/settings.json`'s `permissions.allow` lists
+   `mcp__sapience__sapience`, `mcp__sapience__sapience_search`, `_briefing`, `_context`, `_ask`,
+   `_outstanding`, `_papers`. home-manager merges this file into ~/.claude/settings.json with
+   `permissions` as an ENFORCED key, so these are reasserted machine-wide on every switch.
+
+3. FIVE HOOKS, in the same file's `hooks` object:
+   - SessionStart     -> `[ -f "$HOME/.sapience/mcp.py" ] && python3 "$HOME/.sapience/mcp.py" --briefing-text 2>/dev/null || true`
+   - UserPromptSubmit -> `[ -f "$HOME/.sapience/sapience_cli.py" ] && python3 "$HOME/.sapience/sapience_cli.py" hook prompt 2>/dev/null || true` (timeout 3)
+   - PreToolUse, matcher `Edit|Write|MultiEdit` -> `... sapience_cli.py hook tool ...` (timeout 3)
+   - SessionEnd       -> `... mcp.py --receipt ...` (async true)
+   - Stop             -> `... mcp.py --effect-line ...` (timeout 3)
+   Each is guarded by a `[ -f ~/.sapience/<file> ]` test and `|| true`, so it is already inert
+   when the payload is absent -- but the guard tests for the PAYLOAD, not for the repository,
+   which is exactly the gap this change closes.
+
+4. THE `_SAPIENCE_NOTE` in `config/claude/settings.json` must be rewritten rather than deleted.
+   Its current text records a correct and still-load-bearing reason for the present arrangement --
+   `hooks` and `permissions` are ENFORCED keys in `home.activation.claudeSettings`, so a vendor
+   installer's write to the live file would be reverted on the next switch -- plus two deliberate
+   rulings worth carrying forward: `statusLine` belongs to `hooks/statusline-push.sh` and is
+   deliberately NOT wired to Sapience, and `sapience_cli.py`'s own `hook session` and `hook stop`
+   are deliberately NOT wired because each would duplicate an `mcp.py` hook and print a second
+   line per turn. The rewritten note must state where each surface now lives and why the
+   enforced-key hazard no longer forces them into this file.
+
+=== THE OWNER ACTION THIS TASK MUST SPECIFY BUT CANNOT PERFORM ===
+
+`~/.sapience/config.json` has `capture.mode: "opt-in"` and a `folders` allowlist of five
+transcript directories -- `-home-benjamin--config-nvim`, `-home-benjamin--dotfiles`,
+`-home-benjamin-Philosophy-Papers-PossibleWorlds`, `-home-benjamin-Projects-BimodalLogic`,
+`-home-benjamin-Projects-Logos-Verification` -- plus a 10-entry `capture.projects` list. Verified
+against each repo's `.claude-extensions.json`: only `/home/benjamin/.dotfiles` and
+`/home/benjamin/.config/nvim` actually load the sapience extension. `PossibleWorlds`,
+`BimodalLogic` and `Verification` are enabled for capture and are being read and uploaded WITHOUT
+the extension loaded; `Theory`, `Vision`, `Wedding`, `PersonalWebsite` and `Applications` are
+present but disabled.
+
+`~/.sapience/**` is outside every repository's tree and is a genuine OWNER ACTION -- never an
+agent edit -- and note that the payload SELF-UPDATES DAILY, so a hand-patch to a vendor `.py`
+file there would be overwritten. This task's deliverable for that surface is an EXACT, RUNNABLE
+instruction handed to the user (reconciling `folders` and `capture.projects` to exactly the
+extension-loaded set, preserving the `token` field and the file's 600 mode), not a description of
+one and not an edit. Consider whether `sapience-bootstrap`'s own folder picker is the sanctioned
+route rather than a hand-edit, and say which.
+
+=== VERIFICATION THIS TASK OWNS ===
+
+- `nix flake check` is authoritative and must pass; it runs `statix`, `deadnix`, `nixfmt --check`
+  and `shellcheck` as `checks.<system>.*` outputs. Run it, not merely a build. Note `deadnix`
+  exits 0 on findings unless `--fail` is passed.
+- A `home-manager switch` (or at minimum `home-manager build --flake .#benjamin`) must succeed,
+  and the resulting ~/.claude/settings.json must be inspected to confirm the seven grants and five
+  hooks are GONE from the live merged file -- not merely absent from the repo source. The merge is
+  additive for non-enforced keys, so confirm the enforced-key path actually removes them rather
+  than leaving stale entries behind.
+- ~/.claude.json must be inspected to confirm `mcpServers.sapience` is gone from the top level and
+  that no other key in that file was disturbed -- the activation entry merges rather than
+  overwrites, and that property must survive the change.
+- A session in a repo WITHOUT the extension (`~/Projects/cslib` and `~/Projects/Logos/Theory` are
+  verified-unloaded candidates) must show no `sapience_*` tools, no Sapience grants and no
+  Sapience hook firing. A session in `.dotfiles` or `.config/nvim` must still show all nine tools,
+  all eleven grants and all five hooks.
+
+=== DOCUMENTATION THIS TASK OWNS ===
+
+`docs/sapience.md` carries several statements that become false and must be rewritten, not merely
+appended to:
+- Its "What is installed" table rows `mcpServers.sapience in ~/.claude.json` ("Merged on
+  activation, preserving every other key") and `Three hooks and seven tool grants` ("In
+  config/claude/settings.json").
+- That row's hook count is ALREADY WRONG: it says three hooks; five are registered.
+- Its "why the hooks live in the repo" section, and the first-time-setup step 4 narrative
+  explaining that a second switch is what puts the token into ~/.claude.json and that
+  "`sapience status` keeps reporting Claude Code as not registered" without it -- per-repo
+  registration changes what that step means and what `sapience status` can truthfully report.
+- Any statement that Sapience is active machine-wide once bootstrapped.
+
+=== ACCEPTANCE CRITERIA ===
+
+1. `nix flake check` passes.
+2. No machine-wide Sapience activation surface remains in this repository: no top-level
+   `mcpServers.sapience` merge, no Sapience entry in `permissions.allow`, no Sapience hook in the
+   `hooks` object -- each confirmed absent from the LIVE merged files after a switch, not just
+   from the repo source.
+3. A verified-unloaded repo gets no tools, no grants and no hook firing; `.dotfiles` and
+   `.config/nvim` keep all nine tools, all eleven grants and all five hooks.
+4. The `~/.sapience/config.json` reconciliation is handed over as an exact, runnable owner
+   instruction, with the sanctioned route (hand-edit versus `sapience-bootstrap`'s picker) named.
+5. `docs/sapience.md` states the new activation contract with a correct hook count, and the
+   rewritten `_SAPIENCE_NOTE` preserves the enforced-key rationale, the `statusLine` ruling and
+   the deliberately-unwired-`sapience_cli.py`-hooks ruling.
+6. The ordering constraint was honored: the companion extension-side task landed and was verified
+   first. Record in this task's own artifacts how that was confirmed.
+7. Files outside specs/** carry no task-number references and no record-versioning language
+   (`.claude/rules/no-task-references-in-deliverables.md`,
+   `.claude/rules/no-record-versioning-in-deliverables.md`).
+
+---
+
 ### 611. Repo-tag every Sapience write path the source store owns so untagged knowledge objects stop being created
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
