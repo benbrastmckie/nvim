@@ -1,5 +1,5 @@
 ---
-next_project_number: 613
+next_project_number: 614
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 613
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,612 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,533,534,535,536,537,538,539,545,546,548,549,550,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,612,613 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,540,541,542,543,544,553,564,566,572,576,583,584,592,593,598,605,606 | 383,390,398,431,451,452,455,459,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604,612 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594 | 439,458,472,476,486,509,518,519,542,543,564,572,593 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,595 | 438,492,501,539,547,552,580,594 | core-agent-system, agent-system |
@@ -66,6 +66,7 @@ next_project_number: 613
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
+613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
   └─ 586 [NOT STARTED] — Stand up the suite and gate wall-clock cost consumer: delete,...
 517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
@@ -187,6 +188,16 @@ next_project_number: 613
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 613. Session liveness same process orphan lock
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Make session liveness distinguish a dead same-process session from a live one, so an orphaned lock stops blocking acquire forever. session_liveness() confirms liveness with kill -0 on the registry's recorded pid, but for Claude Code sessions that pid is pid_source: ancestor-claude -- the shared process. Every session ever registered from one claude process therefore carries the same pid and reads as pid-alive for as long as that process runs, regardless of whether its command finished long ago. An orphaned lock from an earlier command in the same process is thus permanently unreapable by the liveness path, and cmd_acquire's stale-overlap escalation (which aborts on liveness_reason=pid-alive) overrides the 30-minute stale-heartbeat threshold that would otherwise have recovered it. task-lock.sh's header already reasons about pid sharing, but only in the opposite direction (forbidding pid-equality self-exclusion so a foreign session is not mistaken for self); the inverse hazard, a dead same-process session reading as live, is unaddressed. Observed live: an orphaned /revise lock from a pre-/clear invocation in the same process blocked an /orchestrate task for two full cycles, where that task's plan-harvested file_scope contained the __WHOLE_TREE__ sentinel and so overlapped every held lock in the repo. Two diagnostic defects belong to the same fix rather than separate tasks: (1) task-lock.sh check N reported free while acquire refused, because the refusal came from cross-task file_scope overlap rather than the task's own lock, giving an operator a directly misleading verdict; and (2) reap's 120-minute threshold is unreachable from the orchestrator, so nothing self-heals within a run. Candidate direction for the fix, affecting scope: record a within-process discriminator alongside the pid (a session start-time or monotonic token) and make session_liveness() return pid-alive only when the entry's own heartbeat is also fresh, so a frozen heartbeat cannot be rescued by a sibling session's liveness. Ancestry, not prior coverage: closed tasks 272 (honest_session_liveness_concurrent_batches) and 81 (mechanize_task_lock_and_session_heartbeat_refresh) built the mechanism this defect is in, and closed task 310 (make_session_registry_trustworthy_contention_signal) has no discharging artifact.
+
+---
 
 ### 612. Gate every Sapience activation surface behind the sapience extension so Sapience runs only in repos that load it
 - **Status**: [NOT STARTED]
