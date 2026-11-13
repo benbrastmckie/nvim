@@ -17,9 +17,10 @@ documents the vault's own model.
 | `hooks/sapience-mcp-register-project.sh` | Bidirectional `SessionStart` hook: invokes the writer when this repo's `.claude-extensions.json` shows the extension active, removes the entry when it does not |
 | `scripts/install-sapience-mcp-session-hook.sh` | Idempotent, `--remove`-capable installer seeding the hook and the writer to `$HOME/.claude/{hooks,scripts}/` and registering the `SessionStart` entry in `$HOME/.claude/settings.json` |
 | `scripts/verify-sapience-mcp.sh` | Verifier: checks extension activation, the per-project MCP entry, the installed files, the `SessionStart` registration, and the merged settings fragment |
+| `scripts/verify-sapience-context-scoping.sh` | Read-only probe: replays the `POST /v1/cli/context` two-call `project=` comparison on demand and reports whether the content-scoping residual (Gap 5) still holds, has lifted, or is inconclusive |
 | `EXTENSION.md` | Merges into `.claude/CLAUDE.md` under `extension_sapience`; carries the per-repo activation contract and the gap-2 postflight wrapup instruction |
-| `index-entries.json` | Context index entries for the six files under `context/project/sapience/` |
-| `context/project/sapience/` | Domain notes: vault model, review-gate boundary, transcript-filter ceiling, subagent orientation, per-repo scoping (now also the MCP-registration triad) |
+| `index-entries.json` | Context index entries for the files under `context/project/sapience/` |
+| `context/project/sapience/` | Domain notes: vault model, review-gate boundary, transcript-filter ceiling, subagent orientation, per-repo scoping (now also the MCP-registration triad), injection-site scoping |
 
 ## The Gaps This Extension Closes
 
@@ -54,3 +55,13 @@ inside any repository's own disposable `.claude/` tree). A surviving top-level
 `.mcpServers.sapience` entry, written by this machine's home-manager activation, is EXPECTED
 residual, not drift, until a separate task disables that activation -- see
 `context/project/sapience/domain/per-repo-scoping.md`.
+
+**Gap 5 -- primary-session content scoping, NOT closed.** Unlike Gaps 1-4 above, this gap has
+no mechanism available to this repository that closes it. `POST /v1/cli/context` (the endpoint
+behind the `UserPromptSubmit` and `PreToolUse` hooks) ignores the `project` field it is already
+sent, and its response carries no per-item attribution a local filter or wrapper could key on.
+This extension ships what it can against that bound: the measured record and both owner actions
+in `context/project/sapience/domain/injection-site-scoping.md`, and
+`scripts/verify-sapience-context-scoping.sh` to detect the day the vendor honors `project` or
+reflects it into authored provenance. Read Gaps 1-4 above as a complete account of what IS
+closed, not of the whole scoping story -- Gap 5 is the explicit exception.

@@ -16,9 +16,11 @@ The twelve MCP tools (`sapience_search`, `_briefing`, `_context`, `_ask`, `_outs
 interface an agent uses. Each is a network call to the hosted vault; none of them is a local
 cache lookup.
 
-## The Local CLI's Exact Mode Inventory
+## `mcp.py`'s Exact Mode Inventory
 
-`~/.sapience/mcp.py` doubles as a small CLI, used by the three ambient hooks and by the GNOME
+This section covers `~/.sapience/mcp.py` specifically — one of two local vendor CLIs, not the
+only one; see "`sapience_cli.py` and `POST /v1/cli/context`" below for the other.
+`~/.sapience/mcp.py` doubles as a small CLI, used by the `SessionStart` hook and by the GNOME
 desktop launchers. Its complete set of CLI modes is:
 
 - `--briefing-text` -- SessionStart hook: prints a "Your Sapience remembers" block, silent when
@@ -38,3 +40,16 @@ lookup. The one per-dispatch, shell-invoked retrieval mechanism this extension d
 `sapience-retrieve.sh`, calls `/v1/search` directly rather than through `mcp.py`; see
 `per-repo-scoping.md` for its repo-tag-filtered scoping mechanism and `subagent-orientation.md`
 for why a per-dispatch injection is the accepted shape.
+
+## `sapience_cli.py` and `POST /v1/cli/context`
+
+`~/.sapience/sapience_cli.py` is the second local vendor CLI, distinct from `mcp.py` above. Its
+`hook session|prompt|tool|stop` modes back the `UserPromptSubmit` and `PreToolUse` hooks (the
+deployed `SessionStart` hook calls `mcp.py`, not this script's `session` mode — see
+`domain/injection-site-scoping.md` for the corrected, measured site-by-site table). All four
+modes share one endpoint, `POST /v1/cli/context`. The measured fact that matters most here: on
+this endpoint, the `project` field the `prompt` mode already sends is silently ignored — a
+request naming this repository's own resolved slug and an otherwise-identical request naming a
+nonexistent sentinel project return byte-identical `text`/`visible` bodies. See
+`domain/injection-site-scoping.md` for the full reproduction, the response's attribution-free
+key set, and the two owner actions that follow from it; it is not restated here.

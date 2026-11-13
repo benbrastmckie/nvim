@@ -211,6 +211,16 @@ Populations 3 and 4 are a documented asymmetry, not a defect this design attempt
 mechanism available to this repository can tag either one. Population 2 is the one this
 extension's own surfaces can and do control.
 
+**The primary-session hook path has no scoping mechanism at all, independent of tagging
+state.** `SessionStart`, `UserPromptSubmit`, and `PreToolUse` never read `provenance` and never
+call `/v1/search` — they call `GET /briefing`/`GET /v1/outstanding` or `POST /v1/cli/context`,
+and the latter's `project` field is measured to be ignored by the server. A `[repo:nvim]`-tagged
+knowledge object is therefore exactly as visible to another repository's `UserPromptSubmit` hook
+as an untagged one: tagging a write more thoroughly has zero effect on what these three hooks
+inject, in either direction. This is a read-path gap, not a fifth write population — it sits
+beside the four-population census above rather than changing it. See
+`domain/injection-site-scoping.md` for the full measurement.
+
 **An `mcp__sapience__*` tool failure cannot be captured mechanically from this repository, and
 this is an accepted gap, stated plainly rather than implied away.** Only the two scripts above
 (`sapience-retrieve.sh`, called from Stage 3.5; `sapience-remember.sh`, called from postflight

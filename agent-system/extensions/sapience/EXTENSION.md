@@ -12,31 +12,31 @@ registers or removes this project's own `~/.claude.json` MCP entry -- six hook s
 total, five of which are extension-merged. See `domain/per-repo-scoping.md`.
 
 **What this extension adds**: besides the grants and hooks above, two scripts deployed to
-`.claude/scripts/`: `scripts/sapience-retrieve.sh`, called from core's
-`orchestrate-build-dispatch.sh` Stage 3.5 `memory_context` block, and
-`scripts/sapience-remember.sh`, called from the postflight wrapup below. See
-`domain/per-repo-scoping.md` for both scripts' contracts and hazards, and for the per-project
-MCP-registration triad (`setup-sapience-mcp.sh`, the registration hook, the installer, the
-verifier).
+`.claude/scripts/`: `scripts/sapience-retrieve.sh` (core's `orchestrate-build-dispatch.sh`
+Stage 3.5 `memory_context` block) and `scripts/sapience-remember.sh` (the postflight wrapup
+below). See `domain/per-repo-scoping.md` for both scripts' contracts and hazards, and for the
+per-project MCP-registration triad (`setup-sapience-mcp.sh`, the registration hook, the
+installer, the verifier).
 
 **Postflight wrapup**: at the `[IMPLEMENTING]` -> `[COMPLETED]` transition, write 3-8 distilled
 notes via `scripts/sapience-remember.sh` (bound enforced at this call site), replacing the
 untagged `sapience_wrapup` call. Do NOT call `sapience_remember` proactively mid-run -- see
 `domain/review-gate-boundary.md`'s `## Write-Tool Disposition` section for the per-tool
-reasoning.
+reasoning. A non-zero exit (`set_aside`, `gated`, `written == 0`, `ok != true`) is MIRRORED
+non-fatally via `issue-record.sh` (`--class "infrastructure/transport unavailable"`); the
+degrade rule is unchanged.
 
-**Superseding the vendor SessionStart nudge**: the Sapience SessionStart briefing carries its
-own standing instruction to save a decision, finding, or correction with `sapience_remember` as
-soon as it lands. In this repository that nudge is superseded: this is a counter-instruction
-carried in this extension's own surfaces, not an owner action and not an accepted residual (the
-nudge text is vendor-authored, arriving through a hook this repository does not own, so it
-cannot be edited directly). Nothing is lost by superseding it -- the finding is held and
-surfaces repo-tagged through the bounded postflight pass above, not dropped.
+**Superseding the vendor SessionStart nudge**: the Sapience SessionStart briefing's own standing
+instruction to save a decision with `sapience_remember` as soon as it lands is superseded here
+by a counter-instruction in this extension's own surfaces (the nudge text is vendor-authored and
+cannot be edited directly). Nothing is lost -- the finding surfaces repo-tagged through the
+bounded postflight pass above instead.
 
-A non-zero exit from that call (`set_aside`, `gated`, `written == 0`, `ok != true` -- see the
-script's own header) is MIRRORED non-fatally via `issue-record.sh`
-(`--class "infrastructure/transport unavailable"`, the script's own stderr as
-`--what-happened`); the existing degrade rule is unchanged.
+**Primary-session content-scoping residual, not closed.** One of three hooks
+(`UserPromptSubmit`) sends a repo identifier on `POST /v1/cli/context`; the server ignores it
+and returns no per-item attribution to filter or label by. No hook is suppressed or narrowed --
+see `domain/injection-site-scoping.md` for the measurement, both owner actions, and
+`scripts/verify-sapience-context-scoping.sh`'s falsifiability probe.
 
 **No task type, no routing, no slash command**: review/sync/coverage/pending/stats are already
 covered by the GNOME desktop launchers the nix module installs.
@@ -56,3 +56,4 @@ Read-on-demand, not eager-loaded:
 - `context/project/sapience/domain/transcript-filter-ceiling.md`
 - `context/project/sapience/domain/subagent-orientation.md`
 - `context/project/sapience/domain/per-repo-scoping.md`
+- `context/project/sapience/domain/injection-site-scoping.md`

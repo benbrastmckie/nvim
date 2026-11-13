@@ -16,8 +16,8 @@
       "domain": "project",
       "subdomain": "sapience",
       "topics": ["sapience", "vault-model", "mcp", "cli"],
-      "keywords": ["app.spnc.ai", "mcp.py", "sf1", "sapience_ask", "briefing-text", "statusline"],
-      "summary": "Hosted vault model, the MCP thin client, and mcp.py's exact CLI mode inventory (no --search, no --ask)",
+      "keywords": ["app.spnc.ai", "mcp.py", "sapience_cli.py", "sf1", "sapience_ask", "briefing-text", "statusline", "POST /v1/cli/context"],
+      "summary": "Hosted vault model, the MCP thin client, mcp.py's exact CLI mode inventory (no --search, no --ask), and sapience_cli.py's hook session|prompt|tool|stop modes sharing POST /v1/cli/context",
       "line_count": 40,
       "load_when": {},
       "on_demand": true
@@ -38,8 +38,8 @@
       "domain": "project",
       "subdomain": "sapience",
       "topics": ["sapience", "per-repo-scoping", "provenance", "ingest-kos", "mcp-registration"],
-      "keywords": ["provenance", "source=", "repo tag", "sapience-retrieve.sh", "sapience-remember.sh", "explicit", "gated", "set_aside", "setup-sapience-mcp.sh", "SessionStart"],
-      "summary": "The provenance repo-tag scoping mechanism, the per-project MCP-registration triad (writer, bidirectional hook, installer, verifier) and its stable-user-level-path invariant, and the no-delete-API / unreviewed-write / four-population / registration-durability hazards",
+      "keywords": ["provenance", "source=", "repo tag", "sapience-retrieve.sh", "sapience-remember.sh", "explicit", "gated", "set_aside", "setup-sapience-mcp.sh", "SessionStart", "primary-session hook"],
+      "summary": "The provenance repo-tag scoping mechanism, the per-project MCP-registration triad (writer, bidirectional hook, installer, verifier) and its stable-user-level-path invariant, and the no-delete-API / unreviewed-write / four-population / registration-durability / primary-session-hook-has-no-scoping hazards",
       "line_count": 229,
       "load_when": {},
       "on_demand": true

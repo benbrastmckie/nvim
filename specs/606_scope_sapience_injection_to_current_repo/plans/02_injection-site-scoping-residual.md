@@ -294,7 +294,7 @@ declaration — no narrowing suite list is claimed, because the selector names n
 
 ---
 
-### Phase 3: Amend the existing domain notes and the extension's top-level docs [NOT STARTED]
+### Phase 3: Amend the existing domain notes and the extension's top-level docs [COMPLETED]
 
 **Goal**: The existing source-store surfaces stop implying the vault's scoping story is complete:
 the hazards census gains the primary-session item, the CLI inventory names the script that
@@ -302,33 +302,36 @@ actually backs two of the three hooks, and the extension's own README/EXTENSION 
 residual, the new probe, and the pointer to the new domain note.
 
 **Tasks**:
-- [ ] `context/project/sapience/domain/per-repo-scoping.md`: add one Hazards item stating that
+- [x] `context/project/sapience/domain/per-repo-scoping.md`: add one Hazards item stating that
       the primary-session hook path has no scoping mechanism at all, independent of tagging
       state — a repo-tagged knowledge object is exactly as visible to another repository's
       `UserPromptSubmit` hook as an untagged one, because that path never reads `provenance` —
       and pointing at `domain/injection-site-scoping.md` for the measurement. Keep the existing
       four-population census intact; this item is about the read path, not a fifth population.
-- [ ] `context/project/sapience/domain/vault-model.md`: scope the existing "The Local CLI's Exact
+- [x] `context/project/sapience/domain/vault-model.md`: scope the existing "The Local CLI's Exact
       Mode Inventory" heading explicitly to `~/.sapience/mcp.py`, and add a short section naming
       `~/.sapience/sapience_cli.py` (the `hook session|prompt|tool|stop` modes) and the
       `POST /v1/cli/context` endpoint those modes share, with the measured fact that its
       `project` field is ignored, pointing at `domain/injection-site-scoping.md` rather than
       restating the reproduction. Do not restate line numbers for either self-updating vendor
       file — cite function names, which are stable.
-- [ ] `README.md`: add a "Gap 5" entry to "The Gaps This Extension Closes" naming the unresolved
+- [x] `README.md`: add a "Gap 5" entry to "The Gaps This Extension Closes" naming the unresolved
       content-scoping residual, what it is bounded by (no working filter parameter, no per-item
       attribution), what this extension ships against it (the record, the probe, the owner
       actions), and explicitly that it is NOT closed — so Gaps 1-4 are not read as a complete
       account.
-- [ ] `README.md`: add a File Inventory row for `scripts/verify-sapience-context-scoping.sh`
+- [x] `README.md`: add a File Inventory row for `scripts/verify-sapience-context-scoping.sh`
       describing it as the read-only residual probe.
-- [ ] `EXTENSION.md`: add one short paragraph on the injection-site residual (one of three hooks
+- [x] `EXTENSION.md`: add one short paragraph on the injection-site residual (one of three hooks
       sends a project identifier, the server ignores it, no local mechanism scopes the primary
       session) pointing at `domain/injection-site-scoping.md`, and add that file to the
       "Context Pointers" list.
-- [ ] Update the three affected `index-entries.json` entries' `summary`/`keywords` where the
-      amendments change what the file is about.
-- [ ] Re-read every changed hunk for task-number references and record-versioning phrasing.
+- [x] Update the three affected `index-entries.json` entries' `summary`/`keywords` where the
+      amendments change what the file is about. *(deviation: altered — only two entries
+      (`per-repo-scoping.md`, `vault-model.md`) had a meaning-changing edit this phase;
+      `project/sapience/README.md`'s summary stays accurate with a sixth Loading Strategy row
+      and was not re-worded)*
+- [x] Re-read every changed hunk for task-number references and record-versioning phrasing.
 
 **Timing**: 1.5 hours
 

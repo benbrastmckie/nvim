@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Amend the existing domain notes and the extension's top-level docs",
+  "started_at": "2026-11-13T00:20:00Z",
+  "last_updated": "2026-11-13T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "per-repo-scoping.md: add Hazards item for primary-session hook path", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 2, "description": "vault-model.md: scope CLI inventory to mcp.py; add sapience_cli.py/cli-context section", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/vault-model.md"]},
+    {"id": 3, "description": "README.md: Gap 5 entry + File Inventory row", "status": "done", "files_touched": ["agent-system/extensions/sapience/README.md"]},
+    {"id": 4, "description": "EXTENSION.md: residual paragraph + Context Pointers entry", "status": "done", "files_touched": ["agent-system/extensions/sapience/EXTENSION.md"]},
+    {"id": 5, "description": "index-entries.json: summary/keyword updates for amended entries", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]},
+    {"id": 6, "description": "Re-read every changed hunk for task refs / record-versioning phrasing", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.5",
+      "description": "Update the three affected index-entries.json entries' summary/keywords",
+      "type": "altered",
+      "reason": "Only two entries (per-repo-scoping.md, vault-model.md) had a meaning-changing edit this phase; project/sapience/README.md's own summary stays accurate with a sixth Loading Strategy row (added in Phase 1) and did not need re-wording.",
+      "annotation": "*(deviation: altered — only two entries (per-repo-scoping.md, vault-model.md) had a meaning-changing edit this phase; project/sapience/README.md's summary stays accurate with a sixth Loading Strategy row and was not re-worded)*"
+    }
+  ],
+  "notes": "EXTENSION.md's new residual paragraph initially pushed the file to 68 lines, tripping check-extension-docs.sh Rule U (60-line hard limit, not advisory). Compressed three paragraphs (What this extension adds, Postflight wrapup + the mirrored-exit note merged, Superseding the vendor SessionStart nudge) to bring the file to 59 lines with no loss of substance. check-extension-docs.sh now reports only the expected, deferred Rule R line_count mismatches (README.md, vault-model.md, per-repo-scoping.md) -- reconciled in Phase 4."
+}
