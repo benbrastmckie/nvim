@@ -325,6 +325,7 @@ IN_SCOPE_RELATIVE_PATHS=(
   "nvim/agents/neovim-implementation-agent.md"
   "python/agents/python-implementation-agent.md"
   "rust/agents/rust-implementation-agent.md"
+  "typescript/agents/typescript-implementation-agent.md"
   "typst/agents/typst-implementation-agent.md"
   "web/agents/web-implementation-agent.md"
   "z3/agents/z3-implementation-agent.md"
@@ -615,6 +616,7 @@ OWNERSHIP_IN_SCOPE_RELATIVE_PATHS=(
   "nvim/agents/neovim-implementation-agent.md"
   "python/agents/python-implementation-agent.md"
   "rust/agents/rust-implementation-agent.md"
+  "typescript/agents/typescript-implementation-agent.md"
   "typst/agents/typst-implementation-agent.md"
   "web/agents/web-implementation-agent.md"
   "z3/agents/z3-implementation-agent.md"
@@ -683,6 +685,7 @@ BOUNDED_WAIT_IN_SCOPE_RELATIVE_PATHS=(
   "nvim/agents/neovim-implementation-agent.md"
   "python/agents/python-implementation-agent.md"
   "rust/agents/rust-implementation-agent.md"
+  "typescript/agents/typescript-implementation-agent.md"
   "typst/agents/typst-implementation-agent.md"
   "web/agents/web-implementation-agent.md"
   "z3/agents/z3-implementation-agent.md"
@@ -1158,6 +1161,7 @@ MODIFIED_FILES_IN_SCOPE_RELATIVE_PATHS=(
   "lean/agents/lean-implementation-agent.md"
   "python/agents/python-implementation-agent.md"
   "rust/agents/rust-implementation-agent.md"
+  "typescript/agents/typescript-implementation-agent.md"
   "typst/agents/typst-implementation-agent.md"
   "web/agents/web-implementation-agent.md"
   "z3/agents/z3-implementation-agent.md"
@@ -1331,6 +1335,10 @@ CHECK_M_EXCLUDED_RELATIVE_PATHS=(
   "formal/agents/logic-research-agent.md"
   "formal/agents/math-research-agent.md"
   "formal/agents/physics-research-agent.md"
+  # Bash grant is explicitly "read-shaped probes only" (tsc --version, npm ls / pnpm ls, jq
+  # over package.json/tsconfig.json) -- no build/test command actually invoked anywhere in the
+  # file.
+  "typescript/agents/typescript-research-agent.md"
 )
 
 _check_n_in_array() {
