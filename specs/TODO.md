@@ -1,5 +1,5 @@
 ---
-next_project_number: 618
+next_project_number: 619
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 618
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,614,615,616,617 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,614,615,616,617,618 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594 | 439,458,472,476,486,509,518,519,542,543,564,572,593 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,595 | 438,492,501,539,547,552,580,594 | core-agent-system, agent-system |
@@ -67,6 +67,7 @@ next_project_number: 618
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
+618 [NOT STARTED] — GOAL. Determine what leaves files behind in this repository's...
 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
   └─ 586 [NOT STARTED] — Stand up the suite and gate wall-clock cost consumer: delete,...
 517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
@@ -190,6 +191,149 @@ next_project_number: 618
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 618. Working tree residue disposition policy
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: GOAL. Determine what leaves files behind in this repository's working tree -- uncommitted,
+untracked and un-ignored -- and design a policy that disposes of every class correctly: ignored
+where the file is runtime state, committed where it is durable provenance, and never silently
+accumulating in a third category that a human has to triage by eye. The deliverable is a
+researched design with a per-class verdict, not a one-off cleanup.
+
+THE OBSERVATION. On 2026-11-13 `git status --porcelain` in /home/benjamin/.config/nvim reported
+35 entries across at least five distinct classes, almost none of which a human had touched. The
+census below is the task's STARTING EVIDENCE and must be re-measured rather than assumed still
+accurate, but the class structure is the part that matters.
+
+CLASS 1 -- POSTFLIGHT STATUS-REWRITE RESIDUE (the largest class, 16 of 35 entries). Eight
+completed tasks each left exactly two modified files behind:
+  - `specs/{NNN}_{slug}/plans/01_*.md` whose plan-level `- **Status**:` line changed from
+    `[IMPLEMENTING]` to `[COMPLETED]`;
+  - `specs/{NNN}_{slug}/.return-meta.json` with `deploy_pending` and `deploy_pending_reason`
+    deleted.
+The affected task directories are 402, 531, 597, 600, 601, 602, 606 and 611 -- a uniform shape,
+not eight separate accidents. Both writes have identified writers:
+`.claude/scripts/update-task-status.sh` drives the plan-status line via
+`update-plan-status.sh` (around its line 1315), and the same script's PHASE 4 (around line 1360)
+clears the `deploy_pending` marker that `skill-base.sh`'s `skill_postflight_update` had set.
+`.claude/scripts/orchestrate-cycle-postflight.sh` seeds `stage_paths` (its line 1936) with the
+task directory, TODO.md and state.json, and appends the plan path for an `implement` phase
+(line 1937), then commits via `git-commit-scoped.sh` (line 2006). So these paths ARE nominally
+in the staged set -- which makes the residue an ORDERING or a REFUSAL question, not an omission
+of pathspec, and the research must settle which:
+  (a) do these two writes land AFTER the commit fires, so the commit cannot see them;
+  (b) does `git-commit-scoped.sh` refuse or drop them (its header documents several refusal and
+      drop paths -- a `file_scope` excursion filter, V7's unreliable `git add` exit code for a
+      tracked-but-gitignore-matching path, V8's parent-directory resolution) and report that
+      non-fatally where nobody reads it;
+  (c) does the deploy gate's own refusal path (the cleared
+      `deploy_pending_reason` here read "postflight completion-deploy gate refused (exit 6):
+      modified_files overlap agent-system/extensions/** and the deploy is stale") leave the
+      clearing write stranded outside any commit window.
+Settle it with evidence from a live run, not by reading the scripts alone.
+
+CLASS 2 -- TASK DIRECTORIES CONTAINING ONLY `.return-meta.json`. Four untracked directories:
+`specs/526_tts_announce_completion_and_input_needed/`,
+`specs/527_hook_registration_set_lint_assertion/`,
+`specs/563_extension_repo_registry_deploy_enumeration/` and
+`specs/609_pending_ask_user_charged_to_failed_tasks/`. Each holds exactly one file,
+`.return-meta.json`, and all four tasks are live in `specs/TODO.md` with no reports, plans or
+summaries yet. The mechanism is visible in `.claude/commands/task.md` Step 7: task creation
+commits `specs/TODO.md` and `specs/state.json` only, and its Step 8 output says the artifacts
+directory is "created on first artifact". A creating dispatch then writes `.return-meta.json`
+into that directory -- content, but not an artifact any later commit's pathspec names, because
+the creation commit has already fired and no artifact-producing phase has run yet. Note that
+`.gitignore` deliberately does NOT ignore the bare `.return-meta.json` (its own comment calls it
+"durable, freshness-gated provenance" that "MUST stay tracked", while ignoring the
+`**/.return-meta-*.json` variants), so ignoring these is the wrong disposal -- they want
+committing, and the design must say by whom and when.
+
+CLASS 3 -- RUNTIME LOGS AND STATE, neither ignored nor deliberately tracked:
+  - `.pid` at the repository root, containing a bare process id.
+  - `specs/central-errors.jsonl`, 154 lines, untracked -- a cross-repo error sink whose rows
+    carry an `origin_repo`, including at least one row originating from `/tmp/accept_foreign`,
+    i.e. a test fixture's output landed in a real repository's store.
+  - `.memory/memory-index.json`, tracked and modified, which churns as a side effect of normal
+    operation rather than as authored work.
+Each needs a verdict: ignore, track deliberately, or relocate out of the tree the way
+`**/.agent-logs/` already was (`.gitignore`'s own comment records that relocation and its
+reason).
+
+CLASS 4 -- A DEPLOY ARTIFACT INSIDE THE SOURCE STORE.
+`agent-system/extensions/core/.claude-extensions.json` is untracked and should not exist: a
+`.claude-extensions.json` belongs at the PROJECT ROOT, and this copy sits inside an extension's
+own source directory with a different shape from the root one (no `version` key). Something
+resolved its write root to the extension directory instead of the project root. This repository
+already carries an open record on root-walkup class closure
+(`specs/601_root_walkup_class_closure_lint/`), so determine whether this is an instance of that
+class before designing anything new, and whether the file is safe to delete or is load-bearing
+for some caller.
+
+CLASS 5 -- GENUINE UNCOMMITTED WORK that no commit ever fired for, mixed in with the four noise
+classes above and indistinguishable from them in `git status` output:
+`lua/neotex/plugins/ai/shared/extensions/merge.lua` plus its `merge_spec.lua` tests (a
+`prune_empty_hooks` addition, coherent and test-covered), three `agent-system/extensions/lean/`
+documents, two `index-entries.json` files, and the root `.claude-extensions.json`. This class is
+the reason the other four matter: noise in the working tree is not merely untidy, it hides real
+work that nobody committed, and a human scanning 35 entries cannot tell the two apart at a
+glance.
+
+WHAT THE DESIGN MUST PRODUCE.
+
+1. A PER-CLASS DISPOSITION TABLE covering every class found in the re-measured census, each
+   entry naming its writer, its correct disposal (ignore / commit, and by which existing
+   commit site / relocate out of tree), and the specific change that implements it.
+
+2. A RULING ON THE STRUCTURAL QUESTION, stated plainly: is the right shape (i) widening existing
+   commit pathspecs so each writer's output is committed by the step that produced it,
+   (ii) adding a terminal sweep that commits or reports whatever a cycle left behind, or
+   (iii) narrowing what gets written into the tree at all. These have very different failure
+   modes -- (i) risks over-staging, which `.claude/rules/git-workflow.md` bans outright in the
+   form of `git add -A`/`.`/directory-and-glob pathspecs and `git commit -am`; (ii) risks
+   committing half-applied work, which the same rule's "Do Not Commit" section bans; (iii) risks
+   losing provenance that `.gitignore`'s own `.return-meta.json` comment says must stay tracked.
+   The design must pick one per class and respect both bans.
+
+3. A DETECTION MECHANISM so this is measured rather than noticed by eye months later. A
+   candidate shape, recorded without prejudging it: a check that reports any working-tree entry
+   not attributable to a class in the disposition table, runnable on demand and cheap enough to
+   run at a cycle boundary. Whether it warns or blocks is part of the ruling, and the repository
+   has a strong local preference for advisory-first (see
+   `.claude/rules/sapience-write-path.md`'s "Verdict: Advisory, Not Mechanized" and its explicit
+   promotion criterion for the local model of how to argue that choice).
+
+4. THE `.gitignore` EDITS the table implies, each with a comment in the file's established house
+   style -- that file's existing entries explain WHY each class is ignored (the
+   orchestrator-runtime-files two-class policy, the untracked-backup nesting hazard, the
+   settings-backup staging directory), and a bare pattern with no reason would not match it.
+
+CONSTRAINTS.
+
+- Deliverable edits land in the source store under `agent-system/extensions/`, never in the
+  deployed `.claude/` tree (`.claude/rules/source-store-deploy-boundary.md`). `.gitignore` and
+  `lua/` are ordinary tracked files and are edited in place.
+- `.claude/context/standards/orchestrator-runtime-files.md` already defines a two-class policy
+  for ephemeral orchestrator files and an "Untracking Already-Committed Ephemeral Files"
+  section. Read it before proposing any new classification; this task extends that policy's
+  reach, it does not replace it.
+- Do not delete or commit Class 5's genuine work as part of this task -- it is evidence of the
+  problem, and its disposal belongs to whoever authored it.
+
+ACCEPTANCE.
+
+- A re-measured census with every entry assigned to a class and a disposition.
+- The structural ruling made, with the rejected alternatives stated on their own merits.
+- `.gitignore` edits and any commit-site or writer changes the table calls for, landed.
+- The detection mechanism built or explicitly deferred with a named promotion criterion.
+- After the change, a `git status --porcelain` immediately following a completed orchestrate
+  cycle on a clean starting tree reports no entry that the disposition table does not account
+  for.
+
+---
 
 ### 617. Reconcile sapience source store surfaces
 - **Status**: [NOT STARTED]
