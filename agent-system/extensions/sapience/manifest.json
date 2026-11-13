@@ -12,7 +12,9 @@
     "scripts": [
       "sapience-remember.sh",
       "sapience-retrieve.sh",
-      "tests/test-sapience-capture.sh"
+      "setup-sapience-mcp.sh",
+      "tests/test-sapience-capture.sh",
+      "tests/test-sapience-mcp-registration.sh"
     ],
     "hooks": [],
     "data": [],

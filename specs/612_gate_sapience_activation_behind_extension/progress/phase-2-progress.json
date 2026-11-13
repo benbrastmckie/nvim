@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "The writer -- scripts/setup-sapience-mcp.sh and its test suite",
+  "started_at": "2026-11-12T22:22:00Z",
+  "last_updated": "2026-11-12T22:22:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write setup-sapience-mcp.sh per-project writer, modelled on setup-lean-mcp.sh",
+      "status": "done",
+      "note": "bash -n and shellcheck pass (same info-only SC2016 baseline as lean's model); manual smoke tests confirmed register/repair/remove/retire-global/interpreter-inheritance/token-fallback",
+      "files_touched": ["agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Write tests/test-sapience-mcp-registration.sh writer-level cases and declare both in manifest.json via sync-manifest-scripts.sh --write",
+      "status": "done",
+      "note": "10/10 writer-level cases pass (hook/installer/verifier cases self-skip with INFO until Phases 3-5 land); manifest.json provides.scripts now lists both new files; sync-manifest-scripts.sh --check exits 0; verify-deploy.sh --skip-slow --only-gate 3,4 clean; run-all.sh --only test-sapience-mcp-registration.sh green from the source-store entry point (deployed-mode run-all.sh cannot discover an un-deployed suite; suite_selection_select also returns __FULL_SWEEP__ pre-deploy for a non-core extension by the library's own documented scope -- recorded as a minor issue, re-checked at Phase 7's deploy)",
+      "files_touched": [
+        "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh",
+        "agent-system/extensions/sapience/manifest.json"
+      ]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

@@ -234,51 +234,55 @@ verification item 1, owned by Phase 7, which pays the deploy.
 
 ---
 
-### Phase 2: The writer — `scripts/setup-sapience-mcp.sh` and its test suite [NOT STARTED]
+### Phase 2: The writer — `scripts/setup-sapience-mcp.sh` and its test suite [COMPLETED]
 
 **Goal**: a per-project writer that registers, repairs, or removes
 `.projects["<abs path>"].mcpServers.sapience` in `~/.claude.json` for exactly one project,
 preserving every other key in that file, with a test suite that covers it.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh`, modelled on
+- [x] Write `agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh`, modelled on
       `agent-system/extensions/lean/scripts/setup-lean-mcp.sh`. Options:
       `--project PATH`, `--scope project|global|both` (default `project`), `--dry-run`,
-      `--remove`, `--retire-global`, `--quiet`, `--help`.
-- [ ] Write only `.projects[$path].mcpServers.sapience` via a whole-file `jq` merge with
+      `--remove`, `--retire-global`, `--quiet`, `--help`. *(completed)*
+- [x] Write only `.projects[$path].mcpServers.sapience` via a whole-file `jq` merge with
       `--arg path` (never literal interpolation), relying on jq's assignment autovivification for
       the intermediate objects, and `mktemp` + `mv` for the write. Never the top-level
-      `.mcpServers` key.
-- [ ] Build the entry as `{type:"stdio", command:<interpreter>, args:[$HOME/.sapience/mcp.py],
+      `.mcpServers` key. *(completed)*
+- [x] Build the entry as `{type:"stdio", command:<interpreter>, args:[$HOME/.sapience/mcp.py],
       env:{SAPIENCE_HOST:<host>} + (SAPIENCE_TOKEN only when the token is non-empty)}`, reading
       the token from `~/.sapience/config.json`'s `.token` with the same
       "register without a token until config.json has one" fallback `.dotfiles`'
-      `sapienceMcpServer` entry uses today.
-- [ ] Resolve `<interpreter>` as: the existing top-level `.mcpServers.sapience.command` if
+      `sapienceMcpServer` entry uses today. *(completed)*
+- [x] Resolve `<interpreter>` as: the existing top-level `.mcpServers.sapience.command` if
       present (inheriting the pinned nix-store path), else `command -v python3` resolved to an
       absolute path, else refuse loudly with a non-zero exit. Resolve `<host>` from
       `~/.sapience/config.json` when it carries one, else default to `https://app.spnc.ai`.
       Record in a header comment that `mcp.py` imports stdlib only and `sapience.nix` pins a
       plain `pkgs.python3`, so the fallback is equivalent rather than merely convenient.
-- [ ] `--quiet`: silent and exit 0 when the entry already matches byte-for-byte; exactly one line
-      when it writes. This is the contract the Phase 3 hook keys its own silence off.
-- [ ] `--retire-global`: remove ONLY the top-level entry, leaving `.projects` untouched. Document
+      *(completed)*
+- [x] `--quiet`: silent and exit 0 when the entry already matches byte-for-byte; exactly one line
+      when it writes. This is the contract the Phase 3 hook keys its own silence off. *(completed)*
+- [x] `--retire-global`: remove ONLY the top-level entry, leaving `.projects` untouched. Document
       in its own help text that it is **inert in practice** until the companion task disables
       `programs.sapience.registerMcpServer`, because the nix activation re-creates that entry on
       every switch — and that running it today would also disable Sapience in every repo still
-      relying on the machine-wide entry. Phase 7 must not run it.
-- [ ] Add a header paragraph citing `context/patterns/mcp-server-ownership.md` for the ownership
+      relying on the machine-wide entry. Phase 7 must not run it. *(completed)*
+- [x] Add a header paragraph citing `context/patterns/mcp-server-ownership.md` for the ownership
       invariant on this class of outside-the-tree write, and its
       "a command path must never resolve inside a repository's own `.claude/` tree" invariant.
-- [ ] Create `agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh`,
+      *(completed)*
+- [x] Create `agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh`,
       modelled on lean's `tests/test-lean-mcp-registration.sh`, exercising the writer against a
       temporary `HOME` fixture: fresh register; idempotent re-run (no write, exit 0, silent under
       `--quiet`); repair of a diverged entry; `--remove`; token-absent fallback; and the
       key-preservation property (an unrelated top-level key and an unrelated
-      `.projects[other]` entry both survive a write byte-for-byte).
-- [ ] Declare both new files by running
+      `.projects[other]` entry both survive a write byte-for-byte). *(completed: 10/10 cases pass;
+      hook/installer/verifier cases self-skip with INFO until Phases 3-5 add those scripts)*
+- [x] Declare both new files by running
       `bash .claude/scripts/sync-manifest-scripts.sh --write` and reviewing the resulting
       `provides.scripts` insertion (Rule Q is a Gate 3 FAIL; the array is derived, not curated).
+      *(completed)*
 
 **Timing**: 2 hours
 
