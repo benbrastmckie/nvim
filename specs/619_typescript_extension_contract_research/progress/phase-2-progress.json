@@ -1,0 +1,41 @@
+{
+  "phase": 2,
+  "phase_name": "Close the Outcome 2 field-to-consumer gap",
+  "started_at": "2026-11-13T00:40:00Z",
+  "last_updated": "2026-11-13T01:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add merge_targets.{entry}.source/target/section_id rows, each paired with actual traced consumer",
+      "status": "done",
+      "files_touched": ["specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md"],
+      "note": "Traced source/target to validate_merge_targets() (manifest.lua), process_merge_targets() (init.lua -- NOT loader.lua), and generate_claudemd() (merge.lua). Traced section_id and found it has NO live consumer: generate_claudemd() never reads it; init.lua's process_merge_targets() explicitly documents skipping section-based injection for claudemd ('the merge_key entry in merged_sections is intentionally left empty'); the only code reading section_id (merge.lua's inject_section/remove_section, re-exported by claude/extensions/merge.lua's inject_claudemd_section/remove_claudemd_section) has zero callers in the live load/unload path -- dead code from a superseded section-marker design. Also corrected the existing merge_targets table row's consumer attribution from loader.lua to init.lua (process_merge_targets/reverse_merge_targets are local functions in init.lua; loader.lua declares neither name)."
+    },
+    {
+      "id": 2,
+      "description": "Add a row for every key on Phase 1's unlisted-key list, or state the list came back empty",
+      "status": "done",
+      "files_touched": [],
+      "note": "Phase 1's unlisted-key list came back empty beyond the merge_targets.{entry}.{source,target,section_id} sub-field rows this phase's objective 1 already adds. No additional row was needed."
+    },
+    {
+      "id": 3,
+      "description": "Add clarifying sentence on section_id's mandatory-by-convention status and task 621's extension_typescript form",
+      "status": "done",
+      "files_touched": ["specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md"],
+      "note": "Added prose immediately before the manifest.json field table recording section_id as mandatory IN PRACTICE (convention, not enforcement) and naming extension_typescript as the form task 621 should use -- worded to agree with the corrected finding that section_id is presently inert, not to contradict it."
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.1",
+      "description": "section_id must be traced to the consumer that actually reads it (expected: the CLAUDE.md section-delimiting path in generate_claudemd() and its reverse on unload)",
+      "type": "altered",
+      "reason": "The plan's own stated expectation for section_id's consumer did not hold: tracing against live source (merge.lua, init.lua) found section_id has NO live consumer at all -- the expected section-delimiting/unload-tracking mechanism exists in source (inject_section/remove_section) but has zero callers in the current load/unload pipeline, which bypasses section-based injection entirely in favor of full-file regeneration via generate_claudemd(). The report was corrected to state this true finding rather than the plan's expected one, per the plan's own Risk Mitigation ('Phase 1 corrects the report in place at the point of discovery' -- applied here in Phase 2 since the discovery happened during this phase's own tracing work) and recorded via issue-record.sh as a costly-severity incorrect-claim correction.",
+      "annotation": "*(deviation: altered — traced to 'no live consumer', not the plan's expected generate_claudemd()/section-delimiting path)*"
+    }
+  ]
+}

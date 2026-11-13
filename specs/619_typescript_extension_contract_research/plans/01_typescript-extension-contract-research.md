@@ -170,24 +170,24 @@ check is `bash .claude/scripts/validate-artifact.sh specs/619_typescript_extensi
 
 ---
 
-### Phase 2: Close the Outcome 2 field-to-consumer gap [NOT STARTED]
+### Phase 2: Close the Outcome 2 field-to-consumer gap [COMPLETED]
 
 **Goal**: Make the Outcome 2 field-to-consumer table complete at `merge_targets` sub-field
 granularity, so task 621 can author its manifest from the report alone.
 
 **Tasks**:
-- [ ] Add rows to the Outcome 2 `manifest.json` table for `merge_targets.{entry}.source`,
+- [x] Add rows to the Outcome 2 `manifest.json` table for `merge_targets.{entry}.source`,
       `merge_targets.{entry}.target` and `merge_targets.{entry}.section_id`, each paired with its
       actual consumer, read out of `merge.lua` / `loader.lua` rather than inferred: `source`/`target`
       are what `validate_merge_targets()` requires on every entry and what the deploy engine reads to
       locate and place content; `section_id` must be traced to the consumer that actually reads it
       (expected: the CLAUDE.md section-delimiting path in `generate_claudemd()` and its reverse on
-      unload) and named, not described generically.
-- [ ] Add a row for every key on Phase 1's unlisted-key list, or state explicitly in the phase notes
-      that the list came back empty.
-- [ ] Add one sentence to the table's surrounding prose recording that `section_id` is mandatory in
+      unload) and named, not described generically. *(deviation: altered — traced to "no live consumer", not the expected generate_claudemd()/section-delimiting path; see progress file task 2.1. Also corrected the pre-existing merge_targets row's consumer attribution from loader.lua to init.lua.)*
+- [x] Add a row for every key on Phase 1's unlisted-key list, or state explicitly in the phase notes
+      that the list came back empty. *(completed: the list came back empty beyond the sub-field rows objective 1 already adds)*
+- [x] Add one sentence to the table's surrounding prose recording that `section_id` is mandatory in
       practice for any extension merging into CLAUDE.md — the convention every surveyed manifest
-      follows — and name the form task 621 is specified to use (`extension_typescript`).
+      follows — and name the form task 621 is specified to use (`extension_typescript`). *(completed: worded to agree with the "presently inert, convention-only" finding)*
 
 **Timing**: 0.5 hours
 
