@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Land the Standing Rule, Register It, Redeploy, and Run the Full Gate Set",
+  "started_at": "2026-11-13T01:40:00Z",
+  "last_updated": "2026-11-13T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create rules/sapience-write-path.md with YAML paths frontmatter (atomic-batch with objective 2)", "status": "done", "files_touched": ["agent-system/extensions/sapience/rules/sapience-write-path.md"]},
+    {"id": 2, "description": "Register rule in manifest.json provides.rules (atomic-batch with objective 1)", "status": "done", "files_touched": ["agent-system/extensions/sapience/manifest.json"]},
+    {"id": 3, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm tagged write end-to-end via --dry-run after redeploy", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Write out any owner action (none required by this plan's route)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run the full gate set (scoped to --only-gate 3,13 per Batch Gate Deferral directive)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.verification",
+      "description": "Run bash .claude/scripts/verify-deploy.sh (the complete, unnarrowed gate set) as the phase's own declared full-tier verification criterion.",
+      "type": "altered",
+      "reason": "This dispatch's .dispatch/3.md carries a Batch Gate Deferral directive for the plan's final full-tier phase: discharge against a scoped tier (--only-gate N[,...]) covering the files this phase touched, deferring the unnarrowed full set to the once-per-batch invocation. An unscoped verify-deploy.sh run at deploy-headless.sh time surfaced two failures unrelated to this task's edits (gate10 validate-state.sh --deep timeout; gate20 skill-orchestrate/SKILL.md budget ceiling, both pre-existing/concurrent-task artifacts, not touched by any file in this task's declared file_scope). Scoped discharge: verify-deploy.sh --skip-slow --only-gate 3,13 (doc-lint covering Rule H/I/R/T for the new rule registration and deployed-copy drift; whole-tree orphan detection for the new rules/ file) exits 0. The full gate set still runs once for the whole batch at the end of the /orchestrate invocation and its result is attributed back to this task via modified_files.",
+      "annotation": "*(completed: scoped to --only-gate 3,13 covering sapience's touched files per this dispatch's Batch Gate Deferral directive; full verify-deploy.sh exits 0 on gates 3 and 13, deferred unnarrowed run to the batch-level invocation per context/formats/plan-format.md's Batch-aware deferral)*"
+    }
+  ],
+  "handoff_count": 0
+}
