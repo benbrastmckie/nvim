@@ -1,5 +1,5 @@
 ---
-next_project_number: 615
+next_project_number: 616
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 615
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,614 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,614,615 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594 | 439,458,472,476,486,509,518,519,542,543,564,572,593 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,595 | 438,492,501,539,547,552,580,594 | core-agent-system, agent-system |
@@ -83,6 +83,7 @@ next_project_number: 615
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
 614 [NOT STARTED] — Resolve a SF-1 card worktree to its parent checkout so card...
+615 [NOT STARTED] — GOAL. Make an extension's permissions.allow grants retract on...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
@@ -187,6 +188,111 @@ next_project_number: 615
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 615. Retract extension grants on unload
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: GOAL. Make an extension's `permissions.allow` grants retract on unload the way its hooks already
+do, so that loading an extension into a repo is genuinely the only thing that grants its tools
+there and unloading it genuinely revokes them.
+
+MEASURED IN THIS REPOSITORY ON 2026-11-13, not inferred:
+
+- `.claude-extensions.json` -> `extensions.sapience.merged_sections.settings.permissions.children.allow.items`
+  is the empty array `[]`, while `agent-system/extensions/sapience/settings-fragment.json`
+  declares ELEVEN grants (4 write-tool: `mcp__sapience__sapience_remember`, `_wrapup`,
+  `_handoff`, `_adddoc`; 7 read-tool: `mcp__sapience__sapience`, `_search`, `_briefing`,
+  `_context`, `_ask`, `_outstanding`, `_papers`) and all eleven are live in
+  `.claude/settings.local.json`.
+- The same empty-`items` record holds for the other two extensions that declare permission
+  grants, `nix` and `lean`. The five that declare none (`email`, `nvim`, `core`, `approvals`,
+  `literature`) record `none`, which is correct for them.
+- By contrast `extensions.sapience.merged_sections.settings.hooks.children` carries all five
+  event keys (`PreToolUse`, `SessionEnd`, `SessionStart`, `Stop`, `UserPromptSubmit`). Hooks are
+  tracked; permissions are not. The defect is specific to the array-merge path, not to tracking
+  in general.
+- The grants land in `.claude/settings.local.json`, not `.claude/settings.json` (which carries
+  no sapience entry at all). Any fix must operate on the file the merge actually writes.
+
+CAUSE, LOCATED. `lua/neotex/plugins/ai/shared/extensions/merge.lua`'s array branch inside
+`deep_merge` dedups against the target BEFORE recording anything: it walks `target[key]` for a
+`vim.deep_equal` match and, only `if not exists`, performs both the `table.insert` into
+`target[key]` and the `table.insert` into `tracked[key].items`. An item already present in the
+target is therefore neither appended nor tracked, and `M.unmerge_settings`'s `remove_tracked`
+has nothing to remove for it. Hooks escape this because they route through
+`merge_hook_event_array` in the same file, which tracks a replacement separately from a plain
+append (see that function's own `tracked.items` / `tracked.hook_items` split).
+
+Any path that re-merges a fragment whose grants already sit in the target reproduces the empty
+record: a `[Reload All]`/`[Regenerate]` from the picker, an individual `Ctrl-l` update, or a
+`deploy-headless.sh` run. So the stale record is the expected steady state after the first
+reload, not a one-off corruption.
+
+CONSEQUENCE, NOT HYPOTHETICAL. Unloading the sapience extension in this repository today
+retracts none of its eleven MCP grants. That defeats the per-repo gating the extension's
+`settings-fragment.json` exists to provide, and it is about to matter more rather than less: the
+companion work sited in /home/benjamin/.dotfiles under the durable project name
+`retire_machine_wide_sapience_surface` removes the seven machine-wide read-tool grants from that
+repository's `config/claude/settings.json`, leaving the per-repo merge as the only grant path.
+`.claude/rules/sapience-write-path.md`'s "Accepted Residual" section already names the four
+write-tool grants' survival as a known residual; this record establishes that the problem is
+wider (all eleven, and not sapience-specific) and that its cause is a merge-engine tracking gap
+rather than anything in the sapience fragment.
+
+A CLAIM TO CORRECT. The companion task's own description in /home/benjamin/.dotfiles states that
+the seven read-tool grants "DO retract cleanly on unload" and that only the four write-tool
+grants survive. The record measured here contradicts that: the tracking array is empty for all
+eleven. This task does not edit that other repository -- per
+`.claude/rules/source-store-deploy-boundary.md`'s task-siting rule its edit targets are all
+local -- but its research report must state the contradiction plainly so the correction can be
+carried across by hand.
+
+SCOPE.
+
+1. THE TRACKING DECISION, which is the whole substance of this task and must not be skipped past
+   to a one-line patch. Recording every fragment item unconditionally is NOT obviously correct:
+   unmerge would then remove a grant the extension did not add, such as a user's own hand-added
+   entry in `.claude/settings.local.json` that happens to equal one in the fragment. Weigh at
+   least these three shapes and pick one with reasons:
+   (i) track every fragment item regardless of pre-existence, accepting that an unload removes a
+       coinciding user grant;
+   (ii) track with a provenance distinction between "we added this" and "it was already here",
+        and have unmerge remove only the former;
+   (iii) drop the tracking record for this class entirely and reconcile at unload time by
+         re-reading the extension's own fragment, so the record cannot go stale in the first
+         place.
+   Shape (iii) interacts with the fragment being editable between load and unload; shape (ii)
+   changes the on-disk shape of `merged_sections` and must say what reads it.
+
+2. REPAIR THE EXISTING STALE RECORDS for `sapience`, `nix` and `lean` in this repository's
+   `.claude-extensions.json`, or establish that a wipe-and-reload is the sanctioned repair and
+   document that where a future reader will find it. Leaving three known-stale records behind a
+   fixed engine is not an acceptable landing.
+
+3. TEST COVERAGE in `lua/neotex/plugins/ai/shared/extensions/merge_spec.lua`: a fresh merge into
+   a target with no prior grants, a re-merge over already-present grants, an unmerge after each,
+   a user-added grant that coincides with a fragment grant (whatever shape 1 selects must have
+   its chosen behavior asserted here, not left implicit), and the hooks path as a
+   non-regression. The existing `prune_empty_hooks` coverage in that file is the local model for
+   shape.
+
+4. CHECK THE SAME DEFECT CLASS ELSEWHERE in the engine before closing: any other `type ==
+   "appended"` array target reachable from a fragment (not only `permissions.allow`) has the
+   same dedup-before-track structure and the same latent staleness.
+
+ACCEPTANCE.
+
+- Loading an extension that declares `permissions.allow` entries into a repo where those entries
+  already exist produces a NON-empty tracking record, and a subsequent unload retracts exactly
+  the set the selected shape says it should.
+- The three stale records in this repository are repaired or their repair route is documented.
+- `merge_spec.lua` covers all five cases in scope item 3 and passes headless.
+- The research report states the contradiction with the companion task's recorded claim.
+
+---
 
 ### 614. Resolve a SF-1 card worktree to its parent checkout so card sessions get repo-scoped Sapience retrieval without hook-injected context
 - **Status**: [NOT STARTED]
