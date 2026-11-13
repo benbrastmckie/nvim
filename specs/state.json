@@ -124798,7 +124798,7 @@
     {
       "project_number": 620,
       "project_name": "typescript_extension_design",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Design the typescript extension: file manifest, agents, hard contracts, verification hook, and the typescript-web split",
       "description": "GOAL. Produce the implementation plan for the new `typescript` extension from the research\nreport, covering its file manifest, both agents, hard contracts, the verification hook, and the\ntypescript/web content split.\n\nREQUIRED OUTCOMES.\n1. Full file manifest with per-file purpose and line budget.\n2. The `context/project/typescript/` tree layout (README.md plus `standards/`, `patterns/`,\n   `domain/`, `tools/` subdirectories), STRICTLY GENERIC -- no repo-specific content anywhere\n   in it.\n3. Both agents' workflow stages, tool grants, and model tier per the agent-frontmatter standard.\n4. The `hard_contracts` contract text for TypeScript work.\n5. A `keyword_overrides` keyword set, with an EXPLICIT collision check against the `web`\n   extension's own `keyword_overrides` (and against every other loaded extension's) documented\n   in the plan.\n6. The `rules/typescript-rules.md` `paths:` frontmatter glob, covering `**/*.ts`, `**/*.tsx`,\n   `package.json`, and `tsconfig*.json`.\n7. The verification-stage lifecycle hook's full contract: inputs, the toolchain detection logic\n   it runs, its exit codes, and its honest-degrade behaviour -- it MUST skip with a stated\n   reason rather than report a false pass when a repository has no typecheck or test command to\n   run.\n8. The line-level split of\n   `agent-system/extensions/web/context/project/web/domain/typescript-web.md`, naming which\n   content moves down into the generic typescript extension and which stays as\n   Astro/browser/Cloudflare-specific.\n\nCONSTRAINT TO CARRY INTO THE PLAN. The `web` extension already has a known duplicate-file\nproblem: `astro-framework.md` and `tailwind-v4.md` each exist both at `context/project/web/`\nroot AND under `context/project/web/domain/`. Do NOT expand scope to fix it, but do not make it\nworse.\n\nDELIVERABLE. An implementation plan.",
@@ -124813,9 +124813,36 @@
           "path": "specs/620_typescript_extension_design/reports/01_typescript-extension-design-research.md",
           "type": "report",
           "summary": "Full design research for a new generic typescript extension: file manifest with line budgets, context/project/typescript/ tree, both agents' stages/tools/model tier, hard_contracts recommendation, keyword_overrides set with an explicit collision check against web and 6 other manifests (none found), the typescript-rules.md paths glob, the verification hook's toolchain-detection and honest-degrade contract, and a line-level split of web's typescript-web.md."
+        },
+        {
+          "path": "specs/620_typescript_extension_design/plans/01_typescript-extension-build.md",
+          "type": "plan",
+          "summary": "Six-phase implementation plan plus embedded design specification for the new generic typescript extension."
         }
       ],
-      "file_scope": [],
+      "file_scope": [
+        "agent-system/extensions/README.md",
+        "agent-system/extensions/typescript/EXTENSION.md",
+        "agent-system/extensions/typescript/README.md",
+        "agent-system/extensions/typescript/agents/typescript-implementation-agent.md",
+        "agent-system/extensions/typescript/agents/typescript-research-agent.md",
+        "agent-system/extensions/typescript/context/contracts/typescript-adversarial-verification.md",
+        "agent-system/extensions/typescript/context/project/typescript/README.md",
+        "agent-system/extensions/typescript/context/project/typescript/domain/module-systems.md",
+        "agent-system/extensions/typescript/context/project/typescript/domain/tsconfig-reference.md",
+        "agent-system/extensions/typescript/context/project/typescript/patterns/path-alias-patterns.md",
+        "agent-system/extensions/typescript/context/project/typescript/patterns/zod-validation-patterns.md",
+        "agent-system/extensions/typescript/context/project/typescript/standards/typescript-style-guide.md",
+        "agent-system/extensions/typescript/context/project/typescript/tools/package-manager-detection.md",
+        "agent-system/extensions/typescript/context/project/typescript/tools/tsc-cli-guide.md",
+        "agent-system/extensions/typescript/index-entries.json",
+        "agent-system/extensions/typescript/manifest.json",
+        "agent-system/extensions/typescript/opencode-agents.json",
+        "agent-system/extensions/typescript/rules/typescript-rules.md",
+        "agent-system/extensions/typescript/scripts/typescript-verify.sh",
+        "agent-system/extensions/typescript/skills/skill-typescript-implementation/SKILL.md",
+        "agent-system/extensions/typescript/skills/skill-typescript-research/SKILL.md"
+      ],
       "audit_verdict": {
         "proposal": {
           "id": "typescript_extension_design",
@@ -125847,7 +125874,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "last_updated": "2026-11-13T21:44:01Z",
+      "last_updated": "2026-11-13T21:54:11Z",
       "session_id": "sess_1794603202_55566e",
       "next_artifact_number": 2
     },
