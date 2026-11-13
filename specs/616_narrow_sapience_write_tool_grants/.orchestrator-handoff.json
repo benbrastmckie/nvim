@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 8,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a 5-phase plan applying research decision (i): delete all four MCP write-tool grants from the sapience settings-fragment, leaving the seven read-shaped entries. Plan sizing found four coupled surfaces the research report missed -- verify-sapience-mcp.sh hardcodes the grant count as `-eq 11` and would report failure against a correct narrowing, permission-configuration.md names the sapience worked example by name, and manifest.json plus index-entries.json both state the 11-grant figure. Phases 1-4 land the narrowing and the prose reconciliation; Phase 5 folds in the merge-source and metadata edits, redeploys, and verifies the fresh-load acceptance criterion. All three Carried-Figure premises were re-validated against live state and confirmed unchanged.",
+  "summary": "Narrowed the sapience MCP write-tool grant from 11 to 7 entries (removed sapience_remember/wrapup/handoff/adddoc) and reconciled eleven coupled surfaces across five phases: settings-fragment.json plus its verification probe, core's carve-out worked example and permission-configuration.md's cross-reference, sapience-write-path.md's landed disposition, review-gate-boundary.md's grant disclosure and carve-out/staleness paragraphs, and the extension's remaining metadata (EXTENSION.md, README.md, manifest.json, index-entries.json). A scratch-repo fresh load confirmed exactly 7 grants with no write tool; this repository's own pre-existing 11-grant additive-merge residual is recorded explicitly as expected, not implied as fully closed. Each intermediate phase ran an idempotent redeploy so its own scoped gate (verify-deploy.sh --skip-slow --only-gate 3,4) could pass within that phase; Phase 5's own full-tier gate was discharged against that same scoped gate per this dispatch's Batch Gate Deferral directive.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/616_narrow_sapience_write_tool_grants/plans/01_narrow-sapience-write-tool-grants.md",
-      "summary": "5-phase plan narrowing the sapience MCP write-tool grants and reconciling nine coupled surfaces."
+      "type": "summary",
+      "path": "specs/616_narrow_sapience_write_tool_grants/summaries/01_narrow-sapience-write-tool-grants-summary.md",
+      "summary": "Narrowed the sapience MCP write-tool grant from 11 to 7 entries and reconciled eleven coupled surfaces across the sapience and core source stores; fresh-load and scoped-gate verification both confirmed."
     }
-  ],
-  "dispatch_seq": 6
+  ]
 }

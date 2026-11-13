@@ -1,16 +1,51 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 8,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/616_narrow_sapience_write_tool_grants/summaries/01_narrow-sapience-write-tool-grants-summary.md",
+      "summary": "Narrowed the sapience MCP write-tool grant from 11 to 7 entries and reconciled eleven coupled surfaces across the sapience and core source stores; fresh-load and scoped-gate verification both confirmed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Removed the four MCP write-tool grants from agent-system/extensions/sapience/settings-fragment.json (11 -> 7 entries) and brought every surface that stated the old grant figure as current fact into agreement across five phases: verify-sapience-mcp.sh's probe, core's carve-out worked example and its cross-reference, the write-path rule's landed disposition, review-gate-boundary.md's grant disclosure, and the extension's remaining metadata/merge-source files. A scratch-repo fresh load confirmed exactly 7 grants with no write tool; this repository's own pre-existing 11-grant merge residual is recorded explicitly, not silently left implying full closure."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/mcp-server-ownership.md",
+    "agent-system/extensions/core/docs/guides/permission-configuration.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/sapience/EXTENSION.md",
+    "agent-system/extensions/sapience/README.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md",
+    "agent-system/extensions/sapience/index-entries.json",
+    "agent-system/extensions/sapience/manifest.json",
+    "agent-system/extensions/sapience/rules/sapience-write-path.md",
+    "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh",
+    "agent-system/extensions/sapience/settings-fragment.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When narrowing a permission-grant count that multiple prose surfaces cite by figure (not just the two files a dispatch names), each source-store edit that shrinks or regenerates a cited file can itself trigger a doc-lint/index-line-count failure in a scoped verification gate (verify-deploy.sh --only-gate 3,4 doc-lints the WHOLE extensions tree, not just the files touched this phase) -- both a deployed-vs-source drift check (any edited script/rule/context file not yet redeployed) and an index-entries.json line_count mismatch (any edited markdown file whose line count the index tracks). Rather than deferring all redeployment to a single final phase, running an idempotent deploy-headless.sh pass (and generate-context-line-counts.sh --write when a markdown file's size changed) after each intermediate phase lets that phase's own named scoped gate pass as literally written, at near-zero marginal cost since the deploy and the line-count regeneration are both idempotent.",
+      "category": "PATTERN",
+      "source_artifact": "specs/616_narrow_sapience_write_tool_grants/summaries/01_narrow-sapience-write-tool-grants-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["doc-lint", "deploy-drift", "line-count", "scoped-gate", "intermediate-redeploy", "idempotent"]
+    },
+    {
+      "content": "To verify a 'fresh extension load produces grant set X' acceptance criterion without polluting the current repository's own merged settings (which may carry a pre-existing additive-merge residual from before a narrowing), drive the extension manager's Lua API directly in a throwaway scratch git repo: `nvim --headless -c \"lua local ext_config = require('neotex.plugins.ai.shared.extensions.config'); local ext_init = require('neotex.plugins.ai.shared.extensions.init'); local manager = ext_init.create(ext_config.claude()); local ok, err = manager.load('EXTNAME', { project_dir = 'SCRATCH_DIR', confirm = false }); print(ok)\" -c \"qa!\"`. This writes only into SCRATCH_DIR's own .claude/ and .claude-extensions.json, never touching the real repo's ~/.claude.json project registry (confirmed: no scratch-repo key appeared there). Precedent for this call pattern already existed in test-mcp-merge-target.sh's run_lua/do_load helpers.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/616_narrow_sapience_write_tool_grants/summaries/01_narrow-sapience-write-tool-grants-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["extension-loader", "manager.load", "scratch-repo", "fresh-load-verification", "headless-nvim", "acceptance-criterion"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794588346_94d92d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ],
-    "phases_completed": 0,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
     "phases_total": 5
   },
   "proposed_file_scope": [
