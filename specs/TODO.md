@@ -83,7 +83,7 @@ next_project_number: 619
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-615 [RESEARCHING] — GOAL. Make an extension's permissions.allow grants retract on...
+615 [RESEARCHED] — GOAL. Make an extension's permissions.allow grants retract on...
 616 [RESEARCHING] — GOAL. Narrow the sapience extension's MCP write-tool...
 617 [RESEARCHED] — GOAL. Reconcile the sapience extension's source store with...
   └─ 614 [NOT STARTED] — Resolve a SF-1 card worktree to its parent checkout so card...
@@ -532,10 +532,11 @@ ACCEPTANCE.
 ---
 
 ### 615. Retract extension grants on unload
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
+- **Research**: [615_retract_extension_grants_on_unload/reports/01_retract-extension-grants-unload.md]
 
 **Description**: GOAL. Make an extension's `permissions.allow` grants retract on unload the way its hooks already
 do, so that loading an extension into a repo is genuinely the only thing that grants its tools
