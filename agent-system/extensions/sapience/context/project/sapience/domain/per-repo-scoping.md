@@ -152,28 +152,29 @@ repo's `~/.claude.json` entry until the NEXT session start in that repo (the bid
 above only fires at session start) — or immediately, via
 `install-sapience-mcp-session-hook.sh --remove`.
 
-**Deliberate divergence from the lean model.** Lean's own installer also writes
-`$HOME/.dotfiles/config/claude/settings.json` as a durable second registration target. This
-extension's installer does not: it is forbidden to touch any `.dotfiles` file, so the
-`SessionStart` registration above lives ONLY in `$HOME/.claude/settings.json`. See the
-durability-residual hazard below.
+**Narrower divergence from the lean model.** Lean's own installer writes both registration
+targets itself: `$HOME/.claude/settings.json` directly, and
+`$HOME/.dotfiles/config/claude/settings.json` as a durable second target. This extension's
+installer writes only the first: it is forbidden to touch any `.dotfiles` file, so it never
+becomes the writer of the second target itself. Durability across a `home-manager switch` is
+supplied instead by a companion-owned `SessionStart` entry in
+`$HOME/.dotfiles/config/claude/settings.json`, written by that other repository's own
+home-manager activation and merged into the enforced `hooks` key on every switch -- a second,
+independent writer converging on the identical command string, rather than this extension's own
+installer taking on a second write target. See the durability detail below.
 
 ## Hazards
 
-**The `SessionStart` MCP-registration hook is NOT durable across a `home-manager switch` --
-accepted residual, same shape as the write-grant residual above.** `hooks` is a home-manager
-ENFORCED key (`~/.dotfiles/modules/home/core/dotfiles.nix`'s
-`[_NOTE,env,hooks,model,permissions,statusLine]` set), reset from `.dotfiles`'
-`config/claude/settings.json` on every `home-manager switch` while that source carries a
-`hooks` key -- which it will, for other entries, even after a companion task removes the
-Sapience ones from it. Because this extension's installer deliberately does not write
-`.dotfiles` (see above), the registration this installer adds to
-`$HOME/.claude/settings.json` is wiped by the next switch and must be re-run. `install-sapience-mcp-session-hook.sh`
-prints a loud WARNING naming this on every run, and `verify-sapience-mcp.sh`'s check (d) detects
-the loss so it is caught rather than silent. **Named escape valve**: a companion task (or a
-follow-up) taking ownership of a durable user-level `SessionStart` entry for this hook, the same
-way the write-grant residual above names a follow-up task as its escape valve rather than a
-silent hope the gap is never hit.
+**The `SessionStart` MCP-registration hook is durable across a `home-manager switch`.** `hooks`
+is a home-manager ENFORCED key (`~/.dotfiles/modules/home/core/dotfiles.nix`'s
+`[_NOTE,env,hooks,model,permissions,statusLine]` set). `~/.dotfiles`'s own
+`config/claude/settings.json` carries a companion-owned `SessionStart` entry invoking this same
+hook, independently of this extension's own installer, and that entry is what the enforced
+`hooks` key preserves on every switch. This extension's installer writes the byte-identical
+command string directly to `$HOME/.claude/settings.json`; because both writers converge on the
+exact same command string, re-running the installer after a switch reports a no-op rather than a
+double registration. `verify-sapience-mcp.sh`'s check (d) confirms the entry's continued presence
+in the live file.
 
 **There is no delete API.** `DELETE /v1/ko/<hash>`, `DELETE /v1/kos/<hash>`, and `POST
 /v1/ko/<hash>/delete` all return 404 on this vault. Every write through `sapience-remember.sh` is

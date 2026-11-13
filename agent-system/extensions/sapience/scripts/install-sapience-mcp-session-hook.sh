@@ -15,19 +15,27 @@
 # all, so it cannot resolve the writer relative to CWD's own .claude/scripts/ -- it needs its
 # own stable copy, installed here.
 #
-# The hooks.SessionStart registration is written to ONE place only: $HOME/.claude/settings.json.
-# This DELIBERATELY DIVERGES from the lean model (install-lean-lsp-session-hook.sh), which also
-# writes $HOME/.dotfiles/config/claude/settings.json as a durable second target. This task is
-# forbidden to touch any `.dotfiles` file, so that second write is omitted outright -- do not
-# "repair" this back to match lean's shape. The consequence is real and is named loudly on every
-# install run below: `hooks` is a home-manager ENFORCED key
+# The hooks.SessionStart registration is written by TWO independent writers that converge on the
+# identical command string, in the same home-manager ENFORCED `hooks` key
 # (`~/.dotfiles/modules/home/core/dotfiles.nix`'s `[_NOTE,env,hooks,model,permissions,statusLine]`
-# set), reset from `.dotfiles`' `config/claude/settings.json` on every `home-manager switch`
-# while that source carries a `hooks` key -- which it will, for the inhibitor and lean entries,
-# even after a companion task removes the Sapience ones from it. This registration is therefore
-# NOT durable across a `home-manager switch` until a companion task in that other repository
-# takes ownership of a durable user-level SessionStart entry for this hook. Re-run this installer
-# after every `home-manager switch` until then.
+# set):
+#
+#   1. This installer -- writes $HOME/.claude/settings.json directly. This is the only write
+#      target this script itself ever touches: it is forbidden to touch any `.dotfiles` file, so
+#      it narrowly diverges from the lean model (install-lean-lsp-session-hook.sh), whose own
+#      installer writes BOTH `$HOME/.claude/settings.json` and
+#      `$HOME/.dotfiles/config/claude/settings.json` itself. Do not "repair" this script to add a
+#      second write target of its own -- writer 2 below already covers that role, from the other
+#      repository.
+#   2. A companion-owned, durable `SessionStart` entry in
+#      `$HOME/.dotfiles/config/claude/settings.json`, written by that other repository's own
+#      home-manager activation and merged into the enforced `hooks` key on every
+#      `home-manager switch`. This is what makes the registration durable across a switch.
+#
+# Because both writers emit the byte-identical command string below, running this installer
+# after a switch that already placed the entry (via writer 2) is a documented no-op, never a
+# double registration -- the idempotency check below (looking for this hook's own command string
+# already present in .hooks.SessionStart) is exactly what verifies that.
 #
 # Idempotent: running this twice in a row makes no further change the second time (checked by
 # looking for this hook's own command string already present in .hooks.SessionStart).
@@ -156,17 +164,16 @@ remove_session_start_entry() {
     echo "  Removed the SessionStart hook entry from $file"
 }
 
-print_durability_warning() {
+print_registration_note() {
     echo ""
-    echo "WARNING: this SessionStart registration lives ONLY in $LIVE_SETTINGS. 'hooks' is a"
-    echo "home-manager ENFORCED key (see \$HOME/.dotfiles/modules/home/core/dotfiles.nix), reset"
-    echo "from \$HOME/.dotfiles/config/claude/settings.json on every 'home-manager switch' while"
-    echo "that source carries a hooks key -- which it will, for other entries, even after a"
-    echo "companion task removes the Sapience ones. This registration will be WIPED by the next"
-    echo "'home-manager switch' until a companion task in that other repository takes ownership"
-    echo "of a durable user-level entry. Re-run this installer"
-    echo "(bash agent-system/extensions/sapience/scripts/install-sapience-mcp-session-hook.sh)"
-    echo "after every 'home-manager switch' until then."
+    echo "NOTE: this script writes the SessionStart registration directly to $LIVE_SETTINGS."
+    echo "'hooks' is a home-manager ENFORCED key (see \$HOME/.dotfiles/modules/home/core/dotfiles.nix),"
+    echo "reset from \$HOME/.dotfiles/config/claude/settings.json on every 'home-manager switch'."
+    echo "That other repository's own home-manager activation carries a companion-owned"
+    echo "SessionStart entry invoking this same hook, independently of this script, so the"
+    echo "registration survives a switch: the enforced 'hooks' key preserves that entry, and"
+    echo "re-running this installer afterward reports a no-op (the byte-identical command string"
+    echo "is already present) rather than a double registration."
 }
 
 if $REMOVE; then
@@ -223,7 +230,7 @@ else
     merge_session_start_entry "$LIVE_SETTINGS"
 fi
 
-print_durability_warning
+print_registration_note
 
 echo ""
 echo "Done. sapience will now be registered/removed automatically, per-project, at the start of"

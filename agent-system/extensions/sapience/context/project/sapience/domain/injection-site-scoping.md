@@ -83,10 +83,16 @@ alternative — it would be overwritten by the next automatic update.
 > server-side — exposing that same grouping as an optional filter would let a caller ask for
 > "this project first" without losing the cross-project tally entirely.
 
-## Owner Action 2 — The Machine-Wide Duplicate Hook Surface
+## No Machine-Wide Duplicate Hook Surface
 
-This is also OWNER ACTION, and it is sited in a different repository (`~/.dotfiles`) that this
-source store must not edit. Exact, runnable inspection commands the owner can paste:
+The five Sapience hook entries (`SessionStart` briefing, `UserPromptSubmit`, `PreToolUse`, the
+`SessionEnd` receipt entry, `Stop`) are merged only into a loaded repository's own
+`settings.local.json`, by `settings-fragment.json` while that repository's own
+`.claude-extensions.json` shows the extension active — never into `$HOME/.claude/settings.json`.
+The `UserPromptSubmit` and `PreToolUse` sites named in the table above therefore reach a session
+only through that session's own repository-merged `settings.local.json`, under the same per-repo
+gating the rest of this extension's surfaces use. Inspection commands to confirm this for a
+given machine:
 
 ```bash
 jq -r '.hooks | keys' "$HOME/.claude/settings.json"
@@ -95,11 +101,13 @@ jq -r '.hooks.UserPromptSubmit' "$HOME/.claude/settings.json"
 jq -r '.hooks.PreToolUse' "$HOME/.claude/settings.json"
 ```
 
-These same hook commands currently fire from `$HOME/.claude/settings.json` in every repository
-on this machine, regardless of any one repository's own per-repo extension activation state.
-Retiring that duplicate is owned by the `retire_machine_wide_sapience_surface` work sited in
-`~/.dotfiles` — a different repository this source store must not edit, per
-`rules/source-store-deploy-boundary.md`'s task-siting rule.
+`$HOME/.claude/settings.json`'s own `.hooks.SessionStart` carries the per-project
+MCP-registration entry (`per-repo-scoping.md`'s "The MCP-Registration Triad") plus entries
+belonging to other, unrelated tools — never the five Sapience hooks above. That registration
+entry gates per-project tool/context access, not the three primary-session injection sites this
+file measures. Owning the registration entry's durability, and retiring any machine-wide
+duplicate of the five hooks above, is sited in `~/.dotfiles` — a different repository this
+source store must not edit, per `rules/source-store-deploy-boundary.md`'s task-siting rule.
 
 ## Candidate Follow-Up, Recorded Not Built
 
