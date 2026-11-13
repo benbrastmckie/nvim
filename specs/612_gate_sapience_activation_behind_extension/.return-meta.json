@@ -1,0 +1,46 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/612_gate_sapience_activation_behind_extension/reports/01_gate-sapience-extension-scope.md",
+      "summary": "Documents that task 612's description is a verbatim duplicate of a separate, correctly-sited .dotfiles task's removal narrative; reconstructs task 612's real (extension-side, per-repo activation) scope from file_scope and codebase evidence, including a found lean-lsp precedent for the MCP-registration mechanism."
+    }
+  ],
+  "next_steps": "Have a human confirm/correct task 612's stored description against this report's reconstructed scope, then run /orchestrate 612 to create an implementation plan grounded in that scope (not the description's literal removal content).",
+  "user_decision": {
+    "question": "Task 612's stored description is a verbatim duplicate of a separate .dotfiles task's (project 138) removal-work narrative, mismatched with task 612's own file_scope/title/siting (which all correctly identify it as the first-half, extension-side activation-surface task). How should this be resolved before planning proceeds?",
+    "options": [
+      "Correct task 612's description field in specs/state.json to describe the actual first-half scope (reconstructed in this report's Findings), then proceed to planning normally",
+      "Leave the description as-is and have the plan phase treat this research report's Findings/Decisions sections as the authoritative scope statement, citing it explicitly rather than the description",
+      "Abandon/merge task 612 as a duplicate and re-file the first-half work under a fresh task with a correct description"
+    ],
+    "recommended": "Correct task 612's description field in specs/state.json to describe the actual first-half scope (reconstructed in this report's Findings), then proceed to planning normally",
+    "blocking": true,
+    "obligation": "The corrected description must state task 612 is the extension-side, per-repo-activation-surface build (mirroring agent-system/extensions/lean's setup-lean-mcp.sh/lean-lsp-register-project.sh/install-lean-lsp-session-hook.sh triad, plus the settings-fragment.json permissions/hooks additions) and must not retain any instruction to edit .dotfiles-owned files (modules/home/services/sapience.nix, config/claude/settings.json, docs/sapience.md), which belong to the separate .dotfiles task 138."
+  },
+  "memory_candidates": [
+    {
+      "content": "The lean extension (agent-system/extensions/lean) already implements a complete, working pattern for per-repository MCP-server registration triggered by extension presence rather than machine-wide nix activation: a stable user-level SessionStart hook (installed to $HOME/.claude/hooks/, never inside any single repo's disposable .claude/ tree) detects per-project applicability (lakefile.lean/lakefile.toml for lean) and calls a stable user-level writer script that registers/repairs that project's own .projects[\"<abs path>\"].mcpServers entry in ~/.claude.json. Installed via a two-file idempotent --remove-capable install script (install-lean-lsp-session-hook.sh). This is the pattern to mirror for any future per-repo MCP server registration that must also work in a fresh git worktree with no .claude/ deploy at all.",
+      "category": "PATTERN",
+      "source_artifact": "specs/612_gate_sapience_activation_behind_extension/reports/01_gate-sapience-extension-scope.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["mcp-server-registration", "per-project", "lean-lsp", "SessionStart-hook", "extension-pattern"]
+    },
+    {
+      "content": "lua/neotex/plugins/ai/shared/extensions/merge.lua's settings merge engine already supports merging a Claude-Code-native hooks object (SessionStart/PreToolUse/etc. matcher-array shape) into a consuming repo's .claude/settings.local.json, not just permissions.allow -- with identity-based dedup (find_hook_match) and clean removal on unload (unmerge_settings/remove_orphaned_hook_registrations), including pruning an emptied hooks key to avoid Claude Code's rejection of a hooks:[] shape. Any extension wanting to ship per-repo hooks via settings-fragment.json's hooks key can rely on this as already-proven, not something to build.",
+      "category": "CONFIG",
+      "source_artifact": "specs/612_gate_sapience_activation_behind_extension/reports/01_gate-sapience-extension-scope.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["settings-merge", "hooks-merge", "extension-settings-fragment", "merge.lua", "unload-cleanup"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1794548508_b5c160_612",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 6
+  }
+}

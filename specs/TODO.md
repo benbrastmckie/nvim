@@ -82,7 +82,7 @@ next_project_number: 614
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-612 [NOT STARTED] — Gate every Sapience activation surface behind the sapience...
+612 [RESEARCHED] — Gate every Sapience activation surface behind the sapience...
   └─ 606 [NOT STARTED] — Scope Sapience context injection to the current repository so...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
@@ -200,10 +200,11 @@ next_project_number: 614
 ---
 
 ### 612. Gate every Sapience activation surface behind the sapience extension so Sapience runs only in repos that load it
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 611
+- **Research**: [612_gate_sapience_activation_behind_extension/reports/01_gate-sapience-extension-scope.md]
 
 **Description**: GOAL. Remove every machine-wide Sapience activation surface this repository owns, so that loading
 the sapience extension into a repo is the ONLY thing that turns Sapience on there, and unloading
