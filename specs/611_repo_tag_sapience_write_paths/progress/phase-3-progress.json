@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Assert the Repo Tag in the Provenance the Call Site Would Send",
+  "started_at": "2026-11-13T01:00:00Z",
+  "last_updated": "2026-11-13T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive existing case count via grep", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Resolve sapience-remember.sh via common_test_resolve_subject", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 3, "description": "Add build_scratch_remember write-side fixture", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 4, "description": "Add case asserting [repo:<slug>] tag", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 5, "description": "Add case asserting token redaction + no leak", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 6, "description": "Add case asserting explicit:true + no-network with no curl stub", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 7, "description": "Drive cases with EXTENSION.md postflight call-site argv shape", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 8, "description": "Widen header comment to name both scripts and new cases", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

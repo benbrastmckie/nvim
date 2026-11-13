@@ -1,19 +1,37 @@
 #!/usr/bin/env bash
-# test-sapience-capture.sh - Regression suite for sapience-retrieve.sh's exit-code split: a
-# genuine transport/HTTP failure (exit 2, with the HTTP status and a length-bounded body excerpt
-# on stderr) versus a benign no-match (exit 1, nothing on stderr, exactly as before) versus
-# success (exit 0, the <memory-context> envelope on stdout). Cases 1-4 cover the original split;
-# cases 5-9 cover the bounded cold-start retry (503 + JSON + `.starting == true`): a retry that
+# test-sapience-capture.sh - Regression suite covering BOTH sapience scripts: the read side,
+# sapience-retrieve.sh, and the write side, sapience-remember.sh.
+#
+# Read side (sapience-retrieve.sh), cases 1-9: the exit-code split between a genuine
+# transport/HTTP failure (exit 2, with the HTTP status and a length-bounded body excerpt on
+# stderr) and a benign no-match (exit 1, nothing on stderr, exactly as before) and success
+# (exit 0, the <memory-context> envelope on stdout). Cases 1-4 cover the original split; cases
+# 5-9 cover the bounded cold-start retry (503 + JSON + `.starting == true`): a retry that
 # succeeds (5), a second 503 that still ends in the unchanged exit-2 degrade (6), a 4xx that is
 # never retried (7), a non-JSON 503 body that is never retried (8), and a `retry_after` outside
 # [1, 20] that is clamped to the ceiling rather than honored verbatim (9).
 #
+# Write side (sapience-remember.sh), cases 10-12: proof that the tagged `--dry-run` call site
+# EXTENSION.md's postflight wrapup prescribes (`--subject S --value V --dry-run`) actually sends
+# a repo-tagged, token-redacted, `explicit: true` body -- asserting the tag is present in what
+# the call site would send, not merely that the call site was edited. Case 10 asserts
+# `[repo:<slug>]` is present in `.kos[0].provenance`, against the fixture's own minted slug
+# (never a hardcoded `nvim`) so the assertion cannot pass vacuously in another checkout. Case 11
+# asserts exact token redaction (`.token == "***REDACTED***"`) AND that the fixture's token value
+# never appears anywhere in stdout -- the second half catches a leak the first half would miss.
+# Case 12 asserts `.kos[0].explicit == true` and that `--dry-run` still exits 0 with NO curl stub
+# installed at all for any of these three cases: sapience-remember.sh's own source returns
+# before ever reaching its `curl` call when `--dry-run` is set, so these cases drive the real
+# system `curl` (un-shadowed) and rely on that short-circuit, not a mocked response, to make "no
+# network call" an assertion rather than an assumption.
+#
 # Follows the core shell-test convention: common_test_pass/_fail/_info from lib/common.sh,
-# PASSED/FAILED integer counters, a mktemp -d workdir with a trap EXIT cleanup. `curl` is
-# PATH-shadowed by a minimal inline stub (the same technique
+# PASSED/FAILED integer counters, a mktemp -d workdir with a trap EXIT cleanup. For the read-side
+# cases, `curl` is PATH-shadowed by a minimal inline stub (the same technique
 # literature/scripts/tests/curl-stub.sh establishes: install a `curl` executable in a scratch
 # directory prepended to PATH, dispatched by env vars, since the script under test calls bare
-# `curl`, never an absolute path or `command curl`).
+# `curl`, never an absolute path or `command curl`). The write-side cases install no such stub
+# (see above).
 #
 # Stub dispatch contract (sequenced curl + recording sleep, for the cold-start retry path):
 #   - `build_curl_stub` writes both `curl` and `sleep` into its returned stub directory, plus two
@@ -41,7 +59,8 @@
 # own scripts/lib/common.sh directly, since sapience itself has no scripts/lib/ of its own.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error
-# (sapience-retrieve.sh, deploy-root-guard.sh, or lib/common.sh not found at any candidate path).
+# (sapience-retrieve.sh, sapience-remember.sh, deploy-root-guard.sh, or lib/common.sh not found
+# at any candidate path).
 
 set -uo pipefail
 
@@ -63,6 +82,11 @@ SCRIPT_UNDER_TEST="$(common_test_resolve_subject "sapience-retrieve.sh" "deploy-
   "$REPO_ROOT/.claude/scripts/sapience-retrieve.sh" \
   "$SCRIPT_DIR/../sapience-retrieve.sh")" || exit 2
 common_test_declare_subject "$SCRIPT_UNDER_TEST"
+
+SCRIPT_UNDER_TEST_REMEMBER="$(common_test_resolve_subject "sapience-remember.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/sapience-remember.sh" \
+  "$SCRIPT_DIR/../sapience-remember.sh")" || exit 2
+common_test_declare_subject "$SCRIPT_UNDER_TEST_REMEMBER"
 
 GUARD_CANDIDATE_DEPLOYED="$REPO_ROOT/.claude/scripts/deploy-root-guard.sh"
 GUARD_CANDIDATE_SOURCE="$SCRIPT_DIR/../../../core/scripts/deploy-root-guard.sh"
@@ -100,6 +124,46 @@ build_scratch() {
   git -C "$scratch" config user.name "test"
   git -C "$scratch" commit -q --allow-empty -m "seed"
   echo "$scratch"
+}
+
+# --- build_scratch_remember -- write-side sibling of build_scratch above. Builds an isolated
+#     <scratch>/.claude/scripts/{sapience-remember.sh,deploy-root-guard.sh,lib/common.sh} tree
+#     (mirroring build_scratch's convention exactly) and a scratch git repo. This deployed
+#     layout is mandatory, not stylistic: sapience-remember.sh sources
+#     ${SCRIPT_DIR}/lib/common.sh and exits 1 when invoked directly from the source store, where
+#     no lib/ directory exists alongside it. Echoes the scratch root; its basename is the repo
+#     slug sapience-remember.sh will mint via `basename "$(git rev-parse --show-toplevel)"`. ---
+build_scratch_remember() {
+  local scratch
+  scratch="$(mktemp -d -p "$TOP_WORKDIR")"
+  mkdir -p "$scratch/.claude/scripts/lib"
+  cp "$SCRIPT_UNDER_TEST_REMEMBER" "$scratch/.claude/scripts/sapience-remember.sh"
+  cp "$GUARD_SCRIPT" "$scratch/.claude/scripts/deploy-root-guard.sh"
+  cp "$COMMON_SH" "$scratch/.claude/scripts/lib/common.sh"
+  chmod +x "$scratch/.claude/scripts/sapience-remember.sh"
+  git -C "$scratch" init -q
+  git -C "$scratch" config user.email "test@example.com"
+  git -C "$scratch" config user.name "test"
+  git -C "$scratch" commit -q --allow-empty -m "seed"
+  echo "$scratch"
+}
+
+# REMEMBER_TOKEN_FIXTURE -- a deliberately distinctive, obviously-fake token value. Case 11
+# asserts this exact string never appears anywhere in sapience-remember.sh's stdout, catching a
+# redaction leak the `.token == "***REDACTED***"` field check alone would miss.
+REMEMBER_TOKEN_FIXTURE="sapience-test-fixture-token-DO-NOT-LEAK-7f3a9c"
+
+# run_remember <scratch> [args...] -- invokes sapience-remember.sh with the EXTENSION.md
+# postflight call-site argv shape (--subject/--value/--dry-run, letting --predicate/--ko-type/
+# --confidence default exactly as the script's own defaults mirror mcp.py's sapience_remember
+# call site) layered in by each case's own extra args, a fixed SAPIENCE_TOKEN so token
+# resolution always succeeds without touching any real ~/.sapience/config.json, and -- unlike
+# run_sr above -- NO PATH shadowing: no curl stub is installed for any write-side case (see the
+# header comment's write-side paragraph for why this is the point, not an oversight).
+run_remember() {
+  local scratch="$1"; shift
+  env SAPIENCE_TOKEN="$REMEMBER_TOKEN_FIXTURE" \
+    bash "$scratch/.claude/scripts/sapience-remember.sh" "$@"
 }
 
 # --- build_curl_stub -- installs a minimal PATH-shadowing curl stub, plus a companion recording
@@ -461,6 +525,76 @@ run_sr() {
     common_test_pass "(9) retry_after 9999 clamped: slept the clamp ceiling (20), not 9999"
   else
     common_test_fail "(9) retry_after 9999 clamped: slept the clamp ceiling (20), not 9999" "sleeps=$sleeps"
+  fi
+}
+
+# =====================================================================================
+# Case 10: the EXTENSION.md postflight call-site shape (--subject/--value/--dry-run) sends a
+# provenance carrying the fixture's own minted [repo:<slug>] tag -- asserted against the
+# fixture's own slug, never a hardcoded "nvim", so this cannot pass vacuously in another
+# checkout.
+# =====================================================================================
+{
+  scratch="$(build_scratch_remember)"
+  slug="$(basename "$scratch")"
+  out="$(run_remember "$scratch" --subject "test subject" --value "test finding value" --dry-run 2>/dev/null)"
+  rc=$?
+  provenance="$(echo "$out" | jq -r '.kos[0].provenance' 2>/dev/null)"
+
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(10) write-side dry-run: exit 0"
+  else
+    common_test_fail "(10) write-side dry-run: exit 0" "got rc=$rc"
+  fi
+  if echo "$provenance" | grep -qF "[repo:${slug}]"; then
+    common_test_pass "(10) write-side dry-run: provenance carries the fixture's own [repo:<slug>] tag"
+  else
+    common_test_fail "(10) write-side dry-run: provenance carries the fixture's own [repo:<slug>] tag" "provenance=$provenance slug=$slug"
+  fi
+}
+
+# =====================================================================================
+# Case 11: the token is redacted exactly as "***REDACTED***" in the printed body, AND the
+# fixture's real token value never appears anywhere in stdout -- the second half catches a leak
+# the first half alone would miss.
+# =====================================================================================
+{
+  scratch="$(build_scratch_remember)"
+  out="$(run_remember "$scratch" --subject "test subject" --value "test finding value" --dry-run 2>/dev/null)"
+  token_field="$(echo "$out" | jq -r '.token' 2>/dev/null)"
+
+  if [ "$token_field" = "***REDACTED***" ]; then
+    common_test_pass "(11) write-side dry-run: .token is exactly \"***REDACTED***\""
+  else
+    common_test_fail "(11) write-side dry-run: .token is exactly \"***REDACTED***\"" "token=$token_field"
+  fi
+  if echo "$out" | grep -qF "$REMEMBER_TOKEN_FIXTURE"; then
+    common_test_fail "(11) write-side dry-run: fixture token never appears in stdout" "leaked in: $out"
+  else
+    common_test_pass "(11) write-side dry-run: fixture token never appears in stdout"
+  fi
+}
+
+# =====================================================================================
+# Case 12: explicit is unconditionally true, and --dry-run exits 0 with no curl stub installed
+# at all -- the real system curl stays un-shadowed and is simply never reached, which is what
+# makes "no network call" an assertion rather than an assumption.
+# =====================================================================================
+{
+  scratch="$(build_scratch_remember)"
+  out="$(run_remember "$scratch" --subject "test subject" --value "test finding value" --dry-run 2>/dev/null)"
+  rc=$?
+  explicit_field="$(echo "$out" | jq -r '.kos[0].explicit' 2>/dev/null)"
+
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(12) write-side dry-run: exit 0 with no curl stub installed"
+  else
+    common_test_fail "(12) write-side dry-run: exit 0 with no curl stub installed" "got rc=$rc"
+  fi
+  if [ "$explicit_field" = "true" ]; then
+    common_test_pass "(12) write-side dry-run: .kos[0].explicit is unconditionally true"
+  else
+    common_test_fail "(12) write-side dry-run: .kos[0].explicit is unconditionally true" "explicit=$explicit_field"
   fi
 }
 

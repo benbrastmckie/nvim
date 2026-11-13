@@ -210,20 +210,20 @@ acceptance criterion 5.
 
 ---
 
-### Phase 3: Assert the Repo Tag in the Provenance the Call Site Would Send [NOT STARTED]
+### Phase 3: Assert the Repo Tag in the Provenance the Call Site Would Send [COMPLETED]
 
 **Goal**: Deliverable (d) and acceptance criterion 4 -- mechanical proof that the tag is present in
 what the postflight call site would actually send, driven with no live vault and no network call.
 
 **Tasks**:
-- [ ] Re-derive the existing case count before adding: `grep -n "^# Case" agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh`. New cases are numbered after the last existing one.
-- [ ] Resolve `sapience-remember.sh` source-store-first alongside the existing `SCRIPT_UNDER_TEST`, using the same `common_test_resolve_subject` convention the suite already applies to `sapience-retrieve.sh`.
-- [ ] Add a `build_scratch`-style fixture for the write side. The existing `build_scratch` is reusable in shape but not as-is: it copies only `sapience-retrieve.sh`. The new fixture copies `sapience-remember.sh` into `$scratch/.claude/scripts/` alongside `deploy-root-guard.sh` and `lib/common.sh`, then `git init`s and seeds the scratch repo exactly as the existing one does. This deployed layout is mandatory, not stylistic: `sapience-remember.sh` sources `${SCRIPT_DIR}/lib/common.sh` and exits 1 when invoked directly from the source store.
-- [ ] Add a case asserting the tag: `--subject`/`--value` plus `--dry-run` exits 0, and stdout parsed with `jq -r '.kos[0].provenance'` contains the literal `[repo:<basename of the scratch repo>]`. Assert against the fixture's own minted slug, never a hardcoded `nvim`, so the assertion cannot pass vacuously in another checkout.
-- [ ] Add a case asserting token redaction: `jq -r '.token'` is exactly `***REDACTED***`, AND the fixture's `SAPIENCE_TOKEN` value appears nowhere in stdout. The second half is the one that would catch a leak the first half misses.
-- [ ] Add a case asserting the noise-gate guard and the no-network property: `jq -r '.kos[0].explicit'` is `true`, and `--dry-run` still exits 0 with no `curl` stub installed at all -- which is what makes "no network call" an assertion rather than an assumption.
-- [ ] Drive these cases with the argv shape `EXTENSION.md`'s postflight call site prescribes, so the assertion is about what that call site would send rather than about an arbitrary invocation.
-- [ ] Update the file's header comment: it currently describes the suite as covering `sapience-retrieve.sh`'s exit-code split and cold-start retry exclusively. Widen that statement to name both scripts and the new cases, and keep the documented stub-dispatch contract accurate (the write-side cases install no `curl` stub).
+- [x] Re-derive the existing case count before adding: `grep -n "^# Case" agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh`. New cases are numbered after the last existing one. *(completed)*
+- [x] Resolve `sapience-remember.sh` source-store-first alongside the existing `SCRIPT_UNDER_TEST`, using the same `common_test_resolve_subject` convention the suite already applies to `sapience-retrieve.sh`. *(completed)*
+- [x] Add a `build_scratch`-style fixture for the write side. The existing `build_scratch` is reusable in shape but not as-is: it copies only `sapience-retrieve.sh`. The new fixture copies `sapience-remember.sh` into `$scratch/.claude/scripts/` alongside `deploy-root-guard.sh` and `lib/common.sh`, then `git init`s and seeds the scratch repo exactly as the existing one does. This deployed layout is mandatory, not stylistic: `sapience-remember.sh` sources `${SCRIPT_DIR}/lib/common.sh` and exits 1 when invoked directly from the source store. *(completed)*
+- [x] Add a case asserting the tag: `--subject`/`--value` plus `--dry-run` exits 0, and stdout parsed with `jq -r '.kos[0].provenance'` contains the literal `[repo:<basename of the scratch repo>]`. Assert against the fixture's own minted slug, never a hardcoded `nvim`, so the assertion cannot pass vacuously in another checkout. *(completed)*
+- [x] Add a case asserting token redaction: `jq -r '.token'` is exactly `***REDACTED***`, AND the fixture's `SAPIENCE_TOKEN` value appears nowhere in stdout. The second half is the one that would catch a leak the first half misses. *(completed)*
+- [x] Add a case asserting the noise-gate guard and the no-network property: `jq -r '.kos[0].explicit'` is `true`, and `--dry-run` still exits 0 with no `curl` stub installed at all -- which is what makes "no network call" an assertion rather than an assumption. *(completed)*
+- [x] Drive these cases with the argv shape `EXTENSION.md`'s postflight call site prescribes, so the assertion is about what that call site would send rather than about an arbitrary invocation. *(completed)*
+- [x] Update the file's header comment: it currently describes the suite as covering `sapience-retrieve.sh`'s exit-code split and cold-start retry exclusively. Widen that statement to name both scripts and the new cases, and keep the documented stub-dispatch contract accurate (the write-side cases install no `curl` stub). *(completed)*
 
 **Timing**: 1 hour
 
