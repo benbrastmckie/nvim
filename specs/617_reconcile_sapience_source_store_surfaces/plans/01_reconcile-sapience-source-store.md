@@ -219,23 +219,26 @@ block the hypothesis missed rather than silently absorbing or skipping it.
 
 ---
 
-### Phase 3: Bring EXTENSION.md's registration-hook sentence into agreement [NOT STARTED]
+### Phase 3: Bring EXTENSION.md's registration-hook sentence into agreement [COMPLETED]
 
 **Goal**: Make the fourth named surface state who owns the durable user-level `SessionStart`
 entry, rather than attributing it solely to this extension's own installer.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/sapience/EXTENSION.md` immediately before editing.
-- [ ] Adjust the "Per-repo activation" paragraph's registration-hook sentence -- currently "A
+- [x] Re-read `agent-system/extensions/sapience/EXTENSION.md` immediately before editing.
+      *(completed)*
+- [x] Adjust the "Per-repo activation" paragraph's registration-hook sentence -- currently "A
       separate, user-level `SessionStart` hook (installed by
       `scripts/install-sapience-mcp-session-hook.sh`) registers or removes this project's own
       `~/.claude.json` MCP entry" -- so it names the companion-owned durable entry in
       `~/.dotfiles/config/claude/settings.json` as the writer that survives a `home-manager
-      switch`, with this extension's installer as the converging second writer.
-- [ ] Keep the "six hook surfaces in total, five of which are extension-merged" count intact and
-      confirm it still holds after the rewording.
-- [ ] Change nothing else in the file; confirm the remaining paragraphs make no durability claim
-      needing correction.
+      switch`, with this extension's installer as the converging second writer. *(completed)*
+- [x] Keep the "six hook surfaces in total, five of which are extension-merged" count intact and
+      confirm it still holds after the rewording. *(completed: count sentence unchanged)*
+- [x] Change nothing else in the file; confirm the remaining paragraphs make no durability claim
+      needing correction. *(completed: full-file grep for "home-manager|durable|SessionStart"
+      shows only the edited paragraph and the unrelated "Superseding the vendor SessionStart
+      nudge" paragraph, which makes no durability claim)*
 
 **Timing**: 0.25 hours
 

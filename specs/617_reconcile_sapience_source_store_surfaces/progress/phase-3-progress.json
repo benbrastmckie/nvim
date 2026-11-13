@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Bring EXTENSION.md's registration-hook sentence into agreement",
+  "started_at": "2026-11-13T00:15:00Z",
+  "last_updated": "2026-11-13T00:18:00Z",
+  "objectives": [
+    {"id": 1, "description": "re-read EXTENSION.md before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "rewrite registration-hook sentence to name companion-owned durable writer", "status": "done", "files_touched": ["agent-system/extensions/sapience/EXTENSION.md"]},
+    {"id": 3, "description": "confirm hook-surface count sentence intact", "status": "done", "files_touched": []},
+    {"id": 4, "description": "confirm no other durability claim needs correction", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "git diff shows one paragraph changed in EXTENSION.md; edited sentence now agrees with per-repo-scoping.md's Hazards paragraph (companion-owned ~/.dotfiles/config/claude/settings.json entry as durable writer, this extension's installer as converging second writer); hook-surface count sentence unchanged; full-file grep for home-manager|durable|SessionStart shows no other durability claim needing correction."
+}

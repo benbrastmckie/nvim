@@ -7,9 +7,12 @@ vault at app.spnc.ai. See `~/.dotfiles/docs/sapience.md` for the machine configu
 Sapience on there; unloading it turns it off again. `settings-fragment.json` carries 7
 permission grants (the read-shaped tools) and five hooks (`SessionStart`,
 `UserPromptSubmit`, `PreToolUse`, `SessionEnd`, `Stop`), merged only while loaded. A separate,
-user-level `SessionStart` hook (installed by `scripts/install-sapience-mcp-session-hook.sh`)
-registers or removes this project's own `~/.claude.json` MCP entry -- six hook surfaces in
-total, five of which are extension-merged. See `domain/per-repo-scoping.md`.
+user-level `SessionStart` hook registers or removes this project's own `~/.claude.json` MCP
+entry: a companion-owned entry in `~/.dotfiles/config/claude/settings.json` is the durable
+writer that survives a `home-manager switch`, with this extension's own
+`scripts/install-sapience-mcp-session-hook.sh` converging on the identical command string as a
+second writer -- six hook surfaces in total, five of which are extension-merged. See
+`domain/per-repo-scoping.md`.
 
 **What this extension adds**: besides the grants and hooks above, two scripts deployed to
 `.claude/scripts/`: `scripts/sapience-retrieve.sh` (core's `orchestrate-build-dispatch.sh`
