@@ -82,7 +82,7 @@ next_project_number: 614
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-606 [RESEARCHED] — Scope Sapience context injection to the current repository so...
+606 [PLANNED] — Scope Sapience context injection to the current repository so...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
@@ -543,11 +543,12 @@ CHANNEL: /orchestrate conclusion channel (c), follow-up task.
 ---
 
 ### 606. Scope Sapience context injection to the current repository so a session stops receiving other repos' facts
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 600, Task 611, Task 612
 - **Research**: [606_scope_sapience_injection_to_current_repo/reports/02_injection-site-scoping-findings.md]
+- **Plan**: [606_scope_sapience_injection_to_current_repo/plans/02_injection-site-scoping-residual.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 

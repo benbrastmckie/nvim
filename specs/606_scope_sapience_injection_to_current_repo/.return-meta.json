@@ -1,39 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794548508_b5c160_606",
-  "dispatch_seq": 4,
-  "findings_count": 5,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/606_scope_sapience_injection_to_current_repo/reports/02_injection-site-scoping-findings.md",
-      "summary": "Corrects the three-hook enumeration (only UserPromptSubmit sends a project id), directly measures that POST /v1/cli/context ignores project= and returns no per-item attribution (closing the client-wrapper lever by test, not inference), reproduces the seed report's cross-repo false claims live inside this repo, confirms tasks 611/612 do not reach this defect, and sharpens the acceptance-criterion-5 vendor ask to name the correct endpoint."
+      "type": "plan",
+      "path": "specs/606_scope_sapience_injection_to_current_repo/plans/02_injection-site-scoping-residual.md",
+      "summary": "Four-phase plan converting the measured, vendor-owned cross-repo injection residual into durable source-store record, a read-only falsification probe, and two verbatim owner actions."
     }
   ],
   "memory_candidates": [
     {
-      "content": "Sapience's three primary-session hooks are NOT uniform: SessionStart (mcp.py --briefing-text) calls GET /briefing + GET /v1/outstanding with no project/cwd parameter at all (by design -- outstanding is a cross-project aggregate); only UserPromptSubmit (sapience_cli.py hook prompt) sends project=project_of(cwd); PreToolUse sends neither. Both sapience_cli.py-backed hooks post to POST /v1/cli/context, a different endpoint from /v1/search (which sapience-retrieve.sh/sapience-remember.sh use and where source=[repo:tag] is proven to work).",
-      "category": "INSIGHT",
-      "source_artifact": "specs/606_scope_sapience_injection_to_current_repo/reports/02_injection-site-scoping-findings.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["sapience", "hooks", "v1/cli/context", "project scoping", "per-repo"]
-    },
-    {
-      "content": "Directly measured: Sapience's POST /v1/cli/context endpoint silently ignores its own project field -- a real project name and a nonexistent sentinel string produce byte-identical responses, including identical stale cross-repo facts (verified against live specs/state.json in two different repositories). The response envelope (enabled/event/level/ms/src/status/text/visible) carries no per-item source/project attribution anywhere, so a client-side wrapper has nothing to filter by. This forecloses any local (agent-editable) fix for Sapience's primary-session hook content scoping; the only lever is a vendor-side change to /v1/cli/context (honor project, or reflect it into provenance for a source= read filter).",
-      "category": "INSIGHT",
-      "source_artifact": "specs/606_scope_sapience_injection_to_current_repo/reports/02_injection-site-scoping-findings.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["sapience", "project filter", "vendor ask", "cross-repo leakage", "ingest-kos"]
-    },
-    {
-      "content": "Sapience's vendor client scripts ~/.sapience/mcp.py and ~/.sapience/sapience_cli.py self-update daily (confirmed via matching same-day mtimes and an update.log/.auto_update.json pair); their cited internal line numbers drift and must be re-read live rather than trusted from a prior report. ~/.sapience/upload.py does not carry the same self-update marker and its line numbers (e.g. _chunk()'s 'project': m['project'] assignment) have stayed stable across sessions.",
+      "content": "When authoring a plan's per-phase Tier Justification, suite_selection_select's union behavior decides the honest answer: if ANY path in a phase's Files to modify set resolves to no suite, the whole selection collapses to __FULL_SWEEP__, regardless of how many suites the other paths map to. Its resolution is basename-driven (self-identity, test-<basename> pairing, then a grep of test suites for the literal basename), so a generic basename like README.md or EXTENSION.md pulls a long incidental suite list that is noise rather than real coverage. Partitioning phases so each one's path set contains at least one genuinely unmapped source-store markdown file yields the sentinel honestly, and the covering check is then plan-format.md's sub-case (b) gate subset: verify-deploy.sh --skip-slow --only-gate 3,4 <repo_root>, with repo_root the directory holding .claude-extensions.json, never source_dir itself (a source-store directory has no .claude/ and gate0 exits 2 before gate selection).",
       "category": "PATTERN",
-      "source_artifact": "specs/606_scope_sapience_injection_to_current_repo/reports/02_injection-site-scoping-findings.md",
+      "source_artifact": "specs/606_scope_sapience_injection_to_current_repo/plans/02_injection-site-scoping-residual.md",
       "confidence": 0.75,
-      "suggested_keywords": ["sapience", "self-update", "carried-figure", "line drift", "vendor file"]
+      "suggested_keywords": ["suite_selection_select", "__FULL_SWEEP__", "tier-justification", "plan-authoring", "verify-deploy", "only-gate"]
     }
   ],
-  "next_steps": "Run /orchestrate 606 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1794548508_b5c160_606",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 4.75,
+    "dependency_waves": [[1, 2], [3], [4]]
+  },
+  "next_steps": "Run /orchestrate 606 to execute the plan",
+  "dispatch_seq": 5
 }

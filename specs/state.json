@@ -111750,7 +111750,7 @@
     {
       "project_number": 606,
       "project_name": "scope_sapience_injection_to_current_repo",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "priority": "high",
       "title": "Scope Sapience context injection to the current repository so a session stops receiving other repos' facts",
@@ -111762,17 +111762,30 @@
         612
       ],
       "file_scope": [
-        "agent-system/extensions/sapience/settings-fragment.json",
+        "__WHOLE_TREE__",
+        "agent-system/extensions/sapience/EXTENSION.md",
+        "agent-system/extensions/sapience/README.md",
+        "agent-system/extensions/sapience/context/project/sapience/README.md",
+        "agent-system/extensions/sapience/context/project/sapience/domain/injection-site-scoping.md",
+        "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+        "agent-system/extensions/sapience/context/project/sapience/domain/transcript-filter-ceiling.md",
+        "agent-system/extensions/sapience/context/project/sapience/domain/vault-model.md",
+        "agent-system/extensions/sapience/index-entries.json",
         "agent-system/extensions/sapience/manifest.json",
         "agent-system/extensions/sapience/scripts/",
-        "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
-        "agent-system/extensions/sapience/context/project/sapience/domain/transcript-filter-ceiling.md"
+        "agent-system/extensions/sapience/scripts/verify-sapience-context-scoping.sh",
+        "agent-system/extensions/sapience/settings-fragment.json"
       ],
       "artifacts": [
         {
           "path": "specs/606_scope_sapience_injection_to_current_repo/reports/02_injection-site-scoping-findings.md",
           "type": "report",
           "summary": "Corrects the three-hook enumeration (only UserPromptSubmit sends a project id), directly measures that POST /v1/cli/context ignores project= and returns no per-item attribution (closing the client-wrapper lever by test, not inference), reproduces the seed report's cross-repo false claims live inside this repo, confirms tasks 611/612 do not reach this defect, and sharpens the acceptance-criterion-5 vendor ask to name the correct endpoint."
+        },
+        {
+          "path": "specs/606_scope_sapience_injection_to_current_repo/plans/02_injection-site-scoping-residual.md",
+          "type": "plan",
+          "summary": "Four-phase plan: new injection-site domain note, residual-monitor probe script, domain/README/EXTENSION amendments, deploy + full gate + acceptance walkthrough."
         }
       ],
       "audit_verdict": {
@@ -112562,7 +112575,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "last_updated": "2026-11-13T07:14:59Z",
+      "last_updated": "2026-11-13T07:23:16Z",
       "session_id": "sess_1794548508_b5c160",
       "next_artifact_number": 2
     },

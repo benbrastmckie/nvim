@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a four-phase implementation plan from the research report's measured findings. Because POST /v1/cli/context ignores the project field it is sent and returns no per-item attribution, no local filter or wrapper is buildable: the plan instead records all three primary-session injection sites by name in a new source-store domain note, ships a read-only probe script that makes the residual falsifiable, amends the existing domain/README/EXTENSION surfaces, and closes with a deploy plus full gate run and a five-criterion acceptance walkthrough. No phase suppresses or narrows any hook, preserving the cross-corpus abstraction class.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/606_scope_sapience_injection_to_current_repo/plans/02_injection-site-scoping-residual.md",
+      "summary": "Four-phase plan: new injection-site domain note, residual-monitor probe script, domain/README/EXTENSION amendments, deploy + full gate + acceptance walkthrough."
+    }
+  ],
+  "dispatch_seq": 5
+}
