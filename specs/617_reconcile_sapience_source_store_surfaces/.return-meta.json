@@ -1,9 +1,43 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/617_reconcile_sapience_source_store_surfaces/summaries/01_reconcile-sapience-source-store-summary.md",
+      "summary": "Reconciled the two remaining companion-gated sapience scripts and EXTENSION.md's registration-hook sentence against the landed machine-wide-surface retirement; redeployed and recorded the no-op installer result and check (d) PASS."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Rewrote comment blocks in verify-sapience-mcp.sh and setup-sapience-mcp.sh and EXTENSION.md's registration-hook sentence to state the current post-companion arrangement, redeployed, and confirmed the installer no-op and verify-sapience-mcp.sh check (d) PASS acceptance properties."
+  },
+  "modified_files": [
+    "agent-system/extensions/sapience/EXTENSION.md",
+    "agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh",
+    "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh",
+    "specs/617_reconcile_sapience_source_store_surfaces/summaries/01_reconcile-sapience-source-store-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "check-extension-docs.sh enforces a 60-line Rule U limit per EXTENSION.md. A content-preserving rewording of even one sentence can silently push the file over the limit; always re-run `bash .claude/scripts/check-extension-docs.sh` (or the scoped `verify-deploy.sh --only-gate 3,26`) immediately after editing an EXTENSION.md, before redeploying, rather than assuming a same-paragraph edit is line-count-neutral.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/617_reconcile_sapience_source_store_surfaces/summaries/01_reconcile-sapience-source-store-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["EXTENSION.md", "check-extension-docs.sh", "Rule U", "60-line limit", "doc-lint"]
+    },
+    {
+      "content": "When a plan's final phase declares Verification Tier: full under a dispatch's Batch Gate Deferral directive, `verify-deploy.sh --only-gate N1,N2 --skip-slow` (naming the specific gates that cover the phase's own touched-file class, e.g. gate3 doc-lint + gate26 extension-README-table-lint for an EXTENSION.md edit) is the correct scoped discharge -- it is both fast and directly traceable to the files actually touched, unlike re-running the whole 43-gate battery or skipping verification entirely.",
+      "category": "PATTERN",
+      "source_artifact": "specs/617_reconcile_sapience_source_store_surfaces/summaries/01_reconcile-sapience-source-store-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["Batch Gate Deferral", "verify-deploy.sh", "--only-gate", "scoped verification", "Verification Tier: full"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794588346_94d92d",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
