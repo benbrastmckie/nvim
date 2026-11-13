@@ -251,17 +251,17 @@ retained set.
 
 ---
 
-### Phase 3: Plumb the retained set through the unload path [NOT STARTED]
+### Phase 3: Plumb the retained set through the unload path [COMPLETED]
 
 **Goal**: Build the other-loaded-extensions retained set in `manager.unload` and pass it to
 `unmerge_settings`, so the guard added in Phase 2 is actually supplied with data.
 
 **Tasks**:
-- [ ] Add a helper beside `build_hook_valid_set` in `init.lua` that, given the settings target path, the unloading extension's name, `loaded_names`, and `config`, returns an array of decoded fragments belonging to every *other* loaded extension whose `merge_targets.settings.target` equals the same target. Model its traversal and its manifest/fragment lookups directly on `build_hook_valid_set`.
-- [ ] Mirror `build_hook_valid_set`'s fail-safe posture, inverted for this direction: an unreadable manifest or unparseable fragment must make the retained set *more* inclusive, never less. Return a signal that causes the unmerge to skip removal of array items entirely rather than removing items a sibling may still need — and surface that skip to the caller rather than failing silently.
-- [ ] In `manager.unload`, build the retained set after `loaded_names` is computed (it already is, for the dependents check) and before `reverse_merge_targets` is called.
-- [ ] Extend `reverse_merge_targets` to accept and forward the retained set to both `unmerge_settings` call sites (settings and mcp). The mcp target is object-keyed and unaffected in practice, but forwarding keeps the two paths uniform.
-- [ ] Leave the failed-load rollback call site at `init.lua:816` passing no retained set: a rollback reverses *this* load's own merge against the state it just created, where the guard has nothing to protect. Add a one-line comment recording that this asymmetry is deliberate.
+- [x] Add a helper beside `build_hook_valid_set` in `init.lua` that, given the settings target path, the unloading extension's name, `loaded_names`, and `config`, returns an array of decoded fragments belonging to every *other* loaded extension whose `merge_targets.settings.target` equals the same target. Model its traversal and its manifest/fragment lookups directly on `build_hook_valid_set`. *(completed: build_retained_fragments)*
+- [x] Mirror `build_hook_valid_set`'s fail-safe posture, inverted for this direction: an unreadable manifest or unparseable fragment must make the retained set *more* inclusive, never less. Return a signal that causes the unmerge to skip removal of array items entirely rather than removing items a sibling may still need — and surface that skip to the caller rather than failing silently. *(completed: returns {}, true on failure -- caller treats the boolean as opts.skip_array_removal)*
+- [x] In `manager.unload`, build the retained set after `loaded_names` is computed (it already is, for the dependents check) and before `reverse_merge_targets` is called. *(completed)*
+- [x] Extend `reverse_merge_targets` to accept and forward the retained set to both `unmerge_settings` call sites (settings and mcp). The mcp target is object-keyed and unaffected in practice, but forwarding keeps the two paths uniform. *(completed)*
+- [x] Leave the failed-load rollback call site at `init.lua:816` passing no retained set: a rollback reverses *this* load's own merge against the state it just created, where the guard has nothing to protect. Add a one-line comment recording that this asymmetry is deliberate. *(completed)*
 
 **Timing**: 1.5 hours
 

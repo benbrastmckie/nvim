@@ -157,6 +157,54 @@ local function build_hook_valid_set(target, extension_name, loaded_names, config
   return valid_set, true
 end
 
+--- Build the array of decoded settings fragments belonging to every OTHER currently loaded
+--- extension that declares the SAME settings merge target as `target` -- the data
+--- `M.unmerge_settings`'s `opts.retained_fragments` guard (merge.lua) needs so that unloading
+--- one extension never strips an array item (e.g. a `permissions.allow` grant) a sibling
+--- extension's own fragment still declares.
+---
+--- FAIL-SAFE, INVERTED from `build_hook_valid_set` above: that function returns `nil, false`
+--- (skip the orphan sweep entirely) on an unreadable manifest/fragment, because an INCOMPLETE
+--- valid set there would wrongly treat a legitimate registration as an orphan. Here the failure
+--- direction is the opposite: an INCOMPLETE retained set would UNDER-protect a sibling's grant,
+--- so an unreadable manifest or unparseable fragment makes this function return
+--- `skip_removal = true` instead of a partial list -- the caller must then suppress ALL
+--- array-item removal for this unload (via `opts.skip_array_removal`) rather than remove
+--- against an uncertain retained set.
+--- @param target string The settings merge target path (manifest's `merge_targets.settings.target`)
+--- @param extension_name string The extension currently being unloaded -- excluded from the union
+--- @param loaded_names table Array of currently-loaded extension names
+--- @param config table Extension system configuration
+--- @return table retained_fragments, boolean skip_removal
+local function build_retained_fragments(target, extension_name, loaded_names, config)
+  local retained_fragments = {}
+
+  for _, ext_name in ipairs(loaded_names) do
+    if ext_name ~= extension_name then
+      local ext = manifest_mod.get_extension(ext_name, config)
+      if not ext or not ext.manifest then
+        return {}, true
+      end
+      local manifest = ext.manifest
+
+      if
+        manifest.merge_targets
+        and manifest.merge_targets.settings
+        and manifest.merge_targets.settings.target == target
+      then
+        local source_path = ext.path .. "/" .. manifest.merge_targets.settings.source
+        local fragment = read_json(source_path)
+        if not fragment then
+          return {}, true
+        end
+        table.insert(retained_fragments, fragment)
+      end
+    end
+  end
+
+  return retained_fragments, false
+end
+
 --- Process merge targets for an extension
 --- @param ext_manifest table Extension manifest
 --- @param source_dir string Extension source directory
@@ -266,7 +314,14 @@ end
 --- @param merged_sections table Tracking data from process_merge_targets
 --- @param project_dir string Target project directory
 --- @param config table Extension system configuration
-local function reverse_merge_targets(ext_manifest, merged_sections, project_dir, config)
+--- @param opts table|nil Forwarded verbatim to both `merge_mod.unmerge_settings` calls below
+---   (the settings target and the mcp target), so the two paths stay uniform. See
+---   `build_retained_fragments` above and `M.unmerge_settings`'s own doc comment in merge.lua
+---   for `opts.retained_fragments` / `opts.skip_array_removal`. Omitting `opts` behaves exactly
+---   as it did before this parameter existed. The mcp target is object-keyed and therefore
+---   unaffected by the array-tracking guard in practice, but forwarding keeps both call sites
+---   identical rather than special-casing one of them.
+local function reverse_merge_targets(ext_manifest, merged_sections, project_dir, config, opts)
   if not ext_manifest or not merged_sections then
     return
   end
@@ -281,14 +336,14 @@ local function reverse_merge_targets(ext_manifest, merged_sections, project_dir,
   if merged_sections.settings and ext_manifest.merge_targets and ext_manifest.merge_targets.settings then
     local mt_config = ext_manifest.merge_targets.settings
     local target_path = project_dir .. "/" .. mt_config.target
-    merge_mod.unmerge_settings(target_path, merged_sections.settings)
+    merge_mod.unmerge_settings(target_path, merged_sections.settings, opts)
   end
 
   -- Reverse MCP server registration
   if merged_sections.mcp and ext_manifest.merge_targets and ext_manifest.merge_targets.mcp then
     local mt_config = ext_manifest.merge_targets.mcp
     local target_path = project_dir .. "/" .. mt_config.target
-    merge_mod.unmerge_settings(target_path, merged_sections.mcp)
+    merge_mod.unmerge_settings(target_path, merged_sections.mcp, opts)
 
     -- Decision 6: unmerge_settings rewrites its target even when the result is {},
     -- which would leave a residual empty .mcp.json at the project root after the
@@ -813,6 +868,9 @@ function M.create(config)
         end
       end
       loader_mod.remove_installed_files(rollback_files, rollback_dirs, { project_dir = project_dir })
+      -- No retained-set opts here, deliberately: this rollback reverses THIS load's own merge
+      -- against the state it just created, so there is no sibling grant for the guard to
+      -- protect -- only the failed load's own just-added items exist to be removed.
       reverse_merge_targets(ext_manifest, merged_sections, project_dir, config)
       -- Restore any hook registrations the orphan sweep removed earlier in this same failed
       -- load, alongside the merge-target reversal above -- a failed load must leave the
@@ -967,9 +1025,32 @@ function M.create(config)
       end
     end
 
+    -- Build the retained set: every OTHER currently loaded extension's own settings fragment,
+    -- when it declares the SAME settings merge target this extension does. Forwarded to
+    -- reverse_merge_targets so this unload never strips an array item (e.g. a
+    -- permissions.allow grant) a sibling extension's fragment still declares. See
+    -- build_retained_fragments's doc comment for the inverted fail-safe direction.
+    local retained_fragments, skip_array_removal = {}, false
+    if
+      extension
+      and extension.manifest
+      and extension.manifest.merge_targets
+      and extension.manifest.merge_targets.settings
+    then
+      retained_fragments, skip_array_removal = build_retained_fragments(
+        extension.manifest.merge_targets.settings.target,
+        extension_name,
+        loaded_names,
+        config
+      )
+    end
+
     -- Reverse merge operations
     if extension and extension.manifest then
-      reverse_merge_targets(extension.manifest, merged_sections, project_dir, config)
+      reverse_merge_targets(extension.manifest, merged_sections, project_dir, config, {
+        retained_fragments = retained_fragments,
+        skip_array_removal = skip_array_removal,
+      })
     end
 
     -- Load .syncprotect so removal honors the same protection as copy

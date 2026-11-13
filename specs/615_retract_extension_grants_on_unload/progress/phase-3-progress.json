@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Plumb the retained set through the unload path",
+  "started_at": "2026-11-13T17:45:00Z",
+  "last_updated": "2026-11-13T17:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add build_retained_fragments helper beside build_hook_valid_set", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 2, "description": "Mirror fail-safe posture, inverted", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 3, "description": "Build retained set in manager.unload before reverse_merge_targets", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 4, "description": "Extend reverse_merge_targets to accept and forward opts to both unmerge_settings call sites", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 5, "description": "Leave failed-load rollback call site passing no retained set, with comment", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
