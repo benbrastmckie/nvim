@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Wrote a 4-phase plan for task 617. The research dispatch already committed edits to three of the four named surfaces (c4efc1a4e), so the plan covers what genuinely remains: re-confirming the landed companion arrangement, reconciling two further companion-gated scripts (verify-sapience-mcp.sh, setup-sapience-mcp.sh), adjusting EXTENSION.md's registration-hook sentence, and redeploying the stale sapience mirror plus an acceptance sweep. Scope judgment for the two added scripts is recorded in the plan's Decisions section.",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/617_reconcile_sapience_source_store_surfaces/plans/01_reconcile-sapience-source-store.md",
+      "summary": "4-phase plan reconciling the remaining sapience source-store surfaces with the landed machine-wide retirement, plus deploy and acceptance sweep."
+    }
+  ],
+  "dispatch_seq": 4
+}

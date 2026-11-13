@@ -83,9 +83,9 @@ next_project_number: 619
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-615 [RESEARCHED] — GOAL. Make an extension's permissions.allow grants retract on...
-616 [RESEARCHED] — GOAL. Narrow the sapience extension's MCP write-tool...
-617 [RESEARCHED] — GOAL. Reconcile the sapience extension's source store with...
+615 [PLANNING] — GOAL. Make an extension's permissions.allow grants retract on...
+616 [PLANNING] — GOAL. Narrow the sapience extension's MCP write-tool...
+617 [PLANNED] — GOAL. Reconcile the sapience extension's source store with...
   └─ 614 [NOT STARTED] — Resolve a SF-1 card worktree to its parent checkout so card...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
@@ -358,11 +358,12 @@ ACCEPTANCE.
 ---
 
 ### 617. Reconcile sapience source store surfaces
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [617_reconcile_sapience_source_store_surfaces/reports/01_reconcile-sapience-source-store.md]
+- **Plan**: [617_reconcile_sapience_source_store_surfaces/plans/01_reconcile-sapience-source-store.md]
 
 **Description**: GOAL. Reconcile the sapience extension's source store with the machine-wide surfaces the
 companion work in /home/benjamin/.dotfiles removes, so that three documents and one script stop
@@ -449,7 +450,7 @@ ACCEPTANCE.
 ---
 
 ### 616. Narrow sapience write tool grants
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
@@ -533,7 +534,7 @@ ACCEPTANCE.
 ---
 
 ### 615. Retract extension grants on unload
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
