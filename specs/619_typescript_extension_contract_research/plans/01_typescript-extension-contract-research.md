@@ -1,7 +1,7 @@
 # Implementation Plan: Task #619
 
 - **Task**: 619 - Survey the real extension file contract and establish the 2026 TypeScript toolchain detection matrix
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None (head of the `typescript-extension` chain: 619 -> 620 -> 621 -> 622 -> 623)
 - **Research Inputs**: specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md

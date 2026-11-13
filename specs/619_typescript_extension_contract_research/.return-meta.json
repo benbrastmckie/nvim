@@ -1,11 +1,72 @@
 {
-  "status": "in_progress",
-  "session_id": "sess_1794603202_55566e",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/619_typescript_extension_contract_research/summaries/01_typescript-extension-contract-research-summary.md",
+      "summary": "Closeout summary: all four plan phases completed, three load-bearing report corrections applied (loader.lua/init.lua conflation x3, section_id dead-code finding), two Outcome gaps closed (merge_targets sub-fields, native type-stripping detection matrix), full gate set discharged per Batch Gate Deferral."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Completed the 4-phase closeout of task 619's research report: re-verified every load-bearing mechanical claim against live source (correcting three instances of a loader.lua/init.lua function-attribution error, and discovering merge_targets.claudemd.section_id has no live consumer at all), closed the Outcome 2 merge_targets sub-field gap and the Outcome 6 native-type-stripping/no-tsconfig.json detection-matrix gap with current (2026) sourced facts, and attested all six required outcomes against real report headings. The full verify-deploy.sh gate set was deferred to the batch-level stage per this dispatch's Batch Gate Deferral directive, since every edit landed under specs/** where no gate/suite can express coverage."
+  },
+  "modified_files": [
+    "specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md",
+    "specs/619_typescript_extension_contract_research/plans/01_typescript-extension-contract-research.md",
+    "specs/619_typescript_extension_contract_research/summaries/01_typescript-extension-contract-research-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A research report that attributes a function to 'loader.lua' within an Nvim-plugin extension-loader subsystem (lua/neotex/plugins/ai/shared/extensions/) should not be trusted without grepping the function's actual definition site. In one report, three separate functions (process_merge_targets, reverse_merge_targets, manager.load) were all mis-attributed to loader.lua when they are actually local functions defined inside init.lua. The subsystem spans manifest.lua/loader.lua/merge.lua/init.lua, and it is easy for a research pass to use 'loader.lua' as informal shorthand for 'the loader subsystem' rather than the literal file -- always verify with a direct grep for the function name before citing a specific file.",
+      "category": "PATTERN",
+      "source_artifact": "specs/619_typescript_extension_contract_research/summaries/01_typescript-extension-contract-research-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "extension-loader",
+        "manifest-lua",
+        "loader-lua",
+        "init-lua",
+        "function-attribution-error"
+      ]
+    },
+    {
+      "content": "A manifest.json field can be declared by convention in every extension in a source store, documented in the dev guide's scaffold template, and yet have zero live code consumers -- discovered for merge_targets.claudemd.section_id, which every one of 20+ extensions declares but which no validator requires and no current load/unload code path reads (the section-marker injection mechanism that would read it, inject_section/remove_section, is dead code superseded by full-file CLAUDE.md regeneration via generate_claudemd()). When auditing a manifest schema's field-to-consumer table, do not assume a field read by the dev guide as 'mandatory' or by convention-universality is therefore read by any live code; trace each field to an actual call site before writing a consumer claim.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/619_typescript_extension_contract_research/summaries/01_typescript-extension-contract-research-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "manifest-schema",
+        "dead-code",
+        "convention-only-field",
+        "section_id",
+        "claudemd-generation"
+      ]
+    },
+    {
+      "content": "For a task whose dispatch file carries a Batch Gate Deferral directive on its final (Verification Tier: full) phase, the UNMAPPABLE CRITERION carve-out applies cleanly when the task's entire edit footprint is confirmable (via git diff --stat across the task's own phase commits) to lie under specs/**: no verify-deploy.sh gate or run-all.sh suite targets specs/** content, so neither --only-gate nor --only SUITE narrowing can express coverage, and the correct scoped discharge is simply the phase's own already-named, scope-capable check (e.g. validate-artifact.sh) rather than attempting a narrowed invocation that cannot actually reach the task's edits.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/619_typescript_extension_contract_research/summaries/01_typescript-extension-contract-research-summary.md",
+      "confidence": 0.65,
+      "suggested_keywords": [
+        "batch-gate-deferral",
+        "unmappable-criterion",
+        "specs-only-task",
+        "validate-artifact",
+        "verify-deploy"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794603202_55566e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
