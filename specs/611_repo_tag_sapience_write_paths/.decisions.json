@@ -1,0 +1,10 @@
+[
+  {
+    "question": "settings-fragment.json still grants all four MCP write tools at this repo's project scope, including two the extension's own text says never to use. Keeping the grant leaves a stray proactive MCP call able to succeed non-interactively and land a permanent, undeletable untagged write; narrowing it adds a mechanical second line of defense but leaves core/context/patterns/mcp-server-ownership.md's worked example (which cites the current four-tool grant by path) stale, and core/ is outside this task's declared edit target.",
+    "answer": "Keep the four-tool grant intact; record the residual and its promotion criterion in the new write-path rule (this plan's route)",
+    "cycle": 2,
+    "timestamp": "2026-11-13T02:33:37Z",
+    "description_fingerprint": "6af2976842660f59bb225133161a74b8b1aba67df37dbb41733c425fe4bc49fb",
+    "obligation": "Deliverable (b) and acceptance criterion 3: the standing rule must exist with its advisory-or-enforced status recorded. The recommended route discharges this with an advisory, path-scoped rules/sapience-write-path.md whose own text records the kept-grant residual, the rejected-mechanization rationale, and the promotion criterion that would justify enforcement -- checkable by reading that file after Phase 4."
+  }
+]

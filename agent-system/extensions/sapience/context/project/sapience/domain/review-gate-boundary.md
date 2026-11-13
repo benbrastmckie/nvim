@@ -21,9 +21,11 @@ the user's persistent cross-session memory," with no mention of staging or appro
 ## Why This Makes the Postflight-Only Scoping Load-Bearing
 
 Because the MCP write-tool path bypasses the `auto_approve: false` review gate entirely, every
-call is effectively a permanent, unreviewed write. This extension's gap-2 instruction (call
-`sapience_wrapup` with 3-8 notes at the `[IMPLEMENTING]` -> `[COMPLETED]` transition, drawn from
-the summary artifact) bounds unreviewed content **per completed task**, not per tool call. A
+call is effectively a permanent, unreviewed write. This extension's gap-2 instruction (write 3-8
+notes at the `[IMPLEMENTING]` -> `[COMPLETED]` transition, drawn from the summary artifact,
+through `scripts/sapience-remember.sh`'s direct `POST /ingest-kos` call -- see
+`## Write-Tool Disposition` below) bounds unreviewed content **per completed task**, not per tool
+call. A
 per-agent instruction to call `sapience_remember` proactively mid-run -- the shape this extension
 deliberately does not add -- would instead produce an unreviewed write per decision, per agent,
 potentially many times across a single `/orchestrate` batch, with no equivalent to the staged
@@ -37,9 +39,10 @@ review gate the rest of this machine's sapience workflow relies on.
 permanent and unreviewed the instant the server returns `written >= 1`. It differs from the four
 MCP tools only in *what* it writes (a repo-tagged KO, for the per-dispatch retrieval injection
 `sapience-retrieve.sh` reads back) and in being called from task-boundary postflight rather than
-mid-session. See `per-repo-scoping.md` for the full scoping mechanism and the bound that keeps
-this path's unreviewed volume per completed task (a 3-8-note set) rather than per decision --
-the same per-task bound this file's gap-2 instruction already applies to `sapience_wrapup`.
+mid-session. See `per-repo-scoping.md`'s "D3: Why Replace, Not Both" section for the full scoping
+mechanism and the bound that keeps this path's unreviewed volume per completed task (a
+3-8-note set) rather than per decision -- the same per-task bound this file's gap-2 instruction
+already applies to the postflight call site (see `## Write-Tool Disposition` below).
 
 ## The Permission Grant's Repository-Scoped Tradeoff
 
@@ -70,3 +73,19 @@ The grant lists the four tool names explicitly (`mcp__sapience__sapience_remembe
 seven-entry dotfiles allow-list's own convention, which is also explicit, one tool per line. The
 tradeoff: a future new sapience write tool is not auto-granted by this fragment and needs its own
 line added here -- a known maintenance item, not a surprise, given the precedent it follows.
+
+## Write-Tool Disposition
+
+An affirmative disposition for each of the four MCP write tools, so that "ruled out" is a
+recorded decision rather than silence:
+
+| Tool | Disposition | Reason |
+|------|-------------|--------|
+| `sapience_remember` | Never named as a prescribed write path. | Its connector hardcodes `provenance` with no injectable repo marker (see `per-repo-scoping.md`'s "Why the MCP Write Tools Cannot Produce a Tagged Write"), so no argument to this tool can produce a tagged write. |
+| `sapience_wrapup` | Replaced by the `sapience-remember.sh` script call site, not kept alongside it. | Keeping both would double permanent, unreviewed write volume for zero added reachability -- the tagged write already covers what an unfiltered read would find (`per-repo-scoping.md`'s "D3: Why Replace, Not Both"). |
+| `sapience_handoff` | Ruled out, not converted. | No instruction surface in this extension calls it today. Adding a second session-closing write path would either duplicate the postflight note set under the same 3-8-note bound (a redundant write for no new coverage) or breach that bound (a second unreviewed write per completed task), and whichever note it carried would still land untagged. |
+| `sapience_adddoc` | Out of scope. | It ingests a document, not a finding; this extension's write path is finding capture, not document ingestion. |
+
+Naming a tool in this table is **discussion**, not prescription: the standing rule (see
+`rules/sapience-write-path.md`) distinguishes naming a tool AS the write path a write SHOULD take
+from documenting, as this table does, which tools exist and why each is not used.

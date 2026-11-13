@@ -28,8 +28,8 @@
       "subdomain": "sapience",
       "topics": ["sapience", "review-gate", "permissions", "staging"],
       "keywords": ["auto_approve", "sapience_remember", "sapience_wrapup", "sapience_handoff", "sapience_adddoc", "settings-fragment", "ingest-kos"],
-      "summary": "Staged-and-reviewed transcript-extraction path vs. direct-and-unreviewed MCP write tools and sapience-remember.sh, and the repository-scoped permission-grant tradeoff",
-      "line_count": 72,
+      "summary": "Staged-and-reviewed transcript-extraction path vs. direct-and-unreviewed MCP write tools and sapience-remember.sh, the repository-scoped permission-grant tradeoff, and the four-tool write-path disposition table",
+      "line_count": 91,
       "load_when": {},
       "on_demand": true
     },
@@ -39,8 +39,8 @@
       "subdomain": "sapience",
       "topics": ["sapience", "per-repo-scoping", "provenance", "ingest-kos"],
       "keywords": ["provenance", "source=", "repo tag", "sapience-retrieve.sh", "sapience-remember.sh", "explicit", "gated", "set_aside"],
-      "summary": "The provenance repo-tag scoping mechanism, why project= and source_loc are dead ends, the two scripts' contracts, and the no-delete-API / unreviewed-write / two-population hazards",
-      "line_count": 153,
+      "summary": "The provenance repo-tag scoping mechanism, why project= and source_loc are dead ends, the two scripts' contracts, and the no-delete-API / unreviewed-write / four-population hazards",
+      "line_count": 171,
       "load_when": {},
       "on_demand": true
     },
@@ -51,7 +51,7 @@
       "topics": ["sapience", "transcript-filter", "orchestration"],
       "keywords": ["source_skip", "harness-started", "subagent", "SAPIENCE_INCLUDE_HEADLESS", "upload.py"],
       "summary": "source_skip() classification mechanics in upload.py and why orchestrated/subagent work cannot reach the vault except by explicit tool call",
-      "line_count": 43,
+      "line_count": 45,
       "load_when": {},
       "on_demand": true
     },

@@ -129,11 +129,29 @@ A direct `POST /ingest-kos` write has no staging and no review step — every wr
 `sapience-remember.sh` is therefore both permanent *and* unreviewed, which is why the bound above
 (per completed task, not per decision) is load-bearing rather than a style preference.
 
-**The vault accumulates two differently-shaped populations.** The transcript-extraction path
-cannot carry a repo tag (it has no caller-supplied provenance to tag), so it keeps writing
-untagged KOs that a repo-filtered read never sees, alongside the smaller, repo-tagged population
-this extension's two scripts produce. This is a documented asymmetry, not a defect this design
-attempts to fix.
+**The vault accumulates four differently-shaped populations, and only one carries the tag.**
+
+1. **Tagged.** `sapience-remember.sh`'s `POST /ingest-kos` writes, carrying `[repo:<slug>]` in
+   `provenance`. This is the only population a `source=` filtered read ever returns.
+2. **Untagged, but reachable from this extension's own instruction surfaces.** The four MCP
+   write tools (`sapience_remember`, `sapience_wrapup`, `sapience_handoff`, `sapience_adddoc`):
+   none can produce a tagged write (see "Why the MCP Write Tools Cannot Produce a Tagged Write"
+   above), and the standing rule (`rules/sapience-write-path.md`) now prohibits naming any of
+   them as a prescribed write path -- see `review-gate-boundary.md`'s
+   `## Write-Tool Disposition` section for the per-tool disposition. This population stays
+   untagged going forward only if a stray proactive call bypasses the rule; it is not expected
+   to grow under normal use.
+3. **Untagged and vendor-owned.** Transcript extraction via `~/.sapience/upload.py`. Its
+   `_chunk()` sends `'project': m['project']` per chunk, so the repo identity does reach the
+   server, but the server-authored provenance drops it before the KO is stored -- this is the
+   largest population on this vault and cannot be fixed from this repository.
+4. **Belongs to no repository.** Documents shared by other people (provenance of the form
+   `people <name> | shared by <name> <timestamp> | doc {...}`). Out of scope by construction:
+   there is no repo to tag them with.
+
+Populations 3 and 4 are a documented asymmetry, not a defect this design attempts to fix: no
+mechanism available to this repository can tag either one. Population 2 is the one this
+extension's own surfaces can and do control.
 
 **An `mcp__sapience__*` tool failure cannot be captured mechanically from this repository, and
 this is an accepted gap, stated plainly rather than implied away.** Only the two scripts above

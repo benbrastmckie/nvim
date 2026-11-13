@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Correct the Domain-Doc Write Contract and Record Every Write-Tool Disposition",
+  "started_at": "2026-11-13T00:00:00Z",
+  "last_updated": "2026-11-13T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm stale sapience_wrapup passages by grep (text-located, not line-numbered)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Correct review-gate-boundary.md's two stale sapience_wrapup passages", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md"]},
+    {"id": 3, "description": "Add Write-Tool Disposition section to review-gate-boundary.md", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md"]},
+    {"id": 4, "description": "Correct transcript-filter-ceiling.md's Conclusion MCP-only claim", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/transcript-filter-ceiling.md"]},
+    {"id": 5, "description": "Extend per-repo-scoping.md Hazards to four-population census", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 6, "description": "Repair index-entries.json line counts via generate-context-line-counts.sh", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

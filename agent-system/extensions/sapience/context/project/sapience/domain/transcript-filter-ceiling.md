@@ -36,8 +36,10 @@ this filter, against 203 eligible -- a ratio consistent with "most sessions on t
 orchestrated, not interactive," not an anomaly or a misconfiguration.
 
 **Conclusion**: orchestrated or subagent work cannot reach the hosted vault through the
-transcript-extraction path at all, by design, regardless of environment variables. An explicit
-MCP tool call (`sapience_wrapup`, `sapience_remember`, etc.) made live during the session is the
-*only* path into the vault for this kind of work. This is the direct motivation for this
+transcript-extraction path at all, by design, regardless of environment variables. The surviving
+path for this kind of work is this extension's own direct `POST /ingest-kos` call
+(`scripts/sapience-remember.sh`, called from the postflight wrapup instruction) -- not an MCP
+tool call; see `review-gate-boundary.md`'s `## Write-Tool Disposition` section for why none of
+the four MCP write tools is named as the write path. This is the direct motivation for this
 extension's gap-2 instruction: a documentation-only postflight call is not a workaround for a
 missing feature, it is the only mechanism that can function at all for orchestrated dispatches.
