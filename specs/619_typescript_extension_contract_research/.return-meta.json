@@ -1,43 +1,35 @@
 {
-  "status": "researched",
+  "status": "planned",
   "session_id": "sess_1794603202_55566e_619",
-  "dispatch_seq": 1,
-  "summary": "Surveyed python/rust/web/nix/lean extension manifests and the loader/routing/hook source code to establish the real extension file contract, and built a current (2026) TypeScript toolchain detection matrix verified against live web search (TS7 GA, ESLint v10, Bun text lockfile default, Vite 8/Rolldown).",
+  "dispatch_seq": 2,
+  "summary": "Created a 4-phase closeout plan for this research-deliverable task: re-verify the report's load-bearing mechanical claims against live source, close two verified coverage gaps (merge_targets sub-fields including section_id in Outcome 2; Node native type-stripping / no-tsconfig.json / erasable-syntax rows in Outcome 6), then attest all six required outcomes and run the full gate set.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md",
-      "summary": "Real extension file contract (loader-enforced vs convention-only), manifest/index-entries.json field-to-consumer table, lifecycle-hook and observer execution contracts, keyword_overrides/hard_contracts resolution mechanics, and the 2026 TypeScript toolchain detection matrix (runtimes, package managers, test runners, typecheck/build, lint/format, module resolution)."
+      "type": "plan",
+      "path": "specs/619_typescript_extension_contract_research/plans/01_typescript-extension-contract-research.md",
+      "summary": "4-phase, fully serial closeout plan (2 hours) completing the extension-contract research report against the dispatch's six required outcomes."
     }
   ],
-  "findings_count": 6,
-  "next_steps": "Run /orchestrate 619 to create implementation plan",
+  "phase_count": 4,
+  "estimated_hours": 2,
+  "dependency_waves": [[1], [2], [3], [4]],
+  "next_steps": "Run /orchestrate 619 to execute the plan",
   "memory_candidates": [
     {
-      "content": "The extension loader (lua/neotex/plugins/ai/shared/extensions/manifest.lua) only hard-requires manifest.json's name/version/description to be non-empty strings; EXTENSION.md, README.md, and index-entries.json are convention-only, enforced solely by check-extension-docs.sh's lint (never the loader). provides and merge_targets are shape-validated if present but are themselves optional at the loader-validation layer, even though the dev guide marks merge_targets 'Yes'.",
+      "content": "For a task whose declared deliverable is a research report (not code), the plan phase's correct shape is a closeout plan, not fabricated implementation phases: (1) re-derive the report's load-bearing mechanical claims against live source before downstream tasks inherit them, (2) close coverage gaps found by mechanically diffing the report against the dispatch's own REQUIRED OUTCOMES list and against the stated profiles of downstream chain members, (3) attest outcome-to-section coverage and run the full gate set. The gap-finding step is the high-value one: grepping the report for terms implied by a downstream task's stated target profile surfaces real holes a prose read misses.",
       "category": "PATTERN",
-      "source_artifact": "specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["extension-loader", "manifest.json", "required-fields", "convention-only", "lint-enforced"]
-    },
-    {
-      "content": "keyword_overrides (consumed at /task creation time by task-type-detect.sh step 4b, whole-word first-match-wins, alphabetical directory scan order matters) and hard_contracts (consumed once per --hard dispatch via routing_lookup_flat(), a one-level {task_type:[...]} map unrelated to agent routing) are two independently-resolved, differently-shaped manifest blocks despite superficial similarity. Only two extensions (lean, cslib) declare hard_contracts; declaring none (books) is a valid documented default.",
-      "category": "PATTERN",
-      "source_artifact": "specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["keyword_overrides", "hard_contracts", "routing_lookup_flat", "task-type-detect", "manifest-routing-lib"]
-    },
-    {
-      "content": "As of mid-2026: TypeScript 7.0 (Go-native tsgo compiler) reached GA in July 2026, so tsc itself is now the fast native binary for any typescript@7.x project (no separate tsgo detection needed, version-gate instead). ESLint v10 (Feb 2026) removed .eslintrc* support entirely. Bun's text bun.lock is the default lockfile since Bun 1.2 (binary bun.lockb is legacy). Vite 8 (stable March 2026) made Rolldown the default production bundler, replacing esbuild+Rollup.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["typescript-7", "eslint-10", "bun-lock", "vite-8-rolldown", "toolchain-2026"]
+      "source_artifact": "specs/619_typescript_extension_contract_research/plans/01_typescript-extension-contract-research.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["research-only-task", "plan-phase-closeout", "outcome-coverage-audit", "report-gap-diff", "chain-head-task"]
     }
   ],
   "metadata": {
-    "agent_type": "general-research-agent",
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "session_id": "sess_1794603202_55566e_619",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "modified_files": []
+  "modified_files": [
+    "specs/619_typescript_extension_contract_research/plans/01_typescript-extension-contract-research.md"
+  ]
 }

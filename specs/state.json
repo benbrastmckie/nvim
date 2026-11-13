@@ -123887,7 +123887,7 @@
     {
       "project_number": 619,
       "project_name": "typescript_extension_contract_research",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Research the extension contract and the 2026 TypeScript toolchain for a new typescript extension",
       "description": "GOAL. Survey the source store's REAL extension file contract -- not the documented-only one --\nby diffing the `python`, `rust`, `web`, `nix` and `lean` extensions under\n`/home/benjamin/.config/nvim/agent-system/extensions/`, and establish the TypeScript toolchain\ndetection matrix the new extension's agents must branch on.\n\nSITING. This task and its four successors belong in /home/benjamin/.config/nvim because every\ndownstream edit target lives under this repo's `agent-system/extensions/` source store, per\n`.claude/rules/source-store-deploy-boundary.md`'s Task Siting subsection.\n\nREAD FIRST.\n- `context/guides/extension-development.md`\n- `docs/guides/creating-extensions.md` (especially its `#lifecycle-hooks` section)\n- `context/guides/manifest-routing-schema.md`\n- `context/guides/hard-mode-routing.md`\n- `docs/reference/standards/agent-frontmatter-standard.md`\n\nREQUIRED OUTCOMES.\n1. The exact required file inventory for a working extension, distinguishing files the loader\n   actually consumes from files that are convention-only.\n2. Every `manifest.json` and `index-entries.json` schema field paired with its actual consumer\n   (which script or merge step reads it).\n3. The lifecycle-hook execution contract -- the top-level `hooks` object, its four stages, how\n   `skill-base.sh` invokes a hook, what a hook receives, and what its exit codes mean.\n4. The `keyword_overrides` and `hard_contracts` schemas as the routing library\n   (`scripts/lib/manifest-routing-lib.sh`'s `routing_lookup_flat()`) actually resolves them.\n5. How `index.json` merging and the `<leader>al` loader's deploy step consume each file.\n6. A current (2026) TypeScript toolchain detection matrix covering: runtimes (Node, Bun, Deno);\n   package managers (npm, pnpm, yarn, bun -- via lockfile); test runners (`node:test`, vitest,\n   jest, `bun:test`); typecheck/build (`tsc --noEmit`, tsgo, esbuild, tsup, rolldown, swc);\n   lint/format (eslint flat config, biome, oxlint, prettier); and module resolution modes\n   (`bundler`, `node16`/`nodenext`, nodenext with `.js` specifiers). Each matrix row MUST name\n   the detection SIGNAL (file presence, lockfile name, package.json script, devDependency)\n   rather than assuming a stack.\n\nPRIOR ART ALREADY CLOSED IN THIS BACKLOG -- confirm the current state of each rather than\nreinventing it: the hard-contracts injection mechanism exists (durable project names\n`build_hard_contracts_injection`, `deliver_hard_mode_contracts_across_extensions`,\n`retire_routing_agents_hard_for_hard_contracts`), and a keyword-override false-positive hazard\nwas already addressed (`fix_task_type_keyword_false_positives`).\n\nDELIVERABLE. A research report.",
@@ -123900,9 +123900,16 @@
           "path": "specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md",
           "type": "report",
           "summary": "Real extension file contract (loader-enforced vs convention-only), manifest/index-entries.json field-to-consumer table, lifecycle-hook and observer execution contracts, keyword_overrides/hard_contracts resolution mechanics, and the 2026 TypeScript toolchain detection matrix (runtimes, package managers, test runners, typecheck/build, lint/format, module resolution)."
+        },
+        {
+          "path": "specs/619_typescript_extension_contract_research/plans/01_typescript-extension-contract-research.md",
+          "type": "plan",
+          "summary": "4-phase closeout plan (2 hours, waves [[1],[2],[3],[4]]) completing the extension-contract research report against its six required outcomes."
         }
       ],
-      "file_scope": [],
+      "file_scope": [
+        "specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md"
+      ],
       "audit_verdict": {
         "proposal": {
           "id": "typescript_extension_contract_research",
@@ -124778,7 +124785,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "last_updated": "2026-11-13T21:04:27Z",
+      "last_updated": "2026-11-13T21:11:03Z",
       "session_id": "sess_1794603202_55566e",
       "next_artifact_number": 2
     },
