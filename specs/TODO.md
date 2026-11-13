@@ -83,7 +83,7 @@ next_project_number: 619
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-614 [RESEARCHED] — Resolve a SF-1 card worktree to its parent checkout so card...
+614 [PLANNED] — Resolve a SF-1 card worktree to its parent checkout so card...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
@@ -642,11 +642,12 @@ ACCEPTANCE.
 ---
 
 ### 614. Resolve a SF-1 card worktree to its parent checkout so card sessions get repo-scoped Sapience retrieval without hook-injected context
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 606, Task 612, Task 617
 - **Research**: [614_scope_card_worktree_sapience_retrieval/reports/01_card-worktree-sapience-retrieval.md]
+- **Plan**: [614_scope_card_worktree_sapience_retrieval/plans/01_card-worktree-sapience-retrieval.md]
 
 **Description**: GOAL. Make a SF-1 hub-runner card worktree resolve to its parent checkout for Sapience
 registration, so a card session gets the card repo's REPO-SCOPED retrieval while continuing to
