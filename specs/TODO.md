@@ -82,7 +82,7 @@ next_project_number: 614
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-606 [PLANNED] — Scope Sapience context injection to the current repository so...
+606 [IMPLEMENTING] — Scope Sapience context injection to the current repository so...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
@@ -543,7 +543,7 @@ CHANNEL: /orchestrate conclusion channel (c), follow-up task.
 ---
 
 ### 606. Scope Sapience context injection to the current repository so a session stops receiving other repos' facts
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: Task 600, Task 611, Task 612

@@ -2,7 +2,7 @@
 
 - **Task**: 606 - Scope Sapience context injection to the current repository so a session stops
   receiving other repos' facts
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.75 hours
 - **Dependencies**: 600 (completed), 611 (completed), 612 (completed)
 - **Research Inputs**:
@@ -124,14 +124,14 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Record the injection-site inventory and the measured foreclosures [NOT STARTED]
+### Phase 1: Record the injection-site inventory and the measured foreclosures [COMPLETED]
 
 **Goal**: A new source-store domain note that names every primary-session injection site, states
 what each transmits and what the server does with it, records the two foreclosures with their
 reproduction, and carries both owner actions verbatim.
 
 **Tasks**:
-- [ ] Create `context/project/sapience/domain/injection-site-scoping.md` under the source store
+- [x] Create `context/project/sapience/domain/injection-site-scoping.md` under the source store
       with these sections, in this order:
   - **The three primary-session sites, by name.** A table with one row per site:
     `SessionStart` / `python3 "$HOME/.sapience/mcp.py" --briefing-text` / `GET /briefing` +
@@ -182,13 +182,13 @@ reproduction, and carries both owner actions verbatim.
     bulleted item asserting a countable identifier about "this repo" against this repository's
     own live `specs/state.json`/`specs/ROADMAP.md` before passing, suppressing, or relabelling
     it. Record its measured brittleness risk and that it is deliberately not built here.
-- [ ] Add a `domain/injection-site-scoping.md` row to
+- [x] Add a `domain/injection-site-scoping.md` row to
       `context/project/sapience/README.md`'s Loading Strategy table, phrased as "when to read
       it" like its sibling rows.
-- [ ] Add the matching entry to `index-entries.json` (`path`, `domain: project`,
+- [x] Add the matching entry to `index-entries.json` (`path`, `domain: project`,
       `subdomain: sapience`, `topics`, `keywords`, `summary`, `line_count`, empty `load_when`,
       `on_demand: true`), matching the shape of the six entries already there.
-- [ ] Re-read the new file end to end and confirm it contains no task number, no "task N"
+- [x] Re-read the new file end to end and confirm it contains no task number, no "task N"
       phrasing, and no record-versioning language ("previously", "no longer", "v1").
 
 **Timing**: 1.25 hours

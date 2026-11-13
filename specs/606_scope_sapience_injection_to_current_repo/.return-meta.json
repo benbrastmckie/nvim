@@ -1,30 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/606_scope_sapience_injection_to_current_repo/plans/02_injection-site-scoping-residual.md",
-      "summary": "Four-phase plan converting the measured, vendor-owned cross-repo injection residual into durable source-store record, a read-only falsification probe, and two verbatim owner actions."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "When authoring a plan's per-phase Tier Justification, suite_selection_select's union behavior decides the honest answer: if ANY path in a phase's Files to modify set resolves to no suite, the whole selection collapses to __FULL_SWEEP__, regardless of how many suites the other paths map to. Its resolution is basename-driven (self-identity, test-<basename> pairing, then a grep of test suites for the literal basename), so a generic basename like README.md or EXTENSION.md pulls a long incidental suite list that is noise rather than real coverage. Partitioning phases so each one's path set contains at least one genuinely unmapped source-store markdown file yields the sentinel honestly, and the covering check is then plan-format.md's sub-case (b) gate subset: verify-deploy.sh --skip-slow --only-gate 3,4 <repo_root>, with repo_root the directory holding .claude-extensions.json, never source_dir itself (a source-store directory has no .claude/ and gate0 exits 2 before gate selection).",
-      "category": "PATTERN",
-      "source_artifact": "specs/606_scope_sapience_injection_to_current_repo/plans/02_injection-site-scoping-residual.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["suite_selection_select", "__FULL_SWEEP__", "tier-justification", "plan-authoring", "verify-deploy", "only-gate"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1794548508_b5c160_606",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 4.75,
-    "dependency_waves": [[1, 2], [3], [4]]
-  },
-  "next_steps": "Run /orchestrate 606 to execute the plan",
-  "dispatch_seq": 5
+    "session_id": "sess_1794548508_b5c160",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 4
+  }
 }

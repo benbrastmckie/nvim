@@ -45,6 +45,17 @@
       "on_demand": true
     },
     {
+      "path": "project/sapience/domain/injection-site-scoping.md",
+      "domain": "project",
+      "subdomain": "sapience",
+      "topics": ["sapience", "injection-site-scoping", "cli-context", "provenance"],
+      "keywords": ["POST /v1/cli/context", "project=", "UserPromptSubmit", "PreToolUse", "SessionStart", "foreclosure", "vendor ask", "attribution"],
+      "summary": "The three primary-session hook sites by name, the two measured foreclosures on POST /v1/cli/context (project ignored, no per-item attribution), the label-never-suppress ruling, both owner actions verbatim, and the recorded claim-shape-heuristic follow-up",
+      "line_count": 120,
+      "load_when": {},
+      "on_demand": true
+    },
+    {
       "path": "project/sapience/domain/transcript-filter-ceiling.md",
       "domain": "project",
       "subdomain": "sapience",

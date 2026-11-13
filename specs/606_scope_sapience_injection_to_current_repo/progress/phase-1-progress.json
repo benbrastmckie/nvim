@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Record the injection-site inventory and the measured foreclosures",
+  "started_at": "2026-11-12T23:30:00Z",
+  "last_updated": "2026-11-12T23:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create context/project/sapience/domain/injection-site-scoping.md", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/injection-site-scoping.md"]},
+    {"id": 2, "description": "Add Loading Strategy row to context/project/sapience/README.md", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/README.md"]},
+    {"id": 3, "description": "Add index-entries.json entry for the new domain note", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]},
+    {"id": 4, "description": "Re-read new file for task refs / record-versioning language", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "verify-deploy.sh --skip-slow --only-gate 3,4 reports one Rule R line_count mismatch for context/project/sapience/README.md (declared 18, actual 19) -- this is the expected, advisory-only drift the plan's Phase 1 note and Risk row anticipate; reconciled in Phase 4 via generate-context-line-counts.sh --write."
+}

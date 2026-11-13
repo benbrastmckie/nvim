@@ -111750,7 +111750,7 @@
     {
       "project_number": 606,
       "project_name": "scope_sapience_injection_to_current_repo",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "priority": "high",
       "title": "Scope Sapience context injection to the current repository so a session stops receiving other repos' facts",
@@ -112575,7 +112575,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "last_updated": "2026-11-13T07:23:16Z",
+      "last_updated": "2026-11-13T07:23:45Z",
       "session_id": "sess_1794548508_b5c160",
       "next_artifact_number": 2
     },
