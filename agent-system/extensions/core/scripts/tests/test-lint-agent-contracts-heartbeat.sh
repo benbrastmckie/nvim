@@ -49,7 +49,7 @@ for req in "$LINT_SRC" "$FRAGMENT_SRC" "$ARTIFACTS_FRAGMENT_SRC" "$STATUS_LIB_SR
   fi
 done
 
-# The exact 13-entry OWNERSHIP_IN_SCOPE_RELATIVE_PATHS set, kept here as a plain data list (not
+# The exact 14-entry OWNERSHIP_IN_SCOPE_RELATIVE_PATHS set, kept here as a plain data list (not
 # sourced from the script) so a drift between this list and the real one surfaces as a
 # "in-scope agent file not found" FAIL inside Check I's own section below (case 1c / 2c) rather
 # than silently assumed. books/agents/books-implementation-agent.md was added to both the real
@@ -58,6 +58,10 @@ done
 # cslib-implementation-hard-agent.md, lean-implementation-hard-agent.md) are retired along with
 # the rest of the per-domain `-hard` agent files -- routing_agents_hard -> hard_contracts
 # migration -- and dropped from both the real array and this mirror.
+# typescript/agents/typescript-implementation-agent.md was added to the real array by a newer
+# extension registration; unlike the other 13, the real file genuinely invokes
+# update-phase-status.sh directly (the modern convention), so its fixture branch below mirrors
+# general-implementation-agent.md's compliant content rather than the non-compliant default.
 OWNERSHIP_PATHS=(
   "core/agents/general-implementation-agent.md"
   "books/agents/books-implementation-agent.md"
@@ -69,6 +73,7 @@ OWNERSHIP_PATHS=(
   "nvim/agents/neovim-implementation-agent.md"
   "python/agents/python-implementation-agent.md"
   "rust/agents/rust-implementation-agent.md"
+  "typescript/agents/typescript-implementation-agent.md"
   "typst/agents/typst-implementation-agent.md"
   "web/agents/web-implementation-agent.md"
   "z3/agents/z3-implementation-agent.md"
@@ -91,7 +96,7 @@ build_fixture_tree() {
     dir="$root/agent-system/extensions/$(dirname "$rel")"
     mkdir -p "$dir"
     base="$(basename "$rel" .md)"
-    if [ "$rel" = "core/agents/general-implementation-agent.md" ]; then
+    if [ "$rel" = "core/agents/general-implementation-agent.md" ] || [ "$rel" = "typescript/agents/typescript-implementation-agent.md" ]; then
       # Truthful mirror of the real file: it DOES invoke update-phase-status.sh.
       cat > "$root/agent-system/extensions/$rel" << EOF
 ---
@@ -104,7 +109,7 @@ Calls \`bash .claude/scripts/update-phase-status.sh\` on every phase transition.
 EOF
     else
       # Every other fixture agent deliberately lacks the call -- mirrors the real,
-      # currently-un-migrated 13.
+      # currently-un-migrated 12.
       cat > "$root/agent-system/extensions/$rel" << EOF
 ---
 name: ${base}
@@ -124,8 +129,8 @@ run_lint() {
 }
 
 # ═══════════════════════════════════════════════════════════════════════
-# Case 1: real, unmodified script -- all 13 inventoried offenders WARN, the one migrated
-# agent PASSes, and the overall lint exits 0 (warnings never fail the gate).
+# Case 1: real, unmodified script -- all 12 inventoried offenders WARN, the two migrated
+# agents (general, typescript) PASS, and the overall lint exits 0 (warnings never fail the gate).
 # ═══════════════════════════════════════════════════════════════════════
 common_test_info "=== Case 1: inventoried offenders WARN, lint exits 0 ==="
 ROOT1="$(mktemp -d)"
