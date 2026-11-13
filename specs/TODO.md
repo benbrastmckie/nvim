@@ -1,5 +1,5 @@
 ---
-next_project_number: 625
+next_project_number: 627
 ---
 
 # TODO
@@ -13,10 +13,10 @@ next_project_number: 625
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,620,624 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,620,624,625 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605,621 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604,620 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594,622 | 439,458,472,476,486,509,518,519,542,543,564,572,593,621 | core-agent-system, file-scope-lifecycle, agent-system, ... |
-| 4 | 524,561,577,581,595,623 | 438,492,501,539,547,552,580,594,622 | core-agent-system, agent-system, typescript-extension |
+| 4 | 524,561,577,581,595,623,626 | 436,438,492,501,539,547,552,580,594,622,625 | core-agent-system, agent-system, typescript-extension |
 | 5 | 596,609 | 577,595 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -36,6 +36,7 @@ next_project_number: 625
 459 [PLANNED] — Design cross-record traceability; verdict on CHANGE\_LOG...
   └─ 458 [NOT STARTED] — Consolidate the duplicated /todo implementation
     └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
+      └─ 626 [NOT STARTED] — Wire /todo and /review to roadmap regeneration behind the...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -68,6 +69,8 @@ next_project_number: 625
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — GOAL. Determine what leaves files behind in this repository's...
+625 [NOT STARTED] — Gate roadmap regeneration behind an interactive...
+  └─ 626 [NOT STARTED] — Wire /todo and /review to roadmap regeneration behind the... (see above)
 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
   └─ 586 [NOT STARTED] — Stand up the suite and gate wall-clock cost consumer: delete,...
 517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
@@ -195,6 +198,147 @@ next_project_number: 625
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 626. Wire /todo and /review to roadmap regeneration behind the shared preflight gate
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 625, Task 436, Task 458
+
+**Description**: PROBLEM.
+`context/patterns/roadmap-update.md` records, as a deliberate Ruling, that
+`roadmap-integration.sh --regenerate` has exactly TWO live callers (`skill-roadmap` and
+`/orchestrate`'s conclusion stage Move 5), and that wiring `/todo` and `/review` to it is "an
+acknowledged gap" left unwired, to be filed via `/task` or `/spawn` if a concrete need arises.
+The owner has now asked for it: a roadmap-updating command must not leave `specs/ROADMAP.md`
+stale behind a silent refusal.
+
+DELIVERABLE 1 -- wire the two new callers.
+Wire `skills/skill-todo/SKILL.md` and `commands/review.md` to
+`roadmap-integration.sh --regenerate`, each SOURCING the shared preflight library delivered by
+the gate task (`scripts/lib/roadmap-preflight-lib.sh`) so that a missing or unknown-layout
+`ROADMAP.md` prompts for approval instead of refusing silently.
+
+DELIVERABLE 2 -- rewrite the contract.
+Rewrite that Ruling paragraph and the caller table in `context/patterns/roadmap-update.md` so the
+contract names FOUR live callers instead of two, and states each one's interactive-vs-autonomous
+arm.
+
+DELIVERABLE 3 -- postflight legality ruling for the `/todo` call site.
+Check `context/standards/postflight-tool-restrictions.md` BEFORE wiring `/todo`: `--regenerate`
+is a generator call from a postflight phase, and that standard's Bash restrictions govern what a
+postflight body may run. Decide EXPLICITLY whether the `/todo` call site is postflight-legal
+as-is, needs the same narrowly-scoped exception the Move 5 conclusion-stage table already
+carries, or belongs at a different point in `/todo`'s flow -- and RECORD the ruling.
+
+EXTERNAL DEPENDENCY RATIONALE (why this task waits on 436 and 458).
+- Open task 436 (`orient_command_with_scout_agent_retire_review`, not_started) would RETIRE
+  `/review` in favour of a new `/orient` command. Wiring `/review` before that is settled risks
+  wiring a command that is being removed -- if 436 lands first, the wiring target becomes
+  `/orient`.
+- Open task 458 (`consolidate_duplicated_todo_implementation`, not_started) consolidates a
+  duplicated `/todo` implementation. Wiring `/todo` beforehand would mean wiring it twice.
+
+HARD CONSTRAINT (edit target). ALL writes go to the core source store at
+`agent-system/extensions/core/`. NEVER write to any repository's `.claude/` deploy tree -- see
+`.claude/rules/source-store-deploy-boundary.md`.
+
+CO-BATCH / ORDERING NOTE (not dependency edges).
+Beyond 436 and 458, the backlog audit found file-territory overlap with open task 492
+(`commands/review.md`) and open task 503
+(`context/standards/postflight-tool-restrictions.md`). Those are co-batch/ordering
+considerations, NOT duplication -- do not convert them into dependency edges.
+
+---
+
+### 625. Gate roadmap regeneration behind an interactive create-or-repair approval when ROADMAP.md is missing or unknown-layout
+- **Effort**: large
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: PROBLEM (measured in a consumer repo; do NOT re-derive these facts).
+`scripts/roadmap-integration.sh --regenerate` refuses to write `specs/ROADMAP.md` when its
+`detect_layout` predicate classifies the file as `unknown`, and no-ops with
+`NOTE: no roadmap tracked at ...` when the file is absent. The refusal prints a stderr `ERROR:`
+line and exits non-zero, but NO caller escalates it. Observed consequence: two consecutive
+`/roadmap` passes wrote `roadmap_batches`/`roadmap_notes` judgment into `specs/state.json` while
+`--regenerate` refused, so batch ordering lived in state for weeks and never rendered to the
+file. `skills/skill-roadmap/SKILL.md`'s Stage 3 escalated it no further than a soft `WARNING:`
+echo line.
+
+DELIVERABLE 1 -- shared preflight library.
+Add `scripts/lib/roadmap-preflight-lib.sh` that classifies `specs/ROADMAP.md` into
+absent / unknown-layout / classic / stage AHEAD of any `roadmap-integration.sh` write-mode call,
+and returns a structured verdict a caller acts on. REUSE `roadmap-integration.sh`'s own
+`detect_layout` predicate rather than reimplementing the classification -- decide during research
+whether to source it, extract it into the new library and have the generator source it back, or
+shell out. Do NOT duplicate the eight-header list in two places.
+
+DELIVERABLE 2 -- skeleton scaffolder.
+On approval, write the classic eight-header skeleton taken from
+`context/formats/roadmap-format.md`'s Section Order table: `## Goal`, `## Gate state`, `## Next`,
+`## Open work`, `## Checks before and after every call`,
+`## Settled decisions (do not re-litigate)`, `## Standing rules`,
+`## Unfiled observations (none worth a task yet)`, with the `# Roadmap` title and an italic
+preamble paragraph. PRESERVE any authored prose already in the file rather than discarding it.
+`## Next` and `## Open work` get placeholder bodies, since `--regenerate` renders them from state
+immediately afterward.
+
+DELIVERABLE 3 -- two-arm gate, BOTH arms required.
+(a) INTERACTIVE arm. Where a user-facing surface exists (`/roadmap` invoked by the user),
+    `AskUserQuestion` asks for approval to create or repair the file before any write, then
+    proceeds to `--regenerate`. CONSTRAINT, already measured in
+    `context/standards/agent-frontmatter-standard.md`'s "Tool Withholding from Dispatched
+    Subagents" section: `AskUserQuestion` is categorically withheld from every `Agent`-tool
+    dispatch of a named `subagent_type`, so the gate's question MUST be asked in the SKILL's own
+    execution context (pre-dispatch), NEVER inside `roadmap-agent`.
+    `skills/skill-meta/SKILL.md`'s own Section 2 is the reference shape for this.
+(b) NON-INTERACTIVE arm. `/orchestrate`'s conclusion stage (Move 5) runs autonomously with no
+    interactive surface. There the gate must degrade LOUDLY and non-silently: a named structured
+    warning PLUS an `issues.jsonl` entry via `scripts/issue-record.sh`. Choose the fitting
+    `--class` from `context/formats/issue-log.md`'s seed enum and JUSTIFY the choice --
+    `infrastructure/transport unavailable` is a candidate but may not be the best fit. Never a
+    silent skip, and never an unapproved auto-write.
+
+HARD CONSTRAINT.
+The generator's own refusal is a documented PERMANENT property ("Destructive-Overwrite Refusal",
+`context/formats/roadmap-format.md`). This gate sits strictly IN FRONT of the generator as a
+preflight. It MUST NOT weaken, bypass, or add a `--force` path to the refusal, and MUST NEVER
+let an agent hand-author a roadmap body in place of the refusal firing. The only sanctioned write
+is the mechanical skeleton scaffold above.
+
+CALLERS GATED IN THIS TASK.
+- `skills/skill-roadmap/SKILL.md` (its Stage 1 and Stage 3 surfaces).
+- `/orchestrate`'s conclusion stage Move 5: `context/contracts/conclusion-stage.md`, plus
+  `context/standards/postflight-tool-restrictions.md`'s "Conclusion Stage (Move 5) Tool
+  Restrictions" allowed-tool table, which currently lists `roadmap-integration.sh --regenerate`
+  as an allowed Bash call and will need the library added.
+
+ALSO UPDATE.
+- `context/patterns/roadmap-update.md` -- the caller contract: document the preflight as part of
+  every write-mode caller's obligation.
+- `scripts/tests/test-roadmap-generation.sh` -- regression coverage for the new library: absent
+  file, unknown-layout file, classic file, stage file, and the idempotence of a
+  scaffold-then-regenerate sequence.
+
+OUT OF SCOPE (already done by hand; must NOT be redone).
+`/home/benjamin/.dotfiles/specs/ROADMAP.md` was migrated to the classic layout and now renders
+idempotently. This task exists so the NEXT repo hitting the condition never needs that hand
+migration.
+
+HARD CONSTRAINT (edit target). ALL writes go to the core source store at
+`agent-system/extensions/core/`. NEVER write to any repository's `.claude/` deploy tree -- see
+`.claude/rules/source-store-deploy-boundary.md`.
+
+CO-BATCH / ORDERING NOTE (not dependency edges).
+The backlog audit found file-territory overlap with open tasks 558 and 562, which both declare
+`context/contracts/conclusion-stage.md`. That is a co-batch/ordering consideration, NOT
+duplication -- do not convert it into a dependency edge.
+
+---
 
 ### 624. Defect record unresolvable in deploy consumer
 - **Status**: [NOT STARTED]
