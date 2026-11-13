@@ -1,7 +1,7 @@
 # Implementation Plan: Task #612
 
 - **Task**: 612 - Gate every Sapience activation surface behind the sapience extension so Sapience runs only in repos that load it
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 12 hours
 - **Dependencies**: Task 611 (completed)
 - **Research Inputs**: specs/612_gate_sapience_activation_behind_extension/reports/01_gate-sapience-extension-scope.md

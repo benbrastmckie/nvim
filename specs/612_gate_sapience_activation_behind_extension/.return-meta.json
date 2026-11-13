@@ -1,11 +1,68 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/612_gate_sapience_activation_behind_extension/summaries/01_gate-sapience-activation-extension-summary.md",
+      "summary": "Built the per-repo Sapience activation surface (MCP-registration triad, 11 grants, 5 hooks, docs) with all five verification items evidenced empirically against the real repo/HOME; one Reasoned Exclusion recorded for a pre-existing merge-engine tracking gap affecting 4 of 11 grants on unload."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Built the per-repository Sapience activation surface in agent-system/extensions/sapience/: a four-script MCP-registration triad (writer, bidirectional SessionStart hook, installer, verifier) mirroring the lean extension's per-project pattern, 11 permission grants and 5 hooks moved into settings-fragment.json, and full documentation updates. All five acceptance verification items were evidenced empirically against the real repo and real $HOME; one item (unload grant-removal) is COMPLETED WITH EXCLUSIONS for 4 of 11 grants due to a pre-existing, out-of-scope merge-engine tracking gap."
+  },
+  "modified_files": [
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md",
+    "agent-system/extensions/sapience/EXTENSION.md",
+    "agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh",
+    "agent-system/extensions/sapience/index-entries.json",
+    "agent-system/extensions/sapience/manifest.json",
+    "agent-system/extensions/sapience/README.md",
+    "agent-system/extensions/sapience/scripts/install-sapience-mcp-session-hook.sh",
+    "agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh",
+    "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh",
+    "agent-system/extensions/sapience/settings-fragment.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When mirroring an existing extension's shipped MCP-registration triad (lean's setup-lean-mcp.sh/lean-lsp-register-project.sh/install-lean-lsp-session-hook.sh/verify-lean-mcp.sh) for a NEW server with a dynamically-resolved interpreter (not a fixed command like `uvx`), build the canonical entry via a resolver function (prefer an existing top-level entry's command, else `command -v <interpreter>`, else refuse loudly) rather than a static string -- then have the verifier RECOMPUTE the same resolution independently to compare, so verification is not circular. Also: a hook emitting JSON via `jq -Rs '{additionalContext: .}'` pretty-prints across multiple lines, breaking a 'exactly one line of valid JSON' hook contract; use `jq -cRs` for compact single-line output. The shipped lean model has this exact (latent, untested) defect -- a new test asserting single-line output catches it immediately where copying the model blindly would not.",
+      "category": "PATTERN",
+      "source_artifact": "specs/612_gate_sapience_activation_behind_extension/summaries/01_gate-sapience-activation-extension-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "mcp-registration",
+        "SessionStart-hook",
+        "jq-compact-output",
+        "interpreter-resolution",
+        "lean-lsp-pattern"
+      ]
+    },
+    {
+      "content": "A settings-merge engine's append-tracking (merge.lua's deep_merge/unmerge_settings in this codebase) only records an item as removable-on-unload when it was NOT already present in the merge target at merge time. If an extension's permission grant (or other array entry) was already present in the deployed settings file at the extension's FIRST ever load -- e.g. because it predates the extension system's own tracking, or a prior manual edit -- the tracking record for it is permanently empty (`items: []`), and no later resync/reload ever retroactively tracks it, so unload can never retract it. This surfaces specifically when a later task ADDS new array entries to an already-loaded extension's fragment: the new entries get tracked and unmerge cleanly, while the old untracked ones silently survive unload forever. Detectable via `jq '.extensions.<name>.merged_sections.settings.permissions.children.allow'` on `.claude-extensions.json` -- an `items: []` with a non-empty live grant list for that extension is the signature. Not fixable from the extension's own files; the fix belongs to the merge engine itself (e.g. a retroactive re-tracking pass, or always tracking the full source-declared set rather than only the merge-time delta).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/612_gate_sapience_activation_behind_extension/summaries/01_gate-sapience-activation-extension-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "merge-engine",
+        "unload-residual",
+        "append-tracking",
+        "claude-extensions.json",
+        "settings-merge"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794548508_b5c160",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 7,
+    "phases_total": 7
   }
 }
