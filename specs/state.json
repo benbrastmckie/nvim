@@ -111750,7 +111750,7 @@
     {
       "project_number": 606,
       "project_name": "scope_sapience_injection_to_current_repo",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "priority": "high",
       "title": "Scope Sapience context injection to the current repository so a session stops receiving other repos' facts",
@@ -112580,7 +112580,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "last_updated": "2026-11-13T07:23:45Z",
+      "last_updated": "2026-11-13T07:58:05Z",
       "session_id": "sess_1794548508_b5c160",
       "next_artifact_number": 2,
       "completion_summary": "Scoped Sapience's primary-session content-scoping gap into durable source-store record: a new domain note (agent-system/extensions/sapience/context/project/sapience/domain/injection-site-scoping.md) names all three injection sites and both measured foreclosures on POST /v1/cli/context, a new read-only probe script (verify-sapience-context-scoping.sh) makes the residual falsifiable, and both owner actions (the vendor ask; the machine-wide duplicate-hook inspection) are written out verbatim. No hook was suppressed, filtered, or narrowed."
