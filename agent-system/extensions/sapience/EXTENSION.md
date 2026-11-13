@@ -17,7 +17,16 @@ Stage 3.5 `memory_context` block; the second is called from the postflight wrapu
 **Postflight wrapup**: at the `[IMPLEMENTING]` -> `[COMPLETED]` transition, write 3-8 distilled
 notes via `scripts/sapience-remember.sh` (bound enforced at this call site), replacing the
 untagged `sapience_wrapup` call. Do NOT call `sapience_remember` proactively mid-run -- see
-`domain/review-gate-boundary.md` for why.
+`domain/review-gate-boundary.md`'s `## Write-Tool Disposition` section for the per-tool
+reasoning.
+
+**Superseding the vendor SessionStart nudge**: the Sapience SessionStart briefing carries its
+own standing instruction to save a decision, finding, or correction with `sapience_remember` as
+soon as it lands. In this repository that nudge is superseded: this is a counter-instruction
+carried in this extension's own surfaces, not an owner action and not an accepted residual (the
+nudge text is vendor-authored, arriving through a hook this repository does not own, so it
+cannot be edited directly). Nothing is lost by superseding it -- the finding is held and
+surfaces repo-tagged through the bounded postflight pass above, not dropped.
 
 A non-zero exit from that call (`set_aside`, `gated`, `written == 0`, `ok != true` -- see the
 script's own header) is MIRRORED non-fatally via `issue-record.sh`

@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "Redirect the SessionStart Nudge to the Tagged Path in EXTENSION.md",
+  "started_at": "2026-11-13T00:40:00Z",
+  "last_updated": "2026-11-13T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Name the SessionStart nudge and state supersession in EXTENSION.md", "status": "done", "files_touched": ["agent-system/extensions/sapience/EXTENSION.md"]},
+    {"id": 2, "description": "Make the redirect explicit (held, surfaces via postflight)", "status": "done", "files_touched": ["agent-system/extensions/sapience/EXTENSION.md"]},
+    {"id": 3, "description": "Record ruling class: counter-instruction, not owner action, not residual", "status": "done", "files_touched": ["agent-system/extensions/sapience/EXTENSION.md"]},
+    {"id": 4, "description": "Point at review-gate-boundary.md Write-Tool Disposition instead of relisting tools", "status": "done", "files_touched": ["agent-system/extensions/sapience/EXTENSION.md"]},
+    {"id": 5, "description": "Confirm Rule U ceiling (wc -l <= 60)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

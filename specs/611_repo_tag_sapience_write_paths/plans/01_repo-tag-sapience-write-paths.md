@@ -175,7 +175,7 @@ and the "ruled out and the reason recorded" half of deliverable (a).
 
 ---
 
-### Phase 2: Redirect the SessionStart Nudge to the Tagged Path in EXTENSION.md [NOT STARTED]
+### Phase 2: Redirect the SessionStart Nudge to the Tagged Path in EXTENSION.md [COMPLETED]
 
 **Goal**: Make deliverable (c)'s ruling explicit and checkable by inspection: name the vendor
 SessionStart nudge, state that it is superseded in this repository, and redirect the finding it
@@ -183,11 +183,11 @@ would have written to the bounded tagged path so the knowledge is still captured
 acceptance criterion 5.
 
 **Tasks**:
-- [ ] Extend `EXTENSION.md`'s existing "Do NOT call `sapience_remember` proactively mid-run" prohibition with a sentence naming the nudge it counters: the Sapience SessionStart briefing's standing instruction to save a decision, finding, or correction with `sapience_remember` as soon as it lands. State that in this repository that nudge is superseded.
-- [ ] Make the redirect explicit rather than a bare suppression: the finding is held and surfaces through the bounded postflight `sapience-remember.sh` pass, so it still reaches the vault -- repo-tagged -- instead of being dropped. A reader must be able to see that nothing is lost, only relocated and tagged.
-- [ ] Record the ruling's class in one clause: this is a counter-instruction inside this extension's own surfaces, NOT an owner action and NOT an accepted residual. The nudge text is vendor-authored and arrives through a hook this repository does not own, so it cannot be edited here; no owner action is requested for it.
-- [ ] Point at `domain/review-gate-boundary.md`'s new `## Write-Tool Disposition` section instead of re-listing the four tools, keeping the addition short.
-- [ ] Confirm Rule U's ceiling holds: `wc -l agent-system/extensions/sapience/EXTENSION.md` stays at or below 60.
+- [x] Extend `EXTENSION.md`'s existing "Do NOT call `sapience_remember` proactively mid-run" prohibition with a sentence naming the nudge it counters: the Sapience SessionStart briefing's standing instruction to save a decision, finding, or correction with `sapience_remember` as soon as it lands. State that in this repository that nudge is superseded. *(completed)*
+- [x] Make the redirect explicit rather than a bare suppression: the finding is held and surfaces through the bounded postflight `sapience-remember.sh` pass, so it still reaches the vault -- repo-tagged -- instead of being dropped. A reader must be able to see that nothing is lost, only relocated and tagged. *(completed)*
+- [x] Record the ruling's class in one clause: this is a counter-instruction inside this extension's own surfaces, NOT an owner action and NOT an accepted residual. The nudge text is vendor-authored and arrives through a hook this repository does not own, so it cannot be edited here; no owner action is requested for it. *(completed)*
+- [x] Point at `domain/review-gate-boundary.md`'s new `## Write-Tool Disposition` section instead of re-listing the four tools, keeping the addition short. *(completed)*
+- [x] Confirm Rule U's ceiling holds: `wc -l agent-system/extensions/sapience/EXTENSION.md` stays at or below 60. *(completed)*
 
 **Timing**: 0.5 hours
 
