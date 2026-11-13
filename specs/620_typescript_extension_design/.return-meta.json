@@ -42,33 +42,57 @@
       "category": "PATTERN",
       "source_artifact": "specs/620_typescript_extension_design/summaries/01_typescript-extension-build-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["lint-agent-contracts", "curated-arrays", "heartbeat-check", "fixture-drift", "extension-authoring"]
+      "suggested_keywords": [
+        "lint-agent-contracts",
+        "curated-arrays",
+        "heartbeat-check",
+        "fixture-drift",
+        "extension-authoring"
+      ]
     },
     {
       "content": "In this environment, the harness auto-backgrounds a Bash tool call once it runs past roughly 100-180 seconds of wall-clock time, REGARDLESS of a raised `timeout` parameter on the tool call itself (observed: a 540000ms parameter still auto-backgrounded at ~180s). For a genuinely long-running local command (e.g. a full verify-deploy.sh/run-all.sh gate sweep taking 10+ minutes), the reliable pattern is: launch it yourself with `nohup cmd > log 2>&1 & echo $! > pidfile; disown`, then poll liveness in repeated short Bash calls using `kill -0 \"$(cat pidfile)\"` (never `ps | grep` or `pgrep -f`, which self-match the waiter's own argv and never resolve), each poll call itself kept under ~100s so it never triggers the harness's own auto-backgrounding. Checking `ps -ef` once to discover a PID when none was captured via `$!` is an acceptable one-off exception to the never-ps-grep rule, but the repeated liveness LOOP must use kill -0 on a captured PID.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/620_typescript_extension_design/summaries/01_typescript-extension-build-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["bounded-wait", "background-task", "kill-0", "nohup", "harness-auto-backgrounding"]
+      "suggested_keywords": [
+        "bounded-wait",
+        "background-task",
+        "kill-0",
+        "nohup",
+        "harness-auto-backgrounding"
+      ]
     },
     {
       "content": "When a full verify-deploy.sh / run-all.sh gate run shows a FAIL unrelated to the task at hand, triage before excluding: (1) re-run the SAME specific failing suite standalone -- if it passes cleanly in isolation, the failure is parallel-execution contention under --jobs auto, not a content regression (confirmed by observing a DIFFERENT suite fail on each successive full-batch run while each one individually passes); (2) for a flagged file with no local edits, run `git log -1 --oneline -- <file>` and `git status --short -- <file>` -- an empty status plus a commit predating this dispatch's start proves the finding is pre-existing, inherited history, not something this task caused; (3) for a gate that times out, re-run the underlying check directly with `time` -- if it reports zero failures but exceeds the gate's own wall-clock ceiling even standalone, it's a ceiling/scale mismatch (e.g. specs/state.json growing past what a 60s budget assumed), not a correctness defect. Each of these three evidence types is sufficient to support a Reasoned Exclusion on an otherwise-full-tier phase.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/620_typescript_extension_design/summaries/01_typescript-extension-build-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["gate-triage", "reasoned-exclusion", "flaky-tests", "pre-existing-regression", "verify-deploy"]
+      "suggested_keywords": [
+        "gate-triage",
+        "reasoned-exclusion",
+        "flaky-tests",
+        "pre-existing-regression",
+        "verify-deploy"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794603202_55566e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh",
     "agent-system/extensions/core/scripts/tests/test-lint-agent-contracts-heartbeat.sh"
-  ]
+  ],
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

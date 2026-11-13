@@ -124818,6 +124818,11 @@
           "path": "specs/620_typescript_extension_design/plans/01_typescript-extension-build.md",
           "type": "plan",
           "summary": "Six-phase implementation plan plus embedded design specification for the new generic typescript extension."
+        },
+        {
+          "path": "specs/620_typescript_extension_design/summaries/01_typescript-extension-build-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary for the typescript extension build: file manifest, decisions, plan deviations, verification evidence, and the three evidenced Reasoned Exclusions on Phase 5."
         }
       ],
       "file_scope": [
@@ -125876,7 +125881,8 @@
       },
       "last_updated": "2026-11-13T21:54:47Z",
       "session_id": "sess_1794603202_55566e",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Built a complete, framework-agnostic typescript extension in the agent-system source store (20 new files: manifest, both agents, both skills, rules file, verification-stage hook, hard_contracts override contract, 8-file generic context tree, merge sources) plus one corrected registry row in agent-system/extensions/README.md. All six plan phases closed; agent-system/extensions/web/ confirmed untouched throughout."
     },
     {
       "project_number": 621,

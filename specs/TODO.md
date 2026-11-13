@@ -454,6 +454,7 @@ expected `.claude/` files, the merged `CLAUDE.md` section, and the merged `index
 - **Dependencies**: Task 619
 - **Research**: [620_typescript_extension_design/reports/01_typescript-extension-design-research.md]
 - **Plan**: [620_typescript_extension_design/plans/01_typescript-extension-build.md]
+- **Summary**: [620_typescript_extension_design/summaries/01_typescript-extension-build-summary.md]
 
 **Description**: GOAL. Produce the implementation plan for the new `typescript` extension from the research
 report, covering its file manifest, both agents, hard contracts, the verification hook, and the
