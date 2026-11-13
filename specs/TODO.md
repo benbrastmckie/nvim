@@ -206,137 +206,127 @@ next_project_number: 614
 - **Dependencies**: Task 611
 - **Research**: [612_gate_sapience_activation_behind_extension/reports/01_gate-sapience-extension-scope.md]
 
-**Description**: GOAL. Remove every machine-wide Sapience activation surface this repository owns, so that loading
-the sapience extension into a repo is the ONLY thing that turns Sapience on there, and unloading
-it is the only thing that turns it off.
+**Description**: GOAL. Build the per-repository Sapience activation surface inside this repository's sapience
+extension source store, so that loading the sapience extension into a repo is the ONLY thing
+that turns Sapience on there, and unloading it is the only thing that turns it off. This task
+BUILDS the per-repo surface; it does not remove anything machine-wide.
 
-SITING. This task belongs in /home/benjamin/.dotfiles because every one of its edit targets is
-owned by this repository's own tree, not by the agent-system source store:
-`modules/home/services/sapience.nix`, `config/claude/settings.json` and `docs/sapience.md`. Per
-`.claude/rules/source-store-deploy-boundary.md`'s Task Siting subsection, a task is filed in the
-repository whose local filesystem contains its edit target. The companion extension-side task is
-sited in /home/benjamin/.config/nvim because its targets live under that repo's
-`agent-system/extensions/sapience/` source store.
+SITING. This task belongs in /home/benjamin/.config/nvim because every one of its edit targets
+lives under this repo's `agent-system/extensions/sapience/` source store (per
+`.claude/rules/source-store-deploy-boundary.md`'s Task Siting subsection). It MUST NOT edit any
+file owned by /home/benjamin/.dotfiles.
 
-ORDERING CONSTRAINT, HARD. This is the second half of a two-part change. The first half, sited in
-/home/benjamin/.config/nvim under the project name `gate_sapience_activation_behind_extension`,
-builds the per-repo activation surface in the extension's source store. This task MUST NOT land
-before that companion task has landed and been verified. Removing the machine-wide surface first
-leaves Sapience off in EVERY repository, including the two that should have it. The constraint
-cannot be expressed as a state.json dependency edge, because the companion lives in a different
-repository's numbering space -- so it is recorded here in prose and the companion is referred to
-by its durable project name. Before starting implementation, confirm the companion has completed;
-if it has not, the correct action is to stop and report, not to proceed.
+ORDERING CONSTRAINT, HARD. This is the FIRST half of a two-part change. The second half --
+removal of the machine-wide surface from /home/benjamin/.dotfiles -- is a separate task sited in
+that repository under the durable project name `retire_machine_wide_sapience_surface`. That
+companion depends on THIS task landing and being verified first; this task depends on nothing in
+.dotfiles and is free to proceed now. Removing the machine-wide surface before this per-repo
+surface exists would leave Sapience off in EVERY repository, including the two that should have
+it. The constraint cannot be expressed as a state.json dependency edge because the companion
+lives in a different repository's numbering space, so it is recorded here in prose and the
+companion is referred to by its durable project name.
 
-=== WHAT IS BEING REMOVED, AND WHY EACH IS SAFE TO REMOVE ONLY AFTER THE COMPANION LANDS ===
+=== WHAT THIS TASK MUST BUILD ===
 
-1. TOP-LEVEL MCP REGISTRATION. `modules/home/services/sapience.nix`'s `claudeMcpServers`
-   activation entry (around lines 787-1055) merges `mcpServers.sapience` into the TOP LEVEL of
-   ~/.claude.json, so all nine `sapience_*` tools load in every session in every directory. The
-   option that controls it is documented at that file's line ~787 ("Merge mcpServers.sapience
-   into ~/.claude.json at user scope ... Set false to leave ~/.claude.json untouched"), and the
-   activation entry is deliberately ordered against the token-shape repair entry that writes the
-   same file (see that file's comment at line ~1017) -- preserve that ordering relationship in
-   whatever replaces it. Note that the same file already contains a worked precedent for the
-   per-project shape: ~/.claude.json's `.projects[<path>].mcpServers` carries `lean-lsp` for four
-   Lean repos today.
+Three building blocks, none of which exist in the extension today (verified: `manifest.json` has
+`provides.hooks: []` and no top-level `hooks` object; `settings-fragment.json` carries only the
+4 MCP write-tool grants; `scripts/` holds only `sapience-remember.sh`, `sapience-retrieve.sh`
+and a capture test, none of which touch `~/.claude.json`).
 
-2. SEVEN READ-TOOL GRANTS. `config/claude/settings.json`'s `permissions.allow` lists
-   `mcp__sapience__sapience`, `mcp__sapience__sapience_search`, `_briefing`, `_context`, `_ask`,
-   `_outstanding`, `_papers`. home-manager merges this file into ~/.claude/settings.json with
-   `permissions` as an ENFORCED key, so these are reasserted machine-wide on every switch.
+1. PER-REPO MCP SERVER REGISTRATION, mirroring the lean extension's shipped triad. The one piece
+   outside the settings-merge engine's remit is writing `~/.claude.json`, which lives outside any
+   repository's tree and is never a `settings-fragment.json`/`.claude/` merge target. The lean
+   extension already implements exactly this pattern per-project; mirror it, adapted:
+   - A writer script under `agent-system/extensions/sapience/scripts/` (e.g.
+     `setup-sapience-mcp.sh`) that registers/repairs `.projects["<abs path>"].mcpServers.sapience`
+     in `~/.claude.json` for ONE project -- never the top-level `.mcpServers` key. Read the token
+     from `~/.sapience/config.json` using the same `jq` merge shape and the same
+     "register without a token until config.json has one" fallback that .dotfiles'
+     `sapienceMcpServer` activation entry uses today. Model on
+     `agent-system/extensions/lean/scripts/setup-lean-mcp.sh` (note its `--retire-global` mode,
+     which tears down the superseded top-level shape).
+   - A `SessionStart` hook that checks whether the session's repo has
+     `extensions.sapience.status == "active"` in its `.claude-extensions.json` -- the Sapience
+     analogue of lean's lakefile detection -- and if so invokes the writer. Model on
+     `agent-system/extensions/lean/hooks/lean-lsp-register-project.sh`. Keep lean's measured
+     behavior: silent on an already-correct session, emitting an `additionalContext` notice only
+     when it actually writes, because a SessionStart hook's own write is not reliably visible
+     within the same session.
+   - An install script that seeds BOTH files to stable, user-level paths (`~/.claude/hooks/`,
+     `~/.claude/scripts/`) rather than inside any single repo's disposable `.claude/` tree,
+     idempotent and `--remove`-capable. Model on
+     `agent-system/extensions/lean/scripts/install-lean-lsp-session-hook.sh`. The user-level
+     siting is load-bearing for the same reason lean's is: a fresh git worktree with no `.claude/`
+     deploy at all must still work.
+   - A verification script mirroring lean's `verify-lean-mcp.sh` per-project entry check, adapted
+     to this task's acceptance criteria.
+   Cite `context/patterns/mcp-server-ownership.md` (named in `.claude/rules/sapience-write-path.md`'s
+   Accepted Residual paragraph) for the ownership invariant governing this class of
+   outside-the-tree write.
 
-3. FIVE HOOKS, in the same file's `hooks` object:
+2. SEVEN READ-TOOL GRANTS into `agent-system/extensions/sapience/settings-fragment.json`'s
+   `permissions.allow`: `mcp__sapience__sapience`, `mcp__sapience__sapience_search`, `_briefing`,
+   `_context`, `_ask`, `_outstanding`, `_papers`. These currently reach every repo machine-wide
+   via .dotfiles' `config/claude/settings.json`; moving them here makes them per-repo. KEEP the
+   existing 4 write-tool grants intact (per `.claude/rules/sapience-write-path.md`'s Accepted
+   Residual -- narrowing them is out of scope here). Result: 11 grants total in the fragment.
+
+3. FIVE HOOKS into the same `settings-fragment.json`'s `hooks` object, so they are present only
+   when the extension is loaded:
    - SessionStart     -> `[ -f "$HOME/.sapience/mcp.py" ] && python3 "$HOME/.sapience/mcp.py" --briefing-text 2>/dev/null || true`
    - UserPromptSubmit -> `[ -f "$HOME/.sapience/sapience_cli.py" ] && python3 "$HOME/.sapience/sapience_cli.py" hook prompt 2>/dev/null || true` (timeout 3)
    - PreToolUse, matcher `Edit|Write|MultiEdit` -> `... sapience_cli.py hook tool ...` (timeout 3)
    - SessionEnd       -> `... mcp.py --receipt ...` (async true)
    - Stop             -> `... mcp.py --effect-line ...` (timeout 3)
-   Each is guarded by a `[ -f ~/.sapience/<file> ]` test and `|| true`, so it is already inert
-   when the payload is absent -- but the guard tests for the PAYLOAD, not for the repository,
-   which is exactly the gap this change closes.
+   Carry forward the two deliberate rulings that currently live in .dotfiles' `_SAPIENCE_NOTE`:
+   `statusLine` belongs to `hooks/statusline-push.sh` and is deliberately NOT wired to Sapience;
+   `sapience_cli.py`'s own `hook session` and `hook stop` are deliberately NOT wired, because each
+   would duplicate an `mcp.py` hook and print a second line per turn.
+   No merge-engine work is needed: `lua/neotex/plugins/ai/shared/extensions/merge.lua` already
+   merges a Claude-Code-native `hooks` object with hook-identity dedup (`is_hook_event_array`,
+   `find_hook_match`) and removes an extension's own hook entries cleanly on unload
+   (`unmerge_settings`, `remove_orphaned_hook_registrations`). The sapience extension simply has
+   not used that path yet. Verify empirically -- do not assume -- that the new SessionStart hook
+   does not collide with lean's in a repo loading both extensions.
 
-4. THE `_SAPIENCE_NOTE` in `config/claude/settings.json` must be rewritten rather than deleted.
-   Its current text records a correct and still-load-bearing reason for the present arrangement --
-   `hooks` and `permissions` are ENFORCED keys in `home.activation.claudeSettings`, so a vendor
-   installer's write to the live file would be reverted on the next switch -- plus two deliberate
-   rulings worth carrying forward: `statusLine` belongs to `hooks/statusline-push.sh` and is
-   deliberately NOT wired to Sapience, and `sapience_cli.py`'s own `hook session` and `hook stop`
-   are deliberately NOT wired because each would duplicate an `mcp.py` hook and print a second
-   line per turn. The rewritten note must state where each surface now lives and why the
-   enforced-key hazard no longer forces them into this file.
+Update `manifest.json`, `EXTENSION.md`, `README.md`, `index-entries.json` and
+`context/project/sapience/domain/{per-repo-scoping.md, review-gate-boundary.md}` to state the new
+per-repo activation contract, with a correct hook count.
 
-=== THE OWNER ACTION THIS TASK MUST SPECIFY BUT CANNOT PERFORM ===
+=== EXPLICITLY OUT OF SCOPE ===
 
-`~/.sapience/config.json` has `capture.mode: "opt-in"` and a `folders` allowlist of five
-transcript directories -- `-home-benjamin--config-nvim`, `-home-benjamin--dotfiles`,
-`-home-benjamin-Philosophy-Papers-PossibleWorlds`, `-home-benjamin-Projects-BimodalLogic`,
-`-home-benjamin-Projects-Logos-Verification` -- plus a 10-entry `capture.projects` list. Verified
-against each repo's `.claude-extensions.json`: only `/home/benjamin/.dotfiles` and
-`/home/benjamin/.config/nvim` actually load the sapience extension. `PossibleWorlds`,
-`BimodalLogic` and `Verification` are enabled for capture and are being read and uploaded WITHOUT
-the extension loaded; `Theory`, `Vision`, `Wedding`, `PersonalWebsite` and `Applications` are
-present but disabled.
-
-`~/.sapience/**` is outside every repository's tree and is a genuine OWNER ACTION -- never an
-agent edit -- and note that the payload SELF-UPDATES DAILY, so a hand-patch to a vendor `.py`
-file there would be overwritten. This task's deliverable for that surface is an EXACT, RUNNABLE
-instruction handed to the user (reconciling `folders` and `capture.projects` to exactly the
-extension-loaded set, preserving the `token` field and the file's 600 mode), not a description of
-one and not an edit. Consider whether `sapience-bootstrap`'s own folder picker is the sanctioned
-route rather than a hand-edit, and say which.
+- Any edit to /home/benjamin/.dotfiles files (`modules/home/services/sapience.nix`,
+  `config/claude/settings.json`, `docs/sapience.md`) and the `_SAPIENCE_NOTE` rewrite -- all
+  belong to the companion `retire_machine_wide_sapience_surface` task in that repository.
+- `nix flake check`, `home-manager switch`/`build`, and any .dotfiles-rooted verification -- the
+  companion task's acceptance criteria, against files outside this repository's tree.
+- The `~/.sapience/config.json` `folders`/`capture.projects` reconciliation owner action -- also
+  the companion task's deliverable.
 
 === VERIFICATION THIS TASK OWNS ===
 
-- `nix flake check` is authoritative and must pass; it runs `statix`, `deadnix`, `nixfmt --check`
-  and `shellcheck` as `checks.<system>.*` outputs. Run it, not merely a build. Note `deadnix`
-  exits 0 on findings unless `--fail` is passed.
-- A `home-manager switch` (or at minimum `home-manager build --flake .#benjamin`) must succeed,
-  and the resulting ~/.claude/settings.json must be inspected to confirm the seven grants and five
-  hooks are GONE from the live merged file -- not merely absent from the repo source. The merge is
-  additive for non-enforced keys, so confirm the enforced-key path actually removes them rather
-  than leaving stale entries behind.
-- ~/.claude.json must be inspected to confirm `mcpServers.sapience` is gone from the top level and
-  that no other key in that file was disturbed -- the activation entry merges rather than
-  overwrites, and that property must survive the change.
-- A session in a repo WITHOUT the extension (`~/Projects/cslib` and `~/Projects/Logos/Theory` are
-  verified-unloaded candidates) must show no `sapience_*` tools, no Sapience grants and no
-  Sapience hook firing. A session in `.dotfiles` or `.config/nvim` must still show all nine tools,
-  all eleven grants and all five hooks.
-
-=== DOCUMENTATION THIS TASK OWNS ===
-
-`docs/sapience.md` carries several statements that become false and must be rewritten, not merely
-appended to:
-- Its "What is installed" table rows `mcpServers.sapience in ~/.claude.json` ("Merged on
-  activation, preserving every other key") and `Three hooks and seven tool grants` ("In
-  config/claude/settings.json").
-- That row's hook count is ALREADY WRONG: it says three hooks; five are registered.
-- Its "why the hooks live in the repo" section, and the first-time-setup step 4 narrative
-  explaining that a second switch is what puts the token into ~/.claude.json and that
-  "`sapience status` keeps reporting Claude Code as not registered" without it -- per-repo
-  registration changes what that step means and what `sapience status` can truthfully report.
-- Any statement that Sapience is active machine-wide once bootstrapped.
+1. After loading the sapience extension into a repo, the merged `.claude/settings.local.json`
+   carries all 11 permission grants and all 5 hooks.
+2. After a session start in that repo, `~/.claude.json`'s
+   `.projects["<that repo's abs path>"].mcpServers.sapience` entry is present and no other key in
+   that file was disturbed (the write merges rather than overwrites, and that property must hold).
+3. Unloading the extension removes all three surfaces (grants, hooks, per-project MCP entry)
+   cleanly, leaving no `[]`-valued `hooks` key behind.
+4. The install script is idempotent (a second run changes nothing) and its `--remove` mode fully
+   reverses it.
+5. The new SessionStart hook coexists with lean's in a repo loading both extensions -- verified
+   empirically, not assumed from the dedup implementation.
 
 === ACCEPTANCE CRITERIA ===
 
-1. `nix flake check` passes.
-2. No machine-wide Sapience activation surface remains in this repository: no top-level
-   `mcpServers.sapience` merge, no Sapience entry in `permissions.allow`, no Sapience hook in the
-   `hooks` object -- each confirmed absent from the LIVE merged files after a switch, not just
-   from the repo source.
-3. A verified-unloaded repo gets no tools, no grants and no hook firing; `.dotfiles` and
-   `.config/nvim` keep all nine tools, all eleven grants and all five hooks.
-4. The `~/.sapience/config.json` reconciliation is handed over as an exact, runnable owner
-   instruction, with the sanctioned route (hand-edit versus `sapience-bootstrap`'s picker) named.
-5. `docs/sapience.md` states the new activation contract with a correct hook count, and the
-   rewritten `_SAPIENCE_NOTE` preserves the enforced-key rationale, the `statusLine` ruling and
-   the deliberately-unwired-`sapience_cli.py`-hooks ruling.
-6. The ordering constraint was honored: the companion extension-side task landed and was verified
-   first. Record in this task's own artifacts how that was confirmed.
-7. Files outside specs/** carry no task-number references and no record-versioning language
+1. All five verification items above pass, evidenced in this task's own artifacts.
+2. Every edit lands under `agent-system/extensions/sapience/` (plus the user-level paths the
+   install script seeds); no .dotfiles file is touched.
+3. Files outside specs/** carry no task-number references and no record-versioning language
    (`.claude/rules/no-task-references-in-deliverables.md`,
    `.claude/rules/no-record-versioning-in-deliverables.md`).
+4. Hand-authored edits go to the source store under `agent-system/extensions/sapience/`, never
+   directly to `.claude/**` (`.claude/rules/source-store-deploy-boundary.md`).
 
 ---
 

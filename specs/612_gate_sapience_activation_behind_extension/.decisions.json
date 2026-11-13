@@ -1,0 +1,10 @@
+[
+  {
+    "question": "Task 612's stored description is a verbatim duplicate of a separate .dotfiles task's (project 138) removal-work narrative, mismatched with task 612's own file_scope/title/siting (which all correctly identify it as the first-half, extension-side activation-surface task). How should this be resolved before planning proceeds?",
+    "answer": "Correct task 612's description field in specs/state.json to describe the actual first-half scope (reconstructed in this report's Findings), then proceed to planning normally",
+    "cycle": 1,
+    "timestamp": "2026-11-13T05:56:05Z",
+    "description_fingerprint": "8ec3da05e1e4c5df157388a04e61728020f09dbd0d720a7d43fc09c5cd03365d",
+    "obligation": "The corrected description must state task 612 is the extension-side, per-repo-activation-surface build (mirroring agent-system/extensions/lean's setup-lean-mcp.sh/lean-lsp-register-project.sh/install-lean-lsp-session-hook.sh triad, plus the settings-fragment.json permissions/hooks additions) and must not retain any instruction to edit .dotfiles-owned files (modules/home/services/sapience.nix, config/claude/settings.json, docs/sapience.md), which belong to the separate .dotfiles task 138."
+  }
+]
