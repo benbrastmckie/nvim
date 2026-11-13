@@ -152,7 +152,7 @@ files are the complete check of what it asserts.
 
 ---
 
-### Phase 2: Reconcile the two remaining companion-gated scripts [NOT STARTED]
+### Phase 2: Reconcile the two remaining companion-gated scripts [COMPLETED]
 
 **Goal**: Remove the stale companion-gated framing from
 `agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh` and
@@ -160,28 +160,30 @@ files are the complete check of what it asserts.
 surface asserting a gap the companion closed.
 
 **Tasks**:
-- [ ] Re-read both files immediately before editing (sibling tasks 615 and 616 have undeclared
-      file scope on this same tree).
-- [ ] In `verify-sapience-mcp.sh`, rewrite the header comment block that frames the surviving
+- [x] Re-read both files immediately before editing (sibling tasks 615 and 616 have undeclared
+      file scope on this same tree). *(completed: no foreign modification observed)*
+- [x] In `verify-sapience-mcp.sh`, rewrite the header comment block that frames the surviving
       top-level `~/.claude.json` `.mcpServers.sapience` entry as "EXPECTED, not drift ... gated on
       a companion task this repository does not own". State the current arrangement: no top-level
       entry is present, registration is per-project, and `--retire-global` has nothing to retire
-      on this machine.
-- [ ] In the same file, rewrite check (d)'s failure note. It currently tells the reader the entry
+      on this machine. *(completed)*
+- [x] In the same file, rewrite check (d)'s failure note. It currently tells the reader the entry
       is "reset from ~/.dotfiles/config/claude/settings.json on every 'home-manager switch'" --
       the inverse of what now holds, since that file is the durable writer that restores it. The
       replacement must still give the reader an actionable remedy (re-run the installer) without
-      asserting the wipe premise.
-- [ ] In the same file, rewrite the trailing conditional NOTE block that fires when a top-level
+      asserting the wipe premise. *(completed)*
+- [x] In the same file, rewrite the trailing conditional NOTE block that fires when a top-level
       entry is found, so its text does not name a pending companion task. The block's condition
-      is correct and stays; only its wording changes.
-- [ ] In `setup-sapience-mcp.sh`, rewrite the header paragraph asserting the top-level entry is
+      is correct and stays; only its wording changes. *(completed: condition unchanged, wording
+      restated to "stale leftover" framing)*
+- [x] In `setup-sapience-mcp.sh`, rewrite the header paragraph asserting the top-level entry is
       "RE-CREATED unconditionally on every `home-manager switch` while
       `programs.sapience.registerMcpServer` is true" and that `--retire-global` is "deliberately
       inert in practice until a companion task ... disables that activation block". Describe only
       what is observable from this side; do not assert what the other repository's nix module now
-      contains beyond what Phase 1's read-only check established.
-- [ ] Touch comment lines only in both files; change no executable line.
+      contains beyond what Phase 1's read-only check established. *(completed)*
+- [x] Touch comment lines only in both files; change no executable line. *(completed: `git diff`
+      confirms comment-line changes only in both files)*
 
 **Timing**: 0.75 hours
 

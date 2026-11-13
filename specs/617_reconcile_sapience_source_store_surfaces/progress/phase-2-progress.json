@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Reconcile the two remaining companion-gated scripts",
+  "started_at": "2026-11-13T00:05:00Z",
+  "last_updated": "2026-11-13T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "re-read both files before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "rewrite verify-sapience-mcp.sh header top-level-entry paragraph", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh"]},
+    {"id": 3, "description": "rewrite verify-sapience-mcp.sh check (d) failure note", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh"]},
+    {"id": 4, "description": "rewrite verify-sapience-mcp.sh trailing conditional NOTE block", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh"]},
+    {"id": 5, "description": "rewrite setup-sapience-mcp.sh header registerMcpServer paragraph", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh"]},
+    {"id": 6, "description": "comment-lines-only confirmation", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "bash -n passes both files; verify-sapience-mcp.sh runs with check (d) [PASS] (check (e) FAILs on a pre-existing, unrelated residual: 11/7 sapience permission grants, explicitly documented by the script's own existing comment as a known pre-existing residual for a repo that loaded sapience before the grant was narrowed to 7 -- unchanged by this phase's edits); setup-sapience-mcp.sh --dry-run runs clean (no changes needed); git diff confirms comment-line-only changes in both files; stale-wording grep for 'until a companion task', 'gated on a companion task', 'will be WIPED' returns no matches."
+}

@@ -10,12 +10,13 @@
 # `.projects["<abs project path>"].mcpServers.sapience` in ~/.claude.json. This script verifies
 # the full per-project activation surface for THAT project (or --project-overridden).
 #
-# The surviving top-level `~/.claude.json` `.mcpServers.sapience` entry is reported as EXPECTED,
-# not drift, for as long as this machine's home-manager activation
-# (`modules/home/services/sapience.nix`'s `sapienceMcpServer` block) keeps re-creating it -- the
-# inverse of lean's verify-lean-mcp.sh Check 9, which treats a surviving global entry as drift
-# to be retired. Do not "fix" this by running --retire-global; that is this extension's own
-# writer's job, gated on a companion task this repository does not own.
+# No top-level `~/.claude.json` `.mcpServers.sapience` entry exists on this machine: the former
+# machine-wide home-manager activation (`modules/home/services/sapience.nix`'s
+# `sapienceMcpServer` block and its `registerMcpServer` option) has been retired, and
+# registration is per-project only (see setup-sapience-mcp.sh's header for the full per-project
+# model). `--retire-global` therefore has nothing to retire here; a leftover top-level entry, if
+# one is ever found, is a stale residual rather than an expected machine-wide registration -- see
+# the trailing conditional NOTE below.
 #
 # Usage: ./verify-sapience-mcp.sh [OPTIONS]
 #
@@ -229,8 +230,11 @@ if [ -f "$LIVE_SETTINGS" ] && jq -e --arg cmd "$HOOK_COMMAND" '[.hooks.SessionSt
 else
     fail "(d) SessionStart entry missing from $LIVE_SETTINGS"
     log ""
-    log "  This is the durability-loss check: 'hooks' is a home-manager ENFORCED key, reset"
-    log "  from ~/.dotfiles/config/claude/settings.json on every 'home-manager switch'. Re-run"
+    log "  'hooks' remains a home-manager ENFORCED key, but the registration command is now"
+    log "  carried as a durable entry in ~/.dotfiles/config/claude/settings.json, so a"
+    log "  'home-manager switch' restores rather than removes it. A missing entry here most"
+    log "  likely means install-sapience-mcp-session-hook.sh has not yet been run on this"
+    log "  machine, or the dotfiles entry has not yet been applied. Re-run"
     log "  install-sapience-mcp-session-hook.sh to restore the registration."
     OVERALL_OK=false
 fi
@@ -260,14 +264,17 @@ else
     log "  (e) $MERGED_SETTINGS not found; skipping merged-settings grant/hook check (no deploy in this tree)"
 fi
 
-# Note: the surviving top-level ~/.claude.json .mcpServers.sapience entry is EXPECTED, not
-# drift, until the companion task disables programs.sapience.registerMcpServer. Say so
-# explicitly so a reader is not sent to remove it.
+# Note: this machine's home-manager activation no longer creates a top-level
+# ~/.claude.json .mcpServers.sapience entry (modules/home/services/sapience.nix's
+# sapienceMcpServer block and its registerMcpServer option have been retired). If one is still
+# present here, it is a stale leftover from before that retirement, not an expected machine-wide
+# registration.
 if [ -f "$CLAUDE_CONFIG" ] && jq -e '.mcpServers.sapience' "$CLAUDE_CONFIG" > /dev/null 2>&1; then
     log ""
     log "  NOTE: a top-level .mcpServers.sapience entry also survives in $CLAUDE_CONFIG. This is"
-    log "  EXPECTED, not drift, until a companion task disables this machine's home-manager"
-    log "  sapienceMcpServer activation -- do not run --retire-global to 'fix' this."
+    log "  a stale leftover from before this machine's home-manager sapienceMcpServer activation"
+    log "  was retired -- consider running --retire-global to remove it, or re-applying the"
+    log "  current home-manager generation."
 fi
 
 log ""

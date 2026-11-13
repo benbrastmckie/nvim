@@ -9,15 +9,14 @@
 # directory -- see agent-system/extensions/core/context/patterns/mcp-server-ownership.md for the
 # full registration/permission split and the per-project-vs-global precedence rule.
 #
-# This writer never touches the top-level `.mcpServers` key (except via the standalone
-# `--retire-global` action below, which is explicitly scoped to that one key alone). The
-# top-level `.mcpServers.sapience` entry is written today by this machine's home-manager
-# activation (`modules/home/services/sapience.nix`'s `sapienceMcpServer` block) and is
-# RE-CREATED unconditionally on every `home-manager switch` while
-# `programs.sapience.registerMcpServer` is true -- so it is NOT this task's to remove, and
-# `--retire-global` is deliberately inert in practice until a companion task in that other
-# repository disables that activation block. Running `--retire-global` before that companion
-# lands would disable Sapience in every repo still relying on the machine-wide entry.
+# This writer never touches the top-level `.mcpServers` key except via the standalone
+# `--retire-global` action below, which is explicitly scoped to that one key alone. This
+# machine's home-manager activation no longer writes a top-level `.mcpServers.sapience` entry:
+# `modules/home/services/sapience.nix`'s `sapienceMcpServer` block and its `registerMcpServer`
+# option have been retired, so registration is per-project only (see above). `--retire-global`
+# is therefore an ordinary cleanup action, not an inert one -- it removes a top-level entry if
+# one is still present (e.g. a stale leftover from before the retirement) and has nothing to do
+# otherwise.
 #
 # Command-path invariant (mcp-server-ownership.md's ".claude/"-path boundary): the `command`
 # this writer resolves must never point inside any repository's own, disposable `.claude/` tree.
