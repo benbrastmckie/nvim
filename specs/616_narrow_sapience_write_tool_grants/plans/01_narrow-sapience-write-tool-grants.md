@@ -364,7 +364,7 @@ paragraphs in full rather than editing by line number.
 
 ---
 
-### Phase 5: Merge Sources, Extension Metadata, Redeploy, and Fresh-Load Verification [IN PROGRESS]
+### Phase 5: Merge Sources, Extension Metadata, Redeploy, and Fresh-Load Verification [COMPLETED]
 
 **Goal**: Every remaining surface states the seven-tool grant, the deployed tree is regenerated
 from the narrowed source, and a fresh load is confirmed to produce the narrowed set.
@@ -375,39 +375,53 @@ into the deployed context index, so the edits and the regeneration that propagat
 one phase rather than split across a later reconciliation.
 
 **Tasks**:
-- [ ] Re-read each file below immediately before editing (sibling-task concurrency).
-- [ ] `agent-system/extensions/sapience/EXTENSION.md` (lines 7-8): "carries 11 permission grants
+- [x] Re-read each file below immediately before editing (sibling-task concurrency). *(completed)*
+- [x] `agent-system/extensions/sapience/EXTENSION.md` (lines 7-8): "carries 11 permission grants
       (7 read tools + 4 write tools)" becomes the seven read-tool figure. The five-hook and
-      six-hook-surface counts are unrelated and stay.
-- [ ] `agent-system/extensions/sapience/README.md` line 15 (the file-inventory table row) and
-      line 28 (Gap 1's body): both state the seven read-tool grant.
-- [ ] `agent-system/extensions/sapience/manifest.json` line 4 (`description`): "grants all 11
+      six-hook-surface counts are unrelated and stay. *(completed)*
+- [x] `agent-system/extensions/sapience/README.md` line 15 (the file-inventory table row) and
+      line 28 (Gap 1's body): both state the seven read-tool grant. *(completed)*
+- [x] `agent-system/extensions/sapience/manifest.json` line 4 (`description`): "grants all 11
       mcp__sapience__* tools" becomes the seven read-tool figure. Confirm the file is still valid
-      JSON.
-- [ ] `agent-system/extensions/sapience/index-entries.json` lines 30-31: drop the `"11 grants"`
+      JSON. *(completed)*
+- [x] `agent-system/extensions/sapience/index-entries.json` lines 30-31: drop the `"11 grants"`
       keyword and restate the `"11-grant/per-project-registration tradeoff"` summary. The four
       write-tool names remain legitimate keywords (the entry indexes the Write-Tool Disposition
-      table, which is sanctioned discussion). Confirm valid JSON.
-- [ ] Per `no-record-versioning-in-deliverables.md`, all four files state the current arrangement
-      only.
-- [ ] Commit the four source files with an explicit file list.
-- [ ] Regenerate the deployed tree (it is already stale for `sapience` per this dispatch's
+      table, which is sanctioned discussion). Confirm valid JSON. *(completed)*
+- [x] Per `no-record-versioning-in-deliverables.md`, all four files state the current arrangement
+      only. *(completed)*
+- [x] Commit the four source files with an explicit file list. *(completed)*
+- [x] Regenerate the deployed tree (it is already stale for `sapience` per this dispatch's
       deploy-freshness context):
       `timeout 540 bash .claude/scripts/deploy-headless.sh`, invoked with the Bash tool's
       `timeout` parameter raised to 600000 per `context/patterns/external-process-wait.md` Rule 1.
-- [ ] Verify the acceptance criterion with a fresh load into a scratch test repository (NOT this
+      *(completed: this is the fourth deploy-headless.sh pass this dispatch — three earlier
+      idempotent passes already ran during Phases 2-4 to keep each phase's own scoped gate
+      green; see those phases' progress-file deviations)*
+- [x] Verify the acceptance criterion with a fresh load into a scratch test repository (NOT this
       repo, whose merged settings carry the pre-existing additive residual): create a clean
       directory, load the sapience extension there, and confirm its
       `.claude/settings.local.json` carries exactly the seven `mcp__sapience__*` entries and no
-      write-tool entry.
-- [ ] Run `bash .claude/scripts/verify-sapience-mcp.sh` against that test repository and confirm
-      check (e) PASSES at 7.
-- [ ] Record this repository's own live merged count
+      write-tool entry. *(completed: loaded via `manager.load('sapience', {project_dir=...,
+      confirm=false})` headlessly against a throwaway scratch git repo, confirmed exactly 7
+      `mcp__sapience__*` entries with no write tool, then discarded the scratch repo)*
+- [x] Run `bash .claude/scripts/verify-sapience-mcp.sh` against that test repository and confirm
+      check (e) PASSES at 7. *(completed: check (e) PASS at "7 permission grants and all 5
+      hooks"; check (b) failed because the scratch load used `manager.load` directly rather than
+      the SessionStart MCP-registration hook, which is outside this task's edit surface — the
+      plan's own verification criterion names only check (e))*
+- [x] Record this repository's own live merged count
       (`jq '[.permissions.allow[]? | select(startswith("mcp__sapience__"))] | length' .claude/settings.local.json`)
       as an observed, expected residual of the additive-only merge engine — not a regression, not
-      a failure of this task — and state it in the implementation summary.
-- [ ] Run the complete gate set and confirm green.
-- [ ] Commit the completion with an explicit file list.
+      a failure of this task — and state it in the implementation summary. *(completed: this
+      repository's own `.claude/settings.local.json` carries 11 `mcp__sapience__*` entries —
+      the pre-existing additive-merge residual the plan anticipated, recorded in the summary)*
+- [x] Run the complete gate set and confirm green. *(deviation: altered — per this dispatch's
+      Batch Gate Deferral directive, discharged against the scoped narrowing invocation
+      `verify-deploy.sh --skip-slow --only-gate 3,4` instead of the complete gate set, which runs
+      once for the whole batch at the end of this invocation; see the summary's verification
+      section)*
+- [x] Commit the completion with an explicit file list. *(completed)*
 
 **Timing**: 1 hour
 

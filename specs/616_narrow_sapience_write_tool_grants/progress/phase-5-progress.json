@@ -2,7 +2,7 @@
   "phase": 5,
   "phase_name": "Merge Sources, Extension Metadata, Redeploy, and Fresh-Load Verification",
   "started_at": "2026-11-13T01:35:00Z",
-  "last_updated": "2026-11-13T01:40:00Z",
+  "last_updated": "2026-11-13T02:10:00Z",
   "objectives": [
     {"id": 1, "description": "Update EXTENSION.md, README.md, manifest.json, index-entries.json to state the seven-tool grant", "status": "done", "files_touched": [
       "agent-system/extensions/sapience/EXTENSION.md",
@@ -10,12 +10,20 @@
       "agent-system/extensions/sapience/manifest.json",
       "agent-system/extensions/sapience/index-entries.json"
     ]},
-    {"id": 2, "description": "Regenerate the deployed tree", "status": "not_started", "files_touched": []},
-    {"id": 3, "description": "Fresh-load verification in a scratch test repository", "status": "not_started", "files_touched": []},
-    {"id": 4, "description": "Record live merged-count residual and run the discharged verification tier", "status": "not_started", "files_touched": []}
+    {"id": 2, "description": "Regenerate the deployed tree", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Fresh-load verification in a scratch test repository", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Record live merged-count residual and run the discharged verification tier", "status": "done", "files_touched": []}
   ],
-  "current_objective": 2,
+  "current_objective": null,
   "approaches_tried": [],
   "handoff_count": 0,
-  "deviations": []
+  "deviations": [
+    {
+      "task_id": "5.final-gate",
+      "description": "Phase 5 declares Verification Tier: full ('run the complete gate set').",
+      "type": "altered",
+      "reason": "Per this dispatch's Batch Gate Deferral directive (final-phase scoped discharge), ran the narrowing invocation verify-deploy.sh --skip-slow --only-gate 3,4 instead of the complete gate set, which runs once for the whole batch at this invocation's end and is attributed back to this task by its own modified_files.",
+      "annotation": "*(deviation: altered — discharged against the Batch Gate Deferral's scoped narrowing invocation rather than the complete gate set)*"
+    }
+  ]
 }
