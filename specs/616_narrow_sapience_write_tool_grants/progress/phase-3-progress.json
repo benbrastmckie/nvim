@@ -1,0 +1,21 @@
+{
+  "phase": 3,
+  "phase_name": "Record the Landed Disposition in the Rule",
+  "started_at": "2026-11-13T00:45:00Z",
+  "last_updated": "2026-11-13T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite the Accepted Residual section of sapience-write-path.md as a landed disposition", "status": "done", "files_touched": ["agent-system/extensions/sapience/rules/sapience-write-path.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.x",
+      "description": "Phase 3's edit made the deployed .claude/rules/sapience-write-path.md stale (content drift) against gate 3's doc-lint check.",
+      "type": "altered",
+      "reason": "Ran an idempotent deploy-headless.sh pass (same action already run in Phase 2) so this phase's own named gate 3,4 could pass as written.",
+      "annotation": "*(deviation: altered — ran an idempotent deploy-headless.sh pass to clear deployed-rule drift ahead of Phase 5's own planned redeploy)*"
+    }
+  ]
+}

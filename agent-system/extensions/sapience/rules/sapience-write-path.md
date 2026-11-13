@@ -57,15 +57,18 @@ write (an instruction surface under either path above naming an MCP write tool a
 a write SHOULD take, found after this rule's creation), or growth of the governed surface set
 past what a single inspection pass can reliably cover.
 
-## Accepted Residual: The Four-Tool Permission Grant Stays Intact
+## The Permission Grant Matches the Standing Contract
 
-`settings-fragment.json` continues to grant all four MCP write tools at this repository's
-project scope, including the two this rule's standing contract says never to use as a write
-path. This is a deliberate, accepted residual, not an unnoticed gap: narrowing the grant would
-leave `core/context/patterns/mcp-server-ownership.md`'s worked example (which cites the current
-four-tool grant by path) stale, and `core/` is outside this rule's own edit surface. The
-consequence of keeping the grant intact is real and is stated plainly: a stray proactive MCP
-call can still succeed non-interactively and land a permanent, undeletable, untagged write (there
-is no delete API on this vault). The named escape valve for this residual is a follow-up task
-that narrows the grant together with the `core/` worked-example update in the same change, so
-neither surface is left inconsistent -- not a silent hope that the grant is never misused.
+`settings-fragment.json` grants the seven read-shaped tools (`sapience`, `sapience_search`,
+`sapience_briefing`, `sapience_context`, `sapience_ask`, `sapience_outstanding`,
+`sapience_papers`) and none of the four MCP write tools (`sapience_remember`, `sapience_wrapup`,
+`sapience_handoff`, `sapience_adddoc`) at this repository's project scope. A call to any of the
+four now raises an interactive permission prompt in an interactive session and is denied outright
+in a headless/autonomous run, rather than succeeding silently. Nothing legitimate is lost: the
+prescribed write path (`scripts/sapience-remember.sh`'s `POST /ingest-kos` call) needs no MCP
+grant at all, because it is a Bash script call, not an MCP tool invocation.
+
+A repository that loaded sapience before this grant was narrowed keeps the already-merged
+write-tool entries in its own `.claude/settings.local.json` until the additive-only merge engine
+gains retraction, or the file is hand-edited; a fresh load or a fresh deploy gets the seven-tool
+grant directly.

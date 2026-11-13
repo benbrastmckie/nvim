@@ -240,32 +240,36 @@ non-`specs/**` markdown sub-case (b):
 
 ---
 
-### Phase 3: Record the Landed Disposition in the Rule [NOT STARTED]
+### Phase 3: Record the Landed Disposition in the Rule [COMPLETED]
 
 **Goal**: `rules/sapience-write-path.md` states the current grant arrangement as a landed fact,
 with no residual and no escape-valve pointer remaining.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/sapience/rules/sapience-write-path.md` immediately before
-      editing. Confirm the edit target is the source store, not `.claude/rules/`.
-- [ ] Retitle the `## Accepted Residual: The Four-Tool Permission Grant Stays Intact` heading to
-      one naming the current state (the grant now matches the standing contract).
-- [ ] Rewrite the section body to state, as current fact: `settings-fragment.json` grants the
+- [x] Re-read `agent-system/extensions/sapience/rules/sapience-write-path.md` immediately before
+      editing. Confirm the edit target is the source store, not `.claude/rules/`. *(completed)*
+- [x] Retitle the `## Accepted Residual: The Four-Tool Permission Grant Stays Intact` heading to
+      one naming the current state (the grant now matches the standing contract). *(completed:
+      retitled to "## The Permission Grant Matches the Standing Contract")*
+- [x] Rewrite the section body to state, as current fact: `settings-fragment.json` grants the
       seven read-shaped tools and none of the four MCP write tools; a call to any of the four now
       raises an interactive permission prompt in an interactive session and is denied outright in
       a headless/autonomous run, rather than succeeding silently; and the prescribed write path
       (`scripts/sapience-remember.sh`'s `POST /ingest-kos`) needs no MCP grant because it is a
-      Bash script call, so nothing legitimate is lost.
-- [ ] Remove the "named escape valve ... follow-up task" sentence — that follow-up is this work.
-- [ ] Add one sentence recording the merge-retraction interaction: a repository that loaded
+      Bash script call, so nothing legitimate is lost. *(completed)*
+- [x] Remove the "named escape valve ... follow-up task" sentence — that follow-up is this work.
+      *(completed)*
+- [x] Add one sentence recording the merge-retraction interaction: a repository that loaded
       sapience before this narrowing keeps the already-merged write-tool entries in its own
       `.claude/settings.local.json` until the additive-only merge engine gains retraction or the
-      file is hand-edited; fresh loads and fresh deploys get the narrowed set.
-- [ ] Per `no-record-versioning-in-deliverables.md`, phrase all of the above as the current
+      file is hand-edited; fresh loads and fresh deploys get the narrowed set. *(completed)*
+- [x] Per `no-record-versioning-in-deliverables.md`, phrase all of the above as the current
       arrangement — no "previously", "no longer", "the grant used to", or supersession table.
-- [ ] Leave the Standing Contract, "Discussing a Tool vs. Prescribing It", and "Verdict:
+      *(completed)*
+- [x] Leave the Standing Contract, "Discussing a Tool vs. Prescribing It", and "Verdict:
       Advisory, Not Mechanized" sections unchanged, including the promotion criterion.
-- [ ] Commit this phase's file with an explicit file list.
+      *(completed)*
+- [x] Commit this phase's file with an explicit file list. *(completed)*
 
 **Timing**: 0.5 hours
 
