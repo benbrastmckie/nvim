@@ -214,6 +214,28 @@
       }
     },
     {
+      "path": "project/neovim/patterns/merge-tracking-contract.md",
+      "domain": "project",
+      "subdomain": "neovim",
+      "topics": [
+        "extensions",
+        "deep-merge",
+        "permission-tracking"
+      ],
+      "keywords": [
+        "deep_merge",
+        "unmerge_settings",
+        "retained_fragments"
+      ],
+      "summary": "How deep_merge's array-tracking record is built and consumed, the dedup-before-track defect and its fix, the sibling-extension-retention guard, the accepted residual, and the real repair route for a stale record",
+      "line_count": 155,
+      "load_when": {
+        "agents": [],
+        "task_types": []
+      },
+      "on_demand": true
+    },
+    {
       "path": "project/neovim/standards/lua-style-guide.md",
       "domain": "project",
       "subdomain": "neovim",

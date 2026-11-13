@@ -1,0 +1,27 @@
+{
+  "phase": 5,
+  "phase_name": "Sweep the defect class and document the decision",
+  "started_at": "2026-11-13T18:30:00Z",
+  "last_updated": "2026-11-13T18:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Enumerate every array target reachable from a fragment, record verdict per path", "status": "done", "files_touched": ["agent-system/extensions/nvim/context/project/neovim/patterns/merge-tracking-contract.md"]},
+    {"id": 2, "description": "Re-confirm mcpServers verdict by reading the Object: recurse arm", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Write merge-tracking-contract.md", "status": "done", "files_touched": ["agent-system/extensions/nvim/context/project/neovim/patterns/merge-tracking-contract.md"]},
+    {"id": 4, "description": "State the N-of-M provenance limitation", "status": "done", "files_touched": ["agent-system/extensions/nvim/context/project/neovim/patterns/merge-tracking-contract.md"]},
+    {"id": 5, "description": "Add index-entries.json entry", "status": "done", "files_touched": ["agent-system/extensions/nvim/index-entries.json"]},
+    {"id": 6, "description": "Update README.md if it enumerates patterns directory", "status": "done", "files_touched": [], "note": "README.md's directory tree line is already a non-exhaustive sample (omits ftplugin-patterns.md too) -- left as-is, consistent with existing precedent"},
+    {"id": 7, "description": "Run check-extension-docs.sh and resolve findings for the nvim extension", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.verification",
+      "description": "bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 exits non-zero (gate 3 doc-lint fails)",
+      "type": "altered",
+      "reason": "The gate-3 failure is exclusively a pre-existing, out-of-scope sapience extension staleness (deployed script content drift + two stale index-entries.json line_count declarations), present before this task started (see the dispatch's own deploy-freshness-context block). check-extension-docs.sh confirms the nvim extension itself (this phase's edit target) is fully clean. Phase 6's redeploy is expected to resolve the sapience staleness as a side effect and re-runs the full verify-deploy.sh as its own verification. Recorded via issue-record.sh rather than fixed here (out of this task's edit scope).",
+      "annotation": "*(deviation: altered -- gate 3's sapience-only failure is a pre-existing, out-of-scope condition; nvim extension itself is clean; see issue log and Phase 6)*"
+    }
+  ]
+}
