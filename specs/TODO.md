@@ -844,6 +844,7 @@ ACCEPTANCE.
 - **Dependencies**: Task 606, Task 612, Task 617
 - **Research**: [614_scope_card_worktree_sapience_retrieval/reports/01_card-worktree-sapience-retrieval.md]
 - **Plan**: [614_scope_card_worktree_sapience_retrieval/plans/01_card-worktree-sapience-retrieval.md]
+- **Summary**: [614_scope_card_worktree_sapience_retrieval/summaries/01_card-worktree-sapience-retrieval-summary.md]
 
 **Description**: GOAL. Make a SF-1 hub-runner card worktree resolve to its parent checkout for Sapience
 registration, so a card session gets the card repo's REPO-SCOPED retrieval while continuing to

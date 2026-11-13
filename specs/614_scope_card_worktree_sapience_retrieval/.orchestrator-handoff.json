@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "dispatch_seq": 11,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 12,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a six-phase implementation plan for worktree-to-checkout resolution of the Sapience per-project MCP registration. Research finding that Claude Code's own ~/.claude.json lookup already resolves a worktree to its checkout entry removed the anticipated teardown/retraction mechanism from scope entirely, and confirmed setup-sapience-mcp.sh needs no change. The plan adds the write-side slug site (sapience-remember.sh) beyond what research named, since a worktree-tagged write would be invisible to every later query and would defeat acceptance criterion 1 from the other direction. Phase 6 declares __WHOLE_TREE__ because verify-deploy gate 5 compares source-store content hashes against the deployed tree.",
+  "summary": "Implemented all six plan phases: a byte-identical marker-delimited helper now resolves a linked git worktree to its parent checkout at the registration hook, the verifier (plus new check (f)), and all three [repo:<slug>] provenance sites (read, write, and the scoping probe). Added six regression cases and a lockstep guard, recorded the two-channel asymmetry in per-repo-scoping.md, and verified all four acceptance criteria live against the real checkout and the live vault, including a direct GET /v1/search cross-check proving a second repository's tagged object is excluded under scoping.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/614_scope_card_worktree_sapience_retrieval/plans/01_card-worktree-sapience-retrieval.md",
-      "summary": "Six-phase plan: hook resolution, verifier lockstep plus check (f), three slug sites, four worktree regression cases plus a lockstep guard, domain-note two-channel asymmetry, live acceptance plus full gate set."
+      "type": "summary",
+      "path": "specs/614_scope_card_worktree_sapience_retrieval/summaries/01_card-worktree-sapience-retrieval-summary.md",
+      "summary": "Full implementation summary covering all six phases, live acceptance evidence, the Batch Gate Deferral scoped discharge of Phase 6's full-gate-set step, and follow-ups."
     }
   ]
 }

@@ -1,10 +1,65 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/614_scope_card_worktree_sapience_retrieval/summaries/01_card-worktree-sapience-retrieval-summary.md",
+      "summary": "All six plan phases completed: a byte-identical marker-delimited helper resolves a linked git worktree to its parent checkout at all five slug/registration call sites, six new regression cases and a verifier check cover the worktree scenarios, the two-channel asymmetry is recorded in the domain notes, and live acceptance against the real checkout/vault confirmed all four acceptance scenarios. Phase 6's full-gate-set step was discharged against the Batch Gate Deferral directive's scoped gates instead."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Taught the Sapience MCP registration hook, its verifier, and the three [repo:<slug>] provenance sites to resolve a linked git worktree to its parent checkout via a byte-identical, marker-delimited helper, so a worktree session gets the checkout's repo-scoped retrieval while remaining structurally excluded from the hook/permission-grant channel. Added six regression cases (worktree register/no-register/retract/no-op/no-dead-entry/lockstep) and verifier check (f), recorded the two-channel asymmetry in per-repo-scoping.md, and verified all four acceptance criteria live against the real checkout and vault."
+  },
+  "modified_files": [
+    "agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh",
+    "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh",
+    "agent-system/extensions/sapience/scripts/sapience-retrieve.sh",
+    "agent-system/extensions/sapience/scripts/sapience-remember.sh",
+    "agent-system/extensions/sapience/scripts/verify-sapience-context-scoping.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh",
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "To make a shared surface (a registration hook, its verifier, and every per-repo slug-derivation call site) worktree-aware, resolve the checkout with ONE comparison: `git rev-parse --git-dir` vs `--git-common-dir` from the same -C dir. Equal (including both failing, on a non-git path) means not a linked worktree -- behave exactly like a bare `--show-toplevel`. Unequal means linked worktree -- the common dir's PARENT directory is the checkout. `--git-common-dir` returns a relative path at a checkout root but an absolute path from inside a worktree, so absolutize before taking the parent. When the same resolution must be duplicated across several installed/stable-path scripts that cannot share a sourced library, bracket each copy in a begin/end marker-comment pair naming the lockstep obligation, and add a regression case that extracts the marker-delimited block from every copy and asserts byte-identity -- this converts a prose 'keep in lockstep' comment into a mechanically checked invariant.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/614_scope_card_worktree_sapience_retrieval/summaries/01_card-worktree-sapience-retrieval-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "git worktree",
+        "git-common-dir",
+        "checkout resolution",
+        "lockstep guard",
+        "marker-delimited block"
+      ]
+    },
+    {
+      "content": "When fixing a worktree-resolution bug for a repo whose own activation file (e.g. .claude-extensions.json) is TRACKED by git, a real `git worktree add` test will materialize that tracked file into the worktree's own working directory too, causing an existing 'CWD file wins' branch to short-circuit before the new checkout-resolution code path is ever exercised. To actually exercise the fix live, delete the worktree-local copy of that file after creating the worktree (a purely local, working-tree-only change that does not affect the checkout) to model the real target scenario (e.g. a throwaway CI/automation worktree whose checkout never tracked the activation file in the first place).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/614_scope_card_worktree_sapience_retrieval/summaries/01_card-worktree-sapience-retrieval-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "git worktree testing",
+        "tracked activation file",
+        "live verification",
+        "fixture vs real worktree"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794588346_94d92d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

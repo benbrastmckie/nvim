@@ -3877,6 +3877,11 @@
           "path": "specs/614_scope_card_worktree_sapience_retrieval/plans/01_card-worktree-sapience-retrieval.md",
           "type": "plan",
           "summary": "Six-phase plan: hook resolution, verifier lockstep plus check (f), three slug sites, four worktree regression cases plus a lockstep guard, domain-note two-channel asymmetry, live acceptance plus full gate set."
+        },
+        {
+          "path": "specs/614_scope_card_worktree_sapience_retrieval/summaries/01_card-worktree-sapience-retrieval-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all six phases, live acceptance evidence, the Batch Gate Deferral scoped discharge of Phase 6's full-gate-set step, and follow-ups."
         }
       ],
       "next_artifact_number": 2,
@@ -4607,7 +4612,8 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "roadmap_annotation": "behind 617 on two shared sapience paths"
+      "roadmap_annotation": "behind 617 on two shared sapience paths",
+      "completion_summary": "Taught the Sapience MCP registration hook, its verifier, and the three [repo:<slug>] provenance sites to resolve a linked git worktree to its parent checkout via a byte-identical, marker-delimited helper, so a worktree session gets the checkout's repo-scoped retrieval while remaining structurally excluded from the hook/permission-grant channel. Added six regression cases (worktree register/no-register/retract/no-op/no-dead-entry/lockstep) and verifier check (f), recorded the two-channel asymmetry in per-repo-scoping.md, and verified all four acceptance criteria live against the real checkout and vault."
     },
     {
       "project_number": 613,
