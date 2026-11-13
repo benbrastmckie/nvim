@@ -221,33 +221,33 @@ If the report already covers it, this phase narrows to the unlisted-key rows onl
 
 ---
 
-### Phase 3: Close the Outcome 6 detection-matrix gap [NOT STARTED]
+### Phase 3: Close the Outcome 6 detection-matrix gap [COMPLETED]
 
 **Goal**: Give the detection matrix the signals it currently lacks for the exact project shape task
 622 will validate against: `.ts` run directly under Node with no build step and no `tsconfig.json`.
 
 **Tasks**:
-- [ ] Verify against current sources (web search, not pretraining) the state of Node's native
+- [x] Verify against current sources (web search, not pretraining) the state of Node's native
       TypeScript type-stripping as of late 2026: which Node versions strip types unflagged, which
       require a flag, and what the flag names are. Write the version thresholds only as far as they
-      are actually verified; an unverified threshold is recorded as a signal with no version claim.
-- [ ] Add a "Native type-stripping / no-build TypeScript execution" block of rows to the matrix,
+      are actually verified; an unverified threshold is recorded as a signal with no version claim. *(completed: verified against official Node.js docs + nightly v26 history table; all thresholds cited inline)*
+- [x] Add a "Native type-stripping / no-build TypeScript execution" block of rows to the matrix,
       each naming a detection SIGNAL in the same column shape the existing rows use — candidate
       signals to confirm: a `package.json` script invoking `node --test` or `node` directly on a
       `.ts` path; `engines.node` pinning a version at or above the unflagged threshold; a
       `--experimental-strip-types` / `--experimental-transform-types` flag appearing in any script;
-      the absence of any build or bundler devDependency alongside `.ts` entry points.
-- [ ] Add a row for the **no-`tsconfig.json`** project shape, stating explicitly what each dependent
+      the absence of any build or bundler devDependency alongside `.ts` entry points. *(completed: new ### subsection added after Typecheck/Build, 6-row table including --no-strip-types as an additional confirmed signal)*
+- [x] Add a row for the **no-`tsconfig.json`** project shape, stating explicitly what each dependent
       signal degrades to when it is absent: the existing `tsc` typecheck row's primary signal does
       not fire, and the entire "Module Resolution Modes" subsection is unanswerable from config and
-      must be inferred from source import style instead.
-- [ ] Add the syntax-constraint note that type-stripping implies — the constructs it cannot erase
+      must be inferred from source import style instead. *(completed: new row added to Module Resolution Modes table)*
+- [x] Add the syntax-constraint note that type-stripping implies — the constructs it cannot erase
       (confirm the current set; expected: enums, namespaces, parameter properties, legacy
       decorators) and the `erasableSyntaxOnly` compiler option that enforces the constraint when a
-      `tsconfig.json` does exist.
-- [ ] Add one sentence to the matrix preamble recording that a TypeScript project may legitimately
+      `tsconfig.json` does exist. *(completed: confirmed set is enum/namespace-with-runtime-code/parameter-properties/decorators/tsconfig-paths; erasableSyntaxOnly confirmed as a real TS 5.8 option)*
+- [x] Add one sentence to the matrix preamble recording that a TypeScript project may legitimately
       have no `tsconfig.json` at all, so a detection script must not treat its absence as "not a
-      TypeScript project".
+      TypeScript project". *(completed)*
 
 **Timing**: 0.6 hours
 

@@ -1,0 +1,47 @@
+{
+  "phase": 3,
+  "phase_name": "Close the Outcome 6 detection-matrix gap",
+  "started_at": "2026-11-13T01:20:00Z",
+  "last_updated": "2026-11-13T02:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Verify Node native type-stripping state as of late 2026 via live web search, not pretraining",
+      "status": "done",
+      "files_touched": [],
+      "note": "Verified against nodejs.org/en/learn/typescript/run-natively (official docs) cross-checked against a nightly v26 build's full version-history table, and the TypeScript 5.8 Microsoft DevBlogs RC/GA announcements. Confirmed: feature added v22.6.0 (flag-gated, --experimental-strip-types); unflagged default v23.6.0/v22.18.0; experimental warning removed v24.3.0/v22.18.0; Stable (stability index 2) in v24.12.0/v25.2.0. Every version threshold written in the report names this source inline."
+    },
+    {
+      "id": 2,
+      "description": "Add Native type-stripping / no-build TypeScript execution block of rows to the matrix",
+      "status": "done",
+      "files_touched": ["specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md"],
+      "note": "Added a new ### subsection with a 6-row signal table (script invoking node/node --test on .ts, engines.node threshold, --experimental-strip-types, --experimental-transform-types, --no-strip-types) plus a verified syntax-constraint paragraph, placed after the existing Typecheck/Build table."
+    },
+    {
+      "id": 3,
+      "description": "Add a row for the no-tsconfig.json project shape, stating what each dependent signal degrades to",
+      "status": "done",
+      "files_touched": ["specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md"],
+      "note": "Added as a new row in the Module Resolution Modes table: states the tsc typecheck row's primary signal does not fire, and the subsection becomes unanswerable from config, requiring inference from source import style instead."
+    },
+    {
+      "id": 4,
+      "description": "Add the syntax-constraint note (non-erasable constructs + erasableSyntaxOnly)",
+      "status": "done",
+      "files_touched": ["specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md"],
+      "note": "Confirmed non-erasable set: enum declarations, namespace/module with runtime code (type-only namespaces are fine), parameter properties, decorators (TC39 Stage 3, unconditional parser error), and tsconfig paths aliases (ignored). Confirmed erasableSyntaxOnly is a real TypeScript 5.8 (Feb/Mar 2025) compiler option enforcing the same constraint at tsc time, specifically for enums/namespaces/parameter properties per the DevBlogs announcement -- decorator coverage under erasableSyntaxOnly specifically was not separately confirmed and is not claimed."
+    },
+    {
+      "id": 5,
+      "description": "Add preamble sentence: a TypeScript project may legitimately have no tsconfig.json",
+      "status": "done",
+      "files_touched": ["specs/619_typescript_extension_contract_research/reports/01_typescript-extension-contract-research.md"],
+      "note": "Added to the matrix's opening preamble paragraph, cross-referencing both the new Native Type-Stripping section and the new Module Resolution Modes no-tsconfig.json row."
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

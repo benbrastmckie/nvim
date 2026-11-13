@@ -303,7 +303,10 @@ Confirmed directly against `manifest-routing-lib.sh` and `task-type-detect.sh`:
 Every row names the detection **signal** (file presence, lockfile name, `package.json` script name,
 or devDependency key) rather than assuming a stack. Signals are listed in descending priority within
 each category where more than one can apply simultaneously (e.g. an explicit `packageManager` field
-beats lockfile inference).
+beats lockfile inference). A TypeScript project may legitimately have **no `tsconfig.json` at all**
+(see "Native Type-Stripping / No-Build TypeScript Execution" below and the no-`tsconfig.json` row
+in "Module Resolution Modes") -- a detection script must not treat its absence as "not a TypeScript
+project."
 
 ### Runtimes
 
@@ -344,6 +347,39 @@ beats lockfile inference).
 | rolldown | Explicit `rolldown.config.{ts,js,mjs}` OR `rolldown` in `devDependencies` | `ROLLDOWN_EXPERIMENTAL` env var reference (legacy opt-in signal, pre-Vite-8) | **As of Vite 8 (stable March 2026), Rolldown is Vite's default bundler** -- a plain `vite` dependency with no separate `rolldown` entry already implies Rolldown is in use; only flag "rolldown" as its own distinct tool when there is no `vite` dependency at all (standalone Rolldown usage) or an explicit override. |
 | swc | `.swcrc` present | `@swc/core` in `devDependencies`; Jest config's `transform` referencing `@swc/jest` |
 
+### Native Type-Stripping / No-Build TypeScript Execution
+
+Verified directly against the official Node.js TypeScript docs (`nodejs.org/api/typescript`,
+history table) and the TypeScript 5.8 release announcement, not pretraining -- this is the exact
+project shape (ESM, `node --test test/*.test.ts`, no `tsconfig.json`, no bundler) task 622's
+validation profile targets, and the matrix previously had no row for it at all.
+
+| Signal | Detail | 2026 note |
+|---|---|---|
+| `package.json` script invoking bare `node` or `node --test` directly on a `.ts` path, with no build/bundle devDependency alongside it | Primary signal -- confirms no-build execution is in use, distinct from a `tsx`/`ts-node`-mediated run. | Node's own loader (internally "Amaro") strips types at parse time; it performs no type-checking, so a separate `tsc --noEmit` script is still needed for that (see "Typecheck / Build" above). |
+| `engines.node` pinning `>=22.18.0` (or `>=23.6.0` on the 23.x line) | Secondary signal -- the version from which type stripping runs **unflagged** for erasable syntax. | Confirmed: Node.js added the feature in **v22.6.0** (flag-gated); it became enabled by default with no flag in **v23.6.0 and v22.18.0**; the experimental warning was removed in **v24.3.0 and v22.18.0**; stability was raised to **Stable** (stability index 2) in **v24.12.0 and v25.2.0**. |
+| `--experimental-strip-types` flag literal appearing in any script | Signals a pre-v22.18.0/pre-v23.6.0 project still on the flag-gated path. | Legacy relative to the 2026 default-unflagged baseline above, but still a valid signal for an older pinned Node version. |
+| `--experimental-transform-types` flag literal appearing in any script | Signals the project relies on Node's own **transform** (not just strip) path, added in **v22.6.0**'s sibling flag (v22.7.0 per the docs' own `Added in:` note) -- this path converts certain non-erasable constructs (e.g. enums) to equivalent JS at runtime instead of erroring. | A different, broader capability than plain `--experimental-strip-types`; treat as additive evidence of non-erasable syntax in use, not a separate runtime. |
+| `--no-strip-types` flag literal appearing in any script | Explicit opt-out signal -- the project disables native type stripping outright (e.g. to force an error on any `.ts` import, or to delegate entirely to a different loader). | Confirmed as the documented disable flag. |
+
+**Syntax constraint native type-stripping imposes** (confirmed against the official Node.js
+TypeScript docs, not the plan's earlier "expected" set): type stripping **erases inline type
+syntax only** and errors (`ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX`) on any construct requiring actual
+JavaScript code generation. The confirmed non-erasable set is: `enum` declarations; `namespace`/
+legacy `module` declarations that contain **runtime** code (a namespace exporting only types is
+fine and erases cleanly); constructor **parameter properties**; `tsconfig` **`paths`** import
+aliases (ignored entirely -- see below); and **decorators**, which error unconditionally because
+they are still a TC39 Stage 3 proposal, not erasable syntax. TypeScript 5.8 (Feb/Mar 2025,
+Microsoft DevBlogs) introduced the **`erasableSyntaxOnly`** compiler option, which makes `tsc`
+itself report an error on most of these same runtime-behavior constructs (confirmed for enums,
+namespaces, and parameter properties specifically) -- enabling it in a `tsconfig.json` that does
+exist lets `tsc --noEmit` catch a native-type-stripping incompatibility ahead of running the file,
+rather than discovering `ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX` at runtime. **Node.js also ignores
+`tsconfig.json` entirely for its own type-stripping decision** -- confirmed directly ("Node.js
+ignores `tsconfig.json` files") -- so `paths` aliases and down-leveling to older JS targets are
+intentionally unsupported on this execution path regardless of what any present `tsconfig.json`
+declares.
+
 ### Lint / Format
 
 | Tool | Primary signal | Secondary signal | 2026 note |
@@ -360,6 +396,7 @@ beats lockfile inference).
 | `bundler` | `tsconfig.json`'s `compilerOptions.moduleResolution` == `"bundler"` -- the expected mode for any bundler-fronted project (Vite/esbuild/webpack/rolldown) that does not need explicit import extensions. |
 | `node16`/`nodenext` | `compilerOptions.module`/`moduleResolution` == `"node16"` or `"nodenext"`, typically paired with `package.json`'s `"type": "module"`. |
 | `nodenext` with `.js` specifiers | Same as above, PLUS relative import statements in `.ts` source ending in literal `.js` (TS resolves the `.js` specifier back to the sibling `.ts` file under `nodenext`'s ESM rules) -- grep source for `from ['"]\./.*\.js['"]` as the concrete signal distinguishing this sub-case from plain `nodenext` without the specifier convention. |
+| **No `tsconfig.json` present** | This is not a "not a TypeScript project" signal (see the preamble note above and the Native Type-Stripping section) -- it degrades every mode-detection row above rather than ruling TypeScript out. The `tsc`/`typescript@7.x` primary signal in "Typecheck / Build" does not fire (no config to point `tsc` at, though a bare `tsc` invocation with CLI flags is still possible and would need its own script-text check). This entire subsection becomes unanswerable from config and must instead be **inferred from source import style**: relative imports ending in a literal `.js` specifier (`from "./foo.js"` resolving to `./foo.ts`) imply `nodenext`-style ESM resolution is already the de facto convention even with no config declaring it; relative imports with no extension at all are ambiguous without a bundler signal from "Typecheck / Build" to anchor the inference. |
 
 ## Risks & Mitigations
 
@@ -410,6 +447,10 @@ beats lockfile inference).
 - `ESLint flat config eslintrc removed version 2026`
 - `oxlint stable biome 2.0 2026 javascript linter formatter adoption`
 - `Deno 2 2026 package.json node_modules compatibility deno.json detection`
+- `Node.js native TypeScript type stripping unflagged version 2026 --experimental-strip-types`
+  (Phase 3, task 619 implementation)
+- `TypeScript 5.8 erasableSyntaxOnly compiler option release notes` (Phase 3, task 619
+  implementation)
 
 ### Key Source Files Read
 
@@ -426,6 +467,14 @@ beats lockfile inference).
 - `agent-system/extensions/{python,rust,web,nix,lean}/manifest.json` (full diff)
 - `lua/neotex/plugins/ai/shared/extensions/{manifest,merge}.lua`
 - `agent-system/extensions/web/context/project/web/domain/typescript-web.md`
+- `lua/neotex/plugins/ai/shared/extensions/init.lua` (`process_merge_targets`/
+  `reverse_merge_targets`, Phase 2 correction)
+- `lua/neotex/plugins/ai/claude/extensions/merge.lua` (`inject_claudemd_section`/
+  `remove_claudemd_section` dead-code re-export, Phase 2)
+- `agent-system/extensions/core/scripts/skill-base.sh` (Phase 1 re-derivation; actual path has no
+  `/lib/` segment)
+- `agent-system/extensions/core/scripts/command-gate-out.sh` (Phase 1 re-derivation, verification
+  hook live call site)
 
 ### Sources (WebSearch)
 
@@ -440,3 +489,6 @@ beats lockfile inference).
 - [Biome 2.0 changelog](https://biomejs.dev/internals/changelog/version/2-0-0...latest/)
 - [Deno runtime configuration docs](https://docs.deno.com/runtime/fundamentals/configuration.md)
 - [Deno Node.js migration guide](https://docs.deno.com/runtime/reference/migration_guide/)
+- [Node.js TypeScript docs -- type stripping history table, stability, unsupported constructs](https://nodejs.org/en/learn/typescript/run-natively) (cross-checked against a nightly v26 build of the same docs page for the full version-history table)
+- [TypeScript 5.8 RC announcement -- `erasableSyntaxOnly` compiler option](https://devblogs.microsoft.com/typescript/announcing-typescript-5-8-rc/)
+- [TypeScript 5.8 general availability announcement](https://devblogs.microsoft.com/typescript/announcing-typescript-5-8/)
