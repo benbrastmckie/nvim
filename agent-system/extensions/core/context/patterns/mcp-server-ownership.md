@@ -336,16 +336,11 @@ This carve-out is distinct from the safe/unsafe split carve-out above: that one 
 tier permanently prompting in every project on the machine, while this one deliberately grants the
 withheld tier in exactly one repository, in exchange for leaving every other project unaffected.
 
-**Worked example**: the sapience extension's `agent-system/extensions/sapience/settings-fragment.json`
-grants four write tools — `mcp__sapience__sapience_remember`, `mcp__sapience__sapience_wrapup`,
-`mcp__sapience__sapience_handoff`, and `mcp__sapience__sapience_adddoc` — at this repository's own
-project scope rather than at user scope. `~/.claude/settings.json`'s `permissions` key is
-nix-enforced from `~/.dotfiles` on this machine, and the owning system (Sapience) already grants a
-seven-tool read-only allow-list at user scope while deliberately withholding these four
-mutating/unreviewed tools from it — the safe/unsafe line the second requirement above cites. See
-`context/project/sapience/domain/review-gate-boundary.md`'s "The Permission Grant's
-Repository-Scoped Tradeoff" section for the full disclosure this carve-out's third requirement
-asks for.
+**Worked example**: no MCP server grant in this repository presently exercises this carve-out.
+`~/.claude/settings.json`'s `permissions` key is nix-enforced from `~/.dotfiles` on this machine,
+so the carve-out remains available to a future extension that needs to grant a withheld tier at
+project scope rather than user scope — the three requirements above state exactly what that
+extension must show before relying on it.
 
 ---
 

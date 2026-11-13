@@ -105,8 +105,8 @@ server is externally enforced (nix-reset on every home-manager switch, for examp
 be durably written by this repository's deploy, an extension may instead grant the withheld tier
 at its own project scope, enumerated, not wildcarded -- see "Carve-out: a nix-enforced user-scope
 settings file cannot receive a new grant" in the same
-[MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) document for the
-sapience-extension worked example and the three governing requirements.
+[MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) document for the three
+governing requirements.
 
 See [MCP Server Ownership](../../context/patterns/mcp-server-ownership.md) for the full
 registration procedure, the evidence behind "settings files never register," the workspace-trust

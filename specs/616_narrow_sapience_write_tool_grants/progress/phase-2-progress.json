@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "Replace core's Carve-Out Worked Example",
+  "started_at": "2026-11-13T00:15:00Z",
+  "last_updated": "2026-11-13T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace the Worked example paragraph in mcp-server-ownership.md with a true no-current-exerciser statement", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/mcp-server-ownership.md", "agent-system/extensions/core/index-entries.json"]},
+    {"id": 2, "description": "Update permission-configuration.md's cross-reference to drop the sapience-extension naming", "status": "done", "files_touched": ["agent-system/extensions/core/docs/guides/permission-configuration.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.x",
+      "description": "Phase 2's own verification tier runs verify-deploy.sh --only-gate 3,4, which also doc-lints the sapience extension and failed on deployed-vs-source script drift (verify-sapience-mcp.sh) introduced by Phase 1's edit, plus a core index-entries.json line_count mismatch introduced by this phase's own edit.",
+      "type": "altered",
+      "reason": "Ran generate-context-line-counts.sh --write (fixes the core line-count mismatch) and deploy-headless.sh (clears the sapience script drift) ahead of Phase 5's planned redeploy, so this phase's own named gate could actually pass as written rather than being left red pending Phase 5. deploy-headless.sh is idempotent; Phase 5 will redeploy again after its own metadata edits with no conflict. This left .claude-extensions.json (a deploy-regenerated, non-source-store file) modified as a side effect; left uncommitted here for Phase 5's planned __WHOLE_TREE__ commit to pick up, since Phase 5 already runs the same deploy step.",
+      "annotation": "*(deviation: altered — ran generate-context-line-counts.sh and an early deploy-headless.sh pass so gate 3,4 could pass within this phase; .claude-extensions.json deploy side-effect left for Phase 5's commit)*"
+    }
+  ]
+}

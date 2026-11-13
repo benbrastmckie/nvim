@@ -181,33 +181,36 @@ the exact suite set `suite_selection_select` returns for these two paths.
 
 ---
 
-### Phase 2: Replace `core`'s Carve-Out Worked Example [NOT STARTED]
+### Phase 2: Replace `core`'s Carve-Out Worked Example [COMPLETED]
 
 **Goal**: `mcp-server-ownership.md`'s carve-out subsection states a true configuration, keeps its
 three governing requirements as forward-looking guidance, and leaves a located passage at the
 anchor `permission-configuration.md` points to.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/patterns/mcp-server-ownership.md` lines
-      320-350 immediately before editing.
-- [ ] Replace the `**Worked example**:` paragraph (currently beginning "the sapience extension's
+- [x] Re-read `agent-system/extensions/core/context/patterns/mcp-server-ownership.md` lines
+      320-350 immediately before editing. *(completed)*
+- [x] Replace the `**Worked example**:` paragraph (currently beginning "the sapience extension's
       `agent-system/extensions/sapience/settings-fragment.json` grants four write tools") with
       text stating, as current fact, that no MCP server grant in this repository presently
-      exercises this carve-out.
-- [ ] Keep the three numbered governing requirements above it, and the "distinct from the
-      safe/unsafe split carve-out" paragraph below it, byte-identical.
-- [ ] Write the replacement so it describes only the write-tool-grant state this task produces;
+      exercises this carve-out. *(completed)*
+- [x] Keep the three numbered governing requirements above it, and the "distinct from the
+      safe/unsafe split carve-out" paragraph below it, byte-identical. *(completed)*
+- [x] Write the replacement so it describes only the write-tool-grant state this task produces;
       do NOT assert anything about the dotfiles-level user-scope read allow-list, which is a
-      separate, still-open question.
-- [ ] Per `no-record-versioning-in-deliverables.md`, state the current arrangement only — no
-      "previously", "no longer", "used to", or supersession framing.
-- [ ] Update `agent-system/extensions/core/docs/guides/permission-configuration.md:109` so the
+      separate, still-open question. *(completed)*
+- [x] Per `no-record-versioning-in-deliverables.md`, state the current arrangement only — no
+      "previously", "no longer", "used to", or supersession framing. *(completed)*
+- [x] Update `agent-system/extensions/core/docs/guides/permission-configuration.md:109` so the
       cross-reference no longer promises a "sapience-extension worked example"; it should point
-      at the subsection and its three governing requirements.
-- [ ] Re-read the surrounding sentence in `permission-configuration.md` after the edit and
+      at the subsection and its three governing requirements. *(completed)*
+- [x] Re-read the surrounding sentence in `permission-configuration.md` after the edit and
       confirm it still reads correctly (research Risk 1's explicit instruction: re-read, do not
       assume).
-- [ ] Commit this phase's two files with an explicit file list.
+- [x] Commit this phase's two files with an explicit file list. *(deviation: altered — a third
+      file, `agent-system/extensions/core/index-entries.json`, was also committed: this phase's
+      edit shrank `mcp-server-ownership.md`'s line count, which `generate-context-line-counts.sh
+      --write` corrected in the same gate pass; see progress file deviation entry)*
 
 **Timing**: 0.5 hours
 
