@@ -1,7 +1,7 @@
 # Implementation Plan: Task #531
 
 - **Task**: 531 - file_scope declaration hygiene remediation for the admission gate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.0 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/531_file_scope_declaration_hygiene_remediation/reports/01_file-scope-hygiene-remediation.md

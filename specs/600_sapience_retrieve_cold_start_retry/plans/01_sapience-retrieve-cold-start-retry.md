@@ -1,7 +1,7 @@
 # Implementation Plan: Task #600
 
 - **Task**: 600 - Sapience retrieve cold-start retry
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/600_sapience_retrieve_cold_start_retry/reports/01_sapience-retrieve-cold-start-retry.md

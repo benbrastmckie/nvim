@@ -1,7 +1,7 @@
 # Implementation Plan: Task #601
 
 - **Task**: 601 - Close the class of invocation-path-dependent repo-root resolution in test suites with a durable lint
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/601_root_walkup_class_closure_lint/reports/01_root-walkup-closure-lint.md

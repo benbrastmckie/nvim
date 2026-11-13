@@ -2,7 +2,7 @@
 
 - **Task**: 606 - Scope Sapience context injection to the current repository so a session stops
   receiving other repos' facts
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.75 hours
 - **Dependencies**: 600 (completed), 611 (completed), 612 (completed)
 - **Research Inputs**:

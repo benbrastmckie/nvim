@@ -1,7 +1,7 @@
 # Implementation Plan: Task #597
 
 - **Task**: 597 - Coupled generated surfaces in plan authoring
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: None (task 596 `generated_file_scope_vs_readonly_risk` depends ON this task; task 599 shares `plan-format.md` territory with no dependency edge)
 - **Research Inputs**: specs/597_coupled_generated_surfaces_in_plan_authoring/reports/01_coupled-generated-surfaces-plan-authoring.md

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #611
 
 - **Task**: 611 - Repo-tag every Sapience write path the source store owns so untagged knowledge objects stop being created
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None. The sibling read-side task (`scope_sapience_injection_to_current_repo`) is sequenced AFTER this one and shares file territory under `agent-system/extensions/sapience/**`; do not run them concurrently.
 - **Research Inputs**: `specs/611_repo_tag_sapience_write_paths/reports/01_repo-tag-sapience-write-paths.md`

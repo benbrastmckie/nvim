@@ -1,0 +1,39 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 1 task (#609) in /home/benjamin/.config/nvim for the ASK_USER_CHARGED_TO_FAILED_TASKS defect class, with an external dependency edge on task 577 for shared SKILL.md / state-machine-doc territory.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Task #609 entry regenerated into TODO.md via generate-todo.sh"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "active_projects entry #609 written under the state-write.sh mutex with --allocate-into and a recorded audit_verdict"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/609_pending_ask_user_charged_to_failed_tasks/",
+      "summary": "Task directory with reports/, plans/, summaries/"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1794443741_dfbfd2",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 1,
+    "task_numbers": [609],
+    "audit_verdict_source": "regenerated_locally",
+    "audit_verdict_note": "The delegation context carried no backlog_audit_result field, so scripts/audit-task-proposals.sh was run once against the resolved target_root with --id set to the project_name about to be written, and its NDJSON forwarded verbatim to state-write.sh --audit-verdict. No --audit-override was used; the covering verdict is recorded on the entry's own audit_verdict field."
+  },
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/TODO.md",
+    "/home/benjamin/.config/nvim/specs/state.json"
+  ],
+  "next_steps": "Run /orchestrate 609 --research to begin work; task 577 is the declared predecessor and is itself still [NOT STARTED]."
+}

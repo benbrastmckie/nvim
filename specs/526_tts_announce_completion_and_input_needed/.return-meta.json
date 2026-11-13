@@ -1,0 +1,25 @@
+{
+  "status": "tasks_created",
+  "artifacts": [
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/526_tts_announce_completion_and_input_needed/",
+      "summary": "Task #526 (tts_announce_completion_and_input_needed) created by /meta in prompt mode"
+    }
+  ],
+  "next_steps": "Run /orchestrate 526 once its dependencies have landed",
+  "metadata": {
+    "session_id": "sess_1794089958_e8996c",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 2
+  },
+  "modified_files": [
+    "specs/TODO.md",
+    "specs/state.json"
+  ]
+}

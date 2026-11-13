@@ -1,7 +1,7 @@
 # Implementation Plan: Task #402
 
 - **Task**: 402 - Conclusion channels (b) and (c) become evidence-only
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: 391, 400 (both archived/landed — confirmed absent from `specs/state.json`'s `active_projects`)
 - **Research Inputs**: specs/402_conclusion_channels_become_evidence_only/reports/01_conclusion-channels-evidence-only.md

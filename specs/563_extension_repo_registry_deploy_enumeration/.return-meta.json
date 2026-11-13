@@ -1,0 +1,33 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 1 task (#563, task_type neovim, topic extensions) for the extension-repo-registry deploy-enumeration defect. No implementation performed.",
+  "artifacts": [
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Task #563 entry regenerated into TODO.md via generate-todo.sh"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "active_projects entry #563 with file_scope, topic, and verbatim audit_verdict evidence"
+    }
+  ],
+  "modified_files": [
+    "specs/TODO.md",
+    "specs/state.json"
+  ],
+  "next_steps": "Run /orchestrate 563 to drive the task through research -> plan -> implement. No dependencies; wave 1.",
+  "metadata": {
+    "session_id": "sess_1794209498_570cdb",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "conclusion-stage", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 1,
+    "task_numbers": [563],
+    "commit": "1987becaa696e8b92cd862f15f8dc54a03dadb44"
+  }
+}
