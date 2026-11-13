@@ -1,7 +1,7 @@
 # Implementation Plan: typescript_extension_design
 
 - **Task**: 620 - typescript_extension_design
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/620_typescript_extension_design/reports/01_typescript-extension-design-research.md
@@ -487,33 +487,33 @@ as found — neither fixed nor worsened.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Generic context tree [NOT STARTED]
+### Phase 1: Generic context tree [COMPLETED]
 
 **Goal**: Create `context/project/typescript/` — README plus all seven subdirectory content files
 — strictly generic, with the two extracted/generalized files seeded per Design Specification §8.
 
 **Tasks**:
-- [ ] Re-derive the two extraction ranges before using them: `wc -l` the source file and
+- [x] Re-derive the two extraction ranges before using them: `wc -l` the source file and
       `grep -n '^#\|^```'` it; confirm "Common Zod Patterns" still begins at 204 and closes at
       232, and "Import Aliases" spans 234-247. If the file has shifted, use the re-derived
-      numbers and note the correction in the phase's verification notes.
-- [ ] Create the four subdirectories (`standards/`, `patterns/`, `domain/`, `tools/`) under
-      `context/project/typescript/`.
-- [ ] Write `patterns/zod-validation-patterns.md` seeded from lines 204-232, with
+      numbers and note the correction in the phase's verification notes. *(completed: confirmed 303 lines, ranges unchanged)*
+- [x] Create the four subdirectories (`standards/`, `patterns/`, `domain/`, `tools/`) under
+      `context/project/typescript/`. *(completed)*
+- [x] Write `patterns/zod-validation-patterns.md` seeded from lines 204-232, with
       `import { z } from 'astro/zod';` rewritten to `import { z } from 'zod';` and all Astro
-      framing removed.
-- [ ] Write `patterns/path-alias-patterns.md` as a framework-free restatement of the lines
-      234-247 concept, with a non-Astro worked example.
-- [ ] Write `standards/typescript-style-guide.md`, `domain/tsconfig-reference.md`,
+      framing removed. *(completed: 98 lines)*
+- [x] Write `patterns/path-alias-patterns.md` as a framework-free restatement of the lines
+      234-247 concept, with a non-Astro worked example. *(completed: 62 lines)*
+- [x] Write `standards/typescript-style-guide.md`, `domain/tsconfig-reference.md`,
       `domain/module-systems.md`, `tools/tsc-cli-guide.md`, and
-      `tools/package-manager-detection.md` per the purposes and budgets in §1.
-- [ ] Write `context/project/typescript/README.md` as a pointer index to the seven files above —
-      never a restatement of their content, and never a duplicate of any of them.
-- [ ] Self-audit every new file against §2's genericity test before closing the phase:
+      `tools/package-manager-detection.md` per the purposes and budgets in §1. *(completed: 96/81/67/66/64 lines)*
+- [x] Write `context/project/typescript/README.md` as a pointer index to the seven files above —
+      never a restatement of their content, and never a duplicate of any of them. *(completed: 53 lines)*
+- [x] Self-audit every new file against §2's genericity test before closing the phase:
       `grep -rniE 'astro|vite|webpack|next\.js|nextjs|react|tailwind|cloudflare'` over
-      `context/project/typescript/` must return zero hits.
-- [ ] Assert the no-duplicate rule: `find context/project/typescript -maxdepth 1 -type f` returns
-      exactly `README.md`.
+      `context/project/typescript/` must return zero hits. *(completed: zero hits confirmed)*
+- [x] Assert the no-duplicate rule: `find context/project/typescript -maxdepth 1 -type f` returns
+      exactly `README.md`. *(completed: confirmed)*
 
 **Timing**: 2 hours
 

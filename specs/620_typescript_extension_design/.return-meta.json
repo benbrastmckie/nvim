@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/620_typescript_extension_design/plans/01_typescript-extension-build.md",
-      "summary": "Six-phase plan to build a generic typescript extension in the source store, with an embedded design specification covering all eight required outcomes (file manifest, context tree, both agents, hard_contracts, keyword_overrides collision check, rules glob, verification-hook contract, typescript-web.md line split)."
-    }
-  ],
-  "next_steps": "Run /orchestrate 620 to execute the plan",
-  "dispatch_seq": 5,
+  "status": "in_progress",
+  "dispatch_seq": 6,
   "metadata": {
-    "session_id": "sess_1794603202_55566e_620",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 9,
-    "dependency_waves": [[1, 2, 3, 4], [5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When planning a new extension for this agent-system source store, the research report's file manifest is not sufficient on its own: three structural obligations are easy to miss and each is enforced by a different lint. (1) Every language extension ships a skills/skill-{domain}-{research,implementation}/SKILL.md pair and declares both in provides.skills -- rust, python, nix, web and latex all do. (2) provides.scripts takes a BARE BASENAME while the top-level hooks map takes the scripts/-prefixed path; nix/manifest.json is the live two-form example, and a mismatch means the hook silently never deploys. (3) agent-system/extensions/README.md's '## Available Extensions' table needs a row for the new directory or lint-extension-readme-table.sh FAILs on a bidirectional diff naming the directory. Verify all three against a precedent manifest before sizing phases.",
-      "category": "PATTERN",
-      "source_artifact": "specs/620_typescript_extension_design/plans/01_typescript-extension-build.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["extension-authoring", "manifest", "provides-scripts", "lifecycle-hooks", "readme-table-lint", "source-store"]
-    }
-  ]
+    "session_id": "sess_1794603202_55566e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
