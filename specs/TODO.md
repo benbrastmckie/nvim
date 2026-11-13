@@ -81,7 +81,7 @@ next_project_number: 613
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-611 [PLANNING] — Repo-tag every Sapience write path the source store owns so...
+611 [PLANNED] — Repo-tag every Sapience write path the source store owns so...
   └─ 612 [NOT STARTED] — Gate every Sapience activation surface behind the sapience...
     └─ 606 [NOT STARTED] — Scope Sapience context injection to the current repository so...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
@@ -330,11 +330,12 @@ appended to:
 ---
 
 ### 611. Repo-tag every Sapience write path the source store owns so untagged knowledge objects stop being created
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
 - **Research**: [611_repo_tag_sapience_write_paths/reports/01_repo-tag-sapience-write-paths.md]
+- **Plan**: [611_repo_tag_sapience_write_paths/plans/01_repo-tag-sapience-write-paths.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

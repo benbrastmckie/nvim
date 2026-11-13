@@ -1,32 +1,41 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794536113_e68c60_611",
-  "dispatch_seq": 1,
-  "findings_count": 9,
-  "next_steps": "Run /orchestrate 611 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/611_repo_tag_sapience_write_paths/reports/01_repo-tag-sapience-write-paths.md",
-      "summary": "Inventories every instruction surface under agent-system/extensions/sapience/**, finds most of deliverable (a) already implemented by a prior task, identifies two stale domain-doc passages still describing the old untagged sapience_wrapup call site, confirms sapience-remember.sh's --dry-run already satisfies deliverable (d) functionally but has zero test coverage, and surfaces open plan-level tradeoffs for deliverables (b) and (c)."
+      "type": "plan",
+      "path": "specs/611_repo_tag_sapience_write_paths/plans/01_repo-tag-sapience-write-paths.md",
+      "summary": "Four-phase plan closing the five durability gaps in the already-working tagged Sapience write path: stale domain-doc corrections plus the four-population census, an explicit disposition for all four MCP write tools, the SessionStart-nudge redirect in EXTENSION.md, write-side dry-run test coverage asserting [repo:<slug>], and a registered advisory write-path rule landed with the redeploy."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1794536113_e68c60_611",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 4.5,
+    "dependency_waves": 3
+  },
+  "user_decision": {
+    "question": "settings-fragment.json still grants all four MCP write tools at this repo's project scope, including two the extension's own text says never to use. Keeping the grant leaves a stray proactive MCP call able to succeed non-interactively and land a permanent, undeletable untagged write; narrowing it adds a mechanical second line of defense but leaves core/context/patterns/mcp-server-ownership.md's worked example (which cites the current four-tool grant by path) stale, and core/ is outside this task's declared edit target.",
+    "options": [
+      "Keep the four-tool grant intact; record the residual and its promotion criterion in the new write-path rule (this plan's route)",
+      "Narrow the grant now by dropping sapience_remember and sapience_wrapup from the allow-list, accepting that mcp-server-ownership.md's worked example goes stale until a follow-up task fixes it",
+      "Keep the grant here and file a separate follow-up task that narrows it together with the core/ worked-example update, so neither surface is left inconsistent"
+    ],
+    "recommended": "Keep the four-tool grant intact; record the residual and its promotion criterion in the new write-path rule (this plan's route)",
+    "blocking": false,
+    "obligation": "Deliverable (b) and acceptance criterion 3: the standing rule must exist with its advisory-or-enforced status recorded. The recommended route discharges this with an advisory, path-scoped rules/sapience-write-path.md whose own text records the kept-grant residual, the rejected-mechanization rationale, and the promotion criterion that would justify enforcement -- checkable by reading that file after Phase 4."
+  },
   "memory_candidates": [
     {
-      "content": "When auditing an extension's instruction surfaces for 'does X name tool Y as a prescribed write path,' check whether the corpus already has a marker-suppression lint precedent (this codebase's task-reference-patterns.sh / record-version-patterns.sh use a <token>-ok marker to let a legitimate discussing-not-prescribing mention suppress an otherwise-correct grep hit) before building a new mechanized lint from scratch. For a small, static corpus (~12 files), an advisory rules/*.md file stating the contract in prose is proportionate; a new lint is only worth it if the corpus is large or churns often.",
+      "content": "Extension-authoring plans in this codebase must be decomposed around two check-extension-docs.sh rules that force same-phase atomicity, neither of which is obvious from the plan standards alone. Rule H (check_undeclared_rules) FAILS on a rules/*.md file present on disk but absent from its extension manifest's provides.rules, so creating a rule file and registering it can never be two separate green commits -- the pair is one atomic-batch objective. Rule R (check_line_count_accuracy) FAILS on a stale line_count in an extension's source index-entries.json, so any phase editing an indexed context/** file must repair index-entries.json in that same phase (bash .claude/scripts/generate-context-line-counts.sh --write) rather than deferring it to the deploy phase, or that phase's own --only-gate 3 check fails. Separately, Rule U caps EXTENSION.md at 60 lines, which is a real ceiling for any plan adding prose there. Also: an extension script that sources ${SCRIPT_DIR}/lib/common.sh cannot run from the source store at all (lib/ exists only in the post-deploy flattened .claude/scripts/ tree), so its tests must build a deployed-layout scratch fixture.",
       "category": "PATTERN",
-      "source_artifact": "specs/611_repo_tag_sapience_write_paths/reports/01_repo-tag-sapience-write-paths.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["lint", "marker-suppression", "advisory-rule", "false-positive", "prescriptive-vs-discussing"]
-    },
-    {
-      "content": "A script's own test file name does not guarantee coverage of every sibling script with a related name: scripts/tests/test-sapience-capture.sh (sapience extension) tests only sapience-retrieve.sh despite its generic 'capture' name; sapience-remember.sh (the actual write/capture script) has zero cases there. Before assuming a named test file covers a related script, grep the file for the script's own basename.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/611_repo_tag_sapience_write_paths/reports/01_repo-tag-sapience-write-paths.md",
-      "confidence": 0.6,
-      "suggested_keywords": ["test-coverage", "naming-mismatch", "sapience", "verification"]
+      "source_artifact": "specs/611_repo_tag_sapience_write_paths/plans/01_repo-tag-sapience-write-paths.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["extension-authoring", "check-extension-docs", "provides.rules", "index-entries-line-count", "atomic-batch", "plan-decomposition"]
     }
-  ]
+  ],
+  "next_steps": "Run /orchestrate 611 to execute the plan",
+  "dispatch_seq": 2
 }

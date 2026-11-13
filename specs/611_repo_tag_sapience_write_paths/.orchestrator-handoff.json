@@ -1,0 +1,26 @@
+{
+  "status": "planned",
+  "dispatch_seq": 2,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Authored a four-phase plan for the write-side repo-tagging task. Re-validated every carried figure in the dispatch description against live files and confirmed all of them, including by direct invocation: the deployed sapience-remember.sh --dry-run already exits 0 with provenance '[repo:nvim] ...', token redacted and explicit:true, so deliverable (d) is a pure test-coverage gap. Phases: (1) correct the two stale domain docs, add a four-row MCP write-tool disposition table, and extend per-repo-scoping.md to the four-population census, repairing index-entries.json line counts in the same phase; (2) make the SessionStart-nudge ruling explicit in EXTENSION.md as a redirect rather than a suppression; (3) add write-side dry-run cases asserting the repo tag, token redaction and explicit:true with no network call; (4) land and register an advisory write-path rule atomically, redeploy, and run the full gate set. Plan validates with 0 warnings and harvests 9 file_scope entries cleanly.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/611_repo_tag_sapience_write_paths/plans/01_repo-tag-sapience-write-paths.md",
+      "summary": "Four-phase implementation plan, 4.5h estimate, three dependency waves, final phase carrying the full gate set and the __WHOLE_TREE__ redeploy claim."
+    }
+  ],
+  "blockers": [],
+  "user_decision": {
+    "question": "settings-fragment.json still grants all four MCP write tools at this repo's project scope, including two the extension's own text says never to use. Keeping the grant leaves a stray proactive MCP call able to succeed non-interactively and land a permanent, undeletable untagged write; narrowing it adds a mechanical second line of defense but leaves core/context/patterns/mcp-server-ownership.md's worked example (which cites the current four-tool grant by path) stale, and core/ is outside this task's declared edit target.",
+    "options": [
+      "Keep the four-tool grant intact; record the residual and its promotion criterion in the new write-path rule (this plan's route)",
+      "Narrow the grant now by dropping sapience_remember and sapience_wrapup from the allow-list, accepting that mcp-server-ownership.md's worked example goes stale until a follow-up task fixes it",
+      "Keep the grant here and file a separate follow-up task that narrows it together with the core/ worked-example update, so neither surface is left inconsistent"
+    ],
+    "recommended": "Keep the four-tool grant intact; record the residual and its promotion criterion in the new write-path rule (this plan's route)",
+    "blocking": false,
+    "obligation": "Deliverable (b) and acceptance criterion 3: the standing rule must exist with its advisory-or-enforced status recorded. The recommended route discharges this with an advisory, path-scoped rules/sapience-write-path.md whose own text records the kept-grant residual, the rejected-mechanization rationale, and the promotion criterion that would justify enforcement -- checkable by reading that file after Phase 4."
+  }
+}
