@@ -608,24 +608,27 @@ validates agent-file frontmatter and contract-bullet presence) plus the sub-case
 
 ---
 
-### Phase 3: Rules file and hard-mode override contract [NOT STARTED]
+### Phase 3: Rules file and hard-mode override contract [COMPLETED]
 
 **Goal**: Write `rules/typescript-rules.md` with the §6 `paths:` glob, and decide-then-write the
 `hard_contracts` override contract per §4.
 
 **Tasks**:
-- [ ] Read the generic core `context/contracts/adversarial-verification.md` in full FIRST and
+- [x] Read the generic core `context/contracts/adversarial-verification.md` in full FIRST and
       judge whether the §4 TypeScript narrowing adds anything it does not already say.
+      *(completed: generic contract is entirely about research-claim confidence tagging; adds
+      nothing about compiler-verified type-safety claims -- narrowing branch taken)*
 - [ ] If it adds nothing: declare no `hard_contracts` block, record a Reasoned Exclusion naming
       the generic contract's covering language, skip the next task, and note that Phase 5 must
-      omit the block.
-- [ ] Otherwise write
+      omit the block. *(deviation: skipped -- the narrowing branch was taken instead; see the
+      completed first task's note)*
+- [x] Otherwise write
       `context/contracts/typescript-adversarial-verification.md` with the four required content
-      points from §4, using the mandatory domain-prefixed basename.
-- [ ] Write `rules/typescript-rules.md`: the §6 `paths:` frontmatter plus a TypeScript standards
-      body parallel to `web-astro.md`'s with every Astro-specific row removed.
-- [ ] Verify the rules glob is repo-root-relative and that `tsconfig*.json` is a glob, not a
-      literal filename.
+      points from §4, using the mandatory domain-prefixed basename. *(completed: 57 lines)*
+- [x] Write `rules/typescript-rules.md`: the §6 `paths:` frontmatter plus a TypeScript standards
+      body parallel to `web-astro.md`'s with every Astro-specific row removed. *(completed: 93 lines, zero Astro hits)*
+- [x] Verify the rules glob is repo-root-relative and that `tsconfig*.json` is a glob, not a
+      literal filename. *(completed: confirmed)*
 
 **Timing**: 1 hour
 
