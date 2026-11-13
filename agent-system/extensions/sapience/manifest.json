@@ -10,6 +10,7 @@
     "skills": [],
     "rules": ["sapience-write-path.md"],
     "scripts": [
+      "install-sapience-mcp-session-hook.sh",
       "sapience-remember.sh",
       "sapience-retrieve.sh",
       "setup-sapience-mcp.sh",

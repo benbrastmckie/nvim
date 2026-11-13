@@ -397,42 +397,44 @@ which covers the `provides.hooks` declaration and the task-reference lint.
 
 ---
 
-### Phase 4: The install script [NOT STARTED]
+### Phase 4: The install script [COMPLETED]
 
 **Goal**: an idempotent, `--remove`-capable installer that seeds the hook and the writer to
 stable user-level paths and registers the `SessionStart` entry, touching no `.dotfiles` file.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/sapience/scripts/install-sapience-mcp-session-hook.sh`,
+- [x] Write `agent-system/extensions/sapience/scripts/install-sapience-mcp-session-hook.sh`,
       modelled on `agent-system/extensions/lean/scripts/install-lean-lsp-session-hook.sh`.
-      Options: `--dry-run`, `--remove`, `--help`.
-- [ ] Copy (and `chmod +x`) two files:
+      Options: `--dry-run`, `--remove`, `--help`. *(completed)*
+- [x] Copy (and `chmod +x`) two files:
       `hooks/sapience-mcp-register-project.sh` -> `$HOME/.claude/hooks/`, and
       `scripts/setup-sapience-mcp.sh` -> `$HOME/.claude/scripts/`. User-level, never inside any
-      repository's disposable `.claude/` tree.
-- [ ] Register the entry in `$HOME/.claude/settings.json` only, idempotently, keyed on an exact
+      repository's disposable `.claude/` tree. *(completed)*
+- [x] Register the entry in `$HOME/.claude/settings.json` only, idempotently, keyed on an exact
       command string pinned in one variable and never changed casually (the same mechanism lean's
-      installer uses for both idempotency and `--remove`).
-- [ ] **Deliberately omit lean's second write target.** Lean's installer also writes
+      installer uses for both idempotency and `--remove`). *(completed)*
+- [x] **Deliberately omit lean's second write target.** Lean's installer also writes
       `$HOME/.dotfiles/config/claude/settings.json`; this task is forbidden to touch `.dotfiles`
       (acceptance criterion 2). Record the divergence from the model in a header paragraph so a
-      future reader does not "repair" it back.
-- [ ] Emit a loud, non-fatal WARNING on every install run naming the resulting durability gap
+      future reader does not "repair" it back. *(completed)*
+- [x] Emit a loud, non-fatal WARNING on every install run naming the resulting durability gap
       precisely: `hooks` is an enforced key (`[_NOTE,env,hooks,model,permissions,statusLine]` in
       `~/.dotfiles/modules/home/core/dotfiles.nix`), reset from `.dotfiles`'
       `config/claude/settings.json` on every `home-manager switch` while that source carries a
       `hooks` key — so this registration must be re-run after a switch until the companion
       `retire_machine_wide_sapience_surface` task takes ownership of a durable entry. Name the
-      re-run command in the warning text.
-- [ ] `--remove`: delete both installed files and remove the `SessionStart` entry from
+      re-run command in the warning text. *(completed)*
+- [x] `--remove`: delete both installed files and remove the `SessionStart` entry from
       `$HOME/.claude/settings.json`, fully reversing the install. Additionally offer to remove
       this project's own `.projects[...].mcpServers.sapience` entry via the writer's `--remove`,
-      so the immediate case does not wait for the next session start.
-- [ ] Extend `tests/test-sapience-mcp-registration.sh`: install into a temporary `HOME`; assert a
+      so the immediate case does not wait for the next session start. *(completed)*
+- [x] Extend `tests/test-sapience-mcp-registration.sh`: install into a temporary `HOME`; assert a
       second run changes nothing (byte-identical settings file and both installed files);
       `--remove` leaves the fixture `HOME` exactly as it began; `--dry-run` writes nothing; and
-      an absent `$HOME/.claude/settings.json` is handled without a crash.
-- [ ] `bash .claude/scripts/sync-manifest-scripts.sh --write`, then `--check`.
+      an absent `$HOME/.claude/settings.json` is handled without a crash. *(completed: 4/4 cases
+      pass; remove_session_start_entry was extended to prune an emptied SessionStart array
+      entirely so reversal is exact)*
+- [x] `bash .claude/scripts/sync-manifest-scripts.sh --write`, then `--check`. *(completed)*
 
 **Timing**: 1.5 hours
 
