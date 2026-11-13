@@ -130,7 +130,6 @@ owns the suggestion half and the unwired `--write-edges`; `603` owns the deeper 
 file generated from `state.json` so there is no cruft to clear and no prose to hand-maintain.
 
 ```
-/orchestrate 611, 606   # Close Sapience per-repo scoping end to end: tag the writes, then filter the reads
 /orchestrate 585, 572, 591   # the verify-deploy.sh lane, serialized on shared territory
 /orchestrate 568, 476, 586, 604, 605   # Gate 8's residual roster and the two lints over it, serialized on the postflight suite
 /orchestrate 505   # whole-tree claimant: runs alone
@@ -347,12 +346,12 @@ dispatched, not a backfill across every record a coarse entry happens to touch.
 /orchestrate 530,533,534,535,536,537,538,539
 /orchestrate 545,546,548,549,550,551,556,557
 /orchestrate 558,559,560,562,563,565,567,574
-/orchestrate 575,599,607,610
+/orchestrate 575,599,607,610,613
 ```
 
 ## Open work
 
-**Core agent system (45)**
+**Core agent system (46)**
 ```
 436 blocked:458,459 Add the /orient executive-orientation command with a read-only scout agent, a...
 439 blocked:431     Rule on the propagation model for the bounded-wait agent contract
@@ -399,19 +398,18 @@ dispatched, not a backfill across every record a coarse entry happens to touch.
 580 ready           Correct the interactive-selection threshold model to AskUserQuestion's real f...
 590 ready           Resolve the /ide dead-command-recommendation findings
 604 ready           Lint-time detector for drifted test-fixture dependency declarations, in both ...
+613 ready           session_liveness_same_process_orphan_lock
 ```
 
-**Extensions (9)**
+**Extensions (7)**
 ```
 342 HOLD            Refactor the books extension's context corpus against the settled convention:...
 498 HOLD            Replace the email preference harvest tally substrate
 384 blocked:383     Adjudicate whether a books reconciliation postflight lifecycle hook is warran...
 457 blocked:455     Repo-specific content has leaked into the shared agent-system source store
-606 blocked:611     Scope Sapience context injection to the current repository so a session stops...
 383 ready           Add a /reconcile command to the books extension: aggregate docs-stage.sh and ...
 522 ready           Fix report/summary heading-skeleton conformance across agents
 563 ready           Make the extension repo registry usable for deploy enumeration: rule between ...
-611 ready           Repo-tag every Sapience write path the source store owns so untagged knowledg...
 ```
 
 **Literature (2)**
