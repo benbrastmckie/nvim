@@ -1,7 +1,7 @@
 # Implementation Plan: Task #617
 
 - **Task**: 617 - Reconcile sapience extension source store with retired machine-wide surfaces
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: Companion work `retire_machine_wide_sapience_surface` (sited in
   `/home/benjamin/.dotfiles`) -- confirmed landed, see Overview
@@ -112,23 +112,28 @@ performed and no roadmap phases are scheduled.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Re-confirm the landed arrangement before editing [NOT STARTED]
+### Phase 1: Re-confirm the landed arrangement before editing [COMPLETED]
 
 **Goal**: Independently re-establish, at implementation time, that the companion's durable
 `SessionStart` entry is in place and the machine-wide surfaces are gone, so no edit in Phases 2-3
 discharges a still-live hazard.
 
 **Tasks**:
-- [ ] Run `jq -r '.hooks.SessionStart[].hooks[].command' "$HOME/.claude/settings.json"` and
-      confirm the sapience registration command string is present.
-- [ ] Run `jq -r '.hooks.SessionStart' /home/benjamin/.dotfiles/config/claude/settings.json` and
+- [x] Run `jq -r '.hooks.SessionStart[].hooks[].command' "$HOME/.claude/settings.json"` and
+      confirm the sapience registration command string is present. *(completed: third command is
+      `bash $HOME/.claude/hooks/sapience-mcp-register-project.sh 2>/dev/null || echo '{}'`)*
+- [x] Run `jq -r '.hooks.SessionStart' /home/benjamin/.dotfiles/config/claude/settings.json` and
       confirm the byte-identical command string is carried there as the durable writer.
-- [ ] Run `jq -r '.mcpServers.sapience // "ABSENT"' "$HOME/.claude.json"` and confirm `ABSENT`.
-- [ ] Read-only: confirm no `registerMcpServer` assignment exists in
+      *(completed: dotfiles' third SessionStart entry carries the identical command string)*
+- [x] Run `jq -r '.mcpServers.sapience // "ABSENT"' "$HOME/.claude.json"` and confirm `ABSENT`.
+      *(completed: returns `ABSENT`)*
+- [x] Read-only: confirm no `registerMcpServer` assignment exists in
       `/home/benjamin/.dotfiles` outside the vendored flake module's own option definition.
-- [ ] If any check contradicts the above, STOP and report rather than proceeding -- the
-      precondition gate has reopened.
-- [ ] Record the four results verbatim for reuse in the summary.
+      *(completed: `modules/home/services/sapience.nix` has zero hits; all remaining hits are
+      confined to the standalone, non-imported `packages/sapience-flake/` tree)*
+- [x] If any check contradicts the above, STOP and report rather than proceeding -- the
+      precondition gate has reopened. *(completed: no contradiction found, proceeding)*
+- [x] Record the four results verbatim for reuse in the summary. *(completed)*
 
 **Timing**: 0.25 hours
 

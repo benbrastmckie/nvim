@@ -83,7 +83,7 @@ next_project_number: 619
 498 [HOLD] — Replace the email preference harvest tally substrate
 522 [NOT STARTED] — Fix report/summary heading-skeleton conformance across agents
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
-617 [PLANNED] — GOAL. Reconcile the sapience extension's source store with...
+617 [IMPLEMENTING] — GOAL. Reconcile the sapience extension's source store with...
   └─ 614 [NOT STARTED] — Resolve a SF-1 card worktree to its parent checkout so card...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
@@ -356,7 +356,7 @@ ACCEPTANCE.
 ---
 
 ### 617. Reconcile sapience source store surfaces
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: extensions
 - **Dependencies**: None
