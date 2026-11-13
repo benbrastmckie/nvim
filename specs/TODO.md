@@ -1,5 +1,5 @@
 ---
-next_project_number: 616
+next_project_number: 617
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 616
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,614,615 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,614,615,616 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594 | 439,458,472,476,486,509,518,519,542,543,564,572,593 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,595 | 438,492,501,539,547,552,580,594 | core-agent-system, agent-system |
@@ -84,6 +84,7 @@ next_project_number: 616
 563 [NOT STARTED] — Make the extension repo registry usable for deploy...
 614 [NOT STARTED] — Resolve a SF-1 card worktree to its parent checkout so card...
 615 [NOT STARTED] — GOAL. Make an extension's permissions.allow grants retract on...
+616 [NOT STARTED] — GOAL. Narrow the sapience extension's MCP write-tool...
 457 [NOT STARTED] — Repo-specific content has leaked into the shared agent-system...
 
 ### Literature
@@ -188,6 +189,89 @@ next_project_number: 616
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 616. Narrow sapience write tool grants
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: extensions
+- **Dependencies**: None
+
+**Description**: GOAL. Narrow the sapience extension's MCP write-tool permission grants to the set its own
+standing rule permits, and update the worked example that cites the current grant set in the
+same change, so neither surface is left inconsistent with the other.
+
+THIS TASK IS THE NAMED ESCAPE VALVE. `.claude/rules/sapience-write-path.md`'s "Accepted Residual:
+The Four-Tool Permission Grant Stays Intact" section records the residual and names its remedy
+verbatim: "a follow-up task that narrows the grant together with the `core/` worked-example
+update in the same change, so neither surface is left inconsistent -- not a silent hope that the
+grant is never misused." No such task existed until this one.
+
+THE RESIDUAL, RESTATED FROM THE RULE'S OWN TEXT. That rule's standing contract is that no
+instruction surface under `agent-system/extensions/sapience/**` or
+`.claude/context/project/sapience/**` may name an MCP write tool (`sapience_remember`,
+`sapience_wrapup`, `sapience_handoff`, `sapience_adddoc`) as the path a write SHOULD take; every
+prescribed write routes through `scripts/sapience-remember.sh`'s direct `POST /ingest-kos` call,
+because that is the only call site that can produce a repo-tagged, per-repo-scopable write.
+`agent-system/extensions/sapience/settings-fragment.json` nonetheless grants all four of those
+tools at project scope. The consequence the rule states plainly: a stray proactive MCP call can
+still succeed non-interactively and land a permanent, undeletable, untagged write -- this vault
+has no delete API (three probed routes return 404; removal is web-app-only).
+
+The harness's own session-start nudge actively pushes toward exactly that call ("when a decision,
+finding, or correction lands, save it with sapience_remember - don't wait to be asked"), which
+the extension's surfaces supersede by counter-instruction. A counter-instruction plus a live
+grant is a weaker arrangement than a counter-instruction plus no grant, and the gap between them
+is what this task closes.
+
+THE COUPLING THAT MAKES THIS ONE TASK AND NOT TWO. Narrowing the grant alone would leave
+`agent-system/extensions/core/context/patterns/mcp-server-ownership.md`'s worked example stale,
+because that example cites the current four-write-tool grant by path. The rule's own text gives
+that as the reason the narrowing was deferred rather than taken at the time: `core/` was outside
+the editing task's surface. Both edits are local to this repository's source store, so this task
+can take both; splitting them would reintroduce exactly the inconsistency the rule's remedy
+clause was written to prevent.
+
+SCOPE.
+
+1. DECIDE WHAT THE GRANT SET BECOMES, with reasons, rather than reflexively deleting four lines.
+   The candidate shapes are not equivalent:
+   (i) remove all four write-tool grants, leaving only the seven read-tool grants;
+   (ii) remove the three never-prescribed tools (`_wrapup`, `_handoff`, `_adddoc`) and keep
+        `sapience_remember` for a user who explicitly asks for an ad hoc save in conversation;
+   (iii) keep the grants and close the gap some other way.
+   Weigh what each costs a PRIMARY session (the postflight write path is a script and needs no
+   MCP grant at all, but an interactively-requested save does) against the permanence of an
+   untagged write. State which conversational affordances shape (i) removes.
+
+2. APPLY THE CHOSEN NARROWING to
+   `agent-system/extensions/sapience/settings-fragment.json`'s `permissions.allow`.
+
+3. UPDATE `agent-system/extensions/core/context/patterns/mcp-server-ownership.md`'s worked
+   example in the same change so its cited grant set matches what the fragment now carries.
+
+4. UPDATE `.claude/rules/sapience-write-path.md`'s Accepted Residual section at its SOURCE
+   (`agent-system/extensions/sapience/` -- never the deployed `.claude/` mirror, per
+   `.claude/rules/source-store-deploy-boundary.md`) so it records the landed disposition rather
+   than a residual that no longer exists. Per
+   `.claude/rules/no-record-versioning-in-deliverables.md` this is a statement of the current
+   arrangement, not a narration of what it used to be.
+
+ORDERING NOTE, NOT A HARD BLOCK. The grant-retraction defect recorded separately in this
+repository means a narrowing here does not retroactively revoke grants already merged into a
+repo's `.claude/settings.local.json`; those persist until that defect is fixed or the file is
+hand-edited. This task should state that interaction rather than imply the narrowing takes
+effect everywhere on its own, but it does not need to wait for that fix to land.
+
+ACCEPTANCE.
+
+- The fragment carries exactly the grant set scope item 1 selected, with the reasoning recorded.
+- `mcp-server-ownership.md`'s worked example cites that same set; a reader of either file is not
+  misled by the other.
+- The Accepted Residual section reads as a landed disposition.
+- A fresh load of the extension into a test repository produces the narrowed set in that repo's
+  `.claude/settings.local.json`.
+
+---
 
 ### 615. Retract extension grants on unload
 - **Status**: [NOT STARTED]
