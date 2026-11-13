@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "Verification-stage hook script",
+  "started_at": "2026-11-13T21:10:00Z",
+  "last_updated": "2026-11-13T21:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read nix-preflight.sh as structural precedent", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Write typescript-verify.sh", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/typescript-verify.sh"]},
+    {"id": 3, "description": "Implement honest-degrade wording rule", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/typescript-verify.sh"]},
+    {"id": 4, "description": "Implement exit-code discipline", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/typescript-verify.sh"]},
+    {"id": 5, "description": "Exercise three-state fixture matrix", "status": "done", "files_touched": []},
+    {"id": 6, "description": "bash -n and lint-shellcheck.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "tsconfig-only fixture (B) with no package.json", "result": "failed", "reason": "Design spec's own detection ladder gates everything on package.json presence first ('No package.json at all -> no Node/TypeScript project is in scope'); a tsconfig.json alone without package.json correctly SKIPs rather than running the config-driven fallback. Corrected the fixture to include a minimal package.json alongside tsconfig.json to exercise the actual fallback branch."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

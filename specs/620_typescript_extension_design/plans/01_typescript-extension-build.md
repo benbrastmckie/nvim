@@ -666,32 +666,32 @@ contract fragment reach before the manifest declares them in Phase 5.
 
 ---
 
-### Phase 4: Verification-stage hook script [NOT STARTED]
+### Phase 4: Verification-stage hook script [COMPLETED]
 
 **Goal**: Write `scripts/typescript-verify.sh` implementing the full §7 contract: the
 5-positional-argument input shape, the toolchain detection ladder, the three-state outcome
 vocabulary, and the honest-degrade wording rule.
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/nix/scripts/nix-preflight.sh` as the structural precedent for
-      "detect, report, never hard-fail" — adapting its shape, not its stage.
-- [ ] Write the script: a header comment stating the 5-argument contract and the three-state
+- [x] Read `agent-system/extensions/nix/scripts/nix-preflight.sh` as the structural precedent for
+      "detect, report, never hard-fail" — adapting its shape, not its stage. *(completed)*
+- [x] Write the script: a header comment stating the 5-argument contract and the three-state
       vocabulary, package-manager detection by lockfile priority, typecheck-script discovery via
       `jq` over `package.json` `.scripts`, the `tsconfig*.json` fallback, test-script discovery
       with npm-placeholder rejection, and the per-sub-check `ran_pass`/`ran_fail`/`skipped_no_command`
-      accounting.
-- [ ] Implement the honest-degrade wording rule: every skip prints
+      accounting. *(completed: 129 lines)*
+- [x] Implement the honest-degrade wording rule: every skip prints
       `[typescript-verify] SKIP: <reason>` and the script contains no `OK`/checkmark/`passed`
-      token on any skip path.
-- [ ] Implement the exit-code discipline: `exit 0` on completion regardless of findings; non-zero
-      only on the script's own failure.
-- [ ] Exercise all three states against throwaway fixture directories under this session's
+      token on any skip path. *(completed; reworded a header comment that had used those words descriptively so the whole-file grep is unambiguously zero)*
+- [x] Implement the exit-code discipline: `exit 0` on completion regardless of findings; non-zero
+      only on the script's own failure. *(completed: non-zero only for missing jq or unparseable package.json)*
+- [x] Exercise all three states against throwaway fixture directories under this session's
       scratchpad: (a) a `package.json` with a `typecheck` script, (b) a `tsconfig.json` with no
       script, (c) neither file present. Confirm case (c) prints an explicit `SKIP` with a reason
-      and no pass-like wording.
-- [ ] Run `bash -n` on the script, then run the repository's sanctioned shellcheck entry point
+      and no pass-like wording. *(completed: all three states reached, plus an explicit ran_fail fixture; see phase notes for the (b) fixture correction -- a bare tsconfig.json with no package.json correctly SKIPs per the design's own detection ladder, so (b) was run with a minimal package.json alongside the tsconfig.json to actually reach the config-driven fallback)*
+- [x] Run `bash -n` on the script, then run the repository's sanctioned shellcheck entry point
       `bash .claude/scripts/lint/lint-shellcheck.sh` and require exit status 0 (never a bare
-      `shellcheck` invocation, and never a stdout diff against a baseline).
+      `shellcheck` invocation, and never a stdout diff against a baseline). *(completed: both exit 0; lint-shellcheck.sh run with the explicit file path argument since the new file is not yet git-tracked and the default git-ls-files discovery would otherwise silently skip it)*
 
 **Timing**: 1.5 hours
 
