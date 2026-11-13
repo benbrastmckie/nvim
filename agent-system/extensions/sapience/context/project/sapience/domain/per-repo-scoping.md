@@ -115,7 +115,65 @@ one: keeping both call sites would double permanent, unreviewed write volume for
 reachability. The bound above is a bound on the shared note set per completed task, not per
 write path, so replacing rather than adding keeps that bound meaningful.
 
+## The MCP-Registration Triad
+
+Per-repo activation also covers WHICH `mcp.py` process a session connects to, not only which
+knowledge it can read or write. Four scripts mirror the lean extension's own shipped per-project
+`lean-lsp` triad. This registration triad's own `SessionStart` hook is a SEPARATE, sixth hook
+surface from the five `settings-fragment.json` merges (`SessionStart`, `UserPromptSubmit`,
+`PreToolUse`, `SessionEnd`, `Stop`) -- installed at user level, not merged by the fragment:
+
+- **`scripts/setup-sapience-mcp.sh`** — the writer. Registers, repairs, or removes
+  `.projects["<abs project path>"].mcpServers.sapience` in `~/.claude.json` for exactly one
+  project, via a whole-file `jq` merge that preserves every other key. Never touches the
+  top-level `.mcpServers` key (the `--retire-global` action is a separate, standalone escape
+  hatch, not part of the normal write path).
+- **`hooks/sapience-mcp-register-project.sh`** — a bidirectional `SessionStart` hook. When the
+  session's repo shows `extensions.sapience.status == "active"` in its own
+  `.claude-extensions.json`, it invokes the writer to register/repair the entry; when it does
+  not and an entry exists, it invokes the writer with `--remove`. This is the only mechanism
+  that can retract the per-project `~/.claude.json` entry once the extension unloads, since the
+  settings-merge engine governs only in-tree merge targets, never `~/.claude.json`.
+- **`scripts/install-sapience-mcp-session-hook.sh`** — idempotent, `--remove`-capable installer
+  that seeds the hook and the writer to `$HOME/.claude/{hooks,scripts}/` and registers the
+  `SessionStart` entry in `$HOME/.claude/settings.json`.
+- **`scripts/verify-sapience-mcp.sh`** — the verifier, checking activation, the per-project
+  entry, the installed files, and the `SessionStart` registration for one project.
+
+**Stable-user-level-path invariant.** The hook and writer are installed to
+`$HOME/.claude/hooks/` and `$HOME/.claude/scripts/` — stable, user-level paths outside any
+repository's own disposable `.claude/` tree (`context/patterns/mcp-server-ownership.md`'s
+`.claude/`-path boundary invariant). This is load-bearing, not merely tidy: the hook must work in
+a fresh git worktree with no `.claude/` deploy at all, so it cannot resolve the writer relative
+to the calling repository's own tree.
+
+**One-session-start removal lag.** Unloading the extension does not retroactively remove a
+repo's `~/.claude.json` entry until the NEXT session start in that repo (the bidirectional hook
+above only fires at session start) — or immediately, via
+`install-sapience-mcp-session-hook.sh --remove`.
+
+**Deliberate divergence from the lean model.** Lean's own installer also writes
+`$HOME/.dotfiles/config/claude/settings.json` as a durable second registration target. This
+extension's installer does not: it is forbidden to touch any `.dotfiles` file, so the
+`SessionStart` registration above lives ONLY in `$HOME/.claude/settings.json`. See the
+durability-residual hazard below.
+
 ## Hazards
+
+**The `SessionStart` MCP-registration hook is NOT durable across a `home-manager switch` --
+accepted residual, same shape as the write-grant residual above.** `hooks` is a home-manager
+ENFORCED key (`~/.dotfiles/modules/home/core/dotfiles.nix`'s
+`[_NOTE,env,hooks,model,permissions,statusLine]` set), reset from `.dotfiles`'
+`config/claude/settings.json` on every `home-manager switch` while that source carries a
+`hooks` key -- which it will, for other entries, even after a companion task removes the
+Sapience ones from it. Because this extension's installer deliberately does not write
+`.dotfiles` (see above), the registration this installer adds to
+`$HOME/.claude/settings.json` is wiped by the next switch and must be re-run. `install-sapience-mcp-session-hook.sh`
+prints a loud WARNING naming this on every run, and `verify-sapience-mcp.sh`'s check (d) detects
+the loss so it is caught rather than silent. **Named escape valve**: a companion task (or a
+follow-up) taking ownership of a durable user-level `SessionStart` entry for this hook, the same
+way the write-grant residual above names a follow-up task as its escape valve rather than a
+silent hope the gap is never hit.
 
 **There is no delete API.** `DELETE /v1/ko/<hash>`, `DELETE /v1/kos/<hash>`, and `POST
 /v1/ko/<hash>/delete` all return 404 on this vault. Every write through `sapience-remember.sh` is

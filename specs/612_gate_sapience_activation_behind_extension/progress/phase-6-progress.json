@@ -1,0 +1,53 @@
+{
+  "phase": 6,
+  "phase_name": "Documentation of the per-repo activation contract",
+  "started_at": "2026-11-12T23:07:00Z",
+  "last_updated": "2026-11-12T23:07:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Replace EXTENSION.md's Already ambient paragraph; keep under 60 lines",
+      "status": "done",
+      "note": "58 lines (ceiling 60), confirmed via wc -l and verify-deploy.sh Gate 3 Rule U",
+      "files_touched": ["agent-system/extensions/sapience/EXTENSION.md"]
+    },
+    {
+      "id": 2,
+      "description": "Update README.md file inventory and gaps sections",
+      "status": "done",
+      "note": "renamed to four gaps (added Gap 4: MCP registration); file inventory lists all 4 new scripts and the hook; hook count stated explicitly (5 merged + 1 separate = 6 total)",
+      "files_touched": ["agent-system/extensions/sapience/README.md"]
+    },
+    {
+      "id": 3,
+      "description": "Update domain/per-repo-scoping.md with the registration triad section",
+      "status": "done",
+      "note": "added The MCP-Registration Triad section (triad description, stable-user-level-path invariant, one-session-start lag, divergence from lean model) plus a Hazards bullet naming Risk 1's residual and escape valve",
+      "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]
+    },
+    {
+      "id": 4,
+      "description": "Update domain/review-gate-boundary.md's 11-grant tradeoff section, anchor unchanged",
+      "status": "done",
+      "note": "heading anchor text verified byte-identical against core's mcp-server-ownership.md citation; section now covers all 11 grants and the scope-matched registration; added a Coming staleness paragraph naming core's worked example and a follow-up task as the escape valve (Risk 4); caught and fixed a 'no longer exists' phrase that would have tripped the record-versioning lint before closing",
+      "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md"]
+    },
+    {
+      "id": 5,
+      "description": "Update manifest.json description; refresh index-entries.json and regenerate line_count",
+      "status": "done",
+      "note": "generate-context-line-counts.sh --write/--check both exact (6/6)",
+      "files_touched": ["agent-system/extensions/sapience/manifest.json", "agent-system/extensions/sapience/index-entries.json"]
+    },
+    {
+      "id": 6,
+      "description": "Re-check task-reference and record-version lints; sync-manifest-scripts.sh --check",
+      "status": "done",
+      "note": "check-task-references.sh: 0 occurrences; check-record-versioning.sh: 3 pre-existing BLOCKING hits all in unrelated himalaya docs, none in this task's edits; sync-manifest-scripts.sh --check clean (7/7); verify-deploy.sh --skip-slow --only-gate 3,4 clean",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

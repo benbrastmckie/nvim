@@ -46,33 +46,59 @@ already applies to the postflight call site (see `## Write-Tool Disposition` bel
 
 ## The Permission Grant's Repository-Scoped Tradeoff
 
-`settings-fragment.json` grants the four write tools at this repository's own project scope
-(`.claude/settings.local.json`), not machine-wide. Sapience is registered at user scope
-(`~/.claude.json`), and the canonical rule for this codebase (see
-`context/patterns/mcp-server-ownership.md`) would put a user-scope server's permission grant in
-user-scope `~/.claude/settings.json` -- but that file is reset from `~/.dotfiles` by
-`home.activation.claudeSettings` on every home-manager switch, so a direct edit there would be
-silently reverted. This is exactly the case `mcp-server-ownership.md`'s "Carve-out: a
-nix-enforced user-scope settings file cannot receive a new grant" subsection (under its
-`## Permission` section) sanctions: the project-scoped grant here is not merely the only
-placement this extension can reach, it is the VERDICT the standard reaches for a nix-enforced
-settings file, with this extension as the worked example the subsection names by path. The
-consequence is real and should not be read as "gap 1 is fully closed": a sapience session in any
-other project on this machine still hits an interactive permission prompt on these four tools,
-because that project's own `.claude/settings.local.json` never receives this grant. Closing the
-gap machine-wide would mean adding the same four entries to
+`settings-fragment.json` grants all 11 `mcp__sapience__*` tools (the 4 write tools plus 7 read
+tools) at this repository's own project scope (`.claude/settings.local.json`), not machine-wide.
+Sapience's MCP registration now also reaches local (per-project) scope: the
+`setup-sapience-mcp.sh` / `sapience-mcp-register-project.sh` triad (see
+`per-repo-scoping.md`'s "The MCP-Registration Triad") writes
+`.projects["<abs path>"].mcpServers.sapience` in `~/.claude.json` for exactly this project,
+gated on the same extension-load state the grant above is gated on. The grant and the
+per-project registration are therefore now SCOPE-MATCHED -- both project-scoped, both tied to
+whether this extension is loaded -- rather than the earlier shape, where a project-scoped grant
+served a server registered only at machine-wide user scope.
+
+A top-level, machine-wide `~/.claude.json` `.mcpServers.sapience` entry still survives alongside
+the per-project one, written by this machine's home-manager activation
+(`modules/home/services/sapience.nix`'s `sapienceMcpServer` block). For AS LONG AS that entry
+survives, the canonical rule for this codebase (see `context/patterns/mcp-server-ownership.md`)
+would put a user-scope server's permission grant in user-scope `~/.claude/settings.json` -- but
+that file is reset from `~/.dotfiles` by `home.activation.claudeSettings` on every home-manager
+switch, so a direct edit there would be silently reverted. This is exactly the case
+`mcp-server-ownership.md`'s "Carve-out: a nix-enforced user-scope settings file cannot receive a
+new grant" subsection (under its `## Permission` section) sanctions: the project-scoped grant
+here is not merely the only placement this extension can reach, it is the VERDICT the standard
+reaches for a nix-enforced settings file, with this extension as the worked example the
+subsection names by path. The consequence is real and should not be read as "the activation gap
+is fully closed": a sapience session in any other project on this machine that has not loaded
+this extension still hits an interactive permission prompt on all 11 tools, because that
+project's own `.claude/settings.local.json` never receives this grant. Closing the gap
+machine-wide would mean adding the same 11 entries to
 `~/.dotfiles/config/claude/settings.json` -- a different repository, and the carve-out subsection
 itself names this as the WRONG fix, not merely out of this extension's scope: it would enlarge
-the blast radius for these four mutating, unreviewed tools from one opted-in repository to every
-project on the machine.
+the blast radius for these mutating, unreviewed write tools from one opted-in repository to
+every project on the machine.
+
+**Coming staleness of `core`'s worked example.** `mcp-server-ownership.md`'s carve-out
+subsection cites this extension by path as its worked example, and calls the 4-grant placement
+a nix-enforced carve-out asserting a seven-tool read-only allow-list exists at USER scope. That
+text still holds today -- the dotfiles-level seven-tool read allow-list and this fragment's own
+11-grant project-scope copy coexist, so neither description is wrong yet. It becomes
+*inaccurate*, not merely outdated, only once a separate task removes the user-scope read grants
+from `~/.dotfiles/config/claude/settings.json`, at which point `core`'s text would describe a
+surface absent from that file. Updating `core/context/patterns/mcp-server-ownership.md` is
+outside this extension's own edit surface; the named escape valve is a follow-up task that
+updates that worked example together with whichever change removes the dotfiles-level read
+grants, so neither surface is left inconsistent.
 
 ## Explicit Grants, Not a Wildcard
 
-The grant lists the four tool names explicitly (`mcp__sapience__sapience_remember`, `_wrapup`,
-`_handoff`, `_adddoc`) rather than a `mcp__sapience__*` wildcard. This matches the existing
-seven-entry dotfiles allow-list's own convention, which is also explicit, one tool per line. The
-tradeoff: a future new sapience write tool is not auto-granted by this fragment and needs its own
-line added here -- a known maintenance item, not a surprise, given the precedent it follows.
+The grant lists all 11 tool names explicitly (`mcp__sapience__sapience_remember`, `_wrapup`,
+`_handoff`, `_adddoc`, `sapience`, `sapience_search`, `_briefing`, `_context`, `_ask`,
+`_outstanding`, `_papers`) rather than a `mcp__sapience__*` wildcard. This matches the
+dotfiles allow-list's own convention for the same seven read tools, which is also explicit, one
+tool per line. The tradeoff: a future new sapience tool is not auto-granted by this fragment and
+needs its own line added here -- a known maintenance item, not a surprise, given the precedent
+it follows.
 
 ## Write-Tool Disposition
 

@@ -532,48 +532,56 @@ over `~/.claude.json`, `~/.claude/settings.json`, `.claude-extensions.json` and
 
 ---
 
-### Phase 6: Documentation of the per-repo activation contract [NOT STARTED]
+### Phase 6: Documentation of the per-repo activation contract [COMPLETED]
 
 **Goal**: every extension doc states the new per-repo activation contract, with a correct hook
 count, and both derived index surfaces are regenerated rather than hand-maintained.
 
 **Tasks**:
-- [ ] `EXTENSION.md`: **replace** the now-wrong "Already ambient" paragraph (confirmed present at
+- [x] `EXTENSION.md`: **replace** the now-wrong "Already ambient" paragraph (confirmed present at
       planning time, lines 6-7, asserting the MCP registration and "the three
       SessionStart/SessionEnd/Stop hooks" live in `~/.dotfiles`) with the per-repo activation
       contract: 11 grants, 5 hooks in the fragment, and the user-level MCP-registration triad.
       Replace rather than append — the file is 53 lines against a hard 60-line ceiling.
-- [ ] State the correct hook count explicitly and unambiguously: **five** hooks in
+      *(completed: 58/60 lines)*
+- [x] State the correct hook count explicitly and unambiguously: **five** hooks in
       `settings-fragment.json` (SessionStart, UserPromptSubmit, PreToolUse, SessionEnd, Stop),
       **plus one** separate MCP-registration `SessionStart` hook installed at user level by
       `install-sapience-mcp-session-hook.sh` — six hook surfaces in total, of which only five are
       extension-merged. Use the same phrasing in `README.md` and the domain docs so no reader has
-      to reconcile two counts.
-- [ ] `README.md`: update `## File Inventory` with the four new scripts and the new hook, and
+      to reconcile two counts. *(completed)*
+- [x] `README.md`: update `## File Inventory` with the four new scripts and the new hook, and
       `## The Three Gaps This Extension Closes` to reflect that the activation surface is now the
-      extension's own.
-- [ ] `domain/per-repo-scoping.md`: add a section documenting the MCP-registration triad, the
+      extension's own. *(completed: renamed to "## The Gaps This Extension Closes" with a new
+      Gap 4 for MCP registration -- heading not cited externally, confirmed by grep)*
+- [x] `domain/per-repo-scoping.md`: add a section documenting the MCP-registration triad, the
       stable-user-level-path invariant and its `mcp-server-ownership.md` citation, the
       bidirectional hook's one-session-start removal lag, and **Risk 1 as a named residual with a
       named escape valve** (the companion task, or a follow-up, taking ownership of a durable
       user-level `SessionStart` entry) — the same shape as the write-grant residual in
       `rules/sapience-write-path.md`. Its `## Hazards` and `## No Lifecycle Hook` sections both
-      exist (confirmed) and are the right homes.
-- [ ] `domain/review-gate-boundary.md`: update `## The Permission Grant's Repository-Scoped
+      exist (confirmed) and are the right homes. *(completed)*
+- [x] `domain/review-gate-boundary.md`: update `## The Permission Grant's Repository-Scoped
       Tradeoff` to cover all 11 grants and to record that, with registration moving to local
       (per-project) scope, the grants become scope-matched to the registration rather than a
       narrower-than-registration carve-out. **Keep that heading's anchor text byte-identical** —
       `core`'s `mcp-server-ownership.md` cites it by name, and `core/` is outside this task's edit
       surface (Risk 4). Record the coming staleness of that worked example and name the follow-up
-      that fixes it.
-- [ ] `manifest.json`: update the `description` field to state the activation-surface role.
-- [ ] `index-entries.json`: refresh the `summary`/`keywords`/`topics` of the two edited domain
+      that fixes it. *(completed: anchor text verified byte-identical against the inbound
+      citation)*
+- [x] `manifest.json`: update the `description` field to state the activation-surface role.
+      *(completed)*
+- [x] `index-entries.json`: refresh the `summary`/`keywords`/`topics` of the two edited domain
       entries, then run `bash .claude/scripts/generate-context-line-counts.sh --write` and
       `--check` for the `line_count` values the edits invalidate (Rule R is a Gate 3 FAIL).
-- [ ] Re-check no task-number reference and no record-versioning language entered any file
+      *(completed: 6/6 exact)*
+- [x] Re-check no task-number reference and no record-versioning language entered any file
       outside `specs/**` (acceptance criterion 3): state the contract as it now is, never as "no
-      longer in `.dotfiles`" or "previously machine-wide".
-- [ ] `bash .claude/scripts/sync-manifest-scripts.sh --check` exits 0.
+      longer in `.dotfiles`" or "previously machine-wide". *(completed: check-task-references.sh
+      0 occurrences; check-record-versioning.sh's 3 BLOCKING hits are pre-existing in unrelated
+      himalaya docs; one "no longer exists" phrase introduced during this phase was caught and
+      rewritten before closing)*
+- [x] `bash .claude/scripts/sync-manifest-scripts.sh --check` exits 0. *(completed: 7/7)*
 
 **Timing**: 2 hours
 

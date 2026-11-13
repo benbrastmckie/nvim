@@ -1,18 +1,23 @@
 ## Sapience Extension
 
-Permission grants and orientation docs for Sapience, the hosted vault at app.spnc.ai. See
-`~/.dotfiles/docs/sapience.md` for the machine configuration -- not duplicated here.
+Permission grants, per-repo activation surface, and orientation docs for Sapience, the hosted
+vault at app.spnc.ai. See `~/.dotfiles/docs/sapience.md` for the machine configuration.
 
-**Already ambient**: the MCP server registration and the three SessionStart/SessionEnd/Stop
-hooks in `~/.dotfiles`, enforced every home-manager switch -- never rebuilt here.
+**Per-repo activation**: loading this extension into a repo is the ONLY thing that turns
+Sapience on there; unloading it turns it off again. `settings-fragment.json` carries 11
+permission grants (7 read tools + 4 write tools) and five hooks (`SessionStart`,
+`UserPromptSubmit`, `PreToolUse`, `SessionEnd`, `Stop`), merged only while loaded. A separate,
+user-level `SessionStart` hook (installed by `scripts/install-sapience-mcp-session-hook.sh`)
+registers or removes this project's own `~/.claude.json` MCP entry -- six hook surfaces in
+total, five of which are extension-merged. See `domain/per-repo-scoping.md`.
 
-**What this extension adds**: `settings-fragment.json` grants the four MCP write tools
-(`sapience_remember`, `sapience_wrapup`, `sapience_handoff`, `sapience_adddoc`) at this repo's
-project scope -- repository-scoped, not machine-wide; see `domain/review-gate-boundary.md`. It
-also provides two scripts, `scripts/sapience-retrieve.sh` and `scripts/sapience-remember.sh`,
-deployed to `.claude/scripts/`: the first is called from core's `orchestrate-build-dispatch.sh`
-Stage 3.5 `memory_context` block; the second is called from the postflight wrapup below. See
-`domain/per-repo-scoping.md` for both scripts' contracts and hazards.
+**What this extension adds**: besides the grants and hooks above, two scripts deployed to
+`.claude/scripts/`: `scripts/sapience-retrieve.sh`, called from core's
+`orchestrate-build-dispatch.sh` Stage 3.5 `memory_context` block, and
+`scripts/sapience-remember.sh`, called from the postflight wrapup below. See
+`domain/per-repo-scoping.md` for both scripts' contracts and hazards, and for the per-project
+MCP-registration triad (`setup-sapience-mcp.sh`, the registration hook, the installer, the
+verifier).
 
 **Postflight wrapup**: at the `[IMPLEMENTING]` -> `[COMPLETED]` transition, write 3-8 distilled
 notes via `scripts/sapience-remember.sh` (bound enforced at this call site), replacing the

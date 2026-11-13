@@ -1,7 +1,7 @@
 {
   "name": "sapience",
   "version": "1.0.0",
-  "description": "Permission grants and orientation docs for the hosted Sapience knowledge vault (app.spnc.ai): closes the MCP write-tool permission gap and documents the postflight wrapup instruction and the vault's review-gate/transcript-filter boundaries",
+  "description": "Permission grants, per-repo MCP activation surface, and orientation docs for the hosted Sapience knowledge vault (app.spnc.ai): grants all 11 mcp__sapience__* tools and merges five hooks per-repo, registers/removes a per-project MCP server entry via a bidirectional SessionStart hook, and documents the postflight wrapup instruction and the vault's review-gate/transcript-filter boundaries",
   "dependencies": ["core"],
   "routing_exempt": true,
   "provides": {
