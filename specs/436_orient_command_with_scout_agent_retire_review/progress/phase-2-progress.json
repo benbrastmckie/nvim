@@ -1,0 +1,55 @@
+{
+  "phase": 2,
+  "phase_name": "Record the Three Lint Exclusions",
+  "started_at": "2026-11-14T23:42:00Z",
+  "last_updated": "2026-11-14T23:58:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run lint-agent-contracts.sh first and capture exact FAIL set for scout-agent.md",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add scout-agent.md to EXCLUDED_TERMINAL_STATUS_RELATIVE_PATHS (Check E)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Add scout-agent.md to EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS (Check F)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Add scout-agent.md to CHECK_J_EXCLUDED_RELATIVE_PATHS (Check J)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Confirm zero .orchestrator-handoff.json occurrences and zero recognized handoff heading in scout-agent.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/scout-agent.md"],
+      "note": "Rewrote two prose mentions to avoid the literal string per the plan's explicit zero-occurrence check, even though is_excluded_from_check_j's continue would have short-circuited the grep anyway once the exclusion array entry landed."
+    },
+    {
+      "id": 6,
+      "description": "Re-run lint and confirm zero FAIL lines naming the new path",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Do not add scout to Checks C/G/H/L/M curated inclusion arrays",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

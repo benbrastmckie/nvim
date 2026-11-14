@@ -236,7 +236,7 @@ run alongside the diff read-through this tier prescribes.
 
 ---
 
-### Phase 2: Record the Three Lint Exclusions [NOT STARTED]
+### Phase 2: Record the Three Lint Exclusions [COMPLETED]
 
 **Goal**: Add the new agent's relative path to each of `lint-agent-contracts.sh`'s three curated
 exclusion arrays that a console-only, forked-dispatch-only agent requires, so Checks E, F and J
@@ -245,30 +245,37 @@ carry.
 
 **Tasks**:
 
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` first, with
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` first, with
       Phase 1's file in place, and capture the exact set of FAIL lines naming
       `agent-system/extensions/core/agents/scout-agent.md`. This is the confirmation step for
-      this phase's Scope Hypothesis — do not assume the set.
-- [ ] Add `"agent-system/extensions/core/agents/scout-agent.md"` to
+      this phase's Scope Hypothesis — do not assume the set. *(completed: confirmed exactly three
+      FAIL lines, naming Checks E, F and J — matching the Scope Hypothesis exactly, no fourth
+      check)*
+- [x] Add `"agent-system/extensions/core/agents/scout-agent.md"` to
       `EXCLUDED_TERMINAL_STATUS_RELATIVE_PATHS` (Check E, array at line 525), with a comment in
       the established shape recording that the file carries no `"status":` value anywhere because
       it writes no terminal metadata at all — the same justification already recorded for
-      `code-reviewer-agent.md` and `roadmap-agent.md`.
-- [ ] Add the same path to `EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS` (Check F, array at line
+      `code-reviewer-agent.md` and `roadmap-agent.md`. *(completed)*
+- [x] Add the same path to `EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS` (Check F, array at line
       392), with the recorded justification "console-only bullet-summary return, no file-based
-      metadata exchange anywhere in the file".
-- [ ] Add the same path to `CHECK_J_EXCLUDED_RELATIVE_PATHS` (Check J, array at line 919), with
+      metadata exchange anywhere in the file". *(completed)*
+- [x] Add the same path to `CHECK_J_EXCLUDED_RELATIVE_PATHS` (Check J, array at line 919), with
       the recorded justification "dispatched directly from `/review`'s own command body via the
       Agent tool; never reached through a `skill-orchestrate` `dispatch[]`/`aux_dispatch[]` row,
       so `orchestrator_mode` never applies and no handoff-writing section is ever required".
-- [ ] Confirm the file contains zero occurrences of `.orchestrator-handoff.json` and zero
+      *(completed)*
+- [x] Confirm the file contains zero occurrences of `.orchestrator-handoff.json` and zero
       recognized handoff-writing heading — Check J's own inverted-drift guard FAILs any exclusion
-      entry whose file later acquires one.
-- [ ] Re-run the lint and confirm zero FAIL lines naming the new path.
-- [ ] Do NOT add the scout to `IN_SCOPE_RELATIVE_PATHS` (Check C),
+      entry whose file later acquires one. *(completed: two prose mentions in scout-agent.md were
+      rewritten to avoid the literal string entirely, even though the exclusion array entry alone
+      would already short-circuit the grep via is_excluded_from_check_j's continue)*
+- [x] Re-run the lint and confirm zero FAIL lines naming the new path. *(completed: lint-agent-contracts.sh
+      exits 0, scout-agent.md logged only as PASS (Check K) and as a recorded exclusion, no FAIL)*
+- [x] Do NOT add the scout to `IN_SCOPE_RELATIVE_PATHS` (Check C),
       `OWNERSHIP_IN_SCOPE_RELATIVE_PATHS` (Check G), Check H's or Check L's or Check M's arrays.
       Those are curated inclusion lists; a file absent from them is simply not checked, and Check
       N's completeness nets reach only `*implementation*agent.md` and `*research*agent.md`.
+      *(completed: confirmed not added to any of those arrays)*
 
 **Timing**: 0.5 hours
 

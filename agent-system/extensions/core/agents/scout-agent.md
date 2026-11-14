@@ -14,8 +14,8 @@ Read-only, console-only orientation agent. Dispatched on demand (never through
 from a command body such as `/review`'s strategic-brief mode) to answer one question: where is
 this repository against its stated aim, and what is the cheapest next move. It researches current
 state and returns exactly ONE compressed brief to its caller, rendered to the user as bullet
-points in conversation. It writes nothing: no file, no `.return-meta.json`, no
-`.orchestrator-handoff.json`, no report artifact under `specs/**`.
+points in conversation. It writes nothing: no file, no return-metadata file, no orchestrator
+handoff artifact of any kind, no report artifact under `specs/**`.
 
 ## Read-Only By Construction
 
@@ -113,6 +113,6 @@ omitted.** Each section is ruthlessly compressed — this is an executive brief,
 ## Return Format
 
 Return the brief directly as this agent's final response: five sections, each a short run of
-bullet points, in the order given above. No `.return-meta.json`, no
-`.orchestrator-handoff.json`, no written artifact of any kind — the same console-only shape
-`code-reviewer-agent.md` already uses for its own return.
+bullet points, in the order given above. No return-metadata file, no orchestrator handoff
+artifact, no written artifact of any kind — the same console-only shape `code-reviewer-agent.md`
+already uses for its own return.

@@ -389,10 +389,13 @@ check_c_no_task_references_bullet() {
 #     (never through skill-orchestrate's dispatch table, never under orchestrator_mode), with no
 #     task directory to write .return-meta.json into; reports via its own console-only text
 #     return instead, same shape as code-reviewer-agent.md above.
+#   - core/agents/scout-agent.md: console-only bullet-summary return, no file-based metadata
+#     exchange anywhere in the file -- same justification as code-reviewer-agent.md above.
 EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS=(
   "agent-system/extensions/core/agents/code-reviewer-agent.md"
   "agent-system/extensions/literature/agents/literature-agent.md"
   "agent-system/extensions/core/agents/roadmap-agent.md"
+  "agent-system/extensions/core/agents/scout-agent.md"
 )
 
 is_excluded_from_artifacts_template() {
@@ -529,6 +532,9 @@ EXCLUDED_TERMINAL_STATUS_RELATIVE_PATHS=(
   "agent-system/extensions/core/agents/code-reviewer-agent.md"
   "agent-system/extensions/literature/agents/literature-agent.md"
   "agent-system/extensions/core/agents/roadmap-agent.md"
+  # scout-agent.md: console-only, read-only agent that writes no terminal metadata at all --
+  # same justification already recorded for code-reviewer-agent.md and roadmap-agent.md above.
+  "agent-system/extensions/core/agents/scout-agent.md"
 )
 
 is_excluded_from_terminal_status() {
@@ -928,6 +934,10 @@ CHECK_J_EXCLUDED_RELATIVE_PATHS=(
   "agent-system/extensions/literature/agents/literature-agent.md"
   "agent-system/extensions/present/agents/pptx-assembly-agent.md"
   "agent-system/extensions/present/agents/slide-critic-agent.md"
+  # core/agents/scout-agent.md: dispatched directly from /review's own command body via the
+  # Agent tool; never reached through a skill-orchestrate dispatch[]/aux_dispatch[] row, so
+  # orchestrator_mode never applies and no handoff-writing section is ever required.
+  "agent-system/extensions/core/agents/scout-agent.md"
 )
 
 is_excluded_from_check_j() {
