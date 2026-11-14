@@ -1,5 +1,5 @@
 ---
-next_project_number: 627
+next_project_number: 629
 ---
 
 # TODO
@@ -13,8 +13,8 @@ next_project_number: 627
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,458,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,436,438,439,457,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598 | 383,390,398,410,431,451,452,453,455,458,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,458,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,436,438,439,457,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,628 | 383,390,398,410,431,451,452,453,455,458,463,472,479,484,491,504,505,527,534,535,538,539,548,549,563,568,585,599 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,501,508,547,552,570,571,579,581,586,588,591,594,624,626 | 436,438,439,472,476,486,492,509,518,519,542,543,564,572,580,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 524,561,577,595,605 | 501,539,547,552,586,594,604 | core-agent-system, agent-system |
 | 5 | 596,609 | 577,595 | agent-system |
@@ -179,6 +179,11 @@ next_project_number: 627
 571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
 572 [NOT STARTED] — Make the full verification tier honorable under batch concurrency
 
+### Sapience
+
+627 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+628 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+
 ### Decidability
 
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
@@ -189,6 +194,44 @@ next_project_number: 627
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 628. Retract sapience write tool grants
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: sapience
+- **Dependencies**: Task 527
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (the merge engine) and agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve each extension's own source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh. Depends on task 527, which is solving the same deployed-set-vs-merge-source convergence problem for hook registrations; coordinate with its mechanism rather than building a second one.
+
+GOAL. Make the narrowing of the sapience permission grant to seven read-shaped tools actually reach deployed repositories. It currently reaches none of them.
+
+MEASURED EVIDENCE. settings-fragment.json grants exactly seven read-shaped mcp__sapience__* tools (sapience, sapience_search, sapience_briefing, sapience_context, sapience_ask, sapience_outstanding, sapience_papers) and no write tools. Every deployed repository that has loaded the extension still grants eleven, including all four MCP write tools (sapience_remember, sapience_wrapup, sapience_handoff, sapience_adddoc): /home/benjamin/.dotfiles, /home/benjamin/.config/nvim, /home/benjamin/Projects/BimodalLogic, /home/benjamin/Projects/Sapience/sf1-engine, /home/benjamin/Projects/Sapience/sapience-app -- 5 of 5. verify-sapience-mcp.sh check (e) fails in this repository with "11/7 sapience grants" and labels it a known pre-existing residual rather than closing it.
+
+WHY IT MATTERS. rules/sapience-write-path.md's "The Permission Grant Matches the Standing Contract" section asserts that a call to any of the four write tools "now raises an interactive permission prompt in an interactive session and is denied outright in a headless/autonomous run, rather than succeeding silently." That claim is false in every live repository. The whole per-repo scoping design rests on writes going through scripts/sapience-remember.sh's POST /ingest-kos call, the only call site that stamps the "[repo:<slug>]" provenance tag that /v1/search's source= filter reads; an MCP write tool cannot produce a tagged write at all, because the connector fixes its provenance string with no injectable repo marker. So every write that takes the still-permitted MCP path lands in the vault unscopable, and nothing currently stops an agent from taking it.
+
+SCOPE. The merge engine is additive-only and cannot retract, which is why the narrowing never propagated. Decide between, and record the reasoning for: (1) teaching the merge engine a retraction mechanism so an entry removed from a fragment is removed from the deployed file on redeploy -- the general fix, and the same shape task 527 needs; or (2) a one-time migration pass over the five deployed settings.local.json files plus a verify-deploy.sh gate that fails when a deployed grant set exceeds its merge source. If (1), the retraction must be narrow enough not to clobber hand-added local grants a user legitimately owns in settings.local.json; state the discrimination rule explicitly.
+
+ACCEPTANCE. All five repositories' .claude/settings.local.json grant exactly the seven read-shaped sapience tools and none of the four write tools; verify-sapience-mcp.sh check (e) passes in this repository; rules/sapience-write-path.md's pre-existing-residual caveat paragraph is rewritten to match reality; a fresh load of the extension into a sixth repository still produces the seven-tool grant directly.
+
+---
+
+### 627. Reap orphan sapience mcp registrations
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: sapience
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh.
+
+GOAL. Close the unreachable-.claude-extensions.json branch in the per-project sapience MCP registration design, so a deleted or moved repository's registration is reaped instead of leaking forever.
+
+MEASURED EVIDENCE. ~/.claude.json carries .projects["/home/benjamin/Projects/sapience-app"].mcpServers.sapience, but that directory does not exist on disk (the repository moved to /home/benjamin/Projects/Sapience/sapience-app, which has its own correct active registration). hooks/sapience-mcp-register-project.sh cannot remove the stale entry: its project-root detection requires a reachable .claude-extensions.json at the CWD or at the git root, and finding none it emits '{}' and exits 0 before reaching the removal branch at all. The bidirectional removal path is therefore structurally unable to clean up any registration whose project path has been deleted or renamed -- removal only ever fires for a path that still exists AND still carries an extensions manifest showing sapience inactive.
+
+SCOPE. Add a reaper pass that removes .projects[<path>].mcpServers.sapience entries whose <path> no longer exists on disk. Decide and record where it belongs: a new --reap mode in scripts/setup-sapience-mcp.sh invoked by the SessionStart hook, the hook itself, or scripts/verify-sapience-mcp.sh promoted from detect-only to fix. Preserve the hook's existing contract exactly: always exit 0, always emit exactly one line of valid JSON, never fail a session on a missing jq or an unwritable ~/.claude.json. Touch only the sapience key -- a project row carrying other servers (e.g. lean-lsp) keeps them, and a row left with no servers is handled explicitly rather than abandoned as a stale empty object.
+
+ACCEPTANCE. The stale /home/benjamin/Projects/sapience-app entry is gone from ~/.claude.json; /home/benjamin/Projects/Sapience/sapience-app keeps its entry; /home/benjamin/Projects/Logos/Theory and the other lean-lsp-only rows are untouched; scripts/tests/test-sapience-mcp-registration.sh gains a case covering a registered-but-nonexistent project path; verify-sapience-mcp.sh still passes its (a)-(d) checks in this repository.
+
+---
 
 ### 626. Wire /todo and /review to roadmap regeneration behind the shared preflight gate
 - **Effort**: medium
