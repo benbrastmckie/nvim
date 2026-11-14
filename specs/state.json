@@ -125887,7 +125887,7 @@
     {
       "project_number": 621,
       "project_name": "typescript_extension_implementation",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Implement the typescript extension in the source store with parity plus a verification-stage gate",
       "description": "GOAL. Create `/home/benjamin/.config/nvim/agent-system/extensions/typescript/` in full, per the\nimplementation plan.\n\nPARITY WITH THE `python` EXTENSION'S SHAPE.\n- `manifest.json` -- `task_type: \"typescript\"`, `dependencies: [\"core\"]`, full `provides` block,\n  `routing_agents` for research/plan/implement, and `merge_targets` for claudemd/index/\n  opencode_json with `section_id: extension_typescript`.\n- `agents/typescript-research-agent.md`\n- `agents/typescript-implementation-agent.md`\n- `skills/skill-typescript-research/SKILL.md`\n- `skills/skill-typescript-implementation/SKILL.md`\n- The strictly-generic `context/project/typescript/` tree.\n- `index-entries.json` with accurate per-file `line_count`, `load_when`, `domain`, `subdomain`,\n  `summary`, and `keywords`.\n- `EXTENSION.md`\n- `opencode-agents.json`\n- `README.md`\n\nPLUS THE FOUR THINGS `python` LACKS.\n- A `hard_contracts` routing entry.\n- `keyword_overrides` in the manifest.\n- `rules/typescript-rules.md`\n- The verification-stage lifecycle hook.\n\nHARD CONSTRAINT. ALL writes go to the source store under\n`agent-system/extensions/typescript/`. NEVER write to any repository's `.claude/` deploy tree --\nsee `.claude/rules/source-store-deploy-boundary.md`.\n\nVERIFICATION. Deploy the extension into a repository via the loader and confirm it produces the\nexpected `.claude/` files, the merged `CLAUDE.md` section, and the merged `index.json` entries.",
@@ -128826,7 +128826,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "last_updated": "2026-11-14T00:27:17Z",
+      "last_updated": "2026-11-14T00:27:53Z",
       "session_id": "sess_1794603202_55566e",
       "next_artifact_number": 2
     },

@@ -183,7 +183,7 @@ next_project_number: 627
 
 ### Typescript Extension
 
-621 [PLANNED] — Implement the typescript extension in the source store with...
+621 [IMPLEMENTING] — Implement the typescript extension in the source store with...
   └─ 622 [NOT STARTED] — Validate the typescript extension's generic toolchain...
     └─ 623 [NOT STARTED] — Make the web extension depend on the typescript extension and...
 
@@ -407,7 +407,7 @@ files under `agent-system/extensions/typescript/`, NEVER by special-casing the r
 
 ### 621. Implement the typescript extension in the source store with parity plus a verification-stage gate
 - **Effort**: large
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: typescript-extension
 - **Dependencies**: Task 620

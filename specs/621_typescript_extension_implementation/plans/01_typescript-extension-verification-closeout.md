@@ -1,7 +1,7 @@
 # Implementation Plan: Task #621
 
 - **Task**: 621 - Implement the typescript extension in the source store with parity plus a verification-stage gate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: Task 620 (COMPLETED)
 - **Research Inputs**: specs/621_typescript_extension_implementation/reports/01_typescript-extension-implementation-readiness.md
@@ -98,29 +98,29 @@ modified.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Re-Confirm the Baseline Has Not Drifted [NOT STARTED]
+### Phase 1: Re-Confirm the Baseline Has Not Drifted [COMPLETED]
 
 **Goal**: Establish, freshly in this dispatch rather than by citing the research report, that the
 typescript extension tree is complete, committed, and passing every available lint — so Phases 2
 and 3 build on a confirmed-clean baseline.
 
 **Tasks**:
-- [ ] Run `git status --short -- agent-system/extensions/typescript/` and
+- [x] Run `git status --short -- agent-system/extensions/typescript/` and
       `git diff --stat HEAD -- agent-system/extensions/typescript/`; both must be empty. If
       either is non-empty, STOP and record the unexpected change before proceeding — do not
-      silently absorb it.
-- [ ] Run `find agent-system/extensions/typescript -type f | sort` and confirm the file inventory
-      against the research report's list (expected: 20 files).
-- [ ] Confirm each `index-entries.json` entry's `line_count` against a live `wc -l` of its file
-      (expected: 9 entries, zero mismatches).
-- [ ] Confirm `manifest.json` still declares all four parity-plus items: `hard_contracts`,
+      silently absorb it. *(completed: both empty)*
+- [x] Run `find agent-system/extensions/typescript -type f | sort` and confirm the file inventory
+      against the research report's list (expected: 20 files). *(completed: 20 files confirmed)*
+- [x] Confirm each `index-entries.json` entry's `line_count` against a live `wc -l` of its file
+      (expected: 9 entries, zero mismatches). *(completed: 9/9 match)*
+- [x] Confirm `manifest.json` still declares all four parity-plus items: `hard_contracts`,
       `keyword_overrides`, `provides.rules` containing `typescript-rules.md`, and the **top-level**
       `hooks.verification` key pointing at `scripts/typescript-verify.sh`. Note the two-place
       declaration: `provides.hooks` is `[]` by design and is NOT where the verification hook
-      lives — a check that looks only there will wrongly report the hook missing.
-- [ ] Re-run the five lints: `lint-routing-wiring.sh`, `lint-extension-readme-table.sh`,
+      lives — a check that looks only there will wrongly report the hook missing. *(completed: all four confirmed present and correctly declared)*
+- [x] Re-run the five lints: `lint-routing-wiring.sh`, `lint-extension-readme-table.sh`,
       `lint-agent-contracts.sh`, `lint-shellcheck.sh` (over `scripts/typescript-verify.sh`), and
-      `check-extension-docs.sh`. Record pass/fail for each.
+      `check-extension-docs.sh`. Record pass/fail for each. *(completed: all 5 PASS — see Verification section below)*
 
 **Timing**: 0.25 hours
 

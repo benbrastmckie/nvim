@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/621_typescript_extension_implementation/plans/01_typescript-extension-verification-closeout.md",
-      "summary": "3-phase, 1.5-hour verification-closeout plan for the already-built typescript extension: baseline drift re-confirmation, scratch-target deploy verification of all four merge targets with evidence record, README procedure capture plus the full gate set."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "The opencode_json merge target is gated by a .managed marker file: merge.lua's generate_opencode_json (Step 1.2) returns ok=true and writes nothing unless <target>/opencode.json.managed exists. End-to-end verification of a new extension's four merge targets via a headless scratch-target manager.load(name, {confirm=false, force=true, project_dir=SCRATCH}) must create that marker before the opencode_json target can be observed at all; a tester who does not know this will misread a correctly gated no-op as a broken merge target.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/621_typescript_extension_implementation/plans/01_typescript-extension-verification-closeout.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["opencode-json", "merge-targets", "extension-verification", "managed-marker", "manager-load", "scratch-target"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 10,
   "metadata": {
-    "session_id": "sess_1794603202_55566e_621",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 3,
-    "estimated_hours": 1.5,
-    "dependency_waves": [[1], [2], [3]]
-  },
-  "next_steps": "Run /orchestrate 621 to execute the plan",
-  "dispatch_seq": 9
+    "session_id": "sess_1794603202_55566e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
