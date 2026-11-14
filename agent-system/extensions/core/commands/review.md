@@ -1,7 +1,7 @@
 ---
 description: Review code and create analysis reports
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), TaskCreate, TaskUpdate, AskUserQuestion
-argument-hint: "[SCOPE] [--create-tasks]"
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(git:*), TaskCreate, TaskUpdate, AskUserQuestion, Agent
+argument-hint: "[SCOPE] [--create-tasks] [--brief]"
 model: sonnet
 ---
 
@@ -13,6 +13,9 @@ Analyze codebase, identify issues, and optionally create tasks for fixes.
 
 - `$1` - Optional scope: file path, directory, or "all"
 - `--create-tasks` - Create tasks for identified issues
+- `--brief` - Request a strategic orientation brief instead of a code review. Dispatches the
+  read-only `scout-agent` and renders its returned brief to the user in conversation. Mutually
+  exclusive with `--create-tasks`; ignores `SCOPE`.
 
 ## Execution
 
@@ -21,12 +24,37 @@ Analyze codebase, identify issues, and optionally create tasks for fixes.
 ```
 scope = $1 or "all"
 create_tasks = "--create-tasks" in $ARGUMENTS
+brief = "--brief" in $ARGUMENTS
 ```
 
 Determine review scope:
 - If file path: Review that file
 - If directory: Review all files in directory
 - If "all": Review entire codebase
+
+### 1.1. Strategic-Brief Mode (early exit)
+
+If `brief` is set, run this section and stop — Sections 1.5 through 8 do not run. This mode never
+initializes review state, never writes `specs/reviews/state.json`, never creates tasks, and never
+reaches the git-commit section.
+
+Dispatch exactly one scout per invocation, using the `Agent` tool with `subagent_type:
+scout-agent`. Give it a prompt stating this repository's root and the five required brief
+sections (WHAT HAPPENED, WHY, WHERE WE ARE, GAINS AND LOSSES, NEXT STRATEGIC GOALS). The prompt
+contains no write-capable instruction of any kind — the scout is read-only by construction and is
+asked only to research and report.
+
+Render the returned brief to the user in conversation as bullet points under the five section
+headings, verbatim in substance. Writing a file is the exception, not the default: if one is
+written at all it is a single short brief, never a full report, and never a `specs/reviews/`
+artifact.
+
+**MUST NOT**: call the roadmap-regeneration integration script from this section or any other
+section of this command. `/review`'s roadmap-regeneration wiring belongs to a separate record
+that owns that deliverable in this same file; this mode does not add that call.
+
+After rendering the brief, `/review` terminates. Sections 2 through 8 do not run for this
+invocation.
 
 ### 1.5. Load Review State
 

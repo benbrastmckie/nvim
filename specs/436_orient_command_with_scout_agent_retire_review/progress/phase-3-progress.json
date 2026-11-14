@@ -1,0 +1,67 @@
+{
+  "phase": 3,
+  "phase_name": "Add the Strategic-Brief Mode to /review",
+  "started_at": "2026-11-15T00:05:00Z",
+  "last_updated": "2026-11-15T00:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Agent to review.md's allowed-tools frontmatter line",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/review.md"]
+    },
+    {
+      "id": 2,
+      "description": "Extend argument-hint to advertise --brief",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/review.md"]
+    },
+    {
+      "id": 3,
+      "description": "Document --brief in ## Arguments, mutually exclusive with --create-tasks, ignores SCOPE",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/review.md"]
+    },
+    {
+      "id": 4,
+      "description": "Insert new Section 1.1 Strategic-Brief Mode (early exit) after Section 1, before 1.5",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/review.md"]
+    },
+    {
+      "id": 5,
+      "description": "Specify the Agent-tool scout dispatch (subagent_type: scout-agent), one scout per invocation",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/review.md"]
+    },
+    {
+      "id": 6,
+      "description": "Specify the conversational rendering of the five-section brief; writing a file is the exception not the default",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/review.md"]
+    },
+    {
+      "id": 7,
+      "description": "Add explicit early-exit statement: Sections 2-8 do not run",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/review.md"]
+    },
+    {
+      "id": 8,
+      "description": "Add MUST NOT bullet forbidding roadmap-integration.sh calls; re-confirm grep -c returns 0",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/commands/review.md"],
+      "note": "Rewrote the MUST NOT prose to avoid the literal script-name substring entirely, matching the same literal-occurrence discipline applied to .orchestrator-handoff.json in Phase 1/2, since the plan's own verification bullet greps for the exact substring and requires 0."
+    },
+    {
+      "id": 9,
+      "description": "Leave Sections 1.5 through 8 and Standards Reference byte-identical",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

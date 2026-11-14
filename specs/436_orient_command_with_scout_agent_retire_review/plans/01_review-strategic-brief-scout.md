@@ -320,7 +320,7 @@ so the covering check is
 
 ---
 
-### Phase 3: Add the Strategic-Brief Mode to /review [NOT STARTED]
+### Phase 3: Add the Strategic-Brief Mode to /review [COMPLETED]
 
 **Goal**: Give `/review` an explicit, early-exit strategic-brief mode that dispatches the scout
 and renders its returned brief to the user in conversation, without touching the existing
@@ -329,33 +329,38 @@ record.
 
 **Tasks**:
 
-- [ ] Add `Agent` to `review.md`'s `allowed-tools:` frontmatter line. `errors.md` already carries
+- [x] Add `Agent` to `review.md`'s `allowed-tools:` frontmatter line. `errors.md` already carries
       `Agent` in the same position, so this is an established spelling, not a new convention.
-      Without it the command cannot dispatch a subagent at all.
-- [ ] Extend the `argument-hint:` frontmatter to advertise the new flag:
-      `"[SCOPE] [--create-tasks] [--brief]"`.
-- [ ] In `## Arguments`, document `--brief` as requesting the strategic orientation brief instead
+      Without it the command cannot dispatch a subagent at all. *(completed)*
+- [x] Extend the `argument-hint:` frontmatter to advertise the new flag:
+      `"[SCOPE] [--create-tasks] [--brief]"`. *(completed)*
+- [x] In `## Arguments`, document `--brief` as requesting the strategic orientation brief instead
       of a code review, and state that it is mutually exclusive with `--create-tasks` and ignores
-      `SCOPE`.
-- [ ] Insert a new `### 1.1. Strategic-Brief Mode (early exit)` section immediately after
+      `SCOPE`. *(completed)*
+- [x] Insert a new `### 1.1. Strategic-Brief Mode (early exit)` section immediately after
       `### 1. Parse Arguments` and BEFORE `### 1.5. Load Review State`, so the brief path never
       initializes review state, never writes `specs/reviews/state.json`, never creates tasks, and
-      never reaches the git-commit section.
-- [ ] In that section, specify the dispatch: use the `Agent` tool with `subagent_type:
+      never reaches the git-commit section. *(completed)*
+- [x] In that section, specify the dispatch: use the `Agent` tool with `subagent_type:
       scout-agent`, a prompt stating the repository root and the five required sections, and no
       write-capable instruction. State that exactly one scout is dispatched per invocation.
-- [ ] Specify the rendering: print the returned brief to the user in conversation as bullet
+      *(completed)*
+- [x] Specify the rendering: print the returned brief to the user in conversation as bullet
       points under the five section headings, verbatim in substance. Writing a file is the
       exception, not the default; if one is written at all it is a single short brief, never a
-      full report, and never a `specs/reviews/` artifact.
-- [ ] Add an explicit early-exit statement: after rendering, `/review` terminates — Sections 2
-      through 8 do not run.
-- [ ] Add a MUST NOT bullet in the new section: do not call `roadmap-integration.sh` from this
+      full report, and never a `specs/reviews/` artifact. *(completed)*
+- [x] Add an explicit early-exit statement: after rendering, `/review` terminates — Sections 2
+      through 8 do not run. *(completed)*
+- [x] Add a MUST NOT bullet in the new section: do not call `roadmap-integration.sh` from this
       path or any other path in `review.md`. That wiring is `wire_todo_review_roadmap_regenerate`'s
       Deliverable 1; re-confirm with `grep -c roadmap-integration.sh
       agent-system/extensions/core/commands/review.md` returning 0 after the edit, exactly as it
-      does before it.
-- [ ] Leave Sections 1.5 through 8 and the `## Standards Reference` block byte-identical.
+      does before it. *(completed: worded the MUST NOT without the literal script-name substring,
+      same discipline as the .orchestrator-handoff.json literal-occurrence fix in Phase 1/2; grep
+      -c confirms 0, unchanged from before the edit)*
+- [x] Leave Sections 1.5 through 8 and the `## Standards Reference` block byte-identical.
+      *(completed: full diff read-through confirms every changed hunk lies in the frontmatter,
+      `## Arguments`, or the new Section 1.1)*
 
 **Timing**: 1.5 hours
 
