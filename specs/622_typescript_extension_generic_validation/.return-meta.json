@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/622_typescript_extension_generic_validation/reports/01_typescript-generic-validation.md",
+      "summary": "Live validation of the typescript extension against sf1-engine's no-tsconfig, ESM, node:test project: detection logic is correct once cwd is set to the project directory, but the verification-stage hook is invoked with cwd fixed at the repo root and never discovers a non-root package.json, so the gate silently skips entirely on this real repo; recommends a bounded vendor-excluded find fallback inside typescript-verify.sh."
+    }
+  ],
+  "next_steps": "Run /orchestrate 622 to create an implementation plan for the bounded package.json fallback-search fix in agent-system/extensions/typescript/scripts/typescript-verify.sh",
+  "metadata": {
+    "session_id": "sess_1794603202_55566e_622",
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 2
+  },
+  "memory_candidates": [
+    {
+      "content": "This repo's extension system's project-root manifest (.claude-extensions.json) entries carry a source_dir pointing back at agent-system/extensions/<name> in this nvim config repo, even for a wholly separate target repository (e.g. /home/benjamin/Projects/Sapience/sf1-engine). An extension can be loaded headlessly into any target repo (no nvim UI needed) via: cd <this-repo> && nvim --headless -c \"lua local ext_config = require('neotex.plugins.ai.shared.extensions.config'); local ext_init = require('neotex.plugins.ai.shared.extensions.init'); local manager = ext_init.create(ext_config.claude()); local ok, err = manager.load('<name>', { project_dir = '<target-repo-abs-path>', confirm = false }); print(tostring(ok)..' '..tostring(err))\" -c \"qa!\". This is the same mechanism test-mcp-merge-target.sh uses against a scratch fixture, generalized to a real external repo.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/622_typescript_extension_generic_validation/reports/01_typescript-generic-validation.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["extension-loading", "headless-nvim", "manager.load", "cross-repo-deploy", "typescript-extension"]
+    },
+    {
+      "content": "Any extension's verification-stage lifecycle hook (skill_run_extension_hook \"verification\", invoked from command-gate-out.sh) always runs with cwd fixed at the project root -- neither that function nor its caller contains any `cd` statement anywhere in their bodies, confirmed by direct grep across both the deployed .claude/scripts/ and source-store agent-system/extensions/core/scripts/ copies. A verification hook that only checks for toolchain files (package.json, go.mod, etc.) relative to cwd will silently no-op on any repo whose actual project lives in a subdirectory (monorepos, nested app/lab layouts) -- this must be handled inside the hook script itself via a bounded, vendor-dir-excluded recursive search, never by changing the call site's cwd (there is no generically correct directory to cd into at that layer).",
+      "category": "PATTERN",
+      "source_artifact": "specs/622_typescript_extension_generic_validation/reports/01_typescript-generic-validation.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verification-hook", "lifecycle-hook", "cwd-scoping", "monorepo-detection", "extension-manifest"]
+    }
+  ]
+}
