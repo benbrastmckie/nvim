@@ -262,7 +262,7 @@ comment-and-unused-array addition in one script, changing no externally visible 
 
 ---
 
-### Phase 3: Redeploy and Full Gate [IN PROGRESS]
+### Phase 3: Redeploy and Full Gate [COMPLETED]
 
 **Goal**: The deployed `.claude/` tree carries all four edits, the complete gate set is green, and the
 record's no-task-reference and no-record-versioning obligations are confirmed over the full added diff.
