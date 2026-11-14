@@ -4,11 +4,46 @@
   "started_at": "2026-11-13T02:10:00Z",
   "last_updated": "2026-11-13T02:40:00Z",
   "objectives": [
-    {"id": 1, "description": "Document preflight obligation for every write-mode caller", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/roadmap-update.md"]},
-    {"id": 2, "description": "Correct Live Callers: roadmap-agent.md is a second, pre-existing caller", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/roadmap-update.md"]},
-    {"id": 3, "description": "State hard constraint: preflight never weakens/bypasses the refusal; scaffold is only sanctioned write", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/roadmap-update.md"]},
-    {"id": 4, "description": "Reconcile derived line counts via generate-context-line-counts.sh --write", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
-    {"id": 5, "description": "Run the complete gate set and record the result", "status": "done", "files_touched": []}
+    {
+      "id": 1,
+      "description": "Document preflight obligation for every write-mode caller",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/roadmap-update.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Correct Live Callers: roadmap-agent.md is a second, pre-existing caller",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/roadmap-update.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "State hard constraint: preflight never weakens/bypasses the refusal; scaffold is only sanctioned write",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/patterns/roadmap-update.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Reconcile derived line counts via generate-context-line-counts.sh --write",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Run the complete gate set and record the result",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh"
+      ]
+    }
   ],
   "current_objective": 5,
   "approaches_tried": [],
