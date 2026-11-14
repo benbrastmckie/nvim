@@ -307,7 +307,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 1234,
+      "line_count": 1246,
       "keywords": [
         "format",
         "plan",
@@ -353,7 +353,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Research report file format specification",
-      "line_count": 366,
+      "line_count": 397,
       "keywords": [
         "format",
         "report",
@@ -477,7 +477,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation summary file format",
-      "line_count": 103,
+      "line_count": 105,
       "keywords": [
         "format",
         "summary",

@@ -24,21 +24,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/459_cross_task_traceability_and_changelog_verdict/summaries/01_decision-citation-convention-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-headless", "doc-lint", "deployed script content drift", "verify-deploy", "redeploy", "source store"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "doc-lint",
+        "deployed script content drift",
+        "verify-deploy",
+        "redeploy",
+        "source store"
+      ]
     },
     {
       "content": "deploy-headless.sh exits 3 (RESULT=landed_verify_red) when the deploy itself lands successfully but its own internal fast-gate verify-deploy.sh run finds any issue -- this is NOT the same as 'the deploy failed' (exit 1/2, RESULT=not_landed). Before treating a non-zero deploy-headless.sh exit as a blocker, read the RESULT= marker and the fast-gate detail: a landed_verify_red outcome whose findings all name files outside the current record's declared file_scope is a pre-existing/unrelated finding to report via issue-record.sh, not a sign the redeploy itself failed.",
       "category": "INSIGHT",
       "source_artifact": "specs/459_cross_task_traceability_and_changelog_verdict/summaries/01_decision-citation-convention-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-headless", "RESULT=landed_verify_red", "exit code", "verify-deploy", "pre-existing finding"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "RESULT=landed_verify_red",
+        "exit code",
+        "verify-deploy",
+        "pre-existing finding"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794635595_257108",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
   },

@@ -1,7 +1,7 @@
 # Implementation Plan: Cross-Record Decision-Citation Convention
 
 - **Task**: 459 - Design cross-record traceability and render an explicit keep-or-retire verdict on `specs/CHANGE_LOG.md`
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2 hours
 - **Dependencies**: None (a recommendation, not an edge, stands toward `consolidate_duplicated_todo_implementation`; see Overview)
 - **Research Inputs**: `specs/459_cross_task_traceability_and_changelog_verdict/reports/01_traceability-design-and-changelog-verdict.md`
