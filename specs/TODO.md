@@ -183,7 +183,7 @@ next_project_number: 627
 
 ### Typescript Extension
 
-623 [NOT STARTED] — Make the web extension depend on the typescript extension and...
+623 [RESEARCHED] — Make the web extension depend on the typescript extension and...
 
 ### Decidability
 
@@ -349,10 +349,11 @@ duplication -- do not convert it into a dependency edge.
 
 ### 623. Make the web extension depend on the typescript extension and split the shared TypeScript context down a layer
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: typescript-extension
 - **Dependencies**: Task 621, Task 622
+- **Research**: [623_web_extension_depends_on_typescript/reports/01_web-typescript-dependency-split.md]
 
 **Description**: GOAL. Make the `web` extension depend on the new `typescript` extension, and split the shared
 TypeScript context down a layer.

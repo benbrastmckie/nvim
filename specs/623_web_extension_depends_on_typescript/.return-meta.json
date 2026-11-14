@@ -1,0 +1,43 @@
+{
+  "status": "researched",
+  "dispatch_seq": 14,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/623_web_extension_depends_on_typescript/reports/01_web-typescript-dependency-split.md",
+      "summary": "Audits the web->typescript dependency wiring: confirms the manifest dependency is mechanically safe (no cycle, depth 2 of 5), finds the two web agents load context via a static per-agent @-reference list (not index.json load_when) so the manifest edit alone does not auto-load typescript context, identifies the exact two duplicate subsections (43 lines) in typescript-web.md to trim, and recommends the concrete fix."
+    }
+  ],
+  "next_steps": "Run /orchestrate 623 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1794603202_55566e_623",
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "In this agent system, a declared extension `dependencies` array (manifest.json) only guarantees the dependency's files are deployed -- it does NOT make a dependent extension's agents actually read the dependency's context tree. web-research-agent.md/web-implementation-agent.md (and, by the same mechanism, any other extension's agents) discover context via a static, hand-authored per-agent `## Context References` @-pointer list, not a dynamic index.json load_when query at dispatch time (grep for load_when/jq/index.json in either file returns zero matches). To make a new dependency functionally load context for the dependent's agents, add one @-reference line to each consuming agent's Context References section pointing at the dependency's own context-tree README (mirroring typescript-research-agent.md's own one-line-to-its-README pattern), and rely on that README's Loading Strategy table for on-demand discovery of the rest -- do not expect index-entries.json load_when edits alone to have any effect on these two agents.",
+      "category": "PATTERN",
+      "source_artifact": "specs/623_web_extension_depends_on_typescript/reports/01_web-typescript-dependency-split.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["extension-dependencies", "context-loading", "context-references", "index.json", "load_when", "agent-system"]
+    },
+    {
+      "content": "The extension loader (lua/neotex/plugins/ai/shared/extensions/init.lua) enforces a recursion depth limit of 5 and circular-dependency detection via a loading stack during manifest `dependencies` resolution; an already-loaded dependency is skipped (not reloaded), and a dependency load failure aborts the parent extension's load before copying any files. Unloading an extension another loaded extension depends on is a hard block (`ERROR: Cannot unload 'X' -- required by: Y`), refused before any confirmation dialog.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/623_web_extension_depends_on_typescript/reports/01_web-typescript-dependency-split.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["extension-loader", "circular-dependency", "depth-limit", "unload-safety", "manifest-dependencies"]
+    }
+  ],
+  "modified_files": [
+    "specs/623_web_extension_depends_on_typescript/reports/01_web-typescript-dependency-split.md"
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/web/manifest.json",
+    "agent-system/extensions/web/context/project/web/domain/typescript-web.md",
+    "agent-system/extensions/web/index-entries.json",
+    "agent-system/extensions/web/agents/web-research-agent.md",
+    "agent-system/extensions/web/agents/web-implementation-agent.md"
+  ]
+}
