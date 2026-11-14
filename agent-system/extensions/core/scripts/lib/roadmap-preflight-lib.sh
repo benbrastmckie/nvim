@@ -2,9 +2,8 @@
 # roadmap-preflight-lib.sh - Single source of truth for specs/ROADMAP.md's layout-classification
 # vocabulary (CLASSIC_HEADERS, the fenced-/orchestrate-block predicate, and detect_layout), plus
 # the preflight gate that sits strictly IN FRONT of roadmap-integration.sh's write modes: a
-# four-way classify entry point (absent/unknown/classic/stage) and (added in a later revision of
-# this file) a mechanical skeleton scaffolder for the two verdicts the generator itself refuses
-# on.
+# four-way classify entry point (absent/unknown/classic/stage) and a mechanical skeleton
+# scaffolder for the two verdicts the generator itself refuses on.
 #
 # Modeled on scripts/lib/status-vocabulary.sh's "one sourced shared library, many consumers"
 # shape. roadmap-integration.sh sources this file and keeps zero copies of its own; the same
@@ -15,11 +14,24 @@
 # at top level with no `BASH_SOURCE` run-as-script guard, so sourcing it directly (to reuse
 # detect_layout) would run its argument parser against the sourcing shell's own $@ and could exit
 # that shell. CLASSIC_HEADERS, the two fence helpers, and detect_layout are side-effect-free and
-# move cleanly.
+# move cleanly; this file adds the run-as-script guard roadmap-integration.sh itself lacks, so a
+# Bash-only caller (both of this task's gated callers are) can invoke it safely without sourcing.
+#
+# WHAT THIS FILE NEVER DOES: it never weakens, bypasses, or adds a --force path to
+# roadmap-integration.sh's Destructive-Overwrite Refusal (context/formats/roadmap-format.md).
+# roadmap_preflight_scaffold below writes ONLY the mechanical classic eight-header skeleton
+# (never roadmap body content, never an invented mission statement or rule) and refuses outright
+# on a path that already classifies as classic or stage -- a scaffold is only ever correct for
+# the two verdicts the generator's own refusal gate would otherwise sit in front of alone.
 #
 # Usage (sourced, e.g. from another script):
 #   source "${SCRIPT_DIR}/lib/roadmap-preflight-lib.sh"
 #   verdict="$(roadmap_preflight_classify "$ROADMAP_PATH")"   # absent|unknown|classic|stage
+#   roadmap_preflight_scaffold "$ROADMAP_PATH"                # only correct on absent/unknown
+#
+# Usage (run as a script, for a Bash-only caller that must not source arbitrary library code):
+#   bash scripts/lib/roadmap-preflight-lib.sh classify specs/ROADMAP.md
+#   bash scripts/lib/roadmap-preflight-lib.sh scaffold specs/ROADMAP.md
 
 # ─── Layout-classification vocabulary (moved verbatim from roadmap-integration.sh) ────────────
 
@@ -103,3 +115,116 @@ roadmap_preflight_classify() {
   detect_layout "$path"
   return 0
 }
+
+# roadmap_preflight_scaffold PATH -> writes the classic eight-header skeleton. Correct ONLY for
+# the two verdicts the gate fires on (absent: create; unknown: repair). Refuses (non-zero, named
+# stderr reason, no write) when PATH already classifies as classic or stage -- a scaffold is
+# never the right move for a file that already round-trips.
+#
+# On "absent": writes `# Roadmap`, an italic preamble paragraph, and the eight classic headers in
+# Section Order order. `## Gate state` gets "Not yet measured."; `## Next` and `## Open work` get
+# a one-line "(rendered by --regenerate)" placeholder, since --regenerate renders them from state
+# immediately afterward; the remaining authored-verbatim sections get a short honest stub -- never
+# an invented mission statement or rule.
+#
+# On "unknown" (repair): writes the same skeleton, then appends the target's full prior content
+# verbatim, under a short literal marker line, under `## Unfiled observations (none worth a task
+# yet)` -- the section roadmap-format.md itself describes as a deliberately unstructured scratch
+# list. Nothing is discarded, reordered, or reinterpreted.
+roadmap_preflight_scaffold() {
+  local path="$1" verdict prior_content=""
+  verdict="$(roadmap_preflight_classify "$path")"
+
+  case "$verdict" in
+    classic|stage)
+      echo "ERROR: roadmap_preflight_scaffold refuses to write ${path}: it already classifies as" >&2
+      echo "       '${verdict}' and already round-trips via --regenerate. A scaffold is only" >&2
+      echo "       ever correct for the 'absent' (create) and 'unknown' (repair) verdicts." >&2
+      return 1
+      ;;
+    unknown)
+      prior_content="$(cat "$path")"
+      ;;
+    absent)
+      :
+      ;;
+  esac
+
+  {
+    echo "# Roadmap"
+    echo
+    echo "_Forward-only: finished work is removed, not archived. Last measured: not yet measured."
+    echo "Section bodies below are rendered by --regenerate; everything else is authored by hand._"
+    echo
+    echo "## Goal"
+    echo
+    echo "(authored by hand -- state the standing mission here)"
+    echo
+    echo "## Gate state"
+    echo
+    echo "Not yet measured."
+    echo
+    echo "## Next"
+    echo
+    echo "(rendered by --regenerate)"
+    echo
+    echo "## Open work"
+    echo
+    echo "(rendered by --regenerate)"
+    echo
+    echo "## Checks before and after every call"
+    echo
+    echo "(authored by hand -- state the standing checklist here)"
+    echo
+    echo "## Settled decisions (do not re-litigate)"
+    echo
+    echo "(authored by hand -- owner rulings go here)"
+    echo
+    echo "## Standing rules"
+    echo
+    echo "(authored by hand -- owner-authored rules go here)"
+    echo
+    echo "## Unfiled observations (none worth a task yet)"
+    echo
+    if [[ -n "$prior_content" ]]; then
+      echo "(salvaged verbatim from the prior unknown-layout file by roadmap_preflight_scaffold;"
+      echo "nothing below this line was discarded, reordered, or reinterpreted)"
+      echo
+      printf '%s\n' "$prior_content"
+    else
+      echo "(none worth a task yet)"
+    fi
+  } > "$path"
+}
+
+# ─── Run-as-script CLI guard ────────────────────────────────────────────────────────────────
+#
+# Argument parsing stays strictly inside this guard so sourcing this file from a shell with
+# arbitrary $@ set neither parses arguments nor exits -- the exact hazard that makes sourcing
+# roadmap-integration.sh directly unsafe (see the file header above).
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  set -euo pipefail
+  roadmap_preflight_usage() {
+    echo "Usage: $(basename "${BASH_SOURCE[0]}") classify PATH" >&2
+    echo "       $(basename "${BASH_SOURCE[0]}") scaffold PATH" >&2
+  }
+
+  if [[ $# -ne 2 ]]; then
+    roadmap_preflight_usage
+    exit 1
+  fi
+
+  case "$1" in
+    classify)
+      roadmap_preflight_classify "$2"
+      ;;
+    scaffold)
+      roadmap_preflight_scaffold "$2"
+      ;;
+    *)
+      echo "ERROR: unknown subcommand: $1" >&2
+      roadmap_preflight_usage
+      exit 1
+      ;;
+  esac
+fi

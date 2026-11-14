@@ -212,29 +212,29 @@ over the generator after the edit: every hit must be a call or a comment, never 
 
 ---
 
-### Phase 2: Mechanical skeleton scaffolder and run-as-script CLI [NOT STARTED]
+### Phase 2: Mechanical skeleton scaffolder and run-as-script CLI [COMPLETED]
 
 **Goal**: `roadmap_preflight_scaffold PATH` writes the classic eight-header skeleton without
 discarding authored prose, and the library is invocable as a CLI by a Bash-only caller.
 
 **Tasks**:
-- [ ] Add `roadmap_preflight_scaffold PATH` to the library: emits `# Roadmap`, an italic preamble
+- [x] Add `roadmap_preflight_scaffold PATH` to the library: emits `# Roadmap`, an italic preamble
       paragraph, and the eight `## ` headers in `roadmap-format.md`'s Section Order order, with the
-      placeholder bodies fixed by Decision 6.
-- [ ] When the target file exists (the `unknown` repair case), read its full prior content first and
+      placeholder bodies fixed by Decision 6. *(completed)*
+- [x] When the target file exists (the `unknown` repair case), read its full prior content first and
       append it verbatim under `## Unfiled observations (none worth a task yet)`, under a short
       literal marker line introducing it as salvaged content. Never discard, never reorder, never
-      reinterpret it.
-- [ ] Make the scaffolder refuse (non-zero, named stderr reason, no write) when
+      reinterpret it. *(completed)*
+- [x] Make the scaffolder refuse (non-zero, named stderr reason, no write) when
       `roadmap_preflight_classify` on the same path returns `classic` or `stage` — a scaffold is
       only ever correct for the two gated verdicts, and this is the structural guard against it
-      being reached for an already-round-tripping file.
-- [ ] Add a `[[ "${BASH_SOURCE[0]}" == "${0}" ]]` run-as-script guard exposing
+      being reached for an already-round-tripping file. *(completed)*
+- [x] Add a `[[ "${BASH_SOURCE[0]}" == "${0}" ]]` run-as-script guard exposing
       `classify PATH` and `scaffold PATH` subcommands, with a usage line and a non-zero exit on an
-      unknown subcommand. Keep argument parsing strictly inside the guard so sourcing stays safe.
-- [ ] Write a one-paragraph header note stating that this file writes only the mechanical skeleton
+      unknown subcommand. Keep argument parsing strictly inside the guard so sourcing stays safe. *(completed)*
+- [x] Write a one-paragraph header note stating that this file writes only the mechanical skeleton
       and never roadmap body content, pointing at `roadmap-format.md`'s Destructive-Overwrite
-      Refusal as the untouched, in-front-of property.
+      Refusal as the untouched, in-front-of property. *(completed)*
 
 **Timing**: 1.25 hours
 

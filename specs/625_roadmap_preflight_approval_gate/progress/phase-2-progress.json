@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Mechanical skeleton scaffolder and run-as-script CLI",
+  "started_at": "2026-11-13T00:15:00Z",
+  "last_updated": "2026-11-13T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add roadmap_preflight_scaffold with Decision 6 skeleton content", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh"]},
+    {"id": 2, "description": "Preserve prior content verbatim under Unfiled observations on unknown repair", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh"]},
+    {"id": 3, "description": "Refuse scaffold on classic/stage with no write", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh"]},
+    {"id": 4, "description": "Add run-as-script BASH_SOURCE guard exposing classify/scaffold subcommands", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh"]},
+    {"id": 5, "description": "Header note on mechanical-skeleton-only scope and Destructive-Overwrite Refusal pointer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
