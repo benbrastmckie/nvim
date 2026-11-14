@@ -432,22 +432,28 @@ indicate a defect in the hook, whereas a *missing* `sf1-v2/opencode-plugin` line
 
 ## Testing & Validation
 
-- [ ] Single-root fast path produces byte-identical output to the pre-change script, and runs no
-      `find`.
-- [ ] A project one or more directories below cwd is discovered and fully verified.
-- [ ] A `package.json` reachable only through `node_modules/` (or another excluded directory) is
-      never discovered.
-- [ ] A repo with no `package.json` anywhere keeps the verbatim terminal SKIP line, summary, and
-      exit 0.
-- [ ] Multiple discovered projects aggregate their three-state counters, with each line naming
-      its project directory.
-- [ ] The depth bound and the project cap are each asserted by a case, and the cap prints a loud
-      truncation notice.
-- [ ] A malformed nested `package.json` is skipped with a stderr warning while sibling projects
-      are still verified; a malformed cwd-local one keeps the exit-1 contract.
-- [ ] The live sf1-engine run from the repo root meets the PASS CONDITION.
-- [ ] No sf1-engine-specific string exists anywhere under
-      `agent-system/extensions/typescript/`.
+- [x] Single-root fast path produces byte-identical output to the pre-change script, and runs no
+      `find`. *(verified: fixture A / Case 1)*
+- [x] A project one or more directories below cwd is discovered and fully verified. *(verified:
+      fixture B / Case 3)*
+- [x] A `package.json` reachable only through `node_modules/` (or another excluded directory) is
+      never discovered. *(verified: fixture D / Case 4)*
+- [x] A repo with no `package.json` anywhere keeps the verbatim terminal SKIP line, summary, and
+      exit 0. *(verified: fixture C / Case 5, byte-identical comparison)*
+- [x] Multiple discovered projects aggregate their three-state counters, with each line naming
+      its project directory. *(verified: Case 6)*
+- [x] The depth bound and the project cap are each asserted by a case, and the cap prints a loud
+      truncation notice. *(verified: fixture H / Case 7 (depth), fixture G / Case cap (project
+      cap))*
+- [x] A malformed nested `package.json` is skipped with a stderr warning while sibling projects
+      are still verified; a malformed cwd-local one keeps the exit-1 contract. *(verified:
+      fixture E / Case 9 (nested), fixture F / Case cwd-malformed (cwd-local))*
+- [x] The live sf1-engine run from the repo root meets the PASS CONDITION. *(verified: Phase 4)*
+- [x] No sf1-engine-specific string exists anywhere under
+      `agent-system/extensions/typescript/`. *(verified with a recorded clarification: `sf1` and
+      `opencode-plugin` each return zero hits; the combined grep's 2 `sapience` hits are the
+      pre-existing, universal `sapience-retrieve.sh` memory boilerplate shared by every
+      extension, unrelated to the target repo -- see Phase 4's verification notes)*
 
 ## Artifacts & Outputs
 

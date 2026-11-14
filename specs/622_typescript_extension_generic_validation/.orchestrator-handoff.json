@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "dispatch_seq": 12,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 13,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Created a 4-phase plan for the typescript extension's nested-project detection defect the research phase exposed. Re-validated both carried figures live before planning: sf1-engine still has 86 *.test.ts suites, no tsconfig, ESM, no root package.json, and the deployed hook run from the repo root still prints the SKIP that fails the PASS CONDITION. Phases: (1) bounded, vendor-excluded package.json fallback search inside typescript-verify.sh with aggregated path-prefixed findings; (2) the extension's first regression suite plus the derived manifest provides.scripts sync; (3) prose-doc sync plus the derived index-entries.json line_count regeneration; (4) live re-validation against sf1-engine with a mechanical HARD-CONSTRAINT grep, and the full gate set. Every edit stays inside agent-system/extensions/typescript/.",
+  "summary": "Fixed the typescript extension's verification hook to discover a Node/TypeScript project living below cwd (not only at it), via a bounded vendor-excluded fallback search inside typescript-verify.sh. Added the extension's first hermetic regression suite (15/15 passing, mutation-verified), synced the two coupled derived surfaces (manifest provides.scripts, index-entries.json line_count), and re-ran the original sf1-engine falsifiability experiment end-to-end: the hook now correctly names sf1-v2/opencode-plugin and runs its real 86-suite node:test battery, with the HARD CONSTRAINT mechanically confirmed (zero sf1-engine-specific content in the extension).",
+  "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/622_typescript_extension_generic_validation/plans/01_nested-package-json-discovery.md",
-      "summary": "4-phase plan: bounded nested package.json discovery, regression suite + manifest sync, doc + line_count sync, live sf1-engine re-validation."
+      "type": "summary",
+      "path": "specs/622_typescript_extension_generic_validation/summaries/01_nested-package-json-discovery-summary.md",
+      "summary": "All 4 plan phases completed: bounded nested-project discovery, regression suite, prose/derived-surface sync, and live sf1-engine re-validation now passing the PASS CONDITION."
     }
-  ],
-  "blockers": []
+  ]
 }
