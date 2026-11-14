@@ -1,0 +1,26 @@
+{
+  "phase": 6,
+  "phase_name": "Caller contract, index reconciliation, and full gate",
+  "started_at": "2026-11-13T02:10:00Z",
+  "last_updated": "2026-11-13T02:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Document preflight obligation for every write-mode caller", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/roadmap-update.md"]},
+    {"id": 2, "description": "Correct Live Callers: roadmap-agent.md is a second, pre-existing caller", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/roadmap-update.md"]},
+    {"id": 3, "description": "State hard constraint: preflight never weakens/bypasses the refusal; scaffold is only sanctioned write", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/roadmap-update.md"]},
+    {"id": 4, "description": "Reconcile derived line counts via generate-context-line-counts.sh --write", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 5, "description": "Run the complete gate set and record the result", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.extra",
+      "description": "The plan's Phase 6 files-to-modify list did not name scripts/lint/lint-roadmap-batch-proposals.sh, but Phase 6's own verification criterion ('grep -rn CLASSIC_HEADERS returns exactly one definition site') failed against the as-planned file set: this lint script carried a second, hand-transcribed copy of CLASSIC_HEADERS/is_classic_layout/is_stage_layout, deliberately duplicated per its own header comment because roadmap-integration.sh was unsafe to source -- a rationale that no longer holds now that roadmap-preflight-lib.sh exists specifically to be sourced safely.",
+      "type": "altered",
+      "reason": "Fixed in-phase: the lint now sources roadmap-preflight-lib.sh and calls detect_layout directly, removing the duplicate, so the plan's own verification criterion is honestly satisfied rather than waived.",
+      "annotation": "*(deviation: altered -- scripts/lint/lint-roadmap-batch-proposals.sh also updated to source the new library, closing a second CLASSIC_HEADERS definition site the plan's files-to-modify list omitted)*"
+    }
+  ],
+  "notes": "Batch Gate Deferral: the plan's own Phase 6 verification names 'bash .claude/scripts/verify-deploy.sh exits 0' and 'the full run-all.sh battery exits 0 with zero failing suites' -- both are exactly the complete-gate-set items this dispatch's directive defers to the once-per-invocation batch stage. Deferred, not run independently here. Discharged instead: (a) the scoped suite union for every touched file that maps to a concrete suite via suite_selection_select (test-context-reachability.sh, test-deploy-orphans.sh, test-index-entries-schema.sh, test-install-uninstall-extension.sh, test-manifest-scripts-sync.sh, test-roadmap-command-registration.sh, test-lint-roadmap-batch-proposals.sh) -- 7/7 PASS; (b) roadmap-update.md itself maps to the __FULL_SWEEP__ sentinel (an unmappable, prose-only context file with no suite of its own) -- discharged instead via the three non-suite-gated checks this phase's own verification already names directly: generate-context-line-counts.sh --check (CHECK PASSED, zero drift across the three edited context files), the repo-wide CLASSIC_HEADERS grep (exactly one definition site, the library), and a direct read confirming roadmap-format.md's Destructive-Overwrite Refusal section carries no diff and no --force path exists anywhere in roadmap-integration.sh. Two pre-existing, unrelated issues recorded via issue-record.sh during this phase (test-deploy-propagation.sh's task-reference-lint root cause from task 620; the lint-roadmap-batch-proposals.sh default-resolution case's stray empty agent-system/extensions/core/specs/ directory) -- neither attributable to this phase's own edits, confirmed by diff-hunk and git-log inspection."
+}

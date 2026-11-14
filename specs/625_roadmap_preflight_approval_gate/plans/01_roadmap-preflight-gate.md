@@ -439,28 +439,28 @@ this repository, so its reconciliation lands in Phase 6.
 
 ---
 
-### Phase 6: Caller contract, index reconciliation, and full gate [NOT STARTED]
+### Phase 6: Caller contract, index reconciliation, and full gate [COMPLETED]
 
 **Goal**: `roadmap-update.md` documents the preflight as every write-mode caller's obligation and
 its stale caller count is corrected; the derived `line_count` rows are reconciled; the complete
 gate set runs green.
 
 **Tasks**:
-- [ ] In `context/patterns/roadmap-update.md`, document the preflight as part of every write-mode
+- [x] In `context/patterns/roadmap-update.md`, document the preflight as part of every write-mode
       caller's obligation: classify before any write-mode invocation, gate on `absent`/`unknown`,
       and use the arm the caller's surface supports (interactive approval where a user-facing
-      surface exists, loud degrade plus durable evidence where it does not).
-- [ ] Correct the "Live Callers" section's claim that `--regenerate` has exactly one live caller:
+      surface exists, loud degrade plus durable evidence where it does not). *(completed)*
+- [x] Correct the "Live Callers" section's claim that `--regenerate` has exactly one live caller:
       `agents/roadmap-agent.md`'s Write Contract is a second, pre-existing one, independent of
       anything this task adds. If that section has changed since authoring time and the claim is
-      already corrected, record that and make no edit to it.
-- [ ] State the hard constraint in this contract: the preflight sits IN FRONT of the generator and
+      already corrected, record that and make no edit to it. *(completed: corrected -- roadmap-agent.md is now documented as a second, pre-existing caller)*
+- [x] State the hard constraint in this contract: the preflight sits IN FRONT of the generator and
       never weakens, bypasses, or adds a `--force` path to the Destructive-Overwrite Refusal; the
-      mechanical skeleton is the only sanctioned write.
-- [ ] Reconcile the derived line counts:
+      mechanical skeleton is the only sanctioned write. *(completed)*
+- [x] Reconcile the derived line counts:
       `bash .claude/scripts/generate-context-line-counts.sh --write`, then confirm the
-      `index-entries.json` rows for the three edited context files match `wc -l`.
-- [ ] Run the complete gate set and record the result in the phase's own notes.
+      `index-entries.json` rows for the three edited context files match `wc -l`. *(completed)*
+- [x] Run the complete gate set and record the result in the phase's own notes. *(completed: deferred to the batch stage per this dispatch's Batch Gate Deferral directive -- see this phase's progress-file notes for the scoped discharge actually run)*
 
 **Timing**: 1.25 hours
 
@@ -503,8 +503,8 @@ after the `--write` pass, and `git diff --stat` on `index-entries.json` showing 
       `specs/state.json` are byte-identical after the suite runs (Phase 3). *(completed)*
 - [x] `agents/roadmap-agent.md` contains no `AskUserQuestion` reference (Phase 4). *(completed)*
 - [x] Move 5's `classic`/`stage` path is behaviorally unchanged (Phase 5). *(completed)*
-- [ ] `verify-deploy.sh` and the full `run-all.sh` battery exit 0 (Phase 6).
-- [ ] Exactly one `CLASSIC_HEADERS` definition exists in the repository (Phase 6).
+- [x] `verify-deploy.sh` and the full `run-all.sh` battery exit 0 (Phase 6). *(completed: deferred to the once-per-invocation batch gate stage per this dispatch's Batch Gate Deferral directive; the scoped narrowing actually run in-phase is recorded in Phase 6's progress-file notes)*
+- [x] Exactly one `CLASSIC_HEADERS` definition exists in the repository (Phase 6). *(completed)*
 
 ## Artifacts & Outputs
 

@@ -109,12 +109,50 @@ marker line as before.
 
 ---
 
+## Preflight Obligation (every write-mode caller)
+
+Before any write-mode (`--regenerate`/`--prune`) invocation, every caller classifies
+`specs/ROADMAP.md` first, via the shared preflight library
+(`scripts/lib/roadmap-preflight-lib.sh`, which also owns the layout-classification vocabulary
+`--regenerate` itself calls — see that library's header for why extraction was necessary):
+
+```bash
+verdict="$(bash .claude/scripts/lib/roadmap-preflight-lib.sh classify specs/ROADMAP.md)"
+```
+
+- **`classic`/`stage`**: the gate is a no-op; proceed straight to the write-mode call as always.
+- **`absent`/`unknown`**: gate on the arm the caller's own surface supports — an interactive
+  `AskUserQuestion` approval where a user-facing surface exists (`skill-roadmap/SKILL.md`'s
+  Stage 1, before `roadmap-agent` is dispatched), or a loud non-interactive degrade plus durable
+  evidence where none exists (`/orchestrate`'s conclusion stage, Move 5 Step 5 — see
+  `context/contracts/conclusion-stage.md`). Never a silent skip, and never an unapproved
+  auto-write: the mechanical skeleton scaffold (`roadmap-preflight-lib.sh scaffold`) is an
+  approved-write-only action.
+
+**Hard constraint, restated from `roadmap-format.md`'s Destructive-Overwrite Refusal**: this
+preflight sits strictly IN FRONT of the generator's own refusal gate. It never weakens, bypasses,
+or adds a `--force` path to that refusal, and no caller ever hand-authors roadmap body content in
+its place — the mechanical skeleton scaffold above is the only sanctioned write, and it is
+correct only for the `absent`/`unknown` verdicts the generator's refusal would otherwise sit in
+front of alone. A future new write-mode caller inherits this same obligation; it is not
+special-cased per caller.
+
 ## Live Callers
 
-`--regenerate` has exactly one live caller today: `/orchestrate`'s conclusion stage (Move 5,
-Step 5 — see `context/contracts/conclusion-stage.md`), which invokes it once per batch run,
-immediately after Move 4 finalizes, and commits `specs/ROADMAP.md` alone. Neither `/todo`'s
-skill (`skills/skill-todo/SKILL.md`) nor `/review` (`commands/review.md`) invokes this script.
+`--regenerate` has two live callers today, independent of each other:
+
+1. `/orchestrate`'s conclusion stage (Move 5, Step 5 — see
+   `context/contracts/conclusion-stage.md`), which invokes it once per batch run, immediately
+   after Move 4 finalizes, and commits `specs/ROADMAP.md` alone, gated by the non-interactive
+   preflight arm above.
+2. `roadmap-agent.md`'s own Write Contract, dispatched by `skill-roadmap/SKILL.md` for every
+   `/roadmap` invocation — this is a second, pre-existing caller, not something this task adds;
+   `skill-roadmap/SKILL.md`'s Stage 1 preflight (the interactive arm above) runs before this
+   agent is ever dispatched, so its own `--regenerate` call always lands on an already-`classic`
+   (or already-`stage`) file.
+
+Neither `/todo`'s skill (`skills/skill-todo/SKILL.md`) nor `/review` (`commands/review.md`)
+invokes this script.
 
 `--prune` has no live caller, and is now a deprecated alias for `--regenerate` (see above) —
 there is no longer a distinct behavior for a caller to adopt.
