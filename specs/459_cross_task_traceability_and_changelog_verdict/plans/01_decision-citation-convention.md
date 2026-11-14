@@ -120,7 +120,7 @@ read as plan input; the research phase separately confirmed it carries no refere
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Name the Cross-Record Decision-Citation Convention [IN PROGRESS]
+### Phase 1: Name the Cross-Record Decision-Citation Convention [COMPLETED]
 
 **Goal**: The convention exists as one named, canonical section in `report-format.md`, reachable from
 `summary-format.md` by a one-line Writing Guidance pointer, with its advisory enforcement level stated.

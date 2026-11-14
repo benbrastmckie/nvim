@@ -67,6 +67,8 @@ contract should point at this section by name rather than copy its text.
 - Use bullet lists for clarity.
 - Reflect status of underlying work accurately.
 - Lazy directory creation: create `summaries/` only when writing this file.
+- Cite another record's decision in the durable form named in `context/formats/report-format.md`'s
+  `## Cross-Record Decision Citation` section, never by bare record number.
 
 ## Example Skeleton
 ```

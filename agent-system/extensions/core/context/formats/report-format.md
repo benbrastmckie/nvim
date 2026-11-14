@@ -73,6 +73,8 @@ Include when dependency relationships are essential to the research topic. Omit 
 - Omit code blocks that restate file contents cited by path.
 - Ensure lazy directory creation: create `reports/` only when writing the first report file.
 - Re-derive or mark every carried figure at authoring time — see `## Carried-Figure Discipline`.
+- Cite another record's decision in the durable form named in `## Cross-Record Decision Citation`,
+  never by bare record number.
 
 ## Carried-Figure Discipline
 
@@ -315,6 +317,35 @@ work to "finish" the amendment, unless further open questions independently rema
 **Do not describe this as reopening, lifting, or walking back the original verdict.** Those
 words describe outcome-overturning amendments; using them for a ground-only correction invites
 exactly the misreading this section exists to prevent.
+
+## Cross-Record Decision Citation
+
+**When this fires**: a decision recorded in the current record is informed by, builds on, or
+revises a decision recorded in another record's artifact. Cite it in durable form rather than by
+bare record number.
+
+**The durable form**:
+
+    {project_name}'s {artifact-type} {NN}, Decision {N}
+
+`project_name` is the cited record's slug — its durable anchor — never its numeric id. A vault
+operation renumbers active records (subtracting a fixed offset and resetting the active
+counter), so a number cited today can denote an entirely different record after the next
+renumbering; the slug survives that operation unchanged. `{artifact-type}` is `report`, `plan`,
+or `summary`; `{NN}` is that artifact's own zero-padded sequence number within the cited record.
+The citation target is the cited record's own `## Decisions` section — the numbered decision the
+citation points at lives there, not scattered elsewhere in the artifact.
+
+**Worked example**: a plan whose Phase 2 choice builds on a decision recorded in another
+record's report would write:
+
+    This phase adopts the recognized-optional tier settled in
+    inventory_cleanup_pipeline's report 02, Decision 3.
+
+**Enforcement level**: advisory, review-enforced prose. No corresponding
+`scripts/validate-artifact.sh` check exists for this convention, and none is implied by stating
+it here — the same honesty this format applies to its own advisory-only checks elsewhere in this
+document.
 
 ## Example Skeleton
 ```
