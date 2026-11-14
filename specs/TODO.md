@@ -1,5 +1,5 @@
 ---
-next_project_number: 629
+next_project_number: 634
 ---
 
 # TODO
@@ -13,8 +13,8 @@ next_project_number: 629
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,436,437,438,451,452,453,455,456,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,457,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,626,628 | 383,390,398,410,431,436,451,452,453,455,463,472,479,484,491,504,505,527,534,535,538,539,548,549,563,568,585,599 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,436,437,438,451,452,453,455,456,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,457,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,626,628,630 | 383,390,398,410,431,436,451,452,453,455,463,472,479,484,491,504,505,527,534,535,538,539,548,549,563,568,585,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,501,508,547,552,570,571,579,581,586,588,591,594,624 | 438,439,472,476,486,492,509,518,519,542,543,564,572,580,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 524,561,577,595,605 | 501,539,547,552,586,594,604 | core-agent-system, agent-system |
 | 5 | 596,609 | 577,595 | agent-system |
@@ -172,6 +172,11 @@ next_project_number: 629
     └─ 594 [NOT STARTED] — Size symmetric-pair phases and iteration obligations separately
       └─ 595 [NOT STARTED] — Define Goal Polarity semantics for decision-gate plans (see above)
 607 [NOT STARTED] — Resolve the gate 20 orchestrator context-budget overage and...
+629 [NOT STARTED] — Fix the two-engine defect: scan\_all\_artifacts' sync\_scan...
+  └─ 630 [NOT STARTED] — Give test-deploy-propagation.sh and...
+631 [NOT STARTED] — Replace test-typescript-verify.sh's fixed-depth REPO\_ROOT...
+632 [NOT STARTED] — Stop orchestrator-context-budget.json's derivation log from...
+633 [NOT STARTED] — Resolve the stray duplicate .claude-extensions.json sitting...
 533 [NOT STARTED] — lake-build-guard replays stale result for env lean FILE
 546 [NOT STARTED] — Diagnose the zero-result literature retrieval and settle the...
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
@@ -193,6 +198,103 @@ next_project_number: 629
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 633. Resolve the stray duplicate .claude-extensions.json sitting inside the core extension source store
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: A 68KB file exists at agent-system/extensions/core/.claude-extensions.json. It is untracked (git status reports ??), dated 2026-11-12, and its contents DIFFER from the real root ledger at ./.claude-extensions.json (verified by diff). The deploy ledger belongs at the project root; the source-store/deploy boundary rule resolves .extensions.<name>.source_dir from the ROOT ledger, so a second copy nested inside an extension's own source tree has no defined role.
+
+WHY IT IS NOT MERELY UNTIDY: it is a 68KB near-copy of a load-bearing config, sitting at a path where a future resolver walking upward from inside agent-system/extensions/core/ could plausibly find IT FIRST instead of the root ledger -- and the two disagree. That is a latent wrong-answer, not just clutter. It also already shows up as a Reasoned Exclusion in unrelated work (a grep for a deleted skill name hit this file), meaning it is actively costing triage attention.
+
+DETERMINE AND THEN ACT: establish how it got there (a mis-targeted write, an interrupted deploy, a manual copy), whether anything reads it today, and in what way it diverges from the root ledger. Then either delete it, or -- if some path genuinely depends on it -- give it a declared role and get it tracked, rather than leaving a 68KB untracked near-duplicate of the ledger in place.
+
+ACCEPTANCE: the path is either gone, or tracked with a documented purpose; and in either case no resolver can reach the wrong ledger.
+
+---
+
+### 632. Stop orchestrator-context-budget.json's derivation log from re-breaking the task-reference lint on every ceiling move
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
+
+verify-deploy.sh gate 4 (check-task-references.sh) reports exactly ONE unexempted occurrence repo-wide, and it is a single field: agent-system/extensions/core/context/config/orchestrator-context-budget.json's 'derivation' string. That field is a long, append-only historical commentary recording every dated ceiling move, and the most recent entry names a task number inline.
+
+THIS IS A RECURRENCE, NOT A ONE-OFF. The field grows by one dated entry every time the orchestrator eager-load ceiling is moved, and the house style for those entries has been to attribute the growth to the record that caused it. So a one-time scrub fixes the lint until the next ceiling move and no longer -- which is why this is filed as a decision, not a cleanup.
+
+DECIDE BETWEEN (state the reasoning, do not just pick):
+  (a) Exempt this field or this file, via the exemption taxonomy in context/standards/task-reference-exemptions.md and the mechanical patterns in scripts/lib/task-reference-patterns.sh -- treating the derivation log as a provenance record akin to the specs/** exemption.
+  (b) Change the house style so derivation entries cite durable anchors (a date, a filename, a decision-record name) instead of a task number, per rules/no-task-references-in-deliverables.md's own 'cite durable anchors instead' direction, and scrub the existing entries to match.
+
+Option (b) aligns with the rule's stated intent -- task numbers are renumbered during vault operations and are meaningless to a future reader -- but option (a) may be the honest answer if this field really is provenance. Whichever is chosen, the outcome must be that a future ceiling move does not reintroduce the finding.
+
+ACCEPTANCE: check-task-references.sh exits 0 repo-wide, AND a hypothetical new derivation entry written in the chosen style would keep it at 0.
+
+---
+
+### 631. Replace test-typescript-verify.sh's fixed-depth REPO_ROOT walk with a boundary-safe resolver
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/typescript/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
+
+verify-deploy.sh gate 29 (lint-test-root-resolution.sh) reports exactly ONE violation across 200 files, and it is agent-system/extensions/typescript/scripts/tests/test-typescript-verify.sh: an unconditional fixed-depth walk assigns/uses REPO_ROOT at effective depth 5 against this file's safe extension-root boundary of 2. The lint's own message names the remedy: use common_test_repo_root / common_test_ext_root from scripts/lib/common.sh, or add a git-first fallback / validated-candidate guard if a fixed walk is genuinely required.
+
+WHY IT MATTERS BEYOND THE LINT: a 2-level divergence between the source-store original and the deployed mirror is precisely the depth that makes a path resolve differently in the two trees. This is the same hazard class the source-store/deploy boundary rule exists to prevent.
+
+KNOWN CASCADE: this single violation is also the sole cause of test-gate-registry-resolution.sh's case32 failure (that case invokes verify-deploy.sh --only-gate 29 and checks its exit status). Fixing this clears both.
+
+ACCEPTANCE: lint-test-root-resolution.sh reports 0 violations; test-typescript-verify.sh still passes standalone.
+
+---
+
+### 630. Give test-deploy-propagation.sh and test-gate-registry-resolution.sh declared known-failures rows
+- **Effort**: small
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 629
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
+
+Two Gate 8 shell suites fail with ZERO rows in agent-system/extensions/core/scripts/tests/known-failures.txt (measured: grep -c returns 0 for each). Because the roster is what run-all.sh reads to annotate a failure EXPECTED vs NEW, an unrostered red suite makes every Gate 8 run report a NEW failure that is not new -- degrading the gate's binary signal in exactly the way the roster exists to prevent.
+
+THE TWO SUITES AND WHY EACH IS RED:
+  scripts/tests/test-deploy-propagation.sh -- assertions A/B are expected-red BY DESIGN, per the suite's own header comment, pending the scan_all_artifacts allow-list post-filter fix. Its row should be attributed to that defect, not marked flaky.
+  scripts/tests/test-gate-registry-resolution.sh -- its case32 fails ONLY because verify-deploy.sh --only-gate 29 itself returns non-zero (the typescript fixed-depth REPO_ROOT walk), not because of any registry-resolution defect. Its row is a CASCADE and should say so, so that fixing gate 29 is known to clear it.
+
+NEITHER IS IN SCOPE OF THE EXISTING SEVEN-SUITE ROSTER WORK. That record enumerates its seven suites explicitly and these two are not among them; do not fold this into it or duplicate its work.
+
+ACCEPTANCE: both suites carry dated, attributed rows; a Gate 8 run annotates both EXPECTED rather than NEW. Prefer attributing each row to its real cause over a bare 'flaky' classification.
+
+---
+
+### 629. Fix the two-engine defect: scan_all_artifacts' sync_scan allow-list post-filter drops manifest-declared entries
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: neovim
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua's load_all_globally reaches scan_all_artifacts, whose sync_scan allow-list POST-FILTER drops entries the extension manifest declares. manager.load's counterpart does NOT drop them -- that divergence is the 'two-engine defect' class: two code paths that are supposed to resolve the same declared artifact set, and do not.
+
+EVIDENCE ALREADY IN THE TREE, DO NOT RE-DERIVE: agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh is a purpose-built regression suite for exactly this surface. Its own header comment documents assertions A/B as EXPECTED-RED BY DESIGN against the current tree, and states verbatim that 'A green A/B at this point in the plan means the diagnosis is wrong'. The suite is hermetic (deploys declared entries into a scratch TARGET and checks them there) and needs no manifest mutation to reproduce the defect. Start from that suite, not from a fresh investigation.
+
+ACCEPTANCE: assertions A and B in test-deploy-propagation.sh go green against the real code path, and the header comment's expected-red framing is updated to match. If the decision is instead that the allow-list post-filter is correct and manager.load is the wrong one, say so explicitly and invert the suite -- but do not leave the two engines divergent and the suite permanently red.
+
+PROVENANCE: surfaced as a Reasoned Exclusion in the /todo consolidation record's Phase 2 gate accounting; the suite itself predates that work (authored under an earlier record, committed e79e1b94a). No open record named sync.lua, load_all_globally, or scan_all_artifacts at creation time.
+
+---
 
 ### 628. Retract sapience write tool grants
 - **Status**: [NOT STARTED]
