@@ -50,6 +50,16 @@ REPORT_SECTIONS=("Executive Summary" "Context & Scope" "Findings" "Decisions" "R
 PLAN_METADATA=("Task" "Status" "Effort" "Dependencies" "Research Inputs" "Artifacts" "Standards" "Type")
 PLAN_SECTIONS=("Overview" "Goals & Non-Goals" "Risks & Mitigations" "Implementation Phases" "Testing & Validation" "Artifacts & Outputs" "Rollback/Contingency")
 
+# The array below is documentation-only: it is deliberately never wired into `required_sections`
+# below and has no effect on validation. It exists solely to keep this script and
+# context/formats/plan-format.md's "Structure" section from drifting out of sync -- "Decisions"
+# is the plan-time counterpart of the required `## Decisions` section in reports and summaries,
+# and is named explicitly in the standard as a recognized optional section. `Decisions` must stay
+# out of `PLAN_SECTIONS` above: promoting it to required would fail every existing plan authored
+# without one at gate-out.
+# shellcheck disable=SC2034  # Deliberately documentation-only -- see the comment above.
+PLAN_SECTIONS_OPTIONAL=("Decisions")
+
 # NOTE: SUMMARY_SECTIONS is a required *minimum*, not an exhaustive whitelist. The check loop
 # below only reports a *missing* required section -- it never enumerates a document's headings
 # against this array -- so a summary carrying additional sections beyond these six is accepted

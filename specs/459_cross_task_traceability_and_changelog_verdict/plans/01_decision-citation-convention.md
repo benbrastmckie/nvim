@@ -193,7 +193,7 @@ gate skips), run together with the `prose` tier's diff read-through.
 
 ---
 
-### Phase 2: Recognize a Decisions Heading as an Optional Plan Section [IN PROGRESS]
+### Phase 2: Recognize a Decisions Heading as an Optional Plan Section [COMPLETED]
 
 **Goal**: `plan-format.md` documents `## Decisions` as a recognized optional plan section with a
 canonical position, carries the citation-convention pointer, and `validate-artifact.sh` records the

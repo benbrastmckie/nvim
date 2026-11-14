@@ -66,12 +66,22 @@ reintroduced, not as a description of live behavior.
 1. **Overview** – 2-4 sentences: problem, scope, constraints, definition of done. May include "Research Integration" subsection listing integrated reports.
 2. **Goals & Non-Goals** – bullets.
 3. **Risks & Mitigations** – bullets.
-4. **Implementation Phases** – under `## Implementation Phases`, preceded by a **Dependency Analysis** wave table (see below), with each phase at level `###` and including a status marker at the end of the heading.
-5. **Planned Strategic Sorries** (hard-mode skeleton plans only) – under `## Planned Strategic Sorries`, present only when `plan_metadata.skeleton: true`; see below.
-6. **Lean Challenge Statements** (lean/lean4 plans only) – under `## Lean Challenge Statements`, present only when the plan's `task_type` is `lean`/`lean4`; see below (including the zero-Lean-goals marker shape for a plan with no theorem deliverable).
-7. **Testing & Validation** – bullets/tests to run.
-8. **Artifacts & Outputs** – enumerate expected outputs with paths.
-9. **Rollback/Contingency** – brief plan if changes must be reverted.
+4. **Decisions (optional)** – explicit planning decisions and their grounds, under `## Decisions`,
+   positioned after `## Risks & Mitigations` and before `## Implementation Phases`. This is the
+   plan-time counterpart of the required `## Decisions` section in reports and summaries. It is a
+   recognized optional section and is deliberately NOT a member of
+   `scripts/validate-artifact.sh`'s `PLAN_SECTIONS` array: promoting it to required would fail
+   every existing plan authored without one at gate-out. Mirrors the shape
+   `context/formats/summary-format.md`'s `### Optional Sections` subsection already uses for
+   `Plan Deviations`. Cite another record's decision in the durable form named in
+   `context/formats/report-format.md`'s `## Cross-Record Decision Citation` section, never by
+   bare record number.
+5. **Implementation Phases** – under `## Implementation Phases`, preceded by a **Dependency Analysis** wave table (see below), with each phase at level `###` and including a status marker at the end of the heading.
+6. **Planned Strategic Sorries** (hard-mode skeleton plans only) – under `## Planned Strategic Sorries`, present only when `plan_metadata.skeleton: true`; see below.
+7. **Lean Challenge Statements** (lean/lean4 plans only) – under `## Lean Challenge Statements`, present only when the plan's `task_type` is `lean`/`lean4`; see below (including the zero-Lean-goals marker shape for a plan with no theorem deliverable).
+8. **Testing & Validation** – bullets/tests to run.
+9. **Artifacts & Outputs** – enumerate expected outputs with paths.
+10. **Rollback/Contingency** – brief plan if changes must be reverted.
 
 **A Rollback/Contingency step that reverts uncommitted work is a snapshot-then-rollback
 recipe, not a bare precautionary checkpoint.** When this section calls for taking a
@@ -1175,6 +1185,8 @@ subsection.
 - Be explicit about dependencies and external inputs.
 - Include lazy directory creation guardrail: commands/agents create the project root and `plans/` only when writing this artifact; do not pre-create `reports/` or `summaries/`.
 - Keep language concise and directive; avoid emojis and informal tone.
+- Cite another record's decision in the durable form named in `context/formats/report-format.md`'s
+  `## Cross-Record Decision Citation` section, never by bare record number.
 
 ## Example Skeleton
 ```
