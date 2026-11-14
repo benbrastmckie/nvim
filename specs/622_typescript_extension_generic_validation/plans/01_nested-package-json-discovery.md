@@ -276,33 +276,39 @@ pick up.
 
 ---
 
-### Phase 3: Prose-doc sync for nested-project detection [NOT STARTED]
+### Phase 3: Prose-doc sync for nested-project detection [COMPLETED]
 
 **Goal**: The human-readable companion doc states the same two-tier detection the hook now
 implements, and its derived `line_count` stays accurate.
 
 **Tasks**:
-- [ ] Add a `## No \`package.json\` At cwd, But One Exists Below` section to
+- [x] Add a `## No \`package.json\` At cwd, But One Exists Below` section to
       `agent-system/extensions/typescript/context/project/typescript/tools/package-manager-detection.md`
       describing the bounded fallback: the depth bound, the vendor/VCS exclusion list, the
       deterministic sort, the project cap and its loud truncation notice, per-project
       path-prefixed output, aggregated three-state counters, and the
-      nested-malformed-manifest-is-skipped-not-fatal policy.
-- [ ] Amend the existing `## No \`package.json\` At All` section so its "normal, expected
+      nested-malformed-manifest-is-skipped-not-fatal policy. *(completed)*
+- [x] Amend the existing `## No \`package.json\` At All` section so its "normal, expected
       terminal outcome" claim is scoped to *after* the bounded search has also come up empty —
-      today it reads as unconditional and would now be wrong.
-- [ ] Grep `agent-system/extensions/typescript/` (`README.md`, `EXTENSION.md`, the two skills,
+      today it reads as unconditional and would now be wrong. *(completed)*
+- [x] Grep `agent-system/extensions/typescript/` (`README.md`, `EXTENSION.md`, the two skills,
       the two agents, `rules/typescript-rules.md`, the adversarial-verification contract) for
       any other statement that detection is single-location, and update only those that are
       actually wrong. If `EXTENSION.md` is touched, re-check Rule U (length limit) and Rule V
-      (claudemd merge-source byte ceiling) still pass.
-- [ ] Sync the coupled derived surface in this same phase:
+      (claudemd merge-source byte ceiling) still pass. *(completed: grep found two hits, both in
+      `typescript-rules.md` and `typescript-implementation-agent.md`, both about source-root
+      layout flexibility within a project, not about the hook's cwd-fixed search -- neither was
+      wrong, so neither was touched; `README.md`/`EXTENSION.md` statements about the
+      verification hook already describe its per-sub-check behavior generically and were also
+      not wrong. `EXTENSION.md` was not touched, so the Rule U/V re-check does not apply.)*
+- [x] Sync the coupled derived surface in this same phase:
       `bash .claude/scripts/generate-context-line-counts.sh --check` to see the drift, then
       `--write`, then `--check` again to confirm clean. `index-entries.json`'s `line_count` for
       `project/typescript/tools/package-manager-detection.md` is currently `64` and matches
       `wc -l` exactly; any edit to that file moves it, and `check-extension-docs.sh` Rule R
       fails on the mismatch at `verify-deploy.sh` Gate 3 — commit-blocking, so it is regenerated
-      here, not deferred.
+      here, not deferred. *(completed: line_count moved 64 -> 100, regenerated via --write,
+      --check now reports typescript 9/9 exact)*
 
 **Timing**: 0.5 hours
 

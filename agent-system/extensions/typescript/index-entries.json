@@ -162,7 +162,7 @@
     },
     {
       "path": "project/typescript/tools/package-manager-detection.md",
-      "line_count": 64,
+      "line_count": 100,
       "load_when": {
         "agents": [
           "typescript-implementation-agent",

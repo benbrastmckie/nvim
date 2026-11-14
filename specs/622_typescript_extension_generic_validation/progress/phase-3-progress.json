@@ -1,0 +1,21 @@
+{
+  "phase": 3,
+  "phase_name": "Prose-doc sync for nested-project detection",
+  "started_at": "2026-11-14T01:45:00Z",
+  "last_updated": "2026-11-14T01:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add nested-discovery section to package-manager-detection.md", "status": "done", "files_touched": ["agent-system/extensions/typescript/context/project/typescript/tools/package-manager-detection.md"]},
+    {"id": 2, "description": "Scope the no-package.json-at-all claim to post-fallback", "status": "done", "files_touched": ["agent-system/extensions/typescript/context/project/typescript/tools/package-manager-detection.md"]},
+    {"id": 3, "description": "Grep extension for other single-location claims; update only wrong ones", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Regenerate index-entries.json line_count for the edited doc", "status": "done", "files_touched": ["agent-system/extensions/typescript/index-entries.json"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": [
+    "generate-context-line-counts.sh --check found mismatch (declared 64, actual 100); --write fixed; --check now 9/9 exact for typescript",
+    "check-extension-docs.sh --quiet: typescript PASS, same one pre-existing ADVISORY as Phase 2 (unrelated, about deployment)",
+    "grep of README.md, EXTENSION.md, both skills, both agents, rules/typescript-rules.md, the adversarial-verification contract found only two hits, both about per-project source-root layout flexibility (unrelated to the cwd-fixed hook search defect) -- neither touched",
+    "EXTENSION.md not touched, so Rule U/V re-check not applicable"
+  ]
+}
