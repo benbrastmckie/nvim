@@ -29,29 +29,53 @@
       "category": "PATTERN",
       "source_artifact": "specs/625_roadmap_preflight_approval_gate/summaries/01_roadmap-preflight-gate-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "source-safety", "run-as-script-guard", "library-extraction", "deduplication"]
+      "suggested_keywords": [
+        "bash",
+        "source-safety",
+        "run-as-script-guard",
+        "library-extraction",
+        "deduplication"
+      ]
     },
     {
       "content": "A plan's 'exactly one definition site' verification criterion (e.g. `grep -rn SYMBOL repo/`) should be run against the WHOLE repository, not just the plan's own declared files-to-modify list, before closing the final dedup phase -- a second hand-transcribed copy of the same vocabulary can exist in a file the plan's authoring pass never discovered (in this task: a lint script that had deliberately duplicated the vocabulary because the original source was unsafe to source, a rationale this task's own new library invalidated). Fix forward in-phase rather than waiving the criterion.",
       "category": "INSIGHT",
       "source_artifact": "specs/625_roadmap_preflight_approval_gate/summaries/01_roadmap-preflight-gate-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verification", "deduplication", "plan-gap", "grep-check", "scope-discovery"]
+      "suggested_keywords": [
+        "verification",
+        "deduplication",
+        "plan-gap",
+        "grep-check",
+        "scope-discovery"
+      ]
     },
     {
       "content": "This repo's test suites resolve their subject script deploy-tree-first by default (testing the stale deployed copy, not a mid-task source-store edit). Set CORE_TEST_SUBJECT_MODE=source-store before invoking a suite to force it to validate the source-store copy instead -- necessary whenever verifying an edit before the next deploy cycle has run.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/625_roadmap_preflight_approval_gate/summaries/01_roadmap-preflight-gate-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["testing", "source-store", "deploy-tree-first", "CORE_TEST_SUBJECT_MODE", "verification"]
+      "suggested_keywords": [
+        "testing",
+        "source-store",
+        "deploy-tree-first",
+        "CORE_TEST_SUBJECT_MODE",
+        "verification"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794626904_81a9cc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

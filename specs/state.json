@@ -106767,6 +106767,11 @@
           "path": "specs/625_roadmap_preflight_approval_gate/plans/01_roadmap-preflight-gate.md",
           "type": "plan",
           "summary": "Six-phase plan, 5.5 hours, four dependency waves."
+        },
+        {
+          "path": "specs/625_roadmap_preflight_approval_gate/summaries/01_roadmap-preflight-gate-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: what changed, decisions, one plan deviation, verification, impacts, and follow-ups."
         }
       ],
       "file_scope": [
@@ -107881,7 +107886,8 @@
       },
       "last_updated": "2026-11-14T03:45:55Z",
       "session_id": "sess_1794626904_81a9cc",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added scripts/lib/roadmap-preflight-lib.sh (four-way classify, mechanical classic-skeleton scaffold, run-as-script CLI) strictly in front of roadmap-integration.sh's write modes; gated skill-roadmap's Stage 1 with an interactive AskUserQuestion approval and /orchestrate's conclusion-stage Step 5 with a loud, non-writing, three-surface degrade on absent/unknown; updated the caller contract, Move 5's allow-list, and the regression suite (13 new cases); also closed a second CLASSIC_HEADERS duplicate found in lint-roadmap-batch-proposals.sh during Phase 6's own verification."
     },
     {
       "project_number": 626,

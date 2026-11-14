@@ -254,6 +254,7 @@ considerations, NOT duplication -- do not convert them into dependency edges.
 - **Dependencies**: None
 - **Research**: [625_roadmap_preflight_approval_gate/reports/01_roadmap-preflight-gate.md]
 - **Plan**: [625_roadmap_preflight_approval_gate/plans/01_roadmap-preflight-gate.md]
+- **Summary**: [625_roadmap_preflight_approval_gate/summaries/01_roadmap-preflight-gate-summary.md]
 
 **Description**: PROBLEM (measured in a consumer repo; do NOT re-derive these facts).
 `scripts/roadmap-integration.sh --regenerate` refuses to write `specs/ROADMAP.md` when its
