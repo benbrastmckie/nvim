@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794603202_55566e_621",
+  "dispatch_seq": 8,
+  "task_number": 621,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/621_typescript_extension_implementation/reports/01_typescript-extension-implementation-readiness.md",
+      "summary": "Gap analysis: the typescript extension's 20-file manifest, python-parity shape, and the 4 python-lacks items (hard_contracts, keyword_overrides, rules file, verification hook) already exist and are fully committed from task 620. All relevant lints re-run clean. The one genuinely open item -- the dispatch's own deploy-and-confirm VERIFICATION clause -- was executed directly against a disposable scratch repo and passed: .claude/ files, merged CLAUDE.md section, merged index.json entries, and (once an opencode.json.managed marker was added) the merged opencode.json agent keys."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "To headlessly load a new/unloaded agent-system extension into a scratch target repo for end-to-end merge-target verification, run nvim --headless with a lua one-liner calling manager.load('core', {confirm=false, force=true, project_dir=SCRATCH}) then manager.load('<ext>', {confirm=false, force=true, project_dir=SCRATCH}) (same pattern deploy-headless.sh uses internally for its bootstrap call). Afterward inspect SCRATCH/.claude/** for provided files, SCRATCH/.claude/CLAUDE.md for the merged section_id block, and SCRATCH/.claude/context/index.json for merged index entries.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/621_typescript_extension_implementation/reports/01_typescript-extension-implementation-readiness.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["extension deploy test", "manager.load", "headless nvim", "merge targets", "scratch repo verification"]
+    },
+    {
+      "content": "merge.lua's generate_opencode_json() gates all output behind a target_path .. '.managed' marker file (opencode.json.managed) in the project root -- absent that marker it returns ok=true, err=nil but writes nothing, which looks like silent success rather than a no-op. Testing an extension's opencode_json merge target end-to-end against a fresh/scratch repo requires creating that marker file first.",
+      "category": "PATTERN",
+      "source_artifact": "specs/621_typescript_extension_implementation/reports/01_typescript-extension-implementation-readiness.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["opencode.json", "managed marker", "generate_opencode_json", "merge target", "extension loader"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 621 to create implementation plan"
+}
