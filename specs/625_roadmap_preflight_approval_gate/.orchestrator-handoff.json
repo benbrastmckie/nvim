@@ -1,17 +1,17 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Wrote a six-phase implementation plan for the roadmap preflight approval gate: extract the layout-classification vocabulary into scripts/lib/roadmap-preflight-lib.sh with a four-way classify entry point, add the mechanical classic eight-header scaffolder plus a run-as-script CLI guard, cover all four verdicts and scaffold-then-regenerate idempotence in test-roadmap-generation.sh, gate skill-roadmap Stage 1 with a pre-dispatch AskUserQuestion, and degrade loudly (named warning + events.jsonl + per-task issues.jsonl) at /orchestrate's conclusion stage Move 5. All seven description claims were re-validated against live source; one divergence found and recorded. Plan validates clean with zero warnings.",
+  "status": "implemented",
+  "phase": "implement",
+  "summary": "Implemented all six plan phases for the roadmap preflight approval gate. Added scripts/lib/roadmap-preflight-lib.sh (four-way classify, mechanical classic-skeleton scaffold, run-as-script CLI) strictly in front of roadmap-integration.sh's write modes, with zero duplicate vocabulary left in the generator. Gated both write-mode callers: skill-roadmap's Stage 1 with an interactive AskUserQuestion approval before roadmap-agent is dispatched, and /orchestrate's conclusion-stage Step 5 with a loud, non-writing, three-surface degrade (named warning, events.jsonl, best-effort per-task issues.jsonl) on absent/unknown. Updated the caller contract (roadmap-update.md), Move 5's allow-list, and the regression suite (13 new cases, all passing). Phase 6's own verification criterion ('exactly one CLASSIC_HEADERS definition site') caught a second duplicate outside the plan's declared files-to-modify list (lint-roadmap-batch-proposals.sh) and that was fixed in-phase rather than waived. Full run-all.sh/verify-deploy.sh deliberately deferred to the batch gate stage per this dispatch's Batch Gate Deferral directive; every phase instead ran a scoped suite/gate discharge, all green. Two pre-existing, unrelated issues recorded via issue-record.sh rather than fixed (out of file scope).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/625_roadmap_preflight_approval_gate/plans/01_roadmap-preflight-gate.md",
-      "summary": "Six-phase plan, 5.5 hours, four dependency waves."
+      "type": "summary",
+      "path": "specs/625_roadmap_preflight_approval_gate/summaries/01_roadmap-preflight-gate-summary.md",
+      "summary": "Full implementation summary: what changed, decisions, one plan deviation, verification, impacts, and follow-ups."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
   "blockers": [],
-  "next_action_hint": "Dispatch implement for task 625; Phase 1 (library extraction) must land before any other phase.",
-  "dispatch_seq": 2
+  "next_action_hint": "Task complete. The deployed .claude/ tree will show content drift against the source store for every edited file until the next deploy cycle runs; self-healing per this repo's own documented behavior, no manual action needed.",
+  "dispatch_seq": 3
 }
