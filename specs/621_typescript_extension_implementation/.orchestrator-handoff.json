@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Wrote a 3-phase, 1.5-hour verification-closeout plan at specs/621_typescript_extension_implementation/plans/01_typescript-extension-verification-closeout.md. The research report established that all 20 typescript-extension files already exist, are committed clean, pass five lints, and carry all four parity-plus items, so the plan deliberately does not rebuild them. Phase 1 re-confirms the baseline has not drifted; Phase 2 executes the dispatch's VERIFICATION clause against a disposable scratch target (including the opencode.json.managed gating step) and records the evidence; Phase 3 writes that procedure into the extension README and runs the full gate set.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/621_typescript_extension_implementation/plans/01_typescript-extension-verification-closeout.md",
+      "summary": "3-phase verification-closeout plan: baseline drift re-confirmation, scratch-target deploy verification with evidence record, README procedure capture plus full gate."
+    }
+  ],
+  "dispatch_seq": 9
+}

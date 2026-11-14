@@ -125887,7 +125887,7 @@
     {
       "project_number": 621,
       "project_name": "typescript_extension_implementation",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Implement the typescript extension in the source store with parity plus a verification-stage gate",
       "description": "GOAL. Create `/home/benjamin/.config/nvim/agent-system/extensions/typescript/` in full, per the\nimplementation plan.\n\nPARITY WITH THE `python` EXTENSION'S SHAPE.\n- `manifest.json` -- `task_type: \"typescript\"`, `dependencies: [\"core\"]`, full `provides` block,\n  `routing_agents` for research/plan/implement, and `merge_targets` for claudemd/index/\n  opencode_json with `section_id: extension_typescript`.\n- `agents/typescript-research-agent.md`\n- `agents/typescript-implementation-agent.md`\n- `skills/skill-typescript-research/SKILL.md`\n- `skills/skill-typescript-implementation/SKILL.md`\n- The strictly-generic `context/project/typescript/` tree.\n- `index-entries.json` with accurate per-file `line_count`, `load_when`, `domain`, `subdomain`,\n  `summary`, and `keywords`.\n- `EXTENSION.md`\n- `opencode-agents.json`\n- `README.md`\n\nPLUS THE FOUR THINGS `python` LACKS.\n- A `hard_contracts` routing entry.\n- `keyword_overrides` in the manifest.\n- `rules/typescript-rules.md`\n- The verification-stage lifecycle hook.\n\nHARD CONSTRAINT. ALL writes go to the source store under\n`agent-system/extensions/typescript/`. NEVER write to any repository's `.claude/` deploy tree --\nsee `.claude/rules/source-store-deploy-boundary.md`.\n\nVERIFICATION. Deploy the extension into a repository via the loader and confirm it produces the\nexpected `.claude/` files, the merged `CLAUDE.md` section, and the merged `index.json` entries.",
@@ -125902,10 +125902,17 @@
           "path": "specs/621_typescript_extension_implementation/reports/01_typescript-extension-implementation-readiness.md",
           "type": "report",
           "summary": "Gap analysis: the typescript extension's 20-file manifest, python-parity shape, and the 4 python-lacks items (hard_contracts, keyword_overrides, rules file, verification hook) already exist and are fully committed from task 620. All relevant lints re-run clean. The one genuinely open item -- the dispatch's own deploy-and-confirm VERIFICATION clause -- was executed directly against a disposable scratch repo and passed: .claude/ files, merged CLAUDE.md section, merged index.json entries, and (once an opencode.json.managed marker was added) the merged opencode.json agent keys."
+        },
+        {
+          "path": "specs/621_typescript_extension_implementation/plans/01_typescript-extension-verification-closeout.md",
+          "type": "plan",
+          "summary": "3-phase verification-closeout plan: baseline drift re-confirmation, scratch-target deploy verification with evidence record, README procedure capture plus full gate."
         }
       ],
       "file_scope": [
-        "agent-system/extensions/typescript/"
+        "agent-system/extensions/typescript/",
+        "agent-system/extensions/typescript/README.md",
+        "specs/621_typescript_extension_implementation/records/deploy-verification-evidence.md"
       ],
       "audit_verdict": {
         "proposal": {
@@ -128819,7 +128826,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "last_updated": "2026-11-14T00:22:04Z",
+      "last_updated": "2026-11-14T00:27:17Z",
       "session_id": "sess_1794603202_55566e",
       "next_artifact_number": 2
     },

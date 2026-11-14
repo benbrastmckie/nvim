@@ -183,7 +183,7 @@ next_project_number: 627
 
 ### Typescript Extension
 
-621 [RESEARCHED] — Implement the typescript extension in the source store with...
+621 [PLANNED] — Implement the typescript extension in the source store with...
   └─ 622 [NOT STARTED] — Validate the typescript extension's generic toolchain...
     └─ 623 [NOT STARTED] — Make the web extension depend on the typescript extension and...
 
@@ -407,11 +407,12 @@ files under `agent-system/extensions/typescript/`, NEVER by special-casing the r
 
 ### 621. Implement the typescript extension in the source store with parity plus a verification-stage gate
 - **Effort**: large
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: typescript-extension
 - **Dependencies**: Task 620
 - **Research**: [621_typescript_extension_implementation/reports/01_typescript-extension-implementation-readiness.md]
+- **Plan**: [621_typescript_extension_implementation/plans/01_typescript-extension-verification-closeout.md]
 
 **Description**: GOAL. Create `/home/benjamin/.config/nvim/agent-system/extensions/typescript/` in full, per the
 implementation plan.
