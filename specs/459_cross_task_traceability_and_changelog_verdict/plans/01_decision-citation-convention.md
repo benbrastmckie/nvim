@@ -193,36 +193,37 @@ gate skips), run together with the `prose` tier's diff read-through.
 
 ---
 
-### Phase 2: Recognize a Decisions Heading as an Optional Plan Section [NOT STARTED]
+### Phase 2: Recognize a Decisions Heading as an Optional Plan Section [IN PROGRESS]
 
 **Goal**: `plan-format.md` documents `## Decisions` as a recognized optional plan section with a
 canonical position, carries the citation-convention pointer, and `validate-artifact.sh` records the
 same fact in a documentation-only array without changing what it requires.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/formats/plan-format.md` immediately before editing.
-- [ ] Add a `## Structure` entry for `**Decisions (optional)**` — explicit planning decisions and their
+- [x] Re-read `agent-system/extensions/core/context/formats/plan-format.md` immediately before editing. *(completed)*
+- [x] Add a `## Structure` entry for `**Decisions (optional)**` — explicit planning decisions and their
       grounds, the plan-time counterpart of the required `## Decisions` section in reports and
       summaries. Name its canonical position: after `## Risks & Mitigations`, before
-      `## Implementation Phases`.
-- [ ] In that same entry, state plainly that `Decisions` is a recognized optional section and is
+      `## Implementation Phases`. *(completed)*
+- [x] In that same entry, state plainly that `Decisions` is a recognized optional section and is
       deliberately NOT a member of `scripts/validate-artifact.sh`'s `PLAN_SECTIONS`, because promoting
       it would fail at gate-out every plan authored without one. Mirror the shape
       `summary-format.md`'s `### Optional Sections` subsection already uses for `Plan Deviations`.
-- [ ] Add one bullet to `plan-format.md`'s `## Writing Guidance` carrying the citation pointer, in the
-      same shape Phase 1 adds to the other two standards.
-- [ ] Re-read `agent-system/extensions/core/scripts/validate-artifact.sh`, then add a
+      *(completed)*
+- [x] Add one bullet to `plan-format.md`'s `## Writing Guidance` carrying the citation pointer, in the
+      same shape Phase 1 adds to the other two standards. *(completed)*
+- [x] Re-read `agent-system/extensions/core/scripts/validate-artifact.sh`, then add a
       documentation-only `PLAN_SECTIONS_OPTIONAL=("Decisions")` array immediately after the
       `PLAN_SECTIONS` assignment, preceded by a comment stating that it is never wired into
       `required_sections`, has no effect on validation, exists to keep the script and
       `context/formats/plan-format.md` from drifting apart, and that `Decisions` must stay out of
       `PLAN_SECTIONS`. Carry `# shellcheck disable=SC2034` with the same justification comment the
-      existing `SUMMARY_SECTIONS_OPTIONAL` array carries.
-- [ ] Assert `PLAN_SECTIONS` itself is byte-for-byte unchanged, and that `required_sections` has no new
-      assignment path, by reading the staged diff for `validate-artifact.sh`.
-- [ ] Confirm no added line contains a literal record-number citation and none uses the barred
-      record-versioning phrasing.
-- [ ] Commit the two files with an explicit two-path pathspec.
+      existing `SUMMARY_SECTIONS_OPTIONAL` array carries. *(completed)*
+- [x] Assert `PLAN_SECTIONS` itself is byte-for-byte unchanged, and that `required_sections` has no new
+      assignment path, by reading the staged diff for `validate-artifact.sh`. *(completed: confirmed via git diff)*
+- [x] Confirm no added line contains a literal record-number citation and none uses the barred
+      record-versioning phrasing. *(completed)*
+- [x] Commit the two files with an explicit two-path pathspec. *(completed, plus an early ahead-of-Phase-3 deploy-headless.sh run so this phase's own gate 3,4 criterion could pass honestly for the script edit — see Decisions/notes)*
 
 **Timing**: 0.75 hours
 

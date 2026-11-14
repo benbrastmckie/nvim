@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "Recognize a Decisions Heading as an Optional Plan Section",
+  "started_at": "2026-11-14T06:11:00Z",
+  "last_updated": "2026-11-14T06:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Decisions (optional) Structure entry to plan-format.md plus Writing Guidance pointer bullet", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 2, "description": "Add documentation-only PLAN_SECTIONS_OPTIONAL array to validate-artifact.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 3, "description": "Assert PLAN_SECTIONS byte-for-byte unchanged; confirm no task refs/record-versioning; commit; early redeploy so gate 3,4 passes honestly for the script edit", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "test-validate-artifact.sh (validator's own test suite): 146 passed, 0 failed.",
+    "An early (ahead-of-Phase-3) deploy-headless.sh run was executed so Phase 2's own narrower verify-deploy.sh --only-gate 3,4 criterion could pass: the doc-lint 'deployed script content drift' check is a hard fail for ANY script edit until the source store is redeployed, so this is structurally required mid-phase for a script-touching phase, not a Phase-3-only action. Phase 3 will redeploy again (idempotent) and run the complete gate set.",
+    "The full-gate run surfaced 3 additional pre-existing, unrelated findings beyond the already-recorded task-reference one, all recorded via issue-record.sh and NOT fixed here: (a) gate10 validate-state.sh --deep hit a transient 60s harness timeout at deploy time, re-ran standalone to completion in 45s with 0 Failed; (b) gate20 orchestrator-context-budget eager-load total exceeded its baseline by 44 B, entirely from rules/*.md + CLAUDE.md content, none of which this record touches; (c) lint-test-root-resolution.sh flagged one violation in the unrelated typescript extension's test-typescript-verify.sh.",
+    "suite_selection_select's extra-suite warning for Phase 2 (test-orchestrate-build-dispatch.sh) was additionally run and PASSED.",
+    "test-orchestrate-cycle-postflight.sh (one of the plan's originally-named 7 suites) FAILs with several acceptance/fixture mismatches around orchestrate-cycle-postflight.sh/orchestrate-recover-outcome.sh status-transition semantics -- confirmed hermetic (own mktemp+git-init fixture) and unrelated to plan-format.md/validate-artifact.sh. Recorded via issue-record.sh, not fixed here."
+  ]
+}
