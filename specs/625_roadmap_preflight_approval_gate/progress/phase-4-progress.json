@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Interactive arm in skill-roadmap",
+  "started_at": "2026-11-13T01:00:00Z",
+  "last_updated": "2026-11-13T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add AskUserQuestion to allowed-tools frontmatter", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
+    {"id": 2, "description": "Extend Stage 1 with classify step", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
+    {"id": 3, "description": "classic/stage proceed unchanged, no question", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
+    {"id": 4, "description": "absent/unknown ask single AskUserQuestion naming verdict/scaffold/preservation", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
+    {"id": 5, "description": "On approval run scaffold CLI then proceed to Stage 2", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
+    {"id": 6, "description": "On decline do not dispatch, return named summary", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
+    {"id": 7, "description": "Pass only resolved outcome into Stage 2 dispatch prompt", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
+    {"id": 8, "description": "Update Stage 3 second WARNING text to name Stage 1 preflight", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
+    {"id": 9, "description": "Amend MUST NOT list with preflight scaffold carve-out on items 3 and 4", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Batch Gate Deferral: verification tier is 'full' per plan but discharged against the scoped narrowing named by the dispatch's Batch Gate Deferral directive -- suite_selection_select over skills/skill-roadmap/SKILL.md names a concrete 28-suite set (not the __FULL_SWEEP__ sentinel), run via run-all.sh --only. 25/28 passed; 3 pre-existing known-failures.txt entries (test-double-loading-check.sh, test-orchestrate-cycle-postflight.sh, test-verify-deploy-context-budget.sh) plus one newly-surfaced-but-pre-existing failure (test-deploy-propagation.sh, root cause: an unrelated task-reference lint finding in orchestrator-context-budget.json last touched by task 620, confirmed via git log and recorded via issue-record.sh) -- not attributable to this phase's edits. manifest.json was additionally updated to declare the new scripts/lib/roadmap-preflight-lib.sh under provides.scripts (closing a gate3 content-drift finding the narrowing run surfaced)."
+}

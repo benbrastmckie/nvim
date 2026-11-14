@@ -316,37 +316,37 @@ assertions added, with zero failures.
 
 ---
 
-### Phase 4: Interactive arm in skill-roadmap [NOT STARTED]
+### Phase 4: Interactive arm in skill-roadmap [COMPLETED]
 
 **Goal**: `/roadmap` classifies `specs/ROADMAP.md` and, on `absent`/`unknown`, asks the user for
 approval and scaffolds before `roadmap-agent` is ever dispatched.
 
 **Tasks**:
-- [ ] Add `AskUserQuestion` to `skills/skill-roadmap/SKILL.md`'s `allowed-tools:` frontmatter
+- [x] Add `AskUserQuestion` to `skills/skill-roadmap/SKILL.md`'s `allowed-tools:` frontmatter
       (`Bash` is already present and is the only other tool the gate needs — the scaffold write
-      goes through the library's CLI, never the `Write` tool).
-- [ ] Extend Stage 1 with a classify step:
-      `bash .claude/scripts/lib/roadmap-preflight-lib.sh classify specs/ROADMAP.md`.
-- [ ] On `classic`/`stage`: proceed to Stage 2 unchanged, with no question asked.
-- [ ] On `absent`/`unknown`: ask a single `AskUserQuestion` for approval to create (absent) or
+      goes through the library's CLI, never the `Write` tool). *(completed)*
+- [x] Extend Stage 1 with a classify step:
+      `bash .claude/scripts/lib/roadmap-preflight-lib.sh classify specs/ROADMAP.md`. *(completed)*
+- [x] On `classic`/`stage`: proceed to Stage 2 unchanged, with no question asked. *(completed)*
+- [x] On `absent`/`unknown`: ask a single `AskUserQuestion` for approval to create (absent) or
       repair (unknown) the file, naming the verdict, what the skeleton write does, and — for
       `unknown` — that the existing content is preserved verbatim under
       `## Unfiled observations (none worth a task yet)`. Model the block's shape on
       `skills/skill-meta/SKILL.md` Section 2, and state in the stage prose why the question lives
       here and not in `roadmap-agent` (the measured `AskUserQuestion` withholding from every
-      dispatched subagent).
-- [ ] On approval: run
+      dispatched subagent). *(completed)*
+- [x] On approval: run
       `bash .claude/scripts/lib/roadmap-preflight-lib.sh scaffold specs/ROADMAP.md` in this
-      skill's own execution, then proceed to Stage 2 with the file already `classic`.
-- [ ] On decline: do not dispatch `roadmap-agent`, do not write anything, and return a named
-      summary stating that roadmap rendering is blocked pending an approved scaffold.
-- [ ] Pass only the resolved outcome into the Stage 2 dispatch prompt — never a flag telling the
-      agent to ask anything itself.
-- [ ] Update Stage 3's second `WARNING:` text to name the Stage 1 preflight as the first thing to
-      re-check on a recurrence; leave the dry-run check's mechanism unchanged.
-- [ ] Amend the MUST NOT list: carve out the Stage 1 preflight scaffold explicitly from item 3
+      skill's own execution, then proceed to Stage 2 with the file already `classic`. *(completed)*
+- [x] On decline: do not dispatch `roadmap-agent`, do not write anything, and return a named
+      summary stating that roadmap rendering is blocked pending an approved scaffold. *(completed)*
+- [x] Pass only the resolved outcome into the Stage 2 dispatch prompt — never a flag telling the
+      agent to ask anything itself. *(completed)*
+- [x] Update Stage 3's second `WARNING:` text to name the Stage 1 preflight as the first thing to
+      re-check on a recurrence; leave the dry-run check's mechanism unchanged. *(completed)*
+- [x] Amend the MUST NOT list: carve out the Stage 1 preflight scaffold explicitly from item 3
       (which forbids the skill invoking `--regenerate` — the scaffold is not `--regenerate`) and
-      confirm item 4 still holds (the scaffold writes `specs/ROADMAP.md`, already in scope).
+      confirm item 4 still holds (the scaffold writes `specs/ROADMAP.md`, already in scope). *(completed)*
 
 **Timing**: 1 hour
 
