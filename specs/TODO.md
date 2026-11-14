@@ -9670,11 +9670,13 @@ EDIT TARGET. Per `.claude/rules/source-store-deploy-boundary.md`, a consumer rep
 - **Topic**: core-agent-system
 - **Dependencies**: Task 313, Task 458, Task 459
 
-**Description**: Add a new `/orient` command that answers "where are we and what next" at executive level, on demand, and retire `/review` in the same change.
+**Description**: Add a strategic-brief capability to `/review`, backed by a new read-only scout agent that answers "where are we against the stated aim, and what next" at executive level, on demand. `/review` stays in place as the surface for high-level questions about the repository's direction; this record extends it rather than replacing it, and no new command is introduced.
 
-PURPOSE. The repository's state is spread across `specs/ROADMAP.md`, `specs/TODO.md`, `specs/state.json`, `specs/CHANGE_LOG.md`, the verdict table in `FormalSystem/Metalogic/Decidability/RaySummary/README.md` (the authority), the C9 and C12 do-not-re-attempt registers in `FormalSystem/Metalogic/Decidability/Verified/Termination/MintBound/Register.lean`, and the wired evidence-probe collection registered in `scripts/check-evidence-probes.sh` (37 wired probes at time of filing). No single artifact answers the orientation question, and reconstructing it by hand is a large, repeated read.
+PURPOSE. The orientation question has no single answering artifact. A consumer repository's state is spread across `specs/ROADMAP.md`, `specs/TODO.md`, `specs/state.json`, `specs/CHANGE_LOG.md`, the verdict table in `FormalSystem/Metalogic/Decidability/RaySummary/README.md` (the authority), the C9 and C12 do-not-re-attempt registers in `FormalSystem/Metalogic/Decidability/Verified/Termination/MintBound/Register.lean`, and the wired evidence-probe collection registered in `scripts/check-evidence-probes.sh` (37 wired probes at time of filing). Reconstructing the position by hand is a large, repeated read. `/review` is the existing on-demand surface for exactly that question, so the brief belongs there.
 
-SHAPE. A new command `/orient` backed by a new skill, which dispatches a NEW READ-ONLY SCOUT AGENT. The scout researches current state and returns ONE compressed brief, rendered to the USER as bullet points in conversation. Scout agent tools: Read, Grep, Glob, and Bash for jq and repo scripts. NO Write, NO Edit -- the scout is read-only by construction, not by convention.
+WHY `/review` AND NOT A DEDICATED ORIENTATION COMMAND. The automatic, once-per-invocation orientation already ships. `/orchestrate`'s Move 5 conclusion stage (`agent-system/extensions/core/context/contracts/conclusion-stage.md`, 498 lines; deployed at `.claude/context/contracts/conclusion-stage.md`) already performs, in order: Step 5 calls `roadmap-integration.sh --regenerate` and commits `specs/ROADMAP.md`, guarded by a preflight layout classifier so `--regenerate` is never called on an `absent`/`unknown` layout (degrading instead to an `events.jsonl` record plus an `issue-record.sh` entry); Step 5 then runs `lint/lint-roadmap-batch-proposals.sh` advisorily over the fresh file; Step 7 invokes `orchestrate-suggest-next-batch.sh --next-batch`, rendering up to `MAX_BATCH_OPTIONS` (3) labelled, probe-verified options, each under its own `Option N -- {criterion}:` header naming why the batch coheres, each carrying per-task `admit`/`defer (reason)` admission evidence; Step 6 emits the report with a `**Roadmap**: regenerated` line and a `**Suggested next batch**:` line per `context/patterns/orchestrate-batch-results-template.md`'s Conclusion block. A separate command for the automatic case would duplicate deployed machinery; a separate command for the on-demand case would duplicate `/review`. The gap the conclusion stage does NOT close is the one this record fills: it reports batch mechanics -- wins, channels, suggested next batch -- and never answers "where are we against the stated aim." That answer, and the labelling discipline that keeps it readable, is the whole of this record's value.
+
+SHAPE. A NEW READ-ONLY SCOUT AGENT, dispatched from `/review` when a strategic brief is asked for. The scout researches current state and returns ONE compressed brief, rendered to the USER as bullet points in conversation. Scout agent tools: Read, Grep, Glob, and Bash for jq and repo scripts. NO Write, NO Edit in its frontmatter -- the scout is read-only by construction, not by convention.
 
 REQUIRED BRIEF SECTIONS, in this order, each ruthlessly compressed, none omitted:
 (1) WHAT HAPPENED -- the last round(s) of work, verdict-first.
@@ -9691,50 +9693,28 @@ HARD REQUIREMENTS on the brief:
 - Point at the authority README's guardrails rather than restating them.
 - Output to the user in conversation rather than producing yet another artifact nobody reads. If any file is written at all, it is one short brief, not a full report.
 
-RETIRE /review, in this same task. Remove its command file, its skill-to-agent mapping row, and its command-reference table row in core's `merge-sources/claudemd.md`.
-
-KEEP `code-reviewer-agent`: already verified at filing time that it has consumers beyond /review's "available for future skill integration" note -- it is referenced by `agent-system/extensions/core/manifest.json`, `index-entries.json`, `scripts/validate-index.sh`, `scripts/lint/lint-agent-contracts.sh`, `scripts/validate-context-budgets.sh`, `agents/README.md`, `README.md` and `docs/reference/standards/agent-frontmatter-standard.md`. Removing the agent would break those registry and lint consumers. Re-verify before acting, then leave the agent in place and remove only the /review wiring.
+KEEP `code-reviewer-agent`. Verified at filing time that it has consumers beyond `/review`'s "available for future skill integration" note -- it is referenced by `agent-system/extensions/core/manifest.json`, `index-entries.json`, `scripts/validate-index.sh`, `scripts/lint/lint-agent-contracts.sh`, `scripts/validate-context-budgets.sh`, `agents/README.md`, `README.md` and `docs/reference/standards/agent-frontmatter-standard.md`. Removing the agent would break those registry and lint consumers. Re-verify before acting, then leave the agent in place. The scout agent is a separate, additional agent, not a replacement for `code-reviewer-agent`.
 
 EDIT TARGET. Per `.claude/rules/source-store-deploy-boundary.md`, a consumer repository's `.claude/` tree is a gitignored, disposable deploy artifact. Resolve `source_dir` from the consumer's `.claude-extensions.json` and make every change under the source store at the mirroring path -- `agent-system/extensions/core/` for all of these. NEVER hand-author under `.claude/**`. Redeploy afterwards via `deploy-headless.sh` using the bounded-wait idiom (`timeout 540`, Bash tool `timeout` raised to 600000), never a hand-patch of a deployed file.
 
-DELIVERABLES: the new skill definition; the new scout agent definition; the new `/orient` command file; the CLAUDE.md merge-source rows (command-reference table and skill-to-agent mapping); and the /review removal. Register the new skill and agent wherever core's registries require it -- `manifest.json`, `index-entries.json` -- so `validate-index.sh` and `lint-agent-contracts.sh` stay green.
+FILE SCOPE. The edit targets are: the new scout agent definition under `agent-system/extensions/core/agents/`; `agent-system/extensions/core/commands/review.md` (the brief's invocation path and the scout dispatch); and core's registries, `manifest.json` and `index-entries.json`, so `validate-index.sh`, `lint-agent-contracts.sh` and `validate-context-budgets.sh` stay green. Neither a new command file nor a new skill directory is in scope: `/review` already has its command file and its direct-execution wiring, and the brief is a capability added inside it.
 
-ACCEPTANCE: `/orient` resolves and dispatches the scout; the scout cannot write (no Write/Edit in its frontmatter); the brief carries all five sections with the four-way SETTLED/LANDED-AT-ONE-FIXTURE/CARRIED-UNVERIFIED/OPEN labelling; `/review` is gone from the command reference and the skill mapping; `code-reviewer-agent` is still present and still referenced by its registry consumers; core's own lint and validate scripts pass; the deployed tree is regenerated rather than hand-edited.
-=== COORDINATION: REMOVING commands/review.md COLLIDES WITH THE ROADMAP-BATCH LINT RECORD ===
-Added 2026-11-02. Nothing else in this record changes.
+DELIVERABLES:
+1. The read-only scout agent definition, with frontmatter carrying Read, Grep, Glob and Bash and NO Write or Edit, and a body specifying the five brief sections and the HARD REQUIREMENTS above.
+2. The strategic-brief mode in `agent-system/extensions/core/commands/review.md`: how it is requested, the scout dispatch, and the conversational rendering of the returned brief.
+3. Registry entries for the new agent in core's `manifest.json` and `index-entries.json`.
 
-Removing `agent-system/extensions/core/commands/review.md` deletes a path that is in the declared
-file_scope of the record `advisory_lint_for_roadmap_batch_proposals` (not_started), where it is that
-record's SEAM B call site -- the place that record's leaning design calls the new lint from. Until
-now neither record knew about the other, so whichever lands first silently invalidates the other.
+ACCEPTANCE:
+- `/review` resolves and can dispatch the scout for a strategic brief.
+- The scout cannot write: no Write and no Edit in its frontmatter.
+- The returned brief carries all five sections, with the four-way SETTLED / LANDED-AT-ONE-FIXTURE / CARRIED-UNVERIFIED / OPEN labelling in section (3).
+- `code-reviewer-agent` is still present and still referenced by all its registry consumers.
+- Core's own lint and validate scripts pass: `validate-index.sh`, `lint-agent-contracts.sh`, `validate-context-budgets.sh`.
+- The deployed tree is regenerated via `deploy-headless.sh` rather than hand-edited.
 
-THE file_scope COLLISION GATE CANNOT SEE THIS. Both records live in this same task space and both
-name `commands/review.md`, but the conflict is a DELETION-versus-CALL-SITE conflict, not the
-concurrent-write conflict the overlap predicate detects. An overlap finding would report "these two
-records touch the same file, batch them"; the actual hazard is that one record removes the file the
-other plans to edit, which batching alone does not resolve. Record the coordination explicitly
-here rather than relying on the gate.
+SCOPE BOUNDARY -- ROADMAP REGENERATION BELONGS TO `wire_todo_review_roadmap_regenerate`. That record owns, as its Deliverable 1, the wiring of `/todo` and `/review` to `roadmap-integration.sh --regenerate` through the shared `scripts/lib/roadmap-preflight-lib.sh`. Verified: `agent-system/extensions/core/commands/review.md` regenerates `TODO.md` via `generate-todo.sh` and writes `active_goal`, and calls `roadmap-integration.sh` nowhere. This record MUST NOT add that call or duplicate that deliverable; the two records share `commands/review.md` as a file but hold disjoint deliverables in it. Because `/review` stays in place, that record's `review.md` deliverable has its subject and needs no re-sizing, and the deliverable conflict over `commands/review.md` between the two records is dissolved -- what remains is an ordinary concurrent-write overlap on one file, which batching or an ordering edge resolves.
 
-RESOLUTION, both directions:
-  - IF THIS RECORD LANDS FIRST (the likely order -- it has no dependencies, while the lint record
-    has four): the lint record's seam decision must be re-made against live callers. Its own
-    SEAM INVALIDATION section already records this and names the two live options, one of which is
-    the `/orient` command this record introduces. No action is required here beyond not being
-    surprised: deleting commands/review.md is correct and the other record is already written to
-    expect it.
-  - IF THE LINT RECORD LANDS FIRST AGAINST commands/review.md: this record must remove the lint
-    call alongside the command file rather than orphaning it -- a lint script registered in
-    manifest.json with a test companion but no remaining caller. Check for a
-    `lint-roadmap-batch-proposals.sh` invocation in commands/review.md before deleting the file,
-    and if one is present, decide whether to re-home it on `/orient` or remove the registration
-    too.
-
-ALSO NOTE, for this record's own benefit: `/orient` IS READ-ONLY BY CONSTRUCTION, so it REPORTS on
-ROADMAP.md and CHANGE_LOG.md state but MAINTAINS neither. The ROADMAP-maintenance gap documented in
-a consumer repository's own ROADMAP Maintenance section survives this record intact. Do not read
-`/orient` as closing that gap, and do not let the brief's coverage of roadmap state be mistaken for
-roadmap upkeep. If section (3) of the brief surfaces stale ROADMAP or CHANGE_LOG content, it says so
-and stops there -- repairing it is someone else's work.
+SCOPE BOUNDARY -- THE SCOUT REPORTS, IT DOES NOT MAINTAIN. The scout is READ-ONLY BY CONSTRUCTION, so it REPORTS on `ROADMAP.md` and `CHANGE_LOG.md` state but MAINTAINS neither. The ROADMAP-maintenance gap documented in a consumer repository's own ROADMAP Maintenance section survives this record intact. Do not read the brief as closing that gap, and do not let its coverage of roadmap state be mistaken for roadmap upkeep. If section (3) surfaces stale ROADMAP or CHANGE_LOG content, it says so and stops there -- repairing it is the roadmap-regeneration record's work, not the scout's.
 
 ---
 
