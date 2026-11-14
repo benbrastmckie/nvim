@@ -262,28 +262,43 @@ comment-and-unused-array addition in one script, changing no externally visible 
 
 ---
 
-### Phase 3: Redeploy and Full Gate [NOT STARTED]
+### Phase 3: Redeploy and Full Gate [IN PROGRESS]
 
 **Goal**: The deployed `.claude/` tree carries all four edits, the complete gate set is green, and the
 record's no-task-reference and no-record-versioning obligations are confirmed over the full added diff.
 
 **Tasks**:
-- [ ] Confirm Phases 1 and 2 are committed and the working tree holds no uncommitted change to the four
-      target files.
-- [ ] Redeploy from the source store: `timeout 540 bash .claude/scripts/deploy-headless.sh`
+- [x] Confirm Phases 1 and 2 are committed and the working tree holds no uncommitted change to the four
+      target files. *(completed)*
+- [x] Redeploy from the source store: `timeout 540 bash .claude/scripts/deploy-headless.sh`
       (source-store path `agent-system/extensions/core/scripts/deploy-headless.sh`), with the Bash tool
       timeout raised to 600000. Never hand-patch a deployed file. Check the exit status, and if the
       command is backgrounded instead, wait on it per the bounded-build-waiter pattern — a hard
       timeout and writer liveness via `kill -0` on the captured PID, never `ps | grep`.
-- [ ] Assert the deploy actually landed the content rather than reading the exit code alone:
+      *(completed: run twice, once ahead-of-schedule during Phase 2 so its own gate 3,4 criterion
+      could pass honestly for the validate-artifact.sh script edit, once again here — both
+      idempotent, both `RESULT=landed_verify_red` only on pre-existing unrelated findings)*
+- [x] Assert the deploy actually landed the content rather than reading the exit code alone:
       `grep -c "Cross-Record Decision Citation" .claude/context/formats/report-format.md .claude/context/formats/summary-format.md .claude/context/formats/plan-format.md`
-      and `grep -n "PLAN_SECTIONS_OPTIONAL" .claude/scripts/validate-artifact.sh`.
-- [ ] Read the complete added diff across all four files against the barred record-versioning phrasing
+      and `grep -n "PLAN_SECTIONS_OPTIONAL" .claude/scripts/validate-artifact.sh`. *(completed: 2/1/2
+      matches and one match, respectively)*
+- [x] Read the complete added diff across all four files against the barred record-versioning phrasing
       list (page-level version labels, supersession framing, "no longer"/"previously"/"formerly"/"used
-      to"/"withdrawn"), since no mechanical lint consumer for that rule exists yet.
-- [ ] Run the complete gate set and read its verdict.
-- [ ] Record any issue or win encountered across all three phases via `issue-record.sh`, and attest
-      explicitly in the handoff summary if there is genuinely nothing to record.
+      to"/"withdrawn"), since no mechanical lint consumer for that rule exists yet. *(completed: 61
+      added lines across the record's own commits, zero matches for any barred phrase or task-number
+      citation)*
+- [x] Run the complete gate set and read its verdict. *(deviation: altered — per this dispatch's own
+      Batch Gate Deferral directive, the complete unfiltered `verify-deploy.sh` battery is deferred to
+      the once-per-invocation batch stage rather than independently run here; discharged instead
+      against the scoped narrowing this phase's touched files resolve to:
+      `verify-deploy.sh --skip-slow --only-gate 3,4` plus the 8 suites named/discovered via
+      `suite_selection_select` for the touched paths -- all PASS. The deploy-headless.sh-internal
+      fast-gate run (43 checks, `--skip-slow`) was also read in full twice; its only 3 findings each
+      time are pre-existing and unrelated, see Decisions/progress notes)*
+- [x] Record any issue or win encountered across all three phases via `issue-record.sh`, and attest
+      explicitly in the handoff summary if there is genuinely nothing to record. *(completed: 1 win
+      plus 5 issue rows recorded across the three phases, all pre-existing/unrelated findings or the
+      batch-deferral observation; see progress files)*
 
 **Timing**: 0.5 hours
 
@@ -300,25 +315,48 @@ reported rather than silently staged or reverted.
 - `__WHOLE_TREE__` - this phase invokes `deploy-headless.sh`, regenerating the entire deployed `.claude/` tree, which is an implicit scope claim over that whole tree
 
 **Verification**:
-- `timeout 540 bash .claude/scripts/deploy-headless.sh` exits 0.
+- `timeout 540 bash .claude/scripts/deploy-headless.sh` exits 0. *(deviation: observed exit 3,
+  `RESULT=landed_verify_red` — per the script's own documented RESULT vocabulary this means the
+  deploy DID land (the tree was regenerated and carries this record's four edits, confirmed below)
+  and only its own internal fast-gate verify-deploy.sh run found issues, all three of which are
+  pre-existing and unrelated — see the Phase 3 task checklist above and progress notes)*
 - `bash .claude/scripts/verify-deploy.sh` — the complete gate set — exits 0. A finding naming one of
   this record's four files is fixed forward in the source store; a pre-existing finding naming
-  anything else is reported, not fixed here.
-- `bash .claude/scripts/check-task-references.sh` exits 0.
-- All four deployed assertions above return the expected non-zero match counts.
+  anything else is reported, not fixed here. *(deviation: altered — per this dispatch's Batch Gate
+  Deferral directive, deferred to the batch stage rather than independently run; the scoped
+  narrowing invocation covering this phase's touched files exits 0 (gates 3,4 plus the 8
+  suite_selection_select-named suites) — see above)*
+- `bash .claude/scripts/check-task-references.sh` exits 0. *(deviation: exits 1 — one pre-existing,
+  unrelated finding in `agent-system/extensions/core/context/config/orchestrator-context-budget.json`,
+  confirmed via `git diff --stat` untouched by this dispatch and predating it; recorded via
+  `issue-record.sh`, not fixed here per the "pre-existing finding ... reported, not fixed" clause
+  immediately above)*
+- All four deployed assertions above return the expected non-zero match counts. *(completed)*
 - `bash .claude/scripts/validate-artifact.sh specs/459_cross_task_traceability_and_changelog_verdict/plans/01_decision-citation-convention.md plan`
-  still exits 0 against the newly deployed validator.
+  still exits 0 against the newly deployed validator. *(completed)*
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-phase-heading-patterns.sh,test-plan-file-scope-harvest.sh,test-resume-scan-nonconformance.sh,test-validate-artifact.sh,test-gate-out-derived-staleness.sh,test-gate-out-repair-reporting.sh,test-orchestrate-cycle-postflight.sh` exits 0.
-- [ ] `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim` exits 0 after each edit phase.
-- [ ] `bash .claude/scripts/verify-deploy.sh` (complete gate set, no `--skip-slow`, no gate filter) exits 0 after the redeploy.
-- [ ] `bash .claude/scripts/check-task-references.sh` exits 0.
-- [ ] `bash .claude/scripts/validate-artifact.sh` on this plan exits 0 both before and after the redeploy, confirming `## Decisions` stayed optional for plans.
-- [ ] `PLAN_SECTIONS` in `validate-artifact.sh` is byte-for-byte unchanged across the whole record.
-- [ ] `specs/CHANGE_LOG.md` is unmodified across the whole record (`git diff --stat -- specs/CHANGE_LOG.md` is empty) — the KEEP verdict asserted mechanically.
-- [ ] `rules/git-workflow.md` and `context/reference/state-management-schema.md` are unmodified — the accept-and-work-around verdict and the declined context extension asserted mechanically.
+- [x] `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-phase-heading-patterns.sh,test-plan-file-scope-harvest.sh,test-resume-scan-nonconformance.sh,test-validate-artifact.sh,test-gate-out-derived-staleness.sh,test-gate-out-repair-reporting.sh,test-orchestrate-cycle-postflight.sh` exits 0.
+  *(deviation: altered — 6 of 7 suites PASS; `test-orchestrate-cycle-postflight.sh` FAILs on
+  several acceptance/fixture mismatches in its own hermetic temp-repo fixture, confirmed unrelated
+  to this record's edits (exercises orchestrate-cycle-postflight.sh/orchestrate-recover-outcome.sh
+  status-transition semantics, neither touched here) and pre-existing; recorded via
+  `issue-record.sh`, not fixed here)*
+- [x] `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim` exits 0 after each edit phase. *(completed: confirmed green after
+  each of Phase 1, Phase 2 (following an early redeploy), and Phase 3)*
+- [x] `bash .claude/scripts/verify-deploy.sh` (complete gate set, no `--skip-slow`, no gate filter) exits 0 after the redeploy. *(deviation: altered — deferred to the batch stage per this
+  dispatch's Batch Gate Deferral directive; the fast-gate (`--skip-slow`) run inside
+  `deploy-headless.sh` was read in full on both redeploys and found only 3 pre-existing, unrelated
+  findings each time (gate4 orchestrator-context-budget.json task-reference, gate20 eager-load
+  overage from rules/*.md+CLAUDE.md, lint-test-root-resolution.sh in the typescript extension) —
+  none naming this record's four files)*
+- [x] `bash .claude/scripts/check-task-references.sh` exits 0. *(deviation: exits 1 on the one
+  pre-existing, unrelated finding named above; not fixed here)*
+- [x] `bash .claude/scripts/validate-artifact.sh` on this plan exits 0 both before and after the redeploy, confirming `## Decisions` stayed optional for plans. *(completed)*
+- [x] `PLAN_SECTIONS` in `validate-artifact.sh` is byte-for-byte unchanged across the whole record. *(completed: confirmed via `git diff` across the full record's commit range)*
+- [x] `specs/CHANGE_LOG.md` is unmodified across the whole record (`git diff --stat -- specs/CHANGE_LOG.md` is empty) — the KEEP verdict asserted mechanically. *(completed)*
+- [x] `rules/git-workflow.md` and `context/reference/state-management-schema.md` are unmodified — the accept-and-work-around verdict and the declined context extension asserted mechanically. *(completed)*
 
 ## Artifacts & Outputs
 
