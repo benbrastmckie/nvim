@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a five-phase plan at specs/436_orient_command_with_scout_agent_retire_review/plans/01_review-strategic-brief-scout.md: author a read-only console-only scout-agent.md in core, record its three lint-agent-contracts.sh exclusion entries, add a --brief early-exit mode to commands/review.md, wire manifest.json plus index-entries.json and the agent tables, then regenerate the deployed tree once via a bounded deploy-headless.sh run and discharge every acceptance criterion. Corrected the research report's count of required lint exclusion arrays from two to three (Check E was missed) and re-derived every premise figure the dispatch flagged, all of which held. validate-artifact.sh passes with 0 warnings and plan-file-scope-harvest.sh harvests all 9 declared paths including the mandatory __WHOLE_TREE__ sentinel on the deploy phase.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/436_orient_command_with_scout_agent_retire_review/plans/01_review-strategic-brief-scout.md",
+      "summary": "Five-phase plan: scout agent definition, three lint exclusion entries, /review --brief mode, registry and docs wiring, bounded redeploy plus full acceptance verification."
+    }
+  ],
+  "dispatch_seq": 2
+}
