@@ -242,12 +242,8 @@ echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
   # Never changes verdict/dispatch_status/failed_tasks — best-effort save only, per D4.
 
   # ask_user verdicts accumulate for Move 4's batched relay — never asked here, never per-task.
-  # A pending question is NOT a failure, and `orchestrate-cycle-postflight.sh` does not charge one
-  # into `failed_tasks` even when the underlying dispatch_status was `failed`/`blocked`: nothing on
-  # the relay-and-record path retracts such an entry, so it would outlive the question and the next
-  # cycle would filter the task out as failed and declare every dependent unreachable. An
-  # OFF-SCHEMA dispatch is charged regardless (`halt`), and a question that is simply never
-  # answered is charged one cycle later by triage's `needs_human` branch, not here.
+  # Not charged to failed_tasks even on a failed/blocked dispatch_status (halt stays charged) --
+  # full rationale in orchestrate-state-machine.md's "What may be charged to failed_tasks" section.
   if [ "$verdict" = "ask_user" ]; then
     jq --argjson tn "$t" --argjson q "$(echo "$postflight_json" | jq -c '.user_decision')" \
       '.pending_ask_user = ((.pending_ask_user // []) + [{"task": $tn, "decision": $q}])' \

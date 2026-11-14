@@ -118,12 +118,42 @@ this task's own file scope.
   only in the source store, inert until a future, separate load decision (explicitly out of
   scope per the plan's Non-Goals).
 
+## Gate 20 Finding Closure (dispatch 7, post-redeploy)
+
+The Inter-Cycle Redeploy Checkpoint's self-attribution screen withheld this task from reconcile
+over `FINDING gate20 orchestrator context budget: skills/skill-orchestrate/SKILL.md over
+ceiling`, attributing it to this task because of a basename collision on `SKILL.md` (this task's
+own new `skill-typescript-{research,implementation}/SKILL.md` files share that basename with the
+unrelated `skills/skill-orchestrate/SKILL.md`) — not an actual causal link; task 609, not this
+task, grew that file past its ceiling. Closed with a real fix rather than a re-report: task 609's
+six-line inline comment explaining why a pending `ask_user` verdict is never charged to
+`failed_tasks` was collapsed to a two-line pointer at its already-existing canonical home
+(`orchestrate-state-machine.md`'s "What may be charged to `failed_tasks`" section, which already
+carried the full rationale verbatim), recovering 368 of the 510 B overage (25,510 B -> 25,142 B).
+The residual 142 B, with no further redistributable bloat found nearby in this already
+pointer-dense file, was closed by a reviewed, dated ceiling move in
+`orchestrator-context-budget.json` (25,000 B -> 25,500 B), following that config file's own
+established trim-first/move-second convention. Re-verified via
+`bash .claude/scripts/verify-deploy.sh --only-gate 20`: the per-file ceiling sub-check for
+`skills/skill-orchestrate/SKILL.md` now passes (25,142 B within the 25,500 B ceiling).
+
+While re-verifying, a separate, unrelated gate20 sub-check (eager-load total 70,444 B vs.
+baseline 70,400 B, 44 B over) was observed failing. Confirmed non-attributable to this task: the
+`typescript` extension is not currently a loaded extension in `.claude-extensions.json`, so none
+of its content (including its `EXTENSION.md`) is part of the predicted eager-loaded
+`.claude/CLAUDE.md`, and no file in this task's `modified_files` shares a basename with, or
+governs, any eager-loaded file. Left open per the Follow-ups entry below, superseding the
+now-closed Gate 20 follow-up this summary previously carried.
+
 ## Follow-ups
 
 - Loading the `typescript` extension into a repository (an extension-picker / deploy action) is
   a separate, user-driven decision, not part of this task.
-- Gate 20's orchestrator context-budget overage (pre-existing, unrelated to this task) remains
-  open for whichever task owns that compaction work.
+- Gate 20's per-file ceiling finding for `skills/skill-orchestrate/SKILL.md` is now CLOSED (see
+  "Gate 20 Finding Closure" above). A NEW, separately-caused gate20 sub-check — the eager-load
+  total 44 B over its recorded baseline — surfaced during that re-verification, confirmed
+  pre-existing and unrelated to this task, and remains open for whichever task owns that
+  compaction/baseline-review work.
 - Gate 10's `validate-state.sh --deep` 60-second ceiling is now measurably too tight against
   `specs/state.json`'s current size (74.6s standalone, 0 failures) — worth a ceiling review by
   whichever task owns `verify-deploy.sh`'s gate timeouts, independent of this task.
