@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Record the Verification Procedure in the Extension README and Close the Gate",
+  "started_at": "2026-11-14T01:05:00Z",
+  "last_updated": "2026-11-14T01:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "extend README.md ## Verification section with scratch-target procedure and .managed gating note", "status": "done", "files_touched": ["agent-system/extensions/typescript/README.md"]},
+    {"id": 2, "description": "correction-target check: ## Verification section confirmed present, extended in place", "status": "done", "files_touched": []},
+    {"id": 3, "description": "coupled-generated-surface check: README.md confirmed not among index-entries.json's 9 entries", "status": "done", "files_touched": []},
+    {"id": 4, "description": "re-run check-extension-docs.sh and lint-extension-readme-table.sh", "status": "done", "files_touched": []},
+    {"id": 5, "description": "run complete gate set per Batch Gate Deferral: scoped discharge via verify-deploy.sh --only-gate 3,26", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "verify-deploy.sh --only-gate 3,26 run per dispatch's Batch Gate Deferral directive (final phase, Verification Tier: full). Gate 26 (lint-extension-readme-table.sh): PASS, 0 violations. Gate 3 (check-extension-docs.sh): typescript's own per-extension row is PASS; the gate's aggregate FAIL is caused entirely by a pre-existing, already-committed line_count drift in agent-system/extensions/lean/index-entries.json (dependency-tracing.md: declared 237, actual 242), unrelated to typescript and outside this phase's file_scope -- recorded via issue-record.sh (class: scope excursion, severity minor), not fixed here. The plan's own named criterion ('check-extension-docs.sh reports PASS for typescript') is satisfied. The full, unscoped gate set is deferred to the once-per-invocation batch stage per the dispatch's Batch Gate Deferral section."
+}

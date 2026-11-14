@@ -73,6 +73,47 @@ artifacts are validated, reporting `ran_pass`/`ran_fail`/`skipped_no_command` pe
 an honest-degrade guarantee: it never reports a pass when no typecheck or test command exists to
 run.
 
+### Verifying This Extension's Own Deploy (Scratch-Target Procedure)
+
+To confirm this extension's four `merge_targets` end-to-end without touching any real
+repository, deploy it into a disposable scratch git repository (created and destroyed entirely
+under a session scratchpad — never this repository, the source store, or any
+`.claude-extensions.json`-registered target) using the same headless Lua call
+`deploy-headless.sh` itself uses:
+
+```bash
+nvim --headless \
+  -c "lua local ext_config = require('neotex.plugins.ai.shared.extensions.config'); \
+      local ext_init = require('neotex.plugins.ai.shared.extensions.init'); \
+      local manager = ext_init.create(ext_config.claude()); \
+      manager.load('core', {confirm=false, force=true, project_dir=SCRATCH}); \
+      manager.load('typescript', {confirm=false, force=true, project_dir=SCRATCH}); \
+      print('DEPLOY_OK')" \
+  -c "qa!"
+```
+
+run from this config repository's own working directory (so the
+`neotex.plugins.ai.shared.extensions.*` modules resolve), with `project_dir` pointed at
+`SCRATCH`. Confirm the four merge targets directly against the scratch tree:
+
+1. **Installed files** — `SCRATCH/.claude/` contains both agents, both skill directories,
+   `rules/typescript-rules.md`, `scripts/typescript-verify.sh`, the contract file, and the full
+   8-file `context/project/typescript/` subtree, all correctly scoped under `.claude/` with no
+   duplicate at the scratch root.
+2. **`claudemd`** — a `## TypeScript Extension` section appears in `SCRATCH/.claude/CLAUDE.md`.
+3. **`index`** — `SCRATCH/.claude/context/index.json` carries all 9 `typescript`-tagged entries,
+   matching `index-entries.json`.
+4. **`opencode_json` — gated by a `.managed` marker**: without a `SCRATCH/opencode.json.managed`
+   file present, `merge.lua`'s `generate_opencode_json` (Step 1.2, managed/unmanaged gating)
+   returns `ok=true` and **writes no file** — this is the function's own documented no-op path,
+   not a defect. Create `SCRATCH/opencode.json.managed` (an empty file is sufficient) and
+   re-run the load above to observe this target: the regenerated `opencode.json` then carries
+   both `typescript-research` and `typescript-implementation` agent keys. A tester who skips
+   creating the marker will see no `opencode.json` at all and may wrongly conclude this merge
+   target is broken.
+
+Delete the scratch repository and every file it generated once done.
+
 ## Deliberately Omitted
 
 - **No `settings-fragment.json`**: nothing MCP- or permission-specific to configure for generic

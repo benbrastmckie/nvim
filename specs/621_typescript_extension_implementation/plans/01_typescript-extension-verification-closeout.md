@@ -217,32 +217,32 @@ criteria below, not a test suite.
 
 ---
 
-### Phase 3: Record the Verification Procedure in the Extension README and Close the Gate [NOT STARTED]
+### Phase 3: Record the Verification Procedure in the Extension README and Close the Gate [COMPLETED]
 
 **Goal**: Make the scratch-target verification procedure and the `opencode.json.managed` gating
 behavior durably discoverable from the extension itself, then close the task with the complete
 gate set green.
 
 **Tasks**:
-- [ ] Extend the `## Verification` section of
+- [x] Extend the `## Verification` section of
       `agent-system/extensions/typescript/README.md` with a short subsection covering: the
       headless `manager.load` scratch-target invocation shape, the four merge targets to confirm,
       and the `opencode.json.managed` gating requirement for the `opencode_json` target. Keep it
       specific to verifying THIS extension; the generic, reusable procedure belongs in a
       follow-up task against core's `context/guides/extension-development.md`, which is out of
-      scope here.
-- [ ] Correction-target check: the `## Verification` section was confirmed present in
+      scope here. *(completed: new '### Verifying This Extension's Own Deploy (Scratch-Target Procedure)' subsection added)*
+- [x] Correction-target check: the `## Verification` section was confirmed present in
       `README.md` at planning time. If it is absent when this phase runs, add the new content as
       its own `## Verification` section rather than skipping the task or inventing a different
-      target.
-- [ ] Coupled-generated-surface check: `README.md` is NOT among `index-entries.json`'s 9 entries
+      target. *(completed: section was present, extended in place)*
+- [x] Coupled-generated-surface check: `README.md` is NOT among `index-entries.json`'s 9 entries
       (confirmed at planning time — those are the 8 `project/typescript/**` context files plus
       the 1 contract file), so this edit moves no `line_count` and `index-entries.json` is
       correctly absent from this phase's file list. If that turns out not to hold when the phase
-      runs, declare `index-entries.json` and reconcile it in this same phase.
-- [ ] Re-run `check-extension-docs.sh` and `lint-extension-readme-table.sh` to confirm the README
-      edit broke neither the per-extension docs rules nor the registry table.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` from the repository root.
+      runs, declare `index-entries.json` and reconcile it in this same phase. *(completed: confirmed still holds, index-entries.json not touched)*
+- [x] Re-run `check-extension-docs.sh` and `lint-extension-readme-table.sh` to confirm the README
+      edit broke neither the per-extension docs rules nor the registry table. *(completed: typescript's own check-extension-docs.sh row is PASS; lint-extension-readme-table.sh PASS with 0 violations. Note: check-extension-docs.sh's overall script exit reflects an unrelated, pre-existing lean-extension line_count drift -- see Verification section below)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` from the repository root. *(completed via Batch Gate Deferral: this dispatch is one of several implement-phase dispatches in one multi-task /orchestrate batch invocation per its dispatch file's 'Batch Gate Deferral' section -- ran the scoped narrowing invocation `verify-deploy.sh --only-gate 3,26` covering this phase's two named lint checks instead; the full, unscoped gate set is deferred to the once-per-invocation batch stage. See Verification section below for the scoped result.)*
 
 **Timing**: 0.5 hours
 
@@ -263,13 +263,26 @@ task list above requires neither of those two files, consistent with this exclus
 
 **Verification**:
 - `README.md`'s `## Verification` section names the `manager.load` scratch-target invocation, the
-  four merge targets, and the `.managed` marker requirement.
-- `check-extension-docs.sh` reports PASS for `typescript`.
-- `lint-extension-readme-table.sh` reports 0 violations.
+  four merge targets, and the `.managed` marker requirement. *(observed: confirmed — new
+  "Verifying This Extension's Own Deploy (Scratch-Target Procedure)" subsection added)*
+- `check-extension-docs.sh` reports PASS for `typescript`. *(observed: confirmed — the
+  per-extension `[typescript]` row and the summary table's `typescript PASS` entry both hold.
+  The script's own aggregate exit code is non-zero because of an unrelated, pre-existing,
+  already-committed line_count drift in a DIFFERENT extension — `lean`'s
+  `index-entries.json`/`dependency-tracing.md` mismatch — outside this phase's file_scope;
+  recorded via `issue-record.sh`, not fixed here)*
+- `lint-extension-readme-table.sh` reports 0 violations. *(observed: confirmed — 0 violations)*
 - `bash .claude/scripts/verify-deploy.sh` (the complete gate set, run from the repository root so
   the source-store-only gates resolve rather than SKIP) exits 0. A gate-6 style stale-deploy
   finding arising solely from this source-store edit is the known self-healing case — the next
   cycle's Inter-Cycle Redeploy Checkpoint reconciles it; do not improvise a manual deploy.
+  *(discharged per this dispatch's Batch Gate Deferral directive: ran the scoped narrowing
+  invocation `bash .claude/scripts/verify-deploy.sh --only-gate 3,26` instead, covering this
+  phase's two named lint checks — check-extension-docs.sh (gate 3) and
+  lint-extension-readme-table.sh (gate 26). Gate 26 PASS. Gate 3's aggregate result is FAIL
+  solely due to the unrelated lean-extension drift noted above, not due to anything this phase
+  touched; `typescript`'s own row within it is PASS. The full, unscoped gate set is deferred to
+  the once-per-invocation batch stage per that directive, never forgiven.)*
 
 ---
 
