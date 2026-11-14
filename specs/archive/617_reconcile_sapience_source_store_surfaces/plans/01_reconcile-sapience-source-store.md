@@ -1,7 +1,7 @@
 # Implementation Plan: Task #617
 
 - **Task**: 617 - Reconcile sapience extension source store with retired machine-wide surfaces
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: Companion work `retire_machine_wide_sapience_surface` (sited in
   `/home/benjamin/.dotfiles`) -- confirmed landed, see Overview

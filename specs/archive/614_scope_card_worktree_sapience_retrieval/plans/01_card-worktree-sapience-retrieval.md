@@ -1,7 +1,7 @@
 # Implementation Plan: Task #614
 
 - **Task**: 614 - Resolve a SF-1 card worktree to its parent checkout so card sessions get repo-scoped Sapience retrieval without hook-injected context
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: None blocking (shares the sapience extension surface with tasks 615, 616, 617 -- see Risks)
 - **Research Inputs**: specs/614_scope_card_worktree_sapience_retrieval/reports/01_card-worktree-sapience-retrieval.md

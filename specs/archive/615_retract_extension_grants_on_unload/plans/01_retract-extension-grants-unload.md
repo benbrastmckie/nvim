@@ -1,7 +1,7 @@
 # Implementation Plan: Task #615
 
 - **Task**: 615 - Retract extension grants on unload
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/615_retract_extension_grants_on_unload/reports/01_retract-extension-grants-unload.md
