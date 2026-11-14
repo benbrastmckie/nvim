@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "dispatch_seq": 15,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 16,
+  "phases_completed": 3,
   "phases_total": 3,
-  "summary": "Created a 3-phase implementation plan for wiring the web extension to the typescript extension. Wave 1 runs the typescript-web.md content split (with its commit-blocking line_count regeneration) and the two web-agent Context References pointers in parallel; wave 2 declares the manifest dependency, confirms the typescript-side index-entries.json no-op, and verifies the scratch-target deploy, unload hard block, and the full gate set. The plan validates with 0 warnings and harvests 8 real source-store paths plus the __WHOLE_TREE__ sentinel.",
+  "summary": "Wired the web extension to depend on typescript (manifest.json dependencies), trimmed typescript-web.md's two generic subsections to named cross-reference pointers into typescript's own context tree (with coupled line_count regeneration), and added a static Context References pointer to each web agent so the dependency actually changes agent behavior. Verified end-to-end via two disposable scratch-target deploys: typescript alone, web auto-loading typescript with no prompt, the unload hard block, and the .managed-gated opencode.json target -- all confirmed and both scratch repos deleted. Per this dispatch's Batch Gate Deferral directive, discharged the final phase against the scoped gate tier (--only-gate 3,4,5,6,7) rather than the complete gate set; ran the named bounded-wait redeploy to clear the pre-existing lean staleness gate 5 traced to, leaving one unrelated pre-existing gate-4 finding unremediated.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/623_web_extension_depends_on_typescript/plans/01_web-typescript-dependency-split.md",
-      "summary": "3-phase plan: content split plus line_count regeneration, web-agent context pointers, manifest dependency plus end-to-end deploy verification."
+      "type": "summary",
+      "path": "specs/623_web_extension_depends_on_typescript/summaries/01_web-typescript-dependency-split-summary.md",
+      "summary": "All 3 plan phases completed: web->typescript dependency wired, typescript-web.md split with named cross-references, web-agent context pointers added, end-to-end scratch-target deploy/unload verification passed."
     }
   ]
 }

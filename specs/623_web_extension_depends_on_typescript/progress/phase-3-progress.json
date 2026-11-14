@@ -1,0 +1,85 @@
+{
+  "phase": 3,
+  "phase_name": "Declare the dependency, reconcile both index files, and verify end to end",
+  "started_at": "2026-11-13T20:00:00Z",
+  "last_updated": "2026-11-14T02:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Edit web/manifest.json dependencies to add typescript",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/web/manifest.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Document dependency in web README.md and EXTENSION.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/web/README.md",
+        "agent-system/extensions/web/EXTENSION.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Re-confirm web/index-entries.json correct (no second edit)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Confirm typescript/index-entries.json needs no change",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Compute and record dependency closure (depth, no cycle)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Scratch-target deploy verification: typescript alone, web auto-loads typescript, unload hard block",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "opencode.json.managed marker check in scratch repo",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "Delete scratch repo",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 9,
+      "description": "Run named lint set against both extensions",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 10,
+      "description": "Run complete gate set (deferred to batch per dispatch directive; run scoped tier instead)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.gate-set",
+      "description": "Run the complete gate set (bash .claude/scripts/verify-deploy.sh, no narrowing)",
+      "type": "altered",
+      "reason": "Per this dispatch's Batch Gate Deferral directive, the complete gate set is deferred to the once-per-batch stage at the end of this /orchestrate invocation. Discharged this phase against the scoped narrowing invocation verify-deploy.sh --skip-slow --only-gate 3,4,5,6,7 instead (doc-lint, task-reference lint, manifest-driven parity, agent-contracts lint, routing-wiring lint -- the gates covering this phase's own touched files). Gate 5 initially failed on the pre-existing lean deploy staleness flagged in this dispatch's own deploy-freshness-context; the named bounded-wait redeploy resolved it. Gate 4 retains one pre-existing, unrelated task-reference finding (recorded separately via issue-record.sh).",
+      "annotation": "*(deviation: altered -- full gate set deferred to batch stage per directive; scoped tier 3,4,5,6,7 run instead, see issue log)*"
+    }
+  ]
+}

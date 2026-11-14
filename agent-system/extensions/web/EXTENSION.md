@@ -19,6 +19,9 @@ Web development support for Astro/Tailwind/TypeScript sites deployed to Cloudfla
 
 ### Context
 
+This extension depends on `typescript`, which auto-loads its generic TypeScript context tree
+(`context/project/typescript/`) alongside the entries below.
+
 - `context/project/web/domain/web-reference.md` - Technologies, build commands, deployment tracking
 - `context/project/web/domain/astro-framework.md` - Astro 5/6 framework reference
 - `context/project/web/domain/tailwind-v4.md` - Tailwind CSS v4 configuration

@@ -223,7 +223,7 @@ channel through which these two agents actually load context.
 
 ---
 
-### Phase 3: Declare the dependency, reconcile both index files, and verify end to end [NOT STARTED]
+### Phase 3: Declare the dependency, reconcile both index files, and verify end to end [COMPLETED]
 
 **Goal**: Add `typescript` to `web`'s `dependencies`, document the dependency in `web`'s
 human-facing and CLAUDE.md-merged docs, confirm the `typescript`-side `index-entries.json`
@@ -231,27 +231,31 @@ requires no change, and verify standalone, combined, and unload behavior against
 scratch target plus the complete gate set.
 
 **Tasks**:
-- [ ] Edit `agent-system/extensions/web/manifest.json`: `"dependencies": ["core", "typescript"]`.
-      Change nothing else in the manifest.
-- [ ] Add a one-line dependency note to `agent-system/extensions/web/README.md` (under
+- [x] Edit `agent-system/extensions/web/manifest.json`: `"dependencies": ["core", "typescript"]`.
+      Change nothing else in the manifest. *(completed)*
+- [x] Add a one-line dependency note to `agent-system/extensions/web/README.md` (under
       Installation): loading `web` auto-loads `typescript`, whose generic TypeScript context tree
-      lives at `context/project/typescript/`.
-- [ ] Add the equivalent one-line note to `agent-system/extensions/web/EXTENSION.md`'s
+      lives at `context/project/typescript/`. *(completed)*
+- [x] Add the equivalent one-line note to `agent-system/extensions/web/EXTENSION.md`'s
       `### Context` section. That file is a `claudemd` merge source subject to a 60-line limit
       (Rule U) and a byte ceiling (Rule V); it is currently 25 lines, so a two-line addition is
-      safe — re-check `wc -l` after editing rather than assuming.
-- [ ] Re-confirm `web/index-entries.json` is correct after Phase 1 (the `line_count` edit already
-      landed there); make no second edit unless `--check` reports drift.
-- [ ] Inspect `agent-system/extensions/typescript/index-entries.json` and confirm **no** change is
+      safe — re-check `wc -l` after editing rather than assuming. *(completed: re-checked, 28 lines)*
+- [x] Re-confirm `web/index-entries.json` is correct after Phase 1 (the `line_count` edit already
+      landed there); make no second edit unless `--check` reports drift. *(completed: --check reports 604/604 exact, no drift, no second edit)*
+- [x] Inspect `agent-system/extensions/typescript/index-entries.json` and confirm **no** change is
       required: nothing moved into `typescript`'s tree, so its nine entries, their `load_when`
       blocks, and their `line_count` values all stand. **State this explicitly in the phase notes
-      and the implementation summary** — a reader must not read "no diff" as "forgotten".
-- [ ] Compute and record the real dependency closure: `web -> [core, typescript]`,
+      and the implementation summary** — a reader must not read "no diff" as "forgotten". *(completed: `git diff --stat` on this file is empty, confirming zero changes needed; its 9 entries stand unchanged)*
+- [x] Compute and record the real dependency closure: `web -> [core, typescript]`,
       `typescript -> [core]` (already loaded, skipped). Maximum loading-stack depth 2, against the
       loader's `max_depth = 5`; no cycle is possible because neither `core` nor `typescript`
       depends on `web`. Confirm the guard itself by reading the loading-stack and depth checks in
       `lua/neotex/plugins/ai/shared/extensions/init.lua`. Do not fabricate a cycle to test it.
-- [ ] Scratch-target deploy verification, following the procedure in
+      *(completed: read init.lua lines 541-592; actual observed stack depth when loading `web`'s
+      dependencies is 1 (child_stack=[web] when loading core/typescript as children), well under
+      max_depth=5; `core`'s own `dependencies` is `[]` and `typescript`'s is `[core]`, neither
+      names `web`, so no cycle is structurally possible)*
+- [x] Scratch-target deploy verification, following the procedure in
       `agent-system/extensions/typescript/README.md`'s "Verifying This Extension's Own Deploy"
       section, in a disposable scratch git repo under this session's scratchpad (never this
       repository, the source store, or any `.claude-extensions.json`-registered target):
@@ -262,22 +266,39 @@ scratch target plus the complete gate set.
       `CLAUDE.md` and all nine `typescript` entries in the scratch `context/index.json`;
       (c) in that same repo, attempt `manager.unload('typescript')` and confirm the hard block
       `ERROR: Cannot unload 'typescript' -- required by: web`, then confirm unloading `web` first
-      makes the `typescript` unload succeed.
-- [ ] Create the `opencode.json.managed` marker in the scratch repo before judging the
+      makes the `typescript` unload succeed. *(completed: (a), (b), (c) all verified exactly as
+      described; the live refusal message text was "Cannot unload extension 'typescript':
+      required by loaded extension(s): web / Unload dependent extension(s) first.", semantically
+      identical to the plan's paraphrase)*
+- [x] Create the `opencode.json.managed` marker in the scratch repo before judging the
       `opencode_json` merge target — without it that target is a documented no-op, and a tester
-      who skips it will wrongly conclude the target is broken.
-- [ ] Delete the scratch repository and everything it generated.
-- [ ] Run the lint set research named, against both extensions:
+      who skips it will wrongly conclude the target is broken. *(completed: with the marker present, opencode.json carried all four of typescript-research/typescript-implementation/web-research/web-implementation agent keys)*
+- [x] Delete the scratch repository and everything it generated. *(completed: both scratch repos removed, scratchpad listing confirmed no residue)*
+- [x] Run the lint set research named, against both extensions:
       `lint-routing-wiring.sh`, `lint-extension-readme-table.sh`, `lint-agent-contracts.sh`,
       `lint-shellcheck.sh`, and `check-extension-docs.sh` (the deployed copies under
-      `.claude/scripts/lint/` and `.claude/scripts/`).
-- [ ] Run the complete gate set (see Verification below). Before acting on any failure, attribute
+      `.claude/scripts/lint/` and `.claude/scripts/`). *(completed: all five pass; lint-agent-contracts.sh's and check-extension-docs.sh's advisory warnings for web/typescript are pre-existing and unrelated to this phase's edits)*
+- [x] Run the complete gate set (see Verification below). Before acting on any failure, attribute
       it to a named extension: this repository's deployed tree is already stale for `lean`,
       which is unrelated to this task. If and only if a failure traces to that staleness, remedy
       it with the bounded-wait redeploy
       `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool `timeout` parameter raised
       to 600000, not its 120000 ms default) and re-run — this is the step for which this phase
-      declares the whole-tree sentinel.
+      declares the whole-tree sentinel. *(deviation: altered — per this dispatch's Batch Gate
+      Deferral directive, the complete 43-gate battery is deferred to the once-per-batch stage at
+      the end of this /orchestrate invocation rather than run independently here. Discharged
+      instead via the scoped narrowing invocation `verify-deploy.sh --skip-slow --only-gate
+      3,4,5,6,7` against the repo root, covering doc-lint, task-reference lint, manifest-driven
+      parity, agent-contracts lint, and routing-wiring lint — the gates that actually exercise
+      this phase's manifest.json/README.md/EXTENSION.md/agent-file changes. Gate 5 initially
+      failed on the pre-existing lean staleness exactly as anticipated; ran the named bounded-wait
+      redeploy, which resolved it. Gate 4 still reports one pre-existing, unrelated
+      task-reference finding in agent-system/extensions/core/context/config/orchestrator-context-budget.json
+      (recorded via issue-record.sh). The full redeploy's own 43-gate run additionally surfaced
+      two more pre-existing, unrelated findings outside this task's file_scope: a 44 B eager-load
+      budget overage and a test-root-resolution violation in
+      agent-system/extensions/typescript/scripts/tests/test-typescript-verify.sh (a prior task's
+      file). Neither is remediated here.)*
 
 **Timing**: 1.75 hours
 
@@ -316,15 +337,15 @@ plan's snapshot of them.
 
 ## Testing & Validation
 
-- [ ] `generate-context-line-counts.sh --check` passes with no `web` or `typescript` finding.
-- [ ] Both web agent files reference `@.claude/context/project/typescript/README.md` exactly once.
-- [ ] `typescript-web.md` contains no generic Zod primitive block and no generic alias example,
-      but retains every Astro-specific section and the Astro alias-resolution clause.
-- [ ] A scratch-target `web`-only load deploys both extensions' files with no prompt.
-- [ ] Unloading `typescript` while `web` is loaded is refused with the dependent-naming error.
-- [ ] `bash .claude/scripts/verify-deploy.sh` (complete gate set) passes.
-- [ ] No file under any `.claude/` tree was hand-authored; `git status --short` shows changes only
-      under `agent-system/extensions/` and `specs/`.
+- [x] `generate-context-line-counts.sh --check` passes with no `web` or `typescript` finding. *(completed: 604/604 exact)*
+- [x] Both web agent files reference `@.claude/context/project/typescript/README.md` exactly once. *(completed)*
+- [x] `typescript-web.md` contains no generic Zod primitive block and no generic alias example,
+      but retains every Astro-specific section and the Astro alias-resolution clause. *(completed; discriminatedUnion count 0, both retained sections intact -- see Phase 1's recorded issue for the literal-grep/intent nuance)*
+- [x] A scratch-target `web`-only load deploys both extensions' files with no prompt. *(completed)*
+- [x] Unloading `typescript` while `web` is loaded is refused with the dependent-naming error. *(completed)*
+- [x] `bash .claude/scripts/verify-deploy.sh` (complete gate set) passes. *(deviation: altered -- deferred to the once-per-batch stage per this dispatch's Batch Gate Deferral directive; the scoped tier run in this dispatch (--only-gate 3,4,5,6,7) passes except one pre-existing, unrelated gate-4 finding -- see Phase 3's task notes)*
+- [x] No file under any `.claude/` tree was hand-authored; `git status --short` shows changes only
+      under `agent-system/extensions/` and `specs/`. *(completed with a noted side effect: the sanctioned bounded-wait redeploy run to remedy the pre-existing lean staleness also updated the tracked, repo-root `.claude-extensions.json` metadata file as its own routine side effect -- not a hand-edit, and not staged into this task's own commits)*
 
 ## Artifacts & Outputs
 

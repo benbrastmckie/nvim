@@ -1,11 +1,48 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 16,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/623_web_extension_depends_on_typescript/summaries/01_web-typescript-dependency-split-summary.md",
+      "summary": "All 3 plan phases completed: web->typescript dependency wired, typescript-web.md split with named cross-references, web-agent context pointers added, end-to-end scratch-target deploy/unload verification passed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added typescript to web's manifest.json dependencies, trimmed typescript-web.md's two generic subsections to named cross-reference pointers into the typescript extension's own context tree (with coupled line_count regeneration), added a static Context References pointer to each web agent, and verified end-to-end via scratch-target deploy/auto-load/unload-hard-block testing plus a scoped gate run."
+  },
+  "modified_files": [
+    "agent-system/extensions/web/context/project/web/domain/typescript-web.md",
+    "agent-system/extensions/web/index-entries.json",
+    "agent-system/extensions/web/agents/web-research-agent.md",
+    "agent-system/extensions/web/agents/web-implementation-agent.md",
+    "agent-system/extensions/web/manifest.json",
+    "agent-system/extensions/web/README.md",
+    "agent-system/extensions/web/EXTENSION.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "generate-context-line-counts.sh --write walks EVERY extension's index-entries.json, not just the one being edited. Pre-census with --check before trimming a context file, then --write and git status --short afterward: it is expected to rewrite exactly the one file whose source content changed, but if another extension's pre-existing drift gets swept in too, stage only the intended file and leave the unrelated correction unstaged (report it rather than folding it into the task's commit).",
+      "category": "PATTERN",
+      "source_artifact": "specs/623_web_extension_depends_on_typescript/summaries/01_web-typescript-dependency-split-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["generate-context-line-counts", "index-entries", "line_count", "scope-containment", "extension-context"]
+    },
+    {
+      "content": "verify-deploy.sh gate 5 (manifest-driven category parity + content-hash equality, via manager.verify_all) fails per-extension when the deployed .claude/ tree has drifted from the source store for ANY currently-loaded extension -- not just the one a task is working on. A dispatch's own deploy-freshness-context block names the stale extension up front; when a scoped gate run's failure traces exactly to that named staleness, the sanctioned remedy is the bounded-wait redeploy (timeout 540 bash .claude/scripts/deploy-headless.sh, Bash tool timeout raised to 600000) followed by a re-run of the same scoped gate -- this resolves gate 5 without touching any file outside the staleness's own remedy path, and is distinct from fixing the unrelated extension's content directly.",
+      "category": "PATTERN",
+      "source_artifact": "specs/623_web_extension_depends_on_typescript/summaries/01_web-typescript-dependency-split-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy", "gate5", "deploy-staleness", "deploy-headless", "manifest-driven-verification", "batch-gate-deferral"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794603202_55566e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
   },
   "proposed_file_scope": [
     "__WHOLE_TREE__",

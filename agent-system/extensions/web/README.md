@@ -13,7 +13,9 @@ Web development support for Astro/Tailwind CSS v4/TypeScript sites deployed to C
 
 ## Installation
 
-Loaded via the extension picker. Once loaded, `web` becomes a recognized task type.
+Loaded via the extension picker. Once loaded, `web` becomes a recognized task type. `web`
+declares a dependency on the `typescript` extension, so loading `web` auto-loads `typescript`
+with it.
 
 ## Architecture
 

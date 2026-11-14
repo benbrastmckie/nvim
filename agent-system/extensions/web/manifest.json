@@ -4,7 +4,8 @@
   "description": "Web development support with Astro, Tailwind CSS v4, TypeScript, and Cloudflare Pages",
   "task_type": "web",
   "dependencies": [
-    "core"
+    "core",
+    "typescript"
   ],
   "provides": {
     "agents": [
