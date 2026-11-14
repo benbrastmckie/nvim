@@ -1,7 +1,7 @@
 # Implementation Plan: Cross-Record Decision-Citation Convention
 
 - **Task**: 459 - Design cross-record traceability and render an explicit keep-or-retire verdict on `specs/CHANGE_LOG.md`
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None (a recommendation, not an edge, stands toward `consolidate_duplicated_todo_implementation`; see Overview)
 - **Research Inputs**: `specs/459_cross_task_traceability_and_changelog_verdict/reports/01_traceability-design-and-changelog-verdict.md`
@@ -120,40 +120,42 @@ read as plan input; the research phase separately confirmed it carries no refere
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Name the Cross-Record Decision-Citation Convention [NOT STARTED]
+### Phase 1: Name the Cross-Record Decision-Citation Convention [IN PROGRESS]
 
 **Goal**: The convention exists as one named, canonical section in `report-format.md`, reachable from
 `summary-format.md` by a one-line Writing Guidance pointer, with its advisory enforcement level stated.
 
 **Tasks**:
-- [ ] Read-only scope confirmation before any edit:
+- [x] Read-only scope confirmation before any edit:
       `jq -r '.active_projects[] | select(.project_number==459) | .file_scope[]' specs/state.json`.
       The four source-store targets this plan declares should appear, merged at this plan's postflight
       by `plan-file-scope-harvest.sh`. If they are absent, record an issue via `issue-record.sh` and
       report the condition — do not edit outside declared scope, and do not attempt
       `--file-scope-add` directly (that flag is restricted to `operation=postflight` with
-      `target_status` in `{research, plan}`).
-- [ ] Re-read `agent-system/extensions/core/context/formats/report-format.md` immediately before
-      editing (concurrent-sibling discipline).
-- [ ] Add a named section `## Cross-Record Decision Citation` to `report-format.md`, positioned after
+      `target_status` in `{research, plan}`). *(completed: all four targets plus __WHOLE_TREE__ confirmed present)*
+- [x] Re-read `agent-system/extensions/core/context/formats/report-format.md` immediately before
+      editing (concurrent-sibling discipline). *(completed)*
+- [x] Add a named section `## Cross-Record Decision Citation` to `report-format.md`, positioned after
       `## Carried-Figure Discipline` and before `## Example Skeleton`. It states: the durable citation
       form `{project_name}'s {artifact-type} {NN}, Decision {N}`; that a record's `project_name` slug
       is the durable anchor and its number is not, because a vault operation renumbers active records;
       that the cited record's `## Decisions` section is the citation target; and that the obligation
       fires when a decision in the current record is informed by, builds on, or revises a decision
       recorded in another record's artifact. Include one worked example using a slug, never a number.
-- [ ] In that same section, state the enforcement level honestly and explicitly: advisory,
+      *(completed)*
+- [x] In that same section, state the enforcement level honestly and explicitly: advisory,
       review-enforced prose, with no corresponding `scripts/validate-artifact.sh` check — matching the
       honesty convention `rules/plan-format-enforcement.md` already uses for its own advisory items.
-- [ ] Add one bullet to `report-format.md`'s `## Writing Guidance` pointing at the new section, in the
-      shape the existing carried-figure bullet already uses.
-- [ ] Re-read `agent-system/extensions/core/context/formats/summary-format.md`, then add one bullet to
+      *(completed)*
+- [x] Add one bullet to `report-format.md`'s `## Writing Guidance` pointing at the new section, in the
+      shape the existing carried-figure bullet already uses. *(completed)*
+- [x] Re-read `agent-system/extensions/core/context/formats/summary-format.md`, then add one bullet to
       its `## Writing Guidance` carrying the same pointer: cite another record's decision in the
       durable form named in `report-format.md`'s `## Cross-Record Decision Citation` section, never by
-      bare record number.
-- [ ] Confirm no added line contains a literal record-number citation and none uses the barred
-      record-versioning phrasing.
-- [ ] Commit the two files with an explicit two-path pathspec.
+      bare record number. *(completed)*
+- [x] Confirm no added line contains a literal record-number citation and none uses the barred
+      record-versioning phrasing. *(completed: diff read-through confirmed purely additive, no numbers, no versioning phrasing)*
+- [x] Commit the two files with an explicit two-path pathspec. *(completed: see git-commit-phase.sh substep commit, plus a follow-up scoped commit for the mechanical index-entries.json line-count fix dropped by the Containment Self-Check)*
 
 **Timing**: 0.75 hours
 

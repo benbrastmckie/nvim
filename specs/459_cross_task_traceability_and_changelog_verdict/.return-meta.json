@@ -1,31 +1,17 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/459_cross_task_traceability_and_changelog_verdict/plans/01_decision-citation-convention.md",
-      "summary": "Three-phase plan implementing the research's Decision 5 alone: a named cross-record decision-citation convention in report-format.md pointed at from summary-format.md and plan-format.md, a recognized-optional Decisions heading for plans with the documentation-only mirror in validate-artifact.sh, and a redeploy plus full gate run."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 8,
   "metadata": {
-    "session_id": "sess_1793893148_3d43f7_459",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "task_number": 459,
-    "phase_count": 3,
-    "estimated_hours": 2,
-    "dependency_waves": [[1, 2], [3]]
+    "session_id": "sess_1794635595_257108",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
   },
-  "memory_candidates": [
-    {
-      "content": "Before documenting a new REQUIRED section in one of this system's artifact-format standards (context/formats/{report,plan,summary}-format.md), check scripts/validate-artifact.sh's matching {REPORT,PLAN,SUMMARY}_SECTIONS array: those arrays drive a hard `log_error \"Missing required section\"` at gate-out, so promoting a section to required retroactively fails every existing artifact that lacks it. The sanctioned landing for a new convention is the recognized-optional tier, whose in-script precedent is the documentation-only SUMMARY_SECTIONS_OPTIONAL array (carrying `# shellcheck disable=SC2034`, deliberately never wired into required_sections) -- an anti-drift mirror of the standard's own optional-section list that changes no validation behavior.",
-      "category": "PATTERN",
-      "source_artifact": "specs/459_cross_task_traceability_and_changelog_verdict/plans/01_decision-citation-convention.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["validate-artifact", "required sections", "optional section", "format standards", "gate-out", "anti-drift"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 459 to execute the plan",
-  "dispatch_seq": 7
+  "proposed_file_scope": [
+    "agent-system/extensions/core/index-entries.json"
+  ]
 }

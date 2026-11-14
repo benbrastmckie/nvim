@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Name the Cross-Record Decision-Citation Convention",
+  "started_at": "2026-11-14T05:55:12Z",
+  "last_updated": "2026-11-14T06:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read-only scope confirmation (file_scope includes four source-store targets)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add ## Cross-Record Decision Citation section to report-format.md plus Writing Guidance bullet", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/report-format.md"]},
+    {"id": 3, "description": "Add Writing Guidance pointer bullet to summary-format.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/summary-format.md"]},
+    {"id": 4, "description": "Confirm no task-number references or record-versioning phrasing in added text; fix index line-count drift; commit", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "verify-deploy.sh --only-gate 3,4 gate 4 (check-task-references.sh) reports one pre-existing, unrelated finding in agent-system/extensions/core/context/config/orchestrator-context-budget.json (mentions 'task 609' in its own budget-ceiling derivation history) -- confirmed via git diff --stat untouched by this dispatch, predates it, and is outside this record's declared file_scope. Recorded via issue-record.sh and not fixed here.",
+    "generate-context-line-counts.sh --write also updated agent-system/extensions/lean/index-entries.json's dependency-tracing.md line_count (237 -> 242) as a side effect of recomputing counts across all extensions. That file was already modified in the working tree before this dispatch started (pre-existing dirty state from a concurrent/prior session) and is outside this record's declared file_scope; left uncommitted, not staged by this dispatch."
+  ]
+}
