@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "dispatch_seq": 10,
+  "status": "implemented",
+  "summary": "Closed task 621 as a verification pass over the already-built typescript extension. Re-confirmed the baseline (20 files, 9/9 index-entries.json line counts, 4 parity-plus manifest items, 5 passing lints) had not drifted since the research pass, then executed the dispatch's own VERIFICATION clause end-to-end against a disposable scratch target: all four merge targets (installed .claude/ files, merged CLAUDE.md section, merged index.json entries, and the .managed-gated opencode.json) confirmed working, with evidence recorded under this task's own records/ directory. Extended the extension's own README with the durable scratch-target verification procedure. All three plan phases are COMPLETED.",
+  "phases_completed": 3,
   "phases_total": 3,
-  "summary": "Wrote a 3-phase, 1.5-hour verification-closeout plan at specs/621_typescript_extension_implementation/plans/01_typescript-extension-verification-closeout.md. The research report established that all 20 typescript-extension files already exist, are committed clean, pass five lints, and carry all four parity-plus items, so the plan deliberately does not rebuild them. Phase 1 re-confirms the baseline has not drifted; Phase 2 executes the dispatch's VERIFICATION clause against a disposable scratch target (including the opencode.json.managed gating step) and records the evidence; Phase 3 writes that procedure into the extension README and runs the full gate set.",
-  "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/621_typescript_extension_implementation/plans/01_typescript-extension-verification-closeout.md",
-      "summary": "3-phase verification-closeout plan: baseline drift re-confirmation, scratch-target deploy verification with evidence record, README procedure capture plus full gate."
+      "type": "summary",
+      "path": "specs/621_typescript_extension_implementation/summaries/01_typescript-extension-verification-closeout-summary.md",
+      "summary": "Verification-closeout summary covering baseline re-confirmation, end-to-end deploy verification of all four merge targets, and the README documentation update."
+    },
+    {
+      "type": "record",
+      "path": "specs/621_typescript_extension_implementation/records/deploy-verification-evidence.md",
+      "summary": "Observed per-merge-target evidence from the live scratch-target deploy test."
     }
   ],
-  "dispatch_seq": 9
+  "blockers": []
 }

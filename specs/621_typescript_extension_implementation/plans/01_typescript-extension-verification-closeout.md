@@ -1,7 +1,7 @@
 # Implementation Plan: Task #621
 
 - **Task**: 621 - Implement the typescript extension in the source store with parity plus a verification-stage gate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: Task 620 (COMPLETED)
 - **Research Inputs**: specs/621_typescript_extension_implementation/reports/01_typescript-extension-implementation-readiness.md

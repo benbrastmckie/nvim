@@ -13,9 +13,9 @@ next_project_number: 627
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,621,624,625 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605,622 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604,621 | core-agent-system, extensions, neovim, ... |
-| 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594,623 | 439,458,472,476,486,509,518,519,542,543,564,572,593,622 | core-agent-system, file-scope-lifecycle, agent-system, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,622,624,625 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605,623 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604,622 | core-agent-system, extensions, neovim, ... |
+| 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594 | 439,458,472,476,486,509,518,519,542,543,564,572,593 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,595,626 | 436,438,492,501,539,547,552,580,594,625 | core-agent-system, agent-system |
 | 5 | 596,609 | 577,595 | agent-system |
 
@@ -183,9 +183,8 @@ next_project_number: 627
 
 ### Typescript Extension
 
-621 [IMPLEMENTING] — Implement the typescript extension in the source store with...
-  └─ 622 [NOT STARTED] — Validate the typescript extension's generic toolchain...
-    └─ 623 [NOT STARTED] — Make the web extension depend on the typescript extension and...
+622 [NOT STARTED] — Validate the typescript extension's generic toolchain...
+  └─ 623 [NOT STARTED] — Make the web extension depend on the typescript extension and...
 
 ### Decidability
 
@@ -407,12 +406,13 @@ files under `agent-system/extensions/typescript/`, NEVER by special-casing the r
 
 ### 621. Implement the typescript extension in the source store with parity plus a verification-stage gate
 - **Effort**: large
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: typescript-extension
 - **Dependencies**: Task 620
 - **Research**: [621_typescript_extension_implementation/reports/01_typescript-extension-implementation-readiness.md]
 - **Plan**: [621_typescript_extension_implementation/plans/01_typescript-extension-verification-closeout.md]
+- **Summary**: [621_typescript_extension_implementation/summaries/01_typescript-extension-verification-closeout-summary.md]
 
 **Description**: GOAL. Create `/home/benjamin/.config/nvim/agent-system/extensions/typescript/` in full, per the
 implementation plan.

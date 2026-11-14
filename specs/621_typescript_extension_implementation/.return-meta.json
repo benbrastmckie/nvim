@@ -1,10 +1,64 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 10,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/621_typescript_extension_implementation/summaries/01_typescript-extension-verification-closeout-summary.md",
+      "summary": "Verification-closeout summary: baseline re-confirmed clean, all four merge targets confirmed working end-to-end against a disposable scratch target with evidence recorded, README extended with the verification procedure, and the Batch Gate Deferral's scoped gate discharge (gates 3,26) run with typescript's own rows PASS."
+    },
+    {
+      "type": "record",
+      "path": "specs/621_typescript_extension_implementation/records/deploy-verification-evidence.md",
+      "summary": "Observed per-merge-target evidence from a live scratch-target manager.load deploy test of the typescript extension, including the opencode.json.managed gating behavior."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed task 621 as a verification pass over the already-built typescript extension: re-confirmed the baseline (20 files, 9/9 index-entries.json line counts, 4 parity-plus manifest items, 5 lints) had not drifted, executed the dispatch's VERIFICATION clause end-to-end against a disposable scratch target (all four merge targets confirmed, including the opencode.json.managed gating behavior), and extended the extension's own README with the durable verification procedure."
+  },
+  "modified_files": [
+    "agent-system/extensions/typescript/README.md",
+    "specs/621_typescript_extension_implementation/records/deploy-verification-evidence.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "The opencode_json merge target is gated by a .managed marker file: merge.lua's generate_opencode_json (Step 1.2) returns ok=true and writes nothing unless <target>/opencode.json.managed exists. End-to-end verification of a new extension's four merge targets via a headless scratch-target manager.load(name, {confirm=false, force=true, project_dir=SCRATCH}) must create that marker before the opencode_json target can be observed at all; a tester who does not know this will misread a correctly gated no-op as a broken merge target. Now documented in agent-system/extensions/typescript/README.md's Verification section as a reusable worked example.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/621_typescript_extension_implementation/summaries/01_typescript-extension-verification-closeout-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "opencode-json",
+        "merge-targets",
+        "extension-verification",
+        "managed-marker",
+        "manager-load",
+        "scratch-target"
+      ]
+    },
+    {
+      "content": "verify-deploy.sh's per-gate check-extension-docs.sh (gate 3) rolls up ALL extensions into one aggregate PASS/FAIL; a single unrelated extension's pre-existing drift (e.g. a stale index-entries.json line_count) fails the whole gate even when the extension actually under test is fine. When using --only-gate to scope a Batch Gate Deferral discharge, verify the NAMED extension's own per-extension row/table entry directly rather than trusting the gate's aggregate exit code, and record any unrelated failing extension as a separate out-of-scope issue rather than treating it as blocking.",
+      "category": "PATTERN",
+      "source_artifact": "specs/621_typescript_extension_implementation/summaries/01_typescript-extension-verification-closeout-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "verify-deploy",
+        "check-extension-docs",
+        "gate-scoping",
+        "batch-gate-deferral",
+        "aggregate-failure"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794603202_55566e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }
