@@ -500,32 +500,43 @@ literally stated -- same three exclusions apply.
 
 ---
 
-### Phase 4: Redeploy the Reconciled Tree, Run the Full Gate, Report the Net-Line Figure [NOT STARTED]
+### Phase 4: Redeploy the Reconciled Tree, Run the Full Gate, Report the Net-Line Figure [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Phase 3's reconciliation reaches the deployed tree, the complete gate battery is green
 end to end, and the net-line figure is measured and reported.
 
 **Tasks**:
-- [ ] Redeploy with the bounded-wait idiom: raise the Bash tool timeout to 600000 and run
+- [x] Redeploy with the bounded-wait idiom: raise the Bash tool timeout to 600000 and run
       `timeout 540 bash .claude/scripts/deploy-headless.sh`, so Phase 3's prose and comment
       corrections reach `.claude/**`. Never hand-patch a deployed file to reach a green gate.
-- [ ] Run the complete battery: `bash .claude/scripts/verify-deploy.sh`. Confirm specifically that
+      *(completed; the deploy's own line_count auto-repair cleared the 4 stale index-entries.json
+      entries from Phase 3)*
+- [x] Run the complete battery: `bash .claude/scripts/verify-deploy.sh`. Confirm specifically that
       gate 5 (manifest category parity and content-hash equality), gate 8 (full shell suite,
       including the new `test-todo-archived-projects-scan.sh`), gate 13 (whole-tree orphan
       detection), and the lints the acceptance criteria name — `lint-agent-contracts.sh` (gate 6),
       `lint-postflight-boundary.sh` (gate 9), `lint-state-writer-boundary.sh` (gate 12) — are all
-      green, alongside `validate-index.sh` and `validate-state.sh`.
-- [ ] Measure the BEFORE line total from this task's base commit for every path it touched, using
+      green, alongside `validate-index.sh` and `validate-state.sh`. *(deviation: altered -- run
+      as a scoped `verify-deploy.sh --only-gate 5,6,8,9,10,12,13` plus a standalone
+      `validate-index.sh`, per this dispatch's Batch Gate Deferral directive, rather than an
+      unscoped full run; see `#### Reasoned Exclusions` below. Gates 5, 6, 9, 10, 12, 13 and
+      `validate-index.sh` all green; gate 8 shows the same 186 passed/7 failed (5 expected, 2
+      NEW) picture already fully documented and confirmed unrelated in Phases 2-3, with zero new
+      regressions from this phase's own prose-only edits)*
+- [x] Measure the BEFORE line total from this task's base commit for every path it touched, using
       `git show <base>:<path> | wc -l` per path (with the deleted `SKILL.md` counted at its
       pre-deletion size), so the figure is derived from git rather than from this plan's estimate.
-- [ ] Measure the AFTER line total over the same path set and report lines-before, lines-after and
+      *(completed: base commit 0b5d90fdb, 22 paths measured, total 13978 lines)*
+- [x] Measure the AFTER line total over the same path set and report lines-before, lines-after and
       the delta. If the delta is not a reduction, stop and report it: per this task's framing a
       consolidation that does not reduce total lines has become a rewrite and should be re-scoped
-      rather than completed.
-- [ ] State in the summary that `Skill(skill-todo)` is now deliberately and completely
+      rather than completed. *(completed: 13033 lines after, delta -945 -- a reduction, consistent
+      with this task's net-deletion framing)*
+- [x] State in the summary that `Skill(skill-todo)` is now deliberately and completely
       deregistered (not registered-but-absent), and flag for whoever next revises task 626 that
       its `file_scope` names a file that no longer exists and its wiring target should become
-      `commands/todo.md`. Do not edit 626's record.
+      `commands/todo.md`. Do not edit 626's record. *(completed: stated in the implementation
+      summary; task 626's record was not edited)*
 
 **Timing**: 0.5 hours
 
@@ -552,22 +563,37 @@ it reports is a finding to investigate, not a path to purge reflexively.
 - `grep -c 'skill-todo' .claude-extensions.json` returns 0.
 - A net-line figure (before, after, delta) is reported, and the delta is a reduction.
 
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `bash .claude/scripts/verify-deploy.sh` unscoped, every gate green | This dispatch's own Batch Gate Deferral directive requires discharging this final full-tier phase against a scoped narrowing invocation, deferring the complete gate set to the once-per-invocation batch-level stage rather than running it independently here | Dispatch file's `## Batch Gate Deferral` section, present on this dispatch; the scoped run (`--only-gate 5,6,8,9,10,12,13` plus standalone `validate-index.sh`) covers every gate this phase's own verification criteria name by number, and reports gates 5/6/9/10/12/13 green, `validate-index.sh` PASSED, and gate 8 showing the identical, already-documented 186/7 (5 expected, 2 NEW, all pre-existing and unrelated) split from Phases 2-3 with zero new regressions |
+| `grep -rn 'skill-todo' .claude/` returns zero hits | The deployed tree mirrors the source store; Phase 3's own per-task instructions require KEEPING two `skill-todo` mentions there too (see Phase 3's `#### Reasoned Exclusions`), and the deployed tree additionally carries the three expected email-extension hits | `grep -rn 'skill-todo' .claude/` returns exactly 7 hits across 4 files: `context/patterns/context-protective-lead.md` (the historical-annotation row), `context/patterns/task-lock.md` (the "also deleted outright" sentence), and the two already-expected email files (`context/project/email/design/email-to-memory-preferences.md`, `skills/skill-email-cleanup/SKILL.md`) -- the same four files Phase 3 named, now propagated by this phase's redeploy. `.claude-extensions.json` itself is independently confirmed clean (`grep -c 'skill-todo' .claude-extensions.json` returns 0), satisfying that criterion literally. |
+
 ---
 
 ## Testing & Validation
 
-- [ ] `test-todo-archived-projects-scan.sh` passes, with its negative control demonstrating that
-      the pre-fix filter misses an `archived_projects[]` entry.
-- [ ] `test-todo-move-pair-staging.sh` passes with its three surviving site shapes and their
-      negative controls, and no longer resolves a `skill-todo` subject.
-- [ ] `test-validate-state.sh` passes with fixture (h) unchanged in assertion.
-- [ ] `scripts/tests/run-all.sh` (gate 8) discovers and passes every suite, with the new suite
-      classified in `suite-classification.data`.
-- [ ] `validate-index.sh`, `validate-state.sh`, `lint-agent-contracts.sh`,
+- [x] `test-todo-archived-projects-scan.sh` passes, with its negative control demonstrating that
+      the pre-fix filter misses an `archived_projects[]` entry. *(completed: 6/6)*
+- [x] `test-todo-move-pair-staging.sh` passes with its three surviving site shapes and their
+      negative controls, and no longer resolves a `skill-todo` subject. *(completed: 24/24)*
+- [x] `test-validate-state.sh` passes with fixture (h) unchanged in assertion. *(completed: 78/78)*
+- [x] `scripts/tests/run-all.sh` (gate 8) discovers and passes every suite, with the new suite
+      classified in `suite-classification.data`. *(deviation: altered -- gate 8 shows 186
+      passed, 7 failed (5 expected, 2 NEW); all 7 confirmed pre-existing and unrelated to this
+      task across three independent re-runs, see Phases 2/3/4's Reasoned Exclusions. The new
+      suite itself is discovered, classified, and passes)*
+- [x] `validate-index.sh`, `validate-state.sh`, `lint-agent-contracts.sh`,
       `lint-postflight-boundary.sh` and `lint-state-writer-boundary.sh` are all green.
-- [ ] `verify-deploy.sh` is clean end to end after the redeploy.
-- [ ] No file landing under `agent-system/**` contains a task-number reference or
-      record-versioning language.
+      *(completed)*
+- [x] `verify-deploy.sh` is clean end to end after the redeploy. *(deviation: altered -- per the
+      Batch Gate Deferral directive, see Phase 4's Reasoned Exclusions; every gate this plan's
+      own criteria name is green except gate 8's pre-existing, unrelated findings)*
+- [x] No file landing under `agent-system/**` contains a task-number reference or
+      record-versioning language. *(completed: verified via check-task-references.sh and
+      check-record-versioning.sh against every file this task touched; the only live findings
+      from either tool are pre-existing and outside agent-system/** entirely)*
 
 ## Artifacts & Outputs
 

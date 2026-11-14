@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy the Reconciled Tree, Run the Full Gate, Report the Net-Line Figure",
+  "started_at": "2026-11-14T11:00:00Z",
+  "last_updated": "2026-11-14T12:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy via deploy-headless.sh (bounded wait)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run the complete/scoped gate battery per Batch Gate Deferral directive", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Measure BEFORE line total from base commit", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Measure AFTER line total and report net-line figure", "status": "done", "files_touched": []},
+    {"id": 5, "description": "State Skill(skill-todo) deregistration and flag task 626", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.2",
+      "description": "Phase 4's own task text says 'Run the complete battery: bash .claude/scripts/verify-deploy.sh', but this dispatch's own Batch Gate Deferral directive (this is one of several implement-phase dispatches inside one multi-task /orchestrate batch invocation) requires discharging the final full-tier phase against a scoped narrowing invocation instead, deferring the complete gate set to the once-per-invocation batch-level stage.",
+      "type": "altered",
+      "reason": "Directive compliance, not a scope failure: ran verify-deploy.sh --only-gate covering the exact gates the plan's own verification criteria name (5, 6, 8, 9, 10, 12, 13) plus the standalone validate-index.sh directly (unmappable to either narrowing form, run as its own named check per the directive's UNMAPPABLE CRITERION carve-out), instead of a bare unscoped verify-deploy.sh.",
+      "annotation": "*(deviation: altered -- discharged against the Batch Gate Deferral directive's scoped tier rather than the plan's literal 'run the complete battery' instruction)*"
+    }
+  ],
+  "notes": "Net-line figure: base commit 0b5d90fdb (before Phase 1), 22 touched source paths, 13978 lines before, 13033 lines after, delta -945 (a reduction, consistent with this task's net-deletion framing and the plan's 'roughly a thousand lines' expectation). .claude-extensions.json excluded from the figure as a regenerated deploy ledger (arbitrary reordering, not source content). Scoped gate run (5,6,8,9,10,12,13 + standalone validate-index.sh) confirms gates 5/6/9/10/12/13 green and validate-index.sh PASSED (309 entries, 76092 lines); gate 8 shows the identical 186/7 (5 expected, 2 NEW) split documented and confirmed unrelated in Phases 2-3, with zero new regressions from this task's own edits across three independent re-runs. Gate 3 (doc-lint) now green post-redeploy (line_count auto-repair cleared the 4 stale index-entries.json entries automatically). grep -rn 'skill-todo' .claude/ returns 7 hits across the same 4 files already accounted for in Phase 3's Reasoned Exclusions (2 deliberate retentions + email extension); .claude-extensions.json itself is clean (0 hits). task-reference and record-versioning scans confirm zero findings in any file this task touched -- the only live findings from either tool are pre-existing and entirely outside agent-system/**."
+}
