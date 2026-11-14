@@ -187,13 +187,13 @@ doc, which Phase 3 owns.
 
 ---
 
-### Phase 2: Regression suite and manifest script declaration [NOT STARTED]
+### Phase 2: Regression suite and manifest script declaration [COMPLETED]
 
 **Goal**: The new detection behavior is pinned by a hermetic suite that `run-all.sh` discovers
 and that the extension's manifest declares.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/typescript/scripts/tests/test-typescript-verify.sh`
+- [x] Create `agent-system/extensions/typescript/scripts/tests/test-typescript-verify.sh`
       following this extension family's valid harness shape (a): locally defined
       `pass()`/`fail()`/`info()`, `PASSED`/`FAILED` integer counters, `SCRIPT_DIR` via
       `$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)`, `mktemp -d` workdir with `trap ... EXIT`,
@@ -202,13 +202,16 @@ and that the extension's manifest declares.
       `scripts/lib/common.sh` of its own, so the shared-harness shape (b) is not reachable from
       the source store here; both shapes are explicitly sanctioned by
       `context/standards/shell-script-testing.md` and `lint-test-harness-adoption.sh`.
-- [ ] Resolve the script under test as `$SCRIPT_DIR/../typescript-verify.sh` with a deployed
+      *(completed)*
+- [x] Resolve the script under test as `$SCRIPT_DIR/../typescript-verify.sh` with a deployed
       `.claude/scripts/typescript-verify.sh` fallback, so the suite runs from both trees.
-- [ ] Make every fixture hermetic: write a stub `npm` (and, where the case needs it, `pnpm` /
+      *(completed)*
+- [x] Make every fixture hermetic: write a stub `npm` (and, where the case needs it, `pnpm` /
       `yarn` / `bun`) into a `bin/` directory inside the `mktemp -d` workdir and prepend it to
       `PATH` for the duration of the case. No case may invoke a real package manager, hit the
-      network, or install anything.
-- [ ] Cases to cover: (1) `package.json` at cwd — fast path, no fallback, output unchanged;
+      network, or install anything. *(completed: one shared `.stubbin/` prepended once for the
+      whole suite run, reused across all 15 fixtures rather than per-case)*
+- [x] Cases to cover: (1) `package.json` at cwd — fast path, no fallback, output unchanged;
       (2) lockfile priority at cwd across all four lockfiles; (3) no `package.json` at cwd, one
       at `a/b/` — discovered, path-prefixed, typecheck SKIPped for a no-tsconfig fixture, test
       sub-check run; (4) the only `package.json` lives under `node_modules/` — NOT discovered,
@@ -217,16 +220,22 @@ and that the extension's manifest declares.
       (7) a `package.json` deeper than the depth bound — deliberately not discovered, asserting
       the bound rather than leaving it untested; (8) npm placeholder `test` script at a nested
       project — still rejected; (9) malformed nested `package.json` — warned, counted as
-      skipped, other projects still verified, exit 0.
-- [ ] Add the mutation-check comment the testing standard requires: name which assertion
+      skipped, other projects still verified, exit 0. *(completed: all nine cases plus two
+      additional cases (project cap, cwd-malformed) -- 15 assertions total, all PASS)*
+- [x] Add the mutation-check comment the testing standard requires: name which assertion
       (case 3) would start passing vacuously if the fallback search were deleted, and which
-      (case 4) kills a mutation that dropped the `node_modules` exclusion.
-- [ ] Sync the coupled derived surface in this same phase:
+      (case 4) kills a mutation that dropped the `node_modules` exclusion. *(completed: comment
+      added at the top of the suite; independently verified in a scratch mutated copy of
+      typescript-verify.sh with the tier-2 fallback block reverted — cases 3, 6, 8, 9, and cap
+      FAIL as expected, confirming the suite is not vacuous)*
+- [x] Sync the coupled derived surface in this same phase:
       `bash .claude/scripts/sync-manifest-scripts.sh --write`, then confirm
       `bash .claude/scripts/sync-manifest-scripts.sh --check` exits clean. `provides.scripts` is
       derived from the on-disk `scripts/` tree and a missing entry fails
       `check-extension-docs.sh` Rule Q, which is `verify-deploy.sh` Gate 3 — commit-blocking, so
-      it is regenerated here, not deferred.
+      it is regenerated here, not deferred. *(completed: `provides.scripts` now lists
+      `tests/test-typescript-verify.sh` and `typescript-verify.sh`; `--check` reports
+      `typescript: 2 on disk, 2 declared, 0 missing, 0 absent`)*
 
 **Timing**: 1.5 hours
 

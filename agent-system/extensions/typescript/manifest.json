@@ -24,6 +24,7 @@
       "contracts"
     ],
     "scripts": [
+      "tests/test-typescript-verify.sh",
       "typescript-verify.sh"
     ],
     "hooks": []

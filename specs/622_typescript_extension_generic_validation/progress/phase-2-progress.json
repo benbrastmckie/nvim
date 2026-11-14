@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Regression suite and manifest script declaration",
+  "started_at": "2026-11-14T01:20:00Z",
+  "last_updated": "2026-11-14T01:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-typescript-verify.sh following the sibling harness shape", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/tests/test-typescript-verify.sh"]},
+    {"id": 2, "description": "Resolve script-under-test with source-store path and deployed fallback", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/tests/test-typescript-verify.sh"]},
+    {"id": 3, "description": "Hermetic fixtures with stub package manager binaries on PATH", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/tests/test-typescript-verify.sh"]},
+    {"id": 4, "description": "Nine fixture cases covering fast path, lockfiles, discovery, exclusions, cap/depth bound, placeholder test, malformed manifest", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/tests/test-typescript-verify.sh"]},
+    {"id": 5, "description": "Mutation-check comment naming discriminating assertions", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/tests/test-typescript-verify.sh"]},
+    {"id": 6, "description": "sync-manifest-scripts.sh --write then --check clean", "status": "done", "files_touched": ["agent-system/extensions/typescript/manifest.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": [
+    "bash -n and shellcheck: clean (one SC2329 on trap-invoked cleanup(), identical to the lean sibling's own finding)",
+    "Direct execution: 15/15 PASS",
+    "run-all.sh --only test-typescript-verify.sh: discovered and PASS",
+    "Mutation check performed in scratchpad: reverting the tier-2 fallback block causes Case 3/6/8/9/cap to FAIL -- the suite is not vacuous",
+    "sync-manifest-scripts.sh --check: clean after --write (typescript: 2 on disk, 2 declared, 0 missing, 0 absent)",
+    "check-extension-docs.sh --quiet: typescript PASS (one pre-existing ADVISORY about scripts/typescript-verify.sh not yet deployed in this repo, unrelated to this phase, expected since typescript is not among this repo's loaded extensions)"
+  ]
+}
