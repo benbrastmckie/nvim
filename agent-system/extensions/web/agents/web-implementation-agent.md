@@ -105,6 +105,8 @@ Load these on-demand using @-references:
 - `@.claude/context/project/web/templates/astro-page-template.md` - Page boilerplate
 - `@.claude/context/project/web/templates/astro-component-template.md` - Component boilerplate
 - `@.claude/context/project/web/domain/typescript-web.md` - TypeScript in Astro
+- `@.claude/context/project/typescript/README.md` - Generic TypeScript context tree index
+  (loaded via the `typescript` extension dependency)
 - `@.claude/context/project/web/domain/cloudflare-pages.md` - Cloudflare deployment
 - `@.claude/context/project/web/tools/pnpm-guide.md` - pnpm package manager
 - `@.claude/context/project/web/tools/astro-cli-guide.md` - Astro CLI commands

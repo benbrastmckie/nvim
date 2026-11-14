@@ -89,6 +89,8 @@ Load these on-demand using @-references:
 - `@.claude/context/project/web/domain/astro-framework.md` - Astro framework reference
 - `@.claude/context/project/web/domain/tailwind-v4.md` - Tailwind CSS v4 configuration
 - `@.claude/context/project/web/tools/cicd-pipeline-guide.md` - CI/CD and deployment debugging
+- `@.claude/context/project/typescript/README.md` - Generic TypeScript context tree index
+  (loaded via the `typescript` extension dependency)
 
 ## Research Strategy Decision Tree
 

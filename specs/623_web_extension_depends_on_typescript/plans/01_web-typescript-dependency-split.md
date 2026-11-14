@@ -179,27 +179,27 @@ one-file result.
 
 ---
 
-### Phase 2: Give both web agents a pointer into the TypeScript context tree [NOT STARTED]
+### Phase 2: Give both web agents a pointer into the TypeScript context tree [COMPLETED]
 
 **Goal**: Make the declared dependency functionally meaningful by adding the generic TypeScript
 context tree's README to each web agent's static `## Context References` list — the verified
 channel through which these two agents actually load context.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/web/agents/web-research-agent.md`, add one entry to the
+- [x] In `agent-system/extensions/web/agents/web-research-agent.md`, add one entry to the
       `**Load for Web Research**` list (the `## Context References` section, around line 87):
       `` `@.claude/context/project/typescript/README.md` - Generic TypeScript context tree index
-      (loaded via the `typescript` extension dependency) ``.
-- [ ] In `agent-system/extensions/web/agents/web-implementation-agent.md`, add the same one-line
+      (loaded via the `typescript` extension dependency) ``. *(completed)*
+- [x] In `agent-system/extensions/web/agents/web-implementation-agent.md`, add the same one-line
       entry to the `**Load for Web Work**` list (the `## Context References` section, around
       line 92), keeping it adjacent to the existing
       `@.claude/context/project/web/domain/typescript-web.md` entry so a reader sees the
-      generic/Astro-specific pairing in one place.
-- [ ] Use exactly one line per agent, pointing at the tree's README only — do not enumerate the
+      generic/Astro-specific pairing in one place. *(completed)*
+- [x] Use exactly one line per agent, pointing at the tree's README only — do not enumerate the
       seven leaf files. The README's own "Loading Strategy" table is what directs on-demand
-      reading, matching `typescript-research-agent.md`'s established convention.
-- [ ] Confirm neither agent file gains any `load_when`/`index.json` query text: the pointer is
-      static by design, and this plan does not change that mechanism.
+      reading, matching `typescript-research-agent.md`'s established convention. *(completed)*
+- [x] Confirm neither agent file gains any `load_when`/`index.json` query text: the pointer is
+      static by design, and this plan does not change that mechanism. *(completed: grep for load_when/index.json on both files returns zero matches)*
 
 **Timing**: 0.5 hours
 
