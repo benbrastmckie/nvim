@@ -150,7 +150,7 @@ task list names, whose output is the phase's entire deliverable.
 
 ---
 
-### Phase 2: Execute the Deploy Verification and Record the Evidence [NOT STARTED]
+### Phase 2: Execute the Deploy Verification and Record the Evidence [COMPLETED]
 
 **Goal**: Perform the dispatch's own VERIFICATION clause — deploy the extension via the loader
 and confirm the merge targets — against a disposable scratch target, and record the observed
@@ -158,29 +158,29 @@ evidence under this task's own `records/` directory so the result is attributabl
 rather than only to a research report.
 
 **Tasks**:
-- [ ] Create a disposable scratch git repository under this session's scratchpad directory. It
+- [x] Create a disposable scratch git repository under this session's scratchpad directory. It
       MUST NOT be this repository, any consumer repository, or anywhere under the source store,
-      and it MUST NOT be registered in any `.claude-extensions.json`.
-- [ ] Load `core` then `typescript` into that scratch target using the same headless Lua call
+      and it MUST NOT be registered in any `.claude-extensions.json`. *(completed)*
+- [x] Load `core` then `typescript` into that scratch target using the same headless Lua call
       `deploy-headless.sh` itself uses: `manager.load(name, {confirm=false, force=true,
-      project_dir=SCRATCH})` via `nvim --headless`. Confirm `DEPLOY_OK`.
-- [ ] Confirm merge target 1 (installed files): the scratch `.claude/` tree contains both agents,
+      project_dir=SCRATCH})` via `nvim --headless`. Confirm `DEPLOY_OK`. *(completed: DEPLOY_OK)*
+- [x] Confirm merge target 1 (installed files): the scratch `.claude/` tree contains both agents,
       both skill directories, `rules/typescript-rules.md`, `scripts/typescript-verify.sh`, the
       contract file, and the full 8-file `context/project/typescript/` subtree — all correctly
-      scoped under `.claude/`, with no duplicate at the target root.
-- [ ] Confirm merge target 2 (`claudemd`): a `## TypeScript Extension` section is present in the
-      generated `.claude/CLAUDE.md`, sourced from `EXTENSION.md`.
-- [ ] Confirm merge target 3 (`index`): the generated `.claude/context/index.json` carries all 9
-      `typescript`-tagged entries, matching `index-entries.json`.
-- [ ] Confirm merge target 4 (`opencode_json`): create `opencode.json.managed` in the scratch
+      scoped under `.claude/`, with no duplicate at the target root. *(completed: all 16 files confirmed present, no duplicate)*
+- [x] Confirm merge target 2 (`claudemd`): a `## TypeScript Extension` section is present in the
+      generated `.claude/CLAUDE.md`, sourced from `EXTENSION.md`. *(completed)*
+- [x] Confirm merge target 3 (`index`): the generated `.claude/context/index.json` carries all 9
+      `typescript`-tagged entries, matching `index-entries.json`. *(completed: 9/9 match)*
+- [x] Confirm merge target 4 (`opencode_json`): create `opencode.json.managed` in the scratch
       target FIRST, then re-run the load. Without that marker, `merge.lua`'s
       `generate_opencode_json` (Step 1.2, managed/unmanaged gating) returns `ok=true` and writes
       no file — a correctly gated no-op, not a defect. With the marker present, confirm the
       regenerated `opencode.json` carries both `typescript-research` and
-      `typescript-implementation` agent keys.
-- [ ] Write the observed evidence (command shapes, per-target result, any deviation) to
-      `specs/621_typescript_extension_implementation/records/deploy-verification-evidence.md`.
-- [ ] Delete the scratch repository and every file it generated.
+      `typescript-implementation` agent keys. *(completed: no-op confirmed without marker, both agent keys confirmed with marker)*
+- [x] Write the observed evidence (command shapes, per-target result, any deviation) to
+      `specs/621_typescript_extension_implementation/records/deploy-verification-evidence.md`. *(completed)*
+- [x] Delete the scratch repository and every file it generated. *(completed)*
 
 **Timing**: 0.75 hours
 
