@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Regression coverage in the roadmap suite",
+  "started_at": "2026-11-13T00:35:00Z",
+  "last_updated": "2026-11-13T00:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add preflight-library section reusing existing fixture writers", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 2, "description": "Case: classify absent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 3, "description": "Case: classify unknown/classic/stage", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 4, "description": "Case: scaffold on absent yields classic with eight headers in order", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 5, "description": "Case: scaffold on unknown preserves original content verbatim and yields classic", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 6, "description": "Case: scaffold refuses on classic and stage with no write", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 7, "description": "Case: scaffold-then-regenerate idempotence", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]},
+    {"id": 8, "description": "Confirm live-tree isolation guard still passes", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -266,29 +266,29 @@ touches no file outside the library. Confirm with `git diff --stat` naming only
 
 ---
 
-### Phase 3: Regression coverage in the roadmap suite [NOT STARTED]
+### Phase 3: Regression coverage in the roadmap suite [COMPLETED]
 
 **Goal**: `test-roadmap-generation.sh` covers all four classify verdicts, both scaffold cases, the
 classic/stage refusal, and scaffold-then-regenerate idempotence.
 
 **Tasks**:
-- [ ] Add a preflight-library section to `scripts/tests/test-roadmap-generation.sh` using the
+- [x] Add a preflight-library section to `scripts/tests/test-roadmap-generation.sh` using the
       suite's existing `build_scratch` / fixture-writer helpers; reuse
       `write_stage_vocabulary_fixture` and `write_unknown_vocabulary_fixture` rather than adding
-      parallel fixtures.
-- [ ] Case: `classify` returns `absent` for a scratch tree with no `specs/ROADMAP.md`.
-- [ ] Case: `classify` returns `unknown`, `classic`, and `stage` for the three existing
-      vocabulary fixtures.
-- [ ] Case: `scaffold` on an absent path yields a file `classify` reports as `classic`, carrying
-      all eight headers in Section Order order.
-- [ ] Case: `scaffold` on the unknown-vocabulary fixture preserves the original content verbatim
-      (assert every original non-blank line is still present) and yields `classic`.
-- [ ] Case: `scaffold` refuses with non-zero exit and no content change on a `classic` fixture and
-      on a `stage` fixture.
-- [ ] Case: scaffold-then-regenerate idempotence — `scaffold`, then `--regenerate`, then a second
-      `--regenerate --dry-run` reports `no content change`.
-- [ ] Confirm the suite's live-tree isolation guard still passes (every new case drives the scratch
-      tree via `--roadmap`/`--state`, never the real `specs/` files).
+      parallel fixtures. *(completed)*
+- [x] Case: `classify` returns `absent` for a scratch tree with no `specs/ROADMAP.md`. *(completed)*
+- [x] Case: `classify` returns `unknown`, `classic`, and `stage` for the three existing
+      vocabulary fixtures. *(completed)*
+- [x] Case: `scaffold` on an absent path yields a file `classify` reports as `classic`, carrying
+      all eight headers in Section Order order. *(completed)*
+- [x] Case: `scaffold` on the unknown-vocabulary fixture preserves the original content verbatim
+      (assert every original non-blank line is still present) and yields `classic`. *(completed)*
+- [x] Case: `scaffold` refuses with non-zero exit and no content change on a `classic` fixture and
+      on a `stage` fixture. *(completed)*
+- [x] Case: scaffold-then-regenerate idempotence — `scaffold`, then `--regenerate`, then a second
+      `--regenerate --dry-run` reports `no content change`. *(completed)*
+- [x] Confirm the suite's live-tree isolation guard still passes (every new case drives the scratch
+      tree via `--roadmap`/`--state`, never the real `specs/` files). *(completed)*
 
 **Timing**: 1.25 hours
 

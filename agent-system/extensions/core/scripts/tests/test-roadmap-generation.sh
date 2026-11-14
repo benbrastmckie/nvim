@@ -1109,6 +1109,164 @@ else
   common_test_fail "roadmap_batches fixture: unrecognised-layout refusal did not hold with roadmap_batches present (rc=$batches_unknown_rc)"
 fi
 
+# ─── Case group: roadmap-preflight-lib.sh -- classify (four verdicts), scaffold (both cases,
+# the classic/stage refusal), and scaffold-then-regenerate idempotence ────────────────────────
+#
+# PREFLIGHT_CLI invokes the library as a run-as-script CLI (bash PREFLIGHT_CLI classify|scaffold
+# PATH), the same invocation shape both gated callers use -- never sourced here, so a bug in the
+# BASH_SOURCE run-as-script guard would surface as a suite failure too.
+
+preflight_classify() {
+  local scratch="$1"
+  bash "$scratch/.claude/scripts/lib/roadmap-preflight-lib.sh" classify "$scratch/specs/ROADMAP.md"
+}
+
+preflight_scaffold() {
+  local scratch="$1"
+  bash "$scratch/.claude/scripts/lib/roadmap-preflight-lib.sh" scaffold "$scratch/specs/ROADMAP.md"
+}
+
+# -- classify: absent --
+scratch15="$(build_scratch)"
+write_state_fixture "$scratch15"
+classify_absent="$(preflight_classify "$scratch15" 2>"$scratch15/stderr-classify-absent.txt")"
+if [[ "$classify_absent" == "absent" ]]; then
+  common_test_pass "preflight classify: absent file reports 'absent'"
+else
+  common_test_fail "preflight classify: absent file should report 'absent' (got '$classify_absent')"
+fi
+
+# -- classify: unknown/classic/stage against the three existing vocabulary fixtures --
+write_unknown_vocabulary_fixture "$scratch15"
+classify_unknown="$(preflight_classify "$scratch15" 2>/dev/null)"
+if [[ "$classify_unknown" == "unknown" ]]; then
+  common_test_pass "preflight classify: unknown-vocabulary fixture reports 'unknown'"
+else
+  common_test_fail "preflight classify: unknown-vocabulary fixture should report 'unknown' (got '$classify_unknown')"
+fi
+
+write_roadmap_fixture "$scratch15"
+classify_classic="$(preflight_classify "$scratch15" 2>/dev/null)"
+if [[ "$classify_classic" == "classic" ]]; then
+  common_test_pass "preflight classify: classic-vocabulary fixture reports 'classic'"
+else
+  common_test_fail "preflight classify: classic-vocabulary fixture should report 'classic' (got '$classify_classic')"
+fi
+
+write_stage_vocabulary_fixture "$scratch15"
+classify_stage="$(preflight_classify "$scratch15" 2>/dev/null)"
+if [[ "$classify_stage" == "stage" ]]; then
+  common_test_pass "preflight classify: stage-vocabulary fixture reports 'stage'"
+else
+  common_test_fail "preflight classify: stage-vocabulary fixture should report 'stage' (got '$classify_stage')"
+fi
+
+# -- scaffold: absent path yields a file classify reports 'classic', with all eight headers in
+# Section Order order --
+scratch16="$(build_scratch)"
+write_state_fixture "$scratch16"
+preflight_scaffold "$scratch16" 2>"$scratch16/stderr-scaffold-absent.txt"
+scaffold_absent_rc=$?
+if [[ "$scaffold_absent_rc" -eq 0 ]]; then
+  common_test_pass "preflight scaffold: absent path exits 0"
+else
+  common_test_fail "preflight scaffold: absent path should exit 0 (got $scaffold_absent_rc; $(cat "$scratch16/stderr-scaffold-absent.txt"))"
+fi
+
+classify_after_absent_scaffold="$(preflight_classify "$scratch16" 2>/dev/null)"
+if [[ "$classify_after_absent_scaffold" == "classic" ]]; then
+  common_test_pass "preflight scaffold: absent path, after scaffold, classifies 'classic'"
+else
+  common_test_fail "preflight scaffold: absent path, after scaffold, should classify 'classic' (got '$classify_after_absent_scaffold')"
+fi
+
+scaffold_headers_absent="$(grep '^## ' "$scratch16/specs/ROADMAP.md")"
+expected_headers="## Goal
+## Gate state
+## Next
+## Open work
+## Checks before and after every call
+## Settled decisions (do not re-litigate)
+## Standing rules
+## Unfiled observations (none worth a task yet)"
+if [[ "$scaffold_headers_absent" == "$expected_headers" ]]; then
+  common_test_pass "preflight scaffold: absent path carries all eight headers in Section Order order"
+else
+  common_test_fail "preflight scaffold: absent path header order mismatch (got: $scaffold_headers_absent)"
+fi
+
+# -- scaffold: unknown-vocabulary fixture preserves original content verbatim and yields
+# 'classic' --
+scratch17="$(build_scratch)"
+write_state_fixture "$scratch17"
+write_unknown_vocabulary_fixture "$scratch17"
+cp "$scratch17/specs/ROADMAP.md" "$scratch17/specs/ROADMAP.unknown-orig.md"
+preflight_scaffold "$scratch17" 2>"$scratch17/stderr-scaffold-unknown.txt"
+scaffold_unknown_rc=$?
+if [[ "$scaffold_unknown_rc" -eq 0 ]]; then
+  common_test_pass "preflight scaffold: unknown-vocabulary fixture exits 0"
+else
+  common_test_fail "preflight scaffold: unknown-vocabulary fixture should exit 0 (got $scaffold_unknown_rc; $(cat "$scratch17/stderr-scaffold-unknown.txt"))"
+fi
+
+classify_after_unknown_scaffold="$(preflight_classify "$scratch17" 2>/dev/null)"
+if [[ "$classify_after_unknown_scaffold" == "classic" ]]; then
+  common_test_pass "preflight scaffold: unknown-vocabulary fixture, after scaffold, classifies 'classic'"
+else
+  common_test_fail "preflight scaffold: unknown-vocabulary fixture, after scaffold, should classify 'classic' (got '$classify_after_unknown_scaffold')"
+fi
+
+unknown_scaffold_missing_lines=0
+while IFS= read -r orig_line; do
+  [[ -z "$orig_line" ]] && continue
+  grep -qF "$orig_line" "$scratch17/specs/ROADMAP.md" || unknown_scaffold_missing_lines=$((unknown_scaffold_missing_lines + 1))
+done <"$scratch17/specs/ROADMAP.unknown-orig.md"
+if [[ "$unknown_scaffold_missing_lines" -eq 0 ]]; then
+  common_test_pass "preflight scaffold: unknown-vocabulary fixture -- every original non-blank line survives verbatim"
+else
+  common_test_fail "preflight scaffold: unknown-vocabulary fixture -- $unknown_scaffold_missing_lines original non-blank line(s) missing after scaffold"
+fi
+
+# -- scaffold refuses with non-zero exit and no content change on a classic fixture and on a
+# stage fixture --
+scratch18="$(build_scratch)"
+write_state_fixture "$scratch18"
+write_roadmap_fixture "$scratch18"
+sum_before_classic_refuse="$(sha256sum "$scratch18/specs/ROADMAP.md" | awk '{print $1}')"
+preflight_scaffold "$scratch18" >/dev/null 2>"$scratch18/stderr-scaffold-classic-refuse.txt"
+scaffold_classic_refuse_rc=$?
+sum_after_classic_refuse="$(sha256sum "$scratch18/specs/ROADMAP.md" | awk '{print $1}')"
+if [[ "$scaffold_classic_refuse_rc" -ne 0 && "$sum_before_classic_refuse" == "$sum_after_classic_refuse" ]]; then
+  common_test_pass "preflight scaffold: classic fixture refuses (non-zero exit, no write)"
+else
+  common_test_fail "preflight scaffold: classic fixture should refuse with no write (rc=$scaffold_classic_refuse_rc)"
+fi
+
+write_stage_vocabulary_fixture "$scratch18"
+sum_before_stage_refuse="$(sha256sum "$scratch18/specs/ROADMAP.md" | awk '{print $1}')"
+preflight_scaffold "$scratch18" >/dev/null 2>"$scratch18/stderr-scaffold-stage-refuse.txt"
+scaffold_stage_refuse_rc=$?
+sum_after_stage_refuse="$(sha256sum "$scratch18/specs/ROADMAP.md" | awk '{print $1}')"
+if [[ "$scaffold_stage_refuse_rc" -ne 0 && "$sum_before_stage_refuse" == "$sum_after_stage_refuse" ]]; then
+  common_test_pass "preflight scaffold: stage fixture refuses (non-zero exit, no write)"
+else
+  common_test_fail "preflight scaffold: stage fixture should refuse with no write (rc=$scaffold_stage_refuse_rc)"
+fi
+
+# -- scaffold-then-regenerate idempotence: scaffold an absent path, --regenerate, then a second
+# --regenerate --dry-run reports "no content change" --
+scratch19="$(build_scratch)"
+write_state_fixture "$scratch19"
+preflight_scaffold "$scratch19" >/dev/null 2>/dev/null
+run_ri "$scratch19" --regenerate >/dev/null 2>/dev/null
+run_ri "$scratch19" --regenerate --dry-run >/dev/null 2>"$scratch19/stderr-scaffold-idempotence.txt"
+if grep -qE 'OUTCOME: --regenerate --dry-run diffed .*; wrote nothing \(layout=classic, no content change\)$' \
+    "$scratch19/stderr-scaffold-idempotence.txt"; then
+  common_test_pass "preflight scaffold-then-regenerate: idempotent (second --regenerate --dry-run reports no content change)"
+else
+  common_test_fail "preflight scaffold-then-regenerate: expected 'no content change' OUTCOME line ($(cat "$scratch19/stderr-scaffold-idempotence.txt"))"
+fi
+
 # ─── Live-tree isolation guard ─────────────────────────────────────────────────────────────
 
 REAL_ROADMAP_SUM_AFTER=""
