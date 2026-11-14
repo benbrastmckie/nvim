@@ -1,7 +1,7 @@
 # Implementation Plan: Task #458
 
 - **Task**: 458 - consolidate_duplicated_todo_implementation
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None live (459 is complete; 626 depends on this task, not the reverse)
 - **Research Inputs**: specs/458_consolidate_duplicated_todo_implementation/reports/01_consolidate-todo-implementations.md

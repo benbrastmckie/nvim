@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "summary": "Created a 4-phase implementation plan making agent-system/extensions/core/commands/todo.md the sole authoritative /todo implementation and removing skills/skill-todo/SKILL.md together with its manifest registration and all 18 dangling registry, lint, test and prose references. The archived_projects-blind orphan/misplaced-directory bug is fixed once in the survivor (three jq sites) and pinned by a new test suite before the duplicate is deleted. Two redeploys are scheduled rather than one, because deploy-headless.sh is additive while verify-deploy Gate 13 fails on deployed-but-undeclared files, so the deregistration phase must purge and redeploy to reach a green tree at all.",
-  "phases_completed": 0,
+  "status": "implemented",
+  "summary": "Collapsed the two /todo implementations into agent-system/extensions/core/commands/todo.md as the sole authoritative implementation, removing skills/skill-todo/SKILL.md (1027 lines) together with every mechanical registration (manifest.json, lint allowlist, test subject, deployed copy, .claude-extensions.json) and reconciling 15 remaining prose/comment references. Fixed the archived_projects-blind detection bug once in the survivor across all three read-back scans, pinned by a new test-todo-archived-projects-scan.sh regression suite. Net reduction of 945 lines across 22 touched paths (13978 -> 13033), with two redeploys completed and a scoped gate run confirming every gate the plan names is green except gate 8's pre-existing, confirmed-unrelated findings.",
+  "phases_completed": 4,
   "phases_total": 4,
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/458_consolidate_duplicated_todo_implementation/summaries/01_consolidate-todo-implementations-summary.md",
+      "summary": "Full implementation summary: what changed, decisions, plan deviations, verification results, net-line figure, and follow-ups (task 626's stale file_scope reference, two unregistered-but-confirmed-unrelated known-failures.txt candidates)."
+    },
+    {
       "type": "plan",
       "path": "specs/458_consolidate_duplicated_todo_implementation/plans/01_consolidate-todo-implementations.md",
-      "summary": "4-phase net-deletion plan: fix archived_projects-blind scans and pin them, remove and deregister skill-todo with a purge-and-redeploy, reconcile every remaining reference, redeploy and report the net-line figure."
+      "summary": "4-phase plan, all phases closed [COMPLETED] or [COMPLETED WITH EXCLUSIONS] with full Reasoned Exclusions tables for every literal verification criterion not satisfied verbatim."
     }
   ],
-  "dispatch_seq": 10
+  "dispatch_seq": 11
 }

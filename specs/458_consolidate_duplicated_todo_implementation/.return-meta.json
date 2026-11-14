@@ -1,10 +1,82 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/458_consolidate_duplicated_todo_implementation/summaries/01_consolidate-todo-implementations-summary.md",
+      "summary": "Collapsed the two /todo implementations into commands/todo.md, fully deregistered skill-todo, fixed the archived_projects-blind detection bug once with a new regression suite, and reconciled every remaining reference. Net reduction of 945 lines across 22 touched paths."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Removed skills/skill-todo/SKILL.md (1027 lines) and its manifest/lint/test registrations, leaving commands/todo.md as the sole authoritative /todo implementation; fixed the archived_projects-blind orphan/misplaced-directory detection bug across all three read-back scans and pinned it with a new test-todo-archived-projects-scan.sh suite; reconciled 15 prose/comment references to post-removal reality; redeployed twice to a clean tree. Net reduction of 945 lines (13978 -> 13033)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/context/architecture/system-overview.md",
+    "agent-system/extensions/core/context/patterns/context-protective-lead.md",
+    "agent-system/extensions/core/context/patterns/roadmap-update.md",
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/context/reference/skill-agent-mapping.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/context/standards/task-reference-exemptions.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/README.md",
+    "agent-system/extensions/core/scripts/deprecated/README.md",
+    "agent-system/extensions/core/scripts/lib/engine-written-state-paths-lib.sh",
+    "agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh",
+    "agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh",
+    "agent-system/extensions/core/scripts/skill-base.sh",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/tests/test-todo-archived-projects-scan.sh",
+    "agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "agent-system/extensions/core/skills/skill-todo/SKILL.md",
+    ".claude-extensions.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a plan deletes a file from the agent-system source store and creates a NEW source-store test file in the same or an earlier phase, the new test file needs an explicit entry in manifest.json's provides.scripts array, separate from any suite-classification.data row. The manifest-driven deploy copier (loader.lua's M.copy_category) only deploys files listed in provides.scripts; a suite-classification.data row alone deploys fine via a different mechanism but does not cause the .sh file itself to be copied. Symptom: gate 5 (manifest category parity) reports 'Missing scripts: scripts/tests/<name>.sh' after a redeploy even though the file exists in the source store and passes standalone.",
+      "category": "PATTERN",
+      "source_artifact": "specs/458_consolidate_duplicated_todo_implementation/summaries/01_consolidate-todo-implementations-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "manifest.json",
+        "provides.scripts",
+        "deploy-headless",
+        "new-test-file",
+        "gate5",
+        "suite-classification.data"
+      ]
+    },
+    {
+      "content": "In this dev environment, a plain foreground Bash call (even with the Bash tool's own timeout parameter raised well above 120000ms) gets auto-backgrounded by the harness after approximately 180 seconds regardless of the parameter value. verify-deploy.sh's full gate battery (especially gate 8 / run-all.sh's ~200-suite run) routinely takes 500-1200+ seconds under concurrent multi-agent load. The reliable idiom is: launch with `nohup <cmd> > logfile 2>&1 & disown`, capture the PID via pgrep if `$!` is lost across tool calls, then poll with a `kill -0 \"$pid\"` loop inside repeated ~170s Bash calls (each call's own wait loop must stay under the ~180s auto-background threshold), reading the log file directly once the PID is confirmed dead. A killed/orphaned run can leave a stale specs/.gate-lock behind; release it with `bash .claude/scripts/task-lock.sh gate-release \"<token-from-owner-file>\"` (the deployed copy, not the source store) rather than rm -rf.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/458_consolidate_duplicated_todo_implementation/summaries/01_consolidate-todo-implementations-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "bounded-wait",
+        "nohup-disown",
+        "kill-0",
+        "gate-lock",
+        "verify-deploy",
+        "auto-background",
+        "concurrent-load"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794635595_257108",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 11
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }
