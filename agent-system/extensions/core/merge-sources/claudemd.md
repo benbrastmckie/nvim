@@ -162,7 +162,6 @@ keeps only the Skill -> Agent pairing, which the harness does not provide.
 | skill-meta | meta-builder-agent |
 | skill-status-sync | (direct execution) |
 | skill-refresh | (direct execution) |
-| skill-todo | (direct execution) |
 | skill-tag | (user-only) |
 | skill-reviser | reviser-agent |
 | skill-spawn | spawn-agent |

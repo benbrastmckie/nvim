@@ -354,72 +354,77 @@ failures are excluded here, specific and evidenced, rather than silently absorbe
 
 ---
 
-### Phase 3: Reconcile Every Remaining Reference to Post-Removal Reality [NOT STARTED]
+### Phase 3: Reconcile Every Remaining Reference to Post-Removal Reality [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: every surviving prose and comment reference to `skill-todo` describes what is actually
 true, and `context/architecture/system-overview.md`'s `/todo` routing row no longer places a skill
 in a path it was never in.
 
 **Tasks**:
-- [ ] `context/architecture/system-overview.md` line 417: change
+- [x] `context/architecture/system-overview.md` line 417: change
       `| /todo | Direct | skill-todo | (no agent) | B |` to
       `| /todo | Direct | (direct execution) | (no agent) | B |`, matching the phrasing the same
       table already uses for `/review` and `/errors`. Re-verify the line number and the row's
-      current text before editing.
-- [ ] `context/reference/skill-agent-mapping.md` line 39: remove the
-      `| skill-todo | Archive completed tasks, sync metrics |` row.
-- [ ] `merge-sources/claudemd.md` line 165: remove the `| skill-todo | (direct execution) |` row
-      from the Skill-to-Agent mapping table.
-- [ ] `README.md` line 96: remove the `skill-todo/` entry from the directory tree listing,
-      preserving the surrounding box-drawing characters' alignment.
-- [ ] `context/patterns/roadmap-update.md` line 154: rewrite
+      current text before editing. *(completed)*
+- [x] `context/reference/skill-agent-mapping.md` line 39: remove the
+      `| skill-todo | Archive completed tasks, sync metrics |` row. *(completed)*
+- [x] `merge-sources/claudemd.md` line 165: remove the `| skill-todo | (direct execution) |` row
+      from the Skill-to-Agent mapping table. *(completed)*
+- [x] `README.md` line 96: remove the `skill-todo/` entry from the directory tree listing,
+      preserving the surrounding box-drawing characters' alignment. *(completed)*
+- [x] `context/patterns/roadmap-update.md` line 154: rewrite
       "Neither `/todo`'s skill (`skills/skill-todo/SKILL.md`) nor `/review` (`commands/review.md`)
       invokes this script" so it names `/todo`'s actual implementation
-      (`commands/todo.md`). The ruling that follows it is unchanged.
-- [ ] `context/patterns/context-protective-lead.md` line 260: this table is a point-in-time audit
+      (`commands/todo.md`). The ruling that follows it is unchanged. *(completed)*
+- [x] `context/patterns/context-protective-lead.md` line 260: this table is a point-in-time audit
       record, not a live dependency list. Annotate the `skill-todo` row the way the same table
       already annotates `skill-orchestrator` ("historical -- skill retired; this row is a
       point-in-time audit record, not a functional dependency") rather than deleting it.
-- [ ] `context/patterns/task-lock.md` lines 829 and 870: at 829, drop
+      *(completed)*
+- [x] `context/patterns/task-lock.md` lines 829 and 870: at 829, drop
       `skills/skill-todo/SKILL.md` from the list of `--state-file`/`--init` callers. At 870, the
       passage already frames a set of skills as "since deleted outright"; move `skill-todo` into
       that framing rather than leaving it in the list of survivors that call `state-write.sh`.
-- [ ] `context/standards/git-staging-scope.md` line 707: the "hand-written `git add` line"
+      *(completed)*
+- [x] `context/standards/git-staging-scope.md` line 707: the "hand-written `git add` line"
       mechanism bullet attributes itself to `skill-todo/SKILL.md`'s GitCommit stage, which no
       longer exists. Keep the mechanism described — the rule is general — but strip the named
       exemplar and adjust the closing "Both mechanisms" paragraph so it does not imply two live
-      exemplars where only the `commands/todo.md` accumulator survives.
-- [ ] `context/standards/task-reference-exemptions.md` line 102: this passage grounds its
+      exemplars where only the `commands/todo.md` accumulator survives. *(completed)*
+- [x] `context/standards/task-reference-exemptions.md` line 102: this passage grounds its
       "`.memory/**` coverage, empirically verified" claim on `skill-todo`'s Stage 14
       memory-harvest, a stage removed on 2026-11-10 — so the citation is already stale
       independent of this task. Re-ground it on a durable anchor. If no live `.memory/**` writer
       exists to anchor it, say that plainly; do NOT substitute a named writer that has not been
-      verified to exist.
-- [ ] `scripts/validate-state.sh` line 731: the comment attributes the `created_at` field shape to
+      verified to exist. *(completed: re-grounded on the memory extension's skill-learn, a
+      verified live `.memory/**` Write-tool writer)*
+- [x] `scripts/validate-state.sh` line 731: the comment attributes the `created_at` field shape to
       `skills/skill-todo/SKILL.md`'s "Archive TODO.md orphans" step. Re-ground it on the shape
       itself — a sparse archive entry carrying `created_at` and no `task_type`, present in
-      historical archive data — with no producer named.
-- [ ] `scripts/tests/test-validate-state.sh` lines 2063 and 2081: apply the same re-grounding to
+      historical archive data — with no producer named. *(completed)*
+- [x] `scripts/tests/test-validate-state.sh` lines 2063 and 2081: apply the same re-grounding to
       fixture (h)'s comment and its `common_test_pass` message. The assertion itself is KEPT
       unchanged — it pins the validator's tolerance, which is independent of any producer.
-- [ ] `scripts/skill-base.sh` line 606: the comment cites "skill-todo's archival jq, which copies
+      *(completed)*
+- [x] `scripts/skill-base.sh` line 606: the comment cites "skill-todo's archival jq, which copies
       the whole active_projects entry unmodified". Re-point it at `commands/todo.md`'s archival jq
       (the `.completed_projects = ([$tasks[] | ...])` assignment, expected near line 390), which
-      has the identical shape.
-- [ ] `scripts/lib/engine-written-state-paths-lib.sh` line 24: the comment states
+      has the identical shape. *(completed)*
+- [x] `scripts/lib/engine-written-state-paths-lib.sh` line 24: the comment states
       `specs/CHANGE_LOG.md` is "written only at archival (skill-todo)". Correct it to state that
       no live path writes it. State the fact only — do not add a judgment about whether it should
-      be written; that question belongs to another record.
-- [ ] `scripts/lint/lint-postflight-boundary.sh` line 70: remove `skill-todo` from the
-      parenthetical list of direct-execution skills in the comment.
-- [ ] `scripts/deprecated/README.md` lines 19 and 132: both sentences name
+      be written; that question belongs to another record. *(completed)*
+- [x] `scripts/lint/lint-postflight-boundary.sh` line 70: remove `skill-todo` from the
+      parenthetical list of direct-execution skills in the comment. *(completed)*
+- [x] `scripts/deprecated/README.md` lines 19 and 132: both sentences name
       `commands/todo.md` *and* `skills/skill-todo/SKILL.md` as the pair that hand-implements the
       quarantined behaviors. Drop the `skill-todo` half; `commands/todo.md` alone is the
-      authoritative implementation these quarantine notes already point at.
-- [ ] Re-run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/audit-deletion-references.sh skill-todo`
+      authoritative implementation these quarantine notes already point at. *(completed)*
+- [x] Re-run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/audit-deletion-references.sh skill-todo`
       and read every remaining hit. A hit is a candidate for triage, not a failure: the three
       email-extension files and this plan's own `specs/**` artifacts are expected, legitimate
-      residual hits and are left alone.
+      residual hits and are left alone. *(completed: hit count dropped from 25 to 9; see
+      `#### Reasoned Exclusions` below for the full accounting of all 9)*
 
 **Timing**: 1.5 hours
 
@@ -476,6 +481,22 @@ or a markdown table cell, with no executable statement altered.
 - `verify-deploy.sh --only-gate 3,4,22` is green.
 - The `audit-deletion-references.sh skill-todo` re-run shows no unexplained hit; every remaining
   hit is one of the three email files or this task's own `specs/**` artifacts.
+
+#### Reasoned Exclusions
+
+`grep -rn 'skill-todo' agent-system/extensions/core/` does not return zero hits (3 hits), and
+this is unsatisfiable literally while also honoring this phase's own per-task instructions,
+which explicitly direct KEEPING two of those three mentions:
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `context/patterns/context-protective-lead.md` line 260 | This phase's own task explicitly instructs annotating (not deleting) the `skill-todo` row as a point-in-time historical audit record, matching the existing `skill-orchestrator` row's convention | The row now reads "...(historical -- skill retired; this row is a point-in-time audit record, not a functional dependency)", word-for-word the annotation this phase's task names |
+| `context/patterns/task-lock.md` line 874 | This phase's own task explicitly instructs moving `skill-todo` into the "since deleted outright" framing rather than leaving it as a survivor -- doing so necessarily still names the string `skill-todo` once, in a sentence stating it is deleted | The sentence reads "`skill-todo` is also deleted outright (its own hand-rolled write block went with it), not merely a survivor calling `state-write.sh`" |
+| `agent-system/extensions/core/.claude-extensions.json` line 50 | Pre-existing, untracked, out-of-`file_scope` stray duplicate of the root deploy ledger, predating this dispatch | `ls -la` shows mtime 2026-11-12 (before this dispatch's 2026-11-14 start); `git status --porcelain` shows it as `??` (never committed); it is not named in this task's `file_scope` |
+
+`grep -rn 'skill-todo' agent-system/extensions/` returns the three expected email-extension
+files PLUS the same three `core/` hits above (6 total), not only the three email files as
+literally stated -- same three exclusions apply.
 
 ---
 

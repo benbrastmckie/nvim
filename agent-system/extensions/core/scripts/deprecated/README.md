@@ -15,11 +15,11 @@ rather than hard-deleted, per the QUARANTINE-NEVER-DELETE posture (see
 
 ## Contents
 
-- **archive-task.sh** - Formerly implemented task archival. Superseded: `commands/todo.md` and
-  `skills/skill-todo/SKILL.md` prose hand-implement the identical archival behavior directly
-  (bash-in-markdown), and this is the **authoritative** implementation, not this script.
-  `commands/todo.md` mentions this filename only once, as a naming-convention precedent for
-  session-ID generation — never as an invocation.
+- **archive-task.sh** - Formerly implemented task archival. Superseded: `commands/todo.md`'s
+  prose hand-implements the identical archival behavior directly (bash-in-markdown), and this is
+  the **authoritative** implementation, not this script. `commands/todo.md` mentions this
+  filename only once, as a naming-convention precedent for session-ID generation — never as an
+  invocation.
 
 - **orphan-detection.sh** - Formerly scanned `specs/` and `specs/archive/` for orphaned task
   directories. Superseded: `commands/todo.md` Step 2.5 ("Detect Orphaned Directories")
@@ -129,8 +129,7 @@ rather than hard-deleted, per the QUARANTINE-NEVER-DELETE posture (see
 
 None of the twelve scripts above is declared in `manifest.json` `provides.scripts`, and none is
 invoked by any active skill, agent, command, or hook. Every behavior they provided is either
-hand-implemented in `commands/todo.md`/`skills/skill-todo/SKILL.md` prose, or superseded by a
-differently-named live script.
+hand-implemented in `commands/todo.md` prose, or superseded by a differently-named live script.
 
 ## Using Deprecated Code
 

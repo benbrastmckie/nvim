@@ -826,7 +826,7 @@ and the `--regen-todo`/`--init` usage refusals below.
 takes an optional `--state-file <path>` (default `specs/state.json`, so every pre-existing caller
 is unchanged) and an `--init` flag for fresh-create targets that have no existing file to
 transform. Both `specs/archive/state.json` and vault-root `state.json` writers in
-`commands/task.md`, `commands/todo.md`, `skills/skill-todo/SKILL.md`, and the (now-quarantined,
+`commands/task.md`, `commands/todo.md`, and the (now-quarantined,
 under `scripts/deprecated/`) archive-task and vault-operation scripts now route through these two
 flags rather than hand-rolling their own `jq ... > tmp && mv` or `jq -n ... > file` sequences.
 
@@ -867,11 +867,13 @@ grep result, not a permanent fact -- re-run the same searches before trusting th
 - Every `specs/state.json` writer in `agent-system/extensions/core/**` now routes through
   `state-write.sh`. The 11 skill files this note previously listed as still carrying hand-rolled
   write blocks (the three base lifecycle skills -- `skill-project-overview`,
-  `skill-reviser`, `skill-spawn`, `skill-status-sync`, `skill-todo`, and core's own three
+  `skill-reviser`, `skill-spawn`, `skill-status-sync`, and core's own three
   standalone hard-mode research/plan/implement skills -- all six of these since deleted outright,
   not merely fixed) each show zero hand-rolled hits today and the survivors call
   `state-write.sh` instead -- that claim was stale; a separate, already-completed effort had
-  closed it before this section's own `--state-file`/`--init` work began. `commands/task.md` and
+  closed it before this section's own `--state-file`/`--init` work began. `skill-todo` is also
+  deleted outright (its own hand-rolled write block went with it), not merely a survivor calling
+  `state-write.sh`. `commands/task.md` and
   `commands/todo.md` likewise carry zero hand-rolled `specs/state.json` or
   `specs/archive/state.json` write sites now (re-measured via
   `grep -rnE 'state\.json[^ ]* *> *[^ ]*(tmp|\.tmp)|(tmp|state\.json\.tmp)[^|]*&&[^|]*mv[^|]*state\.json'

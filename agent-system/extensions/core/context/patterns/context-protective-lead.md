@@ -257,7 +257,7 @@ This is the model all lead agents should follow.
 | skill-nix-research | Compliant | 0 | Verified clean |
 | skill-neovim-implementation | Compliant | 0 | Verified clean |
 | skill-nix-implementation | Compliant | 0 | Verified clean |
-| skill-todo | N/A | 0 | Direct execution, no subagent |
+| skill-todo | N/A | 0 | Direct execution, no subagent (historical -- skill retired; this row is a point-in-time audit record, not a functional dependency) |
 
 ---
 

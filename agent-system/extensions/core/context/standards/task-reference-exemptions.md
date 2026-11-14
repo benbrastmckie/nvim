@@ -99,8 +99,9 @@ repository, in any repo this system deploys into, is a deliverable subject to th
   is documented-buggy for tools bare-allow-listed in `settings.json`'s `permissions.allow` — see
   `guard-destructive-git.sh` for the same pattern). It fails OPEN (exit 0, stderr warning) if its
   own shared pattern library cannot be sourced, so a broken guard never blocks every write in the
-  repo. **`.memory/**` coverage, empirically verified**: `skill-todo`'s Stage 14 memory-harvest
-  logic creates new memory files via the `Write` tool with natural-language instructions, not a
+  repo. **`.memory/**` coverage, empirically verified**: the memory extension's `skill-learn`
+  (`agent-system/extensions/memory/skills/skill-learn/SKILL.md`, invoked by `/distill --learn`)
+  creates new memory files via the `Write` tool with natural-language instructions, not a
   Bash heredoc, so this hook DOES see and can block `.memory/**` memory-candidate harvest writes.
 - **Agent contracts**: every agent that authors deliverable files outside `specs/**` carries an
   explicit MUST-NOT bullet against citing task numbers, sourced from one canonical fragment,

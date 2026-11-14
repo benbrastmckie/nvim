@@ -93,7 +93,6 @@ core/
 │   ├── skill-orchestrate/     # Autonomous lifecycle state machine (/orchestrate command)
 │   ├── skill-meta/            # System building
 │   ├── skill-status-sync/     # Atomic status updates
-│   ├── skill-todo/            # Task archival
 │   ├── skill-tag/             # Version tagging (user-only)
 │   ├── skill-refresh/         # Process cleanup
 │   ├── skill-reviser/         # Plan revision

@@ -1,0 +1,29 @@
+{
+  "phase": 3,
+  "phase_name": "Reconcile Every Remaining Reference to Post-Removal Reality",
+  "started_at": "2026-11-14T10:00:00Z",
+  "last_updated": "2026-11-14T10:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "system-overview.md line 417: /todo routing row names no skill", "status": "done", "files_touched": ["agent-system/extensions/core/context/architecture/system-overview.md"]},
+    {"id": 2, "description": "skill-agent-mapping.md line 39: remove skill-todo row", "status": "done", "files_touched": ["agent-system/extensions/core/context/reference/skill-agent-mapping.md"]},
+    {"id": 3, "description": "merge-sources/claudemd.md line 165: remove skill-todo mapping row", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 4, "description": "README.md line 96: remove skill-todo/ tree entry", "status": "done", "files_touched": ["agent-system/extensions/core/README.md"]},
+    {"id": 5, "description": "roadmap-update.md line 154: name commands/todo.md instead of removed skill", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/roadmap-update.md"]},
+    {"id": 6, "description": "context-protective-lead.md line 260: annotate skill-todo row as historical", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/context-protective-lead.md"]},
+    {"id": 7, "description": "task-lock.md lines 829, 870: re-ground two passages", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 8, "description": "git-staging-scope.md line 707: strip dead exemplar, preserve rule", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 9, "description": "task-reference-exemptions.md line 102: re-ground .memory/** claim", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/task-reference-exemptions.md"]},
+    {"id": 10, "description": "validate-state.sh line 731: re-ground comment on entry shape", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 11, "description": "test-validate-state.sh lines 2063,2081: re-ground fixture (h) comment/message", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-state.sh"]},
+    {"id": 12, "description": "skill-base.sh line 606: re-point comment at survivor's archival jq", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/skill-base.sh"]},
+    {"id": 13, "description": "engine-written-state-paths-lib.sh line 24: correct CHANGE_LOG comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/engine-written-state-paths-lib.sh"]},
+    {"id": 14, "description": "lint-postflight-boundary.sh line 70: remove skill-todo from comment list", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh"]},
+    {"id": 15, "description": "scripts/deprecated/README.md lines 19,132: drop skill-todo half", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/deprecated/README.md"]},
+    {"id": 16, "description": "Re-run audit-deletion-references.sh skill-todo and confirm no unexplained hit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 16,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Re-run of audit-deletion-references.sh skill-todo: Pass 1 literal hits dropped from 25 (Phase 2's capture) to 9. All 9 accounted for: 6 in the three expected email-extension files (Non-Goals), 2 are this phase's own DELIBERATE retentions per explicit task instruction (task-lock.md's new 'skill-todo is also deleted outright' sentence, and context-protective-lead.md's historical-annotation row -- both instructed to KEEP the string, not delete it), and 1 is the pre-existing, untracked, out-of-file_scope stray ledger agent-system/extensions/core/.claude-extensions.json (mtime 2026-11-12, predates this dispatch). The plan's own literal verification bullet ('grep -rn skill-todo agent-system/extensions/core/ returns zero hits') is unsatisfiable while also honoring its own per-task instructions to keep two of those exact mentions -- recorded as a Reasoned Exclusion rather than silently claimed satisfied."
+}

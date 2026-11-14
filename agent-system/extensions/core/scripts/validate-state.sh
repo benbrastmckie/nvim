@@ -727,12 +727,12 @@ if [[ "$ARCHIVE_MODE" == "true" ]]; then
     last_updated next_artifact_number priority project_name project_number session_id status
     task_type title topic
   )
-  # created_at (distinct from created above) added per Phase 5's live-writer verification:
-  # skills/skill-todo/SKILL.md's "Archive TODO.md orphans" step writes this exact field name
-  # (not "created") on its sparse orphan-insert shape -- a genuine known writer field, not yet
-  # present in this repository's own live archive, so the Phase 3 measurement (which only
-  # inspected the live file) missed it. Modeled here rather than left as a permanent WARN,
-  # since the field is real and documented, not evidence of drift.
+  # created_at (distinct from created above) added per Phase 5's live-writer verification: a
+  # sparse archive entry shape carries this exact field name (not "created") with no "task_type"
+  # field, present in historical archive data regardless of which implementation once produced
+  # it -- a genuine known field shape, not yet present in this repository's own live archive, so
+  # the Phase 3 measurement (which only inspected the live file) missed it. Modeled here rather
+  # than left as a permanent WARN, since the field is real and documented, not evidence of drift.
   KNOWN_COMPLETED_ENTRY_FIELDS=(
     abandoned archived archived_at artifacts blockers blocks_note completion_summary created
     created_at dependencies description detected_artifacts effort file_scope last_updated

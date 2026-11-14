@@ -67,7 +67,7 @@ MISSING_SECTION_COUNT=0
 # `subagent_type:`, the remaining 3 team skills via the "Agent tool for team coordination" /
 # "Spawn teammates using Agent tool" phrasing) and were verified to produce zero false positives
 # against the known direct-execution skills (skill-status-sync, skill-refresh, skill-tag,
-# skill-git-workflow, skill-zulip, skill-todo).
+# skill-git-workflow, skill-zulip).
 does_skill_delegate() {
     local file="$1"
     grep -qE 'subagent_type[[:space:]]*:|Tool:[[:space:]]*Agent\b|Spawn teammates using Agent tool|Agent tool for team coordination' "$file" 2>/dev/null

@@ -151,7 +151,7 @@ special-cased per caller.
    agent is ever dispatched, so its own `--regenerate` call always lands on an already-`classic`
    (or already-`stage`) file.
 
-Neither `/todo`'s skill (`skills/skill-todo/SKILL.md`) nor `/review` (`commands/review.md`)
+Neither `/todo` (`commands/todo.md`) nor `/review` (`commands/review.md`)
 invokes this script.
 
 `--prune` has no live caller, and is now a deprecated alias for `--regenerate` (see above) —

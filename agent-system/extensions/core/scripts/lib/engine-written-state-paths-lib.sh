@@ -21,9 +21,8 @@
 # excursion guard at once.
 #
 # Rejected candidates and why each fails the bar:
-#   - specs/CHANGE_LOG.md   - written only at archival (skill-todo), not on behalf of every
-#                             task's ordinary lifecycle; narrower writer population than the bar
-#                             requires.
+#   - specs/CHANGE_LOG.md   - no live path writes it; fails the "every/many tasks" half outright,
+#                             not merely a narrower writer population.
 #   - specs/ROADMAP.md      - user-maintained and read-only for agents; no agent ever writes it,
 #                             engine or otherwise, so admitting it here would be a no-op scope
 #                             widening with no corresponding writer to protect.

@@ -698,20 +698,17 @@ rename site in `commands/todo.md`:
 stage_paths+=(specs/archive "${vault_path}/")
 ```
 
-**Two mechanisms this rule must be honored under** (the two live call sites that pair
-endpoints, named by file plus step/stage, never by line number — both drift):
+**The live call site this rule must be honored under** (named by file plus step/stage, never by
+line number — it drifts):
 
 - An **accumulator array**, in `commands/todo.md`: each move site appends `stage_paths+=("$old"
   "$new")` to a shared array threaded through the whole archival recipe and consumed once at
   its final commit step.
-- A **hand-written `git add` line**, in `skill-todo/SKILL.md`'s GitCommit stage: each of that
-  recipe's Stage 10 move sites appends to a `moved_paths[]` array, which the GitCommit stage's
-  `git add` invocation expands with `"${moved_paths[@]}"` rather than naming a fixed destination
-  directory.
 
-Both mechanisms satisfy the same rule; which one a given recipe uses is a function of whether it
-already carries a pathspec accumulator or builds its `git add` invocation inline — not a reason
-to relax the pairing requirement itself.
+A recipe could equally satisfy this rule with a hand-written `git add` line that expands a
+`moved_paths[]`-style array inline rather than threading a shared accumulator — the rule is
+general to either shape — but the accumulator above is the only one `commands/todo.md` itself
+carries, so it is the only live exemplar to point at.
 
 ## Cached-Untracking Staging (`git rm --cached` with content left on disk)
 

@@ -414,7 +414,7 @@ Complete mapping of all commands to their skill and agent paths:
 | `/meta` | Single | skill-meta | meta-builder-agent | A |
 | `/review` | Direct | (direct execution) | (inline execution) | B |
 | `/errors` | Direct | (direct execution) | (inline execution) | B |
-| `/todo` | Direct | skill-todo | (no agent) | B |
+| `/todo` | Direct | (direct execution) | (no agent) | B |
 | `/task` | Direct | skill-meta | meta-builder-agent | A |
 | `/refresh` | Direct | skill-refresh | (no agent) | B |
 
