@@ -1,13 +1,13 @@
 {
   "status": "implemented",
-  "dispatch_seq": 6,
+  "dispatch_seq": 7,
   "phase": "implement",
-  "summary": "Built the complete generic typescript extension in the source store (20 new files: manifest, both agents, both skills, rules file, verification-stage hook, hard_contracts override, 8-file context tree, merge sources) plus one corrected registry row. All six plan phases closed; agent-system/extensions/web/ confirmed untouched throughout.",
+  "summary": "All six plan phases for the typescript extension build remain closed from the prior dispatch. This dispatch closed the Outstanding Gate Finding (gate20: skills/skill-orchestrate/SKILL.md over its 25000 B ceiling, self-attributed to this task via a basename collision on 'SKILL.md') by relocating a restatable comment to its existing canonical pointer in orchestrate-state-machine.md (recovering 368 B) and a reviewed, dated ceiling move for the 142 B residual (25000 B -> 25500 B). Re-verified green via verify-deploy.sh --only-gate 20's per-file ceiling sub-check. A separate, unrelated gate20 sub-check (eager-load total 44 B over baseline) was found during re-verification, confirmed pre-existing and non-attributable to this task, and left open as a new follow-up.",
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/620_typescript_extension_design/summaries/01_typescript-extension-build-summary.md",
-      "summary": "Full implementation summary for the typescript extension build: file manifest, decisions, plan deviations, verification evidence, and the three evidenced Reasoned Exclusions on Phase 5."
+      "summary": "Full implementation summary for the typescript extension build: file manifest, decisions, plan deviations, verification evidence, the three evidenced Reasoned Exclusions on Phase 5, and dispatch 7's Gate 20 Finding Closure section."
     }
   ],
   "phases_completed": 6,

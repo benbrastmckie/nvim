@@ -6,7 +6,7 @@ next_project_number: 627
 
 ## Task Order
 
-*Updated 2026-11-13. Generated from state.json dependency graph.*
+*Updated 2026-11-14. Generated from state.json dependency graph.*
 
 **Goal**: Make specs/ROADMAP.md generated (306, 307, 308, 313) so planning stops drifting, then push consent and admission posture.
 
