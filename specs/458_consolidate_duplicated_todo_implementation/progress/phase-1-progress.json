@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Fix the archived_projects-Blind Scans in the Survivor",
+  "started_at": "2026-11-14T06:55:52Z",
+  "last_updated": "2026-11-14T07:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive the three jq filter line numbers in commands/todo.md", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace .completed_projects[] with (.completed_projects + .archived_projects)[] at the three read-back sites", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 3, "description": "Create test-todo-archived-projects-scan.sh (subject resolution + repo root)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-todo-archived-projects-scan.sh"]},
+    {"id": 4, "description": "Add behavioral half: positive fixture + negative control", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-todo-archived-projects-scan.sh"]},
+    {"id": 5, "description": "Add static half: assert zero bare .completed_projects[] read-back filters remain and all three sites name both arrays", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-todo-archived-projects-scan.sh"]},
+    {"id": 6, "description": "Add suite-classification.data row for the new suite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/suite-classification.data"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Phase 1's declared gate 3/4/29 verification cannot literally exit 0 pre-deploy / pre-existing out-of-scope findings; see issues.jsonl entry. Gates 22 and 27 (the ones this phase's new file actually exercises) are green, as is the scoped run-all.sh pass for both test-todo-archived-projects-scan.sh and test-todo-move-pair-staging.sh."
+}

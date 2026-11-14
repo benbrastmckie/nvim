@@ -1,7 +1,7 @@
 # Implementation Plan: Task #458
 
 - **Task**: 458 - consolidate_duplicated_todo_implementation
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None live (459 is complete; 626 depends on this task, not the reverse)
 - **Research Inputs**: specs/458_consolidate_duplicated_todo_implementation/reports/01_consolidate-todo-implementations.md
@@ -157,41 +157,43 @@ it. Phases within the same wave could run in parallel; no wave here holds more t
 
 ---
 
-### Phase 1: Fix the `archived_projects`-Blind Scans in the Survivor [NOT STARTED]
+### Phase 1: Fix the `archived_projects`-Blind Scans in the Survivor [COMPLETED]
 
 **Goal**: `commands/todo.md`'s three detection scans read both archive arrays, and a test
 demonstrates that an abandoned-then-archived task directory is no longer reported as an orphan.
 
 **Tasks**:
-- [ ] Re-derive the three jq filter line numbers in
+- [x] Re-derive the three jq filter line numbers in
       `agent-system/extensions/core/commands/todo.md` with
       `grep -n 'completed_projects\[\]' agent-system/extensions/core/commands/todo.md` before
       editing. Expected at plan time: lines 71 (orphans-in-specs), 88 (orphans-in-archive), 127
       (misplaced-directory scan, section 2.6). Edit by matched text, never by line number alone.
-- [ ] At each of the three sites, replace the array selector
+      *(completed: confirmed unchanged at lines 71, 88, 127)*
+- [x] At each of the three sites, replace the array selector
       `.completed_projects[]` with `(.completed_projects + .archived_projects)[]` inside the
       existing one-line filter, leaving the rest of the expression untouched. These three sites
       are the read-back scans only; do NOT touch the archive-WRITE jq at lines 378, 390 and 515,
       nor the vault count at 638 or the reinit at 657 — the write path is already correct and
-      populates both arrays.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-todo-archived-projects-scan.sh`,
+      populates both arrays. *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/tests/test-todo-archived-projects-scan.sh`,
       modelled structurally on `scripts/tests/test-todo-move-pair-staging.sh`: resolve its subject
       via `common_test_resolve_subject` (gate 27's declaration requirement) and resolve its repo
-      root by the same convention that file uses (gate 29).
-- [ ] Give the new suite a BEHAVIORAL half: build a throwaway `specs/archive/state.json` fixture
+      root by the same convention that file uses (gate 29). *(completed)*
+- [x] Give the new suite a BEHAVIORAL half: build a throwaway `specs/archive/state.json` fixture
       holding one entry in `archived_projects[]` and one in `completed_projects[]`, run the fixed
       filter against it, and assert BOTH are found (i.e. neither is reported as an orphan). Add
       the negative control: run the old `.completed_projects[]`-only filter against the same
       fixture and assert it MISSES the `archived_projects[]` entry. A negative control that passes
       as positive is itself a suite failure — it would mean the suite could not have caught the
-      live defect.
-- [ ] Give the new suite a STATIC half over the real recipe text: assert that
+      live defect. *(completed)*
+- [x] Give the new suite a STATIC half over the real recipe text: assert that
       `commands/todo.md` contains zero remaining bare `.completed_projects[] | select(.project_number`
       read-back filters, and that all three surviving read-back sites name both arrays.
-- [ ] Add one TAB-separated row for the new suite to
+      *(completed)*
+- [x] Add one TAB-separated row for the new suite to
       `agent-system/extensions/core/scripts/tests/suite-classification.data`, classified `unit`
       (it spawns none of `deploy-headless.sh`, `verify-deploy.sh`, `run-all.sh`), with a reason
-      field in the style of the rows already present.
+      field in the style of the rows already present. *(completed)*
 
 **Timing**: 1.5 hours
 

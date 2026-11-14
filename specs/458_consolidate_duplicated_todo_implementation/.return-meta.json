@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/458_consolidate_duplicated_todo_implementation/plans/01_consolidate-todo-implementations.md",
-      "summary": "4-phase net-deletion plan consolidating the two /todo implementations into commands/todo.md, fixing the archived_projects-blind detection bug once in the survivor, and fully deregistering skill-todo."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1794635595_257108_458",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 5.5,
-    "dependency_waves": 4
+    "session_id": "sess_1794635595_257108",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "When a plan deletes a file from the agent-system source store, the deletion is not complete at the source. deploy-headless.sh is additive and never removes anything, while verify-deploy Gate 13 (find_orphans) fails on any deployed-but-undeclared file. The deployed copy must be purged explicitly (rm -rf .claude/<path>) in the SAME phase as the redeploy, and that pairing forces the redeploy into the deregistration phase rather than a trailing cleanup phase -- a sub-full verification tier cannot be declared for a deregistration phase, because Gate 5 (manifest content-hash parity) and Gate 13 are exactly the surfaces no suite subset reaches.",
-      "category": "PATTERN",
-      "source_artifact": "specs/458_consolidate_duplicated_todo_implementation/plans/01_consolidate-todo-implementations.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["deploy-headless", "verify-deploy", "gate-13", "orphan-detection", "source-store-deletion", "verification-tier"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 458 to execute the plan",
-  "dispatch_seq": 10
+  "dispatch_seq": 11
 }

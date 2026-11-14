@@ -33,7 +33,7 @@ next_project_number: 627
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
 456 [NOT STARTED] — Exempt private npm/Cargo manifests from /tag's version gate
-458 [PLANNED] — Consolidate the duplicated /todo implementation
+458 [IMPLEMENTING] — Consolidate the duplicated /todo implementation
   └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
     └─ 626 [NOT STARTED] — Wire /todo and /review to roadmap regeneration behind the...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
@@ -8671,7 +8671,7 @@ outside the declared scope silently.
 ---
 
 ### 458. Consolidate the duplicated /todo implementation
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 459

@@ -192,6 +192,7 @@ test-task-lock-queue.sh	unit	-
 test-task-reference-patterns-lib.sh	unit	-
 test-task-type-detect.sh	unit	-
 test-title-sim-dedup.sh	unit	-
+test-todo-archived-projects-scan.sh	unit	-
 test-todo-move-pair-staging.sh	unit	-
 test-update-plan-status.sh	unit	-
 test-update-task-status.sh	unit	-

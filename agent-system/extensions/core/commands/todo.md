@@ -68,7 +68,7 @@ for dir in specs/[0-9]*_*/; do
 
   # Check if in archive/state.json completed_projects
   in_archive=$(jq -r --arg n "$project_num" \
-    '.completed_projects[] | select(.project_number == ($n | tonumber)) | .project_number' \
+    '(.completed_projects + .archived_projects)[] | select(.project_number == ($n | tonumber)) | .project_number' \
     specs/archive/state.json 2>/dev/null)
 
   # If not in either, it's an orphan
@@ -85,7 +85,7 @@ for dir in specs/archive/[0-9]*_*/; do
 
   # Check if in archive/state.json completed_projects
   in_archive=$(jq -r --arg n "$project_num" \
-    '.completed_projects[] | select(.project_number == ($n | tonumber)) | .project_number' \
+    '(.completed_projects + .archived_projects)[] | select(.project_number == ($n | tonumber)) | .project_number' \
     specs/archive/state.json 2>/dev/null)
 
   # If not tracked, it's an orphan
@@ -124,7 +124,7 @@ for dir in specs/[0-9]*_*/; do
 
   # Check if tracked in archive/state.json (should be in archive/)
   in_archive=$(jq -r --arg n "$project_num" \
-    '.completed_projects[] | select(.project_number == ($n | tonumber)) | .project_number' \
+    '(.completed_projects + .archived_projects)[] | select(.project_number == ($n | tonumber)) | .project_number' \
     specs/archive/state.json 2>/dev/null)
 
   # If in archive state but not in active state, it's misplaced
