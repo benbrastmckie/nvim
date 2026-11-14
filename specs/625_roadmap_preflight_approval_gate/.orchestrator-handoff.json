@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Wrote a six-phase implementation plan for the roadmap preflight approval gate: extract the layout-classification vocabulary into scripts/lib/roadmap-preflight-lib.sh with a four-way classify entry point, add the mechanical classic eight-header scaffolder plus a run-as-script CLI guard, cover all four verdicts and scaffold-then-regenerate idempotence in test-roadmap-generation.sh, gate skill-roadmap Stage 1 with a pre-dispatch AskUserQuestion, and degrade loudly (named warning + events.jsonl + per-task issues.jsonl) at /orchestrate's conclusion stage Move 5. All seven description claims were re-validated against live source; one divergence found and recorded. Plan validates clean with zero warnings.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/625_roadmap_preflight_approval_gate/plans/01_roadmap-preflight-gate.md",
+      "summary": "Six-phase plan, 5.5 hours, four dependency waves."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": [],
+  "next_action_hint": "Dispatch implement for task 625; Phase 1 (library extraction) must land before any other phase.",
+  "dispatch_seq": 2
+}
