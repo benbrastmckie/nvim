@@ -1,0 +1,66 @@
+{
+  "phase": 1,
+  "phase_name": "Author the Read-Only Scout Agent Definition",
+  "started_at": "2026-11-14T23:30:00Z",
+  "last_updated": "2026-11-14T23:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create agent-system/extensions/core/agents/scout-agent.md with correct filename avoiding research/implementation substrings",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/scout-agent.md"]
+    },
+    {
+      "id": 2,
+      "description": "Write frontmatter with name, description, tools: Read, Grep, Glob, Bash, model: sonnet; no Write/Edit",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/scout-agent.md"]
+    },
+    {
+      "id": 3,
+      "description": "Write body's five required brief sections in order with four-way labelling",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/scout-agent.md"]
+    },
+    {
+      "id": 4,
+      "description": "Write HARD REQUIREMENTS MUST/MUST NOT bullets",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/scout-agent.md"]
+    },
+    {
+      "id": 5,
+      "description": "Add read-only MUST NOT bullet forbidding file mutation via Bash",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/scout-agent.md"]
+    },
+    {
+      "id": 6,
+      "description": "Add input-discovery section: unconditional specs/** reads plus existence-conditional repo-specific probes",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/scout-agent.md"]
+    },
+    {
+      "id": 7,
+      "description": "Add stop-at-reporting scope boundary (reports, never maintains ROADMAP/CHANGE_LOG)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/scout-agent.md"]
+    },
+    {
+      "id": 8,
+      "description": "Add console-only return contract (no .return-meta.json, no handoff, no report artifact)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/scout-agent.md"]
+    },
+    {
+      "id": 9,
+      "description": "Verify no backgrounding+await-notification antipattern present (Check K)",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

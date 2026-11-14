@@ -1,7 +1,7 @@
 # Implementation Plan: Task #436
 
 - **Task**: 436 - Add a strategic-brief capability to `/review`, backed by a new read-only scout agent
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/436_orient_command_with_scout_agent_retire_review/reports/01_review-strategic-brief-scout.md
@@ -151,7 +151,7 @@ target of this plan — see Non-Goals.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Author the Read-Only Scout Agent Definition [NOT STARTED]
+### Phase 1: Author the Read-Only Scout Agent Definition [IN PROGRESS]
 
 **Goal**: Create the scout agent file so that it is read-only by construction, console-only by
 design, portable across consumer repositories, and compliant with every unconditional
@@ -159,46 +159,48 @@ design, portable across consumer repositories, and compliant with every uncondit
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/core/agents/scout-agent.md`. Use the name `scout-agent` and
+- [x] Create `agent-system/extensions/core/agents/scout-agent.md`. Use the name `scout-agent` and
       the filename `scout-agent.md` — it contains neither `research` nor `implementation`, so
       Check N's two forced-membership nets (`*implementation*agent.md`, `*research*agent.md`) do
       not reach it, and it already matches an entry in this task's existing `file_scope`.
-- [ ] Write the frontmatter with exactly these keys: `name: scout-agent`, a one-line
+      *(completed)*
+- [x] Write the frontmatter with exactly these keys: `name: scout-agent`, a one-line
       `description:`, `tools: Read, Grep, Glob, Bash`, `model: sonnet`. Use `tools:` — NOT
       `allowed-tools:`, which Check A hard-FAILs as an unsupported key. `model:` is required by
-      Check B. Neither `Write` nor `Edit` appears anywhere in the frontmatter.
-- [ ] Write the body's brief specification: the five REQUIRED SECTIONS in order — (1) WHAT
+      Check B. Neither `Write` nor `Edit` appears anywhere in the frontmatter. *(completed)*
+- [x] Write the body's brief specification: the five REQUIRED SECTIONS in order — (1) WHAT
       HAPPENED, verdict-first; (2) WHY, so a refutation reads as a result; (3) WHERE WE ARE,
       labelling every item `SETTLED` / `LANDED-AT-ONE-FIXTURE` / `CARRIED-UNVERIFIED` / `OPEN`;
       (4) GAINS AND LOSSES, explicitly both; (5) NEXT STRATEGIC GOALS, naming the critical path,
       what gates what, and the cheapest next move. State that none may be omitted and each is
-      ruthlessly compressed.
-- [ ] Write the HARD REQUIREMENTS as MUST / MUST NOT bullets: waste no words and omit nothing
+      ruthlessly compressed. *(completed)*
+- [x] Write the HARD REQUIREMENTS as MUST / MUST NOT bullets: waste no words and omit nothing
       essential; cite durable anchors only (declaration name, filename, section heading, probe
       name) and never a task number, per `rules/no-task-references-in-deliverables.md`; never
       conflate a SETTLED THEOREM with a LANDED-AT-ONE-FIXTURE result or a CARRIED-UNVERIFIED
       figure; never present a refutation as a failure; point at an authority document's
       guardrails rather than restating them; return the brief to the user in conversation rather
-      than producing another artifact.
-- [ ] Add the read-only MUST NOT bullet: the agent MUST NOT mutate any file through `Bash` —
+      than producing another artifact. *(completed)*
+- [x] Add the read-only MUST NOT bullet: the agent MUST NOT mutate any file through `Bash` —
       naming the forms explicitly (`>`/`>>` redirection, `sed -i`, `tee`, `cp`, `mv`, `rm`,
       `mkdir`, `git` commands that write) — and MUST NOT create, edit, or delete any file by any
-      route. `Bash` exists solely to run `jq` and read-only repository probe scripts.
-- [ ] Add the input-discovery section: read `specs/ROADMAP.md`, `specs/TODO.md`,
+      route. `Bash` exists solely to run `jq` and read-only repository probe scripts. *(completed)*
+- [x] Add the input-discovery section: read `specs/ROADMAP.md`, `specs/TODO.md`,
       `specs/state.json` and `specs/CHANGE_LOG.md` unconditionally (all four confirmed present
       here), and probe for every repository-specific authority artifact — an authority README's
       verdict table, a do-not-re-attempt register, an evidence-probe collection script —
       existence-conditionally (`[[ -f ]]` guarded), reporting absence as absence rather than
-      erroring. Hardcode no repository-specific path.
-- [ ] Add the stop-at-reporting scope boundary: the scout REPORTS on `ROADMAP.md` and
+      erroring. Hardcode no repository-specific path. *(completed)*
+- [x] Add the stop-at-reporting scope boundary: the scout REPORTS on `ROADMAP.md` and
       `CHANGE_LOG.md` state and MAINTAINS neither; if section (3) surfaces stale content it says
-      so and stops.
-- [ ] Add the return contract: a console-only bullet-point return to the caller, no
+      so and stops. *(completed)*
+- [x] Add the return contract: a console-only bullet-point return to the caller, no
       `.return-meta.json`, no `.orchestrator-handoff.json`, no report artifact — the same shape
-      `code-reviewer-agent.md` already uses.
-- [ ] Verify by diff read-through that the finished file pairs no backgrounding instruction with
+      `code-reviewer-agent.md` already uses. *(completed)*
+- [x] Verify by diff read-through that the finished file pairs no backgrounding instruction with
       a wait-for-notification instruction (Check K is an absence check over every dispatchable
-      agent and needs only that the antipattern never be written).
+      agent and needs only that the antipattern never be written). *(completed: no such
+      instruction written anywhere in the file)*
 
 **Timing**: 1.5 hours
 
