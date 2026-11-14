@@ -1,43 +1,44 @@
 {
-  "status": "researched",
-  "dispatch_seq": 14,
+  "status": "planned",
+  "dispatch_seq": 15,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/623_web_extension_depends_on_typescript/reports/01_web-typescript-dependency-split.md",
-      "summary": "Audits the web->typescript dependency wiring: confirms the manifest dependency is mechanically safe (no cycle, depth 2 of 5), finds the two web agents load context via a static per-agent @-reference list (not index.json load_when) so the manifest edit alone does not auto-load typescript context, identifies the exact two duplicate subsections (43 lines) in typescript-web.md to trim, and recommends the concrete fix."
+      "type": "plan",
+      "path": "specs/623_web_extension_depends_on_typescript/plans/01_web-typescript-dependency-split.md",
+      "summary": "3-phase plan (3h) wiring web -> typescript: content split plus coupled line_count regeneration, web-agent context pointers, manifest dependency plus end-to-end deploy/unload verification."
     }
   ],
-  "next_steps": "Run /orchestrate 623 to create implementation plan",
+  "next_steps": "Run /orchestrate 623 to execute the plan",
   "metadata": {
     "session_id": "sess_1794603202_55566e_623",
-    "agent_type": "general-research-agent",
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 3,
+    "dependency_waves": [[1, 2], [3]]
   },
   "memory_candidates": [
     {
-      "content": "In this agent system, a declared extension `dependencies` array (manifest.json) only guarantees the dependency's files are deployed -- it does NOT make a dependent extension's agents actually read the dependency's context tree. web-research-agent.md/web-implementation-agent.md (and, by the same mechanism, any other extension's agents) discover context via a static, hand-authored per-agent `## Context References` @-pointer list, not a dynamic index.json load_when query at dispatch time (grep for load_when/jq/index.json in either file returns zero matches). To make a new dependency functionally load context for the dependent's agents, add one @-reference line to each consuming agent's Context References section pointing at the dependency's own context-tree README (mirroring typescript-research-agent.md's own one-line-to-its-README pattern), and rely on that README's Loading Strategy table for on-demand discovery of the rest -- do not expect index-entries.json load_when edits alone to have any effect on these two agents.",
+      "content": "suite_selection_select (scripts/lib/suite-selection-lib.sh) does NOT return the union of per-path suite lists for a multi-path phase: if ANY one touched path maps to no suite, the whole selection collapses to the __FULL_SWEEP__ sentinel. A plan phase mixing a markdown/context file (no mapped suite) with a code/JSON file (real suites) therefore CANNOT honestly name those real suites in its **Tier Justification** -- validate-artifact.sh compares the justification's suite names against the selector's output over the phase's whole path set and flags the mismatch as a fabricated claim. The honest form for such a mixed phase is the plan-format __FULL_SWEEP__ sub-case (b) gate subset: `verify-deploy.sh --skip-slow --only-gate 3,4 <repo_root>` with the repo root (the directory holding .claude-extensions.json) as TARGET, keeping any per-path suite run as an explicitly supplementary check rather than the declared covering one.",
       "category": "PATTERN",
-      "source_artifact": "specs/623_web_extension_depends_on_typescript/reports/01_web-typescript-dependency-split.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["extension-dependencies", "context-loading", "context-references", "index.json", "load_when", "agent-system"]
-    },
-    {
-      "content": "The extension loader (lua/neotex/plugins/ai/shared/extensions/init.lua) enforces a recursion depth limit of 5 and circular-dependency detection via a loading stack during manifest `dependencies` resolution; an already-loaded dependency is skipped (not reloaded), and a dependency load failure aborts the parent extension's load before copying any files. Unloading an extension another loaded extension depends on is a hard block (`ERROR: Cannot unload 'X' -- required by: Y`), refused before any confirmation dialog.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/623_web_extension_depends_on_typescript/reports/01_web-typescript-dependency-split.md",
+      "source_artifact": "specs/623_web_extension_depends_on_typescript/plans/01_web-typescript-dependency-split.md",
       "confidence": 0.85,
-      "suggested_keywords": ["extension-loader", "circular-dependency", "depth-limit", "unload-safety", "manifest-dependencies"]
+      "suggested_keywords": ["suite-selection", "verification-tier", "tier-justification", "full-sweep", "validate-artifact", "plan-authoring"]
     }
   ],
   "modified_files": [
-    "specs/623_web_extension_depends_on_typescript/reports/01_web-typescript-dependency-split.md"
+    "specs/623_web_extension_depends_on_typescript/plans/01_web-typescript-dependency-split.md"
   ],
   "proposed_file_scope": [
-    "agent-system/extensions/web/manifest.json",
+    "__WHOLE_TREE__",
+    "agent-system/extensions/typescript/index-entries.json",
+    "agent-system/extensions/web/EXTENSION.md",
+    "agent-system/extensions/web/README.md",
+    "agent-system/extensions/web/agents/web-implementation-agent.md",
+    "agent-system/extensions/web/agents/web-research-agent.md",
     "agent-system/extensions/web/context/project/web/domain/typescript-web.md",
     "agent-system/extensions/web/index-entries.json",
-    "agent-system/extensions/web/agents/web-research-agent.md",
-    "agent-system/extensions/web/agents/web-implementation-agent.md"
+    "agent-system/extensions/web/manifest.json"
   ]
 }

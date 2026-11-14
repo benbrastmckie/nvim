@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 15,
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Created a 3-phase implementation plan for wiring the web extension to the typescript extension. Wave 1 runs the typescript-web.md content split (with its commit-blocking line_count regeneration) and the two web-agent Context References pointers in parallel; wave 2 declares the manifest dependency, confirms the typescript-side index-entries.json no-op, and verifies the scratch-target deploy, unload hard block, and the full gate set. The plan validates with 0 warnings and harvests 8 real source-store paths plus the __WHOLE_TREE__ sentinel.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/623_web_extension_depends_on_typescript/plans/01_web-typescript-dependency-split.md",
+      "summary": "3-phase plan: content split plus line_count regeneration, web-agent context pointers, manifest dependency plus end-to-end deploy verification."
+    }
+  ]
+}
