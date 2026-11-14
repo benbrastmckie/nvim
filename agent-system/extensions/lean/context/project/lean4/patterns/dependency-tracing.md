@@ -27,6 +27,11 @@ Each shape below is a self-contained `run_cmd`/`#print` script, runnable via `la
 <probe-file>` against an existing build (see "Run Against Existing Oleans" below) — no access to
 the originating repository is required to adapt these.
 
+Every shape reads a declaration's body with `ci.value? (allowOpaque := true)`, and the argument is
+load-bearing: on Lean v4.33.0-rc1 a bare `ci.value?` returns `none` for every theorem, so a probe
+written without it walks type signatures only and silently reports no proof-term dependencies.
+Keep `(allowOpaque := true)` at every call site.
+
 ### Shape 1: Forward Transitive Closure (the primary tool)
 
 Answers: "does entry point X reach any of these suspect declarations, directly or indirectly?"
@@ -49,7 +54,7 @@ partial def collect (env : Environment) (visited : Std.HashSet Name) (n : Name) 
     match env.find? n with
     | none => visited
     | some ci =>
-      let deps := (ci.type.getUsedConstants ++ (ci.value?.map Expr.getUsedConstants).getD #[])
+      let deps := (ci.type.getUsedConstants ++ ((ci.value? (allowOpaque := true)).map Expr.getUsedConstants).getD #[])
       deps.foldl (fun acc d => collect env acc d) visited
 
 def targets : List Name := [ `YourProject.entryPointOne, `YourProject.entryPointTwo ]
@@ -99,7 +104,7 @@ partial def collect (env : Environment) (visited : Std.HashSet Name) (n : Name) 
     match env.find? n with
     | none => visited
     | some ci =>
-      let deps := (ci.type.getUsedConstants ++ (ci.value?.map Expr.getUsedConstants).getD #[])
+      let deps := (ci.type.getUsedConstants ++ ((ci.value? (allowOpaque := true)).map Expr.getUsedConstants).getD #[])
       deps.foldl (fun acc d => collect env acc d) visited
 
 end DepTrace2
@@ -154,7 +159,7 @@ run_cmd do
   for (n, ci) in env.constants.toList do
     if sset.contains n then continue
     if n.isInternal then continue
-    let deps := (ci.type.getUsedConstants ++ (ci.value?.map Expr.getUsedConstants).getD #[])
+    let deps := (ci.type.getUsedConstants ++ ((ci.value? (allowOpaque := true)).map Expr.getUsedConstants).getD #[])
     for d in deps do
       if sset.contains d then hits := hits.push (n, d)
   logInfo m!"direct reverse-dependents across the whole environment: {hits.size}"
