@@ -183,7 +183,7 @@ next_project_number: 627
 
 ### Typescript Extension
 
-623 [PLANNED] — Make the web extension depend on the typescript extension and...
+623 [IMPLEMENTING] — Make the web extension depend on the typescript extension and...
 
 ### Decidability
 
@@ -349,7 +349,7 @@ duplication -- do not convert it into a dependency edge.
 
 ### 623. Make the web extension depend on the typescript extension and split the shared TypeScript context down a layer
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: typescript-extension
 - **Dependencies**: Task 621, Task 622

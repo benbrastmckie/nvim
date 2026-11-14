@@ -75,7 +75,7 @@
           "web"
         ]
       },
-      "line_count": 303,
+      "line_count": 272,
       "domain": "project",
       "subdomain": "web",
       "summary": "TypeScript configuration and patterns for type-safe Astro development"

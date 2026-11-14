@@ -203,48 +203,17 @@ export const collections = { blog, team };
 
 ### Common Zod Patterns
 
-```typescript
-import { z } from 'astro/zod';
-
-// Enum values
-z.enum(['draft', 'published', 'archived'])
-
-// Coerce string to date
-z.coerce.date()
-
-// URL validation
-z.string().url()
-
-// Constrained strings
-z.string().min(1).max(200)
-
-// Nested objects
-z.object({
-  width: z.number(),
-  height: z.number(),
-})
-
-// Discriminated unions
-z.discriminatedUnion('type', [
-  z.object({ type: z.literal('text'), content: z.string() }),
-  z.object({ type: z.literal('image'), src: z.string(), alt: z.string() }),
-])
-```
+The generic Zod primitives (enum values, date coercion, URL validation, constrained strings,
+nested objects, discriminated unions) live in the `typescript` extension's
+`context/project/typescript/patterns/zod-validation-patterns.md` ("Core Primitives"). Astro
+re-exports Zod as `astro/zod`; the primitives themselves are identical.
 
 ## Import Aliases
 
-Use `@` prefixed aliases instead of relative paths:
-
-```astro
----
-// Instead of: import Card from '../../../../components/Card.astro';
-import Card from '@components/Card.astro';
-import BaseLayout from '@layouts/BaseLayout.astro';
-import { formatDate } from '@utils/dates';
----
-```
-
-Aliases are defined in `tsconfig.json` `paths` and Astro resolves them automatically.
+The generic alias convention lives in the `typescript` extension's
+`context/project/typescript/patterns/path-alias-patterns.md` ("Using an Alias"). Astro-specific:
+Astro resolves `tsconfig.json` `paths` aliases automatically, in both `.astro` frontmatter and
+`.ts` files, with no bundler plugin required.
 
 ## Type Checking
 

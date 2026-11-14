@@ -1,7 +1,7 @@
 # Implementation Plan: Task #623
 
 - **Task**: 623 - Make the `web` extension depend on the `typescript` extension and split the shared TypeScript context down a layer
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None (prerequisite tasks 621 and 622 are both [COMPLETED])
 - **Research Inputs**: specs/623_web_extension_depends_on_typescript/reports/01_web-typescript-dependency-split.md
@@ -107,39 +107,39 @@ was performed and no roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Split typescript-web.md and regenerate its line_count [NOT STARTED]
+### Phase 1: Split typescript-web.md and regenerate its line_count [COMPLETED]
 
 **Goal**: Remove the two generic subsections from `typescript-web.md`, replace each with a
 one-line cross-reference naming its exact `typescript`-extension home, and bring
 `web/index-entries.json`'s `line_count` back into agreement with the file.
 
 **Tasks**:
-- [ ] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check`
-      and record the pre-edit census (expected: all entries exact).
-- [ ] Locate `### Common Zod Patterns` and `## Import Aliases` by heading text (not by line
-      number) in `agent-system/extensions/web/context/project/web/domain/typescript-web.md`.
-- [ ] Replace the body of `### Common Zod Patterns` with a short pointer that keeps the heading
+- [x] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check`
+      and record the pre-edit census (expected: all entries exact). *(completed: 604/604 exact, confirmed before any edit)*
+- [x] Locate `### Common Zod Patterns` and `## Import Aliases` by heading text (not by line
+      number) in `agent-system/extensions/web/context/project/web/domain/typescript-web.md`. *(completed)*
+- [x] Replace the body of `### Common Zod Patterns` with a short pointer that keeps the heading
       and names the target file explicitly: the generic Zod primitives (enum, `coerce.date`, URL,
       constrained string, nested object, discriminated union) live in the `typescript`
       extension's `context/project/typescript/patterns/zod-validation-patterns.md` ("Core
       Primitives"); note that Astro re-exports Zod as `astro/zod` and the primitives are
-      identical.
-- [ ] Replace the body of `## Import Aliases` with a pointer to the `typescript` extension's
+      identical. *(completed)*
+- [x] Replace the body of `## Import Aliases` with a pointer to the `typescript` extension's
       `context/project/typescript/patterns/path-alias-patterns.md` ("Using an Alias"),
       **retaining** the one Astro-specific clause: Astro resolves `tsconfig.json` `paths` aliases
-      automatically, in both `.astro` frontmatter and `.ts` files, with no bundler plugin.
-- [ ] Leave every other section untouched — in particular the Astro-specific
+      automatically, in both `.astro` frontmatter and `.ts` files, with no bundler plugin. *(completed)*
+- [x] Leave every other section untouched — in particular the Astro-specific
       `## Content Collection Schemas with Zod` block immediately above the first trimmed
-      subsection, and `## Type Checking` immediately below the second.
-- [ ] Re-read `agent-system/extensions/web/context/project/web/README.md` lines 14, 53 and 109 and
+      subsection, and `## Type Checking` immediately below the second. *(completed: heading list re-read post-edit, both sections and every other heading intact)*
+- [x] Re-read `agent-system/extensions/web/context/project/web/README.md` lines 14, 53 and 109 and
       confirm each reference to `typescript-web.md` is still accurate post-trim (line 53's "Zod
       schemas and type utilities" remains true: the Astro content-collection Zod section stays).
-      Record the confirmation; edit only if a reference has actually become false.
-- [ ] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`,
-      then `git status --short` to confirm which files it rewrote.
-- [ ] Stage only `typescript-web.md` and `agent-system/extensions/web/index-entries.json`. If
+      Record the confirmation; edit only if a reference has actually become false. *(completed: all three references confirmed accurate, no edit required)*
+- [x] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`,
+      then `git status --short` to confirm which files it rewrote. *(completed: rewrote exactly one file, web/index-entries.json, line_count 303 -> 272)*
+- [x] Stage only `typescript-web.md` and `agent-system/extensions/web/index-entries.json`. If
       `--write` corrected any other extension's file, leave it unstaged and report it in the
-      phase notes rather than folding it into this task's commit.
+      phase notes rather than folding it into this task's commit. *(completed: no other extension file was rewritten by --write; the pre-existing, already-dirty lean/index-entries.json modification predates this dispatch and is unrelated)*
 
 **Timing**: 0.75 hours
 

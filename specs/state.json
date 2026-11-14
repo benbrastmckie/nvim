@@ -130227,7 +130227,7 @@
     {
       "project_number": 623,
       "project_name": "web_extension_depends_on_typescript",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Make the web extension depend on the typescript extension and split the shared TypeScript context down a layer",
       "description": "GOAL. Make the `web` extension depend on the new `typescript` extension, and split the shared\nTypeScript context down a layer.\n\nWHAT TO DO.\n1. Add `typescript` to the `web` extension's `manifest.json` `dependencies` array, so Astro work\n   auto-loads the base TypeScript context.\n2. Execute the line-level `typescript-web.md` split designed in the plan: generic TypeScript\n   material moves DOWN into the typescript extension's context tree; Astro/browser/\n   Cloudflare-specific TypeScript material STAYS in `web`.\n3. Update BOTH extensions' `index-entries.json` to match the moved files.\n4. Re-verify that each extension deploys cleanly alone and together, and confirm the dependency\n   auto-load path behaves -- including circular detection and the depth limit of 5.\n\nHARD CONSTRAINT. ALL writes go to the source store under `agent-system/extensions/`. NEVER\nwrite to any repository's `.claude/` deploy tree -- see\n`.claude/rules/source-store-deploy-boundary.md`.",
@@ -131025,7 +131025,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "last_updated": "2026-11-14T01:46:18Z",
+      "last_updated": "2026-11-14T01:46:52Z",
       "session_id": "sess_1794603202_55566e",
       "next_artifact_number": 2
     },

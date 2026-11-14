@@ -1,35 +1,12 @@
 {
-  "status": "planned",
-  "dispatch_seq": 15,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/623_web_extension_depends_on_typescript/plans/01_web-typescript-dependency-split.md",
-      "summary": "3-phase plan (3h) wiring web -> typescript: content split plus coupled line_count regeneration, web-agent context pointers, manifest dependency plus end-to-end deploy/unload verification."
-    }
-  ],
-  "next_steps": "Run /orchestrate 623 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 16,
   "metadata": {
-    "session_id": "sess_1794603202_55566e_623",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 3,
-    "estimated_hours": 3,
-    "dependency_waves": [[1, 2], [3]]
+    "session_id": "sess_1794603202_55566e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "suite_selection_select (scripts/lib/suite-selection-lib.sh) does NOT return the union of per-path suite lists for a multi-path phase: if ANY one touched path maps to no suite, the whole selection collapses to the __FULL_SWEEP__ sentinel. A plan phase mixing a markdown/context file (no mapped suite) with a code/JSON file (real suites) therefore CANNOT honestly name those real suites in its **Tier Justification** -- validate-artifact.sh compares the justification's suite names against the selector's output over the phase's whole path set and flags the mismatch as a fabricated claim. The honest form for such a mixed phase is the plan-format __FULL_SWEEP__ sub-case (b) gate subset: `verify-deploy.sh --skip-slow --only-gate 3,4 <repo_root>` with the repo root (the directory holding .claude-extensions.json) as TARGET, keeping any per-path suite run as an explicitly supplementary check rather than the declared covering one.",
-      "category": "PATTERN",
-      "source_artifact": "specs/623_web_extension_depends_on_typescript/plans/01_web-typescript-dependency-split.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["suite-selection", "verification-tier", "tier-justification", "full-sweep", "validate-artifact", "plan-authoring"]
-    }
-  ],
-  "modified_files": [
-    "specs/623_web_extension_depends_on_typescript/plans/01_web-typescript-dependency-split.md"
-  ],
   "proposed_file_scope": [
     "__WHOLE_TREE__",
     "agent-system/extensions/typescript/index-entries.json",
