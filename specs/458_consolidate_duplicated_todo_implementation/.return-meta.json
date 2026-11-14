@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794635595_257108_458",
+  "dispatch_seq": 9,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/458_consolidate_duplicated_todo_implementation/reports/01_consolidate-todo-implementations.md",
+      "summary": "Re-verifies the dispatch's duplication/bug/collision claims against the live source store, finds commands/todo.md should survive as the sole authoritative /todo implementation with skill-todo fully removed (not thin-delegated), and surfaces a fourth divergence surface (TODO.md-orphan detection) and a stale collision-field snapshot (task 626) the dispatch did not account for."
+    }
+  ],
+  "next_steps": "Run /orchestrate 458 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "In this repo, a command-skill pair where the command's allowed-tools line carries no Skill entry structurally cannot dispatch the paired skill, regardless of what either file's prose claims. Verify by grepping the command's allowed-tools frontmatter for 'Skill' before trusting a skill's description/role text as evidence it is live.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/458_consolidate_duplicated_todo_implementation/reports/01_consolidate-todo-implementations.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["skill-dispatch", "allowed-tools", "dead-code-detection", "manifest-registration"]
+    },
+    {
+      "content": "This repo deploys /todo twice: once for Claude Code (agent-system/extensions/core/commands/todo.md -> .claude/) and once for OpenCode (.opencode/commands/todo.md, a separately-maintained copy). The OpenCode copy can diverge and go stale independently of the core source store without tripping the .claude/-focused deploy-freshness check. When auditing a core command's live callers, check both deploy trees, not just .claude/.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/458_consolidate_duplicated_todo_implementation/reports/01_consolidate-todo-implementations.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["opencode", "deploy-staleness", "dual-consumer", "todo-command"]
+    },
+    {
+      "content": "A task's stored file_scope is anticipatory, not a ceiling: task 458's file_scope (7 paths) was measurably narrower than the full set of registry/lint/test files actually referencing the target symbol (skill-todo) once enumerated with a repo-wide grep. When a dispatch names a removal/consolidation target, re-enumerate its full reference footprint rather than trusting file_scope to already list every touch point.",
+      "category": "PATTERN",
+      "source_artifact": "specs/458_consolidate_duplicated_todo_implementation/reports/01_consolidate-todo-implementations.md",
+      "confidence": 0.65,
+      "suggested_keywords": ["file_scope", "reference-footprint", "consolidation", "grep-enumeration"]
+    }
+  ]
+}

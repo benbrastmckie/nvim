@@ -33,7 +33,7 @@ next_project_number: 627
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
 456 [NOT STARTED] — Exempt private npm/Cargo manifests from /tag's version gate
-458 [NOT STARTED] — Consolidate the duplicated /todo implementation
+458 [RESEARCHED] — Consolidate the duplicated /todo implementation
   └─ 436 [NOT STARTED] — Add the /orient executive-orientation command with a...
     └─ 626 [NOT STARTED] — Wire /todo and /review to roadmap regeneration behind the...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
@@ -8671,10 +8671,11 @@ outside the declared scope silently.
 ---
 
 ### 458. Consolidate the duplicated /todo implementation
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 459
+- **Research**: [458_consolidate_duplicated_todo_implementation/reports/01_consolidate-todo-implementations.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ (never .claude/**, a disposable deploy artifact -- see rules/source-store-deploy-boundary.md). Redeploy afterwards via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000), never a hand-patch of a deployed file. No task-number references and no record-versioning language in any file landing under agent-system/** (both are permitted in this description).
 
