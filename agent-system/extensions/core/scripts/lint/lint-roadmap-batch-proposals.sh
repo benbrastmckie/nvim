@@ -52,13 +52,17 @@
 # context/formats/roadmap-format.md's "Next Grammar" section for the declarative statement of
 # this rule (finding (e) in this task's own record).
 #
-# LAYOUT SNIFF: transcribed from context/formats/roadmap-format.md's own prose predicates
-# ("Classic layout" / "Stage layout" sections), never from scripts/roadmap-integration.sh (a
-# monolithic executable that cannot be sourced). `classic` iff all eight literal CLASSIC_HEADERS
-# are present; `stage` iff a `^## Stage [0-9]+` header is present AND some `## ` section's body
-# holds a fenced code block containing at least one `^/orchestrate ` line; otherwise `unknown`.
-# On `unknown`, this script emits one loud named stderr line and exits 0 -- never a silent
-# no-op, and never a guess at one of the two recognised layouts.
+# LAYOUT SNIFF: delegated to scripts/lib/roadmap-preflight-lib.sh's detect_layout (sourced
+# below) -- the sole owner of the classification vocabulary this file previously transcribed its
+# own copy of. detect_layout implements exactly context/formats/roadmap-format.md's own prose
+# predicates ("Classic layout" / "Stage layout" sections): `classic` iff all eight literal
+# CLASSIC_HEADERS are present; `stage` iff a `^## Stage [0-9]+` header is present AND some `## `
+# section's body holds a fenced code block containing at least one `^/orchestrate ` line;
+# otherwise `unknown`. This script never sources scripts/roadmap-integration.sh itself (a
+# monolithic executable with no run-as-script guard, hence unsafe to source) -- only the
+# purpose-built, safe-to-source library. On `unknown`, this script emits one loud named stderr
+# line and exits 0 -- never a silent no-op, and never a guess at one of the two recognised
+# layouts.
 #
 # KNOWN RESIDUAL NOISE in finding (f), stated plainly rather than hidden: a citation that drops
 # MORE than the "agent-system/extensions/<ext>/" prefix this script's extra resolution roots
@@ -124,6 +128,18 @@ if [[ ! -f "${SCRIPT_DIR}/../lib/task-lookup-lib.sh" ]]; then
 fi
 # shellcheck source=../lib/task-lookup-lib.sh
 source "${SCRIPT_DIR}/../lib/task-lookup-lib.sh"
+
+# roadmap-preflight-lib.sh is the sole owner of the layout-classification vocabulary
+# (CLASSIC_HEADERS, the fence helpers, detect_layout) -- unlike roadmap-integration.sh (a
+# monolithic executable with no BASH_SOURCE run-as-script guard, hence unsafe to source), this
+# library was built specifically to be sourced safely. See that file's header for the full
+# rationale. Never re-inline a copy of the vocabulary here.
+if [[ ! -f "${SCRIPT_DIR}/../lib/roadmap-preflight-lib.sh" ]]; then
+  echo "ERROR: shared library not found at ${SCRIPT_DIR}/../lib/roadmap-preflight-lib.sh" >&2
+  exit 2
+fi
+# shellcheck source=../lib/roadmap-preflight-lib.sh
+source "${SCRIPT_DIR}/../lib/roadmap-preflight-lib.sh"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq is required but not found on PATH" >&2
@@ -203,53 +219,11 @@ fi
 MAX_TASKS=8
 
 # ---------------------------------------------------------------------------
-# Layout sniff — transcribed from context/formats/roadmap-format.md's prose predicates.
+# Layout sniff -- delegated to roadmap-preflight-lib.sh's detect_layout (sourced above), the
+# sole owner of this vocabulary. $ROADMAP_PATH's existence was already confirmed above, so
+# detect_layout (not the four-way roadmap_preflight_classify) is the right entry point here.
 # ---------------------------------------------------------------------------
-CLASSIC_HEADERS=(
-  "## Goal"
-  "## Gate state"
-  "## Next"
-  "## Open work"
-  "## Checks before and after every call"
-  "## Settled decisions (do not re-litigate)"
-  "## Standing rules"
-  "## Unfiled observations (none worth a task yet)"
-)
-
-is_classic_layout() {
-  local header
-  for header in "${CLASSIC_HEADERS[@]}"; do
-    grep -qxF "$header" "$ROADMAP_PATH" || return 1
-  done
-  return 0
-}
-
-# is_stage_layout: a `^## Stage [0-9]+` header present AND some fenced code block (anywhere in
-# the file -- every fenced block necessarily falls within the nearest preceding `## ` section
-# once at least one `## ` header exists, which the Stage-header test already requires) contains
-# at least one `^/orchestrate ` line.
-is_stage_layout() {
-  grep -qE '^## Stage [0-9]+' "$ROADMAP_PATH" || return 1
-  local in_fence=false
-  local line
-  while IFS= read -r line; do
-    if [[ "$line" =~ ^\`\`\` ]]; then
-      if $in_fence; then in_fence=false; else in_fence=true; fi
-      continue
-    fi
-    if $in_fence && [[ "$line" =~ ^/orchestrate\  ]]; then
-      return 0
-    fi
-  done < "$ROADMAP_PATH"
-  return 1
-}
-
-LAYOUT="unknown"
-if is_classic_layout; then
-  LAYOUT="classic"
-elif is_stage_layout; then
-  LAYOUT="stage"
-fi
+LAYOUT="$(detect_layout "$ROADMAP_PATH")"
 
 if [[ "$LAYOUT" == "unknown" ]]; then
   echo "NOTE: layout=unknown; no batch block parsed" >&2
