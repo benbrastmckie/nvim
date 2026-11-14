@@ -1,0 +1,42 @@
+{
+  "status": "researched",
+  "summary": "Researched the roadmap preflight approval gate: detect_layout is safely extractable into a new shared library (roadmap-integration.sh parses argv at top level with no run-guard, so sourcing the whole file is unsafe); the gate fires only on absent/unknown verdicts; the real skill-roadmap write call lives in roadmap-agent.md's Write Contract, so the interactive gate belongs in skill-roadmap Stage 1 pre-dispatch, modeled on skill-meta Section 2; the conclusion stage's Bash allow-list needs two new entries and issue-record.sh's per-task scoping tension is resolved via Move 5's existing events-append.sh pattern; no seed issue-log class fits precisely, so a new class is recommended.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/625_roadmap_preflight_approval_gate/reports/01_roadmap-preflight-gate.md",
+      "summary": "Full research findings: library extraction design, 4-way verdict classification, interactive-arm placement in skill-roadmap Stage 1, non-interactive-arm design for conclusion stage Step 5, new issue-log class recommendation, and scaffold placeholder content design."
+    }
+  ],
+  "next_steps": "Run /orchestrate 625 to create an implementation plan from these findings.",
+  "findings_count": 9,
+  "dispatch_seq": 1,
+  "memory_candidates": [
+    {
+      "content": "roadmap-integration.sh (agent-system/extensions/core/scripts/) parses $@ and calls exit at its own top level, outside any function and with no BASH_SOURCE run-guard. A caller that needs its detect_layout classification logic must extract the relevant functions into a sourced library (the status-vocabulary.sh 'one sourced shared library, many consumers' shape) rather than sourcing the whole script, which would re-execute its argument parser and could exit the sourcing shell.",
+      "category": "PATTERN",
+      "source_artifact": "specs/625_roadmap_preflight_approval_gate/reports/01_roadmap-preflight-gate.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["roadmap-integration.sh", "detect_layout", "source vs shell-out", "bash library extraction", "top-level argv parsing hazard"]
+    },
+    {
+      "content": "AskUserQuestion is measured categorically withheld from every Agent-tool dispatch of a named subagent_type (agent-frontmatter-standard.md), independent of tools:/disallowedTools: config. Any skill needing a user-choice point before dispatching a subagent must collect it in the skill's own pre-dispatch stage. skill-meta/SKILL.md Section 2 is the proven reference template for this shape: ask, hold the resolved answer, pass it into the delegation context, dispatch only after.",
+      "category": "PATTERN",
+      "source_artifact": "specs/625_roadmap_preflight_approval_gate/reports/01_roadmap-preflight-gate.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["AskUserQuestion", "subagent tool withholding", "pre-dispatch interview", "skill-meta Section 2"]
+    },
+    {
+      "content": "issue-record.sh is fundamentally per-task (--task-dir/--task N, directory must exist). /orchestrate's conclusion stage (Move 5) is explicitly NOT task-scoped per-se at the batch level; its own channels (b)/(c) already route non-task-scoped evidence to events-append.sh -> specs/events.jsonl for exactly that reason, even though Move 5 does carry a resolved per-task list it can loop over when a per-task issues.jsonl entry is also wanted. Any future non-task-scoped caller needing to use issue-record.sh should follow this dual-write precedent rather than inventing a non-task-scoped exception to that script's contract.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/625_roadmap_preflight_approval_gate/reports/01_roadmap-preflight-gate.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["issue-record.sh", "conclusion stage", "Move 5", "events-append.sh", "task-scoping"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1794626904_81a9cc_625",
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  }
+}
