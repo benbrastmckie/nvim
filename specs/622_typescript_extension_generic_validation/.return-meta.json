@@ -24,28 +24,50 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/622_typescript_extension_generic_validation/summaries/01_nested-package-json-discovery-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["sync-manifest-scripts", "generate-context-line-counts", "git ls-files", "derived surface", "untracked file"]
+      "suggested_keywords": [
+        "sync-manifest-scripts",
+        "generate-context-line-counts",
+        "git ls-files",
+        "derived surface",
+        "untracked file"
+      ]
     },
     {
       "content": "A mechanical 'no special-casing' grep check (e.g. grep -rniE 'targetrepo|targetpath|targetcompany' extension_dir/) can produce an unavoidable false positive when the target repository's own name or path collides with unrelated, pre-existing generic infrastructure already used by every sibling extension (here: the target repo's parent directory 'Sapience' the company vs. this codebase's pre-existing, unrelated 'sapience' memory-extension boilerplate already present in every extension's skills). When this happens, verify by grepping each alternation term independently (zero hits on the terms that actually identify the target) and record the collision explicitly rather than either failing the check or silently ignoring the hit.",
       "category": "INSIGHT",
       "source_artifact": "specs/622_typescript_extension_generic_validation/summaries/01_nested-package-json-discovery-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["hard constraint", "grep false positive", "special-casing check", "sapience", "falsifiability"]
+      "suggested_keywords": [
+        "hard constraint",
+        "grep false positive",
+        "special-casing check",
+        "sapience",
+        "falsifiability"
+      ]
     },
     {
       "content": "verify-deploy.sh's --only-gate N selects WHICH numbered top-level gates run, but does not scope what each gate does internally. Gate 8 (shell test suites) always invokes the unfiltered run-all.sh battery regardless of --only-gate -- it is not a way to get a 'scoped' Gate-8-equivalent result for one new suite. For that, invoke `run-all.sh --only SUITE_BASENAME` directly instead.",
       "category": "PATTERN",
       "source_artifact": "specs/622_typescript_extension_generic_validation/summaries/01_nested-package-json-discovery-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["verify-deploy.sh", "only-gate", "run-all.sh", "gate 8", "scoped verification"]
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "only-gate",
+        "run-all.sh",
+        "gate 8",
+        "scoped verification"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794603202_55566e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }

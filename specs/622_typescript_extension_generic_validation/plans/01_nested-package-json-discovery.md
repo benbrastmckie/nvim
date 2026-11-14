@@ -1,7 +1,7 @@
 # Implementation Plan: Task #622
 
 - **Task**: 622 - Validate the typescript extension's generic toolchain detection against a real no-tsconfig node:test repository
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.25 hours
 - **Dependencies**: Task 621 (completed)
 - **Research Inputs**: specs/622_typescript_extension_generic_validation/reports/01_typescript-generic-validation.md

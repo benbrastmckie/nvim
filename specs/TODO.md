@@ -13,8 +13,8 @@ next_project_number: 627
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,622,624,625 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605,623 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604,622 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,451,452,453,455,456,459,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,623,624,625 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,457,458,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,605 | 383,390,398,410,431,451,452,453,455,459,463,472,479,484,491,504,505,534,535,538,539,548,549,563,568,585,599,604 | core-agent-system, extensions, neovim, ... |
 | 3 | 436,438,454,501,508,547,552,570,571,579,586,588,591,594 | 439,458,472,476,486,509,518,519,542,543,564,572,593 | core-agent-system, file-scope-lifecycle, agent-system |
 | 4 | 524,561,577,581,595,626 | 436,438,492,501,539,547,552,580,594,625 | core-agent-system, agent-system |
 | 5 | 596,609 | 577,595 | agent-system |
@@ -183,8 +183,7 @@ next_project_number: 627
 
 ### Typescript Extension
 
-622 [IMPLEMENTING] — Validate the typescript extension's generic toolchain...
-  └─ 623 [NOT STARTED] — Make the web extension depend on the typescript extension and...
+623 [NOT STARTED] — Make the web extension depend on the typescript extension and...
 
 ### Decidability
 
@@ -376,12 +375,13 @@ write to any repository's `.claude/` deploy tree -- see
 
 ### 622. Validate the typescript extension's generic toolchain detection against a real no-tsconfig node:test repository
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: typescript-extension
 - **Dependencies**: Task 621
 - **Research**: [622_typescript_extension_generic_validation/reports/01_typescript-generic-validation.md]
 - **Plan**: [622_typescript_extension_generic_validation/plans/01_nested-package-json-discovery.md]
+- **Summary**: [622_typescript_extension_generic_validation/summaries/01_nested-package-json-discovery-summary.md]
 
 **Description**: GOAL. This is the falsifiability check on the strictly-generic grounding decision made for the
 new `typescript` extension.
