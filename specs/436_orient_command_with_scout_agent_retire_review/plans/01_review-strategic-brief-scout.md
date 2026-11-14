@@ -151,7 +151,7 @@ target of this plan — see Non-Goals.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Author the Read-Only Scout Agent Definition [IN PROGRESS]
+### Phase 1: Author the Read-Only Scout Agent Definition [COMPLETED]
 
 **Goal**: Create the scout agent file so that it is read-only by construction, console-only by
 design, portable across consumer repositories, and compliant with every unconditional
