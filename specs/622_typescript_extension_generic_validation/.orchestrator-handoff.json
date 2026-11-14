@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 12,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Created a 4-phase plan for the typescript extension's nested-project detection defect the research phase exposed. Re-validated both carried figures live before planning: sf1-engine still has 86 *.test.ts suites, no tsconfig, ESM, no root package.json, and the deployed hook run from the repo root still prints the SKIP that fails the PASS CONDITION. Phases: (1) bounded, vendor-excluded package.json fallback search inside typescript-verify.sh with aggregated path-prefixed findings; (2) the extension's first regression suite plus the derived manifest provides.scripts sync; (3) prose-doc sync plus the derived index-entries.json line_count regeneration; (4) live re-validation against sf1-engine with a mechanical HARD-CONSTRAINT grep, and the full gate set. Every edit stays inside agent-system/extensions/typescript/.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/622_typescript_extension_generic_validation/plans/01_nested-package-json-discovery.md",
+      "summary": "4-phase plan: bounded nested package.json discovery, regression suite + manifest sync, doc + line_count sync, live sf1-engine re-validation."
+    }
+  ],
+  "blockers": []
+}

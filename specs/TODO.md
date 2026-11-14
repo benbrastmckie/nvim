@@ -183,7 +183,7 @@ next_project_number: 627
 
 ### Typescript Extension
 
-622 [RESEARCHED] — Validate the typescript extension's generic toolchain...
+622 [PLANNED] — Validate the typescript extension's generic toolchain...
   └─ 623 [NOT STARTED] — Make the web extension depend on the typescript extension and...
 
 ### Decidability
@@ -376,11 +376,12 @@ write to any repository's `.claude/` deploy tree -- see
 
 ### 622. Validate the typescript extension's generic toolchain detection against a real no-tsconfig node:test repository
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: typescript-extension
 - **Dependencies**: Task 621
 - **Research**: [622_typescript_extension_generic_validation/reports/01_typescript-generic-validation.md]
+- **Plan**: [622_typescript_extension_generic_validation/plans/01_nested-package-json-discovery.md]
 
 **Description**: GOAL. This is the falsifiability check on the strictly-generic grounding decision made for the
 new `typescript` extension.

@@ -128839,7 +128839,7 @@
     {
       "project_number": 622,
       "project_name": "typescript_extension_generic_validation",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Validate the typescript extension's generic toolchain detection against a real no-tsconfig node:test repository",
       "description": "GOAL. This is the falsifiability check on the strictly-generic grounding decision made for the\nnew `typescript` extension.\n\nWHAT TO DO. Load the typescript extension into `/home/benjamin/Projects/Sapience/sf1-engine`\n(which currently loads `core`, `python`, `sapience`) and validate it end-to-end against that\nrepo's TypeScript codebase at `sf1-v2/opencode-plugin/`.\n\nTARGET PROFILE (the point of the test -- a deliberately unusual stack).\n- ESM (`\"type\": \"module\"`)\n- Test script `node --test test/*.test.ts`\n- NO `tsconfig.json` anywhere\n- No bundler\n- 86 test suites\n\nPASS CONDITION. The extension's detection logic must correctly identify that profile and run\nthe verification gate appropriately, WITHOUT any repo-specific content having been added to the\nextension.\n\nHARD CONSTRAINT. Any detection defect this exposes is fixed in the extension's own source-store\nfiles under `agent-system/extensions/typescript/`, NEVER by special-casing the repo.",
@@ -128854,10 +128854,22 @@
           "path": "specs/622_typescript_extension_generic_validation/reports/01_typescript-generic-validation.md",
           "type": "report",
           "summary": "Live validation of the typescript extension against sf1-engine's no-tsconfig, ESM, node:test project: detection logic is correct once cwd is set to the project directory, but the verification-stage hook is invoked with cwd fixed at the repo root and never discovers a non-root package.json, so the gate silently skips entirely on this real repo; recommends a bounded vendor-excluded find fallback inside typescript-verify.sh."
+        },
+        {
+          "path": "specs/622_typescript_extension_generic_validation/plans/01_nested-package-json-discovery.md",
+          "type": "plan",
+          "summary": "4-phase plan: bounded nested package.json discovery, regression suite + manifest sync, doc + line_count sync, live sf1-engine re-validation."
         }
       ],
       "file_scope": [
-        "agent-system/extensions/typescript/"
+        "__WHOLE_TREE__",
+        "agent-system/extensions/typescript/",
+        "agent-system/extensions/typescript/README.md",
+        "agent-system/extensions/typescript/context/project/typescript/tools/package-manager-detection.md",
+        "agent-system/extensions/typescript/index-entries.json",
+        "agent-system/extensions/typescript/manifest.json",
+        "agent-system/extensions/typescript/scripts/tests/test-typescript-verify.sh",
+        "agent-system/extensions/typescript/scripts/typescript-verify.sh"
       ],
       "audit_verdict": {
         "proposal": {
@@ -130202,7 +130214,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "last_updated": "2026-11-14T00:51:58Z",
+      "last_updated": "2026-11-14T00:59:18Z",
       "session_id": "sess_1794603202_55566e",
       "next_artifact_number": 2
     },
