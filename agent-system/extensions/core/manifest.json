@@ -153,6 +153,7 @@
       "lib/redeploy-remedy-lib.sh",
       "lib/return-meta-artifacts-lib.sh",
       "lib/return-meta-status-vocabulary.sh",
+      "lib/roadmap-preflight-lib.sh",
       "lib/runtime-file-patterns.sh",
       "lib/source-store-path-lib.sh",
       "lib/state-writer-boundary-patterns-lib.sh",
