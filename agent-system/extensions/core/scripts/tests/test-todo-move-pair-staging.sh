@@ -1,31 +1,26 @@
 #!/usr/bin/env bash
 # test-todo-move-pair-staging.sh - Regression suite for the /todo move-vacated-source-never-
-# staged defect: both of /todo's recipe copies (commands/todo.md and skill-todo/SKILL.md) used
-# to accumulate ONLY a directory move's destination into the commit pathspec, leaving the
-# vacated source's removal unstaged -- the copy landed as a fresh `create mode` with no
-# matching `delete mode`, the old tree stayed in the index pointing at files that no longer
-# exist, and the commit still exited 0 reporting success. See
-# context/standards/git-staging-scope.md's "Rename and Directory-Move Staging" section for the
-# rule this suite pins.
+# staged defect: `commands/todo.md`'s directory-move staging used to accumulate ONLY a
+# directory move's destination into the commit pathspec, leaving the vacated source's removal
+# unstaged -- the copy landed as a fresh `create mode` with no matching `delete mode`, the old
+# tree stayed in the index pointing at files that no longer exist, and the commit still exited 0
+# reporting success. See context/standards/git-staging-scope.md's "Rename and Directory-Move
+# Staging" section for the rule this suite pins.
 #
-# WHAT THIS SUITE CAN AND CANNOT COVER (stated plainly, not hidden): both recipes are
-# agent-executed markdown, not scripts, so neither can be invoked directly by this suite. The
-# BEHAVIORAL half below reproduces the staging *pattern* each recipe now uses (pair both
-# endpoints vs. stage the destination only) inside a throwaway git fixture repo, proving the
-# pattern itself behaves as expected in both directions. The STATIC half separately asserts
-# that both recipes' actual text, and the standard's own text, use that pattern. Neither half
-# alone is the regression net -- the behavioral half cannot see whether the recipes USE the
-# pattern, and the static half cannot see whether the pattern itself WORKS. Together they pin
-# the defect.
+# WHAT THIS SUITE CAN AND CANNOT COVER (stated plainly, not hidden): the recipe is agent-executed
+# markdown, not a script, so it cannot be invoked directly by this suite. The BEHAVIORAL half
+# below reproduces the staging *pattern* the recipe now uses (pair both endpoints vs. stage the
+# destination only) inside a throwaway git fixture repo, proving the pattern itself behaves as
+# expected in both directions. The STATIC half separately asserts that the recipe's actual text,
+# and the standard's own text, use that pattern. Neither half alone is the regression net -- the
+# behavioral half cannot see whether the recipe USES the pattern, and the static half cannot see
+# whether the pattern itself WORKS. Together they pin the defect.
 #
 # Cases:
 #   Behavioral, one pair (positive + negative control) per affected site shape:
 #     - Step 5D shape: archive a completed/abandoned/expanded task (padded destination)
 #     - Step 5E.1 shape: move an approved orphan out of specs/
 #     - Step 5F shape: move a misplaced directory
-#     - Stage 15 shape: skill-todo/SKILL.md's enumerated moved_paths[] list rather than an
-#       inline accumulator -- mechanically identical git behavior, pinned separately because
-#       it is a distinct site in a distinct file with its own historical regression risk
 #   Each site shape's PAIRED case asserts: no unstaged ` D` entry under specs/, matching
 #   `delete mode`/`create mode` counts in the commit, and phantom_paths == 0.
 #   Each site shape's DEST-ONLY case is the negative control -- it asserts the OPPOSITE of all
@@ -36,11 +31,6 @@
 #   Static, over the real recipe text (not fixtures):
 #     - commands/todo.md: every `mv "..." "..."` line is followed, within a generous lookahead
 #       window, by a `stage_paths+=` call naming two tokens.
-#     - skill-todo/SKILL.md: every bash-level `mv "..." "..."` line is followed by a
-#       `moved_paths+=` call naming two tokens; each prose-level move step (Stage 10 steps 4, 5,
-#       7) instructs appending to `moved_paths[]` in its own text; the single `git add` line
-#       stages `"${moved_paths[@]}"` and contains neither `specs/archive/` nor a bare `specs/`
-#       token.
 #     - git-staging-scope.md: the named `## Rename and Directory-Move Staging` section exists.
 #
 # Structural model: scripts/tests/test-assess-repo-health.sh (pass()/fail()/info() helpers,
@@ -65,10 +55,6 @@ TODO_MD="$(common_test_resolve_subject "commands/todo.md" "source-store" \
   "$REPO_ROOT/.claude/commands/todo.md" \
   "$SCRIPT_DIR/../../commands/todo.md")" || exit 2
 common_test_declare_subject "$TODO_MD"
-SKILL_MD="$(common_test_resolve_subject "skill-todo/SKILL.md" "source-store" \
-  "$REPO_ROOT/.claude/skills/skill-todo/SKILL.md" \
-  "$SCRIPT_DIR/../../skills/skill-todo/SKILL.md")" || exit 2
-common_test_declare_subject "$SKILL_MD"
 STAGING_STD="$(common_test_resolve_subject "git-staging-scope.md" "source-store" \
   "$REPO_ROOT/.claude/context/standards/git-staging-scope.md" \
   "$SCRIPT_DIR/../../context/standards/git-staging-scope.md")" || exit 2
@@ -202,9 +188,6 @@ run_move_pair_case "Step 5E.1 (orphan move)" "specs/099_orphan_task" "specs/arch
 run_move_pair_case "Step 5F (misplaced move)" "specs/misplaced_task" "specs/archive/misplaced_task" "paired"
 run_move_pair_case "Step 5F (misplaced move)" "specs/misplaced_task" "specs/archive/misplaced_task" "dest-only"
 
-run_move_pair_case "Stage 15 (enumerated moved_paths[] list)" "specs/123_fixture_task" "specs/archive/123_fixture_task" "paired"
-run_move_pair_case "Stage 15 (enumerated moved_paths[] list)" "specs/123_fixture_task" "specs/archive/123_fixture_task" "dest-only"
-
 # =====================================================================
 # Static half: assert the real recipe text (and the standard) actually use the pattern the
 # behavioral half above just proved works.
@@ -253,55 +236,6 @@ assert_mv_followed_by_pair() {
 }
 
 assert_mv_followed_by_pair "$TODO_MD" 'mv "' "stage_paths" 10 "commands/todo.md"
-assert_mv_followed_by_pair "$SKILL_MD" 'mv "' "moved_paths" 20 "skill-todo/SKILL.md"
-
-# Prose-level Stage 10 steps 4, 5, 7 (no bash mv line to anchor on) each instruct appending to
-# moved_paths[] in their own step text. Anchored to a bounded window (not a whole-file greedy
-# match) so this cannot pass merely because `moved_paths+=` appears somewhere later in the file.
-PROSE_LOOKAHEAD=6
-for anchor_pattern in \
-  'Move project directories to specs/archive' \
-  'Track orphaned directories' \
-  'Move misplaced directories'
-do
-  anchor_line="$(grep -n "$anchor_pattern" "$SKILL_MD" | head -1 | cut -d: -f1)"
-  if [ -z "$anchor_line" ]; then
-    common_test_fail "skill-todo/SKILL.md: anchor step '$anchor_pattern' not found at all"
-    continue
-  fi
-  window_end=$((anchor_line + PROSE_LOOKAHEAD))
-  window="$(sed -n "${anchor_line},${window_end}p" "$SKILL_MD")"
-  if printf '%s\n' "$window" | grep -q 'moved_paths+='; then
-    common_test_pass "skill-todo/SKILL.md: step '$anchor_pattern' (line $anchor_line) instructs appending to moved_paths[] within $PROSE_LOOKAHEAD lines"
-  else
-    common_test_fail "skill-todo/SKILL.md: step '$anchor_pattern' (line $anchor_line) has no moved_paths+= instruction within $PROSE_LOOKAHEAD lines"
-  fi
-done
-
-# Exactly one git add line, consuming moved_paths[], staging neither specs/archive/ nor a bare
-# specs/ token.
-git_add_count="$(grep -cE 'git add specs/' "$SKILL_MD" || true)"
-if [ "$git_add_count" -eq 1 ]; then
-  common_test_pass "skill-todo/SKILL.md: exactly one 'git add specs/...' line found"
-else
-  common_test_fail "skill-todo/SKILL.md: expected exactly one 'git add specs/...' line, found $git_add_count"
-fi
-stage15_line="$(grep -n 'git add specs/TODO.md specs/state.json' "$SKILL_MD" || true)"
-if [ -n "$stage15_line" ]; then
-  common_test_pass "skill-todo/SKILL.md: Stage 15's git add line found and contains the expected literal form"
-  if printf '%s' "$stage15_line" | grep -q '"\${moved_paths\[@\]}"'; then
-    common_test_pass "skill-todo/SKILL.md: Stage 15's git add consumes \"\${moved_paths[@]}\""
-  else
-    common_test_fail "skill-todo/SKILL.md: Stage 15's git add does not consume \"\${moved_paths[@]}\""
-  fi
-  if printf '%s' "$stage15_line" | grep -q 'specs/archive/'; then
-    common_test_fail "skill-todo/SKILL.md: Stage 15's git add still stages a bare specs/archive/ token"
-  else
-    common_test_pass "skill-todo/SKILL.md: Stage 15's git add does not stage specs/archive/"
-  fi
-else
-  common_test_fail "skill-todo/SKILL.md: Stage 15's expected git add literal form not found"
-fi
 
 if grep -q '^## Rename and Directory-Move Staging$' "$STAGING_STD"; then
   common_test_pass "git-staging-scope.md: '## Rename and Directory-Move Staging' section exists"

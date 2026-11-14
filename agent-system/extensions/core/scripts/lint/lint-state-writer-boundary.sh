@@ -221,7 +221,6 @@ EXCLUDED_FILES=(
     # read-modify-write, so state-write.sh (which transforms content) is not the right tool.
     # Also structurally exempt -- the mv source is an archive path, not a staging path.
     "agent-system/extensions/core/commands/todo.md"
-    "agent-system/extensions/core/skills/skill-todo/SKILL.md"
     "agent-system/extensions/core/scripts/deprecated/vault-operation.sh"
 
     # `jq -e ... specs/state.json > /dev/null` read-only existence checks. These read state and

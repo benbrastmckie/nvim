@@ -1,0 +1,29 @@
+{
+  "phase": 2,
+  "phase_name": "Remove skill-todo, Deregister It, and Redeploy to a Clean Tree",
+  "started_at": "2026-11-14T07:07:00Z",
+  "last_updated": "2026-11-14T09:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Delete skills/skill-todo/SKILL.md and the now-empty directory", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-todo/SKILL.md"]},
+    {"id": 2, "description": "Remove skill-todo from manifest.json extension.skills[]", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "Remove skill-todo exemption from lint-state-writer-boundary.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh"]},
+    {"id": 4, "description": "Remove Stage 15 shape from test-todo-move-pair-staging.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh"]},
+    {"id": 5, "description": "Run audit-deletion-references.sh skill-todo and capture hit list for Phase 3", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Purge deployed .claude/skills/skill-todo/", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Redeploy via deploy-headless.sh (bounded wait)", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Confirm regenerated .claude-extensions.json no longer lists skill-todo/SKILL.md", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.2b",
+      "description": "manifest.json's provides.scripts array needed an entry for test-todo-archived-projects-scan.sh (created in Phase 1)",
+      "type": "altered",
+      "reason": "Plan gap, not an intentional skip: Phase 1 created the new test file but its Files-to-modify list did not include a manifest.json provides.scripts registration. Without it the manifest-driven deploy copier never actually deploys the file (confirmed: suite-classification.data's new row deployed fine via a different mechanism, but the .sh file itself did not), which fails gate 5's category-parity scan with 'Missing scripts: scripts/tests/test-todo-archived-projects-scan.sh'. Added the missing entry to manifest.json's provides.scripts array in this phase and redeployed; gate 5 is now green.",
+      "annotation": "*(deviation: altered -- added a second manifest.json edit beyond the planned skills[] removal, to register the Phase-1-created test file's provides.scripts entry)*"
+    }
+  ],
+  "notes": "Full verify-deploy.sh run reports 5-7 of 44 checks FAIL depending on the run, none traced to this task's edits. Gates 4, 20, 29 are confirmed pre-existing/out-of-scope (unrelated files, committed under unrelated tasks, clean git status). Gates 21/23 are flaky inside the full run but report zero violations when invoked standalone immediately after -- attributed to this heavily shared, concurrently-loaded dev environment (6+ other claude agent processes observed). Gate 8's 2 'NEW' suite failures (test-deploy-propagation.sh, test-gate-registry-resolution.sh) are confirmed unrelated to skill-todo/todo.md (neither file mentions either string); their root causes are a documented pre-existing 'two-engine defect' (test-deploy-propagation.sh's own header) and a cascade from the same pre-existing gate-29 typescript violation (test-gate-registry-resolution.sh case32). The other 5 gate-8 failures are already tracked in known-failures.txt as pre-existing needs-owner rows. All of Phase 2's own in-scope criteria pass: SKILL.md absent from source store and deployed tree, manifest.json clean, gate 5 (manifest parity) PASS, gate 13 (orphan detection) PASS, and both test-todo-move-pair-staging.sh (24/24, three surviving site shapes + negative controls) and test-todo-archived-projects-scan.sh (6/6) pass standalone. Recorded in full via issue-record.sh (class: verification gap, severity: minor)."
+}

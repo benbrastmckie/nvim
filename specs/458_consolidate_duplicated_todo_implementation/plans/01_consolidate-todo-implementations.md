@@ -234,7 +234,7 @@ new source-store test file must satisfy.
 
 ---
 
-### Phase 2: Remove `skill-todo`, Deregister It, and Redeploy to a Clean Tree [NOT STARTED]
+### Phase 2: Remove `skill-todo`, Deregister It, and Redeploy to a Clean Tree [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: `skills/skill-todo/SKILL.md` no longer exists in the source store, no mechanical
 registry (manifest, lint allowlist, test subject) still claims it, and the deployed tree carries
@@ -247,39 +247,44 @@ tree in which the complete gate battery cannot pass — so a manifest deregistra
 redeploy are one unit of work, not two.
 
 **Tasks**:
-- [ ] Delete `agent-system/extensions/core/skills/skill-todo/SKILL.md` and the now-empty
+- [x] Delete `agent-system/extensions/core/skills/skill-todo/SKILL.md` and the now-empty
       `skills/skill-todo/` directory. Confirm first that `SKILL.md` is the directory's only file
-      (verified at plan time; re-check with `ls -A`).
-- [ ] Remove the `"skill-todo",` element from `agent-system/extensions/core/manifest.json`'s
+      (verified at plan time; re-check with `ls -A`). *(completed: 1027 lines deleted)*
+- [x] Remove the `"skill-todo",` element from `agent-system/extensions/core/manifest.json`'s
       `extension.skills[]` array (expected at line 82, between `"skill-telemetry"` and
       `"skill-zulip"`). Re-derive the line; edit the matched element, keeping the array's JSON
-      valid and its surrounding formatting untouched.
-- [ ] Remove the
+      valid and its surrounding formatting untouched. *(completed: confirmed at line 82)*
+- [x] Remove the
       `"agent-system/extensions/core/skills/skill-todo/SKILL.md"` entry from
       `agent-system/extensions/core/scripts/lint/lint-state-writer-boundary.sh`'s exemption
       registry (expected at line 224). Leave the `commands/todo.md` and
       `scripts/deprecated/vault-operation.sh` siblings and the explanatory comment block above
       them in place — that exemption is about the vault-restore `mv`, which the survivor still
-      carries.
-- [ ] Remove the "Stage 15 shape" from
+      carries. *(completed)*
+- [x] Remove the "Stage 15 shape" from
       `agent-system/extensions/core/scripts/tests/test-todo-move-pair-staging.sh`: its
       `SKILL_MD` subject resolution (expected lines 68-70), its behavioral pair, its static half
       (expected lines 256-303), and the two header bullets that enumerate it (expected lines 26-27
       and 39-40). Leave the Step 5D / 5E.1 / 5F shapes and the suite's own framing intact. Update
       the header's opening sentence so it no longer describes the defect as affecting "both of
-      /todo's recipe copies".
-- [ ] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/audit-deletion-references.sh skill-todo`
+      /todo's recipe copies". *(completed: 24/24 cases pass, three surviving site shapes with
+      negative controls intact)*
+- [x] Run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/audit-deletion-references.sh skill-todo`
       and capture the triage checklist. Do NOT act on its prose hits in this phase — they are
       Phase 3's work. Record the hit list so Phase 3 has a measured target set rather than a
-      re-derived one.
-- [ ] Purge the deployed copy: `rm -rf .claude/skills/skill-todo/`. Without this, the deployed
+      re-derived one. *(completed: 25 literal hits captured, matching the four-mechanical-
+      registration Scope Hypothesis -- no fifth registration found; hits are either Phase 3's
+      prose/comment targets or the three expected email-extension files)*
+- [x] Purge the deployed copy: `rm -rf .claude/skills/skill-todo/`. Without this, the deployed
       `SKILL.md` survives the additive redeploy as a deployed-but-undeclared file and Gate 13
-      fails by construction.
-- [ ] Redeploy with the bounded-wait idiom: raise the Bash tool timeout to 600000 and run
+      fails by construction. *(completed)*
+- [x] Redeploy with the bounded-wait idiom: raise the Bash tool timeout to 600000 and run
       `timeout 540 bash .claude/scripts/deploy-headless.sh`. Never hand-patch a deployed file to
-      reach a green gate.
-- [ ] Confirm the regenerated root `.claude-extensions.json` no longer lists
-      `.claude/skills/skill-todo/SKILL.md`.
+      reach a green gate. *(completed; also required a second manifest.json edit -- see deviation
+      recorded in progress/phase-2-progress.json -- to register the new test file's
+      provides.scripts entry, without which the deploy copier never deployed it)*
+- [x] Confirm the regenerated root `.claude-extensions.json` no longer lists
+      `.claude/skills/skill-todo/SKILL.md`. *(completed: grep -c returns 0)*
 
 **Timing**: 2 hours
 
@@ -328,6 +333,24 @@ cover.
   `test-todo-move-pair-staging.sh` still exercising its three surviving site shapes and their
   negative controls.
 - The `audit-deletion-references.sh skill-todo` triage checklist is captured for Phase 3.
+
+#### Reasoned Exclusions
+
+`bash .claude/scripts/verify-deploy.sh` does not exit 0 end to end; every in-scope criterion
+above it (SKILL.md absent from source store and deployed tree, manifest.json clean, Gate 5,
+Gate 13, both `/todo` test suites standalone) is independently green. The remaining gate
+failures are excluded here, specific and evidenced, rather than silently absorbed into a bare
+`[COMPLETED]`:
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| Gate 4 (task-reference lint) | Pre-existing hit in `agent-system/extensions/core/context/config/orchestrator-context-budget.json`'s own historical commentary (mentions a prior task number in prose), outside this task's `file_scope` | `git log --oneline -1` on that file shows it last committed under an unrelated task ("close outstanding gate20 finding"); `git status --porcelain` on it is clean -- the hit predates this dispatch |
+| Gate 20 (eager-load-over-baseline) | Pre-existing 44 B drift (70444 B vs. 70400 B baseline) unrelated to `/todo` or `skill-todo` | Gate 20's own `[FAIL]` line names `commands/orchestrate.md` and `skill-orchestrate/SKILL.md`, neither touched by this task; this task's `file_scope` contains neither path |
+| Gate 29 (test-root-resolution lint) | Pre-existing violation in `agent-system/extensions/typescript/scripts/tests/test-typescript-verify.sh`, outside this task's `file_scope` | `git log --oneline -1` on that file shows it committed under task 622; `git status --porcelain` on it is clean; the violation text itself (an unconditional fixed-depth `REPO_ROOT` walk) has nothing to do with `/todo` or `skill-todo` |
+| Gates 21/23 (hook-registration-path lint, directory-pathspec-boundary lint) | Flaky inside the full battery only; both report zero violations when invoked standalone immediately after the same redeploy, twice | `bash agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh --verbose` and `lint-directory-pathspec-boundary.sh --verbose` both print "Total violations: 0" run directly; attributed to this heavily shared, concurrently-loaded dev environment (6+ other `claude` agent processes observed mid-dispatch via `ps aux`), not to any edit in this task's `file_scope` |
+| Gate 8, `test-deploy-propagation.sh` (NEW) | Its own header comment documents assertions A/B as expected-red by design (a pre-existing "two-engine defect" in `load_all_globally`); not yet added to `known-failures.txt` | `grep -l skill-todo` on the file returns no match; the suite's in-file comment literally states "A green A/B at this point in the plan means the diagnosis is wrong" |
+| Gate 8, `test-gate-registry-resolution.sh` (NEW) | Its case32 fails only because gate 29 itself is red (the typescript violation above), not because of any registry-resolution defect | `grep -l skill-todo` on the file returns no match; case32's own captured output shows the failure is `verify-deploy.sh --only-gate 29` itself returning non-zero, i.e. the same gate-29 finding already excluded above |
+| Gate 8, 5 other suites (`test-double-loading-check.sh`, `test-gate-cache-equivalence.sh`, `test-lint-unit-integration-boundary.sh`, `test-orchestrate-cycle-postflight.sh`, `test-verify-deploy-context-budget.sh`) | Already tracked as pre-existing, needs-owner `real-defect`/`load-sensitive` rows | `agent-system/extensions/core/scripts/tests/known-failures.txt` carries a dated row for each, none mentioning `/todo` or `skill-todo` |
 
 ---
 
