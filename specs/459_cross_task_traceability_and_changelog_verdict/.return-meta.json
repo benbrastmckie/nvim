@@ -1,16 +1,48 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 8,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/459_cross_task_traceability_and_changelog_verdict/summaries/01_decision-citation-convention-summary.md",
+      "summary": "All 3 plan phases completed: named Cross-Record Decision Citation convention in report-format.md with pointer bullets in summary-format.md/plan-format.md, a recognized-optional Decisions Structure entry in plan-format.md, and the documentation-only PLAN_SECTIONS_OPTIONAL mirror in validate-artifact.sh. CHANGE_LOG.md, git-workflow.md, and state-management-schema.md confirmed unmodified -- the research's KEEP/accept-and-work-around/declined-extension verdicts held mechanically through implementation."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented Decision 5 (the one actionable item) from task 459's research-and-design report: added a named, advisory cross-record decision-citation convention to report-format.md with pointer bullets in summary-format.md and plan-format.md, and documented Decisions as a recognized-optional plan section with a documentation-only mirror in validate-artifact.sh. Redeployed and confirmed all four edits landed in the deployed tree; CHANGE_LOG.md and the other declined edit targets remain unmodified, matching the research's verdicts."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/report-format.md",
+    "agent-system/extensions/core/context/formats/summary-format.md",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/scripts/validate-artifact.sh",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When an implement-phase dispatch edits a script under a source-store extension (e.g. agent-system/extensions/core/scripts/*.sh) and that phase's own verification criterion includes doc-lint (verify-deploy.sh gate 3 / check-extension-docs.sh), expect a hard FAIL on 'deployed script content drift (deployed != extension source)' until the source store is redeployed -- this check is an unconditional fail() in check-extension-docs.sh, never gated by STRICT_CORE_DEPLOY (unlike the separate core-deploy ADVISORY channel for markdown/rule drift). If the plan's own redeploy phase comes later (e.g. a dedicated final 'Redeploy and Full Gate' phase), redeploy early (ahead of schedule) in the script-editing phase itself so that phase's own narrower gate can pass honestly; the later plan-scheduled redeploy is idempotent and simply reconfirms.",
+      "category": "PATTERN",
+      "source_artifact": "specs/459_cross_task_traceability_and_changelog_verdict/summaries/01_decision-citation-convention-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-headless", "doc-lint", "deployed script content drift", "verify-deploy", "redeploy", "source store"]
+    },
+    {
+      "content": "deploy-headless.sh exits 3 (RESULT=landed_verify_red) when the deploy itself lands successfully but its own internal fast-gate verify-deploy.sh run finds any issue -- this is NOT the same as 'the deploy failed' (exit 1/2, RESULT=not_landed). Before treating a non-zero deploy-headless.sh exit as a blocker, read the RESULT= marker and the fast-gate detail: a landed_verify_red outcome whose findings all name files outside the current record's declared file_scope is a pre-existing/unrelated finding to report via issue-record.sh, not a sign the redeploy itself failed.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/459_cross_task_traceability_and_changelog_verdict/summaries/01_decision-citation-convention-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deploy-headless", "RESULT=landed_verify_red", "exit code", "verify-deploy", "pre-existing finding"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794635595_257108",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
   },
+  "next_steps": "Task 459 is fully implemented. Proceed to the standard postflight transition out of [IMPLEMENTING].",
   "proposed_file_scope": [
     "agent-system/extensions/core/index-entries.json"
   ]
