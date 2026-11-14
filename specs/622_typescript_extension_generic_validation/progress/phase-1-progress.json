@@ -1,0 +1,32 @@
+{
+  "phase": 1,
+  "phase_name": "Bounded nested-project discovery in typescript-verify.sh",
+  "started_at": "2026-11-14T01:00:44Z",
+  "last_updated": "2026-11-14T01:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extract per-directory detection into a function with counters as parent-shell globals", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/typescript-verify.sh"]},
+    {"id": 2, "description": "Preserve fast path byte-identical when package.json exists at cwd", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/typescript-verify.sh"]},
+    {"id": 3, "description": "Add bounded vendor-excluded find fallback via process substitution", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/typescript-verify.sh"]},
+    {"id": 4, "description": "Cap discovered projects at 10 with loud truncation notice", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/typescript-verify.sh"]},
+    {"id": 5, "description": "Prefix discovered-project output lines with relative directory", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/typescript-verify.sh"]},
+    {"id": 6, "description": "Preserve terminal no-project SKIP behavior when fallback finds nothing", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/typescript-verify.sh"]},
+    {"id": 7, "description": "Malformed-package.json policy: exit 1 at cwd, warn+skip for nested", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/typescript-verify.sh"]},
+    {"id": 8, "description": "Re-check set -euo pipefail interactions on new paths", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/typescript-verify.sh"]},
+    {"id": 9, "description": "Update script header comment describing two-tier detection", "status": "done", "files_touched": ["agent-system/extensions/typescript/scripts/typescript-verify.sh"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": [
+    "bash -n: clean",
+    "shellcheck: clean (0 findings)",
+    "Fixture A (package.json at cwd): output byte-identical to pre-change script",
+    "Fixture B (package.json only at a/b/): discovered, path-prefixed, sub-checks run",
+    "Fixture C (no package.json anywhere): verbatim terminal SKIP line, summary, exit 0",
+    "Fixture D (package.json only under node_modules/): NOT discovered, terminal SKIP preserved",
+    "Fixture E (malformed nested package.json): warned + skipped, exit 0, continues",
+    "Fixture F (malformed cwd-local package.json): exit 1 preserved, unchanged contract",
+    "Fixture G (12 nested projects, cap=10): 10 verified alphabetically, loud NOTICE for the other 2, run correctly marked INCOMPLETE",
+    "Fixture H (package.json at depth 6, maxdepth=4): correctly not discovered, terminal SKIP"
+  ]
+}

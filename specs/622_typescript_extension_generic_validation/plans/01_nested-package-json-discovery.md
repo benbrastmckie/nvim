@@ -1,7 +1,7 @@
 # Implementation Plan: Task #622
 
 - **Task**: 622 - Validate the typescript extension's generic toolchain detection against a real no-tsconfig node:test repository
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.25 hours
 - **Dependencies**: Task 621 (completed)
 - **Research Inputs**: specs/622_typescript_extension_generic_validation/reports/01_typescript-generic-validation.md
@@ -107,43 +107,49 @@ are added and no roadmap file was read or written.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Bounded nested-project discovery in typescript-verify.sh [NOT STARTED]
+### Phase 1: Bounded nested-project discovery in typescript-verify.sh [COMPLETED]
 
 **Goal**: The hook finds and verifies every Node/TypeScript project beneath cwd when none exists
 at cwd, with no repo-specific knowledge and no change to the single-root path.
 
 **Tasks**:
-- [ ] Extract the existing per-directory detection (lockfile-priority package-manager resolution,
+- [x] Extract the existing per-directory detection (lockfile-priority package-manager resolution,
       `package.json` parse check, typecheck sub-check, test sub-check) into one function that
       takes a directory and a display prefix, `cd`s into it, runs the sub-checks unchanged, and
       restores the original cwd before returning. Keep the three counters (`ran_pass`,
       `ran_fail`, `skipped_no_command`) as parent-shell globals incremented by that function.
-- [ ] Preserve the fast path exactly: when `package.json` exists at cwd, verify that one
+      *(completed: `verify_project()` function added)*
+- [x] Preserve the fast path exactly: when `package.json` exists at cwd, verify that one
       directory with an empty display prefix and do **not** invoke `find`. Output for this case
-      must be byte-identical to today's.
-- [ ] Add the fallback, reached only when no `package.json` exists at cwd:
+      must be byte-identical to today's. *(completed: fixture A confirmed byte-identical output)*
+- [x] Add the fallback, reached only when no `package.json` exists at cwd:
       `find . -maxdepth 4 -name package.json -not -path '*/node_modules/*' -not -path '*/.git/*'
       -not -path '*/dist/*' -not -path '*/build/*' -not -path '*/.next/*' -not -path '*/out/*'
       -not -path '*/vendor/*' -not -path '*/.venv/*'`, results sorted for determinism, iterated
       via `while IFS= read -r ... done < <(find ...)` (process substitution, never a pipeline —
       a pipeline puts the loop in a subshell and silently discards every counter increment).
-- [ ] Cap the number of discovered projects verified (10) and print an explicit, named notice
+      *(completed: fixtures B, D, H confirm discovery, exclusion, and depth bound)*
+- [x] Cap the number of discovered projects verified (10) and print an explicit, named notice
       when the cap truncates the list — a truncated run must never look like a complete one.
-- [ ] Prefix every output line of a discovered (non-cwd) project with its relative directory,
+      *(completed: fixture G confirms 10 verified, loud NOTICE for remaining 2)*
+- [x] Prefix every output line of a discovered (non-cwd) project with its relative directory,
       extending the existing `[typescript-verify]` prefix rather than replacing it.
-- [ ] Preserve the terminal no-project behavior: when the fallback also finds nothing, print the
+      *(completed: fixture B shows `[typescript-verify][a/b] ...`)*
+- [x] Preserve the terminal no-project behavior: when the fallback also finds nothing, print the
       existing `SKIP: no package.json found ...` line verbatim, increment
-      `skipped_no_command`, print the summary, and `exit 0`.
-- [ ] Malformed-`package.json` policy, decided here and recorded in the script header: a
+      `skipped_no_command`, print the summary, and `exit 0`. *(completed: fixture C verbatim)*
+- [x] Malformed-`package.json` policy, decided here and recorded in the script header: a
       malformed `package.json` **at cwd** keeps today's `exit 1` hook-input-error contract
       unchanged; a malformed one at a **discovered nested** project emits an `ERROR: ...
       skipping` line on stderr, counts `skipped_no_command`, and continues, so one bad nested
       manifest cannot blank out findings for every sibling project.
-- [ ] Re-check `set -euo pipefail` interactions on every new path (`find` with zero matches, the
+      *(completed: fixtures E (nested, exit 0, warned+skipped) and F (cwd-local, exit 1) confirm)*
+- [x] Re-check `set -euo pipefail` interactions on every new path (`find` with zero matches, the
       `ls tsconfig*.json` guard inside the extracted function, arithmetic increments at value 0).
-- [ ] Update the script's own header comment to describe the two-tier detection (cwd-local fast
+      *(completed: audit recorded in script header comment)*
+- [x] Update the script's own header comment to describe the two-tier detection (cwd-local fast
       path, then bounded fallback), the exclusion list, the depth bound, the project cap, and the
-      malformed-manifest policy above.
+      malformed-manifest policy above. *(completed)*
 
 **Timing**: 1.25 hours
 

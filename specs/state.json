@@ -128839,7 +128839,7 @@
     {
       "project_number": 622,
       "project_name": "typescript_extension_generic_validation",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Validate the typescript extension's generic toolchain detection against a real no-tsconfig node:test repository",
       "description": "GOAL. This is the falsifiability check on the strictly-generic grounding decision made for the\nnew `typescript` extension.\n\nWHAT TO DO. Load the typescript extension into `/home/benjamin/Projects/Sapience/sf1-engine`\n(which currently loads `core`, `python`, `sapience`) and validate it end-to-end against that\nrepo's TypeScript codebase at `sf1-v2/opencode-plugin/`.\n\nTARGET PROFILE (the point of the test -- a deliberately unusual stack).\n- ESM (`\"type\": \"module\"`)\n- Test script `node --test test/*.test.ts`\n- NO `tsconfig.json` anywhere\n- No bundler\n- 86 test suites\n\nPASS CONDITION. The extension's detection logic must correctly identify that profile and run\nthe verification gate appropriately, WITHOUT any repo-specific content having been added to the\nextension.\n\nHARD CONSTRAINT. Any detection defect this exposes is fixed in the extension's own source-store\nfiles under `agent-system/extensions/typescript/`, NEVER by special-casing the repo.",
@@ -130214,7 +130214,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "last_updated": "2026-11-14T00:59:18Z",
+      "last_updated": "2026-11-14T00:59:54Z",
       "session_id": "sess_1794603202_55566e",
       "next_artifact_number": 2
     },

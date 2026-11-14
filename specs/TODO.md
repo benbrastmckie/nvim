@@ -183,7 +183,7 @@ next_project_number: 627
 
 ### Typescript Extension
 
-622 [PLANNED] — Validate the typescript extension's generic toolchain...
+622 [IMPLEMENTING] — Validate the typescript extension's generic toolchain...
   └─ 623 [NOT STARTED] — Make the web extension depend on the typescript extension and...
 
 ### Decidability
@@ -376,7 +376,7 @@ write to any repository's `.claude/` deploy tree -- see
 
 ### 622. Validate the typescript extension's generic toolchain detection against a real no-tsconfig node:test repository
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: typescript-extension
 - **Dependencies**: Task 621

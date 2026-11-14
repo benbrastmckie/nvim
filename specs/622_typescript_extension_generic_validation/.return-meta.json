@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "dispatch_seq": 12,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/622_typescript_extension_generic_validation/plans/01_nested-package-json-discovery.md",
-      "summary": "4-phase plan closing the typescript extension's nested-project detection gap entirely inside agent-system/extensions/typescript/ (bounded vendor-excluded package.json fallback search, first regression suite, two coupled derived-surface regenerations, live sf1-engine re-validation of the PASS CONDITION)."
-    }
-  ],
-  "next_steps": "Run /orchestrate 622 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 13,
   "metadata": {
-    "session_id": "sess_1794603202_55566e_622",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 4.25,
-    "dependency_waves": 3
-  },
-  "memory_candidates": []
+    "session_id": "sess_1794603202_55566e",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
