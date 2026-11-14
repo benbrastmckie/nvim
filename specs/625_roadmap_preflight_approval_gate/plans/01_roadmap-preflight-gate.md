@@ -376,32 +376,32 @@ block.
 
 ---
 
-### Phase 5: Non-interactive arm at the conclusion stage [NOT STARTED]
+### Phase 5: Non-interactive arm at the conclusion stage [COMPLETED]
 
 **Goal**: Move 5 classifies before `--regenerate`, and on `absent`/`unknown` degrades loudly at
 three surfaces instead of calling the generator or writing anything.
 
 **Tasks**:
-- [ ] In `context/contracts/conclusion-stage.md`'s Step 5, insert a classify step before the
+- [x] In `context/contracts/conclusion-stage.md`'s Step 5, insert a classify step before the
       existing `--regenerate` invocation:
-      `bash .claude/scripts/lib/roadmap-preflight-lib.sh classify specs/ROADMAP.md`.
-- [ ] On `classic`/`stage`: Step 5 proceeds exactly as written today — `--regenerate`, the scoped
-      `specs/ROADMAP.md` commit, then the advisory batch-proposal lint. Nothing changes.
-- [ ] On `absent`/`unknown`: emit a named structured warning in Step 5's own surfaced output
+      `bash .claude/scripts/lib/roadmap-preflight-lib.sh classify specs/ROADMAP.md`. *(completed)*
+- [x] On `classic`/`stage`: Step 5 proceeds exactly as written today — `--regenerate`, the scoped
+      `specs/ROADMAP.md` commit, then the advisory batch-proposal lint. Nothing changes. *(completed)*
+- [x] On `absent`/`unknown`: emit a named structured warning in Step 5's own surfaced output
       (naming the verdict, the path, and that the next interactive `/roadmap` resolves it); skip
-      `--regenerate` and the commit entirely; leave `specs/ROADMAP.md` untouched.
-- [ ] Record the degrade durably via `events-append.sh` FIRST (the stage's existing non-task-scoped
+      `--regenerate` and the commit entirely; leave `specs/ROADMAP.md` untouched. *(completed)*
+- [x] Record the degrade durably via `events-append.sh` FIRST (the stage's existing non-task-scoped
       evidence channel), then best-effort loop
       `bash .claude/scripts/issue-record.sh --task-dir <dir> --kind issue --class "roadmap regenerate blocked, no approval surface" --severity costly --phase conclusion --resolution open --what-happened "..."`
       once per task directory in the invocation's already-resolved task list. State explicitly that
       the events write is the durable record and the loop is additive, so an empty or unresolved
-      task list degrades the evidence rather than losing it.
-- [ ] State explicitly in the contract prose that this call site NEVER scaffolds and NEVER
-      auto-writes: the scaffold is an approved-write-only action and Move 5 has no approver for it.
-- [ ] In `context/standards/postflight-tool-restrictions.md`'s Move 5 Allowed Tool Surface `Bash`
+      task list degrades the evidence rather than losing it. *(completed)*
+- [x] State explicitly in the contract prose that this call site NEVER scaffolds and NEVER
+      auto-writes: the scaffold is an approved-write-only action and Move 5 has no approver for it. *(completed)*
+- [x] In `context/standards/postflight-tool-restrictions.md`'s Move 5 Allowed Tool Surface `Bash`
       row, add `lib/roadmap-preflight-lib.sh classify` and `issue-record.sh` to the enumerated
       allow-list. Add a Prohibited bullet: no `lib/roadmap-preflight-lib.sh scaffold` at this
-      stage (classify-only), since the scaffold needs an approval this stage cannot obtain.
+      stage (classify-only), since the scaffold needs an approval this stage cannot obtain. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -494,15 +494,15 @@ after the `--write` pass, and `git diff --stat` on `index-entries.json` showing 
 
 ## Testing & Validation
 
-- [ ] All four classify verdicts return correctly against suite fixtures (Phase 3).
-- [ ] Scaffold-then-regenerate is idempotent: a second `--regenerate --dry-run` reports
-      `no content change` (Phase 3).
-- [ ] Scaffolding an `unknown` file preserves every original non-blank line (Phase 3).
-- [ ] Scaffold refuses on `classic` and `stage` with no write (Phase 3).
-- [ ] The live-tree isolation guard still passes: the real `specs/ROADMAP.md` and
-      `specs/state.json` are byte-identical after the suite runs (Phase 3).
-- [ ] `agents/roadmap-agent.md` contains no `AskUserQuestion` reference (Phase 4).
-- [ ] Move 5's `classic`/`stage` path is behaviorally unchanged (Phase 5).
+- [x] All four classify verdicts return correctly against suite fixtures (Phase 3). *(completed)*
+- [x] Scaffold-then-regenerate is idempotent: a second `--regenerate --dry-run` reports
+      `no content change` (Phase 3). *(completed)*
+- [x] Scaffolding an `unknown` file preserves every original non-blank line (Phase 3). *(completed)*
+- [x] Scaffold refuses on `classic` and `stage` with no write (Phase 3). *(completed)*
+- [x] The live-tree isolation guard still passes: the real `specs/ROADMAP.md` and
+      `specs/state.json` are byte-identical after the suite runs (Phase 3). *(completed)*
+- [x] `agents/roadmap-agent.md` contains no `AskUserQuestion` reference (Phase 4). *(completed)*
+- [x] Move 5's `classic`/`stage` path is behaviorally unchanged (Phase 5). *(completed)*
 - [ ] `verify-deploy.sh` and the full `run-all.sh` battery exit 0 (Phase 6).
 - [ ] Exactly one `CLASSIC_HEADERS` definition exists in the repository (Phase 6).
 

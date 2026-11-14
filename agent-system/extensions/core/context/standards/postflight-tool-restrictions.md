@@ -146,7 +146,7 @@ executable body.
 | `Read` | `specs/{NNN}_*/issues.jsonl` for every task this invocation touched (the stage's sole evidence base) |
 | `AskUserQuestion` | Channel (a)'s single approval gate, AND Step 7's single `edges` approval gate for the next-batch edge write — two independent gates, each under its own key; channels (b) and (c) record evidence unconditionally and are never asked about |
 | `Agent` | Channel (a)'s dispatch of an implementation agent with the approved fix list |
-| `Bash` | `orchestrate-conclusion-aggregate.sh` (`--aggregate`/`--record-approval`/`--check-approval`), `events-append.sh`, `generate-todo.sh`, `roadmap-integration.sh --regenerate`, `lint/lint-roadmap-batch-proposals.sh`, `orchestrate-suggest-next-batch.sh` (both its default propose-only form and its gated `--write-edges` form), `git-commit-scoped.sh` |
+| `Bash` | `orchestrate-conclusion-aggregate.sh` (`--aggregate`/`--record-approval`/`--check-approval`), `events-append.sh`, `generate-todo.sh`, `lib/roadmap-preflight-lib.sh classify` (the Step 5 preflight; `scaffold` is NOT in scope here — see Prohibited below), `roadmap-integration.sh --regenerate`, `lint/lint-roadmap-batch-proposals.sh`, `issue-record.sh` (Step 5's per-task degrade loop only), `orchestrate-suggest-next-batch.sh` (both its default propose-only form and its gated `--write-edges` form), `git-commit-scoped.sh` |
 | `Edit`/`Write` on source files | Only INSIDE a channel-(a)-dispatched agent's own turn — never in the stage body itself |
 
 ### Prohibited
@@ -166,6 +166,10 @@ executable body.
   (`context/patterns/roadmap-update.md`) — both are invoked, never edited.
 - No `--prune` on the roadmap generator — only `--regenerate` is in scope (see
   `context/contracts/conclusion-stage.md`'s D3).
+- No `lib/roadmap-preflight-lib.sh scaffold` at this stage (classify-only) — the scaffold is an
+  approved-write-only action and this stage has no approver for it; on `absent`/`unknown`, Step 5
+  skips `--regenerate` and degrades loudly instead (see `context/contracts/conclusion-stage.md`'s
+  Step 5).
 - No editing another task's archived artifacts.
 - No dispatch and no `specs/state.json` write from channels (b) or (c) — both record evidence to
   `specs/events.jsonl` only.

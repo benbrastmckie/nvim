@@ -4,15 +4,79 @@
   "started_at": "2026-11-13T01:00:00Z",
   "last_updated": "2026-11-13T01:30:00Z",
   "objectives": [
-    {"id": 1, "description": "Add AskUserQuestion to allowed-tools frontmatter", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
-    {"id": 2, "description": "Extend Stage 1 with classify step", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
-    {"id": 3, "description": "classic/stage proceed unchanged, no question", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
-    {"id": 4, "description": "absent/unknown ask single AskUserQuestion naming verdict/scaffold/preservation", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
-    {"id": 5, "description": "On approval run scaffold CLI then proceed to Stage 2", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
-    {"id": 6, "description": "On decline do not dispatch, return named summary", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
-    {"id": 7, "description": "Pass only resolved outcome into Stage 2 dispatch prompt", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
-    {"id": 8, "description": "Update Stage 3 second WARNING text to name Stage 1 preflight", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]},
-    {"id": 9, "description": "Amend MUST NOT list with preflight scaffold carve-out on items 3 and 4", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-roadmap/SKILL.md"]}
+    {
+      "id": 1,
+      "description": "Add AskUserQuestion to allowed-tools frontmatter",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-roadmap/SKILL.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Extend Stage 1 with classify step",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-roadmap/SKILL.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "classic/stage proceed unchanged, no question",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-roadmap/SKILL.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "absent/unknown ask single AskUserQuestion naming verdict/scaffold/preservation",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-roadmap/SKILL.md"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "On approval run scaffold CLI then proceed to Stage 2",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-roadmap/SKILL.md"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "On decline do not dispatch, return named summary",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-roadmap/SKILL.md"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Pass only resolved outcome into Stage 2 dispatch prompt",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-roadmap/SKILL.md"
+      ]
+    },
+    {
+      "id": 8,
+      "description": "Update Stage 3 second WARNING text to name Stage 1 preflight",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-roadmap/SKILL.md"
+      ]
+    },
+    {
+      "id": 9,
+      "description": "Amend MUST NOT list with preflight scaffold carve-out on items 3 and 4",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-roadmap/SKILL.md",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    }
   ],
   "current_objective": 9,
   "approaches_tried": [],
