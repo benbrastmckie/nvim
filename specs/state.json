@@ -130227,7 +130227,7 @@
     {
       "project_number": 623,
       "project_name": "web_extension_depends_on_typescript",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Make the web extension depend on the typescript extension and split the shared TypeScript context down a layer",
       "description": "GOAL. Make the `web` extension depend on the new `typescript` extension, and split the shared\nTypeScript context down a layer.\n\nWHAT TO DO.\n1. Add `typescript` to the `web` extension's `manifest.json` `dependencies` array, so Astro work\n   auto-loads the base TypeScript context.\n2. Execute the line-level `typescript-web.md` split designed in the plan: generic TypeScript\n   material moves DOWN into the typescript extension's context tree; Astro/browser/\n   Cloudflare-specific TypeScript material STAYS in `web`.\n3. Update BOTH extensions' `index-entries.json` to match the moved files.\n4. Re-verify that each extension deploys cleanly alone and together, and confirm the dependency\n   auto-load path behaves -- including circular detection and the depth limit of 5.\n\nHARD CONSTRAINT. ALL writes go to the source store under `agent-system/extensions/`. NEVER\nwrite to any repository's `.claude/` deploy tree -- see\n`.claude/rules/source-store-deploy-boundary.md`.",
@@ -130248,6 +130248,11 @@
           "path": "specs/623_web_extension_depends_on_typescript/plans/01_web-typescript-dependency-split.md",
           "type": "plan",
           "summary": "3-phase plan: content split plus line_count regeneration, web-agent context pointers, manifest dependency plus end-to-end deploy verification."
+        },
+        {
+          "path": "specs/623_web_extension_depends_on_typescript/summaries/01_web-typescript-dependency-split-summary.md",
+          "type": "summary",
+          "summary": "All 3 plan phases completed: web->typescript dependency wired, typescript-web.md split with named cross-references, web-agent context pointers added, end-to-end scratch-target deploy/unload verification passed."
         }
       ],
       "file_scope": [
@@ -131025,9 +131030,10 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "last_updated": "2026-11-14T01:46:52Z",
+      "last_updated": "2026-11-14T02:06:57Z",
       "session_id": "sess_1794603202_55566e",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added typescript to web's manifest.json dependencies, trimmed typescript-web.md's two generic subsections to named cross-reference pointers into the typescript extension's own context tree (with coupled line_count regeneration), added a static Context References pointer to each web agent, and verified end-to-end via scratch-target deploy/auto-load/unload-hard-block testing plus a scoped gate run."
     },
     {
       "project_number": 625,

@@ -26,21 +26,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/623_web_extension_depends_on_typescript/summaries/01_web-typescript-dependency-split-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["generate-context-line-counts", "index-entries", "line_count", "scope-containment", "extension-context"]
+      "suggested_keywords": [
+        "generate-context-line-counts",
+        "index-entries",
+        "line_count",
+        "scope-containment",
+        "extension-context"
+      ]
     },
     {
       "content": "verify-deploy.sh gate 5 (manifest-driven category parity + content-hash equality, via manager.verify_all) fails per-extension when the deployed .claude/ tree has drifted from the source store for ANY currently-loaded extension -- not just the one a task is working on. A dispatch's own deploy-freshness-context block names the stale extension up front; when a scoped gate run's failure traces exactly to that named staleness, the sanctioned remedy is the bounded-wait redeploy (timeout 540 bash .claude/scripts/deploy-headless.sh, Bash tool timeout raised to 600000) followed by a re-run of the same scoped gate -- this resolves gate 5 without touching any file outside the staleness's own remedy path, and is distinct from fixing the unrelated extension's content directly.",
       "category": "PATTERN",
       "source_artifact": "specs/623_web_extension_depends_on_typescript/summaries/01_web-typescript-dependency-split-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["verify-deploy", "gate5", "deploy-staleness", "deploy-headless", "manifest-driven-verification", "batch-gate-deferral"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "gate5",
+        "deploy-staleness",
+        "deploy-headless",
+        "manifest-driven-verification",
+        "batch-gate-deferral"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794603202_55566e",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
   },

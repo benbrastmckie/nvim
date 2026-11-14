@@ -1,7 +1,7 @@
 # Implementation Plan: Task #623
 
 - **Task**: 623 - Make the `web` extension depend on the `typescript` extension and split the shared TypeScript context down a layer
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None (prerequisite tasks 621 and 622 are both [COMPLETED])
 - **Research Inputs**: specs/623_web_extension_depends_on_typescript/reports/01_web-typescript-dependency-split.md
