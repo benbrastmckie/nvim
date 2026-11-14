@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794696615_44948d_436",
+  "dispatch_seq": 1,
+  "findings_count": 10,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/436_orient_command_with_scout_agent_retire_review/reports/01_review-strategic-brief-scout.md",
+      "summary": "Confirms the dispatch's revised scope (extend /review in place; no /orient; keep code-reviewer-agent), flags a stale task title left over from the pre-revision /orient+retire-/review shape, maps the three ACCEPTANCE-gating scripts' exact per-agent requirements (lint-agent-contracts.sh Checks A/B/F/J/K apply automatically to any new dispatchable agent file; validate-index.sh and validate-context-budgets.sh use hardcoded agent lists that do not force inclusion), and identifies that lint-agent-contracts.sh's two curated exclusion arrays (EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS, CHECK_J_EXCLUDED_RELATIVE_PATHS) must be edited to add the new agent even though that file is outside the dispatch's stated FILE SCOPE."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "lint-agent-contracts.sh scans every agent file (frontmatter has 'name:') automatically via enumerate_dispatchable_agents() for Checks A/B/F/J/K -- a new console-only, forked-dispatch-only agent (no Write/Edit, dispatched via Agent tool from a command body rather than skill-orchestrate) must be manually added to both EXCLUDED_ARTIFACTS_TEMPLATE_RELATIVE_PATHS (Check F: no .return-meta.json written) and CHECK_J_EXCLUDED_RELATIVE_PATHS (Check J: never reaches a skill-orchestrate dispatch row), mirroring code-reviewer-agent.md's existing entries, or both checks fail. This edit is necessary even when the lint script itself is not named in a task's stated FILE SCOPE.",
+      "category": "PATTERN",
+      "source_artifact": "specs/436_orient_command_with_scout_agent_retire_review/reports/01_review-strategic-brief-scout.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["lint-agent-contracts", "dispatchable-agent", "read-only-agent", "exclusion-array", "agent-frontmatter"]
+    },
+    {
+      "content": "index-entries.json (core extension) never registers an agent file itself as an entry -- all 177 entries are context docs; agents are only referenced indirectly via other docs' load_when.agents arrays. manifest.json's provides.agents array is the actual agent registry. A task deliverable asking for 'registry entries in manifest.json and index-entries.json' for a new agent is usually satisfied by manifest.json alone unless the new agent also needs a dedicated on-demand context doc.",
+      "category": "PATTERN",
+      "source_artifact": "specs/436_orient_command_with_scout_agent_retire_review/reports/01_review-strategic-brief-scout.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index-entries.json", "manifest.json", "agent-registry", "load_when", "core-extension"]
+    },
+    {
+      "content": "A task's state.json 'title' field is not guaranteed to stay in sync with its 'description' field after a description revision (e.g. via a direct state.json edit or /revise-adjacent flow) -- check git log/git show on the task's most recent 'task N: revise description' commit before trusting the title as a scope summary; the dispatch file (rendered from the current description) is authoritative, not the title.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/436_orient_command_with_scout_agent_retire_review/reports/01_review-strategic-brief-scout.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["task-title", "description-revision", "stale-metadata", "state.json", "dispatch-authoritative"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 436 to create implementation plan"
+}

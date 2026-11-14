@@ -30,7 +30,7 @@ next_project_number: 634
   └─ 439 [NOT STARTED] — Rule on the propagation model for the bounded-wait agent contract
     └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
   └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
-436 [NOT STARTED] — Add the /orient executive-orientation command with a...
+436 [RESEARCHED] — Add the /orient executive-orientation command with a...
   └─ 626 [NOT STARTED] — Wire /todo and /review to roadmap regeneration behind the...
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
@@ -9665,10 +9665,11 @@ EDIT TARGET. Per `.claude/rules/source-store-deploy-boundary.md`, a consumer rep
 ---
 
 ### 436. Add the /orient executive-orientation command with a read-only scout agent, and retire /review
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 313, Task 458, Task 459
+- **Research**: [436_orient_command_with_scout_agent_retire_review/reports/01_review-strategic-brief-scout.md]
 
 **Description**: Add a strategic-brief capability to `/review`, backed by a new read-only scout agent that answers "where are we against the stated aim, and what next" at executive level, on demand. `/review` stays in place as the surface for high-level questions about the repository's direction; this record extends it rather than replacing it, and no new command is introduced.
 
