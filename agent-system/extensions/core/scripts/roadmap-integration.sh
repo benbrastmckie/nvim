@@ -49,6 +49,10 @@ source "${SCRIPT_DIR}/lib/common.sh"
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 source "${SCRIPT_DIR}/lib/status-vocabulary.sh"
+# roadmap-preflight-lib.sh is the sole owner of the layout-classification vocabulary
+# (CLASSIC_HEADERS, the fence helpers, detect_layout) -- see that file's header for why it was
+# extracted rather than left inline. Never re-inline a copy here.
+source "${SCRIPT_DIR}/lib/roadmap-preflight-lib.sh"
 
 ROADMAP_PATH="${PROJECT_ROOT}/specs/ROADMAP.md"
 STATE_PATH="${PROJECT_ROOT}/specs/state.json"
@@ -385,71 +389,10 @@ mode_print() {
 }
 
 # ─── Section-boundary helpers (used only by --regenerate/--prune, which read the existing file) ─
-
-# CLASSIC_HEADERS -- the eight literal headers roadmap-format.md's classic layout requires, in
-# order. Anchors detect_layout's classic predicate and the refusal message's header listing.
-CLASSIC_HEADERS=(
-  "## Goal"
-  "## Gate state"
-  "## Next"
-  "## Open work"
-  "## Checks before and after every call"
-  "## Settled decisions (do not re-litigate)"
-  "## Standing rules"
-  "## Unfiled observations (none worth a task yet)"
-)
-
-# body_has_orchestrate_fence BODY -> status 0 iff some fenced code block (a line that is exactly
-# ``` optionally followed by a language tag, e.g. ```bash) within BODY contains at least one line
-# matching ^/orchestrate ; status 1 otherwise. Used both by roadmap_has_orchestrate_fence (whole
-# file, for detect_layout) and directly by mode_regenerate_stage (one already-split section body,
-# to locate which retained section is the run-order section).
-body_has_orchestrate_fence() {
-  local body="$1"
-  awk '
-    /^```/ { in_fence = !in_fence; next }
-    in_fence && /^\/orchestrate / { found = 1 }
-    END { exit (found ? 0 : 1) }
-  ' <<<"$body"
-}
-
-# roadmap_has_orchestrate_fence FILE -> body_has_orchestrate_fence applied to the whole file's
-# content. Helper for detect_layout's stage predicate (checked before any section splitting).
-roadmap_has_orchestrate_fence() {
-  body_has_orchestrate_fence "$(cat "$1")"
-}
-
-# detect_layout FILE -> "classic" | "stage" | "unknown"
 #
-# This is the permanent destructive-overwrite-refusal gate (sub-fault 3): both write modes call
-# this before touching the file, and refuse loudly rather than guess on anything this script
-# cannot round-trip. Detection is structural, never exact-header matching, for "stage" -- the
-# stage layout's own headers have already been observed to drift by hand-rename (Decision 1).
-#
-#   classic: every literal header in CLASSIC_HEADERS is present (exact match IS correct here --
-#            the classic vocabulary is defined as exactly those eight headers, matched the same
-#            way load_existing_sections' extract_section calls match them).
-#   stage:   a header matching ^## Stage [0-9]+ exists, AND some section's body holds a fenced
-#            /orchestrate block (roadmap_has_orchestrate_fence above) -- survives a cosmetic
-#            rename of "## Run order at a glance" or "## Stage N -- ..." text.
-#   unknown: neither predicate matches.
-detect_layout() {
-  local file="$1" h is_classic=1
-  for h in "${CLASSIC_HEADERS[@]}"; do
-    grep -qxF "$h" "$file" || { is_classic=0; break; }
-  done
-  if [[ "$is_classic" -eq 1 ]]; then
-    echo "classic"
-    return 0
-  fi
-
-  if grep -qE '^## Stage [0-9]+' "$file" && roadmap_has_orchestrate_fence "$file"; then
-    echo "stage"
-    return 0
-  fi
-
-  echo "unknown"
-}
+# CLASSIC_HEADERS, body_has_orchestrate_fence, roadmap_has_orchestrate_fence, and detect_layout
+# now live in lib/roadmap-preflight-lib.sh (sourced above) -- this script keeps zero copies of
+# its own. See that library's header comment for the full rationale.
 
 # refuse_unrecognised_layout MODE LAYOUT -> prints a named, loud refusal to stderr (listing the
 # file's actual ## headers and the two recognised vocabularies) and returns 1. Called by both

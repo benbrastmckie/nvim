@@ -1,22 +1,14 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/625_roadmap_preflight_approval_gate/plans/01_roadmap-preflight-gate.md",
-      "summary": "Six-phase plan adding a shared roadmap preflight library (four-way classify plus mechanical classic-skeleton scaffolder) in front of roadmap-integration.sh, gating both write-mode callers with an interactive AskUserQuestion arm in skill-roadmap and a loud non-interactive degrade at /orchestrate's conclusion stage."
-    }
-  ],
+  "status": "in_progress",
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1794626904_81a9cc_625",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 5.5,
-    "dependency_waves": [[1], [2], [3, 4, 5], [6]]
+    "session_id": "sess_1794626904_81a9cc",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 6
   },
   "memory_candidates": [],
-  "next_steps": "Run /orchestrate 625 to execute the plan",
-  "dispatch_seq": 2
+  "dispatch_seq": 3
 }

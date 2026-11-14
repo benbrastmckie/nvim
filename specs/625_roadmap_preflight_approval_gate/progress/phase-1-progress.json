@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Extract classification into a shared library",
+  "started_at": "2026-11-13T00:00:00Z",
+  "last_updated": "2026-11-13T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create roadmap-preflight-lib.sh with ownership header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh"]},
+    {"id": 2, "description": "Move CLASSIC_HEADERS/fence helpers/detect_layout verbatim", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh"]},
+    {"id": 3, "description": "Add roadmap_preflight_classify PATH", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh"]},
+    {"id": 4, "description": "Source library back into roadmap-integration.sh, delete moved definitions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/roadmap-integration.sh"]},
+    {"id": 5, "description": "Add deploy-tree-first _SRC resolution and build_scratch cp for the new library in the test suite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

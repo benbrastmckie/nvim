@@ -1,7 +1,7 @@
 # Implementation Plan: Task #625
 
 - **Task**: 625 - Roadmap preflight approval gate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/625_roadmap_preflight_approval_gate/reports/01_roadmap-preflight-gate.md
@@ -157,26 +157,26 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Extract classification into a shared library [NOT STARTED]
+### Phase 1: Extract classification into a shared library [COMPLETED]
 
 **Goal**: One copy of `CLASSIC_HEADERS`/`detect_layout` in the repository, owned by a new library,
 with `roadmap-integration.sh` sourcing it back and the test suite still green.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh` with a header
+- [x] Create `agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh` with a header
       comment stating it is the single owner of the roadmap layout vocabulary, following
-      `scripts/lib/status-vocabulary.sh`'s "one sourced shared library, many consumers" framing.
-- [ ] Move `CLASSIC_HEADERS`, `body_has_orchestrate_fence`, `roadmap_has_orchestrate_fence`, and
-      `detect_layout` into it verbatim, comments included.
-- [ ] Add `roadmap_preflight_classify PATH`: prints `absent` when the file does not exist,
-      otherwise delegates to `detect_layout`; always exits 0.
-- [ ] In `scripts/roadmap-integration.sh`, delete the four moved definitions and add
+      `scripts/lib/status-vocabulary.sh`'s "one sourced shared library, many consumers" framing. *(completed)*
+- [x] Move `CLASSIC_HEADERS`, `body_has_orchestrate_fence`, `roadmap_has_orchestrate_fence`, and
+      `detect_layout` into it verbatim, comments included. *(completed)*
+- [x] Add `roadmap_preflight_classify PATH`: prints `absent` when the file does not exist,
+      otherwise delegates to `detect_layout`; always exits 0. *(completed)*
+- [x] In `scripts/roadmap-integration.sh`, delete the four moved definitions and add
       `source "${SCRIPT_DIR}/lib/roadmap-preflight-lib.sh"` immediately after the existing
       `lib/status-vocabulary.sh` source line, with a one-line comment naming the library as the
-      sole owner of the layout vocabulary.
-- [ ] In `scripts/tests/test-roadmap-generation.sh`, add a deploy-tree-first `_SRC` resolution for
+      sole owner of the layout vocabulary. *(completed)*
+- [x] In `scripts/tests/test-roadmap-generation.sh`, add a deploy-tree-first `_SRC` resolution for
       `lib/roadmap-preflight-lib.sh` alongside the existing dependency resolutions, and add the
-      matching `cp` into `build_scratch`'s `.claude/scripts/lib/` population.
+      matching `cp` into `build_scratch`'s `.claude/scripts/lib/` population. *(completed)*
 
 **Timing**: 1 hour
 

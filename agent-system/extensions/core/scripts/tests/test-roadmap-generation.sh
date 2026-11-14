@@ -57,6 +57,9 @@ common_test_declare_subject "$COMMON_SRC"
 STATUSVOC_SRC="$(common_test_resolve_subject "lib/status-vocabulary.sh" "deploy-tree-first" \
   "$DEPLOY_SCRIPTS_SRC/lib/status-vocabulary.sh" "$SOURCE_STORE_SCRIPTS/lib/status-vocabulary.sh")" || exit 2
 common_test_declare_subject "$STATUSVOC_SRC"
+PREFLIGHT_SRC="$(common_test_resolve_subject "lib/roadmap-preflight-lib.sh" "deploy-tree-first" \
+  "$DEPLOY_SCRIPTS_SRC/lib/roadmap-preflight-lib.sh" "$SOURCE_STORE_SCRIPTS/lib/roadmap-preflight-lib.sh")" || exit 2
+common_test_declare_subject "$PREFLIGHT_SRC"
 
 PASSED=0
 FAILED=0
@@ -66,6 +69,7 @@ common_test_info "Dependency (deploy-first): $GTO_SRC"
 common_test_info "Dependency (deploy-first): $GUARD_SRC"
 common_test_info "Dependency (deploy-first): $COMMON_SRC"
 common_test_info "Dependency (deploy-first): $STATUSVOC_SRC"
+common_test_info "Dependency (deploy-first): $PREFLIGHT_SRC"
 
 TOP_WORKDIR="$(mktemp -d)"
 cleanup() { [[ -n "${TOP_WORKDIR:-}" && -d "$TOP_WORKDIR" ]] && rm -rf "$TOP_WORKDIR"; }
@@ -93,6 +97,7 @@ build_scratch() {
   cp "$GUARD_SRC" "$scratch/.claude/scripts/deploy-root-guard.sh"
   cp "$COMMON_SRC" "$scratch/.claude/scripts/lib/common.sh"
   cp "$STATUSVOC_SRC" "$scratch/.claude/scripts/lib/status-vocabulary.sh"
+  cp "$PREFLIGHT_SRC" "$scratch/.claude/scripts/lib/roadmap-preflight-lib.sh"
   chmod +x "$scratch/.claude/scripts/roadmap-integration.sh" "$scratch/.claude/scripts/generate-task-order.sh"
   echo "$scratch"
 }
