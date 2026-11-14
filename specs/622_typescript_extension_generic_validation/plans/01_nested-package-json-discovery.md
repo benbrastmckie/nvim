@@ -337,40 +337,68 @@ this extension is the exact check that covers both.
 
 ---
 
-### Phase 4: Live re-validation against sf1-engine and full gate set [NOT STARTED]
+### Phase 4: Live re-validation against sf1-engine and full gate set [COMPLETED]
 
 **Goal**: The original falsifiability experiment is re-run end-to-end on the real external
 repository and now meets the PASS CONDITION, with the HARD CONSTRAINT mechanically falsified
 rather than asserted.
 
 **Tasks**:
-- [ ] Propagate the fixed hook to the target repo:
+- [x] Propagate the fixed hook to the target repo:
       `cd /home/benjamin/Projects/Sapience/sf1-engine && timeout 540 bash
       .claude/scripts/deploy-headless.sh` (invoke with the Bash tool's `timeout` parameter raised
       to 600000, per the bounded-wait idiom in `context/patterns/external-process-wait.md` Rule
       1). Then `diff` the deployed `.claude/scripts/typescript-verify.sh` against the source-store
       copy and confirm they are identical — a stale deployed copy would make the whole experiment
-      vacuous.
-- [ ] Re-run the hook exactly as the real lifecycle invokes it, from the repo root and with no
+      vacuous. *(completed: deploy landed, `diff` confirmed byte-identical. Inline verification
+      reported 2 pre-existing FAILs in sf1-engine's own tree -- task-reference lint and
+      runtime-file-tracking policy -- both unrelated to the typescript extension; see
+      verification notes)*
+- [x] Re-run the hook exactly as the real lifecycle invokes it, from the repo root and with no
       `cd` into the project: `cd /home/benjamin/Projects/Sapience/sf1-engine && bash
       .claude/scripts/typescript-verify.sh 622 typescript specs/dummy sess_test preflight`, with
-      a bounding `timeout` (the test sub-check runs the project's full suite).
-- [ ] Assert the PASS CONDITION against that output: it names `sf1-v2/opencode-plugin`; the
+      a bounding `timeout` (the test sub-check runs the project's full suite). *(completed)*
+- [x] Assert the PASS CONDITION against that output: it names `sf1-v2/opencode-plugin`; the
       typecheck sub-check SKIPs (no tsconfig and no typecheck script); the package manager
       resolves to `npm` (no lockfile); the test sub-check runs `npm run test` ->
       `node --test test/*.test.ts`; and the final summary is no longer
-      `ran_pass=0 ran_fail=0 skipped_no_command=1`.
-- [ ] Falsify the HARD CONSTRAINT mechanically: `grep -rniE 'sf1|opencode-plugin|sapience'
+      `ran_pass=0 ran_fail=0 skipped_no_command=1`. *(completed: all five hold. New summary:
+      `ran_pass=0 ran_fail=1 skipped_no_command=1` -- the test sub-check ran and reported real
+      findings, 531 passed / 29 failed / 46 skipped subtests)*
+- [x] Falsify the HARD CONSTRAINT mechanically: `grep -rniE 'sf1|opencode-plugin|sapience'
       agent-system/extensions/typescript/` must return nothing. Any hit means the fix was
-      special-cased to the repo and the phase fails.
-- [ ] Record the live test outcome as a finding, not a defect: a `ran_fail` for
+      special-cased to the repo and the phase fails. *(completed with a recorded clarification:
+      the literal combined grep returns 2 lines, both the pre-existing, universal
+      `sapience-retrieve.sh` memory-context call present in every extension's skills since task
+      499/620, well before this task. `sf1` alone and `opencode-plugin` alone each return ZERO
+      hits -- the HARD CONSTRAINT's actual intent, no sf1-engine-specific content, is satisfied;
+      recorded via issue-record.sh as class "verification ambiguity")*
+- [x] Record the live test outcome as a finding, not a defect: a `ran_fail` for
       `sf1-v2/opencode-plugin` caused by that repo's own pre-existing failing subtests is the
-      hook working as intended and is out of scope for this task.
+      hook working as intended and is out of scope for this task. *(completed: 29 failing
+      subtests, matching the Scope Hypothesis's carried-forward figure exactly)*
 - [ ] Redeploy this repo (`timeout 540 bash .claude/scripts/deploy-headless.sh`, same bounded-wait
       idiom) — its deployed tree is currently stale for the `lean` extension, and the
       completion-deploy gate refuses on a stale deploy when `modified_files` overlap
       `agent-system/extensions/**`, which this task's do.
+      *(deviation: deferred -- this dispatch's own `.dispatch/13.md` carries a Batch Gate
+      Deferral directive for this phase: the costly whole-tree redeploy and full gate battery
+      are deferred to the batch-level invocation at the end of this multi-task `/orchestrate`
+      cycle rather than run independently here. A prior session's own finding
+      ("Completion-deploy gate is self-healing") additionally confirms the next cycle's
+      Inter-Cycle Redeploy Checkpoint performs this redeploy and reconciliation automatically, so
+      no action is lost by deferring it)*
 - [ ] Run the full gate set (below) and resolve any failure before closing.
+      *(deviation: deferred -- discharged against the scoped tier instead, per the same Batch
+      Gate Deferral directive: Gate 3 doc-lint was already run directly in Phases 2-3
+      (`check-extension-docs.sh --quiet`, typescript PASS); Gate 8's shell-test content was run
+      scoped via `run-all.sh --only test-typescript-verify.sh` (Phase 2, PASS) rather than the
+      full unfiltered battery; `sync-manifest-scripts.sh --check` and
+      `generate-context-line-counts.sh --check` are both clean. The full unfiltered
+      `verify-deploy.sh`/`run-all.sh`, `check-task-references.sh --quiet`, and
+      `validate-state.sh --deep` are deferred to the once-per-invocation batch-level stage, per
+      `context/formats/plan-format.md`'s "Batch-aware deferral" subsection -- never forgiven,
+      only deferred)*
 
 **Timing**: 1 hour
 

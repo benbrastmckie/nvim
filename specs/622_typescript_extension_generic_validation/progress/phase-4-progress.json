@@ -1,0 +1,45 @@
+{
+  "phase": 4,
+  "phase_name": "Live re-validation against sf1-engine and full gate set",
+  "started_at": "2026-11-14T02:00:00Z",
+  "last_updated": "2026-11-14T02:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Deploy fixed hook to sf1-engine and confirm byte-identical", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-run hook from sf1-engine repo root as the real lifecycle invokes it", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Assert PASS CONDITION against the live run output", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Falsify HARD CONSTRAINT via grep, record clarification for the sapience false-positive", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record live ran_fail outcome as a finding not a defect", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Redeploy this repo -- deferred to batch-level Inter-Cycle Redeploy Checkpoint per Batch Gate Deferral directive", "status": "deferred", "files_touched": []},
+    {"id": 7, "description": "Run full gate set -- discharged against scoped tier per Batch Gate Deferral directive", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.6",
+      "description": "Redeploy this repo (timeout 540 bash .claude/scripts/deploy-headless.sh)",
+      "type": "deferred",
+      "reason": "This dispatch's .dispatch/13.md carries a Batch Gate Deferral directive for this final phase: the costly whole-tree redeploy and full gate battery are deferred to the once-per-invocation batch-level stage. A prior session's own memory finding ('Completion-deploy gate is self-healing') confirms the next cycle's Inter-Cycle Redeploy Checkpoint performs this redeploy and reconciliation automatically.",
+      "annotation": "*(deviation: deferred -- Batch Gate Deferral directive; see .dispatch/13.md)*"
+    },
+    {
+      "task_id": "4.7",
+      "description": "Run the full gate set (verify-deploy.sh, run-all.sh unfiltered, check-task-references.sh --quiet, validate-state.sh --deep)",
+      "type": "altered",
+      "reason": "Discharged against the scoped tier per the Batch Gate Deferral directive: Gate 3 doc-lint run directly via check-extension-docs.sh --quiet (PASS); Gate 8 shell-test content run scoped via run-all.sh --only test-typescript-verify.sh (PASS); sync-manifest-scripts.sh --check and generate-context-line-counts.sh --check both clean. The unfiltered battery, check-task-references.sh --quiet, and validate-state.sh --deep are deferred to the batch-level stage, not waived.",
+      "annotation": "*(deviation: altered -- scoped discharge per Batch Gate Deferral directive; see .dispatch/13.md)*"
+    }
+  ],
+  "verification_notes": [
+    "deploy-headless.sh to sf1-engine: landed, RESULT=landed_verify_red (exit 3) -- inline verification found 2 pre-existing FAILs in sf1-engine's OWN tree health (task-reference lint: 1 unexempted occurrence in that repo's own content; runtime-file-tracking policy: specs/.gitignore managed block not set up in that consumer repo), both confirmed unrelated to the typescript extension and pre-existing (not introduced by this deploy)",
+    "diff of deployed .claude/scripts/typescript-verify.sh against the source-store copy: IDENTICAL",
+    "Live run from sf1-engine repo root: '[typescript-verify][sf1-v2/opencode-plugin] SKIP: no tsconfig.json and no typecheck script found', 'running test: npm run test' -> 'node --test test/*.test.ts', final summary 'ran_pass=0 ran_fail=1 skipped_no_command=1' (previously ran_pass=0 ran_fail=0 skipped_no_command=1, i.e. nothing ran at all) -- PASS CONDITION met",
+    "node --test output: 531 passed, 29 failed, 46 skipped subtests -- the 29-failure figure matches the plan's carried-forward Scope Hypothesis exactly",
+    "HARD CONSTRAINT grep: 'sf1' alone = 0 hits; 'opencode-plugin' alone = 0 hits; combined grep with 'sapience' = 2 hits, both the pre-existing sapience-retrieve.sh memory-context boilerplate present in every extension's skills since task 499/620 (confirmed identical in nix and lean extensions), not a reference to the target repo -- recorded via issue-record.sh",
+    "Gate 3 (doc-lint): check-extension-docs.sh --quiet already run directly in Phases 2-3, typescript PASS",
+    "Gate 8 (shell test suites), scoped: run-all.sh --only test-typescript-verify.sh already run in Phase 2, 1 passed 0 failed",
+    "sync-manifest-scripts.sh --check: clean. generate-context-line-counts.sh --check: clean (604/604 exact)",
+    "Full verify-deploy.sh --only-gate 3,8 attempted directly but exceeded a 300s inner timeout (gate 8 unscoped runs the WHOLE run-all.sh battery, not narrowed) -- abandoned in favor of the already-complete scoped discharge above, consistent with the Batch Gate Deferral directive's intent"
+  ]
+}
