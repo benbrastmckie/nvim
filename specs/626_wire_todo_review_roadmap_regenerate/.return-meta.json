@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794696615_44948d_626",
+  "dispatch_seq": 4,
+  "findings_count": 4,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/626_wire_todo_review_roadmap_regenerate/reports/01_wire-todo-review-roadmap.md",
+      "summary": "Finds the dispatch's blocker rationale went stale (436/458 both completed): 436 kept /review in place (no /orient), so commands/review.md is still correct, but 458 removed skill-todo entirely, so commands/todo.md (not skills/skill-todo/SKILL.md) is the real DELIVERABLE 1 target. Recommends concrete insertion points (after /todo Stage 6's commit; before /review Section 7's commit, each with its own ROADMAP.md-only commit) using the interactive AskUserQuestion preflight arm. Rules on Deliverable 3: postflight-tool-restrictions.md's base tables and its lint do not govern either call site at all (no subagent delegation in either command's relevant flow), so neither needs the Move-5-style additive exception -- recommends one clarifying scope sentence instead."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a dispatch names other tasks as open blockers in its rationale prose, re-check those tasks' live status.json entries before trusting the prose -- a blocker can complete between dispatch authoring and dispatch execution, and the SPECIFIC WAY it resolved (not just that it resolved) can change which file is the correct edit target. Example: task 458 resolved by deleting skill-todo/SKILL.md entirely rather than keeping it, which silently invalidated a dispatch's named wiring target.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/626_wire_todo_review_roadmap_regenerate/reports/01_wire-todo-review-roadmap.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["dependency staleness", "dispatch premise", "task resolution", "file_scope drift"]
+    },
+    {
+      "content": "context/standards/postflight-tool-restrictions.md's base Allowed/Prohibited tables, and its enforcement script lint-postflight-boundary.sh, are scoped to agent-delegating SKILL.md files only: the lint's default scan path is .claude/skills + .claude/extensions SKILL.md files (never .claude/commands/*.md), and its violation logic explicitly gates on whether the skill delegates to a subagent via the Agent tool, skipping files that don't. A direct-execution command file (no Agent-tool dispatch in its relevant flow) is simply out of that standard's scope -- not covered by its allowed-list, but also not bound by its prohibitions. Widening the standard's reach to a new kind of actor (e.g. /orchestrate's conclusion-stage Move 5) has so far always been done via an explicit, named additive section, not silent default coverage.",
+      "category": "PATTERN",
+      "source_artifact": "specs/626_wire_todo_review_roadmap_regenerate/reports/01_wire-todo-review-roadmap.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["postflight boundary", "lint-postflight-boundary.sh", "agent delegation scope", "command vs skill"]
+    },
+    {
+      "content": "roadmap-integration.sh's write-mode preflight has two established gating shapes to choose between for a new caller: the interactive arm (skill-roadmap/SKILL.md Stage 1 -- classify, then a single AskUserQuestion approval on absent/unknown before scaffolding) for any user-present, interactively-invoked command; and the non-interactive degrade arm (conclusion-stage.md Step 5 -- classify, then skip --regenerate and record a loud durable degrade via events-append.sh plus issue-record.sh on absent/unknown, never auto-scaffold) for an autonomous actor with no approval surface. A new caller should match its own interactivity, not default to one shape.",
+      "category": "PATTERN",
+      "source_artifact": "specs/626_wire_todo_review_roadmap_regenerate/reports/01_wire-todo-review-roadmap.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["roadmap preflight gate", "interactive vs autonomous", "AskUserQuestion", "degrade loudly"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 626 to create implementation plan"
+}
