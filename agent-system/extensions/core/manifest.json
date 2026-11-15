@@ -32,6 +32,7 @@
       "planner-agent.md",
       "reviser-agent.md",
       "roadmap-agent.md",
+      "scout-agent.md",
       "spawn-agent.md"
     ],
     "commands": [

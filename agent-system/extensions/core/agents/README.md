@@ -13,6 +13,7 @@ Agent definitions for the Claude Code system. Agents perform execution work for 
 | code-reviewer-agent.md | Code quality assessment and review |
 | reviser-agent.md | Plan revision and task description updates |
 | spawn-agent.md | Blocker analysis and task decomposition |
+| scout-agent.md | Read-only strategic orientation brief, dispatched on demand from `/review --brief` |
 
 ## Agent Structure
 

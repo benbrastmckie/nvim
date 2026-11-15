@@ -444,7 +444,9 @@
         "planning"
       ],
       "load_when": {
-        "agents": [],
+        "agents": [
+          "scout-agent"
+        ],
         "task_types": [],
         "commands": [
           "/todo"
@@ -1446,7 +1448,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Mapping of skills to agents",
-      "line_count": 145,
+      "line_count": 144,
       "keywords": [
         "reference",
         "skill",
@@ -3181,7 +3183,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Task-lock acquisition, heartbeat, and release contract for concurrent task execution",
-      "line_count": 1737,
+      "line_count": 1739,
       "keywords": [
         "task-lock",
         "concurrency",
@@ -3228,7 +3230,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 1094,
+      "line_count": 1091,
       "keywords": [
         "git-staging",
         "commit-scope",
@@ -3343,7 +3345,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Full task-reference exemption taxonomy and enforcement narrative, companion to the always-eager no-task-references-in-deliverables.md rule",
-      "line_count": 178,
+      "line_count": 179,
       "keywords": [
         "task-references",
         "exemptions",

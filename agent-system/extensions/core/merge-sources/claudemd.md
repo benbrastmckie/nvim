@@ -104,7 +104,7 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 | `/task` | `/task "Description"` | Create task |
 | `/task` | `/task --recover N`, `--expand N`, `--sync`, `--abandon N` | Manage tasks |
 | `/revise` | `/revise N` | Create new plan version |
-| `/review` | `/review` | Analyze codebase |
+| `/review` | `/review` | Analyze codebase, or brief |
 | `/project-overview` | `/project-overview` | Interactive repo scan and project-overview.md generation |
 | `/todo` | `/todo` | Archive completed/abandoned tasks, sync repository metrics |
 | `/errors` | `/errors` | Analyze error patterns, create fix plans |
@@ -172,7 +172,7 @@ keeps only the Skill -> Agent pairing, which the harness does not provide.
 | skill-zulip | (direct execution) |
 | skill-project-overview | (direct execution) |
 | skill-telemetry | (direct execution) |
-| /review | (direct execution) — code-reviewer-agent available for future skill integration |
+| /review | (direct execution) — code-reviewer-agent; scout-agent (brief) |
 
 **Model Enforcement**: Agents declare preferred models via `model:` frontmatter using a tiered policy (Opus for deep-reasoning agents, Sonnet for workers), overridable per-invocation by independent effort (`--fast`, `--hard`) and model (`--haiku`, `--sonnet`, `--opus`, `--fable`) flags. See `.claude/docs/reference/standards/agent-frontmatter-standard.md` for the full tier table and flag semantics.
 

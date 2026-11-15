@@ -59,6 +59,7 @@ Multi-task syntax: the research, plan, and implement phases (dispatched via `/or
 | code-reviewer-agent | Code quality assessment and review |
 | reviser-agent | Plan revision with research synthesis |
 | spawn-agent | Blocker analysis and task decomposition |
+| scout-agent | Read-only strategic orientation brief, dispatched on demand from `/review --brief` |
 
 Agent definitions include an `agents/README.md` documenting the shared agent frontmatter standard.
 
@@ -80,6 +81,7 @@ core/
 │   ├── code-reviewer-agent.md
 │   ├── reviser-agent.md
 │   ├── spawn-agent.md
+│   ├── scout-agent.md
 │   └── README.md
 │
 ├── commands/                  # 15 slash command definitions

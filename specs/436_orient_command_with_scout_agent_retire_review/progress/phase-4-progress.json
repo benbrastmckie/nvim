@@ -1,0 +1,80 @@
+{
+  "phase": 4,
+  "phase_name": "Registry and Documentation Wiring",
+  "started_at": "2026-11-15T00:25:00Z",
+  "last_updated": "2026-11-15T01:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Append scout-agent.md to manifest.json's provides.agents (alphabetical insert)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    },
+    {
+      "id": 2,
+      "description": "Do not touch routing_agents",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Add scout-agent to index-entries.json's formats/roadmap-format.md load_when.agents",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/index-entries.json"]
+    },
+    {
+      "id": 4,
+      "description": "Do not add scout to analysis-framework.md/review-process.md load_when.agents",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Add scout-agent.md row to agents/README.md agent table",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/agents/README.md"]
+    },
+    {
+      "id": 6,
+      "description": "Add matching row and directory-tree line to README.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/README.md"]
+    },
+    {
+      "id": 7,
+      "description": "Update merge-sources/claudemd.md's /review command-table row and skill-to-agent row, one line each",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"],
+      "note": "Initial additions pushed the eager-load budget total 199 B over the fixed baseline (70,400 B); trimmed both rows to a compact floor form (dropped the pre-existing 'available for future skill integration' phrase and the explicit [--brief] usage token) to land at exactly 70,400 B. Recorded via issue-record.sh (class 'budget constraint tradeoff')."
+    },
+    {
+      "id": 8,
+      "description": "Re-verify code-reviewer-agent untouched across all 8 named consumers",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 9,
+      "description": "Confirm jq empty parses both edited JSON files",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {
+      "approach": "Several wording trims for the two claudemd.md rows, iterated against measure-eager-context.sh --check until exactly at the 70,400 B ceiling",
+      "result": "succeeded"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.7",
+      "description": "Update merge-sources/claudemd.md's /review rows",
+      "type": "altered",
+      "reason": "Dropped the pre-existing 'available for future skill integration' phrase from the skill-to-agent row and the explicit [--brief] token from the command-table row's usage column to stay within the fixed eager-load budget ceiling; both rows still name scout-agent and the brief capability.",
+      "annotation": "*(deviation: altered — trimmed wording to stay within eager-load budget)*"
+    }
+  ]
+}

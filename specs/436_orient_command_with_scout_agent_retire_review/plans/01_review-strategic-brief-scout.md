@@ -399,7 +399,7 @@ run alongside the diff read-through this tier prescribes.
 
 ---
 
-### Phase 4: Registry and Documentation Wiring [NOT STARTED]
+### Phase 4: Registry and Documentation Wiring [COMPLETED]
 
 **Goal**: Register the scout in core's manifest so it deploys at all, give it the one indexed
 context doc it genuinely needs, and bring the agent tables and the CLAUDE.md merge source into
@@ -407,39 +407,45 @@ line — without granting it a lifecycle route it does not have.
 
 **Tasks**:
 
-- [ ] Append `"scout-agent.md"` to `manifest.json`'s `provides.agents` array (currently 8
+- [x] Append `"scout-agent.md"` to `manifest.json`'s `provides.agents` array (currently 8
       entries, alphabetically ordered — insert in order). This is mandatory, not cosmetic:
       `check-extension-docs.sh` Rule J FAILs a deployed agent with no `provides.agents` source,
       and `deploy-headless.sh` copies agents from this array, so an unregistered file never
-      deploys.
-- [ ] Do NOT add anything to `manifest.json`'s `routing_agents` block. It is keyed by lifecycle
+      deploys. *(completed: inserted between roadmap-agent.md and spawn-agent.md, 8 -> 9 entries)*
+- [x] Do NOT add anything to `manifest.json`'s `routing_agents` block. It is keyed by lifecycle
       phase (`research`/`plan`/`implement`) then task type; the scout is neither, and an entry
       there would wrongly claim a task-type route. Core carries `routing_exempt: true` and already
       has a non-empty `routing_agents`, so the existing
-      "declares agents but has no routing_agents block" check is already satisfied.
-- [ ] Add `"scout-agent"` to the `load_when.agents` array of `index-entries.json`'s existing
+      "declares agents but has no routing_agents block" check is already satisfied. *(completed:
+      confirmed git diff shows exactly the one-line provides.agents insertion, routing_agents
+      byte-identical)*
+- [x] Add `"scout-agent"` to the `load_when.agents` array of `index-entries.json`'s existing
       `formats/roadmap-format.md` entry. Do not add, remove, or renumber any entry, and do not
       touch any `line_count` field — this edit changes no indexed file's content, so no
-      `line_count` moves and `check-extension-docs.sh` Rule R is unaffected.
-- [ ] Do NOT add the scout to `standards/analysis-framework.md`'s or
+      `line_count` moves and `check-extension-docs.sh` Rule R is unaffected. *(completed)*
+- [x] Do NOT add the scout to `standards/analysis-framework.md`'s or
       `workflows/review-process.md`'s `load_when.agents` arrays. Those carry
       `code-reviewer-agent`'s code-review standards, which are the wrong domain for an
-      orientation brief and would inflate the scout's composition for no benefit.
-- [ ] Add a `| scout-agent.md | ... |` row to `agents/README.md`'s agent table, in the existing
-      table's style and ordering.
-- [ ] Add a matching row to `README.md`'s agent table and add `scout-agent.md` to the directory
+      orientation brief and would inflate the scout's composition for no benefit. *(completed)*
+- [x] Add a `| scout-agent.md | ... |` row to `agents/README.md`'s agent table, in the existing
+      table's style and ordering. *(completed)*
+- [x] Add a matching row to `README.md`'s agent table and add `scout-agent.md` to the directory
       tree listing in the same file, next to the existing `code-reviewer-agent.md` lines.
-- [ ] Update `merge-sources/claudemd.md`: the `/review` row in the command-reference table so it
+      *(completed)*
+- [x] Update `merge-sources/claudemd.md`: the `/review` row in the command-reference table so it
       mentions the strategic-brief mode, and the `| /review | (direct execution) ... |` row in the
       skill-to-agent table so it names `scout-agent` for the brief alongside the existing
       `code-reviewer-agent` note. Keep both edits to one line each — the file is 284 lines and
-      every line merges into the generated `.claude/CLAUDE.md`.
-- [ ] Re-verify, before closing the phase, that `code-reviewer-agent` is untouched: still in
+      every line merges into the generated `.claude/CLAUDE.md`. *(completed: deviation — trimmed
+      both rows' wording to a compact floor form to stay within the fixed eager-load budget
+      ceiling, which the initial fuller wording breached by 199 B; see progress file deviation
+      4.7)*
+- [x] Re-verify, before closing the phase, that `code-reviewer-agent` is untouched: still in
       `provides.agents`, still in the three `index-entries.json` `load_when.agents` rows, still in
       `validate-index.sh`'s budget loop, still in all three `lint-agent-contracts.sh` exclusion
       arrays, still in `validate-context-budgets.sh`'s `CAPS` at 8000, and still in both README
-      tables.
-- [ ] Confirm `jq empty` parses both edited JSON files before committing.
+      tables. *(completed: all 8 consumers confirmed intact)*
+- [x] Confirm `jq empty` parses both edited JSON files before committing. *(completed)*
 
 **Timing**: 1 hour
 
