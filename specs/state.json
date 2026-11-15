@@ -929,7 +929,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Close sapience activation-surface scoping gaps: vendor user-level hooks, capture coupling, verifier and docs"
     },
     {
       "project_number": 635,
@@ -2282,7 +2283,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Enforce the sapience postflight wrapup write at task completion"
     },
     {
       "project_number": 634,
@@ -3911,7 +3913,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "title": "Run the end-of-orchestration roadmap regenerate mechanically, for any batch size"
     },
     {
       "project_number": 629,

@@ -579,7 +579,7 @@ and `544`. None is a whole-corpus discovery scope, and none is a defect.
 477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
 514 ready           Convergence guard blind to zero-dispatch cycles
 610 ready           full_gate_verification_ceiling_and_stall
-634 ready           mechanize_orchestrate_conclusion_roadmap_regenerate
+634 ready           Run the end-of-orchestration roadmap regenerate mechanically, for any batch size
 ```
 
 **Agent system (54)**
@@ -644,8 +644,8 @@ and `544`. None is a whole-corpus discovery scope, and none is a defect.
 ```
 628 blocked:527     retract_sapience_write_tool_grants
 627 ready           reap_orphan_sapience_mcp_registrations
-635 ready           enforce_sapience_postflight_wrapup_write
-636 ready           sapience_activation_surface_scoping_gaps
+635 ready           Enforce the sapience postflight wrapup write at task completion
+636 ready           Close sapience activation-surface scoping gaps: vendor user-level hooks, capt...
 ```
 
 **Decidability (1)**

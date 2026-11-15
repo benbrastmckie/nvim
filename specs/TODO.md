@@ -120,7 +120,7 @@ next_project_number: 637
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-634 [NOT STARTED] — Make /orchestrate's end-of-run roadmap regeneration...
+634 [NOT STARTED] — Run the end-of-orchestration roadmap regenerate mechanically,...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 624 [NOT STARTED] — Make system-defect-record.sh able to attribute a...
 
@@ -185,8 +185,8 @@ next_project_number: 637
 ### Sapience
 
 627 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-635 [NOT STARTED] — Enforce the sapience postflight wrapup write at task...
-636 [NOT STARTED] — Close the remaining per-repo scoping gaps in the sapience...
+635 [NOT STARTED] — Enforce the sapience postflight wrapup write at task completion
+636 [NOT STARTED] — Close sapience activation-surface scoping gaps: vendor...
 628 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
 ### Decidability
@@ -200,7 +200,7 @@ next_project_number: 637
 
 ## Tasks
 
-### 636. Sapience activation surface scoping gaps
+### 636. Close sapience activation-surface scoping gaps: vendor user-level hooks, capture coupling, verifier and docs
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: sapience
@@ -220,7 +220,7 @@ GOAL. (1) verify-sapience-mcp.sh gains a check that fails when $HOME/.claude/set
 
 ---
 
-### 635. Enforce sapience postflight wrapup write
+### 635. Enforce the sapience postflight wrapup write at task completion
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: sapience
@@ -236,7 +236,7 @@ GOAL. (1) Decide and implement where the wrapup write is mechanically anchored: 
 
 ---
 
-### 634. Mechanize orchestrate conclusion roadmap regenerate
+### 634. Run the end-of-orchestration roadmap regenerate mechanically, for any batch size
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
