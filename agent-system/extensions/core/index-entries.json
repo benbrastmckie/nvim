@@ -1228,7 +1228,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Caller contract for roadmap-integration.sh: the --print/--regenerate mode contracts, --prune as a deprecated --regenerate alias, the batch-proposal lint's disposition, and the stderr marker",
-      "line_count": 184,
+      "line_count": 197,
       "keywords": [
         "caller-contract",
         "patterns",
@@ -1924,7 +1924,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Tool restrictions in postflight phase",
-      "line_count": 325,
+      "line_count": 331,
       "keywords": [
         "standards",
         "postflight",
