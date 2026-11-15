@@ -298,35 +298,35 @@ run alongside the `local` row's single-file lint/diff read-through.
 
 ---
 
-### Phase 4: Rewrite the Caller Contract [NOT STARTED]
+### Phase 4: Rewrite the Caller Contract [COMPLETED]
 
 **Goal**: Make `context/patterns/roadmap-update.md` describe the four live callers and their arms,
 with no surviving claim that `/todo` or `/review` does not call the script.
 
 **Tasks**:
-- [ ] Enumerate the stale claims before editing:
-      `grep -n "two live callers\|Neither \`/todo\`\|does not call this script\|acknowledged as an" agent-system/extensions/core/context/patterns/roadmap-update.md`.
-- [ ] Rewrite `## Live Callers` as a four-entry list, each naming its caller, its invocation
+- [x] Enumerate the stale claims before editing:
+      `grep -n "two live callers\|Neither \`/todo\`\|does not call this script\|acknowledged as an" agent-system/extensions/core/context/patterns/roadmap-update.md`. *(completed: 3 hits at pre-edit lines 142, 154, 160)*
+- [x] Rewrite `## Live Callers` as a four-entry list, each naming its caller, its invocation
       point, its commit surface, and its arm: `/orchestrate`'s conclusion stage (Move 5, Step 5)
       — non-interactive arm; `roadmap-agent`'s Write Contract via `skill-roadmap/SKILL.md` Stage 1
       — interactive arm; `/todo` (`commands/todo.md`, Stage 6.6) — interactive arm; `/review`
-      (`commands/review.md`, Section 6.8) — interactive arm.
-- [ ] Remove the sentence asserting that neither `/todo` nor `/review` invokes the script, and
+      (`commands/review.md`, Section 6.8) — interactive arm. *(completed)*
+- [x] Remove the sentence asserting that neither `/todo` nor `/review` invokes the script, and
       correct the `## Responsibility Split` bullet that states `/review`'s own command body does
-      not call it.
-- [ ] Replace the Ruling paragraph with the current contract, stated positively: all four callers
+      not call it. *(completed)*
+- [x] Replace the Ruling paragraph with the current contract, stated positively: all four callers
       are wired, each behind the Preflight Obligation, and any future write-mode caller inherits
       that same obligation plus the interactive-vs-autonomous arm choice determined by whether an
-      approver is present on its own surface.
-- [ ] Add one sentence recording the Phase 1 ruling: both command-level callers are
+      approver is present on its own surface. *(completed)*
+- [x] Add one sentence recording the Phase 1 ruling: both command-level callers are
       direct-execution surfaces outside `context/standards/postflight-tool-restrictions.md`'s
-      scope, so neither carries a Move-5-shaped additive exception.
-- [ ] Update `## Preflight Obligation`'s parenthetical arm examples so the interactive arm names
-      all three of its callers.
-- [ ] Keep `--prune`'s deprecated-alias paragraph and the Destructive-Overwrite Refusal hard
-      constraint intact.
-- [ ] Write the current design only: no "previously", "no longer", "formerly", "the gap is now
-      closed", "supersedes", or any other draft-history phrasing, and no task number.
+      scope, so neither carries a Move-5-shaped additive exception. *(completed)*
+- [x] Update `## Preflight Obligation`'s parenthetical arm examples so the interactive arm names
+      all three of its callers. *(completed)*
+- [x] Keep `--prune`'s deprecated-alias paragraph and the Destructive-Overwrite Refusal hard
+      constraint intact. *(completed: `### \`--prune\` (deprecated alias)` Per-Mode-Contract section and the Preflight Obligation's Hard Constraint paragraph both left byte-identical)*
+- [x] Write the current design only: no "previously", "no longer", "formerly", "the gap is now
+      closed", "supersedes", or any other draft-history phrasing, and no task number. *(completed: grep confirms no hit; two pre-existing "no longer" occurrences outside the protected --prune section and outside this task's named edit points were also reworded — see progress file deviation — to satisfy this phase's own whole-file verification grep)*
 
 **Timing**: 0.75 hours
 

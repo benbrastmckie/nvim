@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Rewrite the Caller Contract",
+  "started_at": "2026-11-14T00:40:00Z",
+  "last_updated": "2026-11-14T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Enumerate stale claims", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Rewrite Live Callers / Responsibility Split / Ruling / Preflight Obligation", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/roadmap-update.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.x",
+      "description": "Reword two pre-existing 'no longer' phrasings in sections not named by the plan's own task list (the --prune Live-Callers sentence and the advisory batch-proposal lint disposition paragraph)",
+      "type": "altered",
+      "reason": "The plan's own Phase 4 verification greps the WHOLE file for forbidden draft-history phrasing with no scoping to only the hunks the task list names; leaving these two pre-existing occurrences would fail that explicit verification criterion. Reworded minimally to preserve meaning while removing the flagged word; did not touch the protected --prune Per-Mode-Contract section the Decisions explicitly says to keep intact (confirmed those two sentences are outside that section).",
+      "annotation": "*(deviation: altered — reworded two pre-existing forbidden-phrasing instances outside the plan's named edit points to satisfy the phase's own whole-file grep verification)*"
+    }
+  ]
+}

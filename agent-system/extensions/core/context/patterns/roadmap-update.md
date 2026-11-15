@@ -9,14 +9,13 @@ invokes which, when, and what each promises. The authored-vs-generated split its
 
 ## Responsibility Split
 
-- **`--regenerate` is the `/review`-shaped operation, and is also called directly by
-  `/orchestrate`'s own conclusion stage**: render `## Open work` and `## Next` wholly from
-  `state.json`, including each topic block's membership, every per-task status token, and every
-  `roadmap_batches` entry. `/review` already re-derives system state from scratch; this is the
-  mechanical analogue for `specs/ROADMAP.md` — but `/review`'s own command body does not call
-  this script (see "## Live Callers" below). The conclusion stage (Move 5, Step 5 — see
-  `context/contracts/conclusion-stage.md`) does call it, once per batch run, immediately after
-  Move 4 finalizes.
+- **`--regenerate` is the `/review`-shaped operation, and is called by four surfaces** (see "##
+  Live Callers" below for the full list and each one's arm): render `## Open work` and `## Next`
+  wholly from `state.json`, including each topic block's membership, every per-task status
+  token, and every `roadmap_batches` entry. `/review` already re-derives system state from
+  scratch; this is the mechanical analogue for `specs/ROADMAP.md`, and `/review`'s own command
+  body now calls this script directly (Section 6.8), alongside `/todo` (Stage 6.6),
+  `roadmap-agent`'s Write Contract, and `/orchestrate`'s conclusion stage.
 - **`--prune` is now a deprecated alias for `--regenerate`** (see its Per-Mode Contract entry
   below) — a file rendered wholly from live state cannot accumulate terminal cruft, so there is
   no separate `/todo`-shaped cleanup operation left to describe here.
@@ -123,11 +122,13 @@ verdict="$(bash .claude/scripts/lib/roadmap-preflight-lib.sh classify specs/ROAD
 - **`classic`/`stage`**: the gate is a no-op; proceed straight to the write-mode call as always.
 - **`absent`/`unknown`**: gate on the arm the caller's own surface supports — an interactive
   `AskUserQuestion` approval where a user-facing surface exists (`skill-roadmap/SKILL.md`'s
-  Stage 1, before `roadmap-agent` is dispatched), or a loud non-interactive degrade plus durable
-  evidence where none exists (`/orchestrate`'s conclusion stage, Move 5 Step 5 — see
-  `context/contracts/conclusion-stage.md`). Never a silent skip, and never an unapproved
-  auto-write: the mechanical skeleton scaffold (`roadmap-preflight-lib.sh scaffold`) is an
-  approved-write-only action.
+  Stage 1, before `roadmap-agent` is dispatched; `commands/todo.md`'s Stage 6.6.2; and
+  `commands/review.md`'s Section 6.8.2, each a user-invoked slash command running in a live
+  session with an approver present), or a loud non-interactive degrade plus durable evidence
+  where none exists (`/orchestrate`'s conclusion stage, Move 5 Step 5 — see
+  `context/contracts/conclusion-stage.md`, the one caller with no approver present). Never a
+  silent skip, and never an unapproved auto-write: the mechanical skeleton scaffold
+  (`roadmap-preflight-lib.sh scaffold`) is an approved-write-only action.
 
 **Hard constraint, restated from `roadmap-format.md`'s Destructive-Overwrite Refusal**: this
 preflight sits strictly IN FRONT of the generator's own refusal gate. It never weakens, bypasses,
@@ -139,37 +140,49 @@ special-cased per caller.
 
 ## Live Callers
 
-`--regenerate` has two live callers today, independent of each other:
+`--regenerate` has four live callers today, independent of each other:
 
 1. `/orchestrate`'s conclusion stage (Move 5, Step 5 — see
    `context/contracts/conclusion-stage.md`), which invokes it once per batch run, immediately
-   after Move 4 finalizes, and commits `specs/ROADMAP.md` alone, gated by the non-interactive
-   preflight arm above.
+   after Move 4 finalizes, and commits `specs/ROADMAP.md` alone. **Arm**: non-interactive —
+   loud degrade plus durable evidence on `absent`/`unknown`, since this surface has no approver
+   present.
 2. `roadmap-agent.md`'s own Write Contract, dispatched by `skill-roadmap/SKILL.md` for every
-   `/roadmap` invocation — this is a second, pre-existing caller, not something this task adds;
-   `skill-roadmap/SKILL.md`'s Stage 1 preflight (the interactive arm above) runs before this
-   agent is ever dispatched, so its own `--regenerate` call always lands on an already-`classic`
-   (or already-`stage`) file.
+   `/roadmap` invocation; `skill-roadmap/SKILL.md`'s Stage 1 preflight runs before this agent is
+   ever dispatched, so its own `--regenerate` call always lands on an already-`classic` (or
+   already-`stage`) file. **Arm**: interactive — a single `AskUserQuestion` approval on
+   `absent`/`unknown`, since `/roadmap` runs in a live session with an approver present.
+3. `/todo` (`commands/todo.md`, Stage 6.6), which classifies, approves, regenerates, and commits
+   `specs/ROADMAP.md` alone after Stage 6's archival commit and Stage 6.5's metrics sync.
+   **Arm**: interactive — the same single `AskUserQuestion` approval shape as `/roadmap`, since
+   `/todo` is a user-invoked slash command running in a live session with
+   `AskUserQuestion` already in its `allowed-tools` frontmatter.
+4. `/review` (`commands/review.md`, Section 6.8), which classifies, approves, regenerates, and
+   commits `specs/ROADMAP.md` alone after Section 5's task creation and Section 6.7's Task Order
+   management; `--brief` mode (Section 1.1) early-exits before reaching it and performs no
+   roadmap write. **Arm**: interactive, for the same reason as `/todo`.
 
-Neither `/todo` (`commands/todo.md`) nor `/review` (`commands/review.md`)
-invokes this script.
+Both `/todo` and `/review` are direct-execution command bodies that never delegate to a
+subagent, so neither is governed by
+`context/standards/postflight-tool-restrictions.md`'s base tables — those tables, and
+`scripts/lint/lint-postflight-boundary.sh`'s enforcement of them, are scoped to skills that
+delegate via the Agent tool. Neither new caller needs a Move-5-shaped additive exception of the
+kind the conclusion stage's own call carries.
 
-`--prune` has no live caller, and is now a deprecated alias for `--regenerate` (see above) —
-there is no longer a distinct behavior for a caller to adopt.
+`--prune` has no live caller, and is now a deprecated alias for `--regenerate` (see above) — a
+caller has no distinct `--prune` behavior to adopt beyond what `--regenerate` already provides.
 
-**Ruling**: wiring `/todo` to `--regenerate` and `/review` to `--regenerate` is acknowledged as an
-open gap and is deliberately left unwired. A mode is not wired into a command merely to make
-this contract's caller table symmetric with the conclusion stage's own live call. If a concrete
-operational need for that wiring arises, file it via `/task` or `/spawn` rather than wiring it
-preemptively here.
+All four callers are wired behind the Preflight Obligation above, and each one's arm follows
+directly from whether an approver is present on its own surface. A future new write-mode caller
+inherits that same obligation plus that same arm choice — it is not special-cased per caller.
 
 **The advisory batch-proposal lint's disposition.** A separate record owns an advisory lint over
 hand-authored `## Next` batch blocks (`.claude/scripts/lint/lint-roadmap-batch-proposals.sh`,
 invoked from the conclusion stage's Step 5 — see `context/contracts/conclusion-stage.md`),
-carrying a hard constraint that it must never author, suggest, or rank a batch. Now that `##
-Next` is rendered wholly from `roadmap_batches` rather than hand-authored, that lint's subject
-matter — a hand-authored Run line to check — no longer exists in the shape it was written
-against. Its disposition is **superseded in its parse layer, not merely narrowed**: the lint is
+carrying a hard constraint that it must never author, suggest, or rank a batch. `## Next` is
+rendered wholly from `roadmap_batches` rather than hand-authored, so that lint's subject matter
+— a hand-authored Run line to check — does not exist in the shape it was written against. Its
+disposition is **superseded in its parse layer, not merely narrowed**: the lint is
 wired into no gate (zero references in `verify-deploy.sh`, `gate-registry.data`, or
 `tests/run-all.sh`), so nothing breaks mechanically in the interim, but its parse target is gone.
 The rescoping-or-retirement decision is left to that lint's own owner and is **not made here**.
