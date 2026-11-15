@@ -133,7 +133,6 @@ whenever `/todo` archives or `/review` rewrites. That is the head batch's remain
 it is now one wave out rather than three.
 
 ```
-/orchestrate 436, 626   # Settle /review's fate before wiring it: the orient command, then roadmap regeneration callers
 /orchestrate 585, 572, 591   # the verify-deploy.sh lane, serialized on shared territory
 /orchestrate 527, 628, 627   # The deployed-set convergence mechanism, then sapience's grant retraction and registration reaper
 /orchestrate 568, 476, 624, 586, 604, 605   # Gate 8's residual roster, its two lints and the defect recorder, serialized on one suite
@@ -473,12 +472,12 @@ and `544`. None is a whole-corpus discovery scope, and none is a defect.
 /orchestrate 535,536,537,538,539,545,548,549
 /orchestrate 551,556,557,558,559,560,562,563
 /orchestrate 565,567,574,575,599,607,610,613
-/orchestrate 618
+/orchestrate 618,629,631,632,633,634,635,636
 ```
 
 ## Open work
 
-**Core agent system (46)**
+**Core agent system (44)**
 ```
 439 blocked:431     Rule on the propagation model for the bounded-wait agent contract
 454 blocked:439     State the result-needed-this-turn criterion for choosing the foreground form,...
@@ -495,12 +494,10 @@ and `544`. None is a whole-corpus discovery scope, and none is a defect.
 588 blocked:509     Bar a pre-redeploy plan step from naming a deploy-tree-resolved subject unles...
 591 blocked:572,585 Decide the fate of the errors.json triage surface
 605 blocked:476,586,604  Flag an advisory known-failures roster row whose named suite now passes
-626 blocked:436     Wire /todo and /review to roadmap regeneration behind the shared preflight gate
 338 ready           Classify every task-support file as tracked or ignored
 410 ready           Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on ...
 421 ready           Close three gaps in the telemetry --meta evidence consumer
 431 ready           Record the gate-enforced verbatim-duplication exclusion class as durable agen...
-436 ready           Add the /orient executive-orientation command with a read-only scout agent, a...
 452 ready           Require a verification criterion over a repo-wide gate with standing pre-exis...
 456 ready           Exempt private npm/Cargo manifests from /tag's version gate
 473 ready           Strip record-versioning language from the boundary-owned architecture docs
@@ -573,7 +570,7 @@ and `544`. None is a whole-corpus discovery scope, and none is a defect.
 504 ready           Reconcile the Lean Goals-block harvester with its documented contract
 ```
 
-**Orchestrator (7)**
+**Orchestrator (8)**
 ```
 513 blocked:479     Mechanically detect a plan phase that closed without its own commit
 518 blocked:472     State the blockers[] admission contract and continuation-on-partial requireme...
@@ -582,9 +579,10 @@ and `544`. None is a whole-corpus discovery scope, and none is a defect.
 477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
 514 ready           Convergence guard blind to zero-dispatch cycles
 610 ready           full_gate_verification_ceiling_and_stall
+634 ready           mechanize_orchestrate_conclusion_roadmap_regenerate
 ```
 
-**Agent system (49)**
+**Agent system (54)**
 ```
 481 blocked:390     Rule on and migrate the 32-record mis-sited agent-system task delta accumulat...
 533 blocked:410     lake-build-guard replays stale result for env lean FILE
@@ -611,6 +609,7 @@ and `544`. None is a whole-corpus discovery scope, and none is a defect.
 596 blocked:595,599 Separate generator-written files from hand-edited read-only scope declarations
 598 blocked:548     Provide a sanctioned in-dispatch remedy for a mechanically coupled pair path ...
 609 blocked:577     Stop a pending user question from charging its own task into failed_tasks and...
+630 blocked:629     Give test-deploy-propagation.sh and test-gate-registry-resolution.sh declared...
 390 ready           Migrate seven mis-sited agent-system tasks out of BimodalLogic and retire one...
 438 ready           Dependency edges conflate semantic and serialization rationale, and a semanti...
 510 ready           Fix a missing lib dependency in the predispatch-review test fixture
@@ -635,12 +634,18 @@ and `544`. None is a whole-corpus discovery scope, and none is a defect.
 562 ready           conclusion stage drops null-resolution issue-log entries
 599 ready           Give the batch-gate-deferral directive a narrowing form that covers a phase t...
 607 ready           Resolve the gate 20 orchestrator context-budget overage and the per-gate time...
+629 ready           Fix the two-engine defect: scan_all_artifacts' sync_scan allow-list post-filt...
+631 ready           Replace test-typescript-verify.sh's fixed-depth REPO_ROOT walk with a boundar...
+632 ready           Stop orchestrator-context-budget.json's derivation log from re-breaking the t...
+633 ready           Resolve the stray duplicate .claude-extensions.json sitting inside the core e...
 ```
 
-**Sapience (2)**
+**Sapience (4)**
 ```
 628 blocked:527     retract_sapience_write_tool_grants
 627 ready           reap_orphan_sapience_mcp_registrations
+635 ready           enforce_sapience_postflight_wrapup_write
+636 ready           sapience_activation_surface_scoping_gaps
 ```
 
 **Decidability (1)**
