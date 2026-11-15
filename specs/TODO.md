@@ -1,5 +1,5 @@
 ---
-next_project_number: 635
+next_project_number: 636
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 635
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,452,453,455,456,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633,634 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,452,453,455,456,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633,634,635 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,628,630 | 383,390,398,410,431,451,452,453,455,463,472,479,484,491,504,505,527,534,535,538,539,548,549,563,568,585,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,501,508,547,552,570,571,579,581,586,588,591,594,624 | 438,439,472,476,486,492,509,518,519,542,543,564,572,580,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 524,561,577,595,605 | 501,539,547,552,586,594,604 | core-agent-system, agent-system |
@@ -185,6 +185,7 @@ next_project_number: 635
 ### Sapience
 
 627 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+635 [NOT STARTED] — Enforce the sapience postflight wrapup write at task...
 628 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
 ### Decidability
@@ -197,6 +198,22 @@ next_project_number: 635
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 635. Enforce sapience postflight wrapup write
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: sapience
+- **Dependencies**: None
+
+**Description**: Enforce the sapience postflight wrapup write at task completion so repo-tagged notes are actually written for every completed task, rather than depending on an instruction-level step the orchestrator can skip.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** and, where the call site lives there, agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve each source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**. Follow rules/sapience-write-path.md: the only prescribed write path is scripts/sapience-remember.sh, and the 3-8-note bound per completed task must be inherited, never duplicated.
+
+MEASURED EVIDENCE. `/orchestrate 436, 626` (session sess_1794696615_44948d, Claude Code session 75e6dabf-51fd-4c67-ba3f-77a3e96d83a3) drove both tasks to [COMPLETED], yet neither the lead transcript nor any of its 12 subagent transcripts contains a single `sapience-remember.sh --subject` invocation; other sessions in the same repo and week do contain them, so the write is intermittent. The call site is prose only (EXTENSION.md's postflight wrapup instruction at the [IMPLEMENTING] -> [COMPLETED] transition); context/project/sapience/domain/per-repo-scoping.md's "No Lifecycle Hook" section records why a manifest hooks.postflight entry can never fire for a typeless extension. Meanwhile untagged MCP write-tool calls (sapience_remember/wrapup/handoff/adddoc) still occur in extension repos (4 BimodalLogic session files in three days), prompted by the vendor SessionStart nudge.
+
+GOAL. (1) Decide and implement where the wrapup write is mechanically anchored: e.g. the completing implementation agent emits a bounded `sapience_notes` array in its return metadata and the completion postflight script (the path that already propagates completion_summary) calls sapience-remember.sh once per note, non-fatally, mirroring failures via issue-record.sh under "infrastructure/transport unavailable"; or an equivalent design with the same properties. The notes' content stays agent-authored; only the write is mechanical. (2) Zero notes for a completed task is recorded as a visible, non-blocking gap (an event or issue row), never silent. (3) The 3-8 bound is enforced at that one site. (4) Works in deferred-completion paths too (deploy-gate refusal later settled by reconcile-task-status.sh -- the exact path task 626 took). (5) Update per-repo-scoping.md's "The Tagged-Write Call Site" / "No Lifecycle Hook" sections and EXTENSION.md to state the resulting design; add tests with the network call stubbed (--dry-run).
+
+---
 
 ### 634. Mechanize orchestrate conclusion roadmap regenerate
 - **Status**: [NOT STARTED]
