@@ -770,6 +770,67 @@ bash .claude/scripts/state-write.sh \
   2>/dev/null || echo "Note: Failed to write active_goal / regenerate TODO.md (non-fatal)" >&2
 ```
 
+### 6.8. Regenerate Roadmap
+
+Regenerate `specs/ROADMAP.md` from the current `state.json` so a roadmap-updating command never
+leaves it stale behind a silent refusal. This section runs after Section 5's task creation and
+Section 6.7's Task Order management, so the render reflects the state this run produced — the
+same "render after this run's own changes, not before them" rationale `commands/todo.md`'s
+Stage 6.6 applies. **`--brief` mode (Section 1.1) early-exits before this point and therefore
+performs no roadmap write.**
+
+**Step 6.8.1: Classify** (never writes):
+```bash
+verdict="$(bash .claude/scripts/lib/roadmap-preflight-lib.sh classify specs/ROADMAP.md)"
+```
+- **`classic`/`stage`**: proceed straight to Step 6.8.3 — no question asked, nothing written.
+- **`absent`/`unknown`**: continue to Step 6.8.2 before any write.
+
+**Step 6.8.2: Approve and scaffold on `absent`/`unknown`**:
+
+Ask a single `AskUserQuestion` for approval to create (`absent`) or repair (`unknown`) the file,
+before any write. The question names:
+- the verdict (`absent`: no roadmap tracked yet; `unknown`: the file exists but its section
+  headers match neither the classic nor the stage vocabulary, so `--regenerate` refuses loudly
+  rather than guess),
+- what the mechanical skeleton write does (the eight classic headers get short honest stubs for
+  the owner to fill in by hand; `## Next`/`## Open work` are rendered by `--regenerate`
+  immediately afterward), and
+- for `unknown` specifically: that the existing file's full content is preserved verbatim under
+  `## Unfiled observations (none worth a task yet)`, never discarded, reordered, or
+  reinterpreted.
+
+**On approval**, run the scaffold and continue to Step 6.8.3:
+```bash
+bash .claude/scripts/lib/roadmap-preflight-lib.sh scaffold specs/ROADMAP.md
+```
+
+**On decline**, skip Step 6.8.3 and Step 6.8.4 entirely, write nothing, and record the skip for
+Section 8's output (`roadmap_regenerated: skipped-pending-approval`).
+
+**Step 6.8.3: Regenerate** (non-fatal on failure, per `rules/error-handling.md`'s non-blocking
+treatment of generator calls):
+```bash
+bash .claude/scripts/roadmap-integration.sh --regenerate || echo "Note: roadmap regeneration failed (non-fatal)" >&2
+```
+
+**Step 6.8.4: Commit only if the render changed the file**, in its own `specs/ROADMAP.md`-only
+commit via `git-commit-scoped.sh` — **never** added to Section 7's own `stage_paths` array:
+```bash
+if [ -n "$(git diff --name-only -- specs/ROADMAP.md)" ]; then
+  bash .claude/scripts/git-commit-scoped.sh \
+    --message "review: regenerate roadmap" \
+    --session "${session_id}" \
+    -- specs/ROADMAP.md
+fi
+```
+`--honest-index-rows` and `--task` are both inapplicable here: this is a repo-wide render with no
+owning task number, not a task-scoped row.
+
+**Step 6.8.5: Report**:
+Track for output:
+- `roadmap_regenerated`: `true` / `false` / `skipped-pending-approval`
+
 ### 7. Git Commit
 
 Commit review report, state files, and task state:
@@ -846,6 +907,8 @@ Tasks created: {N}
 {If no tasks created:}
 No tasks created.
 
+Roadmap: {regenerated/unchanged/skipped pending approval}
+
 Next Steps:
 1. Review report for details
 2. Run /orchestrate {N} to address issues
@@ -858,4 +921,5 @@ Next Steps:
 | Issues found | Always |
 | Tasks created | tasks_created > 0 |
 | No tasks created | tasks_created == 0 |
+| Roadmap | Always, when not `--brief` mode (reflects `roadmap_regenerated`) |
 | Next Steps | Always |

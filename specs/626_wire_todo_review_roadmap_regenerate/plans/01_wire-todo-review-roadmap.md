@@ -246,27 +246,27 @@ one file, touching no other stage; confirm with
 
 ---
 
-### Phase 3: Wire `/review` to `--regenerate` [NOT STARTED]
+### Phase 3: Wire `/review` to `--regenerate` [COMPLETED]
 
 **Goal**: Add the same classify-gated roadmap regeneration to `commands/review.md`'s main flow,
 immediately before its existing Git Commit section, with its own `specs/ROADMAP.md`-only commit.
 
 **Tasks**:
-- [ ] Re-confirm the insertion anchor: `grep -n '^### 6.7\.\|^### 7\. Git Commit' agent-system/extensions/core/commands/review.md`.
-- [ ] Insert a new `### 6.8. Regenerate Roadmap` section between `### 6.7. Interactive Task Order
+- [x] Re-confirm the insertion anchor: `grep -n '^### 6.7\.\|^### 7\. Git Commit' agent-system/extensions/core/commands/review.md`. *(completed: lines 675/773 before edit)*
+- [x] Insert a new `### 6.8. Regenerate Roadmap` section between `### 6.7. Interactive Task Order
       Management` and `### 7. Git Commit`, with a one-line note that it runs after task creation
-      and Task Order management so the render reflects the state this run produced.
-- [ ] Classify -> interactive `AskUserQuestion` on `absent`/`unknown` -> scaffold on approval ->
+      and Task Order management so the render reflects the state this run produced. *(completed)*
+- [x] Classify -> interactive `AskUserQuestion` on `absent`/`unknown` -> scaffold on approval ->
       `--regenerate`, using the identical step shape and wording as Phase 2's Steps 6.6.1-6.6.3
       (same library entry points, same approval content, same non-fatal degrade), reworded only
-      for `/review`'s own context.
-- [ ] Commit `specs/ROADMAP.md` alone in its own `git-commit-scoped.sh` invocation, gated on the
+      for `/review`'s own context. *(completed)*
+- [x] Commit `specs/ROADMAP.md` alone in its own `git-commit-scoped.sh` invocation, gated on the
       file actually differing, with message `review: regenerate roadmap`. Do **not** add
-      `specs/ROADMAP.md` to Section 7's existing `stage_paths` array.
-- [ ] State explicitly in the new section that `--brief` mode (Section 1.1) early-exits before
-      this point and therefore performs no roadmap write.
-- [ ] Surface the outcome in `### 8. Output` as one line.
-- [ ] Use `--regenerate` only; never `--prune`. Write no task number into the file.
+      `specs/ROADMAP.md` to Section 7's existing `stage_paths` array. *(completed: confirmed via diff that stage_paths block is untouched)*
+- [x] State explicitly in the new section that `--brief` mode (Section 1.1) early-exits before
+      this point and therefore performs no roadmap write. *(completed)*
+- [x] Surface the outcome in `### 8. Output` as one line. *(completed: also added Roadmap row to Section Inclusion Rules table)*
+- [x] Use `--regenerate` only; never `--prune`. Write no task number into the file. *(completed: grep confirms no `--prune` hit)*
 
 **Timing**: 1 hour
 

@@ -1,0 +1,14 @@
+{
+  "phase": 3,
+  "phase_name": "Wire /review to --regenerate",
+  "started_at": "2026-11-14T00:25:00Z",
+  "last_updated": "2026-11-14T00:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm insertion anchor", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert new 6.8 section with classify/approve/regenerate/commit/output", "status": "done", "files_touched": ["agent-system/extensions/core/commands/review.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
