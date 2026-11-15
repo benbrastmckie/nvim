@@ -360,29 +360,29 @@ run alongside the `prose` row's diff read-through.
 
 ---
 
-### Phase 5: Deploy and Full Acceptance Verification [NOT STARTED]
+### Phase 5: Deploy and Full Acceptance Verification [COMPLETED]
 
 **Goal**: Regenerate the deployed tree from the edited source store and prove the complete gate
 set passes with all four callers wired and the contract matching the code.
 
 **Tasks**:
-- [ ] `bash .claude/scripts/deploy-headless.sh` (default non-destructive resync) to regenerate
-      `.claude/**` from the edited source store.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (no `--only-gate`, no
-      `--skip-slow`), and confirm exit 0.
-- [ ] Re-run the library's own consumer-discovery command and confirm both new consumers appear:
+- [x] `bash .claude/scripts/deploy-headless.sh` (default non-destructive resync) to regenerate
+      `.claude/**` from the edited source store. *(completed: landed, with deploy-headless's own internal fast-gate pass flagging pre-existing/unrelated findings — see below)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (no `--only-gate`, no
+      `--skip-slow`), and confirm exit 0. *(deviation: altered — discharged against the scoped narrowing invocation `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4,9` per this dispatch's Batch Gate Deferral directive, rather than run unnarrowed; the complete gate set is deferred to the batch-level stage. Scoped result: doc-lint and postflight-boundary lint PASS; task-reference lint shows the same single pre-existing, out-of-scope finding (orchestrator-context-budget.json, a file this task never touches) noted since Phase 1. See progress file deviations and issue-record entries.)*
+- [x] Re-run the library's own consumer-discovery command and confirm both new consumers appear:
       `grep -rl 'roadmap-preflight-lib.sh' agent-system/extensions/core` now lists
-      `commands/todo.md` and `commands/review.md` alongside the existing hits.
-- [ ] Confirm the caller count is consistent across the deployed tree:
+      `commands/todo.md` and `commands/review.md` alongside the existing hits. *(completed: both present)*
+- [x] Confirm the caller count is consistent across the deployed tree:
       `grep -rn 'roadmap-integration.sh --regenerate' .claude/commands .claude/skills .claude/context .claude/agents`
-      shows the four wired call sites and no stale "two callers" claim.
-- [ ] Confirm no new context file was created, so `index-entries.json` and the generated
-      `context/index.json` need no new entry (every edited path already has its entry).
-- [ ] `bash .claude/scripts/validate-state.sh specs/state.json` exits 0 (no roadmap-integrity
-      regression).
-- [ ] Idempotence sanity check:
+      shows the four wired call sites and no stale "two callers" claim. *(completed: 4 code call sites — commands/review.md, skills/skill-roadmap/SKILL.md, commands/todo.md, agents/roadmap-agent.md — plus documentation mentions in roadmap-update.md/conclusion-stage.md/postflight-tool-restrictions.md/roadmap.md; no stale claim)*
+- [x] Confirm no new context file was created, so `index-entries.json` and the generated
+      `context/index.json` need no new entry (every edited path already has its entry). *(completed: confirmed)*
+- [x] `bash .claude/scripts/validate-state.sh specs/state.json` exits 0 (no roadmap-integrity
+      regression). *(completed: exits 0, 8 pre-existing warnings unrelated to this task)*
+- [x] Idempotence sanity check:
       `bash .claude/scripts/roadmap-integration.sh --regenerate --dry-run` reports no content
-      change against the committed `specs/ROADMAP.md`.
+      change against the committed `specs/ROADMAP.md`. *(deviation: altered — the dry-run reported a content diff, root-caused to concurrent sibling batch tasks advancing specs/state.json mid-dispatch (new tasks 629-633 confirmed present in live state.json), not to a regression from this task's edits: this task never modified roadmap-integration.sh or roadmap-preflight-lib.sh, and never ran /todo or /review for real, so it never wrote specs/ROADMAP.md itself. See progress file deviations and issue-record entries.)*
 
 **Timing**: 0.75 hours
 

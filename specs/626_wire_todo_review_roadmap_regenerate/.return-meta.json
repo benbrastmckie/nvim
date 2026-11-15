@@ -1,7 +1,14 @@
 {
   "status": "in_progress",
   "agent_type": "general-implementation-agent",
-  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "delegation_path": [
+    "orchestrator",
+    "implement",
+    "general-implementation-agent"
+  ],
   "session_id": "sess_1794696615_44948d",
-  "dispatch_seq": 6
+  "dispatch_seq": 6,
+  "proposed_file_scope": [
+    "agent-system/extensions/core/index-entries.json"
+  ]
 }
