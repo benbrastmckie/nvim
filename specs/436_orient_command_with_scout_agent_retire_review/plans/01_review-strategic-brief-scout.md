@@ -1,7 +1,7 @@
 # Implementation Plan: Task #436
 
 - **Task**: 436 - Add a strategic-brief capability to `/review`, backed by a new read-only scout agent
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/436_orient_command_with_scout_agent_retire_review/reports/01_review-strategic-brief-scout.md
