@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Authored a five-phase plan (4h, waves [1],[2,3],[4],[5]) wiring commands/todo.md (new Stage 6.6) and commands/review.md (new Section 6.8) to roadmap-integration.sh --regenerate, each classifying specs/ROADMAP.md via roadmap-preflight-lib.sh first and gating an absent/unknown verdict on an interactive AskUserQuestion approval, with its own specs/ROADMAP.md-only commit. Phase 1 records the Deliverable 3 ruling: neither call site is governed by postflight-tool-restrictions.md's base tables (its lint scans only agent-delegating SKILL.md files), so no Move-5-shaped exception is needed, only a scope-clarifying Overview sentence. Phase 4 rewrites roadmap-update.md's Live Callers, Responsibility Split bullet, and Ruling paragraph to name four callers with arms; Phase 5 redeploys and runs the full gate set. Per-phase Tier Justifications were measured with suite_selection_select rather than asserted.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/626_wire_todo_review_roadmap_regenerate/plans/01_wire-todo-review-roadmap.md",
+      "summary": "Five-phase implementation plan with dependency waves, measured verification tiers, and a recorded postflight-legality ruling."
+    }
+  ],
+  "blockers": [],
+  "dispatch_seq": 5
+}
