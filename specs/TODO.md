@@ -1,5 +1,5 @@
 ---
-next_project_number: 636
+next_project_number: 637
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 636
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,452,453,455,456,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633,634,635 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,452,453,455,456,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633,634,635,636 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,628,630 | 383,390,398,410,431,451,452,453,455,463,472,479,484,491,504,505,527,534,535,538,539,548,549,563,568,585,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,501,508,547,552,570,571,579,581,586,588,591,594,624 | 438,439,472,476,486,492,509,518,519,542,543,564,572,580,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 524,561,577,595,605 | 501,539,547,552,586,594,604 | core-agent-system, agent-system |
@@ -186,6 +186,7 @@ next_project_number: 636
 
 627 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 635 [NOT STARTED] — Enforce the sapience postflight wrapup write at task...
+636 [NOT STARTED] — Close the remaining per-repo scoping gaps in the sapience...
 628 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
 ### Decidability
@@ -198,6 +199,26 @@ next_project_number: 636
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 636. Sapience activation surface scoping gaps
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: sapience
+- **Dependencies**: None
+
+**Description**: Close the remaining per-repo scoping gaps in the sapience extension's activation surface: detect machine-wide vendor hooks, couple transcript capture to extension activation, and correct the documentation that claims neither gap exists.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**. ~/.dotfiles files are out of bounds for this task (a companion task is filed in ~/.dotfiles for the nix-side default). Related but distinct: tasks 627 (orphan MCP registration reaper) and 628 (write-grant retraction) -- do not duplicate either.
+
+MEASURED EVIDENCE (2026-11-14).
+(a) ~/.claude/settings.json carried three vendor-written, machine-wide hooks -- SessionStart `python3 ~/.sapience/mcp.py --briefing-text`, SessionEnd `--receipt`, Stop `--effect-line` -- written by ~/.sapience/sapience_upkeep.py's wire_hooks() on its daily auto-update because ~/.sapience/config.json had "hooks": true. Effect: every repository, extension loaded or not, received the unfiltered cross-project briefing, and extension repos received it twice. context/project/sapience/domain/injection-site-scoping.md's "No Machine-Wide Duplicate Hook Surface" section asserts the opposite, and scripts/verify-sapience-mcp.sh has no check for it. The three entries were removed by hand and config.json set to "hooks": false (the vendor's documented opt-out, hooks_opted_out()); nothing in this extension detects a recurrence.
+(b) Transcript capture is governed by a separate opt-in list, ~/.sapience/config.json's capture.projects[].enabled, unconnected to extension activation: enabled for .dotfiles, nvim, abood, Sapience/sapience-app; disabled/absent for BimodalLogic and Sapience/sf1-engine although both have the extension active. Today the capture set happens to be a subset of the extension set, but nothing enforces it in either direction.
+(c) ~/Projects/abood shows extensions.sapience.status == "active" with merged_sections.settings carrying only `permissions` -- no hooks merged and no ~/.claude.json MCP registration -- i.e. a load that predates the hook fragment and was never re-merged; verify-sapience-mcp.sh should name this state rather than leave it to inspection.
+(d) scripts/verify-sapience-context-scoping.sh returned RESIDUAL_LIFTED once and RESIDUAL_HOLDS twice in three consecutive runs; its single-run verdict is unreliable.
+
+GOAL. (1) verify-sapience-mcp.sh gains a check that fails when $HOME/.claude/settings.json carries any ~/.sapience/mcp.py or sapience_cli.py injection/reporting hook, and reports ~/.sapience/config.json's `hooks` opt-out value. (2) Rule on capture coupling and implement the ruling: at minimum a verifier check reporting any capture-enabled path whose repository lacks the active extension (and, informationally, the converse); decide whether the SessionStart registration hook or the installer should also reconcile capture.projects[].enabled, given that the dotfiles sapience module also manages a capture map -- if reconciliation belongs in ~/.dotfiles, record that and stop at the verifier check. (3) verify-sapience-mcp.sh distinguishes "active but hook fragment never merged" as its own named failure with the remedy (reload/redeploy). (4) verify-sapience-context-scoping.sh repeats its comparison N times and reports a verdict only on agreement, otherwise "inconclusive". (5) Rewrite injection-site-scoping.md's "No Machine-Wide Duplicate Hook Surface" section and per-repo-scoping.md's population-3 text to state the actual design: the vendor updater re-adds user-level hooks unless config.json "hooks" is false; capture is a separate opt-in list.
+
+---
 
 ### 635. Enforce sapience postflight wrapup write
 - **Status**: [NOT STARTED]
