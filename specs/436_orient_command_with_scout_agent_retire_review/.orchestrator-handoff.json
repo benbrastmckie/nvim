@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a five-phase plan at specs/436_orient_command_with_scout_agent_retire_review/plans/01_review-strategic-brief-scout.md: author a read-only console-only scout-agent.md in core, record its three lint-agent-contracts.sh exclusion entries, add a --brief early-exit mode to commands/review.md, wire manifest.json plus index-entries.json and the agent tables, then regenerate the deployed tree once via a bounded deploy-headless.sh run and discharge every acceptance criterion. Corrected the research report's count of required lint exclusion arrays from two to three (Check E was missed) and re-derived every premise figure the dispatch flagged, all of which held. validate-artifact.sh passes with 0 warnings and plan-file-scope-harvest.sh harvests all 9 declared paths including the mandatory __WHOLE_TREE__ sentinel on the deploy phase.",
+  "summary": "Implemented all five plan phases: created the read-only, console-only scout-agent.md; added its three required lint-agent-contracts.sh exclusion entries (Checks E, F, J); added a --brief early-exit mode to commands/review.md dispatching the scout and rendering its brief in conversation; registered the agent in manifest.json's provides.agents and index-entries.json's formats/roadmap-format.md load_when.agents; redeployed via deploy-headless.sh and ran full acceptance verification. code-reviewer-agent and all eight of its registry/doc consumers remain untouched. All residual gate findings (3 of 43 in the full verify-deploy.sh run, 10 in validate-context-budgets.sh) were confirmed pre-existing and unrelated to this task's edits.",
   "blockers": [],
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/436_orient_command_with_scout_agent_retire_review/plans/01_review-strategic-brief-scout.md",
-      "summary": "Five-phase plan: scout agent definition, three lint exclusion entries, /review --brief mode, registry and docs wiring, bounded redeploy plus full acceptance verification."
+      "summary": "Five-phase plan: scout agent definition, three lint exclusion entries, /review --brief mode, registry and docs wiring, bounded redeploy plus full acceptance verification. All five phases COMPLETED."
+    },
+    {
+      "type": "summary",
+      "path": "specs/436_orient_command_with_scout_agent_retire_review/summaries/01_review-strategic-brief-scout-summary.md",
+      "summary": "Implementation summary covering all five completed phases, decisions, deviations, and verification results."
     }
   ],
-  "dispatch_seq": 2
+  "dispatch_seq": 3
 }
