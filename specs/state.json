@@ -122640,7 +122640,7 @@
     {
       "project_number": 626,
       "project_name": "wire_todo_review_roadmap_regenerate",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Wire /todo and /review to roadmap regeneration behind the shared preflight gate",
       "description": "PROBLEM.\n`context/patterns/roadmap-update.md` records, as a deliberate Ruling, that\n`roadmap-integration.sh --regenerate` has exactly TWO live callers (`skill-roadmap` and\n`/orchestrate`'s conclusion stage Move 5), and that wiring `/todo` and `/review` to it is \"an\nacknowledged gap\" left unwired, to be filed via `/task` or `/spawn` if a concrete need arises.\nThe owner has now asked for it: a roadmap-updating command must not leave `specs/ROADMAP.md`\nstale behind a silent refusal.\n\nDELIVERABLE 1 -- wire the two new callers.\nWire `skills/skill-todo/SKILL.md` and `commands/review.md` to\n`roadmap-integration.sh --regenerate`, each SOURCING the shared preflight library delivered by\nthe gate task (`scripts/lib/roadmap-preflight-lib.sh`) so that a missing or unknown-layout\n`ROADMAP.md` prompts for approval instead of refusing silently.\n\nDELIVERABLE 2 -- rewrite the contract.\nRewrite that Ruling paragraph and the caller table in `context/patterns/roadmap-update.md` so the\ncontract names FOUR live callers instead of two, and states each one's interactive-vs-autonomous\narm.\n\nDELIVERABLE 3 -- postflight legality ruling for the `/todo` call site.\nCheck `context/standards/postflight-tool-restrictions.md` BEFORE wiring `/todo`: `--regenerate`\nis a generator call from a postflight phase, and that standard's Bash restrictions govern what a\npostflight body may run. Decide EXPLICITLY whether the `/todo` call site is postflight-legal\nas-is, needs the same narrowly-scoped exception the Move 5 conclusion-stage table already\ncarries, or belongs at a different point in `/todo`'s flow -- and RECORD the ruling.\n\nEXTERNAL DEPENDENCY RATIONALE (why this task waits on 436 and 458).\n- Open task 436 (`orient_command_with_scout_agent_retire_review`, not_started) would RETIRE\n  `/review` in favour of a new `/orient` command. Wiring `/review` before that is settled risks\n  wiring a command that is being removed -- if 436 lands first, the wiring target becomes\n  `/orient`.\n- Open task 458 (`consolidate_duplicated_todo_implementation`, not_started) consolidates a\n  duplicated `/todo` implementation. Wiring `/todo` beforehand would mean wiring it twice.\n\nHARD CONSTRAINT (edit target). ALL writes go to the core source store at\n`agent-system/extensions/core/`. NEVER write to any repository's `.claude/` deploy tree -- see\n`.claude/rules/source-store-deploy-boundary.md`.\n\nCO-BATCH / ORDERING NOTE (not dependency edges).\nBeyond 436 and 458, the backlog audit found file-territory overlap with open task 492\n(`commands/review.md`) and open task 503\n(`context/standards/postflight-tool-restrictions.md`). Those are co-batch/ordering\nconsiderations, NOT duplication -- do not convert them into dependency edges.",
@@ -123767,7 +123767,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "last_updated": "2026-11-15T00:30:04Z",
+      "last_updated": "2026-11-15T00:30:38Z",
       "session_id": "sess_1794696615_44948d",
       "next_artifact_number": 2
     }

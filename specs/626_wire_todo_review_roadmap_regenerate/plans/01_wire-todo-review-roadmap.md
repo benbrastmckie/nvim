@@ -1,7 +1,7 @@
 # Implementation Plan: Task #626
 
 - **Task**: 626 - Wire /todo and /review to roadmap regeneration behind the shared preflight gate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: 625 (completed), 436 (completed), 458 (completed)
 - **Research Inputs**: specs/626_wire_todo_review_roadmap_regenerate/reports/01_wire-todo-review-roadmap.md
@@ -133,25 +133,25 @@ sequencing.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Record the Postflight-Legality Ruling [NOT STARTED]
+### Phase 1: Record the Postflight-Legality Ruling [COMPLETED]
 
 **Goal**: Record, in the standard whose scope the question concerns, that its base tables and
 their lint govern agent-delegating `SKILL.md` files — so the two new command-level call sites are
 visibly out of scope rather than silently assumed to be.
 
 **Tasks**:
-- [ ] Confirm the two mechanical grounds still hold before writing:
+- [x] Confirm the two mechanical grounds still hold before writing:
       `grep -n 'find "\$PROJECT_ROOT/.claude/skills"' agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh`
-      and `grep -n 'does_skill_delegate' agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh`.
-- [ ] Add one clarifying sentence to `## Overview` in
+      and `grep -n 'does_skill_delegate' agent-system/extensions/core/scripts/lint/lint-postflight-boundary.sh`. *(completed: both grounds confirmed at lines 48 and 71/161)*
+- [x] Add one clarifying sentence to `## Overview` in
       `agent-system/extensions/core/context/standards/postflight-tool-restrictions.md` stating
       that the Allowed/Prohibited tables below, and `scripts/lint/lint-postflight-boundary.sh`'s
       enforcement of them, are scoped to skills that delegate to a subagent via the Agent tool —
       and that a direct-execution command body that never delegates is outside that scope, so a
-      generator or script call from such a body needs no additive exception.
-- [ ] Keep the edit to `## Overview` only: do not touch the Allowed Operations, Prohibited
-      Operations, Exceptions, or Conclusion Stage (Move 5) sections, and add no new table.
-- [ ] Write no task number and no draft-history phrasing into the file.
+      generator or script call from such a body needs no additive exception. *(completed)*
+- [x] Keep the edit to `## Overview` only: do not touch the Allowed Operations, Prohibited
+      Operations, Exceptions, or Conclusion Stage (Move 5) sections, and add no new table. *(completed: diff confined to Overview, 6 added lines, no new table)*
+- [x] Write no task number and no draft-history phrasing into the file. *(completed: grep confirms no hit)*
 
 **Timing**: 0.5 hours
 

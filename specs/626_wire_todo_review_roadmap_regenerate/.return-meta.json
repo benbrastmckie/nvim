@@ -1,22 +1,7 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/626_wire_todo_review_roadmap_regenerate/plans/01_wire-todo-review-roadmap.md",
-      "summary": "Five-phase plan wiring /todo and /review to roadmap-integration.sh --regenerate behind the shared preflight library's interactive arm, recording the postflight-legality ruling, and rewriting the four-caller contract."
-    }
-  ],
-  "metadata": {
-    "session_id": "sess_1794696615_44948d_626",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 4,
-    "dependency_waves": [[1], [2, 3], [4], [5]]
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /orchestrate 626 to execute the plan",
-  "dispatch_seq": 5
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1794696615_44948d",
+  "dispatch_seq": 6
 }

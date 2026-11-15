@@ -20,6 +20,12 @@ The postflight phase **MUST NOT** perform any work that belongs in the agent, in
 - Source file modifications
 - Additional tool calls beyond state management
 
+**Scope**: the Allowed/Prohibited tables below, and `scripts/lint/lint-postflight-boundary.sh`'s
+enforcement of them, are scoped to skills that delegate to a subagent via the Agent tool. A
+direct-execution command body that never delegates carries no agent-work/postflight boundary for
+this standard to protect, so a generator or script call from such a body needs no additive
+exception of the kind the Conclusion Stage (Move 5) table below carries.
+
 ---
 
 ## Allowed Operations
