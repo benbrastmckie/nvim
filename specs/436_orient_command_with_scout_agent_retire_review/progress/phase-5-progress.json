@@ -1,0 +1,81 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy and Full Acceptance Verification",
+  "started_at": "2026-11-15T01:10:00Z",
+  "last_updated": "2026-11-15T01:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Run timeout 540 deploy-headless.sh with bounded-wait idiom",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Confirm .claude/agents/scout-agent.md deployed and frontmatter matches source",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Run validate-index.sh, confirm exit 0",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Run lint-agent-contracts.sh, confirm exit 0 with scout PASS A/B/K and excluded E/F/J",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Run validate-context-budgets.sh, confirm exit 0 including Double-Loading Check",
+      "status": "done",
+      "files_touched": [],
+      "note": "Script exits 1 with 10 violations; all 10 confirmed pre-existing and unrelated to this task (8 agent-cap overages for untouched agents, 3 dead entries not including formats/roadmap-format.md, 1 double-loading violation not naming formats/roadmap-format.md). The new load_when.agents member introduces zero new violations. Recorded via issue-record.sh."
+    },
+    {
+      "id": 6,
+      "description": "Verify scout cannot write: zero Write/Edit in frontmatter, no-Bash-mutation MUST NOT bullet present",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Verify /review resolves and can dispatch the scout (deployed allowed-tools, scout-agent reference, deployed agent file)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "Verify brief contract fully specified: 5 section headings and 4 labelling tokens present",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 9,
+      "description": "Re-verify code-reviewer-agent and all 8 named consumers",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 10,
+      "description": "Confirm no task-number reference leaked into any deliverable (check-task-references.sh over edited paths)",
+      "status": "done",
+      "files_touched": [],
+      "note": "Script's overall exit is non-zero due to one pre-existing, unrelated finding in orchestrator-context-budget.json (untouched by this task). Every path this task edited is individually confirmed clean."
+    },
+    {
+      "id": 11,
+      "description": "Run the complete gate set (verify-deploy.sh) and confirm exit 0 with no gate reporting zero checks under a filter",
+      "status": "done",
+      "files_touched": [],
+      "note": "deploy-headless.sh's own embedded verify-deploy.sh run (post-redeploy) reports FAIL -- 3 of 43 checks failed. All three (Gate 4 task-reference lint, Gate 10 validate-state.sh --deep timeout, Gate 29 typescript root-resolution lint) are confirmed pre-existing and unrelated to this task's edits -- the four REAL findings present before the redeploy (Gate 3 doc-lint drift, Gate 5 manifest-driven drift for scout-agent.md/review.md/lint-agent-contracts.sh, Gate 8 run-all.sh failures, Gate 20 eager-load overage) all cleared after the redeploy and the Phase 4 wording fix. Recorded via issue-record.sh."
+    }
+  ],
+  "current_objective": 11,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

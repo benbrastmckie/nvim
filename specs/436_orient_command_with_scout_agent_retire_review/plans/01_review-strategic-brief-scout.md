@@ -508,7 +508,7 @@ surface no `--only` subset or `--only-gate` subset narrows honestly.
 
 ---
 
-### Phase 5: Redeploy and Full Acceptance Verification [NOT STARTED]
+### Phase 5: Redeploy and Full Acceptance Verification [COMPLETED]
 
 **Goal**: Regenerate the deployed tree from the edited source store and discharge every acceptance
 criterion mechanically, including the three named validate/lint scripts that read the deployed
@@ -516,39 +516,55 @@ criterion mechanically, including the three named validate/lint scripts that rea
 
 **Tasks**:
 
-- [ ] Run the deploy with the bounded-wait idiom: `timeout 540 bash
+- [x] Run the deploy with the bounded-wait idiom: `timeout 540 bash
       agent-system/extensions/core/scripts/deploy-headless.sh` with the Bash tool's own `timeout`
       raised to `600000`. Never hand-patch any file under `.claude/**`; the deploy is the only
       sanctioned writer there. Read `context/patterns/bounded-build-waiter.md` before backgrounding
-      anything, and prefer the foreground bounded run above.
-- [ ] Confirm the deploy landed the new agent: `.claude/agents/scout-agent.md` exists and its
-      frontmatter matches the source file's.
-- [ ] Run `bash .claude/scripts/validate-index.sh` and confirm exit 0 with no orphaned, missing,
-      or duplicate entry introduced.
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` and confirm
+      anything, and prefer the foreground bounded run above. *(completed: ran via nohup + kill-0
+      bounded polling since the environment auto-backgrounds any foreground call past ~180s
+      regardless of the requested timeout; deploy landed in ~90s)*
+- [x] Confirm the deploy landed the new agent: `.claude/agents/scout-agent.md` exists and its
+      frontmatter matches the source file's. *(completed: diff of both frontmatter blocks is empty)*
+- [x] Run `bash .claude/scripts/validate-index.sh` and confirm exit 0 with no orphaned, missing,
+      or duplicate entry introduced. *(completed: exit 0)*
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` and confirm
       exit 0, with the scout logged as a recorded exclusion under Checks E, F and J and as a PASS
-      under Checks A, B and K.
-- [ ] Run `bash .claude/scripts/validate-context-budgets.sh` and confirm exit 0, including the
-      Double-Loading Check against the new `load_when.agents` member.
-- [ ] Verify the scout cannot write: the frontmatter block of
+      under Checks A, B and K. *(completed: exit 0, 0 failed)*
+- [x] Run `bash .claude/scripts/validate-context-budgets.sh` and confirm exit 0, including the
+      Double-Loading Check against the new `load_when.agents` member. *(completed with deviation:
+      script exits 1 on 10 pre-existing, unrelated violations — 8 agent-cap overages for agents
+      this task never touched, 3 dead entries excluding formats/roadmap-format.md, 1
+      double-loading violation naming a different file. The new load_when.agents member
+      introduces zero new violations of any kind. Recorded via issue-record.sh.)*
+- [x] Verify the scout cannot write: the frontmatter block of
       `agent-system/extensions/core/agents/scout-agent.md` contains zero occurrences of `Write`
       and zero of `Edit`, and the body carries the explicit no-`Bash`-mutation MUST NOT bullet.
-- [ ] Verify `/review` resolves and can dispatch the scout: `Agent` is present in the deployed
+      *(completed)*
+- [x] Verify `/review` resolves and can dispatch the scout: `Agent` is present in the deployed
       `.claude/commands/review.md` `allowed-tools` line, the brief section references
       `scout-agent`, and `.claude/agents/scout-agent.md` exists so the `subagent_type` resolves.
-- [ ] Verify the brief contract is fully specified: all five section headings and all four
+      *(completed)*
+- [x] Verify the brief contract is fully specified: all five section headings and all four
       labelling tokens (`SETTLED`, `LANDED-AT-ONE-FIXTURE`, `CARRIED-UNVERIFIED`, `OPEN`) appear
-      in the agent body.
-- [ ] Re-verify `code-reviewer-agent` and every consumer named in the task description:
+      in the agent body. *(completed)*
+- [x] Re-verify `code-reviewer-agent` and every consumer named in the task description:
       `manifest.json`, `index-entries.json`, `validate-index.sh`,
       `lint/lint-agent-contracts.sh`, `validate-context-budgets.sh`, `agents/README.md`,
       `README.md`, and `docs/reference/standards/agent-frontmatter-standard.md`. All eight must
-      still reference it.
-- [ ] Confirm no task-number reference leaked into any deliverable:
+      still reference it. *(completed: all eight confirmed)*
+- [x] Confirm no task-number reference leaked into any deliverable:
       `bash .claude/scripts/check-task-references.sh` over the edited paths exits clean (every
-      file this plan touches is outside `specs/**`, so none is exempt).
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`, and confirm exit 0 with
-      no gate reporting zero checks under a filter.
+      file this plan touches is outside `specs/**`, so none is exempt). *(completed: every edited
+      path individually confirmed clean; the script's overall non-zero exit is from one
+      pre-existing, unrelated finding in orchestrator-context-budget.json, untouched by this task)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`, and confirm exit 0 with
+      no gate reporting zero checks under a filter. *(completed with deviation: deploy-headless.sh's
+      own embedded verify-deploy.sh run reports FAIL -- 3 of 43 checks failed, all three
+      (task-reference lint, validate-state.sh --deep timeout, typescript root-resolution lint)
+      confirmed pre-existing and unrelated to this task. The four real findings present
+      pre-redeploy (doc-lint drift, manifest-driven drift, run-all.sh failures, eager-load
+      overage) all cleared after the redeploy and the Phase 4 wording fix. Recorded via
+      issue-record.sh.)*
 
 **Timing**: 1 hour
 
@@ -582,19 +598,24 @@ criterion mechanically, including the three named validate/lint scripts that rea
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` exits 0 with the
-      scout classified under Checks E, F and J and passing A, B, K.
-- [ ] `bash .claude/scripts/validate-index.sh` exits 0.
-- [ ] `bash .claude/scripts/validate-context-budgets.sh` exits 0.
-- [ ] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` reports no new finding.
-- [ ] `bash .claude/scripts/verify-deploy.sh` exits 0.
-- [ ] The scout's frontmatter contains no `Write` and no `Edit`.
-- [ ] The scout's body specifies all five brief sections and the four-way labelling.
-- [ ] `/review --brief` resolves: `Agent` in `allowed-tools`, `scout-agent` referenced,
-      `.claude/agents/scout-agent.md` deployed.
-- [ ] `grep -c roadmap-integration.sh agent-system/extensions/core/commands/review.md` returns 0.
-- [ ] `code-reviewer-agent` is present and referenced by all eight consumers.
-- [ ] No `.claude/**` file was hand-edited; the deployed tree came only from `deploy-headless.sh`.
+- [x] `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` exits 0 with the
+      scout classified under Checks E, F and J and passing A, B, K. *(completed)*
+- [x] `bash .claude/scripts/validate-index.sh` exits 0. *(completed)*
+- [x] `bash .claude/scripts/validate-context-budgets.sh` exits 0. *(completed with deviation: exits
+      1 on 10 pre-existing, unrelated violations; zero new violations from this task — see Phase 5)*
+- [x] `bash agent-system/extensions/core/scripts/check-extension-docs.sh` reports no new finding.
+      *(completed: zero FAIL lines post-redeploy)*
+- [x] `bash .claude/scripts/verify-deploy.sh` exits 0. *(completed with deviation: 3 of 43 checks
+      fail, all three confirmed pre-existing and unrelated — see Phase 5)*
+- [x] The scout's frontmatter contains no `Write` and no `Edit`. *(completed)*
+- [x] The scout's body specifies all five brief sections and the four-way labelling. *(completed)*
+- [x] `/review --brief` resolves: `Agent` in `allowed-tools`, `scout-agent` referenced,
+      `.claude/agents/scout-agent.md` deployed. *(completed)*
+- [x] `grep -c roadmap-integration.sh agent-system/extensions/core/commands/review.md` returns 0.
+      *(completed)*
+- [x] `code-reviewer-agent` is present and referenced by all eight consumers. *(completed)*
+- [x] No `.claude/**` file was hand-edited; the deployed tree came only from `deploy-headless.sh`.
+      *(completed)*
 
 ## Artifacts & Outputs
 
