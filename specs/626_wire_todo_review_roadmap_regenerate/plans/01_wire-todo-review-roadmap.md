@@ -181,40 +181,40 @@ run alongside the `prose` row's diff read-through.
 
 ---
 
-### Phase 2: Wire `/todo` to `--regenerate` [NOT STARTED]
+### Phase 2: Wire `/todo` to `--regenerate` [COMPLETED]
 
 **Goal**: Add a roadmap-regeneration stage to `commands/todo.md` that classifies first, asks once
 on `absent`/`unknown`, regenerates, and commits `specs/ROADMAP.md` alone.
 
 **Tasks**:
-- [ ] Re-confirm the insertion anchor: `grep -n '^### 6.5\.\|^### 7\. Output' agent-system/extensions/core/commands/todo.md`.
-- [ ] Insert a new `### 6.6. Regenerate Roadmap` stage between `### 6.5. Sync Repository Metrics`
+- [x] Re-confirm the insertion anchor: `grep -n '^### 6.5\.\|^### 7\. Output' agent-system/extensions/core/commands/todo.md`. *(completed: lines 777/848 before edit)*
+- [x] Insert a new `### 6.6. Regenerate Roadmap` stage between `### 6.5. Sync Repository Metrics`
       and `### 7. Output`, with a short header note stating why it runs after Stage 6's archival
       commit and after Stage 6.5 (the same "do not measure or render a worktree this run is about
-      to change again" rationale Stage 6.5's own header states).
-- [ ] Step 6.6.1 — classify:
+      to change again" rationale Stage 6.5's own header states). *(completed)*
+- [x] Step 6.6.1 — classify:
       `verdict="$(bash .claude/scripts/lib/roadmap-preflight-lib.sh classify specs/ROADMAP.md)"`.
-      On `classic`/`stage`, proceed with no question asked and nothing written.
-- [ ] Step 6.6.2 — on `absent`/`unknown`, one `AskUserQuestion` approval before any write, naming
+      On `classic`/`stage`, proceed with no question asked and nothing written. *(completed)*
+- [x] Step 6.6.2 — on `absent`/`unknown`, one `AskUserQuestion` approval before any write, naming
       the verdict, what the mechanical skeleton write does, and (for `unknown`) that the existing
       file's content is preserved verbatim under `## Unfiled observations (none worth a task
       yet)`. On approval run `bash .claude/scripts/lib/roadmap-preflight-lib.sh scaffold specs/ROADMAP.md`
       and continue; on decline skip the regenerate entirely, write nothing, and record the skip
-      for Stage 7's output.
-- [ ] Step 6.6.3 — `bash .claude/scripts/roadmap-integration.sh --regenerate`, non-fatal on
+      for Stage 7's output. *(completed)*
+- [x] Step 6.6.3 — `bash .claude/scripts/roadmap-integration.sh --regenerate`, non-fatal on
       failure (`|| echo "Note: ... (non-fatal)" >&2`), per `rules/error-handling.md`'s
-      non-blocking treatment.
-- [ ] Step 6.6.4 — commit only if the render changed the file: gate on
+      non-blocking treatment. *(completed)*
+- [x] Step 6.6.4 — commit only if the render changed the file: gate on
       `git diff --name-only -- specs/ROADMAP.md` being non-empty, then one
       `bash .claude/scripts/git-commit-scoped.sh --message "todo: regenerate roadmap" --session "${session_id}" -- specs/ROADMAP.md`.
       State inline why `--honest-index-rows` and `--task` are inapplicable (a repo-wide render
-      with no owning task number), mirroring Stage 6.5.3's existing wording.
-- [ ] Step 6.6.5 — add `roadmap_regenerated` (true / false / skipped-pending-approval) to the
-      tracked output fields and surface it in `### 7. Output`.
-- [ ] Confirm no `allowed-tools` frontmatter change is needed, on the ground that Stage 6.5 and
+      with no owning task number), mirroring Stage 6.5.3's existing wording. *(completed)*
+- [x] Step 6.6.5 — add `roadmap_regenerated` (true / false / skipped-pending-approval) to the
+      tracked output fields and surface it in `### 7. Output`. *(completed: also added Roadmap row to Section Inclusion Rules table)*
+- [x] Confirm no `allowed-tools` frontmatter change is needed, on the ground that Stage 6.5 and
       Stage 6 already invoke `bash .claude/scripts/...` under the same frontmatter; record the
-      finding either way rather than editing the list speculatively.
-- [ ] Use `--regenerate` only; never `--prune`. Write no task number into the file.
+      finding either way rather than editing the list speculatively. *(completed: confirmed — new call sites use the identical `bash .claude/scripts/...` shape already present under the same frontmatter; no change made)*
+- [x] Use `--regenerate` only; never `--prune`. Write no task number into the file. *(completed: grep confirms no `--prune` hit)*
 
 **Timing**: 1 hour
 

@@ -1,0 +1,14 @@
+{
+  "phase": 2,
+  "phase_name": "Wire /todo to --regenerate",
+  "started_at": "2026-11-14T00:10:00Z",
+  "last_updated": "2026-11-14T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm insertion anchor", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert new 6.6 stage with classify/approve/regenerate/commit/output steps", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

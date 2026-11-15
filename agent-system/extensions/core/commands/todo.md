@@ -845,6 +845,67 @@ Track for output:
   nonzero value is visible to the operator here rather than buried in state.json
 - `metrics_synced`: true/false indicating if sync was performed
 
+### 6.6. Regenerate Roadmap
+
+Regenerate `specs/ROADMAP.md` from the current `state.json` so a roadmap-updating command never
+leaves it stale behind a silent refusal. This stage runs after Step 6's archival commit and
+Step 6.5's metrics sync, for the same reason Step 6.5's own header gives: rendering any earlier
+would measure a worktree this run is about to change again, and the archival/metrics commits
+must already exist for the render to reflect the state this run actually produced.
+
+**Step 6.6.1: Classify** (never writes):
+```bash
+verdict="$(bash .claude/scripts/lib/roadmap-preflight-lib.sh classify specs/ROADMAP.md)"
+```
+- **`classic`/`stage`**: proceed straight to Step 6.6.3 — no question asked, nothing written.
+- **`absent`/`unknown`**: continue to Step 6.6.2 before any write.
+
+**Step 6.6.2: Approve and scaffold on `absent`/`unknown`**:
+
+Ask a single `AskUserQuestion` for approval to create (`absent`) or repair (`unknown`) the file,
+before any write. The question names:
+- the verdict (`absent`: no roadmap tracked yet; `unknown`: the file exists but its section
+  headers match neither the classic nor the stage vocabulary, so `--regenerate` refuses loudly
+  rather than guess),
+- what the mechanical skeleton write does (the eight classic headers get short honest stubs for
+  the owner to fill in by hand; `## Next`/`## Open work` are rendered by `--regenerate`
+  immediately afterward), and
+- for `unknown` specifically: that the existing file's full content is preserved verbatim under
+  `## Unfiled observations (none worth a task yet)`, never discarded, reordered, or
+  reinterpreted.
+
+**On approval**, run the scaffold and continue to Step 6.6.3:
+```bash
+bash .claude/scripts/lib/roadmap-preflight-lib.sh scaffold specs/ROADMAP.md
+```
+
+**On decline**, skip Step 6.6.3 and Step 6.6.4 entirely, write nothing, and record the skip for
+Step 7's output (`roadmap_regenerated: skipped-pending-approval`).
+
+**Step 6.6.3: Regenerate** (non-fatal on failure, per `rules/error-handling.md`'s non-blocking
+treatment of generator calls):
+```bash
+bash .claude/scripts/roadmap-integration.sh --regenerate || echo "Note: roadmap regeneration failed (non-fatal)" >&2
+```
+
+**Step 6.6.4: Commit only if the render changed the file**, in its own `specs/ROADMAP.md`-only
+commit, separate from Step 6's archival commit and Step 6.5.3's metrics commit:
+```bash
+if [ -n "$(git diff --name-only -- specs/ROADMAP.md)" ]; then
+  bash .claude/scripts/git-commit-scoped.sh \
+    --message "todo: regenerate roadmap" \
+    --session "${session_id}" \
+    -- specs/ROADMAP.md
+fi
+```
+`--honest-index-rows` and `--task` are both inapplicable here, for the same reason they are
+inapplicable to Step 6.5.3: this is a repo-wide render with no owning task number, not a
+task-scoped row.
+
+**Step 6.6.5: Report**:
+Track for output:
+- `roadmap_regenerated`: `true` / `false` / `skipped-pending-approval`
+
 ### 7. Output
 
 Use grouped counts instead of listing individual items:
@@ -864,6 +925,8 @@ Cleanup: {O} orphans tracked, {P} misplaced moved
 {If CLAUDE.md suggestions:}
 CLAUDE.md: {applied}/{total} suggestions applied
 
+Roadmap: {regenerated/unchanged/skipped pending approval}
+
 Active tasks remaining: {N}
 
 Next Steps:
@@ -879,6 +942,7 @@ Next Steps:
 | Directories | directories_moved > 0 |
 | Deferred | deferred_expanded[] is non-empty |
 | Cleanup | orphans_tracked > 0 OR misplaced_moved > 0 |
+| Roadmap | Always (reflects `roadmap_regenerated`) |
 
 **Reference material**: the archival-status definitions, orphan and misplaced-directory
 categories, and jq/shell escaping rules that Steps 2.5, 2.6, and 3 depend on live in
