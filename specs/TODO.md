@@ -1,5 +1,5 @@
 ---
-next_project_number: 634
+next_project_number: 635
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 634
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,452,453,455,456,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,452,453,455,456,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633,634 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,628,630 | 383,390,398,410,431,451,452,453,455,463,472,479,484,491,504,505,527,534,535,538,539,548,549,563,568,585,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,501,508,547,552,570,571,579,581,586,588,591,594,624 | 438,439,472,476,486,492,509,518,519,542,543,564,572,580,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 524,561,577,595,605 | 501,539,547,552,586,594,604 | core-agent-system, agent-system |
@@ -120,6 +120,7 @@ next_project_number: 634
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+634 [NOT STARTED] — Make /orchestrate's end-of-run roadmap regeneration...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 624 [NOT STARTED] — Make system-defect-record.sh able to attribute a...
 
@@ -196,6 +197,22 @@ next_project_number: 634
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 634. Mechanize orchestrate conclusion roadmap regenerate
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Make /orchestrate's end-of-run roadmap regeneration mechanical so it fires at the end of every orchestration, whatever the batch size, instead of depending on the lead remembering a prose-only final stage.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**.
+
+MEASURED EVIDENCE. The run `/orchestrate 436, 626` (session sess_1794696615_44948d) completed both tasks, wrote specs/.orchestration/.return-meta-multi-sess_1794696615_44948d.json at Move 4, printed its final report and ended the turn. Move 5 (context/contracts/conclusion-stage.md's Executable Stage Body) never ran: specs/events.jsonl carries no conclusion_proposal_recorded / roadmap_regenerate_blocked event for that session, git log carries no "orchestrate conclusion: roadmap regenerate" commit, and `roadmap-integration.sh --regenerate --dry-run` afterwards reported "content would change" (436/626 still listed, 629-633 missing). The run's tail was a ~40 minute batch-gate wait plus a manual reconcile-task-status.sh settle of 626, after which the lead treated Move 4's consolidated output as the terminal report. skills/skill-orchestrate/SKILL.md's "Move 5: Conclusion" is a four-line prose pointer placed after the consolidated-output step; nothing in .claude/settings.json or hooks/ checks that it ran. The same skip also dropped Move 5's issue classification, channel (a)/(b)/(c) recording, and Step 7 next-batch suggestion.
+
+GOAL. (1) The roadmap regenerate (preflight classify -> roadmap-integration.sh --regenerate -> scoped specs/ROADMAP.md commit, or the loud absent/unknown degrade) runs from a script on the Move 4 finalize path, in single-task and multi-task runs alike and on partial exits (max_cycles, no_eligible_stuck, etc.) as well as all_terminal, so it cannot be skipped by a lead ending its turn early. Rule on whether Step 5 moves wholly into a finalize script or stays in the contract with the script as its only executor; either way exactly one executable copy. (2) A mechanical backstop for the remainder of Move 5: decide between (a) reordering so the consolidated user-facing output is emitted only after the conclusion stage, (b) a Stop-hook or finalize-script check that a session which wrote a .return-meta-multi file also recorded a conclusion-ran marker, or both; implement the chosen one and record the ruling. (3) Tests covering: regenerate fires on all_terminal and on a partial exit, single-task and batch; the absent/unknown layout degrade still never writes; an idempotent second run is a no-op. (4) Update context/contracts/conclusion-stage.md, context/patterns/roadmap-update.md's caller table, and SKILL.md's Move 4/Move 5 text to state the resulting design.
+
+---
 
 ### 633. Resolve the stray duplicate .claude-extensions.json sitting inside the core extension source store
 - **Effort**: small
