@@ -1,7 +1,7 @@
 # Implementation Plan: Task #626
 
 - **Task**: 626 - Wire /todo and /review to roadmap regeneration behind the shared preflight gate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: 625 (completed), 436 (completed), 458 (completed)
 - **Research Inputs**: specs/626_wire_todo_review_roadmap_regenerate/reports/01_wire-todo-review-roadmap.md
