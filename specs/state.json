@@ -122662,6 +122662,11 @@
           "path": "specs/626_wire_todo_review_roadmap_regenerate/plans/01_wire-todo-review-roadmap.md",
           "type": "plan",
           "summary": "Five-phase implementation plan with dependency waves, measured verification tiers, and a recorded postflight-legality ruling."
+        },
+        {
+          "path": "specs/626_wire_todo_review_roadmap_regenerate/summaries/01_wire-todo-review-roadmap-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: what changed across 4 source-store files, decisions, plan deviations (Phase 4 forbidden-phrasing reword; Phase 5 batch-gate-deferral discharge and idempotence-check diff attribution), verification results, and follow-ups."
         }
       ],
       "file_scope": [
@@ -123769,7 +123774,8 @@
       },
       "last_updated": "2026-11-15T00:30:38Z",
       "session_id": "sess_1794696615_44948d",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Wired /todo (commands/todo.md Stage 6.6) and /review (commands/review.md Section 6.8) to roadmap-integration.sh --regenerate behind scripts/lib/roadmap-preflight-lib.sh's classify/scaffold gate, each using the interactive AskUserQuestion arm; recorded the Deliverable 3 postflight-legality ruling in postflight-tool-restrictions.md's Overview; and rewrote context/patterns/roadmap-update.md to name all four live callers with their arms, removing the stale two-caller/open-gap claims."
     }
   ],
   "completed_projects": [],

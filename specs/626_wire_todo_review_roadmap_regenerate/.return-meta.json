@@ -1,14 +1,79 @@
 {
-  "status": "in_progress",
-  "agent_type": "general-implementation-agent",
-  "delegation_path": [
-    "orchestrator",
-    "implement",
-    "general-implementation-agent"
-  ],
-  "session_id": "sess_1794696615_44948d",
+  "status": "implemented",
   "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/626_wire_todo_review_roadmap_regenerate/summaries/01_wire-todo-review-roadmap-summary.md",
+      "summary": "Full implementation summary: wired /todo and /review to roadmap-integration.sh --regenerate behind the shared preflight gate, recorded the postflight-legality ruling, rewrote the four-caller contract, and discharged Phase 5's full verification tier via the Batch Gate Deferral directive."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Wired /todo (commands/todo.md Stage 6.6) and /review (commands/review.md Section 6.8) to roadmap-integration.sh --regenerate behind scripts/lib/roadmap-preflight-lib.sh's classify/scaffold gate, each using the interactive AskUserQuestion arm; recorded the Deliverable 3 postflight-legality ruling in postflight-tool-restrictions.md's Overview; and rewrote context/patterns/roadmap-update.md to name all four live callers with their arms, removing the stale two-caller/open-gap claims."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/commands/review.md",
+    "agent-system/extensions/core/context/patterns/roadmap-update.md",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a dispatch file carries a 'Batch Gate Deferral' directive, a plan phase's own verification criterion can literally say 'run the complete unnarrowed gate set' (Verification Tier: full) while the dispatch directive requires discharging it against a scoped narrowing invocation (verify-deploy.sh --skip-slow --only-gate N[,M...], chosen to cover the files that phase actually touched) instead. The dispatch directive takes precedence over the plan's literal task text for that one phase; the full gate still runs once at the batch level and its result attributes back via modified_files. Attempting the unnarrowed full gate set directly in a single-task dispatch risked a 580s timeout with no captured output.",
+      "category": "PATTERN",
+      "source_artifact": "specs/626_wire_todo_review_roadmap_regenerate/summaries/01_wire-todo-review-roadmap-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "batch-gate-deferral",
+        "verify-deploy",
+        "verification-tier-full",
+        "orchestrate-batch",
+        "scoped-gate"
+      ]
+    },
+    {
+      "content": "A plan phase's forbidden-phrasing verification grep (e.g. no-record-versioning-in-deliverables checks for 'previously'/'no longer'/'supersedes') is typically written as a whole-file check, not scoped to only the hunks the phase's own task list names. When rewriting one section of a long-lived doc, pre-existing occurrences of the forbidden phrasing elsewhere in the same file (describing durable system behavior, not the document's own draft history) will still fail that phase's verification unless also reworded -- even though the plan's task list never named those locations. Check the verification grep against the WHOLE file, not just the new hunk, before declaring a phase green.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/626_wire_todo_review_roadmap_regenerate/summaries/01_wire-todo-review-roadmap-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "no-record-versioning",
+        "forbidden-phrasing",
+        "whole-file-grep",
+        "plan-verification",
+        "draft-history"
+      ]
+    },
+    {
+      "content": "git-commit-phase.sh's mechanical follow-up-commit trigger works reliably in practice: diffing .return-meta.json's proposed_file_scope array before/after a git-commit-phase.sh call reliably surfaces a silently-dropped out-of-scope path (e.g. an index-entries.json line-count sync file outside the task's declared file_scope), which a scoped git-commit-scoped.sh follow-up commit then lands cleanly without widening the pathspec or re-triggering the same drop via a second git-commit-phase.sh call.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/626_wire_todo_review_roadmap_regenerate/summaries/01_wire-todo-review-roadmap-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "git-commit-phase",
+        "proposed_file_scope",
+        "containment-self-check",
+        "scoped-follow-up-commit",
+        "out-of-scope-drop"
+      ]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1794696615_44948d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
+  },
   "proposed_file_scope": [
     "agent-system/extensions/core/index-entries.json"
-  ]
+  ],
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

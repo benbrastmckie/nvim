@@ -341,6 +341,7 @@ ACCEPTANCE. The stale /home/benjamin/Projects/sapience-app entry is gone from ~/
 - **Dependencies**: Task 625, Task 436, Task 458
 - **Research**: [626_wire_todo_review_roadmap_regenerate/reports/01_wire-todo-review-roadmap.md]
 - **Plan**: [626_wire_todo_review_roadmap_regenerate/plans/01_wire-todo-review-roadmap.md]
+- **Summary**: [626_wire_todo_review_roadmap_regenerate/summaries/01_wire-todo-review-roadmap-summary.md]
 
 **Description**: PROBLEM.
 `context/patterns/roadmap-update.md` records, as a deliberate Ruling, that
