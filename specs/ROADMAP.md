@@ -473,6 +473,7 @@ and `544`. None is a whole-corpus discovery scope, and none is a defect.
 /orchestrate 551,556,557,558,559,560,562,563
 /orchestrate 565,567,574,575,599,607,610,613
 /orchestrate 618,629,631,632,633,634,635,636
+/orchestrate 637
 ```
 
 ## Open work
@@ -640,12 +641,13 @@ and `544`. None is a whole-corpus discovery scope, and none is a defect.
 633 ready           Resolve the stray duplicate .claude-extensions.json sitting inside the core e...
 ```
 
-**Sapience (4)**
+**Sapience (5)**
 ```
 628 blocked:527     retract_sapience_write_tool_grants
 627 ready           reap_orphan_sapience_mcp_registrations
 635 ready           Enforce the sapience postflight wrapup write at task completion
 636 ready           Close sapience activation-surface scoping gaps: vendor user-level hooks, capt...
+637 ready           make_sapience_extension_fully_functional
 ```
 
 **Decidability (1)**
