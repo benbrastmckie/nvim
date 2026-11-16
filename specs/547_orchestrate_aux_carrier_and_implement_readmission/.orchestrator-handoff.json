@@ -1,16 +1,21 @@
 {
   "task_number": 547,
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 6,
   "phases_total": 6,
-  "dispatch_seq": 8,
-  "summary": "Created a 6-phase implementation plan adopting the research phase's settled decisions: Item 1 takes shape (a) confirm-then-clear with shape (c)'s audibility bar layered on at the escalation cap, and Item 2 takes shape (ii) keyed on aux_pending chain state, placed in orchestrate-cycle-plan.sh's post-triage seam rather than inside orchestrate-triage-classify.sh. Every premise line the dispatch extracted was re-validated against the live source store and recorded in a table in the plan; all confirmed except one newly overturned. The plan validates clean with zero warnings.",
+  "dispatch_seq": 9,
+  "summary": "Closed the orchestrate aux blocker-research carrier confirmation gap and the implement-readmission gap across all six plan phases. aux_pending[t] for a blocker-research obligation is now cleared only on a confirmed carrier or at the escalation cap (never at emission), a capped-out obligation is surfaced in blocked[] and the task's issue log, an implement dispatch is withheld while an obligation is outstanding (routing to needs_human), and an explicit forcing flag still admits one dispatch past that override with an audible stderr warning. orchestrate-state-machine.md documents both behaviors. Every new/inverted test assertion was observed failing pre-fix; the named suites and the 25-suite selector set for orchestrate-cycle-plan.sh are green; the source store redeployed clean (RESULT=landed_verify_clean) with the complete gate set passing 43/43.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/547_orchestrate_aux_carrier_and_implement_readmission/plans/01_aux-carrier-implement-readmission.md",
-      "summary": "6-phase, 7.5-hour plan closing the blocker-research carrier confirmation gap and the implement-readmission gap, with failing-first tests in both existing suites and a full-gate final phase."
+      "type": "summary",
+      "path": "specs/547_orchestrate_aux_carrier_and_implement_readmission/summaries/01_aux-carrier-implement-readmission-summary.md",
+      "summary": "Implementation summary for all six phases closing the blocker-research carrier and implement-readmission defects."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/547_orchestrate_aux_carrier_and_implement_readmission/handoffs/phase-6-handoff-20261116T205040Z.md",
+      "summary": "Phase-end handoff recording the final phase's state and the two deviations from the plan."
     }
   ]
 }

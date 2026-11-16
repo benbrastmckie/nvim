@@ -4527,6 +4527,7 @@ OWNERSHIP MAP ESTABLISHED AT FILING TIME -- the reason no new record exists:
 - **Dependencies**: Task 543
 - **Research**: [547_orchestrate_aux_carrier_and_implement_readmission/reports/01_aux-carrier-implement-readmission.md]
 - **Plan**: [547_orchestrate_aux_carrier_and_implement_readmission/plans/01_aux-carrier-implement-readmission.md]
+- **Summary**: [547_orchestrate_aux_carrier_and_implement_readmission/summaries/01_aux-carrier-implement-readmission-summary.md]
 
 **Description**: Close ONE mechanism that produced two separately-reported defect classes: the orchestrate aux chain's blocker-research carrier is written on instruction alone and never confirmed, and nothing in the dispatch-admission path refuses an implement round for a task that is owed a plan revision.
 

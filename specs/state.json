@@ -71036,6 +71036,11 @@
           "path": "specs/547_orchestrate_aux_carrier_and_implement_readmission/plans/01_aux-carrier-implement-readmission.md",
           "type": "plan",
           "summary": "6-phase, 7.5-hour plan closing the blocker-research carrier confirmation gap and the implement-readmission gap, with failing-first tests in both existing suites and a full-gate final phase."
+        },
+        {
+          "path": "specs/547_orchestrate_aux_carrier_and_implement_readmission/summaries/01_aux-carrier-implement-readmission-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary for all six phases closing the blocker-research carrier and implement-readmission defects."
         }
       ],
       "created": "2026-11-02T22:16:59Z",
@@ -71052,7 +71057,8 @@
       },
       "audit_override": "cross-repo relocation of 34 already-created, already-audited meta records out of BimodalLogic, under the user ruling that all meta records live in this repository; these are not new proposals. audit-task-proposals.sh cannot run over this corpus: jq argv overflow at 24 and at 3-per-chunk, the defect closed task 858 did not fix.",
       "session_id": "sess_1794850122_9151c5",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Closed the orchestrate aux blocker-research carrier confirmation gap and the implement-readmission gap: aux_pending is now cleared only on a confirmed carrier or at the escalation cap, a capped-out obligation is surfaced in blocked[] and the issue log, implement dispatch is withheld while an obligation is outstanding (with an audible forcing-flag override), and orchestrate-state-machine.md documents both behaviors. All six phases landed with failing-first regression tests, a clean redeploy, and a green complete gate set."
     },
     {
       "project_number": 548,
