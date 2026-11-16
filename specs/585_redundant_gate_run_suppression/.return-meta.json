@@ -1,10 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 22,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/585_redundant_gate_run_suppression/summaries/02_binding-deferral-cheap-probe-summary.md",
+      "summary": "All 3 phases completed: Mechanism A's Batch Gate Deferral directive now emits --skip-unchanged as the sanctioned cheap probe plus a no-additional-full-sweep obligation, three consumer documents and the derived index line counts synced, and the source store redeployed with the scoped-tier discharge recorded per the batch deferral this dispatch itself carried."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Edited orchestrate-build-dispatch.sh's Batch Gate Deferral directive to emit --skip-unchanged on the verify-deploy.sh --only-gate form and two new CHEAP PROBE / NO ADDITIONAL FULL SWEEP paragraphs, extended the composer's own Group 19 test assertions, synced batch-gate-stage.md / plan-format.md / general-implementation-agent.md and index-entries.json's derived line counts, then redeployed and discharged this dispatch's own final phase against the scoped tier the directive names."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/context/contracts/batch-gate-stage.md",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "generate-context-line-counts.sh and deploy-headless.sh both refuse to run as the agent-system source-store copy: they must bootstrap from an already-deployed scripts/ tree (.claude/scripts/ or .opencode/scripts/), erroring with an explicit message if run from agent-system/extensions/core/scripts/ directly ('../..' resolves to a bogus repo root there). When a plan names the source-store path for either script, run the deployed .claude/scripts/ copy instead -- same effective action, since both regenerate/validate the source-store content either way.",
+      "category": "PATTERN",
+      "source_artifact": "specs/585_redundant_gate_run_suppression/summaries/02_binding-deferral-cheap-probe-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "generate-context-line-counts.sh",
+        "deploy-headless.sh",
+        "source-store",
+        "deployed-tree",
+        "bootstrapping"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794815389_748c3d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }

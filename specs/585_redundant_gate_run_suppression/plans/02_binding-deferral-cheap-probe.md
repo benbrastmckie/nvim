@@ -1,7 +1,7 @@
 # Implementation Plan: Task #585
 
 - **Task**: 585 - Make the batch-gate deferral binding and cache repeat gate runs, so the full set runs once per batch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/585_redundant_gate_run_suppression/reports/01_redundant-gate-run-suppression.md, specs/585_redundant_gate_run_suppression/reports/02_binding-deferral-and-cache-adoption.md

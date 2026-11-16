@@ -13,9 +13,9 @@ next_project_number: 639
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,479,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,480,481,486,492,513,516,517,518,533,540,541,542,543,544,546,550,553,572,576,579,583,586,592,593,598,624,628,630 | 383,390,398,410,431,451,453,455,463,472,476,479,484,491,504,527,534,535,538,539,548,549,563,564,585,599,629 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,501,508,509,547,552,566,570,571,581,591,594,605,637 | 438,439,452,472,476,486,492,518,519,542,543,572,580,586,593,604,628,635,636 | core-agent-system, file-scope-lifecycle, agent-system, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,479,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,572,574,575,580,590,599,604,607,610,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,473,474,480,481,486,492,513,516,517,518,533,540,541,542,543,544,546,550,553,576,579,583,586,591,592,593,598,624,628,630 | 383,390,398,410,431,451,453,455,463,472,476,479,484,491,504,527,534,535,538,539,548,549,563,564,572,599,629 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,501,508,509,547,552,566,570,571,581,594,605,637 | 438,439,452,472,476,486,492,518,519,542,543,580,586,593,604,628,635,636 | core-agent-system, file-scope-lifecycle, agent-system, ... |
 | 4 | 524,561,577,588,595,638 | 501,509,539,547,552,594 | core-agent-system, agent-system |
 | 5 | 596,609 | 577,595 | agent-system |
 
@@ -161,6 +161,7 @@ next_project_number: 639
 558 [NOT STARTED] — Require task descriptions to request a proposal packet...
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
+572 [NOT STARTED] — Make the full verification tier honorable under batch concurrency
 599 [NOT STARTED] — Give the batch-gate-deferral directive a narrowing form that...
   └─ 592 [NOT STARTED] — Re-verify or timestamp a task recorded starting position at...
   └─ 593 [NOT STARTED] — Require pinned Lean Challenge signatures to be measured at...
@@ -176,7 +177,6 @@ next_project_number: 639
 546 [NOT STARTED] — Diagnose the zero-result literature retrieval and settle the...
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
 571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
-572 [NOT STARTED] — Make the full verification tier honorable under batch concurrency
 
 ### Sapience
 
@@ -193,9 +193,6 @@ next_project_number: 639
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ### Uncategorized
-
-585 [IMPLEMENTING] — Make the batch-gate deferral binding and cache repeat gate...
-  └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
 
@@ -1911,11 +1908,12 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deploy
 ---
 
 ### 585. Make the batch-gate deferral binding and cache repeat gate runs, so the full set runs once per batch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: Task 584
 - **Research**: [585_redundant_gate_run_suppression/reports/02_binding-deferral-and-cache-adoption.md]
 - **Plan**: [585_redundant_gate_run_suppression/plans/02_binding-deferral-cheap-probe.md]
+- **Summary**: [585_redundant_gate_run_suppression/summaries/02_binding-deferral-cheap-probe-summary.md]
 
 **Description**: The two-mechanism design is already right and already built; adoption is the gap. Mechanism A (orchestrate-build-dispatch.sh's Batch Gate Deferral) narrows a final implement phase's OBLIGATION but not its BEHAVIOUR -- nothing forbids an additional full sweep and nothing detects one. Observed across one six-task batch: 2 of 5 implement dispatches honoured the scoped tier while 3 ran a full or exploratory gate set anyway, one of them running the full gate set with no flags twice. Measured concurrently: 9 live run-all.sh and 9 live verify-deploy.sh processes against nproc 24. Because the .gate-lock mutex deliberately serialises gate 8 (~11 min), nine batteries queue single-file behind it -- the direct cause of implement-phase wait loops of roughly 70 and 100 minutes in that batch.
 
