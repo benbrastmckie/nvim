@@ -1463,6 +1463,18 @@ for t in "${task_args[@]}"; do
       aux_cnt=$(mt_get --arg t "$t" '.blocker_escalation_count[$t] // 0')
       if [ "$aux_cnt" -ge "$MAX_BLOCKER_ESCALATIONS" ]; then
         echo "[orchestrate] MAX_BLOCKER_ESCALATIONS ($MAX_BLOCKER_ESCALATIONS) reached for task #$t. Manual intervention required. Suggest: (1) /orchestrate $t --research, (2) /revise $t, (3) /orchestrate $t --implement." >&2
+        # Audibility at the cap: the carrier never appeared across $MAX_BLOCKER_ESCALATIONS
+        # confirm-then-clear cycles, so the give-up is surfaced in the emitted blocked[] array and
+        # the durable issue log, not only on the stderr line above -- a reader of the run's own
+        # output must be able to tell a chain that completed from one that evaporated.
+        out_blocked_rows+=("$(jq -n -c --argjson t "$t" --argjson n "$aux_cnt" --argjson m "$MAX_BLOCKER_ESCALATIONS" --arg f "$aux_blocker_file" '{task: $t, reason: ("MAX_BLOCKER_ESCALATIONS reached (" + ($n|tostring) + "/" + ($m|tostring) + " blocker-research escalations) with no confirmed carrier at " + $f)}')")
+        if [ "$dry_run" != "true" ]; then
+          bash "${SCRIPT_DIR}/issue-record.sh" --task "$t" --kind issue --class "orchestration defect" \
+            --severity blocking --phase implement \
+            --what-happened "MAX_BLOCKER_ESCALATIONS reached ($aux_cnt/$MAX_BLOCKER_ESCALATIONS blocker-research escalations) for task #$t with no confirmed carrier at $aux_blocker_file; manual intervention required" \
+            --resolution open --suggested-channel agent_system --session "$session_id" \
+            >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+        fi
         aux_clear_pending[$t]="true"
         continue
       fi

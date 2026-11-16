@@ -51,7 +51,7 @@ require_file "$SUT_SRC"
 for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh task-lock.sh \
          orchestrate-loop-guard-init.sh orchestrate-build-aux-dispatch.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh \
-         orchestrate-recover-outcome.sh git-commit-scoped.sh \
+         orchestrate-recover-outcome.sh git-commit-scoped.sh issue-record.sh \
          lib/common.sh lib/file-scope-overlap.sh lib/continuation-pointer-lib.sh \
          lib/manifest-routing-lib.sh lib/phase-heading-patterns.sh lib/deploy-baseline-lib.sh \
          lib/task-lookup-lib.sh lib/deploy-ledger-lib.sh lib/return-meta-status-vocabulary.sh \
@@ -71,7 +71,8 @@ common_test_workdir_init
 mkdir -p "$WORKDIR/.claude/scripts/lib" "$WORKDIR/.claude/context/reference" "$WORKDIR/specs" "$WORKDIR/specs/.orchestration"
 for f in orchestrate-cycle-plan.sh orchestrate-batch-admit.sh orchestrate-triage-classify.sh \
          task-lock.sh orchestrate-loop-guard-init.sh orchestrate-build-aux-dispatch.sh \
-         deploy-root-guard.sh command-route-agent.sh skill-base.sh orchestrate-recover-outcome.sh; do
+         deploy-root-guard.sh command-route-agent.sh skill-base.sh orchestrate-recover-outcome.sh \
+         issue-record.sh; do
   cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
 done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
@@ -1055,6 +1056,42 @@ if [ "$(jq -r --arg t "1001" '.aux_pending[$t] // "CLEARED"' "$WORKDIR/specs/.or
   common_test_pass "aux: a capped-out aux_pending entry is still cleared (never re-evaluated next cycle)"
 else
   common_test_fail "aux: capped-out aux_pending entry was not cleared"
+fi
+
+# ── Case B2 (audibility at the cap): the give-up is visible in blocked[] and in the task's own
+# durable issue log, not only on the pre-existing stderr line ───────────────────────────────────
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_b2.json"
+jq -n --arg t "1001" '{blocker_escalation_count: {($t): 2}, aux_pending: {($t): {kind: "blocker-research", blocker_desc: "third strike"}}}' \
+  > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_b2.json"
+rm -f "$WORKDIR/specs/1001_g10_aux/issues.jsonl"
+run_sut --session g10_b2 -- 1001
+if [ "$(jqf '.blocked | map(select(.task == 1001)) | length')" = "1" ]; then
+  common_test_pass "aux: MAX_BLOCKER_ESCALATIONS cap surfaces a blocked[] row (audibility)"
+else
+  common_test_fail "aux: MAX_BLOCKER_ESCALATIONS cap produced no blocked[] row (stdout: $LAST_STDOUT)"
+fi
+g10_b2_reason=$(jqf '.blocked | map(select(.task == 1001)) | .[0].reason // ""')
+if [[ "$g10_b2_reason" == *"MAX_BLOCKER_ESCALATIONS"* ]] && [[ "$g10_b2_reason" == *".blocker-research.json"* ]]; then
+  common_test_pass "aux: the cap's blocked[] reason names MAX_BLOCKER_ESCALATIONS and the absent carrier path"
+else
+  common_test_fail "aux: the cap's blocked[] reason is missing the cap name or the carrier path (got: '$g10_b2_reason')"
+fi
+if [ -f "$WORKDIR/specs/1001_g10_aux/issues.jsonl" ] && [ "$(wc -l < "$WORKDIR/specs/1001_g10_aux/issues.jsonl")" -ge 1 ]; then
+  common_test_pass "aux: the cap give-up is also recorded in the task's durable issue log"
+else
+  common_test_fail "aux: no issues.jsonl entry was recorded for the capped-out blocker-research obligation"
+fi
+
+# --dry-run parity: the cap fixture's aux_pending/blocker_escalation_count live in the
+# per-invocation mt_state_file, which --dry-run never reads back (Case H's own documented design
+# above) -- so under --dry-run this fixture cannot reach the cap branch at all, and in particular
+# the issue-record.sh call must not fire.
+rm -f "$WORKDIR/specs/1001_g10_aux/issues.jsonl"
+run_sut --session g10_b3 --dry-run -- 1001
+if [ ! -f "$WORKDIR/specs/1001_g10_aux/issues.jsonl" ]; then
+  common_test_pass "aux: --dry-run on the same cap-shaped fixture records no issue-log entry"
+else
+  common_test_fail "aux: --dry-run unexpectedly wrote an issue-log entry for the cap fixture"
 fi
 
 # ── Case C: MAX_DRIFT_INSPECTIONS=1 cap -- base mode ─────────────────────────────────────────────
