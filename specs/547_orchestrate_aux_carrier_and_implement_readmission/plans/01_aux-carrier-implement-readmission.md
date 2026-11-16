@@ -436,7 +436,7 @@ path.
 
 ---
 
-### Phase 6: State-machine documentation, deploy, and full-gate acceptance [NOT STARTED]
+### Phase 6: State-machine documentation, deploy, and full-gate acceptance [COMPLETED]
 
 **Goal**: a reader of `docs/architecture/orchestrate-state-machine.md` alone can predict both the
 carrier-absence case and the implement-readmission case; the source store is redeployed and the
@@ -444,29 +444,29 @@ complete gate set is green.
 
 **Tasks**:
 
-- [ ] Narrow the `blocked, discharged` row of that document's transition table in place, adding the
+- [x] Narrow the `blocked, discharged` row of that document's transition table in place, adding the
       new discharge precondition: a discharge to `implement` is withheld while a blocker-research
-      escalation is outstanding. Keep the row's existing dependency/handoff-blockers conditions.
-- [ ] Extend the `### Auxiliary Dispatch (aux_dispatch[])` section with the carrier-confirmation
+      escalation is outstanding. Keep the row's existing dependency/handoff-blockers conditions. *(completed)*
+- [x] Extend the `### Auxiliary Dispatch (aux_dispatch[])` section with the carrier-confirmation
       behavior: the pending obligation is cleared on a confirmed, parseable carrier or at the
       escalation cap, never at emission; an unconfirmed obligation is retried up to the cap and
-      then surfaced in `blocked[]` and in the issue log.
-- [ ] State the forcing-flag behavior in the same section, in the shape the research recommends:
+      then surfaced in `blocked[]` and in the issue log. *(completed)*
+- [x] State the forcing-flag behavior in the same section, in the shape the research recommends:
       an explicit forcing flag admits one dispatch regardless of an outstanding blocker-research
-      escalation, and the admission is logged as an override rather than silently granted.
-- [ ] Check every edited sentence against the two deliverable rules: no task numbers, no
+      escalation, and the admission is logged as an override rather than silently granted. *(completed)*
+- [x] Check every edited sentence against the two deliverable rules: no task numbers, no
       record-versioning language. State the landed behavior as what the system does, never as a
       narration of a past run. Cite only the durable anchors the record sanctions (script and
-      document names, aux kinds, carrier filenames, field names, counter names).
-- [ ] Determine whether any file this task edited has a `line_count` entry in core's
+      document names, aux kinds, carrier filenames, field names, counter names). *(completed)*
+- [x] Determine whether any file this task edited has a `line_count` entry in core's
       `index-entries.json`. If one does, update the count to match the file as landed and confirm
-      the file still parses with `jq`.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` and confirm it reports
-      `RESULT=landed_verify_clean`.
-- [ ] Confirm `git status --short` shows no hand-authored file under `.claude/**` — every landed
+      the file still parses with `jq`. *(completed)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` and confirm it reports
+      `RESULT=landed_verify_clean`. *(completed)*
+- [x] Confirm `git status --short` shows no hand-authored file under `.claude/**` — every landed
       edit is in the source store at its mirroring path, and any `.claude/**` change is the
-      deploy's own regeneration.
-- [ ] Run the complete gate set and confirm green.
+      deploy's own regeneration. *(completed)*
+- [x] Run the complete gate set and confirm green. *(completed)*
 
 **Timing**: 1 hour
 

@@ -33,7 +33,7 @@ a special case: it is the same loop with `task_numbers` of length one.
 | `partial` (with blockers) | `.orchestrator-handoff.json` has non-empty `blockers` array | `dispatch_blocker_escalation()` → revise → implement | `implemented` | increment cycle |
 | `partial` (no handoff, cycle limit) | `cycle_count >= MAX_CYCLES` | Report state, exit | — | — |
 | `partial` (infra cap) | `infra_failures >= MAX_INFRA_FAILURES` | Report connectivity issue, exit | — | — |
-| `blocked`, discharged | `status = "blocked"`, all `dependencies[]` reached `status: "completed"`, and handoff carries no blockers | `dispatch(<phase>, task_n)` where `<phase>` is named by `previous_status` (research/plan/implement) | `researched`/`planned`/`implemented` | increment cycle |
+| `blocked`, discharged | `status = "blocked"`, all `dependencies[]` reached `status: "completed"`, and handoff carries no blockers | `dispatch(<phase>, task_n)` where `<phase>` is named by `previous_status` (research/plan/implement) -- EXCEPT when `previous_status` routes to `implement` and this task still carries an outstanding `blocker-research` obligation (`aux_pending[t].kind == "blocker-research"`), in which case the post-triage override in `orchestrate-cycle-plan.sh` withholds the implement dispatch and routes to `needs_human` instead, naming the outstanding obligation; an explicit forcing flag still admits one dispatch past this override, logged as an audible bypass rather than granted silently | `researched`/`planned`/`implemented`, or `needs_human` when withheld | increment cycle |
 | `blocked`, not discharged | `status = "blocked"`, and a dependency is outstanding, empty `dependencies[]`, a dependency is stuck non-completed-terminal, handoff blockers are present, or `previous_status` is missing | Read blockers from `state.json`, `dispatch_blocker_escalation()` | `planned` | increment cycle |
 | `completed` | `status = "completed"` | Report success, exit | — | — |
 | `abandoned` | `status = "abandoned"` | Report abandoned status, exit | — | — |
@@ -782,6 +782,47 @@ has a counterpart in the one surviving engine too, `SKILL.md`'s own Move 1 "Hard
 gate" paragraph: the same three self-checks, reused verbatim rather
 than duplicated, with the signal-firing action replaced by one call to
 `scripts/orchestrate-churn.sh --burnout-signal`.
+
+#### Blocker-Research Carrier Confirmation (Confirm-Then-Clear)
+
+A `blocker-research` signal's `aux_pending[t]` entry is cleared on CONFIRMATION, never at
+emission. When a cycle emits a `blocker-research` aux row, `aux_pending[t]` is deliberately left
+set; it is cleared only when a LATER cycle finds a parseable `.blocker-research.json` carrier at
+that task's own directory (the hop that chains into a `plan-revision` row) or when
+`blocker_escalation_count[t]` reaches `MAX_BLOCKER_ESCALATIONS`. This means a `blocker-research`
+aux dispatch that returns without writing its carrier does not silently drop the obligation: the
+next cycle re-evaluates `aux_pending[t]` and re-emits a fresh `blocker-research` row, up to the
+escalation cap. The `blocker-research` aux prompt itself states that the carrier write is
+required every time, unconditionally, regardless of what the dispatch's own returned text says —
+the follow-on `plan-revision` hop reads only that file.
+
+When the cap is reached with no carrier ever confirmed, the give-up is audible in three places,
+not only on stderr: a `blocked[]` row naming the task and the absent carrier path, and a
+non-fatal entry in that task's own durable issue log (`issues.jsonl`), alongside the existing
+stderr line. A reader of the run's own output can therefore always tell a `blocker-research`
+chain that completed (a `plan-revision` row followed) from one that evaporated (a `blocked[]` row
+and an issue-log entry at the cap).
+
+#### Implement Readmission Withheld on an Outstanding Blocker-Research Obligation
+
+A candidate that routes to `implement` — including the `blocked`, discharged row's own
+`previous_status`-routed readmission above — is withheld and routed to `needs_human` instead
+while `aux_pending[t].kind == "blocker-research"` is still set for that task: the
+confirm-then-clear obligation described above has not yet been confirmed by a parseable carrier
+or capped out. This override sits in `orchestrate-cycle-plan.sh`'s own post-triage seam,
+immediately after classification and before `force_phases` consumption, rather than inside
+`orchestrate-triage-classify.sh` or its own blocked-discharge arm — that classifier reads only
+`specs/state.json` and a candidate's own `.orchestrator-handoff.json`, and never opens the
+per-invocation multi-task state file where `aux_pending` lives. Placing the override at the
+post-triage seam applies it identically regardless of which classification engine (the live
+classifier or its degraded fallback table) produced the base verdict, so neither routing table
+itself changes and the two stay in agreement.
+
+An explicit forcing flag (`--research`/`--plan`/`--implement`) still admits exactly one dispatch
+past this override, because the forced-phase branch never consults the classified group at all.
+That admission is logged as an override, not granted silently: a stderr warning names the task
+and the bypassed `blocker-research` obligation whenever a forced implement dispatch proceeds
+while one is outstanding.
 
 ### Batch Size Cap (MAX_TASKS)
 
