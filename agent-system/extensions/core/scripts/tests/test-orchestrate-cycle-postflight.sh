@@ -2388,6 +2388,18 @@ if echo "$what_happened_830" | grep -qF "$expected_clause2_830"; then
 else
   common_test_fail "regression (830): expected the second blocker's clause to be exactly '$expected_clause2_830' with goal:/tried: omitted, got: $what_happened_830"
 fi
+class_830=$(tail -n 1 "$issues_file_830" 2>/dev/null | jq -r '.class // ""' 2>/dev/null)
+if [ "$class_830" = "unresolved task-domain blocker" ]; then
+  common_test_pass "regression (830): issues.jsonl entry carries the honest class (not 'environment')"
+else
+  common_test_fail "regression (830): expected .class == 'unresolved task-domain blocker', got: $class_830"
+fi
+severity_830=$(tail -n 1 "$issues_file_830" 2>/dev/null | jq -r '.severity // ""' 2>/dev/null)
+if [ "$severity_830" = "blocking" ]; then
+  common_test_pass "regression (830): issues.jsonl entry carries severity=blocking (unchanged)"
+else
+  common_test_fail "regression (830): expected .severity == 'blocking', got: $severity_830"
+fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Regression negative case: a `partial` outcome with EMPTY blockers[] must leave state.json

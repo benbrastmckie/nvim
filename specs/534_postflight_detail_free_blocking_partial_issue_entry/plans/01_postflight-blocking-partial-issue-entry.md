@@ -241,17 +241,17 @@ investigated rather than committed.
 
 ---
 
-### Phase 2: Settle the entry's classification [NOT STARTED]
+### Phase 2: Settle the entry's classification [COMPLETED]
 
 **Goal**: The entry carries an honest class instead of `environment`, severity stays `blocking`
 on the strength of its own admission test, and both decisions are recorded at the call site
 rather than left implicit.
 
 **Tasks**:
-- [ ] Replace `--class "environment"` with the literal `--class "unresolved task-domain blocker"`
+- [x] Replace `--class "environment"` with the literal `--class "unresolved task-domain blocker"`
       in the `partial)` arm's `issue_args` array. Pass it straight through `issue-record.sh`'s
       open `--class` enum; make no edit to `context/formats/issue-log.md`.
-- [ ] Add an inline comment at the call site recording, in two or three lines: that
+- [x] Add an inline comment at the call site recording, in two or three lines: that
       `environment`'s own admission test names the local or CI environment and so almost never
       describes a blocker-bearing partial; that the actual class is not knowable from the
       postflight's vantage point, which is why the value states that honestly instead of guessing;
@@ -260,15 +260,15 @@ rather than left implicit.
       would be pattern-matching dressed as classification. Cite durable anchors only — the
       `issue-log.md` section names (`Seed Class Enum`, `Extensibility Rule`) and field names, no
       task numbers and no draft history.
-- [ ] Add a second inline comment recording the severity argument on its own admission test: this
+- [x] Add a second inline comment recording the severity argument on its own admission test: this
       call site is reachable only inside `partial_blocker_count -gt 0` within the `partial)` arm,
       which is a direct instance of the `Severity Scale`'s `blocking` rung ("work could not
       proceed at all … the dispatch stalled or had to hand off because of it"), so the value is
       exact rather than merely defensible and is not moved to reduce downstream channel volume.
-- [ ] Extend the Phase 1 fixture's new `issues.jsonl` assertions to also require
+- [x] Extend the Phase 1 fixture's new `issues.jsonl` assertions to also require
       `.class == "unresolved task-domain blocker"` and `.severity == "blocking"` on the recorded
       entry, so the classification is pinned by the suite rather than only by prose.
-- [ ] Run the suite and commit.
+- [x] Run the suite and commit. *(completed: 316 passed, 0 failed)*
 
 **Timing**: 0.75 hours
 

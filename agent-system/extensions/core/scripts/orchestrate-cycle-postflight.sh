@@ -1504,7 +1504,21 @@ ${skel_bullets}" \
           # *why* the result came back empty changes.
           partial_blockers_detail=$(echo "${handoff:-null}" | jq -r '(.blockers // []) | map(if type == "object" then "phase \(.phase // ""): \(.target // "")" + (if (.verbatim_goal // "") != "" then " | goal: \(.verbatim_goal)" else "" end) + (if (.what_was_tried // "") != "" then " | tried: \(.what_was_tried)" else "" end) + (if (.why_it_failed // "") != "" then " | failed: \(.why_it_failed)" else "" end) else tostring end) | join("; ")')
           [ -z "$partial_blockers_detail" ] && partial_blockers_detail="partial outcome with ${partial_blocker_count} blocker(s) (detail unavailable)"
-          issue_args=(--task-dir "$TASK_DIR" --kind issue --class "environment" \
+          # --class: "environment"'s own admission test (issue-log.md's Seed Class Enum) names
+          # the local or CI environment (missing binary, version mismatch, permissions) as the
+          # cost's cause, which a blocker-bearing partial almost never is. The actual class is
+          # not knowable from this postflight's own vantage point, so the value states that
+          # honestly rather than guessing; no field in the blockers[] object schema names a
+          # class, and inferring one from free-text why_it_failed would be pattern-matching
+          # dressed as classification. issue-log.md's Extensibility Rule sanctions recording a
+          # new, as-yet-unseeded literal here.
+          #
+          # --severity: this arm is reachable only inside the `partial_blocker_count -gt 0`
+          # guard above, which is a direct instance of the Severity Scale's `blocking` rung
+          # (work "could not proceed at all ... the dispatch stalled or had to hand off because
+          # of it"), so the value is exact rather than merely defensible and is not moved to
+          # reduce downstream channel volume.
+          issue_args=(--task-dir "$TASK_DIR" --kind issue --class "unresolved task-domain blocker" \
             --severity blocking --phase implement --what-happened "$partial_blockers_detail" \
             --resolution open --suggested-channel follow_up_task --session "$session_id")
           [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
