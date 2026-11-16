@@ -505,3 +505,14 @@ genuinely had nothing to record, or skipped the attestation). Render per
 `context/patterns/orchestrate-batch-results-template.md`'s conclusion report block. Step 5's
 advisory batch-proposal-lint findings (if any) appear with Step 5's own output above, not as a
 separate section of this report.
+
+After rendering the report above, delete this invocation's own conclusion-stage pending marker
+(written by `orchestrate-conclusion-roadmap.sh` at Move 4; see Step 5 above and
+`hooks/orchestrate-conclusion-backstop.sh`) as this step's own final action — the backstop hook
+treats a live marker as proof Move 5 has not finished, so deleting it here is what releases that
+hook's own `Stop`-event block for this session:
+
+```bash
+source .claude/scripts/lib/runtime-file-patterns.sh
+rm -f "$(runtime_conclusion_pending_marker_path specs "$session_id")"
+```
