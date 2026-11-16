@@ -6410,6 +6410,41 @@ else
   common_test_fail "Group 38 (negative control): candidate #9402 unexpectedly landed in blocked[] with no aux_pending entry (stdout: $LAST_STDOUT)"
 fi
 
+# Group 38 (forcing-flag override): an explicit --force-phases implement still admits exactly one
+# dispatch against the SAME discharge-eligible-plus-obligation shape as the override case above,
+# because the forced branch never consults triage_group[$t] at all -- and that admission is
+# logged as an override (naming the bypassed obligation) rather than granted silently.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 9400, "project_name": "g38_dep", "task_type": "general", "status": "completed", "description": "completed dependency for the discharge fixture", "dependencies": [], "file_scope": []},
+    {"project_number": 9403, "project_name": "g38_forced", "task_type": "general", "status": "blocked", "previous_status": "implementing", "description": "discharge-eligible blocked candidate with an outstanding obligation, forced to implement", "dependencies": [9400], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/9403_g38_forced"
+mkdir -p "$WORKDIR/specs/9403_g38_forced/plans"
+cat > "$WORKDIR/specs/9403_g38_forced/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [NOT STARTED]
+EOF
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g38c.json"
+jq -n --arg t "9403" '{aux_pending: {($t): {kind: "blocker-research", blocker_desc: "widget X is missing"}}}' \
+  > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g38c.json"
+run_sut --session g38c --force-phases implement -- 9403
+if [ "$(jqf '.dispatch | map(select(.task == 9403 and .phase == "implement")) | length')" = "1" ]; then
+  common_test_pass "Group 38 (forcing-flag override): --force-phases implement still admits exactly one dispatch against an outstanding obligation"
+else
+  common_test_fail "Group 38 (forcing-flag override): the forced implement dispatch did not fire (stdout: $LAST_STDOUT)"
+fi
+if [[ "$LAST_STDERR" == *"WARNING"* ]] && [[ "$LAST_STDERR" == *"blocker-research"* ]] && [[ "$LAST_STDERR" == *"force"* ]]; then
+  common_test_pass "Group 38 (forcing-flag override): a stderr warning names the bypassed blocker-research obligation"
+else
+  common_test_fail "Group 38 (forcing-flag override): no stderr warning named the bypassed obligation (stderr: $LAST_STDERR)"
+fi
+
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"

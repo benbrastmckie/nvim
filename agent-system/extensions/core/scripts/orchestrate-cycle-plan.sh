@@ -1901,6 +1901,15 @@ for t in "${eligible_tasks[@]}"; do
     forced_phase=$(echo "$remaining" | jq -r '.[0]')
     effective_group[$t]="$forced_phase"
     forced_this_cycle[$t]="true"
+    # Forcing-flag override audibility: the forced branch above never consults triage_group[$t],
+    # so it structurally bypasses the post-triage withhold-implement override (Decision 2) without
+    # any code change here -- an explicit forcing flag still admits exactly one dispatch. Make
+    # that admission audible, not silent, whenever it is bypassing an outstanding blocker-research
+    # obligation.
+    forced_aux_obligation_kind=$(mt_get --arg t "$t" '.aux_pending[$t].kind // ""')
+    if [ "$forced_aux_obligation_kind" = "blocker-research" ]; then
+      echo "[orchestrate] WARNING: task #$t is force-dispatched to phase '$forced_phase' although an unconfirmed blocker-research obligation is outstanding (aux_pending[$t].kind == blocker-research) -- a plan revision is owed. The forcing flag admits this one dispatch anyway." >&2
+    fi
   elif [ "$seeded_this_run" = "true" ]; then
     # Queue empty AND this run itself seeded it (as opposed to a task that was simply never
     # forced this run) -- every phase this run's --research/--plan/--implement flag named has
