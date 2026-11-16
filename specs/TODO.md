@@ -166,7 +166,7 @@ next_project_number: 638
   └─ 593 [NOT STARTED] — Require pinned Lean Challenge signatures to be measured at...
     └─ 594 [NOT STARTED] — Size symmetric-pair phases and iteration obligations separately
       └─ 595 [NOT STARTED] — Define Goal Polarity semantics for decision-gate plans (see above)
-607 [PLANNING] — Resolve the gate 20 orchestrator context-budget overage and...
+607 [PLANNED] — Resolve the gate 20 orchestrator context-budget overage and...
 629 [NOT STARTED] — Fix the two-engine defect: scan\_all\_artifacts' sync\_scan...
   └─ 630 [NOT STARTED] — Give test-deploy-propagation.sh and...
 631 [NOT STARTED] — Replace test-typescript-verify.sh's fixed-depth REPO\_ROOT...
@@ -838,12 +838,13 @@ DURABLE EVIDENCE (in the BimodalLogic repo, /home/benjamin/Projects/BimodalLogic
 
 ### 607. Resolve the gate 20 orchestrator context-budget overage and the per-gate timeout sensitivity under concurrent load
 - **Effort**: medium
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Parent**: Task 532
 - **Research**: [607_gate_20_context_budget_and_timeout_sensitivity/reports/01_gate20-budget-and-timeout-sensitivity.md]
+- **Plan**: [607_gate_20_context_budget_and_timeout_sensitivity/plans/01_gate20-headroom-and-timeout-raise.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
 
