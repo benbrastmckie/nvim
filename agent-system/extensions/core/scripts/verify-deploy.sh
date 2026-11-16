@@ -374,6 +374,14 @@ MAX_COST=""
 # concurrency" section for the full contract.
 JOBS="auto"
 
+# GATE8_TOUCHED: empty = no narrowing (today's default behavior). Populated by --gate8-touched
+# below with a comma-separated PATH[,PATH...] list; gate8_run() resolves it through
+# suite_selection_select -- see this file's header "Gate 8 touched-paths narrowing" section for
+# the full contract. MUST be declared here, before the while-loop below, not alongside
+# GATE8_JOBS further down -- that declaration runs AFTER this loop completes and would silently
+# clobber whatever the --gate8-touched case arm just set.
+GATE8_TOUCHED=""
+
 while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=true; shift ;;
@@ -638,16 +646,6 @@ ORCHESTRATOR_BUDGET_GATE_MODE="${ORCHESTRATOR_BUDGET_GATE_MODE:-hard}"
 # flag. Default 'auto' resolves to nproc capped at run-all.sh's own JOBS_CAP (4); see gate 8's
 # call site below for the full precedence/rejected-alternatives record.
 GATE8_JOBS="${VERIFY_DEPLOY_GATE8_JOBS:-auto}"
-
-# GATE8_TOUCHED, parsed by --gate8-touched below, narrows Gate 8's internal run-all.sh
-# invocation to the covering suite(s) for these paths via suite_selection_select -- see this
-# file's header "Gate 8 touched-paths narrowing" section for the full contract. Empty default:
-# absent the flag, nothing reads this variable and gate8_run() is byte-identical to before this
-# flag existed. Genuinely unread in this phase (parse-only, behavior-inert by design); the
-# disable below is a deliberate, temporary marker that gate8_run() grows its reader next phase --
-# remove the disable once that reader lands.
-# shellcheck disable=SC2034
-GATE8_TOUCHED=""
 
 FAILURES=0
 CHECKS=0
@@ -1212,6 +1210,18 @@ fi
 # inside this function). known-failures.txt is advisory and human-maintained (see its own header
 # for the needs-owner convention); this gate now trusts its classification more directly than
 # before, so a stale row understates NEW churn until the manifest is corrected.
+# Touched-paths narrowing (--gate8-touched, GATE8_TOUCHED) -- see this file's header "Gate 8
+# touched-paths narrowing" section for the full contract; summarized here because it changes
+# this function's own run-all.sh invocation and verdict messages. When GATE8_TOUCHED is
+# non-empty, suite_selection_select resolves it to a covering suite set; a real set narrows the
+# run-all.sh call to `--only <set>` (GATE8_NARROWED=true) and the narrowed branch's pass()
+# message, and warn_advisory()/fail() remedy text, are changed to name the narrowing -- the
+# UNNARROWED strings stay byte-identical (two suites assert "run-all.sh: all discovered suites
+# passed" verbatim). The full-sweep sentinel, an empty result, or a missing library all fall back
+# to today's unnarrowed invocation unchanged. FORCED-DIRTY INVARIANT: a narrowed run, pass or
+# fail, unconditionally appends gate8 to GATE_DIRTY_LIST before the verdict branch runs, so a
+# later --skip-unchanged invocation can never write (or trust) a full-corpus cache entry on the
+# strength of a subset pass.
 _gate8_signal_cleanup() {
   local sig="$1"
   if [ "$GATE8_MUTEX_OWNED_HERE" = "true" ]; then
@@ -1271,7 +1281,63 @@ else
     fi
   fi
 
-  run_all_output=$(cd "$TARGET" && bash "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" --quiet --jobs "$GATE8_JOBS" --fail-on-new 2>&1)
+  # Touched-paths narrowing (--gate8-touched; see this file's header "Gate 8 touched-paths
+  # narrowing" section for the full contract). Resolved here, before the run-all.sh invocation
+  # below is built, so GATE8_NARROWED and GATE8_ONLY_ARGS are both settled in time.
+  GATE8_NARROWED=false
+  GATE8_ONLY_ARGS=()
+  GATE8_SUITES=()
+  if [ -n "$GATE8_TOUCHED" ]; then
+    # Lazy, degrade-safe source of the TARGET copy -- deliberately NOT _VD_SCRIPT_DIR/lib/, which
+    # is the DEPLOYED copy when this script is itself invoked from .claude/scripts/ and would
+    # resolve roots (via the library's own BASH_SOURCE[0]) that disagree with the run-all.sh this
+    # gate actually invokes (agent-system/extensions/core/scripts/tests/run-all.sh, always the
+    # source-store copy -- see the unconditional path above). Mirrors validate-artifact.sh's
+    # lazy-source idiom, but degrades to the unnarrowed invocation on a missing library rather
+    # than exiting: coordination/optimization failing is never a reason to skip verification.
+    GATE8_SSL_LIB="$TARGET/agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"
+    if [ ! -f "$GATE8_SSL_LIB" ]; then
+      say "  Note: --gate8-touched given but $GATE8_SSL_LIB not found; falling back to the full, unnarrowed battery."
+    else
+      # shellcheck source=lib/suite-selection-lib.sh
+      . "$GATE8_SSL_LIB"
+      IFS=',' read -r -a GATE8_TOUCHED_PATHS <<< "$GATE8_TOUCHED"
+      mapfile -t GATE8_SUITES < <(suite_selection_select "${GATE8_TOUCHED_PATHS[@]}")
+      if [ "${#GATE8_SUITES[@]}" -eq 1 ] && [ "${GATE8_SUITES[0]}" = "${SUITE_SELECTION_FULL_SWEEP_SENTINEL:-__FULL_SWEEP__}" ]; then
+        say "  Note: --gate8-touched resolved to the full-sweep sentinel (no suite covers the given path(s)); falling back to the full, unnarrowed battery."
+        GATE8_SUITES=()
+      elif [ "${#GATE8_SUITES[@]}" -eq 0 ]; then
+        say "  Note: --gate8-touched resolved to zero suites; falling back to the full, unnarrowed battery."
+      else
+        GATE8_NARROWED=true
+        GATE8_ONLY_ARGS=(--only "$(IFS=,; echo "${GATE8_SUITES[*]}")")
+      fi
+      unset GATE8_TOUCHED_PATHS
+    fi
+    unset GATE8_SSL_LIB
+  fi
+
+  # A narrowed run, pass or fail, is never cache-write-eligible: force gate8 onto
+  # GATE_DIRTY_LIST unconditionally, BEFORE the verdict branch below, so it holds on pass,
+  # advisory-warn and fail alike. This closes the hazard the generic --skip-unchanged
+  # cache-write block cannot see on its own -- that block computes its write key from gate8's
+  # DECLARED @extensions corpus digest and has no knowledge that THIS run's internal run-all.sh
+  # invocation only exercised a subset of it; without this, a clean narrowed pass would silently
+  # write a full-corpus cache entry, certifying suites that never ran.
+  if [ "$GATE8_NARROWED" = "true" ]; then
+    GATE_DIRTY_LIST+=("$CURRENT_GATE")
+  fi
+
+  # NOTE: deliberately "${GATE8_ONLY_ARGS[@]}", never "${GATE8_ONLY_ARGS[@]:-}" -- confirmed by
+  # direct reproduction that the ":-" default form substitutes ONE empty-string WORD for a
+  # declared-but-zero-element array (argc=1, not 0), which run-all.sh's own argument parser then
+  # rejects as "ERROR: unknown argument: " on every unnarrowed run. The bare "[@]" form (no
+  # default) correctly expands to zero words for an empty array under this file's own
+  # `set -uo pipefail` (verified on bash 5.3.9); GATE_RAN_LIST/GATE_DIRTY_LIST's own "[@]:-"
+  # reads elsewhere in this file are safe DESPITE the same quirk only because they are `for`-loop
+  # iterands, where one spurious empty-string iteration is harmless -- never mirror that idiom
+  # for an argument list passed to an external command.
+  run_all_output=$(cd "$TARGET" && bash "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" --quiet --jobs "$GATE8_JOBS" --fail-on-new "${GATE8_ONLY_ARGS[@]}" 2>&1)
   run_all_status=$?
 
   # Release on every path out of the bracket (success and failure alike) -- explicit, mirroring
@@ -1299,8 +1365,25 @@ else
     '[run-all] Failing suites ('*) run_all_had_failing_suites="true" ;;
   esac
 
+  # run-all.sh's own remedy invocation, extended to name the narrowing when this run was
+  # narrowed -- a reader re-running for detail then knows the roster was filtered, rather than
+  # re-running the full battery expecting it to reproduce a narrowed-run verdict.
+  run_all_rerun_remedy="re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh"
+  if [ "$GATE8_NARROWED" = "true" ]; then
+    run_all_rerun_remedy="re-run the SAME narrowed roster for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh --only $(IFS=,; echo "${GATE8_SUITES[*]}") (narrowed by --gate8-touched; this was not a full-battery run)"
+  fi
+
   if [ "$run_all_status" -eq 0 ] && [ "$run_all_had_failing_suites" = "false" ]; then
-    pass "run-all.sh: all discovered suites passed"
+    if [ "$GATE8_NARROWED" = "true" ]; then
+      # Narrowed branch ONLY: this message is deliberately distinct from the unnarrowed string
+      # below, which two suites (test-gate8-expected-new-distinction.sh, test-gate-lock.sh)
+      # assert verbatim -- a narrowed pass must never be textually indistinguishable from a
+      # full-battery pass. Not evidence of full-battery coverage; see this file's header
+      # "Gate 8 touched-paths narrowing" section.
+      pass "run-all.sh: ${#GATE8_SUITES[@]} selected suite(s) passed (narrowed by --gate8-touched -- NOT a full-battery pass)"
+    else
+      pass "run-all.sh: all discovered suites passed"
+    fi
   elif [ "$run_all_status" -eq 0 ] && [ "$run_all_had_failing_suites" = "true" ]; then
     # All-expected outcome: --fail-on-new already certified zero NEW failures, so this is
     # non-blocking (never fail()/FAILURES) but still visible and trackable -- warn_advisory(),
@@ -1309,10 +1392,10 @@ else
     # `FINDING ` line would still reach deploy_findings_snapshot's batch-blocking filter).
     run_all_tally_line="$(printf '%s\n' "$run_all_output" | grep -E '^\[run-all\] [0-9]+ passed, ' | tail -n1)"
     warn_advisory "run-all.sh: all failing suites are declared-expected (no NEW failure)" \
-         "${run_all_tally_line:-see tests/known-failures.txt}; re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh" \
+         "${run_all_tally_line:-see tests/known-failures.txt}; $run_all_rerun_remedy" \
          "run-all.sh: all failing suites are declared-expected (no NEW failure) -- ${run_all_tally_line:-see tests/known-failures.txt}"
   else
-    run_all_remedy="re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh"
+    run_all_remedy="$run_all_rerun_remedy"
     [ "$run_all_status" -eq 2 ] && run_all_remedy="$run_all_remedy (exit 2 may indicate an invalid VERIFY_DEPLOY_GATE8_JOBS value: '$GATE8_JOBS')"
     fail "run-all.sh reported failing or undiscoverable suites (exit $run_all_status)" \
          "$run_all_remedy" ""

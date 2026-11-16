@@ -1,0 +1,25 @@
+{
+  "phase": 2,
+  "phase_name": "Narrow Gate 8 through the selector, and forbid a narrowed run from writing a cache entry",
+  "started_at": "2026-11-16T01:00:00Z",
+  "last_updated": "2026-11-16T02:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read gate8_run() and cache write/invalidate block before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Lazily source suite-selection-lib.sh from TARGET when GATE8_TOUCHED non-empty", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 3, "description": "Split GATE8_TOUCHED, call suite_selection_select", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 4, "description": "Sentinel/empty -> unnarrowed; else GATE8_NARROWED=true + --only", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 5, "description": "Force gate8 onto GATE_DIRTY_LIST unconditionally when narrowed", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 6, "description": "Change only narrowed branch's pass() message", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 7, "description": "Extend narrowed branch's warn_advisory/fail remedy strings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 8, "description": "Update gate8_run() header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "GATE8_TOUCHED default declared beside GATE8_JOBS (after the arg-parsing while loop)", "result": "failed", "reason": "the post-loop default assignment runs AFTER the --gate8-touched case arm inside the loop, silently clobbering the value back to empty every time. Fixed by moving the default before the while loop, alongside GATES_FILTER/JOBS."},
+    {"approach": "\"${GATE8_ONLY_ARGS[@]:-}\" to expand the possibly-empty --only args array", "result": "failed", "reason": "confirmed by direct reproduction that bash's :- default form substitutes ONE empty-string word for a zero-element array (argc=1), not zero words -- causing every unnarrowed run to pass a spurious empty argument to run-all.sh, which rejected it with exit 2. Fixed by using the bare \"${GATE8_ONLY_ARGS[@]}\" form (argc=0 for an empty array, confirmed safe under this file's set -uo pipefail on bash 5.3.9)."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "commit_mode": "atomic-batch",
+  "notes": "Verification note: a full-battery (unnarrowed) --only-gate 8 run against the live repo right now intermittently exits 1 (e.g. test-gate-cache-equivalence.sh load-sensitivity, or test-gate-lock.sh's own fixtures inheriting the real GATE_MUTEX_HELD=1 this gate exports when run nested). Confirmed PRE-EXISTING and unrelated to this phase's changes by running the byte-identical, completely unmodified DEPLOYED .claude/scripts/verify-deploy.sh (zero --gate8-touched references) under the identical invocation and observing the identical exit-1/FAIL output. The narrowed-side behavior this phase actually introduces was verified directly and cleanly: a mappable path narrows the battery and prints the narrowed pass/warn message with the narrowing named in its remedy text; an unmappable path falls back to the sentinel with a Note: line; the absent-flag path is untouched; and a clean narrowed run under --skip-unchanged leaves no gate8 cache entry (confirmed: specs/.gate-cache/gate8.json absent after a clean 3-suite narrowed PASS)."
+}

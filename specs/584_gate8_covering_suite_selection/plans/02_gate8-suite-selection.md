@@ -184,7 +184,7 @@ run of the same script.
 
 ---
 
-### Phase 2: Narrow Gate 8 through the selector, and forbid a narrowed run from writing a cache entry [NOT STARTED]
+### Phase 2: Narrow Gate 8 through the selector, and forbid a narrowed run from writing a cache entry [COMPLETED]
 
 **Goal**: `gate8_run()` resolves `GATE8_TOUCHED` through `suite_selection_select`, invokes
 `run-all.sh --only <list>` when a real suite set comes back, falls back to today's unnarrowed
@@ -192,33 +192,43 @@ invocation on absence or the full-sweep sentinel, marks itself cache-ineligible 
 narrowed, and says so in its own output.
 
 **Tasks**:
-- [ ] Re-read `gate8_run()` and the `--skip-unchanged` post-run cache write/invalidate block
-      immediately before editing.
-- [ ] Inside `gate8_run()`'s `else` branch (the one that actually reaches `run-all.sh`), and only
+- [x] Re-read `gate8_run()` and the `--skip-unchanged` post-run cache write/invalidate block
+      immediately before editing. *(completed)*
+- [x] Inside `gate8_run()`'s `else` branch (the one that actually reaches `run-all.sh`), and only
       when `GATE8_TOUCHED` is non-empty: lazily source
       `$TARGET/agent-system/extensions/core/scripts/lib/suite-selection-lib.sh` - the TARGET copy,
       never `_VD_SCRIPT_DIR/lib/`, so the library's `BASH_SOURCE[0]`-derived roots match the
       `run-all.sh` this gate invokes. Mirror `validate-artifact.sh`'s lazy-source idiom. A missing
       library degrades to the unnarrowed invocation with a named `Note:` line; it never fails the
       gate (coordination/optimization failing is never a reason to skip verification).
-- [ ] Split `GATE8_TOUCHED` on commas into an array and call
+      *(completed)*
+- [x] Split `GATE8_TOUCHED` on commas into an array and call
       `mapfile -t _g8_suites < <(suite_selection_select "${_g8_paths[@]}")`.
-- [ ] If the result is exactly `$SUITE_SELECTION_FULL_SWEEP_SENTINEL` (or empty), run the existing
+      *(completed: named GATE8_TOUCHED_PATHS/GATE8_SUITES to match this phase's own variable
+      prefix)*
+- [x] If the result is exactly `$SUITE_SELECTION_FULL_SWEEP_SENTINEL` (or empty), run the existing
       unnarrowed invocation unchanged and set no narrowing marker. Otherwise set
       `GATE8_NARROWED=true` and append `--only "$(IFS=,; echo "${_g8_suites[*]}")"` to the existing
-      `--quiet --jobs "$GATE8_JOBS" --fail-on-new` invocation.
-- [ ] When `GATE8_NARROWED=true`, append `gate8` to `GATE_DIRTY_LIST` unconditionally - before the
+      `--quiet --jobs "$GATE8_JOBS" --fail-on-new` invocation. *(completed: discovered and fixed a
+      real defect here -- "${GATE8_ONLY_ARGS[@]:-}" substitutes ONE empty-string word for a
+      zero-element array under this file's set -uo pipefail, not zero words, which made every
+      unnarrowed run pass a spurious empty argument to run-all.sh and fail with exit 2. Fixed by
+      using the bare "${GATE8_ONLY_ARGS[@]}" form; see progress/phase-2-progress.json
+      approaches_tried for the full reproduction)*
+- [x] When `GATE8_NARROWED=true`, append `gate8` to `GATE_DIRTY_LIST` unconditionally - before the
       verdict branch, so it holds on pass, advisory-warn and fail alike. Add an inline comment
       naming the hazard it closes: the generic `--skip-unchanged` write block computes its key from
       the gate's **declared** `@extensions` corpus and has no knowledge of an internal `--only`.
-- [ ] Change **only** the narrowed branch's `pass()` message (e.g. naming the selected-suite count
+      *(completed)*
+- [x] Change **only** the narrowed branch's `pass()` message (e.g. naming the selected-suite count
       and stating this is not a full-battery pass). Leave the unnarrowed string
       `run-all.sh: all discovered suites passed` byte-identical - `test-gate8-expected-new-distinction.sh`
-      and `test-gate-lock.sh` both assert it verbatim.
-- [ ] Extend the narrowed branch's `warn_advisory`/`fail` remedy strings to name the narrowing, so
-      a reader re-running for detail knows the roster was filtered.
-- [ ] Update `gate8_run()`'s header comment with the narrowing contract and the forced-dirty
-      invariant.
+      and `test-gate-lock.sh` both assert it verbatim. *(completed: both suites directly re-run
+      and confirmed passing against the fixed code)*
+- [x] Extend the narrowed branch's `warn_advisory`/`fail` remedy strings to name the narrowing, so
+      a reader re-running for detail knows the roster was filtered. *(completed)*
+- [x] Update `gate8_run()`'s header comment with the narrowing contract and the forced-dirty
+      invariant. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -244,10 +254,10 @@ in the one file, touching no other gate's surface, so the covering check is
 - `agent-system/extensions/core/scripts/verify-deploy.sh` - selector sourcing, narrowed `run-all.sh` invocation, forced `GATE_DIRTY_LIST` marking, narrowed-branch verdict messages, header contract
 
 **Verification**:
-- `--only-gate 8 --gate8-touched <a small, mappable path>` runs visibly fewer suites than the same invocation without the flag, and its pass line states it was narrowed.
-- `--only-gate 8 --gate8-touched <an unmappable path>` falls back to the full battery (sentinel path) and prints today's unnarrowed pass string.
-- `--only-gate 8` with no `--gate8-touched` produces output byte-identical to the pre-change script.
-- Under `--skip-unchanged`, a clean narrowed run leaves **no** cache entry for gate 8 (entry invalidated, not written); a clean unnarrowed run still writes one.
+- `--only-gate 8 --gate8-touched <a small, mappable path>` runs visibly fewer suites than the same invocation without the flag, and its pass line states it was narrowed. *(confirmed: `lib/suite-selection-lib.sh` resolves to 3 suites (31 for `verify-deploy.sh` itself, matching the plan's Scope Hypothesis exactly); narrowed `[PASS]` message confirmed naming the count and the narrowing)*
+- `--only-gate 8 --gate8-touched <an unmappable path>` falls back to the full battery (sentinel path) and prints today's unnarrowed pass string. *(confirmed: a deliberately bogus path resolves to `__FULL_SWEEP__`, prints the `Note:` fallback line, and proceeds with GATE8_ONLY_ARGS empty)*
+- `--only-gate 8` with no `--gate8-touched` produces output byte-identical to the pre-change script. *(confirmed by direct comparison against the completely unmodified, deployed `.claude/scripts/verify-deploy.sh` under the identical live-repo conditions: both produce the identical `[FAIL] run-all.sh reported failing or undiscoverable suites (exit 1)` output right now, which is PRE-EXISTING live-repo flakiness unrelated to this phase -- see progress/phase-2-progress.json's `notes` field)*
+- Under `--skip-unchanged`, a clean narrowed run leaves **no** cache entry for gate 8 (entry invalidated, not written); a clean unnarrowed run still writes one. *(narrowed side confirmed directly: a clean 3-suite narrowed PASS left `specs/.gate-cache/gate8.json` absent. Unnarrowed-writes-an-entry is pre-existing, generic `--skip-unchanged` behavior this phase does not touch, and could not be re-confirmed live due to the same pre-existing full-battery flakiness noted above)*
 
 ---
 
