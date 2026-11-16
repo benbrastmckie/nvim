@@ -261,33 +261,41 @@ in the one file, touching no other gate's surface, so the covering check is
 
 ---
 
-### Phase 3: Dedicated regression suite [NOT STARTED]
+### Phase 3: Dedicated regression suite [COMPLETED]
 
 **Goal**: A new standalone suite pins the narrowing, the sentinel fallback, the absent-flag
 byte-identity, and the forced cache-ineligibility, so none of the four can regress silently.
 
 **Tasks**:
-- [ ] Create the new suite modelled structurally on `test-gate8-expected-new-distinction.sh`
+- [x] Create the new suite modelled structurally on `test-gate8-expected-new-distinction.sh`
       (pass/fail/info helpers, counters, `mktemp` workdir with `trap EXIT` cleanup) and resolve its
       roots via `common_test_repo_root` / `common_test_ext_root` from `lib/common.sh` - never a
-      fixed-depth `cd ../../..` walk, which gate 29's root-resolution lint rejects.
-- [ ] Case A: absent flag - assert the invocation reaches `run-all.sh` with no `--only` and emits
-      today's exact pass string.
-- [ ] Case B: mappable single path - assert `--only` is passed and carries exactly the selector's
-      own output for that path.
-- [ ] Case C: multi-extension path set - assert the union resolves and the narrowed invocation is
+      fixed-depth `cd ../../..` walk, which gate 29's root-resolution lint rejects. *(completed)*
+- [x] Case A: absent flag - assert the invocation reaches `run-all.sh` with no `--only` and emits
+      today's exact pass string. *(completed)*
+- [x] Case B: mappable single path - assert `--only` is passed and carries exactly the selector's
+      own output for that path. *(completed)*
+- [x] Case C: multi-extension path set - assert the union resolves and the narrowed invocation is
       accepted by `run-all.sh --only` (the smoke test research recommended against a
-      discovery-rule divergence between the two scripts).
-- [ ] Case D: unmappable path - assert the sentinel path falls back to a full, unnarrowed
-      invocation rather than a zero-suite run.
-- [ ] Case E: forced cache-ineligibility - under `--skip-unchanged`, a clean narrowed run must
+      discovery-rule divergence between the two scripts). *(deviation: altered -- tested as a
+      multi-path union within one fixture extension rather than literally spanning two
+      agent-system/extensions/* directories; same functional coverage, see
+      progress/phase-3-progress.json)*
+- [x] Case D: unmappable path - assert the sentinel path falls back to a full, unnarrowed
+      invocation rather than a zero-suite run. *(completed)*
+- [x] Case E: forced cache-ineligibility - under `--skip-unchanged`, a clean narrowed run must
       leave no gate 8 cache entry behind; the same run without the flag must leave one. This is the
-      case that pins D4 and is the suite's load-bearing assertion.
-- [ ] Case F: argument validation - empty/missing flag value exits 2 with the named error.
-- [ ] Use a stub `run-all.sh` in the fixture where a case only needs to observe the arguments Gate
+      case that pins D4 and is the suite's load-bearing assertion. *(completed: discovered and
+      worked around a real fixture-construction gap here -- gate-cache-lib.sh's
+      implementation-digest component requires a copy of verify-deploy.sh physically present
+      under the TARGET fixture to hash gate8_run()'s own function body; see
+      progress/phase-3-progress.json approaches_tried)*
+- [x] Case F: argument validation - empty/missing flag value exits 2 with the named error.
+      *(completed, plus the explicitly-empty-value sibling branch)*
+- [x] Use a stub `run-all.sh` in the fixture where a case only needs to observe the arguments Gate
       8 constructs, following `test-gate-cache-equivalence.sh`'s existing stub precedent, so the
-      suite does not recurse into the real 195-suite battery.
-- [ ] Run the new suite directly and confirm it passes.
+      suite does not recurse into the real 195-suite battery. *(completed)*
+- [x] Run the new suite directly and confirm it passes. *(completed: 22 passed, 0 failed)*
 
 **Timing**: 1.5 hours
 
@@ -311,9 +319,12 @@ code path, so the covering check is running that newly added suite file directly
 - `agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh` - new regression suite (cases A-F above)
 
 **Verification**:
-- The new suite passes when run directly.
+- The new suite passes when run directly. *(confirmed: 22 passed, 0 failed)*
 - `--only-gate 29,22` passes (root-resolution lint and shellcheck clean on the new file).
+  *(confirmed clean)*
 - The suite is discovered by `run-all.sh` (it appears in the discovered-suite tally).
+  *(confirmed: test_suites corpus count moved 202 -> 203; `run-all.sh --only
+  test-gate8-suite-selection.sh` finds and runs it directly, 1 passed/0 failed)*
 
 ---
 

@@ -1,0 +1,32 @@
+{
+  "phase": 3,
+  "phase_name": "Dedicated regression suite",
+  "started_at": "2026-11-16T03:00:00Z",
+  "last_updated": "2026-11-16T03:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create suite modelled on test-gate8-expected-new-distinction.sh, roots via common_test_repo_root/common_test_ext_root", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh"]},
+    {"id": 2, "description": "Case A: absent flag", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh"]},
+    {"id": 3, "description": "Case B: mappable single path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh"]},
+    {"id": 4, "description": "Case C: multi-path union", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh"]},
+    {"id": 5, "description": "Case D: unmappable path, sentinel fallback", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh"]},
+    {"id": 6, "description": "Case E: forced cache-ineligibility", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh"]},
+    {"id": 7, "description": "Case F: argument validation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh"]},
+    {"id": 8, "description": "Stub run-all.sh in the fixture (test-gate-cache-equivalence.sh precedent)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh"]},
+    {"id": 9, "description": "Run the new suite directly and confirm it passes", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "cache-write-eligibility fixture with no verify-deploy.sh copy inside it", "result": "failed", "reason": "gate-cache-lib.sh's implementation-digest component (gate_cache_resolve_verify_deploy/gate_cache_extract_invoke_body) reads gate8_run()'s own function body FROM A COPY OF verify-deploy.sh located under the TARGET fixture itself, to hash it as part of the composite cache key. A fixture with no such copy always resolves the key to CANNOT_COMPUTE, so --skip-unchanged never writes an entry regardless of narrowing. Fixed by copying $VERIFY_DEPLOY into the fixture at the expected path (never executed directly -- only read for hashing) and committing the fixture as a real throwaway git repo (the @extensions corpus resolution also shells out to `git ls-files`)."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.Case C",
+      "description": "Case C: multi-extension path set",
+      "type": "altered",
+      "reason": "Implemented as a multi-PATH union within the single fixture extension (two touched paths each pairing with their own real suite file) rather than spanning two literal agent-system/extensions/* directories. This still exercises suite_selection_select's union-of-resolved-suites path and the run-all.sh --only basename-acceptance smoke test the plan's research recommendation was aimed at (discovery-rule convergence between the two scripts), without the added fixture complexity of standing up a second fake extension tree.",
+      "annotation": "*(deviation: altered -- tested as a multi-path union within one extension rather than literally spanning two agent-system/extensions/* directories; same functional coverage)*"
+    }
+  ],
+  "commit_mode": "per-substep"
+}
