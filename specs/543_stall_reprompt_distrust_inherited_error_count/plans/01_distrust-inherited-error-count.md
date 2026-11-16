@@ -197,34 +197,42 @@ migration provenance.
 
 ---
 
-### Phase 2: Carry the Addition into the Script-Side Remedy Prose [NOT STARTED]
+### Phase 2: Carry the Addition into the Script-Side Remedy Prose [COMPLETED]
 
 **Goal**: Make three of the four emission sites say, in substance, what the doc list now says, and
 record the reasoned exclusion for the fourth.
 
 **Tasks**:
-- [ ] Extend the `stall_suspected` notice (currently line ~2374) with the full-form clause, inserted
+- [x] Extend the `stall_suspected` notice (currently line ~2374) with the full-form clause, inserted
       between the foreground-re-run parenthetical and the artifact-closing clause:
       `... -- never await a harness notification), to derive its failure inventory solely from that
       re-run's own output -- treating any error count or list carried over from the interrupting
       context as unverified and non-exhaustive, a lower bound at best and never a stopping condition
       -- and to close every phase and write all three artifacts before returning. ...`
-- [ ] Extend the stall-flavoured `recovery_declined_detail` (currently line ~1072) with the short
+      *(completed: inserted verbatim at line 2374)*
+- [x] Extend the stall-flavoured `recovery_declined_detail` (currently line ~1072) with the short
       form: `REMEDY: one re-prompt, foreground verification with the failure inventory derived
       solely from that re-run -- any inherited count is unverified and non-exhaustive -- do NOT
       charge to failed_tasks without that re-prompt.`
-- [ ] Extend the strand-flavoured `recovery_declined_detail` (currently line ~1074) with the short
+      *(completed: inserted verbatim at line 1072)*
+- [x] Extend the strand-flavoured `recovery_declined_detail` (currently line ~1074) with the short
       form: `REMEDY: one re-prompt at the same dispatch_seq, with the failure inventory derived
       solely from that re-run -- any inherited count is unverified and non-exhaustive -- do NOT
       charge to failed_tasks without that re-prompt.`
-- [ ] Leave the `stranded_suspected` notice (currently line ~2414) unchanged, and write the reason
+      *(completed: inserted verbatim at line 1074)*
+- [x] Leave the `stranded_suspected` notice (currently line ~2414) unchanged, and write the reason
       down for the completion summary: its own text routes the reader into the one-re-prompt relay
       by name rather than restating remedy steps inline, so it inherits the addition from the stall
       notice and the doc list; duplicating the clause would create a second copy to keep in sync.
-- [ ] Verify no branch condition, variable, or surrounding logic in the `rd_stall_corroborated` /
+      *(completed: left unchanged; deferral to "same mechanism as stall_suspected" confirmed still
+      present)*
+- [x] Verify no branch condition, variable, or surrounding logic in the `rd_stall_corroborated` /
       `rd_strand_corroborated` conditional was altered — only the quoted string tails.
-- [ ] Confirm the edited prose carries no task-number reference, no record-versioning language, and
+      *(completed: `git diff` confirms only the three quoted string tails changed)*
+- [x] Confirm the edited prose carries no task-number reference, no record-versioning language, and
       no measured count or domain particular.
+      *(completed: `check-task-references.sh` and `check-record-versioning.sh` report 0 blocking
+      findings for this file)*
 
 **Timing**: 0.75 hours
 

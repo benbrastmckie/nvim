@@ -1,0 +1,54 @@
+{
+  "phase": 2,
+  "phase_name": "Carry the Addition into the Script-Side Remedy Prose",
+  "started_at": "2026-11-16T18:51:00Z",
+  "last_updated": "2026-11-16T19:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extend the stall_suspected notice with the full-form clause",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Extend the stall-flavoured recovery_declined_detail with the short form",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Extend the strand-flavoured recovery_declined_detail with the short form",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Leave the stranded_suspected notice unchanged; record the reason",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Verify only quoted string tails changed, no branch/variable/logic touched",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Confirm no task-number reference, no record-versioning language, no measured count or domain particular",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
