@@ -70880,6 +70880,11 @@
           "path": "specs/543_stall_reprompt_distrust_inherited_error_count/plans/01_distrust-inherited-error-count.md",
           "type": "plan",
           "summary": "Four-phase plan: doc Loop obligation amendment, three script-side remedy prose sites with one reasoned exclusion, a content assertion in the postflight suite, then deploy plus full-gate acceptance."
+        },
+        {
+          "path": "specs/543_stall_reprompt_distrust_inherited_error_count/summaries/01_distrust-inherited-error-count-summary.md",
+          "type": "summary",
+          "summary": "Four-phase implementation summary with the full site-by-site decision record for all four enumerated REMEDY: emission sites."
         }
       ],
       "created": "2026-10-18T21:05:24Z",
@@ -70896,7 +70901,8 @@
       },
       "audit_override": "cross-repo relocation of 34 already-created, already-audited meta records out of BimodalLogic, under the user ruling that all meta records live in this repository; these are not new proposals. audit-task-proposals.sh cannot run over this corpus: jq argv overflow at 24 and at 3-per-chunk, the defect closed task 858 did not fix.",
       "session_id": "sess_1794850122_9151c5",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added the inherited-error-count distrust obligation to the canonical \"Loop obligation\" list and to three of the four REMEDY: emission sites in orchestrate-cycle-postflight.sh, with a reasoned exclusion for the fourth (stranded_suspected, which defers to the stall mechanism by name). Pinned the new clause with a non-vacuous content assertion (case S1b) in test-orchestrate-cycle-postflight.sh, verified by negative control, then deployed and discharged the final phase's verification against the scoped Gate 8 tier per the batch's gate-deferral directive."
     },
     {
       "project_number": 544,

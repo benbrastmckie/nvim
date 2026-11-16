@@ -4853,6 +4853,7 @@ as a number resolving to an unrelated record here.
 - **Dependencies**: Task 534
 - **Research**: [543_stall_reprompt_distrust_inherited_error_count/reports/01_distrust-inherited-error-count.md]
 - **Plan**: [543_stall_reprompt_distrust_inherited_error_count/plans/01_distrust-inherited-error-count.md]
+- **Summary**: [543_stall_reprompt_distrust_inherited_error_count/summaries/01_distrust-inherited-error-count-summary.md]
 
 **Description**: Make the stall/strand re-prompt remedy tell the resuming dispatch that an error count inherited from the interrupting context is unverified and non-exhaustive. The remedy text today orders foreground re-verification but says nothing about the provenance of the failure count the resumer was handed, so a resumer that re-runs the build and then reconciles against the handed-down number can stop early believing it is done.
 
