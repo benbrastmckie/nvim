@@ -197,13 +197,23 @@ loosened by anything in this derivation half.
 ## The Executable Stage Body
 
 Executed verbatim by the orchestrate lead, once per invocation, immediately after Move 4's full
-finalization sequence (consolidated output, residue check, session-registry release,
+finalization sequence (the STAGED consolidated output, residue check, session-registry release,
 `.dispatch/` removal, and the multi-task `.return-meta.json` write) has completed — never
 interleaved with it, never run for a per-task Move 3. This section follows the same
 single-executable-block pattern as `context/patterns/lit-stage4a-flow.md`: every instruction
 below is direct and executable, not commented-out pseudocode. Tool and commit surfaces are
 governed by `context/standards/postflight-tool-restrictions.md`'s "Conclusion Stage (Move 5) Tool
 Restrictions" section; nothing below expands that surface.
+
+**Two rulings govern this stage's relationship to Move 4's finalize sequence.** (a) The
+consolidated output is rendered and staged by Move 4 but its *emission* is deferred to this
+body's own Step 6, so the user sees one combined report rather than two partial ones. (b) A
+`Stop`-hook backstop (`hooks/orchestrate-conclusion-backstop.sh`) blocks a session's turn from
+ending while this body has not yet run, mechanizing (a) as defense-in-depth rather than relying
+on it alone — a session that somehow reaches a stop before Step 6 has deleted its own pending
+marker (Step 5 below writes it; Step 6 deletes it) is blocked from ending there. Both were
+adopted together, not as alternatives: see Step 5's own pointer immediately below for why the
+regenerate itself already runs earlier, from Move 4, not from this body.
 
 ### Step 1 — Aggregate
 
@@ -351,80 +361,52 @@ a child task by this stage itself.
 
 ### Step 5 — Roadmap update
 
+**Already run by the time this body begins.** The sole executor is
+`scripts/orchestrate-conclusion-roadmap.sh`, invoked unconditionally from Move 4's finalize
+sequence (`skills/skill-orchestrate/SKILL.md`'s Move 4, immediately after the Batch Gate Stage)
+— never from this body, and never a second time. This is the ONE executable copy of the step;
+this section states only what it does, as the authoritative description the script implements
+against.
+
 **Preflight classify, before `--regenerate` is ever called**: this stage has no interactive
 surface (it runs autonomously, with no confirmation gate between phases), so it cannot obtain
-the approval a write-mode call onto an `absent` or `unknown` file would need. Classify first:
+the approval a write-mode call onto an `absent` or `unknown` `specs/ROADMAP.md` would need. The
+script classifies first via `lib/roadmap-preflight-lib.sh classify`.
 
-```bash
-verdict="$(bash .claude/scripts/lib/roadmap-preflight-lib.sh classify specs/ROADMAP.md)"
-```
-
-- **`classic`/`stage`**: proceed exactly as written below — `--regenerate`, the scoped commit,
-  then the advisory batch-proposal lint. Nothing about this path changes.
-- **`absent`/`unknown`**: skip `--regenerate` and the commit entirely. `specs/ROADMAP.md` is left
-  untouched. This call site NEVER scaffolds and NEVER auto-writes — the scaffold
+- **`classic`/`stage`**: `roadmap-integration.sh --regenerate`, then a scoped commit of
+  `specs/ROADMAP.md` alone via `git-commit-scoped.sh`, then the advisory
+  `lint/lint-roadmap-batch-proposals.sh` run over the freshly regenerated file. Its output is
+  ADVISORY: the exit code is never acted on, and its findings are surfaced verbatim with Step
+  5's own output. This is explicitly NOT a fourth channel — it derives from `specs/ROADMAP.md`,
+  carries no `AskUserQuestion` gate, and the Exactly-One-Channel and Hint-Versus-Decision rules
+  above do not apply to it, the same posture Step 7's suggester already carries. `--prune` is
+  deliberately never called — not because it is a stronger unattended action than an idempotent
+  regenerate, but because `--regenerate` already renders `## Next` and `## Open work` wholly from
+  `specs/state.json`: a terminal task is never written into the file in the first place, so
+  there is nothing left for a prune pass to remove. `--prune` is therefore a DEPRECATED ALIAS for
+  `--regenerate` — see `roadmap-integration.sh`'s own `mode_prune()` header comment and its
+  `--prune`/`--regenerate` usage lines for the source of truth.
+- **`absent`/`unknown`**: `--regenerate` and the commit are skipped entirely; `specs/ROADMAP.md`
+  is left untouched. This call site NEVER scaffolds and NEVER auto-writes — the scaffold
   (`roadmap-preflight-lib.sh scaffold`) is an approved-write-only action and this stage has no
-  approver for it. Degrade loudly instead of silently skipping, at three surfaces:
-  1. Emit a named structured warning in this step's own surfaced output, naming the verdict, the
-     path, and that the next interactive `/roadmap` resolves it (its own Stage 1 preflight gate
-     asks for approval).
-  2. Record the degrade durably via `events-append.sh` FIRST — this is the durable record
-     regardless of what the per-task loop below manages:
-     ```bash
-     bash .claude/scripts/events-append.sh \
-       --event-type roadmap_regenerate_blocked --category blocker --session "$session_id" \
-       --message "roadmap regenerate blocked: specs/ROADMAP.md classifies '$verdict', no approval surface at conclusion" \
-       --detail-json "$(jq -c -n --arg verdict "$verdict" --arg path "specs/ROADMAP.md" \
-         '{verdict: $verdict, path: $path}')"
-     bash .claude/scripts/git-commit-scoped.sh --session "$session_id" \
-       --message "orchestrate conclusion: roadmap regenerate blocked ($verdict)" -- specs/events.jsonl
-     ```
-  3. Then best-effort loop `issue-record.sh` once per task directory in this invocation's own
-     already-resolved task list — additive, never a substitute for the events write above, so an
-     empty or unresolved task list degrades the evidence rather than losing it:
-     ```bash
-     for task_dir in "${resolved_task_dirs[@]}"; do
-       bash .claude/scripts/issue-record.sh --task-dir "$task_dir" \
-         --kind issue --class "roadmap regenerate blocked, no approval surface" --severity costly \
-         --phase conclusion --resolution open \
-         --what-happened "specs/ROADMAP.md classifies '$verdict' at /orchestrate's conclusion stage; --regenerate was skipped (no interactive approval surface here). The next interactive /roadmap run's own preflight gate resolves it." \
-         >/dev/null 2>&1 || true
-     done
-     ```
-  Skip the rest of this step (the `--regenerate` invocation and its commit, the batch-proposal
-  lint below) entirely on this branch.
+  approver for it. The script degrades loudly instead of silently skipping, at three surfaces: a
+  named structured warning in its own surfaced output (naming the verdict, the path, and that
+  the next interactive `/roadmap` resolves it — its own Stage 1 preflight gate asks for
+  approval); a durable `roadmap_regenerate_blocked` event recorded via `events-append.sh` FIRST,
+  plus its own scoped commit of `specs/events.jsonl`; and a best-effort loop over
+  `issue-record.sh`, once per task directory in this invocation's own already-resolved task
+  list — additive, never a substitute for the events write, so an empty or unresolved task list
+  degrades the evidence rather than losing it. The `--regenerate` invocation and its commit, and
+  the batch-proposal lint, are both skipped entirely on this branch.
 
-Invoke the existing roadmap generator's regenerate mode — never reimplementing it:
-
-```bash
-bash .claude/scripts/roadmap-integration.sh --regenerate
-```
-
-`--prune` is deliberately out of scope for this stage, not because it is a stronger unattended
-action than an idempotent regenerate, but because `--regenerate` already renders `## Next` and
-`## Open work` wholly from `specs/state.json`: a terminal task is never written into the file in
-the first place, so there is nothing left for a prune pass to remove. `--prune` is therefore a
-DEPRECATED ALIAS for `--regenerate` — see `roadmap-integration.sh`'s own `mode_prune()` header
-comment and its `--prune`/`--regenerate` usage lines for the source of truth. This stage calls
-`--regenerate` alone for that reason. Commit `specs/ROADMAP.md` alone:
-
-```bash
-bash .claude/scripts/git-commit-scoped.sh --session "$session_id" \
-  --message "orchestrate conclusion: roadmap regenerate" -- specs/ROADMAP.md
-```
-
-After the regenerate and its commit, run the advisory batch-proposal lint over the freshly
-regenerated file:
-
-```bash
-bash .claude/scripts/lint/lint-roadmap-batch-proposals.sh
-```
-
-Its output is ADVISORY: the exit code is never acted on, and its findings are surfaced verbatim
-with Step 5's own output. This is explicitly NOT a fourth channel — it derives from
-`specs/ROADMAP.md`, carries no `AskUserQuestion` gate, and the Exactly-One-Channel and
-Hint-Versus-Decision rules above do not apply to it, the same posture Step 7's suggester already
-carries.
+The script's own stdout outcome block (the verdict, the `OUTCOME:` line verbatim when the
+regenerate branch ran, the commit sha or `none`, and the advisory lint's findings) folds into
+Step 6's combined report below. As its own last action (outside `--dry-run`), the script writes
+this invocation's conclusion-stage pending marker
+(`specs/.orchestration/.conclusion-pending-<session_id>.json`, carrying `session_id`,
+`cc_session_id`, `continuation_count: 0`, and `created_ts`) — read by
+`hooks/orchestrate-conclusion-backstop.sh` and deleted by Step 6 below as that step's own final
+action.
 
 ### Step 7 — Suggest next batch, and gate the edge write
 
