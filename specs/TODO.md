@@ -1,5 +1,5 @@
 ---
-next_project_number: 638
+next_project_number: 639
 ---
 
 # TODO
@@ -13,10 +13,10 @@ next_project_number: 638
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,479,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,580,584,585,590,599,604,607,610,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,480,481,486,492,513,516,517,518,533,540,541,542,543,544,546,550,553,572,576,579,583,586,592,593,598,624,628,630 | 383,390,398,410,431,451,453,455,463,472,476,479,484,491,504,527,534,535,538,539,548,549,563,564,585,599,629 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,501,508,509,547,552,566,570,571,581,591,594,605,637 | 438,439,452,472,476,486,492,518,519,542,543,572,580,586,593,604,628,635,636 | core-agent-system, file-scope-lifecycle, agent-system, ... |
-| 4 | 524,561,577,588,595 | 501,509,539,547,552,594 | core-agent-system, agent-system |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,479,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,580,584,590,599,604,607,610,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,473,474,480,481,486,492,513,516,517,518,533,540,541,542,543,544,546,550,553,576,579,583,585,586,592,593,598,624,628,630 | 383,390,398,410,431,451,453,455,463,472,476,479,484,491,504,527,534,535,538,539,548,549,563,564,584,599,629 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,501,508,509,547,552,566,570,571,572,581,594,605,637 | 438,439,452,472,476,486,492,518,519,542,543,580,585,586,593,604,628,635,636 | core-agent-system, file-scope-lifecycle, agent-system, ... |
+| 4 | 524,561,577,588,591,595,638 | 501,509,539,547,552,572,594 | core-agent-system, agent-system |
 | 5 | 596,609 | 577,595 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -70,6 +70,7 @@ next_project_number: 638
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
 591 [RESEARCHED] — Decide the fate of the errors.json triage surface
+638 [NOT STARTED] — Make /orchestrate's phase selector pick the first enterable...
 
 ### Extensions
 
@@ -194,10 +195,52 @@ next_project_number: 638
 ### Uncategorized
 
 584 [IMPLEMENTING] — Wire covering-suite selection into Gate 8 so an extension...
-585 [PLANNED] — Make the batch-gate deferral binding and cache repeat gate...
-  └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
+  └─ 585 [PLANNED] — Make the batch-gate deferral binding and cache repeat gate...
+    └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 638. Make /orchestrate's phase selector pick the first enterable phase, not the first open-by-marker heading
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 547
+
+**Description**: Make /orchestrate's hard-mode phase selector pick the first ENTERABLE phase, not the first heading that merely parses as open.
+
+SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/scripts/` (never a deployed `.claude/**` tree). Deployed and source were byte-identical for both files named below when this task was filed, verified by `diff -q`. REDEPLOY AFTERWARDS so consumer repos pick the fix up. No task-number references in any file landing under `agent-system/**`.
+
+THE DEFECT, VERIFIED IN SOURCE. `orchestrate-cycle-plan.sh:2393` selects the phase a hard-mode implement dispatch is scoped to with:
+
+    h1_next_heading=$(grep -E "${PHASE_HEADING_ERE} .*${PHASE_STATUS_OPEN_ERE}" "$h1_plan_path" | head -1)
+
+`PHASE_STATUS_OPEN_ERE` derives from `PHASE_STATUS_OPEN_ALT` in `scripts/lib/phase-heading-patterns.sh:120`, which is `'NOT STARTED|IN PROGRESS|PARTIAL|BLOCKED'`. Two consequences, the second the more general:
+
+1. `[BLOCKED]` is a member of the OPEN set. A phase that closed `[BLOCKED]` as a decision-gate outcome -- a CLOSED result that no dispatch should re-enter -- is therefore selected for dispatch, repeatedly, because `head -1` takes it in file order forever.
+2. More generally, the selector has no notion of ENTERABLE at all. It takes the first heading whose marker parses as open, ignoring the phase's own `Depends on` line and ignoring whether the plan's prose has closed the route that phase belongs to.
+
+That grep at line 2393 is the ONLY consumer of `PHASE_STATUS_OPEN_ERE` anywhere in the source store (`grep -rn PHASE_STATUS_OPEN_ERE agent-system/extensions/`), so the blast radius of a change scoped to the selector is one call site.
+
+OBSERVED IN THE FIELD, NOT HYPOTHETICAL. A hard-mode implement dispatch into a 66-phase plan was scoped to a phase the plan's own disposition table lists as "UNCHANGED, and not re-entered", whose two entry gates had both closed by exclusion, and whose target statement is refuted by compilation. The dispatched agent correctly refused, edited nothing, and returned blocked -- one full cycle of the run's budget spent to learn what the plan file already said. The same selection would have recurred every cycle: the next four headings in file order were also non-enterable.
+
+WHY THE OBVIOUS NARROW FIX IS NOT ENOUGH. Dropping `BLOCKED` from `PHASE_STATUS_OPEN_ALT` is tempting and insufficient. In the observed plan, closing the five `[BLOCKED]` phases by hand moved the selector onto the next heading in file order, a `[NOT STARTED]` phase held off a decision premise by a standing ruling -- equally non-enterable, and reached by exactly the same mechanism. Consequence 2 above is the defect; consequence 1 is one instance of it.
+
+ALSO NOTE: `PHASE_STATUS_OPEN_ALT` is shared vocabulary, not selector-private. Before changing it, establish what else reads it (today: nothing but line 2393, but `PHASE_STATUS_OPEN_ERE` is documented in the library header as exported public contract for sourcing consumers, so deployed trees elsewhere may read it). If the fix needs a narrower set, prefer adding a NEW named alternation for enterability over redefining the existing OPEN one, so "open" keeps its established meaning for any future consumer.
+
+WHAT A FIX HAS TO DECIDE. These are the open questions, not a prescribed design:
+1. What makes a phase enterable? Candidates, probably in combination: marker in a narrower set than OPEN; every phase named in its own `Depends on` line is closed; no "do not enter / not re-entered / closed by exclusion" disposition recorded against it.
+2. Where does that predicate live? `phase-heading-patterns.sh` is the single sourced anchor for this grammar and is where a new alternation belongs; a `Depends on` check is a different kind of reasoning and may not.
+3. What happens when NO phase is enterable? Today the selector silently falls through to an unscoped dispatch. Reporting "no enterable phase; the plan needs a /revise" is a better outcome than dispatching into a closed route, and is what the observed run needed.
+4. Does the selector respect an explicit operator override? There is no per-phase flag on `/orchestrate` today; adding one is in scope to consider but not required.
+
+ACCEPTANCE. A plan whose first open-by-marker heading is non-enterable is not selected for it; a plan with an enterable phase later in file order selects that phase; a plan with no enterable phase reports that fact rather than dispatching; the existing behaviour on a plan whose first open heading IS enterable is unchanged; `PHASE_STATUS_OPEN_ALT`'s meaning for any other consumer is either preserved or its change is deliberate and recorded in the library header. Regression coverage goes in the core extension's own `scripts/tests/`, with at least the three plan shapes above as fixtures.
+
+NON-GOALS: no change to how phases are MARKED by implementation agents (the `[NOT STARTED]` -> `[IN PROGRESS]` -> closed cycle stays as it is); no change to the `[COMPLETED WITH EXCLUSIONS]` admission test or to the status-marker enum; no attempt to infer enterability from plan prose by natural-language matching -- any disposition signal consumed must be a structured, greppable form.
+
+TERRITORY, SETTLED AT CREATION. Task 547 ("Confirm the blocker-research aux carrier landed, and refuse an implement re-dispatch when a plan revision is owed") also writes `orchestrate-cycle-plan.sh`. It is a DIFFERENT mechanism -- admission of an implement round when a revision is owed, not selection of a phase within an admitted round -- but the shared file is real, so a `dependencies[]` edge serializes this task behind it rather than racing. The two are topically adjacent and are good batch-mates in that order. Task 472 covers the `validate-handoff.sh` crash separately and is not in this task's territory.
+
+---
 
 ### 637. Make sapience extension fully functional
 - **Status**: [RESEARCHED]
@@ -1871,7 +1914,7 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deploy
 ### 585. Make the batch-gate deferral binding and cache repeat gate runs, so the full set runs once per batch
 - **Status**: [PLANNED]
 - **Task Type**: meta
-- **Dependencies**: None
+- **Dependencies**: Task 584
 - **Research**: [585_redundant_gate_run_suppression/reports/02_binding-deferral-and-cache-adoption.md]
 - **Plan**: [585_redundant_gate_run_suppression/plans/02_binding-deferral-cheap-probe.md]
 
