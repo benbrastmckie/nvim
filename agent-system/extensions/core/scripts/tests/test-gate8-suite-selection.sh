@@ -118,7 +118,8 @@ fixture_tests_dir() {
 # stub_args <fixture_dir> -- echoes the stub's recorded argv from its last invocation, one
 # argument per line (empty if the stub was never invoked).
 stub_args() {
-  local td="$(fixture_tests_dir "$1")"
+  local td
+  td="$(fixture_tests_dir "$1")"
   [ -f "$td/.stub-received-args" ] && cat "$td/.stub-received-args"
 }
 
