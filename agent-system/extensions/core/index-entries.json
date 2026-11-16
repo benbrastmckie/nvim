@@ -1228,7 +1228,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Caller contract for roadmap-integration.sh: the --print/--regenerate mode contracts, --prune as a deprecated --regenerate alias, the batch-proposal lint's disposition, and the stderr marker",
-      "line_count": 197,
+      "line_count": 199,
       "keywords": [
         "caller-contract",
         "patterns",
@@ -1924,7 +1924,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Tool restrictions in postflight phase",
-      "line_count": 331,
+      "line_count": 333,
       "keywords": [
         "standards",
         "postflight",
@@ -2631,7 +2631,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Orchestration conclusion stage (Move 5): derives three gated channels (direct fixes, agent-system changes, follow-up tasks) from aggregated per-task issues.jsonl logs, each firing only on its own explicit approval; the coexistence boundary with the skeleton-plan follow-up mechanism; the executable stage body",
-      "line_count": 507,
+      "line_count": 500,
       "keywords": [
         "conclusion-stage",
         "move-5",
@@ -3493,7 +3493,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Consolidated-output template for /orchestrate batch (multi-task) results, with per-section rendering gates",
-      "line_count": 265,
+      "line_count": 271,
       "keywords": [
         "patterns",
         "orchestrate",
