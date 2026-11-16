@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Extend suite_selection_classify's Suite-File Lookup Across Extensions",
+  "started_at": "2026-11-15T00:10:00Z",
+  "last_updated": "2026-11-15T00:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read the file before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Broaden suite-path lookup block with per-extension loop", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 3, "description": "Leave downstream branches untouched", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Keep documented fallback intact (source-only)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Factor extensions-parent derivation shared with Phase 1 helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 6, "description": "Update PUBLIC API header line for suite_selection_classify", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 7, "description": "Confirm by direct invocation", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "suite_selection_classify now reaches non-core suites via the shared _ssl_extensions_parent helper added in Phase 1 (no second marker-check copy, per the plan's explicit instruction). Confirmed: suite_selection_classify test-lean-mcp-preflight-check.sh lean-mcp-preflight-check.sh returns source-first (evidence-based, not the vacuous source-only fallback). Core pair suite_selection_classify test-run-all-selection.sh run-all.sh returns deployed-first, structurally unchanged (same first-branch fixed-location lookup, no code path altered for core suites). run-all.sh --only test-run-all-selection.sh passes (case2c classification-vocabulary assertion unaffected). lint-shellcheck.sh exits 0."
+}

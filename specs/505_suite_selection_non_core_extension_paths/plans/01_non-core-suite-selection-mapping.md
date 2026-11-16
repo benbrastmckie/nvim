@@ -202,7 +202,7 @@ is the covering check (the exact, measured output of `suite_selection_select` on
 
 ---
 
-### Phase 2: Extend `suite_selection_classify`'s Suite-File Lookup Across Extensions [NOT STARTED]
+### Phase 2: Extend `suite_selection_classify`'s Suite-File Lookup Across Extensions [COMPLETED]
 
 **Goal**: `suite_selection_classify` locates a non-core suite file from the source store and
 classifies it on real source-text evidence, instead of silently returning the vacuous
@@ -211,26 +211,27 @@ by EXTENDING the signal rather than writing a core-only justification.
 
 **Tasks**:
 
-- [ ] Re-read the file before editing.
-- [ ] Broaden only the suite-path lookup block at the top of `suite_selection_classify` (the
+- [x] Re-read the file before editing. *(completed)*
+- [x] Broaden only the suite-path lookup block at the top of `suite_selection_classify` (the
   `_SSL_TESTS_DIR` then `_SSL_SCRIPTS_ROOT` pair): keep both existing probes first and in order,
   then, when neither hits AND the extensions parent carries `core/manifest.json`, loop
   `for _ssl_ext_dir in "<parent>"/*/` probing `<ext>/scripts/tests/<suite>` then
   `<ext>/scripts/<suite>`, taking the first match. Mirror `run-all.sh`'s own per-extension
-  discovery loop shape.
-- [ ] Leave every downstream branch of the function untouched: the `.claude`-reference grep, the
+  discovery loop shape. *(completed)*
+- [x] Leave every downstream branch of the function untouched: the `.claude`-reference grep, the
   pure-comment-line exclusion, the first-occurrence ordering comparison, and all three emitted
-  values. The only change is which file the function can find.
-- [ ] Keep the documented fallback intact: a suite basename that still cannot be found or read
-  emits `source-only` exactly as today.
-- [ ] Factor the extensions-parent derivation so Phase 1's helper and this lookup share one
-  implementation rather than two copies of the marker check.
-- [ ] Update the `PUBLIC API` header line for `suite_selection_classify` so "resolved against
-  this library's scripts tree" states the actual, broadened resolution order.
-- [ ] Confirm by direct invocation that a known non-core suite now classifies on evidence:
+  values. The only change is which file the function can find. *(completed: confirmed via diff read-through -- the three emitted-value branches and both grep scans are byte-identical)*
+- [x] Keep the documented fallback intact: a suite basename that still cannot be found or read
+  emits `source-only` exactly as today. *(completed)*
+- [x] Factor the extensions-parent derivation so Phase 1's helper and this lookup share one
+  implementation rather than two copies of the marker check. *(completed: both call `_ssl_extensions_parent`, added in Phase 1)*
+- [x] Update the `PUBLIC API` header line for `suite_selection_classify` so "resolved against
+  this library's scripts tree" states the actual, broadened resolution order. *(completed)*
+- [x] Confirm by direct invocation that a known non-core suite now classifies on evidence:
   `suite_selection_classify test-lean-mcp-preflight-check.sh <a basename that suite references>`
   no longer returns the file-not-found `source-only` (that suite is one of the 5 carrying a
   `.claude` reference), and that a core pair's classification is unchanged from before the edit.
+  *(completed: `suite_selection_classify test-lean-mcp-preflight-check.sh lean-mcp-preflight-check.sh` returns `source-first`; `suite_selection_classify test-run-all-selection.sh run-all.sh` returns `deployed-first`, via the same unchanged first-branch fixed-location code path)*
 
 **Timing**: 0.75 hours
 

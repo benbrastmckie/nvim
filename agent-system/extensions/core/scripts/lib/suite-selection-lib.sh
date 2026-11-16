@@ -86,8 +86,12 @@
 #       could not map, one per line. Empty output means none were unmapped. Always returns 0.
 #   suite_selection_classify SUITE_BASENAME TOUCHED_BASENAME
 #       Stdout: one of `source-only` / `source-first` / `deployed-first` for how SUITE_BASENAME
-#       (a suite file, resolved against this library's scripts tree) resolves TOUCHED_BASENAME.
-#       Always returns 0; emits `source-only` if the suite file cannot be found or read.
+#       resolves TOUCHED_BASENAME. SUITE_BASENAME is resolved first against this library's own
+#       fixed scripts tree (narrow then flat, exactly as every other function here), then, only
+#       in source-store mode (the core/manifest.json marker), against every extension's own
+#       scripts/tests/ then scripts/ in turn (first match wins) -- the same cross-extension reach
+#       _ssl_roots_for_path gives the selection half. Always returns 0; emits `source-only` if the
+#       suite file cannot be found anywhere or cannot be read.
 #   suite_selection_select_annotated PATH [PATH...]
 #       Convenience wrapper over the two functions above: either the sentinel alone, or one
 #       "SUITE_BASENAME|CLASSIFICATION" row per selected suite (classification computed against
@@ -305,31 +309,52 @@ suite_selection_unmapped() {
 suite_selection_classify() {
   local _ssl_suite_base="$1"
   local _ssl_touched_base="$2"
-  local _ssl_suite_path _ssl_first_touch _ssl_first_deployed
+  local _ssl_suite_path _ssl_first_touch _ssl_first_deployed _ssl_parent _ssl_ext_dir
 
   _ssl_suite_path=""
   if [ -f "${_SSL_TESTS_DIR}/${_ssl_suite_base}" ]; then
     _ssl_suite_path="${_SSL_TESTS_DIR}/${_ssl_suite_base}"
   elif [ -f "${_SSL_SCRIPTS_ROOT}/${_ssl_suite_base}" ]; then
     _ssl_suite_path="${_SSL_SCRIPTS_ROOT}/${_ssl_suite_base}"
+  else
+    # Neither of this library's own two fixed locations has the suite file -- probe every
+    # extension's own scripts/tests/ then scripts/ (same per-extension loop shape run-all.sh's
+    # own source-store discovery uses), but ONLY when running from the source store (the
+    # core/manifest.json marker, shared with _ssl_roots_for_path via _ssl_extensions_parent).
+    # First match wins; suite basenames are corpus-unique by the existing test-*.sh discovery
+    # convention. In deployed mode the marker never exists, so this loop never runs there --
+    # the two fixed-location probes above already cover the whole merged flat tree.
+    _ssl_parent="$(_ssl_extensions_parent)"
+    if [ -n "${_ssl_parent}" ]; then
+      for _ssl_ext_dir in "${_ssl_parent}"/*/; do
+        [ -d "${_ssl_ext_dir}scripts" ] || continue
+        if [ -f "${_ssl_ext_dir}scripts/tests/${_ssl_suite_base}" ]; then
+          _ssl_suite_path="${_ssl_ext_dir}scripts/tests/${_ssl_suite_base}"
+          break
+        elif [ -f "${_ssl_ext_dir}scripts/${_ssl_suite_base}" ]; then
+          _ssl_suite_path="${_ssl_ext_dir}scripts/${_ssl_suite_base}"
+          break
+        fi
+      done
+    fi
   fi
 
   if [ -z "${_ssl_suite_path}" ] || [ ! -r "${_ssl_suite_path}" ]; then
     echo "source-only"
-    unset _ssl_suite_base _ssl_touched_base _ssl_suite_path _ssl_first_touch _ssl_first_deployed
+    unset _ssl_suite_base _ssl_touched_base _ssl_suite_path _ssl_first_touch _ssl_first_deployed _ssl_parent _ssl_ext_dir
     return 0
   fi
 
   if ! grep -q -F -- "${_ssl_touched_base}" "${_ssl_suite_path}" 2>/dev/null; then
     echo "source-only"
-    unset _ssl_suite_base _ssl_touched_base _ssl_suite_path _ssl_first_touch _ssl_first_deployed
+    unset _ssl_suite_base _ssl_touched_base _ssl_suite_path _ssl_first_touch _ssl_first_deployed _ssl_parent _ssl_ext_dir
     return 0
   fi
 
   # shellcheck disable=SC2016
   if ! grep -q -E '\$REPO_ROOT/\.claude|/\.claude/' "${_ssl_suite_path}" 2>/dev/null; then
     echo "source-only"
-    unset _ssl_suite_base _ssl_touched_base _ssl_suite_path _ssl_first_touch _ssl_first_deployed
+    unset _ssl_suite_base _ssl_touched_base _ssl_suite_path _ssl_first_touch _ssl_first_deployed _ssl_parent _ssl_ext_dir
     return 0
   fi
 
@@ -351,7 +376,7 @@ suite_selection_classify() {
     echo "deployed-first"
   fi
 
-  unset _ssl_suite_base _ssl_touched_base _ssl_suite_path _ssl_first_touch _ssl_first_deployed
+  unset _ssl_suite_base _ssl_touched_base _ssl_suite_path _ssl_first_touch _ssl_first_deployed _ssl_parent _ssl_ext_dir
   return 0
 }
 
