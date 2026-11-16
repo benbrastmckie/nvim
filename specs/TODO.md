@@ -32,7 +32,7 @@ next_project_number: 639
   └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
 456 [NOT STARTED] — Exempt private npm/Cargo manifests from /tag's version gate
 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
-476 [PLANNING] — Make the seven untracked red Gate 8 shell suites green or...
+476 [PLANNED] — Make the seven untracked red Gate 8 shell suites green or...
   └─ 586 [NOT STARTED] — Stand up the suite and gate wall-clock cost consumer: delete,...
     └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -8411,12 +8411,13 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_d
 
 ### 476. Make the seven untracked red Gate 8 shell suites green or declared-expected
 - **Effort**: medium
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 423, Task 445, Task 568
 - **Parent**: Task 275
 - **Research**: [476_isolate_seven_red_gate8_shell_suites/reports/02_premise-refresh-and-gate-lock-concurrency-flake.md]
+- **Plan**: [476_isolate_seven_red_gate8_shell_suites/plans/02_gate-lock-flake-and-gate8-acceptance.md]
 
 **Description**: Seven shell suites fail in Gate 8 of verify-deploy.sh with no open task tracking them. Make each one green, or make its remaining failure an explicitly declared and attributed baseline expectation, so that a full Gate 8 run regains its value as a binary signal.
 

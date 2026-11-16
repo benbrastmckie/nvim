@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 21,
+  "summary": "Wrote a 3-phase implementation plan re-scoped onto what report 02 proved still outstanding, rather than onto the dispatch description's superseded premise. Phase 1 reproduces, classifies with evidence, and remedies test-gate-lock.sh's aggregate-only concurrency flake (fix the fixture, or declare it expected with an attributed reason). Phase 2 removes the two stale known-failures.txt rows after re-measuring both suites. Phase 3 runs the full unscoped Gate 8 battery twice from a clean tree, redeploys to landed_verify_clean, and records the excluded eighth suite's still-reproducing regression as a follow-up since its owning record is archived and cannot receive it.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/476_isolate_seven_red_gate8_shell_suites/plans/02_gate-lock-flake-and-gate8-acceptance.md",
+      "summary": "3-phase plan, ~5 hours: diagnose and remedy the test-gate-lock.sh aggregate-only flake, reconcile known-failures.txt, then meet the two-full-run zero-unexpected-failures acceptance bar and redeploy."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 3,
+  "blockers": []
+}
