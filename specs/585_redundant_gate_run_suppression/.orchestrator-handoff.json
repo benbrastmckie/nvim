@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "dispatch_seq": 15,
+  "task_number": 585,
+  "phase": "plan",
+  "session_id": "sess_1794815389_748c3d_585",
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Wrote a 3-phase plan implementing report 02's recommendations: Mechanism A's emitted Batch Gate Deferral directive gains --skip-unchanged on the verify-deploy.sh --only-gate invocation plus CHEAP PROBE and NO ADDITIONAL FULL SWEEP paragraphs, four consumer documents are synced, and the tree is redeployed. One verified correction to the research: tests/run-all.sh has no --skip-unchanged flag (its arg loop exits 2 on an unknown argument), so the flag is applied to the verify-deploy.sh invocation only; adding it to run-all.sh was rejected as sibling task 584's territory this cycle. Phase 2 additionally declares agent-system/extensions/core/index-entries.json and regenerates its line_count values, because doc-lint gate 3 Rule R is commit-blocking on that drift.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/585_redundant_gate_run_suppression/plans/02_binding-deferral-cheap-probe.md",
+      "summary": "3-phase plan (~2.75h): emit the cheap probe and no-extra-sweep obligation in the Batch Gate Deferral directive, sync four consumer contracts plus derived line counts, redeploy and discharge the gate set."
+    }
+  ]
+}

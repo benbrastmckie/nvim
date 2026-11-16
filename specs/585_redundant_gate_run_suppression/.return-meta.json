@@ -1,40 +1,31 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794815389_748c3d_585",
-  "dispatch_seq": 11,
-  "task_number": 585,
-  "findings_count": 5,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/585_redundant_gate_run_suppression/reports/02_binding-deferral-and-cache-adoption.md",
-      "summary": "Resolves all five seed design questions from live code: Mechanism A is prose-only with no enforcement; .gate-lock mutex already safely avoids contention for both narrowed --only runs and cache-hit gate 8; Move 4 structurally cannot regress onto the cache; batch admission's Mode 2 build-heavy co-scheduling excludes meta/general task types by its own task-type pre-filter. Recommends adding --skip-unchanged to Mechanism A's two emitted narrowing invocations as the sanctioned cheap probe, with no change to Move 4, no new hook, and no admission-side change."
+      "type": "plan",
+      "path": "specs/585_redundant_gate_run_suppression/plans/02_binding-deferral-cheap-probe.md",
+      "summary": "3-phase plan (~2.75h) making Mechanism A's Batch Gate Deferral directive emit --skip-unchanged as the sanctioned cheap probe and a no-additional-full-sweep obligation, syncing four consumer contracts and the derived index line counts, then redeploying."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1794815389_748c3d_585",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "task_number": 585,
+    "phase_count": 3,
+    "estimated_hours": 2.75,
+    "dependency_waves": 3
+  },
   "memory_candidates": [
     {
-      "content": "In orchestrate's gate pipeline, a cache-hit (--skip-unchanged) on gate 8 never acquires the specs/.gate-lock mutex: the mutex-acquire code lives inside gate8_run()'s own body, and the pre-dispatch cache-consult loop in verify-deploy.sh removes a cache-hit id from gate_registry_ids() via gate_registry_exclude_ids BEFORE the dispatch loop that would call gate8_run even runs. Likewise, tests/run-all.sh explicitly skips the gate-lock bracket entirely for any --only narrowed run. Both already structurally avoid the mutex contention that caused long implement-phase wait loops under concurrent full-sweep gate runs -- no lock-side fix is needed when adopting the cache or scoped tiers, only adoption itself.",
+      "content": "The two narrowing invocations orchestrate's Batch Gate Deferral directive emits are NOT symmetric in flag support: verify-deploy.sh parses --skip-unchanged, but scripts/tests/run-all.sh does not -- its argument loop ends in a catch-all arm that exits 2 with 'ERROR: unknown argument'. Any proposal to apply the gate cache to both narrowing forms must either stop at verify-deploy.sh or first add the flag to run-all.sh. The asymmetry is also benign: a narrowed run-all.sh --only run explicitly skips the specs/.gate-lock bracket, so it never carries the mutex contention the cache fast path exists to relieve.",
       "category": "PATTERN",
-      "source_artifact": "specs/585_redundant_gate_run_suppression/reports/02_binding-deferral-and-cache-adoption.md",
+      "source_artifact": "specs/585_redundant_gate_run_suppression/plans/02_binding-deferral-cheap-probe.md",
       "confidence": 0.85,
-      "suggested_keywords": ["gate-lock", "mutex", "skip-unchanged", "gate8", "run-all.sh", "verify-deploy.sh"]
-    },
-    {
-      "content": "task_is_build_heavy_implement()'s Mode 2 co-scheduling admission rule (never dispatch two build-heavy implement tasks together) is gated by a hard task_type candidacy pre-filter, BUILD_HEAVY_CANDIDATE_TASK_TYPES=(\"lean4\" \"cslib\"), BEFORE its measured wall-clock signal is ever consulted. A meta/general implement task that runs a full, expensive gate sweep is never even a candidate for this refusal regardless of measured weight -- gate-heavy and build-heavy are disjoint categories in this admission rule as currently scoped.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/585_redundant_gate_run_suppression/reports/02_binding-deferral-and-cache-adoption.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["build-heavy", "co-scheduling", "admission", "task_is_build_heavy_implement", "Mode 2"]
-    },
-    {
-      "content": "lib/deploy-baseline-lib.sh's deploy_findings_snapshot() unconditionally strips --skip-unchanged from any caller's passthrough args (with a stderr warning), because a pre/post findings baseline comparison where one side cache-skips a gate the other ran for real would silently hide a regression on that gate. This makes the batch-gate shared capture (Move 4 / orchestrate-batch-gate.sh) structurally incapable of ever using the gate cache fast path, independent of caller discipline -- a future change proposing to speed up that capture via caching should be rejected or redirected, not implemented there.",
-      "category": "CONFIG",
-      "source_artifact": "specs/585_redundant_gate_run_suppression/reports/02_binding-deferral-and-cache-adoption.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["deploy_findings_snapshot", "skip-unchanged", "batch-gate", "baseline comparison", "cache"]
+      "suggested_keywords": ["skip-unchanged", "run-all.sh", "verify-deploy.sh", "batch-gate-deferral", "gate-lock", "flag-parity"]
     }
   ],
-  "next_steps": "Run /orchestrate 585 to create implementation plan"
+  "next_steps": "Run /orchestrate 585 to execute the plan",
+  "dispatch_seq": 15
 }
