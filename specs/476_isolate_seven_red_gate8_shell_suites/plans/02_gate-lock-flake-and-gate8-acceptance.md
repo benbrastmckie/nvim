@@ -276,7 +276,7 @@ classification work must cover what is actually observed, not what is written he
 
 ---
 
-### Phase 2: Remove the two stale `known-failures.txt` rows [NOT STARTED]
+### Phase 2: Remove the two stale `known-failures.txt` rows [COMPLETED]
 
 **Goal**: Ensure every surviving row in the baseline manifest describes a failure that actually
 still reproduces, so a future regression in either suite is reported `NEW` rather than masked as an
@@ -284,26 +284,37 @@ old, already-attributed failure.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/known-failures.txt` immediately before
-      editing (Phase 1 may have added a row, and a sibling may have touched the file).
-- [ ] Re-confirm, by direct standalone re-run rather than by citing the research, that both suites
+- [x] Re-read `agent-system/extensions/core/scripts/tests/known-failures.txt` immediately before
+      editing (Phase 1 may have added a row, and a sibling may have touched the file). *(completed)*
+- [x] Re-confirm, by direct standalone re-run rather than by citing the research, that both suites
       are green now: `bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`
       (expect 312 passed, 0 failed) and
       `bash agent-system/extensions/core/scripts/tests/test-lint-unit-integration-boundary.sh`
       (expect 15 passed, 0 failed). A row must not be removed on the strength of a prior dispatch's
-      measurement alone.
-- [ ] Remove the `test-orchestrate-cycle-postflight.sh` row, whose described symptom (acceptance
+      measurement alone. *(deviation: altered — test-orchestrate-cycle-postflight.sh confirmed
+      312/0, but test-lint-unit-integration-boundary.sh was NOT green: 14 passed, 1 failed, for a
+      different, newly-discovered coverage gap unrelated to the row's original description)*
+- [x] Remove the `test-orchestrate-cycle-postflight.sh` row, whose described symptom (acceptance
       cases 6/7/8b expecting `researching`/`planned` and observing `planning`, plus an unlinked plan
-      artifact) no longer reproduces.
+      artifact) no longer reproduces. *(completed)*
 - [ ] Remove the `test-lint-unit-integration-boundary.sh` row, whose described symptom (two suites
-      with no row in `suite-classification.data`) no longer reproduces.
-- [ ] Leave every other row intact -- in particular the `test-gate-cache-equivalence.sh`
+      with no row in `suite-classification.data`) no longer reproduces. *(deviation: altered — the
+      ORIGINALLY-described symptom is confirmed fixed (both named suites now have rows), but the
+      suite is still red for a DIFFERENT, newly-discovered gap: test-gate8-suite-selection.sh
+      (added by an unrelated, already-committed change) has no classification row. Per this
+      phase's own Scope Hypothesis, did not remove the row since the suite is still red; instead
+      updated its reason/owner to describe the current gap and added the missing
+      suite-classification.data row to the source store (test-gate8-suite-selection.sh,
+      integration, invokes:verify-deploy.sh,run-all.sh). That fix only takes effect once Phase 3's
+      redeploy propagates it to the deployed tree this suite's own resolution checks
+      "deploy-tree-first" against; re-verify and remove the row then if it reports 0 failures*)
+- [x] Leave every other row intact -- in particular the `test-gate-cache-equivalence.sh`
       `load-sensitive` row and the `test-run-all-parallel.sh` `intermittent` row, both of which
-      still describe live, attributed, accepted conditions.
-- [ ] Preserve the file's comment block and format exactly; the header's own contract (advisory
+      still describe live, attributed, accepted conditions. *(completed)*
+- [x] Preserve the file's comment block and format exactly; the header's own contract (advisory
       only; a stale or partial manifest must never change which suites run) is unaffected by a row
-      removal.
-- [ ] Commit with an explicit file list.
+      removal. *(completed)*
+- [x] Commit with an explicit file list. *(completed)*
 
 **Timing**: 0.5 hours
 
