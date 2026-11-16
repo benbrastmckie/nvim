@@ -13,9 +13,9 @@ next_project_number: 638
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,476,480,481,486,492,513,516,517,518,533,540,541,542,543,544,546,550,553,564,572,576,583,584,592,593,598,628,630 | 383,390,398,410,431,451,453,455,463,472,479,484,491,504,505,527,534,535,538,539,548,549,563,568,585,599,629 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,501,508,509,547,552,566,570,571,579,581,586,591,594,624,637 | 438,439,452,472,476,486,492,518,519,542,543,564,572,580,593,628,635,636 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,479,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,568,574,575,580,584,585,590,599,604,607,610,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,473,474,476,480,481,486,492,513,516,517,518,533,540,541,542,543,544,546,550,553,572,576,579,583,592,593,598,628,630 | 383,390,398,410,431,451,453,455,463,472,479,484,491,504,527,534,535,538,539,548,549,563,564,568,585,599,629 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,501,508,509,547,552,566,570,571,581,586,591,594,624,637 | 438,439,452,472,476,486,492,518,519,542,543,572,580,593,628,635,636 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 524,561,577,588,595,605 | 501,509,539,547,552,586,594,604 | core-agent-system, agent-system |
 | 5 | 596,609 | 577,595 | agent-system |
 
@@ -40,10 +40,6 @@ next_project_number: 638
   └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the... (see above)
 502 [NOT STARTED] — Require research reports to enumerate generated doc-sync surfaces
 503 [NOT STARTED] — Document /revise's unavailability to a dispatched agent
-505 [IMPLEMENTING] — Make covering-suite selection resolve a non-core extension's...
-  └─ 564 [NOT STARTED] — Fix validate-artifact.sh Tier Justification false positive...
-    └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
-  └─ 584 [NOT STARTED] — Wire covering-suite selection into Gate 8 so an extension...
 506 [PLANNED] — Stop the bounded-waiter hook refusing a write whose prose...
 519 [NOT STARTED] — Infra exempt transport error dispatch deaths
 520 [NOT STARTED] — Emit deploy ordering in implement dispatch body
@@ -52,6 +48,8 @@ next_project_number: 638
 525 [NOT STARTED] — Repair the always-failing extensions-directory fallback in...
 526 [NOT STARTED] — Announce completion and input-needed over TTS from the source...
 527 [NOT STARTED] — Assert the deployed hook registration SET matches the...
+564 [NOT STARTED] — Fix validate-artifact.sh Tier Justification false positive...
+  └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
 565 [NOT STARTED] — Resolve archived prior-art paths when composing dispatch and...
 574 [NOT STARTED] — Correct the cycle-budget contract to state shared-pool...
 575 [NOT STARTED] — Stop the cross-phase ceiling check reading a stop-word as a...
@@ -196,6 +194,7 @@ next_project_number: 638
 
 ### Uncategorized
 
+584 [NOT STARTED] — Wire covering-suite selection into Gate 8 so an extension...
 585 [RESEARCHING] — Make the batch-gate deferral binding and cache repeat gate...
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
@@ -7147,7 +7146,7 @@ MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_li
 ---
 
 ### 505. Make covering-suite selection resolve a non-core extension's source-store scripts instead of escalating to a full sweep
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

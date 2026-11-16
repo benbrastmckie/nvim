@@ -21,28 +21,50 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/505_suite_selection_non_core_extension_paths/summaries/01_non-core-suite-selection-mapping-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["test fixture derivation", "load-bearing test", "false skip", "regression masking", "shell test suite"]
+      "suggested_keywords": [
+        "test fixture derivation",
+        "load-bearing test",
+        "false skip",
+        "regression masking",
+        "shell test suite"
+      ]
     },
     {
       "content": "When building a synthetic fixture to test a 'N directories up from X' marker-check (e.g. a core/manifest.json or similar sentinel detected relative to a resolved script location), measure the fixture's ACTUAL directory depth with a throwaway cd/pwd check rather than assuming it mirrors the real corpus's nesting visually. A fixture's scripts/ directory often sits one level shallower than the real corpus's extensions/<ext>/scripts/ (two levels under the extensions root), so 'two directories up' lands at a different place than intuition suggests, and a decoy/marker placed at the wrong level makes the test pass regardless of whether the code under test is correct.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/505_suite_selection_non_core_extension_paths/summaries/01_non-core-suite-selection-mapping-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["fixture directory depth", "marker check", "synthetic test fixture", "path resolution", "bash cd pwd"]
+      "suggested_keywords": [
+        "fixture directory depth",
+        "marker check",
+        "synthetic test fixture",
+        "path resolution",
+        "bash cd pwd"
+      ]
     },
     {
       "content": "A stale 'measured' figure carried in a code comment can be an artifact of an unrelated lookup limitation (a feature that structurally cannot reach a whole subset of inputs, so it always returns the same vacuous default for them) rather than a genuine property of the corpus it claims to describe. Before trusting or forwarding a carried figure, especially one that gates a scope decision ('explicitly out of scope because 0 of N match'), re-derive it with a recorded, reproducible command -- particularly after changing the very lookup mechanism the figure depends on.",
       "category": "INSIGHT",
       "source_artifact": "specs/505_suite_selection_non_core_extension_paths/summaries/01_non-core-suite-selection-mapping-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["carried figure", "stale measurement", "scope justification", "re-derive before trusting", "vacuous default"]
+      "suggested_keywords": [
+        "carried figure",
+        "stale measurement",
+        "scope justification",
+        "re-derive before trusting",
+        "vacuous default"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794815389_748c3d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #505
 
 - **Task**: 505 - Suite selection fails to resolve a covering suite for non-core extension source paths
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.75 hours
 - **Dependencies**: None (ordering-only note with `plan_format_tier_justification_fixes`; no file overlap, no edge filed)
 - **Research Inputs**: specs/505_suite_selection_non_core_extension_paths/reports/01_suite-selection-non-core-mapping.md
