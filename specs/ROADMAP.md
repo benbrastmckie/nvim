@@ -139,7 +139,6 @@ reporting that content would change. That is the head batch, and the same skip i
 that run's issue classification and channel recording too.
 
 ```
-/orchestrate 634, 562   # Make Move 5 mechanical: the regenerate that got skipped, and the channel filter that drops rows
 /orchestrate 585, 572, 591   # the verify-deploy.sh lane, serialized on shared territory
 /orchestrate 527, 628, 635, 636, 627, 637   # Sapience per-repo activation: its enabling blocker, three surface defects, and the close-out
 /orchestrate 568, 476, 624, 586, 604, 605   # Gate 8's residual roster, its two lints and the defect recorder, serialized on one suite
@@ -750,7 +749,7 @@ every one is scoped to a single extension subtree -- `342` (three `books/` direc
 504 ready           Reconcile the Lean Goals-block harvester with its documented contract
 ```
 
-**Orchestrator (8)**
+**Orchestrator (7)**
 ```
 513 blocked:479     Mechanically detect a plan phase that closed without its own commit
 518 blocked:472     State the blockers[] admission contract and continuation-on-partial requireme...
@@ -759,10 +758,9 @@ every one is scoped to a single extension subtree -- `342` (three `books/` direc
 477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
 514 ready           Convergence guard blind to zero-dispatch cycles
 610 ready           full_gate_verification_ceiling_and_stall
-634 ready           Run the end-of-orchestration roadmap regenerate mechanically, for any batch size
 ```
 
-**Agent system (54)**
+**Agent system (53)**
 ```
 481 blocked:390     Rule on and migrate the 32-record mis-sited agent-system task delta accumulat...
 533 blocked:410     lake-build-guard replays stale result for env lean FILE
@@ -811,7 +809,6 @@ every one is scoped to a single extension subtree -- `342` (three `books/` direc
 558 ready           Require task descriptions to request a proposal packet instead of instructing...
 559 ready           Stop one low-specificity shared path from producing duplicate-of-open, and se...
 560 ready           Clear the three standing verify-deploy findings blocking a clean nvim deploy
-562 ready           conclusion stage drops null-resolution issue-log entries
 599 ready           Give the batch-gate-deferral directive a narrowing form that covers a phase t...
 607 ready           Resolve the gate 20 orchestrator context-budget overage and the per-gate time...
 629 ready           Fix the two-engine defect: scan_all_artifacts' sync_scan allow-list post-filt...
