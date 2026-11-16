@@ -1,0 +1,26 @@
+{
+  "phase": 3,
+  "phase_name": "Stop-hook backstop for the remainder of Move 5",
+  "started_at": "2026-11-16T05:20:00Z",
+  "last_updated": "2026-11-16T05:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create hooks/orchestrate-conclusion-backstop.sh on subagent-postflight.sh's structure", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/orchestrate-conclusion-backstop.sh"]},
+    {"id": 2, "description": "Block decision on match, reason naming missing stage/contract/remaining steps", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/orchestrate-conclusion-backstop.sh"]},
+    {"id": 3, "description": "Copy both loop guards: MAX_CONTINUATIONS cap, stop_hook_active escape", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/orchestrate-conclusion-backstop.sh"]},
+    {"id": 4, "description": "Register hook in root-files/settings.json Stop array", "status": "done", "files_touched": ["agent-system/extensions/core/root-files/settings.json"]},
+    {"id": 5, "description": "Declare hook in manifest.json provides.hooks", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 6, "description": "Add marker deletion to conclusion-stage.md Step 6's final action", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/conclusion-stage.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.3",
+      "description": "Copy both loop guards verbatim in shape ... and a stop_hook_active escape so hooks cannot call hooks",
+      "type": "altered",
+      "reason": "subagent-postflight.sh's own stop_hook_active check reads that field FROM THE MARKER, whose only writer (skill_create_postflight_marker) always sets it to the literal false -- confirmed vestigial/dead by its own doc comment ('retained as false ... not by deliberate design'). This hook instead reads stop_hook_active from hook STDIN, Claude Code's own live, harness-maintained flag for exactly this purpose (true when a Stop event is itself the product of a previous Stop hook's block decision) -- functionally equivalent intent, wired to the mechanism that can actually be true.",
+      "annotation": "*(deviation: altered -- stop_hook_active read from hook stdin, the live native signal, rather than from the marker's own vestigial field; see the hook's own header comment for the full reasoning)*"
+    }
+  ]
+}

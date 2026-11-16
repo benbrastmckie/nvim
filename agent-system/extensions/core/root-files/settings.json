@@ -134,6 +134,11 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/orchestrate-conclusion-backstop.sh 2>/dev/null || echo '{}'",
+            "timeout": 30000
           }
         ]
       }

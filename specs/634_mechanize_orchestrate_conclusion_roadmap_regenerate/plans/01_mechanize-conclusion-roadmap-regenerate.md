@@ -293,32 +293,38 @@ here.
 
 ---
 
-### Phase 3: `Stop`-hook backstop for the remainder of Move 5 [NOT STARTED]
+### Phase 3: `Stop`-hook backstop for the remainder of Move 5 [COMPLETED]
 
 **Goal**: A session that wrote the pending marker cannot end its turn without Move 5 having run.
 
 **Tasks**:
-- [ ] Create `hooks/orchestrate-conclusion-backstop.sh` on
+- [x] Create `hooks/orchestrate-conclusion-backstop.sh` on
       `hooks/subagent-postflight.sh`'s proven structure: read hook stdin, take `.session_id` as
       `CC_SESSION_ID`, enumerate `specs/.orchestration/.conclusion-pending-*.json`, and select
       only the marker whose `cc_session_id` equals it. No match, an empty `cc_session_id`, or a
-      malformed marker: print `{}` and exit 0 — inert for every non-orchestrate session.
-- [ ] On a match, return `{"decision": "block", "reason": …}` on stdout with exit 0, the reason
+      malformed marker: print `{}` and exit 0 — inert for every non-orchestrate session. *(completed)*
+- [x] On a match, return `{"decision": "block", "reason": …}` on stdout with exit 0, the reason
       naming the missing stage, the contract path, and the specific remaining steps (channels
       (a)/(b)/(c), Step 7's next-batch suggestion, Step 6's report). Build the JSON with
-      `jq -n --arg` so the reason is escaped, exactly as the precedent does.
-- [ ] Copy both loop guards verbatim in shape: a `MAX_CONTINUATIONS` cap incremented in the
+      `jq -n --arg` so the reason is escaped, exactly as the precedent does. *(completed)*
+- [x] Copy both loop guards verbatim in shape: a `MAX_CONTINUATIONS` cap incremented in the
       marker, deleting the marker and allowing the stop once reached; and a `stop_hook_active`
       escape so hooks cannot call hooks. Log each delete with its reason, as the precedent does.
-- [ ] Register the hook in `root-files/settings.json`'s `Stop` array using the same
+      *(deviation: altered — `stop_hook_active` is read from hook stdin, Claude Code's own live
+      harness-maintained flag, rather than from the marker's own field, which the precedent's
+      sole writer always sets to a vestigial, permanently-`false` value; see the hook's own
+      header comment for the full reasoning)*
+- [x] Register the hook in `root-files/settings.json`'s `Stop` array using the same
       `bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/… 2>/dev/null || echo '{}'` form as its four
       siblings, with a `timeout`. Confirm the block decision travels on stdout with exit 0, so the
-      `|| echo '{}'` arm cannot swallow it.
-- [ ] Declare the hook in `manifest.json`'s `provides.hooks`.
-- [ ] Add the marker's deletion as the final action of Move 5's Step 6 in
+      `|| echo '{}'` arm cannot swallow it. *(completed: also required the matching
+      `merge-sources/settings-hooks.json` fragment entry, caught by gate 21's fragment-coverage
+      check)*
+- [x] Declare the hook in `manifest.json`'s `provides.hooks`. *(completed)*
+- [x] Add the marker's deletion as the final action of Move 5's Step 6 in
       `context/contracts/conclusion-stage.md`, using the Phase 1 resolver's path. (This is the one
       Phase-3 edit to a file the concurrent sibling also declares: re-read the file immediately
-      before editing, confine the change to Step 6's tail, and stage that path alone.)
+      before editing, confine the change to Step 6's tail, and stage that path alone.) *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -340,10 +346,13 @@ which only gates 2 and 21 exercise — no local check reads that cross-file surf
 
 **Verification**:
 - `bash .claude/scripts/verify-deploy.sh --only-gate 2,21` exits 0 (deployed hook registrations
-  and hook-registration paths)
-- `bash .claude/scripts/lint/lint-shellcheck.sh` passes on the new hook
+  and hook-registration paths) — confirmed: `PASS -- 4 check(s), 0 failure(s)`
+- `bash .claude/scripts/lint/lint-shellcheck.sh` passes on the new hook — confirmed clean
 - Hand probe: piping `{"session_id":"X"}` with no matching marker prints `{}` and exits 0; with a
-  matching marker prints a `decision: block` object and exits 0
+  matching marker prints a `decision: block` object and exits 0 — both confirmed, plus three
+  further cases exercised: `stop_hook_active: true` escapes with `{}` and leaves the marker
+  untouched; a marker at `continuation_count: 3` (the cap) is deleted and returns `{}`; a
+  mismatched `cc_session_id` returns `{}` without selecting the foreign marker
 
 ---
 

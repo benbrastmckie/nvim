@@ -502,6 +502,7 @@
       "guard-git-push.sh",
       "log-session.sh",
       "memory-nudge.sh",
+      "orchestrate-conclusion-backstop.sh",
       "please-grant.sh",
       "post-command.sh",
       "record-stash-provenance.sh",
