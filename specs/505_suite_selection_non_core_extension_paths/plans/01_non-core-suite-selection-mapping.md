@@ -392,30 +392,30 @@ file's internal comments.
 
 ---
 
-### Phase 5: Redeploy and Verify From Both Vantage Points Under the Full Gate Set [NOT STARTED]
+### Phase 5: Redeploy and Verify From Both Vantage Points Under the Full Gate Set [COMPLETED]
 
 **Goal**: The source-store change is deployed, the suite passes from both a source-store and a
 deployed vantage point, and the complete gate set is green.
 
 **Tasks**:
 
-- [ ] Re-read both edited files and confirm the working tree holds only this task's changes to
+- [x] Re-read both edited files and confirm the working tree holds only this task's changes to
   them (a sibling task is scheduled this same cycle; a foreign modification is reported, not
-  absorbed).
-- [ ] Run the suite from the SOURCE-STORE vantage point:
-  `bash agent-system/extensions/core/scripts/tests/test-run-all-selection.sh`.
-- [ ] Redeploy: `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool `timeout`
+  absorbed). *(completed: git status --short at phase start showed no foreign modification to either file; both already committed clean from phases 1-4)*
+- [x] Run the suite from the SOURCE-STORE vantage point:
+  `bash agent-system/extensions/core/scripts/tests/test-run-all-selection.sh`. *(completed: 36 passed, 0 failed)*
+- [x] Redeploy: `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool `timeout`
   parameter raised to 600000, per the external-process-wait bounded-wait idiom). The deployed tree
   is stale for `core` and `lean` at planning time, so this also clears that divergence. Never
-  hand-patch any file under `.claude/**` as a substitute.
-- [ ] Run the suite from the DEPLOYED vantage point:
+  hand-patch any file under `.claude/**` as a substitute. *(completed: deploy-headless.sh reported RESULT=landed_verify_clean, with its own embedded verify-deploy.sh pass: 43 checks, 0 failures)*
+- [x] Run the suite from the DEPLOYED vantage point:
   `bash .claude/scripts/tests/test-run-all-selection.sh`, confirming the deployed-mode cases pass
-  and the non-core derivation cases skip or pass cleanly there rather than failing.
-- [ ] Spot-check deployed-mode selection by hand: source `.claude/scripts/lib/suite-selection-lib.sh`
-  and confirm a touched path resolves against the merged flat tree exactly as before the change.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`.
-- [ ] Record issues and wins in the task's issue log as they arise, per the dispatch's Issue Log
-  section.
+  and the non-core derivation cases skip or pass cleanly there rather than failing. *(completed: 32 passed, 0 failed; case3b/3c/3c-unmapped/3e cleanly skipped via common_test_info since deployed mode has no extensions root; case3d still ran and passed)*
+- [x] Spot-check deployed-mode selection by hand: source `.claude/scripts/lib/suite-selection-lib.sh`
+  and confirm a touched path resolves against the merged flat tree exactly as before the change. *(completed: a touched path carrying the agent-system/extensions/lean/scripts/ segment and the equivalent bare .claude/scripts/ path both resolve identically to {test-lean-challenge-snapshot.sh, test-lean-plan-compliance-check.sh}, confirming the extension segment is correctly ignored in deployed mode)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. *(deviation: altered -- discharged against the scoped tier per this dispatch's Batch Gate Deferral directive instead of an independent full run: `bash .claude/scripts/tests/run-all.sh --only "test-lint-shellcheck-parallel.sh,test-measure-gate-costs.sh,test-orchestrate-build-dispatch.sh,test-run-all-selection.sh,test-validate-artifact.sh,test-verify-deploy-gate-selection.sh"` -- the covering suites `suite_selection_select` itself names for this task's two touched files -- passed 6/0. The complete gate set runs once for the whole batch at the end of this /orchestrate invocation and is attributed back to this task by its own modified_files, per the dispatch directive and context/formats/plan-format.md's "Batch-aware deferral" subsection. The deploy step above already ran its own embedded full verify-deploy.sh as a side effect and it passed clean, which is corroborating evidence but not a substitute for the batch-level run.)*
+- [x] Record issues and wins in the task's issue log as they arise, per the dispatch's Issue Log
+  section. *(completed: one issue recorded in Phase 1 (plan premise inaccurate, minor), one win recorded here)*
 
 **Timing**: 1.0 hours
 
@@ -445,20 +445,20 @@ paths (plus the gitignored deployed tree) may carry this task's changes.
 
 ## Testing & Validation
 
-- [ ] A touched `agent-system/extensions/<non-core-ext>/scripts/<name>.sh` path resolves to that
-  extension's own `test-<name>.sh`, not `__FULL_SWEEP__`.
-- [ ] Every path that resolved to a suite before the change resolves to the same suite after it
-  (the suite's pre-existing real-corpus cases, unmodified, are the evidence).
-- [ ] A genuinely uncovered path — core or non-core — still returns `__FULL_SWEEP__`, and
-  `suite_selection_unmapped` still names it verbatim.
-- [ ] Deployed-mode selection is byte-identical to today, pinned by a synthetic deployed-shaped
-  fixture and by a real deployed-vantage run.
-- [ ] `suite_selection_classify` locates non-core suite files and classifies them on evidence;
-  the three emitted values and all core classifications are unchanged.
-- [ ] The library sets no shell options, exports nothing new, leaks no `_ssl_*` name, and every
-  function still returns 0 and never exits.
-- [ ] The header's figure is reproducible by the command recorded beside it.
-- [ ] `test-run-all-selection.sh` passes from both vantage points; `verify-deploy.sh` is green.
+- [x] A touched `agent-system/extensions/<non-core-ext>/scripts/<name>.sh` path resolves to that
+  extension's own `test-<name>.sh`, not `__FULL_SWEEP__`. *(verified: case3b, plus the lean live-symptom reproduction)*
+- [x] Every path that resolved to a suite before the change resolves to the same suite after it
+  (the suite's pre-existing real-corpus cases, unmodified, are the evidence). *(verified: cases 1-25 unchanged across all 5 phases)*
+- [x] A genuinely uncovered path — core or non-core — still returns `__FULL_SWEEP__`, and
+  `suite_selection_unmapped` still names it verbatim. *(verified: case1/case1b for core, case3c/case3c-unmapped for non-core)*
+- [x] Deployed-mode selection is byte-identical to today, pinned by a synthetic deployed-shaped
+  fixture and by a real deployed-vantage run. *(verified: case3d plus the deployed-vantage run of test-run-all-selection.sh and the hand spot-check)*
+- [x] `suite_selection_classify` locates non-core suite files and classifies them on evidence;
+  the three emitted values and all core classifications are unchanged. *(verified: case3e plus direct invocation in Phase 2)*
+- [x] The library sets no shell options, exports nothing new, leaks no `_ssl_*` name, and every
+  function still returns 0 and never exits. *(verified: Phase 1's sourcing-contract check)*
+- [x] The header's figure is reproducible by the command recorded beside it. *(verified: re-ran the exact recorded command standalone and reproduced 4/5/20)*
+- [x] `test-run-all-selection.sh` passes from both vantage points; `verify-deploy.sh` is green. *(verified: 36/0 source-store, 32/0 deployed; the complete gate set is discharged against this dispatch's Batch Gate Deferral scoped tier -- see Phase 5's checklist annotation -- and runs once for the whole batch at the end of this /orchestrate cycle)*
 
 ## Artifacts & Outputs
 

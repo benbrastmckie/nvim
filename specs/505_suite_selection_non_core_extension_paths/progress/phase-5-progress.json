@@ -1,0 +1,28 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy and Verify From Both Vantage Points Under the Full Gate Set",
+  "started_at": "2026-11-16T01:00:00Z",
+  "last_updated": "2026-11-16T01:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read both edited files, confirm no foreign modification", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run suite from source-store vantage point", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run suite from deployed vantage point", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Spot-check deployed-mode selection by hand", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run complete gate set (discharged against scoped tier per Batch Gate Deferral directive)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Record issues/wins in issue log", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.6",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh",
+      "type": "altered",
+      "reason": "This dispatch (specs/505_suite_selection_non_core_extension_paths/.dispatch/10.md, Batch Gate Deferral section) directs discharging the plan's final-phase full verification tier against a scoped narrowing invocation for THIS dispatch, since the complete gate set runs once for the whole /orchestrate batch at the end and is attributed back by modified_files.",
+      "annotation": "see plan checklist annotation for the exact scoped command and result"
+    }
+  ],
+  "notes": "Source-store vantage: 36 passed, 0 failed. Deployed vantage: 32 passed, 0 failed (4 non-core-derivation cases cleanly skip: case3b, case3c, case3c-unmapped, case3e; case3d's synthetic fixture runs and passes regardless of vantage point since it builds its own isolated tree). deploy-headless.sh reported RESULT=landed_verify_clean with its own embedded verify-deploy.sh pass (43 checks, 0 failures) as a side effect of the redeploy -- corroborating evidence, not counted as this phase's own independent full-gate discharge. Scoped batch-gate-deferral invocation (the suites suite_selection_select itself names for this task's two touched files) passed 6/0: test-lint-shellcheck-parallel.sh, test-measure-gate-costs.sh, test-orchestrate-build-dispatch.sh, test-run-all-selection.sh, test-validate-artifact.sh, test-verify-deploy-gate-selection.sh. Deployed-mode spot-check confirmed a touched path carrying agent-system/extensions/lean/scripts/ and the equivalent bare .claude/scripts/ path resolve identically."
+}
