@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Wrote a 3-phase plan narrowing this record's scope from the description's three-way remedy decision (superseded: option (b) plus the surfacing half of (c) is already landed and verified) to the one genuinely open item: an explicit null-suggested_channel statement in conclusion-stage.md's Hint-Versus-Decision Rule and issue-log.md's suggested_channel field row, both at the core-extension source store. Phase 2 records the settled duplicate-transplant disposition as a durable note under the task's records/ directory; Phase 3 redeploys, reconciles the coupled index-entries.json line_count rows, and runs the full gate set. Every carried figure was re-derived against live state at authoring time, including a fresh reproduction confirming the research report's counts exactly (12 entries, 9 issue / 3 win, all null-resolution and null-hint, 1 costly plus 8 minor).",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/562_conclusion_stage_drops_null_resolution_entries/plans/01_null-hint-contract-alignment.md",
+      "summary": "3-phase plan: null-hint documentation sentences at the core source store, a durable settled-disposition note, then redeploy plus full gate set."
+    }
+  ],
+  "dispatch_seq": 4
+}

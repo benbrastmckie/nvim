@@ -164,7 +164,7 @@ next_project_number: 638
 558 [NOT STARTED] — Require task descriptions to request a proposal packet...
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
-562 [PLANNING] — conclusion stage drops null-resolution issue-log entries
+562 [PLANNED] — conclusion stage drops null-resolution issue-log entries
 599 [NOT STARTED] — Give the batch-gate-deferral directive a narrowing form that...
   └─ 592 [NOT STARTED] — Re-verify or timestamp a task recorded starting position at...
   └─ 593 [NOT STARTED] — Require pinned Lean Challenge signatures to be measured at...
@@ -2843,11 +2843,12 @@ EVIDENCE CITATION: recorded during task 369's plan phase as issue-log entry iss_
 ---
 
 ### 562. conclusion stage drops null-resolution issue-log entries
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 313
 - **Research**: [562_conclusion_stage_drops_null_resolution_entries/reports/01_duplicate-transplant-and-channel-gap.md]
+- **Plan**: [562_conclusion_stage_drops_null_resolution_entries/plans/01_null-hint-contract-alignment.md]
 
 **Description**: Close the contract gap that makes null-resolution issue-log entries invisible to the conclusion stage
 
