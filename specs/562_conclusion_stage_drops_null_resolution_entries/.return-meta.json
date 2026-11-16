@@ -1,0 +1,35 @@
+{
+  "status": "researched",
+  "dispatch_seq": 2,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/562_conclusion_stage_drops_null_resolution_entries/reports/01_duplicate-transplant-and-channel-gap.md",
+      "summary": "Confirms the resolution-field defect is already fixed and deployed via the archived absorbing record (task 373), independently re-derives both owed transplant items (a fresh second reproduction including a costly-severity entry, and confirmation that the suggested_channel documentation gap is still genuinely open), confirms this repository's own migration-pattern document already answers the closed-absorbing-record fail-safe (report and leave open, do not abandon), and recommends a narrow documentation-only plan scope."
+    }
+  ],
+  "next_steps": "Run /orchestrate 562 to create an implementation plan for the narrowed suggested_channel documentation addition",
+  "findings_count": 5,
+  "metadata": {
+    "session_id": "sess_1794798170_26e756_562",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "When a migrated duplicate record's disposition text defers an open question to a foreign repository's record number that no longer resolves after migration, check whether the receiving repository's own governing pattern document (e.g. cross-repo-task-migration.md's 'Duplicates: transplant before abandoning' section) already states the general rule unconditionally. A rule phrased as 'if X is not possible, do Y' does not need a separate record to resolve a specific instance of X -- it already covers it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/562_conclusion_stage_drops_null_resolution_entries/reports/01_duplicate-transplant-and-channel-gap.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["cross-repo-migration", "duplicate-transplant", "terminal-state", "fail-safe", "governing-document"]
+    },
+    {
+      "content": "Two records can agree on code-level behavior (a field being null is handled safely) while disagreeing on a narrower documentation-completeness question (whether that null case is stated explicitly in the contract text, the way a sibling field's null case is). Treating 'confirmed correct on inspection, no issue here' as closing a sibling question about explicit documentation conflates safety with completeness; check whether the actual sentence the other record asked for was ever written before treating the question as settled.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/562_conclusion_stage_drops_null_resolution_entries/reports/01_duplicate-transplant-and-channel-gap.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["documentation-gap", "code-vs-docs", "hint-field", "contract-completeness"]
+    }
+  ]
+}
