@@ -3579,6 +3579,15 @@ else
   common_test_fail "stall_suspected (S1): expected true, got '$s1' (verdict=$(jqf '.verdict'))"
 fi
 
+# Case S1b: the emitted notice must tell the re-prompted dispatch that an inherited error count
+# is unverified and non-exhaustive, not merely that a notice was emitted at all. This is the
+# content assertion -- a check that the notice is merely non-empty would not exercise this.
+if echo "$LAST_STDERR" | grep -q "unverified and non-exhaustive"; then
+  common_test_pass "stall_suspected (S1b): the re-prompt notice distrusts an inherited error count"
+else
+  common_test_fail "stall_suspected (S1b): expected the inherited-count-distrust clause on stderr, got: $LAST_STDERR"
+fi
+
 # Case S2 (advisory only): the flag must not change verdict/status bookkeeping. Whatever verdict
 # the no-outcome path already produced, stall_suspected must not have rewritten it into something
 # else -- it is a parallel signal, exactly like report_missing.
