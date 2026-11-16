@@ -182,6 +182,11 @@ if grep -q "\.blocker-research\.json" "$DF" 2>/dev/null; then
 else
   common_test_fail "blocker-research prompt does not name .blocker-research.json"
 fi
+if grep -qi "unconditionally" "$DF" 2>/dev/null && grep -q "\.blocker-research\.json" "$DF" 2>/dev/null; then
+  common_test_pass "blocker-research prompt carries an unconditional insistence clause naming .blocker-research.json"
+else
+  common_test_fail "blocker-research prompt is missing the unconditional insistence clause naming .blocker-research.json"
+fi
 if ! grep -qi "memory-context\|literature-briefing" "$DF" 2>/dev/null; then
   common_test_pass "dispatch file carries no memory-context or literature-briefing block"
 else

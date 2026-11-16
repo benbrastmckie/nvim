@@ -212,7 +212,12 @@ case "$kind" in
     prompt="Read the plan file at '${plan_path}'. Count: (1) total checklist items matching '- [ ]' or '- [x]', (2) completed items matching '- [x]', (3) deviation annotations matching '*(deviation:'. Calculate drift_pct as: deviation_count / max(total_items, 1). Write compact JSON to '${TASK_DIR_ABS}/.drift-inspection.json' with fields: drift_pct (float), deviation_count (int), total_items (int), completed_items (int), summary (string, one sentence). Return a brief summary of findings."
     ;;
   blocker-research)
-    prompt="Research this specific blocker for task ${task_number}: ${blocker_desc}. Find the root cause and a concrete solution path. Write compact JSON to '${TASK_DIR_ABS}/.blocker-research.json' with fields: summary (string), root_cause (string), solution_path (string)."
+    # Insistence clause, in spirit (not verbatim) of the plan-revision prompt's own unconditional
+    # clause below: the chain's follow-on plan-revision hop reads only this carrier file, never
+    # this fork's own returned text, so a response that describes findings without writing the
+    # file leaves nothing for a later cycle to act on and the obligation is retried rather than
+    # dropped (confirm-then-clear).
+    prompt="Research this specific blocker for task ${task_number}: ${blocker_desc}. Find the root cause and a concrete solution path. Write compact JSON to '${TASK_DIR_ABS}/.blocker-research.json' with fields: summary (string), root_cause (string), solution_path (string). Write this file every time, unconditionally, regardless of what you also report in your own returned text — the chain's plan-revision hop reads only this file, and a response that describes findings without writing it leaves nothing for a later cycle to act on."
     ;;
   plan-revision)
     if [ "$revision_reason" = "blocker" ]; then
