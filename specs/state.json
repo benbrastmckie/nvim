@@ -79035,7 +79035,7 @@
     {
       "project_number": 568,
       "project_name": "repair_orchestrate_cycle_postflight_suite",
-      "status": "researching",
+      "status": "researched",
       "task_type": "meta",
       "description": "Fix test-orchestrate-cycle-postflight.sh, which fails 25 of 304 assertions. Failures are status-name mismatches (e.g. expecting 'planning' where 'researching' is produced) and persisted_status drift. Confirmed pre-existing and unrelated to the file_scope reconciliation work that surfaced it: no diff exists for the suite or its target scripts (orchestrator-postflight.sh, update-task-status.sh) across that work. Determine whether the suite's expectations or the scripts' behaviour are wrong before changing either.\n\n--- ADDENDUM (orchestration conclusion stage, 2026-11-10; purely additive, nothing above altered) ---\nINDEPENDENTLY RE-OBSERVED, with two sibling failures found in the same scoped run. A scoped\nbatch-deferral gate run over an unrelated task's blast radius found this suite red at 25 failures,\ncorroborating this record's own count, and additionally reported a 'cleanup: command not found'\nshell error inside this suite -- a detail worth checking against the status-name/persisted_status\ndrift this record already names, since a shell error can mask or inflate assertion counts.\nTwo further pre-existing failures surfaced in the same run and are NOT this record's scope:\ntest-orchestrate-unwind-dispatch.sh at 11 failures (its fixture sandbox omits\nlib/project-number-inuse.sh from REQUIRED_LIB_SCRIPTS, so state-write.sh fails inside the test's\nown scratch repo -- being fixed separately as a direct fix), and\ntest-orchestrate-build-aux-dispatch.sh at 1 failure (reviser-agent model did not resolve to opus,\na manifest-routing model-resolution issue independently re-observed by a second task in the same\nbatch; it has no owning record yet). Evidence: issue-log entry iss_1794276383199_OBj82P in\nspecs/360_validate_carried_unverified_names_a_source/issues.jsonl.",
       "effort": "medium",
@@ -79043,8 +79043,14 @@
       "topic": "file-scope-lifecycle",
       "dependencies": [],
       "created": "2026-11-09T15:56:34Z",
-      "last_updated": "2026-11-16T07:50:35Z",
-      "artifacts": [],
+      "last_updated": "2026-11-16T08:22:01Z",
+      "artifacts": [
+        {
+          "path": "specs/568_repair_orchestrate_cycle_postflight_suite/reports/01_fixture-already-fixed-verification.md",
+          "type": "report",
+          "summary": "Verifies the suite's reported 25/304 failures no longer reproduce; root cause was a fixture setup-completeness gap (missing lib/project-number-inuse.sh copy), already fixed on master by an unrelated task's commit a4e32ff9e, corroborated by task 476's independent root-cause report."
+        }
+      ],
       "audit_verdict": {
         "proposal": {
           "id": "repair_orchestrate_cycle_postflight_suite",
@@ -80951,7 +80957,8 @@
         "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
         "agent-system/extensions/core/scripts/update-task-status.sh"
       ],
-      "session_id": "sess_1794815389_748c3d_568"
+      "session_id": "sess_1794815389_748c3d",
+      "next_artifact_number": 2
     },
     {
       "project_number": 570,

@@ -100,7 +100,7 @@ next_project_number: 638
     └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
     └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
 567 [NOT STARTED] — Port the deployed-tree containment strip into...
-568 [RESEARCHING] — Fix failing assertions in the orchestrate-cycle-postflight suite
+568 [RESEARCHED] — Fix failing assertions in the orchestrate-cycle-postflight suite
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
 ### Lean Extension
@@ -2664,11 +2664,12 @@ This repo's #519 (infra_exempt_transport_error_dispatch_deaths) is the sibling h
 
 ### 568. Fix failing assertions in the orchestrate-cycle-postflight suite
 - **Effort**: medium
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
 - **Parent**: Task 446
+- **Research**: [568_repair_orchestrate_cycle_postflight_suite/reports/01_fixture-already-fixed-verification.md]
 
 **Description**: Fix test-orchestrate-cycle-postflight.sh, which fails 25 of 304 assertions. Failures are status-name mismatches (e.g. expecting 'planning' where 'researching' is produced) and persisted_status drift. Confirmed pre-existing and unrelated to the file_scope reconciliation work that surfaced it: no diff exists for the suite or its target scripts (orchestrator-postflight.sh, update-task-status.sh) across that work. Determine whether the suite's expectations or the scripts' behaviour are wrong before changing either.
 

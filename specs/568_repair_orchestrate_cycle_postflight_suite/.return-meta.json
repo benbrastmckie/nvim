@@ -1,0 +1,28 @@
+{
+  "status": "researched",
+  "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/568_repair_orchestrate_cycle_postflight_suite/reports/01_fixture-already-fixed-verification.md",
+      "summary": "Verifies the suite's reported 25/304 failures no longer reproduce; root cause was a fixture setup-completeness gap (missing lib/project-number-inuse.sh copy), already fixed on master by an unrelated task's commit a4e32ff9e, corroborated by task 476's independent root-cause report."
+    }
+  ],
+  "next_steps": "Close task 568 directly from research with no plan/implement phase; the fix already landed on master and was re-verified by direct execution (312 passed, 0 failed).",
+  "claim_invalidations": [
+    {
+      "declaration_names": ["test-orchestrate-cycle-postflight.sh", "25 of 304 assertions"],
+      "kind": "refutation",
+      "claim": "test-orchestrate-cycle-postflight.sh fails 25 of 304 assertions due to status-name mismatches and persisted_status drift.",
+      "evidence_path": "specs/568_repair_orchestrate_cycle_postflight_suite/reports/01_fixture-already-fixed-verification.md"
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1794815389_748c3d_568",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 1
+  },
+  "memory_candidates": []
+}
