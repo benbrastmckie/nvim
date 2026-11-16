@@ -2402,6 +2402,69 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Regression (distinct fixture, not an overload of 830): identity-keyed dedup collapses repeat
+# partial dispatches against the same unresolved blocker into one open issues.jsonl entry, while
+# a genuinely different blocker identity on a later dispatch still produces its own entry -- the
+# guard discriminates, it does not suppress unconditionally.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Regression: repeat partial dispatches against the same blocker identity collapse to one issues.jsonl entry; a different identity still gets its own"
+setup_sandbox
+mkdir -p "$WORKDIR/specs/833_candidate"
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 833, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #833", "dependencies": [], "file_scope": []}]}
+EOF
+echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+commit_fixture
+cat > "$WORKDIR/specs/833_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+
+run_dedup_cycle() {
+  # Usage: run_dedup_cycle <dispatch_seq> <target>
+  local seq="$1" target="$2"
+  cat > "$WORKDIR/specs/833_candidate/.orchestrator-handoff.json" <<EOF
+{"status": "partial", "dispatch_seq": ${seq}, "phases_completed": 1, "phases_total": 3, "blockers": [{"phase": "implement", "target": "${target}", "verbatim_goal": "resolve ${target}", "why_it_failed": "still unresolved"}]}
+EOF
+  run_sut specs/833_candidate --session sess_833 --phase implement --task-type general \
+    --agent general-implementation-agent --loop-guard-file specs/833_candidate/.orchestrator-loop-guard \
+    --dispatch-seq "$seq" --dispatch-start-ts "$(( $(now_ts) - 5 ))" 833
+}
+
+issues_file_833="$WORKDIR/specs/833_candidate/issues.jsonl"
+
+run_dedup_cycle 1 "identity-A blocker"
+entry_count_after_1=$(wc -l < "$issues_file_833" 2>/dev/null | tr -d ' ')
+if [ "$entry_count_after_1" = "1" ]; then
+  common_test_pass "dedup (833): first partial dispatch against a blocker writes exactly one issues.jsonl entry"
+else
+  common_test_fail "dedup (833): expected exactly 1 issues.jsonl entry after the first dispatch, got: $entry_count_after_1"
+fi
+
+run_dedup_cycle 2 "identity-A blocker"
+entry_count_after_2=$(wc -l < "$issues_file_833" 2>/dev/null | tr -d ' ')
+if [ "$entry_count_after_2" = "1" ]; then
+  common_test_pass "dedup (833): a second partial dispatch against the SAME blocker identity does not re-record (still exactly 1 entry)"
+else
+  common_test_fail "dedup (833): expected the second dispatch (same identity) to skip the write, got $entry_count_after_2 issues.jsonl entries"
+fi
+
+run_dedup_cycle 3 "identity-B blocker"
+entry_count_after_3=$(wc -l < "$issues_file_833" 2>/dev/null | tr -d ' ')
+if [ "$entry_count_after_3" = "2" ]; then
+  common_test_pass "dedup (833): a third partial dispatch against a DIFFERENT blocker identity does produce a second entry (the guard discriminates, it does not suppress unconditionally)"
+else
+  common_test_fail "dedup (833): expected a different blocker identity to produce a second issues.jsonl entry (total 2), got $entry_count_after_3"
+fi
+
+identity_1_833=$(sed -n '1p' "$issues_file_833" | jq -r '.tags.blocker_identity // ""')
+identity_2_833=$(sed -n '2p' "$issues_file_833" | jq -r '.tags.blocker_identity // ""')
+if [ -n "$identity_1_833" ] && [ -n "$identity_2_833" ] && [ "$identity_1_833" != "$identity_2_833" ]; then
+  common_test_pass "dedup (833): the two recorded entries carry distinct, non-empty tags.blocker_identity values"
+else
+  common_test_fail "dedup (833): expected two distinct non-empty blocker_identity tags, got '$identity_1_833' and '$identity_2_833'"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Regression negative case: a `partial` outcome with EMPTY blockers[] must leave state.json
 # status UNCHANGED (still "implementing") -- the explicit "current defer behaviour must be
 # preserved" requirement -- and must record no blocker-research aux signal.

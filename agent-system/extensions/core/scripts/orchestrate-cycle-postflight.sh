@@ -1504,26 +1504,68 @@ ${skel_bullets}" \
           # *why* the result came back empty changes.
           partial_blockers_detail=$(echo "${handoff:-null}" | jq -r '(.blockers // []) | map(if type == "object" then "phase \(.phase // ""): \(.target // "")" + (if (.verbatim_goal // "") != "" then " | goal: \(.verbatim_goal)" else "" end) + (if (.what_was_tried // "") != "" then " | tried: \(.what_was_tried)" else "" end) + (if (.why_it_failed // "") != "" then " | failed: \(.why_it_failed)" else "" end) else tostring end) | join("; ")')
           [ -z "$partial_blockers_detail" ] && partial_blockers_detail="partial outcome with ${partial_blocker_count} blocker(s) (detail unavailable)"
-          # --class: "environment"'s own admission test (issue-log.md's Seed Class Enum) names
-          # the local or CI environment (missing binary, version mismatch, permissions) as the
-          # cost's cause, which a blocker-bearing partial almost never is. The actual class is
-          # not knowable from this postflight's own vantage point, so the value states that
-          # honestly rather than guessing; no field in the blockers[] object schema names a
-          # class, and inferring one from free-text why_it_failed would be pattern-matching
-          # dressed as classification. issue-log.md's Extensibility Rule sanctions recording a
-          # new, as-yet-unseeded literal here.
-          #
-          # --severity: this arm is reachable only inside the `partial_blocker_count -gt 0`
-          # guard above, which is a direct instance of the Severity Scale's `blocking` rung
-          # (work "could not proceed at all ... the dispatch stalled or had to hand off because
-          # of it"), so the value is exact rather than merely defensible and is not moved to
-          # reduce downstream channel volume.
-          issue_args=(--task-dir "$TASK_DIR" --kind issue --class "unresolved task-domain blocker" \
-            --severity blocking --phase implement --what-happened "$partial_blockers_detail" \
-            --resolution open --suggested-channel follow_up_task --session "$session_id")
-          [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
-          bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
-            >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+          # Identity-keyed dedup: collapses N near-duplicate blocking entries from N partial
+          # dispatches against the same unresolved blocker into one. Computed from the
+          # schema-guaranteed subfields only (phase, target) -- verbatim_goal/what_was_tried/
+          # why_it_failed are present-by-convention, not schema-enforced, and are free text an
+          # agent may reword between dispatches, which would make them a fragile key. Reduced to
+          # a short stable digest and carried on the recorded entry via tags.blocker_identity
+          # (the open `tags` seam issue-log.md documents), so the skip predicate below is an
+          # exact JSON field comparison rather than a substring search over what_happened --
+          # which this same arm is simultaneously reformatting. No 2>/dev/null on the identity
+          # computation itself; a safe empty-string fallback covers a jq failure here.
+          partial_blocker_identity_raw=$(echo "${handoff:-null}" | jq -r '[.blockers[]? | "\(.phase // "")|\(.target // "")"] | sort | join(",")')
+          partial_blocker_identity=""
+          [ -n "$partial_blocker_identity_raw" ] && partial_blocker_identity=$(printf '%s' "$partial_blocker_identity_raw" | sha256sum | awk '{print substr($1,1,16)}')
+          # Skip predicate: any read failure, missing issues.jsonl, or unparseable line degrades
+          # to "write" -- today's behavior, never a hard failure. No existing line is
+          # read-merged or rewritten (the append-only-by-line invariant is honored); the
+          # recurrence stays visible in the run log via the diagnostic line below instead of a
+          # second issues.jsonl entry. issue-log.md's Occurrence Collapse convention
+          # (tags.occurrence) is not used here -- it serves a caller that already knows a repeat
+          # count before its first call, which this call site does not.
+          partial_matched_entry_id=""
+          if [ -n "$partial_blocker_identity" ] && [ -f "$TASK_DIR/issues.jsonl" ]; then
+            partial_matched_entry_id=$(jq -r --arg id "$partial_blocker_identity" \
+              'select(.resolution == "open" and (.tags.blocker_identity // "") == $id) | .entry_id' \
+              "$TASK_DIR/issues.jsonl" 2>/dev/null | tail -n 1)
+          fi
+          if [ -n "$partial_matched_entry_id" ]; then
+            echo "${notice_prefix} blocker-bearing partial: skipping a duplicate issues.jsonl write -- an already-open entry (${partial_matched_entry_id}) carries this same blocker identity." >&2
+          else
+            # --class: "environment"'s own admission test (issue-log.md's Seed Class Enum) names
+            # the local or CI environment (missing binary, version mismatch, permissions) as the
+            # cost's cause, which a blocker-bearing partial almost never is. The actual class is
+            # not knowable from this postflight's own vantage point, so the value states that
+            # honestly rather than guessing; no field in the blockers[] object schema names a
+            # class, and inferring one from free-text why_it_failed would be pattern-matching
+            # dressed as classification. issue-log.md's Extensibility Rule sanctions recording a
+            # new, as-yet-unseeded literal here.
+            #
+            # --severity: this arm is reachable only inside the `partial_blocker_count -gt 0`
+            # guard above, which is a direct instance of the Severity Scale's `blocking` rung
+            # (work "could not proceed at all ... the dispatch stalled or had to hand off
+            # because of it"), so the value is exact rather than merely defensible and is not
+            # moved to reduce downstream channel volume.
+            #
+            # Suppression on `user_decision` presence was considered and dropped: at this arm's
+            # vantage point the relay (this script's own later WORK (e) block) has not yet run,
+            # and user-decision-contract.md documents the payload as producer-owned and
+            # relayed-never-resolved, so presence here means "being asked now", not "answered"
+            # -- no mechanical test for "answered" exists at this vantage point. issues.jsonl is
+            # also capture-only and never reaches the user mid-run (the ask_user verdict is a
+            # structurally separate channel with a different reader), so there is no
+            # user-visible duplicate for a suppression to remove.
+            issue_args=(--task-dir "$TASK_DIR" --kind issue --class "unresolved task-domain blocker" \
+              --severity blocking --phase implement --what-happened "$partial_blockers_detail" \
+              --resolution open --suggested-channel follow_up_task --session "$session_id")
+            [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
+            if [ -n "$partial_blocker_identity" ]; then
+              issue_args+=(--tags-json "$(jq -c -n --arg id "$partial_blocker_identity" '{blocker_identity: $id}')")
+            fi
+            bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
+              >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+          fi
         else
           echo "${notice_prefix} [dry-run] would transition task ${task_number} to partial (blocker-bearing) — no write performed." >&2
         fi

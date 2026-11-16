@@ -290,7 +290,7 @@ rather than left implicit.
 
 ---
 
-### Phase 3: Collapse repeat entries on blocker identity [NOT STARTED]
+### Phase 3: Collapse repeat entries on blocker identity [COMPLETED]
 
 **Goal**: One unresolved blocker produces one open blocking entry per task, however many partial
 dispatches it survives, with the recurrence still visible in the run log and no existing line
@@ -317,30 +317,30 @@ rewritten.
   append-only-by-line invariant.
 
 **Tasks**:
-- [ ] Compute the blocker identity in the `partial)` arm, immediately after
+- [x] Compute the blocker identity in the `partial)` arm, immediately after
       `partial_blockers_detail`, using the expression above with no `2>/dev/null` and a safe
       fallback to the empty string.
-- [ ] Add `--tags-json` carrying `{"blocker_identity": "<identity>"}` to `issue_args` whenever the
+- [x] Add `--tags-json` carrying `{"blocker_identity": "<identity>"}` to `issue_args` whenever the
       identity is non-empty.
-- [ ] Add the skip guard reading `$TASK_DIR/issues.jsonl`. On a match, skip the
+- [x] Add the skip guard reading `$TASK_DIR/issues.jsonl`. On a match, skip the
       `issue-record.sh` call and emit one diagnostic line to the script's own stream naming the
       matched prior `entry_id` and stating that the entry was not re-recorded — so the recurrence
       remains visible in the run log without a second `issues.jsonl` line.
-- [ ] Add a short inline comment recording the dropped suppression-on-`user_decision` idea and
+- [x] Add a short inline comment recording the dropped suppression-on-`user_decision` idea and
       why: `user-decision-contract.md` makes the payload relayed-never-resolved at this vantage
       point so no mechanical "answered" test exists, and `issue-log.md`'s capture-only property
       means the `ask_user` verdict is a separate channel with a different reader, so no
       user-visible duplicate exists for a suppression to remove. State it as the current design,
       citing those document and section names — no task numbers, no narration of alternatives
       considered over time.
-- [ ] Add a new fixture (distinct from the Phase 1 one, not an overload of it) that runs the
+- [x] Add a new fixture (distinct from the Phase 1 one, not an overload of it) that runs the
       postflight twice against the same task directory with the same `blockers[]` identity across
       two dispatch sequence numbers, and assert `issues.jsonl` holds exactly one entry with that
       `tags.blocker_identity`.
-- [ ] Add a companion assertion in the same new fixture that a *different* blocker identity on the
+- [x] Add a companion assertion in the same new fixture that a *different* blocker identity on the
       second dispatch does produce a second entry, so the guard is shown to discriminate rather
       than to suppress unconditionally.
-- [ ] Run the suite and commit.
+- [x] Run the suite and commit. *(completed: 320 passed, 0 failed)*
 
 **Timing**: 1.5 hours
 

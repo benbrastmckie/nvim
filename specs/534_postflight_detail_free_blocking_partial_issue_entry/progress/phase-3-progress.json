@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Collapse repeat entries on blocker identity",
+  "started_at": "2026-11-16T18:12:00Z",
+  "last_updated": "2026-11-16T18:12:00Z",
+  "objectives": [
+    {"id": 1, "description": "Compute the blocker identity after partial_blockers_detail, no 2>/dev/null, safe fallback to empty string", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Add --tags-json carrying {blocker_identity} to issue_args when non-empty", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Add skip guard reading issues.jsonl for an open entry with matching tags.blocker_identity, with diagnostic line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Add inline comment recording the dropped suppression-on-user_decision idea", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Add new fixture: two dispatches, same identity -> one entry", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"], "note": "renumbered candidate #832 -> #833 to avoid colliding with an existing fixture already using 832"},
+    {"id": 6, "description": "Add companion assertion: different identity on second dispatch -> second entry", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 7, "description": "Run suite and commit", "status": "done", "files_touched": [], "note": "320 passed, 0 failed."}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "last_updated": "2026-11-16T18:30:00Z"
+}
