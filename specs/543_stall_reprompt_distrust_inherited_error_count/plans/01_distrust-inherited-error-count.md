@@ -1,7 +1,7 @@
 # Implementation Plan: Task #543
 
 - **Task**: 543 - Tell the re-prompted dispatch to distrust the error count it inherited from the interrupting context
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.75 hours
 - **Dependencies**: 534 (declared in state.json; live status is `completed` — satisfied, not blocking)
 - **Research Inputs**: specs/543_stall_reprompt_distrust_inherited_error_count/reports/01_distrust-inherited-error-count.md
@@ -114,25 +114,30 @@ and the deploy must propagate an already-complete source-store state.
 
 ---
 
-### Phase 1: Ground the Edit Surface and Amend the Canonical Loop Obligation [NOT STARTED]
+### Phase 1: Ground the Edit Surface and Amend the Canonical Loop Obligation [COMPLETED]
 
 **Goal**: Confirm the edit surface mechanically, read the landed state of recent work in the shared
 region, and insert the new obligation into the doc list the re-prompt text is actually built from.
 
 **Tasks**:
-- [ ] Enumerate the emission sites mechanically:
+- [x] Enumerate the emission sites mechanically:
       `grep -n "REMEDY:" agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`.
       Record the line numbers and the decision taken for each (needed verbatim by acceptance
       criterion (1) and by the completion summary). Do not trust this plan's line numbers.
-- [ ] Read the landed diff of recent work in the `recovery_declined_detail` corroboration block:
+      *(completed: 4 matches at lines 1072, 1074, 2374, 2414 — unchanged from the plan's citation)*
+- [x] Read the landed diff of recent work in the `recovery_declined_detail` corroboration block:
       `git log --oneline -8 -- agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`,
       then `git log -p -3 -- <that file>` restricted to the ~1045-1078 region, so Phase 2's edits
       compose with the classification/dedup logic already there.
-- [ ] Re-derive the live claimant set for these three files from `specs/state.json` (any record not
+      *(completed: region is settled; the three mutually exclusive `rd_stall_corroborated`/
+      `rd_strand_corroborated` branches are intact and unambiguous)*
+- [x] Re-derive the live claimant set for these three files from `specs/state.json` (any record not
       `completed`/`abandoned` whose `file_scope` names one of them) and run `git status --short`.
       If a live writer holds uncommitted edits in the test file, note it and plan Phase 3 as an
       append-only addition.
-- [ ] Insert a new item 2 into the "Loop obligation" numbered list in
+      *(completed: several not_started tasks claim the files, but `git status --short` on the
+      three target paths was empty — no live uncommitted edit to coordinate around)*
+- [x] Insert a new item 2 into the "Loop obligation" numbered list in
       `agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md` (list currently
       at lines ~1165-1180), renumbering the existing items 2-4 to 3-5 and leaving their substance
       untouched. Wording:
@@ -143,11 +148,14 @@ region, and insert the new obligation into the doc list the re-prompt text is ac
          sole failure inventory; completion is that re-run reporting clean (or a documented
          exclusion), never agreement with an inherited count.
 
-- [ ] Update the coupled count reference in the same doc's "Where this actually runs" paragraph
+- [x] Update the coupled count reference in the same doc's "Where this actually runs" paragraph
       (currently "carrying the four instructions above") so it matches the list's new item count.
-- [ ] Confirm the inserted prose cites only durable anchors and carries no task-number reference, no
+      *(completed: now reads "carrying the five instructions above")*
+- [x] Confirm the inserted prose cites only durable anchors and carries no task-number reference, no
       record-versioning language, no measured counts, and no domain particulars of any past run; it
       must read as what a resumer does, never as narration of a past run.
+      *(completed: `check-task-references.sh` and `check-record-versioning.sh` report 0 blocking
+      findings for this file)*
 
 **Timing**: 0.75 hours
 

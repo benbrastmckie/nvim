@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/543_stall_reprompt_distrust_inherited_error_count/plans/01_distrust-inherited-error-count.md",
-      "summary": "Four-phase plan for the inherited-error-count distrust obligation: doc Loop obligation amendment, three script remedy sites with one reasoned exclusion, a non-vacuous test assertion, then deploy plus full-gate acceptance."
-    }
-  ],
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 6,
   "metadata": {
-    "session_id": "sess_1794850122_9151c5_543",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 2.75,
-    "dependency_waves": 4
-  },
-  "next_steps": "Run /orchestrate 543 to execute the plan",
-  "dispatch_seq": 5
+    "session_id": "sess_1794850122_9151c5",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

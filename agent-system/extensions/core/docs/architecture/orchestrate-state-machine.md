@@ -1169,11 +1169,16 @@ instructing it to:
 
 1. Re-run the verification it was waiting on in the foreground, with a bounded `timeout`,
    redirecting output to a file and grepping that file — never awaiting a harness notification.
-2. Attribute each failure to its own edits or to pre-existing breakage, with `git log` /
+2. Treat any error count, error list, or "only N failures remain" claim arriving with the
+   re-prompt, or recoverable from the interrupting context, as unverified and non-exhaustive — a
+   lower bound at best, never a stopping condition. The re-run's own output in step 1 is the sole
+   failure inventory; completion is that re-run reporting clean (or a documented exclusion), never
+   agreement with an inherited count.
+3. Attribute each failure to its own edits or to pre-existing breakage, with `git log` /
    `git status` overlap evidence.
-3. Close every phase with an explicit verdict — `[COMPLETED]`, or
+4. Close every phase with an explicit verdict — `[COMPLETED]`, or
    `[COMPLETED WITH EXCLUSIONS]` plus a `#### Reasoned Exclusions` record — leaving none open.
-4. Write all three closing artifacts, then commit them.
+5. Write all three closing artifacts, then commit them.
 
 A documented exclusion or an honest `partial` is an acceptable result of that re-prompt; returning
 again with no artifacts is not. Only one re-prompt is owed: a second no-outcome return on the same
@@ -1186,7 +1191,7 @@ itself, since Move 2's "never interleaved with dispatch" rule and the Postflight
 forbid that. Move 4's branch move then drains `pending_stall_reprompt[]` with a **batched stall
 re-prompt relay**, sited directly beside the existing batched `AskUserQuestion` relay (same
 "after every task's Move 3 has run this cycle" timing): one Agent call per queued task, re-using
-the same `subagent_type` the original dispatch used, carrying the four instructions above. After
+the same `subagent_type` the original dispatch used, carrying the five instructions above. After
 each relay call returns, the loop runs `orchestrate-cycle-postflight.sh` once more for that task
 and applies the ordinary verdict handling — `failed_tasks` is now reachable, since the re-prompt
 has been spent — then moves the entry from `pending_stall_reprompt[]` to `stall_reprompted[]`,
