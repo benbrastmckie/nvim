@@ -7,7 +7,7 @@
     {"id": 1, "description": "Create hooks/orchestrate-conclusion-backstop.sh on subagent-postflight.sh's structure", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/orchestrate-conclusion-backstop.sh"]},
     {"id": 2, "description": "Block decision on match, reason naming missing stage/contract/remaining steps", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/orchestrate-conclusion-backstop.sh"]},
     {"id": 3, "description": "Copy both loop guards: MAX_CONTINUATIONS cap, stop_hook_active escape", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/orchestrate-conclusion-backstop.sh"]},
-    {"id": 4, "description": "Register hook in root-files/settings.json Stop array", "status": "done", "files_touched": ["agent-system/extensions/core/root-files/settings.json"]},
+    {"id": 4, "description": "Register hook in root-files/settings.json Stop array", "status": "done", "files_touched": ["agent-system/extensions/core/root-files/settings.json", "agent-system/extensions/core/merge-sources/settings-hooks.json"]},
     {"id": 5, "description": "Declare hook in manifest.json provides.hooks", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
     {"id": 6, "description": "Add marker deletion to conclusion-stage.md Step 6's final action", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/conclusion-stage.md"]}
   ],
