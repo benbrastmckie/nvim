@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Emit the cheap probe and the no-extra-sweep obligation",
+  "started_at": "2026-11-16T12:40:48Z",
+  "last_updated": "2026-11-16T12:48:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read batch_gate_deferral_flag block before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-confirm flag-parser asymmetry (verify-deploy.sh hits, run-all.sh misses)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Append --skip-unchanged to the emitted verify-deploy.sh --only-gate line only", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 4, "description": "Insert CHEAP PROBE paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 5, "description": "Insert NO ADDITIONAL FULL SWEEP paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 6, "description": "Degradation branch stays byte-identical", "status": "done", "files_touched": []},
+    {"id": 7, "description": "No task-number references written", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Extend Group 19 test assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

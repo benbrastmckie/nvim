@@ -1475,6 +1475,8 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   assert_contains "$content_bgd" "## Batch Gate Deferral" "implement (--batch-gate-deferral, no resolvable candidate): section heading present"
   assert_contains "$content_bgd" "COMPLETE gate set" "implement (--batch-gate-deferral, no resolvable candidate): degrades to stating the full gate set as such"
   assert_not_contains "$content_bgd" "agent-system/extensions/core/scripts/" "implement (--batch-gate-deferral, no resolvable candidate): never prints the bare source-store path when it cannot resolve"
+  assert_not_contains "$content_bgd" "CHEAP PROBE:" "implement (--batch-gate-deferral, no resolvable candidate): CHEAP PROBE paragraph absent in degradation branch"
+  assert_not_contains "$content_bgd" "NO ADDITIONAL FULL SWEEP:" "implement (--batch-gate-deferral, no resolvable candidate): NO ADDITIONAL FULL SWEEP paragraph absent in degradation branch"
   if diff -q "$WORKDIR/dispatch-no-bgd.md" "$LAST_DISPATCH_FILE" >/dev/null 2>&1; then
     common_test_fail "implement (--batch-gate-deferral): expected a diff against the no-flag dispatch file, got none"
   else
@@ -1495,8 +1497,16 @@ run_sut implement --clean --seq 19 --dispatch-start-ts 1234567890 --batch-gate-d
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content_bgd_resolved="$(cat "$LAST_DISPATCH_FILE")"
   assert_contains "$content_bgd_resolved" "${FIXTURE}/.claude/scripts/tests/run-all.sh --only SUITE" "implement (--batch-gate-deferral, deployed candidates present): names the resolved deployed run-all.sh path"
-  assert_contains "$content_bgd_resolved" "${FIXTURE}/.claude/scripts/verify-deploy.sh --only-gate N" "implement (--batch-gate-deferral, deployed candidates present): names the resolved deployed verify-deploy.sh path"
+  assert_contains "$content_bgd_resolved" "${FIXTURE}/.claude/scripts/verify-deploy.sh --only-gate N[,M...] --skip-unchanged" "implement (--batch-gate-deferral, deployed candidates present): names the resolved deployed verify-deploy.sh path with the --skip-unchanged cheap probe"
+  run_all_line="$(printf '%s\n' "$content_bgd_resolved" | grep -F -- "run-all.sh --only SUITE" || true)"
+  if [ -n "$run_all_line" ] && ! printf '%s' "$run_all_line" | grep -qF -- "--skip-unchanged"; then
+    common_test_pass "implement (--batch-gate-deferral, deployed candidates present): run-all.sh invocation stays unflagged"
+  else
+    common_test_fail "implement (--batch-gate-deferral, deployed candidates present): run-all.sh invocation line missing or must never carry --skip-unchanged (unparsed flag) (line='$run_all_line')"
+  fi
   assert_not_contains "$content_bgd_resolved" "agent-system/extensions/core/scripts/" "implement (--batch-gate-deferral, deployed candidates present): does not also print the bare source-store path"
+  assert_contains "$content_bgd_resolved" "CHEAP PROBE:" "implement (--batch-gate-deferral, deployed candidates present): CHEAP PROBE paragraph present"
+  assert_contains "$content_bgd_resolved" "NO ADDITIONAL FULL SWEEP:" "implement (--batch-gate-deferral, deployed candidates present): NO ADDITIONAL FULL SWEEP paragraph present"
 else
   common_test_fail "implement (--batch-gate-deferral, deployed candidates present): SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
 fi

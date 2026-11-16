@@ -690,10 +690,25 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
         echo "or"
       fi
       if [ -n "$resolved_verify_deploy" ]; then
-        echo "\`bash ${resolved_verify_deploy} --only-gate N[,M...]\`"
+        echo "\`bash ${resolved_verify_deploy} --only-gate N[,M...] --skip-unchanged\`"
       fi
       echo "— and record in this phase's own verification notes that the full"
       echo "set was deferred to the batch stage rather than independently run."
+      echo ""
+      if [ -n "$resolved_verify_deploy" ]; then
+        echo "CHEAP PROBE: \`--skip-unchanged\` on the \`--only-gate\` form above returns"
+        echo "\`[SKIP-CACHED]\` immediately for every gate whose declared input corpus this"
+        echo "dispatch did not touch, making a repeat or exploratory re-check of an already green"
+        echo "scoped tier cost seconds instead of a battery. This applies to every repeat check"
+        echo "inside this dispatch, not only the first."
+        echo ""
+      fi
+      echo "NO ADDITIONAL FULL SWEEP: running the complete gate set anyway — unflagged, or a"
+      echo "second time — is the specific waste this directive exists to prevent. Under a"
+      echo "multi-task batch, each such sweep queues single-file behind Gate 8's"
+      echo "\`specs/.gate-lock\` mutex and stalls every sibling dispatch. The only sanctioned full"
+      echo "sweep is the UNMAPPABLE CRITERION carve-out below, which requires naming the specific"
+      echo "unreachable criterion in the phase's own verification notes."
       echo ""
       echo "UNMAPPABLE CRITERION: if the phase's own declared verification criterion names a"
       echo "repository-specific check that neither narrowing invocation above can express (no"

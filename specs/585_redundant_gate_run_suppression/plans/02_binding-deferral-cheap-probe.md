@@ -1,7 +1,7 @@
 # Implementation Plan: Task #585
 
 - **Task**: 585 - Make the batch-gate deferral binding and cache repeat gate runs, so the full set runs once per batch
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/585_redundant_gate_run_suppression/reports/01_redundant-gate-run-suppression.md, specs/585_redundant_gate_run_suppression/reports/02_binding-deferral-and-cache-adoption.md
@@ -99,7 +99,7 @@ performed and no roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Emit the cheap probe and the no-extra-sweep obligation [NOT STARTED]
+### Phase 1: Emit the cheap probe and the no-extra-sweep obligation [COMPLETED]
 
 **Goal**: `orchestrate-build-dispatch.sh`'s `## Batch Gate Deferral` block emits
 `--skip-unchanged` on the `verify-deploy.sh --only-gate` invocation and carries two new prose
@@ -107,36 +107,39 @@ paragraphs (CHEAP PROBE, NO ADDITIONAL FULL SWEEP), with the composer's own test
 both.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh` around the
-      `batch_gate_deferral_flag` block before editing (a sibling may have touched it).
-- [ ] Re-confirm the flag-parser asymmetry before editing:
+- [x] Re-read `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh` around the
+      `batch_gate_deferral_flag` block before editing (a sibling may have touched it). *(completed)*
+- [x] Re-confirm the flag-parser asymmetry before editing:
       `grep -n -- '--skip-unchanged' agent-system/extensions/core/scripts/verify-deploy.sh agent-system/extensions/core/scripts/tests/run-all.sh`
       must hit `verify-deploy.sh` and miss `run-all.sh`. If `run-all.sh` has since gained the
       flag, add it to that emitted line too and say so in the phase notes; otherwise leave that
-      line's text unchanged.
-- [ ] Append ` --skip-unchanged` to the emitted `verify-deploy.sh --only-gate N[,M...]` invocation
-      line only. Leave the emitted `run-all.sh --only SUITE[,SUITE...]` line unflagged.
-- [ ] Insert a `CHEAP PROBE:` paragraph after the existing "record ... that the full set was
+      line's text unchanged. *(completed: confirmed unchanged — verify-deploy.sh:390 parses it, run-all.sh has zero hits)*
+- [x] Append ` --skip-unchanged` to the emitted `verify-deploy.sh --only-gate N[,M...]` invocation
+      line only. Leave the emitted `run-all.sh --only SUITE[,SUITE...]` line unflagged. *(completed)*
+- [x] Insert a `CHEAP PROBE:` paragraph after the existing "record ... that the full set was
       deferred" sentence and before the `UNMAPPABLE CRITERION:` paragraph. It states that
       `--skip-unchanged` returns `[SKIP-CACHED]` immediately for every gate whose declared input
       corpus this dispatch did not touch, making a repeat or exploratory re-check of an already
       green scoped tier cost seconds instead of a battery, and that it applies to every repeat
-      check inside the dispatch, not only the first.
-- [ ] Insert a `NO ADDITIONAL FULL SWEEP:` paragraph immediately after it, stating that running
+      check inside the dispatch, not only the first. *(completed: gated on `resolved_verify_deploy`
+      being set, so it never dangles a reference to an --only-gate form that was not printed)*
+- [x] Insert a `NO ADDITIONAL FULL SWEEP:` paragraph immediately after it, stating that running
       the complete gate set anyway — unflagged, or a second time — is the specific waste this
       directive exists to prevent, because under a multi-task batch each such sweep queues
       single-file behind Gate 8's `specs/.gate-lock` mutex and stalls every sibling dispatch; and
       that the only sanctioned full sweep is the UNMAPPABLE CRITERION carve-out below, which
-      requires naming the specific unreachable criterion in the phase's own verification notes.
-- [ ] Keep both paragraphs inside the `if [ -n "$resolved_run_all" ] || [ -n "$resolved_verify_deploy" ]`
+      requires naming the specific unreachable criterion in the phase's own verification notes. *(completed)*
+- [x] Keep both paragraphs inside the `if [ -n "$resolved_run_all" ] || [ -n "$resolved_verify_deploy" ]`
       branch — the degradation branch (neither entry point resolves) must stay byte-identical,
-      since it has no narrowing invocation to probe cheaply.
-- [ ] Write no task numbers into any emitted or edited source-store text (rules/no-task-references-in-deliverables.md).
-- [ ] Extend Group 19 of `agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh`:
+      since it has no narrowing invocation to probe cheaply. *(completed: verified via Group 19's
+      pre-existing diff-against-no-flag assertion plus the new absent-marker assertions)*
+- [x] Write no task numbers into any emitted or edited source-store text (rules/no-task-references-in-deliverables.md). *(completed)*
+- [x] Extend Group 19 of `agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh`:
       assert the resolved `verify-deploy.sh --only-gate N[,M...] --skip-unchanged` string is
       present, assert `run-all.sh --only SUITE` is present WITHOUT `--skip-unchanged`, and assert
       both new paragraph markers (`CHEAP PROBE:`, `NO ADDITIONAL FULL SWEEP:`) appear in the
-      resolved-candidate dispatch and are absent from the degradation-branch dispatch.
+      resolved-candidate dispatch and are absent from the degradation-branch dispatch. *(completed:
+      223 passed, 0 failed in the full suite file)*
 
 **Timing**: 1 hour
 

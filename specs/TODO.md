@@ -32,7 +32,7 @@ next_project_number: 639
   └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
 456 [NOT STARTED] — Exempt private npm/Cargo manifests from /tag's version gate
 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
-476 [RESEARCHED] — Make the seven untracked red Gate 8 shell suites green or...
+476 [PLANNING] — Make the seven untracked red Gate 8 shell suites green or...
   └─ 586 [NOT STARTED] — Stand up the suite and gate wall-clock cost consumer: delete,...
     └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -194,7 +194,7 @@ next_project_number: 639
 
 ### Uncategorized
 
-585 [PLANNED] — Make the batch-gate deferral binding and cache repeat gate...
+585 [IMPLEMENTING] — Make the batch-gate deferral binding and cache repeat gate...
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
@@ -1911,7 +1911,7 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deploy
 ---
 
 ### 585. Make the batch-gate deferral binding and cache repeat gate runs, so the full set runs once per batch
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Dependencies**: Task 584
 - **Research**: [585_redundant_gate_run_suppression/reports/02_binding-deferral-and-cache-adoption.md]
@@ -8411,7 +8411,7 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_d
 
 ### 476. Make the seven untracked red Gate 8 shell suites green or declared-expected
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 423, Task 445, Task 568

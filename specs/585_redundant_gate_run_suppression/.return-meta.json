@@ -1,31 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/585_redundant_gate_run_suppression/plans/02_binding-deferral-cheap-probe.md",
-      "summary": "3-phase plan (~2.75h) making Mechanism A's Batch Gate Deferral directive emit --skip-unchanged as the sanctioned cheap probe and a no-additional-full-sweep obligation, syncing four consumer contracts and the derived index line counts, then redeploying."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 22,
   "metadata": {
-    "session_id": "sess_1794815389_748c3d_585",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "task_number": 585,
-    "phase_count": 3,
-    "estimated_hours": 2.75,
-    "dependency_waves": 3
-  },
-  "memory_candidates": [
-    {
-      "content": "The two narrowing invocations orchestrate's Batch Gate Deferral directive emits are NOT symmetric in flag support: verify-deploy.sh parses --skip-unchanged, but scripts/tests/run-all.sh does not -- its argument loop ends in a catch-all arm that exits 2 with 'ERROR: unknown argument'. Any proposal to apply the gate cache to both narrowing forms must either stop at verify-deploy.sh or first add the flag to run-all.sh. The asymmetry is also benign: a narrowed run-all.sh --only run explicitly skips the specs/.gate-lock bracket, so it never carries the mutex contention the cache fast path exists to relieve.",
-      "category": "PATTERN",
-      "source_artifact": "specs/585_redundant_gate_run_suppression/plans/02_binding-deferral-cheap-probe.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["skip-unchanged", "run-all.sh", "verify-deploy.sh", "batch-gate-deferral", "gate-lock", "flag-parity"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 585 to execute the plan",
-  "dispatch_seq": 15
+    "session_id": "sess_1794815389_748c3d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
