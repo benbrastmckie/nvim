@@ -36,28 +36,50 @@
       "category": "PATTERN",
       "source_artifact": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/summaries/01_mechanize-conclusion-roadmap-regenerate-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["hook-registration", "gate-21", "settings-hooks-fragment", "merge-sources", "Stop-hook"]
+      "suggested_keywords": [
+        "hook-registration",
+        "gate-21",
+        "settings-hooks-fragment",
+        "merge-sources",
+        "Stop-hook"
+      ]
     },
     {
       "content": "hooks/subagent-postflight.sh's stop_hook_active check reads that field FROM THE MARKER file it inspects, not from the hook's own stdin payload. Its sole writer (skill_create_postflight_marker in skill-base.sh) always sets that field to the literal false, by its own documented design ('retained as false ... not by deliberate design'), making the check permanently dead in current practice. Claude Code's hook stdin carries its OWN, live, harness-maintained stop_hook_active boolean (true when a Stop event is itself the result of a previous Stop hook's own block decision) -- a future Stop-hook backstop should read that stdin field directly rather than copying subagent-postflight.sh's marker-field pattern verbatim.",
       "category": "INSIGHT",
       "source_artifact": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/summaries/01_mechanize-conclusion-roadmap-regenerate-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["stop_hook_active", "hook-stdin", "subagent-postflight", "loop-guard", "dead-field"]
+      "suggested_keywords": [
+        "stop_hook_active",
+        "hook-stdin",
+        "subagent-postflight",
+        "loop-guard",
+        "dead-field"
+      ]
     },
     {
       "content": "sync-manifest-scripts.sh --write discovers 'on disk' scripts via `git ls-files <ext>/scripts`, not a plain filesystem walk -- a brand-new, not-yet-`git add`ed script is invisible to it and silently reports '0 missing' even though it is genuinely undeclared in provides.scripts. Run `git add` on the new file(s) first, then re-run --write, or the declaration is skipped with no error.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/summaries/01_mechanize-conclusion-roadmap-regenerate-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["sync-manifest-scripts", "git-ls-files", "provides-scripts", "undeclared-script", "manifest-sync"]
+      "suggested_keywords": [
+        "sync-manifest-scripts",
+        "git-ls-files",
+        "provides-scripts",
+        "undeclared-script",
+        "manifest-sync"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1794798170_26e756",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   },

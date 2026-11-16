@@ -1,7 +1,7 @@
 # Implementation Plan: Task #634
 
 - **Task**: 634 - Mechanize /orchestrate conclusion-stage roadmap regenerate
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/reports/01_mechanize-conclusion-roadmap-regenerate.md

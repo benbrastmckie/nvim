@@ -2824,12 +2824,12 @@
     {
       "project_number": 634,
       "project_name": "mechanize_orchestrate_conclusion_roadmap_regenerate",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "Make /orchestrate's end-of-run roadmap regeneration mechanical so it fires at the end of every orchestration, whatever the batch size, instead of depending on the lead remembering a prose-only final stage.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**.\n\nMEASURED EVIDENCE. The run `/orchestrate 436, 626` (session sess_1794696615_44948d) completed both tasks, wrote specs/.orchestration/.return-meta-multi-sess_1794696615_44948d.json at Move 4, printed its final report and ended the turn. Move 5 (context/contracts/conclusion-stage.md's Executable Stage Body) never ran: specs/events.jsonl carries no conclusion_proposal_recorded / roadmap_regenerate_blocked event for that session, git log carries no \"orchestrate conclusion: roadmap regenerate\" commit, and `roadmap-integration.sh --regenerate --dry-run` afterwards reported \"content would change\" (436/626 still listed, 629-633 missing). The run's tail was a ~40 minute batch-gate wait plus a manual reconcile-task-status.sh settle of 626, after which the lead treated Move 4's consolidated output as the terminal report. skills/skill-orchestrate/SKILL.md's \"Move 5: Conclusion\" is a four-line prose pointer placed after the consolidated-output step; nothing in .claude/settings.json or hooks/ checks that it ran. The same skip also dropped Move 5's issue classification, channel (a)/(b)/(c) recording, and Step 7 next-batch suggestion.\n\nGOAL. (1) The roadmap regenerate (preflight classify -> roadmap-integration.sh --regenerate -> scoped specs/ROADMAP.md commit, or the loud absent/unknown degrade) runs from a script on the Move 4 finalize path, in single-task and multi-task runs alike and on partial exits (max_cycles, no_eligible_stuck, etc.) as well as all_terminal, so it cannot be skipped by a lead ending its turn early. Rule on whether Step 5 moves wholly into a finalize script or stays in the contract with the script as its only executor; either way exactly one executable copy. (2) A mechanical backstop for the remainder of Move 5: decide between (a) reordering so the consolidated user-facing output is emitted only after the conclusion stage, (b) a Stop-hook or finalize-script check that a session which wrote a .return-meta-multi file also recorded a conclusion-ran marker, or both; implement the chosen one and record the ruling. (3) Tests covering: regenerate fires on all_terminal and on a partial exit, single-task and batch; the absent/unknown layout degrade still never writes; an idempotent second run is a no-op. (4) Update context/contracts/conclusion-stage.md, context/patterns/roadmap-update.md's caller table, and SKILL.md's Move 4/Move 5 text to state the resulting design.",
       "topic": "orchestrator",
       "created": "2026-11-15T07:02:31Z",
-      "last_updated": "2026-11-16T03:23:17Z",
+      "last_updated": "2026-11-16T05:56:24Z",
       "audit_verdict": {
         "proposal": {
           "id": "mechanize_orchestrate_conclusion_roadmap_regenerate",
@@ -4460,18 +4460,20 @@
         {
           "path": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/plans/01_mechanize-conclusion-roadmap-regenerate.md",
           "type": "plan",
-          "summary": "Six-phase plan: extract Step 5 to a script, wire the Move 4 call site and defer the emission, add the Stop-hook backstop, test coverage, contract prose, deploy and full gate set."
+          "summary": "Six-phase plan: extract Step 5 to a script, wire the Move 4 call site and defer the emission, add the Stop-hook backstop, test coverage, contract prose, deploy and full gate set. All six phases closed (four plain COMPLETED, two COMPLETED WITH EXCLUSIONS with full Reasoned Exclusions records)."
         }
       ],
       "next_artifact_number": 2,
       "file_scope": [
         "__WHOLE_TREE__",
+        "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
         "agent-system/extensions/core/context/contracts/conclusion-stage.md",
         "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
         "agent-system/extensions/core/context/patterns/roadmap-update.md",
         "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
         "agent-system/extensions/core/hooks/orchestrate-conclusion-backstop.sh",
+        "agent-system/extensions/core/index-entries.json",
         "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/root-files/settings.json",
         "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
@@ -4480,7 +4482,8 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-backstop.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh",
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
-      ]
+      ],
+      "completion_summary": "Mechanized /orchestrate's conclusion-stage roadmap regenerate: a new script (orchestrate-conclusion-roadmap.sh) runs unconditionally from Move 4, the consolidated output's emission is deferred to Move 5 Step 6, and a Stop-hook backstop (orchestrate-conclusion-backstop.sh) blocks a session from ending before Move 5 finishes. Two new test suites cover the required cases; six prose surfaces now state the resulting design."
     },
     {
       "project_number": 629,
