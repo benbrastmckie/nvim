@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 13,
+  "phases_completed": 0,
+  "phases_total": 1,
+  "summary": "Wrote a single-phase closure plan for task 568. The premise was re-validated live and refuted: the suite now reports 312 passed, 0 failed (exit 0), not 25 of 304 failing, because commit a4e32ff9e already added lib/project-number-inuse.sh to the suite's setup_sandbox() library-copy list. The plan therefore carries no production, test, or configuration change; its one phase re-verifies the landed fix against live state, discharges the full gate set, and writes the closure summary. Structural hardening of the hand-maintained fixture allowlist is explicitly a Non-Goal and remains unowned.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/568_repair_orchestrate_cycle_postflight_suite/plans/01_confirm-landed-fix-and-close.md",
+      "summary": "Single-phase verification-and-closure plan: the defect was already fixed on master by commit a4e32ff9e, so the plan makes no source change and gates closure on a live re-run plus the full gate set."
+    }
+  ]
+}

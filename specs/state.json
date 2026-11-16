@@ -79036,7 +79036,7 @@
     {
       "project_number": 568,
       "project_name": "repair_orchestrate_cycle_postflight_suite",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "description": "Fix test-orchestrate-cycle-postflight.sh, which fails 25 of 304 assertions. Failures are status-name mismatches (e.g. expecting 'planning' where 'researching' is produced) and persisted_status drift. Confirmed pre-existing and unrelated to the file_scope reconciliation work that surfaced it: no diff exists for the suite or its target scripts (orchestrator-postflight.sh, update-task-status.sh) across that work. Determine whether the suite's expectations or the scripts' behaviour are wrong before changing either.\n\n--- ADDENDUM (orchestration conclusion stage, 2026-11-10; purely additive, nothing above altered) ---\nINDEPENDENTLY RE-OBSERVED, with two sibling failures found in the same scoped run. A scoped\nbatch-deferral gate run over an unrelated task's blast radius found this suite red at 25 failures,\ncorroborating this record's own count, and additionally reported a 'cleanup: command not found'\nshell error inside this suite -- a detail worth checking against the status-name/persisted_status\ndrift this record already names, since a shell error can mask or inflate assertion counts.\nTwo further pre-existing failures surfaced in the same run and are NOT this record's scope:\ntest-orchestrate-unwind-dispatch.sh at 11 failures (its fixture sandbox omits\nlib/project-number-inuse.sh from REQUIRED_LIB_SCRIPTS, so state-write.sh fails inside the test's\nown scratch repo -- being fixed separately as a direct fix), and\ntest-orchestrate-build-aux-dispatch.sh at 1 failure (reviser-agent model did not resolve to opus,\na manifest-routing model-resolution issue independently re-observed by a second task in the same\nbatch; it has no owning record yet). Evidence: issue-log entry iss_1794276383199_OBj82P in\nspecs/360_validate_carried_unverified_names_a_source/issues.jsonl.",
       "effort": "medium",
@@ -79044,12 +79044,17 @@
       "topic": "file-scope-lifecycle",
       "dependencies": [],
       "created": "2026-11-09T15:56:34Z",
-      "last_updated": "2026-11-16T08:22:01Z",
+      "last_updated": "2026-11-16T08:35:34Z",
       "artifacts": [
         {
           "path": "specs/568_repair_orchestrate_cycle_postflight_suite/reports/01_fixture-already-fixed-verification.md",
           "type": "report",
           "summary": "Verifies the suite's reported 25/304 failures no longer reproduce; root cause was a fixture setup-completeness gap (missing lib/project-number-inuse.sh copy), already fixed on master by an unrelated task's commit a4e32ff9e, corroborated by task 476's independent root-cause report."
+        },
+        {
+          "path": "specs/568_repair_orchestrate_cycle_postflight_suite/plans/01_confirm-landed-fix-and-close.md",
+          "type": "plan",
+          "summary": "Single-phase verification-and-closure plan: the defect was already fixed on master by commit a4e32ff9e, so the plan makes no source change and gates closure on a live re-run plus the full gate set."
         }
       ],
       "audit_verdict": {
@@ -80953,10 +80958,11 @@
       },
       "title": "Fix failing assertions in the orchestrate-cycle-postflight suite",
       "file_scope": [
-        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
-        "agent-system/extensions/core/scripts/update-task-status.sh"
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/update-task-status.sh",
+        "specs/568_repair_orchestrate_cycle_postflight_suite/summaries/01_confirm-landed-fix-and-close-summary.md"
       ],
       "session_id": "sess_1794815389_748c3d",
       "next_artifact_number": 2
@@ -97756,7 +97762,7 @@
     {
       "project_number": 584,
       "project_name": "gate8_covering_suite_selection",
-      "status": "not_started",
+      "status": "researching",
       "title": "Wire covering-suite selection into Gate 8 so an extension change runs the affected suites, not all 149",
       "task_type": "meta",
       "topic": null,
@@ -97773,7 +97779,7 @@
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
       "created": "2026-11-11T02:51:33Z",
-      "last_updated": "2026-11-11T02:51:33Z",
+      "last_updated": "2026-11-16T08:24:29Z",
       "description": "Gate 8 declares input_corpus @extensions (the whole extension tree) in gate-registry.data, so a one-file edit anywhere under agent-system/extensions/** re-runs the entire 149-suite battery. Meanwhile suite-selection-lib.sh already maps touched paths to exactly their covering suites via suite_selection_select, is tested, and is trusted enough that plan Tier Justification lines are validated against its output -- yet grep for suite_selection against verify-deploy.sh returns 0 hits. This is a wiring job against proven machinery, not new invention.\n\nWHY THIS IS THE LARGEST SINGLE LEVER: the existing gate cache cannot help here. 17 of 28 gates declare @extensions as their corpus (3,5,6,7,8,11,12,13,17,18,19,20,21,23,24,26,28), so any implement batch touching one extension file invalidates all 17, gate 8 among them. The cache's headline figure (a warm unchanged run skips 17-20 of 24 gates at near-zero cost) describes an UNCHANGED tree, not the end of an implement batch, where the hit rate for precisely the expensive gates is zero. Narrowing WHAT gate 8 runs is the only lever that reduces its cost in the case that actually occurs.\n\nSeed report: specs/584_gate8_covering_suite_selection/reports/01_gate8-suite-selection.md\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.",
       "research_questions": "What is the right touched-path trigger set, given gate_cache_resolve_corpus already resolves and hashes per-path corpus content? What is the fallback when selection cannot be computed -- adopt the cache's sentinel direction (run the full battery, never a silently narrowed one)? Does narrowing break gate 8's binary-signal semantics, since known-failures.txt rows are basename-keyed and mode-insensitive and a suite that did not run is not a suite that passed? How does selection-narrowing compose with the existing --skip-slow reduction without silently becoming a third reduction? Is a periodic full sweep needed to retain the coverage guarantee, and where would it live?",
       "audit_verdict": {
@@ -99893,12 +99899,13 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "session_id": "sess_1794815389_748c3d_584"
     },
     {
       "project_number": 585,
       "project_name": "redundant_gate_run_suppression",
-      "status": "researched",
+      "status": "planning",
       "title": "Make the batch-gate deferral binding and cache repeat gate runs, so the full set runs once per batch",
       "task_type": "meta",
       "topic": null,
@@ -99918,7 +99925,7 @@
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
       "created": "2026-11-11T02:51:33Z",
-      "last_updated": "2026-11-16T08:22:54Z",
+      "last_updated": "2026-11-16T08:24:44Z",
       "description": "The two-mechanism design is already right and already built; adoption is the gap. Mechanism A (orchestrate-build-dispatch.sh's Batch Gate Deferral) narrows a final implement phase's OBLIGATION but not its BEHAVIOUR -- nothing forbids an additional full sweep and nothing detects one. Observed across one six-task batch: 2 of 5 implement dispatches honoured the scoped tier while 3 ran a full or exploratory gate set anyway, one of them running the full gate set with no flags twice. Measured concurrently: 9 live run-all.sh and 9 live verify-deploy.sh processes against nproc 24. Because the .gate-lock mutex deliberately serialises gate 8 (~11 min), nine batteries queue single-file behind it -- the direct cause of implement-phase wait loops of roughly 70 and 100 minutes in that batch.\n\nSECOND GAP: the gate cache has ZERO adoption in the lifecycle. A repo-wide grep for skip-unchanged across core scripts returns exactly one hit, the flag's own parser; no orchestrate caller passes it, and orchestrate-batch-gate.sh explicitly captures at full depth.\n\nTHE REMEDY IS ASYMMETRIC and must not be flattened: Move 4's once-per-invocation run KEEPS full depth, because caching it is a no-op (17 of 28 gates declare @extensions and every implement batch invalidates them) and it is the batch's only unconditional signal. Per-dispatch scoped runs, and any exploratory or repeat sweep, SHOULD default to --skip-unchanged, which is exactly the warm-unchanged case the cache was built for.\n\nSeed report: specs/585_redundant_gate_run_suppression/reports/01_redundant-gate-run-suppression.md\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.",
       "research_questions": "How binding can Mechanism A be made, and does an agent need a cheap sanctioned 'am I green?' probe more than a tighter prohibition -- three of five dispatches already violated the advisory one? If covering-suite selection lands in gate 8, do the scoped tier and the narrowed gate converge, reducing Mechanism A to 'run the gate, it is already narrow'? Does --skip-unchanged interact safely with the .gate-lock mutex, i.e. should a cache hit acquire it at all? Corpus completeness is the cache's one unproven axis: the equivalence suite proves a declared-corpus change forces a miss but not that declarations are complete, so does defaulting the cache need its own completeness check? Is gate-heavy co-scheduling a defect in admission -- argued on contention grounds only, since Settled decision 14 forbids citing cost as the reason?",
       "audit_verdict": {
@@ -101469,7 +101476,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "session_id": "sess_1794815389_748c3d",
+      "session_id": "sess_1794815389_748c3d_585",
       "next_artifact_number": 2
     },
     {
@@ -121388,7 +121395,7 @@
       "project_number": 607,
       "project_name": "gate_20_context_budget_and_timeout_sensitivity",
       "title": "Resolve the gate 20 orchestrator context-budget overage and the per-gate timeout sensitivity under concurrent load",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.\n\nverify-deploy.sh gate 20 (orchestrator context budget) reports the eager-load total over its baseline: commands/orchestrate.md plus skills/skill-orchestrate/SKILL.md measure 71712B against a 70400B baseline. Decide between trimming the eager-load footprint of those two files -- moving inline contract prose behind on-demand backticked pointers, the pattern the rest of the system already uses -- and re-baselining the gate to a justified new figure, then apply the chosen remedy in the source store.\n\nSecond, narrower question: during a concurrent batch run, gates 8 and 10 of the same sweep were killed by their own 60s per-gate timeout; gate 10's underlying check (validate-state.sh --deep) then passed in 61s when re-run in isolation, confirming resource contention rather than a regression. Assess whether the per-gate timeout should scale with observed concurrency or simply be raised, so a loaded run does not report a timeout as a finding.\n\nOUT OF SCOPE: making the red Gate 8 shell suites green or declared-expected. That is a separate, already-open piece of work and must not be duplicated here.\n\nCHANNEL: /orchestrate conclusion channel (c), follow-up task.",
       "effort": "medium",
@@ -121396,7 +121403,7 @@
       "topic": "agent-system",
       "dependencies": [],
       "created": "2026-11-11T20:14:44Z",
-      "last_updated": "2026-11-16T08:23:20Z",
+      "last_updated": "2026-11-16T08:25:00Z",
       "artifacts": [
         {
           "path": "specs/607_gate_20_context_budget_and_timeout_sensitivity/reports/01_gate20-budget-and-timeout-sensitivity.md",
@@ -123642,7 +123649,7 @@
         "agent-system/extensions/core/scripts/gate-registry.data",
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
-      "session_id": "sess_1794815389_748c3d",
+      "session_id": "sess_1794815389_748c3d_607",
       "next_artifact_number": 2
     },
     {

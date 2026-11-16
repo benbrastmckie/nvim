@@ -98,7 +98,7 @@ next_project_number: 638
     └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
     └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
 567 [NOT STARTED] — Port the deployed-tree containment strip into...
-568 [RESEARCHED] — Fix failing assertions in the orchestrate-cycle-postflight suite
+568 [PLANNED] — Fix failing assertions in the orchestrate-cycle-postflight suite
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
 ### Lean Extension
@@ -166,7 +166,7 @@ next_project_number: 638
   └─ 593 [NOT STARTED] — Require pinned Lean Challenge signatures to be measured at...
     └─ 594 [NOT STARTED] — Size symmetric-pair phases and iteration obligations separately
       └─ 595 [NOT STARTED] — Define Goal Polarity semantics for decision-gate plans (see above)
-607 [RESEARCHED] — Resolve the gate 20 orchestrator context-budget overage and...
+607 [PLANNING] — Resolve the gate 20 orchestrator context-budget overage and...
 629 [NOT STARTED] — Fix the two-engine defect: scan\_all\_artifacts' sync\_scan...
   └─ 630 [NOT STARTED] — Give test-deploy-propagation.sh and...
 631 [NOT STARTED] — Replace test-typescript-verify.sh's fixed-depth REPO\_ROOT...
@@ -194,8 +194,8 @@ next_project_number: 638
 
 ### Uncategorized
 
-584 [NOT STARTED] — Wire covering-suite selection into Gate 8 so an extension...
-585 [RESEARCHED] — Make the batch-gate deferral binding and cache repeat gate...
+584 [RESEARCHING] — Wire covering-suite selection into Gate 8 so an extension...
+585 [PLANNING] — Make the batch-gate deferral binding and cache repeat gate...
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
@@ -838,7 +838,7 @@ DURABLE EVIDENCE (in the BimodalLogic repo, /home/benjamin/Projects/BimodalLogic
 
 ### 607. Resolve the gate 20 orchestrator context-budget overage and the per-gate timeout sensitivity under concurrent load
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -1869,7 +1869,7 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deploy
 ---
 
 ### 585. Make the batch-gate deferral binding and cache repeat gate runs, so the full set runs once per batch
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Dependencies**: None
 - **Research**: [585_redundant_gate_run_suppression/reports/02_binding-deferral-and-cache-adoption.md]
@@ -1887,7 +1887,7 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deploy
 ---
 
 ### 584. Wire covering-suite selection into Gate 8 so an extension change runs the affected suites, not all 149
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Dependencies**: Task 505
 
@@ -2665,12 +2665,13 @@ This repo's #519 (infra_exempt_transport_error_dispatch_deaths) is the sibling h
 
 ### 568. Fix failing assertions in the orchestrate-cycle-postflight suite
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
 - **Parent**: Task 446
 - **Research**: [568_repair_orchestrate_cycle_postflight_suite/reports/01_fixture-already-fixed-verification.md]
+- **Plan**: [568_repair_orchestrate_cycle_postflight_suite/plans/01_confirm-landed-fix-and-close.md]
 
 **Description**: Fix test-orchestrate-cycle-postflight.sh, which fails 25 of 304 assertions. Failures are status-name mismatches (e.g. expecting 'planning' where 'researching' is produced) and persisted_status drift. Confirmed pre-existing and unrelated to the file_scope reconciliation work that surfaced it: no diff exists for the suite or its target scripts (orchestrator-postflight.sh, update-task-status.sh) across that work. Determine whether the suite's expectations or the scripts' behaviour are wrong before changing either.
 
