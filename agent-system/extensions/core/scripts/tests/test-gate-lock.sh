@@ -298,6 +298,27 @@ else
   fi
 fi
 
+# $GATE_LOCK_DIR disappearing is only a proxy for "the signal-scoped trap ran"; it is not proof
+# the signaled process (and whatever it spawned under the same process group, e.g. the nested
+# run-all.sh this case launches) has actually exited. Without this, a still-winding-down child
+# can keep running concurrently with the next case while it reuses this same $WORKDIR, which is
+# exactly the cross-case-pollution hazard named for the aggregate-only "fail-open
+# (verify-deploy.sh Gate 8)" case below. Assert the real causal fact (process death via a bounded
+# `kill -0` liveness wait on the captured pid) rather than inferring it from the directory alone --
+# never `ps | grep`/`pgrep -f`, per the established ambient-host-state-isolation convention.
+if [ -n "$siggroup_pid" ]; then
+  siggroup_dead_waited=0
+  while kill -0 "$siggroup_pid" 2>/dev/null && [ "$siggroup_dead_waited" -lt 3000 ]; do
+    sleep 0.05
+    siggroup_dead_waited=$(( siggroup_dead_waited + 50 ))
+  done
+  if kill -0 "$siggroup_pid" 2>/dev/null; then
+    common_test_fail "case: killed holder (process-group teardown, liveness) -- pid $siggroup_pid still alive ${siggroup_dead_waited}ms after SIGTERM; a lingering child could pollute the next case's shared \$WORKDIR" "$(cat "$WORKDIR/siggroup.out" 2>/dev/null || true)"
+  else
+    common_test_pass "case: killed holder (process-group teardown, liveness) -- pid $siggroup_pid confirmed dead within ${siggroup_dead_waited}ms of SIGTERM, before the next case reuses \$WORKDIR"
+  fi
+fi
+
 # =====================================================================
 # Case: nested invocation -- RUN_ALL_NESTED=1 and, separately, an inherited GATE_MUTEX_HELD=1
 # each create no mutex at all, and the battery still completes with its normal verdict.

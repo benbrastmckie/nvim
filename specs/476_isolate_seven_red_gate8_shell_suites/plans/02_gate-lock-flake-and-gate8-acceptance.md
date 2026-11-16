@@ -1,7 +1,7 @@
 # Implementation Plan: Task #476
 
 - **Task**: 476 - Make the seven untracked red Gate 8 shell suites green or declared-expected
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: 423 (CLOSED), 445 (CLOSED), 568 (CLOSED) -- all three declared edges are
   satisfied; none blocks this plan. See report 02 Finding 3.
@@ -145,7 +145,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Reproduce, classify, and remedy `test-gate-lock.sh`'s aggregate-only flake [NOT STARTED]
+### Phase 1: Reproduce, classify, and remedy `test-gate-lock.sh`'s aggregate-only flake [COMPLETED]
 
 **Goal**: Turn report 02 Finding 4 from a reproduced symptom into a classified failure with
 recorded evidence, and apply the remedy its class dictates -- either a sealed fixture in the suite
@@ -153,47 +153,68 @@ itself, or a declared, attributed baseline row.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-gate-lock.sh` and
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-gate-lock.sh` and
       `agent-system/extensions/core/scripts/tests/known-failures.txt` immediately before any edit,
-      in case a sibling has already changed either.
-- [ ] Reproduce the flake cheaply, excluding the 20-minute suite that dominates the aggregate run's
+      in case a sibling has already changed either. *(completed)*
+- [x] Reproduce the flake cheaply, excluding the 20-minute suite that dominates the aggregate run's
       cost and is already declared EXPECTED:
       `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-gate-lock.sh,test-orchestrate-cycle-postflight.sh,test-orchestrate-predispatch-review.sh,test-orchestrate-unwind-dispatch.sh,test-postflight-deploy-gate.sh,test-redeploy-checkpoint-promotion.sh --fail-on-new`.
       Confirm `test-gate-lock.sh` reports 14 passed / 2 failed and is classified `NEW`. If it does
       not reproduce on the first attempt, repeat up to three times before concluding the flake is
-      load-threshold-dependent; record the observed hit rate either way.
-- [ ] Capture the two failing cases' full output from the run's own per-suite output files rather
+      load-threshold-dependent; record the observed hit rate either way. *(deviation: altered —
+      hit rate was 0/3; did not reproduce under today's host load, zero failures each attempt)*
+- [x] Capture the two failing cases' full output from the run's own per-suite output files rather
       than re-deriving the symptom from assertion text. Both cases already write diagnostic detail
       (`$WORKDIR/siggroup.out` for the teardown case; the captured `failopen_vd_out` for the
-      fail-open case).
-- [ ] **Case "killed holder (process-group teardown)"** (suite lines ~248-283): determine whether
+      fail-open case). *(deviation: altered — no failing-case output existed since the flake did
+      not reproduce; used a diagnostic instrumented copy of the suite instead to measure real
+      timing margins)*
+- [x] **Case "killed holder (process-group teardown)"** (suite lines ~248-283): determine whether
       the failure is the 3000ms poll budget expiring before the nested
       `verify-deploy.sh --only-gate 8` startup self-reports its pid and creates
       `$GATE_LOCK_DIR` under CPU contention from the parallel pool (this host: `nproc` 24,
       `JOBS_CAP` 4, so up to three sibling suites compete). Evidence: whether
       `$WORKDIR/siggroup.pid` and `$GATE_LOCK_DIR` appear at all shortly *after* the window
-      expires, versus never appearing.
-- [ ] **Case "fail-open (verify-deploy.sh Gate 8)"** (suite lines ~373-381): disambiguate which of
+      expires, versus never appearing. *(completed: live-code analysis of run-all.sh shows
+      test-gate-lock.sh is in LOAD_SENSITIVE_BASENAMES and runs fully serially before the
+      parallel pool starts, so it can never overlap with sibling suites within one run-all.sh
+      invocation; a diagnostic instrumented copy measured 50ms pid/lockdir-appear and 500ms/0ms
+      teardown against the 3000ms budgets, standalone, under today's load)*
+- [x] **Case "fail-open (verify-deploy.sh Gate 8)"** (suite lines ~373-381): disambiguate which of
       `run-all.sh`'s two plausible exit-2 sites fires -- "zero test suites discovered" or the
       `TOTAL_ACCOUNTED != TOTAL_DISCOVERED` scheduling-safety assertion -- by reading the nested
       run's own captured stderr, not by inference. Then test the two candidate mechanisms the
       research named: a filesystem-visibility race in the fixture under contention, versus
       cross-case pollution from the immediately preceding teardown case's backgrounded `setsid`
       subprocess still winding down inside the **same** `$WORKDIR` when this case starts.
-- [ ] Explicitly settle whether the two cases share one cause or have two. The research left this
-      unsettled and warned against assuming one; record the answer with its evidence.
-- [ ] Rule out the fixture itself as the defect before touching anything else: a fixture that does
+      *(deviation: altered — this case never failed in any reproduction attempt (rc=0 always),
+      so the exit-2 site was not directly isolated; addressed the more plausible candidate
+      mechanism, cross-case pollution, by making the teardown case confirm process death rather
+      than inferring it)*
+- [x] Explicitly settle whether the two cases share one cause or have two. The research left this
+      unsettled and warned against assuming one; record the answer with its evidence. *(completed:
+      judged ONE shared cause by mechanism inspection — the teardown case's unconfirmed process
+      death could leave a lingering child polluting the fail-open case's reuse of the same
+      $WORKDIR — not confirmed by a second live occurrence since the flake did not reproduce)*
+- [x] Rule out the fixture itself as the defect before touching anything else: a fixture that does
       not construct the state it asserts over would produce exactly these symptoms with no defect
-      in the code under test at all.
-- [ ] Discard or confirm, against the committed tree, the carried speculation that a concurrent
+      in the code under test at all. *(completed: fixture constructs real state it asserts over —
+      self-reported pid file, real GATE_LOCK_DIR — not itself the defect)*
+- [x] Discard or confirm, against the committed tree, the carried speculation that a concurrent
       sibling writer's in-flight edit to `update-task-status.sh` or its dependency chain causes
-      this. It is unverified and is not evidence until checked.
-- [ ] Classify each case into exactly one of outcome 1's four classes, and record the
+      this. It is unverified and is not evidence until checked. *(completed: discarded —
+      test-gate-lock.sh's own REQUIRED file list and fixture copy-list never reference
+      update-task-status.sh or anything in its dependency chain, and verify-deploy.sh's
+      gate8_run() path does not invoke it; no causal path exists)*
+- [x] Classify each case into exactly one of outcome 1's four classes, and record the
       classification **with its evidence** via
       `bash .claude/scripts/issue-record.sh --task-dir "$TASK_DIR" --kind issue --class "..." --severity ... --what-happened "..."`
       (non-fatal; a recording failure must never fail the dispatch). A classification without
-      evidence does not satisfy outcome 1.
-- [ ] Apply the remedy the classification dictates:
+      evidence does not satisfy outcome 1. *(completed: both cases classified class (a)
+      ambient-host-state fixture timing, recorded in issues.jsonl with full evidence)*
+- [x] Apply the remedy the classification dictates: *(completed: class (a) branch — added a
+      bounded `kill -0` liveness wait on the siggroup child's pid after SIGTERM, asserting
+      ordering/causality instead of widening a poll window, per the established convention)*
       - **Class (a) or (b)** -- seal the fixture so the suite constructs what it asserts over. Follow
         the established convention's decision order, do not invent a second one: seam-first for
         readable-input axes; for the timing axis, inject the clock or intercept the delay, then
@@ -210,12 +231,13 @@ itself, or a declared, attributed baseline row.
         naming precisely what was established and what was not. The `owner` field MUST be a durable
         anchor or the literal `needs-owner` -- a bare task number is prohibited in this file, which
         lives under `agent-system/extensions/**`.
-- [ ] Verify: re-run the same `--only` reproduction command and confirm `test-gate-lock.sh` is
+- [x] Verify: re-run the same `--only` reproduction command and confirm `test-gate-lock.sh` is
       either clean or correctly annotated EXPECTED rather than NEW. Then confirm the suite still
       passes standalone (16/0) -- a fix that greens the aggregate run while breaking the standalone
-      run is not a fix.
-- [ ] Commit this phase's green result with an explicit file list, never a directory or glob
-      pathspec.
+      run is not a fix. *(completed: standalone now 17 passed, 0 failed (new liveness case added
+      one); --only aggregate run clean, 6 passed/0 failed/0 NEW after the fix)*
+- [x] Commit this phase's green result with an explicit file list, never a directory or glob
+      pathspec. *(completed)*
 
 **Timing**: 2 hours
 

@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/476_isolate_seven_red_gate8_shell_suites/plans/02_gate-lock-flake-and-gate8-acceptance.md",
-      "summary": "3-phase plan (~5 hours): reproduce/classify/remedy test-gate-lock.sh's aggregate-only concurrency flake, remove two stale known-failures.txt rows, then meet the two-full-run zero-unexpected-failures Gate 8 acceptance bar, redeploy, and hand off the excluded eighth suite's regression."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 23,
   "metadata": {
-    "session_id": "sess_1794815389_748c3d_476",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 3,
-    "estimated_hours": 5,
-    "dependency_waves": [[1], [2], [3]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a plan phase's remedy target depends on a diagnosis the plan cannot yet settle (fix the test vs. declare it an expected baseline failure), keep diagnosis and remedy in ONE phase and list BOTH candidate files in that phase's Files to modify block, with the branch condition stated per entry. Splitting them forces the plan to pre-commit to a branch the evidence has not selected, and declaring only one file strands the other outside the harvested file_scope exactly when the diagnosis picks it.",
-      "category": "PATTERN",
-      "source_artifact": "specs/476_isolate_seven_red_gate8_shell_suites/plans/02_gate-lock-flake-and-gate8-acceptance.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["plan authoring", "conditional remedy", "file_scope harvest", "diagnosis branch", "known-failures"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 476 to execute the plan",
-  "dispatch_seq": 21
+    "session_id": "sess_1794815389_748c3d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Reproduce, classify, and remedy test-gate-lock.sh's aggregate-only flake",
+  "started_at": "2026-11-16T00:00:00Z",
+  "last_updated": "2026-11-16T05:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-gate-lock.sh and known-failures.txt before any edit", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Reproduce the flake cheaply via --only run, confirm 14/2 and NEW classification", "status": "done", "note": "Did NOT reproduce: 3 clean --only attempts (0 failures each) instead of the plan-expected 14/2. Premise moved; recorded via issue-record.sh.", "files_touched": []},
+    {"id": 3, "description": "Capture full output of both failing cases from per-suite output files", "status": "done", "note": "No failing case output existed to capture (flake did not reproduce). Used a diagnostic instrumented copy instead to measure timing margins.", "files_touched": []},
+    {"id": 4, "description": "Diagnose teardown case (3000ms poll window vs CPU contention)", "status": "done", "note": "Margins measured generous (500ms/0ms vs 3000ms budget) under today's load; LOAD_SENSITIVE_BASENAMES already fully serializes this suite from siblings within run-all.sh.", "files_touched": []},
+    {"id": 5, "description": "Diagnose fail-open case (exit-2 site, filesystem-visibility race vs cross-case pollution)", "status": "done", "note": "Could not force-reproduce (rc=0 in all attempts); exit-2 site not directly isolated. Judged most-plausible shared mechanism by code inspection: cross-case pollution via unconfirmed process death.", "files_touched": []},
+    {"id": 6, "description": "Settle whether the two cases share one cause or two, with evidence", "status": "done", "note": "Judged ONE shared cause (unconfirmed siggroup-process death leaving a cross-case-pollution window) by mechanism inspection; not confirmed by a second live occurrence.", "files_touched": []},
+    {"id": 7, "description": "Rule out the fixture itself as the defect", "status": "done", "note": "Fixture constructs real state it asserts over (pid file, GATE_LOCK_DIR); not itself the defect.", "files_touched": []},
+    {"id": 8, "description": "Discard or confirm the concurrent-sibling-edit speculation", "status": "done", "note": "Discarded: suite's REQUIRED_LIBS/fixture copy-list never references update-task-status.sh or its dependency chain; no causal path exists.", "files_touched": []},
+    {"id": 9, "description": "Classify each case into one of the four outcome-1 classes with recorded evidence via issue-record.sh", "status": "done", "note": "Classified both cases as class (a) ambient-host-state fixture timing. Recorded via issue-record.sh (class ambient-host-state-fixture-timing, resolution fixed_inline).", "files_touched": []},
+    {"id": 10, "description": "Apply the remedy the classification dictates (seal fixture / hand off / declare in known-failures.txt)", "status": "done", "note": "Added a bounded kill -0 liveness wait on the siggroup child's pid after SIGTERM (asserting ordering/causality rather than widening a poll window), per the established convention. No known-failures.txt row needed (class a/b branch fixes in-suite).", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-lock.sh"]},
+    {"id": 11, "description": "Verify: re-run --only reproduction, confirm clean or EXPECTED, and standalone 16/0", "status": "done", "note": "Standalone now 17 passed, 0 failed (new liveness case adds one). Aggregate --only 6-suite run clean (6 passed, 0 failed, 0 NEW) after the fix.", "files_touched": []},
+    {"id": 12, "description": "Commit phase result with explicit file list", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-lock.sh", "specs/476_isolate_seven_red_gate8_shell_suites/plans/02_gate-lock-flake-and-gate8-acceptance.md"]}
+  ],
+  "current_objective": 12,
+  "approaches_tried": [
+    {"approach": "Reproduce 14/2 failure via plan's exact --only command, repeated 3x", "result": "failed", "reason": "0 failures each attempt; premise moved since report 02's measurement"},
+    {"approach": "Diagnostic instrumented copy to measure real timing margins under current host load", "result": "partial", "reason": "Measured generous margins for the teardown case; never observed the fail-open case fail at all, so its exit-2 site was not directly isolated"}
+  ],
+  "handoff_count": 0
+}
