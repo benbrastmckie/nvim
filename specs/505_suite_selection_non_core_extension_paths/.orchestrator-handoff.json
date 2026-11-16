@@ -1,17 +1,22 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Wrote a 5-phase implementation plan for making suite-selection-lib.sh resolve a covering suite for source-store paths under any extension, not core alone. Phase 1 adds per-touched-path extension-root resolution threaded through all three strata of _ssl_resolve_one; Phase 2 broadens suite_selection_classify's suite-file lookup across extensions (the ruling on the classification half: extend, not justify core-only); Phase 3 pins the four required behaviours in test-run-all-selection.sh; Phase 4 re-derives the carried 0-of-19 figure and rewrites the header notes; Phase 5 redeploys and runs the suite from both vantage points under the full gate set. The defect was confirmed live during planning: suite_selection_select on the lean path returns __FULL_SWEEP__ although its paired suite exists.",
+  "status": "implemented",
+  "phase": "implement",
+  "summary": "Implemented all 5 plan phases: suite-selection-lib.sh now resolves a touched non-core extension source path to that extension's own paired suite instead of falsely escalating to __FULL_SWEEP__, and suite_selection_classify reaches non-core suites on real evidence via a shared marker-check helper. Added four dynamically-derived pinning cases to test-run-all-selection.sh and re-derived the carried '0 of 19' figure (measured: 9 of 29 non-core suites carry the deployed-vs-source hazard). Redeployed and verified from both source-store (36/0) and deployed (32/0) vantage points; the complete gate set is discharged against this cycle's Batch Gate Deferral scoped tier (6/0) rather than an independent full run, per the dispatch directive.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/505_suite_selection_non_core_extension_paths/plans/01_non-core-suite-selection-mapping.md",
-      "summary": "5-phase plan: extension-aware per-touched-path resolution, broadened classification lookup, four pinning test fixtures, header re-measurement, redeploy plus dual-vantage full-gate verification."
+      "summary": "5-phase plan, all phases COMPLETED with inline task annotations and recorded deviations."
+    },
+    {
+      "type": "summary",
+      "path": "specs/505_suite_selection_non_core_extension_paths/summaries/01_non-core-suite-selection-mapping-summary.md",
+      "summary": "Implementation summary covering what changed, decisions, deviations, verification, and follow-ups."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": [],
-  "dispatch_seq": 8,
-  "next_action_hint": "Dispatch implementation; Phase 1 is the only Wave 1 phase and the chain is strictly sequential."
+  "dispatch_seq": 10,
+  "next_action_hint": "Task ready for postflight completion; the complete gate set for this batch runs once at the end of this /orchestrate cycle."
 }

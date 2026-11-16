@@ -1,12 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 10,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/505_suite_selection_non_core_extension_paths/summaries/01_non-core-suite-selection-mapping-summary.md",
+      "summary": "All 5 plan phases complete: suite-selection-lib.sh now resolves a covering suite for non-core extension source paths, suite_selection_classify reaches non-core suites on evidence, four pinning cases added, header figure re-derived, and the fix redeployed and verified from both vantage points."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed suite-selection-lib.sh's non-core-extension-path blind spot: a touched path under any extension's scripts/ now resolves to that extension's own paired suite instead of falsely escalating to __FULL_SWEEP__, and suite_selection_classify now reaches non-core suites on real evidence via a shared marker-check helper. Added four dynamically-derived pinning cases to test-run-all-selection.sh (36/0 source-store, 32/0 deployed), re-derived the carried '0 of 19' figure (measured: 9 of 29 non-core suites actually carry the deployed-vs-source hazard), and redeployed with a clean verify-deploy.sh pass."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a test case's own fixture-derivation logic calls the SAME function the case exists to pin (e.g. deriving a qualifying (suite, basename) pair by probing with suite_selection_classify, then asserting on the result), a total regression in that function can masquerade as a benign SKIP rather than a FAIL -- the derivation finds nothing to assert on, so the case never runs its assertion at all. Verify load-bearing-ness explicitly: temporarily revert the implementation under test and confirm the dependent case actually fails (not skips), then restore. If it skips instead of failing, narrow the skip guard (e.g. to a vantage-point/precondition signal that is independent of the function being pinned) so a real breakage surfaces as a failure.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/505_suite_selection_non_core_extension_paths/summaries/01_non-core-suite-selection-mapping-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["test fixture derivation", "load-bearing test", "false skip", "regression masking", "shell test suite"]
+    },
+    {
+      "content": "When building a synthetic fixture to test a 'N directories up from X' marker-check (e.g. a core/manifest.json or similar sentinel detected relative to a resolved script location), measure the fixture's ACTUAL directory depth with a throwaway cd/pwd check rather than assuming it mirrors the real corpus's nesting visually. A fixture's scripts/ directory often sits one level shallower than the real corpus's extensions/<ext>/scripts/ (two levels under the extensions root), so 'two directories up' lands at a different place than intuition suggests, and a decoy/marker placed at the wrong level makes the test pass regardless of whether the code under test is correct.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/505_suite_selection_non_core_extension_paths/summaries/01_non-core-suite-selection-mapping-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["fixture directory depth", "marker check", "synthetic test fixture", "path resolution", "bash cd pwd"]
+    },
+    {
+      "content": "A stale 'measured' figure carried in a code comment can be an artifact of an unrelated lookup limitation (a feature that structurally cannot reach a whole subset of inputs, so it always returns the same vacuous default for them) rather than a genuine property of the corpus it claims to describe. Before trusting or forwarding a carried figure, especially one that gates a scope decision ('explicitly out of scope because 0 of N match'), re-derive it with a recorded, reproducible command -- particularly after changing the very lookup mechanism the figure depends on.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/505_suite_selection_non_core_extension_paths/summaries/01_non-core-suite-selection-mapping-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["carried figure", "stale measurement", "scope justification", "re-derive before trusting", "vacuous default"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794815389_748c3d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 5,
     "phases_total": 5
   }
 }
