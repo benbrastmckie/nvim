@@ -1,7 +1,7 @@
 # Implementation Plan: Task #547
 
 - **Task**: 547 - Close the orchestrate aux blocker-research carrier defect and the implement-readmission gap
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.5 hours
 - **Dependencies**: None declared in this plan (the record's own cross-repo edge on `docs/architecture/orchestrate-state-machine.md` is carried at the task level, not the phase level)
 - **Research Inputs**: specs/547_orchestrate_aux_carrier_and_implement_readmission/reports/01_aux-carrier-implement-readmission.md
@@ -144,7 +144,7 @@ rather than in sequence, they share file territory and must be serialized.
 
 ---
 
-### Phase 1: Confirm-then-clear for the blocker-research carrier [NOT STARTED]
+### Phase 1: Confirm-then-clear for the blocker-research carrier [COMPLETED]
 
 **Goal**: `aux_pending[t].kind == "blocker-research"` survives a cycle in which no parseable
 `.blocker-research.json` appears, and is cleared exactly when the carrier is confirmed (hop 4) or
@@ -152,35 +152,35 @@ when the escalation cap is reached — never at emission time.
 
 **Tasks**:
 
-- [ ] Re-resolve `.extensions.core.source_dir` from `<project-root>/.claude-extensions.json` and
+- [x] Re-resolve `.extensions.core.source_dir` from `<project-root>/.claude-extensions.json` and
       confirm every line reference below still holds. If the source store is unreachable or
-      ambiguous, stop and report rather than editing the deploy tree.
-- [ ] Extend `scripts/tests/test-orchestrate-cycle-plan.sh` Group 10 with a new case that seeds
+      ambiguous, stop and report rather than editing the deploy tree. *(completed)*
+- [x] Extend `scripts/tests/test-orchestrate-cycle-plan.sh` Group 10 with a new case that seeds
       `aux_pending[t] = {kind: "blocker-research", ...}`, runs one cycle with no
       `.blocker-research.json` present, and asserts `aux_pending[t]` is **still present**
-      afterward. Run it against the unmodified script and record that it fails.
-- [ ] Add a companion case asserting that a second cycle on the same unchanged state emits a fresh
-      `blocker-research` aux row (re-emission). Record that it fails against the unmodified script.
-- [ ] Add a case asserting the cleared-when-confirmed direction: with a parseable
+      afterward. Run it against the unmodified script and record that it fails. *(completed)*
+- [x] Add a companion case asserting that a second cycle on the same unchanged state emits a fresh
+      `blocker-research` aux row (re-emission). Record that it fails against the unmodified script. *(completed)*
+- [x] Add a case asserting the cleared-when-confirmed direction: with a parseable
       `.blocker-research.json` present, one cycle emits the `plan-revision` row **and** leaves
       `aux_pending[t]` absent. Record whether it passes or fails pre-fix (it exercises the branch
-      that gains the new clear).
-- [ ] Invert Group 10 Case A's existing assertion at lines 998-1002: after a blocker-research
+      that gains the new clear). *(completed)*
+- [x] Invert Group 10 Case A's existing assertion at lines 998-1002: after a blocker-research
       emission, `aux_pending[t]` is now expected to be **present**, while the
       `blocker_escalation_count[t] == 1` half of that assertion stays as it is. Update the pass and
-      fail message strings to describe the new contract.
-- [ ] Remove the unconditional `aux_clear_pending[$t]="true"` at line 1466 (the `blocker-research)`
+      fail message strings to describe the new contract. *(completed)*
+- [x] Remove the unconditional `aux_clear_pending[$t]="true"` at line 1466 (the `blocker-research)`
       case arm, after `aux_emit_blocker_desc` is set). Leave the cap branch's own clear at line
-      1461 untouched.
-- [ ] Add `aux_clear_pending[$t]="true"` to the carrier-success branch (lines 1407-1415), alongside
-      the existing `aux_consume_blocker_file[$t]="true"`.
-- [ ] Amend the consumption-loop comment above line 1578 ("a suppressed entry must not be
+      1461 untouched. *(completed)*
+- [x] Add `aux_clear_pending[$t]="true"` to the carrier-success branch (lines 1407-1415), alongside
+      the existing `aux_consume_blocker_file[$t]="true"`. *(completed)*
+- [x] Amend the consumption-loop comment above line 1578 ("a suppressed entry must not be
       re-evaluated every subsequent cycle of this SAME invocation") so it states the new
       `blocker-research` exception: that kind is deliberately re-evaluated until confirmed or
-      capped. The comment as written now contradicts the landed behavior.
-- [ ] Sweep the remaining `aux_pending` references in the suite (around lines 1116, 1155 and 2659)
-      and confirm none of them asserts a blocker-research clear that Decision 1 invalidates.
-- [ ] Re-run the suite and confirm every new and inverted assertion is green.
+      capped. The comment as written now contradicts the landed behavior. *(completed)*
+- [x] Sweep the remaining `aux_pending` references in the suite (around lines 1116, 1155 and 2659)
+      and confirm none of them asserts a blocker-research clear that Decision 1 invalidates. *(completed)*
+- [x] Re-run the suite and confirm every new and inverted assertion is green. *(completed)*
 
 **Timing**: 1.75 hours
 
@@ -216,7 +216,7 @@ editing, rather than trusting this count.
 
 ---
 
-### Phase 2: Audibility at the escalation cap [NOT STARTED]
+### Phase 2: Audibility at the escalation cap [COMPLETED]
 
 **Goal**: when `blocker_escalation_count[t]` reaches `MAX_BLOCKER_ESCALATIONS` without the carrier
 ever appearing, the give-up is visible in the cycle's own JSON output and in the durable issue log,
@@ -224,25 +224,25 @@ not only on stderr.
 
 **Tasks**:
 
-- [ ] Confirm, by reading the control flow, that the aux chain block executes before
+- [x] Confirm, by reading the control flow, that the aux chain block executes before
       `emit_and_exit` and that an `out_blocked_rows` entry appended there reaches the emitted
-      `blocked[]` array. Record the result before writing any assertion.
-- [ ] Extend `scripts/tests/test-orchestrate-cycle-plan.sh` Group 10 with a case that seeds
+      `blocked[]` array. Record the result before writing any assertion. *(completed)*
+- [x] Extend `scripts/tests/test-orchestrate-cycle-plan.sh` Group 10 with a case that seeds
       `blocker_escalation_count[t]` at the cap alongside a `blocker-research` `aux_pending[t]`
       entry, and asserts a `blocked[]` row naming the task and the absent carrier path. Record that
-      it fails against the unmodified script.
-- [ ] At the cap branch (line 1459-1461), append an `out_blocked_rows` entry whose reason names the
+      it fails against the unmodified script. *(completed)*
+- [x] At the cap branch (line 1459-1461), append an `out_blocked_rows` entry whose reason names the
       cap, the task, and the absent `.blocker-research.json` path, following the existing
-      `jq -n -c --argjson t ...` row idiom used by the `MAX_INFRA_FAILURES` and `MAX_CYCLES` sites.
-- [ ] At the same branch, add a non-fatal `issue-record.sh` call modelled on the
+      `jq -n -c --argjson t ...` row idiom used by the `MAX_INFRA_FAILURES` and `MAX_CYCLES` sites. *(completed)*
+- [x] At the same branch, add a non-fatal `issue-record.sh` call modelled on the
       `MAX_INFRA_FAILURES` site's own call shape (`--task "$t"`, `--kind issue`, a named class,
       `--severity`, `--resolution open`, `--suggested-channel agent_system`, `--session`, output
       discarded, `|| echo "Note: issue recording failed (non-fatal)" >&2`), guarded by the same
-      `[ "$dry_run" != "true" ]` condition that site uses.
-- [ ] Confirm the existing `--dry-run` parity case in Group 10 still passes — the issue-record call
-      must not fire under `--dry-run`.
-- [ ] Keep the existing stderr line at line 1460 unchanged; the new channels are additive.
-- [ ] Re-run the suite green.
+      `[ "$dry_run" != "true" ]` condition that site uses. *(completed)*
+- [x] Confirm the existing `--dry-run` parity case in Group 10 still passes — the issue-record call
+      must not fire under `--dry-run`. *(completed)*
+- [x] Keep the existing stderr line at line 1460 unchanged; the new channels are additive. *(completed)*
+- [x] Re-run the suite green. *(completed)*
 
 **Timing**: 1.25 hours
 
@@ -272,7 +272,7 @@ path.
 
 ---
 
-### Phase 3: Insistence clause on the blocker-research aux prompt [NOT STARTED]
+### Phase 3: Insistence clause on the blocker-research aux prompt [COMPLETED]
 
 **Goal**: the `blocker-research` fork prompt states the carrier write is required regardless of
 what the fork's own return text says, mirroring in spirit (not verbatim) the `plan-revision`
@@ -280,20 +280,20 @@ prompt's existing unconditional clause.
 
 **Tasks**:
 
-- [ ] Extend `scripts/tests/test-orchestrate-build-aux-dispatch.sh` with an assertion on the
+- [x] Extend `scripts/tests/test-orchestrate-build-aux-dispatch.sh` with an assertion on the
       `blocker-research` dispatch file, following the same grep-the-written-dispatch-file pattern
       the existing `plan-revision` sentinel assertions already use. Assert the clause names the
       `.blocker-research.json` carrier path and carries unconditional language. Record that it
-      fails against the unmodified script.
-- [ ] Append the insistence clause to the `blocker-research` prompt in
+      fails against the unmodified script. *(completed)*
+- [x] Append the insistence clause to the `blocker-research` prompt in
       `scripts/orchestrate-build-aux-dispatch.sh` (the `blocker-research)` case arm, around line
       215). Keep the existing field list (`summary`, `root_cause`, `solution_path`) unchanged; the
-      clause is additive.
-- [ ] Add a short comment beside the clause recording why it exists — that the chain's follow-on
+      clause is additive. *(completed)*
+- [x] Add a short comment beside the clause recording why it exists — that the chain's follow-on
       `plan-revision` hop reads only this file, so a fork that returns prose without writing it
       leaves nothing for a later cycle to act on. Do not restate the `plan-revision` sentinel's own
-      contract; that prompt's existing comment already carries it.
-- [ ] Re-run the suite green.
+      contract; that prompt's existing comment already carries it. *(completed)*
+- [x] Re-run the suite green. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -321,7 +321,7 @@ the exact union `suite_selection_select` returns for this phase's two touched pa
 
 ---
 
-### Phase 4: Withhold implement readmission while a blocker-research obligation is outstanding [NOT STARTED]
+### Phase 4: Withhold implement readmission while a blocker-research obligation is outstanding [COMPLETED]
 
 **Goal**: a `blocked` candidate whose `previous_status` was `implementing`, which today discharges
 straight to the implement arm, instead routes to `needs_human` while
@@ -329,30 +329,30 @@ straight to the implement arm, instead routes to `needs_human` while
 
 **Tasks**:
 
-- [ ] Extend `scripts/tests/test-orchestrate-cycle-plan.sh` with a case built on today's exact
+- [x] Extend `scripts/tests/test-orchestrate-cycle-plan.sh` with a case built on today's exact
       discharge-eligible shape: status `blocked`, `previous_status` `implementing`, every entry in
       `dependencies[]` at `completed`, handoff `blockers[]` empty, plus a seeded
       `aux_pending[t] = {kind: "blocker-research", ...}`. Assert the task's verdict is
       `needs_human` with a reason naming the outstanding obligation, not an `implement` dispatch.
-      Record that it fails against the unmodified script (which discharges to implement).
-- [ ] Add a negative-control case: the same fixture with **no** `aux_pending[t]` entry still
+      Record that it fails against the unmodified script (which discharges to implement). *(completed)*
+- [x] Add a negative-control case: the same fixture with **no** `aux_pending[t]` entry still
       discharges to `implement`. This must pass both before and after the change and pins that the
-      override is narrow.
-- [ ] Insert the override loop in `scripts/orchestrate-cycle-plan.sh` at the seam immediately after
+      override is narrow. *(completed)*
+- [x] Insert the override loop in `scripts/orchestrate-cycle-plan.sh` at the seam immediately after
       the classification block closes (after the live/degraded `if`/`else` that populates
       `triage_group` and `triage_reason`, and before the `force_phases` consumption block). Read
       `mt_get --arg t "$t" '.aux_pending[$t].kind // ""'`; when it is `blocker-research` and
       `triage_group[$t]` is `implement`, set `triage_group[$t]="needs_human"` and set
       `triage_reason[$t]` to a reason naming the outstanding blocker-research escalation and the
-      carrier path it is waiting on.
-- [ ] Add a comment at the seam recording why the override lives here and not in
+      carrier path it is waiting on. *(completed)*
+- [x] Add a comment at the seam recording why the override lives here and not in
       `orchestrate-triage-classify.sh`: that script reads only `specs/state.json` and a candidate's
       own `.orchestrator-handoff.json` per its own header, and never opens the per-invocation
       multi-task state file where `aux_pending` lives. Note that placing it here also applies it
-      identically to whichever engine produced the base verdict, so neither routing table changes.
-- [ ] Confirm the Group 13 parity fixture still passes unchanged, and confirm no new `blocked`
-      assertion was added to it.
-- [ ] Re-run the suite green.
+      identically to whichever engine produced the base verdict, so neither routing table changes. *(completed)*
+- [x] Confirm the Group 13 parity fixture still passes unchanged, and confirm no new `blocked`
+      assertion was added to it. *(completed)*
+- [x] Re-run the suite green. *(completed)*
 
 **Timing**: 1.75 hours
 
@@ -386,7 +386,7 @@ Confirm by running the parity fixture unchanged and by checking `git diff --stat
 
 ---
 
-### Phase 5: Forcing-flag override still admits one dispatch, audibly [NOT STARTED]
+### Phase 5: Forcing-flag override still admits one dispatch, audibly [COMPLETED]
 
 **Goal**: an explicit forcing flag continues to admit exactly one dispatch against an outstanding
 blocker-research obligation, and that admission is logged as an override rather than granted
@@ -394,20 +394,20 @@ silently.
 
 **Tasks**:
 
-- [ ] Extend `scripts/tests/test-orchestrate-cycle-plan.sh` with a case on Phase 4's override
+- [x] Extend `scripts/tests/test-orchestrate-cycle-plan.sh` with a case on Phase 4's override
       fixture plus a forced implement phase, asserting (a) the implement dispatch still fires and
       (b) a stderr warning naming the bypassed obligation is present. Record which half fails
       pre-fix — half (a) is expected to pass already, since the forced-phase loop ignores
       `triage_group` entirely when `force_phases_remaining[t]` is non-empty; half (b) is the new
-      assertion and must fail.
-- [ ] Emit the stderr warning at the point `forced_phase` is assigned in the `effective_group`
+      assertion and must fail. *(completed)*
+- [x] Emit the stderr warning at the point `forced_phase` is assigned in the `effective_group`
       loop, conditional on the task carrying an outstanding `aux_pending[t].kind ==
       "blocker-research"`. State plainly that the override is admitting one dispatch although a
-      plan revision is owed.
-- [ ] Confirm by reading the loop that no code change is needed to preserve the admission itself —
+      plan revision is owed. *(completed)*
+- [x] Confirm by reading the loop that no code change is needed to preserve the admission itself —
       the forced branch never consults `triage_group`, so Phase 4's override is bypassed
-      structurally. Record that confirmation rather than asserting it from this plan.
-- [ ] Re-run the suite green.
+      structurally. Record that confirmation rather than asserting it from this plan. *(completed)*
+- [x] Re-run the suite green. *(completed)*
 
 **Timing**: 1 hour
 

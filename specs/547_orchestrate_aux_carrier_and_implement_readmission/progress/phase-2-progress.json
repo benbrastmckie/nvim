@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Audibility at the escalation cap",
+  "started_at": "2026-11-16T01:00:00Z",
+  "last_updated": "2026-11-16T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm aux block executes before emit_and_exit", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add cap audibility test case (blocked[] row)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Append out_blocked_rows entry at cap branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Add non-fatal issue-record.sh call at cap branch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Confirm --dry-run parity (no issue-record fire)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Keep existing stderr line unchanged", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Re-run suite green", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "2.x", "description": "issue-record.sh was not present in the test sandbox's copied-script set, causing the cap-audibility case's issue-log assertion to fail even with the fix applied", "type": "altered", "reason": "Added issue-record.sh to both the require_file list and the cp loop at the top of test-orchestrate-cycle-plan.sh so the sandboxed SUT can actually invoke it.", "annotation": "*(deviation: altered -- added issue-record.sh to the test sandbox's copied-script set)*"}
+  ]
+}

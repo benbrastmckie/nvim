@@ -1,0 +1,22 @@
+{
+  "phase": 1,
+  "phase_name": "Confirm-then-clear for the blocker-research carrier",
+  "started_at": "2026-11-16T00:00:00Z",
+  "last_updated": "2026-11-16T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-resolve source_dir and confirm line references", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add still-present-when-unconfirmed test case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Add re-emission-on-second-cycle test case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 4, "description": "Add cleared-when-confirmed test case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 5, "description": "Invert Group 10 Case A assertion", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]},
+    {"id": 6, "description": "Remove unconditional clear at blocker-research emission (line 1466)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 7, "description": "Add clear to carrier-success branch (lines 1407-1415)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 8, "description": "Amend consumption-loop comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 9, "description": "Sweep remaining aux_pending references", "status": "done", "files_touched": []},
+    {"id": 10, "description": "Re-run suite green", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

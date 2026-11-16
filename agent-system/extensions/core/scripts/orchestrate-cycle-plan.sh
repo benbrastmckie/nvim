@@ -1411,6 +1411,11 @@ for t in "${task_args[@]}"; do
     aux_emit_findings_summary[$t]=$(jq -r '.summary // "No findings"' "$aux_blocker_file" 2>/dev/null) || aux_emit_findings_summary[$t]="No findings"
     aux_emit_plan_path[$t]=$(ls -1 "${aux_task_dir_abs}/plans/"*.md 2>/dev/null | sort -V | tail -1) || aux_emit_plan_path[$t]=""
     aux_consume_blocker_file[$t]="true"
+    # Confirm-then-clear (the carrier-success half): a confirmed, parseable carrier clears any
+    # outstanding blocker-research aux_pending[t] obligation for this task, so it is not
+    # re-evaluated next cycle. Without this, the emission-time clear removed in the
+    # blocker-research) case arm below would leave a confirmed carrier's obligation stale forever.
+    aux_clear_pending[$t]="true"
     continue
   fi
   if [ -f "$aux_drift_file" ] && jq empty "$aux_drift_file" 2>/dev/null; then
@@ -1463,7 +1468,11 @@ for t in "${task_args[@]}"; do
       fi
       aux_emit_kind[$t]="blocker-research"
       aux_emit_blocker_desc[$t]=$(echo "$aux_pending_json" | jq -r '.blocker_desc // "Unspecified blocker"')
-      aux_clear_pending[$t]="true"
+      # Confirm-then-clear: aux_pending[t] is deliberately left set here, not cleared at emission.
+      # It is cleared only when a later cycle confirms a parseable .blocker-research.json carrier
+      # (the carrier-success branch above) or when MAX_BLOCKER_ESCALATIONS is reached (the cap
+      # branch above). This is the fix for the dead-drop-with-no-receipt failure mode: a fork that
+      # returns without writing its carrier must not silently evaporate the obligation.
       ;;
     divergence-audit)
       aux_emit_kind[$t]="divergence-audit"
@@ -1577,7 +1586,12 @@ else
   done
   # Consume aux_pending[t] and any chain marker file for every task decided above, whether a row
   # was actually built or the cap/mutual-exclusion guard suppressed it — a suppressed entry must
-  # not be re-evaluated every subsequent cycle of this SAME invocation.
+  # not be re-evaluated every subsequent cycle of this SAME invocation. EXCEPTION: a
+  # blocker-research entry that was emitted (not suppressed) is deliberately NOT in
+  # aux_clear_pending here (confirm-then-clear) — it is re-evaluated every subsequent cycle of
+  # this invocation until a confirmed carrier clears it (the carrier-success branch above) or the
+  # escalation cap is reached (the cap branch above), so it is correctly re-emitted rather than
+  # dropped if the aux fork returns without writing its carrier.
   for t in "${task_args[@]}"; do
     if [ "${aux_clear_pending[$t]:-}" = "true" ]; then
       mt_set --arg t "$t" 'del(.aux_pending[$t])'

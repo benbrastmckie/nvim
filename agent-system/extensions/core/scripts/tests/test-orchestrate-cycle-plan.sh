@@ -995,12 +995,52 @@ if [ -n "$aux_file_a" ] && [ -f "$aux_file_a" ] && ! grep -qi "memory\|literatur
 else
   common_test_fail "aux: blocker-research dispatch file missing or unexpectedly carries a memory/lit block ($aux_file_a)"
 fi
-if [ "$(jq -r --arg t "1001" '.aux_pending[$t] // "CLEARED"' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json")" = "CLEARED" ] && \
+if [ "$(jq -r --arg t "1001" '.aux_pending[$t].kind // "CLEARED"' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json")" = "blocker-research" ] && \
    [ "$(jq -r --arg t "1001" '.blocker_escalation_count[$t] // 0' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json")" = "1" ]; then
-  common_test_pass "aux: blocker-research clears aux_pending and increments blocker_escalation_count to 1"
+  common_test_pass "aux: blocker-research emission leaves aux_pending present (confirm-then-clear) and increments blocker_escalation_count to 1"
 else
-  common_test_fail "aux: aux_pending not cleared or counter not incremented ($(cat "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json"))"
+  common_test_fail "aux: aux_pending unexpectedly cleared at emission, or counter not incremented ($(cat "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a.json"))"
 fi
+
+# ── Case A2 (confirm-then-clear): a blocker-research emission does NOT clear aux_pending[t] when
+# no parseable .blocker-research.json carrier exists -- the obligation survives so it can be
+# re-emitted rather than silently evaporating if the fork never writes its carrier ───────────────
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a2.json"
+rm -f "$WORKDIR/specs/1001_g10_aux/.blocker-research.json"
+jq -n --arg t "1001" '{aux_pending: {($t): {kind: "blocker-research", blocker_desc: "widget X is missing"}}}' \
+  > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a2.json"
+run_sut --session g10_a2 -- 1001
+if [ "$(jqf '.aux_dispatch | map(select(.task == 1001 and .kind == "blocker-research")) | length')" = "1" ] && \
+   [ "$(jq -r --arg t "1001" '.aux_pending[$t].kind // "CLEARED"' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a2.json")" = "blocker-research" ]; then
+  common_test_pass "aux: a blocker-research emission with no confirming carrier leaves aux_pending[t] present"
+else
+  common_test_fail "aux: blocker-research emission unexpectedly cleared aux_pending[t] with no confirming carrier (stdout: $LAST_STDOUT; state: $(cat "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a2.json"))"
+fi
+
+# ── Case A3 (confirm-then-clear): a second cycle on the SAME still-unconfirmed state re-emits a
+# fresh blocker-research row, because the pending obligation survived the first cycle ────────────
+run_sut --session g10_a2 -- 1001
+if [ "$(jqf '.aux_dispatch | map(select(.task == 1001 and .kind == "blocker-research")) | length')" = "1" ]; then
+  common_test_pass "aux: a second cycle on the same unconfirmed state re-emits a fresh blocker-research row"
+else
+  common_test_fail "aux: second cycle did not re-emit the blocker-research row (stdout: $LAST_STDOUT)"
+fi
+
+# ── Case A4 (confirm-then-clear): once a parseable .blocker-research.json carrier appears, the
+# cycle both emits the plan-revision row AND clears aux_pending[t] -- the confirm half ───────────
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a4.json"
+jq -n --arg t "1001" '{aux_pending: {($t): {kind: "blocker-research", blocker_desc: "widget X is missing"}}}' \
+  > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a4.json"
+jq -n '{summary: "root cause found", blocker_desc: "widget X is missing", root_cause: "typo", solution_path: "fix the typo"}' \
+  > "$WORKDIR/specs/1001_g10_aux/.blocker-research.json"
+run_sut --session g10_a4 -- 1001
+if [ "$(jqf '.aux_dispatch | map(select(.task == 1001 and .kind == "plan-revision")) | length')" = "1" ] && \
+   [ "$(jq -r --arg t "1001" '.aux_pending[$t] // "CLEARED"' "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a4.json")" = "CLEARED" ]; then
+  common_test_pass "aux: a confirmed carrier both emits plan-revision AND clears aux_pending[t]"
+else
+  common_test_fail "aux: confirmed carrier emitted plan-revision but did not clear aux_pending[t] (state: $(cat "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g10_a4.json"))"
+fi
+rm -f "$WORKDIR/specs/1001_g10_aux/.blocker-research.json"
 
 # ── Case B: MAX_BLOCKER_ESCALATIONS=2 cap -- a third blocker-research signal emits no row ───────
 jq -n --arg t "1001" '{blocker_escalation_count: {($t): 2}, aux_pending: {($t): {kind: "blocker-research", blocker_desc: "third strike"}}}' \
