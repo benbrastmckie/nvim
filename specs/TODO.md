@@ -120,7 +120,7 @@ next_project_number: 638
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-634 [RESEARCHED] — Run the end-of-orchestration roadmap regenerate mechanically,...
+634 [PLANNED] — Run the end-of-orchestration roadmap regenerate mechanically,...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 624 [NOT STARTED] — Make system-defect-record.sh able to attribute a...
 
@@ -164,7 +164,7 @@ next_project_number: 638
 558 [NOT STARTED] — Require task descriptions to request a proposal packet...
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
-562 [RESEARCHED] — conclusion stage drops null-resolution issue-log entries
+562 [PLANNING] — conclusion stage drops null-resolution issue-log entries
 599 [NOT STARTED] — Give the batch-gate-deferral directive a narrowing form that...
   └─ 592 [NOT STARTED] — Re-verify or timestamp a task recorded starting position at...
   └─ 593 [NOT STARTED] — Require pinned Lean Challenge signatures to be measured at...
@@ -251,11 +251,12 @@ GOAL. (1) Decide and implement where the wrapup write is mechanically anchored: 
 ---
 
 ### 634. Run the end-of-orchestration roadmap regenerate mechanically, for any batch size
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [634_mechanize_orchestrate_conclusion_roadmap_regenerate/reports/01_mechanize-conclusion-roadmap-regenerate.md]
+- **Plan**: [634_mechanize_orchestrate_conclusion_roadmap_regenerate/plans/01_mechanize-conclusion-roadmap-regenerate.md]
 
 **Description**: Make /orchestrate's end-of-run roadmap regeneration mechanical so it fires at the end of every orchestration, whatever the batch size, instead of depending on the lead remembering a prose-only final stage.
 
@@ -2842,7 +2843,7 @@ EVIDENCE CITATION: recorded during task 369's plan phase as issue-log entry iss_
 ---
 
 ### 562. conclusion stage drops null-resolution issue-log entries
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 313
