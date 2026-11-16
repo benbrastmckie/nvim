@@ -37,8 +37,8 @@ if [ ! -f "$TOOL_SRC" ]; then
   # into one directory, so the sibling relationship between this test and the tool it covers is
   # preserved there too -- this fallback is reached only if the primary, source-store-relative
   # resolution above did not find the file on disk.
-  REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
-  TOOL_SRC="$REPO_ROOT/.claude/scripts/typescript-verify.sh"
+  REPO_ROOT="$(cd "$SCRIPT_DIR" 2>/dev/null && git rev-parse --show-toplevel 2>/dev/null)"
+  TOOL_SRC="${REPO_ROOT:+$REPO_ROOT/.claude/scripts/typescript-verify.sh}"
 fi
 
 if [ ! -f "$TOOL_SRC" ]; then

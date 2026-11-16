@@ -56,6 +56,7 @@ test-central-log-lib.sh	unit	-
 test-check-record-versioning.sh	unit	-
 test-check-task-references.sh	integration	invokes:verify-deploy.sh
 test-claude-refresh-matcher.sh	integration	invokes:verify-deploy.sh
+test-commit-source-store-path.sh	unit	-
 test-common-lib.sh	integration	invokes:run-all.sh
 test-consumer-freshness.sh	unit	-
 test-context-reachability.sh	unit	-
@@ -123,6 +124,7 @@ test-lint-hook-registration-paths.sh	integration	invokes:verify-deploy.sh
 test-lint-json-channel-discipline.sh	integration	invokes:verify-deploy.sh
 test-lint-lifecycle-status-var.sh	unit	-
 test-lint-postflight-boundary.sh	unit	-
+test-lint-roadmap-batch-proposals.sh	unit	-
 test-lint-scoped-commit-boundary.sh	unit	-
 test-lint-shellcheck-parallel.sh	integration	invokes:verify-deploy.sh,run-all.sh
 test-lint-shellcheck.sh	unit	-
@@ -139,7 +141,9 @@ test-literature-discover-tier3.sh	unit	-
 test-literature-search.sh	unit	-
 test-manage-topics-create-order.sh	unit	-
 test-manifest-scripts-sync.sh	unit	-
+test-mcp-merge-target.sh	integration	invokes:deploy-headless.sh
 test-measure-gate-costs.sh	integration	invokes:verify-deploy.sh,run-all.sh
+test-migrate-roadmap-next-to-state.sh	unit	-
 test-mint-dispatch-seq.sh	unit	-
 test-orchestrate-batch-admit.sh	unit	-
 test-orchestrate-batch-gate.sh	integration	invokes:verify-deploy.sh
@@ -174,6 +178,7 @@ test-redeploy-checkpoint-promotion.sh	unit	-
 test-redeploy-remedy-lib.sh	integration	invokes:deploy-headless.sh
 test-resume-scan-nonconformance.sh	unit	-
 test-return-meta-status-vocabulary.sh	unit	-
+test-roadmap-command-registration.sh	unit	-
 test-roadmap-generation.sh	unit	-
 test-routing-resolution.sh	unit	-
 test-run-all-failure-reporting.sh	integration	invokes:run-all.sh
@@ -183,8 +188,10 @@ test-run-all-shared-fixture.sh	integration	invokes:run-all.sh,deploy-headless.sh
 test-run-task-observers.sh	unit	-
 test-runtime-file-tracking.sh	unit	-
 test-sapience-capture.sh	unit	-
+test-sapience-mcp-registration.sh	unit	-
 test-script-inventory.sh	unit	-
 test-skill-base-lifecycle.sh	integration	invokes:deploy-headless.sh
+test-source-store-path-lib.sh	unit	-
 test-stall-reprompt-wiring.sh	unit	-
 test-status-vocabulary.sh	unit	-
 test-subagent-postflight-marker.sh	unit	-
@@ -198,10 +205,11 @@ test-todo-archived-projects-scan.sh	unit	-
 test-todo-move-pair-staging.sh	unit	-
 test-update-plan-status.sh	unit	-
 test-update-task-status.sh	unit	-
-test-validate-artifact.sh	unit	-
+test-validate-artifact.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh,run-all.sh
 test-validate-bounded-waiter.sh	unit	-
 test-validate-handoff-location.sh	unit	-
 test-validate-handoff.sh	unit	-
+test-validate-no-python-state-write.sh	unit	-
 test-validate-no-record-versioning.sh	unit	-
 test-validate-no-task-references.sh	unit	-
 test-validate-return-meta.sh	unit	-

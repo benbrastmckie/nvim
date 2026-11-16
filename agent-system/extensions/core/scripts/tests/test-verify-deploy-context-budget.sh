@@ -97,6 +97,13 @@ common_test_workdir_init
 FIXTURE="$WORKDIR/target"
 mkdir -p "$FIXTURE/agent-system/extensions"
 rsync -a --exclude='literature-pyenv' "$REPO_ROOT/agent-system/extensions/" "$FIXTURE/agent-system/extensions/"
+# Gate 21 (lint-hook-registration-paths.sh) resolves hook identities through the loader's own
+# hook_identity module, read from <target>/lua/ -- outside agent-system/extensions/, so the rsync
+# above does not carry it and the lint exits 2 on a fixture that lacks it.
+HOOK_IDENTITY_REL="lua/neotex/plugins/ai/shared/extensions"
+mkdir -p "$FIXTURE/$HOOK_IDENTITY_REL"
+cp "$REPO_ROOT/$HOOK_IDENTITY_REL/hook_identity.lua" "$REPO_ROOT/$HOOK_IDENTITY_REL/hook_identity_cli.lua" \
+  "$FIXTURE/$HOOK_IDENTITY_REL/"
 cp "$REPO_ROOT/CLAUDE.md" "$FIXTURE/CLAUDE.md"
 cp "$REPO_ROOT/.claude-extensions.json" "$FIXTURE/.claude-extensions.json"
 [ -f "$REPO_ROOT/.gitignore" ] && cp "$REPO_ROOT/.gitignore" "$FIXTURE/.gitignore"

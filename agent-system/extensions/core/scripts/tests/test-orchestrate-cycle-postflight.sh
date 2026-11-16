@@ -92,10 +92,14 @@ setup_sandbox() {
   # unrelated branch, recording spurious defects. See plans/01_recovery-decline-attribution.md.
   # return-meta-artifacts-lib.sh is the equivalent hard dependency of validate-return-meta.sh
   # (the new return-meta schema probe's own collaborator), added for the same reason.
+  # project-number-inuse.sh is a HARD dependency of state-write.sh (a plain `source` under
+  # `set -e`): omitting it makes every state write exit non-zero, so a status transition silently
+  # fails to persist while the dispatch verdict still reads ok.
   for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
            phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh \
            derived-artifact-probe-lib.sh engine-written-state-paths-lib.sh \
-           return-meta-status-vocabulary.sh runtime-file-patterns.sh return-meta-artifacts-lib.sh; do
+           return-meta-status-vocabulary.sh runtime-file-patterns.sh return-meta-artifacts-lib.sh \
+           project-number-inuse.sh; do
     cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
   done
   cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \

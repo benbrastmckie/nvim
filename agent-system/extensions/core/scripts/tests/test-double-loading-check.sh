@@ -188,7 +188,10 @@ cat > "$FIXTURE_DEGRADED" << 'EOF'
 ]}
 EOF
 
+# Both route sources are pointed at nonexistent files: the manifest feeds the lifecycle-command
+# routes, while /revise (the fixture's own command) derives from skill-reviser's SKILL.md.
 OUT="$(VALIDATE_BUDGETS_MANIFEST_OVERRIDE="$WORKDIR/does-not-exist-manifest.json" \
+  VALIDATE_BUDGETS_REVISE_SKILL_OVERRIDE="$WORKDIR/does-not-exist-SKILL.md" \
   bash "$DEPLOYED_SCRIPT" --index "$FIXTURE_DEGRADED" --verbose 2>&1)"
 EXIT_CODE=$?
 if echo "$OUT" | grep -q '\[DEGRADED ROUTE DERIVATION\]'; then

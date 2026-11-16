@@ -1563,41 +1563,32 @@ if [[ "$DEEP" == "true" && "$ARCHIVE_MODE" == "false" && "$_base_shape_ok" == "t
         # absent from the live active_projects is skipped -- archival is covered by other checks,
         # not this one.
         d5_unsuppressed=0
-        d5_pnums=$(jq -r '[.active_projects[].project_number] | .[]' <<< "$prior_json" 2>/dev/null)
-        while IFS= read -r d5_pnum; do
+        # One jq pass over both documents emits a row only for a (project_number, type) pair
+        # whose removed count exceeds its added count -- a per-project, per-type jq invocation
+        # scales with the task count and pushes this check past its caller's timeout.
+        d5_rows=$(jq -r --slurpfile prior <(printf '%s' "$prior_json") '
+          def by_type: reduce ((.artifacts // [])[]) as $a ({};
+            .[($a.type // "(untyped)")] += [($a.path | if type == "string" then . else tojson end)]);
+          (reduce .active_projects[] as $t ({}; .[($t.project_number|tostring)] //= ($t | by_type))) as $live
+          | $prior[0].active_projects[]
+          | (.project_number|tostring) as $n
+          | select($live | has($n))
+          | by_type as $pt | $live[$n] as $lt
+          | (($pt | keys) + ($lt | keys) | unique)[] as $ty
+          | (($pt[$ty] // []) | unique) as $pp | (($lt[$ty] // []) | unique) as $lp
+          | ($pp - $lp) as $removed | ($lp - $pp) as $added
+          | select(($removed | length) > ($added | length))
+          | [$n, $ty, ($removed | length), ($added | length), ($removed | join(", "))] | @tsv
+        ' "$STATE_FILE" 2>/dev/null)
+        while IFS=$'\t' read -r d5_pnum d5_type d5_removed_count d5_added_count d5_dropped; do
           [[ -z "$d5_pnum" ]] && continue
-          if ! jq -e --arg n "$d5_pnum" '.active_projects[] | select((.project_number|tostring) == $n)' "$STATE_FILE" >/dev/null 2>&1; then
-            continue
+          if allow_artifact_removal_matches "$d5_pnum" "$d5_type"; then
+            log_warn "Artifact removal ALLOWED by --allow-artifact-removal opt-in: project_number $d5_pnum, type '$d5_type' (removed=$d5_removed_count added=$d5_added_count)"
+          else
+            log_fail "Artifact loss: project_number $d5_pnum, type '$d5_type' -- removed=$d5_removed_count added=$d5_added_count, dropped path(s): $d5_dropped (opt in with --allow-artifact-removal $d5_pnum:$d5_type if intentional)"
+            d5_unsuppressed=$((d5_unsuppressed + 1))
           fi
-          d5_prior_types=$(jq -r --arg n "$d5_pnum" \
-            '[.active_projects[] | select((.project_number|tostring) == $n) | (.artifacts // [])[] | (.type // "(untyped)")] | unique | .[]' \
-            <<< "$prior_json" 2>/dev/null)
-          d5_live_types=$(jq -r --arg n "$d5_pnum" \
-            '[.active_projects[] | select((.project_number|tostring) == $n) | (.artifacts // [])[] | (.type // "(untyped)")] | unique | .[]' \
-            "$STATE_FILE" 2>/dev/null)
-          d5_all_types=$(printf '%s\n%s\n' "$d5_prior_types" "$d5_live_types" | sort -u | grep -v '^$')
-          [[ -z "$d5_all_types" ]] && continue
-          while IFS= read -r d5_type; do
-            [[ -z "$d5_type" ]] && continue
-            d5_prior_paths=$(jq -r --arg n "$d5_pnum" --arg t "$d5_type" \
-              '[.active_projects[] | select((.project_number|tostring) == $n) | (.artifacts // [])[] | select((.type // "(untyped)") == $t) | .path] | unique | .[]' \
-              <<< "$prior_json" 2>/dev/null)
-            d5_live_paths=$(jq -r --arg n "$d5_pnum" --arg t "$d5_type" \
-              '[.active_projects[] | select((.project_number|tostring) == $n) | (.artifacts // [])[] | select((.type // "(untyped)") == $t) | .path] | unique | .[]' \
-              "$STATE_FILE" 2>/dev/null)
-            d5_removed_count=$(comm -23 <(sort <<< "$d5_prior_paths") <(sort <<< "$d5_live_paths") | grep -c -v '^$')
-            d5_added_count=$(comm -13 <(sort <<< "$d5_prior_paths") <(sort <<< "$d5_live_paths") | grep -c -v '^$')
-            if [[ "$d5_removed_count" -gt "$d5_added_count" ]]; then
-              if allow_artifact_removal_matches "$d5_pnum" "$d5_type"; then
-                log_warn "Artifact removal ALLOWED by --allow-artifact-removal opt-in: project_number $d5_pnum, type '$d5_type' (removed=$d5_removed_count added=$d5_added_count)"
-              else
-                d5_dropped=$(comm -23 <(sort <<< "$d5_prior_paths") <(sort <<< "$d5_live_paths") | grep -v '^$' | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')
-                log_fail "Artifact loss: project_number $d5_pnum, type '$d5_type' -- removed=$d5_removed_count added=$d5_added_count, dropped path(s): $d5_dropped (opt in with --allow-artifact-removal $d5_pnum:$d5_type if intentional)"
-                d5_unsuppressed=$((d5_unsuppressed + 1))
-              fi
-            fi
-          done <<< "$d5_all_types"
-        done <<< "$d5_pnums"
+        done <<< "$d5_rows"
         if [[ "$d5_unsuppressed" -eq 0 ]]; then
           log_pass "No unsuppressed per-type artifact-loss violations found against prior git history"
         fi
