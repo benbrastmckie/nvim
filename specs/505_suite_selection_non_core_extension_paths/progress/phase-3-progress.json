@@ -1,0 +1,32 @@
+{
+  "phase": 3,
+  "phase_name": "Pin All Four Behaviours in test-run-all-selection.sh",
+  "started_at": "2026-11-16T00:00:00Z",
+  "last_updated": "2026-11-16T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-run-all-selection.sh before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Derive non-core fixture dynamically", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 3, "description": "Case (a): non-core resolution", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 4, "description": "Case (b): honest sentinel preserved", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 5, "description": "Case (c): deployed-mode unchanged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 6, "description": "Case (d): classification ruling", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 7, "description": "Guard every derivation with a clear skip", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 8, "description": "Keep SOURCE-STORE-ONLY subject-resolution header promise intact", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {"approach": "Case 3e's skip-vs-fail guard initially always skipped when no pair could be derived, including in source-store mode", "result": "corrected", "reason": "load-bearing check revealed that disabling Phase 2's cross-extension loop entirely made the derivation (which itself calls suite_selection_classify) find nothing and report a false 'skip' rather than a 'fail' -- narrowed the skip condition to EXT_PARENT being empty (true deployed vantage) only; any other empty-derivation in source-store mode is now a hard fail"},
+    {"approach": "Case 3d's decoy extension directory was first placed at $DEPLOYED_FIXTURE/lean/scripts/tests", "result": "corrected", "reason": "measured that _ssl_extensions_parent's two-directories-up derivation from the fixture's scripts/ root lands at $WORKDIR, not $DEPLOYED_FIXTURE (the fixture's scripts/ sits only one level below $DEPLOYED_FIXTURE, mirroring a real deploy's one-level .claude/scripts depth) -- moved the decoy to $WORKDIR/lean/scripts/tests so the case actually depends on the marker gate rather than passing regardless"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.guard",
+      "description": "Guard every derivation: when no non-core extension with a paired suite exists at all ... the cases must report a clear skip rather than a failure",
+      "type": "altered",
+      "reason": "Applied a narrower rule for case3e specifically: a skip is reported only when EXT_PARENT is empty (a true deployed vantage point with no per-extension source-store tree). When EXT_PARENT is non-empty (source-store mode) but no qualifying pair can be derived, this is now a hard FAIL rather than a skip -- discovered via the load-bearing check, which showed that a total breakage of Phase 2's cross-extension classify loop would otherwise be masked as a routine skip (the case's own derivation code calls the same suite_selection_classify function it is pinning, so a fully broken function also makes the derivation find nothing).",
+      "annotation": "case3e additionally distinguishes a genuine deployed-vantage skip from a source-store-mode derivation failure, which is treated as a hard fail rather than a false skip -- see Deviations"
+    }
+  ],
+  "notes": "4 new pinning cases (case3b/3c/3d/3e) plus case3c-unmapped added to PART 1, placed after case3 and before PART 2 so cases 4-25 keep their numbering untouched. Results: 36 passed, 0 failed (was 31 before this phase; +5 new cases including case3c-unmapped). Each of case3b, case3d, case3e was independently verified load-bearing by temporarily reverting the corresponding Phase 1/Phase 2 code and confirming the matching case failed, then restoring and re-confirming a clean 36/0 run. case3c is not expected to regress-detect Phase 1 (the pre-fix behavior already returned the full-sweep sentinel for every non-core path, including genuinely-uncovered ones, so it does not distinguish before/after on that one path) -- it instead pins that the fix does not OVER-reach into false negatives, which is the correct property for that case per the plan's own framing (\"the defect is a false sweep escalation ... never the sentinel itself\"). lint-shellcheck.sh exits 0 on the edited test file."
+}

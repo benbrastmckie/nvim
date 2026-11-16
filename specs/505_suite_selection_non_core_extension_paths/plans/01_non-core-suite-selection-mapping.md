@@ -262,7 +262,7 @@ selected suite carries a valid classification value) is the covering check.
 
 ---
 
-### Phase 3: Pin All Four Behaviours in `test-run-all-selection.sh` [NOT STARTED]
+### Phase 3: Pin All Four Behaviours in `test-run-all-selection.sh` [COMPLETED]
 
 **Goal**: The suite fails if any of the four required behaviours regresses: non-core resolution, a
 genuinely uncovered non-core path still escalating, deployed-mode selection unchanged, and the
@@ -270,38 +270,38 @@ classification ruling.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/tests/test-run-all-selection.sh` before
+- [x] Re-read `agent-system/extensions/core/scripts/tests/test-run-all-selection.sh` before
   editing. New cases go in PART 1 (real-corpus, pure-function cases) with
   `common_test_pass`/`common_test_fail` and the existing numbering style; do not disturb cases
-  1-3 or 14-25.
-- [ ] Derive the non-core fixture DYNAMICALLY, never hardcoded: scan `$CORE_DIR/../../*/` for a
+  1-3 or 14-25. *(completed: new cases 3b/3c/3d/3e inserted between case3 and PART 2; cases 4-25 untouched, verified by verdict-by-verdict diff of the pre/post run)*
+- [x] Derive the non-core fixture DYNAMICALLY, never hardcoded: scan `$CORE_DIR/../../*/` for a
   non-`core` extension directory holding both `scripts/<name>.sh` and
   `scripts/tests/test-<name>.sh`, and take the first such pair. This keeps the suite honest in a
   repo whose extension set differs, and mirrors case 1's existing "never hardcode a basename"
-  discipline.
-- [ ] Case (a) — non-core resolution: `suite_selection_select` on the derived
+  discipline. *(completed: lands on approvals/scripts/approve-classify.sh in the current corpus)*
+- [x] Case (a) — non-core resolution: `suite_selection_select` on the derived
   `agent-system/extensions/<ext>/scripts/<name>.sh` path includes `test-<name>.sh` and is not the
-  sentinel.
-- [ ] Case (b) — honest sentinel preserved: a path under a real non-core extension's `scripts/`
+  sentinel. *(completed: case3b; confirmed load-bearing by reverting Phase 1's root threading and observing case3b FAIL)*
+- [x] Case (b) — honest sentinel preserved: a path under a real non-core extension's `scripts/`
   whose basename no suite in that extension pairs with or references still returns
   `__FULL_SWEEP__`, and `suite_selection_unmapped` names it verbatim. Derive the zero-reference
-  candidate dynamically, the same way case 1 does.
-- [ ] Case (c) — deployed-mode unchanged: build a synthetic DEPLOYED-shaped fixture under
+  candidate dynamically, the same way case 1 does. *(completed: case3c + case3c-unmapped; lands on email/scripts/email-preference-harvest.sh in the current corpus. Not independently load-bearing against Phase 1 by construction -- the pre-fix behavior already returned the sentinel for every non-core path including this one, so before/after is identical on this specific property; it pins the no-over-reach side instead, exactly as the plan frames the defect)*
+- [x] Case (c) — deployed-mode unchanged: build a synthetic DEPLOYED-shaped fixture under
   `$WORKDIR` (a flat `scripts/` + `scripts/tests/` pair with NO `core/manifest.json` two
   directories above it), copy the real library in at `scripts/lib/`, source that copy in a
   subshell, and assert that a touched path carrying an
   `agent-system/extensions/<ext>/scripts/` segment resolves against the flat merged tree exactly
-  as it does today — proving the detection branch cannot fire without the marker.
-- [ ] Case (d) — classification ruling: assert that a non-core suite file is now actually located,
+  as it does today — proving the detection branch cannot fire without the marker. *(completed: case3d, with a decoy lean/scripts/tests/ directory placed at $WORKDIR -- the real two-directories-up landing point measured from the fixture's scripts/ root -- so the case is load-bearing against the marker gate specifically; confirmed by temporarily bypassing the marker check and observing case3d FAIL, then restoring)*
+- [x] Case (d) — classification ruling: assert that a non-core suite file is now actually located,
   by checking that `suite_selection_classify` on a derived non-core suite/touched-basename pair
   distinguishes evidence-based values rather than returning the file-not-found default for every
   non-core input. Pin the ruling (classification extended to non-core suites), not a specific
-  corpus count, so the case does not go stale when a suite's text changes.
-- [ ] Guard every derivation: when no non-core extension with a paired suite exists at all (a
+  corpus count, so the case does not go stale when a suite's text changes. *(completed: case3e; confirmed load-bearing by disabling Phase 2's cross-extension loop and observing case3e FAIL)*
+- [x] Guard every derivation: when no non-core extension with a paired suite exists at all (a
   deployed vantage point has no extensions root), the cases must report a clear skip rather than
-  a failure — the suite must pass from both vantage points, which Phase 5 exercises.
-- [ ] Keep this suite's SOURCE-STORE-ONLY subject-resolution header promise intact: resolve every
-  new path from `SCRIPT_DIR`'s siblings, never from a deployed `$REPO_ROOT/.claude` path.
+  a failure — the suite must pass from both vantage points, which Phase 5 exercises. *(completed: case3b/3c/3d/3e all guard on EXT_PARENT (empty at a deployed vantage point) via common_test_info; case3e additionally distinguishes a genuine deployed-vantage skip from a source-store-mode derivation failure, which is treated as a hard fail rather than a false skip -- see Deviations)*
+- [x] Keep this suite's SOURCE-STORE-ONLY subject-resolution header promise intact: resolve every
+  new path from `SCRIPT_DIR`'s siblings, never from a deployed `$REPO_ROOT/.claude` path. *(completed)*
 
 **Timing**: 1.5 hours
 

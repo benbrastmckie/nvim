@@ -155,6 +155,227 @@ else
   fi
 fi
 
+# Cases 3b-3e pin the four non-core-extension-paths behaviours added to suite-selection-lib.sh:
+# (a) a touched non-core source-store path resolves to its own extension's paired suite; (b) a
+# genuinely uncovered non-core path still escalates to the honest sentinel; (c) deployed-mode
+# selection stays byte-identical; (d) suite_selection_classify now reaches non-core suites on
+# real evidence. EXT_PARENT is the agent-system/extensions/ directory this library's own
+# _ssl_extensions_parent would derive -- empty when this suite itself is run from a deployed
+# vantage point (no such directory exists there), which is the signal every derivation below
+# guards on to report a clean skip rather than a failure (Phase 5 runs this suite from both
+# vantage points).
+EXT_PARENT="$(cd "$CORE_DIR/../.." 2>/dev/null && pwd)"
+[ -f "$EXT_PARENT/core/manifest.json" ] || EXT_PARENT=""
+
+# Case 3b setup: derive a non-core extension pair dynamically -- scan every non-core extension's
+# own scripts/ for a basename pairing with its own scripts/tests/test-<name>.sh (or the lib/
+# "-lib.sh" suffix variant), taking the first such pair in directory-listing order. Never
+# hardcode a specific extension or basename: the extension set and each one's own script corpus
+# can both change (same "never hardcode" discipline as case1's ZERO_REF_CANDIDATE above).
+NONCORE_EXT=""
+NONCORE_NAME=""
+NONCORE_SUITE=""
+if [ -n "$EXT_PARENT" ]; then
+  for _ext_dir in "$EXT_PARENT"/*/; do
+    [ -n "$NONCORE_EXT" ] && break
+    _ext_name="$(basename "$_ext_dir")"
+    [ "$_ext_name" = "core" ] && continue
+    _ext_scripts="${_ext_dir}scripts"
+    [ -d "$_ext_scripts" ] || continue
+    for _cand in "$_ext_scripts"/*.sh; do
+      [ -e "$_cand" ] || continue
+      _cand_base="$(basename "$_cand")"
+      case "$_cand_base" in test-*.sh) continue ;; esac
+      _cand_noext="${_cand_base%.sh}"
+      if [ -f "$_ext_scripts/tests/test-${_cand_base}" ]; then
+        NONCORE_EXT="$_ext_name"
+        NONCORE_NAME="$_cand_base"
+        NONCORE_SUITE="test-${_cand_base}"
+        break
+      elif [ -f "$_ext_scripts/tests/test-${_cand_noext}-lib.sh" ]; then
+        NONCORE_EXT="$_ext_name"
+        NONCORE_NAME="$_cand_base"
+        NONCORE_SUITE="test-${_cand_noext}-lib.sh"
+        break
+      fi
+    done
+  done
+fi
+unset _ext_dir _ext_name _ext_scripts _cand _cand_base _cand_noext
+
+# Case 3b: a touched path under a real non-core extension's scripts/ resolves to that same
+# extension's own paired suite (not __FULL_SWEEP__, the defect this task fixes).
+if [ -z "$NONCORE_EXT" ]; then
+  common_test_info "case3b: skip -- no non-core extension with a scripts/<name>.sh <-> scripts/tests/test-<name>.sh pair could be derived (expected from a deployed vantage point, which has no per-extension source-store tree)"
+else
+  noncore_out="$(suite_selection_select "$EXT_PARENT/$NONCORE_EXT/scripts/$NONCORE_NAME")"
+  if [ "$noncore_out" != "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" ] \
+     && printf '%s\n' "$noncore_out" | grep -qx "$NONCORE_SUITE"; then
+    common_test_pass "case3b: non-core path $NONCORE_EXT/scripts/$NONCORE_NAME resolves to its own extension's paired suite $NONCORE_SUITE"
+  else
+    common_test_fail "case3b: non-core path $NONCORE_EXT/scripts/$NONCORE_NAME did not resolve to $NONCORE_SUITE as expected" "$noncore_out"
+  fi
+fi
+
+# Case 3c setup: derive a genuinely uncovered non-core path -- scan every non-core extension's
+# own scripts/ (flat, plus lib/ and lint/ when present) for a basename with no paired test file
+# and no textual reference from any suite in that SAME extension's own tests/ or flat scripts/
+# (strata (a)+(b), scoped per-extension exactly as the corrected resolution now scopes them).
+UNCOVERED_EXT=""
+UNCOVERED_NAME=""
+if [ -n "$EXT_PARENT" ]; then
+  for _ext_dir in "$EXT_PARENT"/*/; do
+    [ -n "$UNCOVERED_EXT" ] && break
+    _ext_name="$(basename "$_ext_dir")"
+    [ "$_ext_name" = "core" ] && continue
+    _ext_scripts="${_ext_dir}scripts"
+    [ -d "$_ext_scripts" ] || continue
+    for _cand in "$_ext_scripts"/*.sh "$_ext_scripts"/lib/*.sh "$_ext_scripts"/lint/*.sh; do
+      [ -e "$_cand" ] || continue
+      _cand_base="$(basename "$_cand")"
+      case "$_cand_base" in test-*.sh) continue ;; esac
+      _cand_noext="${_cand_base%.sh}"
+      [ -f "$_ext_scripts/tests/test-${_cand_base}" ] && continue
+      [ -f "$_ext_scripts/tests/test-${_cand_noext}-lib.sh" ] && continue
+      _cand_matches=""
+      if [ -d "$_ext_scripts/tests" ]; then
+        _cand_matches="$(grep -l -F -- "$_cand_base" "$_ext_scripts/tests"/test-*.sh 2>/dev/null)"
+      fi
+      if [ -z "$_cand_matches" ]; then
+        _cand_matches="$(grep -l -F -- "$_cand_base" "$_ext_scripts"/test-*.sh 2>/dev/null)"
+      fi
+      if [ -z "$_cand_matches" ]; then
+        UNCOVERED_EXT="$_ext_name"
+        UNCOVERED_NAME="$_cand_base"
+        break
+      fi
+    done
+  done
+fi
+unset _ext_dir _ext_name _ext_scripts _cand _cand_base _cand_noext _cand_matches
+
+# Case 3c: a genuinely uncovered non-core path still escalates to the honest sentinel --
+# __FULL_SWEEP__ semantics are untouched by this task, never weakened.
+if [ -z "$UNCOVERED_EXT" ]; then
+  common_test_info "case3c: skip -- no genuinely uncovered non-core path could be derived from the current corpus (expected from a deployed vantage point, or a source-store corpus where every non-core script happens to be covered)"
+else
+  uncovered_out="$(suite_selection_select "$EXT_PARENT/$UNCOVERED_EXT/scripts/$UNCOVERED_NAME")"
+  if [ "$uncovered_out" = "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" ]; then
+    common_test_pass "case3c: a genuinely uncovered non-core path ($UNCOVERED_EXT/scripts/$UNCOVERED_NAME) still escalates to the full-sweep sentinel"
+  else
+    common_test_fail "case3c: expected the full-sweep sentinel for $UNCOVERED_EXT/scripts/$UNCOVERED_NAME, got:" "$uncovered_out"
+  fi
+  unmapped_nc_out="$(suite_selection_unmapped "$EXT_PARENT/$UNCOVERED_EXT/scripts/$UNCOVERED_NAME")"
+  if [ "$unmapped_nc_out" = "$EXT_PARENT/$UNCOVERED_EXT/scripts/$UNCOVERED_NAME" ]; then
+    common_test_pass "case3c-unmapped: suite_selection_unmapped names the non-core zero-reference path verbatim"
+  else
+    common_test_fail "case3c-unmapped: suite_selection_unmapped did not name the non-core unmappable path as expected" "$unmapped_nc_out"
+  fi
+fi
+
+# Case 3d: deployed-mode selection stays byte-identical -- build a synthetic DEPLOYED-shaped
+# fixture (flat scripts/ + scripts/tests/, with NO core/manifest.json two directories above the
+# scripts root -- the only state _ssl_extensions_parent's marker check consults), copy the real
+# library in at scripts/lib/, source that copy in a subshell, and confirm a touched path carrying
+# an agent-system/extensions/<ext>/scripts/ segment still resolves against the flat merged tree
+# exactly as before this task's change -- proving the detection branch cannot fire without the
+# marker.
+DEPLOYED_FIXTURE="$WORKDIR/deployed-fixture"
+DEPLOYED_SCRIPTS="$DEPLOYED_FIXTURE/scripts"
+DEPLOYED_TESTS="$DEPLOYED_SCRIPTS/tests"
+mkdir -p "$DEPLOYED_SCRIPTS/lib" "$DEPLOYED_TESTS"
+cp "$SUITE_SELECTION_LIB" "$DEPLOYED_SCRIPTS/lib/suite-selection-lib.sh"
+cat > "$DEPLOYED_SCRIPTS/fx-deployed-subject.sh" << 'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+cat > "$DEPLOYED_TESTS/test-fx-deployed-subject.sh" << 'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+# Decoy: a real "lean/scripts/tests/" directory living exactly where _ssl_extensions_parent
+# would land two directories up from the scripts root ($WORKDIR, the deployed fixture's own
+# flat scripts/ being only one level below it -- the same shape a real .claude/scripts deploy
+# has relative to the repo root), with no suite pairing a touched basename of
+# "fx-deployed-subject.sh" at all. If the marker gate were ever bypassed (e.g. a future edit
+# drops the core/manifest.json check), the extension-root override would find this decoy
+# directory real and switch roots to it -- which has no matching suite -- flipping the expected
+# result to the full-sweep sentinel instead of test-fx-deployed-subject.sh and failing this
+# case. This is what makes the case load-bearing against the marker gate specifically, not
+# merely against the extension directory existing.
+mkdir -p "$WORKDIR/lean/scripts/tests"
+
+deployed_out="$(bash -c '
+  source "$1"
+  suite_selection_select "agent-system/extensions/lean/scripts/fx-deployed-subject.sh"
+' _ "$DEPLOYED_SCRIPTS/lib/suite-selection-lib.sh")"
+
+if [ "$deployed_out" = "test-fx-deployed-subject.sh" ]; then
+  common_test_pass "case3d: deployed-mode selection is byte-identical -- a touched path carrying an agent-system/extensions/<ext>/scripts/ segment still resolves against the flat merged tree (no core/manifest.json marker two directories up, so the detection branch cannot fire)"
+else
+  common_test_fail "case3d: deployed-mode selection changed under the new extension-detection branch" "$deployed_out"
+fi
+
+# Case 3e setup: derive a non-core (suite, touched-basename) pair whose suite_selection_classify
+# call reaches real evidence rather than the vacuous not-found default -- scan every non-core
+# suite carrying a .claude reference (the same textual signal the corpus-wide deployed-preferring
+# ratio already uses) and probe candidate basenames the suite textually mentions until one yields
+# a non-source-only classification. A non-"source-only" result is only reachable once the suite
+# FILE has actually been found and read, so it is itself the evidence that classification now
+# reaches non-core suites.
+CLASSIFY_SUITE=""
+CLASSIFY_TOUCHED=""
+CLASSIFY_RESULT=""
+if [ -n "$EXT_PARENT" ]; then
+  for _ext_dir in "$EXT_PARENT"/*/; do
+    [ -n "$CLASSIFY_SUITE" ] && break
+    _ext_name="$(basename "$_ext_dir")"
+    [ "$_ext_name" = "core" ] && continue
+    _ext_tests="${_ext_dir}scripts/tests"
+    [ -d "$_ext_tests" ] || continue
+    for _suite_f in "$_ext_tests"/test-*.sh; do
+      [ -e "$_suite_f" ] || continue
+      [ -n "$CLASSIFY_SUITE" ] && break
+      # shellcheck disable=SC2016
+      grep -q -E '\$REPO_ROOT/\.claude|/\.claude/' "$_suite_f" 2>/dev/null || continue
+      _suite_base="$(basename "$_suite_f")"
+      while IFS= read -r _touched_cand; do
+        [ -n "$_touched_cand" ] || continue
+        _res="$(suite_selection_classify "$_suite_base" "$_touched_cand")"
+        if [ "$_res" != "source-only" ]; then
+          CLASSIFY_SUITE="$_suite_base"
+          CLASSIFY_TOUCHED="$_touched_cand"
+          CLASSIFY_RESULT="$_res"
+          break
+        fi
+      done < <(grep -oE '[A-Za-z0-9_.-]+\.sh' "$_suite_f" 2>/dev/null | sort -u)
+    done
+  done
+fi
+unset _ext_dir _ext_name _ext_tests _suite_f _suite_base _touched_cand _res
+
+# Case 3e: suite_selection_classify locates a non-core suite file and classifies it on real
+# evidence (the classification ruling -- EXTENDED to non-core suites, not left core-only).
+# A deployed vantage point (EXT_PARENT empty) has no per-extension source-store tree to derive
+# from at all, so a clean skip is reported there -- but in source-store mode, deriving nothing is
+# itself a failure signal (the research phase measured 5 qualifying suites in the real corpus),
+# not a routine skip; it would otherwise hide a totally broken classify() behind a false skip,
+# since the derivation above is probing with the very function this case exists to pin.
+if [ -z "$CLASSIFY_SUITE" ] && [ -z "$EXT_PARENT" ]; then
+  common_test_info "case3e: skip -- no extensions root at this vantage point (deployed mode has no per-extension source-store tree to derive a pair from)"
+elif [ -z "$CLASSIFY_SUITE" ]; then
+  common_test_fail "case3e: no non-core (suite, touched-basename) pair could be derived that reaches evidence-based classification, although this is a source-store vantage point with an extensions root"
+else
+  case "$CLASSIFY_RESULT" in
+    source-first|deployed-first)
+      common_test_pass "case3e: suite_selection_classify locates a non-core suite ($CLASSIFY_SUITE) and classifies $CLASSIFY_TOUCHED on real evidence ($CLASSIFY_RESULT), not the vacuous not-found default"
+      ;;
+    *)
+      common_test_fail "case3e: derived non-core pair did not classify on evidence as expected" "$CLASSIFY_SUITE / $CLASSIFY_TOUCHED -> $CLASSIFY_RESULT"
+      ;;
+  esac
+fi
+
 # =====================================================================================
 # PART 2 -- run-all.sh's --only flag, against the REAL script directly (cheap: validation
 # happens before any suite executes).
