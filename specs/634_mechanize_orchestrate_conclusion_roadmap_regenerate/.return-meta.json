@@ -1,16 +1,66 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/summaries/01_mechanize-conclusion-roadmap-regenerate-summary.md",
+      "summary": "Extracted /orchestrate's conclusion-stage roadmap regenerate into one script invoked unconditionally from Move 4, deferred the consolidated output's emission to Move 5 Step 6, added a Stop-hook backstop, two new test suites, and updated six prose surfaces. Phases 2 and 6 closed COMPLETED WITH EXCLUSIONS over confirmed pre-existing/environmental gate failures."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Mechanized /orchestrate's conclusion-stage roadmap regenerate: a new script (orchestrate-conclusion-roadmap.sh) runs unconditionally from Move 4, the consolidated output's emission is deferred to Move 5 Step 6, and a Stop-hook backstop (orchestrate-conclusion-backstop.sh) blocks a session from ending before Move 5 finishes. Two new test suites cover the required cases; six prose surfaces now state the resulting design."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/context/patterns/roadmap-update.md",
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/hooks/orchestrate-conclusion-backstop.sh",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/settings-hooks.json",
+    "agent-system/extensions/core/root-files/settings.json",
+    "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+    "agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-backstop.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A new Stop (or SubagentStop) hook registration in this agent-system's core extension must land in BOTH agent-system/extensions/core/root-files/settings.json (this repo's own deployed settings) AND agent-system/extensions/core/merge-sources/settings-hooks.json (the fragment merged into OTHER repos that load this extension) -- registering in only the first passes a casual check but fails verify-deploy.sh's gate 21 (lint-hook-registration-paths.sh), whose fragment-coverage check requires the identical command string to appear in both surfaces.",
+      "category": "PATTERN",
+      "source_artifact": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/summaries/01_mechanize-conclusion-roadmap-regenerate-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["hook-registration", "gate-21", "settings-hooks-fragment", "merge-sources", "Stop-hook"]
+    },
+    {
+      "content": "hooks/subagent-postflight.sh's stop_hook_active check reads that field FROM THE MARKER file it inspects, not from the hook's own stdin payload. Its sole writer (skill_create_postflight_marker in skill-base.sh) always sets that field to the literal false, by its own documented design ('retained as false ... not by deliberate design'), making the check permanently dead in current practice. Claude Code's hook stdin carries its OWN, live, harness-maintained stop_hook_active boolean (true when a Stop event is itself the result of a previous Stop hook's own block decision) -- a future Stop-hook backstop should read that stdin field directly rather than copying subagent-postflight.sh's marker-field pattern verbatim.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/summaries/01_mechanize-conclusion-roadmap-regenerate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["stop_hook_active", "hook-stdin", "subagent-postflight", "loop-guard", "dead-field"]
+    },
+    {
+      "content": "sync-manifest-scripts.sh --write discovers 'on disk' scripts via `git ls-files <ext>/scripts`, not a plain filesystem walk -- a brand-new, not-yet-`git add`ed script is invisible to it and silently reports '0 missing' even though it is genuinely undeclared in provides.scripts. Run `git add` on the new file(s) first, then re-run --write, or the declaration is skipped with no error.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/summaries/01_mechanize-conclusion-roadmap-regenerate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sync-manifest-scripts", "git-ls-files", "provides-scripts", "undeclared-script", "manifest-sync"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794798170_26e756",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   },
-  "dispatch_seq": 5,
   "proposed_file_scope": [
     "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
     "agent-system/extensions/core/index-entries.json"

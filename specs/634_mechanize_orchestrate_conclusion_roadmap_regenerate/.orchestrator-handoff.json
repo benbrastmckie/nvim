@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a 6-phase plan (7.75h) mechanizing /orchestrate's conclusion-stage roadmap regenerate. Rules GOAL (1) as extract-to-script (orchestrate-conclusion-roadmap.sh, invoked unconditionally from Move 4 beside the Batch Gate Stage, contract keeps the authoritative prose as a pointer) and GOAL (2) as both (a) deferring the consolidated output's emission to Move 5 Step 6 and (b) a Stop-hook pending-marker backstop on subagent-postflight.sh's proven shape. Premise re-validation found one carried figure stale (the --dry-run 'content would change' claim, settled by commit 5c0bf002a) and the other three confirmed. Planning surfaced four coupled surfaces the dispatch did not name: manifest.json's explicit provides lists, the suite-classification.data row, postflight-tool-restrictions.md's Conclusion Stage Bash row, and the results template's Move-3 misattribution.",
+  "summary": "Mechanized /orchestrate's conclusion-stage roadmap regenerate across six phases: extracted Step 5 into orchestrate-conclusion-roadmap.sh (invoked unconditionally from Move 4), deferred the consolidated output's emission to Move 5 Step 6, added a Stop-hook backstop (orchestrate-conclusion-backstop.sh), two new test suites (29 assertions), and corrected six prose surfaces to state the resulting design. Phases 2 and 6 closed COMPLETED WITH EXCLUSIONS over gate/suite failures independently confirmed pre-existing or environmental (a typescript-extension violation, a load-induced timeout, and concurrent-sibling test interference) and unrelated to this task's own edits.",
   "blockers": [],
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/plans/01_mechanize-conclusion-roadmap-regenerate.md",
-      "summary": "Six-phase plan: extract Step 5 to a script, wire the Move 4 call site and defer the emission, add the Stop-hook backstop, test coverage, contract prose, deploy and full gate set."
+      "summary": "Six-phase plan: extract Step 5 to a script, wire the Move 4 call site and defer the emission, add the Stop-hook backstop, test coverage, contract prose, deploy and full gate set. All six phases closed (four plain COMPLETED, two COMPLETED WITH EXCLUSIONS with full Reasoned Exclusions records)."
+    },
+    {
+      "type": "summary",
+      "path": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/summaries/01_mechanize-conclusion-roadmap-regenerate-summary.md",
+      "summary": "Full implementation summary: files changed, decisions, plan deviations, verification results, and follow-up issues."
     }
   ],
-  "dispatch_seq": 3
+  "dispatch_seq": 5
 }
