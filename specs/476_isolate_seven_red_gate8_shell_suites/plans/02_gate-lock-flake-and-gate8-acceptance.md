@@ -345,7 +345,7 @@ re-check the manifest against live results rather than against this count.
 
 ---
 
-### Phase 3: Full-battery acceptance, redeploy, and the eighth-suite handoff [NOT STARTED]
+### Phase 3: Full-battery acceptance, redeploy, and the eighth-suite handoff [COMPLETED]
 
 **Goal**: Meet this task's literal acceptance criterion -- a full, unscoped Gate 8 run reporting
 zero unexpected failures, performed twice from a clean tree -- land the deployed tree, and pass
@@ -353,18 +353,20 @@ the excluded eighth suite's still-reproducing regression forward rather than dro
 
 **Tasks**:
 
-- [ ] Confirm the working tree is clean of this task's own changes (all of Phases 1-2 committed)
+- [x] Confirm the working tree is clean of this task's own changes (all of Phases 1-2 committed)
       before the first full run. A selected-subset pass is explicitly not evidence of a clean full
-      run, per `run-all.sh`'s own header, so neither of these runs may use `--only`.
-- [ ] Run the full, unscoped battery the first time:
+      run, per `run-all.sh`'s own header, so neither of these runs may use `--only`. *(completed)*
+- [x] Run the full, unscoped battery the first time:
       `bash agent-system/extensions/core/scripts/tests/run-all.sh --fail-on-new`. Background it and
       wait with a hard timeout and writer liveness via `kill -0` on the captured PID, one waiter per
       log -- never `ps | grep`, never `pgrep -f`, never an unbounded watch. Budget generously:
       `test-gate-cache-equivalence.sh` alone is killed at the 600s per-suite bound inside an
-      aggregate run and is correctly reported EXPECTED when that happens.
-- [ ] Run it a second time, serially after the first completes, to catch order- and
-      concurrency-dependent flakes that a single run would miss.
-- [ ] Triage every failure in both runs against the `EXPECTED`/`NEW` annotation the manifest
+      aggregate run and is correctly reported EXPECTED when that happens. *(completed: 193
+      passed, 3 failed (3 expected, 0 NEW), 196 total, pre-redeploy)*
+- [x] Run it a second time, serially after the first completes, to catch order- and
+      concurrency-dependent flakes that a single run would miss. *(completed: identical, 193
+      passed/3 failed/0 NEW)*
+- [x] Triage every failure in both runs against the `EXPECTED`/`NEW` annotation the manifest
       mechanism supplies:
       - A failure annotated `EXPECTED` and matched to a declared row satisfies the bar; no action.
       - A `NEW` failure in a suite inside this task's `file_scope`: fix it, or declare it with an
@@ -374,21 +376,27 @@ the excluded eighth suite's still-reproducing regression forward rather than dro
         prevents the zero-unexpected-failures bar from being met -- declare it in
         `known-failures.txt` with an honest `needs-owner` row rather than leaving it undeclared. An
         undeclared expected failure is indistinguishable from a regression, which is the condition
-        this task exists to end.
-- [ ] Record the eighth-suite handoff so the conclusion-stage proposal audit can act on it: the
+        this task exists to end. *(completed: all 3 pre-redeploy failures EXPECTED, no NEW failure
+        in any run; a 4th, one-off full `verify-deploy.sh` invocation transiently showed gate8 NEW
+        with no suite identity captured and did not reproduce on retry — recorded via
+        issue-record.sh rather than chased further, since the acceptance bar's own two runs were
+        both independently clean)*
+- [x] Record the eighth-suite handoff so the conclusion-stage proposal audit can act on it: the
       `test-verify-deploy-context-budget.sh` symptom (`baseline fixture is not clean (rc=1, gate20
       finding lines=0)` -- fixture setup broken, later cases unreliable) still reproduces verbatim
       today, after both its owning record's closure and a later commit that specifically touched
       that suite's fixture. Capture it via `issue-record.sh` and name it in the summary's Follow-ups.
-      Do **not** edit that suite -- it is deliberately outside `file_scope`.
-- [ ] Redeploy the source store with the bounded-wait idiom (`timeout 540`, Bash tool timeout raised
+      Do **not** edit that suite -- it is deliberately outside `file_scope`. *(completed)*
+- [x] Redeploy the source store with the bounded-wait idiom (`timeout 540`, Bash tool timeout raised
       to 600000): `bash agent-system/extensions/core/scripts/deploy-headless.sh`, waiting to
       `RESULT=landed_verify_clean`. Never hand-author under `.claude/**`; it is a gitignored,
-      disposable deploy artifact regenerated from the source store.
-- [ ] Confirm no file landing under `agent-system/**` in this task carries a task-number reference
+      disposable deploy artifact regenerated from the source store. *(completed: two redeploys,
+      both RESULT=landed_verify_clean; the second after removing the now-green
+      test-lint-unit-integration-boundary.sh known-failures.txt row)*
+- [x] Confirm no file landing under `agent-system/**` in this task carries a task-number reference
       or record-versioning language. Both are permitted in this task's own `specs/**` artifacts and
-      in commit messages, and prohibited in the source store.
-- [ ] Commit the phase's result with an explicit file list.
+      in commit messages, and prohibited in the source store. *(completed: zero matches)*
+- [x] Commit the phase's result with an explicit file list. *(completed)*
 
 **Timing**: 2.5 hours (dominated by wall clock: two full batteries plus the redeploy)
 
