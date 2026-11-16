@@ -1,22 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/505_suite_selection_non_core_extension_paths/plans/01_non-core-suite-selection-mapping.md",
-      "summary": "5-phase plan making suite-selection-lib.sh resolve covering suites for source-store paths under any extension, with the classification half extended and the carried figure re-derived."
-    }
-  ],
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 10,
   "metadata": {
-    "session_id": "sess_1793988163_b25d4a_505",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 4.75,
-    "dependency_waves": 5
-  },
-  "next_steps": "Run /orchestrate 505 to execute the plan",
-  "dispatch_seq": 8
+    "session_id": "sess_1794815389_748c3d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 5
+  }
 }

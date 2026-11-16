@@ -1,7 +1,7 @@
 # Implementation Plan: Task #505
 
 - **Task**: 505 - Suite selection fails to resolve a covering suite for non-core extension source paths
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.75 hours
 - **Dependencies**: None (ordering-only note with `plan_format_tier_justification_fixes`; no file overlap, no edge filed)
 - **Research Inputs**: specs/505_suite_selection_non_core_extension_paths/reports/01_suite-selection-non-core-mapping.md
@@ -128,7 +128,7 @@ consumes the previous one's result.
 
 ---
 
-### Phase 1: Per-Touched-Path Extension-Root Resolution in `_ssl_resolve_one` [NOT STARTED]
+### Phase 1: Per-Touched-Path Extension-Root Resolution in `_ssl_resolve_one` [COMPLETED]
 
 **Goal**: A touched path naming a non-core extension's `scripts/` tree resolves its strata
 against that extension's own `scripts/` + `scripts/tests/` directories, while every core path and
@@ -136,11 +136,11 @@ every deployed-mode path falls through to the roots already computed today.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/scripts/lib/suite-selection-lib.sh` immediately
+- [x] Re-read `agent-system/extensions/core/scripts/lib/suite-selection-lib.sh` immediately
   before editing (a sibling task may be live in this tree) and re-derive the current line numbers
   for the root derivation block and `_ssl_resolve_one` — the figures quoted in this plan are from
-  planning time and move.
-- [ ] Add one internal helper, `_ssl_roots_for_path PATH`, emitting exactly two lines (scripts
+  planning time and move. *(completed: root derivation confirmed at lines 114-116, `_ssl_resolve_one` at 147-196, unchanged from planning time)*
+- [x] Add one internal helper, `_ssl_roots_for_path PATH`, emitting exactly two lines (scripts
   root, then tests dir) on stdout:
   - Derive the extensions parent once per call as `${_SSL_SCRIPTS_ROOT}/../..` and accept it only
     if `<parent>/core/manifest.json` exists — the same marker check `tests/run-all.sh` already
@@ -151,22 +151,23 @@ every deployed-mode path falls through to the roots already computed today.
     real directory; otherwise emit `${_SSL_SCRIPTS_ROOT}` and `${_SSL_TESTS_DIR}` unchanged.
   - `_ssl_`-prefixed, all locals `unset` before return, always `return 0`, never `exit`, sets no
     shell options.
-- [ ] Thread the resolved pair through `_ssl_resolve_one`: call the helper once at the top, hold
+  *(completed: added as `_ssl_extensions_parent` (shared marker-check helper, factored out for Phase 2 reuse) plus `_ssl_roots_for_path`)*
+- [x] Thread the resolved pair through `_ssl_resolve_one`: call the helper once at the top, hold
   the result in two locals, and replace every use of `_SSL_TESTS_DIR` / `_SSL_SCRIPTS_ROOT`
   inside that function (stratum 0 self-identity, stratum (a) `cand1`/`cand2` existence checks,
   stratum (b) the two `grep -l` scans) with those locals. `suite_selection_select`,
-  `suite_selection_unmapped`, and `suite_selection_select_annotated` need no change.
-- [ ] Leave `_ssl_discovered_basenames` and the whole `--class`/`--tag`/`--cost-class` section on
+  `suite_selection_unmapped`, and `suite_selection_select_annotated` need no change. *(completed)*
+- [x] Leave `_ssl_discovered_basenames` and the whole `--class`/`--tag`/`--cost-class` section on
   the fixed library-local roots: they enumerate the discovered corpus for the runner, not a
-  touched path, and are explicitly out of scope.
-- [ ] Confirm by direct invocation that the reported defect is fixed and nothing narrowed:
+  touched path, and are explicitly out of scope. *(completed: left untouched)*
+- [x] Confirm by direct invocation that the reported defect is fixed and nothing narrowed:
   `source` the edited library and check that
   `suite_selection_select "agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh"`
   now prints `test-lean-challenge-snapshot.sh` (it printed `__FULL_SWEEP__` at planning time),
   while `suite_selection_select "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"`
-  still prints exactly `test-run-all-selection.sh`.
-- [ ] Confirm the sourcing contract: after sourcing in a fresh shell, no `_ssl_*` or `_SSL_SELF_*`
-  name introduced by this phase survives, and `$-` is unchanged.
+  still prints exactly `test-run-all-selection.sh`. *(deviation: altered — the lean path now resolves to `test-lean-challenge-snapshot.sh` as predicted, confirming the fix; the core-path prediction of a single-suite output does not hold before OR after this edit — direct invocation prior to editing already returned three suites (`test-orchestrate-build-dispatch.sh`, `test-run-all-selection.sh`, `test-validate-artifact.sh`) via the pre-existing stratum-(b) grep reference, each a genuine textual reference to this filename in those suites' own source. Output is byte-identical before and after the edit, which is the actual no-narrowing evidence this step exists to produce)*
+- [x] Confirm the sourcing contract: after sourcing in a fresh shell, no `_ssl_*` or `_SSL_SELF_*`
+  name introduced by this phase survives, and `$-` is unchanged. *(completed: confirmed via compgen -v diff and $- comparison; only pre-existing _SSL_SCRIPTS_ROOT/_SSL_TESTS_DIR module constants remain, predating this phase)*
 
 **Timing**: 1.25 hours
 

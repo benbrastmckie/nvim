@@ -120,6 +120,61 @@ unset _SSL_SELF_DIR
 # suite basename matches test-*.sh; this does not).
 SUITE_SELECTION_FULL_SWEEP_SENTINEL="__FULL_SWEEP__"
 
+# _ssl_extensions_parent -- stdout: the agent-system/extensions/ parent directory, but ONLY when
+# this library is running from the source store -- detected by the same marker check
+# tests/run-all.sh's own source-store/deployed dual-mode note already uses
+# (<parent>/core/manifest.json). Empty output (no line at all) in deployed mode, where that
+# marker never exists because every extension's scripts merge into one flat tree. Internal; not
+# part of the public API. Shared by _ssl_roots_for_path below and by
+# suite_selection_classify's cross-extension suite-file lookup, so the marker check is written
+# exactly once.
+_ssl_extensions_parent() {
+  local _ssl_parent
+  _ssl_parent="$(cd "${_SSL_SCRIPTS_ROOT}/../.." 2>/dev/null && pwd)"
+  if [ -n "${_ssl_parent}" ] && [ -f "${_ssl_parent}/core/manifest.json" ]; then
+    printf '%s\n' "${_ssl_parent}"
+  fi
+  unset _ssl_parent
+  return 0
+}
+
+# _ssl_roots_for_path PATH -- stdout: exactly two lines, the scripts root then the tests
+# directory that PATH's strata should be resolved against. When PATH names a literal
+# agent-system/extensions/<ext>/scripts/ path segment, this library is running from the source
+# store (per _ssl_extensions_parent above), and <ext>'s own scripts/ directory actually exists,
+# emits that extension's own two roots (<parent>/<ext>/scripts and
+# <parent>/<ext>/scripts/tests). In every other case -- a core path, deployed mode (where the
+# marker never exists), an unrecognized path shape, or a named extension that does not actually
+# have a scripts/ directory -- falls through unchanged to this library's own fixed
+# _SSL_SCRIPTS_ROOT / _SSL_TESTS_DIR, exactly as every caller already resolved before this
+# function existed. This is the one place the touched-path argument's directory structure (not
+# just its basename) is consulted. Internal; not part of the public API.
+_ssl_roots_for_path() {
+  local _ssl_path="$1"
+  local _ssl_parent _ssl_rest _ssl_ext _ssl_ext_scripts
+  local _ssl_out_scripts="${_SSL_SCRIPTS_ROOT}"
+  local _ssl_out_tests="${_SSL_TESTS_DIR}"
+
+  _ssl_parent="$(_ssl_extensions_parent)"
+  if [ -n "${_ssl_parent}" ]; then
+    case "${_ssl_path}" in
+      *agent-system/extensions/*/scripts/*)
+        _ssl_rest="${_ssl_path#*agent-system/extensions/}"
+        _ssl_ext="${_ssl_rest%%/scripts/*}"
+        _ssl_ext_scripts="${_ssl_parent}/${_ssl_ext}/scripts"
+        if [ -d "${_ssl_ext_scripts}" ]; then
+          _ssl_out_scripts="${_ssl_ext_scripts}"
+          _ssl_out_tests="${_ssl_ext_scripts}/tests"
+        fi
+        ;;
+    esac
+  fi
+
+  printf '%s\n%s\n' "${_ssl_out_scripts}" "${_ssl_out_tests}"
+  unset _ssl_path _ssl_parent _ssl_rest _ssl_ext _ssl_ext_scripts _ssl_out_scripts _ssl_out_tests
+  return 0
+}
+
 # _ssl_discovered_basenames -- stdout: every discovered suite basename (narrow + flat), one per
 # line, unsorted. Mirrors run-all.sh's own two-location discovery exactly (tests/test-*.sh plus
 # flat test-*.sh), scoped to this library's own scripts root.
@@ -142,18 +197,26 @@ _ssl_discovered_basenames() {
 }
 
 # _ssl_resolve_one PATH -- stdout: resolved suite basenames for ONE touched path, one per line,
-# de-duplicated. Empty output means UNMAPPABLE (strata a+b both missed). Internal; not part of
-# the public API.
+# de-duplicated. Empty output means UNMAPPABLE (strata a+b both missed). Resolves all three
+# strata against the root pair _ssl_roots_for_path derives for PATH -- that extension's own
+# scripts/ + scripts/tests/ for a recognized non-core source-store path, this library's own
+# fixed roots for everything else (a core path, deployed mode, or an unrecognized path shape).
+# Internal; not part of the public API.
 _ssl_resolve_one() {
   local _ssl_path="$1"
   local _ssl_base _ssl_noext _ssl_hit _ssl_cand1 _ssl_cand2 _ssl_f
-  local -a _ssl_hits=()
+  local _ssl_scripts_root _ssl_tests_dir
+  local -a _ssl_hits=() _ssl_roots=()
+
+  mapfile -t _ssl_roots < <(_ssl_roots_for_path "${_ssl_path}")
+  _ssl_scripts_root="${_ssl_roots[0]:-${_SSL_SCRIPTS_ROOT}}"
+  _ssl_tests_dir="${_ssl_roots[1]:-${_SSL_TESTS_DIR}}"
 
   _ssl_base="$(basename "${_ssl_path}")"
   _ssl_noext="${_ssl_base%.sh}"
 
   # Stratum 0: self-identity -- the touched path IS already a discovered suite.
-  if [ -f "${_SSL_TESTS_DIR}/${_ssl_base}" ] || [ -f "${_SSL_SCRIPTS_ROOT}/${_ssl_base}" ]; then
+  if [ -f "${_ssl_tests_dir}/${_ssl_base}" ] || [ -f "${_ssl_scripts_root}/${_ssl_base}" ]; then
     case "${_ssl_base}" in
       test-*.sh) _ssl_hits+=("${_ssl_base}") ;;
     esac
@@ -162,29 +225,29 @@ _ssl_resolve_one() {
   # Stratum (a): strict basename pairing, plus the lib/ "-lib.sh" suffix variant.
   _ssl_cand1="test-${_ssl_base}"
   _ssl_cand2="test-${_ssl_noext}-lib.sh"
-  if [ -f "${_SSL_TESTS_DIR}/${_ssl_cand1}" ]; then
+  if [ -f "${_ssl_tests_dir}/${_ssl_cand1}" ]; then
     _ssl_hits+=("${_ssl_cand1}")
   fi
-  if [ -f "${_SSL_SCRIPTS_ROOT}/${_ssl_cand1}" ]; then
+  if [ -f "${_ssl_scripts_root}/${_ssl_cand1}" ]; then
     _ssl_hits+=("${_ssl_cand1}")
   fi
-  if [ "${_ssl_cand2}" != "${_ssl_cand1}" ] && [ -f "${_SSL_TESTS_DIR}/${_ssl_cand2}" ]; then
+  if [ "${_ssl_cand2}" != "${_ssl_cand1}" ] && [ -f "${_ssl_tests_dir}/${_ssl_cand2}" ]; then
     _ssl_hits+=("${_ssl_cand2}")
   fi
 
   # Stratum (b): grep-based reference lookup, every suite that textually references the touched
   # basename. Many-to-one allowed.
-  if [ -d "${_SSL_TESTS_DIR}" ]; then
+  if [ -d "${_ssl_tests_dir}" ]; then
     while IFS= read -r _ssl_f; do
       [ -n "${_ssl_f}" ] || continue
       _ssl_hits+=("$(basename "${_ssl_f}")")
-    done < <(grep -l -F -- "${_ssl_base}" "${_SSL_TESTS_DIR}"/test-*.sh 2>/dev/null)
+    done < <(grep -l -F -- "${_ssl_base}" "${_ssl_tests_dir}"/test-*.sh 2>/dev/null)
   fi
-  if [ -d "${_SSL_SCRIPTS_ROOT}" ]; then
+  if [ -d "${_ssl_scripts_root}" ]; then
     while IFS= read -r _ssl_f; do
       [ -n "${_ssl_f}" ] || continue
       _ssl_hits+=("$(basename "${_ssl_f}")")
-    done < <(grep -l -F -- "${_ssl_base}" "${_SSL_SCRIPTS_ROOT}"/test-*.sh 2>/dev/null)
+    done < <(grep -l -F -- "${_ssl_base}" "${_ssl_scripts_root}"/test-*.sh 2>/dev/null)
   fi
 
   if [ "${#_ssl_hits[@]}" -gt 0 ]; then
@@ -192,6 +255,7 @@ _ssl_resolve_one() {
   fi
 
   unset _ssl_path _ssl_base _ssl_noext _ssl_hit _ssl_cand1 _ssl_cand2 _ssl_f _ssl_hits
+  unset _ssl_scripts_root _ssl_tests_dir _ssl_roots
   return 0
 }
 

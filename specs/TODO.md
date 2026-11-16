@@ -40,7 +40,7 @@ next_project_number: 638
   └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the... (see above)
 502 [NOT STARTED] — Require research reports to enumerate generated doc-sync surfaces
 503 [NOT STARTED] — Document /revise's unavailability to a dispatched agent
-505 [PLANNED] — Make covering-suite selection resolve a non-core extension's...
+505 [IMPLEMENTING] — Make covering-suite selection resolve a non-core extension's...
   └─ 564 [NOT STARTED] — Fix validate-artifact.sh Tier Justification false positive...
     └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
   └─ 584 [NOT STARTED] — Wire covering-suite selection into Gate 8 so an extension...
@@ -100,7 +100,7 @@ next_project_number: 638
     └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
     └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
 567 [NOT STARTED] — Port the deployed-tree containment strip into...
-568 [NOT STARTED] — Fix failing assertions in the orchestrate-cycle-postflight suite
+568 [RESEARCHING] — Fix failing assertions in the orchestrate-cycle-postflight suite
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
 ### Lean Extension
@@ -168,7 +168,7 @@ next_project_number: 638
   └─ 593 [NOT STARTED] — Require pinned Lean Challenge signatures to be measured at...
     └─ 594 [NOT STARTED] — Size symmetric-pair phases and iteration obligations separately
       └─ 595 [NOT STARTED] — Define Goal Polarity semantics for decision-gate plans (see above)
-607 [NOT STARTED] — Resolve the gate 20 orchestrator context-budget overage and...
+607 [RESEARCHING] — Resolve the gate 20 orchestrator context-budget overage and...
 629 [NOT STARTED] — Fix the two-engine defect: scan\_all\_artifacts' sync\_scan...
   └─ 630 [NOT STARTED] — Give test-deploy-propagation.sh and...
 631 [NOT STARTED] — Replace test-typescript-verify.sh's fixed-depth REPO\_ROOT...
@@ -196,7 +196,7 @@ next_project_number: 638
 
 ### Uncategorized
 
-585 [NOT STARTED] — Make the batch-gate deferral binding and cache repeat gate...
+585 [RESEARCHING] — Make the batch-gate deferral binding and cache repeat gate...
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
@@ -839,7 +839,7 @@ DURABLE EVIDENCE (in the BimodalLogic repo, /home/benjamin/Projects/BimodalLogic
 
 ### 607. Resolve the gate 20 orchestrator context-budget overage and the per-gate timeout sensitivity under concurrent load
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -1869,7 +1869,7 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deploy
 ---
 
 ### 585. Make the batch-gate deferral binding and cache repeat gate runs, so the full set runs once per batch
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Dependencies**: None
 
@@ -2664,7 +2664,7 @@ This repo's #519 (infra_exempt_transport_error_dispatch_deaths) is the sibling h
 
 ### 568. Fix failing assertions in the orchestrate-cycle-postflight suite
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
@@ -7146,7 +7146,7 @@ MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_li
 ---
 
 ### 505. Make covering-suite selection resolve a non-core extension's source-store scripts instead of escalating to a full sweep
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

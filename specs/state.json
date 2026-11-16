@@ -40632,7 +40632,7 @@
     {
       "project_number": 505,
       "project_name": "suite_selection_non_core_extension_paths",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Make covering-suite selection resolve a non-core extension's source-store scripts instead of escalating to a full sweep",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.\n\nORIGIN: Conclusion stage (channel b, agent-system change request) of an /orchestrate invocation that drove seven tasks to completion, session sess_1793947646_0784d9. User-approved at the lead level and dispatched to the meta builder for task creation only. The originating entry's own suggested_channel hint was agent_system; this routing agrees with the hint.\n\nCITATIONS -- {task 385, iss_1793948998156_m8PsvT} in specs/385_lean4_plan_with_zero_lean_goals/issues.jsonl (class \"missing cheap verification tier\", severity minor, plan phase, resolution worked_around, evidence_path agent-system/extensions/core/scripts/lib/suite-selection-lib.sh).\n\nSEVERITY: minor per the entry, but structurally broad: it affects covering-suite selection for every non-core extension, not one plan.\n\nLIVE SYMPTOM (verified by direct read of the source store at creation time; line numbers move, re-derive before editing): suite-selection-lib.sh maps touched paths against exactly ONE scripts tree -- agent-system/extensions/core/scripts when sourced from the source store, or the flat merged .claude/scripts tree when sourced from a deploy. Its own header states the limitation explicitly (around lines 41-47): \"Extending the mapping to reason about a SOURCE-STORE path belonging to a different extension while still un-deployed is explicitly out of scope\", justified at the time by a measurement that \"0 of 19 non-core suites were found to match the deployed-vs-source hazard this library also classifies -- a core-only phenomenon today\". The cited plan edited agent-system/extensions/lean/scripts/** in two separate phases; suite_selection_select returned the __FULL_SWEEP__ sentinel for those paths rather than naming the obvious paired suite test-lean-challenge-snapshot.sh. Worked around by hand-naming that suite's direct invocation as the covering check in each Tier Justification instead of a run-all.sh --only selection. Two separate tasks in the same batch hit this and applied the same hand workaround.\n\nWHY THE RECORDED OUT-OF-SCOPE NOTE DOES NOT DISPOSE OF IT: the note scopes out the deployed-vs-source CLASSIFICATION hazard for non-core suites (the source-only / source-first / deployed-first signal), and the 0-of-19 measurement is about that hazard. It does not establish that non-core source-store paths have no covering suite to select -- the cited incident is a direct counterexample, since test-lean-challenge-snapshot.sh is a real, named, cheap covering suite that the selector declined to name. Re-derive the 0-of-19 figure before relying on it; it is CARRIED-UNVERIFIED from the library header here.\n\nTHE ASK -- make the mapping resolve a covering suite for a source-store path under agent-system/extensions/<ext>/scripts/** for any <ext>, not core alone, and decide explicitly what happens to the deployed-vs-source classification for those suites:\n(1) Extend the path-to-suite mapping to walk every extension's source scripts/ and tests/ tree, so a touched non-core script resolves to its own extension's paired suite. The deployed-flat case must keep behaving exactly as it does today (one merged tree, where core-only and whole-tree already coincide).\n(2) Rule on the classification half: either extend the source-only / source-first / deployed-first signal to non-core suites too, or state in the header WHY the classification legitimately stays core-only while the SELECTION does not, and re-measure the figure the current note rests on rather than carrying it forward unexamined.\n(3) Keep __FULL_SWEEP__ as the honest answer where no suite covers a path. The defect is a false sweep escalation for a path that DOES have a covering suite, never the sentinel itself.\n\nHARD CONSTRAINTS:\n- The library is sourced, never executed; it must keep setting no shell options a caller inherits and exporting nothing a caller must guess at.\n- Do not narrow what the selector admits today. A path that resolves to a suite now must resolve to the same suite after the change.\n- Preserve the deployed-mode dual behaviour documented in run-all.sh's own source-store/deployed note; do not fork that convention.\n\nVERIFY: extend agent-system/extensions/core/scripts/tests/test-run-all-selection.sh (the existing suite for this library -- there is no test-suite-selection-lib.sh) with fixtures pinning (a) a touched agent-system/extensions/<non-core-ext>/scripts/ path resolving to that extension's own paired suite, (b) a genuinely uncovered path still returning __FULL_SWEEP__, (c) deployed-mode selection unchanged, and (d) the chosen classification ruling. Run the suite from both a source-store and a deployed vantage point.\n\nTERRITORY: agent-system/extensions/core/scripts/lib/suite-selection-lib.sh and tests/test-run-all-selection.sh are declared by no other open record -- this task holds them alone.\n\nORDERING NOTE, NOT A DEPENDENCY: the open record plan_format_tier_justification_fixes weighs requiring a plan author to RUN suite_selection_select and quote its actual output rather than asserting a covering suite. That requirement becomes materially better once this defect is fixed and materially worse before it -- mandating measurement from a selector that falsely escalates non-core paths would push authors toward full sweeps. No file overlap exists (that record declares only context/formats/plan-format.md), so no dependency edge is filed; if both are admitted to one batch, land this one first.\n\nMECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_lifecycle_command_prose_per_class declares whole directory prefixes (core/agents/, core/commands/, core/context/, core/hooks/, core/index-entries.json, core/manifest.json) and contain_deliberate_break_source_mutations declares core/scripts/tests/ and core/scripts/lint/ as prefixes, so the directory-prefix overlap predicate reports both against most agent-system records, including every record created in this batch. No dependency edge is filed, matching how the rest of this backlog treats those two blanket declarations. Re-check at admission time and file an edge if either has narrowed to a concrete file this record also touches.",
@@ -41732,8 +41732,8 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "last_updated": "2026-11-06T18:22:42Z",
-      "session_id": "sess_1793988163_b25d4a",
+      "last_updated": "2026-11-16T07:50:50Z",
+      "session_id": "sess_1794815389_748c3d",
       "next_artifact_number": 2
     },
     {
@@ -79035,7 +79035,7 @@
     {
       "project_number": 568,
       "project_name": "repair_orchestrate_cycle_postflight_suite",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "description": "Fix test-orchestrate-cycle-postflight.sh, which fails 25 of 304 assertions. Failures are status-name mismatches (e.g. expecting 'planning' where 'researching' is produced) and persisted_status drift. Confirmed pre-existing and unrelated to the file_scope reconciliation work that surfaced it: no diff exists for the suite or its target scripts (orchestrator-postflight.sh, update-task-status.sh) across that work. Determine whether the suite's expectations or the scripts' behaviour are wrong before changing either.\n\n--- ADDENDUM (orchestration conclusion stage, 2026-11-10; purely additive, nothing above altered) ---\nINDEPENDENTLY RE-OBSERVED, with two sibling failures found in the same scoped run. A scoped\nbatch-deferral gate run over an unrelated task's blast radius found this suite red at 25 failures,\ncorroborating this record's own count, and additionally reported a 'cleanup: command not found'\nshell error inside this suite -- a detail worth checking against the status-name/persisted_status\ndrift this record already names, since a shell error can mask or inflate assertion counts.\nTwo further pre-existing failures surfaced in the same run and are NOT this record's scope:\ntest-orchestrate-unwind-dispatch.sh at 11 failures (its fixture sandbox omits\nlib/project-number-inuse.sh from REQUIRED_LIB_SCRIPTS, so state-write.sh fails inside the test's\nown scratch repo -- being fixed separately as a direct fix), and\ntest-orchestrate-build-aux-dispatch.sh at 1 failure (reviser-agent model did not resolve to opus,\na manifest-routing model-resolution issue independently re-observed by a second task in the same\nbatch; it has no owning record yet). Evidence: issue-log entry iss_1794276383199_OBj82P in\nspecs/360_validate_carried_unverified_names_a_source/issues.jsonl.",
       "effort": "medium",
@@ -79043,7 +79043,7 @@
       "topic": "file-scope-lifecycle",
       "dependencies": [],
       "created": "2026-11-09T15:56:34Z",
-      "last_updated": "2026-11-10T15:49:47Z",
+      "last_updated": "2026-11-16T07:50:35Z",
       "artifacts": [],
       "audit_verdict": {
         "proposal": {
@@ -80950,7 +80950,8 @@
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
         "agent-system/extensions/core/scripts/update-task-status.sh"
-      ]
+      ],
+      "session_id": "sess_1794815389_748c3d_568"
     },
     {
       "project_number": 570,
@@ -99889,7 +99890,7 @@
     {
       "project_number": 585,
       "project_name": "redundant_gate_run_suppression",
-      "status": "not_started",
+      "status": "researching",
       "title": "Make the batch-gate deferral binding and cache repeat gate runs, so the full set runs once per batch",
       "task_type": "meta",
       "topic": null,
@@ -99903,7 +99904,7 @@
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
       "created": "2026-11-11T02:51:33Z",
-      "last_updated": "2026-11-11T02:51:33Z",
+      "last_updated": "2026-11-16T07:51:06Z",
       "description": "The two-mechanism design is already right and already built; adoption is the gap. Mechanism A (orchestrate-build-dispatch.sh's Batch Gate Deferral) narrows a final implement phase's OBLIGATION but not its BEHAVIOUR -- nothing forbids an additional full sweep and nothing detects one. Observed across one six-task batch: 2 of 5 implement dispatches honoured the scoped tier while 3 ran a full or exploratory gate set anyway, one of them running the full gate set with no flags twice. Measured concurrently: 9 live run-all.sh and 9 live verify-deploy.sh processes against nproc 24. Because the .gate-lock mutex deliberately serialises gate 8 (~11 min), nine batteries queue single-file behind it -- the direct cause of implement-phase wait loops of roughly 70 and 100 minutes in that batch.\n\nSECOND GAP: the gate cache has ZERO adoption in the lifecycle. A repo-wide grep for skip-unchanged across core scripts returns exactly one hit, the flag's own parser; no orchestrate caller passes it, and orchestrate-batch-gate.sh explicitly captures at full depth.\n\nTHE REMEDY IS ASYMMETRIC and must not be flattened: Move 4's once-per-invocation run KEEPS full depth, because caching it is a no-op (17 of 28 gates declare @extensions and every implement batch invalidates them) and it is the batch's only unconditional signal. Per-dispatch scoped runs, and any exploratory or repeat sweep, SHOULD default to --skip-unchanged, which is exactly the warm-unchanged case the cache was built for.\n\nSeed report: specs/585_redundant_gate_run_suppression/reports/01_redundant-gate-run-suppression.md\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.",
       "research_questions": "How binding can Mechanism A be made, and does an agent need a cheap sanctioned 'am I green?' probe more than a tighter prohibition -- three of five dispatches already violated the advisory one? If covering-suite selection lands in gate 8, do the scoped tier and the narrowed gate converge, reducing Mechanism A to 'run the gate, it is already narrow'? Does --skip-unchanged interact safely with the .gate-lock mutex, i.e. should a cache hit acquire it at all? Corpus completeness is the cache's one unproven axis: the equivalence suite proves a declared-corpus change forces a miss but not that declarations are complete, so does defaulting the cache need its own completeness check? Is gate-heavy co-scheduling a defect in admission -- argued on contention grounds only, since Settled decision 14 forbids citing cost as the reason?",
       "audit_verdict": {
@@ -101453,7 +101454,8 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "session_id": "sess_1794815389_748c3d_585"
     },
     {
       "project_number": 588,
@@ -121371,7 +121373,7 @@
       "project_number": 607,
       "project_name": "gate_20_context_budget_and_timeout_sensitivity",
       "title": "Resolve the gate 20 orchestrator context-budget overage and the per-gate timeout sensitivity under concurrent load",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.\n\nverify-deploy.sh gate 20 (orchestrator context budget) reports the eager-load total over its baseline: commands/orchestrate.md plus skills/skill-orchestrate/SKILL.md measure 71712B against a 70400B baseline. Decide between trimming the eager-load footprint of those two files -- moving inline contract prose behind on-demand backticked pointers, the pattern the rest of the system already uses -- and re-baselining the gate to a justified new figure, then apply the chosen remedy in the source store.\n\nSecond, narrower question: during a concurrent batch run, gates 8 and 10 of the same sweep were killed by their own 60s per-gate timeout; gate 10's underlying check (validate-state.sh --deep) then passed in 61s when re-run in isolation, confirming resource contention rather than a regression. Assess whether the per-gate timeout should scale with observed concurrency or simply be raised, so a loaded run does not report a timeout as a finding.\n\nOUT OF SCOPE: making the red Gate 8 shell suites green or declared-expected. That is a separate, already-open piece of work and must not be duplicated here.\n\nCHANNEL: /orchestrate conclusion channel (c), follow-up task.",
       "effort": "medium",
@@ -121379,7 +121381,7 @@
       "topic": "agent-system",
       "dependencies": [],
       "created": "2026-11-11T20:14:44Z",
-      "last_updated": "2026-11-11T20:14:44Z",
+      "last_updated": "2026-11-16T07:51:21Z",
       "artifacts": [],
       "audit_verdict": {
         "proposal": {
@@ -123618,7 +123620,8 @@
         "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
         "agent-system/extensions/core/scripts/gate-registry.data",
         "agent-system/extensions/core/scripts/verify-deploy.sh"
-      ]
+      ],
+      "session_id": "sess_1794815389_748c3d_607"
     },
     {
       "project_number": 609,

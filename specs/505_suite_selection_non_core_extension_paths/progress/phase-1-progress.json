@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Per-Touched-Path Extension-Root Resolution in _ssl_resolve_one",
+  "started_at": "2026-11-15T00:00:00Z",
+  "last_updated": "2026-11-15T00:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read suite-selection-lib.sh and re-derive current line numbers", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add _ssl_roots_for_path helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 3, "description": "Thread resolved pair through _ssl_resolve_one", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 4, "description": "Confirm defect fixed and nothing narrowed via direct invocation", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm sourcing contract (no leaked names, $- unchanged)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.4",
+      "description": "Confirm by direct invocation that the reported defect is fixed and nothing narrowed",
+      "type": "altered",
+      "reason": "The plan's core-path prediction of a single-suite output (test-run-all-selection.sh alone) does not hold before or after the edit: direct invocation prior to editing already returned three suites via the pre-existing stratum-(b) grep reference. Output is byte-identical before/after, which is the real no-narrowing evidence.",
+      "annotation": "*(deviation: altered — the lean path now resolves to test-lean-challenge-snapshot.sh as predicted, confirming the fix; the core-path prediction of a single-suite output does not hold before OR after this edit ... Output is byte-identical before and after the edit, which is the actual no-narrowing evidence this step exists to produce)*"
+    }
+  ],
+  "notes": "Live defect confirmed before edit: suite_selection_select on agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh returned __FULL_SWEEP__. After edit it resolves to test-lean-challenge-snapshot.sh (plus test-lean-plan-compliance-check.sh via stratum-b grep reference). Core-path selection output is byte-identical before/after (test-orchestrate-build-dispatch.sh, test-run-all-selection.sh, test-validate-artifact.sh). Pre-existing _SSL_SCRIPTS_ROOT/_SSL_TESTS_DIR module constants are not unset by design (predates this phase); no new name leaked. $- unchanged (hBc). run-all.sh --only test-run-all-selection.sh passes with the suite's pre-existing case set unmodified. lint-shellcheck.sh exits 0 with zero findings."
+}
