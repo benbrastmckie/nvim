@@ -896,16 +896,48 @@ saving; this is a property of the mapping being honest (many-to-one, not tuned),
   declined-for-now. No concrete interactive caller was identified, and the mapping library always
   emits an exact resolved basename list, never a pattern, so nothing today would consume pattern
   syntax. Revisit if a caller needs pattern matching the library's own strata cannot express.
-- A `verify-deploy.sh` pass-through for `--only` -- not built. Gate 8 keeps invoking the full
-  sweep unchanged by design (narrowing Gate 8's own default would violate the non-negotiable
-  "tiering governs granularity only, never the final gate" invariant), and a cheaper mid-task
-  phase gate can invoke `run-all.sh --only` directly without going through `verify-deploy.sh` at
-  all. Revisit as a follow-up only if a concrete caller needs `--only` reachable specifically
-  through the `verify-deploy.sh` CLI surface.
 
 Regression coverage for both halves of this mechanism (the mapping library's escalation and
 classification behavior, and the flag's validation/parity behavior on a deterministic synthetic
 fixture) lives in `tests/test-run-all-selection.sh`.
+
+### Gate 8's own touched-paths narrowing: `--gate8-touched` (`verify-deploy.sh`)
+
+`verify-deploy.sh`'s Gate 8 (the shell test suite runner) accepts an opt-in
+`--gate8-touched PATH[,PATH...]` input that resolves the given path(s) through
+`suite_selection_select` (the exact mapping library documented above) and narrows Gate 8's OWN
+internal `run-all.sh` invocation to `--only <that set>` when a real suite set comes back. This
+changes WHAT Gate 8 runs; it never changes WHICH gates run (`--only-gate` remains the only way to
+select gates), and the flag's absence leaves every caller's output byte-identical to a build with
+no narrowing capability at all -- `GATE8_TOUCHED` is read nowhere on that path. A touched path
+with no covering suite (or a missing `suite-selection-lib.sh` copy) falls back to today's
+unnarrowed invocation via the full-sweep sentinel, never a zero-suite `--only`.
+
+**Honesty constraint, stated plainly and not softened**: a narrowed Gate 8 pass is NOT evidence
+of full-battery coverage, the same accepted trade-off this document already states for
+`--skip-slow` and bare `--only`. The narrowed branch's own `[PASS]` message says so explicitly
+(naming the selected-suite count and "NOT a full-battery pass"), and is deliberately a different
+string from the unnarrowed `"run-all.sh: all discovered suites passed"` that
+`test-gate8-expected-new-distinction.sh` and `test-gate-lock.sh` assert verbatim -- a narrowed
+pass must never be textually indistinguishable from a full-battery one.
+
+**Forced cache-ineligibility invariant**: a narrowed Gate 8 run, pass or fail, unconditionally
+forces `gate8` onto `GATE_DIRTY_LIST` before its own verdict is decided. This closes a hazard
+`--skip-unchanged`'s generic cache-write block cannot see on its own: that block computes its
+write key from Gate 8's DECLARED `@extensions` corpus digest and has no knowledge of an internal
+`--only`, so without this invariant a clean narrowed pass would silently write a full-corpus
+cache entry, certifying suites that never ran. A narrowed run is therefore never
+cache-write-eligible under `--skip-unchanged`, regardless of its outcome.
+
+This input is caller-supplied, never derived inside `verify-deploy.sh` itself (not from git, not
+from the gate cache -- which persists one opaque aggregate hash per gate, never a per-file map --
+and not from `invocation_modified_files`, which lives in the orchestrator). Wiring an actual
+caller to supply touched paths (an orchestrator batch-gate call site, for example) is separate
+work; this mechanism is the opt-in surface a caller reaches for, not itself a caller.
+
+Regression coverage for the narrowing, the sentinel fallback, the absent-flag byte-identity
+guarantee, and the forced cache-ineligibility invariant lives in
+`tests/test-gate8-suite-selection.sh`.
 
 ### End-of-run failure roster and the known-failures baseline
 

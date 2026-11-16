@@ -328,27 +328,35 @@ code path, so the covering check is running that newly added suite file directly
 
 ---
 
-### Phase 4: Document the narrowing and its coverage trade-off [NOT STARTED]
+### Phase 4: Document the narrowing and its coverage trade-off [COMPLETED]
 
 **Goal**: The new input, its forced-dirty invariant, and the deliberately unnarrowed Move 4 are
 recorded where a future reader finds them without reconstructing the reasoning from two task
 directories.
 
 **Tasks**:
-- [ ] In `context/standards/shell-script-testing.md`'s suite-selection section, document Gate 8's
+- [x] In `context/standards/shell-script-testing.md`'s suite-selection section, document Gate 8's
       opt-in `--gate8-touched` input: what it narrows, the sentinel fallback, and the invariant
-      that a narrowed run is never cache-write-eligible.
-- [ ] State explicitly that a narrowed Gate 8 pass is **not** evidence of full-battery coverage -
+      that a narrowed run is never cache-write-eligible. *(completed; also removed the now-stale
+      "A verify-deploy.sh pass-through for --only -- not built" declined-alternative bullet, which
+      this phase's own work directly contradicts)*
+- [x] State explicitly that a narrowed Gate 8 pass is **not** evidence of full-battery coverage -
       the same honesty constraint the standard already applies to `--skip-slow` and `--only`.
-- [ ] In `context/contracts/batch-gate-stage.md`, add the convergence subsection research
+      *(completed)*
+- [x] In `context/contracts/batch-gate-stage.md`, add the convergence subsection research
       recommended: Mechanism A's `--only-gate 8` can now be made genuinely suite-narrow by a caller
       supplying touched paths, while Move 4's once-per-invocation run remains unnarrowed and is the
-      batch's only unconditional signal, pending the decision recorded as D3 above.
-- [ ] Verify both files exist before editing (both confirmed present at plan-authoring time,
+      batch's only unconditional signal, pending the decision recorded as D3 above. *(completed)*
+- [x] Verify both files exist before editing (both confirmed present at plan-authoring time,
       2026-11-16); if either has been renamed or retired by then, record the deviation and place
-      the content in its replacement rather than recreating the old path.
-- [ ] Do **not** hand-edit `index-entries.json`'s `line_count` values; Phase 5's redeploy
-      regenerates them (see the declaration note below).
+      the content in its replacement rather than recreating the old path. *(completed: both
+      present, unrenamed)*
+- [x] Do **not** hand-edit `index-entries.json`'s `line_count` values; Phase 5's redeploy
+      regenerates them (see the declaration note below). *(completed: left untouched)*
+- [x] *(deviation: altered -- added a one-line `agent-system/extensions/core/manifest.json`
+      `provides.scripts` entry for Phase 3's new suite file, outside this task's declared
+      `file_scope` but required for the suite to be deployable at all; doc-lint (gate 3) caught
+      the gap directly. See `issues.jsonl`.)*
 
 **Timing**: 0.75 hours
 
@@ -380,8 +388,15 @@ with a diff read-through confirming every hunk lies in prose.
 
 **Verification**:
 - `--only-gate 3,4` with the repository root as TARGET passes (doc-lint and task-reference lint clean).
-- Diff read-through confirms every changed hunk is prose.
-- Neither document asserts that a narrowed Gate 8 pass equals a full-battery pass.
+  *(task-reference lint clean, confirmed. Doc-lint reports exactly the three findings this
+  phase's own Scope Hypothesis already declared non-blocking and deferred: deployed-vs-source
+  content drift on `verify-deploy.sh` -- pending Phase 5's redeploy -- and the two
+  `index-entries.json` `line_count` mismatches for the two edited docs. Zero NEW findings beyond
+  those three and the manifest-registration gap, which was fixed directly rather than deferred.)*
+- Diff read-through confirms every changed hunk is prose. *(confirmed: `git diff --stat` on both
+  docs plus the one-line manifest.json addition, no other hunks)*
+- Neither document asserts that a narrowed Gate 8 pass equals a full-battery pass. *(confirmed:
+  both new sections state the honesty constraint explicitly)*
 
 ---
 

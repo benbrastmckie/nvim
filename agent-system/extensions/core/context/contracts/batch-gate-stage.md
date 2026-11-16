@@ -33,6 +33,23 @@ arbitrary task. This is the stage's load-bearing acceptance claim: the shared ru
 cheaper than N per-task runs, it is also a MORE HONEST attribution than a per-task run under
 concurrency, where every sibling's in-flight edits pollute every other sibling's own gate result.
 
+## Suite-Level Narrowing Convergence (Gate 8)
+
+Mechanism A's scoped `verify-deploy.sh --only-gate 8` directive selects GATES, not suites — it
+still runs Gate 8's complete shell-test battery, only skipping every OTHER gate. `verify-deploy.sh`
+separately carries an opt-in, caller-supplied `--gate8-touched PATH[,PATH...]` input
+(`context/standards/shell-script-testing.md`'s "Gate 8's own touched-paths narrowing" section) that
+narrows Gate 8's OWN internal `run-all.sh` invocation to the covering suite(s) for the given
+path(s). The two compose: a caller holding both a scoped gate selection and a touched-paths list
+can reach a result genuinely narrower than "all of Gate 8," not just "only Gate 8 among the 29."
+
+This stage's own Move 4 run never carries `--gate8-touched` and stays unnarrowed by design — it
+is the batch's one unconditional, full-coverage signal, and narrowing it would trade that away for
+a per-batch cost reduction with no periodic full-sweep cadence yet built to compensate. Wiring
+Mechanism A's own emitted directive (or `orchestrate-batch-gate.sh`'s Move 4 call site) to
+actually supply touched paths is separate, not-yet-built work — this section records the
+convergence point a future caller would use, not a claim that either call site uses it today.
+
 ## Trigger
 
 A no-op (exit 0, one explanatory line, no `batch_gate` key written to the multi-task state file)
