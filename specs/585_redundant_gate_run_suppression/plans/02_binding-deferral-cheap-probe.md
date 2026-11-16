@@ -175,38 +175,43 @@ is the verbatim `suite_selection_select` covering set for both files this phase 
 
 ---
 
-### Phase 2: Sync the consumer contracts and the derived line counts [NOT STARTED]
+### Phase 2: Sync the consumer contracts and the derived line counts [COMPLETED]
 
 **Goal**: the four documents that restate Mechanism A's invocation shapes describe what the
 composer now emits, and the source index's derived `line_count` values stay accurate for the two
 context files this phase grows.
 
 **Tasks**:
-- [ ] Re-read each target file immediately before editing it.
-- [ ] `context/contracts/batch-gate-stage.md` ("Narrowing-invocation paths are resolved, not
+- [x] Re-read each target file immediately before editing it. *(completed)*
+- [x] `context/contracts/batch-gate-stage.md` ("Narrowing-invocation paths are resolved, not
       hardcoded", the two-invocation sentence): state that the `verify-deploy.sh --only-gate`
       form carries `--skip-unchanged` as the sanctioned cheap probe and that the `run-all.sh
       --only` form does not, because `run-all.sh` does not parse that flag and a narrowed run
-      already bypasses the `specs/.gate-lock` bracket.
-- [ ] `context/formats/plan-format.md` ("Batch-aware deferral", the "What the override changes"
+      already bypasses the `specs/.gate-lock` bracket. *(completed)*
+- [x] `context/formats/plan-format.md` ("Batch-aware deferral", the "What the override changes"
       paragraph): update both deploy-target and source-store invocation shapes to match the
       emitted text, and add one sentence that the cheap probe does not relax the
       "`--skip-unchanged` is never a tier" reading already stated for `--skip-slow` and
       `--only`/`--only-gate` — it narrows cost, never the set of checks a phase's criteria
-      require.
-- [ ] `agents/general-implementation-agent.md` ("Batch Gate Deferral (final phase only)"): name
+      require. *(completed)*
+- [x] `agents/general-implementation-agent.md` ("Batch Gate Deferral (final phase only)"): name
       the cheap probe for repeat checks and add the no-additional-full-sweep obligation, mirroring
-      the directive's own wording, including that an escalation records the unmappable criterion.
-- [ ] `context/contracts/phase-closure.md`: read the no-promotion-without-evidence carve-out and
+      the directive's own wording, including that an escalation records the unmappable criterion. *(completed)*
+- [x] `context/contracts/phase-closure.md`: read the no-promotion-without-evidence carve-out and
       confirm whether it restates either invocation shape. Edit it only if it does; if it merely
-      cross-references, leave it unchanged and say so in the phase notes.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` and
+      cross-references, leave it unchanged and say so in the phase notes. *(completed: confirmed
+      it only cross-references `plan-format.md` and `batch-gate-stage.md` by name — no invocation
+      shape or flag text restated — left unchanged)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` and
       read the flagged set. If the only flagged entries are `formats/plan-format.md` and
       `contracts/batch-gate-stage.md`, run `--write`. If any other entry is flagged, do NOT run
       `--write`: hand-correct only this task's own two `line_count` values in
       `agent-system/extensions/core/index-entries.json` and report the foreign drift per the
-      dispatch's territory note.
-- [ ] Stage each file by explicit name; never a directory or glob pathspec.
+      dispatch's territory note. *(completed: exactly these two entries flagged, `--write` run,
+      re-check passed with 0 mismatches; also ran the source-store script directly first, which
+      correctly refuses with a guidance error when run outside a deployed tree — confirming no
+      source-store invocation path was missed)*
+- [x] Stage each file by explicit name; never a directory or glob pathspec. *(completed)*
 
 **Timing**: 1 hour
 

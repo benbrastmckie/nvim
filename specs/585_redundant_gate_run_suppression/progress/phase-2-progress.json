@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Sync the consumer contracts and the derived line counts",
+  "started_at": "2026-11-16T12:51:00Z",
+  "last_updated": "2026-11-16T12:59:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read each target file before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Edit batch-gate-stage.md cheap-probe/asymmetry sentence", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/batch-gate-stage.md"]},
+    {"id": 3, "description": "Edit plan-format.md Batch-aware deferral invocation shapes + never-a-tier sentence", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 4, "description": "Edit general-implementation-agent.md cheap probe + no-additional-full-sweep obligation", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 5, "description": "Check phase-closure.md -- confirmed cross-reference only, no edit needed", "status": "done", "files_touched": []},
+    {"id": 6, "description": "generate-context-line-counts.sh --check then --write for the two flagged entries", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 7, "description": "Stage each file by explicit name", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Scope-hypothesis grep surfaced a 5th file (context/standards/shell-script-testing.md) matching the --only/--only-gate pattern; read it and confirmed it documents the flags' general semantics for the testing infrastructure, never Mechanism A's emitted directive text or the Batch Gate Deferral section by name -- left unedited.",
+    "phase-closure.md's no-promotion-without-evidence carve-out only cross-references plan-format.md and batch-gate-stage.md by name; it restates neither invocation shape nor any flag -- left unedited per the plan's conditional instruction.",
+    "verify-deploy.sh --only-gate 3 --skip-unchanged reports FAIL overall due to deployed-script-content-drift findings on orchestrate-build-dispatch.sh and its test file (expected: the deployed .claude/ mirror has not yet been regenerated from the Phase-1-edited source store; Phase 3 redeploys). Zero 'Rule R' findings -- the specific criterion this phase's own Verification names -- confirming the line_count fix is clean."
+  ]
+}

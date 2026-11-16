@@ -512,15 +512,28 @@ whether the dispatch file (`.dispatch/{seq}.md`) carries a `## Batch Gate Deferr
 does, and this is the plan's final phase declaring `**Verification Tier**: full`, discharge the
 phase against the scoped tier the directive names instead of independently invoking
 `verify-deploy.sh` at full depth — run the directive's named narrowing invocation
-(`run-all.sh --only SUITE[,...]` or `verify-deploy.sh --only-gate N[,...]`) covering the files this
-phase actually touched. Record in the phase's own verification notes (progress file and/or
-handoff) that the full gate set was deferred to the once-per-invocation batch-level stage rather
-than run independently in this dispatch — see `context/contracts/phase-closure.md`'s
-no-promotion-without-evidence carve-out and `context/formats/plan-format.md`'s "Batch-aware
-deferral" subsection for the contract this honors. **MUST NOT** treat the directive's presence as
-license to skip verification entirely (the scoped tier's own check still runs and must still be
-observed green), and **MUST NOT** apply this narrowing to any phase whose dispatch file carries no
-such section — a dispatch without the section is held to the unqualified `full` obligation.
+(`run-all.sh --only SUITE[,...]` or `verify-deploy.sh --only-gate N[,...] --skip-unchanged`)
+covering the files this phase actually touched. Record in the phase's own verification notes
+(progress file and/or handoff) that the full gate set was deferred to the once-per-invocation
+batch-level stage rather than run independently in this dispatch — see
+`context/contracts/phase-closure.md`'s no-promotion-without-evidence carve-out and
+`context/formats/plan-format.md`'s "Batch-aware deferral" subsection for the contract this
+honors. **MUST NOT** treat the directive's presence as license to skip verification entirely (the
+scoped tier's own check still runs and must still be observed green), and **MUST NOT** apply this
+narrowing to any phase whose dispatch file carries no such section — a dispatch without the
+section is held to the unqualified `full` obligation.
+
+**Cheap probe, and no additional full sweep.** `--skip-unchanged` on the `--only-gate` form
+above returns `[SKIP-CACHED]` immediately for every gate whose declared input corpus this
+dispatch did not touch — use it for every repeat or exploratory re-check of an already-green
+scoped tier, not only the first check, since it costs seconds instead of a battery. **MUST NOT**
+run the complete gate set anyway, unflagged or a second time: under a multi-task batch each such
+sweep queues single-file behind Gate 8's `specs/.gate-lock` mutex and stalls every sibling
+dispatch. The only sanctioned escalation to a full sweep is the UNMAPPABLE CRITERION carve-out
+the directive itself names — a phase's own declared verification criterion naming a
+repository-specific check neither narrowing invocation can express — and that escalation MUST
+name the specific unreachable criterion in the phase's own verification notes rather than
+reverting to a full sweep silently.
 
 **D. Mark Phase Complete**
 Call `update-phase-status.sh` to mark the phase finished:
