@@ -1,0 +1,16 @@
+{
+  "task_number": 547,
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "dispatch_seq": 8,
+  "summary": "Created a 6-phase implementation plan adopting the research phase's settled decisions: Item 1 takes shape (a) confirm-then-clear with shape (c)'s audibility bar layered on at the escalation cap, and Item 2 takes shape (ii) keyed on aux_pending chain state, placed in orchestrate-cycle-plan.sh's post-triage seam rather than inside orchestrate-triage-classify.sh. Every premise line the dispatch extracted was re-validated against the live source store and recorded in a table in the plan; all confirmed except one newly overturned. The plan validates clean with zero warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/547_orchestrate_aux_carrier_and_implement_readmission/plans/01_aux-carrier-implement-readmission.md",
+      "summary": "6-phase, 7.5-hour plan closing the blocker-research carrier confirmation gap and the implement-readmission gap, with failing-first tests in both existing suites and a full-gate final phase."
+    }
+  ]
+}
