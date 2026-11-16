@@ -140,10 +140,12 @@ for this being the system's first *blocking* staleness gate.
 postflight boundary (Move 3) — the existing per-dispatch postflight contract stays exactly as
 written for every skill. This section governs a DISTINCT, LATER actor: `/orchestrate`'s own
 conclusion stage (Move 5), which runs exactly once per invocation, strictly AFTER Move 4 has
-emitted the consolidated output and the batch's own state has been closed and committed. Nothing
-in this section relaxes the Move 3 tables above for any skill, and nothing above governs Move 5.
-See `context/contracts/conclusion-stage.md` for the stage's full derivation contract and
-executable body.
+rendered and staged the consolidated output (never emitted it — that happens only at this
+stage's own Step 6) and the batch's own state has been closed and committed. The roadmap-update
+step (Step 5 below) has ALREADY run by this point too, from Move 4, via its own script — see
+that step's entry in the Bash row below. Nothing in this section relaxes the Move 3 tables above
+for any skill, and nothing above governs Move 5. See `context/contracts/conclusion-stage.md` for
+the stage's full derivation contract and executable body.
 
 ### Allowed Tool Surface
 
@@ -152,7 +154,7 @@ executable body.
 | `Read` | `specs/{NNN}_*/issues.jsonl` for every task this invocation touched (the stage's sole evidence base) |
 | `AskUserQuestion` | Channel (a)'s single approval gate, AND Step 7's single `edges` approval gate for the next-batch edge write — two independent gates, each under its own key; channels (b) and (c) record evidence unconditionally and are never asked about |
 | `Agent` | Channel (a)'s dispatch of an implementation agent with the approved fix list |
-| `Bash` | `orchestrate-conclusion-aggregate.sh` (`--aggregate`/`--record-approval`/`--check-approval`), `events-append.sh`, `generate-todo.sh`, `lib/roadmap-preflight-lib.sh classify` (the Step 5 preflight; `scaffold` is NOT in scope here — see Prohibited below), `roadmap-integration.sh --regenerate`, `lint/lint-roadmap-batch-proposals.sh`, `issue-record.sh` (Step 5's per-task degrade loop only), `orchestrate-suggest-next-batch.sh` (both its default propose-only form and its gated `--write-edges` form), `git-commit-scoped.sh` |
+| `Bash` | `orchestrate-conclusion-aggregate.sh` (`--aggregate`/`--record-approval`/`--check-approval`), `events-append.sh`, `generate-todo.sh`, `orchestrate-conclusion-roadmap.sh` (Step 5's one executable copy — already run from Move 4 by the time this stage's own Bash surface is exercised; named here for completeness, never re-invoked from this body), `orchestrate-suggest-next-batch.sh` (both its default propose-only form and its gated `--write-edges` form), `git-commit-scoped.sh`, and (Step 6's own final action) deleting this invocation's conclusion-stage pending marker via `lib/runtime-file-patterns.sh`'s path resolver |
 | `Edit`/`Write` on source files | Only INSIDE a channel-(a)-dispatched agent's own turn — never in the stage body itself |
 
 ### Prohibited

@@ -12,6 +12,7 @@
   },
   "dispatch_seq": 5,
   "proposed_file_scope": [
-    "agent-system/extensions/core/context/config/orchestrator-context-budget.json"
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/index-entries.json"
   ]
 }

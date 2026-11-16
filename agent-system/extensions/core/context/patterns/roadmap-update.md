@@ -142,11 +142,13 @@ special-cased per caller.
 
 `--regenerate` has four live callers today, independent of each other:
 
-1. `/orchestrate`'s conclusion stage (Move 5, Step 5 — see
-   `context/contracts/conclusion-stage.md`), which invokes it once per batch run, immediately
-   after Move 4 finalizes, and commits `specs/ROADMAP.md` alone. **Arm**: non-interactive —
-   loud degrade plus durable evidence on `absent`/`unknown`, since this surface has no approver
-   present.
+1. `scripts/orchestrate-conclusion-roadmap.sh`, the mechanical executor of /orchestrate's
+   conclusion-stage roadmap-update step (Step 5 — see `context/contracts/conclusion-stage.md`).
+   It fires once per invocation, unconditionally, from Move 4's finalize sequence
+   (`skills/skill-orchestrate/SKILL.md`'s Move 4, immediately after the Batch Gate Stage) —
+   never from Move 5 itself, which has already seen the step run by the time it begins — and
+   commits `specs/ROADMAP.md` alone. **Arm**: non-interactive — loud degrade plus durable
+   evidence on `absent`/`unknown`, since this surface has no approver present.
 2. `roadmap-agent.md`'s own Write Contract, dispatched by `skill-roadmap/SKILL.md` for every
    `/roadmap` invocation; `skill-roadmap/SKILL.md`'s Stage 1 preflight runs before this agent is
    ever dispatched, so its own `--regenerate` call always lands on an already-`classic` (or

@@ -432,13 +432,13 @@ land — a third discovered-but-unclassified suite would surface there, not at r
 
 ---
 
-### Phase 5: State the resulting design in the contract prose [NOT STARTED]
+### Phase 5: State the resulting design in the contract prose [COMPLETED]
 
 **Goal**: Every prose surface that describes this step describes what now happens, with the two
 rulings recorded.
 
 **Tasks**:
-- [ ] `context/contracts/conclusion-stage.md`: rewrite `### Step 5 — Roadmap update` as the
+- [x] `context/contracts/conclusion-stage.md`: rewrite `### Step 5 — Roadmap update` as the
       authoritative description of *what* the step does plus a pointer naming
       `orchestrate-conclusion-roadmap.sh` as its sole executor and Move 4 as its sole call site,
       stating that the step has already run by the time Move 5 begins. Remove the executable
@@ -448,27 +448,30 @@ rulings recorded.
       Stage Body" preamble, and update that preamble's "immediately after Move 4's full
       finalization sequence (consolidated output, …)" clause, which the reorder makes wrong.
       Re-read the file immediately before editing (concurrent sibling territory) and stage this
-      path alone.
-- [ ] `context/patterns/roadmap-update.md`: rewrite Live Callers entry 1 to name the script as
+      path alone. *(completed: committed alone, as its own commit, separate from the other three files)*
+- [x] `context/patterns/roadmap-update.md`: rewrite Live Callers entry 1 to name the script as
       the actual call site and Move 4 as where it fires, keeping the "non-interactive — loud
       degrade … since this surface has no approver present" arm description, which this move
-      does not change. Leave the advisory-lint disposition paragraph alone.
-- [ ] `context/standards/postflight-tool-restrictions.md`: in the Conclusion Stage allowed-`Bash`
+      does not change. Leave the advisory-lint disposition paragraph alone. *(completed)*
+- [x] `context/standards/postflight-tool-restrictions.md`: in the Conclusion Stage allowed-`Bash`
       row, replace the individually-enumerated Step 5 primitives
       (`lib/roadmap-preflight-lib.sh classify`, `roadmap-integration.sh --regenerate`,
       `lint/lint-roadmap-batch-proposals.sh`, `issue-record.sh`'s degrade loop) with the one
       script, and add the marker deletion. Keep every Prohibited bullet — the `scaffold`,
       `--prune`, and caller-contract-editing prohibitions all still bind, now inside the script.
       Correct the section's own "strictly AFTER Move 4 has emitted the consolidated output"
-      preamble, which the reorder makes wrong.
-- [ ] `context/patterns/orchestrate-batch-results-template.md`: correct the opening line's
+      preamble, which the reorder makes wrong. *(completed)*
+- [x] `context/patterns/orchestrate-batch-results-template.md`: correct the opening line's
       attribution (it currently names "Move 3") to the Move 5 Step 6 emission site, and reconcile
       the `### Conclusion` section note — its claim that the section renders "after this
       template's render completes" is now literally true of one single emission, which is worth
-      saying plainly rather than leaving as an inference.
-- [ ] Re-read all four files after editing and confirm no task-number reference and no
+      saying plainly rather than leaving as an inference. *(completed)*
+- [x] Re-read all four files after editing and confirm no task-number reference and no
       record-versioning language landed (both are repo-wide rules outside `specs/**`, and both
-      have commit-blocking enforcement).
+      have commit-blocking enforcement). *(completed: `check-task-references.sh` found one
+      unrelated unbalanced-marker defect in Phase 4's own test suite — a missing
+      `task-ref-ok:end` — fixed in place; `check-record-versioning.sh`'s 3 BLOCKING hits are all
+      pre-existing, in an unrelated himalaya Lua-plugin doc tree, none in this phase's four files)*
 
 **Timing**: 1.25 hours
 
@@ -495,11 +498,17 @@ list or Phase 2's means the enumeration was short and the phase is not done.
   caller attribution and the `### Conclusion` section note
 
 **Verification**:
-- `bash .claude/scripts/check-extension-docs.sh --quiet` passes
+- `bash .claude/scripts/check-extension-docs.sh --quiet` passes — confirmed (`PASS: all
+  extensions OK`, after a routine `generate-context-line-counts.sh --write` Rule R line-count fix
+  run via `deploy-headless.sh`)
 - `bash .claude/scripts/check-task-references.sh` and
-  `bash .claude/scripts/check-record-versioning.sh` pass
+  `bash .claude/scripts/check-record-versioning.sh` pass — `check-task-references.sh` confirmed
+  (`PASS: 0 unexempted task-reference occurrences`, after fixing a missing `task-ref-ok:end`
+  marker Phase 4's own test suite had left unbalanced); `check-record-versioning.sh` reports 3
+  pre-existing BLOCKING hits repo-wide, all in `lua/neotex/plugins/tools/himalaya/docs/` (unrelated
+  to this task) — none in this phase's four files
 - `grep -c '```bash' context/contracts/conclusion-stage.md` shows Step 5's code blocks gone (one
-  executable copy, in the script)
+  executable copy, in the script) — confirmed: Step 5's own section carries zero `bash` fences
 
 ---
 

@@ -1,12 +1,14 @@
 # Orchestrate Batch Results Template
 
-This file holds the `## Batch Orchestrate Results` consolidated-output template that
-`skill-orchestrate/SKILL.md` Move 3 emits after the lifecycle-cycling loop exits.
-It was extracted verbatim from `commands/orchestrate.md`'s former inline fence, before batch-output
-ownership moved to Move 3. The template MUST be followed exactly — every interleaved "rendered
-only when X" / "populated from Y" gating rule on each of its twelve `###`-level subsections is
-part of the contract, not commentary. Read this file at the Move 3 call site before emitting the
-consolidated output.
+This file holds the `## Batch Orchestrate Results` consolidated-output template.
+`skill-orchestrate/SKILL.md` Move 4 renders and stages it after the lifecycle-cycling loop
+exits, but Move 5's own Step 6 is the sole site that EMITS it — folded into that step's combined
+report alongside the conclusion stage's own channels. It was extracted verbatim from
+`commands/orchestrate.md`'s former inline fence, before batch-output ownership moved into the
+four-move loop. The template MUST be followed exactly — every interleaved "rendered only when X"
+/ "populated from Y" gating rule on each of its twelve `###`-level subsections is part of the
+contract, not commentary. Read this file at Move 4's render-and-stage step, and again at Move 5
+Step 6's emission, before the consolidated output is ever shown.
 
 ```markdown
 ## Batch Orchestrate Results
@@ -191,10 +193,14 @@ succeed" vs. "did the complete gate set, run once for the whole batch, find anyt
 
 ### Conclusion
 
-(Rendered once per invocation, after this template's render completes, from Move 5 — see
-`context/contracts/conclusion-stage.md`. ALWAYS placed last, immediately before `### Next Steps`,
-since Move 5 runs only after Move 4 has fully finalized, including this template's own render.
-Never merged with `### System Defects Detected` above: that section is unconditional and
+(Rendered once per invocation, as part of Move 5's own Step 6 — the single site that EMITS this
+entire template, including every section above. Move 4 renders and stages those other sections
+but prints none of them; Step 6 is where this Conclusion section is composed and where the whole
+combined report (everything above, plus this section) is shown for the first and only time. See
+`context/contracts/conclusion-stage.md`. ALWAYS placed last, immediately before `### Next
+Steps`, since Step 6 runs only after Move 4 has fully finalized, including this template's own
+render-and-stage pass. Never merged with `### System Defects Detected` above: that section is
+unconditional and
 engine-written; this one derives from subagent-written `issues.jsonl` evidence via
 `scripts/orchestrate-conclusion-aggregate.sh`, and only channel (a) is gated behind an explicit
 approval — channels (b) and (c) record unconditionally.)
