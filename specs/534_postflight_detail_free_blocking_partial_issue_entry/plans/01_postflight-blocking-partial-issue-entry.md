@@ -1,7 +1,7 @@
 # Implementation Plan: Task #534
 
 - **Task**: 534 - Stop the orchestrate postflight from writing a detail-free blocking issue-log entry on every blocker-bearing partial return, and settle that entry's classification.
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/534_postflight_detail_free_blocking_partial_issue_entry/reports/01_postflight-blocking-partial-issue-entry.md

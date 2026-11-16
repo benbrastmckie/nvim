@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "dispatch_seq": 2,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a 4-phase plan for the postflight blocker-bearing-partial issue entry. Re-validated all four carried-figure trigger lines: the described raw jq join() root cause is SUPERSEDED (the call site already carries a map/if-object render), but verbatim_goal is still dropped, 2>/dev/null is still swallowing, --class \"environment\" is still hard-coded, and the regression fixture still never reads issues.jsonl. Phases: detail restoration (atomic-batch, test-red-first), classification settlement, identity-keyed dedup via the open tags seam, then redeploy plus the full gate set.",
+  "summary": "Implemented all four plan phases for the postflight blocker-bearing-partial issue entry: restored the dropped verbatim_goal and surfaced the swallowed jq error in orchestrate-cycle-postflight.sh's partial) arm (atomic-batch, red-then-green), replaced the hard-coded --class \"environment\" with an honest open-enum value, added an identity-keyed dedup guard via the open tags seam that collapses repeat blocking entries for one unresolved blocker, then redeployed and verified against the deployed tree with a scoped gate invocation per this dispatch's Batch Gate Deferral directive. 320 tests passed in the extended suite; the deployed mirror is byte-identical to the source-store copies.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/534_postflight_detail_free_blocking_partial_issue_entry/plans/01_postflight-blocking-partial-issue-entry.md",
-      "summary": "4-phase plan confining every edit to the core source store's orchestrate-cycle-postflight.sh partial) arm and its test file, disjoint from the sibling null-resolution record's territory."
+      "type": "summary",
+      "path": "specs/534_postflight_detail_free_blocking_partial_issue_entry/summaries/01_postflight-blocking-partial-issue-entry-summary.md",
+      "summary": "Implementation summary covering all four phases: detail restoration, classification settlement, identity-keyed dedup, and redeploy/gate acceptance."
     }
   ]
 }

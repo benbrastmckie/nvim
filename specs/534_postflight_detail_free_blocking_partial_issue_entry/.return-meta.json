@@ -1,10 +1,60 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/534_postflight_detail_free_blocking_partial_issue_entry/summaries/01_postflight-blocking-partial-issue-entry-summary.md",
+      "summary": "Restored the dropped verbatim_goal and surfaced the swallowed jq error in orchestrate-cycle-postflight.sh's partial) arm, replaced the hard-coded --class \"environment\" with an honest open-enum value, and added an identity-keyed dedup guard via the open tags seam -- all redeployed and verified against the deployed tree."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed orchestrate-cycle-postflight.sh's partial) arm to render the full blocker detail (including verbatim_goal) into issues.jsonl, surface jq failures instead of swallowing them, use an honest issue class, and collapse repeat blocking entries for one unresolved blocker via an identity-keyed dedup guard. Extended the existing regression fixture and added a new one; redeployed and verified against the deployed tree."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "specs/534_postflight_detail_free_blocking_partial_issue_entry/plans/01_postflight-blocking-partial-issue-entry.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "jq's join() degrades gracefully on an array of strings but ERRORS on an array of objects (\"string (...) and object (...) cannot be added\", exit 5), with no partial output. Wrapping such a substitution in 2>/dev/null silently converts that error into an empty command-substitution result, which then threads through a `[ -z \"$x\" ] && x=fallback` guard indistinguishably from a genuinely empty input -- turning a type-mismatch bug into an invisible one that looks like routine degradation. Before trusting a jq pipeline's `2>/dev/null` silence as \"nothing to report\", re-run the same expression without the redirect against a schema instance that actually contains the object shape the pipeline is meant to handle.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/534_postflight_detail_free_blocking_partial_issue_entry/summaries/01_postflight-blocking-partial-issue-entry-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "jq",
+        "join",
+        "2>/dev/null",
+        "silent error",
+        "type mismatch",
+        "command substitution"
+      ]
+    },
+    {
+      "content": "When adding a new synthetic numeric fixture identifier (a \"candidate #N\" directory/number) to a large test file with hundreds of existing fixtures, grep the whole file for that number before use (e.g. `grep -n '<N>_candidate\\|#<N>'`). A collision with an existing fixture using the same number will not fail the test suite -- setup_sandbox's per-fixture `rm -rf $WORKDIR` means each fixture runs in isolation regardless -- so nothing mechanical catches the duplicate; only a manual pre-check does, and the cost of skipping it is a confusing double-use of the same identifier for future readers grepping by number.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/534_postflight_detail_free_blocking_partial_issue_entry/summaries/01_postflight-blocking-partial-issue-entry-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "test fixture",
+        "synthetic numbering",
+        "collision",
+        "setup_sandbox",
+        "grep before use"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794850122_9151c5",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
   }
 }
