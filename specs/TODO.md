@@ -1,19 +1,19 @@
 ---
-next_project_number: 637
+next_project_number: 638
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-11-15. Generated from state.json dependency graph.*
+*Updated 2026-11-16. Generated from state.json dependency graph.*
 
 **Goal**: Make specs/ROADMAP.md generated (306, 307, 308, 313) so planning stops drifting, then push consent and admission posture.
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,452,453,455,456,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633,634,635,636 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,452,453,455,456,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633,634,635,636,637 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,628,630 | 383,390,398,410,431,451,452,453,455,463,472,479,484,491,504,505,527,534,535,538,539,548,549,563,568,585,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,501,508,547,552,570,571,579,581,586,588,591,594,624 | 438,439,472,476,486,492,509,518,519,542,543,564,572,580,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 524,561,577,595,605 | 501,539,547,552,586,594,604 | core-agent-system, agent-system |
@@ -187,6 +187,7 @@ next_project_number: 637
 627 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 635 [NOT STARTED] — Enforce the sapience postflight wrapup write at task completion
 636 [NOT STARTED] — Close sapience activation-surface scoping gaps: vendor...
+637 [NOT STARTED] — Make the sapience extension fully functional across loaded...
 628 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
 ### Decidability
@@ -199,6 +200,16 @@ next_project_number: 637
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
+
+### 637. Make sapience extension fully functional
+- **Status**: [NOT STARTED]
+- **Task Type**: general
+- **Topic**: sapience
+- **Dependencies**: None
+
+**Description**: Make the sapience extension fully functional across loaded repositories: tagged postflight writes fire reliably in every loaded repo (no tagged notes after Nov 13 anywhere; zero ever in .dotfiles, BimodalLogic, sf1-engine despite completed tasks, with no failures logged), prompt-time hook injection is repo-filtered or otherwise bounded (POST /v1/cli/context ignores the repo identifier; probe returns RESIDUAL_HOLDS), transcript capture sync is restored and its opt-in project list agrees with the set of loaded repos (stalled since Nov 13; BimodalLogic disabled, sf1-engine absent), and verify-sapience-mcp.sh check (e) stops failing on the additive-merge 11-vs-7 grant residual. Out of scope: repairing the half-deployed abood repo (on hold). Overlaps open tasks 635, 636 and 628. Seed report: specs/637_make_sapience_extension_fully_functional/reports/01_seed-audit-findings.md
+
+---
 
 ### 636. Close sapience activation-surface scoping gaps: vendor user-level hooks, capture coupling, verifier and docs
 - **Status**: [NOT STARTED]
