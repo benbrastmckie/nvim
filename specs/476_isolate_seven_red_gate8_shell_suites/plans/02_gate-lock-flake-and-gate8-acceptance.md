@@ -424,18 +424,20 @@ the excluded eighth suite's still-reproducing regression forward rather than dro
 
 ## Testing & Validation
 
-- [ ] `test-gate-lock.sh` passes standalone **and** inside an aggregate `run-all.sh` run with its
+- [x] `test-gate-lock.sh` passes standalone **and** inside an aggregate `run-all.sh` run with its
       file-scope siblings -- the two conditions that diverged and produced this task's remaining
-      work.
-- [ ] `test-orchestrate-cycle-postflight.sh` and `test-lint-unit-integration-boundary.sh` each
+      work. *(completed: 17/0 standalone, clean inside every aggregate run)*
+- [x] `test-orchestrate-cycle-postflight.sh` and `test-lint-unit-integration-boundary.sh` each
       report 0 failures standalone, re-measured in this task rather than cited from research.
-- [ ] Two full, unscoped `run-all.sh --fail-on-new` runs report zero NEW failures.
-- [ ] Every surviving `known-failures.txt` row describes a failure that still reproduces, and every
-      remaining Gate 8 failure matches one.
-- [ ] `verify-deploy.sh` passes in full, and `deploy-headless.sh` reaches
-      `RESULT=landed_verify_clean`.
-- [ ] No file under `agent-system/**` touched by this task contains a task-number reference or
-      record-versioning language.
+      *(completed: 312/0 and, post-redeploy, 15/0)*
+- [x] Two full, unscoped `run-all.sh --fail-on-new` runs report zero NEW failures. *(completed:
+      verified both pre-redeploy (193/3/0-NEW) and post-redeploy (195/1/0-NEW, twice))*
+- [x] Every surviving `known-failures.txt` row describes a failure that still reproduces, and every
+      remaining Gate 8 failure matches one. *(completed)*
+- [x] `verify-deploy.sh` passes in full, and `deploy-headless.sh` reaches
+      `RESULT=landed_verify_clean`. *(completed: PASS -- 43 check(s), 0 failure(s), twice)*
+- [x] No file under `agent-system/**` touched by this task contains a task-number reference or
+      record-versioning language. *(completed: zero matches)*
 
 ## Artifacts & Outputs
 

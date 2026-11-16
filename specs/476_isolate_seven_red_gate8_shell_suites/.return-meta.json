@@ -1,6 +1,38 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 23,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/476_isolate_seven_red_gate8_shell_suites/summaries/02_gate-lock-flake-and-gate8-acceptance-summary.md",
+      "summary": "Restored Gate 8 as a usable binary signal: sealed test-gate-lock.sh's teardown-case ordering (assert process death via kill -0 rather than inferring it), reconciled two stale known-failures.txt rows (one kept-and-updated for a newly-discovered, now-fixed coverage gap), ran the full unscoped battery twice with zero NEW failures, and redeployed twice to RESULT=landed_verify_clean."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Made test-gate-lock.sh's aggregate-only flake unreproducible (6/6 clean reproduction attempts) and hardened its teardown-case ordering anyway; reconciled known-failures.txt (removed one stale row, updated-then-removed another after fixing its real underlying gap in suite-classification.data); verified two full, unscoped run-all.sh --fail-on-new runs report zero NEW failures and verify-deploy.sh passes in full with deploy-headless.sh reaching RESULT=landed_verify_clean."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/known-failures.txt",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/tests/test-gate-lock.sh",
+    "specs/476_isolate_seven_red_gate8_shell_suites/plans/02_gate-lock-flake-and-gate8-acceptance.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Before trusting a research report's 'fails only when run concurrently with its file-scope siblings' framing for a shell-suite flake, check run-all.sh's own LOAD_SENSITIVE_BASENAMES scheduling: a suite in that list runs fully serially before the parallel pool starts and can NEVER overlap with sibling suites within one run-all.sh invocation, regardless of --only selection. If the suite is already load-sensitive, the real trigger for an 'aggregate-only' failure must be external ambient host load at measurement time (e.g. other concurrent /orchestrate dispatches), not intra-run sibling contention -- re-attempting reproduction under today's load, and reasoning about the actual scheduling code, is cheaper than assuming the report's framing is still accurate.",
+      "category": "PATTERN",
+      "source_artifact": "specs/476_isolate_seven_red_gate8_shell_suites/summaries/02_gate-lock-flake-and-gate8-acceptance-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["run-all.sh", "LOAD_SENSITIVE_BASENAMES", "ambient-host-state", "flake reproduction", "shell test scheduling"]
+    },
+    {
+      "content": "A suite whose own lint/check resolves its subject via a 'deploy-tree-first' pattern (common_test_resolve_subject) will NOT reflect a source-store-only fix until the next redeploy propagates it to .claude/. Before removing a known-failures.txt row on the strength of such a fix, either redeploy first and re-verify standalone, or explicitly keep the row (with an updated, accurate reason) until the redeploy has actually landed -- removing it prematurely makes a still-genuinely-red suite silently NEW/undeclared.",
+      "category": "PATTERN",
+      "source_artifact": "specs/476_isolate_seven_red_gate8_shell_suites/summaries/02_gate-lock-flake-and-gate8-acceptance-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["deploy-tree-first", "source-store-deploy-boundary", "known-failures.txt", "redeploy sequencing"]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794815389_748c3d",
     "agent_type": "general-implementation-agent",
@@ -9,7 +41,9 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/scripts/tests/suite-classification.data"

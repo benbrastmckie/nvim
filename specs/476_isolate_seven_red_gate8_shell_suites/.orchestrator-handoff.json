@@ -1,16 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 21,
-  "summary": "Wrote a 3-phase implementation plan re-scoped onto what report 02 proved still outstanding, rather than onto the dispatch description's superseded premise. Phase 1 reproduces, classifies with evidence, and remedies test-gate-lock.sh's aggregate-only concurrency flake (fix the fixture, or declare it expected with an attributed reason). Phase 2 removes the two stale known-failures.txt rows after re-measuring both suites. Phase 3 runs the full unscoped Gate 8 battery twice from a clean tree, redeploys to landed_verify_clean, and records the excluded eighth suite's still-reproducing regression as a follow-up since its owning record is archived and cannot receive it.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 23,
+  "summary": "Completed all 3 plan phases. test-gate-lock.sh's reported aggregate-only flake did not reproduce in 6 attempts; classified it ambient-host-state and hardened the teardown case's ordering assertion anyway. Reconciled known-failures.txt (removed one confirmed-stale row; kept-then-removed a second after fixing a newly-discovered suite-classification.data coverage gap, re-verified post-redeploy). Ran the full unscoped run-all.sh --fail-on-new battery twice post-redeploy: 195 passed, 1 failed (1 expected), 0 NEW, both times. verify-deploy.sh passes in full (43/0) and deploy-headless.sh reached RESULT=landed_verify_clean twice. Recorded the excluded eighth suite's still-reproducing regression as a follow-up (its owning record is archived) and a transient, non-reproducing ambient-host-state anomaly observed mid-phase.",
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/476_isolate_seven_red_gate8_shell_suites/plans/02_gate-lock-flake-and-gate8-acceptance.md",
-      "summary": "3-phase plan, ~5 hours: diagnose and remedy the test-gate-lock.sh aggregate-only flake, reconcile known-failures.txt, then meet the two-full-run zero-unexpected-failures acceptance bar and redeploy."
+      "summary": "3-phase plan, all phases COMPLETED."
+    },
+    {
+      "type": "summary",
+      "path": "specs/476_isolate_seven_red_gate8_shell_suites/summaries/02_gate-lock-flake-and-gate8-acceptance-summary.md",
+      "summary": "Implementation summary: Gate 8 restored to zero-unexpected-failures across the full corpus."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 3,
   "phases_total": 3,
   "blockers": []
 }
