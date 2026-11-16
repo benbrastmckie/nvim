@@ -945,11 +945,30 @@ if [ "$IS_DEFAULT_TARGET" = true ] && [ "$INIT_MODE" = false ]; then
     fi
 
     # Coverage confirmed (or --audit-override given) -- record durable evidence onto each new
-    # entry. A verdict-matched entry gets .audit_verdict (the matching object verbatim); an
-    # entry the verdict file does not cover (whether because --audit-verdict was omitted
-    # entirely, or because --audit-override is what actually covers it) gets .audit_override
-    # instead. Applied via a private mktemp-then-mv, matching alloc_regenerate_cache's own
-    # never-half-written discipline.
+    # entry. A verdict-matched entry gets .audit_verdict; an entry the verdict file does not
+    # cover (whether because --audit-verdict was omitted entirely, or because --audit-override
+    # is what actually covers it) gets .audit_override instead. Applied via a private
+    # mktemp-then-mv, matching alloc_regenerate_cache's own never-half-written discipline.
+    #
+    # .audit_verdict is a SUMMARY of the matched verdict object, not that object verbatim.
+    # audit-task-proposals.sh emits one `.verdicts[]` row per OTHER corpus record it compared
+    # the proposal against (context/patterns/backlog-reconciliation.md's "No suppression"
+    # Non-Goal, deliberately, for the in-flight creation-time decision) -- so the raw object
+    # grows with the size of the backlog itself: observed 371 rows / ~164KB on one real task,
+    # 78% of it `covered-by-closed` rows alone, each repeating a discharging-artifact summary
+    # for a closed task that is no longer actionable once this entry already exists. Persisted
+    # verbatim into EVERY newly-created task's own state.json record forever, this single field
+    # was large enough on its own to exceed Linux's MAX_ARG_STRLEN (131072 bytes) the moment the
+    # whole record crossed it in an exported shell variable (see skill-base.sh's TASK_DATA note)
+    # -- and it is read back by nothing in this codebase (verified: no script, skill, or agent
+    # file references `.audit_verdict` except this writer). The summary below keeps exactly what
+    # a human auditor would still need -- the proposal, a count per verdict category (bounded by
+    # the fixed, small vocabulary in backlog-reconciliation.md, never by backlog size), and full
+    # detail for the OPEN-side verdicts that still name an operator action after creation
+    # (duplicate-of-open/subset-of-open/superset-of-open/overlaps-open/narrow-open), capped at
+    # $AUDIT_VERDICT_DETAIL_CAP rows so even a pathological match count stays bounded -- while
+    # collapsing the purely-informational covered-by-closed/scope-blind/genuinely-new rows (the
+    # categories with no further action once the task exists) to their counts only.
     AUDIT_RECORD_TMP="$(mktemp "${STAGE_FILE}.audit.XXXXXX")" || {
       echo "Error: audit-evidence gate: failed to create a private recording temp file; $STATE_FILE was NOT modified." >&2
       exit 3
@@ -958,13 +977,27 @@ if [ "$IS_DEFAULT_TARGET" = true ] && [ "$INIT_MODE" = false ]; then
       --argjson newnums "$AUDIT_NEW_NUMBERS" \
       --slurpfile verdicts "$AUDIT_VERDICT_NORMALIZED_FILE" \
       --arg override "$AUDIT_OVERRIDE_REASON" \
+      --argjson detail_cap 25 \
       '
+      def audit_verdict_summarize($cap):
+        . as $v |
+        ($v.verdicts // []) as $all |
+        ($all | group_by(.verdict) | map({key: .[0].verdict, value: length}) | from_entries) as $counts |
+        ["duplicate-of-open","subset-of-open","superset-of-open","overlaps-open","narrow-open"] as $actionable |
+        ([$all[] | select(.verdict as $vv | ($actionable | index($vv)) != null)] | .[0:$cap]) as $detail |
+        {
+          proposal: $v.proposal,
+          verdict_counts: $counts,
+          verdicts_detail: $detail,
+          passes: $v.passes,
+          degradations_count: ($v.degradations // [] | length)
+        };
       ([$verdicts[0][] | select(.proposal.id != null)] | map({key: .proposal.id, value: .}) | from_entries) as $by_id |
       .active_projects |= map(
         .project_number as $pn |
         if ($newnums | index($pn)) != null then
           ( (.project_name // "") as $pname | $by_id[$pname] ) as $v |
-          if $v != null then (. + {audit_verdict: $v})
+          if $v != null then (. + {audit_verdict: ($v | audit_verdict_summarize($detail_cap))})
           else (. + {audit_override: $override})
           end
         else . end

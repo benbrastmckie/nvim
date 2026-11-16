@@ -12,8 +12,11 @@
 #     skill_preflight_update "$task_number" "research" "$session_id"
 #
 # VARIABLE EXPORTS:
-#   skill_validate_input  -> TASK_DATA, TASK_TYPE, TASK_STATUS, PROJECT_NAME, PADDED_NUM, TASK_DIR,
-#                            TASK_DIR_ABS, TASK_IS_ARCHIVED
+#   skill_validate_input  -> TASK_DATA_FILE, TASK_TYPE, TASK_STATUS, PROJECT_NAME, PADDED_NUM,
+#                            TASK_DIR, TASK_DIR_ABS, TASK_IS_ARCHIVED
+#                            (also sets TASK_DATA as a plain, UNEXPORTED shell variable -- see
+#                            skill_validate_input's own doc comment for why: the full task record
+#                            can exceed Linux's MAX_ARG_STRLEN and must never be exported)
 #   skill_read_artifact_number -> ARTIFACT_NUMBER, ARTIFACT_PADDED
 #   skill_read_metadata   -> SUBAGENT_STATUS, ARTIFACT_PATH, ARTIFACT_TYPE, ARTIFACT_SUMMARY, MEMORY_CANDIDATES
 #
@@ -337,10 +340,32 @@ _events_append_observable() {
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 1: Validate input task number
 # Usage: skill_validate_input "$task_number" ["$allow_terminal"]
-# Exports: TASK_DATA, TASK_TYPE, TASK_STATUS, PROJECT_NAME, PADDED_NUM, TASK_DIR, TASK_DIR_ABS,
-#          TASK_IS_ARCHIVED
+# Sets (NOT exported — see TASK_DATA note below): TASK_DATA
+# Exports: TASK_DATA_FILE, TASK_TYPE, TASK_STATUS, PROJECT_NAME, PADDED_NUM, TASK_DIR,
+#          TASK_DIR_ABS, TASK_IS_ARCHIVED
 # Exit 1 if task not found in EITHER active_projects or the archive, or (absent allow_terminal)
 # in a terminal state.
+#
+# TASK_DATA is deliberately NOT exported. It holds the task's entire specs/state.json record as
+# one JSON string, and a duplicate-detection field some records carry (.audit_verdict) can push
+# that string well past Linux's MAX_ARG_STRLEN (131072 bytes, 32 pages) -- the kernel's per-
+# single-string cap on any one argv or envp entry, independent of the much larger total ARG_MAX.
+# Exporting a string over that cap means every subsequent exec() from this shell fails with
+# E2BIG ("Argument list too long"), including on wholly unrelated commands (observed: jq and
+# head calls elsewhere in this file and in task-lookup-lib.sh). TASK_DATA remains an ordinary
+# (unexported) shell variable, which is all every current in-process consumer needs: each reads
+# it via `echo "$TASK_DATA" | jq ...` (or an equivalent variable copy) in the SAME bash block
+# skill_validate_input runs in, and `echo` is a bash builtin -- it never execs, so the large
+# value never has to cross an argv/envp boundary that way. For a consumer that genuinely needs
+# the record from a separate exec'd process, TASK_DATA_FILE (below) is the sanctioned path.
+#
+# TASK_DATA_FILE: the record is additionally written to a small per-process temp file, and only
+# that FILE PATH (always short) is exported. Named deterministically by task number and this
+# shell's PID ($$) rather than via `mktemp`'s random suffix, so repeated calls for the same task
+# within one shell overwrite in place instead of accumulating; cleanup is left to normal /tmp
+# rotation (systemd-tmpfiles / reboot), matching how other ad hoc per-session artifacts in this
+# repo are handled -- its lifetime is this shell session, not this one function call, so an
+# EXIT trap here would delete it out from under later consumers in the same block/session.
 #
 # Optional 2nd positional: `allow_terminal` ("true"/empty). Absent or empty (every existing call
 # site, byte-for-byte) preserves today's behavior exactly: the completed/abandoned/expanded block
@@ -364,6 +389,11 @@ skill_validate_input() {
   TASK_STATUS=$(echo "$TASK_DATA" | jq -r '.status')
   PROJECT_NAME=$(echo "$TASK_DATA" | jq -r '.project_name')
   DESCRIPTION=$(echo "$TASK_DATA" | jq -r '.description // ""')
+  # Write the full record to a small per-process temp file and export ONLY that path (see the
+  # TASK_DATA_FILE note above). `echo ... >` here is also a bash builtin redirect, not an exec,
+  # so this write is itself safe regardless of TASK_DATA's size.
+  TASK_DATA_FILE="${TMPDIR:-/tmp}/skill-task-data.$$.${task_number}.json"
+  echo "$TASK_DATA" > "$TASK_DATA_FILE"
   # Archive-aware directory resolution (task-lookup-lib.sh): an archived task's dispatch file and
   # artifacts land in specs/archive/{NNN}_{slug}/, next to its existing reports and plans, rather
   # than a hardcoded specs/{NNN}_{slug} that no longer exists (and would otherwise be silently
@@ -387,7 +417,10 @@ skill_validate_input() {
       exit 1
     fi
   fi
-  export TASK_DATA TASK_TYPE TASK_STATUS PROJECT_NAME DESCRIPTION PADDED_NUM TASK_DIR TASK_DIR_ABS TASK_IS_ARCHIVED
+  # TASK_DATA itself is deliberately excluded from this export list -- see the TASK_DATA_FILE
+  # note above `skill_validate_input`'s own doc comment. It remains a plain shell variable,
+  # which is all every current in-process consumer needs.
+  export TASK_DATA_FILE TASK_TYPE TASK_STATUS PROJECT_NAME DESCRIPTION PADDED_NUM TASK_DIR TASK_DIR_ABS TASK_IS_ARCHIVED
 }
 
 # ─────────────────────────────────────────────────────────────────────────────
