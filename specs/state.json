@@ -530,7 +530,12 @@
           "summary": "Resolves the absorb/depend/expand question for tasks 635/636/628 (recommends depend-on, not absorb/expand), confirms F5 (prompt-time injection scoping) is already a closed, vendor-owned residual with no further local action, and narrows the open F6 capture-stall question with live-machine evidence pointing to a manual-invocation gap rather than a code defect, recommending it be appended to task 636 rather than filed separately."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "dependencies": [
+        628,
+        635,
+        636
+      ]
     },
     {
       "project_number": 636,
