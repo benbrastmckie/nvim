@@ -1,22 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/562_conclusion_stage_drops_null_resolution_entries/plans/01_null-hint-contract-alignment.md",
-      "summary": "3-phase plan (1.5h): null-hint documentation statements in conclusion-stage.md and issue-log.md at the core source store, a durable settled-disposition note under records/, then redeploy plus the full gate set."
-    }
-  ],
-  "next_steps": "Run /orchestrate 562 to execute the plan",
-  "phase_count": 3,
-  "estimated_hours": 1.5,
-  "dependency_waves": [[1, 2], [3]],
-  "memory_candidates": [],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1794798170_26e756_562",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1794798170_26e756",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 3
   },
-  "dispatch_seq": 4
+  "dispatch_seq": 6
 }

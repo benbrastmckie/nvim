@@ -82,6 +82,15 @@ stated **visibly** in the proposal text — naming both the hint that was given 
 actually chosen, and why. A hint that is silently overridden defeats the purpose of recording it
 at all.
 
+A null or omitted `suggested_channel` is acceptable by design and is not a defect in the entry —
+`issue-record.sh` never requires the flag. An entry written without one contributes nothing to
+its proposal's `suggested_channel_hints` list, and a proposal whose hint list is empty carries no
+override obligation: there is no hint to agree or disagree with, so the orchestrator states its
+chosen channel plainly rather than framing it as an override. This is deliberately not the
+posture the Filter Predicate takes toward a null `resolution` above, which is read as a positive
+value (`open`) because dropping the entry would hide it — a missing hint hides nothing, and is
+absorbed rather than defaulted.
+
 ## The Cross-Task Grouping Rule
 
 When the same `class` of issue recurs across two or more tasks touched by this invocation, it

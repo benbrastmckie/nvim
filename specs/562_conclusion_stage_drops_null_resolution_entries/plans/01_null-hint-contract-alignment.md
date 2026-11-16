@@ -1,7 +1,7 @@
 # Implementation Plan: Task #562
 
 - **Task**: 562 - Close the contract gap that makes null-resolution issue-log entries invisible to the conclusion stage
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/562_conclusion_stage_drops_null_resolution_entries/reports/01_duplicate-transplant-and-channel-gap.md
@@ -146,23 +146,25 @@ and no roadmap phases are included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: State the null-hint rule in both governing documents [NOT STARTED]
+### Phase 1: State the null-hint rule in both governing documents [COMPLETED]
 
 **Goal**: `conclusion-stage.md` and `issue-log.md` each state explicitly that a null or omitted
 `suggested_channel` is acceptable by design, so a reader of either can predict the other's
 behavior for that field.
 
 **Tasks**:
-- [ ] Re-confirm the premise before editing: `grep` the Filter Predicate's null-`resolution`
+- [x] Re-confirm the premise before editing: `grep` the Filter Predicate's null-`resolution`
       sentence in `agent-system/extensions/core/context/contracts/conclusion-stage.md`, the
       `resolution` field row's null sentence in
       `agent-system/extensions/core/context/formats/issue-log.md`, and the
       `(.resolution // "open")` coercion plus `implicit_open_count` in
       `agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh`. If any is absent,
       stop and report: this plan's scope rests on the `resolution` half already being landed.
-- [ ] Re-read `agent-system/extensions/core/context/contracts/conclusion-stage.md` immediately
+      *(completed: all three present, confirmed via grep)*
+- [x] Re-read `agent-system/extensions/core/context/contracts/conclusion-stage.md` immediately
       before editing (a sibling task is scheduled this same cycle with undeclared scope).
-- [ ] In that file's `## The Hint-Versus-Decision Rule` section, after the existing paragraph
+      *(completed)*
+- [x] In that file's `## The Hint-Versus-Decision Rule` section, after the existing paragraph
       ending "defeats the purpose of recording it at all.", add a short paragraph stating: a null
       or omitted `suggested_channel` is acceptable by design and is not a defect in the entry;
       `issue-record.sh` never requires the flag; an entry written without one contributes nothing
@@ -171,19 +173,21 @@ behavior for that field.
       orchestrator states its chosen channel plainly rather than framing it as an override; and
       this is deliberately not the posture the Filter Predicate takes toward a null `resolution`,
       which is read as a positive value because dropping the entry would hide it, whereas a
-      missing hint hides nothing and is absorbed rather than defaulted.
-- [ ] Re-read `agent-system/extensions/core/context/formats/issue-log.md` immediately before
-      editing.
-- [ ] Extend that file's `suggested_channel` field-table row's description cell with the parallel
+      missing hint hides nothing and is absorbed rather than defaulted. *(completed)*
+- [x] Re-read `agent-system/extensions/core/context/formats/issue-log.md` immediately before
+      editing. *(completed)*
+- [x] Extend that file's `suggested_channel` field-table row's description cell with the parallel
       clause: a null or omitted value is acceptable by design; the conclusion stage filters nulls
       out of a proposal's hint list, so an entry without a hint contributes nothing there and
       triggers no override obligation; unlike `resolution`, a missing hint is absorbed rather than
-      defaulted to a value.
-- [ ] Verify the added prose contains no task-number reference and no record-versioning phrasing
+      defaulted to a value. *(completed)*
+- [x] Verify the added prose contains no task-number reference and no record-versioning phrasing
       (no "no longer", "previously", "formerly", "supersedes", version labels) — both files sit
-      outside `specs/**`, where that language is prohibited.
-- [ ] Confirm, by reading the rendered field table, that the extended row has not broken the
-      markdown table's pipe structure.
+      outside `specs/**`, where that language is prohibited. *(completed: grep clean, no new
+      occurrences introduced)*
+- [x] Confirm, by reading the rendered field table, that the extended row has not broken the
+      markdown table's pipe structure. *(completed: row renders as a single well-formed table
+      row)*
 
 **Timing**: 0.5 hours
 
