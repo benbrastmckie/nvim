@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 18,
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase implementation plan for Gate 8 covering-suite selection. Phase 1 adds an opt-in --gate8-touched input to verify-deploy.sh; Phase 2 narrows gate8_run()'s run-all.sh invocation through suite_selection_select and, in the same atomic-batch commit, forces gate8 onto GATE_DIRTY_LIST so a narrowed pass can never write a full-@extensions-corpus cache entry; Phases 3-4 add a dedicated regression suite and the docs/contract updates; Phase 5 redeploys, adds the sequencing dependencies[] edge to the call-site task, and runs the unnarrowed full gate set. Call-site wiring (orchestrate-batch-gate.sh Move 4, Mechanism A) is an explicit non-goal, outside this task's file_scope and inside a concurrent sibling's.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/584_gate8_covering_suite_selection/plans/02_gate8-suite-selection.md",
+      "summary": "5-phase plan: opt-in --gate8-touched narrowing of Gate 8, forced cache-ineligibility, regression suite, docs, redeploy + full gate."
+    }
+  ]
+}

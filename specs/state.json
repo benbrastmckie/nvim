@@ -97768,7 +97768,7 @@
     {
       "project_number": 584,
       "project_name": "gate8_covering_suite_selection",
-      "status": "planning",
+      "status": "planned",
       "title": "Wire covering-suite selection into Gate 8 so an extension change runs the affected suites, not all 149",
       "task_type": "meta",
       "topic": null,
@@ -97781,17 +97781,27 @@
           "path": "specs/584_gate8_covering_suite_selection/reports/02_gate8-suite-selection.md",
           "type": "report",
           "summary": "Re-verifies seed figures (suite count drifted 149->195; 17-gate @extensions set and gate8 cost confirmed), rules out the gate cache as a touched-path source, and recommends a backward-compatible opt-in touched-paths input to gate8_run plus a forced-dirty cache-write guard, scoped entirely inside the task's own file_scope, with call-site wiring left as a coordinated follow-on with sibling task 585."
+        },
+        {
+          "path": "specs/584_gate8_covering_suite_selection/plans/02_gate8-suite-selection.md",
+          "type": "plan",
+          "summary": "5-phase plan: opt-in --gate8-touched narrowing of Gate 8, forced cache-ineligibility, regression suite, docs, redeploy + full gate."
         }
       ],
       "file_scope": [
+        "__WHOLE_TREE__",
+        "agent-system/extensions/core/context/contracts/batch-gate-stage.md",
+        "agent-system/extensions/core/context/standards/shell-script-testing.md",
+        "agent-system/extensions/core/index-entries.json",
         "agent-system/extensions/core/scripts/gate-registry.data",
         "agent-system/extensions/core/scripts/lib/gate-cache-lib.sh",
         "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh",
         "agent-system/extensions/core/scripts/tests/run-all.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh",
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
       "created": "2026-11-11T02:51:33Z",
-      "last_updated": "2026-11-16T08:37:43Z",
+      "last_updated": "2026-11-16T08:46:47Z",
       "description": "Gate 8 declares input_corpus @extensions (the whole extension tree) in gate-registry.data, so a one-file edit anywhere under agent-system/extensions/** re-runs the entire 149-suite battery. Meanwhile suite-selection-lib.sh already maps touched paths to exactly their covering suites via suite_selection_select, is tested, and is trusted enough that plan Tier Justification lines are validated against its output -- yet grep for suite_selection against verify-deploy.sh returns 0 hits. This is a wiring job against proven machinery, not new invention.\n\nWHY THIS IS THE LARGEST SINGLE LEVER: the existing gate cache cannot help here. 17 of 28 gates declare @extensions as their corpus (3,5,6,7,8,11,12,13,17,18,19,20,21,23,24,26,28), so any implement batch touching one extension file invalidates all 17, gate 8 among them. The cache's headline figure (a warm unchanged run skips 17-20 of 24 gates at near-zero cost) describes an UNCHANGED tree, not the end of an implement batch, where the hit rate for precisely the expensive gates is zero. Narrowing WHAT gate 8 runs is the only lever that reduces its cost in the case that actually occurs.\n\nSeed report: specs/584_gate8_covering_suite_selection/reports/01_gate8-suite-selection.md\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.",
       "research_questions": "What is the right touched-path trigger set, given gate_cache_resolve_corpus already resolves and hashes per-path corpus content? What is the fallback when selection cannot be computed -- adopt the cache's sentinel direction (run the full battery, never a silently narrowed one)? Does narrowing break gate 8's binary-signal semantics, since known-failures.txt rows are basename-keyed and mode-insensitive and a suite that did not run is not a suite that passed? How does selection-narrowing compose with the existing --skip-slow reduction without silently becoming a third reduction? Is a periodic full sweep needed to retain the coverage guarantee, and where would it live?",
       "audit_verdict": {
@@ -99912,7 +99922,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "session_id": "sess_1794815389_748c3d_584",
+      "session_id": "sess_1794815389_748c3d",
       "next_artifact_number": 2
     },
     {
