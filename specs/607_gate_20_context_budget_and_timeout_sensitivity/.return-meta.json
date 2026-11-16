@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794815389_748c3d_607",
+  "dispatch_seq": 12,
+  "findings_count": 5,
+  "next_steps": "Run /orchestrate 607 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/607_gate_20_context_budget_and_timeout_sensitivity/reports/01_gate20-budget-and-timeout-sensitivity.md",
+      "summary": "Gate 20 already passes (stale 71712B overage already fixed by tasks 620/634); recommends a deliberate headroom re-baseline. Corrects the gate 8/10 timeout claim to gate 10 (plus possibly 3/4), recommends a static timeout_s raise rather than a load-adaptive mechanism, and flags an unreconciled scope overlap with task 610."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's agent-system, orchestrator-context-budget.json's eager_load.baseline_bytes and the two per-file ceiling_bytes (commands/orchestrate.md, skills/skill-orchestrate/SKILL.md) have been reactively bumped roughly 10 times since 2026-10-01, each landing with a 0-200B margin that the next ordinary edit re-trips. When gate 20 is found passing but history shows this pattern, prefer a deliberate headroom re-baseline (several hundred bytes of real slack) over hunting for more compaction -- recent entries already record 'no further redistributable bloat found nearby'.",
+      "category": "PATTERN",
+      "source_artifact": "specs/607_gate_20_context_budget_and_timeout_sensitivity/reports/01_gate20-budget-and-timeout-sensitivity.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["gate20", "context-budget", "orchestrator-context-budget.json", "ceiling", "razor-thin-margin"]
+    },
+    {
+      "content": "verify-deploy.sh gate 10 (validate-state.sh --deep, timeout_s=60 in gate-registry.data) is a repeat false-positive under concurrent multi-dispatch CPU load on this host (24 cores): corroborated 3x on 2026-11-16 alone, always re-passing standalone in 61-66s. Gate 8's declared timeout_s is 1500 (not 60) and is serialized (runs alone) -- it is not part of this false-positive class despite sometimes being conflated with it in task descriptions. No load-adaptive timeout mechanism exists yet for individual gates; timeout_s is a static gate-registry.data field with no env-var override (unlike gate 8's own VERIFY_DEPLOY_GATE8_JOBS concurrency knob).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/607_gate_20_context_budget_and_timeout_sensitivity/reports/01_gate20-budget-and-timeout-sensitivity.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["gate10", "validate-state", "timeout", "concurrent-load", "false-positive", "gate-registry"]
+    }
+  ]
+}
