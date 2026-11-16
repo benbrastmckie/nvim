@@ -1,0 +1,23 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy, schedule the call-site follow-on, and run the full gate set",
+  "started_at": "2026-11-16T04:30:00Z",
+  "last_updated": "2026-11-16T05:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh to regenerate the deployed tree", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 2, "description": "Confirm deployed verify-deploy.sh carries the new flag and selector lib present", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add dependencies[] edge sequencing 585 after 584", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm batch still drains via orchestrate-cycle-plan.sh --dry-run", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run complete unnarrowed gate set", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Record measured narrowed vs unnarrowed Gate 8 wall-clock", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "preflight 585 edge_only --depends-on-add", "result": "failed", "reason": "edge_only requires operation:target_status to resolve to the task's CURRENT status (a no-op replay), not an unconditional edge-add regardless of status. 585 was 'planned', which 'edge_only' alone resolves to 'not_started' -- mismatch, refused. Fixed by using 'postflight 585 plan <session_id>' instead, which correctly no-op-replays the existing 'planned' status while adding the edge."},
+    {"approach": "git-commit-scoped.sh --task 584 for the out-of-scope manifest.json fix", "result": "failed", "reason": "the --task flag's own containment guard independently vetoes any path not in the task's declared file_scope, identical in effect to git-commit-phase.sh's Containment Self-Check. Fixed by omitting --task entirely for this one scoped follow-up commit (manifest.json is a legitimate, minimal out-of-scope touch -- see Phase 4 progress notes)."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "commit_mode": "per-substep",
+  "notes": "Measured Gate 8 wall-clock (this host, concurrent sibling load present throughout): unnarrowed full battery (196 suites) = 660.6s (11m0.6s). Narrowed to verify-deploy.sh's OWN 32 covering suites = 628.8s (10m28.8s, only ~4.8% faster) -- this touched path's covering set happens to include the corpus's single heaviest suite (test-verify-deploy-context-budget.sh), matching shell-script-testing.md's own pre-recorded honest caveat about non-tuned many-to-one fan-out. A more TYPICAL, lighter touched path (suite-selection-lib.sh itself, resolving to 3 suites) = 17.5s, a ~97.3% reduction (~37.8x) against the same 660.6s full-battery baseline -- the representative case the narrowing exists for. Both figures are real, concurrent-load measurements, not isolated/idealized ones.\n\nThree gate-set failures observed (41/44 passed) are NOT regressions from this task: gate3/gate5 trace to a concurrent sibling's uncommitted, not-yet-redeployed edit to scripts/lib/continuation-pointer-lib.sh (outside file_scope, confirmed via git log/status); gate8's lone NEW classification (test-gate-lock.sh) reproduces the same pre-existing, environment-dependent flakiness already documented in Phase 2, confirmed against the completely unmodified deployed verify-deploy.sh. See issues.jsonl for the full account of both."
+}

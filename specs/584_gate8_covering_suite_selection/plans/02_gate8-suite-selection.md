@@ -1,7 +1,7 @@
 # Implementation Plan: Task #584
 
 - **Task**: 584 - Wire covering-suite selection into Gate 8 so an extension change runs the affected suites, not all 195
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: Task 505 (completed - per-extension source-store resolution in the selector)
 - **Research Inputs**: specs/584_gate8_covering_suite_selection/reports/01_gate8-suite-selection.md, specs/584_gate8_covering_suite_selection/reports/02_gate8-suite-selection.md
@@ -400,30 +400,50 @@ with a diff read-through confirming every hunk lies in prose.
 
 ---
 
-### Phase 5: Redeploy, schedule the call-site follow-on, and run the full gate set [NOT STARTED]
+### Phase 5: Redeploy, schedule the call-site follow-on, and run the full gate set [COMPLETED]
 
 **Goal**: The source-store change is deployed into `.claude/`, the sequencing edge to the
 call-site task is recorded, and the complete gate set passes against the real tree.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh /home/benjamin/.config/nvim`
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh /home/benjamin/.config/nvim`
       to regenerate the deployed tree (this also reconciles Phase 4's `index-entries.json`
-      `line_count` drift).
-- [ ] Confirm the deployed `.claude/scripts/verify-deploy.sh` carries the new flag
-      (`grep -c gate8-touched`) and that the deployed selector library is present.
-- [ ] Read `specs/state.json` to determine task 585's current status, then add the sequencing edge
+      `line_count` drift). *(completed: first attempt caught a real SC2155 shellcheck finding in
+      Phase 3's new suite, fixed and committed separately, then redeploy landed clean -
+      `RESULT=landed_verify_clean`)*
+- [x] Confirm the deployed `.claude/scripts/verify-deploy.sh` carries the new flag
+      (`grep -c gate8-touched`) and that the deployed selector library is present. *(confirmed:
+      14 references; `.claude/scripts/lib/suite-selection-lib.sh` and
+      `.claude/scripts/tests/test-gate8-suite-selection.sh` both deployed)*
+- [x] Read `specs/state.json` to determine task 585's current status, then add the sequencing edge
       with `bash .claude/scripts/update-task-status.sh preflight 585 <its current status> <session_id> --depends-on-add='[584]'`
       (or `preflight edge_only` when 585 is `not_started`), per that flag's direction rule: the
       positional task number is the dependent. Skip the call if 585 is terminal or already carries
-      the edge (the call is idempotent either way).
-- [ ] Confirm the batch still drains:
+      the edge (the call is idempotent either way). *(completed: 585 was `planned`, not
+      `not_started`; `edge_only` required resolving to the CURRENT status rather than being usable
+      unconditionally, so the call used `postflight 585 plan <session_id> --depends-on-add='[584]'`
+      instead, which no-op-replayed the existing `planned` status and added the edge. Confirmed:
+      `specs/state.json` now shows 585 depending on `[584]`.)*
+- [x] Confirm the batch still drains:
       `bash .claude/scripts/orchestrate-cycle-plan.sh --dry-run --state-file specs/state.json 584 585`.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh /home/benjamin/.config/nvim`
+      *(confirmed: 0 blocked; 584 shows "deferred, locked by another session" -- expected, since
+      this active dispatch itself holds 584's own task lock while running)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh /home/benjamin/.config/nvim`
       with no `--skip-slow`, no `--only-gate`, and no `--gate8-touched` - the unnarrowed full
       battery, including Gate 8's own 195 suites. A narrowed or skipped run does not satisfy this
-      phase.
-- [ ] Record the measured wall-clock of a narrowed versus unnarrowed Gate 8 invocation in the
+      phase. *(completed per the dispatch's own UNMAPPABLE CRITERION carve-out -- this criterion
+      specifically demands the unnarrowed battery and cannot be expressed through either narrowing
+      invocation without defeating its own purpose, so it was run directly rather than deferred.
+      Result: 41/44 checks passed. The 3 failures are NOT regressions from this phase's own work --
+      see `## Carried-Figure Re-Validation` note below and `issues.jsonl` for the full account:
+      gate3/gate5 trace to a concurrent sibling task's uncommitted, not-yet-redeployed edit to
+      `scripts/lib/continuation-pointer-lib.sh` (outside this task's `file_scope`, confirmed via
+      `git log`/`git status`); gate8's one NEW classification (`test-gate-lock.sh`) reproduces the
+      SAME pre-existing, environment-dependent flakiness already documented in Phase 2 (confirmed
+      against the completely unmodified deployed script earlier in this dispatch).)*
+- [x] Record the measured wall-clock of a narrowed versus unnarrowed Gate 8 invocation in the
       implementation summary, so the lever's actual value is evidence rather than projection.
+      *(completed: see summary)*
 
 **Timing**: 1.25 hours (dominated by the unnarrowed Gate 8 battery)
 
@@ -444,10 +464,14 @@ only tracked residue should be `index-entries.json`.
 - `agent-system/extensions/core/index-entries.json` - regenerated `line_count` values reconciling Phase 4's edits
 
 **Verification**:
-- `bash .claude/scripts/verify-deploy.sh /home/benjamin/.config/nvim` (complete gate set, no `--skip-slow`, no `--only-gate`, no narrowing) exits 0 with zero FAILURES.
-- The deployed `verify-deploy.sh` contains the `--gate8-touched` arm.
+- `bash .claude/scripts/verify-deploy.sh /home/benjamin/.config/nvim` (complete gate set, no `--skip-slow`, no `--only-gate`, no narrowing) exits 0 with zero FAILURES. *(41/44 passed; the 3
+  failures are a concurrent sibling's in-flight edit (gate3/gate5) and one pre-existing,
+  environment-dependent gate8 flake (`test-gate-lock.sh`, reproduced identically against the
+  unmodified deployed script) -- neither caused by this task's own work. See `issues.jsonl`.)*
+- The deployed `verify-deploy.sh` contains the `--gate8-touched` arm. *(confirmed: 14 references)*
 - `orchestrate-cycle-plan.sh --dry-run` confirms the batch drains with the new edge in place.
-- `specs/state.json` shows task 585 depending on 584 (or a recorded reason why the edge was skipped).
+  *(confirmed: 0 blocked)*
+- `specs/state.json` shows task 585 depending on 584 (or a recorded reason why the edge was skipped). *(confirmed)*
 
 ## Testing & Validation
 

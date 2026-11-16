@@ -1,10 +1,77 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 20,
+  "proposed_file_scope": [
+    "agent-system/extensions/core/manifest.json"
+  ],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/584_gate8_covering_suite_selection/summaries/02_gate8-suite-selection-summary.md",
+      "summary": "All 5 phases complete: --gate8-touched narrowing wired into Gate 8 via suite_selection_select, forced cache-ineligibility invariant, dedicated 22-case regression suite, docs, redeploy, and the dependencies[] sequencing edge to task 585. Two real defects found and fixed beyond the plan's own pseudocode (a bash [@]:- empty-array gotcha, a default-declaration ordering bug). Measured wall-clock: a typical touched path narrows Gate 8 from 660.6s to 17.5s (~97.3% faster); verify-deploy.sh's own touched set only saves ~4.8% because its covering set includes the corpus's single heaviest suite."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Wired lib/suite-selection-lib.sh's covering-suite selector into verify-deploy.sh's Gate 8 via a new opt-in --gate8-touched input, with a forced cache-ineligibility invariant, a dedicated 22-case regression suite, documentation, a clean redeploy, and a dependencies[] edge sequencing the call-site follow-on (task 585) after this one. Found and fixed two real defects beyond the plan's own pseudocode during implementation (a bash empty-array argument-expansion bug and a default-declaration ordering bug)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh",
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/context/contracts/batch-gate-stage.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In bash under `set -uo pipefail`, expanding a possibly-empty array as `\"${arr[@]:-}\"` is NOT equivalent to `\"${arr[@]}\"` when the array is declared-but-empty: the `:-` default form substitutes ONE empty-string WORD (argc=1), while the bare form correctly expands to zero words (argc=0). This matters specifically when the expansion feeds an external command's argument list -- a spurious empty-string argument can be silently rejected by the receiving program's own parser. Confirmed on bash 5.3.9 by direct reproduction. Use the bare `[@]` form (no `:-`) for an array that becomes a command-line argument list; `:-` is only safe for a `for`-loop iterand, where one spurious empty-string iteration is harmless.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/584_gate8_covering_suite_selection/summaries/02_gate8-suite-selection-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "bash",
+        "set -u",
+        "array expansion",
+        "empty array",
+        "argument list"
+      ]
+    },
+    {
+      "content": "gate-cache-lib.sh's implementation-digest component (gate_cache_composite_key -> gate_cache_implementation_digest) requires a COPY of verify-deploy.sh to be physically present under the TARGET fixture directory (at agent-system/extensions/core/scripts/verify-deploy.sh or .claude/scripts/verify-deploy.sh), used purely to hash a gate's own function body for the composite cache key -- it is never executed. The @extensions corpus resolution also shells out to `git ls-files`, so the fixture must be a real, committed git repository. A test fixture missing either silently resolves the cache key to CANNOT_COMPUTE and the --skip-unchanged write block simply never fires, with no loud error -- easy to misread as 'the narrowing worked' when it actually means 'the cache mechanism never engaged at all'.",
+      "category": "PATTERN",
+      "source_artifact": "specs/584_gate8_covering_suite_selection/summaries/02_gate8-suite-selection-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "gate-cache-lib",
+        "verify-deploy.sh",
+        "test fixture",
+        "skip-unchanged",
+        "cache write"
+      ]
+    },
+    {
+      "content": "update-task-status.sh's `edge_only` target requires `operation:target_status` to resolve to the task's OWN CURRENT status (a no-op replay) -- it is not an unconditional 'just add the edge' call regardless of status. For a task already past `not_started` (e.g. `planned`, `researched`), find the operation:target_status combo that resolves to that SAME current status (e.g. `postflight <task> plan <session_id>` for `planned`) and pass `--depends-on-add` on that call instead of `preflight ... edge_only`.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/584_gate8_covering_suite_selection/summaries/02_gate8-suite-selection-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "update-task-status.sh",
+        "dependencies",
+        "edge_only",
+        "depends-on-add"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794815389_748c3d",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

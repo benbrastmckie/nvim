@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 18,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 20,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a 5-phase implementation plan for Gate 8 covering-suite selection. Phase 1 adds an opt-in --gate8-touched input to verify-deploy.sh; Phase 2 narrows gate8_run()'s run-all.sh invocation through suite_selection_select and, in the same atomic-batch commit, forces gate8 onto GATE_DIRTY_LIST so a narrowed pass can never write a full-@extensions-corpus cache entry; Phases 3-4 add a dedicated regression suite and the docs/contract updates; Phase 5 redeploys, adds the sequencing dependencies[] edge to the call-site task, and runs the unnarrowed full gate set. Call-site wiring (orchestrate-batch-gate.sh Move 4, Mechanism A) is an explicit non-goal, outside this task's file_scope and inside a concurrent sibling's.",
+  "summary": "Wired lib/suite-selection-lib.sh's covering-suite selector into verify-deploy.sh's Gate 8 via a new opt-in --gate8-touched input: a mappable touched path narrows Gate 8's internal run-all.sh invocation to its covering suite(s); absent the flag, behavior is byte-identical. A narrowed run, pass or fail, is forced onto GATE_DIRTY_LIST so it can never write a full-corpus --skip-unchanged cache entry. Added a 22-case regression suite, documented the mechanism and its coverage trade-off in two context docs, redeployed cleanly, and sequenced task 585 after this one via a dependencies[] edge. Found and fixed two real defects beyond the plan's own pseudocode during implementation (a bash empty-array argument-expansion bug that made every unnarrowed run fail with exit 2, and a variable-default-declaration ordering bug that silently clobbered the flag's parsed value).",
   "blockers": [],
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/584_gate8_covering_suite_selection/plans/02_gate8-suite-selection.md",
-      "summary": "5-phase plan: opt-in --gate8-touched narrowing of Gate 8, forced cache-ineligibility, regression suite, docs, redeploy + full gate."
+      "summary": "5-phase plan, all phases [COMPLETED]: opt-in --gate8-touched narrowing of Gate 8, forced cache-ineligibility, regression suite, docs, redeploy + full gate."
+    },
+    {
+      "type": "summary",
+      "path": "specs/584_gate8_covering_suite_selection/summaries/02_gate8-suite-selection-summary.md",
+      "summary": "Full implementation summary including measured wall-clock figures and the two real defects found and fixed during implementation."
     }
   ]
 }

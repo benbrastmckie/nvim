@@ -13,10 +13,10 @@ next_project_number: 639
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,479,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,580,584,590,599,604,607,610,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,480,481,486,492,513,516,517,518,533,540,541,542,543,544,546,550,553,576,579,583,585,586,592,593,598,624,628,630 | 383,390,398,410,431,451,453,455,463,472,476,479,484,491,504,527,534,535,538,539,548,549,563,564,584,599,629 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,501,508,509,547,552,566,570,571,572,581,594,605,637 | 438,439,452,472,476,486,492,518,519,542,543,580,585,586,593,604,628,635,636 | core-agent-system, file-scope-lifecycle, agent-system, ... |
-| 4 | 524,561,577,588,591,595,638 | 501,509,539,547,552,572,594 | core-agent-system, agent-system |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,479,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,473,474,480,481,486,492,513,516,517,518,533,540,541,542,543,544,546,550,553,572,576,579,583,586,592,593,598,624,628,630 | 383,390,398,410,431,451,453,455,463,472,476,479,484,491,504,527,534,535,538,539,548,549,563,564,585,599,629 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,501,508,509,547,552,566,570,571,581,591,594,605,637 | 438,439,452,472,476,486,492,518,519,542,543,572,580,586,593,604,628,635,636 | core-agent-system, file-scope-lifecycle, agent-system, ... |
+| 4 | 524,561,577,588,595,638 | 501,509,539,547,552,594 | core-agent-system, agent-system |
 | 5 | 596,609 | 577,595 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -194,9 +194,8 @@ next_project_number: 639
 
 ### Uncategorized
 
-584 [IMPLEMENTING] — Wire covering-suite selection into Gate 8 so an extension...
-  └─ 585 [PLANNED] — Make the batch-gate deferral binding and cache repeat gate...
-    └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
+585 [PLANNED] — Make the batch-gate deferral binding and cache repeat gate...
+  └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
 
@@ -1931,11 +1930,12 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deploy
 ---
 
 ### 584. Wire covering-suite selection into Gate 8 so an extension change runs the affected suites, not all 149
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Dependencies**: Task 505
 - **Research**: [584_gate8_covering_suite_selection/reports/02_gate8-suite-selection.md]
 - **Plan**: [584_gate8_covering_suite_selection/plans/02_gate8-suite-selection.md]
+- **Summary**: [584_gate8_covering_suite_selection/summaries/02_gate8-suite-selection-summary.md]
 
 **Description**: Gate 8 declares input_corpus @extensions (the whole extension tree) in gate-registry.data, so a one-file edit anywhere under agent-system/extensions/** re-runs the entire 149-suite battery. Meanwhile suite-selection-lib.sh already maps touched paths to exactly their covering suites via suite_selection_select, is tested, and is trusted enough that plan Tier Justification lines are validated against its output -- yet grep for suite_selection against verify-deploy.sh returns 0 hits. This is a wiring job against proven machinery, not new invention.
 
