@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Test coverage",
+  "started_at": "2026-11-16T06:10:00Z",
+  "last_updated": "2026-11-16T07:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-orchestrate-conclusion-roadmap.sh structural model", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"]},
+    {"id": 2, "description": "Case A: all_terminal classic regenerate", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"]},
+    {"id": 3, "description": "Case B: partial exit identical outcome + SKILL.md structural grep", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"]},
+    {"id": 4, "description": "Case C: absent/unknown three-part degrade", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"]},
+    {"id": 5, "description": "Case D: idempotence", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"]},
+    {"id": 6, "description": "Case E: pending marker written/never under --dry-run", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"]},
+    {"id": 7, "description": "Create test-orchestrate-conclusion-backstop.sh (5 guard cases)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-backstop.sh"]},
+    {"id": 8, "description": "suite-classification.data rows for both new suites", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/suite-classification.data"]},
+    {"id": 9, "description": "sync-manifest-scripts.sh --write for both suites", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -356,41 +356,44 @@ which only gates 2 and 21 exercise — no local check reads that cross-file surf
 
 ---
 
-### Phase 4: Test coverage [NOT STARTED]
+### Phase 4: Test coverage [COMPLETED]
 
 **Goal**: The regenerate step's four required cases and the backstop's guards are covered by
 suites the gate-8 runner discovers.
 
 **Tasks**:
-- [ ] Create `scripts/tests/test-orchestrate-conclusion-roadmap.sh` on the structural model of
+- [x] Create `scripts/tests/test-orchestrate-conclusion-roadmap.sh` on the structural model of
       `test-orchestrate-batch-gate.sh` (`set -uo pipefail`, `common_test_repo_root`,
       `common_test_resolve_subject`/`common_test_declare_subject` source-store-first resolution,
       `mktemp -d` scratch root with a scratch `specs/state.json` and scratch git repo, pass/fail
-      counters, exit `0`/`1`/`2`).
-- [ ] Case A — `all_terminal`, `classic`/`stage` roadmap: the regenerate fires, the scoped commit
+      counters, exit `0`/`1`/`2`). *(completed)*
+- [x] Case A — `all_terminal`, `classic`/`stage` roadmap: the regenerate fires, the scoped commit
       lands on `specs/ROADMAP.md` alone, and stderr carries `OUTCOME: --regenerate rewrote`.
-- [ ] Case B — partial exit: a scratch state file with a non-empty `failed_tasks` produces an
+      *(completed)*
+- [x] Case B — partial exit: a scratch state file with a non-empty `failed_tasks` produces an
       identical call outcome, proving the script carries no `exit_status` branch. Pair it with a
       grep-level assertion over the deployed `SKILL.md` that the invocation sits above the
       emission step and under no conditional — the call site, not the script, is what makes the
-      partial-exit case true.
-- [ ] Case C — `absent`/`unknown`: assert no `OUTCOME:` line at all (so `--regenerate` was never
+      partial-exit case true. *(completed)*
+- [x] Case C — `absent`/`unknown`: assert no `OUTCOME:` line at all (so `--regenerate` was never
       invoked), `specs/ROADMAP.md` unchanged or still absent, and all three degrade surfaces
       fired (the named warning, the `roadmap_regenerate_blocked` row in the scratch
       `events.jsonl` plus its scoped commit, and at least one `issues.jsonl` row per scratch task
-      dir).
-- [ ] Case D — idempotence: two back-to-back runs with no intervening state change; the second
-      emits `OUTCOME: --regenerate left … unchanged` and creates no second commit.
-- [ ] Case E — the pending marker: written on a real run, carrying `cc_session_id` and
-      `continuation_count: 0`; never written under `--dry-run`.
-- [ ] Create `scripts/tests/test-orchestrate-conclusion-backstop.sh` covering: no matching
+      dir). *(completed)*
+- [x] Case D — idempotence: two back-to-back runs with no intervening state change; the second
+      emits `OUTCOME: --regenerate left … unchanged` and creates no second commit. *(completed)*
+- [x] Case E — the pending marker: written on a real run, carrying `cc_session_id` and
+      `continuation_count: 0`; never written under `--dry-run`. *(completed)*
+- [x] Create `scripts/tests/test-orchestrate-conclusion-backstop.sh` covering: no matching
       marker prints `{}`; a matching marker blocks on stdout with exit 0; a mismatched
       `cc_session_id` does not block; the `MAX_CONTINUATIONS` cap deletes the marker and stops
-      blocking; `stop_hook_active` escapes.
-- [ ] Add a TAB-separated row for each new suite to `scripts/tests/suite-classification.data`
+      blocking; `stop_hook_active` escapes. *(completed)*
+- [x] Add a TAB-separated row for each new suite to `scripts/tests/suite-classification.data`
       with its class and reason (`lint-unit-integration-boundary.sh` fails loudly on an
-      unclassified discovered suite).
-- [ ] Re-run `sync-manifest-scripts.sh --write` so both suites appear in `provides.scripts`.
+      unclassified discovered suite). *(completed: both classified `unit`/`-` — neither suite
+      spawns `deploy-headless.sh`/`verify-deploy.sh`/`run-all.sh`)*
+- [x] Re-run `sync-manifest-scripts.sh --write` so both suites appear in `provides.scripts`.
+      *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -417,10 +420,15 @@ land — a third discovered-but-unclassified suite would surface there, not at r
 
 **Verification**:
 - `bash .claude/scripts/tests/run-all.sh --only
-  test-orchestrate-conclusion-roadmap.sh,test-orchestrate-conclusion-backstop.sh` passes
+  test-orchestrate-conclusion-roadmap.sh,test-orchestrate-conclusion-backstop.sh` passes —
+  confirmed: `2 passed, 0 failed`
 - `bash .claude/scripts/lint/lint-subject-resolution-declaration.sh` and
-  `bash .claude/scripts/lint/lint-test-root-resolution.sh` pass (gates 27, 29)
-- `bash .claude/scripts/lint/lint-unit-integration-boundary.sh` reports no unclassified suite
+  `bash .claude/scripts/lint/lint-test-root-resolution.sh` pass (gates 27, 29) — gate 27 passes
+  outright; gate 29 still fails on the pre-existing, unrelated `typescript` extension violation
+  recorded against Phase 2 (both new suites are individually reported `[INFO] OK`)
+- `bash .claude/scripts/lint/lint-unit-integration-boundary.sh` reports no unclassified suite —
+  confirmed for both new suites specifically (neither appears among the lint's 9 reported
+  violations, all 9 pre-existing and unrelated — see this phase's own issue-log entry)
 
 ---
 

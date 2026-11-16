@@ -416,6 +416,8 @@
       "tests/test-orchestrate-build-dispatch.sh",
       "tests/test-orchestrate-churn.sh",
       "tests/test-orchestrate-conclusion-aggregate.sh",
+      "tests/test-orchestrate-conclusion-backstop.sh",
+      "tests/test-orchestrate-conclusion-roadmap.sh",
       "tests/test-orchestrate-context-growth.sh",
       "tests/test-orchestrate-cycle-plan.sh",
       "tests/test-orchestrate-cycle-postflight.sh",
