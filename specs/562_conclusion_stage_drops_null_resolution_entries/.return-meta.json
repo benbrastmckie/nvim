@@ -1,12 +1,73 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/562_conclusion_stage_drops_null_resolution_entries/summaries/01_null-hint-contract-alignment-summary.md",
+      "summary": "Lands the null-suggested_channel documentation statement in both conclusion-stage.md and issue-log.md, records the settled duplicate-transplant disposition under records/, and redeploys; Phase 3 closed COMPLETED WITH EXCLUSIONS against the literal full-gate criteria per the dispatch's Batch Gate Deferral directive, with a full Reasoned Exclusions record."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added the null-or-omitted suggested_channel statement to conclusion-stage.md's Hint-Versus-Decision Rule and issue-log.md's suggested_channel field row, wrote a durable settled-disposition note under records/ discharging both duplicate-transplant items, and redeployed the source-store edits to the live tree."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+    "agent-system/extensions/core/context/formats/issue-log.md",
+    "specs/562_conclusion_stage_drops_null_resolution_entries/records/01_settled-disposition.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/562_conclusion_stage_drops_null_resolution_entries/issues.jsonl"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Piping a bash gate script (e.g. verify-deploy.sh) through `tail`/`head` while wrapped in an outer `timeout` loses ALL output when the timeout SIGTERMs the process -- `tail` block-buffers until the pipe closes cleanly, and a SIGTERM kill never gets to flush it. Always redirect directly to a file (`cmd > logf 2>&1`) instead of piping through a filter when the command might be killed by a bound, then read/tail the file separately.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/562_conclusion_stage_drops_null_resolution_entries/summaries/01_null-hint-contract-alignment-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "bounded-waiter",
+        "timeout",
+        "tail",
+        "output-loss",
+        "verify-deploy"
+      ]
+    },
+    {
+      "content": "When a dispatch's Batch Gate Deferral directive names a check as an 'unmappable criterion' (not expressible as a suite basename or gate number, e.g. deploy-headless.sh's own RESULT string), the correct handling is to run it directly and unscoped, then report its true result. If it comes back red for reasons demonstrably outside the phase's own touched files, exclude the literal criterion on its merits via a full Reasoned Exclusions record ([COMPLETED WITH EXCLUSIONS]) rather than silently waiving or force-passing it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/562_conclusion_stage_drops_null_resolution_entries/summaries/01_null-hint-contract-alignment-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "batch-gate-deferral",
+        "unmappable-criterion",
+        "reasoned-exclusions",
+        "verify-deploy"
+      ]
+    },
+    {
+      "content": "Under heavy concurrent multi-agent CPU load (many sibling verify-deploy.sh/lake/test invocations running at once), validate-state.sh --deep's internal 60s timeout can fail against a large specs/state.json even though the check itself is correct -- re-running it standalone with a longer budget (e.g. 180s) disambiguates a load-induced timeout flake from a real validation failure before treating it as blocking.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/562_conclusion_stage_drops_null_resolution_entries/summaries/01_null-hint-contract-alignment-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "validate-state",
+        "timeout",
+        "concurrent-load",
+        "gate10",
+        "flake"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794798170_26e756",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
     "phases_total": 3
-  },
-  "dispatch_seq": 6
+  }
 }

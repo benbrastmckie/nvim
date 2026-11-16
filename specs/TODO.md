@@ -13,7 +13,7 @@ next_project_number: 638
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,452,453,455,456,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,562,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,452,453,455,456,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,457,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,628,630 | 383,390,398,410,431,451,452,453,455,463,472,479,484,491,504,505,527,534,535,538,539,548,549,563,568,585,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,501,508,547,552,570,571,579,581,586,588,591,594,624,637 | 438,439,472,476,486,492,509,518,519,542,543,564,572,580,593,628,635,636 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 524,561,577,595,605 | 501,539,547,552,586,594,604 | core-agent-system, agent-system |
@@ -163,7 +163,6 @@ next_project_number: 638
 558 [NOT STARTED] — Require task descriptions to request a proposal packet...
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
-562 [IMPLEMENTING] — conclusion stage drops null-resolution issue-log entries
 599 [NOT STARTED] — Give the batch-gate-deferral directive a narrowing form that...
   └─ 592 [NOT STARTED] — Re-verify or timestamp a task recorded starting position at...
   └─ 593 [NOT STARTED] — Require pinned Lean Challenge signatures to be measured at...
@@ -2842,12 +2841,13 @@ EVIDENCE CITATION: recorded during task 369's plan phase as issue-log entry iss_
 ---
 
 ### 562. conclusion stage drops null-resolution issue-log entries
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 313
 - **Research**: [562_conclusion_stage_drops_null_resolution_entries/reports/01_duplicate-transplant-and-channel-gap.md]
 - **Plan**: [562_conclusion_stage_drops_null_resolution_entries/plans/01_null-hint-contract-alignment.md]
+- **Summary**: [562_conclusion_stage_drops_null_resolution_entries/summaries/01_null-hint-contract-alignment-summary.md]
 
 **Description**: Close the contract gap that makes null-resolution issue-log entries invisible to the conclusion stage
 

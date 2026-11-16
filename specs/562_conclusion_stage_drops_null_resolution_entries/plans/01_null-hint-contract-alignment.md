@@ -1,7 +1,7 @@
 # Implementation Plan: Task #562
 
 - **Task**: 562 - Close the contract gap that makes null-resolution issue-log entries invisible to the conclusion stage
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/562_conclusion_stage_drops_null_resolution_entries/reports/01_duplicate-transplant-and-channel-gap.md

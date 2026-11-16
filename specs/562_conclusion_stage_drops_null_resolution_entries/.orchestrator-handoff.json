@@ -1,15 +1,25 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 3,
   "phases_total": 3,
-  "summary": "Wrote a 3-phase plan narrowing this record's scope from the description's three-way remedy decision (superseded: option (b) plus the surfacing half of (c) is already landed and verified) to the one genuinely open item: an explicit null-suggested_channel statement in conclusion-stage.md's Hint-Versus-Decision Rule and issue-log.md's suggested_channel field row, both at the core-extension source store. Phase 2 records the settled duplicate-transplant disposition as a durable note under the task's records/ directory; Phase 3 redeploys, reconciles the coupled index-entries.json line_count rows, and runs the full gate set. Every carried figure was re-derived against live state at authoring time, including a fresh reproduction confirming the research report's counts exactly (12 entries, 9 issue / 3 win, all null-resolution and null-hint, 1 costly plus 8 minor).",
+  "summary": "Landed the one remaining open item in this record: an explicit null-suggested_channel statement in both conclusion-stage.md's Hint-Versus-Decision Rule and issue-log.md's suggested_channel field row, at the core-extension source store. Recorded the settled duplicate-transplant disposition as a durable note under records/, and redeployed. Phase 3 closed [COMPLETED WITH EXCLUSIONS] against the plan's literal full-gate criteria (deploy-headless.sh RESULT=landed_verify_clean; verify-deploy.sh passing unscoped), per the dispatch's own Batch Gate Deferral directive: the scoped 8-suite run-all.sh --only discharge ran green, and two incidental full runs confirmed the only red findings (an unrelated typescript-extension lint violation and a load-induced validate-state.sh gate10 timeout) are both outside this phase's file scope.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/562_conclusion_stage_drops_null_resolution_entries/summaries/01_null-hint-contract-alignment-summary.md",
+      "summary": "Implementation summary for the null-hint contract alignment: both documentation edits, the settled-disposition note, and the Phase 3 Batch Gate Deferral exclusion."
+    },
+    {
       "type": "plan",
       "path": "specs/562_conclusion_stage_drops_null_resolution_entries/plans/01_null-hint-contract-alignment.md",
-      "summary": "3-phase plan: null-hint documentation sentences at the core source store, a durable settled-disposition note, then redeploy plus full gate set."
+      "summary": "3-phase plan, all phases closed (Phase 3 COMPLETED WITH EXCLUSIONS with a full Reasoned Exclusions record)."
+    },
+    {
+      "type": "record",
+      "path": "specs/562_conclusion_stage_drops_null_resolution_entries/records/01_settled-disposition.md",
+      "summary": "Durable settled-disposition note discharging both duplicate-transplant items and explaining why this record stays open rather than being abandoned."
     }
   ],
-  "dispatch_seq": 4
+  "dispatch_seq": 6
 }
