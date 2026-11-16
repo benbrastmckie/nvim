@@ -1,0 +1,55 @@
+{
+  "status": "researched",
+  "dispatch_seq": 19,
+  "findings_count": 6,
+  "metadata": {
+    "session_id": "sess_1794815389_748c3d_476",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/476_isolate_seven_red_gate8_shell_suites/reports/02_premise-refresh-and-gate-lock-concurrency-flake.md",
+      "summary": "Re-measures all seven in-scope suites (all now 0-failure standalone), confirms dependencies 423/445 are closed and task 568 already fixed one shared-cause suite, finds a new concurrency-dependent flake in test-gate-lock.sh under run-all.sh's own aggregate battery, confirms the excluded eighth suite's fixture-not-clean symptom still reproduces after 423's closure, and flags two stale known-failures.txt rows."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "Task-number references embedded in an /orchestrate dispatch description (e.g. \"open record 423\", \"open record 445\") can go stale between dispatch generation and execution if the referenced task closes in the interim -- always re-check a cited task's live status (active_projects vs. specs/archive/) before treating a dispatch's framing of it as a blocker or as an unresolved recipient for a hand-off. An archived task cannot receive new findings; a 'hand this observation to record N' instruction against a now-closed N needs a fresh follow-up task instead.",
+      "category": "PATTERN",
+      "source_artifact": "specs/476_isolate_seven_red_gate8_shell_suites/reports/02_premise-refresh-and-gate-lock-concurrency-flake.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["dispatch premise", "stale task reference", "archived task", "hand-off", "orchestrate"]
+    },
+    {
+      "content": "A suite that passes standalone can still fail only inside run-all.sh's own aggregate/parallel battery -- run a cheap `run-all.sh --only <suite1,suite2,...> --fail-on-new` smoke test across a task's declared file_scope suites before assuming standalone green means Gate 8 green. This surfaced a genuine ambient-host-state timing flake in test-gate-lock.sh (passes 16/0 alone, fails 14/2 in the aggregate) that no standalone run would ever reveal.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/476_isolate_seven_red_gate8_shell_suites/reports/02_premise-refresh-and-gate-lock-concurrency-flake.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["run-all.sh", "concurrency flake", "ambient-host-state", "fail-on-new", "gate8"]
+    }
+  ],
+  "claim_invalidations": [
+    {
+      "declaration_names": ["423", "test-verify-deploy-context-budget.sh"],
+      "kind": "supersession",
+      "claim": "Task 423 closed 2026-11-10 ([COMPLETED]); the dispatch description's framing of it as an open blocking dependency for test-verify-deploy-context-budget.sh is superseded, and its own closure attributes a different root cause (gate-24 /ide findings) than the fixture-not-clean symptom this task's description separately reports, which this dispatch independently re-confirmed still reproduces after 423's closure.",
+      "evidence_path": "specs/archive/423_fix_verify_deploy_context_budget_byte_count_drift/summaries/01_eager-baseline-move-and-row-rewrite-summary.md"
+    },
+    {
+      "declaration_names": ["445", "Gate 8's Gate8_run", "expected-versus-NEW failure distinction"],
+      "kind": "supersession",
+      "claim": "Task 445 closed 2026-11-10 ([COMPLETED]) and delivered the EXPECTED/NEW distinction mechanism (gate8_run()'s three-way verdict, run-all.sh --fail-on-new, known-failures.txt) outcome 4 names as a dependency to wait on; it is no longer a blocker and was used directly in this dispatch's own verification.",
+      "evidence_path": "specs/archive/445_gate8_expected_vs_new_failure_distinction/summaries/01_gate8-expected-new-distinction-summary.md"
+    },
+    {
+      "declaration_names": ["test-postflight-deploy-gate.sh", "test-redeploy-checkpoint-promotion.sh", "test-orchestrate-cycle-postflight.sh", "test-orchestrate-predispatch-review.sh", "test-orchestrate-unwind-dispatch.sh"],
+      "kind": "refutation",
+      "claim": "The dispatch description's carried failure counts (test-postflight-deploy-gate.sh 5 failed, test-redeploy-checkpoint-promotion.sh 3 failed, and report 01's earlier 12/2/11/7-failure figures for these five suites) are refuted by direct re-run in this dispatch: all five now report 0 failed standalone (29, 17, 312, 37, and 21 passed respectively).",
+      "evidence_path": "specs/476_isolate_seven_red_gate8_shell_suites/reports/02_premise-refresh-and-gate-lock-concurrency-flake.md"
+    }
+  ],
+  "next_steps": "Run /orchestrate 476 to create an implementation plan that: (1) diagnoses and fixes/declares-expected the new test-gate-lock.sh aggregate-only concurrency flake (report 02 Finding 4), (2) removes the two stale known-failures.txt rows (Finding 6), (3) runs the full, unscoped Gate 8 battery twice per outcome 5's acceptance bar, and (4) flags (does not fix) the excluded eighth suite's regression for a new follow-up task since its owning record (423) is closed (Finding 5)."
+}
