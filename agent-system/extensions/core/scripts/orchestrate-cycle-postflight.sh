@@ -1484,7 +1484,25 @@ ${skel_bullets}" \
           # MIRROR obligation (context/formats/issue-log.md's handoff blockers[] relation
           # verdict): the handoff's blockers[] is overwritten on the next dispatch; this log is
           # not. Co-located with the state.json transition it mirrors, same arm.
-          partial_blockers_detail=$(echo "${handoff:-null}" | jq -r '(.blockers // []) | map(if type == "object" then "phase \(.phase // ""): \(.target // "")" + (if (.what_was_tried // "") != "" then " | tried: \(.what_was_tried)" else "" end) + (if (.why_it_failed // "") != "" then " | failed: \(.why_it_failed)" else "" end) else tostring end) | join("; ")' 2>/dev/null)
+          #
+          # Rendering format, decided explicitly rather than left implicit in the jq expression:
+          # one semicolon-separated clause per blocker entry; within a clause, pipe-separated
+          # segments in this fixed order: phase/target (always rendered, each falling back to
+          # the empty string when absent -- the only two subfields validate-handoff.sh
+          # requires), then goal: (verbatim_goal -- placed first among the optional segments
+          # because it is the highest-value field this render was dropping), then tried:
+          # (what_was_tried), then failed: (why_it_failed). Each of goal:/tried:/failed: is
+          # omitted in its entirety -- separator included -- when its subfield is absent or
+          # empty.
+          #
+          # This one substitution deliberately carries no 2>/dev/null, unlike every other jq
+          # redirect in this script (including the partial_blocker_count substitution a few
+          # lines above, whose numeric-sanitizing `case` idiom depends on a quiet empty result):
+          # a jq failure here now surfaces on this script's own diagnostic stream instead of
+          # being silently swallowed into the generic fallback below. The `[ -z ... ]` fallback
+          # still fires identically on an empty result either way -- only the visibility of
+          # *why* the result came back empty changes.
+          partial_blockers_detail=$(echo "${handoff:-null}" | jq -r '(.blockers // []) | map(if type == "object" then "phase \(.phase // ""): \(.target // "")" + (if (.verbatim_goal // "") != "" then " | goal: \(.verbatim_goal)" else "" end) + (if (.what_was_tried // "") != "" then " | tried: \(.what_was_tried)" else "" end) + (if (.why_it_failed // "") != "" then " | failed: \(.why_it_failed)" else "" end) else tostring end) | join("; ")')
           [ -z "$partial_blockers_detail" ] && partial_blockers_detail="partial outcome with ${partial_blocker_count} blocker(s) (detail unavailable)"
           issue_args=(--task-dir "$TASK_DIR" --kind issue --class "environment" \
             --severity blocking --phase implement --what-happened "$partial_blockers_detail" \

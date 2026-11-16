@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/534_postflight_detail_free_blocking_partial_issue_entry/plans/01_postflight-blocking-partial-issue-entry.md",
-      "summary": "4-phase plan: restore the dropped verbatim_goal and surface the swallowed jq error (atomic-batch, red-first), settle class/severity, collapse repeat entries on blocker identity via the open tags seam, then redeploy and run the full gate set."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1794850122_9151c5_534",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 4.5,
-    "dependency_waves": 4
-  },
-  "memory_candidates": [
-    {
-      "content": "When a plan must de-duplicate repeated structured-log writes from one call site, prefer writing an explicit identity key into the log schema's open `tags` object (via an existing `--tags-json` pass-through) and matching on that exact field, rather than substring-matching the human-readable narrative field. Two reasons compound: the narrative is often being reformatted by the same change set, and the narrative draws on fields that are present-by-convention rather than schema-enforced, so an agent rewording them between dispatches silently breaks the key. Compute the identity from only the schema-required subfields. This keeps the whole fix inside the calling script's own file scope -- no writer-script or format-document edit -- which matters when a sibling record has claimed those files as its territory.",
-      "category": "PATTERN",
-      "source_artifact": "specs/534_postflight_detail_free_blocking_partial_issue_entry/plans/01_postflight-blocking-partial-issue-entry.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["issue-log", "tags seam", "de-duplication", "identity key", "file-territory collision", "tags-json"]
-    }
-  ],
-  "dispatch_seq": 2,
-  "next_steps": "Run /orchestrate 534 to execute the plan"
+    "session_id": "sess_1794850122_9151c5",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

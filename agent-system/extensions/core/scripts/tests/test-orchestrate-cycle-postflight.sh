@@ -2325,7 +2325,7 @@ cat > "$WORKDIR/specs/830_candidate/.orchestrator-loop-guard" <<'EOF'
 {"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
 EOF
 cat > "$WORKDIR/specs/830_candidate/.orchestrator-handoff.json" <<'EOF'
-{"status": "partial", "dispatch_seq": 1, "phases_completed": 3, "phases_total": 4, "blockers": [{"target": "aeneas-macos-aarch64 asset", "verbatim_goal": "download the release asset", "why_it_failed": "upstream release lacks this asset"}]}
+{"status": "partial", "dispatch_seq": 1, "phases_completed": 3, "phases_total": 4, "blockers": [{"phase": "implement", "target": "aeneas-macos-aarch64 asset", "verbatim_goal": "download the release asset", "what_was_tried": "built from source", "why_it_failed": "upstream release lacks this asset"}, {"target": "second-blocker probe", "why_it_failed": "network timeout"}]}
 EOF
 run_sut specs/830_candidate --session sess_830 --phase implement --task-type general \
   --agent general-implementation-agent --loop-guard-file specs/830_candidate/.orchestrator-loop-guard \
@@ -2365,6 +2365,28 @@ if jq -e '.aux_pending."830".kind == "blocker-research"' \
   common_test_pass "regression (830): aux_pending[830] persisted to the loop-guard file"
 else
   common_test_fail "regression (830): aux_pending[830] not found in the loop-guard file"
+fi
+# issues.jsonl MIRROR obligation: the handoff's blockers[] detail must also reach the task's own
+# issues.jsonl log, since the handoff file is overwritten on the next dispatch. what_happened
+# must carry every subfield the first blocker object (all five subfields present) actually
+# carries; the second blocker object (missing phase/verbatim_goal/what_was_tried) is present to
+# pin the omitted-segment behavior below, without disturbing blocker_desc_830 above (which reads
+# only blockers[0], unchanged here).
+issues_file_830="$WORKDIR/specs/830_candidate/issues.jsonl"
+what_happened_830=$(tail -n 1 "$issues_file_830" 2>/dev/null | jq -r '.what_happened // ""' 2>/dev/null)
+if echo "$what_happened_830" | grep -q "aeneas-macos-aarch64 asset" \
+   && echo "$what_happened_830" | grep -q "download the release asset" \
+   && echo "$what_happened_830" | grep -q "built from source" \
+   && echo "$what_happened_830" | grep -q "upstream release lacks this asset"; then
+  common_test_pass "regression (830): issues.jsonl what_happened carries target, verbatim_goal, what_was_tried, and why_it_failed"
+else
+  common_test_fail "regression (830): expected issues.jsonl what_happened to carry all four blocker subfields, got: $what_happened_830"
+fi
+expected_clause2_830="phase : second-blocker probe | failed: network timeout"
+if echo "$what_happened_830" | grep -qF "$expected_clause2_830"; then
+  common_test_pass "regression (830): second blocker (missing goal:/tried: subfields) renders with those segments omitted entirely, separator included, no stray label"
+else
+  common_test_fail "regression (830): expected the second blocker's clause to be exactly '$expected_clause2_830' with goal:/tried: omitted, got: $what_happened_830"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #534
 
 - **Task**: 534 - Stop the orchestrate postflight from writing a detail-free blocking issue-log entry on every blocker-bearing partial return, and settle that entry's classification.
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/534_postflight_detail_free_blocking_partial_issue_entry/reports/01_postflight-blocking-partial-issue-entry.md
@@ -158,7 +158,7 @@ rather than batched.
 
 ---
 
-### Phase 1: Restore the lost blocker detail and stop swallowing the jq error [NOT STARTED]
+### Phase 1: Restore the lost blocker detail and stop swallowing the jq error [COMPLETED]
 
 **Goal**: Every subfield the handoff's `blockers[]` objects carry reaches the recorded
 `what_happened`, under a format stated explicitly here and asserted by the existing regression
@@ -183,11 +183,11 @@ phase <phase>: <target> | goal: <verbatim_goal> | tried: <what_was_tried> | fail
 - A non-object element falls through to `tostring`, unchanged.
 
 **Tasks**:
-- [ ] Re-derive the premise at implementation time before editing: run the current
+- [x] Re-derive the premise at implementation time before editing: run the current
       `partial_blockers_detail` jq expression against a synthetic object-shaped `blockers[]`
       payload carrying all five subfields, with `2>/dev/null` removed, and confirm the output
       omits the `verbatim_goal` value. Record the observed output.
-- [ ] Extend the existing blocker-bearing-partial regression fixture in
+- [x] Extend the existing blocker-bearing-partial regression fixture in
       `scripts/tests/test-orchestrate-cycle-postflight.sh` (the `specs/830_candidate` case) in
       place: add a `what_was_tried` and a `phase` to its `blockers[]` object so the fixture
       exercises every segment, then add assertions that read
@@ -196,20 +196,20 @@ phase <phase>: <target> | goal: <verbatim_goal> | tried: <what_was_tried> | fail
       `why_it_failed` values. Mirror the assertion style of the `aux_signal.blocker_desc`
       assertion immediately below it in the same fixture. Do not remove or renumber any existing
       assertion in that fixture.
-- [ ] Run the suite and capture the RED result, confirming the new `verbatim_goal` assertion
+- [x] Run the suite and capture the RED result, confirming the new `verbatim_goal` assertion
       fails against the unmodified script. This is the acceptance bar's "show the assertion fails
       first" step; its output is recorded in the phase's verification notes. Do not commit this
       state.
-- [ ] Add the `goal:` segment to the object branch of the `partial_blockers_detail` map
+- [x] Add the `goal:` segment to the object branch of the `partial_blockers_detail` map
       expression in `scripts/orchestrate-cycle-postflight.sh`, guarded by the same non-empty check
       the existing optional segments use.
-- [ ] Remove `2>/dev/null` from this one `partial_blockers_detail` substitution only, leaving
+- [x] Remove `2>/dev/null` from this one `partial_blockers_detail` substitution only, leaving
       every other `2>/dev/null` in the script untouched — including the `partial_blocker_count`
       substitution a few lines above, whose numeric-sanitizing `case` idiom depends on a quiet
       empty result. Add a one-line comment stating that the `[ -z … ]` fallback still fires
       identically and that only the visibility of *why* the output was empty changes.
-- [ ] Re-run the suite and capture the GREEN result.
-- [ ] Commit the two files together as one objective.
+- [x] Re-run the suite and capture the GREEN result. *(completed: 314 passed, 0 failed)*
+- [x] Commit the two files together as one objective.
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,19 @@
+{
+  "phase": 1,
+  "phase_name": "Restore the lost blocker detail and stop swallowing the jq error",
+  "started_at": "2026-11-16T17:49:20Z",
+  "last_updated": "2026-11-16T17:49:20Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive premise: run current jq expression against a synthetic object-shaped blockers[] payload without 2>/dev/null and confirm verbatim_goal is omitted", "status": "done", "files_touched": [], "note": "Confirmed: output was 'phase implement: lemma X | tried: induction | failed: refuted by counterexample' -- verbatim_goal (prove X) absent."},
+    {"id": 2, "description": "Extend the specs/830_candidate regression fixture with what_was_tried and phase, and add issues.jsonl what_happened content assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Run suite and capture RED (new assertion fails against unmodified script)", "status": "done", "files_touched": [], "note": "RED confirmed: [FAIL] regression (830): expected issues.jsonl what_happened to carry all four blocker subfields, got: ...goal segment absent."},
+    {"id": 4, "description": "Add goal: segment to partial_blockers_detail object branch in orchestrate-cycle-postflight.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "Remove 2>/dev/null from partial_blockers_detail substitution only, with inline comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 6, "description": "Re-run suite and capture GREEN", "status": "done", "files_touched": [], "note": "314 passed, 0 failed."},
+    {"id": 7, "description": "Commit the two files together as one objective (atomic-batch)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh", "specs/534_postflight_detail_free_blocking_partial_issue_entry/plans/01_postflight-blocking-partial-issue-entry.md"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "last_updated": "2026-11-16T18:05:00Z"
+}
