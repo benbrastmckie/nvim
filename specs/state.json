@@ -5,12 +5,12 @@
     {
       "project_number": 637,
       "project_name": "make_sapience_extension_fully_functional",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "general",
       "description": "Make the sapience extension fully functional across loaded repositories: tagged postflight writes fire reliably in every loaded repo (no tagged notes after Nov 13 anywhere; zero ever in .dotfiles, BimodalLogic, sf1-engine despite completed tasks, with no failures logged), prompt-time hook injection is repo-filtered or otherwise bounded (POST /v1/cli/context ignores the repo identifier; probe returns RESIDUAL_HOLDS), transcript capture sync is restored and its opt-in project list agrees with the set of loaded repos (stalled since Nov 13; BimodalLogic disabled, sf1-engine absent), and verify-sapience-mcp.sh check (e) stops failing on the additive-merge 11-vs-7 grant residual. Out of scope: repairing the half-deployed abood repo (on hold). Overlaps open tasks 635, 636 and 628. Seed report: specs/637_make_sapience_extension_fully_functional/reports/01_seed-audit-findings.md",
       "topic": "sapience",
       "created": "2026-11-16T01:22:12Z",
-      "last_updated": "2026-11-16T01:22:12Z",
+      "last_updated": "2026-11-16T01:37:12Z",
       "audit_verdict": {
         "proposal": {
           "id": "make_sapience_extension_fully_functional",
@@ -521,7 +521,16 @@
           "scope-blind: project 168 (correct_opencode_mcp_scoping_claim) declares no file_scope -- judged on the semantic shortlist alone",
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
-      }
+      },
+      "session_id": "sess_1794792661_b8da9f",
+      "artifacts": [
+        {
+          "path": "specs/637_make_sapience_extension_fully_functional/reports/02_scoping-and-remaining-gaps.md",
+          "type": "report",
+          "summary": "Resolves the absorb/depend/expand question for tasks 635/636/628 (recommends depend-on, not absorb/expand), confirms F5 (prompt-time injection scoping) is already a closed, vendor-owned residual with no further local action, and narrows the open F6 capture-stall question with live-machine evidence pointing to a manual-invocation gap rather than a code defect, recommending it be appended to task 636 rather than filed separately."
+        }
+      ],
+      "next_artifact_number": 2
     },
     {
       "project_number": 636,
