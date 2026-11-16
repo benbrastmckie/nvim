@@ -332,7 +332,7 @@ itself the covering check: `bash agent-system/extensions/core/scripts/tests/run-
 
 ---
 
-### Phase 4: Re-Derive the Carried Figure and Rewrite the Header Notes [NOT STARTED]
+### Phase 4: Re-Derive the Carried Figure and Rewrite the Header Notes [COMPLETED]
 
 **Goal**: The library's SCOPE and classification header notes state what the corrected code
 actually does and a figure measured against it, with the measurement command recorded — the
@@ -341,26 +341,26 @@ measurement rather than a bumped denominator.
 
 **Tasks**:
 
-- [ ] Run the corrected `suite_selection_classify` across every real non-core suite discoverable
+- [x] Run the corrected `suite_selection_classify` across every real non-core suite discoverable
   in the source store, paired with a touched basename that suite actually references, and record
   the resulting counts per value (`source-only` / `source-first` / `deployed-first`). Record the
-  exact command used so a future reader can re-run it.
-- [ ] Rewrite the SCOPE block to describe per-touched-path extension resolution: which segment is
+  exact command used so a future reader can re-run it. *(completed: 29 non-core suites measured -- 20 source-only, 5 source-first, 4 deployed-first; command recorded verbatim in the header and independently re-run to reproduce the identical tally)*
+- [x] Rewrite the SCOPE block to describe per-touched-path extension resolution: which segment is
   detected, the `core/manifest.json` marker gate, the deployed-flat fall-through, and why the
-  change cannot alter deployed behaviour.
-- [ ] Replace the carried figure with the freshly measured one, stated as a measurement with its
-  command — not as a standing property of the corpus.
-- [ ] Record the classification ruling in the RESOLUTION-ORDER CLASSIFICATION block:
+  change cannot alter deployed behaviour. *(completed)*
+- [x] Replace the carried figure with the freshly measured one, stated as a measurement with its
+  command — not as a standing property of the corpus. *(completed)*
+- [x] Record the classification ruling in the RESOLUTION-ORDER CLASSIFICATION block:
   classification now reaches non-core suites, the lookup order (library-local tree first, then the
   per-extension loop), and that first match wins on a basename the discovery convention already
-  keeps unique.
-- [ ] Document the one remaining limitation: a touched path with no
+  keeps unique. *(completed)*
+- [x] Document the one remaining limitation: a touched path with no
   `agent-system/extensions/<ext>/scripts/` segment (a bare relative path from inside an extension
-  directory) still resolves against the library-local tree.
-- [ ] Keep `__FULL_SWEEP__`'s documented meaning untouched, and keep the HONESTY CONSTRAINT block
-  as it stands.
-- [ ] Write no task numbers and no record-versioning language into the header: name durable
-  anchors (file paths, function names, the measurement command) only.
+  directory) still resolves against the library-local tree. *(completed)*
+- [x] Keep `__FULL_SWEEP__`'s documented meaning untouched, and keep the HONESTY CONSTRAINT block
+  as it stands. *(completed: neither block was touched, confirmed via diff)*
+- [x] Write no task numbers and no record-versioning language into the header: name durable
+  anchors (file paths, function names, the measurement command) only. *(completed: scanned the diff's actual +/- lines for both patterns, none present)*
 
 **Timing**: 0.75 hours
 

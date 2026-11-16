@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "Re-Derive the Carried Figure and Rewrite the Header Notes",
+  "started_at": "2026-11-16T00:45:00Z",
+  "last_updated": "2026-11-16T00:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run corrected classify across real non-core corpus, record exact command", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Rewrite SCOPE block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 3, "description": "Replace carried figure with freshly measured one", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 4, "description": "Record classification ruling in RESOLUTION-ORDER CLASSIFICATION block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 5, "description": "Document remaining limitation (bare relative path)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 6, "description": "Keep FULL_SWEEP meaning and HONESTY CONSTRAINT untouched", "status": "done", "files_touched": []},
+    {"id": 7, "description": "No task numbers / record-versioning language in header", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Measured command (recorded verbatim in the header) run against the live corpus: 29 non-core suites total, 20 source-only, 5 source-first, 4 deployed-first -- 9 of 29 (31%) carry the deployed-vs-source hazard, directly contradicting the carried '0 of 19' claim. Re-ran the exact header-recorded command standalone and reproduced the identical 4/5/20 tally. Diff read-through confirmed every changed +/- line in this phase's hunk begins with '#' (comment-only). run-all.sh --only test-run-all-selection.sh still passes (36/0, unmoved by a comment-only edit). lint-shellcheck.sh exits 0. Scanned the diff for task-number references and record-versioning phrasing (task N, previously, no longer, formerly, 'used to' as a lineage marker, carried forward, withdrawn, supersede) -- none present in the actual changed lines."
+}

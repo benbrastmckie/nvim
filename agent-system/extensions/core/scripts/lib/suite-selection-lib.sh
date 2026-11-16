@@ -36,15 +36,40 @@
 # ground, not this library's job.
 #
 # ─── SCOPE ───────────────────────────────────────────────────────────────────────────────────
-# This library maps touched paths against ONE scripts tree: the one this file itself currently
-# lives under (resolved from its own location two directories up: scripts/lib/THIS_FILE ->
-# scripts/). That is agent-system/extensions/core/scripts when sourced from the source store, and
-# .claude/scripts when sourced from a deploy (where every extension's scripts merge into one flat
-# tree, so "core-only" and "the whole deployed tree" become the same population -- see run-all.sh
-# header's own source-store/deployed dual-mode note for the general pattern this mirrors).
-# Extending the mapping to reason about a SOURCE-STORE path belonging to a different extension
-# while still un-deployed is explicitly out of scope (0 of 19 non-core suites were found to match
-# the deployed-vs-source hazard this library also classifies -- a core-only phenomenon today).
+# This library's DEFAULT scripts tree is the one this file itself currently lives under (resolved
+# from its own location two directories up: scripts/lib/THIS_FILE -> scripts/). That is
+# agent-system/extensions/core/scripts when sourced from the source store, and .claude/scripts
+# when sourced from a deploy (where every extension's scripts merge into one flat tree, so
+# "core-only" and "the whole deployed tree" become the same population -- see run-all.sh header's
+# own source-store/deployed dual-mode note for the general pattern this mirrors).
+#
+# A touched path naming a literal agent-system/extensions/<ext>/scripts/ segment is resolved
+# against THAT extension's own scripts/ + scripts/tests/ instead -- but ONLY when two conditions
+# both hold: this library is running from the source store (detected by the same marker run-all.sh
+# itself already uses: <extensions-parent>/core/manifest.json exists -- derived once per call via
+# the shared _ssl_extensions_parent helper, never a second detection idiom), AND that named
+# extension's own scripts/ directory actually exists on disk. Failing either condition falls
+# through unchanged to this library's own default tree above -- the fall-through is why a core
+# path, a deployed-mode path (the marker never exists there, since a deploy has no per-extension
+# source-store layout to find), and an unrecognized path shape all behave exactly as they did
+# before this per-extension resolution existed. Resolution is scoped to the ONE extension the
+# touched path itself names, never a corpus-wide search across every extension -- broadening the
+# existing stratum (b) grep to scan every extension's suites would risk a coincidental
+# cross-extension basename collision, which would be a behavior change for core paths too.
+#
+# `suite_selection_classify`'s suite-FILE lookup (not the touched-path mapping above) is widened
+# the same way: a suite basename not found in this library's own two fixed locations is probed
+# against every extension's own scripts/tests/ then scripts/ in turn, first match wins, but again
+# only in source-store mode (the identical marker). This reaches every real non-core suite, not
+# core's alone -- see RESOLUTION-ORDER CLASSIFICATION below for why this half is EXTENDED rather
+# than staying core-only.
+#
+# Known limitation: a touched path given as a bare relative path with no
+# agent-system/extensions/<ext>/scripts/ segment at all (e.g. a caller that already `cd`'d into an
+# extension directory and passed a path relative to it, such as plain `scripts/foo.sh`) still
+# resolves against this library's own default tree, never against the path's actual extension.
+# This is a known gap, not a silent miss: such a path is never wrongly classified as unmappable,
+# it simply does not benefit from the per-extension resolution this file otherwise provides.
 #
 # ─── MAPPING STRATA (in order; first hit wins per path) ─────────────────────────────────────────
 #   (a) Strict basename pairing: NAME.sh -> test-NAME.sh (covers lint/lint-*.sh and flat
@@ -75,6 +100,30 @@
 # deliberately conservative (defaults to `deployed-first` whenever both occur with the deployed
 # reference not provably later) and is surfaced for a human/caller to weigh, never used to drop a
 # suite from selection.
+#
+# CLASSIFICATION RULING: this signal is EXTENDED to non-core suites, not left core-only. An
+# earlier measurement claiming "0 of 19 non-core suites match the deployed-vs-source hazard" was
+# itself an artifact of the suite-FILE lookup only ever checking this library's own default tree
+# -- a non-core suite file could never be found at all, so every one of them fell through to the
+# `source-only` not-found default, indistinguishable from a genuine absence of the hazard. Once
+# the lookup was widened (see SCOPE above), a direct re-measurement across the real non-core
+# corpus found the opposite: 9 of 29 non-core suites (5 `source-first`, 4 `deployed-first`) DO
+# carry the hazard -- re-run this exact command to reproduce the figure against the live corpus
+# (counts will drift as suites are added/removed; the command, not the number, is the durable
+# anchor):
+#   for d in agent-system/extensions/*/; do e="$(basename "$d")"; [ "$e" = core ] && continue
+#     [ -d "${d}scripts" ] || continue
+#     for f in "${d}scripts/tests"/test-*.sh "${d}scripts"/test-*.sh; do [ -e "$f" ] || continue
+#       s="$(basename "$f")"; n="${s#test-}"; n="${n%.sh}"
+#       suite_selection_classify "$s" "${n}.sh"
+#     done
+#   done | sort | uniq -c
+# Lookup order for a non-core suite basename: this library's own two fixed locations first (so a
+# core-adjacent basename collision resolves exactly as it always did), then every extension
+# directory's own scripts/tests/ then scripts/ in turn, first match wins. First match wins safely
+# because every suite basename is corpus-unique by the existing test-*.sh discovery convention
+# (one real file per basename across the whole corpus), and the per-extension loop order is the
+# stable `*/` glob order inherited from run-all.sh's own discovery loop.
 #
 # ─── PUBLIC API ──────────────────────────────────────────────────────────────────────────────
 #   suite_selection_select PATH [PATH...]
