@@ -194,7 +194,7 @@ next_project_number: 638
 
 ### Uncategorized
 
-584 [RESEARCHING] — Wire covering-suite selection into Gate 8 so an extension...
+584 [RESEARCHED] — Wire covering-suite selection into Gate 8 so an extension...
 585 [PLANNING] — Make the batch-gate deferral binding and cache repeat gate...
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
@@ -1887,9 +1887,10 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deploy
 ---
 
 ### 584. Wire covering-suite selection into Gate 8 so an extension change runs the affected suites, not all 149
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Dependencies**: Task 505
+- **Research**: [584_gate8_covering_suite_selection/reports/02_gate8-suite-selection.md]
 
 **Description**: Gate 8 declares input_corpus @extensions (the whole extension tree) in gate-registry.data, so a one-file edit anywhere under agent-system/extensions/** re-runs the entire 149-suite battery. Meanwhile suite-selection-lib.sh already maps touched paths to exactly their covering suites via suite_selection_select, is tested, and is trusted enough that plan Tier Justification lines are validated against its output -- yet grep for suite_selection against verify-deploy.sh returns 0 hits. This is a wiring job against proven machinery, not new invention.
 

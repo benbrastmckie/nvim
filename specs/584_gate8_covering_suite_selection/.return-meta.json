@@ -1,0 +1,43 @@
+{
+  "status": "researched",
+  "dispatch_seq": 14,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/584_gate8_covering_suite_selection/reports/02_gate8-suite-selection.md",
+      "summary": "Re-verifies seed figures (suite count drifted 149->195; 17-gate @extensions set and gate8 cost confirmed), rules out the gate cache as a touched-path source, and recommends a backward-compatible opt-in touched-paths input to gate8_run plus a forced-dirty cache-write guard, scoped entirely inside the task's own file_scope, with call-site wiring left as a coordinated follow-on with sibling task 585."
+    }
+  ],
+  "next_steps": "Run /orchestrate 584 to create an implementation plan from this research.",
+  "metadata": {
+    "session_id": "sess_1794815389_748c3d_584",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 9,
+    "issue_log_contribution": 3
+  },
+  "memory_candidates": [
+    {
+      "content": "gate-cache-lib.sh's persisted cache entry (gate_cache_entry_write/read) stores only ONE opaque composite hash per gate -- never per-file hashes. It cannot supply a touched-path diff; the gate cache answers 'did the corpus change' but never 'which files changed'. The only existing touched-path source in this codebase is the orchestrator's invocation_modified_files/cycle_modified_files, built from each agent's own self-reported .return-meta.json modified_files and accumulated in orchestrate-cycle-postflight.sh -- not derivable from the gate cache itself.",
+      "category": "PATTERN",
+      "source_artifact": "specs/584_gate8_covering_suite_selection/reports/02_gate8-suite-selection.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["gate-cache-lib", "corpus-digest", "touched-path", "invocation_modified_files", "suite-selection-lib"]
+    },
+    {
+      "content": "verify-deploy.sh's generic --skip-unchanged cache-write block (~line 2251) writes a cache entry for any gate that ran clean this invocation, keyed by the gate's DECLARED corpus (e.g. the whole @extensions tree for gate 8), with no awareness of whether that gate's own internal invocation was narrowed to a subset. Any future narrowing of a gate's internal suite/check selection (gate 8 or otherwise) must force that gate onto GATE_DIRTY_LIST whenever narrowing was used, regardless of pass/fail outcome -- otherwise a narrowed-but-clean pass silently certifies the full corpus as green under --skip-unchanged, and a later unrelated run with an unchanged corpus skips the gate entirely.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/584_gate8_covering_suite_selection/reports/02_gate8-suite-selection.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy.sh", "skip-unchanged", "gate-cache", "cache-write-eligibility", "coverage-erosion"]
+    },
+    {
+      "content": "Of verify-deploy.sh's three call sites to Gate 8, only orchestrate-batch-gate.sh's Move 4 (full depth, no --skip-slow) actually runs the full shell-test battery at cost; orchestrate-cycle-plan.sh's pre/post findings snapshots pass --skip-slow, which makes gate8_run() return before run-all.sh is ever invoked -- those calls get zero benefit from any Gate 8 narrowing and are not a useful target. Mechanism A's --only-gate 8 scoped-tier option is also currently NOT suite-level narrow (gate8_run runs the full battery regardless of which gates were selected via --only-gate).",
+      "category": "PATTERN",
+      "source_artifact": "specs/584_gate8_covering_suite_selection/reports/02_gate8-suite-selection.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["gate8_run", "orchestrate-batch-gate.sh", "skip-slow", "batch-gate-stage", "only-gate"]
+    }
+  ]
+}
