@@ -369,22 +369,30 @@ named in Non-Goals is owed before proceeding.
 
 ---
 
-### Phase 4: Redeploy and full-gate acceptance [NOT STARTED]
+### Phase 4: Redeploy and full-gate acceptance [COMPLETED]
 
 **Goal**: The source-store edits reach the deployed tree, and the complete gate set passes against
 the result.
 
 **Tasks**:
-- [ ] Confirm every edit from Phases 1-3 lives under `agent-system/extensions/core/` and that
+- [x] Confirm every edit from Phases 1-3 lives under `agent-system/extensions/core/` and that
       `git status --short` shows no hand-authored change under `.claude/**`.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` and confirm the output reports
+- [x] Run `bash .claude/scripts/deploy-headless.sh` and confirm the output reports
       `RESULT=landed_verify_clean`. Any other `RESULT` value halts this phase for diagnosis
       rather than being recorded as a pass.
-- [ ] Confirm the deployed mirror `.claude/scripts/orchestrate-cycle-postflight.sh` now matches
+- [x] Confirm the deployed mirror `.claude/scripts/orchestrate-cycle-postflight.sh` now matches
       the source-store copy at the `partial)` arm.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`, no
-      `--only-gate`, no `--skip-unchanged`). Record the verdict.
-- [ ] Record the verification notes and commit.
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`, no
+      `--only-gate`, no `--skip-unchanged`). Record the verdict. *(deviation: altered -- this
+      dispatch's own Batch Gate Deferral directive (multi-task batch invocation) narrows this
+      step to `bash .claude/scripts/tests/run-all.sh --only
+      test-corroborate-phase-counts.sh,test-deploy-baseline-lib.sh,test-force-phases.sh,test-gate-out-derived-staleness.sh,test-git-commit-scoped.sh,test-handoff-dispatch-identity.sh,test-handoff-reader-parity.sh,test-lint-deliberate-break-residue.sh,test-lint-json-channel-discipline.sh,test-orchestrate-context-growth.sh,test-orchestrate-cycle-plan.sh,test-orchestrate-cycle-postflight.sh,test-orchestrate-recover-message-findings.sh,test-run-task-observers.sh,test-skill-base-lifecycle.sh,test-stall-reprompt-wiring.sh`
+      against the deployed tree -- the same complete covering set named in Phase 1's and Phase
+      2's own Tier Justifications for this task's two touched files. Result: 16 passed, 0
+      failed, exit 0. The full, unnarrowed battery is deferred to the once-per-batch-invocation
+      full gate and is attributed back to this task by its own `modified_files`, per the
+      dispatch's own directive)*
+- [x] Record the verification notes and commit.
 
 **Timing**: 0.75 hours
 
