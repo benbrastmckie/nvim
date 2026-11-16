@@ -1,51 +1,43 @@
 {
-  "status": "tasks_created",
-  "summary": "Created 2 tasks (#834, #835) from an approved five-defect agent-system change request; three of the five defects were already owned by open records (#767, #768/#813, #785/#827) and were not duplicated.",
+  "status": "researched",
   "artifacts": [
     {
-      "type": "task_entry",
-      "path": "/home/benjamin/Projects/BimodalLogic/specs/TODO.md",
-      "summary": "Tasks #834 and #835 added to TODO.md and state.json"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/Projects/BimodalLogic/specs/834_orchestrate_aux_carrier_and_implement_readmission/",
-      "summary": "Task directory created (no artifacts yet)"
-    },
-    {
-      "type": "task_entry",
-      "path": "/home/benjamin/Projects/BimodalLogic/specs/835_plan_format_baseline_relative_gate_criteria/",
-      "summary": "Task directory created (no artifacts yet)"
+      "type": "report",
+      "path": "specs/547_orchestrate_aux_carrier_and_implement_readmission/reports/01_aux-carrier-implement-readmission.md",
+      "summary": "Confirms the four-hop aux carrier chain defect and the implement-readmission gap against the live source store, recommends confirm-then-clear (Item 1) and a post-triage chain-state override placed in orchestrate-cycle-plan.sh rather than orchestrate-triage-classify.sh (Item 2), and corrects the dispatch's own premise about where the multi-task state file is read."
     }
   ],
+  "next_steps": "Run /orchestrate 547 to create an implementation plan",
+  "dispatch_seq": 7,
   "metadata": {
-    "session_id": "sess_1793651515_3f23fb",
-    "agent_type": "meta-builder-agent",
+    "session_id": "sess_1794850122_9151c5_547",
+    "agent_type": "general-research-agent",
     "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "meta",
-      "meta-builder-agent"
-    ],
-    "mode": "prompt",
-    "mode_target": "local",
-    "target_root": "/home/benjamin/Projects/BimodalLogic",
-    "tasks_created": 2,
-    "parent_task": 761,
-    "topic": "agent-system",
-    "covers": "defects 1 and 2 (one shared root cause: the aux blocker-research carrier is unverified, and nothing refuses an implement re-dispatch when a plan revision is owed)"
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 7,
+    "issue_log_contribution": 1
   },
-  "modified_files": [
-    "specs/TODO.md",
-    "specs/state.json"
-  ],
-  "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
-    "agent-system/extensions/core/scripts/orchestrate-build-aux-dispatch.sh",
-    "agent-system/extensions/core/scripts/orchestrate-triage-classify.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-aux-dispatch.sh",
-    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
-  ],
-  "next_steps": "Run /research 834 once its dependency #823 has cleared"
+  "memory_candidates": [
+    {
+      "content": "orchestrate-triage-classify.sh reads only specs/state.json and a candidate's own .orchestrator-handoff.json (its own header states this read set explicitly). The per-invocation multi-task state file (specs/.orchestration/.orchestrator-multi-state-{session_id}.json, holding aux_pending/blocker_escalation_count/etc.) is loaded only inside orchestrate-cycle-plan.sh itself via mt_get/mt_set/mt_save. A routing predicate that needs to key on aux_pending or similar chain state must be placed as a post-triage override inside orchestrate-cycle-plan.sh (after triage_group[$t] is assigned, before the forced-phase/effective_group loop), never inside orchestrate-triage-classify.sh, to avoid widening that script's documented narrow read contract.",
+      "category": "PATTERN",
+      "source_artifact": "specs/547_orchestrate_aux_carrier_and_implement_readmission/reports/01_aux-carrier-implement-readmission.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate-triage-classify", "orchestrate-cycle-plan", "aux_pending", "multi-task state file", "mt_json"]
+    },
+    {
+      "content": "The .orchestrator-handoff.json schema's next_action_hint field is confirmed structurally dead in the agent-system source store: zero agent files write it (verified by grep across general-implementation-agent.md, reviser-agent.md, lean-implementation-agent.md), and test-handoff-reader-parity.sh's own header states it was retired from that suite because neither field has a live reader any more. A future routing need should not assume next_action_hint has any adoption to build on -- treat it as greenfield, not as an existing signal to tap.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/547_orchestrate_aux_carrier_and_implement_readmission/reports/01_aux-carrier-implement-readmission.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["next_action_hint", "handoff-schema", "dead field", "orchestrator-handoff"]
+    },
+    {
+      "content": "blocker_escalation_count[t] in orchestrate-cycle-plan.sh's multi-task state resets to 0 each /orchestrate invocation (per orchestrate-loop-guard-init.sh's own comment), and increments only when a blocker-research fork is actually built and dispatched (not on confirmed failure). When redesigning a confirm-then-clear remedy for a similar aux-chain carrier, the increment point can usually stay put -- only the aux_pending clear point needs to move from emission time to confirmation time, provided the carrier-success branch is also updated to perform the clear that the emission-time write no longer does.",
+      "category": "PATTERN",
+      "source_artifact": "specs/547_orchestrate_aux_carrier_and_implement_readmission/reports/01_aux-carrier-implement-readmission.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["aux_pending", "blocker_escalation_count", "confirm-then-clear", "orchestrate-cycle-plan"]
+    }
+  ]
 }
