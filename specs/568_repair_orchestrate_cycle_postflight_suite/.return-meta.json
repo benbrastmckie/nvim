@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "dispatch_seq": 13,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/568_repair_orchestrate_cycle_postflight_suite/plans/01_confirm-landed-fix-and-close.md",
-      "summary": "Single-phase verification-and-closure plan (1 phase, ~0.5h): the named defect was already fixed on master by commit a4e32ff9e, so the plan makes no source change and gates closure on a live suite re-run plus the full gate set."
-    }
-  ],
-  "next_steps": "Run /orchestrate 568 to execute the plan",
-  "claim_invalidations": [
-    {
-      "declaration_names": ["test-orchestrate-cycle-postflight.sh", "25 of 304 assertions"],
-      "kind": "refutation",
-      "claim": "test-orchestrate-cycle-postflight.sh fails 25 of 304 assertions due to status-name mismatches and persisted_status drift.",
-      "evidence_path": "specs/568_repair_orchestrate_cycle_postflight_suite/plans/01_confirm-landed-fix-and-close.md"
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 17,
   "metadata": {
-    "session_id": "sess_1794815389_748c3d_568",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 1,
-    "estimated_hours": 0.5,
-    "dependency_waves": 1
-  },
-  "memory_candidates": []
+    "session_id": "sess_1794815389_748c3d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #568
 
 - **Task**: 568 - Fix test-orchestrate-cycle-postflight.sh, which fails 25 of 304 assertions
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/568_repair_orchestrate_cycle_postflight_suite/reports/01_fixture-already-fixed-verification.md
@@ -95,38 +95,46 @@ was performed.
 Phases within the same wave can execute in parallel. This plan has a single phase, which is
 therefore its final phase.
 
-### Phase 1: Re-verify the Landed Fix and Close [NOT STARTED]
+### Phase 1: Re-verify the Landed Fix and Close [COMPLETED]
 
 **Goal**: Confirm against live state that the suite is green and the fix commit is intact, run
 the full gate set, and write the closure summary recording that no change was made and none was
 needed.
 
 **Tasks**:
-- [ ] Re-run the suite directly and capture its trailing `Results:` line and exit status:
+- [x] Re-run the suite directly and capture its trailing `Results:` line and exit status:
       `timeout 300 bash agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`.
       Acceptance is `0 failed` and exit 0. If it is non-green, STOP: check `git log` to confirm
       the change is not this task's own, then report the observation rather than patching —
-      a sibling task is dispatched on this same working tree this cycle.
-- [ ] Confirm the fix is present and unmodified: `grep -n "project-number-inuse"
+      a sibling task is dispatched on this same working tree this cycle. *(completed: re-run
+      produced `Results: 312 passed, 0 failed`, exit 0)*
+- [x] Confirm the fix is present and unmodified: `grep -n "project-number-inuse"
       agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh` shows the
       entry inside `setup_sandbox()`'s library-copy loop together with its explanatory comment,
       and `git log --oneline -1 -- <that suite path>` still reports `a4e32ff9e` as the most
-      recent commit touching it with no uncommitted modification.
-- [ ] Confirm the two scripts the task description named as candidate culprits
+      recent commit touching it with no uncommitted modification. *(completed: entry present
+      with comment; `git log` confirms `a4e32ff9e` as the most recent commit, no uncommitted mod)*
+- [x] Confirm the two scripts the task description named as candidate culprits
       (`orchestrate-cycle-postflight.sh`, `update-task-status.sh`) carry no change attributable
       to this task — their last commits predate this task's dispatch and nothing here touched
-      them.
-- [ ] Confirm source-store/deploy parity for the suite with `diff -q` against
+      them. *(completed: last commits `9be017d79` and `c5289cb1a` respectively, both predating
+      this dispatch)*
+- [x] Confirm source-store/deploy parity for the suite with `diff -q` against
       `.claude/scripts/tests/test-orchestrate-cycle-postflight.sh` (expect exit 0, byte-identical).
-- [ ] Run the full gate set (see **Verification** below) and record its outcome.
-- [ ] Write the closure summary at the path named under **Files to modify**, stating: the
+      *(completed: `diff -q` exit 0, byte-identical)*
+- [x] Run the full gate set (see **Verification** below) and record its outcome. *(completed:
+      per this dispatch's Batch Gate Deferral directive, discharged via the scoped narrowing
+      `bash .claude/scripts/tests/run-all.sh --only test-orchestrate-cycle-postflight.sh` — 1
+      passed, 0 failed; the complete gate set is deferred to the batch-level stage, see dispatch
+      17's Batch Gate Deferral section)*
+- [x] Write the closure summary at the path named under **Files to modify**, stating: the
       disposition (fixture-completeness gap, not a suite-expectation or production-code defect);
       that the fix landed via commit `a4e32ff9e` before this task reached implementation; the
       re-run evidence; and that zero source files were changed by this task. Cite the commit sha,
-      the suite filename, and `lib/project-number-inuse.sh` as the durable anchors.
-- [ ] Record an issue-log entry for the premise refutation (`--kind issue --class
+      the suite filename, and `lib/project-number-inuse.sh` as the durable anchors. *(completed)*
+- [x] Record an issue-log entry for the premise refutation (`--kind issue --class
       "stale premise"`, severity `minor`) noting that this task's description was overtaken by an
-      unrelated task's commit between task creation and dispatch.
+      unrelated task's commit between task creation and dispatch. *(completed)*
 
 **Timing**: 0.5 hours
 

@@ -98,7 +98,7 @@ next_project_number: 638
     └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
     └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
 567 [NOT STARTED] — Port the deployed-tree containment strip into...
-568 [PLANNED] — Fix failing assertions in the orchestrate-cycle-postflight suite
+568 [IMPLEMENTING] — Fix failing assertions in the orchestrate-cycle-postflight suite
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
 ### Lean Extension
@@ -194,7 +194,7 @@ next_project_number: 638
 
 ### Uncategorized
 
-584 [RESEARCHED] — Wire covering-suite selection into Gate 8 so an extension...
+584 [PLANNING] — Wire covering-suite selection into Gate 8 so an extension...
 585 [PLANNED] — Make the batch-gate deferral binding and cache repeat gate...
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
@@ -1889,7 +1889,7 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deploy
 ---
 
 ### 584. Wire covering-suite selection into Gate 8 so an extension change runs the affected suites, not all 149
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Dependencies**: Task 505
 - **Research**: [584_gate8_covering_suite_selection/reports/02_gate8-suite-selection.md]
@@ -2668,7 +2668,7 @@ This repo's #519 (infra_exempt_transport_error_dispatch_deaths) is the sibling h
 
 ### 568. Fix failing assertions in the orchestrate-cycle-postflight suite
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None

@@ -79036,7 +79036,7 @@
     {
       "project_number": 568,
       "project_name": "repair_orchestrate_cycle_postflight_suite",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "Fix test-orchestrate-cycle-postflight.sh, which fails 25 of 304 assertions. Failures are status-name mismatches (e.g. expecting 'planning' where 'researching' is produced) and persisted_status drift. Confirmed pre-existing and unrelated to the file_scope reconciliation work that surfaced it: no diff exists for the suite or its target scripts (orchestrator-postflight.sh, update-task-status.sh) across that work. Determine whether the suite's expectations or the scripts' behaviour are wrong before changing either.\n\n--- ADDENDUM (orchestration conclusion stage, 2026-11-10; purely additive, nothing above altered) ---\nINDEPENDENTLY RE-OBSERVED, with two sibling failures found in the same scoped run. A scoped\nbatch-deferral gate run over an unrelated task's blast radius found this suite red at 25 failures,\ncorroborating this record's own count, and additionally reported a 'cleanup: command not found'\nshell error inside this suite -- a detail worth checking against the status-name/persisted_status\ndrift this record already names, since a shell error can mask or inflate assertion counts.\nTwo further pre-existing failures surfaced in the same run and are NOT this record's scope:\ntest-orchestrate-unwind-dispatch.sh at 11 failures (its fixture sandbox omits\nlib/project-number-inuse.sh from REQUIRED_LIB_SCRIPTS, so state-write.sh fails inside the test's\nown scratch repo -- being fixed separately as a direct fix), and\ntest-orchestrate-build-aux-dispatch.sh at 1 failure (reviser-agent model did not resolve to opus,\na manifest-routing model-resolution issue independently re-observed by a second task in the same\nbatch; it has no owning record yet). Evidence: issue-log entry iss_1794276383199_OBj82P in\nspecs/360_validate_carried_unverified_names_a_source/issues.jsonl.",
       "effort": "medium",
@@ -79044,7 +79044,7 @@
       "topic": "file-scope-lifecycle",
       "dependencies": [],
       "created": "2026-11-09T15:56:34Z",
-      "last_updated": "2026-11-16T08:35:34Z",
+      "last_updated": "2026-11-16T08:37:30Z",
       "artifacts": [
         {
           "path": "specs/568_repair_orchestrate_cycle_postflight_suite/reports/01_fixture-already-fixed-verification.md",
@@ -97762,7 +97762,7 @@
     {
       "project_number": 584,
       "project_name": "gate8_covering_suite_selection",
-      "status": "researched",
+      "status": "planning",
       "title": "Wire covering-suite selection into Gate 8 so an extension change runs the affected suites, not all 149",
       "task_type": "meta",
       "topic": null,
@@ -97785,7 +97785,7 @@
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
       "created": "2026-11-11T02:51:33Z",
-      "last_updated": "2026-11-16T08:36:01Z",
+      "last_updated": "2026-11-16T08:37:43Z",
       "description": "Gate 8 declares input_corpus @extensions (the whole extension tree) in gate-registry.data, so a one-file edit anywhere under agent-system/extensions/** re-runs the entire 149-suite battery. Meanwhile suite-selection-lib.sh already maps touched paths to exactly their covering suites via suite_selection_select, is tested, and is trusted enough that plan Tier Justification lines are validated against its output -- yet grep for suite_selection against verify-deploy.sh returns 0 hits. This is a wiring job against proven machinery, not new invention.\n\nWHY THIS IS THE LARGEST SINGLE LEVER: the existing gate cache cannot help here. 17 of 28 gates declare @extensions as their corpus (3,5,6,7,8,11,12,13,17,18,19,20,21,23,24,26,28), so any implement batch touching one extension file invalidates all 17, gate 8 among them. The cache's headline figure (a warm unchanged run skips 17-20 of 24 gates at near-zero cost) describes an UNCHANGED tree, not the end of an implement batch, where the hit rate for precisely the expensive gates is zero. Narrowing WHAT gate 8 runs is the only lever that reduces its cost in the case that actually occurs.\n\nSeed report: specs/584_gate8_covering_suite_selection/reports/01_gate8-suite-selection.md\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.",
       "research_questions": "What is the right touched-path trigger set, given gate_cache_resolve_corpus already resolves and hashes per-path corpus content? What is the fallback when selection cannot be computed -- adopt the cache's sentinel direction (run the full battery, never a silently narrowed one)? Does narrowing break gate 8's binary-signal semantics, since known-failures.txt rows are basename-keyed and mode-insensitive and a suite that did not run is not a suite that passed? How does selection-narrowing compose with the existing --skip-slow reduction without silently becoming a third reduction? Is a periodic full sweep needed to retain the coverage guarantee, and where would it live?",
       "audit_verdict": {
@@ -99906,7 +99906,7 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "session_id": "sess_1794815389_748c3d",
+      "session_id": "sess_1794815389_748c3d_584",
       "next_artifact_number": 2
     },
     {
