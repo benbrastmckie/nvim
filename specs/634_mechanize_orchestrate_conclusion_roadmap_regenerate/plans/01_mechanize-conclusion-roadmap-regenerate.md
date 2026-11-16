@@ -220,34 +220,34 @@ the step.
 
 ---
 
-### Phase 2: Wire the one call site and defer the emission [NOT STARTED]
+### Phase 2: Wire the one call site and defer the emission [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: The script runs on every Move 4 finalize path, and the consolidated output is no longer
 printable before the conclusion stage has run.
 
 **Tasks**:
-- [ ] In `skills/skill-orchestrate/SKILL.md`'s Move 4, immediately after the Batch Gate Stage
+- [x] In `skills/skill-orchestrate/SKILL.md`'s Move 4, immediately after the Batch Gate Stage
       paragraph and before the emission step, add the unconditional foreground invocation of
       `orchestrate-conclusion-roadmap.sh --session "$session_id" --state-file "$mt_state_file"`,
       stating explicitly that it is not backgrounded (a sub-second classify-plus-regenerate needs
       no bounded-waiter idiom) and not trigger-gated (it fires on `all_terminal`,
-      `no_eligible_stuck`, `max_cycles`, and every `partial` alike).
-- [ ] Rewrite Move 4's "Then: emit the consolidated output …" sentence so Move 4 *renders and
+      `no_eligible_stuck`, `max_cycles`, and every `partial` alike). *(completed)*
+- [x] Rewrite Move 4's "Then: emit the consolidated output …" sentence so Move 4 *renders and
       stages* the batch-results sections but does not print them, and name Move 5's Step 6 as the
       sole emission site. Keep the rest of that sentence's finalize list (residue check, session
       registry release, queue archive, `.dispatch/` removal, `.return-meta-multi` write) exactly
-      where it is.
-- [ ] Rewrite Move 5's four-line pointer to state: the roadmap step has already run from Move 4
+      where it is. *(completed)*
+- [x] Rewrite Move 5's four-line pointer to state: the roadmap step has already run from Move 4
       (naming the script), the pending marker is live until Step 6 completes, and Step 6 is where
-      the single combined report is emitted.
-- [ ] In `docs/architecture/orchestrate-state-machine.md`'s "Consolidated Output and Exit-Status
+      the single combined report is emitted. *(completed)*
+- [x] In `docs/architecture/orchestrate-state-machine.md`'s "Consolidated Output and Exit-Status
       Resolution", change numbered item 5 from "Emits the consolidated output" to render-and-stage
       with the emission attributed to Move 5 Step 6, and add a subsection beside
       "### Batch Gate Stage (between steps 4 and 5 above)" naming the roadmap step as the second
       sibling script at that same site — including the one axis on which the two differ (the
-      batch gate is trigger-gated on `.implement_agents`; this one is unconditional).
-- [ ] In the same file's "## Move 5: Conclusion Stage" paragraph, correct the "items 5 through 9"
-      enumeration so it no longer claims the consolidated output render precedes Move 5.
+      batch gate is trigger-gated on `.implement_agents`; this one is unconditional). *(completed)*
+- [x] In the same file's "## Move 5: Conclusion Stage" paragraph, correct the "items 5 through 9"
+      enumeration so it no longer claims the consolidated output render precedes Move 5. *(completed)*
 
 **Timing**: 1 hour
 
@@ -268,10 +268,28 @@ task-lookup lints among them), so no cheaper tier covers this phase's blast radi
 
 **Verification**:
 - `bash .claude/scripts/verify-deploy.sh` exits 0 (the complete gate set, gate 20's eager-context
-  budget lock and gate 8's full runner included)
-- `bash .claude/scripts/tests/run-all.sh` exits 0
-- `grep -n "emit the consolidated output" SKILL.md` returns no occurrence inside Move 4
-- `bash .claude/scripts/lint/lint-postflight-boundary.sh .claude/skills/skill-orchestrate` exits 0
+  budget lock and gate 8's full runner included) — **did not exit 0**; see Reasoned Exclusions below
+- `bash .claude/scripts/tests/run-all.sh` exits 0 — **did not exit 0**; see Reasoned Exclusions below
+- `grep -n "emit the consolidated output" SKILL.md` returns no occurrence inside Move 4 — confirmed
+  (exit 1, no match, against both the source-store file and its deployed copy)
+- `bash .claude/scripts/lint/lint-postflight-boundary.sh .claude/skills/skill-orchestrate` exits 0 —
+  confirmed (0 violations); the full-corpus run inside `verify-deploy.sh` gate 9 also reports
+  `[PASS] postflight boundary lint reports no failures (full corpus)`
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|---|---|---|
+| `verify-deploy.sh` gate 29 (`lint-test-root-resolution.sh`) | Pre-existing violation in a different extension entirely, outside this task's `Files to modify`/Non-Goals: `agent-system/extensions/typescript/scripts/tests/test-typescript-verify.sh:40` has an unconditional fixed-depth `REPO_ROOT` walk at effective depth 5, exceeding that file's own 2-level safe boundary. | `bash .claude/scripts/lint/lint-test-root-resolution.sh --verbose` names exactly that one file/line; `git log -- agent-system/extensions/typescript/scripts/tests/test-typescript-verify.sh` shows it landed in commit `35725799c` (2026-11-13, "task 622 phase 2: regression suite and manifest script declaration"), 3 days before this dispatch and touching no file this task's `Files to modify` lists. |
+| `verify-deploy.sh` gate 10 (`validate-state.sh --deep`) | Load-induced timeout, not content-dependent: this host ran this dispatch's work concurrently with sibling task `562`'s own session plus several unrelated desktop processes (observed via `ps -eo pid,ppid,etimes,pcpu,cmd --sort=-pcpu` showing multiple concurrent `claude`/`nvim`/browser processes). Reproduced identically (gate10 killed at its 60s timeout) on two independent full `verify-deploy.sh` runs in this same phase, regardless of which files were staged. | Both runs' own output: `[FAIL] gate10 (gate10_run) exceeded its 60s timeout and was killed`, unchanged between the first run (which also hit a stale `specs/.gate-lock` holder from an earlier exploratory command in this same dispatch, since cleaned up) and the second, cleaner run. |
+| `tests/run-all.sh`'s one `NEW` failure, `test-gate-registry-resolution.sh` case32 | Directly downstream of the same gate-29 pre-existing violation above, not a regression from this phase's edits: case32 asserts `--only-gate 29` is accepted (rc=0) against the real tree, which genuinely finds the pre-existing typescript violation and returns rc=1. The other 5 `run-all.sh` failures this run are independently pre-existing and already tracked. | `tests/run-all.sh`'s own summary: `179 passed, 6 failed (5 expected, 1 NEW)`; `known-failures.txt` already lists all 5 "expected" suites (`test-double-loading-check.sh`, `test-gate-cache-equivalence.sh`, `test-lint-unit-integration-boundary.sh`, `test-orchestrate-cycle-postflight.sh`, `test-verify-deploy-context-budget.sh`) each with its own pre-existing, unrelated `real-defect`/`load-sensitive` reason; case32's own failing-case output shows the nested `--only-gate 29` sub-invocation reproducing gate 29's exact finding. |
+
+None of the three excluded items names a file this phase's `Files to modify` list declares, and
+none requires any further action from this task — `agent-system/extensions/typescript/**` and
+`validate-state.sh`'s own timeout budget are outside this task's Non-Goals-adjacent scope.
+Recorded as issues (non-blocking) via `issue-record.sh` in this task's own `issues.jsonl` for the
+conclusion stage's evidence base, per the Carried-Figure/Issue-Log discipline, rather than fixed
+here.
 
 ---
 

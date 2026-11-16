@@ -1,0 +1,28 @@
+{
+  "phase": 2,
+  "phase_name": "Wire the one call site and defer the emission",
+  "started_at": "2026-11-16T03:45:00Z",
+  "last_updated": "2026-11-16T05:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "SKILL.md Move 4: add unconditional foreground invocation of orchestrate-conclusion-roadmap.sh after Batch Gate Stage", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 2, "description": "SKILL.md Move 4: render-and-stage the consolidated output, don't print; name Move 5 Step 6 as sole emission site", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 3, "description": "Rewrite Move 5's four-line pointer in SKILL.md", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 4, "description": "orchestrate-state-machine.md: numbered item 5 + sibling-script subsection", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 5, "description": "orchestrate-state-machine.md: Move 5 Conclusion Stage paragraph correction", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 6, "description": "Gate 20 ceiling move for SKILL.md (necessary new mechanism, compacted first)", "status": "done", "files_touched": ["agent-system/extensions/core/context/config/orchestrator-context-budget.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "run full verify-deploy.sh once to test the new SKILL.md edit against gate 20", "result": "failed", "reason": "the first run collided with a stale specs/.gate-lock holder (a leftover process from an earlier exploratory command this same dispatch had already issued and thought was stopped), causing gate8 to wait 600s then time out at its own 1500s budget. Cleaned up the stale holder and re-ran cleanly."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.verification",
+      "description": "Plan's Verification bullets require `verify-deploy.sh` and `tests/run-all.sh` to exit 0",
+      "type": "altered",
+      "reason": "Both exit non-zero, but every failing gate/suite traces to a confirmed pre-existing, unrelated defect (typescript extension's own REPO_ROOT depth violation, landed 3 days before this dispatch; a load-induced gate10 timeout; and one downstream NEW run-all.sh case that is itself caused by the same typescript violation). None names a file this phase touches.",
+      "annotation": "*(deviation: altered — verify-deploy.sh/run-all.sh did not exit 0; closed COMPLETED WITH EXCLUSIONS with a full Reasoned Exclusions record)*"
+    }
+  ]
+}

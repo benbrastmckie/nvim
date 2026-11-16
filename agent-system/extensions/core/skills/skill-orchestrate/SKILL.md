@@ -337,25 +337,37 @@ above, with `bg_log="specs/.orchestration/.batch-gate-${session_id}.log"` and `b
 only: the `batch_gate` key it may add to `$mt_state_file` (absent on the no-implement-dispatch
 no-op path).
 
-Then: emit the consolidated output (read `context/patterns/orchestrate-batch-results-template.md`
-and render exactly, including this stage's `batch_gate` result when present), run the residue
-check (`git status --porcelain -- specs/` — warn only, never commits), release the session
-registry (`task-lock.sh session-release "$session_id"`) AND archive the queue record
-(`task-lock.sh queue-finish "$session_id"` -- moves it into `specs/.orchestration/archive/`,
-never `rm -f`), remove `.dispatch/` for every task in
-`completed_tasks` only, and write `specs/.orchestration/.return-meta-multi-${session_id}.json`
-(creating `specs/.orchestration/` first via `mkdir -p` if it does not already exist) with `status`,
-`session_id`, and `metadata` (`tasks_completed`, `tasks_failed`, the two deferred arrays,
-`forward_progress_violated`, `defer_ledger`, `idle_overlap_ledger`, `detected_defects`,
-`verify_deploy_baseline_notices`, `batch_gate`, `cycles_used`) — `jq -n` shape documented in
+**Roadmap-update stage** (sibling script, same site; executes `conclusion-stage.md`'s Step 5;
+unconditional, unlike the batch gate's `.implement_agents` gate; foreground, sub-second):
+
+```bash
+bash .claude/scripts/orchestrate-conclusion-roadmap.sh --session "$session_id" --state-file "$mt_state_file"
+```
+
+Writes `specs/ROADMAP.md`'s scoped commit (or the loud degrade) and the marker Move 5 Step 6
+deletes.
+
+Then: render the consolidated output (read
+`context/patterns/orchestrate-batch-results-template.md` and render exactly, including this
+stage's `batch_gate` result when present) and hold it — never print it here; Move 5 Step 6 is
+the sole emission site. Run the residue check (`git status --porcelain --
+specs/` — warn only, never commits), release the session registry (`task-lock.sh
+session-release "$session_id"`) AND archive the queue record (`task-lock.sh queue-finish
+"$session_id"` -- moves it into `specs/.orchestration/archive/`, never `rm -f`), remove
+`.dispatch/` for every task in `completed_tasks` only, and write
+`specs/.orchestration/.return-meta-multi-${session_id}.json` (creating `specs/.orchestration/`
+first via `mkdir -p` if it does not already exist) with `status`, `session_id`, and `metadata`
+(`tasks_completed`, `tasks_failed`, the two deferred arrays, `forward_progress_violated`,
+`defer_ledger`, `idle_overlap_ledger`, `detected_defects`, `verify_deploy_baseline_notices`,
+`batch_gate`, `cycles_used`) — `jq -n` shape documented in
 `context/formats/return-metadata-file.md`.
 
 ### Move 5: Conclusion
 
-Non-repeating; runs once, after Move 4 finalizes. Body executed verbatim from
-`context/contracts/conclusion-stage.md`'s "## The Executable Stage Body", including that
-body's Step 7 (next-batch suggestion). Tool/commit surface:
-`postflight-tool-restrictions.md`'s Conclusion Stage section.
+Non-repeating; runs once, immediately after Move 4 finalizes (the roadmap-update stage above has
+already run). Body executed verbatim from `context/contracts/conclusion-stage.md`'s "## The
+Executable Stage Body", including that body's Step 7 (next-batch suggestion). Tool/commit
+surface: `postflight-tool-restrictions.md`'s Conclusion Stage section.
 
 ---
 

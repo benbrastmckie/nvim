@@ -1486,7 +1486,7 @@ After the lifecycle-cycling loop exits (all terminal, no eligible tasks, or the 
    - `failed_count > 0` OR any task in `deferred_self_modifying` is still non-terminal at loop exit OR `deferred_deploy_checkpoint` is non-empty -> `"partial"`. A non-empty `deferred_deploy_checkpoint` alone still yields `"partial"` — that set retains its permanent-exclusion semantics.
    - `verify_deploy_baseline_notices` and `detected_defects` are NEVER consulted by this branch selection — both are pure observation logs with no bearing on `exit_status`. A batch that ran to completion past a pre-existing `verify-deploy.sh` failure, or that also observed a system-defect detection, is still `"implemented"`.
 4. Reports `deferred_self_modifying` tasks as **deferred at least one cycle by the self-modification gate** — an observation, not an outstanding-work category — with each task's final status at loop exit. Reports `deferred_deploy_checkpoint` tasks as a distinct **deferred-by-redeploy-checkpoint** category (different operator remedy: resolve the deploy/verify failure, redeploy manually, then re-run on the remaining task numbers). Reports `verify_deploy_baseline_notices` and `detected_defects`, when non-empty, each as their own distinct category — never folded together, never omitted merely because the batch otherwise succeeded — and `idle_overlap_ledger`, when non-empty, as a distinct **admitted (idle overlap advisory)** category, since its entries are admits, not exclusions. When `forward_progress_violated` is true, the summary additionally leads with a zero-dispatch banner enumerating every `defer_ledger` entry with its `defer_reason`, and a re-run sequence ordering the deferred/excluded task numbers predecessor-first from `dependency_graph`.
-5. **Emits the consolidated output**: read `context/patterns/orchestrate-batch-results-template.md` and render the batch results using that template exactly — its per-section rendering conditions are contract, not commentary. This is the template's sole caller.
+5. **Renders and stages the consolidated output** (never emits it here): read `context/patterns/orchestrate-batch-results-template.md` and render the batch results using that template exactly — its per-section rendering conditions are contract, not commentary. This is the template's sole caller. The rendered text is held, not printed; Move 5 Step 6 (`context/contracts/conclusion-stage.md`) is this report's sole emission site, folding in that stage's own channels before the combined report is ever shown.
 6. Writes `specs/.orchestration/.return-meta-multi-${session_id}.json` with `status` (the closed `"implemented"`/`"partial"`/`"failed"` vocabulary) at top level, and `tasks_completed`, `tasks_failed`, `tasks_deferred_self_modifying`, `tasks_deferred_deploy_checkpoint`, `forward_progress_violated`, `defer_ledger`, `idle_overlap_ledger`, `detected_defects`, `verify_deploy_baseline_notices`, `batch_gate`, `cycles_used`, and `multi_task_mode: true` inside `metadata`. `batch_gate` is the record the Batch Gate Stage below writes (absent/omitted entirely on an invocation whose trigger condition never fired).
 7. Runs the non-blocking residue check (`### Commit Granularity` above) — warns only, never commits.
 8. Releases the batch's in-flight session registry entry (`task-lock.sh session-release`), unconditionally regardless of `exit_status`, best-effort and non-blocking.
@@ -1525,16 +1525,36 @@ dispatch occurred this invocation, read from `.implement_agents`) is a separate,
 no-op guard layered on top of that invariance — it stops the stage from firing on a
 research-only or plan-only invocation, not from a single-task batch.
 
+### Roadmap-Update Stage (second sibling script, same Move 4/5 boundary site)
+
+`scripts/orchestrate-conclusion-roadmap.sh` is the second script fired at this same boundary,
+immediately alongside the Batch Gate Stage above — the mechanical executor of
+`context/contracts/conclusion-stage.md`'s Step 5 (roadmap update). It differs from the Batch
+Gate Stage on exactly one axis: the Batch Gate Stage is trigger-gated on `.implement_agents`
+being non-empty, while this script is UNCONDITIONAL, firing on every exit status and every
+invocation shape (`all_terminal`, `no_eligible_stuck`, `max_cycles`, every `partial`, single-task
+and batch alike) — a research-only or plan-only dispatch still moves a task's status, which
+changes what `--regenerate` would render, so gating this step the same way the batch gate is
+gated would reintroduce the lead-discretion-dependent skip this design exists to close.
+Foreground, not backgrounded (a classify plus an idempotent regenerate is a sub-second
+operation, unlike the batch gate's own full `verify-deploy.sh` run). Durable side effects:
+`specs/ROADMAP.md`'s scoped commit (or the loud `absent`/`unknown` degrade, recorded to
+`specs/events.jsonl`), and the conclusion-stage pending marker
+(`specs/.orchestration/.conclusion-pending-<session_id>.json`) that Move 5 Step 6 deletes as its
+own final action. Full contract: `context/contracts/conclusion-stage.md`'s Step 5.
+
 ## Move 5: Conclusion Stage
 
 A fifth, distinct, non-repeating stage, run exactly once per `/orchestrate` invocation, strictly
 AFTER the "Consolidated Output and Exit-Status Resolution" sequence above has fully finished —
-items 5 through 9 of that section: the consolidated output render, the multi-task
-`.return-meta.json` write, the residue check, the session-registry release, and the
-`completed_tasks`-only `.dispatch/` removal. It is never interleaved with that sequence, never
-run per-task, and never folded into any per-dispatch postflight (Move 3). Full specification and
-the executable procedure: `context/contracts/conclusion-stage.md`; this section is a placement
-and relationship summary, not a restatement.
+items 5 through 9 of that section: the consolidated output's render-and-stage (never its
+emission, which this stage's own Step 6 performs), the multi-task `.return-meta.json` write, the
+residue check, the session-registry release, and the `completed_tasks`-only `.dispatch/`
+removal. The Roadmap-Update Stage above has already run, from Move 4, before this sequence even
+started. It is never interleaved with that sequence, never run per-task, and never folded into
+any per-dispatch postflight (Move 3). Full specification and the executable procedure:
+`context/contracts/conclusion-stage.md`; this section is a placement and relationship summary,
+not a restatement.
 
 **Placement**: once per invocation, after Move 4's full finalization. There is no Move 5 for an
 invocation that dispatched nothing (e.g. all-terminal admission with zero eligible tasks) — the
