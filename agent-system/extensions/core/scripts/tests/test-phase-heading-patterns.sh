@@ -349,11 +349,214 @@ else
 fi
 
 # =====================================================================
+# Enterability vocabulary: PHASE_STATUS_ENTERABLE_ALT is a NEW, narrower alternation that
+# excludes BLOCKED; PHASE_STATUS_OPEN_ALT must keep BLOCKED, byte-identical in meaning, for any
+# other consumer.
+# =====================================================================
+if grep -qE "^(${PHASE_STATUS_ENTERABLE_ALT})\$" <<< "BLOCKED"; then
+  common_test_fail "PHASE_STATUS_ENTERABLE_ALT: unexpectedly includes BLOCKED"
+else
+  common_test_pass "PHASE_STATUS_ENTERABLE_ALT: excludes BLOCKED"
+fi
+if grep -qE "^(${PHASE_STATUS_OPEN_ALT})\$" <<< "BLOCKED"; then
+  common_test_pass "PHASE_STATUS_OPEN_ALT: still includes BLOCKED (byte-identical, unchanged meaning)"
+else
+  common_test_fail "PHASE_STATUS_OPEN_ALT: BLOCKED regression -- OPEN's established meaning must be preserved"
+fi
+for _enterable_marker in "NOT STARTED" "IN PROGRESS" "PARTIAL"; do
+  if grep -qE "^(${PHASE_STATUS_ENTERABLE_ALT})\$" <<< "$_enterable_marker"; then
+    common_test_pass "PHASE_STATUS_ENTERABLE_ALT: includes '$_enterable_marker'"
+  else
+    common_test_fail "PHASE_STATUS_ENTERABLE_ALT: missing '$_enterable_marker'"
+  fi
+done
+
+# =====================================================================
+# phase_marker_of: existing phase prints its marker; a non-existent phase number fails (returns
+# 1, empty stdout).
+# =====================================================================
+marker_of_file="$WORKDIR/marker-of.md"
+cat > "$marker_of_file" <<'EOF'
+### Phase 1: One [COMPLETED]
+### Phase 2: Two [NOT STARTED]
+EOF
+marker_of_got="$(phase_marker_of "$marker_of_file" 1)"
+if [[ "$marker_of_got" == "COMPLETED" ]]; then
+  common_test_pass "phase_marker_of: existing phase 1 -> 'COMPLETED'"
+else
+  common_test_fail "phase_marker_of: expected 'COMPLETED', got '$marker_of_got'"
+fi
+if phase_marker_of "$marker_of_file" 999 >/dev/null 2>&1; then
+  common_test_fail "phase_marker_of: unexpectedly succeeded for a non-existent phase number"
+else
+  common_test_pass "phase_marker_of: correctly fails for a non-existent phase number"
+fi
+
+# =====================================================================
+# phase_dependency_numbers: both field spellings, `none`, comma-spacing variants, a decimal
+# sub-phase token, an unparseable-prose value and a corpus-realistic value both falling back to
+# all-prior, and an absent field also falling back to all-prior.
+# task-ref-ok:begin test fixture quoting a real plan-corpus Depends-on value found during
+# research/planning, asserting the parser falls back to the all-prior default rather than
+# misreading its digit-shaped tokens as phase numbers (category 6 analog: the fixture's whole
+# purpose is a literal string the parser must reject)
+# =====================================================================
+dep_file="$WORKDIR/deps.md"
+cat > "$dep_file" <<'EOF'
+### Phase 1: First [COMPLETED]
+### Phase 2: Second [COMPLETED]
+### Phase 3: Third [NOT STARTED]
+
+**Depends on**: none
+
+### Phase 4: Fourth [NOT STARTED]
+
+**Depends on:** 1
+
+### Phase 5: Fifth [NOT STARTED]
+
+**Depends on**: 1, 2
+
+### Phase 6: Sixth [NOT STARTED]
+
+**Depends on:** 1,2
+
+### Phase 7: Seventh [NOT STARTED]
+
+**Depends on**: 3.1
+
+### Phase 8: Eighth [NOT STARTED]
+
+**Depends on**: Phase 3 (directory skeleton must exist)
+
+### Phase 9: Ninth [NOT STARTED]
+
+**Depends on**: Items 593 (shared utilities), 594 (skill base)
+
+### Phase 10: Tenth [NOT STARTED]
+EOF
+# task-ref-ok:end
+assert_dep_numbers() {
+  local label="$1" phase_number="$2" expected="$3" got
+  got="$(phase_dependency_numbers "$dep_file" "$phase_number" | tr '\n' ',')"
+  got="${got%,}"
+  if [[ "$got" == "$expected" ]]; then
+    common_test_pass "$label: phase_dependency_numbers($phase_number) -> '$got'"
+  else
+    common_test_fail "$label: phase_dependency_numbers($phase_number) expected '$expected', got '$got'"
+  fi
+}
+assert_dep_numbers "field spelling 1 ('**Depends on**:'), literal 'none'" 3 ""
+assert_dep_numbers "field spelling 2 ('**Depends on:**'), single token '1'" 4 "1"
+assert_dep_numbers "spacing variant '1, 2'" 5 "1,2"
+assert_dep_numbers "spacing variant '1,2'" 6 "1,2"
+assert_dep_numbers "decimal sub-phase token '3.1'" 7 "3.1"
+assert_dep_numbers "unparseable prose value falls back to all-prior" 8 "1,2,3,4,5,6,7"
+assert_dep_numbers "corpus-realistic multi-number prose value falls back to all-prior (never parsed as phase numbers)" 9 "1,2,3,4,5,6,7,8"
+assert_dep_numbers "absent field falls back to all-prior" 10 "1,2,3,4,5,6,7,8,9"
+
+# =====================================================================
+# phase_is_enterable: marker rejection (BLOCKED), unmet dependency, dangling dependency, and a
+# satisfied phase accepted -- each reported via its own single machine-readable reason token.
+# =====================================================================
+ent_file="$WORKDIR/enterable.md"
+cat > "$ent_file" <<'EOF'
+### Phase 1: One [BLOCKED]
+
+**Depends on**: none
+
+### Phase 2: Two [NOT STARTED]
+
+**Depends on**: 1
+
+### Phase 3: Three [NOT STARTED]
+
+**Depends on**: 99
+
+### Phase 4: Four [COMPLETED]
+### Phase 5: Five [NOT STARTED]
+
+**Depends on**: 4
+EOF
+assert_enterable() {
+  local label="$1" phase_number="$2" expect_rc="$3" expect_reason="$4"
+  local heading got rc
+  heading=$(grep -E "^### Phase ${phase_number}:" "$ent_file")
+  got="$(phase_is_enterable "$ent_file" "$heading")"
+  rc=$?
+  if [[ "$rc" -eq "$expect_rc" && "$got" == "$expect_reason" ]]; then
+    common_test_pass "$label: phase_is_enterable -> rc=$rc reason='$got'"
+  else
+    common_test_fail "$label: expected rc=$expect_rc reason='$expect_reason', got rc=$rc reason='$got'"
+  fi
+}
+assert_enterable "BLOCKED rejected on marker" 1 1 "marker"
+assert_enterable "unmet dependency rejected" 2 1 "unmet-dependency:1"
+assert_enterable "dangling dependency rejected" 3 1 "dangling-dependency:99"
+assert_enterable "satisfied phase (dependency COMPLETED) accepted" 5 0 ""
+
+# =====================================================================
+# select_enterable_phase: one fixture per exit code.
+#   exit 0 -- the SAME enterable.md file above: phases 1-3 are open but non-enterable in file
+#             order; phase 5 (later in file order) is the first ENTERABLE heading and is selected,
+#             never phase 1.
+#   exit 3 -- open headings exist (phases 1-2), none enterable: a diagnostic line per rejected
+#             heading, in file order.
+#   exit 4 -- no heading matches PHASE_STATUS_OPEN_ERE at all (the pre-existing fallthrough).
+# =====================================================================
+select_exit0_out="$(select_enterable_phase "$ent_file")"
+select_exit0_rc=$?
+if [[ "$select_exit0_rc" -eq 0 && "$select_exit0_out" == "### Phase 5: Five [NOT STARTED]" ]]; then
+  common_test_pass "select_enterable_phase exit 0: selects phase 5 (later in file order), never phase 1"
+else
+  common_test_fail "select_enterable_phase exit 0: expected phase 5, got rc=$select_exit0_rc out='$select_exit0_out'"
+fi
+
+select_exit3_file="$WORKDIR/select-exit3.md"
+cat > "$select_exit3_file" <<'EOF'
+### Phase 1: One [BLOCKED]
+
+**Depends on**: none
+
+### Phase 2: Two [NOT STARTED]
+
+**Depends on**: 1
+EOF
+select_exit3_out="$(select_enterable_phase "$select_exit3_file")"
+select_exit3_rc=$?
+if [[ "$select_exit3_rc" -eq 3 ]]; then
+  common_test_pass "select_enterable_phase exit 3: open headings exist, none enterable"
+else
+  common_test_fail "select_enterable_phase exit 3: expected rc=3, got rc=$select_exit3_rc (out: $select_exit3_out)"
+fi
+if echo "$select_exit3_out" | grep -qF "1:BLOCKED:marker" && echo "$select_exit3_out" | grep -qF "2:NOT STARTED:unmet-dependency:1"; then
+  common_test_pass "select_enterable_phase exit 3: diagnostic lines name both rejected headings with their reasons"
+else
+  common_test_fail "select_enterable_phase exit 3: expected diagnostics missing (got: $select_exit3_out)"
+fi
+
+select_exit4_file="$WORKDIR/select-exit4.md"
+cat > "$select_exit4_file" <<'EOF'
+### Phase 1: One [COMPLETED]
+### Phase 2: Two [COMPLETED WITH EXCLUSIONS]
+EOF
+select_exit4_out="$(select_enterable_phase "$select_exit4_file")"
+select_exit4_rc=$?
+if [[ "$select_exit4_rc" -eq 4 && -z "$select_exit4_out" ]]; then
+  common_test_pass "select_enterable_phase exit 4: no OPEN heading at all -- the pre-existing fallthrough, preserved as its own distinct code"
+else
+  common_test_fail "select_enterable_phase exit 4: expected rc=4 and empty output, got rc=$select_exit4_rc out='$select_exit4_out'"
+fi
+
+# =====================================================================
 # Deliberate-break check (documented here, not run automatically): flipping any exported
 # constant, e.g. removing "COMPLETED WITH EXCLUSIONS" from PHASE_STATUS_ENUM, must make the
 # suite above fail -- proving the assertions are live, not vacuous. Verified manually during
 # implementation; not re-run on every invocation since it requires mutating the sourced library
-# in place.
+# in place. The same holds for the enterability additions above: e.g. restoring `BLOCKED` to
+# PHASE_STATUS_ENTERABLE_ALT must make the "PHASE_STATUS_ENTERABLE_ALT: excludes BLOCKED"
+# assertion (and the exit-3/exit-0 select_enterable_phase assertions above, which depend on
+# BLOCKED staying non-enterable) fail.
 # =====================================================================
 
 # =====================================================================

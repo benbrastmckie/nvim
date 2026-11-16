@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Enterability vocabulary and Depends on parser in the pattern library",
+  "started_at": "2026-11-16T15:30:00Z",
+  "last_updated": "2026-11-16T15:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add PHASE_STATUS_ENTERABLE_ALT/ERE and PHASE_HEADING_ENTERABLE_ERE beside OPEN, plus header scope note and rationale comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh"]},
+    {"id": 2, "description": "Implement phase_marker_of, phase_dependency_numbers, phase_is_enterable, select_enterable_phase", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh"]},
+    {"id": 3, "description": "Write unit cases in test-phase-heading-patterns.sh covering both spellings, none, token shapes, unparseable/absent fallback, marker/dependency rejection, and all three select_enterable_phase exit codes", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

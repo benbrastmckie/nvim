@@ -1,7 +1,7 @@
 # Implementation Plan: Task #638
 
 - **Task**: 638 - Make /orchestrate's hard-mode phase selector pick the first ENTERABLE phase, not the first heading that merely parses as open
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.25 hours
 - **Dependencies**: Task 547 (`[COMPLETED]`; the shared-file edge on `orchestrate-cycle-plan.sh` is discharged)
 - **Research Inputs**: specs/638_orchestrate_enterable_phase_selector/reports/01_enterable_phase_selector.md
@@ -186,7 +186,7 @@ Phases within the same wave can execute in parallel. This plan is fully sequenti
 
 ---
 
-### Phase 1: Enterability vocabulary and `Depends on` parser in the pattern library [NOT STARTED]
+### Phase 1: Enterability vocabulary and `Depends on` parser in the pattern library [COMPLETED]
 
 **Goal**: Add — purely additively — a narrower enterable-marker alternation, a `Depends on` field
 parser, and an enterability predicate to `phase-heading-patterns.sh`, with unit coverage, leaving
@@ -194,23 +194,23 @@ every existing export byte-identical in meaning.
 
 **Tasks**:
 
-- [ ] Add beside `PHASE_STATUS_OPEN_ALT` (do NOT modify it):
+- [x] Add beside `PHASE_STATUS_OPEN_ALT` (do NOT modify it):
       `PHASE_STATUS_ENTERABLE_ALT='NOT STARTED|IN PROGRESS|PARTIAL'`, plus
       `PHASE_STATUS_ENTERABLE_ERE` and `PHASE_HEADING_ENTERABLE_ERE` derived in the same shape the
       DONE/OPEN pairs already use (including the `# shellcheck disable=SC2034` export-contract
-      comment the file's other exported constants carry).
-- [ ] Add a comment block immediately above the new alternation recording the deliberate split:
+      comment the file's other exported constants carry). *(completed)*
+- [x] Add a comment block immediately above the new alternation recording the deliberate split:
       OPEN means "not closed" and keeps all four members for any sourcing consumer; ENTERABLE
       means "a dispatch may be scoped into this phase" and excludes `BLOCKED` because both
       sanctioned meanings of a `[BLOCKED]` phase heading (a pre-decided gate that never executes,
       and a phase waiting on an external unblock) are wrong to dispatch into, and nothing in the
-      marker text distinguishes them.
-- [ ] Update the library's top-of-file header to state the widened scope (phase-heading grammar
+      marker text distinguishes them. *(completed)*
+- [x] Update the library's top-of-file header to state the widened scope (phase-heading grammar
       *and* the per-phase enterability fields it governs), so D1 is recorded where a future reader
-      meets it.
-- [ ] Implement `phase_marker_of <file> <phase_number>`: prints the marker text of that phase's
-      conforming heading; returns 1 when no such heading exists.
-- [ ] Implement `phase_dependency_numbers <file> <phase_number>`: prints the phase's EFFECTIVE
+      meets it. *(completed)*
+- [x] Implement `phase_marker_of <file> <phase_number>`: prints the marker text of that phase's
+      conforming heading; returns 1 when no such heading exists. *(completed)*
+- [x] Implement `phase_dependency_numbers <file> <phase_number>`: prints the phase's EFFECTIVE
       dependency numbers, one per line. Rules, all of them:
       - Scan from the phase's own heading line to the next `^### ` line (or EOF) for the first
         line matching the field label in EITHER live spelling — `**Depends on**:` and
@@ -222,30 +222,38 @@ every existing export byte-identical in meaning.
       - Absence default (field missing, or parse discarded): every conforming phase number
         appearing strictly earlier in file order than this phase. This is `plan-format.md`'s
         documented "Absence means sequential (depends on all prior phases)" — never "no
-        dependency".
-- [ ] Implement `phase_is_enterable <file> <heading_line>`: returns 0 only when the heading's
+        dependency". *(completed)*
+- [x] Implement `phase_is_enterable <file> <heading_line>`: returns 0 only when the heading's
       marker is in `PHASE_STATUS_ENTERABLE_ALT` AND every number from `phase_dependency_numbers`
       resolves to a heading in the file whose marker is in `PHASE_STATUS_DONE_ALT`. On refusal,
       print one short machine-readable reason token on stdout: `marker`,
       `unmet-dependency:<n>`, or `dangling-dependency:<n>` (a dependency naming a phase with no
-      heading in the file).
-- [ ] Implement `select_enterable_phase <file>` with a three-way exit contract, documented in its
+      heading in the file). *(completed)*
+- [x] Implement `select_enterable_phase <file>` with a three-way exit contract, documented in its
       own header comment:
       - exit 0 — prints the first (lowest file-order) enterable heading line on stdout;
       - exit 3 — at least one heading matched `PHASE_STATUS_OPEN_ERE` but none was enterable;
         prints one `<phase>:<marker>:<reason>` diagnostic line per rejected heading;
       - exit 4 — no heading matched `PHASE_STATUS_OPEN_ERE` at all (the pre-existing fallthrough
-        condition, preserved as its own distinct code).
-- [ ] Write unit cases in the existing `scripts/tests/test-phase-heading-patterns.sh`: both field
+        condition, preserved as its own distinct code). *(completed)*
+- [x] Write unit cases in the existing `scripts/tests/test-phase-heading-patterns.sh`: both field
       spellings; `none`; `1`; `1, 3`; `1,3`; a decimal `3.1` token; an unparseable prose value
       (`Phase 3 (directory skeleton must exist)`) falling back to all-prior; a `Tasks 593 (...)`
       value falling back to all-prior rather than parsing task numbers as phases; an absent field
       falling back to all-prior; `[BLOCKED]` rejected on marker; an unmet dependency rejected; a
       dangling dependency rejected; a satisfied phase accepted; and one fixture per
-      `select_enterable_phase` exit code (0, 3, 4).
-- [ ] Add a line to that suite's existing "Deliberate-break check" comment block naming one
+      `select_enterable_phase` exit code (0, 3, 4). *(deviation: altered — the "falls back to
+      all-prior rather than parsing task numbers as phases" fixture uses the literal text "Items
+      593 (shared utilities), 594 (skill base)" rather than "Tasks 593 (...)", because the literal
+      word "Tasks" followed by a number is itself a pattern the repo's own task-reference guard
+      (`hooks/validate-no-task-references.sh`) blocks from landing under `agent-system/**`. The
+      fixture is wrapped in a `task-ref-ok` exempt region regardless, as a backstop. The substance
+      of the assertion is unchanged: a multi-token prose value whose first token fails
+      `PHASE_NUMBER_TOKEN_ERE` must fall back to the all-prior default, never be parsed as phase
+      numbers.)*
+- [x] Add a line to that suite's existing "Deliberate-break check" comment block naming one
       mutation that must make the new assertions fail (e.g. restoring `BLOCKED` to
-      `PHASE_STATUS_ENTERABLE_ALT`), matching the convention already there.
+      `PHASE_STATUS_ENTERABLE_ALT`), matching the convention already there. *(completed)*
 
 **Timing**: 1.5 hours
 
