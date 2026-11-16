@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794869398_636639_638",
+  "dispatch_seq": 1,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/638_orchestrate_enterable_phase_selector/reports/01_enterable_phase_selector.md",
+      "summary": "Confirms the H1 selector defect at orchestrate-cycle-plan.sh:2453 (grep|head -1 over PHASE_STATUS_OPEN_ERE, no Depends-on awareness, BLOCKED overloaded between two meanings); establishes that COMPLETED WITH EXCLUSIONS already closes the dynamic-bypass disposition case so no new prose signal is needed; finds phase-level Depends on: is prose-only with no existing parser and documents its absence-means-all-priors default; locates the Group 9 H1 test suite in test-orchestrate-cycle-plan.sh as the exact home for new fixtures; recommends a new narrower PHASE_STATUS_ENTERABLE alternation plus Depends-on-closure check, and a distinct new blocked-reason for the no-enterable-phase case."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this codebase's plan-format.md, [COMPLETED WITH EXCLUSIONS] already closes the 'decision gate executed, failed, contingency branch ran instead' case for bypassed phases, and is already a member of PHASE_STATUS_DONE_ALT (excluded from PHASE_STATUS_OPEN_ALT). A SEPARATE, legitimate use of [BLOCKED] at the phase-heading grain exists for a gate that is pre-decided BLOCKED at plan-authoring time (never executes) -- it declares Depends on: none and is exempted from the transitive dependency rule, with the final phase re-observing its measurement instead. Both meanings share the identical [BLOCKED] marker text with no textual way to distinguish them; any selector logic should simply treat [BLOCKED] as universally non-enterable rather than trying to disambiguate the two meanings.",
+      "category": "PATTERN",
+      "source_artifact": "specs/638_orchestrate_enterable_phase_selector/reports/01_enterable_phase_selector.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["phase-heading", "BLOCKED", "COMPLETED WITH EXCLUSIONS", "decision-gate", "plan-format"]
+    },
+    {
+      "content": "Phase-level '**Depends on:**' lines in this codebase's plan files (distinct from task-level dependencies[] in state.json) are prose-only today -- no script in scripts/ or scripts/lib/ parses them. Documented default when the field is absent: 'depends on all prior phases' (full sequential), not 'no dependency'. A future consumer must implement this parser from scratch and must honor the absence default or it will under-gate plans relying on it. PHASE_NUMBER_TOKEN_ERE in phase-heading-patterns.sh is the existing per-token number grammar to reuse for validating comma-split dependency tokens.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/638_orchestrate_enterable_phase_selector/reports/01_enterable_phase_selector.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["depends-on", "phase-dependency", "plan-format", "parser", "phase-heading-patterns"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 638 to create implementation plan"
+}
