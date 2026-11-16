@@ -942,6 +942,153 @@ else
   common_test_fail "H1: --dry-run unexpectedly mutated the plan file"
 fi
 
+# ── Case F: phase 1 [BLOCKED] (Depends on: none), phase 2 [COMPLETED], phase 3 [NOT STARTED]
+# (Depends on: 2) -- dispatches phase 3, never phase 1 (BLOCKED is never enterable) ──────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 906, "project_name": "g9_blocked_first", "task_type": "general", "status": "implementing", "description": "H1 enterable-phase: BLOCKED-first plan selects a later enterable phase", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/906_g9_blocked_first/plans"
+cat > "$WORKDIR/specs/906_g9_blocked_first/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [BLOCKED]
+
+**Depends on**: none
+
+### Phase 2: Two [COMPLETED]
+### Phase 3: Three [NOT STARTED]
+
+**Depends on**: 2
+EOF
+cat > "$WORKDIR/specs/906_g9_blocked_first/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "phases_completed": 1, "phases_total": 3}
+EOF
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g9f_sess.json"
+: > "$ARGV_LOG"
+run_sut --session g9f_sess --hard -- 906
+if [ "$(jqf '.dispatch | map(select(.task == 906)) | length')" = "1" ] && \
+   [ "$(jqf '.blocked | map(select(.task == 906)) | length')" = "0" ]; then
+  common_test_pass "H1 Case F: BLOCKED-first plan dispatches (not blocked)"
+else
+  common_test_fail "H1 Case F: expected a dispatch, got (stdout: $LAST_STDOUT)"
+fi
+g9f_argv=$(grep '^906 implement' "$ARGV_LOG" || true)
+if echo "$g9f_argv" | grep -q -- "--phase-number 3"; then
+  common_test_pass "H1 Case F: dispatches with --phase-number 3, never 1"
+else
+  common_test_fail "H1 Case F: expected --phase-number 3 (argv: '$g9f_argv')"
+fi
+
+# ── Case G: phase 1 [COMPLETED], phase 2 [NOT STARTED] (Depends on: 4), phase 3 [NOT STARTED]
+# (Depends on: 1), phase 4 [NOT STARTED] (Depends on: 1) -- dispatches phase 3, never phase 2
+# (phase 2's own dependency, phase 4, is itself open) ─────────────────────────────────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 907, "project_name": "g9_unmet_dep_first", "task_type": "general", "status": "implementing", "description": "H1 enterable-phase: unmet-dependency-first plan selects a later enterable phase", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/907_g9_unmet_dep_first/plans"
+cat > "$WORKDIR/specs/907_g9_unmet_dep_first/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [COMPLETED]
+### Phase 2: Two [NOT STARTED]
+
+**Depends on**: 4
+
+### Phase 3: Three [NOT STARTED]
+
+**Depends on**: 1
+
+### Phase 4: Four [NOT STARTED]
+
+**Depends on**: 1
+EOF
+cat > "$WORKDIR/specs/907_g9_unmet_dep_first/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "phases_completed": 1, "phases_total": 4}
+EOF
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g9g_sess.json"
+: > "$ARGV_LOG"
+run_sut --session g9g_sess --hard -- 907
+if [ "$(jqf '.dispatch | map(select(.task == 907)) | length')" = "1" ] && \
+   [ "$(jqf '.blocked | map(select(.task == 907)) | length')" = "0" ]; then
+  common_test_pass "H1 Case G: unmet-dependency-first plan dispatches (not blocked)"
+else
+  common_test_fail "H1 Case G: expected a dispatch, got (stdout: $LAST_STDOUT)"
+fi
+g9g_argv=$(grep '^907 implement' "$ARGV_LOG" || true)
+if echo "$g9g_argv" | grep -q -- "--phase-number 3"; then
+  common_test_pass "H1 Case G: dispatches with --phase-number 3, never 2"
+else
+  common_test_fail "H1 Case G: expected --phase-number 3 (argv: '$g9g_argv')"
+fi
+
+# ── Case H: phase 1 [BLOCKED], phase 2 [NOT STARTED] (Depends on: 1) -- no phase is enterable:
+# zero dispatch rows, exactly one blocked row naming NO ENTERABLE PHASE ──────────────────────────
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 908, "project_name": "g9_no_enterable", "task_type": "general", "status": "implementing", "description": "H1 enterable-phase: no phase enterable at all", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+mkdir -p "$WORKDIR/specs/908_g9_no_enterable/plans"
+cat > "$WORKDIR/specs/908_g9_no_enterable/plans/01_plan.md" <<'EOF'
+# Plan
+
+### Phase 1: One [BLOCKED]
+
+**Depends on**: none
+
+### Phase 2: Two [NOT STARTED]
+
+**Depends on**: 1
+EOF
+cat > "$WORKDIR/specs/908_g9_no_enterable/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "phases_completed": 0, "phases_total": 2}
+EOF
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g9h_sess.json"
+: > "$ARGV_LOG"
+run_sut --session g9h_sess --hard -- 908
+if [ "$(jqf '.dispatch | map(select(.task == 908)) | length')" = "0" ] && \
+   [ "$(jqf '.blocked | map(select(.task == 908)) | length')" = "1" ]; then
+  common_test_pass "H1 Case H: no enterable phase -- zero dispatch rows, one blocked row"
+else
+  common_test_fail "H1 Case H: expected zero dispatch / one blocked row (stdout: $LAST_STDOUT)"
+fi
+if [[ "$(jqf '.blocked | map(select(.task == 908)) | .[0].reason')" == *"NO ENTERABLE PHASE"* ]]; then
+  common_test_pass "H1 Case H: blocked reason names NO ENTERABLE PHASE"
+else
+  common_test_fail "H1 Case H: blocked reason missing NO ENTERABLE PHASE text (got: $(jqf '.blocked | map(select(.task == 908)) | .[0].reason'))"
+fi
+
+# ── Case I: --dry-run parity over Case H's fixture -- identical blocked verdict, plan file
+# byte-identical before and after ─────────────────────────────────────────────────────────────
+g9i_plan_before=$(cat "$WORKDIR/specs/908_g9_no_enterable/plans/01_plan.md")
+run_sut --session g9i_sess --hard --dry-run -- 908
+if [ "$(jqf '.dispatch | map(select(.task == 908)) | length')" = "0" ] && \
+   [ "$(jqf '.blocked | map(select(.task == 908)) | length')" = "1" ] && \
+   [[ "$(jqf '.blocked | map(select(.task == 908)) | .[0].reason')" == *"NO ENTERABLE PHASE"* ]]; then
+  common_test_pass "H1 Case I: --dry-run reports the SAME NO ENTERABLE PHASE blocked verdict"
+else
+  common_test_fail "H1 Case I: --dry-run did not report the expected blocked verdict (stdout: $LAST_STDOUT)"
+fi
+g9i_plan_after=$(cat "$WORKDIR/specs/908_g9_no_enterable/plans/01_plan.md")
+if [ "$g9i_plan_before" = "$g9i_plan_after" ]; then
+  common_test_pass "H1 Case I: --dry-run mutates nothing (plan file byte-identical)"
+else
+  common_test_fail "H1 Case I: --dry-run unexpectedly mutated the plan file"
+fi
+
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Group 10: Decision 2 — aux_dispatch[] emission (fixed agents, per-task caps, chaining,
 # mutual exclusion, --dry-run parity)

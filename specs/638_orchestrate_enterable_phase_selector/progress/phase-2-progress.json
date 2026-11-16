@@ -1,0 +1,14 @@
+{
+  "phase": 2,
+  "phase_name": "Rewire the H1 selector onto the predicate, with a named no-enterable-phase refusal",
+  "started_at": "2026-11-16T16:00:00Z",
+  "last_updated": "2026-11-16T16:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Replace grep|head -1 with select_enterable_phase, branch on 3 exit codes, compose H1: NO ENTERABLE PHASE blocked reason, leave everything else untouched", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 2, "description": "Add Group 9 Cases F, G, H, I to test-orchestrate-cycle-plan.sh and re-confirm Cases A-E pass unmodified", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

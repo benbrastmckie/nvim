@@ -293,7 +293,7 @@ planned: stop and re-scope rather than proceeding.
 
 ---
 
-### Phase 2: Rewire the H1 selector onto the predicate, with a named no-enterable-phase refusal [NOT STARTED]
+### Phase 2: Rewire the H1 selector onto the predicate, with a named no-enterable-phase refusal [COMPLETED]
 
 **Goal**: Replace the `grep | head -1` at `orchestrate-cycle-plan.sh:2453` with
 `select_enterable_phase`, add a distinct blocked row for "open headings exist, none enterable",
@@ -301,27 +301,32 @@ and leave the no-open-heading fallthrough byte-identical in behavior.
 
 **Tasks**:
 
-- [ ] Replace the single `h1_next_heading=$(grep ... | head -1)` with a call to
+- [x] Replace the single `h1_next_heading=$(grep ... | head -1)` with a call to
       `select_enterable_phase "$h1_plan_path"`, captured with the `rc=0; out=$(...) || rc=$?`
       idiom (never a pipe into `grep -q`, and never `$(cmd || echo ...)` — the file's own
-      neighboring comment documents why that form corrupts output).
-- [ ] Branch on the three exit codes:
+      neighboring comment documents why that form corrupts output). *(completed)*
+- [x] Branch on the three exit codes:
       - 0 — set `h1_next_heading` from stdout and continue into the existing
         `extract_phase_number` call and marker/handoff crosscheck, untouched;
       - 3 — set `h1_blocked_reason[$t]` to a new named reason (below) and take no dispatch;
       - 4 — leave `h1_next_phase_val` empty so control reaches the pre-existing fallthrough
-        comment and the ordinary status-derived dispatch, exactly as today.
-- [ ] Compose the new blocked reason to carry everything the operator needs without a second
+        comment and the ordinary status-derived dispatch, exactly as today. *(completed; an
+        unrecognized exit code is also handled conservatively as inconclusive, a defensive
+        addition not spelled out in the original three bullets but consistent with "never fall
+        through to an unscoped dispatch")*
+- [x] Compose the new blocked reason to carry everything the operator needs without a second
       investigation: the literal prefix `H1: NO ENTERABLE PHASE`, the plan path, the count of
       open-but-rejected headings, a per-heading list (`phase N [MARKER] — <reason>`) capped at the
       first five with a `(+K more)` suffix, and the remedy ("the plan needs a `/revise`, or the
-      gate phases need closing").
-- [ ] Leave the whole-file conformance gate (`has_nonconforming_phase_headings`), the
+      gate phases need closing"). *(completed)*
+- [x] Leave the whole-file conformance gate (`has_nonconforming_phase_headings`), the
       `extract_phase_number` call, the marker/handoff crosscheck, the disputed-heading
       `[PARTIAL]` downgrade, and the H7 territory literal exactly where and as they are.
-- [ ] Confirm the new branch sits in the shared decision section ABOVE the dry-run/live fork, so
-      `--dry-run` reports the identical verdict and mutates nothing.
-- [ ] Add Group 9 regression fixtures to `scripts/tests/test-orchestrate-cycle-plan.sh`, reusing
+      *(completed)*
+- [x] Confirm the new branch sits in the shared decision section ABOVE the dry-run/live fork, so
+      `--dry-run` reports the identical verdict and mutates nothing. *(completed; confirmed by
+      Group 9 Case I)*
+- [x] Add Group 9 regression fixtures to `scripts/tests/test-orchestrate-cycle-plan.sh`, reusing
       the Case A–E idiom verbatim (`write_state` heredoc, `mkdir -p .../plans`, plan heredoc,
       `run_sut --session X --hard -- N`, `jqf`, `$ARGV_LOG`):
       - **Case F** — phase 1 `[BLOCKED]` (`Depends on: none`), phase 2 `[COMPLETED]`, phase 3
@@ -334,13 +339,16 @@ and leave the no-open-heading fallthrough byte-identical in behavior.
         `phases_completed: 0`: zero dispatch rows, exactly one blocked row whose reason contains
         `NO ENTERABLE PHASE`.
       - **Case I** — `--dry-run` parity over Case H's fixture: identical blocked verdict, plan
-        file byte-identical before and after.
-- [ ] Re-run Group 9 Cases A–E unchanged and confirm each still passes without edits to its
+        file byte-identical before and after. *(completed: all four cases pass, 8/8 new
+        assertions)*
+- [x] Re-run Group 9 Cases A–E unchanged and confirm each still passes without edits to its
       assertions — in particular Case C (first open heading IS enterable: still dispatches
       `--phase-number 2`) and Case D (no open heading: still falls through with no
-      `--phase-number`).
-- [ ] Verify no file landing under `agent-system/**` gained a task-number reference (the fixture
-      project numbers 906+ are test identifiers, not task citations).
+      `--phase-number`). *(completed: 433/0 baseline before the rewiring, 441/0 after adding
+      Cases F–I, zero pre-existing assertions edited)*
+- [x] Verify no file landing under `agent-system/**` gained a task-number reference (the fixture
+      project numbers 906+ are test identifiers, not task citations). *(completed:
+      check-task-references.sh agent-system/ reports 0 unexempted occurrences)*
 
 **Timing**: 1.5 hours
 

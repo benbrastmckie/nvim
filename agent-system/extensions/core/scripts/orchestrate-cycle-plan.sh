@@ -2450,11 +2450,55 @@ for t in "${probed_dispatch[@]}"; do
       warn_nonconforming "$h1_plan_path" "orchestrate-cycle-plan-h1-next-phase" || true
       h1_inconclusive="true"
     else
-      h1_next_heading=$(grep -E "${PHASE_HEADING_ERE} .*${PHASE_STATUS_OPEN_ERE}" "$h1_plan_path" | head -1) || true
-      if [ -n "$h1_next_heading" ]; then
-        h1_next_phase_val=$(extract_phase_number "$h1_next_heading") || h1_next_phase_val=""
-        [ -z "$h1_next_phase_val" ] && h1_inconclusive="true"
-      fi
+      # --- enterable-phase-select: select_enterable_phase's three-way exit contract replaces the
+      # old plain `grep PHASE_HEADING_ERE.*PHASE_STATUS_OPEN_ERE | head -1`. Captured with the
+      # `rc=0; out=$(...) || rc=$?` idiom (never a pipe into `grep -q`, and never
+      # `$(cmd || echo ...)` -- see phase-heading-patterns.sh's own module header for the
+      # SIGPIPE/pipefail rationale this convention exists to avoid).
+      h1_select_rc=0
+      h1_select_out=$(select_enterable_phase "$h1_plan_path") || h1_select_rc=$?
+      case "$h1_select_rc" in
+        0)
+          # Enterable heading found -- continue into the existing extract_phase_number call and
+          # marker/handoff crosscheck below, untouched.
+          h1_next_heading="$h1_select_out"
+          h1_next_phase_val=$(extract_phase_number "$h1_next_heading") || h1_next_phase_val=""
+          [ -z "$h1_next_phase_val" ] && h1_inconclusive="true"
+          ;;
+        3)
+          # Open headings exist (marker in PHASE_STATUS_OPEN_ERE) but NONE is enterable (marker
+          # rejected, or an unmet/dangling `Depends on`). A distinct, named refusal -- never an
+          # unscoped dispatch into a closed route. $h1_select_out carries one
+          # `<phase>:<marker>:<reason>` diagnostic line per rejected heading, in file order.
+          h1_select_count=0
+          h1_select_count=$(printf '%s\n' "$h1_select_out" | grep -c . 2>/dev/null) || h1_select_count=0
+          h1_select_list=""
+          h1_select_shown=0
+          while IFS=: read -r h1_sel_phase h1_sel_marker h1_sel_reason; do
+            [ -z "$h1_sel_phase" ] && continue
+            [ "$h1_select_shown" -ge 5 ] && continue
+            h1_select_list="${h1_select_list}phase ${h1_sel_phase} [${h1_sel_marker}] — ${h1_sel_reason}; "
+            h1_select_shown=$((h1_select_shown + 1))
+          done <<< "$h1_select_out"
+          h1_select_list="${h1_select_list%; }"
+          if [ "$h1_select_count" -gt 5 ]; then
+            h1_select_list="${h1_select_list} (+$((h1_select_count - 5)) more)"
+          fi
+          h1_blocked_reason[$t]="H1: NO ENTERABLE PHASE in ${h1_plan_path} — ${h1_select_count} open phase(s) rejected: ${h1_select_list}. The plan needs a /revise, or the gate phases need closing."
+          ;;
+        4)
+          # No heading matched PHASE_STATUS_OPEN_ERE at all -- the pre-existing fallthrough
+          # (nothing left open). Leave h1_next_phase_val empty so control reaches the
+          # pre-existing fallthrough comment and the ordinary status-derived dispatch below,
+          # exactly as before this change.
+          :
+          ;;
+        *)
+          # Unrecognized exit code from select_enterable_phase -- treat conservatively as
+          # inconclusive rather than silently falling through to an unscoped dispatch.
+          h1_inconclusive="true"
+          ;;
+      esac
     fi
   fi
 
