@@ -1,18 +1,18 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 543,
-  "phase": "plan",
-  "dispatch_seq": 5,
-  "session_id": "sess_1794850122_9151c5_543",
-  "phases_completed": 0,
+  "phase": "implement",
+  "dispatch_seq": 6,
+  "session_id": "sess_1794850122_9151c5",
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a four-phase implementation plan for adding the inherited-error-count distrust obligation to the stall/strand re-prompt remedy. Phase 1 grounds the edit surface and amends the canonical Loop obligation list in orchestrate-state-machine.md (plus its coupled item-count sentence); Phase 2 carries the clause into three of the four REMEDY emission sites in orchestrate-cycle-postflight.sh, leaving the stranded_suspected notice as a reasoned exclusion; Phase 3 pins the clause with a non-vacuous content assertion in test-orchestrate-cycle-postflight.sh; Phase 4 deploys and runs the full gate set. The plan passes validate-artifact.sh --strict with zero warnings.",
+  "summary": "Implemented the inherited-error-count distrust obligation across the stall/strand re-prompt remedy. Added a new numbered item to the canonical Loop obligation list in orchestrate-state-machine.md, carried the addition into three of the four REMEDY emission sites in orchestrate-cycle-postflight.sh (the stranded_suspected notice left unchanged on a stated reasoned exclusion), and pinned the clause with a non-vacuous content assertion in test-orchestrate-cycle-postflight.sh verified by negative control. Deployed the source-store changes and discharged the final phase's verification against the scoped Gate 8 tier per this dispatch's Batch Gate Deferral directive.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/543_stall_reprompt_distrust_inherited_error_count/plans/01_distrust-inherited-error-count.md",
-      "summary": "Four-phase plan: doc Loop obligation amendment, three script-side remedy prose sites with one reasoned exclusion, a content assertion in the postflight suite, then deploy plus full-gate acceptance."
+      "type": "summary",
+      "path": "specs/543_stall_reprompt_distrust_inherited_error_count/summaries/01_distrust-inherited-error-count-summary.md",
+      "summary": "Four-phase implementation summary with the full site-by-site decision record for all four enumerated REMEDY: emission sites."
     }
   ]
 }

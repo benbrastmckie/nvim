@@ -1,7 +1,7 @@
 # Implementation Plan: Task #543
 
 - **Task**: 543 - Tell the re-prompted dispatch to distrust the error count it inherited from the interrupting context
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.75 hours
 - **Dependencies**: 534 (declared in state.json; live status is `completed` — satisfied, not blocking)
 - **Research Inputs**: specs/543_stall_reprompt_distrust_inherited_error_count/reports/01_distrust-inherited-error-count.md
