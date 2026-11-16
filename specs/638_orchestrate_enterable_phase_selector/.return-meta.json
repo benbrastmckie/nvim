@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794869398_636639_638",
-  "dispatch_seq": 1,
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/638_orchestrate_enterable_phase_selector/reports/01_enterable_phase_selector.md",
-      "summary": "Confirms the H1 selector defect at orchestrate-cycle-plan.sh:2453 (grep|head -1 over PHASE_STATUS_OPEN_ERE, no Depends-on awareness, BLOCKED overloaded between two meanings); establishes that COMPLETED WITH EXCLUSIONS already closes the dynamic-bypass disposition case so no new prose signal is needed; finds phase-level Depends on: is prose-only with no existing parser and documents its absence-means-all-priors default; locates the Group 9 H1 test suite in test-orchestrate-cycle-plan.sh as the exact home for new fixtures; recommends a new narrower PHASE_STATUS_ENTERABLE alternation plus Depends-on-closure check, and a distinct new blocked-reason for the no-enterable-phase case."
+      "type": "plan",
+      "path": "specs/638_orchestrate_enterable_phase_selector/plans/01_enterable-phase-selector.md",
+      "summary": "4-phase plan replacing the H1 selector's grep|head -1 with a marker-plus-Depends-on enterability predicate, adding a named no-enterable-phase refusal, Group 9 regression fixtures, an authoring-doc sync, and a redeploy/full-gate close."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1794869398_636639_638",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 4.25,
+    "dependency_waves": 4
+  },
   "memory_candidates": [
     {
-      "content": "In this codebase's plan-format.md, [COMPLETED WITH EXCLUSIONS] already closes the 'decision gate executed, failed, contingency branch ran instead' case for bypassed phases, and is already a member of PHASE_STATUS_DONE_ALT (excluded from PHASE_STATUS_OPEN_ALT). A SEPARATE, legitimate use of [BLOCKED] at the phase-heading grain exists for a gate that is pre-decided BLOCKED at plan-authoring time (never executes) -- it declares Depends on: none and is exempted from the transitive dependency rule, with the final phase re-observing its measurement instead. Both meanings share the identical [BLOCKED] marker text with no textual way to distinguish them; any selector logic should simply treat [BLOCKED] as universally non-enterable rather than trying to disambiguate the two meanings.",
-      "category": "PATTERN",
-      "source_artifact": "specs/638_orchestrate_enterable_phase_selector/reports/01_enterable_phase_selector.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["phase-heading", "BLOCKED", "COMPLETED WITH EXCLUSIONS", "decision-gate", "plan-format"]
-    },
-    {
-      "content": "Phase-level '**Depends on:**' lines in this codebase's plan files (distinct from task-level dependencies[] in state.json) are prose-only today -- no script in scripts/ or scripts/lib/ parses them. Documented default when the field is absent: 'depends on all prior phases' (full sequential), not 'no dependency'. A future consumer must implement this parser from scratch and must honor the absence default or it will under-gate plans relying on it. PHASE_NUMBER_TOKEN_ERE in phase-heading-patterns.sh is the existing per-token number grammar to reuse for validating comma-split dependency tokens.",
+      "content": "Before writing any parser for a markdown field convention in this repo's plan corpus, measure the live spelling distribution first -- the documented form is not always the dominant one. Measured for the per-phase dependency field: '**Depends on**:' occurs 4907 times repo-wide while '**Depends on:**' (colon inside the bold) occurs 296 times, and plan-format.md's own field definition uses the MINORITY spelling. A parser matching only the documented form silently reads 296 real occurrences as absent. The same survey also found values that are not phase numbers at all ('Phase 3 (directory skeleton must exist)', 'Tasks 593 (shared utilities), 594 (skill base)' -- task numbers, not phase numbers), so such a parser needs all-or-nothing token validation against PHASE_NUMBER_TOKEN_ERE with a conservative documented-default fallback, never best-effort partial parsing.",
       "category": "INSIGHT",
-      "source_artifact": "specs/638_orchestrate_enterable_phase_selector/reports/01_enterable_phase_selector.md",
+      "source_artifact": "specs/638_orchestrate_enterable_phase_selector/plans/01_enterable-phase-selector.md",
       "confidence": 0.85,
-      "suggested_keywords": ["depends-on", "phase-dependency", "plan-format", "parser", "phase-heading-patterns"]
+      "suggested_keywords": ["depends-on", "plan-format", "parser", "field-spelling", "corpus-survey", "phase-dependency"]
     }
   ],
-  "next_steps": "Run /orchestrate 638 to create implementation plan"
+  "next_steps": "Run /orchestrate 638 to execute the plan",
+  "dispatch_seq": 2
 }

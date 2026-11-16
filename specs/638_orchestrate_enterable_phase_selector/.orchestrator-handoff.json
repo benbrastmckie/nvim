@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Created a 4-phase implementation plan for the hard-mode enterable-phase selector fix. Phase 1 adds a narrower PHASE_STATUS_ENTERABLE_ALT alternation plus a Depends-on parser and three-way enterability selector to phase-heading-patterns.sh (additive only; PHASE_STATUS_OPEN_ALT untouched). Phase 2 rewires the single grep|head -1 call site at orchestrate-cycle-plan.sh:2453 onto that predicate and adds a named NO ENTERABLE PHASE blocked row, with Group 9 fixtures F-I. Phase 3 syncs plan-format.md's authoring contract; Phase 4 redeploys and runs the full gate. Premise re-validation found one drifted figure (line 2393 -> 2453) and confirmed every other carried claim live, including source/deploy byte-identity.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/638_orchestrate_enterable_phase_selector/plans/01_enterable-phase-selector.md",
+      "summary": "4-phase plan: enterability vocabulary and Depends-on parser in phase-heading-patterns.sh, H1 selector rewiring with a named no-enterable-phase refusal, plan-format.md authoring-contract sync, redeploy and full gate."
+    }
+  ],
+  "dispatch_seq": 2
+}
