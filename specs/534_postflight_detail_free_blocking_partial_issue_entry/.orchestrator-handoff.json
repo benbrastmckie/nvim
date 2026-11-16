@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 2,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase plan for the postflight blocker-bearing-partial issue entry. Re-validated all four carried-figure trigger lines: the described raw jq join() root cause is SUPERSEDED (the call site already carries a map/if-object render), but verbatim_goal is still dropped, 2>/dev/null is still swallowing, --class \"environment\" is still hard-coded, and the regression fixture still never reads issues.jsonl. Phases: detail restoration (atomic-batch, test-red-first), classification settlement, identity-keyed dedup via the open tags seam, then redeploy plus the full gate set.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/534_postflight_detail_free_blocking_partial_issue_entry/plans/01_postflight-blocking-partial-issue-entry.md",
+      "summary": "4-phase plan confining every edit to the core source store's orchestrate-cycle-postflight.sh partial) arm and its test file, disjoint from the sibling null-resolution record's territory."
+    }
+  ]
+}
