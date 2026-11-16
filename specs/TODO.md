@@ -195,7 +195,7 @@ next_project_number: 638
 ### Uncategorized
 
 584 [NOT STARTED] — Wire covering-suite selection into Gate 8 so an extension...
-585 [RESEARCHING] — Make the batch-gate deferral binding and cache repeat gate...
+585 [RESEARCHED] — Make the batch-gate deferral binding and cache repeat gate...
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
 ## Tasks
@@ -1868,9 +1868,10 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deploy
 ---
 
 ### 585. Make the batch-gate deferral binding and cache repeat gate runs, so the full set runs once per batch
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Dependencies**: None
+- **Research**: [585_redundant_gate_run_suppression/reports/02_binding-deferral-and-cache-adoption.md]
 
 **Description**: The two-mechanism design is already right and already built; adoption is the gap. Mechanism A (orchestrate-build-dispatch.sh's Batch Gate Deferral) narrows a final implement phase's OBLIGATION but not its BEHAVIOUR -- nothing forbids an additional full sweep and nothing detects one. Observed across one six-task batch: 2 of 5 implement dispatches honoured the scoped tier while 3 ran a full or exploratory gate set anyway, one of them running the full gate set with no flags twice. Measured concurrently: 9 live run-all.sh and 9 live verify-deploy.sh processes against nproc 24. Because the .gate-lock mutex deliberately serialises gate 8 (~11 min), nine batteries queue single-file behind it -- the direct cause of implement-phase wait loops of roughly 70 and 100 minutes in that batch.
 

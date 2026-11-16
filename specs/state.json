@@ -99898,13 +99898,19 @@
     {
       "project_number": 585,
       "project_name": "redundant_gate_run_suppression",
-      "status": "researching",
+      "status": "researched",
       "title": "Make the batch-gate deferral binding and cache repeat gate runs, so the full set runs once per batch",
       "task_type": "meta",
       "topic": null,
       "effort": null,
       "dependencies": [],
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/585_redundant_gate_run_suppression/reports/02_binding-deferral-and-cache-adoption.md",
+          "type": "report",
+          "summary": "Resolves all five seed design questions from live code: Mechanism A is prose-only with no enforcement; .gate-lock mutex already safely avoids contention for both narrowed --only runs and cache-hit gate 8; Move 4 structurally cannot regress onto the cache; batch admission's Mode 2 build-heavy co-scheduling excludes meta/general task types by its own task-type pre-filter. Recommends adding --skip-unchanged to Mechanism A's two emitted narrowing invocations as the sanctioned cheap probe, with no change to Move 4, no new hook, and no admission-side change."
+        }
+      ],
       "file_scope": [
         "agent-system/extensions/core/context/contracts/batch-gate-stage.md",
         "agent-system/extensions/core/scripts/orchestrate-batch-gate.sh",
@@ -99912,7 +99918,7 @@
         "agent-system/extensions/core/scripts/verify-deploy.sh"
       ],
       "created": "2026-11-11T02:51:33Z",
-      "last_updated": "2026-11-16T07:51:06Z",
+      "last_updated": "2026-11-16T08:22:54Z",
       "description": "The two-mechanism design is already right and already built; adoption is the gap. Mechanism A (orchestrate-build-dispatch.sh's Batch Gate Deferral) narrows a final implement phase's OBLIGATION but not its BEHAVIOUR -- nothing forbids an additional full sweep and nothing detects one. Observed across one six-task batch: 2 of 5 implement dispatches honoured the scoped tier while 3 ran a full or exploratory gate set anyway, one of them running the full gate set with no flags twice. Measured concurrently: 9 live run-all.sh and 9 live verify-deploy.sh processes against nproc 24. Because the .gate-lock mutex deliberately serialises gate 8 (~11 min), nine batteries queue single-file behind it -- the direct cause of implement-phase wait loops of roughly 70 and 100 minutes in that batch.\n\nSECOND GAP: the gate cache has ZERO adoption in the lifecycle. A repo-wide grep for skip-unchanged across core scripts returns exactly one hit, the flag's own parser; no orchestrate caller passes it, and orchestrate-batch-gate.sh explicitly captures at full depth.\n\nTHE REMEDY IS ASYMMETRIC and must not be flattened: Move 4's once-per-invocation run KEEPS full depth, because caching it is a no-op (17 of 28 gates declare @extensions and every implement batch invalidates them) and it is the batch's only unconditional signal. Per-dispatch scoped runs, and any exploratory or repeat sweep, SHOULD default to --skip-unchanged, which is exactly the warm-unchanged case the cache was built for.\n\nSeed report: specs/585_redundant_gate_run_suppression/reports/01_redundant-gate-run-suppression.md\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.",
       "research_questions": "How binding can Mechanism A be made, and does an agent need a cheap sanctioned 'am I green?' probe more than a tighter prohibition -- three of five dispatches already violated the advisory one? If covering-suite selection lands in gate 8, do the scoped tier and the narrowed gate converge, reducing Mechanism A to 'run the gate, it is already narrow'? Does --skip-unchanged interact safely with the .gate-lock mutex, i.e. should a cache hit acquire it at all? Corpus completeness is the cache's one unproven axis: the equivalence suite proves a declared-corpus change forces a miss but not that declarations are complete, so does defaulting the cache need its own completeness check? Is gate-heavy co-scheduling a defect in admission -- argued on contention grounds only, since Settled decision 14 forbids citing cost as the reason?",
       "audit_verdict": {
@@ -101463,7 +101469,8 @@
           "scope-blind: project 138 (orchestrate_multitask_phase_forcing_gap) declares no file_scope -- judged on the semantic shortlist alone"
         ]
       },
-      "session_id": "sess_1794815389_748c3d_585"
+      "session_id": "sess_1794815389_748c3d",
+      "next_artifact_number": 2
     },
     {
       "project_number": 588,
