@@ -1,29 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/plans/01_mechanize-conclusion-roadmap-regenerate.md",
-      "summary": "Six-phase plan mechanizing /orchestrate's conclusion-stage roadmap regenerate: extract Step 5 to one script on the Move 4 finalize path, defer the consolidated output's emission to Move 5, add a Stop-hook backstop, test coverage, contract prose, deploy and full gate set."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1794798170_26e756_634",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 7.75,
-    "dependency_waves": 5
+    "session_id": "sess_1794798170_26e756",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "In this agent-system's source store, an extension's manifest.json declares provides.scripts and provides.hooks as EXPLICIT file lists (core carries 407 and 27 entries), not globs. A new script or hook that is not declared there is simply not deployed by deploy-headless.sh, and check-extension-docs.sh's Rule Q (verify-deploy gate 3, commit-blocking) fails on an undeclared script. The sanctioned writer is sync-manifest-scripts.sh --write; never hand-edit the array. A new test suite carries two further coupled obligations: a TAB-separated row in scripts/tests/suite-classification.data (lint-unit-integration-boundary.sh fails loudly on an unclassified discovered suite) and compliance with gates 27 (lint-subject-resolution-declaration.sh) and 29 (lint-test-root-resolution.sh), both commit-blocking and both scoped to scripts/tests/*.sh. Any plan that adds a script, hook, or suite must declare manifest.json in the same phase's Files to modify block as the new file itself.",
-      "category": "PATTERN",
-      "source_artifact": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/plans/01_mechanize-conclusion-roadmap-regenerate.md",
-      "confidence": 0.88,
-      "suggested_keywords": ["manifest", "provides-scripts", "coupled-generated-surface", "suite-classification", "deploy-headless", "gate-registry"]
-    }
-  ],
-  "dispatch_seq": 3
+  "dispatch_seq": 5
 }

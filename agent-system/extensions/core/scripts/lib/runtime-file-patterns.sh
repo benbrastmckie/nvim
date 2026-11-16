@@ -355,3 +355,18 @@ runtime_return_meta_multi_path() {
   local specs_dir="$1" session_id="$2"
   echo "${specs_dir}/.orchestration/.return-meta-multi-${session_id}.json"
 }
+
+# runtime_conclusion_pending_marker_path <specs_dir> <session_id>
+# Sibling resolver for the conclusion-stage pending marker: written by
+# scripts/orchestrate-conclusion-roadmap.sh as its own last action (outside --dry-run) at Move 4,
+# read and deleted by hooks/orchestrate-conclusion-backstop.sh, and deleted as Move 5 Step 6's
+# own final action once the rest of the conclusion stage has run (see
+# context/contracts/conclusion-stage.md). Same contract as the two resolvers above: caller
+# supplies its own resolved `specs/` directory and ensures `.orchestration/` exists before
+# writing; this function only computes the path. No new runtime-file-pattern class member is
+# needed for this path -- `specs/.orchestration/` is already covered, directory-class, by this
+# file's own class membership.
+runtime_conclusion_pending_marker_path() {
+  local specs_dir="$1" session_id="$2"
+  echo "${specs_dir}/.orchestration/.conclusion-pending-${session_id}.json"
+}

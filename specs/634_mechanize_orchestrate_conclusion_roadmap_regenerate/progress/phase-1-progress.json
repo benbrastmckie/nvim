@@ -1,0 +1,30 @@
+{
+  "phase": 1,
+  "phase_name": "Extract Step 5 into orchestrate-conclusion-roadmap.sh",
+  "started_at": "2026-11-15T00:00:00Z",
+  "last_updated": "2026-11-16T03:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Transcribe Step 5 body into orchestrate-conclusion-roadmap.sh, no logic change", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh"]},
+    {"id": 2, "description": "Define CLI --session/--state-file/--dry-run", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh"]},
+    {"id": 3, "description": "Standard header block, set -euo pipefail, deploy-root-guard.sh, lib/common.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh"]},
+    {"id": 4, "description": "Record unconditional-trigger rationale in header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh"]},
+    {"id": 5, "description": "Add marker-path resolver to runtime-file-patterns.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"]},
+    {"id": 6, "description": "Write pending marker as script's last action, skip under --dry-run", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh"]},
+    {"id": 7, "description": "Emit outcome in a named parseable block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh"]},
+    {"id": 8, "description": "sync-manifest-scripts.sh --write", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {"approach": "verify via literal source-store path per plan's own verification wording", "result": "failed", "reason": "deploy-root-guard.sh refuses any invocation from agent-system/extensions/core/scripts/ for this family of script (orchestrate-batch-gate.sh/orchestrate-conclusion-aggregate.sh share this NOT-RUNNABLE-FROM-SOURCE-STORE contract, and this script deliberately matches it, no DEPLOY_ROOT_GUARD_SELF_CORRECT opt-in). Verified instead against the deployed .claude/scripts/ copy after an early redeploy."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.verification",
+      "description": "Phase 1's verification line literally names `bash agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh ... --dry-run`",
+      "type": "altered",
+      "reason": "This script is modeled on orchestrate-batch-gate.sh/orchestrate-conclusion-aggregate.sh, neither of which is runnable from the source store (deploy-root-guard.sh refuses). Exercised the equivalent deployed copy instead (bash .claude/scripts/orchestrate-conclusion-roadmap.sh ... --dry-run) after an early redeploy; same script content, same result.",
+      "annotation": "*(deviation: altered — verified via the deployed copy, not the literal source-store path, matching this script family's NOT-RUNNABLE-FROM-SOURCE-STORE contract)*"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #634
 
 - **Task**: 634 - Mechanize /orchestrate conclusion-stage roadmap regenerate
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/reports/01_mechanize-conclusion-roadmap-regenerate.md
@@ -143,13 +143,13 @@ populates `file_scope` from them, so the overlap becomes declared rather than la
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Extract Step 5 into `orchestrate-conclusion-roadmap.sh` [NOT STARTED]
+### Phase 1: Extract Step 5 into `orchestrate-conclusion-roadmap.sh` [COMPLETED]
 
 **Goal**: One executable copy of the roadmap-update step exists as a script, with the pending
 marker it must write for Phase 3's backstop.
 
 **Tasks**:
-- [ ] Read `context/contracts/conclusion-stage.md`'s `### Step 5 — Roadmap update` in full and
+- [x] Read `context/contracts/conclusion-stage.md`'s `### Step 5 — Roadmap update` in full and
       transcribe its body into the new script without logic change: classify via
       `lib/roadmap-preflight-lib.sh classify specs/ROADMAP.md`; on `classic`/`stage` run
       `roadmap-integration.sh --regenerate`, then `git-commit-scoped.sh … -- specs/ROADMAP.md`,
@@ -157,35 +157,35 @@ marker it must write for Phase 3's backstop.
       `absent`/`unknown` skip both the regenerate and the commit and run the three-part degrade
       (named structured warning naming verdict + path + the `/roadmap` remedy;
       `events-append.sh --event-type roadmap_regenerate_blocked` plus its own scoped commit of
-      `specs/events.jsonl`; then the best-effort per-task-dir `issue-record.sh` loop).
-- [ ] Define the CLI as `--session SID --state-file PATH [--dry-run]`, modeled on
+      `specs/events.jsonl`; then the best-effort per-task-dir `issue-record.sh` loop). *(completed)*
+- [x] Define the CLI as `--session SID --state-file PATH [--dry-run]`, modeled on
       `orchestrate-batch-gate.sh`'s own contract: `--state-file` is the multi-task state file
       directly (never `specs/state.json`); task numbers for the degrade loop are read from that
       file's `.task_numbers`, and task directories resolved through the sanctioned task-lookup
       helper (gate 18 forbids an ad hoc glob). `--dry-run` computes and prints the same summary
-      but performs no write and no commit.
-- [ ] Give the script the standard header block in the house shape (purpose, the single call
+      but performs no write and no commit. *(completed)*
+- [x] Give the script the standard header block in the house shape (purpose, the single call
       site, usage, exit codes `0`/`2`, and an explicit "never sourced" note), `set -euo pipefail`,
       the `deploy-root-guard.sh` source, and `lib/common.sh` — copying
-      `orchestrate-batch-gate.sh`'s opening 55 lines as the structural model.
-- [ ] Record in the header why the trigger condition is *unconditional*, unlike
+      `orchestrate-batch-gate.sh`'s opening 55 lines as the structural model. *(completed)*
+- [x] Record in the header why the trigger condition is *unconditional*, unlike
       `orchestrate-batch-gate.sh`'s `.implement_agents` gate: a research-only or plan-only
       invocation that still moved a task's status changes what `--regenerate` would render, so
-      gating on an implement dispatch would reintroduce the skip this task exists to close.
-- [ ] Add a shared marker-path resolver beside the two existing session-scoped resolvers in
+      gating on an implement dispatch would reintroduce the skip this task exists to close. *(completed)*
+- [x] Add a shared marker-path resolver beside the two existing session-scoped resolvers in
       `scripts/lib/runtime-file-patterns.sh`, returning
       `<specs_dir>/.orchestration/.conclusion-pending-<session_id>.json`, so the script and
       Phase 3's hook never duplicate the path. Add no class member and touch no pattern array —
       `specs/.orchestration/` is already covered directory-class, so no count figure and no
-      `.gitignore` entry moves.
-- [ ] Write the pending marker as the script's last action (`mkdir -p` the directory first),
+      `.gitignore` entry moves. *(completed)*
+- [x] Write the pending marker as the script's last action (`mkdir -p` the directory first),
       carrying `session_id`, `cc_session_id` (from `$CLAUDE_CODE_SESSION_ID`, empty-tolerated),
-      `continuation_count: 0`, and `created_ts`. Skip the marker write entirely under `--dry-run`.
-- [ ] Emit the step's outcome to stdout in one named, parseable block so Move 4 can fold it into
+      `continuation_count: 0`, and `created_ts`. Skip the marker write entirely under `--dry-run`. *(completed)*
+- [x] Emit the step's outcome to stdout in one named, parseable block so Move 4 can fold it into
       the report that Phase 2 defers: the verdict, the `OUTCOME:` line verbatim, the commit sha or
-      `none`, and the advisory lint's findings.
-- [ ] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` and
-      confirm both new/changed paths appear in `provides.scripts`.
+      `none`, and the advisory lint's findings. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` and
+      confirm both new/changed paths appear in `provides.scripts`. *(completed: required `git add` of the new file first, since the script discovers via `git ls-files`)*
 
 **Timing**: 1.5 hours
 

@@ -282,6 +282,7 @@
       "orchestrate-build-dispatch.sh",
       "orchestrate-churn.sh",
       "orchestrate-conclusion-aggregate.sh",
+      "orchestrate-conclusion-roadmap.sh",
       "orchestrate-cycle-plan.sh",
       "orchestrate-cycle-postflight.sh",
       "orchestrate-loop-guard-init.sh",
