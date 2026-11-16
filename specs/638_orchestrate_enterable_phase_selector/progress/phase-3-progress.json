@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Record the now-machine-consumed Depends on contract in the authoring docs",
+  "started_at": "2026-11-16T16:40:00Z",
+  "last_updated": "2026-11-16T16:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Extend the Depends on field bullet: parsed by the hard-mode selector, both spellings accepted, unparseable falls back to all-prior, default is enforced not advisory", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 2, "description": "Add a sentence to the plan-authoring-time-BLOCKED-gate subsection naming the mechanical consequence (NO ENTERABLE PHASE report)", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md", "agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "3.extra",
+      "description": "Fix index-entries.json's declared line_count for formats/plan-format.md (not named in the plan's Files to modify list)",
+      "type": "altered",
+      "reason": "The plan-format.md prose edit added 15 lines, making Rule R (source index-entries.json line_count accuracy) fail doc-lint with a real, non-drift mismatch (declared 1254, actual 1269). generate-context-line-counts.sh --write (the named remedy) refuses to run outside a deployed scripts/ tree, so the single JSON value was hand-corrected directly in the source store instead.",
+      "annotation": "*(deviation: altered -- also updated agent-system/extensions/core/index-entries.json's line_count for formats/plan-format.md from 1254 to 1269)*"
+    }
+  ],
+  "handoff_count": 0
+}

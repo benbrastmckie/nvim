@@ -103,7 +103,15 @@ role as a durable, non-reverting checkpoint.
   - **Goal:** short statement
   - **Tasks:** bullet checklist
   - **Timing:** expected duration or window
-  - **Depends on:** phase numbers this phase requires (e.g., `none`, `1`, `1, 3`). Absence means sequential (depends on all prior phases).
+  - **Depends on:** phase numbers this phase requires (e.g., `none`, `1`, `1, 3`). Absence means sequential (depends on all prior phases). This field is now MECHANICALLY PARSED, not merely
+    documentation: the hard-mode (`/orchestrate --hard`) per-phase selector reads it (via
+    `scripts/lib/phase-heading-patterns.sh`'s `phase_dependency_numbers`/`phase_is_enterable`) to
+    decide which open phase is actually ENTERABLE, as distinct from merely open-by-marker. Both
+    bold spellings in live use are accepted — `**Depends on**:` and `**Depends on:**` — so either
+    is safe to author. An unparseable value (a value that is not `none` and does not split into
+    comma-separated phase-number tokens) falls back to the absence-means-all-prior default just
+    as a missing field does; this default is now ENFORCED by the selector, not advisory prose a
+    human might or might not honor.
   - **Verification Tier:** (required) one of `prose`, `local`, `interface`, `full` — see
     `## Verification Tiers` below for the full vocabulary and blind-spot definitions.
   - **Commit Mode:** (optional, default `per-substep`) `per-substep` or `atomic-batch` — see
@@ -1122,6 +1130,13 @@ phase MUST re-observe the blocked gate's own measurement by name inside its own 
 criteria, and the Dependency Analysis wave-table note MUST state this re-observation explicitly
 — together these two MUSTs keep the gate's decision load-bearing on the final phase's own
 verification despite its exemption from the depends-on edge.
+
+A `[BLOCKED]` phase heading is never a dispatch target under hard mode: the per-phase selector's
+enterability predicate excludes `BLOCKED` from its narrower marker set regardless of context, so
+this subsection's own `Depends on: none` obligation (and the rule that no later phase names such
+a gate as a dependency) now has a mechanical consequence, not only an authoring-discipline one —
+a plan that violates it has the selector report "no enterable phase" and dispatch nothing,
+rather than silently advancing into the gate or past it.
 
 ## Status Marker Requirements
 - Use markers exactly as defined in status-markers.md.

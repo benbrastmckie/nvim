@@ -11,7 +11,11 @@
     "session_id": "sess_1794869398_636639_638",
     "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "plan",
+      "planner-agent"
+    ],
     "phase_count": 4,
     "estimated_hours": 4.25,
     "dependency_waves": 4
@@ -22,9 +26,19 @@
       "category": "INSIGHT",
       "source_artifact": "specs/638_orchestrate_enterable_phase_selector/plans/01_enterable-phase-selector.md",
       "confidence": 0.85,
-      "suggested_keywords": ["depends-on", "plan-format", "parser", "field-spelling", "corpus-survey", "phase-dependency"]
+      "suggested_keywords": [
+        "depends-on",
+        "plan-format",
+        "parser",
+        "field-spelling",
+        "corpus-survey",
+        "phase-dependency"
+      ]
     }
   ],
   "next_steps": "Run /orchestrate 638 to execute the plan",
-  "dispatch_seq": 2
+  "dispatch_seq": 2,
+  "proposed_file_scope": [
+    "agent-system/extensions/core/index-entries.json"
+  ]
 }

@@ -387,7 +387,7 @@ predicate rather than editing the assertion.
 
 ---
 
-### Phase 3: Record the now-machine-consumed `Depends on` contract in the authoring docs [NOT STARTED]
+### Phase 3: Record the now-machine-consumed `Depends on` contract in the authoring docs [COMPLETED]
 
 **Goal**: Update `plan-format.md` so plan authors learn that the per-phase `Depends on` field and
 the `[BLOCKED]` phase marker are now read by the H1 selector, and that the absence default is
@@ -395,19 +395,25 @@ mechanically enforced rather than merely documented.
 
 **Tasks**:
 
-- [ ] In `context/formats/plan-format.md`'s per-phase field list, extend the `**Depends on:**`
+- [x] In `context/formats/plan-format.md`'s per-phase field list, extend the `**Depends on:**`
       bullet to state that the field is now parsed by the hard-mode phase selector, that BOTH
       bold spellings are accepted, that an unparseable value falls back to the
       absence-means-all-prior default, and that the default is enforced, not advisory.
-- [ ] In the same file's "A decision gate that is already `[BLOCKED]` at plan-authoring time"
+      *(completed)*
+- [x] In the same file's "A decision gate that is already `[BLOCKED]` at plan-authoring time"
       subsection, add one sentence noting that a `[BLOCKED]` phase heading is never a dispatch
       target under hard mode, which is why that subsection's existing `Depends on: none`
       obligation (and the rule that no later phase names such a gate as a dependency) now has a
       mechanical consequence: a plan violating it reports "no enterable phase" instead of
-      advancing.
-- [ ] Do not restate the predicate's implementation in prose — cite the library by name and keep
-      the executable contract single-sourced in `phase-heading-patterns.sh`.
-- [ ] Confirm no task-number reference enters any file under `agent-system/**`.
+      advancing. *(completed; also required a hand-correction of
+      `agent-system/extensions/core/index-entries.json`'s declared `line_count` for
+      `formats/plan-format.md` (1254 -> 1269), since the prose addition tripped doc-lint's
+      Rule R line-count-accuracy check and `generate-context-line-counts.sh --write` refuses to
+      run outside a deployed tree -- see progress file deviation entry)*
+- [x] Do not restate the predicate's implementation in prose — cite the library by name and keep
+      the executable contract single-sourced in `phase-heading-patterns.sh`. *(completed)*
+- [x] Confirm no task-number reference enters any file under `agent-system/**`. *(completed:
+      check-task-references.sh agent-system/ reports 0 unexempted occurrences)*
 
 **Timing**: 0.5 hours
 
