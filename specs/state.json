@@ -97791,14 +97791,14 @@
           "summary": "Re-verifies seed figures (suite count drifted 149->195; 17-gate @extensions set and gate8 cost confirmed), rules out the gate cache as a touched-path source, and recommends a backward-compatible opt-in touched-paths input to gate8_run plus a forced-dirty cache-write guard, scoped entirely inside the task's own file_scope, with call-site wiring left as a coordinated follow-on with sibling task 585."
         },
         {
-          "path": "specs/584_gate8_covering_suite_selection/plans/02_gate8-suite-selection.md",
-          "type": "plan",
-          "summary": "5-phase plan: opt-in --gate8-touched narrowing of Gate 8, forced cache-ineligibility, regression suite, docs, redeploy + full gate."
-        },
-        {
           "path": "specs/584_gate8_covering_suite_selection/summaries/02_gate8-suite-selection-summary.md",
           "type": "summary",
           "summary": "All 5 phases complete: --gate8-touched narrowing wired into Gate 8 via suite_selection_select, forced cache-ineligibility invariant, dedicated 22-case regression suite, docs, redeploy, and the dependencies[] sequencing edge to task 585."
+        },
+        {
+          "path": "specs/584_gate8_covering_suite_selection/plans/02_gate8-suite-selection.md",
+          "type": "plan",
+          "summary": "5-phase plan, all phases [COMPLETED]: opt-in --gate8-touched narrowing of Gate 8, forced cache-ineligibility, regression suite, docs, redeploy + full gate."
         }
       ],
       "file_scope": [
@@ -97806,6 +97806,7 @@
         "agent-system/extensions/core/context/contracts/batch-gate-stage.md",
         "agent-system/extensions/core/context/standards/shell-script-testing.md",
         "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/scripts/gate-registry.data",
         "agent-system/extensions/core/scripts/lib/gate-cache-lib.sh",
         "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh",
@@ -99936,7 +99937,8 @@
         ]
       },
       "session_id": "sess_1794815389_748c3d",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Wired lib/suite-selection-lib.sh's covering-suite selector into verify-deploy.sh's Gate 8 via a new opt-in --gate8-touched input, with a forced cache-ineligibility invariant, a dedicated 22-case regression suite, documentation, a clean redeploy, and a dependencies[] edge sequencing the call-site follow-on (task 585) after this one. Found and fixed two real defects beyond the plan's own pseudocode during implementation (a bash empty-array argument-expansion bug and a default-declaration ordering bug)."
     },
     {
       "project_number": 585,
