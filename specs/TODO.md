@@ -13,8 +13,8 @@ next_project_number: 639
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,479,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,572,574,575,580,590,599,604,607,610,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,480,481,486,492,513,516,517,518,533,540,541,542,543,544,546,550,553,576,579,583,586,591,592,593,598,624,628,630 | 383,390,398,410,431,451,453,455,463,472,476,479,484,491,504,527,534,535,538,539,548,549,563,564,572,599,629 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,479,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,572,574,575,580,590,599,604,607,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,473,474,480,481,486,492,513,516,517,518,533,540,541,542,543,544,546,550,553,576,579,583,586,591,592,593,598,610,624,628,630 | 383,390,398,410,431,451,453,455,463,472,476,479,484,491,504,527,534,535,538,539,548,549,563,564,572,599,607,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,501,508,509,547,552,566,570,571,581,594,605,637 | 438,439,452,472,476,486,492,518,519,542,543,580,586,593,604,628,635,636 | core-agent-system, file-scope-lifecycle, agent-system, ... |
 | 4 | 524,561,577,588,595,638 | 501,509,539,547,552,594 | core-agent-system, agent-system |
 | 5 | 596,609 | 577,595 | agent-system |
@@ -117,8 +117,8 @@ next_project_number: 639
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
+610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 624 [NOT STARTED] — Make system-defect-record.sh able to attribute a...
 
 ### Agent System
@@ -131,7 +131,7 @@ next_project_number: 639
 512 [PLANNED] — Exempt built-in commands from the dead-command-recommendation...
 529 [NOT STARTED] — Evaluate whether formal:logic implement routing should...
 530 [NOT STARTED] — Land the three agent-system context extensions recorded by...
-534 [NOT STARTED] — postflight writes detail-free blocking issue entry on partial...
+534 [RESEARCHED] — postflight writes detail-free blocking issue entry on partial...
   └─ 543 [NOT STARTED] — Tell the re-prompted dispatch to distrust the error count it...
     └─ 547 [NOT STARTED] — Confirm the blocker-research aux carrier landed, and refuse...
       └─ 577 [NOT STARTED] — Make a blocker-triggered aux plan-revision consumable by...
@@ -774,7 +774,7 @@ ACCEPTANCE.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 476, Task 607
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -5804,10 +5804,11 @@ surface, and that rationale does not survive into this repository.
 ---
 
 ### 534. postflight writes detail-free blocking issue entry on partial returns
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
+- **Research**: [534_postflight_detail_free_blocking_partial_issue_entry/reports/01_postflight-blocking-partial-issue-entry.md]
 
 **Description**: Stop the orchestrate postflight from writing a detail-free blocking issue-log entry on every blocker-bearing partial return, and settle that entry's classification.
 

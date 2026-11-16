@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794850122_9151c5_534",
+  "dispatch_seq": 1,
+  "findings_count": 10,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/534_postflight_detail_free_blocking_partial_issue_entry/reports/01_postflight-blocking-partial-issue-entry.md",
+      "summary": "Research on the detail-free blocking issue-log entry at orchestrate-cycle-postflight.sh's partial) arm: the described raw jq join() root cause was already superseded incidentally by an unrelated task (commit 83898819a), but the fix omits verbatim_goal, still swallows jq errors via 2>/dev/null, and test fixture 830 never asserts issues.jsonl content. Settles classification: keep severity=blocking (meets the admission test exactly), replace --class \"environment\" with a new open-enum class value (no issue-log.md edit required), add identity-keyed de-duplication for repeated partial dispatches, and drop the suppress-on-user_decision idea (no mechanical \"answered\" test exists, and issues.jsonl never surfaces mid-run so there is no user-visible duplicate to suppress)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In a concurrent-batch orchestration run, an unrelated task's uncommitted edit to a shared file can be swept into a different task's commit (git-commit-scoped.sh stages/commits whatever is on disk at commit time, not just the invoking task's own changes). Confirmed instance: orchestrate-cycle-postflight.sh's partial_blockers_detail jq rendering fix landed inside commit 83898819a (\"task 304: orchestration paused (cycle 3)\"), attributed by that task's own summary to a sibling task in a declared file_scope overlap set. When auditing \"when did X get fixed\" on a frequently-touched shared script, check git log -S on the exact changed substring rather than trusting the owning task's own narrative -- the commit that introduced a fix is not necessarily the task whose summary you'd expect to describe it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/534_postflight_detail_free_blocking_partial_issue_entry/reports/01_postflight-blocking-partial-issue-entry.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-commit-scoped", "concurrent-batch", "file_scope overlap", "git log -S", "orchestrate-cycle-postflight"]
+    },
+    {
+      "content": "issue-log.md's --class field is a documented open enum: issue-record.sh accepts any value outside its 16-class seed table with only a stderr warning, never a refusal, and promoting a recurring new value into the documented seed table is explicitly \"a documentation change ... never an enforcement change in the writer.\" This means a call site with a wrong hard-coded --class default can be fixed by substituting a new, honest literal with zero edits to issue-log.md itself -- useful when a sibling/concurrent record has claimed the format document as its own file territory and a format-document edit would otherwise require a serializing dependency edge.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/534_postflight_detail_free_blocking_partial_issue_entry/reports/01_postflight-blocking-partial-issue-entry.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["issue-log", "open enum", "issue-record.sh", "class field", "file-territory collision"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 534 to create implementation plan"
+}
