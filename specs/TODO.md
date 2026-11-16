@@ -32,7 +32,7 @@ next_project_number: 638
   └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
 456 [NOT STARTED] — Exempt private npm/Cargo manifests from /tag's version gate
 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
-476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
+476 [RESEARCHING] — Make the seven untracked red Gate 8 shell suites green or...
   └─ 586 [NOT STARTED] — Stand up the suite and gate wall-clock cost consumer: delete,...
     └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
@@ -193,7 +193,7 @@ next_project_number: 638
 
 ### Uncategorized
 
-584 [PLANNED] — Wire covering-suite selection into Gate 8 so an extension...
+584 [IMPLEMENTING] — Wire covering-suite selection into Gate 8 so an extension...
 585 [PLANNED] — Make the batch-gate deferral binding and cache repeat gate...
   └─ 572 [NOT STARTED] — (agent-system: Make the full verification tier...) (see above)
 
@@ -1888,7 +1888,7 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deploy
 ---
 
 ### 584. Wire covering-suite selection into Gate 8 so an extension change runs the affected suites, not all 149
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Dependencies**: Task 505
 - **Research**: [584_gate8_covering_suite_selection/reports/02_gate8-suite-selection.md]
@@ -8368,7 +8368,7 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_d
 
 ### 476. Make the seven untracked red Gate 8 shell suites green or declared-expected
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 423, Task 445, Task 568

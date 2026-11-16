@@ -49,7 +49,7 @@
 # it stands for, so a reader can re-run any single line by hand rather than trusting this script.
 #
 # Usage:
-#   verify-deploy.sh [--quiet] [--findings] [--skip-slow] [--skip-unchanged] [--jobs N|auto] [--minimal-init DIR] [TARGET_REPO]
+#   verify-deploy.sh [--quiet] [--findings] [--skip-slow] [--skip-unchanged] [--jobs N|auto] [--gate8-touched PATH[,PATH...]] [--minimal-init DIR] [TARGET_REPO]
 #
 # TARGET_REPO placeholder (see TARGET_REPO CONTRACT above):
 #   TARGET_REPO is a repository root, not a directory to be checked -- it must already hold a
@@ -151,6 +151,29 @@
 #   exit-2 validation; Gate 8's remedy text names the variable when that happens. run-all.sh's
 #   nested-invocation guard (RUN_ALL_NESTED) still forces sequential execution when this script
 #   is itself reached from inside another run-all.sh suite, regardless of this setting.
+#
+# Gate 8 touched-paths narrowing (--gate8-touched PATH[,PATH...], additive-only, opt-in):
+#   Narrows Gate 8's OWN internal tests/run-all.sh invocation to the covering suite(s) for the
+#   given touched path(s), resolved through lib/suite-selection-lib.sh's suite_selection_select
+#   (the same selector validate-artifact.sh's Tier Justification check already trusts). This
+#   flag changes WHAT Gate 8 runs; it never changes WHICH gates run (that remains --only-gate's
+#   job), and a narrowed pass is never presented as equivalent to a full-battery pass -- see this
+#   section's own forced-dirty note below. Absent this flag, GATE8_TOUCHED is empty and
+#   gate8_run() is byte-identical to before this flag existed: nothing reads GATE8_TOUCHED on
+#   that path.
+#
+#   Resolution: the comma-separated PATH list is split and passed to suite_selection_select. A
+#   real suite set narrows the run-all.sh invocation to `--only <that set>`; the full-sweep
+#   sentinel (or an empty result) falls back to today's unnarrowed invocation, unchanged. A
+#   narrowed run, pass or fail, forces gate8 onto GATE_DIRTY_LIST so a later --skip-unchanged
+#   invocation can never skip Gate 8 on the strength of a subset pass -- the generic
+#   --skip-unchanged cache-write block computes its key from the gate's declared @extensions
+#   corpus and has no knowledge of an internal --only, so Gate 8 marks itself dirty rather than
+#   teaching that gate-agnostic block about its own internals.
+#
+#   This input is caller-supplied, never derived here (not from git, not from the gate cache,
+#   not from invocation_modified_files) -- see context/standards/shell-script-testing.md's
+#   suite-selection section for why the gate cache cannot supply a touched-path list.
 #
 # Gate-level concurrency (--jobs N|auto, additive-but-defaulted):
 #   Runs independent gates CONCURRENTLY instead of strictly in series, via
@@ -405,6 +428,17 @@ while [ $# -gt 0 ]; do
       unset _only_gate_tok _only_gate_max_id
       GATES_FILTER="$2"; shift 2
       ;;
+    --gate8-touched)
+      if [ $# -lt 2 ] || [ -z "$2" ]; then
+        echo "ERROR: --gate8-touched requires PATH[,PATH...] (a non-empty touched-path list), e.g. --gate8-touched agent-system/extensions/core/scripts/gate-registry.data" >&2
+        [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --gate8-touched requires PATH[,PATH...]"
+        exit 2
+      fi
+      # No path-existence validation here -- an unmappable or absent path is handled downstream
+      # by suite_selection_select's own fail-safe full-sweep sentinel (gate8_run() falls back to
+      # the unnarrowed invocation), never rejected at parse time.
+      GATE8_TOUCHED="$2"; shift 2
+      ;;
     --max-cost)
       if [ $# -lt 2 ] || [ -z "$2" ]; then
         echo "ERROR: --max-cost requires a class argument (free, moderate, or slow), e.g. --max-cost moderate" >&2
@@ -604,6 +638,16 @@ ORCHESTRATOR_BUDGET_GATE_MODE="${ORCHESTRATOR_BUDGET_GATE_MODE:-hard}"
 # flag. Default 'auto' resolves to nproc capped at run-all.sh's own JOBS_CAP (4); see gate 8's
 # call site below for the full precedence/rejected-alternatives record.
 GATE8_JOBS="${VERIFY_DEPLOY_GATE8_JOBS:-auto}"
+
+# GATE8_TOUCHED, parsed by --gate8-touched below, narrows Gate 8's internal run-all.sh
+# invocation to the covering suite(s) for these paths via suite_selection_select -- see this
+# file's header "Gate 8 touched-paths narrowing" section for the full contract. Empty default:
+# absent the flag, nothing reads this variable and gate8_run() is byte-identical to before this
+# flag existed. Genuinely unread in this phase (parse-only, behavior-inert by design); the
+# disable below is a deliberate, temporary marker that gate8_run() grows its reader next phase --
+# remove the disable once that reader lands.
+# shellcheck disable=SC2034
+GATE8_TOUCHED=""
 
 FAILURES=0
 CHECKS=0

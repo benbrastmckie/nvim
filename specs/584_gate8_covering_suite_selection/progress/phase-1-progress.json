@@ -1,0 +1,25 @@
+{
+  "phase": 1,
+  "phase_name": "Add the --gate8-touched input (parse and validate only)",
+  "started_at": "2026-11-16T00:00:00Z",
+  "last_updated": "2026-11-16T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read argument-parsing loop before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add GATE8_TOUCHED variable beside GATE8_JOBS", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 3, "description": "Add --gate8-touched case arm mirroring --only-gate posture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 4, "description": "Extend usage line and add header-doc section", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 5, "description": "Confirm inertness: flag absent means GATE8_TOUCHED read nowhere", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.2",
+      "description": "Add GATE8_TOUCHED variable beside GATE8_JOBS",
+      "type": "altered",
+      "reason": "shellcheck SC2034 (appears unused) fires because this phase is deliberately parse-only and inertness-confirming -- gate8_run() grows the reader in Phase 2. Added a temporary `# shellcheck disable=SC2034` with an inline note to remove it once Phase 2 adds the reader.",
+      "annotation": "*(deviation: altered -- added a temporary shellcheck disable=SC2034, to be removed in Phase 2 once gate8_run() reads GATE8_TOUCHED)*"
+    }
+  ]
+}

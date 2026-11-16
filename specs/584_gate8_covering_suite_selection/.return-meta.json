@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/584_gate8_covering_suite_selection/plans/02_gate8-suite-selection.md",
-      "summary": "5-phase plan wiring suite_selection_select into Gate 8 via an opt-in --gate8-touched input, with a forced cache-ineligibility guard, a dedicated regression suite, docs, and a redeploy + full gate close-out."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 20,
   "metadata": {
-    "session_id": "sess_1794815389_748c3d_584",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 5.5,
-    "dependency_waves": [[1], [2], [3, 4], [5]]
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /orchestrate 584 to execute the plan",
-  "dispatch_seq": 18
+    "session_id": "sess_1794815389_748c3d",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

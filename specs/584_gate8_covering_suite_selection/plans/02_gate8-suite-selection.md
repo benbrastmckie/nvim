@@ -1,7 +1,7 @@
 # Implementation Plan: Task #584
 
 - **Task**: 584 - Wire covering-suite selection into Gate 8 so an extension change runs the affected suites, not all 195
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: Task 505 (completed - per-extension source-store resolution in the selector)
 - **Research Inputs**: specs/584_gate8_covering_suite_selection/reports/01_gate8-suite-selection.md, specs/584_gate8_covering_suite_selection/reports/02_gate8-suite-selection.md
@@ -137,25 +137,28 @@ modified by this plan.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add the `--gate8-touched` input (parse and validate only) [NOT STARTED]
+### Phase 1: Add the `--gate8-touched` input (parse and validate only) [COMPLETED]
 
 **Goal**: `verify-deploy.sh` accepts and validates `--gate8-touched PATH[,PATH...]`, storing it in
 a single variable that nothing yet reads - a parse-only, behavior-inert change.
 
 **Tasks**:
-- [ ] Re-read `verify-deploy.sh`'s argument-parsing `while`/`case` loop immediately before editing
-      (a sibling task may have touched the file this cycle).
-- [ ] Add a `GATE8_TOUCHED` variable beside the existing `GATE8_JOBS` declaration, defaulting to
+- [x] Re-read `verify-deploy.sh`'s argument-parsing `while`/`case` loop immediately before editing
+      (a sibling task may have touched the file this cycle). *(completed)*
+- [x] Add a `GATE8_TOUCHED` variable beside the existing `GATE8_JOBS` declaration, defaulting to
       empty, and document it in the same block that documents `VERIFY_DEPLOY_GATE8_JOBS`.
-- [ ] Add a `--gate8-touched)` case arm: a missing or empty value exits 2 with a named error (and,
+      *(deviation: altered -- added a temporary `# shellcheck disable=SC2034`, to be removed in
+      Phase 2 once gate8_run() reads GATE8_TOUCHED)*
+- [x] Add a `--gate8-touched)` case arm: a missing or empty value exits 2 with a named error (and,
       under `--findings`, a `FINDING gate0` line), mirroring `--only-gate`'s own invalid-argument
       posture exactly. Accept a comma-separated list; do not validate path existence here (the
-      selector's own fail-safe sentinel handles an unmappable or absent path).
-- [ ] Extend the file's usage line and add a header-doc section for the flag, stating: opt-in,
+      selector's own fail-safe sentinel handles an unmappable or absent path). *(completed)*
+- [x] Extend the file's usage line and add a header-doc section for the flag, stating: opt-in,
       defaults off, byte-identical output when absent, and that it narrows only Gate 8's internal
-      `run-all.sh` invocation - never which gates run.
-- [ ] Confirm the inertness claim: with the flag absent, `GATE8_TOUCHED` is read nowhere, so no
-      gate's behavior changes in this phase.
+      `run-all.sh` invocation - never which gates run. *(completed)*
+- [x] Confirm the inertness claim: with the flag absent, `GATE8_TOUCHED` is read nowhere, so no
+      gate's behavior changes in this phase. *(completed: confirmed via smoke test -- flag parsed
+      with a value and run proceeds byte-identically, exit 0)*
 
 **Timing**: 0.5 hours
 
