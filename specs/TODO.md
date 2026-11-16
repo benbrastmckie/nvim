@@ -120,7 +120,7 @@ next_project_number: 638
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-634 [NOT STARTED] — Run the end-of-orchestration roadmap regenerate mechanically,...
+634 [RESEARCHED] — Run the end-of-orchestration roadmap regenerate mechanically,...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 624 [NOT STARTED] — Make system-defect-record.sh able to attribute a...
 
@@ -164,7 +164,7 @@ next_project_number: 638
 558 [NOT STARTED] — Require task descriptions to request a proposal packet...
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
-562 [NOT STARTED] — conclusion stage drops null-resolution issue-log entries
+562 [RESEARCHING] — conclusion stage drops null-resolution issue-log entries
 599 [NOT STARTED] — Give the batch-gate-deferral directive a narrowing form that...
   └─ 592 [NOT STARTED] — Re-verify or timestamp a task recorded starting position at...
   └─ 593 [NOT STARTED] — Require pinned Lean Challenge signatures to be measured at...
@@ -251,10 +251,11 @@ GOAL. (1) Decide and implement where the wrapup write is mechanically anchored: 
 ---
 
 ### 634. Run the end-of-orchestration roadmap regenerate mechanically, for any batch size
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
+- **Research**: [634_mechanize_orchestrate_conclusion_roadmap_regenerate/reports/01_mechanize-conclusion-roadmap-regenerate.md]
 
 **Description**: Make /orchestrate's end-of-run roadmap regeneration mechanical so it fires at the end of every orchestration, whatever the batch size, instead of depending on the lead remembering a prose-only final stage.
 
@@ -794,7 +795,7 @@ DUPLICATE CHECK PERFORMED. audit-task-proposals.sh surfaced 454 (semantic_score 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 577
+- **Dependencies**: Task 534, Task 543, Task 547, Task 577
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -1184,7 +1185,7 @@ record's subject," and that ruling stands independently of its status.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 595, Task 597, Task 599
+- **Dependencies**: Task 593, Task 594, Task 595, Task 597, Task 599
 
 **Description**: Agent-system change request from the /orchestrate conclusion stage (channel b), approved by the user.
 
@@ -1310,7 +1311,7 @@ not be carried across.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 539, Task 594, Task 597, Task 599
+- **Dependencies**: Task 539, Task 593, Task 594, Task 597, Task 599
 
 **Description**: Agent-system change request from the /orchestrate conclusion stage (channel b), approved by the user.
 
@@ -2248,7 +2249,7 @@ VERIFY, bearing in mind this is a pure-guidance markdown change with no executab
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 547
+- **Dependencies**: Task 543, Task 547
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -2841,7 +2842,7 @@ EVIDENCE CITATION: recorded during task 369's plan phase as issue-log entry iss_
 ---
 
 ### 562. conclusion stage drops null-resolution issue-log entries
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 313

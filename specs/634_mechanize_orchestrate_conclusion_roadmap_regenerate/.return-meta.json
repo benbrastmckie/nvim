@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794798170_26e756_634",
+  "dispatch_seq": 1,
+  "findings_count": 8,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/reports/01_mechanize-conclusion-roadmap-regenerate.md",
+      "summary": "Root-caused the skipped Move 5: the batch-results template already requires Move 5 to finish before the combined report is emitted, but SKILL.md's Move 4 text emits early. Recommends extracting Step 5 (roadmap regenerate) into one new script wired unconditionally into Move 4's existing finalize sequence (same site as orchestrate-batch-gate.sh), reordering the consolidated-output emission to after Move 5's Step 6 as the primary Move-5 backstop, and a Stop-hook block (modeled on hooks/subagent-postflight.sh) as secondary defense-in-depth; identifies all reusable script primitives and test-harness shape to reuse, and flags concurrent file-scope overlap with task 562."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this repo's /orchestrate engine, orchestrate-batch-results-template.md's own ### Conclusion section documentation already states the combined report is rendered once per invocation, after Move 5, and placed last -- i.e. the design already requires Move 5 to complete before any output is shown. A lead treating Move 4's partial render as a terminal report (skipping Move 5) is a SKILL.md sequencing defect (an early 'emit' instruction), not a missing mechanism. When auditing a skipped later stage, check whether an earlier stage's own documented contract already forbids emitting its output before the later stage runs.",
+      "category": "PATTERN",
+      "source_artifact": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/reports/01_mechanize-conclusion-roadmap-regenerate.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrate", "move-5", "conclusion-stage", "consolidated-output", "sequencing"]
+    },
+    {
+      "content": "hooks/subagent-postflight.sh is this repo's working precedent for a Stop-hook that blocks premature termination: it reads hook stdin for session_id, correlates against a per-task marker's cc_session_id, and on match returns {\"decision\":\"block\",\"reason\":...} with a loop-guard counter (MAX_CONTINUATIONS) to avoid infinite re-blocking and a stop_hook_active escape to prevent hooks calling hooks. Reusable shape for any future 'force continuation until X happened' backstop, translated to the plain Stop event for top-level (non-subagent) direct-execution skills like /orchestrate.",
+      "category": "PATTERN",
+      "source_artifact": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/reports/01_mechanize-conclusion-roadmap-regenerate.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["stop-hook", "block-decision", "loop-guard", "subagent-postflight", "backstop"]
+    },
+    {
+      "content": "roadmap-integration.sh --regenerate is idempotent and signals this on stderr via a named OUTCOME: line: 'OUTCOME: --regenerate rewrote ...' on an actual change vs 'OUTCOME: --regenerate left ... unchanged (... no content change)' on a no-op. Tests asserting idempotency should grep this OUTCOME: line rather than diffing the file by hand.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/634_mechanize_orchestrate_conclusion_roadmap_regenerate/reports/01_mechanize-conclusion-roadmap-regenerate.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["roadmap-integration.sh", "idempotent", "OUTCOME-line", "regenerate", "test-design"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 634 to create implementation plan"
+}
