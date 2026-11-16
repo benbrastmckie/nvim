@@ -13,10 +13,10 @@ next_project_number: 638
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,452,453,455,456,463,472,473,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,457,462,474,476,480,481,486,492,509,513,516,517,518,533,540,541,542,543,544,546,550,553,564,566,572,576,583,584,592,593,598,628,630 | 383,390,398,410,431,451,452,453,455,463,472,479,484,491,504,505,527,534,535,538,539,548,549,563,568,585,599,629 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,501,508,547,552,570,571,579,581,586,588,591,594,624,637 | 438,439,472,476,486,492,509,518,519,542,543,564,572,580,593,628,635,636 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
-| 4 | 524,561,577,595,605 | 501,539,547,552,586,594,604 | core-agent-system, agent-system |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,479,484,491,498,502,503,504,505,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,534,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,565,567,568,574,575,580,585,590,599,604,607,610,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,473,474,476,480,481,486,492,513,516,517,518,533,540,541,542,543,544,546,550,553,564,572,576,583,584,592,593,598,628,630 | 383,390,398,410,431,451,453,455,463,472,479,484,491,504,505,527,534,535,538,539,548,549,563,568,585,599,629 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,501,508,509,547,552,566,570,571,579,581,586,591,594,624,637 | 438,439,452,472,476,486,492,518,519,542,543,564,572,580,593,628,635,636 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 4 | 524,561,577,588,595,605 | 501,509,539,547,552,586,594,604 | core-agent-system, agent-system |
 | 5 | 596,609 | 577,595 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -30,10 +30,7 @@ next_project_number: 638
   └─ 439 [NOT STARTED] — Rule on the propagation model for the bounded-wait agent contract
     └─ 454 [NOT STARTED] — State the result-needed-this-turn criterion for choosing the...
   └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
-452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
-  └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
 456 [NOT STARTED] — Exempt private npm/Cargo manifests from /tag's version gate
-473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
   └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
@@ -65,6 +62,9 @@ next_project_number: 638
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — GOAL. Determine what leaves files behind in this repository's...
+452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
+  └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
+473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 476 [NOT STARTED] — Make the seven untracked red Gate 8 shell suites green or...
   └─ 586 [NOT STARTED] — Stand up the suite and gate wall-clock cost consumer: delete,...
     └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite... (see above)
@@ -8559,7 +8559,7 @@ CONCURRENT TERRITORY NOTE: agent-frontmatter-standard.md is claimed by at least 
 - **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 472
 - **Parent**: Task 468
 
 **Description**: Strip record-versioning language from the boundary-owned architecture docs that task 468's plan declared out of scope.
@@ -9390,7 +9390,7 @@ DUPLICATE CHECK PERFORMED. No open task names literature-briefing.sh. 404 (compl
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 328, Task 360, Task 385, Task 435, Task 446, Task 448
+- **Dependencies**: Task 328, Task 360, Task 385, Task 435, Task 446, Task 448, Task 451
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (primarily) and agent-system/extensions/lean/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

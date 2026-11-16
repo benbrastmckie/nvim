@@ -24904,7 +24904,8 @@
         385,
         435,
         446,
-        448
+        448,
+        451
       ],
       "file_scope": [
         "agent-system/extensions/core/context/formats/plan-format.md",
@@ -26597,7 +26598,9 @@
       "effort": "medium",
       "parent_task": 468,
       "topic": "core-agent-system",
-      "dependencies": [],
+      "dependencies": [
+        472
+      ],
       "file_scope": [
         "agent-system/extensions/core/docs/architecture/batch-admit-schema.md",
         "agent-system/extensions/core/docs/architecture/extension-system.md",
