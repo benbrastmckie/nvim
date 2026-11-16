@@ -6342,6 +6342,75 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 38: post-triage override -- withhold implement readmission while a blocker-research
+# obligation is outstanding. Built on today's exact discharge-eligible shape (status `blocked`,
+# `previous_status` `implementing`, every dependencies[] entry `completed`, no handoff blockers),
+# which the live classifier routes to `implement` via its own blocked-discharge arm. A seeded
+# aux_pending[t].kind == "blocker-research" must override that verdict to `needs_human`; the same
+# fixture with no aux_pending entry must still discharge to `implement` unchanged (negative
+# control, pins that the override is narrow). LIVE fixtures throughout (never --dry-run): per
+# Group 10's own documented design, --dry-run never reads aux_pending back from a pre-seeded
+# mt_state_file (the --dry-run decision pass only ever consults on-disk task-directory files), so
+# a --dry-run invocation here would never see the seeded obligation at all.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Group 38: post-triage override withholds implement while a blocker-research obligation is outstanding"
+
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 9400, "project_name": "g38_dep", "task_type": "general", "status": "completed", "description": "completed dependency for the discharge fixture", "dependencies": [], "file_scope": []},
+    {"project_number": 9401, "project_name": "g38_override", "task_type": "general", "status": "blocked", "previous_status": "implementing", "description": "discharge-eligible blocked candidate with an outstanding blocker-research obligation", "dependencies": [9400], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/9401_g38_override"
+mkdir -p "$WORKDIR/specs/9401_g38_override"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g38a.json"
+jq -n --arg t "9401" '{aux_pending: {($t): {kind: "blocker-research", blocker_desc: "widget X is missing"}}}' \
+  > "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g38a.json"
+run_sut --session g38a -- 9401
+if [ "$(jqf '.blocked | map(select(.task == 9401)) | length')" = "1" ] && \
+   [ "$(jqf '.dispatch | map(select(.task == 9401)) | length')" = "0" ]; then
+  common_test_pass "Group 38: a discharge-eligible blocked candidate with an outstanding blocker-research obligation routes to needs_human, not implement"
+else
+  common_test_fail "Group 38: discharge-eligible candidate #9401 was not withheld from implement (stdout: $LAST_STDOUT)"
+fi
+g38_reason=$(jqf '.blocked | map(select(.task == 9401)) | .[0].reason // ""')
+if [[ "$g38_reason" == *"blocker-research"* ]]; then
+  common_test_pass "Group 38: the blocked[] reason names the outstanding blocker-research obligation"
+else
+  common_test_fail "Group 38: the blocked[] reason does not name the outstanding obligation (got: '$g38_reason')"
+fi
+
+# Negative control: the identical fixture shape, but with NO aux_pending entry -- still discharges
+# to implement, both before and after the override lands. Pins that the override is narrow.
+write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 9400, "project_name": "g38_dep", "task_type": "general", "status": "completed", "description": "completed dependency for the discharge fixture", "dependencies": [], "file_scope": []},
+    {"project_number": 9402, "project_name": "g38_negative", "task_type": "general", "status": "blocked", "previous_status": "implementing", "description": "discharge-eligible blocked candidate with NO outstanding obligation", "dependencies": [9400], "file_scope": []}
+  ]
+}
+EOF
+reset_lock_dirs
+rm -rf "$WORKDIR/specs/9402_g38_negative"
+mkdir -p "$WORKDIR/specs/9402_g38_negative"
+rm -f "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-g38b.json"
+run_sut --session g38b -- 9402
+if [ "$(jqf '.dispatch | map(select(.task == 9402)) | length')" = "1" ] && \
+   [ "$(jqf '.dispatch | map(select(.task == 9402)) | .[0].phase')" = "implement" ]; then
+  common_test_pass "Group 38 (negative control): the same discharge-eligible shape with NO aux_pending entry still discharges to implement"
+else
+  common_test_fail "Group 38 (negative control): candidate #9402 did not discharge to implement with no aux_pending entry (stdout: $LAST_STDOUT)"
+fi
+if [ "$(jqf '.blocked | map(select(.task == 9402)) | length')" = "0" ]; then
+  common_test_pass "Group 38 (negative control): candidate #9402 is absent from blocked[] with no aux_pending entry"
+else
+  common_test_fail "Group 38 (negative control): candidate #9402 unexpectedly landed in blocked[] with no aux_pending entry (stdout: $LAST_STDOUT)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [ "$FAILED" -eq 0 ]; then

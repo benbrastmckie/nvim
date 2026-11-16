@@ -1854,6 +1854,31 @@ else
   done <<< "$triage_ndjson"
 fi
 
+# ── Post-triage override: withhold implement readmission while a blocker-research obligation is
+# outstanding. A candidate that either engine above routed to `implement` -- including
+# orchestrate-triage-classify.sh's own `blocked`-discharge arm, which readmits a discharged
+# `blocked` candidate by its previous_status -- is overridden back to `needs_human` while
+# aux_pending[t].kind == "blocker-research" is still set: the confirm-then-clear obligation from a
+# blocker-research aux round that has not yet been confirmed by a parseable carrier or capped out.
+# This override lives HERE, in this post-triage seam, rather than inside
+# orchestrate-triage-classify.sh or its own blocked-discharge arm, because that script reads only
+# specs/state.json and a candidate's own .orchestrator-handoff.json per its own header and never
+# opens the per-invocation multi-task state file where aux_pending lives. Placing it here also
+# applies it identically to whichever engine (live classifier or the degraded fallback table
+# above) produced the base verdict, so NEITHER routing table itself is changed and the two stay in
+# agreement (the Group 13 parity fixture is unaffected). An explicit forcing-flag override (the
+# force_phases consumption step immediately below) still admits one dispatch regardless of this
+# override, because the forced branch never consults triage_group[$t] at all.
+for t in "${eligible_tasks[@]}"; do
+  if [ "${triage_group[$t]:-}" = "implement" ]; then
+    aux_obligation_kind=$(mt_get --arg t "$t" '.aux_pending[$t].kind // ""')
+    if [ "$aux_obligation_kind" = "blocker-research" ]; then
+      triage_group[$t]="needs_human"
+      triage_reason[$t]="withholding implement dispatch for task #$t: an unconfirmed blocker-research obligation is outstanding (aux_pending[$t].kind == blocker-research) -- a plan revision is owed before this task is implement-eligible again"
+    fi
+  fi
+done
+
 # ── (f) Per-task force_phases consumption ────────────────────────────────────────────────────────
 # Lazily seed force_phases_remaining for any task first seen this invocation, from the CLI's
 # uniform --force-phases value (canonicalized above). Idempotent: a task already carrying a
