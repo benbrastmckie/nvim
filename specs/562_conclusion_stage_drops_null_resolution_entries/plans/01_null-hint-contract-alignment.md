@@ -232,15 +232,16 @@ than asserted.
 
 ---
 
-### Phase 2: Record the settled disposition as a durable note under the task [NOT STARTED]
+### Phase 2: Record the settled disposition as a durable note under the task [COMPLETED]
 
 **Goal**: this record carries, in its own durable artifacts, the settled disposition of the
 duplicate-transplant obligation — so the next reader does not have to re-derive why the record was
 neither abandoned nor folded into its duplicate.
 
 **Tasks**:
-- [ ] Create `specs/562_conclusion_stage_drops_null_resolution_entries/records/` if absent.
-- [ ] Write `records/01_settled-disposition.md` stating, in order: that the `resolution`-field
+- [x] Create `specs/562_conclusion_stage_drops_null_resolution_entries/records/` if absent.
+      *(completed)*
+- [x] Write `records/01_settled-disposition.md` stating, in order: that the `resolution`-field
       defect is fixed, live, and verified byte-identical between the core source store and the
       deployed mirror; that transplant item (i) is discharged by an independent second
       reproduction, with the re-derived counts from the live fixture and the `costly`-severity
@@ -249,13 +250,15 @@ neither abandoned nor folded into its duplicate.
       landed in Phase 1 rather than discarded; that the absorbing duplicate record is terminal and
       therefore unamendable, naming the governing rule in `cross-repo-task-migration.md`'s
       duplicate-transplant section; and that under that rule's fail-safe this record is not
-      abandoned.
-- [ ] State in that note that the record's own description still carries a stale
+      abandoned. *(completed)*
+- [x] State in that note that the record's own description still carries a stale
       disposition-pending block and that this note supersedes it, so a reader who encounters the
-      description first is directed here.
-- [ ] Do not edit `.dispatch/4.md` or any other dispatch sidecar; the note is the carrier.
-- [ ] Verify the note cites durable anchors only — file names, section headings, field names — and
+      description first is directed here. *(completed)*
+- [x] Do not edit `.dispatch/4.md` or any other dispatch sidecar; the note is the carrier.
+      *(completed: no dispatch sidecar edited)*
+- [x] Verify the note cites durable anchors only — file names, section headings, field names — and
       names no identifier from a foreign repository's task space as if it resolved here.
+      *(completed: grep confirms no #373/#390/#481/753 references in the note)*
 
 **Timing**: 0.25 hours
 

@@ -1,0 +1,14 @@
+{
+  "phase": 2,
+  "phase_name": "Record the settled disposition as a durable note under the task",
+  "started_at": "2026-11-16T03:28:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create records/ directory", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Write records/01_settled-disposition.md with the full settled disposition", "status": "done", "files_touched": ["specs/562_conclusion_stage_drops_null_resolution_entries/records/01_settled-disposition.md"]},
+    {"id": 3, "description": "Verify note cites durable anchors only, no foreign-repo identifiers treated as resolving here", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "last_updated": "2026-11-16T03:32:00Z",
+  "approaches_tried": [],
+  "handoff_count": 0
+}
