@@ -105,7 +105,7 @@
     },
     {
       "path": "project/lean4/patterns/dependency-tracing.md",
-      "line_count": 237,
+      "line_count": 242,
       "load_when": {
         "agents": [
           "lean-implementation-agent"
