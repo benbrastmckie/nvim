@@ -1,0 +1,33 @@
+{
+  "phase": 6,
+  "phase_name": "Deploy, full gate set, and close",
+  "started_at": "2026-11-16T08:20:00Z",
+  "last_updated": "2026-11-16T09:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read touched files, confirm no foreign uncommitted modification, stage only own paths", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run scoped gate discharge per Batch Gate Deferral directive + run-all.sh", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm deployed tree carries script/hook/suites/settings/manifest", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Exercise the real deployed path end to end (--dry-run probe)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Commit with scoped-staging flow", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.2",
+      "description": "Run `bash agent-system/deploy-headless.sh`",
+      "type": "altered",
+      "reason": "That literal path does not exist in this repository; the actual source-store entry point is agent-system/extensions/core/scripts/deploy-headless.sh, used throughout this dispatch (first noted in the Phase 1 handoff).",
+      "annotation": "*(deviation: altered -- the literal path does not exist; the correct source-store entry point is agent-system/extensions/core/scripts/deploy-headless.sh)*"
+    },
+    {
+      "task_id": "6.3",
+      "description": "Run the complete gate set: verify-deploy.sh (all 29 registered gates) and tests/run-all.sh",
+      "type": "altered",
+      "reason": "This dispatch's own Batch Gate Deferral directive names this phase as the plan's final full-tiered phase and requires discharging against a SCOPED narrowing invocation instead of independently running the complete gate set, which the once-per-invocation batch-level stage runs separately.",
+      "annotation": "*(deviation: altered -- discharged via verify-deploy.sh --only-gate 2,3,4,5,8,9,11,14,17,18,20,21,22,27,29 per the dispatch's own Batch Gate Deferral directive)*"
+    }
+  ]
+}
