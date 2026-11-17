@@ -2,13 +2,28 @@
   "phase": 5,
   "phase_name": "Sapience Domain Docs State the Wired Design",
   "started_at": "2026-11-17T14:10:00Z",
-  "last_updated": "2026-11-17T14:20:00Z",
+  "last_updated": "2026-11-17T14:40:00Z",
   "objectives": [
     {"id": 1, "description": "Rewrite EXTENSION.md's Postflight wrapup and What this extension adds paragraphs to state the mechanical design", "status": "done", "files_touched": ["agent-system/extensions/sapience/EXTENSION.md"]},
-    {"id": 2, "description": "Rewrite per-repo-scoping.md's Tagged-Write Call Site and No Lifecycle Hook sections; check Hazards census and sapience-write-path.md's 14-file count", "status": "not_started", "files_touched": []}
+    {"id": 2, "description": "Rewrite per-repo-scoping.md's Tagged-Write Call Site and No Lifecycle Hook sections; check Hazards census and sapience-write-path.md's 14-file count", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]}
   ],
   "current_objective": 2,
   "approaches_tried": [],
   "handoff_count": 0,
-  "deviations": []
+  "deviations": [
+    {
+      "task_id": "5.3",
+      "description": "Hazards section permanent/unreviewed-write census check",
+      "type": "none",
+      "reason": "Confirmed accurate as-is: the new postflight-sapience-notes.sh site does not add a write path, it mechanizes the existing sapience-remember.sh one, so the census count is unchanged. No edit made.",
+      "annotation": null
+    },
+    {
+      "task_id": "5.4",
+      "description": "rules/sapience-write-path.md's '14 files under the source store path' governed-surface count check",
+      "type": "none",
+      "reason": "Found the actual current count does not match 14 under either a .md-only (10) or all-files (24) reading, and this predates this task's own 2 new .sh files (which are mechanism, not prose, and arguably outside the population the rule actually governs). Left unedited: sapience-write-path.md is outside this task's declared file_scope and the plan's own instruction was check-and-report, not fix. Recorded via issue-record.sh (class: design-record defect or ambiguity) for separate triage.",
+      "annotation": null
+    }
+  ]
 }

@@ -77,24 +77,42 @@ call at that one site.
 
 ## The Tagged-Write Call Site
 
-`sapience-remember.sh` is called from `EXTENSION.md`'s postflight wrapup instruction, at the
-`[IMPLEMENTING]` -> `[COMPLETED]` transition, **replacing** the untagged `sapience_wrapup` MCP
-call rather than keeping both (D3, below). The call-site contract:
+`sapience-remember.sh` is called by `scripts/postflight-sapience-notes.sh`, a mechanical write
+site invoked directly from **three** invocation points across two core scripts, rather than
+from instruction-level postflight wrapup text: `orchestrate-cycle-postflight.sh`'s terminal
+`implemented)` case (the live `/orchestrate` completion path), and `reconcile-task-status.sh`'s
+`implementing)` and `partial)` promotion arms (the deferred completion path — a deploy-gate exit
+refusal later settled by that script, which bypasses the live path's own propagation helpers
+entirely). Each invocation point is guarded on `postflight-sapience-notes.sh`'s own presence and
+is non-fatal. This **replaces** the untagged `sapience_wrapup` MCP call rather than keeping both
+(D3, below). The write script reads the completing implementation agent's own 3-8-note
+`sapience_notes` array from `.return-meta.json` (see
+`context/formats/return-metadata-file.md`'s `### sapience_notes (optional)` section) and issues
+one `sapience-remember.sh` call per honored note. The call-site contract:
 
-- **Bound**: 3-8 notes per completed task, one `sapience-remember.sh` call per note. The script
-  itself deliberately does not enforce this bound (it is a general-purpose write primitive with
-  other future callers); the call site is the only place it is enforced, and it is load-bearing
-  there because every write is both permanent (no delete API) and unreviewed (bypasses the
+- **Bound**: 3-8 notes per completed task. The ceiling (8) is **mechanical**: a pre-write
+  `jq length` check in `postflight-sapience-notes.sh`, performed once before any write is
+  issued — never a running counter — slicing to the first 8 and recording a `tooling bug or gap`
+  issue row on an excess. The floor (3) is **agent-side guidance only**: there is no content to
+  fabricate when an agent has nothing durable to report, so the write script's only lower-end
+  action is recording a visible `knowledge-capture gap` issue row when the array is empty,
+  rather than silently writing nothing. `sapience-remember.sh` itself deliberately does not
+  enforce either half of this bound (it is a general-purpose write primitive with other future
+  callers); the write site is the one place it is enforced, and it is load-bearing there because
+  every write is both permanent (no delete API) and unreviewed (bypasses the
   `auto_approve: false` review gate — see Hazards below).
 - **Dry-run before real write**: `sapience-remember.sh --subject S --value V --dry-run` exits 0
   and prints the request body (provenance carrying `[repo:<slug>]`, token redacted) without
-  making a network call. Verify the dry-run output before the first real rollout, and after any
-  change to the call site, rather than discovering a defect from a landed, permanent write.
+  making a network call; `postflight-sapience-notes.sh --dry-run` propagates `--dry-run` into
+  every per-note call it issues. Verify the dry-run output before the first real rollout, and
+  after any change to the call site, rather than discovering a defect from a landed, permanent
+  write.
 - **Degrade rule**: a failed `sapience-remember.sh` call (non-zero exit, a `gated >= 1` or
-  non-empty `set_aside` response, or `written: 0`) is logged and stepped over — it never fails
-  the postflight step, never blocks the `[IMPLEMENTING]` -> `[COMPLETED]` status transition, and
-  never retries automatically (a retry of a write that failed the noise gate is not expected to
-  succeed differently).
+  non-empty `set_aside` response, or `written: 0`) is mirrored by `postflight-sapience-notes.sh`
+  as one `infrastructure/transport unavailable` issue row per failed note, and the loop
+  continues to the remaining notes — it never fails the postflight step, never blocks the
+  `[IMPLEMENTING]` -> `[COMPLETED]` status transition, and never retries automatically (a retry
+  of a write that failed the noise gate is not expected to succeed differently).
 
 ## No Lifecycle Hook
 
@@ -103,7 +121,8 @@ A `hooks.postflight` manifest entry was considered and rejected: `skill-base.sh`
 "$ext_task_type" = "$task_type" ]`, and this extension declares no `task_type` at all (it is
 deliberately typeless, applying to every task regardless of domain), so the hook path fails the
 `-n` test unconditionally and silently — it can never fire. This is not a gap to close; it is why
-the call site lives in the instruction-level postflight wrapup text instead.
+the write site instead lives in a script the core completion paths invoke directly, sidestepping
+extension-hook dispatch entirely rather than depending on it.
 
 ## D3: Why Replace, Not Both
 

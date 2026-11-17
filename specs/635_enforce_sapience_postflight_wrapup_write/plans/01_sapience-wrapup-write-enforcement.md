@@ -499,32 +499,32 @@ so a reader is not told the write depends on following an instruction.
 - [x] Add `scripts/postflight-sapience-notes.sh` to EXTENSION.md's **What this extension adds**
       paragraph (lines 15-20), which currently names two deployed scripts; it becomes three.
       Update that paragraph's own count wording accordingly. *(completed)*
-- [ ] Rewrite `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`'s
+- [x] Rewrite `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`'s
       `## The Tagged-Write Call Site` section (line 78) to name
       `scripts/postflight-sapience-notes.sh` and its three invocation points across
       `orchestrate-cycle-postflight.sh` and `reconcile-task-status.sh`'s two promotion arms,
       instead of "`EXTENSION.md`'s postflight wrapup instruction". Keep all three bullets of the
       call-site contract (Bound, Dry-run before real write, Degrade rule) and extend the Bound
       bullet to state which half of 3-8 is mechanical (the ceiling, as a pre-write length check)
-      and which is agent-side guidance (the floor, with the zero case recorded as a visible gap).
-- [ ] Add one sentence to that file's `## No Lifecycle Hook` section (line 99) noting that the
+      and which is agent-side guidance (the floor, with the zero case recorded as a visible gap). *(completed)*
+- [x] Add one sentence to that file's `## No Lifecycle Hook` section (line 99) noting that the
       write site sidesteps the `hooks.postflight` gating entirely by living in a script the core
       completion paths invoke directly, rather than depending on extension-hook dispatch. Leave
       the section's `skill_get_extension_dir()` reasoning substantively unchanged — it is still
       correct, and its final sentence ("it is why the call site lives in the instruction-level
       postflight wrapup text instead") is the one clause that needs updating to point at the new
-      site.
-- [ ] Update `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`'s
+      site. *(completed)*
+- [x] Update `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`'s
       Hazards section only if its permanent/unreviewed-write census is now inaccurate — the new
       site does not add a write path, it mechanizes the existing one, so the census count should
-      be unchanged. Confirm by reading it; report either way.
-- [ ] Verify compliance with `rules/sapience-write-path.md`: the new prose must name
+      be unchanged. Confirm by reading it; report either way. *(completed)*
+- [x] Verify compliance with `rules/sapience-write-path.md`: the new prose must name
       `scripts/sapience-remember.sh` (via `postflight-sapience-notes.sh`) as the only prescribed
       write path and must not name any MCP write tool as a path a write should take. The inherited
       3-8 bound is the same bound, not a second independently-sized one — state that explicitly.
       That rule also states its governed surface is "14 files under the source store path"; this
-      phase adds files under that path, so check whether that count needs updating and report it.
-- [ ] No task numbers, no record-versioning language in either file.
+      phase adds files under that path, so check whether that count needs updating and report it. *(completed)*
+- [x] No task numbers, no record-versioning language in either file. *(completed)*
 
 **Timing**: 0.75 hours
 
