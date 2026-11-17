@@ -872,7 +872,7 @@ reusable-pattern framing:
 - A decision made during this task and its rationale
 - A measured fact about an external system (a tool's actual behavior, a service's actual
   response shape, a library's actual API surface)
-- A correction to a previously-held belief this task's work disproved
+- A correction to an assumption this task's work disproved
 - A non-obvious constraint discovered during the work
 
 **What NOT to capture**:
