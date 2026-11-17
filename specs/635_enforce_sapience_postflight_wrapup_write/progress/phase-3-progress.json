@@ -11,5 +11,13 @@
   "current_objective": 3,
   "approaches_tried": [],
   "handoff_count": 0,
-  "deviations": []
+  "deviations": [
+    {
+      "task_id": "3-verification",
+      "description": "Phase 3's scoped suite list (Tier Justification --only list) surfaced test-deploy-baseline-lib.sh as a failing suite (3 cases)",
+      "type": "none",
+      "reason": "Confirmed pre-existing and unrelated to this task via git log (zero commits by this task touch test-deploy-baseline-lib.sh, deploy-baseline-lib.sh, or verify-deploy.sh) and by failure-mode analysis (gate-selection cache-corruption handling, structurally unrelated to issue-record.sh classes or the sapience postflight scripts this task edits). Recorded via issue-record.sh (class: gate collision) for separate triage; not fixed, out of declared file_scope.",
+      "annotation": null
+    }
+  ]
 }

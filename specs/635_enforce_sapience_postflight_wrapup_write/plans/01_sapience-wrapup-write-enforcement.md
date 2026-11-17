@@ -320,7 +320,7 @@ classification row, report it rather than silently adding a runner change to thi
 
 ---
 
-### Phase 3: Wire the Three Completion Invocation Points [IN PROGRESS]
+### Phase 3: Wire the Three Completion Invocation Points [COMPLETED]
 
 **Goal**: Make the write fire on both the live and the deferred completion paths, each site
 guarded on the extension's presence and each non-fatal.
