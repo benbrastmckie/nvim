@@ -470,9 +470,9 @@ fi
 # direct function calls). A stale, absent, unreadable, or ambiguous cache must degrade to a full
 # run, never a false pass. Driven against an ISOLATED scratch target (its own specs/.gate-cache/,
 # never the live repo's) with a symlinked agent-system/ so gate_cache_implementation_digest can
-# resolve verify-deploy.sh/gate-registry.data/scripts/lib -- gate 1 ("Event-store and error-store
-# files") is used throughout: cheap, free-cost, and its corpus is nine literal paths easy to
-# stand up in a scratch .claude/ tree.
+# resolve verify-deploy.sh/gate-registry.data/scripts/lib -- gate 1 ("Event-store files") is used
+# throughout: cheap, free-cost, and its corpus is six literal paths easy to stand up in a
+# scratch .claude/ tree.
 VERIFY_DEPLOY_REAL="$CORE_DIR/verify-deploy.sh"
 if [ -f "$VERIFY_DEPLOY_REAL" ]; then
   VD_SCRATCH="$WORKDIR/vd-scratch"
@@ -480,8 +480,7 @@ if [ -f "$VERIFY_DEPLOY_REAL" ]; then
     "$VD_SCRATCH/.claude/context/schemas" "$VD_SCRATCH/.claude/context/formats"
   for relf in scripts/events-append.sh scripts/events-query.sh hooks/events-log-artifact.sh \
     hooks/events-log-lifecycle.sh context/schemas/events-schema.json \
-    context/formats/events-format.md scripts/errors-append.sh \
-    context/schemas/errors-schema.json context/formats/errors-format.md; do
+    context/formats/events-format.md; do
     echo "x" > "$VD_SCRATCH/.claude/$relf"
   done
   # The real repository root is resolved via common_test_repo_root (git rev-parse

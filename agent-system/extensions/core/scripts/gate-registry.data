@@ -120,7 +120,7 @@
 # This file is edited directly (it is genuinely data, unlike gate-cost-model.csv or
 # suite-cost-hints.txt, which are mechanically regenerated) -- adding a migrated gate is a new row
 # here plus a `gateN_run` function definition, not a 40-line copy-pasted if/fi block.
-1	Event-store and error-store files	gate1_run	-	false	30	free	false	.claude/scripts/events-append.sh,.claude/scripts/events-query.sh,.claude/hooks/events-log-artifact.sh,.claude/hooks/events-log-lifecycle.sh,.claude/context/schemas/events-schema.json,.claude/context/formats/events-format.md,.claude/scripts/errors-append.sh,.claude/context/schemas/errors-schema.json,.claude/context/formats/errors-format.md
+1	Event-store files	gate1_run	-	false	30	free	false	.claude/scripts/events-append.sh,.claude/scripts/events-query.sh,.claude/hooks/events-log-artifact.sh,.claude/hooks/events-log-lifecycle.sh,.claude/context/schemas/events-schema.json,.claude/context/formats/events-format.md
 2	Hook registrations in the deployed settings.json	gate2_run	-	false	30	free	false	.claude/settings.json
 3	Doc-lint (check-extension-docs.sh)	gate3_run	-	true	60	moderate	false	@extensions,.claude
 4	Task-reference lint (check-task-references.sh)	gate4_run	-	false	60	moderate	false	@repo,!specs/**

@@ -253,29 +253,29 @@ and act on whatever that returns, not on the number stated here.
 
 ---
 
-### Phase 3: Narrow the deploy gate and its registry corpus [NOT STARTED]
+### Phase 3: Narrow the deploy gate and its registry corpus [COMPLETED]
 
 **Goal**: Stop `verify-deploy.sh` gate 1 from asserting the presence of three files that no
 longer exist, and bring the gate registry's declared input corpus and the baseline-cache test's
 scratch corpus back in line with it.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/verify-deploy.sh`, remove
+- [x] In `agent-system/extensions/core/scripts/verify-deploy.sh`, remove
       `scripts/errors-append.sh`, `context/schemas/errors-schema.json`, and
       `context/formats/errors-format.md` from `gate1_run`'s `for rel in ...` list, leaving the six
-      events-store paths.
-- [ ] Update gate 1's own `say "1. ..."` line and the block comment above `gate1_run` so they
+      events-store paths. *(completed)*
+- [x] Update gate 1's own `say "1. ..."` line and the block comment above `gate1_run` so they
       describe one store family (the events stack) rather than two. The comment currently
-      narrates an "error-tracking stack"; that sentence goes.
-- [ ] In `agent-system/extensions/core/scripts/gate-registry.data`, edit gate 1's row: drop the
+      narrates an "error-tracking stack"; that sentence goes. *(completed)*
+- [x] In `agent-system/extensions/core/scripts/gate-registry.data`, edit gate 1's row: drop the
       three `.claude/...` entries from the `input_corpus` field and update the `name` field to
-      match the new `say` line. Preserve the TAB separation and the nine-field shape exactly.
-- [ ] Run `bash .claude/scripts/lint/lint-gate-registry.sh` to confirm the row still parses and
-      the id range stays contiguous.
-- [ ] In `agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh`, drop the same
+      match the new `say` line. Preserve the TAB separation and the nine-field shape exactly. *(completed)*
+- [x] Run `bash .claude/scripts/lint/lint-gate-registry.sh` to confirm the row still parses and
+      the id range stays contiguous. *(completed: 7 passed, 0 failed)*
+- [x] In `agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh`, drop the same
       three paths from the scratch `.claude/` corpus loop, remove the now-unneeded
       `context/schemas` / `context/formats` `mkdir -p` components if nothing else uses them, and
-      correct the comment that calls gate 1's corpus "nine literal paths".
+      correct the comment that calls gate 1's corpus "nine literal paths". *(completed: the context/schemas and context/formats mkdir -p components are still needed for events-schema.json/events-format.md, so left in place; corpus description corrected to "six literal paths")*
 
 **Timing**: 1 hour
 

@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "Narrow the deploy gate and its registry corpus",
+  "started_at": "2026-11-17T03:50:00Z",
+  "last_updated": "2026-11-17T04:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Remove the three errors paths from verify-deploy.sh gate1_run's for rel in ... list", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 2, "description": "Update gate 1's say line and header comment to describe one store family", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 3, "description": "Edit gate-registry.data gate 1 row: drop three input_corpus entries and update name", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/gate-registry.data"]},
+    {"id": 4, "description": "Run lint-gate-registry.sh", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Narrow test-deploy-baseline-lib.sh scratch corpus and fix comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
