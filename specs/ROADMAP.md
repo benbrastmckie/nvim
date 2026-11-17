@@ -140,8 +140,7 @@ pass. `/todo` and `/review` reach `--regenerate` behind the shared preflight cla
 `skill-orchestrate` names and a dedicated suite covers.
 
 ```
-/orchestrate 628, 636, 627, 637   # Sapience per-repo activation: its enabling blocker, three surface defects, and the close-out
-/orchestrate 476, 624, 586, 604, 605   # Gate 8's residual roster, its two lints and the defect recorder, serialized on one suite
+/orchestrate 624, 586, 604, 605   # Gate 8's residual roster, its two lints and the defect recorder, serialized on one suite
 /orchestrate 577, 609   # The failure-accounting chain's tail, held behind the prioritized head both members depend on
 /orchestrate 629, 630, 631, 632, 633   # Five already-diagnosed findings one full battery filed: two gate hits, a roster gap, two defects
 /orchestrate 607, 610   # Per-gate timeout and gate 20 ceiling first, then the load-adaptive gate 8 and dispatch-stall fix
@@ -654,9 +653,8 @@ None is a whole-corpus discovery scope, and none is a defect.
 
 ## Open work
 
-**Core agent system (41)**
+**Core agent system (40)**
 ```
-476 IN FLIGHT       Make the seven untracked red Gate 8 shell suites green or declared-expected
 439 blocked:431     Rule on the propagation model for the bounded-wait agent contract
 452 blocked:451     Require a verification criterion over a repo-wide gate with standing pre-exis...
 454 blocked:439     State the result-needed-this-turn criterion for choosing the foreground form,...
@@ -671,7 +669,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 579 blocked:564     Record the selector's full-path-set aggregation rule in the Tier Justificatio...
 581 blocked:438,479,492,580  Extract one shared AskUserQuestion option renderer and adopt it acro...
 588 blocked:509     Bar a pre-redeploy plan step from naming a deploy-tree-resolved subject unles...
-605 blocked:476,586,604  Flag an advisory known-failures roster row whose named suite now passes
+605 blocked:586,604 Flag an advisory known-failures roster row whose named suite now passes
 338 ready           Classify every task-support file as tracked or ignored
 410 ready           Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on ...
 421 ready           Close three gaps in the telemetry --meta evidence consumer
@@ -725,7 +723,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 ```
 484 blocked:477     Collapse per-path scope excursion issue rows into one record per drop event
 486 blocked:484     Stop a required extension manifest.json registration being dropped from a pha...
-501 blocked:472,476,484,486  Give the cycle-postflight containment site predicate parity and a gu...
+501 blocked:472,484,486  Give the cycle-postflight containment site predicate parity and a guarde...
 508 blocked:486     Rule on where shared extension metadata belongs in the containment allowlist,...
 509 blocked:452     Make a redeploy phase declarable without polluting file_scope, and bar a pre-...
 455 ready           Pre-flag the predictable first-run module-invariant failures that wiring a ne...
@@ -747,11 +745,11 @@ None is a whole-corpus discovery scope, and none is a defect.
 ```
 513 blocked:479     Mechanically detect a plan phase that closed without its own commit
 518 blocked:472     State the blockers[] admission contract and continuation-on-partial requireme...
-610 blocked:476,607 full_gate_verification_ceiling_and_stall
-624 blocked:476     defect_record_unresolvable_in_deploy_consumer
+610 blocked:607     full_gate_verification_ceiling_and_stall
 472 ready           Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop...
 477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
 514 ready           Convergence guard blind to zero-dispatch cycles
+624 ready           defect_record_unresolvable_in_deploy_consumer
 ```
 
 **Agent system (53)**
@@ -811,14 +809,6 @@ None is a whole-corpus discovery scope, and none is a defect.
 640 ready           Add a derived-percentage bug class to the census methodology standard
 ```
 
-**Sapience (4)**
-```
-637 blocked:628,636 make_sapience_extension_fully_functional
-627 ready           reap_orphan_sapience_mcp_registrations
-628 ready           retract_sapience_write_tool_grants
-636 ready           Close sapience activation-surface scoping gaps: vendor user-level hooks, capt...
-```
-
 **Decidability (1)**
 ```
 557 ready           Record the half-line test as a lean4 context pattern note
@@ -826,7 +816,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 
 **Uncategorized (1)**
 ```
-586 blocked:476     Stand up the suite and gate wall-clock cost consumer: delete, optimize, or de...
+586 ready           Stand up the suite and gate wall-clock cost consumer: delete, optimize, or de...
 ```
 
 ## Checks before and after every call
