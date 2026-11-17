@@ -313,41 +313,43 @@ time over that path.
 
 ---
 
-### Phase 3: Check E -- Three Distinct Findings with Distinct Remedies [NOT STARTED]
+### Phase 3: Check E -- Three Distinct Findings with Distinct Remedies [COMPLETED]
 
 **Goal**: Assert the deployed registration SET against the declared union and report shapes (a),
 (b) and (c) as three separately-remediable findings, with the carve-out running first.
 
 **Tasks**:
 
-- [ ] Build the declared set as `event\x01matcher\x01identity` strings over the `root` and `frag`
+- [x] Build the declared set as `event\x01matcher\x01identity` strings over the `root` and `frag`
       groups' identity-eligible rows, with a code comment naming
       `merge.lua`'s `M.hook_valid_set_key(event, matcher, identity)` as the definition this key
-      shape mirrors, so the two cannot silently diverge again.
-- [ ] Write Check E's per-row loop over the `deployed` group with the nil-identity carve-out as its
+      shape mirrors, so the two cannot silently diverge again. *(completed)*
+- [x] Write Check E's per-row loop over the `deployed` group with the nil-identity carve-out as its
       FIRST statement: an empty identity row is skipped unconditionally, before the shape-(b)
-      grouping and before any declared-set comparison.
-- [ ] Shape (b): group the surviving deployed rows by `(event, identity)` -- never by matcher -- and
+      grouping and before any declared-set comparison. *(completed)*
+- [x] Shape (b): group the surviving deployed rows by `(event, identity)` -- never by matcher -- and
       report any group whose member matchers are not all identical, naming the event, the identity,
       and every distinct matcher string in the group. Report it independent of declared-set
-      membership and independent of each registration's individual form.
-- [ ] Shape (a)/(c) split: for any surviving deployed row whose `(event, matcher, identity)` triple
+      membership and independent of each registration's individual form. *(completed)*
+- [x] Shape (a)/(c) split: for any surviving deployed row whose `(event, matcher, identity)` triple
       is absent from the declared set, probe `$(dirname "$DEPLOYED_SETTINGS")/<norm>` -- never
-      `check_exists()`. Present on disk is shape (a); absent is shape (c).
-- [ ] Give each shape its own remedy text: (a) remove the stale registration, or correct the merge
+      `check_exists()`. Present on disk is shape (a); absent is shape (c). *(completed)*
+- [x] Give each shape its own remedy text: (a) remove the stale registration, or correct the merge
       source's declared event/matcher to match; (b) collapse the duplicate blocks to the one matcher
       the source declares, naming the double-fire event; (c) fix the registered path or remove the
       registration -- re-declaring it cannot help, since the file is absent from this deploy target.
-- [ ] Emit every Check E finding with the same `[VIOLATION]` prefix Checks A-D use, so Gate 21's
+      *(completed)*
+- [x] Emit every Check E finding with the same `[VIOLATION]` prefix Checks A-D use, so Gate 21's
       existing `verify_deploy_extract_verdict_lines '[VIOLATION]'` scrape captures them unchanged.
-- [ ] Confirm Check E reads only the jq `.hooks` walk: `env`, `permissions`, `statusLine` and
-      `mcpServers` are never read, reported, or touched.
-- [ ] Update the script header: the EXIT-CODE CONTRACT, "THE FOUR CHECKS" (now five), the usage
+      *(completed)*
+- [x] Confirm Check E reads only the jq `.hooks` walk: `env`, `permissions`, `statusLine` and
+      `mcpServers` are never read, reported, or touched. *(completed)*
+- [x] Update the script header: the EXIT-CODE CONTRACT, "THE FOUR CHECKS" (now five), the usage
       block's new flag, and a new numbered design note recording the deploy-target-relative versus
       source-store-relative existence distinction and why `check_exists()` is deliberately not
-      reused here.
-- [ ] Add Check E's own counters to the summary block so a Check E finding is reflected in the
-      printed `Total violations` on both the clean and failing paths.
+      reused here. *(completed: D7)*
+- [x] Add Check E's own counters to the summary block so a Check E finding is reflected in the
+      printed `Total violations` on both the clean and failing paths. *(completed)*
 
 **Timing**: 1.75 hours
 

@@ -95,7 +95,20 @@
 # filenames: root-files/settings.json, settings-hooks.json, settings-fragment.json -- never
 # settings.local.json), not by a runtime exclusion check.
 #
-# THE FOUR CHECKS
+# D7 -- EXISTENCE BOUNDARY: source-store-relative vs. deploy-target-relative, two INDEPENDENT
+# axes. `check_exists()` (Check D) asks "does this script exist somewhere under
+# agent-system/extensions/*/ in the SOURCE STORE" -- the right question when auditing what the
+# source store itself declares. Check E's shape-(c) probe asks a different question entirely:
+# "does this script exist at THIS DEPLOY TARGET's own `.claude/<norm>`" -- a script can be fully
+# present and correctly declared in the source store while being absent from one particular
+# deploy target's filesystem (e.g. a deploy predating that script's addition, or a deploy that
+# has drifted). Reusing `check_exists()` for a deployed-tree audit would be a FALSE NEGATIVE on
+# precisely the defect class shape (c) names -- it would report "exists" because the source store
+# has the file, even though the one deploy target under audit does not. This is why Check E never
+# calls `check_exists()` and instead probes `$(dirname "$DEPLOYED_SETTINGS")/<norm>` directly. See
+# also `context/standards/source-store-deploy-boundary-narrative.md`'s matching subsection.
+#
+# THE FIVE CHECKS
 # ----------------
 #   Check A (path shape, settings surfaces): every `"command"` key's invoked script path, across
 #     root-files/settings.json and every settings-hooks.json / settings-fragment.json under the
@@ -119,6 +132,18 @@
 #   Check D (script existence): every invoked script path that is source-store-resolvable (i.e.
 #     every accepted- or violation-shaped path except a `~/`-anchored one, per D2) must resolve to
 #     an actual file under some agent-system/extensions/*/<normalized-path> in the source store.
+#   Check E (deployed registration SET assertion, D7 below): a DEPLOYED `.claude/settings.json`
+#     (--deployed-settings PATH, or $PROJECT_ROOT/.claude/settings.json by default) is compared,
+#     as a (event, matcher, hook-identity) SET, against the union of what the root-files and
+#     fragment surfaces declare. Three drift shapes, each its own finding with its own remedy:
+#     (a) a deployed registration no source surface declares anywhere, with its script PRESENT on
+#     this deploy target's own filesystem; (b) one hook identity registered under two different
+#     matchers for one event (a double-fire), independent of declared-set membership and
+#     independent of each registration's individual form-correctness; (c) a deployed registration
+#     no source surface declares, with its script ABSENT from this deploy target's own
+#     filesystem. The nil-identity carve-out (D4/D5) runs FIRST, unconditionally, before any
+#     shape-(b) grouping or shape-(a)/(c) comparison -- a hand-written custom hook is NEVER a
+#     finding.
 #
 # KNOWN FALSE-POSITIVE RISKS, closed by construction
 # -----------------------------------------------------
@@ -704,6 +729,111 @@ for i in "${!ALL_COMMAND[@]}"; do
 done
 
 # ---------------------------------------------------------------------------
+# Check E -- deployed registration SET assertion against the declared union
+# ---------------------------------------------------------------------------
+# Unlike Checks A-D (which audit the source store's own declared surfaces against each other),
+# Check E audits a DEPLOYED `.claude/settings.json` (the `deployed` inventory group, Phase 2)
+# against the union of what the source store declares -- the drift this task's GOAL exists to
+# catch: a registration no source surface declares anywhere (a), the same identity registered
+# under two different matchers for one event (b), or a registration whose script file is simply
+# absent from THIS deploy target's own filesystem (c). See the module header's "EXISTENCE
+# BOUNDARY" design note (added by this check) for why (c)'s existence probe is deliberately
+# deploy-target-relative rather than a `check_exists()` reuse.
+E_VIOLATIONS=0
+
+# Declared set: every identity-eligible `root`/`frag` row's (event, matcher, identity) triple,
+# keyed with the control-character separator `\x01` -- NEVER `|`, since a real matcher
+# legitimately CONTAINS `|` (`"Bash|Write|Edit"`), which would make a `|`-joined key ambiguous.
+# This key shape deliberately MIRRORS `merge.lua`'s own `M.hook_valid_set_key(event, matcher,
+# identity)` builder (same three fields, same separator rationale) so the two can never silently
+# diverge into two different answers to "is this the same registration" -- see that function's
+# own doc comment in lua/neotex/plugins/ai/shared/extensions/merge.lua.
+declare -A DECLARED_SET
+for i in "${!ALL_COMMAND[@]}"; do
+    [[ "${ALL_GROUP[$i]}" == "deployed" ]] && continue
+    identity="${ALL_IDENTITY[$i]:-}"
+    [[ -z "$identity" ]] && continue
+    DECLARED_SET["${ALL_EVENT[$i]}"$'\x01'"${ALL_MATCHER[$i]}"$'\x01'"$identity"]=1
+done
+
+# check_exists_deployed NORMALIZED_PATH -- deploy-target-relative existence probe, deliberately
+# NOT a call to check_exists() (which globs agent-system/extensions/*/<norm> in the SOURCE
+# STORE -- the right question for Checks C/D, which audit declarations, and the wrong one for a
+# deployed tree's own filesystem state, per the EXISTENCE BOUNDARY design note below).
+check_exists_deployed() {
+    local norm="$1"
+    [[ -f "$(dirname "$DEPLOYED_SETTINGS")/$norm" ]]
+}
+
+# Per-(event, identity) matcher-set accumulation for shape (b), built in the SAME single pass as
+# the carve-out and the shape (a)/(c) split below -- never a second loop over the deployed group.
+declare -A E_MATCHER_SET   # "event\x01identity" -> "\x01"-joined distinct matchers seen so far
+declare -A E_MATCHER_SEEN  # "event\x01identity\x01matcher" -> 1, dedup guard
+declare -a E_B_KEYS=()     # order-preserving list of "event\x01identity" groups with >1 matcher
+declare -A E_B_REPORTED    # dedup guard so a 3-matcher group reports once, not per extra matcher
+
+for i in "${!ALL_COMMAND[@]}"; do
+    [[ "${ALL_GROUP[$i]}" != "deployed" ]] && continue
+    event="${ALL_EVENT[$i]}"
+    matcher="${ALL_MATCHER[$i]}"
+    identity="${ALL_IDENTITY[$i]:-}"
+
+    # THE CARVE-OUT, FIRST, UNCONDITIONALLY: a nil identity (hand-written custom hook, a
+    # `~/`-anchored path, an absolute non-`.claude/` path, or no `*.sh` invocation at all) is
+    # never matched, never grouped, never diffed against the declared set -- before any other
+    # Check E logic runs. A lint that reports a user's own hook registration as drift is worse
+    # than no lint.
+    [[ -z "$identity" ]] && continue
+
+    # Shape (b): group by (event, identity) -- NEVER by matcher, which would collapse the exact
+    # distinction being detected -- and report any group whose matchers are not all identical.
+    # Independent of declared-set membership and independent of each registration's individual
+    # form: form-correctness is exactly why this shape passes Checks A-D today.
+    bkey="${event}"$'\x01'"${identity}"
+    seen_key="${bkey}"$'\x01'"${matcher}"
+    if [[ -z "${E_MATCHER_SEEN[$seen_key]+x}" ]]; then
+        E_MATCHER_SEEN["$seen_key"]=1
+        if [[ -z "${E_MATCHER_SET[$bkey]+x}" ]]; then
+            E_MATCHER_SET["$bkey"]="$matcher"
+        else
+            E_MATCHER_SET["$bkey"]="${E_MATCHER_SET[$bkey]}"$'\x01'"$matcher"
+            if [[ -z "${E_B_REPORTED[$bkey]+x}" ]]; then
+                E_B_REPORTED["$bkey"]=1
+                E_B_KEYS+=("$bkey")
+            fi
+        fi
+    fi
+
+    # Shape (a)/(c) split: a deployed triple present in the declared set is correct -- no
+    # finding. Absent means either (a) undeclared-but-present-on-disk, or (c) undeclared-and-the-
+    # file-is-gone; the two get separate remedies because re-declaring (c) cannot help.
+    triple="${event}"$'\x01'"${matcher}"$'\x01'"${identity}"
+    if [[ -z "${DECLARED_SET[$triple]+x}" ]]; then
+        norm="${identity#*:}"
+        name="${norm##*/}"
+        file="${ALL_FILE[$i]}"
+        if check_exists_deployed "$norm"; then
+            echo -e "${RED}[VIOLATION]${NC} $file: deployed registration '$name' (event: $event, matcher: $matcher, identity: $identity) is not declared by any source surface -- remove the stale registration, or correct the merge source's declared event/matcher to match"
+        else
+            echo -e "${RED}[VIOLATION]${NC} $file: deployed registration '$name' (event: $event, matcher: $matcher, identity: $identity) is undeclared AND its script is absent from this deploy target at $(dirname "$DEPLOYED_SETTINGS")/$norm -- fix the registered path or remove the registration; re-declaring it cannot help, since the file is absent from this deploy target"
+        fi
+        ((E_VIOLATIONS++)) || true
+        ((VIOLATIONS++)) || true
+    fi
+done
+
+for bkey in "${E_B_KEYS[@]}"; do
+    event="${bkey%%$'\x01'*}"
+    identity="${bkey#*$'\x01'}"
+    matchers="${E_MATCHER_SET[$bkey]}"
+    matchers_display="${matchers//$'\x01'/, }"
+    file="$DEPLOYED_SETTINGS"
+    echo -e "${RED}[VIOLATION]${NC} $file: hook identity '$identity' is registered under multiple matchers for event '$event' ($matchers_display) -- a single matching event now fires it more than once; collapse the duplicate blocks to the one matcher the source declares"
+    ((E_VIOLATIONS++)) || true
+    ((VIOLATIONS++)) || true
+done
+
+# ---------------------------------------------------------------------------
 # Summary
 # ---------------------------------------------------------------------------
 if [[ $VIOLATIONS -eq 0 ]]; then
@@ -716,6 +846,7 @@ if [[ $VIOLATIONS -eq 0 ]]; then
         echo "Markdown files checked: ${#MARKDOWN_FILES[@]}"
         echo "Candidates accepted: $ACCEPTED_SEEN"
         echo "Candidates exempted: $EXEMPTED_SEEN"
+        echo "Deployed-settings violations (Check E): $E_VIOLATIONS"
         echo "Total violations: 0"
         echo -e "${GREEN}No CWD-relative, fragment-unreachable, or dead hook registrations found.${NC}"
     }
@@ -730,11 +861,14 @@ echo "Settings surfaces checked: ${#SETTINGS_FILES[@]}"
 echo "Markdown files checked: ${#MARKDOWN_FILES[@]}"
 echo "Candidates accepted: $ACCEPTED_SEEN"
 echo "Candidates exempted: $EXEMPTED_SEEN"
+echo "Deployed-settings violations (Check E): $E_VIOLATIONS"
 echo "Total violations: $VIOLATIONS"
 echo -e "${RED}Found $VIOLATIONS hook-registration violation(s). See above for details.${NC}"
 echo ""
 echo "Fix: use bash \"\$CLAUDE_PROJECT_DIR\"/.claude/hooks/x.sh (or an absolute / ~/-anchored path)."
 echo "     A fragment-coverage violation: add the registration to the named fragment file."
 echo "     A dead-script violation: fix the path, or remove the registration."
+echo "     A deployed-set violation (Check E): remove/correct an undeclared registration, fix or"
+echo "     remove a dead-on-this-deploy registration, or collapse a duplicate-matcher double-fire."
 echo "Edit the source store under agent-system/extensions/ -- .claude/ is a generated artifact."
 exit 1

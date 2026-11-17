@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Check E -- Three Distinct Findings with Distinct Remedies",
+  "started_at": "2026-11-17T11:20:00Z",
+  "last_updated": "2026-11-17T12:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Build declared set as event\\x01matcher\\x01identity, comment citing merge.lua's M.hook_valid_set_key", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]},
+    {"id": 2, "description": "Per-row loop over deployed group, nil-identity carve-out FIRST", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]},
+    {"id": 3, "description": "Shape (b) grouping by (event, identity), report matcher-set >1", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]},
+    {"id": 4, "description": "Shape (a)/(c) split via deploy-target-relative existence probe, never check_exists()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]},
+    {"id": 5, "description": "Three distinct remedy texts", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]},
+    {"id": 6, "description": "Emit [VIOLATION] prefix for Gate 21 scrape compatibility", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]},
+    {"id": 7, "description": "Confirm only .hooks walk read, no env/permissions/statusLine/mcpServers", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Update header: FIVE CHECKS, D7 existence-boundary design note, usage block flag", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]},
+    {"id": 9, "description": "Add Check E counters to summary block (clean and failing paths)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "notes": "Verified live: default deployed path 0 findings exit 0. ModelBuilder exemplar -> 4 shape-(a) findings matching Phase 1 measurement exactly. SPSDemo exemplar -> 1 shape-(c) finding matching Phase 1 measurement exactly. Reconstructed Logos/Theory + duplicate-Notification-matcher fixture (with companion hooks/tts-notify.sh planted) -> fires shape (b) (plus an incidental shape (a) on the same undeclared second matcher, which is itself a faithful reflection of the real defect being simultaneously undeclared AND duplicate-matcher). Hand-written custom-hook fixture -> 0 findings. check_exists (source-store-relative) is never called inside the Check E block (grep-confirmed); only check_exists_deployed is. The five-suite run-all.sh tier shows the SAME two pre-existing/unrelated failures isolated and logged in Phase 2 (test-deploy-baseline-lib.sh NEW but proven unrelated; test-verify-deploy-context-budget.sh EXPECTED); test-lint-hook-registration-paths.sh itself: 21/21 pre-existing cases pass unchanged. Current case count in that suite is 19 (not the plan's carried 18), re-confirmed per the plan's own Phase-4 hedge; new cases will number from 20."
+}
