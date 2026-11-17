@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Created a 4-phase serial plan implementing the research-settled design: a standalone --reap action on setup-sapience-mcp.sh, writer-level fixture cases, an ungated reap invocation in the restructured SessionStart hook with array-based notice assembly, then docs plus redeploy, installer refresh and the full gate set. Premise re-validation found the description's cited stale entry no longer reproduces (that row now carries mcpServers:{}; zero orphaned server rows across all 41 project rows), so the plan moves discriminating evidence to fixtures and reframes live acceptance as a no-wrongful-reap regression check. Two mechanics not in the report were added: --reap must short-circuit before resolve_interpreter's hard exit 1, and the hook's jq/writer guards must hoist above the manifest-reachability branch.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/627_reap_orphan_sapience_mcp_registrations/plans/01_reap-orphan-sapience-mcp.md",
+      "summary": "4-phase, 3.5-hour plan adding a cross-project --reap mode to the sapience MCP writer and an ungated reap pass to the SessionStart hook, with fixture coverage, docs, redeploy and installer refresh."
+    }
+  ],
+  "dispatch_seq": 9
+}

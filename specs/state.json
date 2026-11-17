@@ -2390,12 +2390,12 @@
     {
       "project_number": 627,
       "project_name": "reap_orphan_sapience_mcp_registrations",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh.\n\nGOAL. Close the unreachable-.claude-extensions.json branch in the per-project sapience MCP registration design, so a deleted or moved repository's registration is reaped instead of leaking forever.\n\nMEASURED EVIDENCE. ~/.claude.json carries .projects[\"/home/benjamin/Projects/sapience-app\"].mcpServers.sapience, but that directory does not exist on disk (the repository moved to /home/benjamin/Projects/Sapience/sapience-app, which has its own correct active registration). hooks/sapience-mcp-register-project.sh cannot remove the stale entry: its project-root detection requires a reachable .claude-extensions.json at the CWD or at the git root, and finding none it emits '{}' and exits 0 before reaching the removal branch at all. The bidirectional removal path is therefore structurally unable to clean up any registration whose project path has been deleted or renamed -- removal only ever fires for a path that still exists AND still carries an extensions manifest showing sapience inactive.\n\nSCOPE. Add a reaper pass that removes .projects[<path>].mcpServers.sapience entries whose <path> no longer exists on disk. Decide and record where it belongs: a new --reap mode in scripts/setup-sapience-mcp.sh invoked by the SessionStart hook, the hook itself, or scripts/verify-sapience-mcp.sh promoted from detect-only to fix. Preserve the hook's existing contract exactly: always exit 0, always emit exactly one line of valid JSON, never fail a session on a missing jq or an unwritable ~/.claude.json. Touch only the sapience key -- a project row carrying other servers (e.g. lean-lsp) keeps them, and a row left with no servers is handled explicitly rather than abandoned as a stale empty object.\n\nACCEPTANCE. The stale /home/benjamin/Projects/sapience-app entry is gone from ~/.claude.json; /home/benjamin/Projects/Sapience/sapience-app keeps its entry; /home/benjamin/Projects/Logos/Theory and the other lean-lsp-only rows are untouched; scripts/tests/test-sapience-mcp-registration.sh gains a case covering a registered-but-nonexistent project path; verify-sapience-mcp.sh still passes its (a)-(d) checks in this repository.",
       "topic": "sapience",
       "created": "2026-11-14T09:19:47Z",
-      "last_updated": "2026-11-17T09:37:03Z",
+      "last_updated": "2026-11-17T09:49:36Z",
       "audit_verdict": {
         "proposal": {
           "id": "reap_orphan_sapience_mcp_registrations",
@@ -2615,15 +2615,28 @@
         },
         "degradations_count": 42
       },
-      "session_id": "sess_1794907446_b4b581_627",
+      "session_id": "sess_1794907446_b4b581",
       "artifacts": [
         {
           "path": "specs/627_reap_orphan_sapience_mcp_registrations/reports/01_reap-orphan-sapience-mcp.md",
           "type": "report",
           "summary": "Confirms the hook's activation-detection precondition structurally cannot reach an orphaned (deleted/moved) project path; recommends a new --reap mode on setup-sapience-mcp.sh, invoked unconditionally by the SessionStart hook on every session (not gated on the current repo's own activation), touching only the sapience subkey; records the rejected alternatives (inline-hook edit, promoting verify-sapience-mcp.sh to a fixer) and the test cases to add."
+        },
+        {
+          "path": "specs/627_reap_orphan_sapience_mcp_registrations/plans/01_reap-orphan-sapience-mcp.md",
+          "type": "plan",
+          "summary": "4-phase, 3.5-hour plan adding a cross-project --reap mode to the sapience MCP writer and an ungated reap pass to the SessionStart hook, with fixture coverage, docs, redeploy and installer refresh."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "file_scope": [
+        "__WHOLE_TREE__",
+        "agent-system/extensions/sapience/README.md",
+        "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+        "agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh",
+        "agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh",
+        "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"
+      ]
     },
     {
       "project_number": 624,
