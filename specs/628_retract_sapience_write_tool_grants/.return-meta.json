@@ -1,5 +1,5 @@
 {
-  "status": "planned",
+  "status": "in_progress",
   "artifacts": [
     {
       "type": "plan",
@@ -7,24 +7,13 @@
       "summary": "5-phase plan (6h, 4 waves) retracting sapience write-tool grants via forced-reload retraction in the merge engine, regression coverage, two caveat rewrites, and a five-repository redeploy."
     }
   ],
-  "phase_count": 5,
-  "estimated_hours": 6,
-  "dependency_waves": 4,
-  "next_steps": "Run /orchestrate 628 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "Retraction in the Neovim extension merge engine is a call-site gap, not a missing mechanism. Three separate facts compose into the bug: (1) deep_merge is additive-only by design and records every fragment item on every merge so unload always has something to remove; (2) M.unmerge_settings plus build_retained_fragments IS a working, sibling-safe retraction primitive, but is reached only from manager.unload; (3) manager.resync_all -- the path deploy-headless.sh's default mode uses -- deliberately 'never unloads', force-reloading each extension in place. So a narrowed fragment never propagates to an already-loaded repository. The load-time hook orphan sweep is the one load-path retraction that works, and it is explicitly scoped to the hooks key only (permissions/env/mcpServers are read and rewritten byte-for-byte). deploy-headless.sh --wipe is not a workaround: settings_backup snapshots and restores settings.local.json byte-for-byte rather than re-merging from fragments. The fix shape is to call the existing unmerge with the extension's own prior merged_sections immediately before process_merge_targets in manager.load's opts.force branch. The discrimination rule that protects a hand-added user grant needs no invention: remove_tracked visits only keys present in the passed tracked structure, so an untracked grant is never a candidate.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/628_retract_sapience_write_tool_grants/plans/01_retract-sapience-write-grants.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["merge-engine", "retraction", "deploy-headless", "unmerge_settings", "resync_all", "settings-fragment"]
-    }
-  ],
   "metadata": {
-    "session_id": "sess_1794907446_b4b581_628",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1794907446_b4b581",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 5
   },
-  "dispatch_seq": 13
+  "dispatch_seq": 15
 }

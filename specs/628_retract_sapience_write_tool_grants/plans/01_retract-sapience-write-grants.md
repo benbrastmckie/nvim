@@ -1,7 +1,7 @@
 # Implementation Plan: Task #628
 
 - **Task**: 628 - Retract sapience write-tool grants from deployed repositories
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: task 527 (`[COMPLETED]`) — its Check E supplies a *pattern*, not retraction machinery; no blocking edge
 - **Research Inputs**: specs/628_retract_sapience_write_tool_grants/reports/01_retract-sapience-write-grants.md
@@ -139,7 +139,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Pin the pre-change baseline across all five repositories [NOT STARTED]
+### Phase 1: Pin the pre-change baseline across all five repositories [COMPLETED]
 
 **Goal**: Capture a durable, re-diffable fingerprint of every target repository's merged settings
 and every loaded extension's tracked record, so Phase 5 can prove the change removed exactly the
@@ -147,24 +147,25 @@ four sapience write grants and perturbed nothing else.
 
 **Tasks**:
 
-- [ ] For each of the five repositories (`/home/benjamin/.dotfiles`,
+- [x] For each of the five repositories (`/home/benjamin/.dotfiles`,
       `/home/benjamin/.config/nvim`, `/home/benjamin/Projects/BimodalLogic`,
       `/home/benjamin/Projects/Sapience/sf1-engine`,
       `/home/benjamin/Projects/Sapience/sapience-app`), record into the records file: the
       `mcp__sapience__*` grant count and the sorted grant list from
       `.claude/settings.local.json`; and `jq -S '{hooks, permissions}'` piped to `sha256sum` for
-      both `.claude/settings.local.json` and `.claude/settings.json`.
-- [ ] For each repository, record `jq -S '.extensions | to_entries | map({key, merged_sections})'`
+      both `.claude/settings.local.json` and `.claude/settings.json`. *(completed: all 5 report 11 grants)*
+- [x] For each repository, record `jq -S '.extensions | to_entries | map({key, merged_sections})'`
       from its own `.claude-extensions.json`, so the prior tracked record Phase 2's retraction
-      will read is pinned before any reload touches it.
-- [ ] Record, for this repository, the sorted grant list from
+      will read is pinned before any reload touches it. *(completed: all 5 already show the narrow 7-item tracked record)*
+- [x] Record, for this repository, the sorted grant list from
       `agent-system/extensions/sapience/settings-fragment.json`, and the set difference
-      (deployed minus fragment) that Phase 5 must find empty.
-- [ ] Note in the records file the exact tracked-record jq path
+      (deployed minus fragment) that Phase 5 must find empty. *(completed: diff is the four write tools)*
+- [x] Note in the records file the exact tracked-record jq path
       (`.extensions.sapience.merged_sections.settings.permissions.children.allow.items`),
-      including the `children` level, so no later phase re-derives it.
-- [ ] Run `bash .claude/scripts/issue-record.sh` for any repository that is unreachable or whose
+      including the `children` level, so no later phase re-derives it. *(completed)*
+- [x] Run `bash .claude/scripts/issue-record.sh` for any repository that is unreachable or whose
       `.claude/settings.local.json` is absent, and record the exclusion in the records file.
+      *(completed: no exclusions — all 5 reachable)*
 
 **Timing**: 0.75 hours
 

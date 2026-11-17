@@ -175,7 +175,7 @@ next_project_number: 643
 
 ### Sapience
 
-628 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
+628 [IMPLEMENTING] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
 636 [PLANNED] — Close sapience activation-surface scoping gaps: vendor...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
@@ -674,7 +674,7 @@ PROVENANCE: surfaced as a Reasoned Exclusion in the /todo consolidation record's
 ---
 
 ### 628. Retract sapience write tool grants
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: Task 527

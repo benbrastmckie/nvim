@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Pin the pre-change baseline across all five repositories",
+  "started_at": "2026-11-17T16:20:00Z",
+  "last_updated": "2026-11-17T16:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Record per-repo grant count/list and hooks+permissions fingerprint hashes for all five repos", "status": "done", "files_touched": ["specs/628_retract_sapience_write_tool_grants/records/01_pre-change-baseline.md"]},
+    {"id": 2, "description": "Record per-repo tracked merged_sections from .claude-extensions.json", "status": "done", "files_touched": ["specs/628_retract_sapience_write_tool_grants/records/01_pre-change-baseline.md"]},
+    {"id": 3, "description": "Record this repo's fragment grant list and set difference vs deployed", "status": "done", "files_touched": ["specs/628_retract_sapience_write_tool_grants/records/01_pre-change-baseline.md"]},
+    {"id": 4, "description": "Note the tracked-record jq path including children level", "status": "done", "files_touched": ["specs/628_retract_sapience_write_tool_grants/records/01_pre-change-baseline.md"]},
+    {"id": 5, "description": "Record any unreachable/missing-settings exclusions via issue-record.sh", "status": "done", "files_touched": ["specs/628_retract_sapience_write_tool_grants/records/01_pre-change-baseline.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
