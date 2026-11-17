@@ -1,0 +1,30 @@
+{
+  "status": "planned",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/572_make_full_gate_viable_under_batch_concurrency/plans/01_full-gate-batch-concurrency.md",
+      "summary": "4-phase, 4.75-hour plan: widen the batch gate deferral directive from the plan's final phase to every full-tier phase, align plan-format.md/batch-gate-stage.md contract prose, add a contention-detected (annotation-only) signal to gate 8's lock/load path, redeploy and run the complete gate set."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1794879152_8837d5_572",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 4.75,
+    "dependency_waves": [[1], [2], [3], [4]]
+  },
+  "memory_candidates": [
+    {
+      "content": "In this repo, any new content added to orchestrate-build-dispatch.sh's composed dispatch file must be weighed against orchestrate-cycle-plan.sh's cycle_plan_dispatch_hash() normalizer, whose comment block carries a STANDING OBLIGATION to record a 'DECIDED AND RECORDED' note for each such section (stripped as per-cycle boilerplate, or deliberately unstripped as a genuine behavioral signal). The discriminator is whether the content varies per cycle with no real change: plan-DERIVED content is safe to leave unstripped provided the scan is status-marker-independent, because it then varies only when the plan itself changes -- which is exactly when the IDENTICAL DISPATCH HALT should not fire. A status-derived scan would instead vary as phases complete and silently weaken the halt. Precedent: the '## Territory' and '## Outstanding Gate Finding' sections are both deliberately unstripped on the same reasoning.",
+      "category": "PATTERN",
+      "source_artifact": "specs/572_make_full_gate_viable_under_batch_concurrency/plans/01_full-gate-batch-concurrency.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["dispatch-hash", "identical-dispatch-halt", "orchestrate-build-dispatch", "cycle-plan-normalizer", "plan-derived-content"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 572 to execute the plan",
+  "dispatch_seq": 25
+}
