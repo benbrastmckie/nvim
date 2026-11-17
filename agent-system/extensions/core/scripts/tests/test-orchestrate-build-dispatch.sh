@@ -1514,6 +1514,107 @@ fi
 # are unaffected by these two stub files.
 rm -f "$FIXTURE/.claude/scripts/tests/run-all.sh" "$FIXTURE/.claude/scripts/verify-deploy.sh"
 
+# Full-tier phase-scan cases: the directive's wording must name every phase of $plan_path
+# declaring `**Verification Tier**: full`, not only the plan's literal final phase, and must
+# never assert the old "FINAL phase" claim (which is false whenever a `full` phase is NOT the
+# last one in the file). Each case below writes a custom fixture plan, runs the SUT, and
+# restores the default single-phase fixture plan afterward -- same pattern as Group 11's Case
+# B/C plan-swap-and-restore above.
+
+# Case: intermediate phase declares full (Phase 2 of 3) -- the directive must name Phase 2 by
+# number, not claim the final phase (Phase 3, which declares `local`) is the constrained one.
+cat > "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md" <<'EOF'
+# Fixture plan
+
+### Phase 1: First phase [NOT STARTED]
+
+**Verification Tier**: local
+
+### Phase 2: Intermediate full-tier phase [NOT STARTED]
+
+**Verification Tier**: full
+
+### Phase 3: Final phase [NOT STARTED]
+
+**Verification Tier**: local
+EOF
+run_sut implement --clean --seq 19intermediate --dispatch-start-ts 1234567890 --batch-gate-deferral
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_bgd_intermediate="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_bgd_intermediate" "Phase 2 of the plan declares" "intermediate full-tier phase: names Phase 2 by number"
+  assert_not_contains "$content_bgd_intermediate" "FINAL phase" "intermediate full-tier phase: never asserts the old FINAL-phase claim"
+else
+  common_test_fail "intermediate full-tier phase: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case: several phases declare full (Phases 2 and 4) -- ONE block names both, in file order.
+cat > "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md" <<'EOF'
+# Fixture plan
+
+### Phase 1: First phase [NOT STARTED]
+
+**Verification Tier**: local
+
+### Phase 2: Second phase [NOT STARTED]
+
+**Verification Tier**: full
+
+### Phase 3: Third phase [NOT STARTED]
+
+**Verification Tier**: local
+
+### Phase 4: Fourth phase [NOT STARTED]
+
+**Verification Tier**: full
+EOF
+run_sut implement --clean --seq 19multi --dispatch-start-ts 1234567890 --batch-gate-deferral
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_bgd_multi="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_bgd_multi" "Phases 2, 4 of the plan declare" "multi-phase full tier: names Phases 2 and 4 together in one block"
+  assert_not_contains "$content_bgd_multi" "FINAL phase" "multi-phase full tier: never asserts the old FINAL-phase claim"
+  bgd_block_count="$(printf '%s\n' "$content_bgd_multi" | grep -cF '## Batch Gate Deferral')"
+  if [ "$bgd_block_count" -eq 1 ]; then
+    common_test_pass "multi-phase full tier: exactly one '## Batch Gate Deferral' block (never one per phase)"
+  else
+    common_test_fail "multi-phase full tier: expected exactly one '## Batch Gate Deferral' block, found $bgd_block_count"
+  fi
+else
+  common_test_fail "multi-phase full tier: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case: no full declaration anywhere -- numberless degrade wording, no false final-phase claim.
+cat > "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md" <<'EOF'
+# Fixture plan
+
+### Phase 1: Only phase [NOT STARTED]
+
+**Verification Tier**: local
+EOF
+run_sut implement --clean --seq 19nofull --dispatch-start-ts 1234567890 --batch-gate-deferral
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_bgd_nofull="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_bgd_nofull" "Every phase of the plan that declares" "no full declaration: numberless degrade wording present"
+  assert_not_contains "$content_bgd_nofull" "FINAL phase" "no full declaration: never asserts the old FINAL-phase claim"
+else
+  common_test_fail "no full declaration: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Case: missing plan file entirely -- same numberless degrade wording (the scan's own absent-file
+# branch), never a crash and never a false final-phase assertion.
+mv "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md" "$WORKDIR/01_fixture-plan.md.setaside-19"
+run_sut implement --clean --seq 19missingplan --dispatch-start-ts 1234567890 --batch-gate-deferral
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_bgd_missing="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_bgd_missing" "Every phase of the plan that declares" "missing plan file: numberless degrade wording present"
+  assert_not_contains "$content_bgd_missing" "FINAL phase" "missing plan file: never asserts the old FINAL-phase claim"
+else
+  common_test_fail "missing plan file: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+mv "$WORKDIR/01_fixture-plan.md.setaside-19" "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md"
+
+# Restore the default single-phase fixture plan for any group appended after this one.
+printf '# Fixture plan\n\n### Phase 1: Fixture phase [NOT STARTED]\n' > "$FIXTURE/${TASK_DIR_REL}/plans/01_fixture-plan.md"
+
 # research/plan: the SUT's emission guard is the explicit conjunction
 # `[ "$phase" = "implement" ] && [ "$batch_gate_deferral_flag" = "true" ]` (unlike
 # --gate/--compare, which are phase-agnostic Identity-section lines) -- so the flag is a silent

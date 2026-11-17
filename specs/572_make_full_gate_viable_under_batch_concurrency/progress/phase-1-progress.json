@@ -1,0 +1,66 @@
+{
+  "phase": 1,
+  "phase_name": "Widen the Batch Gate Deferral directive to every full-tier phase",
+  "started_at": "2026-11-16T17:40:00Z",
+  "last_updated": "2026-11-16T18:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Confirm the emission site is singular before editing",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Scan $plan_path for every phase declaring Verification Tier: full, status-marker-independent",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Replace final-phase-only wording with set-naming directive block (single block, list form)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Degrade honestly to numberless wording when plan unreadable/empty or no full declaration found",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Add bounded kill-0 waiter instruction to the two sanctioned unscoped paths",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Extend test-orchestrate-build-dispatch.sh with intermediate/multi-phase/degrade/missing-plan cases",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Extend orchestrate-cycle-plan.sh's cycle_plan_dispatch_hash() comment with a DECIDED AND RECORDED note for the now plan-derived phase-list content",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+      ]
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

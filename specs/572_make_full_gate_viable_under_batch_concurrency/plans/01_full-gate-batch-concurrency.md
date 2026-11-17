@@ -1,7 +1,7 @@
 # Implementation Plan: Task #572
 
 - **Task**: 572 - Make a declared `Verification Tier: full` honorable under batch concurrency
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/572_make_full_gate_viable_under_batch_concurrency/reports/01_batch-gate-full-tier-viability.md
@@ -152,46 +152,51 @@ Phases within the same wave can execute in parallel. This plan is a strict chain
 both edit `context/contracts/batch-gate-stage.md` and `index-entries.json`, so they are
 deliberately serialized rather than placed in one wave.
 
-### Phase 1: Widen the Batch Gate Deferral directive to every full-tier phase [NOT STARTED]
+### Phase 1: Widen the Batch Gate Deferral directive to every full-tier phase [COMPLETED]
 
 **Goal**: The composed directive covers every phase of the plan that declares
 `**Verification Tier**: full`, and the two unscoped paths it still sanctions instruct a detached,
 bounded-wait invocation.
 
 **Tasks**:
-- [ ] Confirm the emission site is singular before editing:
+- [x] Confirm the emission site is singular before editing:
       `grep -rn "FINAL phase" agent-system/extensions/core/scripts/` — expect the one block in
       `orchestrate-build-dispatch.sh` (prose copies in `context/**` are Phase 2's, not this
-      phase's).
-- [ ] In `orchestrate-build-dispatch.sh`'s `## Batch Gate Deferral` block, scan `$plan_path`
+      phase's). *(completed: confirmed singular, one hit at orchestrate-build-dispatch.sh:678)*
+- [x] In `orchestrate-build-dispatch.sh`'s `## Batch Gate Deferral` block, scan `$plan_path`
       (already resolved for implement dispatches well before this block) for every phase heading
       whose section declares `**Verification Tier**: full`, collecting phase numbers in order.
       Accept both bold spellings already in live use for adjacent fields. The scan MUST ignore
       phase status markers so the rendered text is stable across cycles while the plan is
-      unchanged.
-- [ ] Replace "The plan's final phase declares …" / "This directive constrains the FINAL phase of
+      unchanged. *(completed)*
+- [x] Replace "The plan's final phase declares …" / "This directive constrains the FINAL phase of
       the plan …" with wording that names the collected set (e.g. "Phases 2, 4, 5 of the plan
       declare `**Verification Tier**: full`; this directive constrains each of them"). Keep ONE
       block with a list — never one block per phase — and keep the literal heading
-      `## Batch Gate Deferral` unchanged.
-- [ ] Degrade honestly: when `$plan_path` is empty/unreadable or the scan finds no `full`
+      `## Batch Gate Deferral` unchanged. *(completed)*
+- [x] Degrade honestly: when `$plan_path` is empty/unreadable or the scan finds no `full`
       declaration, emit the set-wording with no phase numbers ("every phase of the plan that
       declares `**Verification Tier**: full`") rather than asserting a final-phase fact that may
       be false. Leave the existing no-resolvable-candidate branch's own degrade text in place.
-- [ ] On the two paths that still sanction an UNSCOPED aggregator run — the no-resolvable-candidate
+      *(completed)*
+- [x] On the two paths that still sanction an UNSCOPED aggregator run — the no-resolvable-candidate
       degrade branch and the UNMAPPABLE CRITERION carve-out — add one instruction to run it
       detached with a bounded `kill -0` wait per `context/patterns/bounded-build-waiter.md`, never
       as a bare foreground call that the caller's own tool-call ceiling can kill mid-run.
-- [ ] Extend `scripts/tests/test-orchestrate-build-dispatch.sh` (Group 19's neighborhood) with
+      *(completed)*
+- [x] Extend `scripts/tests/test-orchestrate-build-dispatch.sh` (Group 19's neighborhood) with
       cases: a plan declaring `full` on an intermediate phase names that phase; a plan declaring
       `full` on several phases names all of them in one block; a plan with no `full` declaration
       (and a missing plan file) renders the numberless degrade wording and asserts no false
       final-phase claim; the `## Batch Gate Deferral` heading literal and its position relative to
       `## Description`/`## Plan` are unchanged; and research/plan dispatches still emit no section.
-- [ ] Extend `orchestrate-cycle-plan.sh`'s `cycle_plan_dispatch_hash()` comment block with a new
+      *(completed: 9 new cases added, confirmed failing against the pre-change composer, full
+      suite 232/232 passing against the post-change composer)*
+- [x] Extend `orchestrate-cycle-plan.sh`'s `cycle_plan_dispatch_hash()` comment block with a new
       "DECIDED AND RECORDED" note stating that this section's now plan-derived content remains
       deliberately UNSTRIPPED and why it is not per-cycle-varying (status-marker-independent
       scan), discharging that block's STANDING OBLIGATION in the same change that creates it.
+      *(completed)*
 
 **Timing**: 1.5 hours
 

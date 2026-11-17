@@ -668,16 +668,70 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
       if [ -f "$_bgd_candidate" ]; then resolved_verify_deploy="$_bgd_candidate"; break; fi
     done
 
+    # Scan $plan_path (already resolved above for implement dispatches) for every phase section
+    # declaring `**Verification Tier**: full`, regardless of that phase's own status marker --
+    # content-derived, never status-derived, so the rendered text stays stable across cycles
+    # while the plan itself is unchanged (see orchestrate-cycle-plan.sh's
+    # cycle_plan_dispatch_hash() DECIDED AND RECORDED note for this section). Mirrors
+    # validate-artifact.sh's own per-phase block-scan idiom (grep -nE "$PHASE_HEADING_ERE" |
+    # cut -d: -f1, then a sed -n START,END slice per phase) so a reader of either script
+    # recognizes the same pattern rather than a third hand-rolled variant.
+    _bgd_full_tier_phases=()
+    _bgd_phlib="${SCRIPT_DIR}/lib/phase-heading-patterns.sh"
+    if [ -n "$plan_path" ] && [ -f "$plan_path" ] && [ -f "$_bgd_phlib" ]; then
+      # shellcheck disable=SC1090
+      . "$_bgd_phlib"
+      mapfile -t _bgd_phase_lines < <(grep -nE "$PHASE_HEADING_ERE" "$plan_path" | cut -d: -f1)
+      _bgd_total_lines=$(wc -l < "$plan_path")
+      for _bgd_i in "${!_bgd_phase_lines[@]}"; do
+        _bgd_start="${_bgd_phase_lines[$_bgd_i]}"
+        _bgd_heading=$(sed -n "${_bgd_start}p" "$plan_path")
+        _bgd_num=$(extract_phase_number "$_bgd_heading") || _bgd_num=""
+        [ -z "$_bgd_num" ] && continue
+        if [ $(( _bgd_i + 1 )) -lt "${#_bgd_phase_lines[@]}" ]; then
+          _bgd_end=$(( _bgd_phase_lines[_bgd_i + 1] - 1 ))
+        else
+          _bgd_end="$_bgd_total_lines"
+        fi
+        _bgd_block=$(sed -n "${_bgd_start},${_bgd_end}p" "$plan_path")
+        _bgd_tier=$(echo "$_bgd_block" | grep -oE '\*\*Verification Tier\*\*:[[:space:]]*[A-Za-z]+|\*\*Verification Tier:\*\*[[:space:]]*[A-Za-z]+' | head -1 | grep -oE '[A-Za-z]+$' || true)
+        if [ "$_bgd_tier" = "full" ]; then
+          _bgd_full_tier_phases+=("$_bgd_num")
+        fi
+      done
+    fi
+    _bgd_phase_list=""
+    if [ "${#_bgd_full_tier_phases[@]}" -gt 0 ]; then
+      # printf-join on ", " -- IFS-based `${arr[*]}` joining uses only IFS's FIRST character as
+      # the separator, which would silently collapse ", " to "," and lose the space.
+      _bgd_phase_list="$(printf '%s, ' "${_bgd_full_tier_phases[@]}")"
+      _bgd_phase_list="${_bgd_phase_list%, }"
+    fi
+
     echo "## Batch Gate Deferral"
     echo ""
     echo "This task is one of several \`implement\`-phase dispatches inside one multi-task"
-    echo "/orchestrate batch invocation. The plan's final phase declares"
-    echo "\`**Verification Tier**: full\` — that field is NOT edited by this directive and stays"
-    echo "exactly as written in the plan file."
-    echo ""
-    echo "This directive constrains the FINAL phase of the plan named under \`## Plan\` below —"
-    echo "read it now, before reaching that plan body, so the constraint is already in hand when"
-    echo "that phase's own verification step runs."
+    echo "/orchestrate batch invocation."
+    if [ -n "$_bgd_phase_list" ]; then
+      if [ "${#_bgd_full_tier_phases[@]}" -eq 1 ]; then
+        _bgd_tier_subj="Phase ${_bgd_phase_list} of the plan declares"
+      else
+        _bgd_tier_subj="Phases ${_bgd_phase_list} of the plan declare"
+      fi
+      echo "${_bgd_tier_subj} \`**Verification Tier**: full\` — that field is NOT edited by"
+      echo "this directive and stays exactly as written in the plan file."
+      echo ""
+      echo "This directive constrains each of those phases of the plan named under \`## Plan\`"
+      echo "below — read the plan now, before reaching that plan body, so the constraint is"
+      echo "already in hand when each such phase's own verification step runs."
+    else
+      echo "Every phase of the plan that declares \`**Verification Tier**: full\` — that field is"
+      echo "NOT edited by this directive and stays exactly as written in the plan file."
+      echo ""
+      echo "This directive constrains every such phase of the plan named under \`## Plan\` below"
+      echo "— read the plan now, before reaching that plan body, so the constraint is already in"
+      echo "hand when each such phase's own verification step runs."
+    fi
     echo ""
     if [ -n "$resolved_run_all" ] || [ -n "$resolved_verify_deploy" ]; then
       echo "THIS dispatch discharges that phase against a SCOPED tier instead of independently"
@@ -716,7 +770,10 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
       echo "that named check directly instead — scoped to this phase's own touched files where"
       echo "the check itself supports scoping — and record THAT as the scoped discharge. An"
       echo "unmappable criterion is never waived, dropped, or treated as satisfied by a"
-      echo "narrowing that does not actually reach it."
+      echo "narrowing that does not actually reach it. If that named check cannot itself be"
+      echo "scoped and so runs unscoped, run it DETACHED with a bounded \`kill -0\` wait per"
+      echo "\`context/patterns/bounded-build-waiter.md\` rather than as a bare foreground call"
+      echo "this dispatch's own tool-call ceiling can abandon mid-run."
     else
       # DEGRADATION: neither candidate exists at ${SKILL_REPO_ROOT} (no deployed .claude/
       # mirror and no agent-system/ source-store tree). Naming a path that cannot resolve
@@ -727,7 +784,9 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
       echo "found under ${SKILL_REPO_ROOT}. Discharge this phase's declared"
       echo "\`full\` verification tier against the COMPLETE gate set instead, stating that choice as"
       echo "such in this phase's own verification notes — never silently narrowed to an invocation"
-      echo "that cannot exist here."
+      echo "that cannot exist here. Run that complete gate set DETACHED with a bounded"
+      echo "\`kill -0\` wait per \`context/patterns/bounded-build-waiter.md\`, never as a bare"
+      echo "foreground call this dispatch's own tool-call ceiling can abandon mid-run."
     fi
     echo ""
     echo "The complete gate set still runs — exactly once, for the whole batch, at the end of"

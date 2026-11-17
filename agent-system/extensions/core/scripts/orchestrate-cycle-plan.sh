@@ -2294,6 +2294,21 @@ fi
 # boilerplate, so it must still change the digest. This satisfies the STANDING OBLIGATION stated
 # above: this is the decision that obligation calls for, not an omission of it.
 #
+# DECIDED AND RECORDED (batch-gate deferral phase-list content): within that same `## Batch Gate
+# Deferral` section, the body text now also names the SET of plan phases declaring
+# `**Verification Tier**: full` (e.g. "Phases 2, 4 of the plan declare..."), derived by scanning
+# the plan file's phase sections rather than hardcoded to "the final phase". This content is
+# likewise deliberately NOT added to the strip pattern below, for a THIRD distinct reason from
+# the two already recorded above: the scan orchestrate-build-dispatch.sh runs to produce it is
+# explicitly status-marker-INDEPENDENT (it reads each phase's `**Verification Tier**` field, never
+# its `[NOT STARTED]`/`[IN PROGRESS]`/`[COMPLETED]` heading marker), so the rendered phase-number
+# set is stable across repeated cycles of the SAME unchanged plan, exactly as the Territory and
+# pending-gate-finding content above are stable for their own unchanged inputs. A dispatch whose
+# phase-list text changes between cycles reflects a genuine plan edit (a phase's tier was added,
+# removed, or changed), which must still change the digest — never a phase simply progressing from
+# `[NOT STARTED]` to `[COMPLETED]`, which this scan is deliberately blind to. This satisfies the
+# STANDING OBLIGATION stated above in the same change that introduced the scan.
+#
 # DECIDED AND RECORDED (pending gate finding): orchestrate-build-dispatch.sh's `## Outstanding
 # Gate Finding` section (emitted only when `--pending-gate-finding` is passed, built from
 # verify_deploy_baseline_notices) is likewise deliberately NOT added to the strip pattern below.
