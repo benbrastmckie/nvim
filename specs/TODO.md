@@ -53,7 +53,7 @@ next_project_number: 643
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
-604 [PLANNING] — Lint-time detector for drifted test-fixture dependency...
+604 [PLANNED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — GOAL. Determine what leaves files behind in this repository's...
@@ -1279,11 +1279,12 @@ failure-side direction.
 ---
 
 ### 604. Lint-time detector for drifted test-fixture dependency declarations, in both the named-array and open-coded shapes
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [604_fixture_dependency_declaration_drift_lint/reports/01_fixture-dependency-drift-lint.md]
+- **Plan**: [604_fixture_dependency_declaration_drift_lint/plans/01_fixture-dependency-drift-lint.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md).
 

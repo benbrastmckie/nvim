@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase plan for the fixture-dependency-declaration drift lint: detector script with the unified both-shapes extraction and the four-shape mandatory/optional guard classifier, a regression suite seeded from the three measured pre-repair commits, gate registration via route (a) with the id computed at edit time, the first written record of the convention in shell-script-testing.md, and a final deploy + full gate run. Re-validated every carried figure against live state: the dispatch's '3 named-array suites' is superseded by a measured 8, and scripts/lib referencers measured 90 not 88. Found two coupled generated surfaces the research report missed -- manifest.json's provides.scripts (gate 3 Rule Q, commit-blocking) and index-entries.json's line_count plus plan-format.md's line-number pin -- and declared each in the phase that moves its input.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/604_fixture_dependency_declaration_drift_lint/plans/01_fixture-dependency-drift-lint.md",
+      "summary": "5-phase plan (4 dependency waves, 5.75h) for the fixture-dependency-declaration drift lint, siting ruled to route (a) gate registration with rationale recorded."
+    }
+  ],
+  "dispatch_seq": 6
+}

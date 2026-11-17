@@ -1,39 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794942735_1748a1_604",
-  "dispatch_seq": 3,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/604_fixture_dependency_declaration_drift_lint/reports/01_fixture-dependency-drift-lint.md",
-      "summary": "Research on a lint-time detector for fixture test-suite dependency-declaration drift: unified extraction algorithm for both the named-array and open-coded declaration shapes, a four-way mandatory-vs-optional source/. classification taxonomy validated against three real historical repair commits, a corrected (wider) population measurement, and a gate-registry.data siting ruling with full precedent-based rationale."
+      "type": "plan",
+      "path": "specs/604_fixture_dependency_declaration_drift_lint/plans/01_fixture-dependency-drift-lint.md",
+      "summary": "5-phase plan (4 dependency waves, 5.75h) for the fixture-dependency-declaration drift lint, siting ruled to route (a) gate registration with rationale recorded."
     }
   ],
-  "findings_count": 4,
-  "next_steps": "Run /orchestrate 604 to create implementation plan",
   "memory_candidates": [
     {
-      "content": "In this repo's scripts/lib resolution idioms, a *_CANDIDATES=(...) array + search loop is syntactically IDENTICAL whether the empty-result branch is a hard 'exit 5' (mandatory dependency) or a soft 'inconclusive, passing through' log-and-continue (optional dependency) -- e.g. update-task-status.sh's PHASE_LIB/VOCAB_LIB (mandatory) vs. OVERLAP_LIB/DEPLOY_FRESHNESS_LIB (optional), both inside the same function. Any static lint over this corpus that classifies a CANDIDATES-array pattern as mandatory purely from its shape, without inspecting the empty-branch body for an exit vs. a log-and-continue, will false-positive on the optional instances.",
+      "content": "In this repo's agent-system source store, creating ANY new script under agent-system/extensions/<ext>/scripts/ (including a test suite) owes an entry in that extension's manifest.json provides.scripts -- an explicit, non-glob list (409 entries for core) whose completeness is enforced by check-extension-docs.sh Rule Q inside verify-deploy.sh gate 3, which is commit-blocking. run-all.sh discovers suites by glob and needs no entry, so authors reasonably expect provides.scripts to behave like index-entries.json's wholesale-directory convention; it does not, and a missing entry produces no authoring-time signal. Remedy is one command: sync-manifest-scripts.sh --write (then --check). A plan that creates a new source-store script must declare manifest.json in the SAME phase per plan-format.md's coupled-generated-surface obligation.",
       "category": "PATTERN",
-      "source_artifact": "specs/604_fixture_dependency_declaration_drift_lint/reports/01_fixture-dependency-drift-lint.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["shell-lint", "source-guard", "candidates-array", "mandatory-optional-dependency", "false-positive"]
-    },
-    {
-      "content": "The single-line '[ -f \"$VAR\" ] && . \"$VAR\"' idiom in this repo's core scripts (update-task-status.sh's _RR_LIB, task-lock.sh's identical copy) is a documented degrade-safe guard (context/patterns/regeneration-is-manual-only.md, 'Redeploy-Remedy Emission Sites', Decision 1(c)): the library's absence is an intentional no-op fallback, never an error. Any lint or audit over this corpus that treats an unconditional-looking source/. reference as always-mandatory must special-case this exact syntactic shape as OPTIONAL.",
-      "category": "PATTERN",
-      "source_artifact": "specs/604_fixture_dependency_declaration_drift_lint/reports/01_fixture-dependency-drift-lint.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["degrade-safe-guard", "redeploy-remedy-lib", "optional-dependency", "shell-idiom"]
-    },
-    {
-      "content": "In agent-system/extensions/core's gate-registry.data, the newest migrated lint gates (27, 29) have NO entry in docs/reference/utility-scripts-inventory.md, while older ones (6, 7, 11) do -- the convention has shifted toward gate-registry.data plus the script's own header being the sole registration record for a gate-wired lint, with the inventory reserved for scripts genuinely outside the normal lifecycle. When sizing a new gate-registered lint's documentation footprint, follow the newest precedent (no inventory entry), not the oldest.",
-      "category": "WORKFLOW",
-      "source_artifact": "specs/604_fixture_dependency_declaration_drift_lint/reports/01_fixture-dependency-drift-lint.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["gate-registry", "utility-scripts-inventory", "lint-registration", "documentation-convention"]
+      "source_artifact": "specs/604_fixture_dependency_declaration_drift_lint/plans/01_fixture-dependency-drift-lint.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["manifest-provides-scripts", "sync-manifest-scripts", "rule-q", "coupled-generated-surface", "source-store", "gate3"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1794942735_1748a1_604",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 5.75,
+    "dependency_waves": [[1], [2, 4], [3], [5]]
+  },
+  "next_steps": "Run /orchestrate 604 to execute the plan",
+  "dispatch_seq": 6
 }
