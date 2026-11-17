@@ -1,0 +1,29 @@
+{
+  "phase": 4,
+  "phase_name": "Deploy, attest end-to-end, and run the full gate set",
+  "started_at": "2026-11-18T00:05:00Z",
+  "last_updated": "2026-11-18T01:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh to regenerate deployed tree", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm deployed copy carries the fix", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Build scratch consumer-shaped tree and attest end-to-end resolution", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Read-only cslib replay of source_dir lookup", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run complete gate set (scoped per Batch Gate Deferral directive)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Record issues/wins via issue-record.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "verify-deploy.sh --only-gate 3,4,5,8 --skip-unchanged without --gate8-touched", "result": "failed", "reason": "caused gate 8 to run the full unnarrowed 206-suite battery, exactly the waste the Batch Gate Deferral directive warns against; corrected by adding --gate8-touched"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.5",
+      "description": "Run the complete gate set: bash .claude/scripts/verify-deploy.sh (no --skip-slow, no --only-gate), and resolve any finding it reports.",
+      "type": "altered",
+      "reason": "This dispatch's own Batch Gate Deferral directive (.dispatch/11.md) requires discharging this phase's declared Verification Tier: full against a scoped tier instead of an independent unflagged run; the complete gate set runs once for the whole batch at the end of the invocation.",
+      "annotation": "*(deviation: altered -- per Batch Gate Deferral directive, discharged against the scoped tier verify-deploy.sh --only-gate 3,4,5,8 --skip-unchanged --gate8-touched <task files> instead of an independent unflagged run)*"
+    }
+  ],
+  "notes": "Gates 3, 4, 5 all PASS clean (no drift findings remain post-deploy). Gate 8, narrowed via --gate8-touched to this task's own touched files (suite_selection_select resolved 39-41 suites), reports 3 failing suites: test-gate-cache-equivalence.sh (pre-existing documented EXPECTED/load-sensitive per known-failures.txt, not a concern), test-lint-unit-integration-boundary.sh (NEW, but caused by two OTHER unclassified suites outside task 624's file_scope: test-lint-fixture-dependency-declaration.sh from task 604, and the sapience extension's test-sapience-context-scoping.sh), and test-mcp-merge-target.sh (NEW, unrelated .mcp.json merge assertions, plausibly concurrent-session MCP state contamination under this multi-task batch). Both NEW failures were investigated directly (standalone suite runs) and confirmed unrelated to any file in task 624's declared file_scope -- reported via issue-record.sh per Stage 3.6 Observation Duty, not fixed (out of scope). End-to-end consumer attestation (scratch tree) and the read-only cslib replay both confirmed resolution works exactly as the plan specifies. Self-inflicted process note: the first scoped-gate attempt omitted --gate8-touched and briefly ran the full unnarrowed battery before being corrected -- recorded via issue-record.sh."
+}

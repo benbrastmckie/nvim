@@ -359,35 +359,42 @@ silently SKIPs).
 
 ---
 
-### Phase 4: Deploy, attest end-to-end, and run the full gate set [NOT STARTED]
+### Phase 4: Deploy, attest end-to-end, and run the full gate set [COMPLETED]
 
 **Goal**: the *deployed* recorder — the copy every call site actually invokes — carries the fix,
 resolves from a consumer-shaped tree, and the whole repository is green.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed `.claude/**` tree
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed `.claude/**` tree
       from the source store (this is a whole-tree regeneration; see the `__WHOLE_TREE__`
-      declaration below).
-- [ ] Confirm the deployed copy carries the fix: the new helper and the
+      declaration below). *(completed)*
+- [x] Confirm the deployed copy carries the fix: the new helper and the
       `.claude-extensions.json` reference are present in
       `.claude/scripts/system-defect-record.sh`, and the deployed
-      `.claude/scripts/tests/test-system-defect-record-signal-b.sh` exists.
-- [ ] Build a scratch consumer-shaped tree under the session scratchpad (a `.claude/` copied from
+      `.claude/scripts/tests/test-system-defect-record-signal-b.sh` exists. *(completed: `diff`
+      against the source-store copy is byte-identical)*
+- [x] Build a scratch consumer-shaped tree under the session scratchpad (a `.claude/` copied from
       the freshly deployed tree, a `.claude-extensions.json` whose `core.source_dir` points at
       this repository's real `agent-system/extensions/core`, no `agent-system/` subtree of its
       own, and an empty `specs/`), invoke its `.claude/scripts/system-defect-record.sh
       --defect-class RECOVERY_DECLINED --dispatched-agent general-research-agent`, and assert it
       no longer exits 3 — the end-to-end inverse of the reproduction recorded in this plan's
-      Premise Re-Validation.
-- [ ] Replay the resolution read-only against the original consumer repository without recording
+      Premise Re-Validation. *(completed: exit 0, event recorded with
+      `detail.attributed_source_path = "agent-system/extensions/core/agents/general-research-agent.md"`;
+      scratch tree deleted afterward)*
+- [x] Replay the resolution read-only against the original consumer repository without recording
       into it: `jq -r '.extensions.core.source_dir'
       /home/benjamin/Projects/cslib/.claude-extensions.json` followed by `test -f
       <that>/agents/general-research-agent.md`, confirming the exact lookup the fix performs
-      succeeds there.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`, no
-      `--only-gate`), and resolve any finding it reports.
-- [ ] Record any issue or win encountered across all four phases via `issue-record.sh`, per the
-      dispatch's Issue Log contract.
+      succeeds there. *(completed: resolves)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`, no
+      `--only-gate`), and resolve any finding it reports. *(deviation: altered — per this
+      dispatch's own Batch Gate Deferral directive, discharged against the scoped tier
+      `verify-deploy.sh --only-gate 3,4,5,8 --skip-unchanged` instead of an independent unflagged
+      run; the complete gate set runs once for the whole batch at the end of the invocation and
+      is attributed back to this task by its own `modified_files`, per the directive)*
+- [x] Record any issue or win encountered across all four phases via `issue-record.sh`, per the
+      dispatch's Issue Log contract. *(completed)*
 
 **Timing**: 0.75 hours
 
