@@ -241,10 +241,10 @@ all live, with a suite that asserts call count and argument shape against a reco
       `--task`) so a caller's `|| note` guard distinguishes misuse from a degraded write. Every
       `issue-record.sh` call is itself `|| true`-guarded: a recording failure never fails this
       script. *(completed)*
-- [ ] Register both new files in `agent-system/extensions/sapience/manifest.json`'s
+- [x] Register both new files in `agent-system/extensions/sapience/manifest.json`'s
       `provides.scripts` array: `postflight-sapience-notes.sh` and
       `tests/test-postflight-sapience-notes.sh`, keeping the array's existing alphabetical
-      order.
+      order. *(completed)*
 - [ ] Create `agent-system/extensions/sapience/scripts/tests/test-postflight-sapience-notes.sh`
       following `test-sapience-capture.sh`'s conventions exactly: `common_test_pass/_fail/_info`
       from `lib/common.sh`, `PASSED`/`FAILED` integer counters, a `mktemp -d` workdir with

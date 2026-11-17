@@ -11,9 +11,11 @@
     "rules": ["sapience-write-path.md"],
     "scripts": [
       "install-sapience-mcp-session-hook.sh",
+      "postflight-sapience-notes.sh",
       "sapience-remember.sh",
       "sapience-retrieve.sh",
       "setup-sapience-mcp.sh",
+      "tests/test-postflight-sapience-notes.sh",
       "tests/test-sapience-capture.sh",
       "tests/test-sapience-mcp-registration.sh",
       "verify-sapience-context-scoping.sh",
