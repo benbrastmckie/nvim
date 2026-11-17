@@ -182,7 +182,7 @@ if [ "$MODE" = "aggregate" ]; then
     exit 1
   fi
 
-  # Seed enum (16 classes; context/formats/issue-log.md is authoritative -- kept in sync by hand,
+  # Seed enum (17 classes; context/formats/issue-log.md is authoritative -- kept in sync by hand,
   # same convention as issue-record.sh's own comment-only copy).
   SEED_CLASSES_JSON='[
     "design-record defect or ambiguity",
@@ -200,7 +200,8 @@ if [ "$MODE" = "aggregate" ]; then
     "orchestration defect",
     "stale workaround",
     "cost-forced exclusion or substituted verification",
-    "infrastructure/transport unavailable"
+    "infrastructure/transport unavailable",
+    "knowledge-capture gap"
   ]'
 
   entries_tmp="$(mktemp)"
