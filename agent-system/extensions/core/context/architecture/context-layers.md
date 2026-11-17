@@ -212,7 +212,7 @@ eager (in the session-start prompt prefix, paid on every invocation) or lazy (lo
 ### The no-volatile-files-in-eager-prefix constraint
 
 Files that change on every task operation — `specs/TODO.md`, `specs/state.json`,
-`specs/errors.json`, and anything else mutated by the task lifecycle — must **never** be
+`specs/events.jsonl`, and anything else mutated by the task lifecycle — must **never** be
 `@`-imported into the eager prefix. Two independent reasons:
 
 - **Cache economics**: the eager prefix is a cached prompt prefix; a volatile file in it

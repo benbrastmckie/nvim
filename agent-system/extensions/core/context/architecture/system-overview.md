@@ -383,7 +383,7 @@ session_id="sess_$(date +%s)_$(od -An -N3 -tx1 /dev/urandom | tr -d ' ')"
 - Passed through delegation context to agent
 - Returned in agent metadata
 - Included in git commit message
-- Logged in errors.json for traceability
+- Logged in issues.jsonl for traceability
 
 ---
 
@@ -413,7 +413,6 @@ Complete mapping of all commands to their skill and agent paths:
 | `/revise` | Single | skill-reviser (new version) | reviser-agent | A |
 | `/meta` | Single | skill-meta | meta-builder-agent | A |
 | `/review` | Direct | (direct execution) | (inline execution) | B |
-| `/errors` | Direct | (direct execution) | (inline execution) | B |
 | `/todo` | Direct | (direct execution) | (no agent) | B |
 | `/task` | Direct | skill-meta | meta-builder-agent | A |
 | `/refresh` | Direct | skill-refresh | (no agent) | B |
@@ -447,7 +446,7 @@ Skill validates return, passes through error
     │
     ▼
 Orchestrator receives error, handles based on severity:
-  ├─ Critical: Log to errors.json, return to user
+  ├─ Critical: Log via issue-record.sh, return to user
   ├─ Recoverable: Suggest retry/resume
   └─ Partial: Save progress, enable resume
 ```

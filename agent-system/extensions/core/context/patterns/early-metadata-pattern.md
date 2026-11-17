@@ -169,7 +169,7 @@ When skill postflight reads metadata with `status: "in_progress"`:
 
 1. **Interpret as interrupted**: Agent was terminated before completion
 2. **Keep task status unchanged**: Do not transition to next status
-3. **Log the interruption**: Record to errors.json with type="delegation_interrupted"
+3. **Log the interruption**: Record via `issue-record.sh` with `--class "delegation_interrupted"`
 4. **Extract partial_progress**: Use to determine resume point
 5. **Preserve artifacts**: If any artifacts were created, link them
 6. **Display guidance**: Tell user to run command again to resume
@@ -183,20 +183,11 @@ If metadata file contains `status: "in_progress"`:
 
 1. Extract `partial_progress.stage` and `partial_progress.details`
 2. Keep task status unchanged (still "researching" or "implementing")
-3. Log error to errors.json:
-   ```json
-   {
-     "type": "delegation_interrupted",
-     "message": "Agent interrupted at stage: {stage}",
-     "context": {
-       "session_id": "...",
-       "partial_progress": {...}
-     },
-     "recovery": {
-       "suggested_action": "Run command again to resume",
-       "auto_recoverable": true
-     }
-   }
+3. Log error via `issue-record.sh`:
+   ```bash
+   issue-record.sh --task-dir "$TASK_DIR" --kind issue --class "delegation_interrupted" \
+     --severity costly --what-happened "Agent interrupted at stage: {stage}" \
+     --session "$session_id"
    ```
 4. Display to user:
    "Agent interrupted at {stage}. Run /orchestrate N to resume."

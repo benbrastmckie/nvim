@@ -68,7 +68,7 @@
       "domain": "core",
       "subdomain": "architecture",
       "summary": "High-level agent system architecture overview",
-      "line_count": 505,
+      "line_count": 504,
       "keywords": [
         "architecture",
         "system",
@@ -857,7 +857,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Checkpoint-based execution pattern",
-      "line_count": 252,
+      "line_count": 238,
       "keywords": [
         "patterns",
         "checkpoint",
@@ -899,7 +899,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Early metadata creation for interruption recovery",
-      "line_count": 260,
+      "line_count": 251,
       "keywords": [
         "patterns",
         "metadata",
@@ -1090,7 +1090,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Recovery patterns for MCP tool failures",
-      "line_count": 261,
+      "line_count": 245,
       "keywords": [
         "patterns",
         "mcp",

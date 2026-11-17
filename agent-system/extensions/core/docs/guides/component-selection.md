@@ -260,7 +260,6 @@ Creates: Agent only (manifest's `routing_agents.implement.{type}` entry routes t
 | /orchestrate | skill-orchestrate (dispatches general-research-agent/planner-agent/general-implementation-agent directly, or extension skills when loaded) |
 | /revise | skill-reviser |
 | /review | (direct execution) |
-| /errors | (direct execution) |
 | /todo | (direct execution) |
 | /meta | skill-meta |
 

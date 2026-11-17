@@ -485,7 +485,7 @@ Layer 1: Orchestrator displays error to user
 - Recoverable error → Include recovery recommendation
 
 **Two-Level Error Logging**:
-- **CRITICAL**: Errors that prevent task completion (logged to errors.json)
+- **CRITICAL**: Errors that prevent task completion (logged via `issue-record.sh`)
 - **NON-CRITICAL**: Warnings or recoverable errors (logged but don't fail task)
 
 **See Also**:

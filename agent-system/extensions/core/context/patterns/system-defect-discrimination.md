@@ -273,7 +273,7 @@ charging a genuine cycle" section.
 array.** Signal A is false — nothing about that outcome violates a schema the agent system owns;
 the implementation agent followed its own contract to the letter and reported an honest failure
 of the *user's* work. The mechanism never fires, however severe the underlying failure is, however
-many times it recurs, and however loudly `/errors` or a human reviewer later complains about it.
+many times it recurs, and however loudly a human reviewer later complains about it.
 
 This is deliberate and total: severity of the underlying failure is not an input to the predicate
 at all. A catastrophic, repeatedly-failing Lean proof and a single successful research report both

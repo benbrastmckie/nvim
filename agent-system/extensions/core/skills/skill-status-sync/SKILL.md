@@ -275,7 +275,7 @@ Return failed status with recommendation to check permissions.
 
 ### jq Parse Failure
 If jq commands fail with INVALID_CHARACTER or syntax error (Issue #1132):
-1. Log to errors.json with session_id and original command
+1. Log via issue-record.sh with session_id and original command
 2. Retry with two-step pattern from `jq-escaping-workarounds.md`
 3. If retry succeeds, log recovery action
 

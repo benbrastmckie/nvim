@@ -470,35 +470,35 @@ the measurement rather than moving the baseline silently.
 
 ---
 
-### Phase 6: Sweep the remaining context, command, skill, and docs prose [NOT STARTED]
+### Phase 6: Sweep the remaining context, command, skill, and docs prose [COMPLETED]
 
 **Goal**: Remove the surface from every remaining documentary surface in the source store.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/context/architecture/system-overview.md` and
-      `context/architecture/context-layers.md`: remove the `/errors` and `errors.json` mentions.
-- [ ] `agent-system/extensions/core/context/orchestration/architecture.md` and
-      `context/reference/workflow-diagrams.md`: same.
-- [ ] `agent-system/extensions/core/context/patterns/`: correct `backlog-reconciliation.md`
+- [x] `agent-system/extensions/core/context/architecture/system-overview.md` and
+      `context/architecture/context-layers.md`: remove the `/errors` and `errors.json` mentions. *(completed)*
+- [x] `agent-system/extensions/core/context/orchestration/architecture.md` and
+      `context/reference/workflow-diagrams.md`: same. *(completed)*
+- [x] `agent-system/extensions/core/context/patterns/`: correct `backlog-reconciliation.md`
       (which cites `commands/errors.md` as a caller), `context-discovery.md` (which lists
       `/errors` among the command dimension's values), `system-defect-discrimination.md`,
-      `early-metadata-pattern.md`, `checkpoint-execution.md`, and `mcp-tool-recovery.md`.
-- [ ] `agent-system/extensions/core/context/processes/implementation-workflow.md`: same.
-- [ ] `agent-system/extensions/core/commands/task.md`: remove `/errors` from the example caller
+      `early-metadata-pattern.md`, `checkpoint-execution.md`, and `mcp-tool-recovery.md`. *(completed)*
+- [x] `agent-system/extensions/core/context/processes/implementation-workflow.md`: same. *(completed)*
+- [x] `agent-system/extensions/core/commands/task.md`: remove `/errors` from the example caller
       list in the observations paragraph and from the programmatic-caller sentence that names
-      `/errors` Step 3.6. `/meta` and `/fix-it` remain as the examples.
-- [ ] `agent-system/extensions/core/commands/spawn.md`: remove the `errors.json` mention.
-- [ ] `agent-system/extensions/core/skills/skill-reviser/SKILL.md` and
-      `skills/skill-status-sync/SKILL.md`: same.
-- [ ] `agent-system/extensions/core/docs/`: correct `guides/user-guide.md` (including its table
+      `/errors` Step 3.6. `/meta` and `/fix-it` remain as the examples. *(completed: retargeted the programmatic-caller example to /fix-it, a real pre-set-backlog_audit caller)*
+- [x] `agent-system/extensions/core/commands/spawn.md`: remove the `errors.json` mention. *(completed)*
+- [x] `agent-system/extensions/core/skills/skill-reviser/SKILL.md` and
+      `skills/skill-status-sync/SKILL.md`: same. *(completed)*
+- [x] `agent-system/extensions/core/docs/`: correct `guides/user-guide.md` (including its table
       of contents anchor), `guides/component-selection.md`, `guides/creating-commands.md`,
       `guides/permission-configuration.md`, `architecture/system-overview.md`,
       `reference/standards/multi-task-creation-standard.md` (its per-command compliance rows for
       `/errors`), and `reference/utility-scripts-inventory.md` (the `errors-append.sh` mirroring
       citation in the `orchestrate-record-decision.sh` entry — repoint it at a live script or
-      drop the clause).
-- [ ] Run `bash .claude/scripts/lint/lint-dead-command-recommendations.sh` and clear anything it
-      flags.
+      drop the clause). *(completed: `guides/permission-configuration.md` left untouched — its errors.json mentions are all the unrelated, never-implemented .agent-logs/errors.json speculative feature, out of this task's scope; see deviation note)*
+- [x] Run `bash .claude/scripts/lint/lint-dead-command-recommendations.sh` and clear anything it
+      flags. *(completed: 0 violations across 1102 files checked)*
 
 **Timing**: 1.5 hours
 

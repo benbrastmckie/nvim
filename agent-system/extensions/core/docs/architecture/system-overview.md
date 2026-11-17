@@ -91,7 +91,6 @@ Commands are user-facing entry points invoked via `/command` syntax. They:
 | `/review` | Review code and create analysis reports |
 | `/project-overview` | Analyze repository and create task to generate project-overview.md |
 | `/todo` | Archive completed, abandoned, and expanded tasks |
-| `/errors` | Analyze errors and create fix plans |
 | `/meta` | Interactive system builder that creates tasks for agent architecture changes |
 | `/fix-it` | Scan for FIX:/NOTE:/TODO:/QUESTION: tags and create structured tasks |
 | `/zulip` | Fetch a Zulip thread via API and write formatted JSON to a file |

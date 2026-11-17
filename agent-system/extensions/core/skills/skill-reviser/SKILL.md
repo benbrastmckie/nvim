@@ -503,7 +503,7 @@ Non-blocking: Log failure but continue with success response.
 
 ### jq Parse Failure
 If jq commands fail with INVALID_CHARACTER or syntax error (Issue #1132):
-1. Log to errors.json
+1. Log via issue-record.sh
 2. Retry with two-step pattern (already implemented in Stage 8)
 
 ### Subagent Timeout

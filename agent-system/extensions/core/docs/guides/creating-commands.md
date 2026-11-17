@@ -167,7 +167,7 @@ Document the recovery paths:
 ## Error Handling
 
 - **Task not found**: Exit with error, preserve no state
-- **Delegation failure**: Keep task in current status, log to errors.json
+- **Delegation failure**: Keep task in current status, log via issue-record.sh
 - **Timeout**: Mark phase [PARTIAL] in plan, next invocation resumes
 ```
 

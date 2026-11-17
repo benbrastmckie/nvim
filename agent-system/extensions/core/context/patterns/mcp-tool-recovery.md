@@ -136,29 +136,13 @@ When MCP tool calls fail during execution:
 
 ## Error Logging Format
 
-When MCP errors occur, they should be logged to errors.json with:
+When MCP errors occur, they should be logged via `issue-record.sh`:
 
-```json
-{
-  "id": "err_{timestamp}",
-  "timestamp": "ISO_DATE",
-  "type": "mcp_abort_error",
-  "severity": "high",
-  "message": "MCP tool {tool_name} aborted with error -32001",
-  "context": {
-    "session_id": "sess_...",
-    "command": "research or implement dispatch",
-    "task": 259,
-    "tool_name": "tool_name_here",
-    "error_code": -32001,
-    "retry_attempted": true,
-    "alternative_used": "alternative_tool_name"
-  },
-  "recovery": {
-    "suggested_action": "Retry command or check MCP configuration",
-    "auto_recoverable": true
-  }
-}
+```bash
+issue-record.sh --task-dir "$TASK_DIR" --kind issue --class "mcp_abort_error" \
+  --severity costly --session "sess_..." --phase implement \
+  --what-happened "MCP tool {tool_name} aborted with error -32001 during {command}; retry attempted, fell back to {alternative_tool_name}" \
+  --suggested-channel fix_now
 ```
 
 ---

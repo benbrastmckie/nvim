@@ -1,0 +1,47 @@
+{
+  "phase": 6,
+  "phase_name": "Sweep the remaining context, command, skill, and docs prose",
+  "started_at": "2026-11-17T05:50:00Z",
+  "last_updated": "2026-11-17T06:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run discovery grep and enumerate remaining files", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Sweep context/architecture, orchestration, reference, patterns files", "status": "done", "files_touched": [
+      "agent-system/extensions/core/context/architecture/system-overview.md",
+      "agent-system/extensions/core/context/architecture/context-layers.md",
+      "agent-system/extensions/core/context/orchestration/architecture.md",
+      "agent-system/extensions/core/context/reference/workflow-diagrams.md",
+      "agent-system/extensions/core/context/patterns/backlog-reconciliation.md",
+      "agent-system/extensions/core/context/patterns/context-discovery.md",
+      "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+      "agent-system/extensions/core/context/patterns/early-metadata-pattern.md",
+      "agent-system/extensions/core/context/patterns/checkpoint-execution.md",
+      "agent-system/extensions/core/context/patterns/mcp-tool-recovery.md",
+      "agent-system/extensions/core/context/processes/implementation-workflow.md",
+      "agent-system/extensions/core/index-entries.json"
+    ]},
+    {"id": 3, "description": "Sweep commands/task.md and commands/spawn.md", "status": "done", "files_touched": ["agent-system/extensions/core/commands/task.md", "agent-system/extensions/core/commands/spawn.md"]},
+    {"id": 4, "description": "Sweep skill-reviser/SKILL.md and skill-status-sync/SKILL.md", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-reviser/SKILL.md", "agent-system/extensions/core/skills/skill-status-sync/SKILL.md"]},
+    {"id": 5, "description": "Sweep docs/ guides and reference files", "status": "done", "files_touched": [
+      "agent-system/extensions/core/docs/guides/user-guide.md",
+      "agent-system/extensions/core/docs/guides/component-selection.md",
+      "agent-system/extensions/core/docs/guides/creating-commands.md",
+      "agent-system/extensions/core/docs/architecture/system-overview.md",
+      "agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md",
+      "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md"
+    ]},
+    {"id": 6, "description": "Run lint-dead-command-recommendations.sh and clear findings", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6-permission-config",
+      "description": "docs/guides/permission-configuration.md was NOT edited in this phase",
+      "type": "skipped",
+      "reason": "All 6 'errors.json' mentions in this file are '.agent-logs/errors.json' -- the same speculative, never-implemented permission-denial log (different path, different schema) excluded in Phase 5 from context/standards/error-handling.md. Same judgment applied here: out of this task's declared scope (specs/errors.json only).",
+      "annotation": "*(deviation: skipped — docs/guides/permission-configuration.md's errors.json mentions are all the unrelated .agent-logs/errors.json speculative feature, out of scope)*"
+    }
+  ],
+  "verification_notes": "lint-dead-command-recommendations.sh: 0 violations (1102 files checked). validate-index.sh: PASSED, no missing-file entries, no stale line_count drift remaining after corrections. Discovery grep over agent-system/extensions/core/ now returns only: .claude-extensions.json (explicit Non-Goals exclusion), context/config/orchestrator-context-budget.json (protected note field, explicit Non-Goals exclusion), and scripts/ + scripts/tests/ files (Phase 7's declared scope, plus our own already-correct Phase 4 inverted-assertion test fixtures)."
+}

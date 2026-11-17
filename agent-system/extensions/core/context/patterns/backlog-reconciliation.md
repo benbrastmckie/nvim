@@ -183,7 +183,7 @@ deliverables generally, applied here to one specific field.
   the one place that can observe every creation write regardless of which surface originated it.
 - **Each wiring site** (`agents/meta-builder-agent.md`, `skills/skill-meta/SKILL.md`,
   `commands/task.md`, `skills/skill-fix-it/SKILL.md`, `skills/skill-spawn/SKILL.md`,
-  `commands/review.md`, `commands/errors.md`) — calls the matcher at the skill/command layer
+  `commands/review.md`) — calls the matcher at the skill/command layer
   (where a human-facing confirmation surface is reachable) and forwards the resulting verdict
   document to the write.
 

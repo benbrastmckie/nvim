@@ -107,7 +107,6 @@ Identify items that could become tasks from various sources.
 | `/fix-it` | FIX:, NOTE:, TODO:, QUESTION: tags in source files |
 | `/meta` | User interview responses |
 | `/review` | Code analysis findings + roadmap items |
-| `/errors` | Error patterns from errors.json |
 | `/task --review` | Incomplete phases from plan files |
 
 **Implementation**:
@@ -609,10 +608,7 @@ See `.claude/agents/meta-builder-agent.md` for complete implementation details.
 | `/meta` | Yes (primary-match criterion) | Yes | **Automatic** | Yes (meta-builder-agent) | Yes (meta-interview.md Stage 4.6 / Step 4.5) | Full DAG | Kahn's | Linear/Layered |
 | `/fix-it` | Yes (primary-match criterion) | Yes | Yes | Yes (skill-fix-it) | Yes (skill-fix-it Step 8.2d) | Internal only | No | No |
 | `/review` | No (not yet wired) | Yes | Yes | No | Yes (Step 3.5, per-task AskUserQuestion on a finding); still does not satisfy 4a | No | No | No |
-| `/errors` | Yes (non-interactive) | Partial* | No | No | Yes (Step 3.6, non-interactive -- rendered in the report, never blocks); still does not satisfy 4a | No | No | No |
 | `/task --review` | No (not yet wired) | Yes | No | No | No (not yet wired) | parent_task | No | No |
-
-*`/errors` creates tasks automatically without interactive selection (intentional for error triage workflow).
 
 `/spawn` (single-task-follow-up creator, `spawn-agent` + `skill-spawn`) also implements
 Footprint Overlap (4a) even though it is not a multi-task *creation* command in the strict
@@ -634,14 +630,6 @@ Step 5.5; Expand Mode inherits it via Step 3's explicit reuse of Create Task Mod
 ### /review
 - **Gap**: No dependency support between created tasks
 - **Enhancement**: Add dependency interview for issue groups that have natural ordering
-
-### /errors
-- **Gap**: No interactive selection, no dependency support
-- **Rationale**: Automatic mode is intentional for quick error triage; `/errors` now applies the
-  Task-Count Reasoning (0) default-to-consolidate rule non-interactively before drafting task
-  entries (see Component 0 above), so the remaining gap is selection/dependency UI, not
-  consolidation
-- **Enhancement**: Add `--interactive` flag for manual selection mode
 
 ### /fix-it
 - **Gap**: No external dependency support (only internal learn-it -> fix-it)

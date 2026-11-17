@@ -179,7 +179,7 @@ On error during phase:
          v
 +-----------------+
 | Log error       |
-| to errors.json  |
+| via issue-record|
 +--------+--------+
          |
          v

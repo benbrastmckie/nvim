@@ -155,25 +155,11 @@ ensures a metadata file exists. Postflight should handle this gracefully:
 **Response**:
 1. Extract `partial_progress.stage` and `partial_progress.details`
 2. **Keep task status unchanged** (still "researching" or "implementing")
-3. Log error to errors.json:
-   ```json
-   {
-     "type": "delegation_interrupted",
-     "severity": "high",
-     "message": "Agent interrupted at stage: {stage}",
-     "context": {
-       "session_id": "{session_id}",
-       "task": {N},
-       "partial_progress": {
-         "stage": "{stage}",
-         "details": "{details}"
-       }
-     },
-     "recovery": {
-       "suggested_action": "Run command again to resume",
-       "auto_recoverable": true
-     }
-   }
+3. Log error via `issue-record.sh`:
+   ```bash
+   issue-record.sh --task-dir "$TASK_DIR" --kind issue --class "delegation_interrupted" \
+     --severity costly --what-happened "Agent interrupted at stage: {stage}: {details}" \
+     --session "{session_id}"
    ```
 4. Display guidance to user:
    ```
@@ -238,7 +224,7 @@ Session ID links all operations in a single command execution:
 | Agent Metadata | Returned in metadata.session_id |
 | GATE OUT | Verified match |
 | COMMIT | Included in commit message |
-| errors.json | Logged for traceability |
+| issues.jsonl | Logged for traceability |
 
 ---
 

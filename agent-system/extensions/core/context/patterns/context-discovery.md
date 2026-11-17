@@ -349,7 +349,7 @@ commands in their `load_when.commands` arrays. These files should only be discov
 their domain-specific agents, task types, and domain-specific commands.
 
 **Generic commands (must NOT appear in project/* entries)**:
-`/plan`, `/implement`, `/research`, `/task`, `/revise`, `/review`, `/errors`, `/todo`, `/spawn`
+`/plan`, `/implement`, `/research`, `/task`, `/revise`, `/review`, `/todo`, `/spawn`
 
 **Domain-specific commands (OK in project/* entries)**:
 `/market`, `/analyze`, `/strategy`, `/legal`, `/project`, `/sheet`, `/convert`, `/table`,

@@ -22,7 +22,6 @@ A comprehensive guide to using the `.claude/` task management system commands fo
    - [/todo](#todo-command)
    - [/review](#review-command)
    - [/refresh](#refresh-command)
-   - [/errors](#errors-command)
 4. [Automation Commands](#automation-commands)
    - [/orchestrate](#orchestrate-command)
    - [/spawn](#spawn-command)
@@ -338,33 +337,6 @@ Clean Claude Code resources.
    - 8 hours (recent files)
    - 2 days (older files)
    - Clean slate (all non-essential files)
-
----
-
----
-
-### /errors Command
-
-Analyze error patterns and create fix plans.
-
-```
-/errors [--fix N]
-```
-
-**Arguments**:
-- `--fix N` - Fix specific error by ID
-
-**Actions**:
-1. Reads `specs/errors.json`
-2. Groups errors by type, severity, recurrence
-3. Creates analysis report in `specs/errors/`
-4. Optionally fixes specific errors
-
-**Example**:
-```
-/errors                   # Analyze all errors
-/errors --fix err_12345   # Fix specific error
-```
 
 ---
 
@@ -791,7 +763,6 @@ each domain extension's own routing).
 | `/todo` | `/todo [--dry-run]` | Archive completed tasks |
 | `/review` | `/review [SCOPE] [--create-tasks]` | Analyze codebase |
 | `/refresh` | `/refresh [--dry-run] [--force]` | Clean resources |
-| `/errors` | `/errors [--fix N]` | Analyze errors |
 | `/meta` | `/meta [PROMPT] \| --analyze` | System builder |
 | `/fix-it` | `/fix-it [PATH...]` | Extract tags to tasks |
 | `/zulip` | `/zulip <url> [output-path]` | Fetch a Zulip thread to JSON |
@@ -880,7 +851,7 @@ and is the authority for its own precedence rules.
 **Solutions**:
 1. Run `/orchestrate N` again to resume
 2. Check plan for `[PARTIAL]` phase markers
-3. Review errors: `/errors`
+3. Review the task's `issues.jsonl` for recorded findings
 4. If truly stuck, manually edit plan to mark phases `[COMPLETED]`
 
 #### State Desynchronization

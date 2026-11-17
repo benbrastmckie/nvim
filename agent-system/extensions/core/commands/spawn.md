@@ -210,7 +210,7 @@ Next Steps:
 - **Invalid status**: Return error with current status and guidance
 
 ### DELEGATE Failure
-- **Skill fails**: Keep parent at current status, log error to errors.json
+- **Skill fails**: Keep parent at current status, log error via issue-record.sh
 - **Timeout**: Partial spawn may exist, run /task --sync
 
 ### GATE OUT Failure

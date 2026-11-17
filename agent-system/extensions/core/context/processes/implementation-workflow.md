@@ -280,7 +280,7 @@ status-sync-manager ensures TODO.md, state.json, and plan file (if exists) are u
    - Create commit with message
    - Verify commit created
 3. If commit fails:
-   - Log error to errors.json (non-critical)
+   - Log error via issue-record.sh (non-critical)
    - Continue (implementation already complete)
    - Return success with warning
 

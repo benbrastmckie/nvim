@@ -72,7 +72,7 @@ When $ARGUMENTS contains a description (no flags).
 
 2.5. **Task-count check** (when drafting more than one task in the same session): if this
    invocation is one of several `/task` creation calls drafting a related set of findings or
-   observations in the same session (e.g. `/meta`, `/fix-it`, `/errors`, or an ad hoc multi-finding
+   observations in the same session (e.g. `/meta`, `/fix-it`, or an ad hoc multi-finding
    batch), run the Task-Count Reasoning test — Component 0 in
    `.claude/docs/reference/standards/multi-task-creation-standard.md` — across the whole set
    BEFORE assigning each finding its own description: default to consolidating findings into one
@@ -166,7 +166,7 @@ When $ARGUMENTS contains a description (no flags).
    here).
 
    **Non-interactive caller escape valve**: if `$backlog_audit` is ALREADY set and non-empty when
-   this step begins, a caller invoking `/task` programmatically (e.g. `/errors` Step 3.6) has
+   this step begins, a caller invoking `/task` programmatically (e.g. `/fix-it`) has
    already run and resolved this audit in its own non-interactive flow — skip re-running the
    audit and skip the AskUserQuestion below entirely; use the pre-set `$backlog_audit` value
    as-is for Step 6's `--audit-verdict` flag. This is the only way `/task`'s creation path stays
