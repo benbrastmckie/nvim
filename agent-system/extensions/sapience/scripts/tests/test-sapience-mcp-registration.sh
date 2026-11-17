@@ -62,6 +62,16 @@
 #   (23) Missing SessionStart registration fails with exit 1.
 #   (24) Inactive extension is reported distinctly.
 #
+# Check (g) cases -- machine-wide vendor hook recurrence detector (added once the verifier
+# carries check (g)):
+#   (37) A fixture settings.json carrying a vendor SessionStart --briefing-text hook fails
+#        check (g) by name with exit 1.
+#   (38) A fixture with no vendor entry passes check (g) and reports the config.json hooks
+#        opt-out value (false).
+#   (39) A vendor Stop hook fails check (g), and the hooks opt-out value is reported (true) on
+#        the fail path too.
+#   (40) A config.json omitting the "hooks" key entirely reports "absent" rather than crashing.
+#
 # Worktree cases (added once worktree-aware checkout resolution lands; skipped if `git worktree`
 # is unusable or the hook/verifier sources do not exist yet):
 #   (25) A worktree of a LOADED checkout registers an entry keyed on the checkout's path, with
@@ -698,6 +708,79 @@ else
 
   info "Case 23 (missing SessionStart registration) and case 24 (inactive extension) are covered"
   info "by the verifier's own named checks; exercised at Phase 7 end-to-end against the real HOME."
+
+  # =====================================================================
+  # Case 37: a fixture settings.json carrying a vendor SessionStart --briefing-text hook fails
+  # check (g) by name with exit 1.
+  # =====================================================================
+  HOME37="$WORKDIR/case37/home"
+  PROJ37="$WORKDIR/case37/repo"
+  mkdir -p "$HOME37/.claude" "$HOME37/.sapience" "$PROJ37"
+  echo '{"hooks": false}' > "$HOME37/.sapience/config.json"
+  jq -n '{"hooks": {"SessionStart": [{"hooks": [{"command": "python3 /home/x/.sapience/mcp.py --briefing-text"}]}]}}' > "$HOME37/.claude/settings.json"
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$PROJ37/.claude-extensions.json"
+
+  RC37=0
+  OUT37=$(cd "$PROJ37" && HOME="$HOME37" bash "$VERIFIER_SRC" --project "$PROJ37" 2>&1) || RC37=$?
+  if [ "$RC37" -eq 1 ] && printf '%s' "$OUT37" | grep -q '\[FAIL\] (g)'; then
+    pass "Case 37: a vendor SessionStart hook in settings.json fails check (g) by name with exit 1"
+  else
+    fail "Case 37: expected exit 1 and a [FAIL] (g) line; rc=$RC37 output=$OUT37"
+  fi
+
+  # =====================================================================
+  # Case 38: a fixture with no vendor entry passes check (g) and reports the hooks opt-out
+  # value (false).
+  # =====================================================================
+  HOME38="$WORKDIR/case38/home"
+  PROJ38="$WORKDIR/case38/repo"
+  mkdir -p "$HOME38/.claude" "$HOME38/.sapience" "$PROJ38"
+  echo '{"hooks": false}' > "$HOME38/.sapience/config.json"
+  jq -n '{"hooks": {}}' > "$HOME38/.claude/settings.json"
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$PROJ38/.claude-extensions.json"
+
+  OUT38=$(cd "$PROJ38" && HOME="$HOME38" bash "$VERIFIER_SRC" --project "$PROJ38" 2>&1)
+  if printf '%s' "$OUT38" | grep -q '\[PASS\] (g)' && printf '%s' "$OUT38" | grep -q 'hooks opt-out value: false'; then
+    pass "Case 38: no vendor hook passes check (g) and reports the hooks opt-out value (false)"
+  else
+    fail "Case 38: expected a [PASS] (g) line and 'hooks opt-out value: false'; output=$OUT38"
+  fi
+
+  # =====================================================================
+  # Case 39: a vendor Stop hook fails check (g), and the hooks opt-out value is reported (true)
+  # on the fail path too -- the value line is unconditional, not gated on pass/fail.
+  # =====================================================================
+  HOME39="$WORKDIR/case39/home"
+  PROJ39="$WORKDIR/case39/repo"
+  mkdir -p "$HOME39/.claude" "$HOME39/.sapience" "$PROJ39"
+  echo '{"hooks": true}' > "$HOME39/.sapience/config.json"
+  jq -n '{"hooks": {"Stop": [{"hooks": [{"command": "python3 /home/x/.sapience/mcp.py --effect-line"}]}]}}' > "$HOME39/.claude/settings.json"
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$PROJ39/.claude-extensions.json"
+
+  OUT39=$(cd "$PROJ39" && HOME="$HOME39" bash "$VERIFIER_SRC" --project "$PROJ39" 2>&1)
+  if printf '%s' "$OUT39" | grep -q '\[FAIL\] (g)' && printf '%s' "$OUT39" | grep -q 'hooks opt-out value: true'; then
+    pass "Case 39: a vendor Stop hook fails check (g), and the opt-out value is reported as true on the fail path too"
+  else
+    fail "Case 39: expected [FAIL] (g) and 'hooks opt-out value: true'; output=$OUT39"
+  fi
+
+  # =====================================================================
+  # Case 40: a config.json omitting the "hooks" key entirely reports "absent" rather than
+  # crashing.
+  # =====================================================================
+  HOME40="$WORKDIR/case40/home"
+  PROJ40="$WORKDIR/case40/repo"
+  mkdir -p "$HOME40/.claude" "$HOME40/.sapience" "$PROJ40"
+  echo '{}' > "$HOME40/.sapience/config.json"
+  jq -n '{"hooks": {}}' > "$HOME40/.claude/settings.json"
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$PROJ40/.claude-extensions.json"
+
+  OUT40=$(cd "$PROJ40" && HOME="$HOME40" bash "$VERIFIER_SRC" --project "$PROJ40" 2>&1)
+  if printf '%s' "$OUT40" | grep -q 'hooks opt-out value: absent'; then
+    pass "Case 40: a config.json omitting the hooks key reports 'absent' rather than crashing"
+  else
+    fail "Case 40: expected 'hooks opt-out value: absent'; output=$OUT40"
+  fi
 fi
 
 # =====================================================================

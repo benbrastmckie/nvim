@@ -175,7 +175,7 @@ next_project_number: 643
 
 ### Sapience
 
-636 [PLANNED] — Close sapience activation-surface scoping gaps: vendor...
+636 [IMPLEMENTING] — Close sapience activation-surface scoping gaps: vendor...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
 
 ### Decidability
@@ -516,7 +516,7 @@ TERRITORY, SETTLED AT CREATION. Task 547 ("Confirm the blocker-research aux carr
 ---
 
 ### 636. Close sapience activation-surface scoping gaps: vendor user-level hooks, capture coupling, verifier and docs
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None

@@ -2,7 +2,7 @@
 
 - **Task**: 636 - Close sapience activation-surface scoping gaps: vendor user-level hooks,
   capture coupling, verifier and docs
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/636_sapience_activation_surface_scoping_gaps/reports/01_activation-surface-scoping-gaps.md
@@ -132,39 +132,40 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Check (g) — Machine-Wide Vendor Hook Recurrence Detector [NOT STARTED]
+### Phase 1: Check (g) — Machine-Wide Vendor Hook Recurrence Detector [COMPLETED]
 
 **Goal**: `verify-sapience-mcp.sh` fails when `$HOME/.claude/settings.json` carries any vendor
 sapience injection/reporting hook, and reports `~/.sapience/config.json`'s `hooks` opt-out value
 unconditionally.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh` immediately
-      before editing (shared tree, concurrent siblings).
-- [ ] Add check (g) after check (f), generalizing check (d)'s existing
+- [x] Re-read `agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh` immediately
+      before editing (shared tree, concurrent siblings). *(completed)*
+- [x] Add check (g) after check (f), generalizing check (d)'s existing
       `[.hooks.<KEY>[]?.hooks[]?.command // empty]` `jq` idiom to iterate `SessionStart`,
       `SessionEnd`, and `Stop` and match any command containing `.sapience/mcp.py` or
-      `.sapience/sapience_cli.py`. Report each match by hook key and command text.
-- [ ] Set `OVERALL_OK=false` on any match; the remedy line names the vendor opt-out
+      `.sapience/sapience_cli.py`. Report each match by hook key and command text. *(completed)*
+- [x] Set `OVERALL_OK=false` on any match; the remedy line names the vendor opt-out
       (`~/.sapience/config.json`'s `"hooks": false`, or `SAPIENCE_NO_HOOKS=1`) and states that
-      hand-removing the entries alone does not prevent recurrence.
-- [ ] Read `~/.sapience/config.json`'s `.hooks` key and emit its value (`false`, `true`, or
+      hand-removing the entries alone does not prevent recurrence. *(completed)*
+- [x] Read `~/.sapience/config.json`'s `.hooks` key and emit its value (`false`, `true`, or
       `absent`) on **every** run, pass or fail — a `log` line, not conditioned on the match
-      result.
-- [ ] Add an inline comment naming the mirrored vendor surface: `sapience_upkeep.py`'s
+      result. *(completed)*
+- [x] Add an inline comment naming the mirrored vendor surface: `sapience_upkeep.py`'s
       `hooks_opted_out()` (env `SAPIENCE_NO_HOOKS` == `1`, else `config.json`'s `hooks` is
       `false`) and `wire_hooks()`'s three `REQUIRED` additions, so a future reader can check the
-      mirror against a newer vendor file.
-- [ ] Update the script's own `# Checks (each reported by name):` header block to document (g).
+      mirror against a newer vendor file. *(completed)*
+- [x] Update the script's own `# Checks (each reported by name):` header block to document (g).
       This header is what `--help` prints (`sed -n '2,/^$/p' "$0"`), so the edit is user-visible,
-      not decorative.
-- [ ] Add regression cases to
+      not decorative. *(completed)*
+- [x] Add regression cases to
       `agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh`,
       continuing its existing numbering after case (30): a fixture `HOME` whose
       `settings.json` carries a vendor `SessionStart --briefing-text` entry fails with exit 1 and
       names (g); a fixture with no vendor entry passes (g); the `hooks` opt-out value is reported
       in both; and a fixture whose `config.json` omits `hooks` entirely reports `absent` rather
-      than crashing. Extend the suite's own header case list to match.
+      than crashing. Extend the suite's own header case list to match. *(completed: cases 37-40,
+      inserted after case 22 inside the existing VERIFIER_SRC-gated block)*
 
 **Timing**: 1 hour
 

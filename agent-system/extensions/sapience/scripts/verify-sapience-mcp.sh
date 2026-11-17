@@ -42,6 +42,11 @@
 #       hook/permission-grant channel is deliberately absent from a worktree even though MCP
 #       retrieval (checks a/b above) is resolved to the parent checkout. Logs a skip line, never
 #       a pass or a fail, when CWD is not a linked worktree.
+#   (g) $HOME/.claude/settings.json carries no machine-wide vendor sapience hook (a
+#       SessionStart/SessionEnd/Stop command naming ~/.sapience/mcp.py or sapience_cli.py),
+#       re-added by ~/.sapience/sapience_upkeep.py's wire_hooks() on every auto_update/update
+#       --wire pass unless config.json's "hooks" opt-out holds. Reports that opt-out value
+#       (false/true/absent) unconditionally, pass or fail.
 #
 # The project root detected above (and used for checks a/b) is the PARENT CHECKOUT for a linked
 # worktree, never the worktree itself -- see the marker-delimited resolution block below.
@@ -324,6 +329,53 @@ if [ -n "$WT_GIT_DIR" ] && [ -n "$WT_COMMON_DIR" ] && [ "$WT_GIT_DIR" != "$WT_CO
 else
     log "  (f) CWD is not a linked worktree; skipping worktree hook/grant-absence check"
 fi
+
+# Check (g): machine-wide vendor hook recurrence detector. Mirrors
+# ~/.sapience/sapience_upkeep.py's hooks_opted_out() (env SAPIENCE_NO_HOOKS == "1", else
+# config.json's "hooks" is false) and wire_hooks()'s three REQUIRED additions (SessionStart
+# --briefing-text, SessionEnd --receipt, Stop --effect-line). wire_hooks() re-adds these three
+# hooks to $HOME/.claude/settings.json on every auto_update/update --wire pass unless the
+# opt-out holds -- hand-removing the entries alone does not prevent recurrence; only the
+# opt-out flag does. If a newer sapience_upkeep.py changes the REQUIRED set or the script
+# basenames, this local mirror will not see it until updated to match.
+VENDOR_HOOK_MATCHES=""
+if [ -f "$LIVE_SETTINGS" ]; then
+    for VENDOR_HOOK_KEY in SessionStart SessionEnd Stop; do
+        while IFS= read -r VENDOR_HOOK_CMD; do
+            [ -z "$VENDOR_HOOK_CMD" ] && continue
+            case "$VENDOR_HOOK_CMD" in
+                *.sapience/mcp.py*|*.sapience/sapience_cli.py*)
+                    VENDOR_HOOK_MATCHES="${VENDOR_HOOK_MATCHES}${VENDOR_HOOK_KEY}: ${VENDOR_HOOK_CMD}"$'\n'
+                    ;;
+            esac
+        done < <(jq -r --arg key "$VENDOR_HOOK_KEY" '[.hooks[$key][]?.hooks[]?.command // empty] | .[]' "$LIVE_SETTINGS" 2>/dev/null)
+    done
+fi
+
+if [ -n "$VENDOR_HOOK_MATCHES" ]; then
+    fail "(g) $LIVE_SETTINGS carries a machine-wide vendor sapience hook"
+    log ""
+    while IFS= read -r VENDOR_HOOK_MATCH_LINE; do
+        [ -z "$VENDOR_HOOK_MATCH_LINE" ] && continue
+        log "    $VENDOR_HOOK_MATCH_LINE"
+    done <<< "$VENDOR_HOOK_MATCHES"
+    log ""
+    log "  Hand-removing these entries alone does not prevent recurrence: wire_hooks() re-adds"
+    log "  them on every auto_update/update --wire pass unless the opt-out holds. Remedy: set"
+    log "  ~/.sapience/config.json's \"hooks\" to false, or export SAPIENCE_NO_HOOKS=1."
+    OVERALL_OK=false
+else
+    pass "(g) no machine-wide vendor sapience hook in $LIVE_SETTINGS"
+fi
+
+# Unconditionally report the vendor opt-out value, pass or fail -- a clean (g) could otherwise
+# mean either "opted out" or "never wired", and this line disambiguates.
+if [ -r "$SAPIENCE_CONFIG" ]; then
+    HOOKS_OPT_VALUE="$(jq -r 'if has("hooks") then (.hooks | tostring) else "absent" end' "$SAPIENCE_CONFIG" 2>/dev/null || echo "absent")"
+else
+    HOOKS_OPT_VALUE="absent"
+fi
+log "  (g) ~/.sapience/config.json hooks opt-out value: ${HOOKS_OPT_VALUE}"
 
 # Note: this machine's home-manager activation no longer creates a top-level
 # ~/.claude.json .mcpServers.sapience entry (modules/home/services/sapience.nix's
