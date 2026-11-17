@@ -1,7 +1,7 @@
 # Implementation Plan: Task #572
 
 - **Task**: 572 - Make a declared `Verification Tier: full` honorable under batch concurrency
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/572_make_full_gate_viable_under_batch_concurrency/reports/01_batch-gate-full-tier-viability.md

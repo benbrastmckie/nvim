@@ -13,8 +13,8 @@ next_project_number: 639
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,572,574,575,577,580,590,599,604,607,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,479,481,486,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,586,591,592,593,598,609,610,624,628,630 | 383,390,398,410,431,438,451,453,455,463,472,476,484,504,519,527,535,538,539,548,549,563,564,572,577,599,607,629 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,590,591,599,604,607,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,473,474,479,481,486,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,586,592,593,598,609,610,624,628,630 | 383,390,398,410,431,438,451,453,455,463,472,476,484,504,519,527,535,538,539,548,549,563,564,577,599,607,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,480,492,501,508,509,513,552,566,571,594,605,637 | 439,452,472,476,479,486,491,518,542,586,593,604,628,635,636 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 524,561,581,588,595 | 492,501,509,539,552,580,594 | core-agent-system, agent-system |
 | 5 | 596 | 595 | agent-system |
@@ -56,6 +56,7 @@ next_project_number: 639
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
+591 [RESEARCHED] — Decide the fate of the errors.json triage surface
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite... (see above)
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
@@ -69,7 +70,6 @@ next_project_number: 639
 517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
-591 [RESEARCHED] — Decide the fate of the errors.json triage surface
 
 ### Extensions
 
@@ -154,7 +154,6 @@ next_project_number: 639
 558 [NOT STARTED] — Require task descriptions to request a proposal packet...
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
-572 [IMPLEMENTING] — Make the full verification tier honorable under batch concurrency
 577 [NOT STARTED] — Make a blocker-triggered aux plan-revision consumable by...
   └─ 609 [NOT STARTED] — Stop a pending user question from charging its own task into...
 599 [NOT STARTED] — Give the batch-gate-deferral directive a narrowing form that...
@@ -2556,12 +2555,13 @@ NON-GOALS: no change to how the budget is computed, clamped, charged, or enforce
 
 ### 572. Make the full verification tier honorable under batch concurrency
 - **Effort**: large
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 585
 - **Research**: [572_make_full_gate_viable_under_batch_concurrency/reports/01_batch-gate-full-tier-viability.md]
 - **Plan**: [572_make_full_gate_viable_under_batch_concurrency/plans/01_full-gate-batch-concurrency.md]
+- **Summary**: [572_make_full_gate_viable_under_batch_concurrency/summaries/01_full-gate-batch-concurrency-summary.md]
 
 **Description**: Make a declared 'Verification Tier: full' actually honorable inside a multi-task /orchestrate batch. Measured this run: task 497 abandoned one unscoped 'bash verify-deploy.sh' after roughly 10 minutes and a second after roughly 18 minutes (test-gate-cache-equivalence.sh alone exceeded 10 minutes against a normal cost far below that), and the batch gate stage itself took roughly 28 minutes at load average 10.4. Both batch tasks therefore substituted scoped --only-gate runs for their plans' declared full tier and recorded the deviation. Gate timeouts in this state are indistinguishable from real failures at the call site: several suites that time out under load pass cleanly standalone (test-gate-lock.sh 16/16, test-lint-state-writer-boundary.sh 28/0), so contention manufactures false findings that then require manual triage. Candidate directions: a shared gate lock or admission token so sibling dispatches serialize their gate runs rather than multiplying them; per-gate cost budgets with an explicit contention-detected outcome distinct from FAIL; gate-level parallelism caps; or making the batch gate stage the single sanctioned full-gate run per invocation with per-task tiers downgraded by contract rather than by each agent's own judgment. Scope deliberately includes the tier-declaration contract, since the present situation has agents routinely deviating from a tier the environment cannot deliver.
 

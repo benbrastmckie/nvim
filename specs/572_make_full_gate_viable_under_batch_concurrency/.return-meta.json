@@ -1,30 +1,78 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 26,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/572_make_full_gate_viable_under_batch_concurrency/plans/01_full-gate-batch-concurrency.md",
-      "summary": "4-phase, 4.75-hour plan: widen the batch gate deferral directive from the plan's final phase to every full-tier phase, align plan-format.md/batch-gate-stage.md contract prose, add a contention-detected (annotation-only) signal to gate 8's lock/load path, redeploy and run the complete gate set."
+      "type": "summary",
+      "path": "specs/572_make_full_gate_viable_under_batch_concurrency/summaries/01_full-gate-batch-concurrency-summary.md",
+      "summary": "All 4 phases completed: widened the Batch Gate Deferral directive to every full-tier phase, aligned plan-format.md/batch-gate-stage.md prose, added an annotation-only contention-detected signal to Gate 8's lock/load path, redeployed and ran the complete gate set (scoped per the dispatch's own batch directive)."
     }
   ],
-  "metadata": {
-    "session_id": "sess_1794879152_8837d5_572",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 4.75,
-    "dependency_waves": [[1], [2], [3], [4]]
+  "completion_data": {
+    "completion_summary": "Widened the Batch Gate Deferral directive from the plan's literal final phase to every phase declaring Verification Tier: full (status-marker-independent scan), aligned the matching contract prose in plan-format.md and batch-gate-stage.md, added an annotation-only [CONTENTION]/WARN-FINDING signal to Gate 8's specs/.gate-lock acquire-wait and entry-load-average path in verify-deploy.sh, and redeployed plus discharged the complete gate set scoped per this dispatch's own batch directive (35/37 suites passing, 2 pre-existing known-failures, 0 new)."
   },
+  "modified_files": [
+    "agent-system/extensions/core/context/contracts/batch-gate-stage.md",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-lock.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh"
+  ],
   "memory_candidates": [
     {
-      "content": "In this repo, any new content added to orchestrate-build-dispatch.sh's composed dispatch file must be weighed against orchestrate-cycle-plan.sh's cycle_plan_dispatch_hash() normalizer, whose comment block carries a STANDING OBLIGATION to record a 'DECIDED AND RECORDED' note for each such section (stripped as per-cycle boilerplate, or deliberately unstripped as a genuine behavioral signal). The discriminator is whether the content varies per cycle with no real change: plan-DERIVED content is safe to leave unstripped provided the scan is status-marker-independent, because it then varies only when the plan itself changes -- which is exactly when the IDENTICAL DISPATCH HALT should not fire. A status-derived scan would instead vary as phases complete and silently weaken the halt. Precedent: the '## Territory' and '## Outstanding Gate Finding' sections are both deliberately unstripped on the same reasoning.",
+      "content": "task-lock.sh defines GATE_MUTEX_ACQUIRE_BUDGET_MS (default 600000) inside its own process, invoked as a separate `bash task-lock.sh ...` subprocess from verify-deploy.sh's gate8_run(). That default never leaks back into the calling verify-deploy.sh process's own environment. Any new logic in verify-deploy.sh that needs to reason about that budget (e.g. computing a fraction of it for a contention threshold) must re-declare the SAME default inline (`${GATE_MUTEX_ACQUIRE_BUDGET_MS:-600000}`) rather than reading the bare variable, or the computed threshold silently becomes 0. Caught by an isolated logic-only smoke test before running the real fixture suite.",
       "category": "PATTERN",
-      "source_artifact": "specs/572_make_full_gate_viable_under_batch_concurrency/plans/01_full-gate-batch-concurrency.md",
+      "source_artifact": "specs/572_make_full_gate_viable_under_batch_concurrency/summaries/01_full-gate-batch-concurrency-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "task-lock.sh",
+        "subprocess-env-visibility",
+        "GATE_MUTEX_ACQUIRE_BUDGET_MS",
+        "gate8_run"
+      ]
+    },
+    {
+      "content": "Joining a bash array with a multi-character separator via `IFS=', '; echo \"${arr[*]}\"` silently collapses to only the FIRST character of IFS (',' here), losing the space -- a real, easy-to-miss bug caught only by actually printing the joined result. The correct idiom for a multi-character join is `printf '%s, ' \"${arr[@]}\" | sed 's/, $//'` (or equivalent trailing-strip), never the IFS/`[*]` expansion when the separator is more than one character.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/572_make_full_gate_viable_under_batch_concurrency/summaries/01_full-gate-batch-concurrency-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "bash",
+        "array-join",
+        "IFS",
+        "multi-character-separator",
+        "shell-scripting-pitfall"
+      ]
+    },
+    {
+      "content": "generate-context-line-counts.sh and check-extension-docs.sh both refuse to run from the agent-system source-store scripts/ directory by default (their deploy-root-guard assumes a deployed .claude/scripts/ tree), but both honor a documented bypass: `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/<script>.sh`. Needed whenever a source-store edit's Rule-R-exact line_count must be regenerated before redeploying.",
+      "category": "CONFIG",
+      "source_artifact": "specs/572_make_full_gate_viable_under_batch_concurrency/summaries/01_full-gate-batch-concurrency-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["dispatch-hash", "identical-dispatch-halt", "orchestrate-build-dispatch", "cycle-plan-normalizer", "plan-derived-content"]
+      "suggested_keywords": [
+        "generate-context-line-counts.sh",
+        "check-extension-docs.sh",
+        "REPO_ROOT",
+        "deploy-root-guard",
+        "source-store-invocation"
+      ]
     }
   ],
-  "next_steps": "Run /orchestrate 572 to execute the plan",
-  "dispatch_seq": 25
+  "next_steps": "Task complete. All 4 phases implemented and verified; the complete gate set runs once more at the batch stage per this invocation's Batch Gate Deferral directive.",
+  "metadata": {
+    "session_id": "sess_1794879152_8837d5",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }

@@ -1,15 +1,19 @@
 {
-  "status": "planned",
-  "dispatch_seq": 25,
-  "phases_completed": 0,
-  "phases_total": 4,
-  "summary": "Created a 4-phase implementation plan for making a declared Verification Tier: full honorable under batch concurrency. Phase 1 widens orchestrate-build-dispatch.sh's '## Batch Gate Deferral' directive from the plan's literal final phase to every phase declaring full (plus a bounded-waiter instruction on the two paths that still sanction an unscoped aggregator run, and the hash-normalizer decision note the standing obligation requires). Phase 2 aligns the tier-declaration contract prose in plan-format.md and batch-gate-stage.md, which premise re-validation found carries the same final-phase-only scoping the composer does. Phase 3 adds a contention-detected annotation (never a reclassification) to gate 8's lock/load path, and Phase 4 redeploys and runs the complete gate set.",
-  "blockers": [],
+  "status": "implemented",
+  "dispatch_seq": 26,
+  "phase": "implement",
+  "summary": "All 4 phases completed: widened the Batch Gate Deferral directive to every full-tier plan phase (not only the final one), aligned plan-format.md/batch-gate-stage.md contract prose, added an annotation-only [CONTENTION] signal to Gate 8's specs/.gate-lock acquire-wait/load-average path in verify-deploy.sh, and redeployed plus discharged the complete gate set scoped per this dispatch's own batch directive.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/572_make_full_gate_viable_under_batch_concurrency/plans/01_full-gate-batch-concurrency.md",
-      "summary": "4-phase, 4.75-hour plan: widen the batch gate deferral directive to every full-tier phase, align the contract prose, add a contention-distinct gate-8 signal, redeploy and run the full gate set."
+      "type": "summary",
+      "path": "specs/572_make_full_gate_viable_under_batch_concurrency/summaries/01_full-gate-batch-concurrency-summary.md",
+      "summary": "Full implementation summary: widened batch-gate-deferral scan, aligned contract prose, gate8 contention annotation, redeploy and scoped batch discharge."
     }
-  ]
+  ],
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "continuation_path": null,
+  "next_action_hint": "Task complete. No further dispatch needed for this task; the complete gate set runs once more at the batch stage per this invocation's Batch Gate Deferral directive."
 }
