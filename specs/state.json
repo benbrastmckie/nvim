@@ -162,12 +162,12 @@
     {
       "project_number": 637,
       "project_name": "make_sapience_extension_fully_functional",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "general",
       "description": "Make the sapience extension fully functional across loaded repositories: tagged postflight writes fire reliably in every loaded repo (no tagged notes after Nov 13 anywhere; zero ever in .dotfiles, BimodalLogic, sf1-engine despite completed tasks, with no failures logged), prompt-time hook injection is repo-filtered or otherwise bounded (POST /v1/cli/context ignores the repo identifier; probe returns RESIDUAL_HOLDS), transcript capture sync is restored and its opt-in project list agrees with the set of loaded repos (stalled since Nov 13; BimodalLogic disabled, sf1-engine absent), and verify-sapience-mcp.sh check (e) stops failing on the additive-merge 11-vs-7 grant residual. Out of scope: repairing the half-deployed abood repo (on hold). Overlaps open tasks 635, 636 and 628. Seed report: specs/637_make_sapience_extension_fully_functional/reports/01_seed-audit-findings.md",
       "topic": "sapience",
       "created": "2026-11-16T01:22:12Z",
-      "last_updated": "2026-11-17T17:21:47Z",
+      "last_updated": "2026-11-17T17:45:37Z",
       "audit_verdict": {
         "proposal": {
           "id": "make_sapience_extension_fully_functional",
@@ -214,6 +214,11 @@
           "path": "specs/637_make_sapience_extension_fully_functional/plans/02_cross-repo-closeout-verification.md",
           "type": "plan",
           "summary": "4-phase (3-wave, 4.75h) closeout plan: cross-repo baseline, verify-sapience-mcp.sh check (j) with fixtures, capture-scheduling and residual-probe documentation, then five-repository redeploy and acceptance sweep."
+        },
+        {
+          "path": "specs/637_make_sapience_extension_fully_functional/summaries/02_cross-repo-closeout-verification-summary.md",
+          "type": "summary",
+          "summary": "Closed task 637's four goals: new verify-sapience-mcp.sh check (j) with fixture coverage, two documentation sections, and a five-repository redeploy-and-sweep proving each goal's disposition against the Phase 1 baseline."
         }
       ],
       "next_artifact_number": 2,
@@ -223,6 +228,8 @@
         636
       ],
       "file_scope": [
+        ".orchestrator-handoff.json",
+        ".return-meta.json",
         "__WHOLE_TREE__",
         "agent-system/extensions/sapience/context/project/sapience/domain/injection-site-scoping.md",
         "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
@@ -230,7 +237,8 @@
         "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh",
         "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh",
         "specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"
-      ]
+      ],
+      "completion_summary": "Added a standing verify-sapience-mcp.sh check (j) (postflight tagged-write reachability, with 6 new fixture cases) and two durable documentation sections, then redeployed and swept all five loaded repositories, confirming check (j)/(e) PASS and correctly [repo:<slug>]-tagged dry-run writes everywhere. Goals 2 and 3 are reported as owned, out-of-repository residuals (vendor-owned injection scoping; manual-by-design, ~/.dotfiles-scheduled capture extraction) rather than claimed closed."
     },
     {
       "project_number": 636,

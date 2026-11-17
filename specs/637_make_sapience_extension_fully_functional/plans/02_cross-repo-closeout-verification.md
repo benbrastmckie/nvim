@@ -1,7 +1,7 @@
 # Implementation Plan: Task #637
 
 - **Task**: 637 - Make the sapience extension fully functional across loaded repositories
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.75 hours
 - **Dependencies**: 628, 635, 636 (all three now `[COMPLETED]`)
 - **Research Inputs**: specs/637_make_sapience_extension_fully_functional/reports/02_scoping-and-remaining-gaps.md, specs/637_make_sapience_extension_fully_functional/reports/01_seed-audit-findings.md
