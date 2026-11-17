@@ -13,11 +13,11 @@ next_project_number: 643
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,590,599,604,607,613,618,627,629,631,632,633,635,636,639,640 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,479,481,486,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,586,592,593,598,609,610,624,628,630 | 383,390,398,410,431,438,451,453,455,463,472,476,484,504,519,527,535,538,539,548,549,563,564,577,599,607,629 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,480,492,501,508,509,513,552,566,571,594,605,637 | 439,452,472,476,479,486,491,518,542,586,593,604,628,635,636 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
-| 4 | 524,561,581,588,595 | 492,501,509,539,552,580,594 | core-agent-system, agent-system |
-| 5 | 596,641 | 454,561,595 | agent-system |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,590,599,604,607,613,618,627,629,631,632,633,635,636,639,640 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,586,592,593,598,609,610,624,628,630 | 383,390,398,410,431,438,451,453,455,463,472,476,477,504,519,527,535,538,539,548,549,563,564,577,599,607,629 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,480,486,492,509,513,552,566,571,594,605,637 | 439,452,479,484,491,518,542,586,593,604,628,635,636 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 4 | 501,508,561,581,588,595 | 472,476,486,492,509,539,552,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
+| 5 | 524,596,641 | 454,501,561,595 | core-agent-system, agent-system |
 | 6 | 642 | 641 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -48,7 +48,7 @@ next_project_number: 643
 523 [NOT STARTED] — Make Gate 27 MISSING\_DECLARATION count call sites, not...
 525 [NOT STARTED] — Repair the always-failing extensions-directory fallback in...
 526 [NOT STARTED] — Announce completion and input-needed over TTS from the source...
-527 [NOT STARTED] — Assert the deployed hook registration SET matches the...
+527 [RESEARCHED] — Assert the deployed hook registration SET matches the...
 564 [NOT STARTED] — Fix validate-artifact.sh Tier Justification false positive...
   └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
 565 [NOT STARTED] — Resolve archived prior-art paths when composing dispatch and...
@@ -93,11 +93,11 @@ next_project_number: 643
 ### File Scope Lifecycle
 
 455 [NOT STARTED] — Pre-flag the predictable first-run module-invariant failures...
+567 [NOT STARTED] — Port the deployed-tree containment strip into...
 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
   └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
     └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
     └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
-567 [NOT STARTED] — Port the deployed-tree containment strip into...
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
 ### Lean Extension
@@ -179,10 +179,10 @@ next_project_number: 643
 
 ### Sapience
 
-627 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-635 [NOT STARTED] — Enforce the sapience postflight wrapup write at task completion
+627 [RESEARCHING] — SOURCE STORE IS THE EDIT TARGET:...
+635 [RESEARCHING] — Enforce the sapience postflight wrapup write at task completion
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
-636 [NOT STARTED] — Close sapience activation-surface scoping gaps: vendor...
+636 [RESEARCHING] — Close sapience activation-surface scoping gaps: vendor...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
 628 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
@@ -522,7 +522,7 @@ TERRITORY, SETTLED AT CREATION. Task 547 ("Confirm the blocker-research aux carr
 ---
 
 ### 636. Close sapience activation-surface scoping gaps: vendor user-level hooks, capture coupling, verifier and docs
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
@@ -542,7 +542,7 @@ GOAL. (1) verify-sapience-mcp.sh gains a check that fails when $HOME/.claude/set
 ---
 
 ### 635. Enforce the sapience postflight wrapup write at task completion
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
@@ -693,7 +693,7 @@ ACCEPTANCE. All five repositories' .claude/settings.local.json grant exactly the
 ---
 
 ### 627. Reap orphan sapience mcp registrations
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
@@ -6308,10 +6308,11 @@ repository before being written.
 
 ### 527. Assert the deployed hook registration SET matches the merge-source, not only each path's form
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 369, Task 445
+- **Research**: [527_hook_registration_set_lint_assertion/reports/01_hook-registration-set-lint.md]
 
 **Description**: Extend the hook-registration lint so it asserts the deployed hook registration SET against the merge-source, not only the FORM of each individual command path, and wire the resulting gate into verify-deploy.sh.
 
@@ -8249,7 +8250,7 @@ TERRITORY EDGES -- git-commit-phase.sh is SHARED FILE TERRITORY with three open 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
-- **Dependencies**: Task 430, Task 446, Task 469
+- **Dependencies**: Task 430, Task 446, Task 469, Task 477
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

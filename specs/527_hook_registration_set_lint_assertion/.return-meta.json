@@ -1,25 +1,43 @@
 {
-  "status": "tasks_created",
+  "status": "researched",
+  "dispatch_seq": 2,
   "artifacts": [
     {
-      "type": "task",
-      "path": "/home/benjamin/.config/nvim/specs/527_hook_registration_set_lint_assertion/",
-      "summary": "Task #527 (hook_registration_set_lint_assertion) created by /meta in prompt mode"
+      "type": "report",
+      "path": "specs/527_hook_registration_set_lint_assertion/reports/01_hook-registration-set-lint.md",
+      "summary": "Confirms both dependency edges (tasks 369, 445) landed; identifies the shared merge.lua hook_valid_set_key(event,matcher,identity) as the exact tuple to reuse; finds the lint has no deployed-tree concept today and needs a new Check E with a matcher-aware inventory; finds Gate 21 already wires the gate with zero verify-deploy.sh/gate-registry.data changes needed; finds shape-(c) existence must be checked against the deploy target's own directory (not the source store) to actually catch the dispatch's own cited lean4 example; and re-validates the dispatch's field-instance premises (Logos/Theory and Logos/Website already remediated by task 369; ModelBuilder still genuinely drifted; lean4's cited shape (c) is a different, still-open defect)."
     }
   ],
-  "next_steps": "Run /orchestrate 527 once its dependencies have landed",
+  "memory_candidates": [
+    {
+      "content": "In this nvim-config source-store repo, a bash lint auditing a DEPLOYED .claude/settings.json for file existence must resolve existence relative to the deployed file's own directory ($(dirname DEPLOYED_FILE)/<norm>), never via the source-store-relative glob pattern ($PROJECT_ROOT/agent-system/extensions/*/<norm>) that existing source-declaration checks (e.g. lint-hook-registration-paths.sh Check D) correctly use. A script can be fully present and correctly declared in the source store while still being absent from one specific deploy target's own filesystem (confirmed field case: theorem_proving_in_lean4 missing claude-stop-notify.sh/wezterm-preflight-status.sh despite both existing in agent-system/extensions/core/hooks/) -- reusing the source-store-relative check for a deployed-tree audit produces a false negative on exactly this defect class.",
+      "category": "PATTERN",
+      "source_artifact": "specs/527_hook_registration_set_lint_assertion/reports/01_hook-registration-set-lint.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["hook-registration", "deploy-target-relative", "existence-check", "lint-hook-registration-paths", "source-store-boundary"]
+    },
+    {
+      "content": "merge.lua (this repo's Claude Code extension loader) exports M.hook_valid_set_key(event, matcher, identity) -- the normative (event, matcher, hook-identity) tuple key for 'is this the same hook registration', shared with hook_identity.lua's M.identity(command, hook_type). Any new bash-side consumer needing to compare a deployed hook-registration set against the source-declared union should rebuild this exact tuple shape (via the existing hook_identity_cli.lua nvim bridge for identity resolution) rather than defining a second notion -- this is the specific divergence task 369 (orphan_sweep_for_removed_merge_target_entries) closed and that a second definition would silently reopen.",
+      "category": "PATTERN",
+      "source_artifact": "specs/527_hook_registration_set_lint_assertion/reports/01_hook-registration-set-lint.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["hook_valid_set_key", "hook_identity", "merge.lua", "identity-notion", "orphan-sweep"]
+    },
+    {
+      "content": "verify-deploy.sh's gate-registry.data has a requires_source_store field per gate row; Gate 21 (lint-hook-registration-paths.sh) already sets it true and already scrapes every [VIOLATION]-prefixed line from the lint's --verbose output into FINDINGS_LIST. A new check added INSIDE an already-gated lint script (rather than a new standalone script) is wired into verify-deploy.sh for free -- no new gate id, no gate-registry.data edit, no gateNN_run function needed -- as long as the new check's own preconditions (e.g. needing the source store on disk) match the existing gate's requires_source_store value and the new violations use the same [VIOLATION] prefix convention.",
+      "category": "PATTERN",
+      "source_artifact": "specs/527_hook_registration_set_lint_assertion/reports/01_hook-registration-set-lint.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verify-deploy.sh", "gate-registry.data", "gate21", "requires_source_store", "FINDINGS_LIST"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 527 to create an implementation plan",
   "metadata": {
-    "session_id": "sess_1794089958_e8996c",
-    "agent_type": "meta-builder-agent",
+    "session_id": "sess_1794907446_b4b581_527",
+    "agent_type": "general-research-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 2
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 8
   },
-  "modified_files": [
-    "specs/TODO.md",
-    "specs/state.json"
-  ]
+  "modified_files": []
 }
