@@ -59,6 +59,15 @@
 #       (capture enabled + extension inactive). (active + capture not enabled) is reported
 #       informationally, never a failure. This source store stops at this check -- it does not
 #       write capture.projects[].enabled; see the check's own inline comment for the ruling.
+#   (j) postflight tagged-write reachability, against the resolved project's DEPLOYED tree (the
+#       same tree check (e) reads): both .claude/scripts/postflight-sapience-notes.sh and
+#       .claude/scripts/sapience-remember.sh exist and are executable, and both
+#       orchestrate-cycle-postflight.sh and reconcile-task-status.sh contain at least one
+#       postflight-sapience-notes.sh invocation. FAILs (not a warning) when any condition is
+#       unmet, naming the redeploy remedy; SKIPs when no deployed tree is reachable. Reads two
+#       CORE-owned scripts deliberately: a core deploy predating the postflight wiring is
+#       precisely the state in which tagged writes silently never fire, and no sapience-only
+#       assertion can observe it.
 #
 # The project root detected above (and used for checks a/b) is the PARENT CHECKOUT for a linked
 # worktree, never the worktree itself -- see the marker-delimited resolution block below.
@@ -475,6 +484,59 @@ if [ -r "$SAPIENCE_CONFIG" ] && jq -e 'has("capture")' "$SAPIENCE_CONFIG" > /dev
     fi
 else
     log "  (i) ~/.sapience/config.json unreadable or carries no capture key; skipping capture/activation coupling check"
+fi
+
+# Check (j): postflight tagged-write reachability, against the resolved project's DEPLOYED
+# tree -- the SAME tree check (e) above reads, never the source store. Asserts four conditions:
+# both postflight write scripts exist and are executable, and both CORE-owned call sites that
+# invoke postflight-sapience-notes.sh actually contain at least one invocation. This check
+# deliberately reads two core-owned scripts from a sapience verifier: a core deploy predating
+# the postflight wiring is precisely the state in which tagged writes silently never fire, and
+# no sapience-only assertion can observe that state. FAILs (never warns) on any unmet
+# condition, naming the redeploy remedy explicitly; SKIPs, mirroring check (e)/(f)'s existing
+# skip convention, when no deployed .claude/scripts tree is reachable for this project at all.
+POSTFLIGHT_NOTES_SCRIPT="$EXPECTED_PROJECT_PATH/.claude/scripts/postflight-sapience-notes.sh"
+REMEMBER_SCRIPT="$EXPECTED_PROJECT_PATH/.claude/scripts/sapience-remember.sh"
+ORCHESTRATE_POSTFLIGHT_SCRIPT="$EXPECTED_PROJECT_PATH/.claude/scripts/orchestrate-cycle-postflight.sh"
+RECONCILE_TASK_STATUS_SCRIPT="$EXPECTED_PROJECT_PATH/.claude/scripts/reconcile-task-status.sh"
+if [ ! -d "$EXPECTED_PROJECT_PATH/.claude/scripts" ]; then
+    log "  (j) no deployed .claude/scripts tree reachable for $EXPECTED_PROJECT_PATH; skipping postflight tagged-write reachability check"
+else
+    J_FAIL_REASONS=()
+
+    if [ ! -x "$POSTFLIGHT_NOTES_SCRIPT" ]; then
+        J_FAIL_REASONS+=("$POSTFLIGHT_NOTES_SCRIPT missing or not executable")
+    fi
+    if [ ! -x "$REMEMBER_SCRIPT" ]; then
+        J_FAIL_REASONS+=("$REMEMBER_SCRIPT missing or not executable")
+    fi
+
+    OCP_COUNT="$(grep -c 'postflight-sapience-notes.sh' "$ORCHESTRATE_POSTFLIGHT_SCRIPT" 2>/dev/null)" || true
+    OCP_COUNT="${OCP_COUNT:-0}"
+    if [ ! -f "$ORCHESTRATE_POSTFLIGHT_SCRIPT" ] || [ "$OCP_COUNT" -lt 1 ]; then
+        J_FAIL_REASONS+=("$ORCHESTRATE_POSTFLIGHT_SCRIPT carries no postflight-sapience-notes.sh invocation")
+    fi
+
+    RTS_COUNT="$(grep -c 'postflight-sapience-notes.sh' "$RECONCILE_TASK_STATUS_SCRIPT" 2>/dev/null)" || true
+    RTS_COUNT="${RTS_COUNT:-0}"
+    if [ ! -f "$RECONCILE_TASK_STATUS_SCRIPT" ] || [ "$RTS_COUNT" -lt 1 ]; then
+        J_FAIL_REASONS+=("$RECONCILE_TASK_STATUS_SCRIPT carries no postflight-sapience-notes.sh invocation")
+    fi
+
+    if [ "${#J_FAIL_REASONS[@]}" -eq 0 ]; then
+        pass "(j) postflight tagged-write path is reachable: both scripts deployed and executable, both core call sites wired"
+    else
+        fail "(j) postflight tagged-write path is NOT reachable for $EXPECTED_PROJECT_PATH"
+        log ""
+        for J_REASON in "${J_FAIL_REASONS[@]}"; do
+            log "    - $J_REASON"
+        done
+        log ""
+        log "  Remedy: redeploy this repository (deploy-headless.sh). A core deploy predating the"
+        log "  postflight wiring is exactly the state in which tagged writes silently never fire,"
+        log "  and no sapience-only check can see it without reading these core-owned scripts."
+        OVERALL_OK=false
+    fi
 fi
 
 # Note: this machine's home-manager activation no longer creates a top-level

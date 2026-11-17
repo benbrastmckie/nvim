@@ -88,6 +88,18 @@
 #   (47) A nested-prefix fixture (a shorter enabled prefix and a longer disabled one both
 #        matching) resolves to the LONGER entry.
 #
+# Check (j) cases -- postflight tagged-write reachability, against the resolved project's
+# DEPLOYED tree (added once the verifier carries check (j)):
+#   (48) All four conditions met (both scripts deployed+executable, both core call sites wired)
+#        passes check (j).
+#   (49) A missing postflight-sapience-notes.sh fails check (j) by name.
+#   (50) A non-executable sapience-remember.sh fails check (j) by name.
+#   (51) orchestrate-cycle-postflight.sh present but carrying no invocation fails check (j) by
+#        name, naming that call site.
+#   (52) reconcile-task-status.sh present but carrying no invocation fails check (j) by name,
+#        naming that call site.
+#   (53) No deployed .claude/scripts tree at all logs a skip, never a pass or a fail.
+#
 # Worktree cases (added once worktree-aware checkout resolution lands; skipped if `git worktree`
 # is unusable or the hook/verifier sources do not exist yet):
 #   (25) A worktree of a LOADED checkout registers an entry keyed on the checkout's path, with
@@ -926,6 +938,129 @@ else
     pass "Case 47: a nested-prefix fixture resolves to the LONGER (inner) entry, not the shorter outer one"
   else
     fail "Case 47: expected resolution to the longer 'nested-inner' entry; output=$OUT47"
+  fi
+
+  # =====================================================================
+  # Check (j) cases -- postflight tagged-write reachability, against the resolved project's
+  # DEPLOYED tree (added once the verifier carries check (j)). A minimal, inactive
+  # .claude-extensions.json is used throughout: check (j) does not depend on SAPIENCE_ACTIVE, and
+  # an inactive fixture keeps checks (a)/(h)/(i) a silent fail/skip rather than noise this test
+  # does not assert on.
+  # =====================================================================
+
+  # Case 48: all four conditions met -> [PASS] (j).
+  HOME48="$WORKDIR/case48/home"
+  PROJ48="$WORKDIR/case48/repo"
+  mkdir -p "$HOME48" "$PROJ48/.claude/scripts"
+  echo '{}' > "$HOME48/.claude.json"
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$PROJ48/.claude-extensions.json"
+  printf '#!/usr/bin/env bash\ntrue\n' > "$PROJ48/.claude/scripts/postflight-sapience-notes.sh"
+  printf '#!/usr/bin/env bash\ntrue\n' > "$PROJ48/.claude/scripts/sapience-remember.sh"
+  chmod +x "$PROJ48/.claude/scripts/postflight-sapience-notes.sh" "$PROJ48/.claude/scripts/sapience-remember.sh"
+  printf '#!/usr/bin/env bash\nbash .claude/scripts/postflight-sapience-notes.sh --task-dir "$TASK_DIR"\n' > "$PROJ48/.claude/scripts/orchestrate-cycle-postflight.sh"
+  printf '#!/usr/bin/env bash\nbash .claude/scripts/postflight-sapience-notes.sh --task-dir "$TASK_DIR"\n' > "$PROJ48/.claude/scripts/reconcile-task-status.sh"
+
+  OUT48=$(cd "$PROJ48" && HOME="$HOME48" bash "$VERIFIER_SRC" --project "$PROJ48" 2>&1)
+  if printf '%s' "$OUT48" | grep -q '\[PASS\] (j)'; then
+    pass "Case 48: all four conditions met passes check (j)"
+  else
+    fail "Case 48: expected a [PASS] (j) line; output=$OUT48"
+  fi
+
+  # Case 49: postflight-sapience-notes.sh missing entirely -> [FAIL] (j), naming that script.
+  HOME49="$WORKDIR/case49/home"
+  PROJ49="$WORKDIR/case49/repo"
+  mkdir -p "$HOME49" "$PROJ49/.claude/scripts"
+  echo '{}' > "$HOME49/.claude.json"
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$PROJ49/.claude-extensions.json"
+  printf '#!/usr/bin/env bash\ntrue\n' > "$PROJ49/.claude/scripts/sapience-remember.sh"
+  chmod +x "$PROJ49/.claude/scripts/sapience-remember.sh"
+  printf '#!/usr/bin/env bash\nbash .claude/scripts/postflight-sapience-notes.sh\n' > "$PROJ49/.claude/scripts/orchestrate-cycle-postflight.sh"
+  printf '#!/usr/bin/env bash\nbash .claude/scripts/postflight-sapience-notes.sh\n' > "$PROJ49/.claude/scripts/reconcile-task-status.sh"
+
+  RC49=0
+  OUT49=$(cd "$PROJ49" && HOME="$HOME49" bash "$VERIFIER_SRC" --project "$PROJ49" 2>&1) || RC49=$?
+  if [ "$RC49" -eq 1 ] && printf '%s' "$OUT49" | grep -q '\[FAIL\] (j)' && printf '%s' "$OUT49" | grep -q 'postflight-sapience-notes.sh missing or not executable'; then
+    pass "Case 49: a missing postflight-sapience-notes.sh fails check (j) by name, naming the script"
+  else
+    fail "Case 49: expected exit 1, a [FAIL] (j) line, and the missing-script reason; rc=$RC49 output=$OUT49"
+  fi
+
+  # Case 50: sapience-remember.sh present but not executable -> [FAIL] (j), naming that script.
+  HOME50="$WORKDIR/case50/home"
+  PROJ50="$WORKDIR/case50/repo"
+  mkdir -p "$HOME50" "$PROJ50/.claude/scripts"
+  echo '{}' > "$HOME50/.claude.json"
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$PROJ50/.claude-extensions.json"
+  printf '#!/usr/bin/env bash\ntrue\n' > "$PROJ50/.claude/scripts/postflight-sapience-notes.sh"
+  chmod +x "$PROJ50/.claude/scripts/postflight-sapience-notes.sh"
+  printf '#!/usr/bin/env bash\ntrue\n' > "$PROJ50/.claude/scripts/sapience-remember.sh"
+  # deliberately NOT chmod +x'd
+  printf '#!/usr/bin/env bash\nbash .claude/scripts/postflight-sapience-notes.sh\n' > "$PROJ50/.claude/scripts/orchestrate-cycle-postflight.sh"
+  printf '#!/usr/bin/env bash\nbash .claude/scripts/postflight-sapience-notes.sh\n' > "$PROJ50/.claude/scripts/reconcile-task-status.sh"
+
+  RC50=0
+  OUT50=$(cd "$PROJ50" && HOME="$HOME50" bash "$VERIFIER_SRC" --project "$PROJ50" 2>&1) || RC50=$?
+  if [ "$RC50" -eq 1 ] && printf '%s' "$OUT50" | grep -q '\[FAIL\] (j)' && printf '%s' "$OUT50" | grep -q 'sapience-remember.sh missing or not executable'; then
+    pass "Case 50: a non-executable sapience-remember.sh fails check (j) by name, naming the script"
+  else
+    fail "Case 50: expected exit 1, a [FAIL] (j) line, and the non-executable reason; rc=$RC50 output=$OUT50"
+  fi
+
+  # Case 51: orchestrate-cycle-postflight.sh present but carries no postflight-sapience-notes.sh
+  # invocation -> [FAIL] (j), naming that call site as unwired.
+  HOME51="$WORKDIR/case51/home"
+  PROJ51="$WORKDIR/case51/repo"
+  mkdir -p "$HOME51" "$PROJ51/.claude/scripts"
+  echo '{}' > "$HOME51/.claude.json"
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$PROJ51/.claude-extensions.json"
+  printf '#!/usr/bin/env bash\ntrue\n' > "$PROJ51/.claude/scripts/postflight-sapience-notes.sh"
+  printf '#!/usr/bin/env bash\ntrue\n' > "$PROJ51/.claude/scripts/sapience-remember.sh"
+  chmod +x "$PROJ51/.claude/scripts/postflight-sapience-notes.sh" "$PROJ51/.claude/scripts/sapience-remember.sh"
+  printf '#!/usr/bin/env bash\necho unwired\n' > "$PROJ51/.claude/scripts/orchestrate-cycle-postflight.sh"
+  printf '#!/usr/bin/env bash\nbash .claude/scripts/postflight-sapience-notes.sh\n' > "$PROJ51/.claude/scripts/reconcile-task-status.sh"
+
+  RC51=0
+  OUT51=$(cd "$PROJ51" && HOME="$HOME51" bash "$VERIFIER_SRC" --project "$PROJ51" 2>&1) || RC51=$?
+  if [ "$RC51" -eq 1 ] && printf '%s' "$OUT51" | grep -q '\[FAIL\] (j)' && printf '%s' "$OUT51" | grep -q 'orchestrate-cycle-postflight.sh carries no postflight-sapience-notes.sh invocation'; then
+    pass "Case 51: an unwired orchestrate-cycle-postflight.sh fails check (j) by name, naming the call site"
+  else
+    fail "Case 51: expected exit 1, a [FAIL] (j) line, and the unwired-call-site reason; rc=$RC51 output=$OUT51"
+  fi
+
+  # Case 52: reconcile-task-status.sh present but carries no postflight-sapience-notes.sh
+  # invocation -> [FAIL] (j), naming that call site as unwired.
+  HOME52="$WORKDIR/case52/home"
+  PROJ52="$WORKDIR/case52/repo"
+  mkdir -p "$HOME52" "$PROJ52/.claude/scripts"
+  echo '{}' > "$HOME52/.claude.json"
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$PROJ52/.claude-extensions.json"
+  printf '#!/usr/bin/env bash\ntrue\n' > "$PROJ52/.claude/scripts/postflight-sapience-notes.sh"
+  printf '#!/usr/bin/env bash\ntrue\n' > "$PROJ52/.claude/scripts/sapience-remember.sh"
+  chmod +x "$PROJ52/.claude/scripts/postflight-sapience-notes.sh" "$PROJ52/.claude/scripts/sapience-remember.sh"
+  printf '#!/usr/bin/env bash\nbash .claude/scripts/postflight-sapience-notes.sh\n' > "$PROJ52/.claude/scripts/orchestrate-cycle-postflight.sh"
+  printf '#!/usr/bin/env bash\necho unwired\n' > "$PROJ52/.claude/scripts/reconcile-task-status.sh"
+
+  RC52=0
+  OUT52=$(cd "$PROJ52" && HOME="$HOME52" bash "$VERIFIER_SRC" --project "$PROJ52" 2>&1) || RC52=$?
+  if [ "$RC52" -eq 1 ] && printf '%s' "$OUT52" | grep -q '\[FAIL\] (j)' && printf '%s' "$OUT52" | grep -q 'reconcile-task-status.sh carries no postflight-sapience-notes.sh invocation'; then
+    pass "Case 52: an unwired reconcile-task-status.sh fails check (j) by name, naming the call site"
+  else
+    fail "Case 52: expected exit 1, a [FAIL] (j) line, and the unwired-call-site reason; rc=$RC52 output=$OUT52"
+  fi
+
+  # Case 53: no deployed .claude/scripts tree at all -> a skip line, never a [PASS]/[FAIL] (j).
+  HOME53="$WORKDIR/case53/home"
+  PROJ53="$WORKDIR/case53/repo"
+  mkdir -p "$HOME53" "$PROJ53"
+  echo '{}' > "$HOME53/.claude.json"
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$PROJ53/.claude-extensions.json"
+
+  OUT53=$(cd "$PROJ53" && HOME="$HOME53" bash "$VERIFIER_SRC" --project "$PROJ53" 2>&1)
+  if printf '%s' "$OUT53" | grep -q 'skipping postflight tagged-write reachability check' && ! printf '%s' "$OUT53" | grep -qE '\[(PASS|FAIL)\] \(j\)'; then
+    pass "Case 53: no deployed .claude/scripts tree logs a skip and neither passes nor fails check (j)"
+  else
+    fail "Case 53: expected a skip line and no [PASS]/[FAIL] (j) line; output=$OUT53"
   fi
 fi
 

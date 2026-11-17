@@ -201,7 +201,7 @@ at probe time and records any exclusion explicitly rather than restating this co
 
 ---
 
-### Phase 2: Add check (j) — postflight tagged-write reachability [NOT STARTED]
+### Phase 2: Add check (j) — postflight tagged-write reachability [COMPLETED]
 
 **Goal**: Make "the tagged postflight write path is actually reachable in this repository" a
 standing, named verifier check with fixture coverage, so a repo whose deploy predates the
@@ -209,34 +209,34 @@ postflight wiring is detected rather than discovered by the absence of notes wee
 
 **Tasks**:
 
-- [ ] Add check (j) to `agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh`,
+- [x] Add check (j) to `agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh`,
       positioned after check (i), asserting against the resolved project's **deployed** tree (the
       same tree check (e) already reads, never the source store): that
       `.claude/scripts/postflight-sapience-notes.sh` and `.claude/scripts/sapience-remember.sh`
       both exist and are executable, and that `.claude/scripts/orchestrate-cycle-postflight.sh` and
       `.claude/scripts/reconcile-task-status.sh` each contain at least one
-      `postflight-sapience-notes.sh` invocation.
-- [ ] Make check (j) FAIL (not warn) when any of those four conditions is unmet, with a message
+      `postflight-sapience-notes.sh` invocation. *(completed)*
+- [x] Make check (j) FAIL (not warn) when any of those four conditions is unmet, with a message
       naming which one failed and naming the remedy explicitly as a redeploy
       (`deploy-headless.sh`), and SKIP when no deployed tree is reachable for the resolved project
-      — mirroring check (e)/(f)'s existing skip convention rather than inventing a second one.
-- [ ] Record inside check (j)'s own comment block why a sapience verifier reads two core-owned
+      — mirroring check (e)/(f)'s existing skip convention rather than inventing a second one. *(completed)*
+- [x] Record inside check (j)'s own comment block why a sapience verifier reads two core-owned
       scripts: a core deploy predating the postflight wiring is precisely the state in which tagged
-      writes silently never fire, and no sapience-only assertion can observe it.
-- [ ] Extend the `--help` / header check inventory in the same file with check (j)'s one-line
-      description, matching the existing (a)-(i) entries' form.
-- [ ] Add fixture cases to
+      writes silently never fire, and no sapience-only assertion can observe it. *(completed)*
+- [x] Extend the `--help` / header check inventory in the same file with check (j)'s one-line
+      description, matching the existing (a)-(i) entries' form. *(completed)*
+- [x] Add fixture cases to
       `agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh` covering:
       all four conditions met (pass); each of the two scripts missing or non-executable (fail);
       each core call site present-but-unwired (fail); and no deployed tree (skip). Use
       `grep -c`'s own exit-1-on-zero-match behavior carefully — capture its stdout into a variable
       with `|| true` rather than an `|| echo 0` fallback, which double-prints on a clean zero-match
-      run.
-- [ ] Run the suite from the source store
+      run. *(completed: cases 48-53)*
+- [x] Run the suite from the source store
       (`bash agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh`,
       which exercises the edited sibling copy via its own `VERIFIER_SRC` path) and repair any
       pre-existing all-green fixture that the new check newly fails, exactly as check (h)'s
-      addition required of case 20.
+      addition required of case 20. *(completed: all 53 cases passed on first run, no repair needed)*
 
 **Timing**: 1.5 hours
 
