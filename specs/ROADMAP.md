@@ -140,7 +140,6 @@ pass. `/todo` and `/review` reach `--regenerate` behind the shared preflight cla
 `skill-orchestrate` names and a dedicated suite covers.
 
 ```
-/orchestrate 572, 591   # The verify-deploy.sh lane: make a declared full tier honorable under load, then rule on errors.json
 /orchestrate 527, 628, 635, 636, 627, 637   # Sapience per-repo activation: its enabling blocker, three surface defects, and the close-out
 /orchestrate 476, 624, 586, 604, 605   # Gate 8's residual roster, its two lints and the defect recorder, serialized on one suite
 /orchestrate 577, 609   # The failure-accounting chain's tail, held behind the prioritized head both members depend on
@@ -655,7 +654,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 
 ## Open work
 
-**Core agent system (43)**
+**Core agent system (42)**
 ```
 476 IN FLIGHT       Make the seven untracked red Gate 8 shell suites green or declared-expected
 439 blocked:431     Rule on the propagation model for the bounded-wait agent contract
@@ -663,6 +662,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 454 blocked:439     State the result-needed-this-turn criterion for choosing the foreground form,...
 473 blocked:472     Strip record-versioning language from the boundary-owned architecture docs
 474 blocked:431     Repair the broken relative links in agent-frontmatter-standard.md
+479 blocked:438     Require every task to name a landing target: a creation-time gate on report-o...
 480 blocked:479     Advisory detector for research tasks stranded at RESEARCHED with artifacts bu...
 492 blocked:479,491 Make backlog-audit corroboration computable and gate the confirm prompt on it
 517 blocked:455     Require a phase commit to regenerate and stage the derived surfaces it stales
@@ -671,7 +671,6 @@ None is a whole-corpus discovery scope, and none is a defect.
 579 blocked:564     Record the selector's full-path-set aggregation rule in the Tier Justificatio...
 581 blocked:438,479,492,580  Extract one shared AskUserQuestion option renderer and adopt it acro...
 588 blocked:509     Bar a pre-redeploy plan step from naming a deploy-tree-resolved subject unles...
-591 blocked:572     Decide the fate of the errors.json triage surface
 605 blocked:476,586,604  Flag an advisory known-failures roster row whose named suite now passes
 338 ready           Classify every task-support file as tracked or ignored
 410 ready           Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on ...
@@ -679,7 +678,6 @@ None is a whole-corpus discovery scope, and none is a defect.
 431 ready           Record the gate-enforced verbatim-duplication exclusion class as durable agen...
 456 ready           Exempt private npm/Cargo manifests from /tag's version gate
 475 ready           Close the audit-evidence gate internal --argjson hole: a large verdict dies w...
-479 ready           Require every task to name a landing target: a creation-time gate on report-o...
 491 ready           Fix the Pass-2 semantic scorer whose normalization inflates against verbose c...
 502 ready           Require research reports to enumerate generated doc-sync surfaces
 503 ready           Document /revise's unavailability to a dispatched agent
@@ -757,7 +755,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 514 ready           Convergence guard blind to zero-dispatch cycles
 ```
 
-**Agent system (50)**
+**Agent system (49)**
 ```
 481 blocked:390     Rule on and migrate the 32-record mis-sited agent-system task delta accumulat...
 533 blocked:410     lake-build-guard replays stale result for env lean FILE
@@ -801,7 +799,6 @@ None is a whole-corpus discovery scope, and none is a defect.
 558 ready           Require task descriptions to request a proposal packet instead of instructing...
 559 ready           Stop one low-specificity shared path from producing duplicate-of-open, and se...
 560 ready           Clear the three standing verify-deploy findings blocking a clean nvim deploy
-572 ready           Make the full verification tier honorable under batch concurrency
 577 ready           Make a blocker-triggered aux plan-revision consumable by triage, and stop the...
 599 ready           Give the batch-gate-deferral directive a narrowing form that covers a phase t...
 607 ready           Resolve the gate 20 orchestrator context-budget overage and the per-gate time...
