@@ -13,7 +13,7 @@ next_project_number: 639
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,590,591,599,604,607,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,590,599,604,607,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,473,474,479,481,486,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,586,592,593,598,609,610,624,628,630 | 383,390,398,410,431,438,451,453,455,463,472,476,484,504,519,527,535,538,539,548,549,563,564,577,599,607,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,480,492,501,508,509,513,552,566,571,594,605,637 | 439,452,472,476,479,486,491,518,542,586,593,604,628,635,636 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 524,561,581,588,595 | 492,501,509,539,552,580,594 | core-agent-system, agent-system |
@@ -56,7 +56,6 @@ next_project_number: 639
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
-591 [IMPLEMENTING] — Decide the fate of the errors.json triage surface
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite... (see above)
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
@@ -1798,12 +1797,13 @@ repository's own space.
 
 ### 591. Decide the fate of the errors.json triage surface
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 572, Task 585
 - **Parent**: Task 587
 - **Plan**: [591_retire_errors_json_triage_surface/plans/01_retire-errors-triage-surface.md]
+- **Summary**: [591_retire_errors_json_triage_surface/summaries/01_retire-errors-triage-surface-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
 

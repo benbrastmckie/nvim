@@ -1,7 +1,7 @@
 # Implementation Plan: Task #591
 
 - **Task**: 591 - Decide the fate of the errors.json triage surface
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10 hours
 - **Dependencies**: 572, 585
 - **Research Inputs**: None (planned directly from the task description plus direct source-store reads; see Decision Record below for the evidence gathered)

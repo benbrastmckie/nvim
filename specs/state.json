@@ -17171,7 +17171,7 @@
     {
       "project_number": 591,
       "project_name": "retire_errors_json_triage_surface",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.\n\nPROBLEM: specs/errors.json, scripts/errors-append.sh, and the /errors command form a triage surface with its own schema, decoupled from the stores that carry this repository's real error traffic. errors-append.sh's 'append' subcommand -- the write half of what rules/error-handling.md once documented as THE error store -- was mechanically verified to have ZERO production call sites across agents, skills, hooks, commands and scripts in the source store: every remaining reference is a comment, a test fixture, or verify-deploy.sh's own manifest-presence check. The single non-append caller is core/commands/errors.md, which calls 'update' only. Measured alongside: specs/errors.json holds 19 records whose newest timestamp is more than two months old.\n\nThe documented contract has since been corrected to name issue-record.sh as the live write path (error-logging contract work, task 587), so nothing now points callers at the abandoned store. Retiring the surface outright was deliberately left open there rather than decided.\n\nSCOPE: decide and execute the retirement question. Settle (1) whether /errors retains any capability that issues.jsonl plus the conclusion stage's own aggregation and three-channel promotion do not already provide -- its triage schema and interactive flow are the candidates worth checking honestly, not assuming; (2) what becomes of the 19 existing records (migrate into an issue log, archive, or discard with the decision recorded); and (3) if retiring, remove the command, the script, its manifest entry, verify-deploy.sh's presence check, and the test fixtures together, so no half-retired surface is left for a future reader to mistake for live. If the decision is to KEEP it, say what it is for and wire at least one real caller -- a store with no writer is the defect, whichever way it is resolved.\n\nTERRITORY NOTE: verify-deploy.sh and core/manifest.json are shared with several open records; batch or serialize against whichever of them is live rather than racing them.",
       "effort": "medium",
@@ -17254,12 +17254,17 @@
         "specs/errors.json"
       ],
       "created": "2026-11-11T06:30:33Z",
-      "last_updated": "2026-11-17T03:06:45Z",
+      "last_updated": "2026-11-17T04:46:34Z",
       "artifacts": [
         {
           "path": "specs/591_retire_errors_json_triage_surface/plans/01_retire-errors-triage-surface.md",
           "type": "plan",
           "summary": "8-phase plan retiring the errors.json triage surface: record audit and discard, file deletion and deregistration, gate-1 narrowing, runtime-allowlist removal, three prose sweeps, and a wipe redeploy with the full gate set."
+        },
+        {
+          "path": "specs/591_retire_errors_json_triage_surface/summaries/01_retire-errors-triage-surface-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all 8 phases of the errors.json triage-surface retirement."
         }
       ],
       "audit_verdict": {
@@ -17491,7 +17496,8 @@
         "degradations_count": 43
       },
       "title": "Decide the fate of the errors.json triage surface",
-      "session_id": "sess_1794879152_8837d5"
+      "session_id": "sess_1794879152_8837d5",
+      "completion_summary": "Retired the specs/errors.json / errors-append.sh / /errors triage surface outright: audited and dispositioned all 19 records, deleted the command/script/test/schema/format files, removed every manifest/index/gate/allowlist registration, swept all prose and script-comment references across the source store, and redeployed with a scoped verify-deploy.sh discharge (gates 1 and 13) confirming no orphaned residue survives."
     },
     {
       "project_number": 592,
