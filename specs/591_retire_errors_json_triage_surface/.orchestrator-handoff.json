@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "task_number": 591,
+  "session_id": "sess_1794879152_8837d5_591",
+  "dispatch_seq": 27,
+  "phases_completed": 0,
+  "phases_total": 8,
+  "summary": "Planned the outright retirement of the errors.json/errors-append.sh//errors triage surface. The retention question was settled against the actual implementations: issues.jsonl plus orchestrate-conclusion-aggregate.sh already provide cross-task grouping, recurrence tally, a richer severity/class vocabulary, and three-channel promotion, and central-errors.jsonl provides cross-repo durability errors.json never had. The two things /errors uniquely offers -- a mutable fix_status lifecycle and autonomous fix-task creation -- are respectively never-exercised and deliberately not provided elsewhere by design. The plan is 8 phases across 4 waves, ~10 hours, covering five file deletions plus four live code paths the task description does not enumerate.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/591_retire_errors_json_triage_surface/plans/01_retire-errors-triage-surface.md",
+      "summary": "8-phase plan retiring the errors.json triage surface: record audit and discard, file deletion and deregistration, gate-1 narrowing, runtime-allowlist removal, three prose sweeps, and a wipe redeploy with the full gate set."
+    }
+  ]
+}

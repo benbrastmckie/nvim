@@ -56,7 +56,7 @@ next_project_number: 639
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
-591 [RESEARCHED] — Decide the fate of the errors.json triage surface
+591 [PLANNED] — Decide the fate of the errors.json triage surface
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite... (see above)
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
@@ -1798,11 +1798,12 @@ repository's own space.
 
 ### 591. Decide the fate of the errors.json triage surface
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 572, Task 585
 - **Parent**: Task 587
+- **Plan**: [591_retire_errors_json_triage_surface/plans/01_retire-errors-triage-surface.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
 
