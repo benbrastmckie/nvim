@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794907446_b4b581_627",
+  "task_number": 627,
+  "dispatch_seq": 5,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/627_reap_orphan_sapience_mcp_registrations/reports/01_reap-orphan-sapience-mcp.md",
+      "summary": "Confirms the hook's activation-detection precondition structurally cannot reach an orphaned (deleted/moved) project path; recommends a new --reap mode on setup-sapience-mcp.sh, invoked unconditionally by the SessionStart hook on every session (not gated on the current repo's own activation), touching only the sapience subkey; records the rejected alternatives (inline-hook edit, promoting verify-sapience-mcp.sh to a fixer) and the test cases to add."
+    }
+  ],
+  "next_steps": "Run /orchestrate 627 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "Sapience per-project MCP registration (setup-sapience-mcp.sh / sapience-mcp-register-project.sh) has a structural blind spot: the SessionStart hook's bidirectional register/remove logic is gated on finding a reachable .claude-extensions.json at the CURRENT session's CWD/git root, so a project whose directory is deleted or renamed can never again trigger its own entry's removal from ~/.claude.json -- the fix must be a cross-project sweep triggered from ANY still-living session, not a per-repo check.",
+      "category": "PATTERN",
+      "source_artifact": "specs/627_reap_orphan_sapience_mcp_registrations/reports/01_reap-orphan-sapience-mcp.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sapience", "mcp-registration", "orphan", "reap", "session-start-hook"]
+    },
+    {
+      "content": "In this codebase's MCP registration triads (sapience, lean-lsp), the writer script (e.g. setup-sapience-mcp.sh) is the single choke point for every ~/.claude.json mutation (mktemp + whole-file jq + mv); the SessionStart hook never edits the file directly, only decides which writer invocation to make. Any new mutation capability (e.g. an orphan-reap sweep) belongs as a new mode on the writer, not inlined in the hook.",
+      "category": "PATTERN",
+      "source_artifact": "specs/627_reap_orphan_sapience_mcp_registrations/reports/01_reap-orphan-sapience-mcp.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["mcp-registration", "writer-pattern", "claude.json", "jq-merge"]
+    }
+  ]
+}

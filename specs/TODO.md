@@ -179,7 +179,7 @@ next_project_number: 643
 
 ### Sapience
 
-627 [RESEARCHING] — SOURCE STORE IS THE EDIT TARGET:...
+627 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
 635 [RESEARCHED] — Enforce the sapience postflight wrapup write at task completion
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
 636 [RESEARCHED] — Close sapience activation-surface scoping gaps: vendor...
@@ -695,10 +695,11 @@ ACCEPTANCE. All five repositories' .claude/settings.local.json grant exactly the
 ---
 
 ### 627. Reap orphan sapience mcp registrations
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
+- **Research**: [627_reap_orphan_sapience_mcp_registrations/reports/01_reap-orphan-sapience-mcp.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh.
 
