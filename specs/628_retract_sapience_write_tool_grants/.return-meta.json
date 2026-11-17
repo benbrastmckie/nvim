@@ -1,0 +1,25 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794907446_b4b581_628",
+  "dispatch_seq": 11,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/628_retract_sapience_write_tool_grants/reports/01_retract-sapience-write-grants.md",
+      "summary": "Root-causes why the narrowed sapience permission grant never reaches deployed repos (merge engine is additive-only; resync_all never unloads; the existing hook orphan sweep and --wipe both leave permissions untouched) and recommends generalizing the existing unmerge_settings/build_retained_fragments/get_merged_sections primitives into manager.load's forced-reload path rather than building a permissions-specific sweep or a one-time migration script."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "The nvim agent-system's merge engine (lua/neotex/plugins/ai/shared/extensions/{merge,init,settings_backup,state}.lua) has TWO existing retraction mechanisms, both already tested: (1) M.unmerge_settings + build_retained_fragments + state get_merged_sections, driven by an extension's own previously-recorded tracked set, called only from manager.unload/manager.reload; (2) a load-time hook-orphan-sweep (build_hook_valid_set + M.remove_orphaned_hook_registrations, task 369) that runs inside every manager.load call including manager.resync_all's forced in-place reloads, but is deliberately scoped to the `hooks` key only (permissions/env/mcpServers explicitly untouched, verified by task 369's own before/after fingerprint). manager.resync_all (deploy-headless.sh's default path) 'never unloads' by design, so mechanism (1) never fires during an ordinary redeploy. manager.wipe's settings_backup does a byte-for-byte snapshot/restore of settings.local.json, not a re-merge, so --wipe cannot retract stale grants either. Neovim's runtime config for this merge engine is always ~/.config/nvim regardless of deploy-headless.sh's TARGET_REPO argument, so a fix landed there propagates to every target repo on next deploy-headless.sh run against it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/628_retract_sapience_write_tool_grants/reports/01_retract-sapience-write-grants.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["merge engine", "unmerge_settings", "resync_all", "additive-only", "settings.local.json", "sapience", "deploy-headless.sh"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 628 to create implementation plan"
+}
