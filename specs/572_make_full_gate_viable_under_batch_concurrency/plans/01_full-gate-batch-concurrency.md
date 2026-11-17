@@ -237,36 +237,43 @@ script-side site appears, fix it in this phase too rather than deferring it.
 
 ---
 
-### Phase 2: Align the tier-declaration and mechanism contracts with the widened scoping [NOT STARTED]
+### Phase 2: Align the tier-declaration and mechanism contracts with the widened scoping [COMPLETED]
 
 **Goal**: The prose contracts state the widened scoping, so neither `plan-format.md` nor
 `batch-gate-stage.md` can reintroduce the final-phase-only assumption a future reader would
 otherwise copy.
 
 **Tasks**:
-- [ ] Enumerate the prose copies before editing:
+- [x] Enumerate the prose copies before editing:
       `grep -rn "final phase" agent-system/extensions/core/context/formats/plan-format.md
       agent-system/extensions/core/context/contracts/batch-gate-stage.md
       agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md`
       and treat each hit that is about the deferral override (not about the tier tie-break rule or
-      the final-phase definition, both of which stay as they are) as in scope.
-- [ ] In `plan-format.md`'s `### Batch-aware deferral` subsection (confirmed present), change
+      the final-phase definition, both of which stay as they are) as in scope. *(completed: exactly
+      one deferral-override hit found, at batch-gate-stage.md's own "Mechanism A's Dispatch-Time
+      Siting" section; the two hits at batch-gate-stage.md lines 76/82 are about the tie-break
+      invariant's "final phase mandated full" guarantee in the single-task-invariance case, not
+      about deferral-override scoping, and were correctly left untouched)*
+- [x] In `plan-format.md`'s `### Batch-aware deferral` subsection (confirmed present), change
       "the final phase's own in-dispatch obligation narrows…" to state that EVERY phase declaring
       `**Verification Tier**: full` has its in-dispatch obligation narrowed, and that the directive
       names the qualifying phases. Leave untouched: the non-negotiable invariant, the "never a
       tier" rulings, the unmappable-criterion paragraph's substance, and the `**Tier
-      Justification**:` field rules.
-- [ ] In `batch-gate-stage.md`'s `## Mechanism A's Dispatch-Time Siting` section (confirmed
+      Justification**:` field rules. *(completed)*
+- [x] In `batch-gate-stage.md`'s `## Mechanism A's Dispatch-Time Siting` section (confirmed
       present), replace the closing sentence's "the final-phase-only consumption scoping … [is]
       unchanged" with the widened scan, and record — per the research report's Context Extension
       Recommendation — that the previous scoping left intermediate `full` phases with NO deferral
-      coverage at all, which is the defect this change closed.
-- [ ] If and only if the grep above shows `batch-orchestration-guardrails.md` restating the
+      coverage at all, which is the defect this change closed. *(completed)*
+- [x] If and only if the grep above shows `batch-orchestration-guardrails.md` restating the
       final-phase scoping, update that restatement the same way; otherwise record in the phase
-      notes that it carries none (do not invent an edit).
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` and
+      notes that it carries none (do not invent an edit). *(completed: confirmed zero hits for
+      "final phase"/"Batch Gate Deferral"/"final-phase" in batch-orchestration-guardrails.md — no
+      edit made, per the "do not invent an edit" instruction)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` and
       stage the resulting `index-entries.json` change in this same phase (Rule R is exact, with no
-      tolerance).
+      tolerance). *(completed: plan-format.md 1269->1275, batch-gate-stage.md 227->236; `grep
+      "Rule R"` over check-extension-docs.sh's output returns no finding)*
 
 **Timing**: 1 hour
 

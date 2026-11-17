@@ -545,17 +545,23 @@ territory — never by editing the plan's own `**Verification Tier**:` field. Th
 tier is the CEILING the standalone path (a single-task implement-phase dispatch, or a single-task
 `/orchestrate N`, neither of which ever carries the override) must meet, unchanged.
 
-**What the override changes**: the final phase's own in-dispatch obligation narrows from the
-complete gate set to a scoped tier (`local` or `interface`) naming a concrete narrowing
+**What the override changes**: EVERY phase of the plan that declares `**Verification Tier**:
+full` — not only the plan's literal final phase — has its own in-dispatch obligation narrowed
+from the complete gate set to a scoped tier (`local` or `interface`) naming a concrete narrowing
 invocation — `bash .claude/scripts/tests/run-all.sh --only SUITE[,SUITE...]` or
 `bash .claude/scripts/verify-deploy.sh --only-gate N[,M...] --skip-unchanged` in a deploy-target
 repository, or the parallel `bash agent-system/extensions/core/scripts/tests/run-all.sh --only
 SUITE[,SUITE...]` / `bash agent-system/extensions/core/scripts/verify-deploy.sh --only-gate
 N[,M...] --skip-unchanged` form when the dispatch is composed from inside the agent-system
 source-store repository itself — covering only the files that dispatch itself touched. The
-composer resolves and interpolates whichever of the two actually exists in the repository the
-dispatch is running in (never a hardcoded path that cannot resolve there); if neither exists, the
-directive degrades to stating the full gate set as such instead of naming a dead path.
+directive names the qualifying phase(s) by number, derived by scanning the plan for every phase
+section declaring `**Verification Tier**: full` regardless of that phase's own status marker
+(content-derived, not status-derived, so the rendered set stays stable across cycles while the
+plan is unchanged) — never hardcoded to the final phase, which is false whenever an intermediate
+phase also declares `full`. The composer resolves and interpolates whichever of the two narrowing
+invocations actually exists in the repository the dispatch is running in (never a hardcoded path
+that cannot resolve there); if neither exists, the directive degrades to stating the full gate set
+as such instead of naming a dead path.
 `--skip-unchanged` is carried only on the `verify-deploy.sh --only-gate` form — `run-all.sh` does
 not parse that flag — as the sanctioned cheap probe for a repeat or exploratory re-check of an
 already-green scoped tier; running the complete gate set again instead, unflagged, is the

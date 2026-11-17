@@ -1,0 +1,48 @@
+{
+  "phase": 2,
+  "phase_name": "Align the tier-declaration and mechanism contracts with the widened scoping",
+  "started_at": "2026-11-16T18:10:00Z",
+  "last_updated": "2026-11-16T18:25:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Enumerate the prose copies before editing",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Widen plan-format.md's Batch-aware deferral subsection to every full-tier phase",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/formats/plan-format.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Widen batch-gate-stage.md's Mechanism A Dispatch-Time Siting section, recording the prior coverage gap",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/contracts/batch-gate-stage.md"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Confirm batch-orchestration-guardrails.md carries no final-phase restatement (no edit)",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Regenerate index-entries.json line counts for the two edited context files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

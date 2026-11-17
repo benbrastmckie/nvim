@@ -206,8 +206,17 @@ structurally, rather than relying on a careful top-to-bottom read to happen to r
 Emission remains confined to `implement`-phase dispatches via an explicit guard conjunction
 (`[ "$phase" = "implement" ] && [ "$batch_gate_deferral_flag" = "true" ]`), independent of where
 in the composer's output stream the section is written. The heading string,
-`## Batch Gate Deferral`, and the final-phase-only consumption scoping documented above are both
-unchanged by this siting decision.
+`## Batch Gate Deferral`, is unchanged by this siting decision.
+
+The directive's own CONSUMPTION scoping, by contrast, is no longer final-phase-only: the composer
+scans `$plan_path` for every phase section declaring `**Verification Tier**: full`, regardless of
+that phase's own status marker, and the rendered directive names the complete set of qualifying
+phases (e.g. "Phases 2, 4 of the plan declare…"), not only the plan's literal final phase. The
+previous final-phase-only scoping left any intermediate `full` phase with NO deferral coverage at
+all — a dispatch scoped into such a phase read the directive, saw it name only the final phase,
+and reasonably concluded it did not apply, then ran (and risked abandoning) an unscoped aggregator
+sweep for a phase the directive was never written to reach. See `context/formats/plan-format.md`'s
+"Batch-aware deferral" subsection for the full override contract this widened scan now satisfies.
 
 **Two alternatives were considered and rejected**:
 
