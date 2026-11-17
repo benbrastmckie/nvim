@@ -460,7 +460,7 @@ is recorded as a correction, not reconciled toward the projection.
 
 ---
 
-### Phase 5: Record the Verdict, the Counting Methodology, and the Non-Recommendations [NOT STARTED]
+### Phase 5: Record the Verdict, the Counting Methodology, and the Non-Recommendations [COMPLETED]
 
 **Goal**: The audit's durable output exists as a decision record — the 0-DELETE/14-KEEP verdict
 with the owner's rule applied, the four-way suite-population counting methodology, and the
@@ -468,12 +468,12 @@ demotion-tier non-recommendation — and the whole task is verified green agains
 tree.
 
 **Tasks**:
-- [ ] Confirm the correction target before writing to it: `specs/decisions/` exists and already
+- [x] Confirm the correction target before writing to it: `specs/decisions/` exists and already
       holds four verdict records (the directory ROADMAP Settled decision 14 cites for
       `worktree-isolation-removal-verdict.md`). Write the new record there as a sibling. If the
       directory is somehow absent at implementation time, create it rather than relocating the
-      record, and say so in the commit message.
-- [ ] Write `specs/decisions/suite-cost-delete-keep-verdict.md` carrying, on its own merits:
+      record, and say so in the commit message. *(completed: directory confirmed present)*
+- [x] Write `specs/decisions/suite-cost-delete-keep-verdict.md` carrying, on its own merits:
       (a) the owner's DELETE/KEEP discrimination rule as the governing test; (b) the 14-member
       Category-A roster with the unreachable-by-real-tree property that earns each a KEEP, and the
       explicit **0 DELETE** count; (c) why the naive
@@ -487,21 +487,26 @@ tree.
       demotion-tier finding: `known-failures.txt` is advisory by design (decision 13),
       `--skip-slow` and `--max-cost` are both gate-granular, gate 8 is monolithic, so a
       suite-level tier is new machinery and is **not recommended**; (f) the realized savings from
-      Phases 3-4 and the residual leak figure from Phase 2.
-- [ ] Write it as a standing record, not a narrative of this task: no task numbers, no "v2", no
+      Phases 3-4 and the residual leak figure from Phase 2. *(completed: all four countings
+      re-derived live and confirmed unchanged from the plan's cited figures)*
+- [x] Write it as a standing record, not a narrative of this task: no task numbers, no "v2", no
       supersession framing, no phase-by-phase history. Cite durable anchors — filenames, the
       owner's rule, Settled decision numbers, and the commands that re-derive each figure.
-- [ ] Add a short pointer comment to `agent-system/extensions/core/scripts/tests/run-all.sh`'s
+      *(completed: verified via manual grep and check-task-references.sh, 0 findings)*
+- [x] Add a short pointer comment to `agent-system/extensions/core/scripts/tests/run-all.sh`'s
       header — the file that documents the suite-discovery algorithm the four countings differ
       over — naming the decision record as the place the counting methodology is written down.
-      Comment-only; no behavior change.
-- [ ] If Phase 2 found a third leak mechanism, name it in the record as owed follow-up work rather
-      than leaving it only in `issues.jsonl`.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` and confirm `RESULT=landed_verify_clean`, so
+      Comment-only; no behavior change. *(completed: confirmed comment-only via git diff)*
+- [x] If Phase 2 found a third leak mechanism, name it in the record as owed follow-up work rather
+      than leaving it only in `issues.jsonl`. *(completed: not applicable -- Phase 2 found no
+      third leak mechanism. Phase 4's deferred artifact regeneration is instead named as the
+      owed follow-up, in the record's "Realized Savings and Residual State" section)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` and confirm `RESULT=landed_verify_clean`, so
       gate 8 dispatches the deployed copies of the Phase 1 and Phase 3 edits rather than stale
-      ones.
-- [ ] Confirm `git status --short` shows no hand-authored file under `.claude/**` — every landed
-      path there must be a deploy product.
+      ones. *(completed: RESULT=landed_verify_clean, 40 checks 0 failures on the fast-gate
+      checkpoint)*
+- [x] Confirm `git status --short` shows no hand-authored file under `.claude/**` — every landed
+      path there must be a deploy product. *(completed: confirmed)*
 
 **Timing**: 1.5 hours
 

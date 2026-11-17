@@ -17,6 +17,13 @@
 #     merges every extension's scripts into one flat .claude/scripts/ tree. Suites live at
 #     .claude/scripts/tests/test-*.sh and .claude/scripts/test-*.sh.
 #
+# "How many suites exist" has no single answer -- this discovery algorithm is exactly why four
+# different, legitimate suite-population countings (core source-store, all-loaded-extensions
+# source-store, this repo's deployed tree, script-inventory.sh's own corpus scan) coexist and
+# disagree. See specs/decisions/suite-cost-delete-keep-verdict.md for the full counting
+# methodology (all four countings with their own re-derivation commands) and the DELETE/KEEP
+# verdict over the recursive meta-suite class this discovery algorithm's own output feeds.
+#
 # Uses set -uo pipefail (NOT set -euo pipefail) deliberately: this is a counter-idiom harness
 # (PASSED/FAILED style, one level up -- see suite-level PASS/FAIL counters below) that must keep
 # running after an individual suite fails so it can report a complete summary. A runner that
