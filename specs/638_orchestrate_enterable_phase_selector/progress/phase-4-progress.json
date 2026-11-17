@@ -1,0 +1,25 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy and full gate",
+  "started_at": "2026-11-16T16:58:00Z",
+  "last_updated": "2026-11-17T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh and confirm a landed, verify-clean result", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm diff -q silence between source and deploy for all touched files", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run the complete verify-deploy.sh gate set (no narrowing)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-observe Group 9 Cases C, D, F, G, H, I from the deployed tree", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record issues/wins across all four phases via issue-record.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "bash .claude/scripts/verify-deploy.sh (unqualified, full gate set)",
+      "type": "altered",
+      "reason": "Ran in full as specified; returned FAIL on 1 of 44 checks (Gate 8, shell test-suite battery) due to two failing suites, neither caused by this task -- see the phase's own Reasoned Exclusions table for the full evidence. Closed the phase COMPLETED WITH EXCLUSIONS rather than COMPLETED.",
+      "annotation": "*(deviation: altered -- see Reasoned Exclusions table)*"
+    }
+  ],
+  "handoff_count": 0
+}

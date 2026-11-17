@@ -444,31 +444,43 @@ is the gate subset `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gat
 
 ---
 
-### Phase 4: Redeploy and full gate [NOT STARTED]
+### Phase 4: Redeploy and full gate [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Regenerate the deployed tree from the source store so consumer repositories pick up the
 fixed selector, and discharge the complete gate set.
 
 **Tasks**:
 
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` and confirm it reports a landed, verify-clean
-      result.
-- [ ] Confirm post-deploy that `diff -q` between source and deploy is silent for all four touched
+- [x] Run `bash .claude/scripts/deploy-headless.sh` and confirm it reports a landed, verify-clean
+      result. *(completed: RESULT=landed_verify_clean, 43 checks passed, 0 failures)*
+- [x] Confirm post-deploy that `diff -q` between source and deploy is silent for all four touched
       source files (the same byte-identity relationship the premise re-validation established
-      pre-change).
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`, no
-      `--only-gate` — a narrowed pass is never evidence for the final phase).
-- [ ] Re-observe the acceptance criteria end-to-end against the DEPLOYED tree: Group 9 Cases
+      pre-change). *(completed: `diff -q` silent for all five touched files -- the four scripts
+      plus `context/formats/plan-format.md`)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`, no
+      `--only-gate` — a narrowed pass is never evidence for the final phase). *(completed: run in
+      full, 43 of 44 checks passed; see `#### Reasoned Exclusions` below for Gate 8's two failing
+      suites, neither caused by this task)*
+- [x] Re-observe the acceptance criteria end-to-end against the DEPLOYED tree: Group 9 Cases
       C, D, F, G, H, I all pass when `test-orchestrate-cycle-plan.sh` runs from
-      `.claude/scripts/tests/`.
-- [ ] Record any issue or win encountered across all four phases via `issue-record.sh`, per the
-      dispatch's Issue Log obligation.
+      `.claude/scripts/tests/`. *(completed: all of Group 9 -- Cases A-I -- pass from the
+      deployed tree, 441/0; `test-phase-heading-patterns.sh` also passes from the deployed tree,
+      58/0)*
+- [x] Record any issue or win encountered across all four phases via `issue-record.sh`, per the
+      dispatch's Issue Log obligation. *(completed)*
 
 **Timing**: 0.75 hours
 
 **Depends on**: 3
 
 **Verification Tier**: full
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `test-gate-cache-equivalence.sh` (Gate 8 failure) | Pre-registered in the repo's own `known-failures.txt` roster (hence `run-all.sh` tags it `(EXPECTED)`, not `(NEW)`). It is an "integration" suite (per `suite-classification.data`) that itself invokes `deploy-headless.sh`/`verify-deploy.sh`/`run-all.sh` -- a gate-infrastructure meta-test, not a test of anything this task touched. `run-all.sh`'s own exit-code semantics mark exit 1 on ANY suite failure, EXPECTED or not, so this standing, repo-wide, pre-existing condition makes an unqualified `verify-deploy.sh` pass unattainable today independent of this task. | `run-all.sh` output line: `test-gate-cache-equivalence.sh (EXPECTED)`; `suite-classification.data:82: test-gate-cache-equivalence.sh integration invokes:deploy-headless.sh,verify-deploy.sh,run-all.sh` |
+| `test-lake-build-guard.sh` (Gate 8 failure) | Failed only inside the full 203-suite battery, preceded in the same gate run by `WARN: reclaiming stale specs/.gate-lock mutex (age 5142s > holder-declared 1800s)` -- a transient concurrency/resource-contention flake, not a real regression. The suite is a Lean/Lake build-guard unit suite with zero relationship to `phase-heading-patterns.sh` or `orchestrate-cycle-plan.sh`. | Isolated re-run immediately afterward: `bash agent-system/extensions/core/scripts/tests/test-lake-build-guard.sh` -> `Passed: 51` / `Failed: 0` |
 
 **Files to modify**:
 
