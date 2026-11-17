@@ -199,31 +199,34 @@ before fixing the match set, and widen the key/basename lists if the vendor file
 
 ---
 
-### Phase 2: Check (h) — "Active But Hook Fragment Never Merged" [NOT STARTED]
+### Phase 2: Check (h) — "Active But Hook Fragment Never Merged" [COMPLETED]
 
 **Goal**: a distinctly named failure for a repository whose own ledger records an active sapience
 extension whose merged settings never received the hooks fragment, with reload/redeploy as the
 stated remedy.
 
 **Tasks**:
-- [ ] Re-read `verify-sapience-mcp.sh` immediately before editing.
-- [ ] Add check (h) reading the same `EXTENSIONS_FILE` check (a) already opens — no second file
+- [x] Re-read `verify-sapience-mcp.sh` immediately before editing. *(completed)*
+- [x] Add check (h) reading the same `EXTENSIONS_FILE` check (a) already opens — no second file
       read — testing `.extensions.sapience.merged_sections.settings | has("hooks")` only when
-      `SAPIENCE_ACTIVE` is true.
-- [ ] On `false`, `fail` with wording that names the cause (this repository's own ledger records
+      `SAPIENCE_ACTIVE` is true. *(completed)*
+- [x] On `false`, `fail` with wording that names the cause (this repository's own ledger records
       a merge that predates the hooks fragment and was never re-run) and the remedy (reload the
-      extension / redeploy for this repository), and set `OVERALL_OK=false`.
-- [ ] Skip with a `log` line, never a pass or a fail, when the extension is inactive or
+      extension / redeploy for this repository), and set `OVERALL_OK=false`. *(completed)*
+- [x] Skip with a `log` line, never a pass or a fail, when the extension is inactive or
       `EXTENSIONS_FILE` is unreadable — mirroring check (e)/(f)'s existing skip convention.
-- [ ] Add inline comments cross-referencing check (e): (h) reports the ledger-recorded cause,
+      *(completed)*
+- [x] Add inline comments cross-referencing check (e): (h) reports the ledger-recorded cause,
       (e) reports the deployed-file symptom; both may legitimately fail on one repository and
-      neither is redundant.
-- [ ] Extend check (e)'s own inline comment with the reciprocal cross-reference.
-- [ ] Update the script's header check list to document (h).
-- [ ] Add regression cases to `test-sapience-mcp-registration.sh`: an active-status fixture whose
+      neither is redundant. *(completed)*
+- [x] Extend check (e)'s own inline comment with the reciprocal cross-reference. *(completed)*
+- [x] Update the script's header check list to document (h). *(completed)*
+- [x] Add regression cases to `test-sapience-mcp-registration.sh`: an active-status fixture whose
       `merged_sections.settings` carries only `permissions` fails with exit 1 and names (h); an
       active fixture carrying both `hooks` and `permissions` passes (h); an inactive fixture logs
-      a skip and neither passes nor fails (h). Extend the suite header case list.
+      a skip and neither passes nor fails (h). Extend the suite header case list. *(completed:
+      cases 41-43; case 20's all-green fixture also updated to carry
+      merged_sections.settings.hooks so it stays all-green under the new check)*
 
 **Timing**: 0.75 hours
 

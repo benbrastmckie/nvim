@@ -27,6 +27,10 @@
 #
 # Checks (each reported by name):
 #   (a) .claude-extensions.json shows extensions.sapience.status == "active" for this project
+#   (h) when active, the SAME .claude-extensions.json's merged_sections.settings records the
+#       hooks fragment as merged -- a distinctly named "active but hook fragment never merged"
+#       failure, read at this point so it sits next to the check (a) data it shares a file with.
+#       Remedy: reload/redeploy for this repository. Skipped (not a pass or a fail) when inactive.
 #   (b) .projects[<abs path>].mcpServers.sapience exists in ~/.claude.json and matches the
 #       canonical entry (command, args, env.SAPIENCE_HOST, and whether SAPIENCE_TOKEN is present
 #       given ~/.sapience/config.json)
@@ -36,7 +40,9 @@
 #   (e) the merged .claude/settings.local.json carries all 7 permission grants and all 5 hooks,
 #       when the extension is loaded in this project. manager.load's forced-reload branch
 #       retracts a narrowed grant on a `deploy-headless.sh` resync, so a count above 7 here is
-#       real drift -- re-run `deploy-headless.sh` against this repository to converge it.
+#       real drift -- re-run `deploy-headless.sh` against this repository to converge it. Reports
+#       the deployed-file SYMPTOM; check (h) above reports the ledger-RECORDED cause -- both may
+#       legitimately fail on one repository for related-but-distinct reasons.
 #   (f) when CWD is a linked git worktree, asserts the worktree itself carries NO
 #       mcp__sapience__* permission grant and none of the five sapience hook keys -- the
 #       hook/permission-grant channel is deliberately absent from a worktree even though MCP
@@ -193,6 +199,30 @@ else
     fi
 fi
 
+# Check (h): "active but hook fragment never merged" -- reads the same $EXTENSIONS_FILE check
+# (a) already opened above (no second file read). Distinct from check (e) below: (h) reports
+# the ledger-RECORDED cause (merged_sections.settings never received the hooks fragment); (e)
+# reports the deployed-file SYMPTOM (the grant/hook count actually present in
+# settings.local.json). Both may legitimately fail on one repository for related-but-distinct
+# reasons -- neither is redundant with the other. Skips with a log line, never a pass or a fail,
+# when the extension is inactive or $EXTENSIONS_FILE is unreadable (SAPIENCE_ACTIVE already
+# covers both cases), mirroring check (e)/(f)'s existing skip convention.
+if $SAPIENCE_ACTIVE; then
+    HAS_MERGED_HOOKS="$(jq -r '(.extensions.sapience.merged_sections.settings // {}) | has("hooks")' "$EXTENSIONS_FILE" 2>/dev/null || echo "false")"
+    if [ "$HAS_MERGED_HOOKS" = "true" ]; then
+        pass "(h) $EXPECTED_PROJECT_PATH's ledger records the hooks fragment as merged"
+    else
+        fail "(h) $EXPECTED_PROJECT_PATH's extension is active but its ledger's merged_sections.settings never received the hooks fragment"
+        log ""
+        log "  This repository's own ledger ($EXTENSIONS_FILE) records a merge that predates the"
+        log "  hooks fragment and was never re-run. Remedy: reload the extension (redeploy) for"
+        log "  this repository."
+        OVERALL_OK=false
+    fi
+else
+    log "  (h) sapience extension not active; skipping hook-fragment-merged check"
+fi
+
 # Check (b): per-project MCP registration entry.
 if [ ! -f "$CLAUDE_CONFIG" ]; then
     fail "(b) $CLAUDE_CONFIG not found"
@@ -281,7 +311,9 @@ else
     OVERALL_OK=false
 fi
 
-# Check (e): merged settings.local.json (only when a repo with a deploy is reachable).
+# Check (e): merged settings.local.json (only when a repo with a deploy is reachable). Reports
+# the deployed-file SYMPTOM; check (h) above reports the ledger-RECORDED cause. Both may
+# legitimately fail on one repository for related-but-distinct reasons -- neither is redundant.
 MERGED_SETTINGS="$EXPECTED_PROJECT_PATH/.claude/settings.local.json"
 if [ -f "$MERGED_SETTINGS" ]; then
     if $SAPIENCE_ACTIVE; then

@@ -1,0 +1,22 @@
+{
+  "phase": 2,
+  "phase_name": "Check (h) — Active But Hook Fragment Never Merged",
+  "started_at": "2026-11-17T00:20:00Z",
+  "last_updated": "2026-11-17T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add check (h) to verify-sapience-mcp.sh and cross-reference check (e)", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh"]},
+    {"id": 2, "description": "Add regression cases to test-sapience-mcp-registration.sh", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "2.N",
+      "description": "Case 20's all-green verifier fixture",
+      "type": "altered",
+      "reason": "Adding check (h) made the previously all-green case-20 fixture fail (no merged_sections.settings.hooks); updated its fixture to carry merged_sections.settings.hooks:true so it remains all-green, rather than leaving case 20 red.",
+      "annotation": "*(deviation: altered — case 20 fixture extended to satisfy new check (h))*"
+    }
+  ],
+  "handoff_count": 0
+}

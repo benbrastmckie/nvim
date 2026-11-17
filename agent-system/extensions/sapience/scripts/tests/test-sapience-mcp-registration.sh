@@ -72,6 +72,13 @@
 #        the fail path too.
 #   (40) A config.json omitting the "hooks" key entirely reports "absent" rather than crashing.
 #
+# Check (h) cases -- "active but hook fragment never merged" (added once the verifier carries
+# check (h)):
+#   (41) An active-status fixture whose merged_sections.settings carries only "permissions"
+#        fails check (h) by name with exit 1.
+#   (42) An active fixture carrying both "hooks" and "permissions" passes check (h).
+#   (43) An inactive fixture logs a skip and neither passes nor fails check (h).
+#
 # Worktree cases (added once worktree-aware checkout resolution lands; skipped if `git worktree`
 # is unusable or the hook/verifier sources do not exist yet):
 #   (25) A worktree of a LOADED checkout registers an entry keyed on the checkout's path, with
@@ -659,7 +666,7 @@ else
   mkdir -p "$HOME20/.claude" "$HOME20/.sapience" "$PROJ20"
   echo '{}' > "$HOME20/.sapience/config.json"
   echo '{}' > "$HOME20/.claude/settings.json"
-  jq -n '{"extensions": {"sapience": {"status": "active"}}}' > "$PROJ20/.claude-extensions.json"
+  jq -n '{"extensions": {"sapience": {"status": "active", "merged_sections": {"settings": {"permissions": true, "hooks": true}}}}}' > "$PROJ20/.claude-extensions.json"
   # Use the real installer (not a hand-crafted fixture) so case 20 exercises the exact same
   # command string the installer itself registers -- avoiding fixture/production drift.
   if [ -f "$INSTALLER_SRC" ]; then
@@ -780,6 +787,57 @@ else
     pass "Case 40: a config.json omitting the hooks key reports 'absent' rather than crashing"
   else
     fail "Case 40: expected 'hooks opt-out value: absent'; output=$OUT40"
+  fi
+
+  # =====================================================================
+  # Case 41: an active-status fixture whose merged_sections.settings carries only "permissions"
+  # fails check (h) by name with exit 1.
+  # =====================================================================
+  HOME41="$WORKDIR/case41/home"
+  PROJ41="$WORKDIR/case41/repo"
+  mkdir -p "$HOME41" "$PROJ41"
+  echo '{}' > "$HOME41/.claude.json"
+  jq -n '{"extensions": {"sapience": {"status": "active", "merged_sections": {"settings": {"permissions": true}}}}}' > "$PROJ41/.claude-extensions.json"
+
+  RC41=0
+  OUT41=$(cd "$PROJ41" && HOME="$HOME41" bash "$VERIFIER_SRC" --project "$PROJ41" 2>&1) || RC41=$?
+  if [ "$RC41" -eq 1 ] && printf '%s' "$OUT41" | grep -q '\[FAIL\] (h)'; then
+    pass "Case 41: an active fixture whose merged_sections.settings lacks 'hooks' fails check (h) by name with exit 1"
+  else
+    fail "Case 41: expected exit 1 and [FAIL] (h); rc=$RC41 output=$OUT41"
+  fi
+
+  # =====================================================================
+  # Case 42: an active fixture carrying both "hooks" and "permissions" passes check (h).
+  # =====================================================================
+  HOME42="$WORKDIR/case42/home"
+  PROJ42="$WORKDIR/case42/repo"
+  mkdir -p "$HOME42" "$PROJ42"
+  echo '{}' > "$HOME42/.claude.json"
+  jq -n '{"extensions": {"sapience": {"status": "active", "merged_sections": {"settings": {"permissions": true, "hooks": true}}}}}' > "$PROJ42/.claude-extensions.json"
+
+  OUT42=$(cd "$PROJ42" && HOME="$HOME42" bash "$VERIFIER_SRC" --project "$PROJ42" 2>&1)
+  if printf '%s' "$OUT42" | grep -q '\[PASS\] (h)'; then
+    pass "Case 42: an active fixture carrying both hooks and permissions passes check (h)"
+  else
+    fail "Case 42: expected [PASS] (h); output=$OUT42"
+  fi
+
+  # =====================================================================
+  # Case 43: an inactive fixture logs a skip and neither passes nor fails check (h).
+  # =====================================================================
+  HOME43="$WORKDIR/case43/home"
+  PROJ43="$WORKDIR/case43/repo"
+  mkdir -p "$HOME43" "$PROJ43"
+  echo '{}' > "$HOME43/.claude.json"
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$PROJ43/.claude-extensions.json"
+
+  OUT43=$(cd "$PROJ43" && HOME="$HOME43" bash "$VERIFIER_SRC" --project "$PROJ43" 2>&1)
+  if ! printf '%s' "$OUT43" | grep -q '\[PASS\] (h)' && ! printf '%s' "$OUT43" | grep -q '\[FAIL\] (h)' \
+     && printf '%s' "$OUT43" | grep -q 'skipping hook-fragment-merged check'; then
+    pass "Case 43: an inactive fixture logs a skip and neither passes nor fails check (h)"
+  else
+    fail "Case 43: expected a skip line and no [PASS]/[FAIL] (h); output=$OUT43"
   fi
 fi
 
