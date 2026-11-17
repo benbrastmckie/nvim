@@ -437,6 +437,44 @@ Each candidate object:
 - `/todo` consumes candidates during archival
 - The field uses `// []` fallback in all jq reads for backward compatibility
 
+### sapience_notes (optional)
+
+**Type**: array of objects (3-8 items) at the **top level** of `.return-meta.json` — a sibling
+of `memory_candidates`, never nested under `completion_data`.
+
+**Producer**: the completing implementation agent. **Consumer**: the sapience extension's
+postflight write script (`scripts/postflight-sapience-notes.sh`), invoked at the
+`[IMPLEMENTING]` -> `[COMPLETED]` transition on both the live and the deferred completion paths.
+
+Each object maps 1:1 onto `sapience-remember.sh`'s own flags:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `subject` | string | Yes | Passed as `--subject`. |
+| `value` | string | Yes | Passed as `--value`. |
+| `predicate` | string | No | Passed as `--predicate` when present and non-null; script default `"finding is"` otherwise. |
+| `ko_type` | string | No | Passed as `--ko-type` when present and non-null; script default `"insight"` otherwise. |
+| `confidence` | number | No | Passed as `--confidence` when present and non-null; script default `0.8` otherwise. |
+| `source_loc` | string | No | Passed as `--source-loc` when present and non-null. |
+
+**Not interchangeable with `memory_candidates`**: the two fields share an identical shape
+convention — an array of small structured objects an agent emits at completion — but target
+different stores. `memory_candidates` is written to this repository's local `specs/state.json`
+and consumed by `/todo` during archival. `sapience_notes` is written to the hosted Sapience
+vault via a tagged `POST /ingest-kos` call, is scoped to durable, cross-session findings rather
+than in-repo reusable patterns, and every write is **permanent and unreviewed** — there is no
+delete API on the vault — which is why the array is bounded.
+
+**Notes**:
+- Agents emit 3-8 notes per completion; the bound is enforced mechanically at the single write
+  site as a pre-write length check — see `postflight-sapience-notes.sh`'s own contract. The floor
+  (3) is agent-side guidance only, since there is no content to fabricate when an agent has
+  nothing durable to report; the ceiling (8) is mechanical, truncating any excess before any
+  write is issued.
+- An empty array (zero notes) is a recorded, non-blocking `issue-record.sh` gap
+  (`--class "knowledge-capture gap"`), never silent.
+- The field uses `// []` fallback in the write script's own read for backward compatibility.
+
 ### modified_files (optional)
 
 **Type**: optional `string[]` at the **top level** of `.return-meta.json` — a sibling of

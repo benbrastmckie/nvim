@@ -179,9 +179,9 @@ next_project_number: 643
 ### Sapience
 
 627 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
-628 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+628 [RESEARCHING] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
-635 [PLANNED] — Enforce the sapience postflight wrapup write at task completion
+635 [IMPLEMENTING] — Enforce the sapience postflight wrapup write at task completion
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
 636 [PLANNED] — Close sapience activation-surface scoping gaps: vendor...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
@@ -543,7 +543,7 @@ GOAL. (1) verify-sapience-mcp.sh gains a check that fails when $HOME/.claude/set
 ---
 
 ### 635. Enforce the sapience postflight wrapup write at task completion
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
@@ -676,7 +676,7 @@ PROVENANCE: surfaced as a Reasoned Exclusion in the /todo consolidation record's
 ---
 
 ### 628. Retract sapience write tool grants
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: Task 527

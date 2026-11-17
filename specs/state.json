@@ -444,12 +444,12 @@
     {
       "project_number": 635,
       "project_name": "enforce_sapience_postflight_wrapup_write",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "Enforce the sapience postflight wrapup write at task completion so repo-tagged notes are actually written for every completed task, rather than depending on an instruction-level step the orchestrator can skip.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** and, where the call site lives there, agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve each source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**. Follow rules/sapience-write-path.md: the only prescribed write path is scripts/sapience-remember.sh, and the 3-8-note bound per completed task must be inherited, never duplicated.\n\nMEASURED EVIDENCE. `/orchestrate 436, 626` (session sess_1794696615_44948d, Claude Code session 75e6dabf-51fd-4c67-ba3f-77a3e96d83a3) drove both tasks to [COMPLETED], yet neither the lead transcript nor any of its 12 subagent transcripts contains a single `sapience-remember.sh --subject` invocation; other sessions in the same repo and week do contain them, so the write is intermittent. The call site is prose only (EXTENSION.md's postflight wrapup instruction at the [IMPLEMENTING] -> [COMPLETED] transition); context/project/sapience/domain/per-repo-scoping.md's \"No Lifecycle Hook\" section records why a manifest hooks.postflight entry can never fire for a typeless extension. Meanwhile untagged MCP write-tool calls (sapience_remember/wrapup/handoff/adddoc) still occur in extension repos (4 BimodalLogic session files in three days), prompted by the vendor SessionStart nudge.\n\nGOAL. (1) Decide and implement where the wrapup write is mechanically anchored: e.g. the completing implementation agent emits a bounded `sapience_notes` array in its return metadata and the completion postflight script (the path that already propagates completion_summary) calls sapience-remember.sh once per note, non-fatally, mirroring failures via issue-record.sh under \"infrastructure/transport unavailable\"; or an equivalent design with the same properties. The notes' content stays agent-authored; only the write is mechanical. (2) Zero notes for a completed task is recorded as a visible, non-blocking gap (an event or issue row), never silent. (3) The 3-8 bound is enforced at that one site. (4) Works in deferred-completion paths too (deploy-gate refusal later settled by reconcile-task-status.sh -- the exact path task 626 took). (5) Update per-repo-scoping.md's \"The Tagged-Write Call Site\" / \"No Lifecycle Hook\" sections and EXTENSION.md to state the resulting design; add tests with the network call stubbed (--dry-run).",
       "topic": "sapience",
       "created": "2026-11-15T07:02:57Z",
-      "last_updated": "2026-11-17T09:48:55Z",
+      "last_updated": "2026-11-17T10:34:13Z",
       "audit_verdict": {
         "proposal": {
           "id": "enforce_sapience_postflight_wrapup_write",
@@ -2158,12 +2158,12 @@
     {
       "project_number": 628,
       "project_name": "retract_sapience_write_tool_grants",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (the merge engine) and agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve each extension's own source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh. Depends on task 527, which is solving the same deployed-set-vs-merge-source convergence problem for hook registrations; coordinate with its mechanism rather than building a second one.\n\nGOAL. Make the narrowing of the sapience permission grant to seven read-shaped tools actually reach deployed repositories. It currently reaches none of them.\n\nMEASURED EVIDENCE. settings-fragment.json grants exactly seven read-shaped mcp__sapience__* tools (sapience, sapience_search, sapience_briefing, sapience_context, sapience_ask, sapience_outstanding, sapience_papers) and no write tools. Every deployed repository that has loaded the extension still grants eleven, including all four MCP write tools (sapience_remember, sapience_wrapup, sapience_handoff, sapience_adddoc): /home/benjamin/.dotfiles, /home/benjamin/.config/nvim, /home/benjamin/Projects/BimodalLogic, /home/benjamin/Projects/Sapience/sf1-engine, /home/benjamin/Projects/Sapience/sapience-app -- 5 of 5. verify-sapience-mcp.sh check (e) fails in this repository with \"11/7 sapience grants\" and labels it a known pre-existing residual rather than closing it.\n\nWHY IT MATTERS. rules/sapience-write-path.md's \"The Permission Grant Matches the Standing Contract\" section asserts that a call to any of the four write tools \"now raises an interactive permission prompt in an interactive session and is denied outright in a headless/autonomous run, rather than succeeding silently.\" That claim is false in every live repository. The whole per-repo scoping design rests on writes going through scripts/sapience-remember.sh's POST /ingest-kos call, the only call site that stamps the \"[repo:<slug>]\" provenance tag that /v1/search's source= filter reads; an MCP write tool cannot produce a tagged write at all, because the connector fixes its provenance string with no injectable repo marker. So every write that takes the still-permitted MCP path lands in the vault unscopable, and nothing currently stops an agent from taking it.\n\nSCOPE. The merge engine is additive-only and cannot retract, which is why the narrowing never propagated. Decide between, and record the reasoning for: (1) teaching the merge engine a retraction mechanism so an entry removed from a fragment is removed from the deployed file on redeploy -- the general fix, and the same shape task 527 needs; or (2) a one-time migration pass over the five deployed settings.local.json files plus a verify-deploy.sh gate that fails when a deployed grant set exceeds its merge source. If (1), the retraction must be narrow enough not to clobber hand-added local grants a user legitimately owns in settings.local.json; state the discrimination rule explicitly.\n\nACCEPTANCE. All five repositories' .claude/settings.local.json grant exactly the seven read-shaped sapience tools and none of the four write tools; verify-sapience-mcp.sh check (e) passes in this repository; rules/sapience-write-path.md's pre-existing-residual caveat paragraph is rewritten to match reality; a fresh load of the extension into a sixth repository still produces the seven-tool grant directly.",
       "topic": "sapience",
       "created": "2026-11-14T09:20:41Z",
-      "last_updated": "2026-11-14T09:20:41Z",
+      "last_updated": "2026-11-17T10:34:01Z",
       "audit_verdict": {
         "proposal": {
           "id": "retract_sapience_write_tool_grants",
@@ -2385,7 +2385,8 @@
       },
       "dependencies": [
         527
-      ]
+      ],
+      "session_id": "sess_1794907446_b4b581_628"
     },
     {
       "project_number": 627,

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #635
 
 - **Task**: 635 - Enforce the sapience postflight wrapup write at task completion
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/635_enforce_sapience_postflight_wrapup_write/reports/01_sapience-postflight-wrapup-enforcement.md
@@ -129,14 +129,14 @@ No `roadmap_path` was provided in this dispatch context; no roadmap phases are i
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Contract Surfaces — `sapience_notes` Field Spec and Gap Class [NOT STARTED]
+### Phase 1: Contract Surfaces — `sapience_notes` Field Spec and Gap Class [IN PROGRESS]
 
 **Goal**: Land the two contract surfaces every later phase references — the
 `.return-meta.json` field specification and the `issue-record.sh` class the zero-notes gap uses —
 so Phases 2 and 4 build against a fixed vocabulary.
 
 **Tasks**:
-- [ ] Add a `### sapience_notes (optional)` section to
+- [x] Add a `### sapience_notes (optional)` section to
       `agent-system/extensions/core/context/formats/return-metadata-file.md`, sibling to the
       existing `### memory_candidates (optional)` section (currently at line 405) and placed
       immediately after it. Specify: array of 3-8 objects at the **top level**, never nested
@@ -145,12 +145,12 @@ so Phases 2 and 4 build against a fixed vocabulary.
       `sapience-remember.sh`'s flags: `subject` (string, required), `value` (string, required),
       `predicate` (string, optional, script default `"finding is"`), `ko_type` (string,
       optional, script default `"insight"`), `confidence` (number, optional, script default
-      `0.8`), `source_loc` (string, optional).
-- [ ] In that same section, state explicitly that `sapience_notes` and `memory_candidates` are
+      `0.8`), `source_loc` (string, optional). *(completed)*
+- [x] In that same section, state explicitly that `sapience_notes` and `memory_candidates` are
       **not interchangeable**: identical in shape convention, different in destination
       (`memory_candidates` -> local `specs/state.json`; `sapience_notes` -> the hosted vault via
       a tagged `POST /ingest-kos`), and that every `sapience_notes` write is permanent and
-      unreviewed, which is why the array is bounded.
+      unreviewed, which is why the array is bounded. *(completed)*
 - [ ] Add one seed-class row to `agent-system/extensions/core/context/formats/issue-log.md`'s
       class table: `knowledge-capture gap` — "a durable knowledge-capture step a completion path
       was supposed to feed produced nothing (an empty agent-authored note set at a task boundary,

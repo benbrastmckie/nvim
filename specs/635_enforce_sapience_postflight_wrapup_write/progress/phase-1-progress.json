@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Contract Surfaces — sapience_notes Field Spec and Gap Class",
+  "started_at": "2026-11-17T10:35:40Z",
+  "last_updated": "2026-11-17T10:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add ### sapience_notes (optional) section to return-metadata-file.md, including the non-interchangeable-with-memory_candidates statement", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]},
+    {"id": 2, "description": "Add knowledge-capture gap seed-class row to issue-log.md with seeded-on-introduction statement", "status": "not_started", "files_touched": []},
+    {"id": 3, "description": "Add knowledge-capture gap to issue-record.sh ISSUE_SEED_CLASSES array and its comment copy", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Grep and update all 16-class/16 seed/16 classes occurrences under agent-system/** to 17, report actual count", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

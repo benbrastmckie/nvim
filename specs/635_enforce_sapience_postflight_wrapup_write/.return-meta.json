@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/635_enforce_sapience_postflight_wrapup_write/plans/01_sapience-wrapup-write-enforcement.md",
-      "summary": "Six-phase plan mechanically anchoring the repo-tagged Sapience wrapup write at every implement-completion path, with bound enforcement, a visible zero-notes gap, and a stubbed test suite."
-    }
-  ],
-  "next_steps": "Run /orchestrate 635 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 12,
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1794907446_b4b581_635",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 6,
-    "dependency_waves": 5
-  },
-  "memory_candidates": [
-    {
-      "content": "When planning a change that must fire at every implement-completion in this codebase, prefer a standalone script invoked as a subprocess over a new skill-base.sh function: reconcile-task-status.sh (the deferred/deploy-gate-refusal completion path) sources only lib/common.sh and deploy-root-guard.sh, never skill-base.sh, and already reaches core behavior by sibling-script call (update-task-status.sh). A skill-base.sh function would require sourcing a multi-thousand-line lifecycle library into that script for one call, and is also harder to test because the suite then needs a sourcing fixture.",
-      "category": "PATTERN",
-      "source_artifact": "specs/635_enforce_sapience_postflight_wrapup_write/plans/01_sapience-wrapup-write-enforcement.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["reconcile-task-status.sh", "skill-base.sh", "completion-path", "standalone-script", "deferred-completion"]
-    }
-  ],
-  "dispatch_seq": 7
+    "session_id": "sess_1794907446_b4b581",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 6
+  }
 }
