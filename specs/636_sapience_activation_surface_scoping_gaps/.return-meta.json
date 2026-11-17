@@ -27,21 +27,39 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/636_sapience_activation_surface_scoping_gaps/summaries/01_activation-surface-scoping-gaps-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["sync-manifest-scripts.sh", "git ls-files", "provides.scripts", "manifest.json", "staging"]
+      "suggested_keywords": [
+        "sync-manifest-scripts.sh",
+        "git ls-files",
+        "provides.scripts",
+        "manifest.json",
+        "staging"
+      ]
     },
     {
       "content": "Pattern for extending an existing two-call curl-stub-on-PATH test technique (CURL_STUB_CODE_1/_2 fallback to unsuffixed) to an arbitrary-length N-call sequence: use bash indirect variable expansion (`${!varname}`) inside the stub to look up CURL_STUB_CODE_<call_index> dynamically, still falling back to the unsuffixed var and then a hardcoded default. Avoids hand-writing a fixed number of tiers.",
       "category": "PATTERN",
       "source_artifact": "specs/636_sapience_activation_surface_scoping_gaps/summaries/01_activation-surface-scoping-gaps-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["curl-stub", "bash indirect expansion", "shell-test", "PATH shadow", "sequenced response table"]
+      "suggested_keywords": [
+        "curl-stub",
+        "bash indirect expansion",
+        "shell-test",
+        "PATH shadow",
+        "sequenced response table"
+      ]
     },
     {
       "content": "A sapience-extension shell script that unconditionally sources ${SCRIPT_DIR}/lib/common.sh cannot be invoked directly from the source store pre-deploy, since sapience itself carries no scripts/lib/ of its own (it is flattened into .claude/scripts/lib/ only post-deploy). A regression suite for such a script must build a scratch deployed-tree-shaped fixture (<scratch>/.claude/scripts/{script,lib/common.sh}) rather than invoking the source-store copy directly.",
       "category": "INSIGHT",
       "source_artifact": "specs/636_sapience_activation_surface_scoping_gaps/summaries/01_activation-surface-scoping-gaps-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["sapience", "scripts/lib/common.sh", "deploy-root-guard", "pre-deploy source store", "scratch fixture"]
+      "suggested_keywords": [
+        "sapience",
+        "scripts/lib/common.sh",
+        "deploy-root-guard",
+        "pre-deploy source store",
+        "scratch fixture"
+      ]
     }
   ],
   "sapience_notes": [
@@ -90,7 +108,11 @@
     "session_id": "sess_1794933948_6af122",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   }

@@ -2,7 +2,7 @@
 
 - **Task**: 636 - Close sapience activation-surface scoping gaps: vendor user-level hooks,
   capture coupling, verifier and docs
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/636_sapience_activation_surface_scoping_gaps/reports/01_activation-surface-scoping-gaps.md
