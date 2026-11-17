@@ -88,7 +88,7 @@ Each line is exactly one JSON object with the fields below.
 | `entry_id` | yes | string | Unique, creation-order-sortable ID: `iss_{timestamp_ms}_{random6}`, mirroring `events.jsonl`'s `event_id` convention. |
 | `timestamp` | yes | string | ISO 8601 UTC, matching every other timestamp convention in this codebase. |
 | `kind` | yes | string (closed: `issue` \| `win`) | Positive and negative signal share one schema and one file, on equal footing. |
-| `class` | yes | string (open, extensible) | One of the 16 seed classes below, or a new value — see "Extensibility Rule" below. |
+| `class` | yes | string (open, extensible) | One of the 17 seed classes below, or a new value — see "Extensibility Rule" below. |
 | `severity` | yes | string (closed: see "Severity Scale" below) | |
 | `phase` | no (nullable) | string (closed: `research` \| `plan` \| `implement` \| `conclusion` \| `other`) | The lifecycle phase the entry belongs to. |
 | `dispatch_seq` | no (nullable) | integer | The dispatch sequence number this entry belongs to, when known. |
@@ -130,11 +130,14 @@ naturally minutes:
 Record the unit that actually fits the event; do not force a `gate_runs` cost into a fabricated
 minutes estimate.
 
-## Seed Class Enum — The 16-Class Taxonomy
+## Seed Class Enum — The 17-Class Taxonomy
 
 Empirically grounded in 16 completed tasks measured in a prior verification-focused repository,
-plus one class added to distinguish infrastructure/transport unavailability from work failure.
-Each class below is a one-line gloss, not a full taxonomy document:
+plus one class added to distinguish infrastructure/transport unavailability from work failure,
+plus one further class (`knowledge-capture gap`) seeded on introduction of a mechanical writer
+that emits it, rather than promoted after recurrence — the promotion path described in the
+"Extensibility Rule" below remains for classes first recorded ad hoc. Each class below is a
+one-line gloss, not a full taxonomy document:
 
 | Class | Gloss |
 |-------|-------|
@@ -154,11 +157,12 @@ Each class below is a one-line gloss, not a full taxonomy document:
 | `stale workaround` | A previously-applied workaround was still in place after its root cause was fixed, or outlived its justification. |
 | `cost-forced exclusion or substituted verification` | A verification step was narrowed, skipped, or substituted because the full form was judged too costly, and this was the record of that trade-off. |
 | `infrastructure/transport unavailable` | An external system was genuinely unreachable or self-reported unavailable (an HTTP 503 from a backing service, a transport `ESERVFAIL`, a dead MCP connection). An entry of this class records infrastructure being unavailable, not the task's own work failing. Nothing in cycle accounting reads this field today — cycle-accounting treatment of transport deaths is a separate concern owned elsewhere and deliberately not changed here. |
+| `knowledge-capture gap` | A durable knowledge-capture step a completion path was supposed to feed produced nothing (an empty agent-authored note set at a task boundary, for instance). Records an absent capture, not a backing-service failure. |
 
 ### Extensibility Rule
 
 `class` is **deliberately open, not a closed enum**. `scripts/issue-record.sh` accepts any value:
-when the value is outside the 16 seed classes above, the script **warns to stderr and proceeds**
+when the value is outside the 17 seed classes above, the script **warns to stderr and proceeds**
 — it never refuses the call. This is the one deliberate divergence from
 `scripts/system-defect-record.sh`'s closed-enum-refuses-loudly posture; do not "fix" this script
 into a closed enum by analogy to that one. The point of the open enum is that a genuinely new
@@ -268,7 +272,7 @@ usage to make a schema worth writing without immediately needing a revision.
 
 Because `class` is open, the conclusion stage (`context/contracts/conclusion-stage.md`, deriving
 its three output channels from these logs) is expected to tally entries whose `class` falls
-outside the 16-class seed list above, across tasks, as part of its own synthesis. A class that
+outside the 17-class seed list above, across tasks, as part of its own synthesis. A class that
 recurs often enough across tasks is a candidate for promotion into this document's seed enum in a
 future revision. This tally is explicitly the conclusion stage's job, not this log's own —
 recording here stays CAPTURE ONLY.

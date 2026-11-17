@@ -151,21 +151,21 @@ so Phases 2 and 4 build against a fixed vocabulary.
       (`memory_candidates` -> local `specs/state.json`; `sapience_notes` -> the hosted vault via
       a tagged `POST /ingest-kos`), and that every `sapience_notes` write is permanent and
       unreviewed, which is why the array is bounded. *(completed)*
-- [ ] Add one seed-class row to `agent-system/extensions/core/context/formats/issue-log.md`'s
+- [x] Add one seed-class row to `agent-system/extensions/core/context/formats/issue-log.md`'s
       class table: `knowledge-capture gap` — "a durable knowledge-capture step a completion path
       was supposed to feed produced nothing (an empty agent-authored note set at a task boundary,
-      for instance). Records an absent capture, not a backing-service failure."
-- [ ] Add the identical string to `agent-system/extensions/core/scripts/issue-record.sh`'s
+      for instance). Records an absent capture, not a backing-service failure. *(completed)*"
+- [x] Add the identical string to `agent-system/extensions/core/scripts/issue-record.sh`'s
       `ISSUE_SEED_CLASSES` array (currently 16 entries, starting line 276) **and** to its
-      comment-only convenience copy directly above it (lines 268-274).
-- [ ] Grep every occurrence of `16-class`, `16 seed`, and `16 classes` under
+      comment-only convenience copy directly above it (lines 268-274). *(completed)*
+- [x] Grep every occurrence of `16-class`, `16 seed`, and `16 classes` under
       `agent-system/**` and update each to 17 — at minimum `issue-log.md` (the class-table intro,
       the Extensibility Rule paragraph, and the `class` field row in the schema table) and
       `issue-record.sh` (its header comment at line 17, the inline seed-enum comment at line 268,
-      and the lenient-warning message string at line 301). Record the actual count found.
-- [ ] State in the `issue-log.md` edit that this class was seeded on introduction of a
+      and the lenient-warning message string at line 301). Record the actual count found. *(completed: found 10 occurrences across 4 files, not 2 as hypothesized — issue-log.md (4: class-field row, heading, Extensibility Rule paragraph, Unknown-Class Tally paragraph), issue-record.sh (3), plus two files the plan did not name: orchestrate-conclusion-aggregate.sh's own third unsynced SEED_CLASSES_JSON copy (1) and error-recovery-strategies.md (1); all updated to 17 except issue-log.md's `system_defect`/system-defect-record.sh LEAVE row, which names an unrelated closed enum and is correctly left unchanged)*
+- [x] State in the `issue-log.md` edit that this class was seeded on introduction of a
       mechanical writer that emits it, not promoted after recurrence — the promotion path that
-      document describes remains for classes first recorded ad hoc.
+      document describes remains for classes first recorded ad hoc. *(completed)*
 
 **Timing**: 0.75 hours
 

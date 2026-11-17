@@ -2,15 +2,23 @@
   "phase": 1,
   "phase_name": "Contract Surfaces — sapience_notes Field Spec and Gap Class",
   "started_at": "2026-11-17T10:35:40Z",
-  "last_updated": "2026-11-17T10:40:00Z",
+  "last_updated": "2026-11-17T10:55:00Z",
   "objectives": [
     {"id": 1, "description": "Add ### sapience_notes (optional) section to return-metadata-file.md, including the non-interchangeable-with-memory_candidates statement", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]},
-    {"id": 2, "description": "Add knowledge-capture gap seed-class row to issue-log.md with seeded-on-introduction statement", "status": "not_started", "files_touched": []},
-    {"id": 3, "description": "Add knowledge-capture gap to issue-record.sh ISSUE_SEED_CLASSES array and its comment copy", "status": "not_started", "files_touched": []},
-    {"id": 4, "description": "Grep and update all 16-class/16 seed/16 classes occurrences under agent-system/** to 17, report actual count", "status": "not_started", "files_touched": []}
+    {"id": 2, "description": "Add knowledge-capture gap seed-class row to issue-log.md with seeded-on-introduction statement", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/issue-log.md"]},
+    {"id": 3, "description": "Add knowledge-capture gap to issue-record.sh ISSUE_SEED_CLASSES array and its comment copy", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/issue-record.sh"]},
+    {"id": 4, "description": "Grep and update all 16-class/16 seed/16 classes occurrences under agent-system/** to 17, report actual count", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/issue-log.md", "agent-system/extensions/core/scripts/issue-record.sh", "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh", "agent-system/extensions/core/context/standards/error-recovery-strategies.md"]}
   ],
-  "current_objective": 2,
+  "current_objective": 4,
   "approaches_tried": [],
   "handoff_count": 0,
-  "deviations": []
+  "deviations": [
+    {
+      "task_id": "1.5",
+      "description": "Grep every occurrence of 16-class/16 seed/16 classes under agent-system/**",
+      "type": "altered",
+      "reason": "Scope Hypothesis expected exactly 2 files; actual was 4 files (orchestrate-conclusion-aggregate.sh carries a third, previously-unsynced seed-class JSON array, and error-recovery-strategies.md has its own reference). Updated all 4, left issue-log.md's unrelated system_defect/system-defect-record.sh row at 16 since it names a different closed enum.",
+      "annotation": "*(completed: found 10 occurrences across 4 files, not 2 as hypothesized ...)*"
+    }
+  ]
 }
