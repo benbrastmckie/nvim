@@ -428,24 +428,24 @@ general/meta/markdown — actually author the notes the mechanical site writes.
       `memory_candidates` and `modified_files` as a top-level field, and add
       `"sapience_notes": []` to the worked `.return-meta.json` example (near line 883) so the
       shape is visible rather than only described. *(completed)*
-- [ ] In `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh`, add a short
+- [x] In `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh`, add a short
       `sapience_notes` instruction block to the dispatch body, emitted only when `$phase` is
       `implement` **and** `${SKILL_REPO_ROOT}/.claude/scripts/sapience-remember.sh` exists.
       Model its placement and presence-gating on the existing Stage 3.5 `memory_context` block
       (lines 349-381); this is the one edit that reaches the lean, nix, neovim, and email
       implementation agents, none of which has a memory-candidates stage, without editing five
-      agent files.
-- [ ] Keep that block short (a few lines: the field name, the 3-8 bound, the one-sentence
+      agent files. *(completed)*
+- [x] Keep that block short (a few lines: the field name, the 3-8 bound, the one-sentence
       capture framing, and a pointer to `return-metadata-file.md`'s field spec) and keep it out
       of the `--clean` suppression path — `--clean` suppresses memory *retrieval*, not the
-      agent's own obligation to report what it learned.
-- [ ] Add a case to `test-orchestrate-build-dispatch.sh` asserting the block is present for
+      agent's own obligation to report what it learned. *(completed)*
+- [x] Add a case to `test-orchestrate-build-dispatch.sh` asserting the block is present for
       `phase=implement` with the script present, and absent for `phase=research`/`phase=plan`
-      and when the script is absent.
-- [ ] Name no task numbers in any of these files (all lie outside `specs/**`), and state the
+      and when the script is absent. *(completed)*
+- [x] Name no task numbers in any of these files (all lie outside `specs/**`), and state the
       design on its own merits — no "replacing", "previously", "no longer", or supersession
       framing, per `no-task-references-in-deliverables.md` and
-      `no-record-versioning-in-deliverables.md`.
+      `no-record-versioning-in-deliverables.md`. *(completed)*
 
 **Timing**: 1 hour
 

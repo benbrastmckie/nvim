@@ -2,13 +2,13 @@
   "phase": 4,
   "phase_name": "Emission Instruction Surfaces",
   "started_at": "2026-11-17T13:20:00Z",
-  "last_updated": "2026-11-17T13:20:00Z",
+  "last_updated": "2026-11-17T13:55:00Z",
   "objectives": [
     {"id": 1, "description": "Add Stage 6c (Emit Sapience Notes) to general-implementation-agent.md after Stage 6b, update Stage 7's write-up line and worked example", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
-    {"id": 2, "description": "Add phase+presence-gated sapience_notes instruction block to orchestrate-build-dispatch.sh, modeled on the memory_context block, outside --clean suppression", "status": "not_started", "files_touched": []},
-    {"id": 3, "description": "Add presence/phase-gating/absence cases to test-orchestrate-build-dispatch.sh", "status": "not_started", "files_touched": []}
+    {"id": 2, "description": "Add phase+presence-gated sapience_notes instruction block to orchestrate-build-dispatch.sh, modeled on the memory_context block, outside --clean suppression", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]},
+    {"id": 3, "description": "Add presence/phase-gating/absence cases to test-orchestrate-build-dispatch.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]}
   ],
-  "current_objective": 1,
+  "current_objective": 3,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": [

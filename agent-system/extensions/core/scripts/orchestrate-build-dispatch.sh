@@ -379,6 +379,27 @@ if [ "$clean_flag" != "true" ]; then
   unset _memory_stderr_file _memory_stderr memory_exit
 fi
 
+# ─── Stage 3.5 output 1b: sapience_notes_instruction — a short emission-instruction block for
+# the completing implementation agent, phase- and presence-gated (phase=implement AND the
+# sapience extension's write-side script present), deliberately OUTSIDE the --clean suppression
+# above: --clean suppresses memory *retrieval* (memory_context), never an agent's own obligation
+# to report what it learned. Kept short by design: the field name, the 3-8 bound, a one-sentence
+# capture framing, and a pointer to the full field spec — the agent's own Stage 6c in
+# general-implementation-agent.md carries the detail. ───────────────────────────────────────────
+sapience_notes_instruction=""
+if [ "$phase" = "implement" ] && [ -f "${SKILL_REPO_ROOT}/.claude/scripts/sapience-remember.sh" ]; then
+  sapience_notes_instruction="## Sapience Notes
+
+Before returning, emit 3-8 durable, cross-session findings (a decision and its rationale, a
+measured fact about an external system, a correction to an assumption this work disproved, a
+non-obvious constraint) as the top-level \`sapience_notes\` array in \`.return-meta.json\` — a sibling field
+to \`memory_candidates\`, targeting a different destination (the hosted Sapience vault), never
+nested under \`completion_data\`. See \`context/formats/return-metadata-file.md\`'s \`###
+sapience_notes (optional)\` section for the full per-object field spec. Fewer than 3 is recorded
+as a visible gap; more than 8 is truncated — both enforced mechanically at the write site, not
+by this instruction."
+fi
+
 # ─── Stage 3.5 output 2: lit_context (headless — orchestrator_mode is always true here, so the
 # two interactive directives (PROMPT_NEEDED's interactive branch, and any AskUserQuestion) are
 # unreachable by construction; PROMPT_NEEDED itself is handled defensively below even though
@@ -929,6 +950,10 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
   fi
   if [ -n "$memory_context" ]; then
     echo "$memory_context"
+    echo ""
+  fi
+  if [ -n "$sapience_notes_instruction" ]; then
+    echo "$sapience_notes_instruction"
     echo ""
   fi
   if [ -n "$lit_context" ]; then
