@@ -2662,6 +2662,11 @@
           "path": "specs/627_reap_orphan_sapience_mcp_registrations/plans/01_reap-orphan-sapience-mcp.md",
           "type": "plan",
           "summary": "4-phase, 3.5-hour plan adding a cross-project --reap mode to the sapience MCP writer and an ungated reap pass to the SessionStart hook, with fixture coverage, docs, redeploy and installer refresh."
+        },
+        {
+          "path": "specs/627_reap_orphan_sapience_mcp_registrations/summaries/01_reap-orphan-sapience-mcp-summary.md",
+          "type": "summary",
+          "summary": "All 4 plan phases completed: --reap mode added to the writer, writer-level and hook-level fixture coverage added, the SessionStart hook restructured for an ungated cross-project reap pass, and documentation/redeploy/live verification completed with no wrongful reap."
         }
       ],
       "next_artifact_number": 2,
@@ -2672,7 +2677,8 @@
         "agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh",
         "agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh",
         "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"
-      ]
+      ],
+      "completion_summary": "Added a --reap cross-project action to setup-sapience-mcp.sh and restructured the SessionStart hook to invoke it unconditionally on every session start, closing the gap where a deleted/renamed project's sapience MCP registration could never be reaped. All 4 plan phases completed and committed individually; 36-case test suite green in both the source store and the deployed tree; live ~/.claude.json census confirmed no wrongful reap."
     },
     {
       "project_number": 624,

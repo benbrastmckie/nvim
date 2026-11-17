@@ -1,7 +1,94 @@
 {
-  "status": "in_progress",
-  "task_number": 627,
+  "status": "implemented",
   "dispatch_seq": 14,
+  "task_number": 627,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/627_reap_orphan_sapience_mcp_registrations/summaries/01_reap-orphan-sapience-mcp-summary.md",
+      "summary": "All 4 plan phases completed: --reap mode added to the writer, writer-level and hook-level fixture coverage added, the SessionStart hook restructured for an ungated cross-project reap pass, and documentation/redeploy/live verification completed with no wrongful reap."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a --reap cross-project action to setup-sapience-mcp.sh and restructured the SessionStart hook to invoke it unconditionally on every session start, closing the gap where a deleted/renamed project's sapience MCP registration could never be reaped. All 4 plan phases completed and committed individually; 36-case test suite green in both the source store and the deployed tree; live ~/.claude.json census confirmed no wrongful reap."
+  },
+  "modified_files": [
+    "agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh",
+    "agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh",
+    "agent-system/extensions/sapience/README.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When adding a cross-cutting standalone action to a shell writer/hook pair where the hook must invoke the action unconditionally regardless of its own per-repo gating: (1) in the writer, place the new action's dispatch alongside any existing standalone-action short-circuits (e.g. --retire-global), before any top-level hard-exit resource resolution the new action doesn't need; (2) in the hook, hoist every precondition the new action shares with the existing per-repo logic (jq presence, writer existence) above the per-repo gating branch, convert that branch's early-exit arms into a boolean flag instead, and replace a single-NOTICE tail with an array-based notice assembly so any subset of independent notice sources still yields exactly one output line.",
+      "category": "PATTERN",
+      "source_artifact": "specs/627_reap_orphan_sapience_mcp_registrations/summaries/01_reap-orphan-sapience-mcp-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "shell-script",
+        "standalone-action",
+        "hook-restructuring",
+        "notice-assembly",
+        "ungated-pass"
+      ]
+    },
+    {
+      "content": "deploy-headless.sh's inline verify-deploy.sh call defaults to --skip-slow (opt-out via --skip-verify suppresses it entirely), which is a lighter-weight gate pass distinct from an independent full-depth verify-deploy.sh invocation. Under a Batch Gate Deferral directive that prohibits running the complete gate set a second time, a plan phase whose own task list mandates 'redeploy via deploy-headless.sh' can treat that script's own built-in --skip-slow pass as the scoped discharge for a 'verify-deploy.sh green' verification criterion, rather than needing a separate narrowing invocation.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/627_reap_orphan_sapience_mcp_registrations/summaries/01_reap-orphan-sapience-mcp-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "deploy-headless",
+        "verify-deploy",
+        "batch-gate-deferral",
+        "skip-slow",
+        "gate-discharge"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "task 627 orphan sapience MCP registration",
+      "value": "The task description's cited stale /home/benjamin/Projects/sapience-app registration (.mcpServers.sapience on a deleted-path row) was already gone by the time research ran -- the row existed but carried mcpServers:{} with no sapience subkey. Re-confirmed at implementation time: zero orphaned sapience registrations existed across all live .projects rows throughout this task's entire lifecycle, so live acceptance was always a no-wrongful-reap regression check rather than a reproducible repro; the real discriminating evidence lived entirely in fixture-based test cases.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "specs/627_reap_orphan_sapience_mcp_registrations/plans/01_reap-orphan-sapience-mcp.md"
+    },
+    {
+      "subject": "deploy-headless.sh inline verification depth",
+      "value": "deploy-headless.sh's own inline verify-deploy.sh call runs with --skip-slow by default (an opt-out --skip-verify flag suppresses it entirely), which is measurably lighter than an independent full-depth verify-deploy.sh invocation and does not trigger Gate 8's shell-suite battery mutex contention the way an unflagged full run would.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/deploy-headless.sh"
+    },
+    {
+      "subject": "bash array expansion under set -uo pipefail",
+      "value": "In this machine's bash, `\"${arr[@]}\"` expansion on a declared-but-empty array under `set -u` (no -e) does not raise an unbound-variable error -- confirmed empirically via both setup-sapience-mcp.sh's orphans array and sapience-mcp-register-project.sh's NOTICES array, each gated by a `${#arr[@]} -eq 0` check before any loop/printf expansion, with no bash-version-specific guard needed beyond that check.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.75
+    },
+    {
+      "subject": "git-commit-phase.sh Containment Self-Check and __WHOLE_TREE__",
+      "value": "git-commit-phase.sh's Containment Self-Check treats the __WHOLE_TREE__ file_scope sentinel as a literal pathspec string, not a semantic wildcard that widens containment to every path. A path outside the task's explicitly-listed file_scope entries (e.g. an auto-regenerated index file touched incidentally by a whole-tree redeploy) is still dropped from the phase commit and must be landed via a separate git-commit-scoped.sh follow-up commit, even when __WHOLE_TREE__ is itself present in the declared file_scope.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": ".claude/scripts/git-commit-phase.sh"
+    },
+    {
+      "subject": "test fixture design for bidirectional assertions",
+      "value": "Merging two directional test assertions (e.g. 'an orphan row is correctly reaped' and 'a live row survives untouched') into a single shared fixture and invocation, rather than two separate cases, keeps a growing regression suite's case count tighter without losing discriminating power -- both directions are proven by one --reap call against a fixture containing both an orphan and a present-path row.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.7,
+      "source_loc": "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794907446_b4b581",
     "agent_type": "general-implementation-agent",
@@ -10,9 +97,13 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
   },
   "proposed_file_scope": [
     "agent-system/extensions/sapience/index-entries.json"
-  ]
+  ],
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

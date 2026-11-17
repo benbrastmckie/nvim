@@ -703,6 +703,7 @@ ACCEPTANCE. All five repositories' .claude/settings.local.json grant exactly the
 - **Dependencies**: None
 - **Research**: [627_reap_orphan_sapience_mcp_registrations/reports/01_reap-orphan-sapience-mcp.md]
 - **Plan**: [627_reap_orphan_sapience_mcp_registrations/plans/01_reap-orphan-sapience-mcp.md]
+- **Summary**: [627_reap_orphan_sapience_mcp_registrations/summaries/01_reap-orphan-sapience-mcp-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh.
 

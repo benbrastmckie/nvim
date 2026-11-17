@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Created a 4-phase serial plan implementing the research-settled design: a standalone --reap action on setup-sapience-mcp.sh, writer-level fixture cases, an ungated reap invocation in the restructured SessionStart hook with array-based notice assembly, then docs plus redeploy, installer refresh and the full gate set. Premise re-validation found the description's cited stale entry no longer reproduces (that row now carries mcpServers:{}; zero orphaned server rows across all 41 project rows), so the plan moves discriminating evidence to fixtures and reframes live acceptance as a no-wrongful-reap regression check. Two mechanics not in the report were added: --reap must short-circuit before resolve_interpreter's hard exit 1, and the hook's jq/writer guards must hoist above the manifest-reachability branch.",
+  "summary": "Implemented all 4 plan phases: added a --reap cross-project standalone action to setup-sapience-mcp.sh (removes .mcpServers.sapience for any .projects path no longer on disk), added writer-level and hook-level fixture coverage proving it (cases 31-36 plus a discrimination check, 36/36 green), restructured the SessionStart hook to invoke --reap unconditionally before and independent of its own manifest-reachability branch with array-based notice assembly, and completed documentation/redeploy/installer-refresh/live verification. Live ~/.claude.json census confirmed no wrongful reap (zero orphans existed before or after); verify-sapience-mcp.sh (a)-(d) pass matching the documented baseline. Each phase committed individually.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/627_reap_orphan_sapience_mcp_registrations/summaries/01_reap-orphan-sapience-mcp-summary.md",
+      "summary": "All 4 plan phases completed: --reap mode added to the writer, writer-level and hook-level fixture coverage added, the SessionStart hook restructured for an ungated cross-project reap pass, and documentation/redeploy/live verification completed with no wrongful reap."
+    },
+    {
       "type": "plan",
       "path": "specs/627_reap_orphan_sapience_mcp_registrations/plans/01_reap-orphan-sapience-mcp.md",
-      "summary": "4-phase, 3.5-hour plan adding a cross-project --reap mode to the sapience MCP writer and an ungated reap pass to the SessionStart hook, with fixture coverage, docs, redeploy and installer refresh."
+      "summary": "4-phase plan, all phases marked [COMPLETED]."
     }
   ],
-  "dispatch_seq": 9
+  "dispatch_seq": 14
 }
