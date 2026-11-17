@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Clear the Leaked-Fixture Backlog",
+  "started_at": "2026-11-17T20:33:35Z",
+  "last_updated": "2026-11-17T20:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive before figures (count, du total)", "status": "done", "files_touched": [], "note": "1,733 entries, 1.4G (re-measured 2026-11-17, differs from the plan's 1,739/1.4GB carried figure)"},
+    {"id": 2, "description": "Confirm no sibling dispatch mid-run via --dry-run + git status", "status": "done", "files_touched": [], "note": "dry-run candidate ages all >=1d (no today-dated candidate); git status --short showed only foreign, disjoint-file_scope modifications from concurrent siblings 604/624/547, none under /tmp or this plan's file_scope"},
+    {"id": 3, "description": "Run reaper under --force, capture its report", "status": "done", "files_touched": [], "note": "Removed: 1493 fixture(s), Failed: 0. See issue log for a recorded near-miss: invoking the whole script under --force also arms the Claude/Lean termination passes (both reported 0 actions this run)."},
+    {"id": 4, "description": "Re-derive after figures and record delta", "status": "done", "files_touched": [], "note": "After: 240 entries, 549M. Delta: -1,493 entries, -~851MB reclaimed."},
+    {"id": 5, "description": "Record any surviving candidate as a third leak mechanism via issue-record.sh", "status": "done", "files_touched": [], "note": "Not applicable -- all 240 survivors are dated 2026-11-16/2026-11-17 (today/yesterday), fully explained by the existing age-threshold gate; no new leak mechanism found, so no issue-record.sh call was needed for this objective."}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

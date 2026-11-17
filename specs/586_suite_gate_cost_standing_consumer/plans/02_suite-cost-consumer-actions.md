@@ -235,27 +235,38 @@ message rather than silently dropping it.
 
 ---
 
-### Phase 2: Clear the Leaked-Fixture Backlog [NOT STARTED]
+### Phase 2: Clear the Leaked-Fixture Backlog [COMPLETED]
 
 **Goal**: The 1.4 GB leaked-fixture backlog is reclaimed by the Phase 1 pass itself — which is
 also the pass's only live validation — and the before/after figures are recorded.
 
 **Tasks**:
-- [ ] Re-derive both figures immediately before acting, since the count grows continuously:
+- [x] Re-derive both figures immediately before acting, since the count grows continuously:
       `find /tmp -maxdepth 1 -name 'tmp.*' | wc -l` and
       `find /tmp -maxdepth 1 -name 'tmp.*' -print0 | du -sch --files0-from=- | tail -1`.
-      Record both.
-- [ ] Confirm no sibling dispatch is mid-run with a live fixture: run
+      Record both. *(completed: 1,733 entries / 1.4G, re-derived live 2026-11-17 -- differs
+      slightly from this plan's carried 1,739-entry figure, as expected for a continuously
+      growing count)*
+- [x] Confirm no sibling dispatch is mid-run with a live fixture: run
       `bash agent-system/extensions/core/scripts/claude-refresh.sh --dry-run` first and read the
       candidate list for anything dated today, then check `git status --short` for foreign
-      in-flight modifications per the dispatch's concurrency note.
-- [ ] Run the reaper under `--force` and capture its own report of what it removed.
-- [ ] Re-derive the same two figures afterwards and record the delta. A residual count is expected
+      in-flight modifications per the dispatch's concurrency note. *(completed: all dry-run
+      candidate ages were >=1d, i.e. none dated today; `git status --short` showed only foreign,
+      disjoint-file_scope modifications from concurrent siblings 604/624/547)*
+- [x] Run the reaper under `--force` and capture its own report of what it removed. *(completed:
+      "Removed: 1493 fixture(s), Failed: 0 fixture(s)". Deviation note: invoking the whole script
+      under --force also arms run_claude_pass()/run_lean_pass() in the same invocation -- both
+      reported zero actions this run, recorded as a near-miss via issue-record.sh for future
+      invocations to use a direct function call instead)*
+- [x] Re-derive the same two figures afterwards and record the delta. A residual count is expected
       and correct (today's fixtures are below the age threshold) — do not chase it to zero by
-      lowering the threshold.
-- [ ] If any candidate survived removal, treat it as a third leak mechanism the pass does not yet
+      lowering the threshold. *(completed: after = 240 entries / 549M. Delta: -1,493 entries,
+      -~851MB reclaimed)*
+- [x] If any candidate survived removal, treat it as a third leak mechanism the pass does not yet
       carry: record it via `issue-record.sh` with the exact path and `ls -la` output rather than
-      hand-deleting it, so Phase 5 can name it.
+      hand-deleting it, so Phase 5 can name it. *(completed: not applicable -- all 240 survivors
+      are dated 2026-11-16/2026-11-17, fully explained by the existing age-threshold gate; no new
+      leak mechanism was found, so no issue-record.sh call was needed for this item)*
 
 **Timing**: 0.5 hours
 
