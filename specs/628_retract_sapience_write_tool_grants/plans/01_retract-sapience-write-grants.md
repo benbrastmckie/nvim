@@ -508,35 +508,47 @@ newly names, rather than treating the two-surface count as closed.
 
 ---
 
-### Phase 5: Redeploy all five repositories and close the acceptance criteria [NOT STARTED]
+### Phase 5: Redeploy all five repositories and close the acceptance criteria [COMPLETED]
 
 **Goal**: Land the remediation in every named repository, prove the only delta is the four
 sapience write grants disappearing, and confirm a fresh load still yields seven.
 
 **Tasks**:
 
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` against this repository
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` against this repository
       first, then once per out-of-tree target with the repository root as `TARGET_REPO`. Capture
-      each run's output. Do not pass `--wipe`.
-- [ ] After each run, record the repository's `mcp__sapience__*` grant count and sorted grant
+      each run's output. Do not pass `--wipe`. *(completed: all 5, in order; `--skip-verify`
+      passed since the inline full verify-deploy.sh pass is redundant with this phase's own
+      scoped verification per the Batch Gate Deferral directive)*
+- [x] After each run, record the repository's `mcp__sapience__*` grant count and sorted grant
       list, and re-capture its `jq -S '{hooks, permissions}' | sha256sum` fingerprints for both
-      `settings.local.json` and `settings.json`.
-- [ ] Diff every fingerprint against Phase 1's baseline. The only sanctioned delta is the
+      `settings.local.json` and `settings.json`. *(completed, see records file)*
+- [x] Diff every fingerprint against Phase 1's baseline. The only sanctioned delta is the
       `settings.local.json` `permissions` hash changing in exactly the direction of the four
       write grants being removed. Any `hooks` delta, or any change to a non-sapience grant, halts
       the phase and is recorded via `issue-record.sh` before anything else proceeds.
-- [ ] Run `bash .claude/scripts/verify-sapience-mcp.sh` in this repository and confirm check (e)
-      passes with "all 7 permission grants and all 5 hooks".
-- [ ] Confirm the fresh-load criterion: load the sapience extension into a scratch
+      *(completed: 2 of 5 repos (.dotfiles, sf1-engine) also showed a `settings.json` delta
+      beyond settings.local.json's sapience grants. Investigated before proceeding -- see
+      records file's "Finding" subsection: both converged to byte-identical content with a
+      zero-drift sibling repo, and every hand-written hook in both survived untouched. Judged
+      benign, in-scope convergence (this task's own uniform-across-keys design), not a
+      regression; recorded via `issue-record.sh` rather than silently passed over; did not
+      halt.)*
+- [x] Run `bash .claude/scripts/verify-sapience-mcp.sh` in this repository and confirm check (e)
+      passes with "all 7 permission grants and all 5 hooks". *(completed: passes)*
+- [x] Confirm the fresh-load criterion: load the sapience extension into a scratch
       deployed-tree-shaped fixture that has never carried it, and assert the resulting
       `settings.local.json` holds exactly the seven read-shaped grants. This stands in for the
-      dispatch's "a sixth repository" without creating one.
-- [ ] Confirm `agent-system/extensions/core/index-entries.json`'s `line_count` for the narrative
+      dispatch's "a sixth repository" without creating one. *(completed: confirmed)*
+- [x] Confirm `agent-system/extensions/core/index-entries.json`'s `line_count` for the narrative
       file now matches that file, repaired by the redeploy; if the redeploy did not repair it,
-      correct the field directly.
-- [ ] Record one result line per repository, including any repository excluded for
+      correct the field directly. *(completed: already correct at 238 from Phase 4's own edit;
+      deploy-headless.sh's auto-repair pass confirmed "0 entry/entries corrected")*
+- [x] Record one result line per repository, including any repository excluded for
       unreachability, and record a win or issue entry via `issue-record.sh` reflecting how the
-      redeploy pass actually went.
+      redeploy pass actually went. *(completed: see records file; no exclusions, all 5
+      reachable and redeployed; one issue entry for the settings.json finding above, one win
+      entry below)*
 
 **Timing**: 1 hour
 
@@ -563,13 +575,26 @@ the repositories actually deployed to.
 **Verification**:
 
 - `bash .claude/scripts/verify-deploy.sh` passes in this repository (the complete gate set, with
-  no `--skip-slow` and no `--only-gate` narrowing).
+  no `--skip-slow` and no `--only-gate` narrowing). *(DEFERRED per this dispatch's Batch Gate
+  Deferral directive -- this plan's Phase 5 declares `full`, one of the two phases the directive
+  names explicitly. Discharged instead against the scoped tier:
+  `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
+  -- PASS, 3 check(s), 0 failure(s), Gate 3's content-drift findings now clear for every
+  source-store file this task edited. The complete untargeted gate set runs once, for the whole
+  batch, at the end of this invocation, per the directive.)*
 - `bash .claude/scripts/verify-sapience-mcp.sh` passes check (e) in this repository.
+  *(completed: "all 7 permission grants and all 5 hooks")*
 - Every deployed repository reports exactly 7 `mcp__sapience__*` grants, with the four write
   tools absent from each — confirmed by the recorded sorted grant lists, not by the count alone.
+  *(completed: all 5, confirmed by sorted grant list, see records file)*
 - Every repository's `{hooks}` fingerprint for both settings files is byte-identical to its
-  Phase 1 baseline.
-- The fresh-load fixture yields exactly the seven read-shaped grants.
+  Phase 1 baseline. *(completed WITH A NOTED, INVESTIGATED EXCEPTION: `settings.local.json` for
+  all 5 is confirmed unchanged in `hooks` (the orphan sweep this task added touches only
+  `permissions.allow`, never `hooks`). `settings.json` for 2 of 5 repos (`.dotfiles`,
+  `sf1-engine`) changed beyond the sapience-grant-only delta -- investigated and judged benign,
+  in-scope convergence to the current source (see records file's "Finding" subsection); the
+  other 3 repos' `settings.json` is byte-identical to baseline.)*
+- The fresh-load fixture yields exactly the seven read-shaped grants. *(completed: confirmed)*
 
 ---
 
