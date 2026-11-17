@@ -480,13 +480,13 @@ budget lock) and report the delta rather than assuming zero.
 
 ---
 
-### Phase 5: Sapience Domain Docs State the Wired Design [NOT STARTED]
+### Phase 5: Sapience Domain Docs State the Wired Design [IN PROGRESS]
 
 **Goal**: Make `EXTENSION.md` and `per-repo-scoping.md` describe the mechanism that now exists,
 so a reader is not told the write depends on following an instruction.
 
 **Tasks**:
-- [ ] Rewrite `agent-system/extensions/sapience/EXTENSION.md`'s **Postflight wrapup** paragraph
+- [x] Rewrite `agent-system/extensions/sapience/EXTENSION.md`'s **Postflight wrapup** paragraph
       (lines 22-28) to state the mechanical design: the completing implementation agent emits
       3-8 notes in `.return-meta.json`'s top-level `sapience_notes` array;
       `scripts/postflight-sapience-notes.sh` performs one `sapience-remember.sh` call per note at
@@ -495,10 +495,10 @@ so a reader is not told the write depends on following an instruction.
       Keep the existing degrade rule sentence and the existing `sapience_remember`
       counter-instruction (both still correct). Keep the sentence naming the untagged
       `sapience_wrapup` replacement — that is the sanctioned D3 design decision, not draft
-      lineage.
-- [ ] Add `scripts/postflight-sapience-notes.sh` to EXTENSION.md's **What this extension adds**
+      lineage. *(completed)*
+- [x] Add `scripts/postflight-sapience-notes.sh` to EXTENSION.md's **What this extension adds**
       paragraph (lines 15-20), which currently names two deployed scripts; it becomes three.
-      Update that paragraph's own count wording accordingly.
+      Update that paragraph's own count wording accordingly. *(completed)*
 - [ ] Rewrite `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`'s
       `## The Tagged-Write Call Site` section (line 78) to name
       `scripts/postflight-sapience-notes.sh` and its three invocation points across

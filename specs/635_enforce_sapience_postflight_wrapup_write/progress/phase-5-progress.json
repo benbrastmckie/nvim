@@ -1,0 +1,14 @@
+{
+  "phase": 5,
+  "phase_name": "Sapience Domain Docs State the Wired Design",
+  "started_at": "2026-11-17T14:10:00Z",
+  "last_updated": "2026-11-17T14:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite EXTENSION.md's Postflight wrapup and What this extension adds paragraphs to state the mechanical design", "status": "done", "files_touched": ["agent-system/extensions/sapience/EXTENSION.md"]},
+    {"id": 2, "description": "Rewrite per-repo-scoping.md's Tagged-Write Call Site and No Lifecycle Hook sections; check Hazards census and sapience-write-path.md's 14-file count", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
