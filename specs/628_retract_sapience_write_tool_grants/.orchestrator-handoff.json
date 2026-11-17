@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase, 6-hour plan adopting the research report's merge-engine retraction route: wire the already-existing unmerge_settings / build_retained_fragments / get_merged_sections primitives into manager.load's forced-reload branch via the existing reverse_merge_targets helper, with rollback symmetry mirroring the settings_swept precedent. Re-measured every carried figure live: all five repositories still carry 11 sapience grants against a 7-grant fragment, confirmed unchanged. Corrected two research-report details -- the tracked-record jq path omits a 'children' level, and exactly two source-store surfaces (not one) carry the now-false residual caveat. No migration script and no new lint; redeploy is the remediation.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/628_retract_sapience_write_tool_grants/plans/01_retract-sapience-write-grants.md",
+      "summary": "5-phase plan (6h, 4 waves) retracting sapience write-tool grants via forced-reload retraction in the merge engine, regression coverage, two caveat rewrites, and a five-repository redeploy."
+    }
+  ],
+  "dispatch_seq": 13
+}

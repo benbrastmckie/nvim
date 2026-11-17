@@ -179,7 +179,7 @@ next_project_number: 643
 ### Sapience
 
 627 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
-628 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
+628 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
 636 [PLANNED] — Close sapience activation-surface scoping gaps: vendor...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
@@ -675,11 +675,12 @@ PROVENANCE: surfaced as a Reasoned Exclusion in the /todo consolidation record's
 ---
 
 ### 628. Retract sapience write tool grants
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: Task 527
 - **Research**: [628_retract_sapience_write_tool_grants/reports/01_retract-sapience-write-grants.md]
+- **Plan**: [628_retract_sapience_write_tool_grants/plans/01_retract-sapience-write-grants.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (the merge engine) and agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve each extension's own source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh. Depends on task 527, which is solving the same deployed-set-vs-merge-source convergence problem for hook registrations; coordinate with its mechanism rather than building a second one.
 
