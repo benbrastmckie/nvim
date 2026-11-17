@@ -142,7 +142,7 @@
 # see. Treat a clean run as "the known defect shapes are not present in the known surfaces", never
 # as "every hook registration anywhere is correct."
 #
-# Usage: lint-hook-registration-paths.sh [--verbose] [--quiet] [path...]
+# Usage: lint-hook-registration-paths.sh [--verbose] [--quiet] [--deployed-settings PATH] [path...]
 #
 #   path...    Optional. Files or directories to scan. A directory is scanned recursively for the
 #              settings-surface and markdown filenames below. A single explicit file argument is
@@ -155,6 +155,21 @@
 #              verbose or not -- it was never a candidate in the first place.
 #   --quiet    Suppress the progress header and the all-clear summary. Violations are still
 #              printed, and the failing summary is still printed, so a failing run is never silent.
+#   --deployed-settings PATH
+#              Point Check E (below) at a deployed-tree settings.json other than the default
+#              $PROJECT_ROOT/.claude/settings.json -- ad hoc inspection of another deploy target,
+#              or a fixture-driven test run. Parsed in a pre-pass inside this script's own body,
+#              stripped from "$@" BEFORE lint_corpus_scan_parse_flags ever sees it (that shared
+#              parser treats any unrecognized token as a positional scan path). A missing,
+#              unreadable, or non-JSON path degrades to zero Check E rows and zero findings, never
+#              exit 2 -- mirroring every other check's missing-surface degrade in this script.
+#
+# ENV OVERRIDE CONVENTION -- mirrors HOOK_IDENTITY_CLI_OVERRIDE (used by the test suite to point
+# the identity bridge at a deliberately broken path without touching the real bridge file):
+# HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE, when set, supplies the same deployed-settings path
+# --deployed-settings would, for the flagless gate-21 invocation where no CLI flag can reach this
+# script. Precedence: --deployed-settings flag beats HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE beats the
+# $PROJECT_ROOT/.claude/settings.json default.
 
 set -euo pipefail
 
@@ -177,6 +192,27 @@ if [[ ! -f "${SCRIPT_DIR}/../lib/lint-corpus-scan-lib.sh" ]]; then
 fi
 # shellcheck source=../lib/lint-corpus-scan-lib.sh
 source "${SCRIPT_DIR}/../lib/lint-corpus-scan-lib.sh"
+
+# --deployed-settings PATH pre-pass: strip the flag and its value from "$@" BEFORE calling
+# lint_corpus_scan_parse_flags, which is shared byte-identically across seven lints and treats
+# any unrecognized token as a positional scan path (an unstripped flag would land as one and
+# exit 2 with "scan path not found: --deployed-settings"). Leaves that shared library untouched.
+DEPLOYED_SETTINGS_FLAG=""
+ARGS_AFTER_STRIP=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --deployed-settings)
+            shift
+            DEPLOYED_SETTINGS_FLAG="${1:-}"
+            shift || true
+            ;;
+        *)
+            ARGS_AFTER_STRIP+=("$1")
+            shift
+            ;;
+    esac
+done
+set -- "${ARGS_AFTER_STRIP[@]}"
 
 VERBOSE=false
 QUIET=false
@@ -214,6 +250,13 @@ resolve_project_root() {
 }
 
 PROJECT_ROOT="$(resolve_project_root)"
+
+# Check E's deployed-settings input: --deployed-settings flag beats
+# HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE beats the default $PROJECT_ROOT/.claude/settings.json
+# (never settings.local.json, per D6). A missing, unreadable, or non-JSON file degrades to zero
+# Check E rows -- collect_inventory's own "[[ -f \"\$f\" ]]" guard below already handles that; no
+# exit 2 here.
+DEPLOYED_SETTINGS="${DEPLOYED_SETTINGS_FLAG:-${HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE:-$PROJECT_ROOT/.claude/settings.json}}"
 
 if [[ ${#SCAN_PATHS[@]} -eq 0 ]]; then
     DEFAULT_SCAN="$PROJECT_ROOT/agent-system/extensions"
@@ -566,30 +609,33 @@ resolve_identities_via_bridge() {
 ALL_GROUP=()
 ALL_FILE=()
 ALL_EVENT=()
+ALL_MATCHER=()
 ALL_TYPE=()
 ALL_COMMAND=()
 
 collect_inventory() {
-    # Usage: collect_inventory <root|frag> <file...>
+    # Usage: collect_inventory <root|frag|deployed> <file...>
     local group="$1"
     shift
     local f
     for f in "$@"; do
         [[ -z "$f" || ! -f "$f" ]] && continue
-        local event type command
-        while IFS=$'\t' read -r event type command; do
+        local event matcher type command
+        while IFS=$'\t' read -r event matcher type command; do
             [[ -z "$command" ]] && continue
             ALL_GROUP+=("$group")
             ALL_FILE+=("$f")
             ALL_EVENT+=("$event")
+            ALL_MATCHER+=("$matcher")
             ALL_TYPE+=("$type")
             ALL_COMMAND+=("$command")
-        done < <(jq -r '(.hooks // {}) | to_entries[] | .key as $event | (.value // [])[] | ((.hooks // [])[] // {}) | [$event, (.type // ""), (.command // "")] | @tsv' "$f" 2>/dev/null)
+        done < <(jq -r '(.hooks // {}) | to_entries[] | .key as $event | (.value // [])[] | (.matcher // "") as $matcher | ((.hooks // [])[] // {}) | [$event, $matcher, (.type // ""), (.command // "")] | @tsv' "$f" 2>/dev/null)
     done
 }
 
 collect_inventory root "${ROOT_FILES_GROUP[@]}"
 collect_inventory frag "${FRAGMENT_GROUP[@]}"
+collect_inventory deployed "$DEPLOYED_SETTINGS"
 
 IDENTITY_IN="$(mktemp)"
 IDENTITY_OUT="$(mktemp)"
@@ -611,6 +657,9 @@ declare -A FRAG_IDS
 for i in "${!ALL_COMMAND[@]}"; do
     identity="${ALL_IDENTITY[$i]:-}"
     [[ -z "$identity" ]] && continue
+    # Check C's root-vs-fragment coverage comparison is a source-store-only question; a
+    # `deployed` row (Check E's own input) must never enter it.
+    [[ "${ALL_GROUP[$i]}" == "deployed" ]] && continue
     key="${identity}|${ALL_EVENT[$i]}"
     if [[ "${ALL_GROUP[$i]}" == "root" ]]; then
         ROOT_IDS["$key"]="${ALL_FILE[$i]}"
@@ -640,6 +689,10 @@ done
 for i in "${!ALL_COMMAND[@]}"; do
     identity="${ALL_IDENTITY[$i]:-}"
     [[ -z "$identity" ]] && continue
+    # Check D's existence verdict is source-store-relative (check_exists globs
+    # agent-system/extensions/*/<norm>); a `deployed` row needs a deploy-target-relative probe
+    # instead, which is Check E's own job (below), never this one's.
+    [[ "${ALL_GROUP[$i]}" == "deployed" ]] && continue
     norm="${identity#*:}"
     if ! check_exists "$norm"; then
         name="${norm##*/}"

@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Matcher-Aware Inventory and Deployed-Settings Input",
+  "started_at": "2026-11-17T10:40:00Z",
+  "last_updated": "2026-11-17T11:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture before-baseline --verbose output over default scan root", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Extend collect_inventory jq recipe with .matcher and ALL_MATCHER array", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]},
+    {"id": 3, "description": "Add deployed group to collect_inventory, single batched bridge call", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]},
+    {"id": 4, "description": "Add --deployed-settings PATH pre-pass flag, strip before lint_corpus_scan_parse_flags", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]},
+    {"id": 5, "description": "Add HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE env override, precedence flag>env>default", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]},
+    {"id": 6, "description": "Default DEPLOYED_SETTINGS, missing/unreadable degrade to zero rows never exit 2", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]},
+    {"id": 7, "description": "Guard root/frag groups (Checks C/D) against deployed rows", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]},
+    {"id": 8, "description": "Re-run before-baseline command, assert byte-identical output", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "notes": "run-all.sh --only <5 suites> for this phase exits non-zero: test-verify-deploy-context-budget.sh is already EXPECTED in known-failures.txt (unrelated gate-24 reason, plus this task's own pending source/deployed drift which Phase 6's redeploy resolves); test-deploy-baseline-lib.sh fails identically with this phase's edit removed via git-stash isolation (proven NOT caused by this task -- gate1_run's event-store file list was reduced to 6 by an unrelated prior task, breaking that test's hardcoded '9 PASS lines' assertion). Both logged via issue-record.sh. All of this phase's OWN verification criteria (byte-identical Check A-D output, flag pre-pass, env override, missing-file degrade, no edit to lint-corpus-scan-lib.sh, exactly one bridge call site) are independently confirmed green by direct command output, not by the suite's aggregate exit code alone."
+}

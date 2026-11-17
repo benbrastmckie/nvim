@@ -243,37 +243,41 @@ over this plan's reconstruction path.
 
 ---
 
-### Phase 2: Matcher-Aware Inventory and Deployed-Settings Input [NOT STARTED]
+### Phase 2: Matcher-Aware Inventory and Deployed-Settings Input [COMPLETED]
 
 **Goal**: Give the lint a deployed-tree input and a matcher column, with Checks A-D's finding set
 provably unchanged -- all the plumbing Check E needs, and none of its finding logic.
 
 **Tasks**:
 
-- [ ] Capture the current full `--verbose` output of the lint over the default scan root, as the
-      before-baseline for the no-behavior-change assertion below.
-- [ ] Extend `collect_inventory()`'s jq recipe to also extract `.matcher` (the enclosing block's
+- [x] Capture the current full `--verbose` output of the lint over the default scan root, as the
+      before-baseline for the no-behavior-change assertion below. *(completed)*
+- [x] Extend `collect_inventory()`'s jq recipe to also extract `.matcher` (the enclosing block's
       field, read at the `(.value // [])[]` level where it actually lives), and add a parallel
       `ALL_MATCHER` array alongside `ALL_GROUP`/`ALL_FILE`/`ALL_EVENT`/`ALL_TYPE`/`ALL_COMMAND`.
-- [ ] Add a `deployed` group to `collect_inventory`'s `<root|frag>` group argument and call
+      *(completed)*
+- [x] Add a `deployed` group to `collect_inventory`'s `<root|frag>` group argument and call
       `collect_inventory deployed "$DEPLOYED_SETTINGS"` alongside the existing `root`/`frag` calls,
       so the deployed rows are resolved through the SAME single batched
       `resolve_identities_via_bridge` invocation. Do not add a second identity mechanism or a
-      second bridge call.
-- [ ] Add a `--deployed-settings PATH` flag, parsed in a pre-pass inside this lint's own body that
+      second bridge call. *(completed)*
+- [x] Add a `--deployed-settings PATH` flag, parsed in a pre-pass inside this lint's own body that
       strips the flag and its value from `"$@"` BEFORE `lint_corpus_scan_parse_flags` is called.
       Leave `scripts/lib/lint-corpus-scan-lib.sh` untouched: that parser is shared byte-identically
-      by seven lints and treats any unknown token as a positional scan path.
-- [ ] Add a `HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE` environment override, documented in the script
+      by seven lints and treats any unknown token as a positional scan path. *(completed)*
+- [x] Add a `HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE` environment override, documented in the script
       header as mirroring the existing `HOOK_IDENTITY_CLI_OVERRIDE` convention, for the flagless
-      gate-21 invocation. Precedence: flag beats env var beats the default.
-- [ ] Default `DEPLOYED_SETTINGS` to `$PROJECT_ROOT/.claude/settings.json`, never
+      gate-21 invocation. Precedence: flag beats env var beats the default. *(completed)*
+- [x] Default `DEPLOYED_SETTINGS` to `$PROJECT_ROOT/.claude/settings.json`, never
       `settings.local.json` (D6). A missing, unreadable, or non-JSON file yields zero rows and zero
       findings -- never exit 2 -- mirroring the existing empty-`SETTINGS_FILES` degrade.
-- [ ] Guard the `root`/`frag` groups against the new `deployed` rows: Checks C and D must continue
+      *(completed)*
+- [x] Guard the `root`/`frag` groups against the new `deployed` rows: Checks C and D must continue
       to iterate only their own groups, so a deployed row can never enter Check C's
       root-vs-fragment coverage comparison or Check D's source-store existence verdict.
-- [ ] Re-run the captured before-baseline command and assert the output is byte-identical.
+      *(completed)*
+- [x] Re-run the captured before-baseline command and assert the output is byte-identical.
+      *(completed: diff confirms byte-identical)*
 
 **Timing**: 1.5 hours
 
