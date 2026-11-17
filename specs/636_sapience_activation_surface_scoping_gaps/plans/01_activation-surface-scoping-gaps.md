@@ -405,51 +405,54 @@ path set, so no narrower suite subset can be claimed honestly.
 
 ---
 
-### Phase 5: Rewrite the Two Falsified Documentation Sections [NOT STARTED]
+### Phase 5: Rewrite the Two Falsified Documentation Sections [COMPLETED]
 
 **Goal**: `injection-site-scoping.md`'s "No Machine-Wide Duplicate Hook Surface" section and
 `per-repo-scoping.md`'s population-3 text state the actual design, and the reconciliation ruling
 has a durable prose home.
 
 **Tasks**:
-- [ ] Re-read both documentation files immediately before editing.
-- [ ] Rewrite `injection-site-scoping.md`'s "No Machine-Wide Duplicate Hook Surface" section to
+- [x] Re-read both documentation files immediately before editing. *(completed)*
+- [x] Rewrite `injection-site-scoping.md`'s "No Machine-Wide Duplicate Hook Surface" section to
       describe two independent mechanisms writing into the same file, kept clearly separated:
       (i) the five settings-fragment-merged hooks, still correctly per-repo-gated into a loaded
       repository's own `settings.local.json` — the section's one still-true claim; and (ii) the
       vendor upkeep path, which re-adds three hooks (`SessionStart --briefing-text`,
       `SessionEnd --receipt`, `Stop --effect-line`) to `$HOME/.claude/settings.json` on every
       `auto_update`/`update --wire` pass unless `~/.sapience/config.json`'s `hooks` is `false` or
-      `SAPIENCE_NO_HOOKS=1` is set.
-- [ ] Replace that section's now-misleading inspection-commands framing: keep the commands as
+      `SAPIENCE_NO_HOOKS=1` is set. *(completed)*
+- [x] Replace that section's now-misleading inspection-commands framing: keep the commands as
       inspection aids but point the reader at `verify-sapience-mcp.sh`'s check (g) as the
       standing detector, and state that hand-removal alone does not prevent recurrence — the
-      opt-out flag is what does.
-- [ ] Keep the section's existing task-siting statement (owning the registration entry's
+      opt-out flag is what does. *(completed)*
+- [x] Keep the section's existing task-siting statement (owning the registration entry's
       durability and retiring a machine-wide duplicate is sited in `~/.dotfiles`) intact; it is
-      unaffected and still correct.
-- [ ] Extend `per-repo-scoping.md`'s population-3 bullet with the omitted gating layer: capture
+      unaffected and still correct. *(completed)*
+- [x] Extend `per-repo-scoping.md`'s population-3 bullet with the omitted gating layer: capture
       is a separate opt-in list (`~/.sapience/config.json`'s `capture.projects[].enabled`,
       matched by longest `path_prefix`), unconnected to extension activation, and a repository
       with no entry or a disabled one never reaches `upload.py`'s per-chunk `project` field at
       all because the opt-in gate short-circuits before extraction runs. Keep the existing
       sentence about `_chunk()`'s per-chunk `project` and the server-authored provenance drop —
       it is not false, only incomplete. Cross-reference check (i) rather than restating its
-      mechanics.
-- [ ] Add a short named subsection to `per-repo-scoping.md` recording the reconciliation ruling
+      mechanics. *(completed)*
+- [x] Add a short named subsection to `per-repo-scoping.md` recording the reconciliation ruling
       durably in prose: this source store stops at the verifier check; writing
       `capture.projects[].enabled` belongs in `~/.dotfiles`, which already owns a capture-map
       writer; a second independent writer here would create the two-writers-disagreeing hazard
-      the file's own Hazards census already names for the MCP-registration entry.
-- [ ] Touch no other section of either file, and add no page-level version label, supersession
+      the file's own Hazards census already names for the MCP-registration entry. *(completed:
+      "### Capture/Activation Reconciliation")*
+- [x] Touch no other section of either file, and add no page-level version label, supersession
       note, or "previously/no longer" framing (`rules/no-record-versioning-in-deliverables.md`):
       state the current design only. Use no task-number reference
       (`rules/no-task-references-in-deliverables.md`) — cite filenames, section headings, and the
-      vendor function names instead.
-- [ ] Reconcile the coupled derived surface in this same phase: run
+      vendor function names instead. *(completed: verified via check-task-references.sh, 0
+      occurrences, and a targeted grep for version/supersession phrasing)*
+- [x] Reconcile the coupled derived surface in this same phase: run
       `bash .claude/scripts/generate-context-line-counts.sh --write` from the repository root so
       `index-entries.json`'s `line_count` for both edited files matches `wc -l`, then confirm only
-      `line_count` values changed in the diff.
+      `line_count` values changed in the diff. *(completed: 325->348, 128->157; diff confirmed
+      scoped to the two line_count values only)*
 
 **Timing**: 1 hour
 

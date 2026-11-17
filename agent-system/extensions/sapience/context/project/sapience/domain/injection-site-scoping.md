@@ -85,29 +85,58 @@ alternative — it would be overwritten by the next automatic update.
 
 ## No Machine-Wide Duplicate Hook Surface
 
-The five Sapience hook entries (`SessionStart` briefing, `UserPromptSubmit`, `PreToolUse`, the
-`SessionEnd` receipt entry, `Stop`) are merged only into a loaded repository's own
-`settings.local.json`, by `settings-fragment.json` while that repository's own
-`.claude-extensions.json` shows the extension active — never into `$HOME/.claude/settings.json`.
-The `UserPromptSubmit` and `PreToolUse` sites named in the table above therefore reach a session
-only through that session's own repository-merged `settings.local.json`, under the same per-repo
-gating the rest of this extension's surfaces use. Inspection commands to confirm this for a
-given machine:
+Two independent mechanisms write hook entries into the SAME file, `$HOME/.claude/settings.json`,
+and must be kept clearly separated.
+
+**(i) The five settings-fragment-merged hooks.** `SessionStart` briefing, `UserPromptSubmit`,
+`PreToolUse`, the `SessionEnd` receipt entry, and `Stop` are merged only into a LOADED
+repository's own `settings.local.json`, by `settings-fragment.json` while that repository's own
+`.claude-extensions.json` shows the extension active — never into `$HOME/.claude/settings.json`
+directly. The `UserPromptSubmit` and `PreToolUse` sites named in the table above therefore reach
+a session only through that session's own repository-merged `settings.local.json`, under the
+same per-repo gating the rest of this extension's surfaces use.
+
+**(ii) The vendor upkeep path.** `~/.sapience/sapience_upkeep.py`'s `wire_hooks()` re-adds THREE
+hooks directly to `$HOME/.claude/settings.json` — `SessionStart --briefing-text`, `SessionEnd
+--receipt`, `Stop --effect-line` — on every `auto_update`/`update --wire` pass, REGARDLESS of any
+repository's extension state, UNLESS `~/.sapience/config.json`'s `hooks` key is `false` or
+`SAPIENCE_NO_HOOKS=1` is set (`hooks_opted_out()`'s exact two-part test). This is a genuinely
+machine-wide, duplicate-capable surface: measured on this machine, these three entries were once
+present in `$HOME/.claude/settings.json` at the same time the five settings-fragment hooks were
+also merged into every loaded repository's `settings.local.json`, so a loaded repository
+received the `SessionStart`/`SessionEnd`/`Stop` content twice, once from each mechanism, and
+every OTHER repository (extension loaded or not) still received the unfiltered, cross-project
+vendor briefing/receipt/effect-line once.
+
+Inspection commands to confirm the current state for a given machine:
 
 ```bash
 jq -r '.hooks | keys' "$HOME/.claude/settings.json"
 jq -r '.hooks.SessionStart' "$HOME/.claude/settings.json"
-jq -r '.hooks.UserPromptSubmit' "$HOME/.claude/settings.json"
-jq -r '.hooks.PreToolUse' "$HOME/.claude/settings.json"
+jq -r '.hooks.SessionEnd' "$HOME/.claude/settings.json"
+jq -r '.hooks.Stop' "$HOME/.claude/settings.json"
+jq -r '.hooks // "absent"' "$HOME/.sapience/config.json"
 ```
 
-`$HOME/.claude/settings.json`'s own `.hooks.SessionStart` carries the per-project
+These are inspection aids only, not the standing detector: `scripts/verify-sapience-mcp.sh`'s
+check (g) is what actually watches for recurrence, on every run, reporting the
+`~/.sapience/config.json` `hooks` opt-out value unconditionally alongside the match result.
+Hand-removing a recurred entry alone does NOT prevent it from coming back — `wire_hooks()` runs
+again on the next `auto_update`/`update --wire` pass regardless of what was manually deleted;
+only the opt-out flag (`config.json`'s `"hooks": false`, or `SAPIENCE_NO_HOOKS=1`) stops it from
+being re-added.
+
+`$HOME/.claude/settings.json`'s own `.hooks.SessionStart` ALSO carries the per-project
 MCP-registration entry (`per-repo-scoping.md`'s "The MCP-Registration Triad") plus entries
-belonging to other, unrelated tools — never the five Sapience hooks above. That registration
-entry gates per-project tool/context access, not the three primary-session injection sites this
-file measures. Owning the registration entry's durability, and retiring any machine-wide
-duplicate of the five hooks above, is sited in `~/.dotfiles` — a different repository this
-source store must not edit, per `rules/source-store-deploy-boundary.md`'s task-siting rule.
+belonging to other, unrelated tools — a THIRD, separate occupant of this same file, distinct
+from both (i) and (ii) above. That registration entry gates per-project tool/context access,
+not the three primary-session injection sites this file measures. Owning the registration
+entry's durability, and retiring any machine-wide duplicate of the five settings-fragment hooks
+above, is sited in `~/.dotfiles` — a different repository this source store must not edit, per
+`rules/source-store-deploy-boundary.md`'s task-siting rule. The vendor upkeep path (ii) is
+different again: it is not something this source store (or `~/.dotfiles`) writes at all — it is
+the vendor's own update script, local detection and reporting is the only lever check (g) gives,
+and the opt-out is the only lever a person has.
 
 ## Candidate Follow-Up, Recorded Not Built
 

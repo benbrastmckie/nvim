@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "phase_name": "Rewrite the Two Falsified Documentation Sections",
+  "started_at": "2026-11-17T01:50:00Z",
+  "last_updated": "2026-11-17T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite injection-site-scoping.md's No Machine-Wide Duplicate Hook Surface section", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/injection-site-scoping.md"]},
+    {"id": 2, "description": "Extend per-repo-scoping.md population-3 and add reconciliation-ruling subsection", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 3, "description": "Reconcile index-entries.json line_count via generate-context-line-counts.sh --write", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "verification_notes": "check-task-references.sh: 0 occurrences repo-wide. Targeted grep for version/supersession phrasing clean (two pre-existing unrelated hits elsewhere in per-repo-scoping.md, not touched). generate-context-line-counts.sh --write diff scoped to the two line_count values only. verify-deploy.sh --skip-slow --only-gate 3,4: gate 4 passes; gate 3 fails solely on expected pre-redeploy script-content drift (Phases 1-4's edits not yet deployed), resolved at Phase 6."
+}

@@ -288,7 +288,17 @@ A direct `POST /ingest-kos` write has no staging and no review step — every wr
 3. **Untagged and vendor-owned.** Transcript extraction via `~/.sapience/upload.py`. Its
    `_chunk()` sends `'project': m['project']` per chunk, so the repo identity does reach the
    server, but the server-authored provenance drops it before the KO is stored -- this is the
-   largest population on this vault and cannot be fixed from this repository.
+   largest population on this vault and cannot be fixed from this repository. A repository never
+   reaches this population at all unless its path is ALSO opted into capture: extraction is
+   gated by `~/.sapience/config.json`'s `capture.projects[].enabled`, a SEPARATE opt-in list
+   keyed by `path_prefix` (longest-prefix-wins, mirroring `~/.sapience/sapience_capture.py`'s
+   `for_cwd()`) that is UNCONNECTED to this extension's own activation state -- a repository with
+   no matching entry, or a matching entry with `enabled: false`, never reaches `upload.py`'s
+   per-chunk `project` field at all, because the opt-in gate short-circuits before extraction
+   runs. `scripts/verify-sapience-mcp.sh`'s check (i) reports this coupling for the current
+   project, scoped to the single path it resolves; see that check's own inline comment and the
+   "Capture/Activation Reconciliation" subsection below for the ruling on who, if anyone, should
+   write `enabled` on this list.
 4. **Belongs to no repository.** Documents shared by other people (provenance of the form
    `people <name> | shared by <name> <timestamp> | doc {...}`). Out of scope by construction:
    there is no repo to tag them with.
@@ -296,6 +306,19 @@ A direct `POST /ingest-kos` write has no staging and no review step — every wr
 Populations 3 and 4 are a documented asymmetry, not a defect this design attempts to fix: no
 mechanism available to this repository can tag either one. Population 2 is the one this
 extension's own surfaces can and do control.
+
+### Capture/Activation Reconciliation
+
+This source store stops at `verify-sapience-mcp.sh`'s check (i) and does NOT write
+`capture.projects[].enabled` from either the `SessionStart` registration hook or the installer.
+Two reasons: (1) no script in this extension reads or writes the `capture` key today, so adding
+a writer here would be new, unreviewed surface rather than a fix to an existing one; (2)
+`~/.dotfiles` already owns a capture-map writer, so a second independent writer in this source
+store would create the two-writers-disagreeing hazard the Hazards census above already warns
+about for the MCP-registration entry -- where byte-identical convergence across writers is
+deliberately maintained and no equivalent guarantee would exist here. If active reconciliation
+between extension activation and capture enablement is built at all, it belongs in
+`~/.dotfiles`, per `rules/source-store-deploy-boundary.md`'s task-siting rule.
 
 **The primary-session hook path has no scoping mechanism at all, independent of tagging
 state.** `SessionStart`, `UserPromptSubmit`, and `PreToolUse` never read `provenance` and never
