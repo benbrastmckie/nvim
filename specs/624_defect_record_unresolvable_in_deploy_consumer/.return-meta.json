@@ -1,37 +1,29 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/624_defect_record_unresolvable_in_deploy_consumer/reports/01_signal-b-deploy-consumer-resolution.md",
-      "summary": "Reproduces the Signal B --dispatched-agent exit-3 defect live against a real deploy-consumer repository and recommends resolving through .claude-extensions.json's per-extension source_dir field, preserving the existing agent-system/extensions/<ext>/agents/<name>.md resolved-path shape required by the recursion guard and dedup key."
+      "type": "plan",
+      "path": "specs/624_defect_record_unresolvable_in_deploy_consumer/plans/01_signal-b-deploy-consumer-resolution.md",
+      "summary": "Four-phase plan (3.25h) adding a .claude-extensions.json source_dir resolution route to system-defect-record.sh's Signal B --dispatched-agent branch, with a new fixture suite and full-gate attestation."
     }
   ],
-  "next_steps": "Run /orchestrate 624 to create implementation plan",
   "metadata": {
     "session_id": "sess_1794942735_1748a1_624",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 3.25,
+    "dependency_waves": [[1], [2, 3], [4]]
   },
   "memory_candidates": [
     {
-      "content": "A deploy-consumer repository's .claude-extensions.json records, per loaded extension, an absolute source_dir path back to the source-store-holding repository's agent-system/extensions/<ext> directory on the same machine. Any script needing to resolve a source-store-relative identity string (e.g. agent-system/extensions/<ext>/agents/<name>.md for Signal B defect attribution) from a repository that does not itself hold the source store should read this field rather than globbing PROJECT_ROOT/agent-system/**, which only ever exists in the one repository physically hosting the store. Verified live against three real deploy-consumer repos (cslib, ModelChecker, .dotfiles) on this machine.",
+      "content": "In this agent-system corpus, adding a new shell test suite requires exactly two declaration surfaces and no runner edit: (1) agent-system/extensions/<ext>/manifest.json's provides.scripts, regenerated mechanically by sync-manifest-scripts.sh --write and blocked on by verify-deploy gate 3's check-extension-docs.sh Rule Q; (2) scripts/tests/suite-classification.data, where lint-unit-integration-boundary.sh treats an unclassified discovered suite as a violation in its own right. tests/run-all.sh needs NO edit because it discovers suites by globbing scripts/tests/test-*.sh, and tests/suite-cost-hints.txt plus tests/known-failures.txt are documented advisory-only (a missing row never changes which suites run). This matters for territory planning: the three no-edit files are frequently inside a concurrent task's declared file_scope, so the glob-discovery property removes a collision at zero cost. Companion test-design idiom: to assert a script's internally-computed path string without copying its event-write dependency chain into a fixture, feed the fixture an orchestrator-critical-paths.json marking the expected path recursion_guard:true -- the recursion guard then exits 0 and echoes the resolved path verbatim in stderr.",
       "category": "PATTERN",
-      "source_artifact": "specs/624_defect_record_unresolvable_in_deploy_consumer/reports/01_signal-b-deploy-consumer-resolution.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["deploy-consumer", "source_dir", "claude-extensions.json", "signal-b-attribution", "system-defect-record"]
-    },
-    {
-      "content": "system-defect-record.sh's resolved_path (Signal B attribution) feeds three downstream consumers that all require its agent-system/extensions/<ext>/** shape to stay stable across repositories: the recursion guard (self_mod_match against orchestrator-critical-paths.json), the defect_key dedup identity, and the persisted attributed_source_path detail field. A fix to its resolution mechanism must reproduce that exact string shape rather than substituting a differently-shaped identifier (a bare agent name, or a deployed .claude/** path), or it silently forks the dedup/recursion-guard key space per repository for the same underlying agent file.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/624_defect_record_unresolvable_in_deploy_consumer/reports/01_signal-b-deploy-consumer-resolution.md",
+      "source_artifact": "specs/624_defect_record_unresolvable_in_deploy_consumer/plans/01_signal-b-deploy-consumer-resolution.md",
       "confidence": 0.85,
-      "suggested_keywords": ["resolved-path-shape", "dedup-key", "recursion-guard", "system-defect-record", "signal-b"]
+      "suggested_keywords": ["test-suite-declaration", "suite-classification", "manifest-scripts-sync", "glob-discovery", "territory-collision", "fixture-design"]
     }
   ],
-  "modified_files": [
-    "specs/624_defect_record_unresolvable_in_deploy_consumer/reports/01_signal-b-deploy-consumer-resolution.md"
-  ],
-  "dispatch_seq": 1
+  "dispatch_seq": 4
 }

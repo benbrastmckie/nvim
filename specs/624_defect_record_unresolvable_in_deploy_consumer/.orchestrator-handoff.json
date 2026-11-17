@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Wrote a 4-phase plan (3.25h, medium) adopting the research report's candidate direction 1: add a .claude-extensions.json source_dir fallback to system-defect-record.sh's --dispatched-agent branch, emitting the byte-identical source-store-relative resolved_path so the recursion guard, defect_key dedup, and persisted attributed_source_path are unchanged. Phases: (1) the resolver fix, (2) a new four-case fixture suite plus its manifest and classification declarations, (3) discrimination-doc prose sync, (4) deploy plus full gate set. All three description trigger-class claims were re-validated live this dispatch: the line-233 glob citation is exact, the consumer exit-3 refusal reproduced from /home/benjamin/Projects/cslib, and the \"twice in one run\" figure is unverifiable from durable stores by construction (a refused recording writes nothing) and is not load-bearing.",
+  "blockers": [],
+  "phases_completed": 0,
+  "phases_total": 4,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/624_defect_record_unresolvable_in_deploy_consumer/plans/01_signal-b-deploy-consumer-resolution.md",
+      "summary": "Four-phase plan for resolving Signal B dispatched-agent attribution from a deploy-consumer repository via .claude-extensions.json source_dir."
+    }
+  ],
+  "dispatch_seq": 4
+}
