@@ -184,3 +184,109 @@ RESIDUAL_HOLDS"
 See `specs/637_make_sapience_extension_fully_functional/issues.jsonl` for the corresponding
 `issue-record.sh` entries recorded during this phase (the permission-bit discrepancy and the
 pre-(h)/(i) deployed-script finding).
+
+---
+
+## Phase 4: Post-Change Sweep (measured 2026-11-17, after redeploy)
+
+### Redeploy results
+
+`bash agent-system/extensions/core/scripts/deploy-headless.sh` (no `--wipe`) was run against this
+repository first, then once per out-of-tree target, for all five repositories this baseline
+recorded as reachable:
+
+- `/home/benjamin/.config/nvim` — `RESULT=landed_verify_clean`
+- `/home/benjamin/.dotfiles` — `RESULT=landed_verify_clean`
+- `/home/benjamin/Projects/BimodalLogic` — `RESULT=landed_verify_clean`
+- `/home/benjamin/Projects/Sapience/sf1-engine` — `RESULT=landed_verify_red`. The sapience files
+  themselves landed correctly (deployed `verify-sapience-mcp.sh` grew to 562 lines including
+  check (j); `postflight-sapience-notes.sh` landed executable). The red verdict is
+  `deploy-headless.sh`'s own internal `verify-deploy.sh` gate 4 (`check-task-references.sh`)
+  failing on a task-number reference inside
+  `integration/claude-system/context/config/orchestrator-context-budget.json` — a separate,
+  git-committed snapshot directory in that repository (added by a prior commit of its own,
+  unrelated to the live `.claude/` deploy tree and to this task's sapience-extension scope).
+  Recorded via `issue-record.sh` as a pre-existing, out-of-scope finding; not fixed here, and not
+  a defect of anything this task changed.
+- `/home/benjamin/Projects/Sapience/sapience-app` — `RESULT=landed_verify_clean`
+
+No exclusions: all five repositories were reachable and redeployed.
+
+### `verify-sapience-mcp.sh` post-change verdicts
+
+Check (j) and check (e) in every one of the five repositories:
+
+| Repository | Check (j) | Check (e) | Check (i) |
+|---|---|---|---|
+| `/home/benjamin/.config/nvim` | PASS | PASS (7/5) | PASS (capture enabled, 'nvim') |
+| `/home/benjamin/.dotfiles` | PASS | PASS (7/5) | PASS (capture enabled, '.dotfiles') |
+| `/home/benjamin/Projects/BimodalLogic` | PASS | PASS (7/5) | informational (not enabled) |
+| `/home/benjamin/Projects/Sapience/sf1-engine` | PASS | PASS (7/5) | informational (not enabled, resolved entry 'none') |
+| `/home/benjamin/Projects/Sapience/sapience-app` | PASS | PASS (7/5) | PASS (capture enabled, 'sapience-app') |
+
+Check (j) PASSes in all five — the exact outcome the Phase 1 baseline's "four of five run a
+pre-(h)/(i) script" finding predicted once redeployed. Check (e) is at seven grants and five
+hooks in all five, confirming goal 4 remains closed. Check (i)'s active-but-not-captured set is
+confirmed unchanged from Phase 1: `{BimodalLogic, sf1-engine}` — `.dotfiles` and `sapience-app`
+both show capture enabled, as Phase 1 measured.
+
+### Tagged-write reachability probe (dry-run, end to end)
+
+A scratch task directory with a minimal `.return-meta.json` (a two-element `sapience_notes`
+array) was passed to each repository's own **deployed**
+`.claude/scripts/postflight-sapience-notes.sh --task-dir <scratch> --task 637 --dry-run`. The
+printed request body's `provenance` field carried the correct `[repo:<slug>]` tag in every
+repository, and no non-dry-run call was issued anywhere:
+
+- `/home/benjamin/.config/nvim` → `[repo:nvim]`
+- `/home/benjamin/.dotfiles` → `[repo:.dotfiles]`
+- `/home/benjamin/Projects/BimodalLogic` → `[repo:BimodalLogic]`
+- `/home/benjamin/Projects/Sapience/sf1-engine` → `[repo:sf1-engine]`
+- `/home/benjamin/Projects/Sapience/sapience-app` → `[repo:sapience-app]`
+
+Every scratch directory was removed after its probe.
+
+### Per-Goal Disposition
+
+- **Goal 1 (tagged postflight writes fire reliably in every loaded repo)**: mechanism deployed
+  and probe-confirmed per repository (five-for-five `[repo:<slug>]`-tagged dry-run bodies above),
+  and now covered by a standing mechanical check — `verify-sapience-mcp.sh` check (j) — rather
+  than resting on a one-off audit claim. Closed mechanically.
+- **Goal 2 (prompt-time hook injection is repo-filtered or otherwise bounded; probe returns
+  `RESIDUAL_HOLDS`)**: accepted vendor-owned residual. Phase 1's probe run returned
+  `INCONCLUSIVE -- 2 RESIDUAL_HOLDS, 1 RESIDUAL_LIFTED over 3 iterations`, not a unanimous
+  `residual holds`; per the plan's own instruction this was recorded as-is and not retried. The
+  disposition of all three possible outcomes (including `inconclusive`) is now documented by name
+  in `domain/injection-site-scoping.md`'s rewritten "Verifying This Residual Is Still Current"
+  section, so a future reader diagnoses this from documentation rather than re-deriving it. No
+  local change can move this verdict; reported as an owned residual, not claimed closed.
+- **Goal 3 (transcript capture sync is restored)**: the list disagreement (`{BimodalLogic,
+  sf1-engine}` active-but-not-captured) is owned by `~/.dotfiles` per task 636's recorded ruling,
+  confirmed unchanged by this sweep. Extraction itself is manual-by-design, with its scheduling
+  lever (`services.sapience.backgroundSync`) named and documented in `domain/per-repo-scoping.md`'s
+  new "Capture Scheduling and the Manual-Only Trigger" subsection. Not restored by this task —
+  restoring it (enabling scheduled extraction, or running `sapience sync` manually) is the user's
+  call, raised below as a non-blocking `user_decision`, since it spends real money/CPU or uploads
+  transcript-derived content and is not required by any goal this plan closes.
+- **Goal 4 (`verify-sapience-mcp.sh` check (e) stops failing on the additive-merge 11-vs-7 grant
+  residual)**: passing at seven grants and five hooks in all five repositories, both at the Phase
+  1 baseline and after this sweep. This goal was already closed by an earlier redeploy, confirmed
+  rather than newly closed by this task.
+
+### User-Owned Levers (non-blocking)
+
+Two levers remain, both outside this repository's write surface and both the user's call, not an
+implementation step:
+
+1. **Whether to enable scheduled extraction** (`services.sapience.backgroundSync` in
+   `~/.dotfiles`, default `false`). Enabling it spends real money or CPU on every scheduled run,
+   per the module's own recorded rationale.
+2. **Whether to enable capture for `BimodalLogic` and `sf1-engine`** (the two active-but-not-
+   captured repositories). Enabling capture means their transcripts begin being extracted and
+   uploaded to the vault.
+
+Recommendation: leave both as they stand (the conservative option) — neither is required to
+close any goal this plan addresses, and both carry a real cost (money/CPU, or uploading
+transcript-derived content) that only the user should accept. See `.return-meta.json`'s
+`user_decision` field for the structured, non-blocking record of this choice.
+

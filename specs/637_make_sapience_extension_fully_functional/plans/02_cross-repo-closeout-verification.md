@@ -347,7 +347,7 @@ subject matter and the records file notes the divergence rather than creating a 
 
 ---
 
-### Phase 4: Redeploy, sweep all five repositories, and close the acceptance criteria [NOT STARTED]
+### Phase 4: Redeploy, sweep all five repositories, and close the acceptance criteria [COMPLETED]
 
 **Goal**: Land check (j) and both documentation changes in every reachable loaded repository, prove
 each of the four goals' disposition by measurement recorded beside its Phase 1 baseline, and raise
@@ -355,37 +355,38 @@ the two remaining user-owned levers.
 
 **Tasks**:
 
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` against this repository
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` against this repository
       first, then once per out-of-tree target with that repository root as `TARGET_REPO`, for the
       five repositories Phase 1 recorded as reachable. Do not pass `--wipe`. Capture each run's
-      output.
-- [ ] In each redeployed repository, run `bash .claude/scripts/verify-sapience-mcp.sh` and record
+      output. *(completed: 4/5 landed_verify_clean; sf1-engine landed_verify_red on an unrelated
+      pre-existing finding in a non-deploy snapshot directory, recorded via issue-record.sh)*
+- [x] In each redeployed repository, run `bash .claude/scripts/verify-sapience-mcp.sh` and record
       every check's verdict beside its Phase 1 baseline. Check (j) must PASS in all five; check (e)
-      must report seven grants and five hooks in all five.
-- [ ] In each redeployed repository, run the tagged-write reachability probe end to end: create a
+      must report seven grants and five hooks in all five. *(completed: both PASS in all five)*
+- [x] In each redeployed repository, run the tagged-write reachability probe end to end: create a
       scratch task directory holding a minimal `.return-meta.json` with a two-element
       `sapience_notes` array, invoke that repository's **deployed**
       `.claude/scripts/postflight-sapience-notes.sh --task-dir <scratch> --task 637 --dry-run`, and
       assert the printed request body carries the correct `[repo:<slug>]` provenance for that
-      repository. Remove the scratch directory afterward. Issue no non-dry-run call anywhere.
-- [ ] Record the capture/activation verdict per repository from check (i), and restate the
-      active-but-not-captured set with its named owner (`~/.dotfiles`, per 636's recorded ruling).
-- [ ] Append to `records/01_cross-repo-closeout-evidence.md` a per-goal disposition block: goal 1
+      repository. Remove the scratch directory afterward. Issue no non-dry-run call anywhere. *(completed: all five tagged correctly, all scratch dirs removed)*
+- [x] Record the capture/activation verdict per repository from check (i), and restate the
+      active-but-not-captured set with its named owner (`~/.dotfiles`, per 636's recorded ruling). *(completed: unchanged from Phase 1 -- {BimodalLogic, sf1-engine})*
+- [x] Append to `records/01_cross-repo-closeout-evidence.md` a per-goal disposition block: goal 1
       (tagged writes) — mechanism deployed and probe-confirmed per repository, now covered by a
       standing check; goal 2 (injection scoping) — accepted vendor-owned residual, probe-verified,
       disposition now documented; goal 3 (capture) — list disagreement owned by `~/.dotfiles`,
       extraction manual-by-design with its scheduling lever named; goal 4 (check (e)) — passing at
-      seven grants in all five repositories.
-- [ ] Set a non-blocking `user_decision` on `.return-meta.json` (mirrored into
+      seven grants in all five repositories. *(completed)*
+- [x] Set a non-blocking `user_decision` on `.return-meta.json` (mirrored into
       `.orchestrator-handoff.json`) covering the two levers that are the user's alone and lie
       outside this repository: whether to enable scheduled extraction
       (`services.sapience.backgroundSync` in `~/.dotfiles`, which spends real money or CPU per run)
       or leave extraction on-request, and whether to enable capture for the two active-but-not-
       captured repositories. Recommend the conservative option (leave both as they stand, since
       both spend money or upload transcript-derived content and neither is required by any goal
-      this plan closes) and proceed on it.
-- [ ] Record one result line per repository including every exclusion, and record a win or issue
-      entry via `bash .claude/scripts/issue-record.sh` reflecting how the sweep actually went.
+      this plan closes) and proceed on it. *(completed)*
+- [x] Record one result line per repository including every exclusion, and record a win or issue
+      entry via `bash .claude/scripts/issue-record.sh` reflecting how the sweep actually went. *(completed: no exclusions; one win entry and one pre-existing-finding issue entry recorded)*
 
 **Timing**: 1.25 hours
 
@@ -416,6 +417,17 @@ repositories actually swept.
 - The dry-run probe's printed body carries the expected `[repo:<slug>]` provenance in each of the
   five repositories, and no non-dry-run write was issued (confirmed by the absence of any
   `sapience-remember.sh` invocation without `--dry-run` in the phase's own command history).
+
+**Batch Gate Deferral note**: this dispatch's own dispatch file carried a `## Batch Gate
+Deferral` section naming this phase's `full` tier. Per that directive, the complete unscoped
+`verify-deploy.sh`/`run-all.sh` sweep this tier literally names was NOT independently re-invoked
+by this phase; `deploy-headless.sh`'s own internal `verify-deploy.sh` call (an unavoidable part
+of the deploy mechanism itself, confirmed PASS/clean in four of five repositories, with the one
+`sf1-engine` exception analyzed above as pre-existing and unrelated) satisfied the deploy-landing
+check, and `bash .claude/scripts/tests/run-all.sh --only test-sapience-mcp-registration.sh`
+(PASS) discharged the scoped suite covering this phase's own touched files. The full,
+once-per-invocation gate set is deferred to the batch stage per the directive, not independently
+run a second time here.
 
 ---
 

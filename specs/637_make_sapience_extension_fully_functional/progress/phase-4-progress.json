@@ -1,0 +1,27 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy, sweep all five repositories, and close the acceptance criteria",
+  "started_at": "2026-11-17T17:00:00Z",
+  "last_updated": "2026-11-17T17:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh against this repository first, then each out-of-tree target, for all five repositories", "status": "done", "note": "4/5 landed_verify_clean; sf1-engine landed_verify_red on an unrelated pre-existing finding in a non-deploy snapshot directory (integration/claude-system/)."},
+    {"id": 2, "description": "Run verify-sapience-mcp.sh in each redeployed repository and record every check's verdict beside its Phase 1 baseline", "status": "done", "files_touched": ["specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"]},
+    {"id": 3, "description": "Run the tagged-write reachability probe end to end in each repository (dry-run only)", "status": "done", "files_touched": ["specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"]},
+    {"id": 4, "description": "Record the capture/activation verdict per repository and restate the active-but-not-captured set", "status": "done", "files_touched": ["specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"]},
+    {"id": 5, "description": "Append the four per-goal disposition blocks to the records file", "status": "done", "files_touched": ["specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"]},
+    {"id": 6, "description": "Set a non-blocking user_decision on .return-meta.json (mirrored to .orchestrator-handoff.json)", "status": "done", "files_touched": [".return-meta.json", ".orchestrator-handoff.json"]},
+    {"id": 7, "description": "Record one result line per repository and a win/issue entry via issue-record.sh", "status": "done", "note": "No exclusions. One win entry (sweep success) and one issue entry (sf1-engine pre-existing finding) recorded."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.redeploy",
+      "description": "sf1-engine's deploy-headless.sh run reported RESULT=landed_verify_red due to a pre-existing task-reference finding in a git-committed, out-of-scope snapshot directory (integration/claude-system/) unrelated to the live .claude/ deploy tree or this task's sapience-extension work.",
+      "type": "altered",
+      "reason": "Per the plan's own Rollback/Contingency guidance (record and report rather than weaken a check to force green), the finding was recorded via issue-record.sh and reported in the records file rather than fixed; the sapience-specific verification (check (j), check (e), the dry-run probe) for sf1-engine was independently confirmed green and unaffected by this unrelated finding.",
+      "annotation": "*(deviation: altered -- see Plan Deviations in the implementation summary)*"
+    }
+  ]
+}

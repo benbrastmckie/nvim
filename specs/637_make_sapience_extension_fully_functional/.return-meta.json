@@ -1,10 +1,128 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 11,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/637_make_sapience_extension_fully_functional/summaries/02_cross-repo-closeout-verification-summary.md",
+      "summary": "Closed task 637's four goals: new verify-sapience-mcp.sh check (j) with fixture coverage, two documentation sections, and a five-repository redeploy-and-sweep proving each goal's disposition against the Phase 1 baseline. Goals 1 and 4 closed mechanically; goals 2 and 3 reported as owned, out-of-repository residuals."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a standing verify-sapience-mcp.sh check (j) (postflight tagged-write reachability, with 6 new fixture cases) and two durable documentation sections, then redeployed and swept all five loaded repositories, confirming check (j)/(e) PASS and correctly [repo:<slug>]-tagged dry-run writes everywhere. Goals 2 and 3 are reported as owned, out-of-repository residuals (vendor-owned injection scoping; manual-by-design, ~/.dotfiles-scheduled capture extraction) rather than claimed closed."
+  },
+  "modified_files": [
+    "specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md",
+    "specs/637_make_sapience_extension_fully_functional/plans/02_cross-repo-closeout-verification.md",
+    "specs/637_make_sapience_extension_fully_functional/summaries/02_cross-repo-closeout-verification-summary.md",
+    "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh",
+    "agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh",
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/injection-site-scoping.md",
+    "agent-system/extensions/sapience/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A deployment-reachability verifier check that literally asserts 'file is executable' can produce a false-FAIL even when the actual call path never needs the exec bit (e.g. every call site invokes the script via `bash <path>`, not directly). Before adding such a check, confirm the real deployed state actually satisfies the literal condition today -- if it does not, fix the underlying permission drift (git-tracked mode) rather than writing the check against an assumption the measured state contradicts.",
+      "category": "PATTERN",
+      "source_artifact": "specs/637_make_sapience_extension_fully_functional/summaries/02_cross-repo-closeout-verification-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "verifier-check",
+        "executable-bit",
+        "deployment-reachability",
+        "false-fail",
+        "permission-drift"
+      ]
+    },
+    {
+      "content": "A whole-tree deploy script (deploy-headless.sh) that runs its own internal full verify-deploy.sh as part of landing can surface a pre-existing, repository-specific finding unrelated to the current change (e.g. a stale snapshot directory outside the live deploy tree). Distinguish 'the deploy itself landed correctly' (confirm the specific files this task touched) from 'the whole-repo gate set is green' (a separate, potentially unrelated signal) when sweeping multiple out-of-tree repositories -- do not treat a red whole-repo gate as evidence the task's own change is broken without checking which specific gate failed and why.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/637_make_sapience_extension_fully_functional/summaries/02_cross-repo-closeout-verification-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "deploy-headless",
+        "verify-deploy",
+        "cross-repo-sweep",
+        "pre-existing-finding",
+        "gate-attribution"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "sapience extension cross-repo deploy propagation",
+      "value": "Deploying a new verifier check or doc change to the sapience extension's source store does not automatically reach other loaded repositories -- each one needs its own deploy-headless.sh run. Measured 2026-11-17: four of five loaded repositories (.dotfiles, BimodalLogic, sf1-engine, sapience-app) were running an identical 348-line pre-task-636 verify-sapience-mcp.sh lacking checks (h) and (i) entirely, while only nvim carried the current 500-line copy, until this task's Phase 4 redeploy landed the current script in all five.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"
+    },
+    {
+      "subject": "postflight-sapience-notes.sh permission bit",
+      "value": "postflight-sapience-notes.sh was git-tracked at mode 100644 (non-executable) in the sapience extension's source store, inconsistent with its sibling sapience-remember.sh's 100755, deployed non-executable identically across all five loaded repositories. Not a functional break (both call sites invoke it via `bash <path>`), but fixed via chmod +x since a planned verifier check literally asserts the executable bit.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh"
+    },
+    {
+      "subject": "verify-sapience-context-scoping.sh probe result",
+      "value": "On 2026-11-17, `verify-sapience-context-scoping.sh --repeat 3` returned INCONCLUSIVE (2 RESIDUAL_HOLDS, 1 RESIDUAL_LIFTED over 3 iterations), not a unanimous residual holds. The probe's own exit-code-2 contract treats disagreement as 're-run later', not as a defect to act on; recorded as-is per plan instruction, not retried.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"
+    },
+    {
+      "subject": "sapience capture active-but-not-captured set",
+      "value": "The measured active-but-not-captured set (sapience extension active, transcript capture disabled or absent) is {BimodalLogic, sf1-engine}, not {.dotfiles, BimodalLogic, sf1-engine}. .dotfiles' capture.projects[] entry is enabled: true as of 2026-11-17 -- a correction to the commonly assumed framing of this disagreement.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"
+    },
+    {
+      "subject": "sf1-engine integration/claude-system snapshot directory",
+      "value": "/home/benjamin/Projects/Sapience/sf1-engine carries a separate, git-committed snapshot directory at integration/claude-system/ (added by that repository's own prior commit), outside the live .claude/ deploy tree that deploy-headless.sh manages. It can fail verify-deploy.sh's check-task-references.sh gate independently of the live deploy's actual health, since that gate scans the whole repository tree, not only .claude/.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"
+    },
+    {
+      "subject": "sapience extraction scheduling mechanism",
+      "value": "services.sapience.backgroundSync in ~/.dotfiles/modules/home/services/sapience.nix defaults to false; the module always defines systemd.user.timers.sapience-sync but installs it only when backgroundSync is true (lib.mkIf cfg.backgroundSync). With the default, the timer is defined but never installed, and this is the sole scheduling lever for transcript extraction on this machine -- confirmed no systemd user timer or crontab entry exists for any sapience process as of 2026-11-17.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"
+    }
+  ],
+  "user_decision": {
+    "question": "Two levers remain outside this repository's write surface, both the user's call: whether to enable scheduled transcript extraction (services.sapience.backgroundSync in ~/.dotfiles), and whether to enable transcript capture for the two active-but-not-captured repositories (BimodalLogic, sf1-engine).",
+    "options": [
+      "Leave both as they stand (extraction stays manual-on-request; BimodalLogic and sf1-engine stay capture-disabled)",
+      "Enable services.sapience.backgroundSync in ~/.dotfiles for scheduled extraction, and/or enable capture for BimodalLogic and sf1-engine"
+    ],
+    "recommended": "Leave both as they stand (extraction stays manual-on-request; BimodalLogic and sf1-engine stay capture-disabled)",
+    "blocking": false
+  },
   "metadata": {
     "session_id": "sess_1794933948_6af122",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
   },
-  "dispatch_seq": 11
+  "proposed_file_scope": [
+    ".orchestrator-handoff.json",
+    ".return-meta.json"
+  ]
 }

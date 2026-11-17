@@ -1,15 +1,29 @@
 {
-  "status": "planned",
-  "dispatch_seq": 10,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 11,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a 4-phase, 4.75-hour plan (3 waves) closing task 637 as a cross-repo verification pass plus one new mechanism. Planning-time measurement confirmed the three dependency tasks (628, 635, 636) all completed and that goals 1 and 4 are already satisfied in all five healthy loaded repos, so the plan builds only verify-sapience-mcp.sh check (j) (postflight tagged-write reachability, with fixture coverage) and otherwise measures, documents, and redeploys. Goal 2's RESIDUAL_HOLDS bar and goal 3's capture-restoration bar are re-read on the record as a vendor-owned foreclosure and an out-of-repository (~/.dotfiles) scheduling/ownership matter respectively, with the two user-owned levers raised as a non-blocking user_decision in the final phase.",
+  "summary": "Closed task 637's four goals: added a standing verify-sapience-mcp.sh check (j) (postflight tagged-write reachability, 6 new fixture cases), documented the capture-extraction trigger and the residual-probe dispositions in two durable context files, then redeployed and swept all five loaded repositories. Check (j) and check (e) PASS in all five; the dry-run tagged-write reachability probe produced the correct [repo:<slug>] provenance everywhere. Goals 1 and 4 are closed mechanically; goals 2 (vendor-owned injection-scoping residual) and 3 (manual-by-design, ~/.dotfiles-scheduled capture extraction) are reported as owned, out-of-repository residuals with their mechanisms now documented, not claimed closed. One unrelated pre-existing finding (a stale task-reference in sf1-engine's own out-of-scope integration/claude-system/ snapshot directory) was recorded, not fixed.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/637_make_sapience_extension_fully_functional/summaries/02_cross-repo-closeout-verification-summary.md",
+      "summary": "Closed task 637's four goals: new verify-sapience-mcp.sh check (j) with fixture coverage, two documentation sections, and a five-repository redeploy-and-sweep proving each goal's disposition against the Phase 1 baseline."
+    },
+    {
       "type": "plan",
       "path": "specs/637_make_sapience_extension_fully_functional/plans/02_cross-repo-closeout-verification.md",
-      "summary": "4-phase (3-wave, 4.75h) closeout plan: cross-repo baseline, verify-sapience-mcp.sh check (j) with fixtures, capture-scheduling and residual-probe documentation, then five-repository redeploy and acceptance sweep."
+      "summary": "4-phase (3-wave, 4.75h) closeout plan, all four phases now [COMPLETED]."
     }
-  ]
+  ],
+  "user_decision": {
+    "question": "Two levers remain outside this repository's write surface, both the user's call: whether to enable scheduled transcript extraction (services.sapience.backgroundSync in ~/.dotfiles), and whether to enable transcript capture for the two active-but-not-captured repositories (BimodalLogic, sf1-engine).",
+    "options": [
+      "Leave both as they stand (extraction stays manual-on-request; BimodalLogic and sf1-engine stay capture-disabled)",
+      "Enable services.sapience.backgroundSync in ~/.dotfiles for scheduled extraction, and/or enable capture for BimodalLogic and sf1-engine"
+    ],
+    "recommended": "Leave both as they stand (extraction stays manual-on-request; BimodalLogic and sf1-engine stay capture-disabled)",
+    "blocking": false
+  }
 }
