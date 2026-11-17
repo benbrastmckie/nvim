@@ -6,14 +6,14 @@ next_project_number: 639
 
 ## Task Order
 
-*Updated 2026-11-16. Generated from state.json dependency graph.*
+*Updated 2026-11-17. Generated from state.json dependency graph.*
 
 **Goal**: Make specs/ROADMAP.md generated (306, 307, 308, 313) so planning stops drifting, then push consent and admission posture.
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,479,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,572,574,575,577,580,590,599,604,607,613,618,627,629,631,632,633,635,636,638 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,479,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,572,574,575,577,580,590,599,604,607,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,473,474,480,481,486,492,513,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,586,591,592,593,598,609,610,624,628,630 | 383,390,398,410,431,451,453,455,463,472,476,479,484,491,504,519,527,535,538,539,548,549,563,564,572,577,599,607,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,501,508,509,552,566,571,581,594,605,637 | 438,439,452,472,476,486,492,518,542,580,586,593,604,628,635,636 | core-agent-system, file-scope-lifecycle, agent-system, ... |
 | 4 | 524,561,588,595 | 501,509,539,552,594 | core-agent-system, agent-system |
@@ -63,7 +63,6 @@ next_project_number: 639
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite... (see above)
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — GOAL. Determine what leaves files behind in this repository's...
-638 [IMPLEMENTING] — Make /orchestrate's phase selector pick the first enterable...
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
@@ -195,12 +194,13 @@ next_project_number: 639
 
 ### 638. Make /orchestrate's phase selector pick the first enterable phase, not the first open-by-marker heading
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 547
 - **Research**: [638_orchestrate_enterable_phase_selector/reports/01_enterable_phase_selector.md]
 - **Plan**: [638_orchestrate_enterable_phase_selector/plans/01_enterable-phase-selector.md]
+- **Summary**: [638_orchestrate_enterable_phase_selector/summaries/01_enterable-phase-selector-summary.md]
 
 **Description**: Make /orchestrate's hard-mode phase selector pick the first ENTERABLE phase, not the first heading that merely parses as open.
 

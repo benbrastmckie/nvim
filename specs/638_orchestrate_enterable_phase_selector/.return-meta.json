@@ -1,44 +1,65 @@
 {
-  "status": "planned",
+  "status": "implemented",
+  "dispatch_seq": 3,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/638_orchestrate_enterable_phase_selector/plans/01_enterable-phase-selector.md",
-      "summary": "4-phase plan replacing the H1 selector's grep|head -1 with a marker-plus-Depends-on enterability predicate, adding a named no-enterable-phase refusal, Group 9 regression fixtures, an authoring-doc sync, and a redeploy/full-gate close."
+      "type": "summary",
+      "path": "specs/638_orchestrate_enterable_phase_selector/summaries/01_enterable-phase-selector-summary.md",
+      "summary": "Full implementation summary: replaced the H1 selector's grep|head -1 with an enterability predicate across phase-heading-patterns.sh/orchestrate-cycle-plan.sh, added regression coverage, synced plan-format.md, and redeployed with 43/44 gate checks passing (2 reasoned exclusions, neither caused by this task)."
     }
   ],
-  "metadata": {
-    "session_id": "sess_1794869398_636639_638",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": [
-      "orchestrator",
-      "plan",
-      "planner-agent"
-    ],
-    "phase_count": 4,
-    "estimated_hours": 4.25,
-    "dependency_waves": 4
+  "completion_data": {
+    "completion_summary": "Replaced the H1 hard-mode phase selector's grep|head -1 with a marker-plus-Depends-on enterability predicate (new PHASE_STATUS_ENTERABLE_ALT vocabulary, phase_dependency_numbers, phase_is_enterable, select_enterable_phase in phase-heading-patterns.sh), rewired into orchestrate-cycle-plan.sh with a named 'H1: NO ENTERABLE PHASE' refusal, covered by 22 new unit assertions and 4 new Group 9 integration cases (441/0 and 58/0 from the deployed tree), documented in plan-format.md, and redeployed (RESULT=landed_verify_clean). The full verify-deploy.sh gate passed 43 of 44 checks; the 2 Gate-8 suite failures are excluded with evidence (one pre-existing/repo-wide known-failure, one confirmed transient concurrency flake), neither touching this task's changes."
   },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/lib/phase-heading-patterns.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-phase-heading-patterns.sh"
+  ],
   "memory_candidates": [
     {
-      "content": "Before writing any parser for a markdown field convention in this repo's plan corpus, measure the live spelling distribution first -- the documented form is not always the dominant one. Measured for the per-phase dependency field: '**Depends on**:' occurs 4907 times repo-wide while '**Depends on:**' (colon inside the bold) occurs 296 times, and plan-format.md's own field definition uses the MINORITY spelling. A parser matching only the documented form silently reads 296 real occurrences as absent. The same survey also found values that are not phase numbers at all ('Phase 3 (directory skeleton must exist)', 'Tasks 593 (shared utilities), 594 (skill base)' -- task numbers, not phase numbers), so such a parser needs all-or-nothing token validation against PHASE_NUMBER_TOKEN_ERE with a conservative documented-default fallback, never best-effort partial parsing.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/638_orchestrate_enterable_phase_selector/plans/01_enterable-phase-selector.md",
+      "content": "When a plan's final phase requires a redeploy (source store -> deployed .claude/ tree) and earlier phases must verify source-store-only changes before that redeploy runs, use the test harness's own CORE_TEST_SUBJECT_MODE=source-store environment override (scripts/lib/common.sh's common_test_resolve_subject) to point suite runs at the source-store copy instead of the stale deployed one. Do NOT set this override globally when running run-all.sh alongside test-common-lib.sh in the same invocation -- that suite's own fixtures assert the DEFAULT deploy-tree-first resolution behavior, and the override corrupts them into a false failure. Run test-common-lib.sh separately, unmodified, when it is part of a named covering-check set.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/638_orchestrate_enterable_phase_selector/summaries/01_enterable-phase-selector-summary.md",
       "confidence": 0.85,
       "suggested_keywords": [
-        "depends-on",
-        "plan-format",
-        "parser",
-        "field-spelling",
-        "corpus-survey",
-        "phase-dependency"
+        "core-test-subject-mode",
+        "source-store",
+        "deploy-tree-first",
+        "test-common-lib",
+        "pre-deploy-verification"
+      ]
+    },
+    {
+      "content": "To distinguish a real regression from a transient full-battery concurrency flake in this repo's gate (verify-deploy.sh / run-all.sh): (1) check whether the failing suite is tagged (EXPECTED) vs (NEW) in run-all.sh's own output -- EXPECTED means it is pre-registered in known-failures.txt and is a standing, repo-wide condition unrelated to any one task; (2) for a NEW failure, re-run that one suite in isolation immediately -- if it passes cleanly, and the full-battery run showed a 'WARN: reclaiming stale specs/.gate-lock mutex' or similar concurrency signal nearby, the failure is very likely a resource-contention flake, not a regression, especially when the failing suite's domain has no relationship to the files the task actually touched. run-all.sh's own exit-code semantics mark exit 1 on ANY suite failure (EXPECTED or not) unless --fail-on-new is passed, so an unqualified verify-deploy.sh pass can be structurally unattainable while a known-failures.txt entry stands, independent of any given task.",
+      "category": "PATTERN",
+      "source_artifact": "specs/638_orchestrate_enterable_phase_selector/summaries/01_enterable-phase-selector-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "gate-flake",
+        "known-failures",
+        "run-all-expected-new",
+        "concurrency",
+        "reasoned-exclusion"
       ]
     }
   ],
-  "next_steps": "Run /orchestrate 638 to execute the plan",
-  "dispatch_seq": 2,
   "proposed_file_scope": [
     "agent-system/extensions/core/index-entries.json"
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1794869398_636639",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }

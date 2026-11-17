@@ -1,7 +1,7 @@
 # Implementation Plan: Task #638
 
 - **Task**: 638 - Make /orchestrate's hard-mode phase selector pick the first ENTERABLE phase, not the first heading that merely parses as open
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4.25 hours
 - **Dependencies**: Task 547 (`[COMPLETED]`; the shared-file edge on `orchestrate-cycle-plan.sh` is discharged)
 - **Research Inputs**: specs/638_orchestrate_enterable_phase_selector/reports/01_enterable_phase_selector.md
