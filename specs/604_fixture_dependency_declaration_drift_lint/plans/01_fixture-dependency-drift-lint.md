@@ -1,7 +1,7 @@
 # Implementation Plan: Fixture dependency declaration drift lint
 
 - **Task**: 604 - Fixture dependency declaration drift lint
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/604_fixture_dependency_declaration_drift_lint/reports/01_fixture-dependency-drift-lint.md
