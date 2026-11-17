@@ -199,7 +199,7 @@ carried forward to Phase 5's expectations rather than treated as a plan error.
 
 ---
 
-### Phase 2: Wire forced-reload retraction into `manager.load` [NOT STARTED]
+### Phase 2: Wire forced-reload retraction into `manager.load` [COMPLETED]
 
 **Goal**: Make a forced reload retract what the extension's own prior `merged_sections` recorded
 and its current fragment no longer declares, reusing the existing primitives verbatim, with
@@ -207,42 +207,65 @@ rollback symmetry and a visible fail-safe suppression notice.
 
 **Tasks**:
 
-- [ ] In `manager.load`, inside the existing load `pcall` and after `updated_state`/`loaded_names`
+- [x] In `manager.load`, inside the existing load `pcall` and after `updated_state`/`loaded_names`
       are read (currently `init.lua:786-790`), add a forced-reload retraction block gated on
       `state_mod.is_loaded(state, extension_name)` AND `opts.force` — so a first-time load, which
-      has no prior record, is untouched.
-- [ ] In that block, read the prior record via
+      has no prior record, is untouched. *(completed)*
+- [x] In that block, read the prior record via
       `state_mod.get_merged_sections(updated_state, extension_name)`. This must happen before
       `process_merge_targets` runs (currently `init.lua:846`) and therefore before
       `state_mod.mark_loaded`/`state_mod.write` overwrite it (currently `init.lua:895-896`);
       confirm that ordering holds in the file as found rather than assuming these line numbers.
-- [ ] Build the sibling-retention data with the existing
+      *(completed)*
+- [x] Build the sibling-retention data with the existing
       `build_retained_fragments(ext_manifest.merge_targets.settings.target, extension_name,
       loaded_names, config)`, and on `skip_removal == true` pass `opts.skip_array_removal = true`
-      through rather than bypassing the guard.
-- [ ] Call the existing `reverse_merge_targets(ext_manifest, prior_merged_sections, project_dir,
+      through rather than bypassing the guard. *(completed)*
+- [x] Call the existing `reverse_merge_targets(ext_manifest, prior_merged_sections, project_dir,
       config, { retained_fragments = ..., skip_array_removal = ... })`, not a new removal path.
       Confirm it covers both the `settings` and `mcp` targets and skips the `index` target, whose
       staleness is already handled by the pre-load `remove_orphaned_index_entries` cleanup
-      immediately above.
-- [ ] Record what the retraction removed so the rollback path can restore it, mirroring the
+      immediately above. *(completed)*
+- [x] Record what the retraction removed so the rollback path can restore it, mirroring the
       existing `merged_sections.settings_swept` / `restore_removed_hook_registrations` pair
       (currently `init.lua:252` and `init.lua:879-881`). If `merge.lua` needs a restore entry
       point for the permissions/array shape that `restore_removed_hook_registrations` does not
       cover, add it beside that function using the same signature shape, and do not generalize
-      the hook-specific one.
-- [ ] Extend the rollback block (currently `init.lua:874-881`) to perform that restore, so a
-      failed forced load does not leave the retracted entries gone.
-- [ ] Emit a pcall-guarded `helpers.notify(..., "INFO")` line naming the extension whenever
+      the hook-specific one. *(completed: `merge_mod.unmerge_settings` now returns a
+      `pre_removal_snapshot` 2nd value, consumed by a new `M.restore_retracted_sections`)*
+- [x] Extend the rollback block (currently `init.lua:874-881`) to perform that restore, so a
+      failed forced load does not leave the retracted entries gone. *(completed)*
+- [x] Emit a pcall-guarded `helpers.notify(..., "INFO")` line naming the extension whenever
       retraction is suppressed by the `skip_removal` fail-safe, matching the existing
       hook-sweep skip notices' wording and guard style, so a suppressed retraction is visible in
-      deploy output.
-- [ ] Update the doc comments on `reverse_merge_targets` and on `manager.load`'s `opts.force`
+      deploy output. *(completed)*
+- [x] Update the doc comments on `reverse_merge_targets` and on `manager.load`'s `opts.force`
       paragraph (currently `init.lua:505-516`, which asserts everything downstream of the
       already-loaded abort "is already idempotent/overwrite-safe ... so no further special-casing
       is needed") so they describe the retraction step. Leave `deep_merge`'s own additive-only
       comment and `manager.resync_all`'s "never unloads" comment factually intact — both remain
-      true; what changed is that `manager.load` now retracts before merging.
+      true; what changed is that `manager.load` now retracts before merging. *(completed)*
+- [x] *(deviation: altered — a second mechanism, not in the original task list, was required)*
+      Discovered during implementation, and confirmed against this repository's own git history
+      (fragment narrowed at commit `0564e2554`; the tracked `merged_sections` record was already
+      reset from 11 to 7 items by an ordinary redeploy at commit `94b181040`, well before this
+      task began): the planned unmerge-prior/remerge-current mechanism alone cannot retroactively
+      remediate any of the five repositories, because `state_mod.mark_loaded` overwrites
+      `merged_sections` wholesale on every load, so the wide historical tracked record no longer
+      exists anywhere on disk. Confirmed empirically against a scratch fixture reproducing the
+      real drift (narrow tracked record, wide deployed file): the planned mechanism alone left
+      the deployed grant count unchanged at 11. Added a second, complementary MCP-permission-
+      grant orphan sweep (`merge_mod.remove_orphaned_mcp_permission_grants` /
+      `restore_removed_mcp_permission_grants`, `init.lua`'s `build_permission_valid_set`),
+      modeled directly on the existing hook-registration orphan sweep: it reasons from currently
+      loaded extensions' CURRENT fragments rather than historical tracked data, scoped strictly
+      to the `mcp__<server>__` grant-string shape so it never touches an unrelated hand-added
+      grant. Confirmed against the same fixture: converges 11 grants to exactly 7, with a
+      byte-identical hooks fingerprint, idempotently. Both mechanisms are kept — the tracked-
+      record retraction remains correct and useful for other merge-target categories and future
+      narrowings; the orphan sweep is what actually closes this task's acceptance criteria for
+      the five already-affected repositories. Recorded via `issue-record.sh`
+      (class "plan deviation").
 
 **Timing**: 1.75 hours
 
@@ -264,18 +287,34 @@ three suites `suite_selection_select` maps `init.lua` to (`test-deploy-orphans.s
   artifact, so `rules/source-store-deploy-boundary.md` does not redirect it; the dispatch's
   "source store is the edit target" instruction names `agent-system/extensions/core/**` because
   it assumed the merge engine lived there, and the research report established it does not.
-- `lua/neotex/plugins/ai/shared/extensions/merge.lua` - only if a restore entry point for the
-  array/permissions shape is needed; no change to `deep_merge` or `unmerge_settings` themselves.
+- `lua/neotex/plugins/ai/shared/extensions/merge.lua` - a restore entry point for the
+  array/permissions shape (`M.restore_retracted_sections`, consuming a new `pre_removal_snapshot`
+  2nd return value from `M.unmerge_settings`); no change to `deep_merge` or `unmerge_settings`'s
+  own removal logic. *(deviation: altered — also adds the MCP-permission-grant orphan sweep,
+  `M.remove_orphaned_mcp_permission_grants` / `M.restore_removed_mcp_permission_grants` /
+  `M.extract_mcp_prefix`, required to actually close this task's acceptance criteria — see the
+  Tasks list deviation note above)*.
+- `lua/neotex/plugins/ai/shared/extensions/init.lua` *(deviation: altered)* - also adds
+  `build_permission_valid_set` (the orphan sweep's orchestration-layer counterpart to
+  `build_hook_valid_set`) and wires it into `process_merge_targets`/`manager.load` alongside the
+  hook sweep.
 
 **Verification**:
 
 - `nvim --headless -c "PlenaryBustedFile lua/neotex/plugins/ai/shared/extensions/merge_spec.lua" -c qa`
   passes with no new failures (pre-existing failures, if any, recorded in Phase 1's records file
-  as the baseline).
+  as the baseline). *(completed: 30/30 pass, no regressions, before and after every edit in this
+  phase)*
 - `bash .claude/scripts/verify-deploy.sh` passes (the complete gate set for this repository).
+  *(deferred to Phase 5/the batch-level pass per this dispatch's Batch Gate Deferral directive —
+  this phase touches only `lua/**` source, not yet redeployed into `.claude/**`, so no gate in
+  `verify-deploy.sh` has a changed input corpus to check yet)*
 - A forced reload of sapience into a scratch deployed-tree-shaped fixture (not the source store —
   `deploy-root-guard.sh` refuses a source-store invocation) retracts the four write grants and
-  leaves the fixture's `{hooks}` fingerprint byte-identical.
+  leaves the fixture's `{hooks}` fingerprint byte-identical. *(completed: reproduced the real
+  five-repo drift shape exactly — a fresh load yields 7, four write grants injected directly
+  simulate the historical additive leftover, a forced reload converges back to exactly 7 with
+  the `{hooks}` hash unchanged and byte-identical, and a second forced reload is idempotent)*
 
 ---
 

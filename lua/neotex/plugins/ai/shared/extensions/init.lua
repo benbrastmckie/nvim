@@ -205,6 +205,90 @@ local function build_retained_fragments(target, extension_name, loaded_names, co
   return retained_fragments, false
 end
 
+--- Build the valid set and watched-prefix set for `merge_mod.remove_orphaned_mcp_permission_grants`
+--- -- the MCP-tool-grant orphan sweep's orchestration-layer counterpart, modeled structurally on
+--- `build_hook_valid_set` above (same loop shape, same fail-safe direction: an unreadable
+--- sibling manifest/fragment makes the valid set INCOMPLETE, which would wrongly treat a
+--- legitimate grant as an orphan, so this returns `ok = false` and the caller must skip the
+--- sweep entirely rather than act on uncertain data).
+---
+--- WHY THIS SWEEP EXISTS ALONGSIDE THE TRACKED-record RETRACTION the forced-reload branch below
+--- also performs (not instead of it): a tracked `merged_sections` record is OVERWRITTEN
+--- wholesale by every load/reload (`state_mod.mark_loaded`), so once an extension's fragment has
+--- been narrowed and THEN force-reloaded even once under the pre-this-fix engine (additive-only,
+--- no retraction call), the wide historical tracked record is gone for good -- confirmed against
+--- this very repository's own git history, where a routine redeploy already reset the sapience
+--- tracked record to the narrow 7-item set while the deployed grant list stayed at 11. The
+--- tracked-record retraction alone cannot recover from that already-happened case: there is
+--- nothing left on disk recording that the four removed grants were ever this extension's own.
+--- This sweep instead reasons from what the CURRENTLY LOADED extensions' CURRENT fragments
+--- declare, never from historical tracked state, so it converges correctly regardless of how
+--- many additive-only reloads already ran before this fix existed.
+--- @param target string The settings merge target path
+--- @param extension_name string The extension currently loading -- EXCLUDED from the loop,
+---   since its own current fragment's grants are re-added immediately after the sweep by the
+---   ordinary merge that follows (mirrors `build_hook_valid_set`'s exclusion)
+--- @param loaded_names table Every currently loaded extension's name
+--- @param current_fragment table|nil This extension's own current fragment, unioned in too --
+---   LOAD-BEARING, not cosmetic: this extension's own fragment is the primary (usually ONLY)
+---   source of its "mcp__<server>__" watched prefix, since no sibling extension typically
+---   declares anything under the same namespace. Omitting this leaves `watched_prefixes` empty
+---   and the sweep a permanent no-op, confirmed empirically against a scratch fixture during
+---   this task's implementation (the very first version of this call omitted it and silently
+---   swept nothing).
+--- @param config table
+--- @return table valid_set grant string -> true
+--- @return table watched_prefixes prefix string -> true (only a prefix some loaded extension's
+---   CURRENT fragment actually declares at least one item under is ever swept)
+--- @return boolean ok False on any unreadable manifest/fragment -- caller must skip the sweep
+local function build_permission_valid_set(target, extension_name, loaded_names, current_fragment, config)
+  local valid_set = {}
+  local watched_prefixes = {}
+
+  local function union_fragment(fragment)
+    if type(fragment) ~= "table" or type(fragment.permissions) ~= "table" then
+      return
+    end
+    local allow = fragment.permissions.allow
+    if type(allow) ~= "table" then
+      return
+    end
+    for _, item in ipairs(allow) do
+      local prefix = merge_mod.extract_mcp_prefix(item)
+      if prefix then
+        watched_prefixes[prefix] = true
+        valid_set[item] = true
+      end
+    end
+  end
+
+  union_fragment(current_fragment)
+
+  for _, ext_name in ipairs(loaded_names) do
+    if ext_name ~= extension_name then
+      local ext = manifest_mod.get_extension(ext_name, config)
+      if not ext or not ext.manifest then
+        return {}, {}, false
+      end
+      local manifest = ext.manifest
+      if
+        manifest.merge_targets
+        and manifest.merge_targets.settings
+        and manifest.merge_targets.settings.target == target
+      then
+        local source_path = ext.path .. "/" .. manifest.merge_targets.settings.source
+        local fragment = read_json(source_path)
+        if not fragment then
+          return {}, {}, false
+        end
+        union_fragment(fragment)
+      end
+    end
+  end
+
+  return valid_set, watched_prefixes, true
+end
+
 --- Process merge targets for an extension
 --- @param ext_manifest table Extension manifest
 --- @param source_dir string Extension source directory
@@ -214,7 +298,11 @@ end
 ---   build_hook_valid_set above), or nil to skip the sweep entirely for this load (either
 ---   fail-safe gate fired, or the merge target has no settings fragment at all).
 --- @return table merged_sections Tracking data for unmerge
-local function process_merge_targets(ext_manifest, source_dir, project_dir, config, hook_valid_set)
+--- @param permission_sweep table|nil `{valid_set=, watched_prefixes=}` from
+---   `build_permission_valid_set`, or nil to skip the MCP-permission-grant orphan sweep
+---   entirely for this load (either fail-safe gate fired, or the merge target has no settings
+---   fragment at all) -- mirrors `hook_valid_set`'s own nil-skip convention exactly.
+local function process_merge_targets(ext_manifest, source_dir, project_dir, config, hook_valid_set, permission_sweep)
   local merged_sections = {}
 
   if not ext_manifest.merge_targets then
@@ -250,6 +338,20 @@ local function process_merge_targets(ext_manifest, source_dir, project_dir, conf
         merge_mod.remove_orphaned_hook_registrations(target_path, hook_valid_set)
       if sweep_ok and removed_count > 0 then
         merged_sections.settings_swept = removed_entries
+      end
+    end
+
+    -- MCP-permission-grant orphan sweep: removes a grant (e.g. a sapience write tool) left
+    -- behind by a now-narrowed-or-removed fragment declaration. Sited here, immediately before
+    -- the merge below, for the same reason the hook sweep is: the merge that follows re-adds
+    -- this extension's own CURRENT grants regardless, so running the sweep first and the merge
+    -- second never leaves the target swept-but-not-replenished.
+    if permission_sweep and fragment then
+      local perm_sweep_ok, perm_removed_count, perm_removed_items = merge_mod.remove_orphaned_mcp_permission_grants(
+        target_path, permission_sweep.valid_set, permission_sweep.watched_prefixes
+      )
+      if perm_sweep_ok and perm_removed_count > 0 then
+        merged_sections.permissions_swept = perm_removed_items
       end
     end
 
@@ -321,9 +423,16 @@ end
 ---   as it did before this parameter existed. The mcp target is object-keyed and therefore
 ---   unaffected by the array-tracking guard in practice, but forwarding keeps both call sites
 ---   identical rather than special-casing one of them.
+--- @return table removed `{settings=, mcp=}`, each either the `pre_removal_snapshot`
+---   `merge_mod.unmerge_settings` returned for that target, or nil if that target had nothing to
+---   reverse. Existing call sites (manager.unload, manager.load's own failed-load rollback) call
+---   this as a bare statement and so ignore the return value, exactly as before this return value
+---   existed -- only the new forced-reload retraction block in `manager.load` captures it, to
+---   restore a pre-merge retraction if the subsequent re-merge then fails.
 local function reverse_merge_targets(ext_manifest, merged_sections, project_dir, config, opts)
+  local removed = { settings = nil, mcp = nil }
   if not ext_manifest or not merged_sections then
-    return
+    return removed
   end
 
   local merge_key = config.merge_target_key
@@ -336,14 +445,20 @@ local function reverse_merge_targets(ext_manifest, merged_sections, project_dir,
   if merged_sections.settings and ext_manifest.merge_targets and ext_manifest.merge_targets.settings then
     local mt_config = ext_manifest.merge_targets.settings
     local target_path = project_dir .. "/" .. mt_config.target
-    merge_mod.unmerge_settings(target_path, merged_sections.settings, opts)
+    local ok, snapshot = merge_mod.unmerge_settings(target_path, merged_sections.settings, opts)
+    if ok then
+      removed.settings = snapshot
+    end
   end
 
   -- Reverse MCP server registration
   if merged_sections.mcp and ext_manifest.merge_targets and ext_manifest.merge_targets.mcp then
     local mt_config = ext_manifest.merge_targets.mcp
     local target_path = project_dir .. "/" .. mt_config.target
-    merge_mod.unmerge_settings(target_path, merged_sections.mcp, opts)
+    local mcp_ok, mcp_snapshot = merge_mod.unmerge_settings(target_path, merged_sections.mcp, opts)
+    if mcp_ok then
+      removed.mcp = mcp_snapshot
+    end
 
     -- Decision 6: unmerge_settings rewrites its target even when the result is {},
     -- which would leave a residual empty .mcp.json at the project root after the
@@ -373,6 +488,8 @@ local function reverse_merge_targets(ext_manifest, merged_sections, project_dir,
   -- opencode.json is now a computed artifact regenerated after state update.
   -- generate_opencode_json() rebuilds the file without the unloaded extension's
   -- content. Per-extension unmerge is no longer used.
+
+  return removed
 end
 
 --- Detect whether a project has legacy core files without extensions.json entry.
@@ -504,8 +621,13 @@ function M.create(config)
 
     -- Check if already loaded. `opts.force` bypasses ONLY this abort -- everything downstream
     -- (the copy sequence, merge-target processing, state update) is already idempotent/
-    -- overwrite-safe given the install-once root-files guard, so no further special-casing is
-    -- needed to make a forced re-run of an already-loaded extension safe.
+    -- overwrite-safe given the install-once root-files guard, with one deliberate exception:
+    -- the forced-reload retraction block below (inside the load pcall, just before
+    -- `process_merge_targets` runs) retracts whatever this extension's own prior
+    -- `merged_sections` recorded that its current fragment no longer declares, so a narrowed
+    -- fragment actually propagates to an already-loaded repository rather than only ever
+    -- adding. See that block's own comment for the ordering requirement and the rollback
+    -- restore this pairs with.
     --
     -- Dual effect of `opts.force`, deliberate rather than an accidental name collision: this
     -- same field is also threaded to recursive dependency loads below ("Resolve dependencies"),
@@ -671,6 +793,11 @@ function M.create(config)
     local data_skeleton_files = {}
     local total_skipped = 0
     local total_symlink_skipped = 0
+    -- Declared before pcall, same as the above, so a failed forced-reload's rollback can see
+    -- what the pre-merge retraction block (inside the pcall below) removed and restore it.
+    -- Stays nil for a first-time load (no retraction ever ran) or when the retraction block's
+    -- `prior_merged_sections` was empty.
+    local retraction_removed = nil
 
     -- Wrap copy+merge in pcall for atomic rollback on failure
     local load_ok, load_err = pcall(function()
@@ -790,6 +917,48 @@ function M.create(config)
       local updated_state = state_mod.read(project_dir, config)
       local loaded_names = state_mod.list_loaded(updated_state)
 
+      -- Forced-reload retraction: when this is a forced re-load of an ALREADY-loaded extension
+      -- (opts.force, checked against `state`, not `updated_state`, above at the "already
+      -- loaded" guard), retract whatever the extension's own PRIOR `merged_sections` recorded
+      -- before `process_merge_targets` below re-merges its CURRENT fragment. Without this, a
+      -- fragment narrowed since the last load (e.g. a permission grant removed) never
+      -- propagates to an already-loaded repository, because `deep_merge` is additive-only and
+      -- a forced reload otherwise only ever adds. A first-time load has no prior record
+      -- (`state_mod.is_loaded` false) and is correctly untouched.
+      --
+      -- Must run BEFORE `process_merge_targets` (below) and therefore before
+      -- `state_mod.mark_loaded`/`state_mod.write` (after this pcall closure) overwrite the
+      -- state's `merged_sections` entry for this extension -- `updated_state`, read just above,
+      -- is this load's only chance to see the prior record.
+      if state_mod.is_loaded(state, extension_name) and opts.force then
+        local prior_merged_sections = state_mod.get_merged_sections(updated_state, extension_name)
+        if prior_merged_sections and not vim.tbl_isempty(prior_merged_sections) then
+          local retraction_retained_fragments, retraction_skip_array_removal = {}, false
+          if ext_manifest.merge_targets and ext_manifest.merge_targets.settings then
+            retraction_retained_fragments, retraction_skip_array_removal = build_retained_fragments(
+              ext_manifest.merge_targets.settings.target,
+              extension_name,
+              loaded_names,
+              config
+            )
+            if retraction_skip_array_removal then
+              -- Fail-safe gate fired (unreadable sibling manifest/fragment): every candidate is
+              -- treated as retained for this reload, so nothing is removed. Visible in deploy
+              -- output rather than silently mistaken for a successful retraction, matching the
+              -- hook-sweep skip notices' wording/guard style above.
+              pcall(helpers.notify, string.format(
+                "[%s] forced-reload retraction suppressed: an unreadable loaded-extension manifest or settings fragment made the retained set incomplete",
+                extension_name
+              ), "INFO")
+            end
+          end
+          retraction_removed = reverse_merge_targets(ext_manifest, prior_merged_sections, project_dir, config, {
+            retained_fragments = retraction_retained_fragments,
+            skip_array_removal = retraction_skip_array_removal,
+          })
+        end
+      end
+
       -- Pre-load cleanup: remove stale index entries before appending fresh ones.
       -- Excludes the current extension from valid prefixes so its stale entries
       -- are removed. Fresh entries are then added by process_merge_targets()
@@ -842,8 +1011,42 @@ function M.create(config)
         end
       end
 
+      -- MCP-permission-grant orphan sweep's valid set (same fail-safe gates and reasoning as
+      -- the hook sweep immediately above -- see build_permission_valid_set's own doc comment
+      -- for why this sweep exists alongside the tracked-record retraction below rather than
+      -- instead of it).
+      local permission_sweep = nil
+      if ext_manifest.merge_targets and ext_manifest.merge_targets.settings then
+        if #loaded_names == 0 then
+          pcall(helpers.notify, string.format(
+            "[%s] MCP-permission-grant orphan sweep skipped: no loaded extensions (empty valid set)",
+            extension_name
+          ), "INFO")
+        else
+          -- This extension's OWN current fragment is the primary (usually ONLY) source of its
+          -- "mcp__<server>__" watched prefix -- no sibling extension declares anything under
+          -- it in the common case, so omitting this would leave watched_prefixes empty and the
+          -- sweep a permanent no-op. Read directly from source_dir (available in this
+          -- enclosing scope), not via source_mod/process_merge_targets's own later read of the
+          -- same path -- a harmless second decode of a small JSON file, not a shared mutable
+          -- read.
+          local current_settings_fragment = read_json(source_dir .. "/" .. ext_manifest.merge_targets.settings.source)
+          local perm_valid_set, perm_watched_prefixes, perm_built_ok = build_permission_valid_set(
+            ext_manifest.merge_targets.settings.target, extension_name, loaded_names, current_settings_fragment, config
+          )
+          if perm_built_ok then
+            permission_sweep = { valid_set = perm_valid_set, watched_prefixes = perm_watched_prefixes }
+          else
+            pcall(helpers.notify, string.format(
+              "[%s] MCP-permission-grant orphan sweep skipped: an unreadable loaded-extension manifest or settings fragment made the valid set incomplete",
+              extension_name
+            ), "INFO")
+          end
+        end
+      end
+
       -- Process merge targets
-      merged_sections = process_merge_targets(ext_manifest, source_dir, project_dir, config, hook_valid_set)
+      merged_sections = process_merge_targets(ext_manifest, source_dir, project_dir, config, hook_valid_set, permission_sweep)
     end)
 
     -- Rollback on failure
@@ -879,6 +1082,27 @@ function M.create(config)
       if merged_sections.settings_swept and ext_manifest.merge_targets and ext_manifest.merge_targets.settings then
         local settings_target_path = project_dir .. "/" .. ext_manifest.merge_targets.settings.target
         merge_mod.restore_removed_hook_registrations(settings_target_path, merged_sections.settings_swept)
+      end
+      -- Restore any MCP permission grants the orphan sweep removed earlier in this same
+      -- failed load, alongside the hook-sweep restore immediately above.
+      if merged_sections.permissions_swept and ext_manifest.merge_targets and ext_manifest.merge_targets.settings then
+        local settings_target_path = project_dir .. "/" .. ext_manifest.merge_targets.settings.target
+        merge_mod.restore_removed_mcp_permission_grants(settings_target_path, merged_sections.permissions_swept)
+      end
+      -- Restore whatever the forced-reload retraction block removed earlier in this same
+      -- failed load attempt, mirroring the hook-sweep restore immediately above: a failed
+      -- forced load must leave the target settings/mcp files exactly as it found them, not
+      -- missing entries the pre-merge retraction already committed to disk before the
+      -- subsequent re-merge failed.
+      if retraction_removed then
+        if retraction_removed.settings and ext_manifest.merge_targets and ext_manifest.merge_targets.settings then
+          local settings_target_path = project_dir .. "/" .. ext_manifest.merge_targets.settings.target
+          merge_mod.restore_retracted_sections(settings_target_path, retraction_removed.settings)
+        end
+        if retraction_removed.mcp and ext_manifest.merge_targets and ext_manifest.merge_targets.mcp then
+          local mcp_target_path = project_dir .. "/" .. ext_manifest.merge_targets.mcp.target
+          merge_mod.restore_retracted_sections(mcp_target_path, retraction_removed.mcp)
+        end
       end
       return false, "Extension load failed: " .. tostring(load_err)
     end

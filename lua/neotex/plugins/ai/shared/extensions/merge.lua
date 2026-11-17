@@ -514,15 +514,33 @@ end
 ---     `opts.retained_fragments` (e.g. an unreadable manifest or an unparseable sibling
 ---     fragment): an uncertain retained set must widen protection, never narrow it.
 --- @return boolean success True if unmerge succeeded
+--- @return table|nil pre_removal_snapshot A `vim.deepcopy` of `target[key]`, for every top-level
+---   key present in `tracked_entries`, captured BEFORE `remove_tracked` mutates it. Callers that
+---   need to UNDO this exact unmerge (a failed forced-reload rollback -- see `manager.load`'s
+---   forced-reload retraction block in init.lua) pass this verbatim to
+---   `M.restore_retracted_sections` to restore every affected top-level key to its pre-removal
+---   value in one step, nested structure (permissions, mcp, hooks) and all. Callers that do not
+---   need this (the ordinary unload path, and the existing failed-load rollback, both of which
+---   are reversing a merge rather than a retraction) simply ignore this second return value.
 function M.unmerge_settings(target_path, tracked_entries, opts)
   opts = opts or {}
   local retained_fragments = opts.retained_fragments or {}
 
   if vim.fn.filereadable(target_path) ~= 1 then
-    return true
+    return true, nil
   end
 
   local target = read_json(target_path) or {}
+
+  -- Snapshot every top-level key this unmerge is about to touch, BEFORE remove_tracked
+  -- mutates `target` below. See the @return doc comment above for why this exists and who
+  -- consumes it.
+  local pre_removal_snapshot = {}
+  for key in pairs(tracked_entries) do
+    if target[key] ~= nil then
+      pre_removal_snapshot[key] = vim.deepcopy(target[key])
+    end
+  end
 
   --- Is `item` present in any of `fragments`' array at `key`, or is removal globally
   --- suppressed via `opts.skip_array_removal`?
@@ -646,10 +664,36 @@ function M.unmerge_settings(target_path, tracked_entries, opts)
 
   local success = M.write_json(target_path, target)
   if not success then
-    return false
+    return false, nil
   end
 
-  return true
+  return true, pre_removal_snapshot
+end
+
+--- Restore every top-level key `M.unmerge_settings` just removed, undoing that exact unmerge in
+--- one step. Used ONLY by `manager.load`'s forced-reload retraction block (init.lua): when the
+--- subsequent re-merge of the (possibly narrowed) current fragment fails, the pre-merge
+--- retraction this function undoes must not be left in place, mirroring the existing
+--- `settings_swept` / `restore_removed_hook_registrations` rollback precedent -- but generalized
+--- to the full top-level key (permissions, mcp, hooks, env, ...) rather than scoped to hooks
+--- only, since `M.unmerge_settings` can retract any of them.
+--- @param target_path string Path to the settings.json-shaped file to restore into
+--- @param snapshot table|nil The `pre_removal_snapshot` `M.unmerge_settings` returned
+--- @return boolean success
+function M.restore_retracted_sections(target_path, snapshot)
+  if not snapshot or vim.tbl_isempty(snapshot) then
+    return true
+  end
+  if vim.fn.filereadable(target_path) ~= 1 then
+    return true
+  end
+
+  local target = read_json(target_path) or {}
+  for key, value in pairs(snapshot) do
+    target[key] = value
+  end
+
+  return M.write_json(target_path, target)
 end
 
 --- Append (upsert) entries to index.json
@@ -1061,6 +1105,121 @@ function M.restore_removed_hook_registrations(target_path, removed_entries)
       table.insert(settings.hooks[entry.event], block)
     end
     table.insert(block.hooks, entry.hook)
+  end
+
+  return M.write_json(target_path, settings)
+end
+
+--- Extract the `mcp__<server>__` prefix from a `permissions.allow` grant string, or nil if the
+--- string does not have the MCP-tool-grant shape. An MCP permission grant is always namespaced
+--- by its server name as the second `__`-delimited segment (`mcp__sapience__sapience_search`,
+--- `mcp__nixos__nix`, ...); a non-MCP grant (`Bash(echo:*)`, `Read(//home/...)`) never matches.
+--- Exported (not local) because `init.lua`'s `build_permission_valid_set` -- the orchestration-
+--- layer counterpart that resolves WHICH extensions are loaded and reads their fragments,
+--- mirroring `build_hook_valid_set` -- needs the identical prefix-extraction rule this sweep
+--- uses, and a second, drifting copy of this one-line rule is worse than a cross-module call.
+--- @param item any
+--- @return string|nil prefix Including both trailing underscores, e.g. "mcp__sapience__"
+function M.extract_mcp_prefix(item)
+  if type(item) ~= "string" then
+    return nil
+  end
+  return item:match("^(mcp__[^_]+__)")
+end
+
+--- Remove any `permissions.allow` entry whose MCP-tool prefix (`mcp__<server>__`,
+--- `M.extract_mcp_prefix` above) is WATCHED (some currently-loaded extension's current fragment
+--- declares at least one item under it, via `init.lua`'s `build_permission_valid_set`) but the
+--- entry itself is not in `valid_set`. This is the orphan sweep that recovers a grant left
+--- behind by a now-narrowed-or-removed fragment declaration, independent of tracked history --
+--- see `build_permission_valid_set`'s doc comment (init.lua) for why tracked history alone
+--- cannot do this: a tracked `merged_sections` record is OVERWRITTEN wholesale by every
+--- load/reload (`state.mark_loaded`), so once a fragment has been narrowed and THEN
+--- force-reloaded even once under the pre-this-fix engine (additive-only, no retraction call),
+--- the wide historical tracked record is gone for good. This sweep instead reasons from what
+--- the CURRENTLY LOADED extensions' CURRENT fragments declare, so it converges correctly
+--- regardless of how many additive-only reloads already ran before this fix existed.
+---
+--- SAFETY: scoped strictly to the MCP-tool-grant shape. A hand-added, non-MCP grant (a Bash or
+--- Read permission string) never matches `M.extract_mcp_prefix` and is never a candidate --
+--- the same "never touch an untracked, unrecognized grant" discipline `M.unmerge_settings`'s
+--- `remove_tracked` already applies to array items generally. A grant under an UNWATCHED mcp
+--- prefix (no currently-loaded extension currently declares anything under it) is also left
+--- untouched -- the same fail-safe direction as the hook sweep: incomplete/absent information
+--- about a namespace is never a reason to act on it.
+--- @param target_path string Path to the settings.json-shaped file to sweep
+--- @param valid_set table grant string -> true (grants to keep)
+--- @param watched_prefixes table prefix string -> true (prefixes this sweep may act on)
+--- @return boolean success True if the sweep (and any resulting write) succeeded
+--- @return number removed_count
+--- @return table removed_items Array of the removed grant strings, for rollback threading
+function M.remove_orphaned_mcp_permission_grants(target_path, valid_set, watched_prefixes)
+  if vim.fn.filereadable(target_path) ~= 1 then
+    return true, 0, {}
+  end
+  if not watched_prefixes or vim.tbl_isempty(watched_prefixes) then
+    return true, 0, {}
+  end
+
+  local settings = read_json(target_path)
+  if
+    not settings
+    or type(settings.permissions) ~= "table"
+    or type(settings.permissions.allow) ~= "table"
+  then
+    return true, 0, {}
+  end
+
+  local removed_items = {}
+  local allow = settings.permissions.allow
+  for i = #allow, 1, -1 do
+    local item = allow[i]
+    local prefix = M.extract_mcp_prefix(item)
+    if prefix and watched_prefixes[prefix] and not valid_set[item] then
+      table.insert(removed_items, item)
+      table.remove(allow, i)
+    end
+  end
+
+  if #removed_items == 0 then
+    return true, 0, {}
+  end
+
+  local success = M.write_json(target_path, settings)
+  if not success then
+    return false, 0, {}
+  end
+
+  return true, #removed_items, removed_items
+end
+
+--- Restore grant strings previously removed by `M.remove_orphaned_mcp_permission_grants`,
+--- re-appending each one to `permissions.allow` (creating the array if the whole thing was
+--- emptied away). Used ONLY by `manager.load`'s own failed-load rollback path, threaded
+--- alongside `M.restore_removed_hook_registrations` -- a failed load must leave the target
+--- settings file exactly as it found it, not missing grants this sweep already committed to
+--- disk earlier in that same load attempt.
+--- @param target_path string
+--- @param removed_items table Array of grant strings, as returned by
+---   M.remove_orphaned_mcp_permission_grants
+--- @return boolean success
+function M.restore_removed_mcp_permission_grants(target_path, removed_items)
+  if not removed_items or #removed_items == 0 then
+    return true
+  end
+  if vim.fn.filereadable(target_path) ~= 1 then
+    return true
+  end
+
+  local settings = read_json(target_path)
+  if not settings then
+    return false
+  end
+  settings.permissions = settings.permissions or {}
+  settings.permissions.allow = settings.permissions.allow or {}
+
+  for _, item in ipairs(removed_items) do
+    table.insert(settings.permissions.allow, item)
   end
 
   return M.write_json(target_path, settings)

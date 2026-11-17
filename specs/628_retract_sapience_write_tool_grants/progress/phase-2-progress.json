@@ -1,0 +1,31 @@
+{
+  "phase": 2,
+  "phase_name": "Wire forced-reload retraction into manager.load",
+  "started_at": "2026-11-17T16:40:00Z",
+  "last_updated": "2026-11-17T18:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Forced-reload retraction block gated on is_loaded+force", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 2, "description": "Read prior merged_sections before process_merge_targets runs", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 3, "description": "Build sibling-retention data via build_retained_fragments", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 4, "description": "Call reverse_merge_targets with retained_fragments/skip_array_removal", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 5, "description": "Record retraction removal for rollback restore (merge.lua restore_retracted_sections + unmerge_settings 2nd return)", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua", "lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 6, "description": "Extend rollback block to restore retracted entries", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 7, "description": "pcall-guarded INFO notice on skip_removal suppression", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 8, "description": "Update doc comments on reverse_merge_targets and opts.force", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/init.lua"]},
+    {"id": 9, "description": "DEVIATION: add MCP-permission-grant orphan sweep (required to actually close acceptance criteria -- tracked-record retraction alone is a no-op against already-clobbered real-repo state)", "status": "done", "files_touched": ["lua/neotex/plugins/ai/shared/extensions/merge.lua", "lua/neotex/plugins/ai/shared/extensions/init.lua"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "Tracked-record unmerge-then-remerge alone (as literally planned)", "result": "failed", "reason": "Real repos' tracked merged_sections was already reset to the narrow 7-item set by a prior ordinary redeploy (confirmed via git history, commit 94b181040), so there is no wide historical record left to retract against. Empirically confirmed no-op against a fixture reproducing the exact drift."}
+  ],
+  "deviations": [
+    {
+      "task_id": "2.9",
+      "description": "Add MCP-permission-grant orphan sweep (merge_mod.remove_orphaned_mcp_permission_grants, build_permission_valid_set) not present anywhere in the original plan's task list",
+      "type": "altered",
+      "reason": "The planned tracked-record retraction mechanism alone cannot retroactively remediate the five already-affected repositories; only a current-fragment-driven orphan sweep (modeled on the existing hook sweep) can recover from the already-lost tracked history.",
+      "annotation": "*(deviation: altered — a second mechanism, not in the original task list, was required)*"
+    }
+  ],
+  "handoff_count": 0
+}
