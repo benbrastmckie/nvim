@@ -1,30 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/604_fixture_dependency_declaration_drift_lint/plans/01_fixture-dependency-drift-lint.md",
-      "summary": "5-phase plan (4 dependency waves, 5.75h) for the fixture-dependency-declaration drift lint, siting ruled to route (a) gate registration with rationale recorded."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "In this repo's agent-system source store, creating ANY new script under agent-system/extensions/<ext>/scripts/ (including a test suite) owes an entry in that extension's manifest.json provides.scripts -- an explicit, non-glob list (409 entries for core) whose completeness is enforced by check-extension-docs.sh Rule Q inside verify-deploy.sh gate 3, which is commit-blocking. run-all.sh discovers suites by glob and needs no entry, so authors reasonably expect provides.scripts to behave like index-entries.json's wholesale-directory convention; it does not, and a missing entry produces no authoring-time signal. Remedy is one command: sync-manifest-scripts.sh --write (then --check). A plan that creates a new source-store script must declare manifest.json in the SAME phase per plan-format.md's coupled-generated-surface obligation.",
-      "category": "PATTERN",
-      "source_artifact": "specs/604_fixture_dependency_declaration_drift_lint/plans/01_fixture-dependency-drift-lint.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["manifest-provides-scripts", "sync-manifest-scripts", "rule-q", "coupled-generated-surface", "source-store", "gate3"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1794942735_1748a1_604",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 5.75,
-    "dependency_waves": [[1], [2, 4], [3], [5]]
-  },
-  "next_steps": "Run /orchestrate 604 to execute the plan",
-  "dispatch_seq": 6
+    "session_id": "sess_1794942735_1748a1",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

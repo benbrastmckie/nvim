@@ -251,6 +251,7 @@
       "lint/lint-deliberate-break-residue.sh",
       "lint/lint-directory-pathspec-boundary.sh",
       "lint/lint-extension-readme-table.sh",
+      "lint/lint-fixture-dependency-declaration.sh",
       "lint/lint-gate-registry.sh",
       "lint/lint-hook-registration-paths.sh",
       "lint/lint-json-channel-discipline.sh",

@@ -144,54 +144,75 @@ No `roadmap_path` was provided in this dispatch; no roadmap consultation perform
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Detector script [NOT STARTED]
+### Phase 1: Detector script [COMPLETED]
 
 **Goal**: `scripts/lint/lint-fixture-dependency-declaration.sh` exists, implements the unified
 extraction and the four-shape mandatory/optional classifier, and runs clean against the live
 corpus.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/manifest.json` immediately before editing it
-- [ ] Create `agent-system/extensions/core/scripts/lint/lint-fixture-dependency-declaration.sh`
+- [x] Re-read `agent-system/extensions/core/manifest.json` immediately before editing it *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/lint/lint-fixture-dependency-declaration.sh`
       modelled structurally on `lint/lint-subject-resolution-declaration.sh`: the
       `[--verbose] [--quiet] [path...]` CLI, the `[VIOLATION]`/`[PASS]` output convention, and the
       `0`/`1`/`2` exit-code contract every sibling lint already uses, so
       `verify_deploy_extract_verdict_lines '[VIOLATION]' ...` needs no new consumer-side code
-- [ ] Corpus: `scripts/tests/*.sh`, flat and non-recursive — not the shared-corpus `[[ == ]]` glob
+      *(completed)*
+- [x] Corpus: `scripts/tests/*.sh`, flat and non-recursive — not the shared-corpus `[[ == ]]` glob
       match, whose pattern spans directory separators and would silently widen the scan (the same
-      rationale `lint-subject-resolution-declaration.sh` records for itself)
-- [ ] Suite-selection predicate, **both** conditions required: (a) the file declares at least one
+      rationale `lint-subject-resolution-declaration.sh` records for itself) *(completed)*
+- [x] Suite-selection predicate, **both** conditions required: (a) the file declares at least one
       `require_file "<...>/lib/<name>.sh"` call OR an array whose elements are consumed by such a
       call; AND (b) the file contains at least one `cp` line whose destination resolves under a
       sandbox root (`$WORKDIR/.claude/scripts` or `$root/.claude/scripts` — both literal forms
-      are live). A file satisfying (a) without (b) is out of population
-- [ ] Declared/copied-set extraction, **one pass, both shapes**: the union of every literal
+      are live). A file satisfying (a) without (b) is out of population *(completed: measured
+      selection is exactly the 8 named-array + 7 open-coded suites, excluding
+      test-stall-reprompt-wiring.sh, matching the research report's corrected population)*
+- [x] Declared/copied-set extraction, **one pass, both shapes**: the union of every literal
       `require_file` argument, every literal `cp` argument, every element of any array literal
       consumed by a `for f in "${NAME[@]}"` loop whose body contains a `require_file` or `cp`
       (regardless of array name, and including the combined-array sub-variant that mixes
       top-level and `lib/`-prefixed entries), and every direct `cp "$VAR" "$dest"` line. The
       declared set is "everything this suite's setup actually copies into the sandbox", never
-      "the named array's contents"
-- [ ] Mandatory-dependency extraction per copied script (resolve each copied-set entry to its real
+      "the named array's contents" *(completed: implemented as Tier A (direct literal
+      `lib/<name>.sh`), Tier B (bare elements of a `*LIB*`-named array), and Tier C (a literal
+      word-list for-loop whose body concatenates `lib/$VAR`) — plus GLOB-ALL-LIBS recognition for
+      a `cp .../lib/*.sh` wildcard copy, a legitimate third declared-set shape measured live in
+      this corpus (test-update-task-status.sh and three open-coded suites) that the research
+      report did not separately name)*
+- [x] Mandatory-dependency extraction per copied script (resolve each copied-set entry to its real
       on-disk path under `scripts/`, then scan its text), classifying each `lib/<name>.sh`
       occurrence by the four measured shapes: (i) bare `source "..."`/`. "..."` with no enclosing
       `[ -f ... ] &&` on the same line → MANDATORY; (ii) the single-line `[ -f "$VAR" ] && . "$VAR"`
       idiom → OPTIONAL, never reported; (iii) a `*_CANDIDATES=(...)` array plus search loop →
       inspect the empty-result branch body: an `exit <nonzero>` → MANDATORY, a log-and-continue
       with no exit → OPTIONAL; (iv) `if ! . "$PATH" ...; then ... exit/return <nonzero>; fi` →
-      MANDATORY
-- [ ] Recurse into each MANDATORY dependency found — implement as a closure, not a single pass
-- [ ] Verdict: for each selected suite, any MANDATORY dependency of any copied script absent from
+      MANDATORY *(completed: also added a multi-line variant of shape (ii) — `if [ -f "<literal>"
+      ]; then source "<same literal>"; fi` across lines, measured live in issue-record.sh's
+      central-log-lib.sh guard — and narrowed shape (iv) to only a column-0 (unconditionally
+      reached) occurrence, since an INDENTED occurrence is task-lock.sh's lazy
+      `ensure_file_scope_overlap_lib()` wrapper, called only from the one CLI subcommand that
+      needs it; the research report itself notes this reachability is undecidable by static
+      analysis and drove none of the measured repairs, so it is deliberately never flagged)*
+- [x] Recurse into each MANDATORY dependency found — implement as a closure, not a single pass
+      *(completed: `transitive_mandatory_libs_of_script`, depth-bounded and visited-set-guarded;
+      a corpus-wide sweep at implementation time confirms zero `lib/*.sh` file in today's corpus
+      sources a further `lib/*.sh` file, so the closure is currently a no-op beyond depth 1, kept
+      for forward-compatibility per the plan's own rationale)*
+- [x] Verdict: for each selected suite, any MANDATORY dependency of any copied script absent from
       that suite's own declared/copied set is one `[VIOLATION]` line naming the suite, the copied
-      script that needs it, and the missing library
-- [ ] State the KNOWN LIMITATION plainly in the script header, matching the convention every
+      script that needs it, and the missing library *(completed)*
+- [x] State the KNOWN LIMITATION plainly in the script header, matching the convention every
       cited sibling uses for itself: a regex/text-level classifier of shapes (i)-(iv), not a shell
       parser; a dependency reached only through an unrecognized shape (a fifth guard idiom, a
       variable-indirected `source "$(resolve_lib foo)"`) is a bounded blind spot, not a soundness
       claim. Record the hybrid shared-fixture suite (`common_test_fixture_overlay`) as a second
-      documented blind spot — no such hybrid exists in the measured corpus today
-- [ ] Add the new script to `provides.scripts`:
+      documented blind spot — no such hybrid exists in the measured corpus today *(completed)*
+- [x] Add the new script to `provides.scripts`:
       `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write`, then `--check`
+      *(completed: required `git add` of the new file first, since sync-manifest-scripts.sh
+      diffs against `git ls-files`, not a raw disk walk — an undocumented precondition worth
+      recording)*
 
 **Timing**: 2 hours
 

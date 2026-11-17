@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Detector script",
+  "started_at": "2026-11-17T21:30:00Z",
+  "last_updated": "2026-11-17T21:55:10Z",
+  "objectives": [
+    {"id": 1, "description": "Create lint-fixture-dependency-declaration.sh with unified extraction and four-shape classifier", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-fixture-dependency-declaration.sh"]},
+    {"id": 2, "description": "Add new script to provides.scripts via sync-manifest-scripts.sh", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {"approach": "blind N-line forward scan for exit/passing-through signal (shape iii)", "result": "failed", "reason": "misattributed deploy-freshness-lib.sh's unrelated nested 'exit 6' staleness refusal to the library's own missing-dependency guard; replaced with a scoped scan bounded to the if-statement's own first branch"},
+    {"approach": "whole-file bare .sh token scan for copied-toplevel-script detection", "result": "failed", "reason": "misread test-git-commit-scoped.sh's Z10 absence-assertion ('if [ -e .../issue-record.sh ]') as a declared copy; replaced with context-restricted extraction (require_file/cp/array/for-loop call sites only)"}
+  ],
+  "handoff_count": 0
+}
