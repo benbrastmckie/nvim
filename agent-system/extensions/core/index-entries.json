@@ -3356,8 +3356,8 @@
       "path": "standards/source-store-deploy-boundary-narrative.md",
       "domain": "core",
       "subdomain": "standards",
-      "summary": "Full source-store/deploy-boundary resolution procedure, unreachable-source-store fallback, worked example, Exceptions, and Enforcement narrative",
-      "line_count": 171,
+      "summary": "Full source-store/deploy-boundary resolution procedure, unreachable-source-store fallback, worked example, Exceptions, Enforcement narrative, and the source-store-relative vs. deploy-target-relative existence distinction",
+      "line_count": 205,
       "keywords": [
         "source-store",
         "deploy-boundary",
