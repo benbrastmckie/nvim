@@ -1,0 +1,18 @@
+{
+  "phase": 5,
+  "phase_name": "Gate Wiring Confirmation and Boundary Note",
+  "started_at": "2026-11-17T13:20:00Z",
+  "last_updated": "2026-11-17T13:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run verify-deploy.sh --skip-slow --only-gate 21 against live state, confirm pass", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-run with HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE pointed at drifted exemplar, confirm FAIL, FINDINGS_LIST tagged gate21, settings.json never written", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm by git diff that verify-deploy.sh and gate-registry.data are unmodified", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Add existence-boundary subsection to source-store-deploy-boundary-narrative.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md"]},
+    {"id": 5, "description": "Note the two independent axes in that subsection", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "notes": "Gate 21 confirmed live-clean (exit 0, 1 check, 0 failures) and confirmed FAILING against the ModelBuilder drifted exemplar via HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE, with FINDING gate21-tagged lines captured via --findings and the live .claude/settings.json md5sum confirmed byte-unchanged before/after. git diff on verify-deploy.sh and gate-registry.data is empty -- the 'no new gate' decision holds in fact. Updated index-entries.json's line_count for the narrative file (171 -> 205) per the plan's own instruction that this phase owes the declaration even though the deploy-time regeneration itself lands in Phase 6. The mandated 'bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4' check is RED (gate 3 doc-lint) for the SAME reason already documented in every prior phase's handoff: scripts/lint/lint-hook-registration-paths.sh and scripts/tests/test-lint-hook-registration-paths.sh (Phase 2/3/4's own files, not this phase's) show source/deployed content drift pending Phase 6's redeploy -- confirmed this is the ONLY cause relevant to this task; a third drifted file (scripts/git-commit-scoped.sh) is unrelated pre-existing drift from a separately committed, different task (confirmed via git log, last touched by a commit outside this task's history), also pending its own redeploy and not this task's to fix. This phase's own two edited files (the narrative doc and index-entries.json) are not implicated in the doc-lint drift check at all. Gate 4 (task-reference lint) passes cleanly. Deferred to Phase 6 per the plan's own design, which explicitly owns the full post-redeploy gate sweep."
+}

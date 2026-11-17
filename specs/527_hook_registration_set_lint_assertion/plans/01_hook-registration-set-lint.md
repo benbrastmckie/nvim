@@ -453,7 +453,7 @@ have added a case; the contiguity requirement is on the numbering as found, not 
 
 ---
 
-### Phase 5: Gate Wiring Confirmation and Boundary Note [NOT STARTED]
+### Phase 5: Gate Wiring Confirmation and Boundary Note [COMPLETED]
 
 **Goal**: Demonstrate that Gate 21 already is the resulting gate, with no `verify-deploy.sh` or
 `gate-registry.data` edit, and record the existence-boundary distinction where a future lint in
@@ -461,25 +461,26 @@ this cluster will look for it.
 
 **Tasks**:
 
-- [ ] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 21 <repo_root>`
+- [x] Run `bash agent-system/extensions/core/scripts/verify-deploy.sh --skip-slow --only-gate 21 <repo_root>`
       (`<repo_root>` being the directory holding `.claude-extensions.json`) and confirm gate 21
-      passes against live state.
-- [ ] Re-run the same invocation with `HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE` pointed at the Phase 1
+      passes against live state. *(completed: 1 check, 0 failures)*
+- [x] Re-run the same invocation with `HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE` pointed at the Phase 1
       drifted exemplar and confirm gate 21 FAILS, that `--findings` captures the Check E
       `[VIOLATION]` lines into `FINDINGS_LIST` tagged `gate21`, and that the live
-      `.claude/settings.json` was never written to.
-- [ ] Confirm by `git diff` that `agent-system/extensions/core/scripts/verify-deploy.sh` and
+      `.claude/settings.json` was never written to. *(completed: 4 FINDING gate21 lines, md5sum
+      confirmed unchanged)*
+- [x] Confirm by `git diff` that `agent-system/extensions/core/scripts/verify-deploy.sh` and
       `agent-system/extensions/core/scripts/gate-registry.data` are both unmodified -- the
-      "no new gate" decision holds in fact, not only in intent.
-- [ ] Add a short subsection to
+      "no new gate" decision holds in fact, not only in intent. *(completed: empty diff)*
+- [x] Add a short subsection to
       `agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md`
       covering the source-store-relative versus deploy-target-relative existence distinction: what
       `check_exists()`'s glob correctly answers, what a deploy-target probe answers, and why reusing
       the former for a deployed-tree audit is a false negative. Cite the lint and the check by
-      durable name, never by task number or line number.
-- [ ] Note in that subsection that the two questions are independent axes, so a script can be fully
+      durable name, never by task number or line number. *(completed)*
+- [x] Note in that subsection that the two questions are independent axes, so a script can be fully
       present and correctly declared in the source store while absent from one deploy target's own
-      filesystem.
+      filesystem. *(completed)*
 
 **Timing**: 1 hour
 

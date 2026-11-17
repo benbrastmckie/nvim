@@ -169,3 +169,37 @@ part of the same invocation (see `deploy-headless.sh`'s own "Bootstrap safety" n
 loaded-extension list non-empty for that same call so the sweep runs normally. See
 `specs/369_orphan_sweep_for_removed_merge_target_entries/records/02_after-measurements.md` for
 the measured before/after result of that remediation.
+
+### Source-Store-Relative vs. Deploy-Target-Relative Existence: Two Independent Axes
+
+A script-existence question always has an implicit frame: existence relative to WHAT tree? Two
+frames answer genuinely different questions, and conflating them produces a false negative on
+precisely the defect class that matters most for a deployed-tree audit.
+
+**Source-store-relative existence** asks "does this script exist somewhere under
+`agent-system/extensions/*/` in the source store itself?" This is the right question whenever the
+audit's subject IS the source store's own declarations — confirming that what a merge source or
+root-files surface declares actually has a backing file somewhere in the tree that produces every
+deploy. `lint-hook-registration-paths.sh`'s Check D answers exactly this question, via its
+`check_exists()` helper, which globs `agent-system/extensions/*/<normalized-path>`.
+
+**Deploy-target-relative existence** asks a different question entirely: "does this script exist
+at THIS ONE deploy target's own `.claude/<normalized-path>`?" This is the right question whenever
+the audit's subject is a DEPLOYED tree — a concrete repository that received a copy of the loader's
+output at some point in the past and may since have drifted from what the source store declares
+today. The same Check-D question, asked against a deployed tree instead of the source store, would
+be WRONG: a script can be fully present and correctly declared in the source store at the moment
+of the audit, while being absent from one particular deploy target's filesystem (e.g. a deploy
+predating that script's addition to the source, or a deploy whose `.claude/hooks/` directory has
+independently drifted). Reusing the source-store-relative `check_exists()` for a deployed-tree audit
+would therefore report "exists" purely because the SOURCE has the file — a false negative on the
+exact defect a deployed-tree existence check exists to catch.
+
+`lint-hook-registration-paths.sh`'s Check E (the deployed registration SET assertion) is the
+worked example of keeping these two axes separate in one script: its own existence probe,
+`check_exists_deployed()`, never calls `check_exists()` and instead tests
+`$(dirname "$DEPLOYED_SETTINGS")/<normalized-path>` directly — the deploy target's own directory,
+not the source store's. The two questions are independent: a future lint or sweep that needs to
+ask "does this script exist" must first decide which of the two trees is actually under audit, and
+answer accordingly, rather than reaching for whichever existence helper happens to already be in
+scope.
