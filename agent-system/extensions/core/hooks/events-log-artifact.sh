@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # PostToolUse hook: log unified-event-store events for Write/Edit calls that touch a
-# task's .return-meta.json or specs/errors.json.
+# task's .return-meta.json.
 #
 # Integration: appended to the existing PostToolUse "Write|Edit" matcher's hooks array in
 # root-files/settings.json, alongside validate-plan-write.sh's entry.
 #
-# Cheap early-exit: file_path is checked against two narrow path patterns BEFORE any
+# Cheap early-exit: file_path is checked against one narrow path pattern BEFORE any
 # jq/lock work is paid for, so this hook is near-zero-cost on the vast majority of
 # Write/Edit calls it fires for (mirrors validate-plan-write.sh / validate-meta-write.sh).
 #
@@ -82,16 +82,13 @@ if [ -z "$FILE" ]; then
   exit 0
 fi
 
-# Determine match type from the two narrow path patterns this hook cares about. Any other
+# Determine match type from the one narrow path pattern this hook cares about. Any other
 # path exits immediately without touching jq/flock -- the hot-path cost this hook must
 # stay cheap on.
 match_type=""
 case "$FILE" in
   specs/*/.return-meta.json|*/specs/*/.return-meta.json)
     match_type="return_meta"
-    ;;
-  specs/errors.json|*/specs/errors.json)
-    match_type="errors_json"
     ;;
   *)
     echo '{}'
@@ -137,29 +134,6 @@ if [ "$match_type" = "return_meta" ]; then
     event_args=(--event-type artifact_write --category "$category" --session "$session_id" \
       --message "Artifact metadata written with status '${status:-unknown}'")
     [ -n "$task" ] && event_args+=(--task "$task") || true
-    [ -n "$CWD" ] && event_args+=(--cwd "$CWD") || true
-    [ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID") || true
-
-    _events_append_observable "$EVENTS_APPEND" "${event_args[@]}"
-  fi
-
-elif [ "$match_type" = "errors_json" ]; then
-  session_id=$(jq -r '.errors[-1].context.session_id // empty' "$FILE" 2>/dev/null)
-
-  if [ -n "$session_id" ]; then
-    task=$(jq -r '.errors[-1].context.task // empty' "$FILE" 2>/dev/null)
-    error_id=$(jq -r '.errors[-1].id // empty' "$FILE" 2>/dev/null)
-    severity=$(jq -r '.errors[-1].severity // empty' "$FILE" 2>/dev/null)
-
-    case "$severity" in
-      critical|high) category="blocker" ;;
-      *) category="deviation" ;;
-    esac
-
-    event_args=(--event-type error_logged --category "$category" --session "$session_id" \
-      --message "Error entry logged to specs/errors.json")
-    { [ -n "$task" ] && [ "$task" != "null" ]; } && event_args+=(--task "$task") || true
-    [ -n "$error_id" ] && event_args+=(--error-ref "$error_id") || true
     [ -n "$CWD" ] && event_args+=(--cwd "$CWD") || true
     [ -n "$CC_SESSION_ID" ] && event_args+=(--cc-session-id "$CC_SESSION_ID") || true
 

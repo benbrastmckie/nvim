@@ -67,7 +67,7 @@
 # which the historical six-rule baseline's `specs/**`-only representative set never caught). This
 # is a correct, by-design divergence, not a bug to chase.
 #
-# VOLATILE-FILE GUARD: specs/TODO.md, specs/state.json, specs/errors.json (VOLATILE_PATHS array,
+# VOLATILE-FILE GUARD: specs/TODO.md, specs/state.json (VOLATILE_PATHS array,
 # extensible) must never be counted as legitimately eager. Every candidate path considered by any
 # channel is checked against this deny-list; a hit emits a loud `FLAG:` line, excludes the file's
 # bytes from the eager total, and makes --check exit 1. Today this class is empty in every channel
@@ -160,7 +160,6 @@ tokens_of() {
 VOLATILE_PATHS=(
   "specs/TODO.md"
   "specs/state.json"
-  "specs/errors.json"
 )
 
 is_volatile() {

@@ -50,7 +50,7 @@ Optional:
   --checkpoint NAME      Lifecycle checkpoint name (e.g. preflight, GATE_IN, phase_2)
   --duration SECONDS    Duration in seconds (number)
   --detail-json '{...}' Open JSON object payload (must be valid JSON)
-  --error-ref ERR_ID     Optional cross-link to an errors.json entry id
+  --error-ref ERR_ID     Optional cross-link to an external error/issue entry id
   --cwd PATH             Invoking working directory (absolute path); written as null when
                          absent (backward compatible). Never auto-detected -- the caller
                          supplies it explicitly (e.g. from hook stdin's .cwd field).

@@ -43,7 +43,7 @@
 # One exported function:
 #
 #   engine_written_state_paths - prints the compact JSON array
-#     ["specs/TODO.md","specs/state.json","specs/events.jsonl","specs/errors.json"]
+#     ["specs/TODO.md","specs/state.json","specs/events.jsonl"]
 #     on stdout, rc 0. Built with `printf` from a literal, NOT via `jq` -- this set is a fixed
 #     constant of the core engine (no .claude-extensions.json lookup, unlike the derived-output
 #     probes in derived-artifact-probe-lib.sh), so the function must not acquire a `jq`
@@ -57,10 +57,10 @@
 #     splice)
 
 # engine_written_state_paths
-# Prints the compact JSON array of the four engine-written-state paths on stdout. Built from a
+# Prints the compact JSON array of the three engine-written-state paths on stdout. Built from a
 # literal via printf, not jq, so this function has no external-tool dependency and always
 # succeeds. Always returns 0.
 engine_written_state_paths() {
-  printf '%s' '["specs/TODO.md","specs/state.json","specs/events.jsonl","specs/errors.json"]'
+  printf '%s' '["specs/TODO.md","specs/state.json","specs/events.jsonl"]'
   return 0
 }

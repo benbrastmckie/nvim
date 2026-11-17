@@ -52,27 +52,27 @@ else
 fi
 
 # =====================================================================
-# Case (b): exactly the four expected members, no more
+# Case (b): exactly the three expected members, no more
 # =====================================================================
 COUNT="$(echo "$RESULT_JSON" | jq 'length' 2>/dev/null)"
-if [ "$COUNT" = "4" ]; then
-  common_test_pass "engine_written_state_paths: exactly four members"
+if [ "$COUNT" = "3" ]; then
+  common_test_pass "engine_written_state_paths: exactly three members"
 else
-  common_test_fail "engine_written_state_paths: expected length 4, got <<<${COUNT}>>> (full value: ${RESULT_JSON})"
+  common_test_fail "engine_written_state_paths: expected length 3, got <<<${COUNT}>>> (full value: ${RESULT_JSON})"
 fi
 
 # =====================================================================
-# Case (c): specs/events.jsonl and specs/errors.json are present
+# Case (c): specs/events.jsonl is present and specs/errors.json is absent
 # =====================================================================
 if echo "$RESULT_JSON" | jq -e 'index("specs/events.jsonl") != null' >/dev/null 2>&1; then
   common_test_pass "specs/events.jsonl is present in the member set"
 else
   common_test_fail "specs/events.jsonl is MISSING from the member set: ${RESULT_JSON}"
 fi
-if echo "$RESULT_JSON" | jq -e 'index("specs/errors.json") != null' >/dev/null 2>&1; then
-  common_test_pass "specs/errors.json is present in the member set"
+if echo "$RESULT_JSON" | jq -e 'index("specs/errors.json") == null' >/dev/null 2>&1; then
+  common_test_pass "specs/errors.json is absent from the member set (retired store)"
 else
-  common_test_fail "specs/errors.json is MISSING from the member set: ${RESULT_JSON}"
+  common_test_fail "specs/errors.json is unexpectedly present in the member set: ${RESULT_JSON}"
 fi
 
 # Also confirm the two pre-existing members survived the migration to this shared source.
@@ -89,18 +89,18 @@ fi
 
 # =====================================================================
 # Case (d): specs/CHANGE_LOG.md and specs/ROADMAP.md are ABSENT -- a membership-creep
-# tripwire, not a tautology. If a future edit widens the list past the justified four, this
+# tripwire, not a tautology. If a future edit widens the list past the justified three, this
 # case fails loudly rather than silently passing.
 # =====================================================================
 if echo "$RESULT_JSON" | jq -e 'index("specs/CHANGE_LOG.md") == null' >/dev/null 2>&1; then
   common_test_pass "specs/CHANGE_LOG.md is absent (membership-creep tripwire)"
 else
-  common_test_fail "specs/CHANGE_LOG.md unexpectedly present -- membership has crept wider than the justified four: ${RESULT_JSON}"
+  common_test_fail "specs/CHANGE_LOG.md unexpectedly present -- membership has crept wider than the justified three: ${RESULT_JSON}"
 fi
 if echo "$RESULT_JSON" | jq -e 'index("specs/ROADMAP.md") == null' >/dev/null 2>&1; then
   common_test_pass "specs/ROADMAP.md is absent (membership-creep tripwire)"
 else
-  common_test_fail "specs/ROADMAP.md unexpectedly present -- membership has crept wider than the justified four: ${RESULT_JSON}"
+  common_test_fail "specs/ROADMAP.md unexpectedly present -- membership has crept wider than the justified three: ${RESULT_JSON}"
 fi
 
 # =====================================================================

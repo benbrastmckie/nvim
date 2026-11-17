@@ -1796,8 +1796,11 @@ fi
 # =====================================================================
 # Z15-Z18: the shared engine-written-state-paths-lib.sh widening of containment_scope_arr.
 # None of these fixtures declares specs/events.jsonl or specs/errors.json in its own
-# file_scope -- admission comes entirely from the shared library's four-member set, not from
-# the declared scope.
+# file_scope -- specs/events.jsonl's admission comes entirely from the shared library's
+# three-member set, not from the declared scope. specs/errors.json is no longer a member of
+# that set (the store is retired) and Z16 below asserts the inverse: it is dropped as an
+# ordinary undeclared out-of-scope path, exactly like any other path absent from both the
+# declared scope and the shared library's set.
 # =====================================================================
 
 # --- Z15 (positive): a tracked, dirtied specs/events.jsonl named directly in the pathspec
@@ -1826,7 +1829,10 @@ else
   common_test_fail "Z15: expected rc=0, HEAD+1, a.txt and events.jsonl both in HEAD, no out-of-scope WARN; got rc=$rc_z15 before=$before_z15 after=$after_z15 show='$show_z15' output=$out_z15"
 fi
 
-# --- Z16 (positive): the same shape for specs/errors.json. ---
+# --- Z16 (inverted): specs/errors.json is no longer a member of the shared library's set (the
+# store is retired), so an undeclared specs/errors.json is now dropped as an ordinary
+# out-of-scope path -- the same partial-drop shape Z17 below asserts for a genuinely
+# out-of-scope sibling path. ---
 
 repo_z16="$(build_repo_with_scope 999 probe '["specs/999_probe/a.txt"]')"
 echo '{"errors":[]}' > "$repo_z16/specs/errors.json"
@@ -1841,13 +1847,14 @@ rc_z16=$?
 after_z16=$(git -C "$repo_z16" rev-list --count HEAD 2>/dev/null || echo "$before_z16")
 show_z16="$(git -C "$repo_z16" show --name-only --format="" HEAD 2>/dev/null)"
 
-if [ "$rc_z16" -eq 0 ] && [ "$after_z16" -eq $((before_z16 + 1)) ] \
+if [ "$rc_z16" -eq 7 ] && [ "$after_z16" -eq $((before_z16 + 1)) ] \
   && echo "$show_z16" | grep -qF "specs/999_probe/a.txt" \
-  && echo "$show_z16" | grep -qF "specs/errors.json" \
-  && ! echo "$out_z16" | grep -q "out-of-scope"; then
-  common_test_pass "Z16: specs/errors.json is admitted via the shared engine-written-state-paths-lib.sh widening, undeclared in file_scope -- exit 0, no Containment drop, present in HEAD"
+  && ! echo "$show_z16" | grep -qF "specs/errors.json" \
+  && echo "$out_z16" | grep -q "out-of-scope" \
+  && echo "$out_z16" | grep -qF "specs/errors.json"; then
+  common_test_pass "Z16: specs/errors.json is dropped as an ordinary out-of-scope path (the retired store is no longer in the shared library's widening set) -- a.txt commits, errors.json does not, WARN names it, exit 7"
 else
-  common_test_fail "Z16: expected rc=0, HEAD+1, a.txt and errors.json both in HEAD, no out-of-scope WARN; got rc=$rc_z16 before=$before_z16 after=$after_z16 show='$show_z16' output=$out_z16"
+  common_test_fail "Z16: expected rc=7, HEAD+1, a.txt in HEAD, errors.json absent, WARN naming errors.json; got rc=$rc_z16 before=$before_z16 after=$after_z16 show='$show_z16' output=$out_z16"
 fi
 
 # --- Z17 (paired negative, the non-regression guard): in the SAME fixture shape, a genuinely

@@ -314,7 +314,7 @@ after the edit.
 
 ---
 
-### Phase 4: Retire `specs/errors.json` from the runtime allowlists [NOT STARTED]
+### Phase 4: Retire `specs/errors.json` from the runtime allowlists [COMPLETED]
 
 **Goal**: Remove the deleted store from the three live code paths that still name it — the
 engine-written-state staging allowlist, the eager-context volatile deny-list, and the
@@ -325,30 +325,30 @@ A staging allowlist that admits a file which no longer exists is exactly the hal
 this task exists to prevent, so this is in scope rather than left as harmless.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/lib/engine-written-state-paths-lib.sh`, change the
+- [x] In `agent-system/extensions/core/scripts/lib/engine-written-state-paths-lib.sh`, change the
       printed literal from the four-element array to
       `["specs/TODO.md","specs/state.json","specs/events.jsonl"]`, and update both header
       occurrences of the four-element list. Leave the fail-open two-literal fallback contract
-      wording untouched — it is unchanged by this edit.
-- [ ] In `agent-system/extensions/core/scripts/tests/test-engine-written-state-paths-lib.sh`,
+      wording untouched — it is unchanged by this edit. *(completed)*
+- [x] In `agent-system/extensions/core/scripts/tests/test-engine-written-state-paths-lib.sh`,
       rewrite case (c) so it asserts `specs/events.jsonl` is present and `specs/errors.json` is
-      absent from the member set.
-- [ ] In `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`, rewrite case Z16
+      absent from the member set. *(completed: also corrected case (b)'s length-4 assertion to 3 and case (d)'s "justified four" wording to "three", both necessary consequences of the same edit)*
+- [x] In `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`, rewrite case Z16
       so it asserts the inverse: an undeclared `specs/errors.json` is now dropped as out-of-scope
-      rather than admitted. Update the comment above it that names both files.
-- [ ] In `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh`, rewrite case 13
-      the same way, keeping the `specs/events.jsonl` half of the assertion intact.
-- [ ] In `agent-system/extensions/core/scripts/measure-eager-context.sh`, remove
-      `"specs/errors.json"` from `VOLATILE_PATHS`.
-- [ ] In `agent-system/extensions/core/hooks/events-log-artifact.sh`, remove the
+      rather than admitted. Update the comment above it that names both files. *(completed)*
+- [x] In `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh`, rewrite case 13
+      the same way, keeping the `specs/events.jsonl` half of the assertion intact. *(completed)*
+- [x] In `agent-system/extensions/core/scripts/measure-eager-context.sh`, remove
+      `"specs/errors.json"` from `VOLATILE_PATHS`. *(completed)*
+- [x] In `agent-system/extensions/core/hooks/events-log-artifact.sh`, remove the
       `specs/errors.json|*/specs/errors.json)` case branch, its `--message "Error entry logged to
-      specs/errors.json"` arm, and the header sentence that names the store.
-- [ ] In `agent-system/extensions/core/scripts/orchestrator-postflight.sh`, remove the
+      specs/errors.json"` arm, and the header sentence that names the store. *(completed)*
+- [x] In `agent-system/extensions/core/scripts/orchestrator-postflight.sh`, remove the
       `specs/errors.json` read that derives `error_ref` and the header paragraph describing it,
-      keeping the surrounding `events-append.sh` call and its never-fatal posture intact.
-- [ ] In `agent-system/extensions/core/scripts/events-append.sh`, reword the `--error-ref` help
+      keeping the surrounding `events-append.sh` call and its never-fatal posture intact. *(completed)*
+- [x] In `agent-system/extensions/core/scripts/events-append.sh`, reword the `--error-ref` help
       line so it no longer names `errors.json`. Keep the flag itself — it is part of the events
-      schema and is not being removed.
+      schema and is not being removed. *(completed)*
 
 **Timing**: 1.5 hours
 

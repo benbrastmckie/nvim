@@ -516,13 +516,15 @@ fi
 
 # =====================================================================
 # Case 13 (positive admission + paired negative, the non-regression guard): specs/events.jsonl
-# and specs/errors.json are admitted via the shared engine-written-state-paths-lib.sh widening
-# -- neither is in the declared file_scope -- with NO "dropping out-of-scope path" warning for
-# either, both present in the commit. In the SAME fixture, Case 7's genuinely out-of-scope
-# other/outside.txt is STILL dropped, STILL warned with the same message text, and the commit
-# STILL lands minus that path -- proving the admission is not a blanket pass.
+# is admitted via the shared engine-written-state-paths-lib.sh widening -- it is not in the
+# declared file_scope -- with NO "dropping out-of-scope path" warning, and is present in the
+# commit. specs/errors.json is no longer a member of that shared widening set (the store is
+# retired) and is asserted to be dropped exactly like any other undeclared path. In the SAME
+# fixture, Case 7's genuinely out-of-scope other/outside.txt is STILL dropped, STILL warned with
+# the same message text, and the commit STILL lands minus both dropped paths -- proving the
+# events.jsonl admission is not a blanket pass.
 # =====================================================================
-common_test_info "=== Case 13: specs/events.jsonl and specs/errors.json are admitted; a genuine excursion is still dropped ==="
+common_test_info "=== Case 13: specs/events.jsonl is admitted; specs/errors.json and a genuine excursion are both dropped ==="
 
 repo13="$(build_repo)"
 mkdir -p "$repo13/other"
@@ -542,17 +544,17 @@ show13="$(git -C "$repo13" show --name-only --format= HEAD)"
 
 if [ "$rc13" -eq 0 ] \
   && ! echo "$out13" | grep -q "dropping out-of-scope path 'specs/events.jsonl'" \
-  && ! echo "$out13" | grep -q "dropping out-of-scope path 'specs/errors.json'" \
+  && echo "$out13" | grep -q "dropping out-of-scope path 'specs/errors.json'" \
   && echo "$show13" | grep -qF "specs/events.jsonl" \
-  && echo "$show13" | grep -qF "specs/errors.json"; then
-  common_test_pass "Case 13: specs/events.jsonl and specs/errors.json are admitted via the shared library widening -- no drop warning for either, both committed"
+  && ! echo "$show13" | grep -qF "specs/errors.json"; then
+  common_test_pass "Case 13: specs/events.jsonl is admitted via the shared library widening (no drop warning, committed); specs/errors.json is dropped as an ordinary out-of-scope path (retired store, no longer a member of the widening set)"
 else
-  common_test_fail "Case 13: expected rc=0, events.jsonl and errors.json committed with no drop warning; got rc=$rc13 show='$show13' out=$out13"
+  common_test_fail "Case 13: expected rc=0, events.jsonl committed with no drop warning, errors.json dropped with a drop warning; got rc=$rc13 show='$show13' out=$out13"
 fi
 
 if echo "$out13" | grep -q "WARNING.*dropping out-of-scope path 'other/outside.txt'" \
   && ! echo "$show13" | grep -qF "other/outside.txt"; then
-  common_test_pass "Case 13 (paired negative): other/outside.txt is STILL dropped with the same warning, in the SAME run that admits the engine-written-state files -- non-regression proof"
+  common_test_pass "Case 13 (paired negative): other/outside.txt is STILL dropped with the same warning, in the SAME run that admits specs/events.jsonl -- non-regression proof"
 else
   common_test_fail "Case 13 (paired negative): expected other/outside.txt to still be dropped with a warning; got show='$show13' out=$out13"
 fi

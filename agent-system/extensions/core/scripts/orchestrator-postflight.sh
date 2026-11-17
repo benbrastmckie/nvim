@@ -228,9 +228,8 @@ if [ -z "$artifact_type_from_meta" ]; then
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Stage 6b: Emit exactly one success/blocker/deviation event to the unified event store,
-# cross-linked to specs/errors.json when present. Never fatal: absence/malformedness of
-# errors.json degrades to an empty error_ref, and events-append.sh failure is swallowed.
+# Stage 6b: Emit exactly one success/blocker/deviation event to the unified event store.
+# Never fatal: events-append.sh failure is swallowed.
 # ─────────────────────────────────────────────────────────────────────────────
 case "$status" in
   "$success_status") event_category="success" ;;
@@ -241,20 +240,10 @@ esac
 
 event_duration=$(awk -v a="$_postflight_t0" -v b="$(date +%s.%N)" 'BEGIN{printf "%.3f", b-a}')
 
-error_ref=""
-if [ -f specs/errors.json ] && jq empty specs/errors.json 2>/dev/null; then
-  error_ref=$(jq -r --arg sid "$session_id" \
-    '[.errors[]? | select(.context.session_id == $sid)] | sort_by(.timestamp) | last | .id // empty' \
-    specs/errors.json 2>/dev/null || true)
-fi
-
 event_args=(--event-type orchestrator_status --category "$event_category" \
   --checkpoint postflight --task "$task_number" --session "$session_id" \
   --duration "$event_duration" \
   --message "Orchestrator postflight resolved status '${status}' for ${operation_type}")
-if [ -n "$error_ref" ] && [ "$error_ref" != "null" ]; then
-  event_args+=(--error-ref "$error_ref")
-fi
 
 _events_append_observable ".claude/scripts/events-append.sh" "${event_args[@]}"
 

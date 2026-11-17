@@ -1,0 +1,31 @@
+{
+  "phase": 4,
+  "phase_name": "Retire specs/errors.json from the runtime allowlists",
+  "started_at": "2026-11-17T04:15:00Z",
+  "last_updated": "2026-11-17T04:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "engine-written-state-paths-lib.sh: drop the fourth literal and header mentions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/engine-written-state-paths-lib.sh"]},
+    {"id": 2, "description": "test-engine-written-state-paths-lib.sh: invert case (c)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-engine-written-state-paths-lib.sh"]},
+    {"id": 3, "description": "test-git-commit-scoped.sh: invert case Z16", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 4, "description": "test-git-commit-phase.sh: invert case 13's errors.json half", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 5, "description": "measure-eager-context.sh: drop the volatile-path entry", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/measure-eager-context.sh"]},
+    {"id": 6, "description": "events-log-artifact.sh: drop the errors.json case branch and header sentence", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/events-log-artifact.sh"]},
+    {"id": 7, "description": "orchestrator-postflight.sh: drop the error_ref derivation and header paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrator-postflight.sh"]},
+    {"id": 8, "description": "events-append.sh: reword the --error-ref help line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/events-append.sh"]}
+  ],
+  "current_objective": 8,
+  "verification_notes": "Selector-resolved suite run (CORE_TEST_SUBJECT_MODE=source-store, 25 suites): 22 passed, 3 failed (2 EXPECTED baseline: test-gate-cache-equivalence.sh, test-verify-deploy-context-budget.sh; 1 suite-level NEW classification: test-git-commit-scoped.sh). The NEW classification's sole failing case is U5, unrelated to specs/errors.json -- traced to a FOREIGN, already-uncommitted (present at this dispatch's start) in-flight edit to git-commit-scoped.sh itself (a V12 addition by a different task) that changes U5's expected exit code from 2 to 1. This phase's own Z15-Z18 and case-13 assertions (the ones this phase actually rewrote) all PASS. Logged via issue-record.sh (class: concurrent write observed, severity: minor). Not a regression from this phase's edits.",
+  "approaches_tried": [
+    {"approach": "Ran deploy-tree-first unit suites (test-engine-written-state-paths-lib.sh) via default deployed-tree resolution before redeploy", "result": "failed", "reason": "Deployed .claude/ tree is intentionally stale until Phase 8's wipe redeploy, so the suite resolved the OLD 4-element library and failed. Re-ran with CORE_TEST_SUBJECT_MODE=source-store (the library's own sanctioned override for exactly this pre-redeploy asymmetry) and it passed 10/10."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4-verification",
+      "description": "Phase 4's stated verification grep ('specs/errors.json' over scripts/ and hooks/ returns nothing)",
+      "type": "altered",
+      "reason": "This criterion is in tension with Phase 4's own task list, which requires the three rewritten test cases to literally reference the string 'specs/errors.json' as the fixture path they assert is now ABSENT/dropped. Interpreted by evident intent: confirmed zero matches across the five non-test production files this phase edits; the only remaining matches are the three tests' deliberate inverted-assertion fixtures and one orchestrate-cycle-postflight.sh comment explicitly scoped to Phase 7's own task list. Logged via issue-record.sh (class: plan ambiguity, severity: minor).",
+      "annotation": "*(deviation: altered — Phase 4's verification grep is satisfied by evident intent, not literal zero matches, since the phase's own task list requires test fixtures that still name specs/errors.json to assert its absence)*"
+    }
+  ]
+}
