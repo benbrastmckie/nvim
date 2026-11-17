@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a five-phase plan that acts on the audit's 0-DELETE/14-KEEP verdict instead of deleting suites. Re-derived every carried figure live first: the /tmp leak is 1,739 entries / 1.4 GB with 165 of them carrying non-writable content (far more prevalent than the research's sample suggested), gate-cost-model.csv is a single-row 1-of-26-gates model dated 2026-10-19, and the real cost lever was isolated by direct timing -- verify-deploy.sh's standing corpus probe costs 2.37s of a 4.07s minimal --only-gate invocation and fires in both fixture shapes the expensive suites build. The plan lands a claude-refresh.sh reaper pass and backlog sweep, suppresses the corpus probe on gate-narrowed invocations with a --corpus-probe opt-in, regenerates both stale probe artifacts against the optimized system, and records the verdict plus the four-way suite-population counting methodology in specs/decisions/. The research report's recommended documentation target (context/standards/shell-script-testing.md) was redirected because it sits in concurrent sibling 604's declared file_scope and carries an index-entries.json line_count coupling; this plan's file_scope is disjoint from both siblings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/586_suite_gate_cost_standing_consumer/plans/02_suite-cost-consumer-actions.md",
+      "summary": "Five-phase, 7-hour plan across four dependency waves: reaper pass, backlog sweep, corpus-probe suppression, probe-artifact regeneration, and the standing verdict record."
+    }
+  ],
+  "dispatch_seq": 5
+}

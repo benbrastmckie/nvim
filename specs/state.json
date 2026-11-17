@@ -16525,7 +16525,7 @@
     {
       "project_number": 586,
       "project_name": "suite_gate_cost_standing_consumer",
-      "status": "planning",
+      "status": "planned",
       "title": "Stand up the suite and gate wall-clock cost consumer: delete, optimize, or demote every suite the probe indicts",
       "task_type": "meta",
       "topic": null,
@@ -16538,22 +16538,33 @@
           "path": "specs/586_suite_gate_cost_standing_consumer/reports/02_suite-cost-verdict-table.md",
           "type": "report",
           "summary": "Re-derives every carried cost/count figure (finding several individually stale, dated 2026-10-16/10-19 despite a blanket 2026-11-10 claim), corrects the recursive-meta-suite count from 35 to 14 genuine members after removing comment-only and stub-only false positives, applies the owner's DELETE/KEEP rule to produce a 0-DELETE/14-KEEP verdict table (every genuine recursive meta-suite tests a cross-invocation/crash/concurrency property no single real gate run can self-certify), identifies the actual cost driver for the two most expensive suites as fixed per-invocation verify-deploy.sh overhead rather than gate-8 battery recursion (already stubbed away), confirms no suite-level demotion tier exists (known-failures.txt and --skip-slow/--max-cost are gate-granularity only), and reconfirms the /tmp fixture leak is still live (1,716 entries, 1.4GB) with a recommendation to extend claude-refresh.sh rather than open a separate task."
+        },
+        {
+          "path": "specs/586_suite_gate_cost_standing_consumer/plans/02_suite-cost-consumer-actions.md",
+          "type": "plan",
+          "summary": "Five-phase, 7-hour plan across four dependency waves: reaper pass, backlog sweep, corpus-probe suppression, probe-artifact regeneration, and the standing verdict record."
         }
       ],
       "file_scope": [
+        "__WHOLE_TREE__",
+        "agent-system/extensions/core/scripts/claude-refresh.sh",
         "agent-system/extensions/core/scripts/gate-cost-model.csv",
         "agent-system/extensions/core/scripts/measure-gate-costs.sh",
         "agent-system/extensions/core/scripts/tests/known-failures.txt",
         "agent-system/extensions/core/scripts/tests/run-all.sh",
         "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt",
-        "agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"
+        "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh",
+        "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
+        "agent-system/extensions/core/scripts/verify-deploy.sh",
+        "specs/decisions/suite-cost-delete-keep-verdict.md"
       ],
       "created": "2026-11-11T02:51:33Z",
-      "last_updated": "2026-11-17T19:36:55Z",
+      "last_updated": "2026-11-17T19:50:23Z",
       "description": "STANDING CONSUMER for the suite/gate wall-clock cost probes (measure-gate-costs.sh -> gate-cost-model.csv, tests/suite-cost-hints.txt), neither of which has a consumer acting on its output. Filed as ONE standing task per ROADMAP Settled decision 16 (a systemic cost is filed against a probe's output, not as a stream of point defects), which also records that the predecessor probe has had no standing consumer since its own work landed.\n\nMEASURED 2026-11-10, CARRIED-UNVERIFIED, re-derive first: 149 suites, 23.5 min total serial wall time; the top 10 are 78% of that and test-gate-cache-equivalence.sh alone is 38% (543s). gate-cost-model.csv puts gate8 at 662,462ms. 35 of 149 suites re-invoke the full run-all.sh or verify-deploy.sh inside throwaway fixture copies; 1,780 leaked /tmp fixtures totalling 1.1GB were observed, because run-all.sh dispatches suites under 'timeout -k 5 600' and SIGKILL skips the EXIT trap.\n\nNOT A DUPLICATE of the archived systematic script-and-test-corpus-efficiency record, and the backlog audit's 50% semantic match on it is the recall-biased over-inclusion that matcher's own header warns about. That record optimised for CORPUS SIZE (duplication, boilerplate, NET-TEST/NET-MD deletion deltas), not wall clock. Its one runtime-touching phase built a shared deployed-tree fixture and found the eligible consumer set to be exactly ONE suite, explicitly excluding gate-cache-equivalence and the other flag-matrix meta-suites BY CONSTRUCTION on the ground that 'the variance across invocations is what it verifies'. That exclusion is precisely why the expensive suites survived, and this record's objective function (wall clock, with deletion authority) is different.\n\nOWNER RULING: this audit MAY DELETE suites outright, not merely optimize or demote them. Settled discrimination rule for the recursive meta-suite class: DELETE when a verify-deploy gate already asserts the same property against the real tree; KEEP when the fixture reaches a state the real tree cannot be put into (crash nets, stale-lock reclaim, nested invocation, fail-open degradation).\n\nSeed report: specs/586_suite_gate_cost_standing_consumer/reports/01_suite-gate-cost-audit.md\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.",
       "research_questions": "Re-derive every seed figure; gate-cost-model.csv carries a per-row valid column and an ALL_VALID marker its header says never to trust when non-true. Produce a DELETE/KEEP verdict table over all 35 recursive meta-suites under the settled rule, each row citing the covering gate or the unreachable-by-gate state. For each top-10 suite decide optimize/demote/delete; for test-gate-cache-equivalence.sh specifically, can the cached-vs-uncached comparison reuse one gate run instead of two full passes, and can its mechanical arm cover a cross-section rather than all 18 cache-eligible gates? Is a demotion tier available at all, given known-failures.txt is explicitly not one (Settled decision 13)? Does the fixture leak belong here or in its own record?",
       "audit_override": "Collision repair, not a new task: a concurrent session allocated 583 (loader_settings_defaults_surface, commit df2cf4540) between this session's next_project_number read and its write. Renumbering this session's own already-audited entry 583 -> 586; the backlog reconciliation for it was performed at creation time against audit-task-proposals.sh output.",
-      "session_id": "sess_1794942735_1748a1_586",
+      "session_id": "sess_1794942735_1748a1",
       "next_artifact_number": 2
     },
     {
