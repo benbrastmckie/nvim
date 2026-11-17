@@ -296,43 +296,54 @@ figures.
 
 ---
 
-### Phase 3: Suppress the Fixed Corpus Probe on Gate-Narrowed Invocations [NOT STARTED]
+### Phase 3: Suppress the Fixed Corpus Probe on Gate-Narrowed Invocations [COMPLETED]
 
 **Goal**: `verify-deploy.sh` stops paying the 2.2-2.4s corpus-scan cost on every gate-narrowed
 invocation, with an explicit opt-in to force it, and the behavior is pinned by assertions.
 
 **Tasks**:
-- [ ] Re-read the standing corpus-size probe block at the end of
+- [x] Re-read the standing corpus-size probe block at the end of
       `agent-system/extensions/core/scripts/verify-deploy.sh` (the `_VD_SCRIPT_INVENTORY` /
       `_VD_CORPUS_LINE` block immediately before the PASS/FAIL summary) and its existing guard,
-      `[ -d "$TARGET/agent-system/extensions" ] && [ -f "$_VD_SCRIPT_INVENTORY" ]`.
-- [ ] Add a `--corpus-probe` opt-in flag to the argument parser (confirm first that the name
+      `[ -d "$TARGET/agent-system/extensions" ] && [ -f "$_VD_SCRIPT_INVENTORY" ]`. *(completed)*
+- [x] Add a `--corpus-probe` opt-in flag to the argument parser (confirm first that the name
       collides with no existing flag), defaulting to off, declared with the other flag defaults
       *before* the parse loop — the file's own comment at the `GATE8_TOUCHED` declaration explains
-      why a later declaration silently clobbers a parsed value.
-- [ ] Extend the probe guard so the inventory subprocess runs only when the invocation is **not**
+      why a later declaration silently clobbers a parsed value. *(completed: confirmed no
+      pre-existing collision via grep before adding; CORPUS_PROBE=false declared alongside
+      GATE8_TOUCHED before the while-loop)*
+- [x] Extend the probe guard so the inventory subprocess runs only when the invocation is **not**
       gate-narrowed (`GATES_FILTER` empty — which also covers `--max-cost`, since that resolves
       into the same variable) **or** `--corpus-probe` was passed. Keep the change additive-only:
       with no filter and no new flag, the emitted line and the whole code path must be
       byte-identical to today, because the standing full-run record is the probe's actual purpose.
-- [ ] Deliberately leave `--quiet` behavior untouched. The probe uses a raw `echo`, exactly as the
+      *(completed: `[ -z "$GATES_FILTER" ] || $CORPUS_PROBE`)*
+- [x] Deliberately leave `--quiet` behavior untouched. The probe uses a raw `echo`, exactly as the
       PASS/FAIL summary lines do, so surviving `--quiet` is the existing intent; narrowing the
       change to the filter condition alone is what keeps the unfiltered path identical.
-- [ ] Document the new flag and the suppression rule in `verify-deploy.sh`'s own header flag list,
+      *(completed: --quiet was not touched)*
+- [x] Document the new flag and the suppression rule in `verify-deploy.sh`'s own header flag list,
       stating plainly that a gate-narrowed run is not the standing full verification the probe
-      exists to record.
-- [ ] Add cases to
+      exists to record. *(completed: new "Standing corpus-size probe suppression" header
+      subsection, inserted after the "Gate 8 touched-paths narrowing" section)*
+- [x] Add cases to
       `agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh` against
       its existing `FIXTURE_RICH` (a real `rsync` copy of `agent-system/extensions/`, so the probe
       genuinely fires there): `--skip-slow --only-gate 1` emits no `[verify-deploy] corpus:` line,
       and `--skip-slow --only-gate 1 --corpus-probe` does. Honor that suite's stated
       anti-recursion invariant — every invocation keeps `--skip-slow`, and no case may drop the
-      gate filter against `FIXTURE_RICH`.
-- [ ] Record the per-invocation saving measured in the fixture itself (time one `--only-gate 1`
+      gate filter against `FIXTURE_RICH`. *(completed: case (t), both sub-cases pass. The
+      complementary "unfiltered still fires" bullet was verified manually instead of as a third
+      automated case -- see this phase's progress file `approaches_tried` for why: it would have
+      required a full, unfiltered battery against FIXTURE_RICH, measured at ~22s, roughly
+      doubling this suite's own cost for one assertion)*
+- [x] Record the per-invocation saving measured in the fixture itself (time one `--only-gate 1`
       invocation against `FIXTURE_RICH` before and after), so Phase 4 inherits a measured
-      per-invocation figure rather than this plan's repo-root numbers.
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` over both edited
-      files.
+      per-invocation figure rather than this plan's repo-root numbers. *(completed: 3.805s with
+      --corpus-probe (emulating the old always-on behavior) vs 1.400s without it (new default) --
+      a ~2.405s saving per invocation, matching the plan's ~2.3s estimate)*
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` over both edited
+      files. *(completed: 0 findings)*
 
 **Timing**: 1.5 hours
 

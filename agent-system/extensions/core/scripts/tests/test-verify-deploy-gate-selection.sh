@@ -570,6 +570,35 @@ else
   common_test_fail "case(s): unexpectedly found a row for gate $FIXTURE_EXTRA_ID in the REAL gate-registry.data"
 fi
 
+# =====================================================================
+# Case (t): standing corpus-size probe suppression on a gate-narrowed invocation
+# (--corpus-probe). FIXTURE_RICH carries a real agent-system/extensions/ copy, so the probe's
+# own guard (-d "$TARGET/agent-system/extensions") is genuinely satisfied there -- the probe
+# fires for real, not vacuously. Both invocations keep --skip-slow (via run_vd) and --only-gate 1,
+# per this suite's anti-recursion invariant -- neither case drops the gate filter against
+# FIXTURE_RICH. The complementary "an unfiltered invocation still emits the corpus line" check
+# (the standing full-run record is preserved) is deliberately NOT added as a third case here: it
+# requires a full, unfiltered gate battery against FIXTURE_RICH to exercise the GATES_FILTER-empty
+# branch of the guard, which would roughly double this suite's own measured cost
+# (suite-cost-hints.txt: 36,823ms) for one extra assertion -- itself the exact class of expense
+# this task exists to reduce. That check was instead performed once, manually, against the same
+# fixture shape, and is recorded in this phase's own commit message/progress file rather than
+# baked into the permanent regression suite.
+# =====================================================================
+corpus_narrowed_out="$(run_vd "$FIXTURE_RICH" --only-gate 1)"
+if echo "$corpus_narrowed_out" | grep -q '^\[verify-deploy\] corpus:'; then
+  common_test_fail "case(t): --only-gate 1 against FIXTURE_RICH unexpectedly emitted a [verify-deploy] corpus: line" "$corpus_narrowed_out"
+else
+  common_test_pass "case(t): --only-gate 1 against FIXTURE_RICH emits no [verify-deploy] corpus: line (probe suppressed on a gate-narrowed run)"
+fi
+
+corpus_forced_out="$(run_vd "$FIXTURE_RICH" --only-gate 1 --corpus-probe)"
+if echo "$corpus_forced_out" | grep -q '^\[verify-deploy\] corpus:'; then
+  common_test_pass "case(t): --only-gate 1 --corpus-probe against FIXTURE_RICH emits the [verify-deploy] corpus: line (explicit opt-in forces it on a gate-narrowed run)"
+else
+  common_test_fail "case(t): --only-gate 1 --corpus-probe against FIXTURE_RICH did not emit the [verify-deploy] corpus: line" "$corpus_forced_out"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

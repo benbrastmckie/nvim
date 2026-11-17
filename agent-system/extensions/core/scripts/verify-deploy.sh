@@ -175,6 +175,26 @@
 #   not from invocation_modified_files) -- see context/standards/shell-script-testing.md's
 #   suite-selection section for why the gate cache cannot supply a touched-path list.
 #
+# Standing corpus-size probe suppression (--corpus-probe, additive-only, defaults off):
+#   The standing corpus-size probe (near the end of this file, immediately before the PASS/FAIL
+#   summary) shells out to script-inventory.sh --size-line, measured live at 2.2-2.4s of a 4.07s
+#   minimal --only-gate invocation -- a fixed per-invocation cost a gate-narrowed caller pays on
+#   every single invocation even though the probe's own purpose (a standing, full-run corpus-size
+#   record) has nothing to do with the one or two gates that invocation actually narrowed to. A
+#   gate-narrowed run (GATES_FILTER non-empty -- true whenever --only-gate and/or --max-cost was
+#   given, since both resolve into that one variable) is not the standing full verification the
+#   probe exists to record, so the probe is now skipped on exactly that path. An unfiltered
+#   invocation (GATES_FILTER empty, i.e. the default, full-battery shape) is UNAFFECTED: the
+#   probe still always fires there, because that is the standing record. `--corpus-probe` is the
+#   explicit opt-in to force the probe even on a gate-narrowed invocation, for a caller that
+#   genuinely wants the corpus-size line alongside a narrowed run. Absent this flag, CORPUS_PROBE
+#   is false and the suppression condition it feeds is simply "GATES_FILTER is empty", so an
+#   unfiltered default-shape invocation's emitted line and whole code path remain byte-identical
+#   to before this flag existed. `--quiet` is deliberately left untouched by this change: the
+#   probe line uses a raw `echo`, exactly like the PASS/FAIL summary lines, so it already survives
+#   `--quiet` today and continues to do so -- narrowing the suppression to the GATES_FILTER
+#   condition alone is what keeps that pre-existing behavior unchanged.
+#
 # Gate-level concurrency (--jobs N|auto, additive-but-defaulted):
 #   Runs independent gates CONCURRENTLY instead of strictly in series, via
 #   lib/gate-registry-lib.sh's gate_registry_exec_concurrent_batch -- a direct port of
@@ -382,12 +402,22 @@ JOBS="auto"
 # clobber whatever the --gate8-touched case arm just set.
 GATE8_TOUCHED=""
 
+# CORPUS_PROBE: false = no forced probe (today's default behavior). Populated by --corpus-probe
+# below; the standing corpus-size probe near the end of this file fires when GATES_FILTER is
+# empty (the unfiltered, full-battery shape) OR this is true -- see this file's header "Standing
+# corpus-size probe suppression" section for the full contract. Declared here, before the
+# while-loop, for the same reason GATE8_TOUCHED above is: nothing downstream reassigns it after
+# the loop, so this placement is not load-bearing the way GATE8_TOUCHED's is, but it keeps every
+# simple-flag default declared in one place rather than split across the file.
+CORPUS_PROBE=false
+
 while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=true; shift ;;
     --findings) FINDINGS=true; shift ;;
     --skip-slow) SKIP_SLOW=true; shift ;;
     --skip-unchanged) SKIP_UNCHANGED=true; shift ;;
+    --corpus-probe) CORPUS_PROBE=true; shift ;;
     --jobs)
       if [ $# -lt 2 ] || [ -z "$2" ]; then
         echo "ERROR: --jobs requires N or 'auto'" >&2
@@ -2564,8 +2594,20 @@ fi
 # no new check, no effect on CHECKS/FAILURES/FINDINGS_LIST -- this is additive-only output.
 # Scoped to TARGET actually being the source store, matching every other source-store-only gate's
 # own guard above: a deploy-consumer TARGET has no agent-system/extensions/** corpus to report on.
+#
+# Gate-narrowed suppression (--corpus-probe; see this file's header "Standing corpus-size probe
+# suppression" section for the full contract): measured at 2.2-2.4s of a 4.07s minimal
+# --only-gate invocation, this probe is a fixed per-invocation cost a gate-narrowed caller would
+# otherwise pay on every single invocation even though the probe's own purpose (a standing,
+# full-run corpus-size record) has nothing to do with the gate(s) that invocation actually
+# narrowed to. GATES_FILTER empty means unfiltered (the standing full-battery shape this probe
+# exists to record) -- with no filter and no --corpus-probe, this condition is byte-identical to
+# "always true", so the emitted line and the whole code path below remain byte-for-byte unchanged
+# from before this flag existed. `--quiet` is deliberately NOT part of this guard: the probe uses
+# a raw `echo`, exactly like the PASS/FAIL summary lines, so surviving `--quiet` is the existing,
+# unchanged intent -- only the GATES_FILTER/--corpus-probe condition is new.
 _VD_SCRIPT_INVENTORY="$TARGET/agent-system/extensions/core/scripts/script-inventory.sh"
-if [ -d "$TARGET/agent-system/extensions" ] && [ -f "$_VD_SCRIPT_INVENTORY" ]; then
+if [ -d "$TARGET/agent-system/extensions" ] && [ -f "$_VD_SCRIPT_INVENTORY" ] && { [ -z "$GATES_FILTER" ] || $CORPUS_PROBE; }; then
   _VD_CORPUS_LINE="$(bash "$_VD_SCRIPT_INVENTORY" --root "$TARGET" --size-line 2>/dev/null || true)"
   if [ -n "$_VD_CORPUS_LINE" ]; then
     echo "[verify-deploy] corpus: ${_VD_CORPUS_LINE#script-inventory: }"

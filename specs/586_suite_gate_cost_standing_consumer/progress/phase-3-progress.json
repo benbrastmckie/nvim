@@ -1,0 +1,27 @@
+{
+  "phase": 3,
+  "phase_name": "Suppress the Fixed Corpus Probe on Gate-Narrowed Invocations",
+  "started_at": "2026-11-17T20:35:51Z",
+  "last_updated": "2026-11-17T21:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read verify-deploy.sh's corpus probe block and guard", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add --corpus-probe opt-in flag", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 3, "description": "Extend probe guard for gate-narrowed suppression", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 4, "description": "Leave --quiet behavior untouched", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Document new flag in header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 6, "description": "Add test cases to test-verify-deploy-gate-selection.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"]},
+    {"id": 7, "description": "Record measured per-invocation saving", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Run lint-shellcheck.sh over both edited files", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {"approach": "Add a third automated test case asserting an unfiltered (no --only-gate) run against FIXTURE_RICH still emits the corpus line", "result": "failed", "reason": "Requires a full, unfiltered gate battery against FIXTURE_RICH to exercise the GATES_FILTER-empty branch, measured at ~22s -- would roughly double this suite's own measured cost (36,823ms hint) for one extra assertion. Verified manually instead (against an equivalent fixture) and recorded here/in the commit message rather than baked into the permanent regression suite."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": {
+    "batch_gate_deferral": "Phase 3 declares Verification Tier: full because verify-deploy.sh is touched by 32 suites (suite_selection_select, re-derived live 2026-11-17; close to the plan's cited 33). Per the dispatch's Batch Gate Deferral directive, this phase discharged against the scoped narrowing `bash agent-system/extensions/core/scripts/tests/run-all.sh --only test-verify-deploy-gate-selection.sh` (29 passed, 0 failed) -- the suite that directly and exhaustively exercises verify-deploy.sh's CLI surface, including the new --corpus-probe flag and guard. The full 32-suite set and the complete gate sweep are deferred to the once-per-invocation batch-level stage, per context/contracts/phase-closure.md's no-promotion-without-evidence carve-out.",
+    "manual_verification": "The plan's 'An unfiltered invocation still emits the corpus line' bullet was confirmed manually (not as an automated test case -- see approaches_tried): `verify-deploy.sh --skip-slow` with no --only-gate against a FIXTURE_RICH-shaped fixture emitted exactly one `[verify-deploy] corpus:` line.",
+    "measured_saving": "Timed `verify-deploy.sh --skip-slow --only-gate 1` against a fresh FIXTURE_RICH-shaped fixture: with --corpus-probe (emulating the pre-change always-on probe), 3.805s; without it (new default, suppressed), 1.400s. Realized per-invocation saving: ~2.405s, matching the plan's ~2.3s estimate."
+  }
+}
