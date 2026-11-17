@@ -194,29 +194,29 @@ what is actually there and say so in the artifact.
 
 ---
 
-### Phase 2: Delete the surface files and deregister them [NOT STARTED]
+### Phase 2: Delete the surface files and deregister them [COMPLETED]
 
 **Goal**: Remove the command, the writer, its test suite, and its two contract documents, and
 drop every registration that still names them.
 
 **Tasks**:
-- [ ] Delete `agent-system/extensions/core/commands/errors.md`,
+- [x] Delete `agent-system/extensions/core/commands/errors.md`,
       `agent-system/extensions/core/scripts/errors-append.sh`,
       `agent-system/extensions/core/scripts/tests/test-errors-append.sh`,
       `agent-system/extensions/core/context/formats/errors-format.md`,
-      `agent-system/extensions/core/context/schemas/errors-schema.json`.
-- [ ] In `agent-system/extensions/core/manifest.json`, remove the `errors.md`,
+      `agent-system/extensions/core/context/schemas/errors-schema.json`. *(completed)*
+- [x] In `agent-system/extensions/core/manifest.json`, remove the `errors.md`,
       `errors-append.sh`, and `tests/test-errors-append.sh` rows, plus any row naming
       `formats/errors-format.md` or `schemas/errors-schema.json`. Re-read the file and locate
-      each row by content; do not work from remembered line numbers.
-- [ ] In `agent-system/extensions/core/index-entries.json`, delete the two entries whose `path`
+      each row by content; do not work from remembered line numbers. *(completed: three rows removed; no formats/errors-format.md or schemas/errors-schema.json rows existed in manifest.json)*
+- [x] In `agent-system/extensions/core/index-entries.json`, delete the two entries whose `path`
       is `formats/errors-format.md` and `schemas/errors-schema.json`, and remove the `"/errors"`
-      string from the `load_when.commands` array of every remaining entry that carries it.
-- [ ] In `agent-system/extensions/core/scripts/tests/suite-classification.data`, remove the
-      `test-errors-append.sh` row.
-- [ ] In `agent-system/extensions/core/scripts/tests/suite-cost-hints.txt`, remove the
-      `test-errors-append.sh` row.
-- [ ] Validate both edited JSON files parse (`jq empty`).
+      string from the `load_when.commands` array of every remaining entry that carries it. *(completed: 2 entries deleted, 8 remaining entries narrowed; plus one unlisted keyword/summary match on standards/error-recovery-strategies.md corrected — see deviation note)*
+- [x] In `agent-system/extensions/core/scripts/tests/suite-classification.data`, remove the
+      `test-errors-append.sh` row. *(completed)*
+- [x] In `agent-system/extensions/core/scripts/tests/suite-cost-hints.txt`, remove the
+      `test-errors-append.sh` row. *(completed)*
+- [x] Validate both edited JSON files parse (`jq empty`). *(completed)*
 
 **Timing**: 1.5 hours
 

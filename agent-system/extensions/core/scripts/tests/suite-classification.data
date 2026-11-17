@@ -75,7 +75,6 @@ test-dispatch-metrics.sh	unit	-
 test-dispatch-strand-probe.sh	unit	-
 test-double-loading-check.sh	integration	invokes:deploy-headless.sh,run-all.sh
 test-engine-written-state-paths-lib.sh	unit	-
-test-errors-append.sh	unit	-
 test-force-phases.sh	unit	-
 test-gate3-parallel-equivalence.sh	integration	invokes:run-all.sh
 test-gate3-strict-equivalence.sh	integration	invokes:verify-deploy.sh

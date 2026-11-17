@@ -36,7 +36,6 @@
       "spawn-agent.md"
     ],
     "commands": [
-      "errors.md",
       "fix-it.md",
       "merge.md",
       "meta.md",
@@ -106,7 +105,6 @@
       "deploy-root-guard.sh",
       "dispatch-metrics.sh",
       "dispatch-strand-probe.sh",
-      "errors-append.sh",
       "events-append.sh",
       "events-query.sh",
       "export-to-markdown.sh",
@@ -351,7 +349,6 @@
       "tests/test-dispatch-strand-probe.sh",
       "tests/test-double-loading-check.sh",
       "tests/test-engine-written-state-paths-lib.sh",
-      "tests/test-errors-append.sh",
       "tests/test-force-phases.sh",
       "tests/test-gate-cache-equivalence.sh",
       "tests/test-gate-cache-lib.sh",

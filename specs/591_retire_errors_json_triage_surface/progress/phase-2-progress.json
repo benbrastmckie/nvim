@@ -1,0 +1,34 @@
+{
+  "phase": 2,
+  "phase_name": "Delete the surface files and deregister them",
+  "started_at": "2026-11-17T03:30:00Z",
+  "last_updated": "2026-11-17T03:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Delete the five surface files", "status": "done", "files_touched": [
+      "agent-system/extensions/core/commands/errors.md",
+      "agent-system/extensions/core/scripts/errors-append.sh",
+      "agent-system/extensions/core/scripts/tests/test-errors-append.sh",
+      "agent-system/extensions/core/context/formats/errors-format.md",
+      "agent-system/extensions/core/context/schemas/errors-schema.json"
+    ]},
+    {"id": 2, "description": "Remove manifest.json rows for the three deleted files", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "Remove index-entries.json entries and narrow load_when.commands arrays", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 4, "description": "Remove suite-classification.data and suite-cost-hints.txt rows", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/suite-classification.data",
+      "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"
+    ]},
+    {"id": 5, "description": "Validate both edited JSON files parse", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.3",
+      "description": "Remove the two index-entries.json entries whose path is formats/errors-format.md and schemas/errors-schema.json, and narrow load_when.commands",
+      "type": "altered",
+      "reason": "Also corrected an unlisted summary/keyword reference to errors-append.sh in the standards/error-recovery-strategies.md index entry (keyword 'errors-append' -> 'issue-record', summary retargeted) because Phase 2's own verification criterion requires the repo-wide grep over manifest.json/index-entries.json to return nothing, and this metadata entry otherwise matched. This pre-empts Phase 5's planned content retarget of the underlying file onto issue-record.sh so the index metadata and the eventual file content agree.",
+      "annotation": "*(deviation: altered — also corrected an unlisted errors-append index-entry keyword/summary match required by this phase's own verification grep)*"
+    }
+  ]
+}

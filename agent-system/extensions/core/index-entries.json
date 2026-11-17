@@ -210,31 +210,6 @@
       "on_demand": true
     },
     {
-      "path": "formats/errors-format.md",
-      "domain": "core",
-      "subdomain": "formats",
-      "summary": "Errors store document/record schema: specs/errors.json field contract, lazy creation, object-with-array shape rationale, and the errors-append.sh append/update CLI contract",
-      "line_count": 177,
-      "keywords": [
-        "errors",
-        "schema",
-        "fix_status",
-        "flock",
-        "logging"
-      ],
-      "topics": [
-        "observability"
-      ],
-      "load_when": {
-        "agents": [],
-        "commands": [
-          "/errors",
-          "/orchestrate"
-        ],
-        "task_types": []
-      }
-    },
-    {
       "path": "formats/events-format.md",
       "domain": "core",
       "subdomain": "formats",
@@ -253,7 +228,6 @@
       "load_when": {
         "agents": [],
         "commands": [
-          "/errors",
           "/orchestrate"
         ],
         "task_types": []
@@ -1057,7 +1031,6 @@
         "agents": [],
         "task_types": [],
         "commands": [
-          "/errors",
           "/meta"
         ]
       }
@@ -1107,7 +1080,6 @@
       "load_when": {
         "agents": [],
         "commands": [
-          "/errors",
           "/orchestrate"
         ],
         "task_types": []
@@ -1573,32 +1545,6 @@
       "on_demand": true
     },
     {
-      "path": "schemas/errors-schema.json",
-      "domain": "core",
-      "subdomain": "schemas",
-      "summary": "Draft-07 JSON Schema for the specs/errors.json document (object holding a mutable-in-place error record array)",
-      "line_count": 137,
-      "keywords": [
-        "errors",
-        "schema",
-        "json-schema",
-        "validation",
-        "fix_status"
-      ],
-      "topics": [
-        "observability",
-        "standards"
-      ],
-      "load_when": {
-        "agents": [],
-        "commands": [
-          "/errors",
-          "/orchestrate"
-        ],
-        "task_types": []
-      }
-    },
-    {
       "path": "schemas/events-schema.json",
       "domain": "core",
       "subdomain": "schemas",
@@ -1617,7 +1563,6 @@
       "load_when": {
         "agents": [],
         "commands": [
-          "/errors",
           "/orchestrate"
         ],
         "task_types": []
@@ -1826,9 +1771,7 @@
       "load_when": {
         "agents": [],
         "task_types": [],
-        "commands": [
-          "/errors"
-        ]
+        "commands": []
       }
     },
     {
@@ -2220,7 +2163,6 @@
         "agents": [],
         "task_types": [],
         "commands": [
-          "/errors",
           "/fix-it"
         ]
       }
@@ -3244,8 +3186,7 @@
           "general-implementation-agent"
         ],
         "commands": [
-          "/orchestrate",
-          "/errors"
+          "/orchestrate"
         ]
       }
     },
@@ -3441,11 +3382,11 @@
       "path": "standards/error-recovery-strategies.md",
       "domain": "core",
       "subdomain": "standards",
-      "summary": "Per-error-type reactive recovery strategies (timeout, state sync, build error, jq parse failure, MCP abort, delegation interrupted) plus the full errors-append.sh CLI/field spec",
+      "summary": "Per-error-type reactive recovery strategies (timeout, state sync, build error, jq parse failure, MCP abort, delegation interrupted) plus the full issue-record.sh CLI/field spec",
       "line_count": 108,
       "keywords": [
         "error-recovery",
-        "errors-append",
+        "issue-record",
         "timeout-recovery",
         "build-error-recovery",
         "jq-parse-failure",
@@ -3994,8 +3935,7 @@
         "commands": [
           "/task",
           "/meta",
-          "/review",
-          "/errors"
+          "/review"
         ]
       },
       "on_demand": true

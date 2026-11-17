@@ -42,7 +42,6 @@ test-detect-noop-bash.sh,4248
 test-dispatch-metrics.sh,926
 test-dispatch-strand-probe.sh,647
 test-double-loading-check.sh,922
-test-errors-append.sh,1665
 test-force-phases.sh,6461
 test-gate-out-derived-staleness.sh,565
 test-gate-out-repair-reporting.sh,3018
