@@ -12,12 +12,16 @@
 # lands, this probe's "residual lifted" outcome is what detects it, rather than the gap being
 # assumed closed or re-discovered by accident.
 #
-# Usage: verify-sapience-context-scoping.sh [--print] [--help]
+# Usage: verify-sapience-context-scoping.sh [--repeat N] [--print] [--help]
 #
 # Options:
-#   --print   Also print the returned `text` block from the real-project call, so a reader can
-#             confirm the channel still delivers content (not only that project= is ignored).
-#   --help    Show this help message.
+#   --repeat N  Repeat the two-call comparison N times (default 3, matching the measured
+#               evidence that motivated this flag: a single run is unreliable). Must be an
+#               integer >= 1; a non-integer or < 1 value exits 1 with a named reason.
+#   --print     Also print the returned `text` block(s) from the FINAL iteration's real-project
+#               (and, on RESIDUAL_LIFTED, sentinel-project) call, so a reader can confirm the
+#               channel still delivers content (not only that project= is ignored).
+#   --help      Show this help message.
 #
 # Config resolution (mirrors ~/.sapience/sapience_cli.py's config() function exactly):
 #   SAPIENCE_HOST env, else ~/.sapience/config.json's .host, else https://app.spnc.ai.
@@ -28,58 +32,74 @@
 # The repository slug sent as the "real project" value is resolved the same way
 # sapience-remember.sh resolves it: basename of the parent checkout's git toplevel.
 #
+# N-repeat unanimous-agreement rule: a single run's RESIDUAL_LIFTED is exactly as likely to be
+# the server's own per-session repeat-suppression (see "session_id MUST be unique" below) as a
+# real lift of the residual -- a single run cannot tell the two apart. So this script repeats
+# the comparison --repeat times (fresh session-id pair every iteration) and reports a
+# conclusive outcome ONLY when all N iterations agree. A single disagreeing iteration -- not a
+# majority vote -- disqualifies agreement, because the measured evidence that motivated this
+# flag was precisely a 1-vs-2 split that a majority rule would have (wrongly) called conclusive.
+#
 # Outcomes (each printed on its own line, exactly one per run):
-#   RESIDUAL_HOLDS   - the two calls returned byte-identical text/visible bodies. project= is
-#                       still ignored on this endpoint. Exit 0.
-#   RESIDUAL_LIFTED  - the two calls returned DIFFERENT text/visible bodies. Two explanations are
-#                       possible, and this probe cannot distinguish them on one run: the vendor
-#                       ask may have landed (see context/project/sapience/domain/injection-site-scoping.md),
-#                       OR the server's own repeat-suppression (see "session_id MUST be unique"
-#                       above) hid content on one call for a reason unrelated to `project`. Treat
-#                       a single RESIDUAL_LIFTED run as inconclusive-leaning and re-run before
-#                       concluding the gap has closed. Exit 0 either way (this outcome is not a
-#                       failure of the probe).
-#   INCONCLUSIVE     - a non-200 status, an empty body, or a network failure on either call.
-#                       Exit 2. Never asserts RESIDUAL_HOLDS or RESIDUAL_LIFTED on partial data.
+#   RESIDUAL_HOLDS   - every iteration's two calls returned byte-identical text/visible bodies.
+#                       project= is still ignored on this endpoint. Exit 0.
+#   RESIDUAL_LIFTED  - every iteration's two calls returned DIFFERENT text/visible bodies,
+#                       unanimously. Two explanations remain possible even under unanimous
+#                       agreement across iterations: the vendor ask may have landed (see
+#                       context/project/sapience/domain/injection-site-scoping.md), OR the
+#                       server's own repeat-suppression hid content on the SAME call position in
+#                       every iteration for a reason unrelated to `project`. Exit 0 either way
+#                       (this outcome is not a failure of the probe).
+#   INCONCLUSIVE     - a non-200 status, an empty body, or a network failure on any iteration's
+#                       call, OR the N iterations did not unanimously agree. The disagreement
+#                       case prints the per-iteration tally (e.g. "2 RESIDUAL_HOLDS, 1
+#                       RESIDUAL_LIFTED over 3 iterations"). Exit 2. Never asserts RESIDUAL_HOLDS
+#                       or RESIDUAL_LIFTED on partial or disagreeing data.
 #
 # Exit codes:
-#   0 - a conclusive outcome was reached (RESIDUAL_HOLDS or RESIDUAL_LIFTED)
-#   2 - INCONCLUSIVE (non-200, empty body, or network failure)
+#   0 - a conclusive, unanimous outcome was reached (RESIDUAL_HOLDS or RESIDUAL_LIFTED)
+#   2 - INCONCLUSIVE (non-200, empty body, network failure on any iteration, or disagreement)
 #   3 - config error: missing config file, missing host, or missing token (named reason on
 #       stderr, no stack trace)
-#   1 - bad arguments
+#   1 - bad arguments (including a bad --repeat value)
 #
 # The token is read into a shell variable once and is passed ONLY in the Authorization header
 # built in-process by curl's -H flag. It is never echoed, never written to a file, and never
-# included in any error message or --print output below.
+# included in any error message or --print output below (preserved under --repeat: --print's
+# output is scoped to the final iteration's bodies only).
 
 set -uo pipefail
 
 PRINT_BLOCK="false"
+REPEAT_N=3
 
 usage() {
   cat >&2 <<'USAGE'
-Usage: verify-sapience-context-scoping.sh [--print] [--help]
+Usage: verify-sapience-context-scoping.sh [--repeat N] [--print] [--help]
 
-Read-only probe: replays the two-call POST /v1/cli/context "project" comparison and reports
-one of RESIDUAL_HOLDS, RESIDUAL_LIFTED, or INCONCLUSIVE. Makes no vault write and no local
-mutation.
+Read-only probe: replays the two-call POST /v1/cli/context "project" comparison --repeat times
+(default 3) and reports RESIDUAL_HOLDS or RESIDUAL_LIFTED only on UNANIMOUS agreement across all
+iterations, otherwise INCONCLUSIVE with the per-iteration tally. Makes no vault write and no
+local mutation.
 
 Options:
-  --print   Also print the real-project call's returned text block (evidence the channel still
-            delivers content).
-  --help    Show this help message.
+  --repeat N  Repeat the comparison N times (default 3). Must be an integer >= 1.
+  --print     Also print the final iteration's returned text block(s) (evidence the channel
+              still delivers content).
+  --help      Show this help message.
 
 Exit codes:
-  0 - conclusive outcome reached (RESIDUAL_HOLDS or RESIDUAL_LIFTED)
-  2 - INCONCLUSIVE (non-200, empty body, or network failure)
+  0 - conclusive, unanimous outcome reached (RESIDUAL_HOLDS or RESIDUAL_LIFTED)
+  2 - INCONCLUSIVE (non-200, empty body, network failure on any iteration, or disagreement)
   3 - config error (missing config file, host, or token)
-  1 - bad arguments
+  1 - bad arguments (including a bad --repeat value)
 USAGE
 }
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
+    --repeat)
+      REPEAT_N="${2:-}"; shift 2 ;;
     --print)
       PRINT_BLOCK="true"; shift ;;
     -h|--help)
@@ -90,6 +110,16 @@ while [ "$#" -gt 0 ]; do
       exit 1 ;;
   esac
 done
+
+case "$REPEAT_N" in
+  ''|*[!0-9]*)
+    echo "verify-sapience-context-scoping.sh: --repeat requires an integer >= 1, got: '${REPEAT_N}'" >&2
+    exit 1 ;;
+esac
+if [ "$REPEAT_N" -lt 1 ]; then
+  echo "verify-sapience-context-scoping.sh: --repeat requires an integer >= 1, got: ${REPEAT_N}" >&2
+  exit 1
+fi
 
 # --- Paths ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -202,59 +232,107 @@ post_context() {
     "${sapience_host}/v1/cli/context" 2>/dev/null
 }
 
-raw_real="$(post_context "$repo_slug" "real")" || raw_real=""
-http_real="${raw_real##*$'\n'}"
-body_real="${raw_real%$'\n'*}"
+# --- N-repeat loop: each iteration mints its own fresh session-id pair (post_context's own
+# $$-plus-epoch run_tag, plus a per-iteration suffix on sid so two iterations landing in the
+# same wall-clock second still mint distinct session_ids), so the server's per-session
+# repeat-suppression starts empty on every iteration -- never a shared/fixed session_id across
+# iterations. A conclusive outcome is reported only when all REPEAT_N iterations agree. ---
+OUTCOMES=()
+INCONCLUSIVE_ITER="false"
+FAIL_REASON=""
+FINAL_TEXT_REAL=""
+FINAL_TEXT_SENTINEL=""
 
-raw_sentinel="$(post_context "$SENTINEL_PROJECT" "sentinel")" || raw_sentinel=""
-http_sentinel="${raw_sentinel##*$'\n'}"
-body_sentinel="${raw_sentinel%$'\n'*}"
+for i in $(seq 1 "$REPEAT_N"); do
+  raw_real="$(post_context "$repo_slug" "real-${i}")" || raw_real=""
+  http_real="${raw_real##*$'\n'}"
+  body_real="${raw_real%$'\n'*}"
 
-# --- Inconclusive gate: either call must be a 200 with a non-empty, JSON-parseable body. ---
-inconclusive="false"
-reason=""
+  raw_sentinel="$(post_context "$SENTINEL_PROJECT" "sentinel-${i}")" || raw_sentinel=""
+  http_sentinel="${raw_sentinel##*$'\n'}"
+  body_sentinel="${raw_sentinel%$'\n'*}"
 
-if [ -z "$raw_real" ] || [ "$http_real" != "200" ]; then
-  inconclusive="true"; reason="real-project call: http=${http_real:-none} (network failure or non-200)"
-elif ! echo "$body_real" | jq -e . >/dev/null 2>&1; then
-  inconclusive="true"; reason="real-project call: non-JSON body"
-fi
+  # --- Inconclusive gate (per iteration): either call must be a 200 with a non-empty,
+  # JSON-parseable body. A single iteration's failure makes the WHOLE run inconclusive -- never
+  # discarded as a non-vote and never masked by the other iterations' agreement. ---
+  iter_inconclusive="false"
+  iter_reason=""
 
-if [ "$inconclusive" = "false" ]; then
-  if [ -z "$raw_sentinel" ] || [ "$http_sentinel" != "200" ]; then
-    inconclusive="true"; reason="sentinel call: http=${http_sentinel:-none} (network failure or non-200)"
-  elif ! echo "$body_sentinel" | jq -e . >/dev/null 2>&1; then
-    inconclusive="true"; reason="sentinel call: non-JSON body"
+  if [ -z "$raw_real" ] || [ "$http_real" != "200" ]; then
+    iter_inconclusive="true"; iter_reason="real-project call: http=${http_real:-none} (network failure or non-200)"
+  elif ! echo "$body_real" | jq -e . >/dev/null 2>&1; then
+    iter_inconclusive="true"; iter_reason="real-project call: non-JSON body"
   fi
-fi
 
-if [ "$inconclusive" = "true" ]; then
-  echo "INCONCLUSIVE -- ${reason}"
+  if [ "$iter_inconclusive" = "false" ]; then
+    if [ -z "$raw_sentinel" ] || [ "$http_sentinel" != "200" ]; then
+      iter_inconclusive="true"; iter_reason="sentinel call: http=${http_sentinel:-none} (network failure or non-200)"
+    elif ! echo "$body_sentinel" | jq -e . >/dev/null 2>&1; then
+      iter_inconclusive="true"; iter_reason="sentinel call: non-JSON body"
+    fi
+  fi
+
+  if [ "$iter_inconclusive" = "true" ]; then
+    INCONCLUSIVE_ITER="true"
+    FAIL_REASON="iteration ${i}/${REPEAT_N}: ${iter_reason}"
+    break
+  fi
+
+  text_real="$(echo "$body_real" | jq -r '.text // ""')"
+  visible_real="$(echo "$body_real" | jq -r '.visible // ""')"
+  text_sentinel="$(echo "$body_sentinel" | jq -r '.text // ""')"
+  visible_sentinel="$(echo "$body_sentinel" | jq -r '.visible // ""')"
+
+  if [ "$text_real" = "$text_sentinel" ] && [ "$visible_real" = "$visible_sentinel" ]; then
+    OUTCOMES+=("RESIDUAL_HOLDS")
+  else
+    OUTCOMES+=("RESIDUAL_LIFTED")
+  fi
+
+  # --print scopes to the FINAL iteration's bodies only (preserved behavior, generalized to N).
+  FINAL_TEXT_REAL="$text_real"
+  FINAL_TEXT_SENTINEL="$text_sentinel"
+done
+
+if [ "$INCONCLUSIVE_ITER" = "true" ]; then
+  echo "INCONCLUSIVE -- ${FAIL_REASON}"
   exit 2
 fi
 
-text_real="$(echo "$body_real" | jq -r '.text // ""')"
-visible_real="$(echo "$body_real" | jq -r '.visible // ""')"
-text_sentinel="$(echo "$body_sentinel" | jq -r '.text // ""')"
-visible_sentinel="$(echo "$body_sentinel" | jq -r '.visible // ""')"
+# --- Unanimous-agreement verdict: UNANIMOUS, not majority. The measured evidence that
+# motivated this flag was a 1-vs-2 split across 3 runs; a majority rule would have called that
+# conclusive (RESIDUAL_HOLDS, 2-1), which is precisely the false confidence this rule exists to
+# prevent. Any disagreement, including a single dissenting iteration, is INCONCLUSIVE. ---
+HOLDS_COUNT=0
+LIFTED_COUNT=0
+for o in "${OUTCOMES[@]}"; do
+  if [ "$o" = "RESIDUAL_HOLDS" ]; then
+    HOLDS_COUNT=$((HOLDS_COUNT + 1))
+  else
+    LIFTED_COUNT=$((LIFTED_COUNT + 1))
+  fi
+done
 
-if [ "$text_real" = "$text_sentinel" ] && [ "$visible_real" = "$visible_sentinel" ]; then
-  echo "RESIDUAL_HOLDS -- project= is still ignored on POST /v1/cli/context (real project '${repo_slug}' and sentinel project both returned byte-identical text/visible bodies)"
+if [ "$HOLDS_COUNT" -eq "$REPEAT_N" ]; then
+  echo "RESIDUAL_HOLDS -- project= is still ignored on POST /v1/cli/context (unanimous across ${REPEAT_N} iteration(s): real project '${repo_slug}' and sentinel project both returned byte-identical text/visible bodies every time)"
   if [ "$PRINT_BLOCK" = "true" ]; then
     echo ""
-    echo "--- returned text block (real-project call; evidence the channel still delivers content) ---"
-    echo "$text_real"
+    echo "--- returned text block (final iteration's real-project call; evidence the channel still delivers content) ---"
+    echo "$FINAL_TEXT_REAL"
+  fi
+  exit 0
+elif [ "$LIFTED_COUNT" -eq "$REPEAT_N" ]; then
+  echo "RESIDUAL_LIFTED -- the real-project and sentinel-project calls returned DIFFERENT text/visible bodies, unanimously across ${REPEAT_N} iteration(s). Either the vendor ask in context/project/sapience/domain/injection-site-scoping.md has landed, or the server's own repeat-suppression hid content on the same call position in every iteration for a reason unrelated to project= -- this probe cannot tell which from repeated runs alone."
+  if [ "$PRINT_BLOCK" = "true" ]; then
+    echo ""
+    echo "--- returned text block (final iteration's real-project call) ---"
+    echo "$FINAL_TEXT_REAL"
+    echo ""
+    echo "--- returned text block (final iteration's sentinel-project call) ---"
+    echo "$FINAL_TEXT_SENTINEL"
   fi
   exit 0
 else
-  echo "RESIDUAL_LIFTED -- the real-project and sentinel-project calls returned DIFFERENT text/visible bodies. Either the vendor ask in context/project/sapience/domain/injection-site-scoping.md has landed, or the server's own repeat-suppression hid content on one call for a reason unrelated to project= -- this probe cannot tell which from one run. Re-run before concluding either way (a single differing call is not proof of a hard pre-filter)."
-  if [ "$PRINT_BLOCK" = "true" ]; then
-    echo ""
-    echo "--- returned text block (real-project call) ---"
-    echo "$text_real"
-    echo ""
-    echo "--- returned text block (sentinel-project call) ---"
-    echo "$text_sentinel"
-  fi
-  exit 0
+  echo "INCONCLUSIVE -- ${HOLDS_COUNT} RESIDUAL_HOLDS, ${LIFTED_COUNT} RESIDUAL_LIFTED over ${REPEAT_N} iterations"
+  exit 2
 fi

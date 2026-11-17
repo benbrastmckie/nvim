@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "N-Repeat Unanimous-Agreement Verdict in the Context-Scoping Probe",
+  "started_at": "2026-11-17T01:15:00Z",
+  "last_updated": "2026-11-17T01:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add --repeat N flag and unanimous-agreement loop to verify-sapience-context-scoping.sh", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/verify-sapience-context-scoping.sh"]},
+    {"id": 2, "description": "Create test-sapience-context-scoping.sh regression suite", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-context-scoping.sh"]},
+    {"id": 3, "description": "Declare new test script in manifest via sync-manifest-scripts.sh --write", "status": "done", "files_touched": ["agent-system/extensions/sapience/manifest.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "verification_notes": "Full tier deferred per batch gate directive. Live --repeat 3 run against the real endpoint reproduced the documented 1-vs-2 split as INCONCLUSIVE (correct, not a failure). test-manifest-scripts-sync.sh and test-script-inventory.sh pass against the deployed tree today; the new suite itself (test-sapience-context-scoping.sh, not yet deployed) run directly against the source store, 6/6 pass. Full deployed-tree discovery covered at Phase 6 redeploy."
+}

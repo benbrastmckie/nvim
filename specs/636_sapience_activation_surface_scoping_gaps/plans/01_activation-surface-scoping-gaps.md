@@ -325,44 +325,51 @@ back to the synthetic fixture case if the map has moved.
 
 ---
 
-### Phase 4: N-Repeat Unanimous-Agreement Verdict in the Context-Scoping Probe [NOT STARTED]
+### Phase 4: N-Repeat Unanimous-Agreement Verdict in the Context-Scoping Probe [COMPLETED]
 
 **Goal**: `verify-sapience-context-scoping.sh` repeats its comparison N times and reports a
 conclusive verdict only on unanimous agreement, with dedicated regression coverage.
 
 **Tasks**:
-- [ ] Re-read `verify-sapience-context-scoping.sh` immediately before editing.
-- [ ] Add a `--repeat N` flag (default 3, matching the measured evidence's own run count),
-      rejecting a non-integer or `< 1` value with exit 1 and a named reason.
-- [ ] Wrap the existing two-call body (both `post_context` calls, the inconclusive gate, and the
+- [x] Re-read `verify-sapience-context-scoping.sh` immediately before editing. *(completed)*
+- [x] Add a `--repeat N` flag (default 3, matching the measured evidence's own run count),
+      rejecting a non-integer or `< 1` value with exit 1 and a named reason. *(completed)*
+- [x] Wrap the existing two-call body (both `post_context` calls, the inconclusive gate, and the
       text/visible comparison) in an N-iteration loop. Each iteration must mint its own fresh
       session-id pair exactly as a single run does today — the `$$`-plus-epoch `run_tag` already
       in `post_context` — so the server's per-session repeat-suppression starts empty on every
-      iteration. Do not change `post_context`'s signature.
-- [ ] Collect each iteration's outcome. Emit the shared outcome only when all N iterations agree;
+      iteration. Do not change `post_context`'s signature. *(completed: per-iteration suffix
+      added to `sid` too, so two iterations landing in the same wall-clock second still mint
+      distinct session_ids)*
+- [x] Collect each iteration's outcome. Emit the shared outcome only when all N iterations agree;
       a per-iteration `INCONCLUSIVE` disqualifies agreement rather than being discarded as a
-      non-vote.
-- [ ] On disagreement, print `INCONCLUSIVE` with a reason naming the per-iteration tally (e.g.
+      non-vote. *(completed)*
+- [x] On disagreement, print `INCONCLUSIVE` with a reason naming the per-iteration tally (e.g.
       `2 RESIDUAL_HOLDS, 1 RESIDUAL_LIFTED over 3 iterations`) and exit 2 — the existing
-      inconclusive exit code, unchanged.
-- [ ] Preserve `--print`'s behavior, scoped to the final iteration's bodies, and keep the
+      inconclusive exit code, unchanged. *(completed)*
+- [x] Preserve `--print`'s behavior, scoped to the final iteration's bodies, and keep the
       token-handling invariant intact (never echoed, never written, never in an error message or
-      `--print` output).
-- [ ] Update the script's header: the `Usage:`/`Options:` blocks, the `usage()` heredoc, and the
+      `--print` output). *(completed)*
+- [x] Update the script's header: the `Usage:`/`Options:` blocks, the `usage()` heredoc, and the
       `Outcomes` block, so the single-run "treat a single RESIDUAL_LIFTED as
       inconclusive-leaning and re-run" guidance is replaced by the N-repeat rule the script now
-      implements.
-- [ ] Create `agent-system/extensions/sapience/scripts/tests/test-sapience-context-scoping.sh`,
+      implements. *(completed)*
+- [x] Create `agent-system/extensions/sapience/scripts/tests/test-sapience-context-scoping.sh`,
       reusing `test-sapience-capture.sh`'s curl-stub-on-`PATH` technique extended to a sequenced,
       per-call-index response table: unanimous-holds over N iterations yields `RESIDUAL_HOLDS`
       and exit 0; unanimous-lifted yields `RESIDUAL_LIFTED` and exit 0; a mixed tally yields
       `INCONCLUSIVE` and exit 2; one iteration returning a non-200 yields `INCONCLUSIVE` and
       exit 2 even when the rest agree; `--repeat 1` reproduces today's single-run behavior; a
-      bad `--repeat` value exits 1.
-- [ ] Declare the new script in the manifest by running
+      bad `--repeat` value exits 1. *(completed: 6/6 cases pass; the suite also builds a
+      deployed-tree-shaped scratch fixture, mirroring test-sapience-capture.sh's build_scratch,
+      since the script under test sources ${SCRIPT_DIR}/lib/common.sh which does not exist
+      alongside it in the source store)*
+- [x] Declare the new script in the manifest by running
       `bash .claude/scripts/sync-manifest-scripts.sh --write` from the repository root (the
       one-command repair `check-extension-docs.sh` Rule Q names), then review the resulting
-      `provides.scripts` diff rather than hand-editing the array.
+      `provides.scripts` diff rather than hand-editing the array. *(completed: the new file had
+      to be `git add`-staged first, since the script derives "on disk" from `git ls-files`; diff
+      reviewed and confirmed to add exactly one entry)*
 
 **Timing**: 1.5 hours
 
