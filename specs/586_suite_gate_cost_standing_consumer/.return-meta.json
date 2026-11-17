@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794942735_1748a1_586",
+  "dispatch_seq": 2,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/586_suite_gate_cost_standing_consumer/reports/02_suite-cost-verdict-table.md",
+      "summary": "Re-derives every carried cost/count figure (finding several individually stale, dated 2026-10-16/10-19 despite a blanket 2026-11-10 claim), corrects the recursive-meta-suite count from 35 to 14 genuine members after removing comment-only and stub-only false positives, applies the owner's DELETE/KEEP rule to produce a 0-DELETE/14-KEEP verdict table (every genuine recursive meta-suite tests a cross-invocation/crash/concurrency property no single real gate run can self-certify), identifies the actual cost driver for the two most expensive suites as fixed per-invocation verify-deploy.sh overhead rather than gate-8 battery recursion (already stubbed away), confirms no suite-level demotion tier exists (known-failures.txt and --skip-slow/--max-cost are gate-granularity only), and reconfirms the /tmp fixture leak is still live (1,716 entries, 1.4GB) with a recommendation to extend claude-refresh.sh rather than open a separate task."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "agent-system/extensions/core run-all.sh/verify-deploy.sh suite-count citations are multi-valued depending on scope: core-only source-store test-*.sh (157 as of 2026-11-17), all-loaded-extensions source-store total (197), the currently-deployed .claude/ tree for a given repo (189 here), and verify-deploy.sh's own live corpus-scan test_suites field (204, a different classification boundary). A bare suite count carried from an earlier measurement is never safe to cite without stating which of these four it means.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/586_suite_gate_cost_standing_consumer/reports/02_suite-cost-verdict-table.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["run-all.sh", "verify-deploy.sh", "suite count", "gate8", "test corpus"]
+    },
+    {
+      "content": "verify-deploy.sh's corpus-scan step (scripts=N lines=N test_suites=N md_files=N md_lines=N) runs unconditionally on every invocation regardless of --only-gate scope, costing ~4.6s measured live even for a single-gate selection. A suite that invokes verify-deploy.sh many times via --only-gate (e.g. a cache-equivalence or crash-net regression suite) pays this fixed cost once per invocation; its wall-clock total is often dominated by invocation-count x this fixed overhead rather than by any specific gate's real work. --skip-slow and --max-cost both operate at gate granularity (gate 8 is the only 'slow' gate and is monolithic, all-suites-or-none), so neither can selectively demote one expensive suite inside gate 8's own battery -- a suite-level demotion tier does not exist and would be new machinery.",
+      "category": "PATTERN",
+      "source_artifact": "specs/586_suite_gate_cost_standing_consumer/reports/02_suite-cost-verdict-table.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy.sh", "corpus scan", "only-gate", "skip-slow", "max-cost", "demotion tier"]
+    },
+    {
+      "content": "A lexical grep for 'does this suite mention run-all.sh/verify-deploy.sh' over-counts suites that actually re-invoke those scripts by roughly 2.6x in this corpus: many suites only write an empty stub file with that name for call-counting (test-orchestrate-cycle-plan.sh, test-orchestrate-build-dispatch.sh) or plant the literal string as synthetic fixture content for a classification lint to detect (test-lint-unit-integration-boundary.sh), never executing the real script. Before classifying any suite as a 'recursive meta-suite' for a cost or deletion audit, confirm the invocation is real (grep for the variable/literal actually being executed as a command, not just appearing as text) rather than trusting a name-mention grep.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/586_suite_gate_cost_standing_consumer/reports/02_suite-cost-verdict-table.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["grep false positive", "recursive meta-suite", "test suite audit", "stub fixture"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 586 to create implementation plan"
+}

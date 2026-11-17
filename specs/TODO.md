@@ -179,7 +179,7 @@ next_project_number: 643
 
 ### Uncategorized
 
-586 [RESEARCHING] — Stand up the suite and gate wall-clock cost consumer: delete,...
+586 [RESEARCHED] — Stand up the suite and gate wall-clock cost consumer: delete,...
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
@@ -2167,9 +2167,10 @@ The documentary check (the rule present at the sited section, reachable from the
 ---
 
 ### 586. Stand up the suite and gate wall-clock cost consumer: delete, optimize, or demote every suite the probe indicts
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Dependencies**: Task 476
+- **Research**: [586_suite_gate_cost_standing_consumer/reports/02_suite-cost-verdict-table.md]
 
 **Description**: STANDING CONSUMER for the suite/gate wall-clock cost probes (measure-gate-costs.sh -> gate-cost-model.csv, tests/suite-cost-hints.txt), neither of which has a consumer acting on its output. Filed as ONE standing task per ROADMAP Settled decision 16 (a systemic cost is filed against a probe's output, not as a stream of point defects), which also records that the predecessor probe has had no standing consumer since its own work landed.
 
