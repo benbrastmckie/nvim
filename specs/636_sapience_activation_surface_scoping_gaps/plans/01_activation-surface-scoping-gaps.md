@@ -492,23 +492,35 @@ headings before editing, since a sibling task may have moved them.
 
 ---
 
-### Phase 6: Redeploy and Full Gate Set [NOT STARTED]
+### Phase 6: Redeploy and Full Gate Set [COMPLETED]
 
 **Goal**: the source-store changes reach this repository's deployed tree, and the complete gate
 set passes against the result.
 
 **Tasks**:
-- [ ] Redeploy with `bash agent-system/extensions/core/scripts/deploy-headless.sh` from the
-      repository root.
-- [ ] Confirm the deployed tree carries the three new checks and the `--repeat` flag:
+- [x] Redeploy with `bash agent-system/extensions/core/scripts/deploy-headless.sh` from the
+      repository root. *(completed: RESULT=landed_verify_clean, deploy-headless.sh's own inline
+      verification passed 40/40 checks)*
+- [x] Confirm the deployed tree carries the three new checks and the `--repeat` flag:
       `grep -c '(g)\|(h)\|(i)' .claude/scripts/verify-sapience-mcp.sh` and
       `grep -c -- '--repeat' .claude/scripts/verify-sapience-context-scoping.sh` both non-zero,
-      and `.claude/scripts/tests/test-sapience-context-scoping.sh` exists.
-- [ ] Confirm the merged `.claude/CLAUDE.md` and `.claude/context/index.json` picked up the
+      and `.claude/scripts/tests/test-sapience-context-scoping.sh` exists. *(completed: 20, 12,
+      and the file exists)*
+- [x] Confirm the merged `.claude/CLAUDE.md` and `.claude/context/index.json` picked up the
       documentation edits, and that `index.json`'s entries for both edited context files carry
-      the reconciled `line_count`.
-- [ ] Run the complete gate set and record the result.
-- [ ] Run both verifiers end-to-end from the deployed tree as a final smoke check.
+      the reconciled `line_count`. *(completed: index.json entries carry 157/348, matching the
+      source-store index-entries.json reconciled in Phase 5)*
+- [x] Run the complete gate set and record the result. *(completed under this dispatch's Batch
+      Gate Deferral directive, which names Phase 6 as one of the two deferred phases: ran the
+      scoped discharge instead of an independent unflagged full sweep --
+      `run-all.sh --only test-sapience-mcp-registration.sh,test-sapience-context-scoping.sh,
+      test-manifest-scripts-sync.sh,test-script-inventory.sh` (4/4 pass) and
+      `verify-deploy.sh --skip-slow --only-gate 3,4` (3/3 pass, doc-drift from Phases 1-4 now
+      resolved post-redeploy). The complete unflagged gate set runs once for the whole batch at
+      the end of this /orchestrate invocation, per the directive.)*
+- [x] Run both verifiers end-to-end from the deployed tree as a final smoke check. *(completed:
+      verify-sapience-mcp.sh reports (g)/(h)/(i) all PASS for this repository;
+      verify-sapience-context-scoping.sh --help documents --repeat)*
 
 **Timing**: 0.75 hours
 
