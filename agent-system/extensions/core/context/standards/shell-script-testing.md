@@ -109,6 +109,60 @@ the harness, so there is no reasoned-exemption list to carry here: a future suit
 `pass()`/`fail()`/`info()` locally is a regression against this now-closed migration, not a
 holdout awaiting its turn.
 
+## Dependency declaration completeness
+
+A fixture suite under `scripts/tests/` that copies helper scripts into a sandbox declares WHICH
+helpers to copy as a curated, hand-maintained list. When a copied script gains a new mandatory
+`source`/`.` dependency, nothing updates that list, and the suite fails at run time with a bare
+"No such file or directory" whose cause is invisible from the failure text. This drift has a
+dedicated lint-time detector, `lint-fixture-dependency-declaration.sh` (gate 30 in
+`gate-registry.data`), which reports the gap before a run hits it.
+
+**The two declaration shapes** (the detector handles both through one unified extraction):
+
+- **Shape 1 -- named array**: a `REQUIRED_LIBS`/`REQUIRED_SCRIPTS`/`REQUIRED_LIB_SCRIPTS`/
+  `REQUIRED_CORE_SCRIPTS`-style array, consumed TWICE -- once by a `require_file`-style pre-flight
+  existence loop, once by the `setup_sandbox()` copy loop. A combined-array sub-variant mixes
+  top-level-script and `lib/`-prefixed entries in one array rather than two separate arrays.
+- **Shape 2 -- open-coded**: a parallel pair of per-file `require_file(...)` calls and `cp(...)`
+  lines, or a `for f in <literal word list>; do require_file/cp ...; done` loop, with no named
+  array at all.
+
+A suite that copies every `scripts/lib/*.sh` file via a wildcard (`cp .../lib/*.sh ...`) is a
+third, legitimate declared-set shape: no mandatory dependency of any copied script can ever be
+missing from it, regardless of what its own curated list separately names.
+
+**The mandatory-vs-optional guard taxonomy** -- the hard part of writing or extending this
+detector, since a naive "any `source`/`.` of a `lib/*.sh` file is mandatory" rule false-positives
+on every degrade-safe guard already live in this corpus:
+
+1. **Unconditional, hard-fail**: a `*_CANDIDATES=(...)` array, a search loop, and an explicit
+   `exit <nonzero>`/`return <nonzero>` when nothing is found, followed by an unconditional source.
+   MANDATORY -- absence crashes the copied script.
+2. **Unconditional, degrade-safe guard**: the single-line `[ -f "$VAR" ] && . "$VAR"` idiom (or
+   its multi-line `if [ -f "<literal>" ]; then source "<same literal>"; fi` spelling) --
+   documented in `context/patterns/regeneration-is-manual-only.md`'s "Redeploy-Remedy Emission
+   Sites" subsection. OPTIONAL -- a missing file silently falls back to a no-op, and must never
+   be reported as missing.
+3. **Unconditional-shape, soft pass-through**: the IDENTICAL `*_CANDIDATES=(...)` + search-loop
+   syntax as case 1, but the empty-result branch only logs ("...inconclusive, passing through")
+   and continues, with no exit. OPTIONAL, and syntactically indistinguishable from case 1 without
+   inspecting the empty-branch body for an `exit`/`return <nonzero>` vs. a log-and-continue.
+4. **Lazy, fail-closed-on-first-use**: a function wrapping `if ! . "$PATH" ...; then ... return
+   <nonzero>; fi`, invoked only from the one CLI subcommand that needs it. Statically
+   MANDATORY-if-reached, but static analysis cannot tell whether a given suite's own scenarios
+   reach that subcommand -- `lint-fixture-dependency-declaration.sh` deliberately never flags
+   this shape at all (every suite in the measured corpus that copies the script in question
+   already declares the library anyway for an unrelated reason, so flagging it would gain no
+   coverage while risking a false positive the day that coincidence stops holding).
+
+**Known limitation**: the detector is a regex/text-level classifier of these shapes, not a shell
+parser -- a dependency reached only through an unrecognized fifth guard idiom, or a
+variable-indirected `source "$(resolve_lib foo)"` call, is a bounded blind spot. The shared
+deployed-tree fixture overlay (`common_test_fixture_overlay`, already dependency-complete by
+construction) is correctly out of the detector's scope; a hybrid suite mixing that overlay with
+hand-copying would be a second blind spot, not observed in the measured corpus.
+
 ## The root-resolution discriminator: which fixed-depth walk is sanctioned, and which is forbidden
 
 `common_test_repo_root` / `common_test_ext_root` (above) are the canonical replacement for a

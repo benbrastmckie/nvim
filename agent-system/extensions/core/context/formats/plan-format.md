@@ -516,7 +516,7 @@ one sentence, never an essay:
   `context/workflows/task-breakdown.md`'s `full` phase is the documented model for this shape.
 
 **A cheaper non-final tier never discharges the doc-sync-pin evidence, and `--skip-slow` is never
-a tier.** Per ROADMAP Settled decision 15 (see `context/standards/shell-script-testing.md:178-183`),
+a tier.** Per ROADMAP Settled decision 15 (see `context/standards/shell-script-testing.md:232-237`),
 Gate 8's deployed-tree coverage is knowingly reduced under `--skip-slow`, so a `--skip-slow` pass
 is not evidence that doc-sync pins hold. The same honesty constraint applies to a selected-subset
 pass under `--only`/`--only-gate`: narrowing which checks run for cost reasons is never read as

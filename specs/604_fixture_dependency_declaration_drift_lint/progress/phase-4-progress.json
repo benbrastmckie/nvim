@@ -1,0 +1,23 @@
+{
+  "phase": 4,
+  "phase_name": "Document the dependency-declaration convention",
+  "started_at": "2026-11-17T23:00:00Z",
+  "last_updated": "2026-11-17T23:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Dependency declaration completeness subsection to shell-script-testing.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]},
+    {"id": 2, "description": "Update the shifted line-number pin in plan-format.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 3, "description": "Re-derive index-entries.json line_count for the edited file", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "4.3",
+      "description": "Run generate-context-line-counts.sh --write to re-derive index-entries.json's line_count",
+      "type": "altered",
+      "reason": "the script refuses to run from the source store (deploy-root-guard.sh-style guard, confirmed by direct invocation); its mechanical wc -l computation (1427) was applied directly to index-entries.json instead, with identical effect",
+      "annotation": "*(deviation: altered -- the script itself refuses to run from the source store ... so the mechanical wc -l-derived line_count value was written directly instead)*"
+    }
+  ],
+  "handoff_count": 0
+}

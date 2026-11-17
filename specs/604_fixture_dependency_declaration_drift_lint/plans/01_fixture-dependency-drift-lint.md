@@ -392,35 +392,44 @@ gate cannot execute until Phase 5 redeploys — that 32-suite surface is dischar
 
 ---
 
-### Phase 4: Document the dependency-declaration convention [NOT STARTED]
+### Phase 4: Document the dependency-declaration convention [COMPLETED]
 
 **Goal**: `context/standards/shell-script-testing.md` gains a "Dependency declaration
 completeness" subsection — the first written record of this convention anywhere in the corpus.
 
 **Tasks**:
-- [ ] **RE-READ `agent-system/extensions/core/context/standards/shell-script-testing.md`
+- [x] **RE-READ `agent-system/extensions/core/context/standards/shell-script-testing.md`
       immediately before editing.** It is shared territory with tasks #511 and #523 and with this
       proposal's sibling roster task; no concurrent sibling declares it this cycle, but re-read
-      regardless
-- [ ] Add the subsection near the existing "Required structural model for a new suite" section,
+      regardless *(completed; no concurrent edit found)*
+- [x] Add the subsection near the existing "Required structural model for a new suite" section,
       summarizing: Shape 1 (a named array consumed twice — once by a `require_file`-style
       existence loop, once by the `setup_sandbox()` copy loop), Shape 2 (the open-coded parallel
       `require_file`/`cp` pair with no named array), the four-shape mandatory/optional guard
       taxonomy including the degrade-safe-guard exemption, and the new lint by name and gate id
-- [ ] Write no task numbers into the prose — `agent-system/**` is outside the `specs/**` exemption
+      *(completed: "Dependency declaration completeness" subsection added immediately after
+      that section)*
+- [x] Write no task numbers into the prose — `agent-system/**` is outside the `specs/**` exemption
       (`rules/no-task-references-in-deliverables.md`). Cite durable anchors: the lint's filename,
-      the gate id, section headings
-- [ ] The one line-number pin into this file is `context/formats/plan-format.md`'s
+      the gate id, section headings *(completed; confirmed via check-task-references.sh)*
+- [x] The one line-number pin into this file is `context/formats/plan-format.md`'s
       `shell-script-testing.md:178-183` citation (measured at plan time by
       `grep -rn 'shell-script-testing\.md:[0-9]'` over `agent-system/extensions/core` — exactly
       one hit). Read the pinned lines' content before the insertion, read them again after, and
       update that citation in this same phase if the insertion shifted them. No mechanical
       checker enforces line-number pins, which is why this is declared here rather than left to a
-      gate
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
+      gate *(completed: the insertion shifted the pinned content from 178-183 to 232-237; updated
+      plan-format.md's citation to match, confirming the shifted content is byte-identical to the
+      pre-edit text)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
       re-derive `index-entries.json`'s `line_count` for the edited file
       (`check-extension-docs.sh` Rule R's tripwire; advisory by default and auto-healed by
       `deploy-headless.sh`, declared and regenerated here because this phase moves its input)
+      *(deviation: altered — the script itself refuses to run from the source store
+      (deploy-root-guard.sh-style guard; same class as the memory-context note on this), so the
+      mechanical `wc -l`-derived `line_count` value (1427, up from 1373) was written directly
+      instead, replicating exactly what `--write` computes. `--check` will self-verify after
+      Phase 5's redeploy)*
 
 **Timing**: 45 minutes
 
