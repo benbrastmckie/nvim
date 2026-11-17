@@ -28,14 +28,27 @@
       "category": "PATTERN",
       "source_artifact": "specs/628_retract_sapience_write_tool_grants/summaries/01_retract-sapience-write-grants-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["merge-engine", "retraction", "orphan-sweep", "tracked-record", "additive-only", "mark_loaded"]
+      "suggested_keywords": [
+        "merge-engine",
+        "retraction",
+        "orphan-sweep",
+        "tracked-record",
+        "additive-only",
+        "mark_loaded"
+      ]
     },
     {
       "content": "When building a valid-set/watched-prefix style orphan sweep (e.g. for MCP tool permission grants namespaced mcp__<server>__*), the extension's OWN current fragment is usually the PRIMARY (often only) source of its own watched prefix -- no sibling extension typically shares the same server namespace. Omitting it when building the valid set (reasoning 'the subsequent merge re-adds these anyway, so it's cosmetic') is a real bug, not a harmless simplification: it leaves watched_prefixes empty and makes the sweep a permanent, silent no-op. Confirmed by direct observation during implementation: the first version of this call omitted the extension's own fragment and swept nothing at all against a fixture reproducing the real drift.",
       "category": "INSIGHT",
       "source_artifact": "specs/628_retract_sapience_write_tool_grants/summaries/01_retract-sapience-write-grants-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["orphan-sweep", "valid-set", "mcp-permission-grant", "watched-prefix", "build_permission_valid_set"]
+      "suggested_keywords": [
+        "orphan-sweep",
+        "valid-set",
+        "mcp-permission-grant",
+        "watched-prefix",
+        "build_permission_valid_set"
+      ]
     }
   ],
   "sapience_notes": [
@@ -79,7 +92,11 @@
     "session_id": "sess_1794907446_b4b581",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }

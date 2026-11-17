@@ -13,8 +13,8 @@ next_project_number: 643
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,586,590,599,604,607,613,618,624,628,629,631,632,633,636,639,640 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,592,593,598,605,609,610,630,637 | 383,390,398,410,431,438,451,453,455,463,472,477,504,519,535,538,539,548,549,563,564,577,586,599,604,607,628,629,636 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,586,590,599,604,607,613,618,624,629,631,632,633,636,639,640 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,592,593,598,605,609,610,630,637 | 383,390,398,410,431,438,451,453,455,463,472,477,504,519,535,538,539,548,549,563,564,577,586,599,604,607,629,636 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,480,486,492,509,513,552,566,571,594 | 439,452,479,484,491,518,542,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,561,581,588,595 | 472,486,492,509,539,552,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 524,596,641 | 454,501,561,595 | core-agent-system, agent-system |
@@ -175,10 +175,8 @@ next_project_number: 643
 
 ### Sapience
 
-628 [IMPLEMENTING] — SOURCE STORE IS THE EDIT TARGET:...
-  └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
 636 [PLANNED] — Close sapience activation-surface scoping gaps: vendor...
-  └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
+  └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
 
 ### Decidability
 
@@ -674,12 +672,13 @@ PROVENANCE: surfaced as a Reasoned Exclusion in the /todo consolidation record's
 ---
 
 ### 628. Retract sapience write tool grants
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: Task 527
 - **Research**: [628_retract_sapience_write_tool_grants/reports/01_retract-sapience-write-grants.md]
 - **Plan**: [628_retract_sapience_write_tool_grants/plans/01_retract-sapience-write-grants.md]
+- **Summary**: [628_retract_sapience_write_tool_grants/summaries/01_retract-sapience-write-grants-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (the merge engine) and agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve each extension's own source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh. Depends on task 527, which is solving the same deployed-set-vs-merge-source convergence problem for hook registrations; coordinate with its mechanism rather than building a second one.
 

@@ -2168,12 +2168,12 @@
     {
       "project_number": 628,
       "project_name": "retract_sapience_write_tool_grants",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (the merge engine) and agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve each extension's own source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh. Depends on task 527, which is solving the same deployed-set-vs-merge-source convergence problem for hook registrations; coordinate with its mechanism rather than building a second one.\n\nGOAL. Make the narrowing of the sapience permission grant to seven read-shaped tools actually reach deployed repositories. It currently reaches none of them.\n\nMEASURED EVIDENCE. settings-fragment.json grants exactly seven read-shaped mcp__sapience__* tools (sapience, sapience_search, sapience_briefing, sapience_context, sapience_ask, sapience_outstanding, sapience_papers) and no write tools. Every deployed repository that has loaded the extension still grants eleven, including all four MCP write tools (sapience_remember, sapience_wrapup, sapience_handoff, sapience_adddoc): /home/benjamin/.dotfiles, /home/benjamin/.config/nvim, /home/benjamin/Projects/BimodalLogic, /home/benjamin/Projects/Sapience/sf1-engine, /home/benjamin/Projects/Sapience/sapience-app -- 5 of 5. verify-sapience-mcp.sh check (e) fails in this repository with \"11/7 sapience grants\" and labels it a known pre-existing residual rather than closing it.\n\nWHY IT MATTERS. rules/sapience-write-path.md's \"The Permission Grant Matches the Standing Contract\" section asserts that a call to any of the four write tools \"now raises an interactive permission prompt in an interactive session and is denied outright in a headless/autonomous run, rather than succeeding silently.\" That claim is false in every live repository. The whole per-repo scoping design rests on writes going through scripts/sapience-remember.sh's POST /ingest-kos call, the only call site that stamps the \"[repo:<slug>]\" provenance tag that /v1/search's source= filter reads; an MCP write tool cannot produce a tagged write at all, because the connector fixes its provenance string with no injectable repo marker. So every write that takes the still-permitted MCP path lands in the vault unscopable, and nothing currently stops an agent from taking it.\n\nSCOPE. The merge engine is additive-only and cannot retract, which is why the narrowing never propagated. Decide between, and record the reasoning for: (1) teaching the merge engine a retraction mechanism so an entry removed from a fragment is removed from the deployed file on redeploy -- the general fix, and the same shape task 527 needs; or (2) a one-time migration pass over the five deployed settings.local.json files plus a verify-deploy.sh gate that fails when a deployed grant set exceeds its merge source. If (1), the retraction must be narrow enough not to clobber hand-added local grants a user legitimately owns in settings.local.json; state the discrimination rule explicitly.\n\nACCEPTANCE. All five repositories' .claude/settings.local.json grant exactly the seven read-shaped sapience tools and none of the four write tools; verify-sapience-mcp.sh check (e) passes in this repository; rules/sapience-write-path.md's pre-existing-residual caveat paragraph is rewritten to match reality; a fresh load of the extension into a sixth repository still produces the seven-tool grant directly.",
       "topic": "sapience",
       "created": "2026-11-14T09:20:41Z",
-      "last_updated": "2026-11-17T16:05:12Z",
+      "last_updated": "2026-11-17T16:44:51Z",
       "audit_verdict": {
         "proposal": {
           "id": "retract_sapience_write_tool_grants",
@@ -2407,6 +2407,11 @@
           "path": "specs/628_retract_sapience_write_tool_grants/plans/01_retract-sapience-write-grants.md",
           "type": "plan",
           "summary": "5-phase plan (6h, 4 waves) retracting sapience write-tool grants via forced-reload retraction in the merge engine, regression coverage, two caveat rewrites, and a five-repository redeploy."
+        },
+        {
+          "path": "specs/628_retract_sapience_write_tool_grants/summaries/01_retract-sapience-write-grants-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: both retraction mechanisms, regression coverage, caveat rewrites, mechanism-map subsection, and the five-repository redeploy with its one investigated finding."
         }
       ],
       "next_artifact_number": 2,
@@ -2421,7 +2426,8 @@
         "lua/neotex/plugins/ai/shared/extensions/merge.lua",
         "lua/neotex/plugins/ai/shared/extensions/merge_spec.lua",
         "specs/628_retract_sapience_write_tool_grants/records/01_pre-change-baseline.md"
-      ]
+      ],
+      "completion_summary": "Retracted the sapience extension's four MCP write-tool grants from all five deployed repositories. Wired a tracked-record retraction into manager.load's forced-reload branch and, when that alone proved insufficient against repositories whose tracked history had already been clobbered, added a complementary MCP-permission-grant orphan sweep; both are regression-tested (39/39 and 10/10 passing suites) and all five repositories now converge to exactly the seven read-shaped sapience grants."
     },
     {
       "project_number": 627,

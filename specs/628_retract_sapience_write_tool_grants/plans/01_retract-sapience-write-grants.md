@@ -1,7 +1,7 @@
 # Implementation Plan: Task #628
 
 - **Task**: 628 - Retract sapience write-tool grants from deployed repositories
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: task 527 (`[COMPLETED]`) — its Check E supplies a *pattern*, not retraction machinery; no blocking edge
 - **Research Inputs**: specs/628_retract_sapience_write_tool_grants/reports/01_retract-sapience-write-grants.md
