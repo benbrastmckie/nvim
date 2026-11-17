@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "summary": "Wrote a 4-phase plan (3.25h, medium) adopting the research report's candidate direction 1: add a .claude-extensions.json source_dir fallback to system-defect-record.sh's --dispatched-agent branch, emitting the byte-identical source-store-relative resolved_path so the recursion guard, defect_key dedup, and persisted attributed_source_path are unchanged. Phases: (1) the resolver fix, (2) a new four-case fixture suite plus its manifest and classification declarations, (3) discrimination-doc prose sync, (4) deploy plus full gate set. All three description trigger-class claims were re-validated live this dispatch: the line-233 glob citation is exact, the consumer exit-3 refusal reproduced from /home/benjamin/Projects/cslib, and the \"twice in one run\" figure is unverifiable from durable stores by construction (a refused recording writes nothing) and is not load-bearing.",
+  "status": "implemented",
+  "dispatch_seq": 11,
+  "summary": "Added a .claude-extensions.json source_dir fallback resolution route to system-defect-record.sh's Signal B --dispatched-agent branch, reached only when the existing agent-system/extensions/*/agents/NAME.md glob finds nothing, emitting the identical resolved-path string. A new four-case fixture suite (11 assertions) pins both routes, their path-shape parity, and the preserved exit-3 refusal; the governing discrimination document's resolver prose now names both routes; the fix was deployed and attested end-to-end against a scratch consumer-shaped tree and a read-only replay against the real consumer repository that originally reproduced the defect.",
   "blockers": [],
-  "phases_completed": 0,
+  "phases_completed": 4,
   "phases_total": 4,
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/624_defect_record_unresolvable_in_deploy_consumer/plans/01_signal-b-deploy-consumer-resolution.md",
       "summary": "Four-phase plan for resolving Signal B dispatched-agent attribution from a deploy-consumer repository via .claude-extensions.json source_dir."
+    },
+    {
+      "type": "summary",
+      "path": "specs/624_defect_record_unresolvable_in_deploy_consumer/summaries/01_signal-b-deploy-consumer-resolution-summary.md",
+      "summary": "Implementation summary: resolver fallback added, fixture suite added, resolver prose synced, deployed and attested end-to-end."
     }
-  ],
-  "dispatch_seq": 4
+  ]
 }
