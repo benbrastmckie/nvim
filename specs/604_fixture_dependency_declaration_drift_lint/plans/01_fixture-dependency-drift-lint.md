@@ -469,28 +469,55 @@ dependency), claimed by none of them here and discharged by Phase 5's `full` run
 
 ---
 
-### Phase 5: Deploy and full gate verification [NOT STARTED]
+### Phase 5: Deploy and full gate verification [COMPLETED]
 
 **Goal**: the source store is redeployed and the new gate is proven to execute and pass in a real
 deployed tree, with the complete gate set green and no previously-green gate regressed.
 
 **Tasks**:
-- [ ] Re-read every file this task touched and confirm no sibling has modified them since; if a
+- [x] Re-read every file this task touched and confirm no sibling has modified them since; if a
       foreign commit or foreign uncommitted modification is observed, STOP and report after
-      checking `git log` to confirm the work is not this task's own
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` — whole-tree
-      regeneration, which is why `__WHOLE_TREE__` is declared below
-- [ ] Confirm the new lint and the new suite landed in the deployed tree
+      checking `git log` to confirm the work is not this task's own *(completed: `git log`
+      confirms every commit since Phase 1 is this task's own; `git status --porcelain` shows
+      only the same pre-existing foreign dirty files present at dispatch start, none of this
+      task's own files among them)*
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` — whole-tree
+      regeneration, which is why `__WHOLE_TREE__` is declared below *(completed: landed; its own
+      line_count auto-repair found 0 entries to correct, confirming Phase 4's hand-applied
+      `index-entries.json` value was already right)*
+- [x] Confirm the new lint and the new suite landed in the deployed tree
       (`.claude/scripts/lint/`, `.claude/scripts/tests/`) — if either is absent, the
-      `provides.scripts` entry from Phase 1 or 2 did not take
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` — the complete gate set — with `TARGET` the
+      `provides.scripts` entry from Phase 1 or 2 did not take *(completed: both present, and
+      `.claude/scripts/gate-registry.data`/`.claude/context/standards/shell-script-testing.md`
+      carry the new row and subsection respectively)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` — the complete gate set — with `TARGET` the
       source-store repository's own root, which is simultaneously the deploy consumer and the
-      source store
-- [ ] Confirm the new gate's own `say` line appears in the output, reports a pass, and that the
-      run's gate count and verdicts show no previously-green gate regressed
-- [ ] Confirm the new suite is discovered and green inside Gate 8's battery
-- [ ] Confirm the new gate's `[SKIP]` branch behaves correctly for a `TARGET` that is a deploy
-      consumer rather than the source store
+      source store *(deviation: altered per this dispatch's own Batch Gate Deferral directive --
+      this is one of several concurrent `implement`-phase dispatches in a multi-task batch, so
+      the complete gate set is deferred to the once-per-invocation batch-level stage rather than
+      run independently here. `deploy-headless.sh`'s own internal "fast gates" pass (gates 1-7,
+      9-30; gate 8 deferred by that script itself) ran as a side effect of the deploy step above
+      and reported gate 30 PASS plus every other non-timed-out gate PASS; gates 3 and 4 hit their
+      60s timeout under measured host load (`uptime` load average 8.90 at the time), confirmed a
+      transient host-contention artifact, not a regression, by a direct standalone re-run (`bash
+      .claude/scripts/verify-deploy.sh --only-gate 3,4 .`) passing cleanly in 42s. The scoped
+      discharge actually run: `bash .claude/scripts/verify-deploy.sh --only-gate 30
+      --skip-unchanged .` (PASS) plus `bash .claude/scripts/tests/run-all.sh --only
+      test-lint-fixture-dependency-declaration.sh,test-lint-subject-resolution-declaration.sh,test-lint-test-root-resolution.sh`
+      (3/3 PASS, gate 8's own scoped slice) for the one UNMAPPABLE sub-criterion ("no
+      previously-green gate regressed") that neither narrowing invocation alone expresses*
+- [x] Confirm the new gate's own `say` line appears in the output, reports a pass, and that the
+      run's gate count and verdicts show no previously-green gate regressed *(completed via the
+      scoped discharge above: gate 30's own `say "30. Fixture dependency declaration lint..."`
+      line appears and reports PASS; every other fast-gate line in the same deploy-headless.sh
+      run also reports PASS except the two host-load timeouts addressed above)*
+- [x] Confirm the new suite is discovered and green inside Gate 8's battery *(completed: scoped
+      `run-all.sh --only` slice above discovers and passes it against the deployed copy)*
+- [x] Confirm the new gate's `[SKIP]` branch behaves correctly for a `TARGET` that is a deploy
+      consumer rather than the source store *(completed: a scratch directory carrying `.claude/`
+      but no `agent-system/extensions` correctly prints the `[SKIP] ... is a deploy consumer, not
+      the source store ...` line and `verify-deploy.sh` reports "cannot attest: every gate
+      selected ... skipped")*
 
 **Timing**: 45 minutes
 
