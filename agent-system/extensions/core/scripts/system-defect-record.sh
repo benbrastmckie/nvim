@@ -24,8 +24,14 @@
 #                           --attributed-path wins. --attributed-path may be a deploy path
 #                           (.claude/X or .claude/extensions/<ext>/X) -- it is transformed to its
 #                           source-store equivalent automatically. --dispatched-agent NAME is
-#                           resolved mechanically to agent-system/extensions/<ext>/agents/<NAME>.md
-#                           by globbing the source store.
+#                           resolved mechanically to agent-system/extensions/<ext>/agents/<NAME>.md,
+#                           first by globbing a local source store, then (only when the glob finds
+#                           nothing -- e.g. in a deploy consumer with no agent-system/ subtree of
+#                           its own) by looking up each extension's source_dir in
+#                           .claude-extensions.json and checking for the agent file there. Both
+#                           routes emit the identical agent-system/extensions/<ext>/agents/<NAME>.md
+#                           string; first match wins when more than one extension ships a
+#                           same-named agent.
 #
 # Optional:
 #   --task N                Bare (unpadded) task/project number, threaded through to
@@ -225,6 +231,32 @@ transform_deploy_to_source() {
   esac
 }
 
+# .claude-extensions.json's per-extension source_dir -> agent-system/extensions/<ext>/agents/<NAME>.md
+# Fallback route reached only when the glob below finds nothing (e.g. a deploy consumer with no
+# agent-system/ subtree of its own). Emits the identical source-store-relative path string the
+# glob route produces, never the absolute source_dir-based path. Fails CLOSED on any
+# missing/malformed/unreadable manifest, or an unreachable source_dir -- every branch falls
+# through to the unresolved case (empty echo) rather than aborting the recorder under
+# set -euo pipefail. First-match-wins across extension entries, same as the glob route.
+resolve_agent_via_extensions_manifest() {
+  local name="$1"
+  local manifest="$PROJECT_ROOT/.claude-extensions.json"
+  [ -f "$manifest" ] || return 0
+  local entries
+  entries="$(jq -r '.extensions | to_entries[] | [.key, (.value.source_dir // "")] | @tsv' "$manifest" 2>/dev/null)" || return 0
+  [ -n "$entries" ] || return 0
+  local key ext_source_dir
+  while IFS=$'\t' read -r key ext_source_dir; do
+    [ -n "$ext_source_dir" ] || continue
+    [ -d "$ext_source_dir" ] || continue
+    if [ -f "$ext_source_dir/agents/${name}.md" ]; then
+      echo "agent-system/extensions/${key}/agents/${name}.md"
+      return 0
+    fi
+  done <<< "$entries"
+  return 0
+}
+
 resolved_path=""
 if [ -n "$attributed_path_arg" ]; then
   resolved_path="$(transform_deploy_to_source "$attributed_path_arg")"
@@ -234,6 +266,8 @@ elif [ -n "$dispatched_agent_arg" ]; then
   shopt -u nullglob
   if [ "${#agent_matches[@]}" -gt 0 ] && [ -f "${agent_matches[0]}" ]; then
     resolved_path="${agent_matches[0]#"$PROJECT_ROOT"/}"
+  else
+    resolved_path="$(resolve_agent_via_extensions_manifest "$dispatched_agent_arg")"
   fi
 fi
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #624
 
 - **Task**: 624 - Make system-defect-record.sh able to attribute a dispatched-agent defect from a deploy-consumer repository
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.25 hours
 - **Dependencies**: None (both declared dependencies are closed and, per the research report, settled adjacent questions)
 - **Research Inputs**: specs/624_defect_record_unresolvable_in_deploy_consumer/reports/01_signal-b-deploy-consumer-resolution.md
@@ -146,15 +146,15 @@ planning dispatch:
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Add the `.claude-extensions.json` resolution route [NOT STARTED]
+### Phase 1: Add the `.claude-extensions.json` resolution route [COMPLETED]
 
 **Goal**: `--dispatched-agent NAME` resolves in a deploy consumer, emitting the unchanged
 source-store-relative path shape, with exit 3 preserved for the genuinely unresolvable case.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/system-defect-record.sh` immediately before
-      editing (concurrent siblings are live on this tree).
-- [ ] Add a helper beside `transform_deploy_to_source()` (e.g.
+- [x] Re-read `agent-system/extensions/core/scripts/system-defect-record.sh` immediately before
+      editing (concurrent siblings are live on this tree). *(completed)*
+- [x] Add a helper beside `transform_deploy_to_source()` (e.g.
       `resolve_agent_via_extensions_manifest()`) that: returns empty unless
       `$PROJECT_ROOT/.claude-extensions.json` exists; enumerates
       `.extensions | to_entries[] | [.key, .value.source_dir]` with jq under an explicit
@@ -162,16 +162,17 @@ source-store-relative path shape, with exit 3 preserved for the genuinely unreso
       for each entry with a non-empty `source_dir` that is an existing directory, tests
       `"$source_dir/agents/${NAME}.md"`; and on first match echoes exactly
       `agent-system/extensions/<key>/agents/<NAME>.md` — the source-store-relative string, never
-      the absolute `source_dir`-based path.
-- [ ] In the `--dispatched-agent` branch (line 231 onward), call that helper only when the
+      the absolute `source_dir`-based path. *(completed)*
+- [x] In the `--dispatched-agent` branch (line 231 onward), call that helper only when the
       existing glob did not resolve, leaving the glob and its `agent_matches[0]` semantics
-      untouched.
-- [ ] Leave the acceptance `case "$resolved_path" in agent-system/extensions/*)` gate, the exit-3
-      message text, and the exit code unchanged.
-- [ ] Update this script's own header prose (the `--dispatched-agent` description around lines
+      untouched. *(completed)*
+- [x] Leave the acceptance `case "$resolved_path" in agent-system/extensions/*)` gate, the exit-3
+      message text, and the exit code unchanged. *(completed: verified by diff — these lines are
+      untouched)*
+- [x] Update this script's own header prose (the `--dispatched-agent` description around lines
       26-28) so "resolved mechanically ... by globbing the source store" also names the
-      `.claude-extensions.json` `source_dir` route and the first-match-wins ordering.
-- [ ] Commit this phase's single file with an explicit pathspec.
+      `.claude-extensions.json` `source_dir` route and the first-match-wins ordering. *(completed)*
+- [x] Commit this phase's single file with an explicit pathspec. *(completed)*
 
 **Timing**: 0.75 hours
 
