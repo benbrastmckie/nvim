@@ -1,7 +1,7 @@
 # Implementation Plan: Task #627
 
 - **Task**: 627 - Reap orphan sapience MCP registrations
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/627_reap_orphan_sapience_mcp_registrations/reports/01_reap-orphan-sapience-mcp.md
@@ -156,7 +156,7 @@ run concurrently), and Phase 4 documents and deploys all of it.
 
 ---
 
-### Phase 1: `--reap` mode in the writer [NOT STARTED]
+### Phase 1: `--reap` mode in the writer [COMPLETED]
 
 **Goal**: `setup-sapience-mcp.sh --reap` removes every `.projects[<path>].mcpServers.sapience`
 whose `<path>` is not a directory on disk, touching nothing else, with `--dry-run` and `--quiet`
@@ -164,35 +164,36 @@ honored.
 
 **Tasks**:
 
-- [ ] Add `REAP=false` alongside the existing `DRY_RUN`/`REMOVE`/`RETIRE_GLOBAL` flag block, and
-      a `--reap` case to the argument parser.
-- [ ] Add a `process_reap()` function and dispatch it as a **standalone action short-circuit
+- [x] Add `REAP=false` alongside the existing `DRY_RUN`/`REMOVE`/`RETIRE_GLOBAL` flag block, and
+      a `--reap` case to the argument parser. *(completed)*
+- [x] Add a `process_reap()` function and dispatch it as a **standalone action short-circuit
       placed next to the existing `--retire-global` block — before the `PROJECT_PATH` default
       and before the top-level `resolve_interpreter`/`resolve_host`/`resolve_token` calls and the
       `log "Configuration:"` banner.** `--reap` needs no interpreter, and `resolve_interpreter`
       hard-`exit 1`s when none resolves; a later placement would make the hook's reap call fail
       on a machine with no resolvable `python3`. `--reap` ignores `--scope` and needs no
-      `--project`.
-- [ ] Implement the body per the research report's mechanics: bail cleanly (`return 0`, `log`
+      `--project`. *(completed)*
+- [x] Implement the body per the research report's mechanics: bail cleanly (`return 0`, `log`
       only) when `~/.claude.json` is absent; enumerate candidates with
       `jq -r '.projects | to_entries[] | select(.value.mcpServers.sapience != null) | .key'`;
       filter to `[ ! -d "$p" ]`; bail cleanly when the orphan set is empty; under `--dry-run`
       log each would-be reap and mutate nothing; otherwise `mktemp` + a single
       `reduce $paths[] as $p (.; del(.projects[$p].mcpServers.sapience))` + `mv`, matching the
-      existing writer actions' mutation shape exactly.
-- [ ] Emit, per reaped path, a `log` line and — when `--quiet` — exactly one stdout line
+      existing writer actions' mutation shape exactly. *(completed)*
+- [x] Emit, per reaped path, a `log` line and — when `--quiet` — exactly one stdout line
       (`sapience: reaped orphaned entry for <path>`), mirroring `process_remove`'s
       `[ "$QUIET" = "true" ] && echo ...` convention so the hook can detect "something changed"
-      by non-empty output exactly as it already does.
-- [ ] Guard the jq enumeration against an unparseable or `.projects`-less file (`2>/dev/null ||
-      echo ""`), consistent with the file's existing defensive reads.
-- [ ] Add an inline comment recording the two deliberate decisions: an emptied `.mcpServers`
+      by non-empty output exactly as it already does. *(completed)*
+- [x] Guard the jq enumeration against an unparseable or `.projects`-less file (`2>/dev/null ||
+      echo ""`), consistent with the file's existing defensive reads. *(completed)*
+- [x] Add an inline comment recording the two deliberate decisions: an emptied `.mcpServers`
       becomes `{}` and is left that way (deleting the project row would discard unrelated
       session/history/cost metadata), and `[ -d ]` treats an inaccessible-but-existing directory
       as absent, accepted because the next session start in that repo re-registers it.
-- [ ] Extend the script's header `Options:` block and the numbered "The script will" list to
+      *(completed)*
+- [x] Extend the script's header `Options:` block and the numbered "The script will" list to
       document `--reap`, in the same voice as `--retire-global` (the header doubles as `--help`
-      output via the `sed -n '2,/^$/p'` extraction, so the edit is user-visible).
+      output via the `sed -n '2,/^$/p'` extraction, so the edit is user-visible). *(completed)*
 
 **Timing**: 0.75 hours
 

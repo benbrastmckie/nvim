@@ -1,0 +1,14 @@
+{
+  "phase": 1,
+  "phase_name": "--reap mode in the writer",
+  "started_at": "2026-11-17T15:50:00Z",
+  "last_updated": "2026-11-17T15:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add REAP flag and --reap parser case", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh"]},
+    {"id": 2, "description": "Implement process_reap() standalone action before resolve_interpreter", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh"]},
+    {"id": 3, "description": "Document --reap in header Options block and 'will do' list", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

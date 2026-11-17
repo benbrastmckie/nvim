@@ -13,10 +13,10 @@ next_project_number: 643
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,590,599,604,607,613,618,627,628,629,631,632,633,636,639,640 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,586,592,593,598,609,610,624,630,637 | 383,390,398,410,431,438,451,453,455,463,472,476,477,504,519,535,538,539,548,549,563,564,577,599,607,628,629,636 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,480,486,492,509,513,552,566,571,594,605 | 439,452,479,484,491,518,542,586,593,604 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
-| 4 | 501,508,561,581,588,595 | 472,476,486,492,509,539,552,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,586,590,599,604,607,613,618,624,627,628,629,631,632,633,636,639,640 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,592,593,598,605,609,610,630,637 | 383,390,398,410,431,438,451,453,455,463,472,477,504,519,535,538,539,548,549,563,564,577,586,599,604,607,628,629,636 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,480,486,492,509,513,552,566,571,594 | 439,452,479,484,491,518,542,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 4 | 501,508,561,581,588,595 | 472,486,492,509,539,552,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 524,596,641 | 454,501,561,595 | core-agent-system, agent-system |
 | 6 | 642 | 641 | agent-system |
 
@@ -33,9 +33,6 @@ next_project_number: 643
   └─ 474 [RESEARCHED] — Repair the broken relative links in agent-frontmatter-standard.md
 456 [NOT STARTED] — Exempt private npm/Cargo manifests from /tag's version gate
 475 [NOT STARTED] — Close the audit-evidence gate internal --argjson hole: a...
-476 [IMPLEMENTING] — Make the seven untracked red Gate 8 shell suites green or...
-  └─ 586 [NOT STARTED] — Stand up the suite and gate wall-clock cost consumer: delete,...
-    └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 491 [NOT STARTED] — Fix the Pass-2 semantic scorer whose normalization inflates...
   └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the...
     └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt...
@@ -57,7 +54,7 @@ next_project_number: 643
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
-  └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite... (see above)
+  └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — GOAL. Determine what leaves files behind in this repository's...
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
@@ -115,9 +112,9 @@ next_project_number: 643
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
+624 [NOT STARTED] — Make system-defect-record.sh able to attribute a...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-624 [NOT STARTED] — Make system-defect-record.sh able to attribute a...
 
 ### Agent System
 
@@ -178,7 +175,7 @@ next_project_number: 643
 
 ### Sapience
 
-627 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
+627 [IMPLEMENTING] — SOURCE STORE IS THE EDIT TARGET:...
 628 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
 636 [PLANNED] — Close sapience activation-surface scoping gaps: vendor...
@@ -189,6 +186,9 @@ next_project_number: 643
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
 
 ### Uncategorized
+
+586 [NOT STARTED] — Stand up the suite and gate wall-clock cost consumer: delete,...
+  └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
 
@@ -697,7 +697,7 @@ ACCEPTANCE. All five repositories' .claude/settings.local.json grant exactly the
 ---
 
 ### 627. Reap orphan sapience mcp registrations
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
@@ -8758,13 +8758,14 @@ SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_d
 
 ### 476. Make the seven untracked red Gate 8 shell suites green or declared-expected
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 423, Task 445, Task 568
 - **Parent**: Task 275
 - **Research**: [476_isolate_seven_red_gate8_shell_suites/reports/02_premise-refresh-and-gate-lock-concurrency-flake.md]
 - **Plan**: [476_isolate_seven_red_gate8_shell_suites/plans/02_gate-lock-flake-and-gate8-acceptance.md]
+- **Summary**: [476_isolate_seven_red_gate8_shell_suites/summaries/02_gate-lock-flake-and-gate8-acceptance-summary.md]
 
 **Description**: Seven shell suites fail in Gate 8 of verify-deploy.sh with no open task tracking them. Make each one green, or make its remaining failure an explicitly declared and attributed baseline expectation, so that a full Gate 8 run regains its value as a binary signal.
 

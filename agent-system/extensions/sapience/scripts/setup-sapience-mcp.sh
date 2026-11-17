@@ -23,6 +23,18 @@
 # It resolves to either the nix-store-pinned interpreter the existing top-level entry already
 # names, or a plain `python3` resolved via `command -v` -- never a path under `.claude/`.
 #
+# --reap (cross-project reaper): a registered `.projects[<path>]` row whose `<path>` has since
+# been deleted or renamed can never again satisfy the SessionStart hook's own
+# .claude-extensions.json-reachability precondition, so the bidirectional register/remove path
+# above can never reach it -- removal only ever fires for a path that still exists AND still
+# carries a manifest showing sapience inactive. `--reap` closes that gap from the one place that
+# CAN see every registered path at once: this writer, which already owns every ~/.claude.json
+# mutation. It removes ONLY `.mcpServers.sapience` from every `.projects[<path>]` row whose
+# `<path>` is not a directory on disk; other servers on that row (e.g. `lean-lsp`) and the row
+# itself are left untouched, and a row left with `"mcpServers": {}` is the accepted end state --
+# deleting the whole project row would discard unrelated session/history/cost metadata. `--reap`
+# is a standalone, cross-project action: it ignores `--scope` and needs no `--project`.
+#
 # Usage: ./setup-sapience-mcp.sh [OPTIONS]
 #
 # Options:
@@ -31,6 +43,10 @@
 #   --dry-run           Show what would be done without making changes
 #   --remove            Remove the sapience entry from the selected --scope
 #   --retire-global      Remove ONLY the top-level global entry, leaving .projects untouched
+#   --reap               Remove orphaned .projects[<path>].mcpServers.sapience entries for every
+#                        <path> that is no longer a directory on disk (cross-project; ignores
+#                        --scope and --project). Other servers and the project row itself are
+#                        left untouched; an emptied .mcpServers becomes {} and stays that way.
 #   --quiet             Silent and exit 0 when the entry already matches; one line when it
 #                        writes. Suitable for hook invocation.
 #   --help              Show this help message
@@ -40,6 +56,10 @@
 #   2. Create ~/.claude.json if it doesn't exist
 #   3. Add/repair the sapience entry at that scope if it is missing or diverges
 #   4. Preserve every other entry in the file (whole-file jq merge, never a wholesale rewrite)
+#
+# --reap is a standalone cross-project action (like --retire-global above) rather than a
+# per-scope step: it sweeps every `.projects[<path>]` row once, independent of any single
+# project's scope selection.
 #
 # Interpreter resolution: `mcp.py` imports stdlib only (json, os, re, sys, urllib.*, hashlib,
 # tempfile, time) and sapience.nix's home-manager module pins a plain `pkgs.python3` (no
@@ -57,6 +77,7 @@ set -euo pipefail
 DRY_RUN=false
 REMOVE=false
 RETIRE_GLOBAL=false
+REAP=false
 QUIET=false
 PROJECT_PATH=""
 SCOPE="project"
@@ -81,6 +102,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --retire-global)
             RETIRE_GLOBAL=true
+            shift
+            ;;
+        --reap)
+            REAP=true
             shift
             ;;
         --quiet|-q)
@@ -140,6 +165,71 @@ if $RETIRE_GLOBAL; then
     mv "$TMP_FILE" "$CLAUDE_CONFIG"
 
     log "Retired the top-level global sapience entry from $CLAUDE_CONFIG (.projects untouched)."
+    exit 0
+fi
+
+# --reap is a standalone, cross-project action: remove ONLY the `sapience` key from
+# `.projects[<path>].mcpServers` for every registered `<path>` that is NOT a directory on disk,
+# leaving every other key on that row (other servers, session/history/cost metadata) and every
+# other `.projects` row untouched. Placed here -- before PROJECT_PATH/SCOPE resolution and
+# before resolve_interpreter's hard `exit 1` below -- because a reap pass needs no interpreter
+# at all; placing it later would make the hook's reap invocation fail outright on a machine
+# with no resolvable python3, exactly the hazard --retire-global above already avoids via the
+# same placement. Takes priority over --scope/--project/--remove, which it ignores.
+#
+# Two deliberate edge cases (documented, not revisited elsewhere):
+#   - A row left with "mcpServers": {} after reaping sapience is left that way, never deleted
+#     as a whole project row -- the row still carries unrelated session/history/cost metadata
+#     that deleting the row would discard.
+#   - A path that exists on disk but is unreadable or unmounted reads as absent via `[ ! -d ]`
+#     and is reaped as if orphaned. Accepted: this is self-healing, since the next session start
+#     in that repo re-registers the entry via the hook's own register branch.
+process_reap() {
+    if [ ! -f "$CLAUDE_CONFIG" ]; then
+        log "No ~/.claude.json found, nothing to reap."
+        return 0
+    fi
+
+    local candidates path
+    candidates=$(jq -r '.projects // {} | to_entries[] | select(.value.mcpServers.sapience? != null) | .key' "$CLAUDE_CONFIG" 2>/dev/null || echo "")
+
+    local orphans=()
+    while IFS= read -r path; do
+        [ -z "$path" ] && continue
+        if [ ! -d "$path" ]; then
+            orphans+=("$path")
+        fi
+    done <<< "$candidates"
+
+    if [ "${#orphans[@]}" -eq 0 ]; then
+        log "No orphaned sapience registrations found (every registered path still exists on disk); nothing to reap."
+        return 0
+    fi
+
+    if $DRY_RUN; then
+        for path in "${orphans[@]}"; do
+            log "[DRY RUN] Would reap the orphaned sapience entry for $path (project directory no longer exists)"
+        done
+        return 0
+    fi
+
+    local orphans_json
+    orphans_json=$(printf '%s\n' "${orphans[@]}" | jq -R . | jq -s .)
+
+    TMP_FILE=$(mktemp "${CLAUDE_CONFIG}.tmp.XXXXXXXXXX")
+    jq --argjson paths "$orphans_json" \
+        'reduce $paths[] as $p (.; del(.projects[$p].mcpServers.sapience))' \
+        "$CLAUDE_CONFIG" > "$TMP_FILE"
+    mv "$TMP_FILE" "$CLAUDE_CONFIG"
+
+    for path in "${orphans[@]}"; do
+        log "Reaped the orphaned sapience entry for $path (project directory no longer exists)"
+        [ "$QUIET" = "true" ] && echo "sapience: reaped orphaned entry for $path"
+    done
+}
+
+if $REAP; then
+    process_reap
     exit 0
 fi
 

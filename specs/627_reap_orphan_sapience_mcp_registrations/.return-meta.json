@@ -1,31 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/627_reap_orphan_sapience_mcp_registrations/plans/01_reap-orphan-sapience-mcp.md",
-      "summary": "4-phase, 3.5-hour plan adding a cross-project --reap mode to the sapience MCP writer and an ungated reap pass to the SessionStart hook, with fixture coverage, docs, redeploy and installer refresh."
-    }
-  ],
-  "metadata": {
-    "session_id": "sess_1794907446_b4b581_627",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 3.5,
-    "dependency_waves": 4
-  },
+  "status": "in_progress",
   "task_number": 627,
-  "next_steps": "Run /orchestrate 627 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "When adding a new standalone action to a shell writer script, check where the script's top-level resource resolution runs: setup-sapience-mcp.sh resolves its python3 interpreter at top level with a hard 'exit 1' on failure, AFTER the --retire-global short-circuit but BEFORE the normal write path. Any new action that needs no interpreter (e.g. a cross-project reap sweep) must short-circuit alongside --retire-global, not later -- otherwise it inherits an unrelated hard-exit precondition and fails on a machine where that resource is unresolvable.",
-      "category": "PATTERN",
-      "source_artifact": "specs/627_reap_orphan_sapience_mcp_registrations/plans/01_reap-orphan-sapience-mcp.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["shell-script", "standalone-action", "short-circuit", "interpreter-resolution", "writer-pattern"]
-    }
-  ],
-  "dispatch_seq": 9
+  "dispatch_seq": 14,
+  "metadata": {
+    "session_id": "sess_1794907446_b4b581",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
