@@ -36,6 +36,15 @@
 # status.sh exits 0 on both the permit and refuse paths by design (a refusal is a handled no-op,
 # not a script error).
 #
+# Cases 12-17 cover a different concern: the postflight sapience note write wired into both the
+# implementing) and partial) promotion arms. These run the sandboxed script WITHOUT --dry-run
+# (run_reconcile_live), with update-task-status.sh stubbed to a bare `exit <rc>` (0 for a
+# successful promotion, 4 for the phase-accounting backstop's refusal) and
+# postflight-sapience-notes.sh stubbed to a recorder that appends to $PSN_MARKER. Each arm gets
+# three cases: successful promotion invokes the write exactly once, a refused promotion
+# (reconcile_rc==4) does not invoke it, and --dry-run does not invoke it either (asserted via
+# the existing dry-run runner, run_reconcile).
+#
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (no
 # resolvable scripts/ tree, or the sandbox could not be constructed).
 
@@ -149,6 +158,40 @@ STDERR_FILE="$SANDBOX/_stderr.txt"
 run_reconcile() {
   (cd "$SANDBOX" && bash "$RECONCILE" "$TASK_NUMBER" "$SESSION_ID" --dry-run) \
     >"$STDOUT_FILE" 2>"$STDERR_FILE"
+}
+
+# --- Sapience postflight note write fixtures (cases 12-17 below) -------------------------------
+# run_reconcile_live <psn_marker> -- invokes the sandboxed reconcile-task-status.sh WITHOUT
+# --dry-run, exporting PSN_MARKER so the stubbed postflight-sapience-notes.sh (installed by
+# write_psn_stub below) can record its own invocation independent of this suite's process.
+PSN_MARKER="$SANDBOX/_psn_calls.txt"
+run_reconcile_live() {
+  (cd "$SANDBOX" && env PSN_MARKER="$PSN_MARKER" bash "$RECONCILE" "$TASK_NUMBER" "$SESSION_ID") \
+    >"$STDOUT_FILE" 2>"$STDERR_FILE"
+}
+
+# write_update_task_status_stub <rc> -- overwrites the sandbox's own update-task-status.sh with
+# a trivial stub that exits <rc> and does nothing else, so the live (non---dry-run) promotion
+# arms can be exercised without touching the real update-task-status.sh machinery. rc=0
+# simulates a successful promotion; rc=4 simulates the phase-accounting backstop's refusal.
+write_update_task_status_stub() {
+  local rc="$1"
+  cat > "$SANDBOX/.claude/scripts/update-task-status.sh" <<STUB
+#!/usr/bin/env bash
+exit ${rc}
+STUB
+  chmod +x "$SANDBOX/.claude/scripts/update-task-status.sh"
+}
+
+# write_psn_stub -- overwrites the sandbox's own postflight-sapience-notes.sh with a recorder
+# stub that appends one line to \$PSN_MARKER per invocation and exits 0.
+write_psn_stub() {
+  cat > "$SANDBOX/.claude/scripts/postflight-sapience-notes.sh" <<'STUB'
+#!/usr/bin/env bash
+echo "invoked: $*" >> "${PSN_MARKER:?PSN_MARKER must be set}"
+exit 0
+STUB
+  chmod +x "$SANDBOX/.claude/scripts/postflight-sapience-notes.sh"
 }
 
 SIX_LEGAL_VALUES="researched|planned|implemented|partial|failed|blocked"
@@ -334,6 +377,112 @@ if grep -qF "refusing promotion" "$STDOUT_FILE" && ! grep -qF "Would promote" "$
   common_test_pass "case 11 (partial branch, on-enum mismatch: blocked): refuses AND emits the refusal line"
 else
   common_test_fail "case 11 (partial branch, on-enum mismatch: blocked): expected a refusal line. stdout=$(cat "$STDOUT_FILE")"
+fi
+
+# =====================================================================
+# Case 12: implementing arm, successful live promotion -> the postflight sapience note write is
+# invoked exactly once.
+# =====================================================================
+reset_specs
+write_state_json "implementing"
+write_summary_artifact
+write_handoff "implemented"
+write_update_task_status_stub 0
+write_psn_stub
+rm -f "$PSN_MARKER"
+run_reconcile_live
+if grep -qF "promoted implementing -> completed" "$STDOUT_FILE" && [[ -f "$PSN_MARKER" ]]; then
+  common_test_pass "case 12 (implementing arm, successful promotion): sapience note write invoked"
+else
+  common_test_fail "case 12 (implementing arm, successful promotion): sapience note write invoked" "stdout=$(cat "$STDOUT_FILE") psn_marker_exists=$([[ -f "$PSN_MARKER" ]] && echo yes || echo no)"
+fi
+
+# =====================================================================
+# Case 13: implementing arm, refused promotion (reconcile_rc==4) -> the sapience note write is
+# NOT invoked.
+# =====================================================================
+reset_specs
+write_state_json "implementing"
+write_summary_artifact
+write_handoff "implemented"
+write_update_task_status_stub 4
+write_psn_stub
+rm -f "$PSN_MARKER"
+run_reconcile_live
+if grep -qF "phase-accounting backstop refused the implementing -> completed promotion" "$STDOUT_FILE" && [[ ! -f "$PSN_MARKER" ]]; then
+  common_test_pass "case 13 (implementing arm, refused promotion): sapience note write NOT invoked"
+else
+  common_test_fail "case 13 (implementing arm, refused promotion): sapience note write NOT invoked" "stdout=$(cat "$STDOUT_FILE") psn_marker_exists=$([[ -f "$PSN_MARKER" ]] && echo yes || echo no)"
+fi
+
+# =====================================================================
+# Case 14: implementing arm, --dry-run -> the sapience note write is NOT invoked, and the
+# matching dry-run notice is emitted.
+# =====================================================================
+reset_specs
+write_state_json "implementing"
+write_summary_artifact
+write_handoff "implemented"
+write_psn_stub
+rm -f "$PSN_MARKER"
+run_reconcile
+if grep -qF "Would also attempt a postflight sapience note write" "$STDOUT_FILE" && [[ ! -f "$PSN_MARKER" ]]; then
+  common_test_pass "case 14 (implementing arm, --dry-run): sapience note write NOT invoked, dry-run notice emitted"
+else
+  common_test_fail "case 14 (implementing arm, --dry-run): sapience note write NOT invoked, dry-run notice emitted" "stdout=$(cat "$STDOUT_FILE") psn_marker_exists=$([[ -f "$PSN_MARKER" ]] && echo yes || echo no)"
+fi
+
+# =====================================================================
+# Case 15: partial arm, successful live promotion -> the postflight sapience note write is
+# invoked exactly once.
+# =====================================================================
+reset_specs
+write_state_json "partial"
+write_summary_artifact
+write_handoff "implemented"
+write_update_task_status_stub 0
+write_psn_stub
+rm -f "$PSN_MARKER"
+run_reconcile_live
+if grep -qF "promoted partial -> completed" "$STDOUT_FILE" && [[ -f "$PSN_MARKER" ]]; then
+  common_test_pass "case 15 (partial arm, successful promotion): sapience note write invoked"
+else
+  common_test_fail "case 15 (partial arm, successful promotion): sapience note write invoked" "stdout=$(cat "$STDOUT_FILE") psn_marker_exists=$([[ -f "$PSN_MARKER" ]] && echo yes || echo no)"
+fi
+
+# =====================================================================
+# Case 16: partial arm, refused promotion (reconcile_rc==4) -> the sapience note write is NOT
+# invoked.
+# =====================================================================
+reset_specs
+write_state_json "partial"
+write_summary_artifact
+write_handoff "implemented"
+write_update_task_status_stub 4
+write_psn_stub
+rm -f "$PSN_MARKER"
+run_reconcile_live
+if grep -qF "phase-accounting backstop refused the partial -> completed promotion" "$STDOUT_FILE" && [[ ! -f "$PSN_MARKER" ]]; then
+  common_test_pass "case 16 (partial arm, refused promotion): sapience note write NOT invoked"
+else
+  common_test_fail "case 16 (partial arm, refused promotion): sapience note write NOT invoked" "stdout=$(cat "$STDOUT_FILE") psn_marker_exists=$([[ -f "$PSN_MARKER" ]] && echo yes || echo no)"
+fi
+
+# =====================================================================
+# Case 17: partial arm, --dry-run -> the sapience note write is NOT invoked, and the matching
+# dry-run notice is emitted.
+# =====================================================================
+reset_specs
+write_state_json "partial"
+write_summary_artifact
+write_handoff "implemented"
+write_psn_stub
+rm -f "$PSN_MARKER"
+run_reconcile
+if grep -qF "Would also attempt a postflight sapience note write" "$STDOUT_FILE" && [[ ! -f "$PSN_MARKER" ]]; then
+  common_test_pass "case 17 (partial arm, --dry-run): sapience note write NOT invoked, dry-run notice emitted"
+else
+  common_test_fail "case 17 (partial arm, --dry-run): sapience note write NOT invoked, dry-run notice emitted" "stdout=$(cat "$STDOUT_FILE") psn_marker_exists=$([[ -f "$PSN_MARKER" ]] && echo yes || echo no)"
 fi
 
 # =====================================================================
