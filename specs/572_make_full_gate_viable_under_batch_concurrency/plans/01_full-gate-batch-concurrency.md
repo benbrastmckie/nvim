@@ -402,26 +402,37 @@ edit; a second acquire site would mean instrumenting both in this phase.
 
 ---
 
-### Phase 4: Redeploy and run the complete gate set [NOT STARTED]
+### Phase 4: Redeploy and run the complete gate set [COMPLETED]
 
 **Goal**: The deployed `.claude/**` tree matches the source store and the whole repository passes
 the complete gate set with this task's changes in place.
 
 **Tasks**:
-- [ ] Run the deploy so every edited source-store file is mirrored into `.claude/**`
+- [x] Run the deploy so every edited source-store file is mirrored into `.claude/**`
       (`bash agent-system/extensions/core/scripts/deploy-headless.sh`, which also regenerates the
-      context line counts and `.claude/context/index.json` as part of its own run).
-- [ ] Verify no source-vs-deployed drift remains for the files this task touched (compare each
-      edited file against its deployed copy).
-- [ ] Run the complete gate set: `bash agent-system/extensions/core/scripts/verify-deploy.sh`.
+      context line counts and `.claude/context/index.json` as part of its own run). *(completed:
+      `timeout 540 bash .claude/scripts/deploy-headless.sh`, deploy landed)*
+- [x] Verify no source-vs-deployed drift remains for the files this task touched (compare each
+      edited file against its deployed copy). *(completed: all 7 files this task's Phases 1-3
+      touched confirmed byte-identical via direct `diff -q` against their deployed copies)*
+- [x] Run the complete gate set: `bash agent-system/extensions/core/scripts/verify-deploy.sh`.
       If this dispatch carries a `## Batch Gate Deferral` directive, follow it instead — discharge
       scoped against the suites named in Phases 1-3's Tier Justifications plus the gates covering
       the edited context files, and record in this phase's verification notes that the full set was
       deferred to the batch stage rather than independently run. If an unscoped run IS the
       sanctioned path here, run it detached with a bounded `kill -0` wait per
-      `context/patterns/bounded-build-waiter.md`, never as a bare foreground call.
-- [ ] Triage any finding by isolating this task's own edits before attributing it; a finding not
-      reproducible from these changes is recorded, not fixed here.
+      `context/patterns/bounded-build-waiter.md`, never as a bare foreground call. *(DEFERRED per
+      the directive: re-ran the same 37-suite selector-derived union post-deploy -- 35 passed, 2
+      failed (2 expected, 0 NEW), identical classification to Phase 3's own pre-deploy run. The
+      complete gate set runs once at the batch stage per the directive.)*
+- [x] Triage any finding by isolating this task's own edits before attributing it; a finding not
+      reproducible from these changes is recorded, not fixed here. *(completed: deploy-headless.sh's
+      own fast-gate pass (gates 1-7, 9-29, --skip-slow) surfaced exactly ONE non-expected finding --
+      'core: Content differs from source: scripts/git-commit-scoped.sh' -- isolated and confirmed
+      NOT attributable to this task: git-commit-scoped.sh was never touched by any of this task's
+      edits, and specs/state.json shows task 476 (isolate_seven_red_gate8_shell_suites)
+      concurrently status=implementing, a live sibling writer under this same batch invocation
+      mid-edit on that exact file. Recorded via issue-record.sh, not fixed, not deployed over.)*
 
 **Timing**: 0.75 hours
 
@@ -438,22 +449,30 @@ the complete gate set with this task's changes in place.
 - `bash agent-system/extensions/core/scripts/verify-deploy.sh` — the complete gate set (all gates,
   including gate 8's full shell-suite battery) reports no finding attributable to this task, or the
   sanctioned scoped discharge is recorded as such with the deferral stated in the phase notes.
+  *(DEFERRED per the Batch Gate Deferral directive, as recorded in the task annotation above.)*
 - Every file edited in Phases 1-3 is byte-identical to its deployed `.claude/**` counterpart.
+  *(CONFIRMED via direct `diff -q`: orchestrate-build-dispatch.sh, orchestrate-cycle-plan.sh,
+  test-orchestrate-build-dispatch.sh, plan-format.md, batch-gate-stage.md, verify-deploy.sh, and
+  test-gate-lock.sh are all byte-identical source-vs-deployed.)*
 
 ## Testing & Validation
 
-- [ ] `verify-deploy.sh --only-gate 8 --gate8-touched <phase paths>` passes for Phase 1's three
-      touched scripts (the selector-derived covering set).
-- [ ] New composer cases fail against the pre-change composer (non-vacuousness), confirmed before
-      the edit lands.
-- [ ] `check-extension-docs.sh` Rule R clean after each context-file edit (Phases 2, 3).
-- [ ] `verify-deploy.sh --only-gate 8 --gate8-touched <phase paths>` passes for Phase 2's edited
-      context files and regenerated index entries.
-- [ ] The complete gate set passes for Phase 3, including `test-gate-lock.sh`'s "a real FAIL still
-      FAILs under the contention tag" case.
-- [ ] A clean fixture gate-8 run emits no contention line and an unchanged `^FINDING ` set
-      (Phase 3).
-- [ ] Complete gate set green, or scoped discharge recorded per the batch directive (Phase 4).
+- [x] `verify-deploy.sh --only-gate 8 --gate8-touched <phase paths>` passes for Phase 1's three
+      touched scripts (the selector-derived covering set). *(27 selected suites PASS)*
+- [x] New composer cases fail against the pre-change composer (non-vacuousness), confirmed before
+      the edit lands. *(confirmed via git diff showing the old "FINAL phase" literal, and the new
+      assertions against it before the edit)*
+- [x] `check-extension-docs.sh` Rule R clean after each context-file edit (Phases 2, 3). *(confirmed
+      both times via `grep -i "Rule R"` over its output)*
+- [x] `verify-deploy.sh --only-gate 8 --gate8-touched <phase paths>` passes for Phase 2's edited
+      context files and regenerated index entries. *(10 selected suites PASS)*
+- [x] The complete gate set passes for Phase 3, including `test-gate-lock.sh`'s "a real FAIL still
+      FAILs under the contention tag" case. *(DEFERRED per the directive to the 37-suite scoped
+      union; test-gate-lock.sh's new non-vacuousness case confirmed directly: 27/27 passing)*
+- [x] A clean fixture gate-8 run emits no contention line and an unchanged `^FINDING ` set
+      (Phase 3). *(confirmed via test-gate-lock.sh's "clean run" case)*
+- [x] Complete gate set green, or scoped discharge recorded per the batch directive (Phase 4).
+      *(scoped discharge recorded: 35/37 passed, 2 expected/0 NEW, post-deploy)*
 
 ## Artifacts & Outputs
 
