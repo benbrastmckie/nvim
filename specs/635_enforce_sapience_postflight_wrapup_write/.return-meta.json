@@ -38,21 +38,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/635_enforce_sapience_postflight_wrapup_write/summaries/01_sapience-wrapup-write-enforcement-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["verify-deploy.sh", "gate 8", "only-gate", "gate-lock", "batch-gate-deferral"]
+      "suggested_keywords": [
+        "verify-deploy.sh",
+        "gate 8",
+        "only-gate",
+        "gate-lock",
+        "batch-gate-deferral"
+      ]
     },
     {
       "content": "bash's `read -r a b < <(cmd)` reads only ONE line from the process substitution and splits it by IFS into the named variables -- it does not read successive output lines into successive variables. To capture several output lines from one command substitution into separate variables, use `mapfile -t arr < <(cmd)` and index into the array.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/635_enforce_sapience_postflight_wrapup_write/summaries/01_sapience-wrapup-write-enforcement-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["bash", "read", "mapfile", "process-substitution", "multi-line"]
+      "suggested_keywords": [
+        "bash",
+        "read",
+        "mapfile",
+        "process-substitution",
+        "multi-line"
+      ]
     },
     {
       "content": "`grep -c PATTERN FILE 2>/dev/null || echo 0` can print TWO lines when FILE exists and has zero matches: grep prints '0' to stdout on a clean zero-match run but still exits 1, which also triggers the `|| echo 0` fallback, yielding '0\\n0' where a single integer was expected downstream (e.g. in a `[ \"$n\" -eq 0 ]` test). Capture grep's own stdout via `n=\"$(grep -c ...)\" || true; echo \"${n:-0}\"` instead of appending a bare `|| echo 0` fallback after a `-c` count.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/635_enforce_sapience_postflight_wrapup_write/summaries/01_sapience-wrapup-write-enforcement-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["grep", "bash", "exit-code", "count", "fallback-bug"]
+      "suggested_keywords": [
+        "grep",
+        "bash",
+        "exit-code",
+        "count",
+        "fallback-bug"
+      ]
     }
   ],
   "sapience_notes": [

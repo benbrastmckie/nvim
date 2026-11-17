@@ -1,7 +1,7 @@
 # Implementation Plan: Task #635
 
 - **Task**: 635 - Enforce the sapience postflight wrapup write at task completion
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/635_enforce_sapience_postflight_wrapup_write/reports/01_sapience-postflight-wrapup-enforcement.md

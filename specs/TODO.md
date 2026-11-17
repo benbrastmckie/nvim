@@ -13,8 +13,8 @@ next_project_number: 643
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,590,599,604,607,613,618,627,628,629,631,632,633,635,636,639,640 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,586,592,593,598,609,610,624,630,637 | 383,390,398,410,431,438,451,453,455,463,472,476,477,504,519,535,538,539,548,549,563,564,577,599,607,628,629,635,636 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,590,599,604,607,613,618,627,628,629,631,632,633,636,639,640 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,586,592,593,598,609,610,624,630,637 | 383,390,398,410,431,438,451,453,455,463,472,476,477,504,519,535,538,539,548,549,563,564,577,599,607,628,629,636 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,480,486,492,509,513,552,566,571,594,605 | 439,452,479,484,491,518,542,586,593,604 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,561,581,588,595 | 472,476,486,492,509,539,552,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 524,596,641 | 454,501,561,595 | core-agent-system, agent-system |
@@ -181,8 +181,6 @@ next_project_number: 643
 627 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
 628 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
-635 [IMPLEMENTING] — Enforce the sapience postflight wrapup write at task completion
-  └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
 636 [PLANNED] — Close sapience activation-surface scoping gaps: vendor...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
 
@@ -543,12 +541,13 @@ GOAL. (1) verify-sapience-mcp.sh gains a check that fails when $HOME/.claude/set
 ---
 
 ### 635. Enforce the sapience postflight wrapup write at task completion
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
 - **Research**: [635_enforce_sapience_postflight_wrapup_write/reports/01_sapience-postflight-wrapup-enforcement.md]
 - **Plan**: [635_enforce_sapience_postflight_wrapup_write/plans/01_sapience-wrapup-write-enforcement.md]
+- **Summary**: [635_enforce_sapience_postflight_wrapup_write/summaries/01_sapience-wrapup-write-enforcement-summary.md]
 
 **Description**: Enforce the sapience postflight wrapup write at task completion so repo-tagged notes are actually written for every completed task, rather than depending on an instruction-level step the orchestrator can skip.
 
