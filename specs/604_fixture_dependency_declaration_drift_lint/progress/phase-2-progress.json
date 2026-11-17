@@ -4,7 +4,7 @@
   "started_at": "2026-11-17T22:05:00Z",
   "last_updated": "2026-11-17T22:35:00Z",
   "objectives": [
-    {"id": 1, "description": "Create test-lint-fixture-dependency-declaration.sh with 3 positive (pre-repair), 3 negative (current text), and 2 dedicated OPTIONAL-shape negative cases, plus the live-corpus standing case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-fixture-dependency-declaration.sh"]},
+    {"id": 1, "description": "Create test-lint-fixture-dependency-declaration.sh with 3 positive (pre-repair), 3 negative (current text), and 2 dedicated OPTIONAL-shape negative cases, plus the live-corpus standing case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-fixture-dependency-declaration.sh", "agent-system/extensions/core/scripts/lint/lint-fixture-dependency-declaration.sh"]},
     {"id": 2, "description": "Add new suite to provides.scripts via sync-manifest-scripts.sh", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
   ],
   "current_objective": 2,
