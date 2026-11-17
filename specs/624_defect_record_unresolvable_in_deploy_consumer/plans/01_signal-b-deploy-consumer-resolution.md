@@ -1,7 +1,7 @@
 # Implementation Plan: Task #624
 
 - **Task**: 624 - Make system-defect-record.sh able to attribute a dispatched-agent defect from a deploy-consumer repository
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.25 hours
 - **Dependencies**: None (both declared dependencies are closed and, per the research report, settled adjacent questions)
 - **Research Inputs**: specs/624_defect_record_unresolvable_in_deploy_consumer/reports/01_signal-b-deploy-consumer-resolution.md

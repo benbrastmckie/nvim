@@ -2717,13 +2717,14 @@
     {
       "project_number": 624,
       "project_name": "defect_record_unresolvable_in_deploy_consumer",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "Make system-defect-record.sh able to attribute a dispatched-agent defect from a deploy-consumer repository. Signal B attribution resolves --dispatched-agent by globbing PROJECT_ROOT/agent-system/extensions/*/agents/NAME.md (system-defect-record.sh around line 233), a path that exists only in the repository holding the source store. In any deploy consumer (a repo carrying only the regenerated .claude/** mirror and a .claude-extensions.json) that glob can never match, so the recorder refuses with exit 3 and the message \"Signal B attribution unresolvable ... did not resolve to a path under agent-system/extensions/**\", and the defect is lost to a non-fatal log line. Reproduced directly: invoking the deployed recorder with --defect-class RECOVERY_DECLINED --dispatched-agent general-research-agent from a consumer repo exits 3 with that message. Observed in the wild twice in one orchestration run, where cycle postflight printed \"Note: system-defect recording failed (non-fatal)\" for two RECOVERY_DECLINED detections that consequently never reached any durable store. Candidate directions: resolve the source store through .claude-extensions.json source_dir the way the source-store boundary rule already prescribes for edit targets; accept a bare agent name as attribution when no source store is reachable locally; or record the defect against the deployed .claude/agents/NAME.md path. Note the nearest closed records settled adjacent questions and not this one: 258 fixed which defect class and which attribution target apply to a declined recovery, and 426 separated stall from agent fault; neither addresses the resolver being structurally unable to find an agent file outside the source-store repository.",
       "topic": "orchestrator",
       "file_scope": [
         "__WHOLE_TREE__",
         "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+        "agent-system/extensions/core/index-entries.json",
         "agent-system/extensions/core/manifest.json",
         "agent-system/extensions/core/scripts/system-defect-record.sh",
         "agent-system/extensions/core/scripts/tests/suite-classification.data",
@@ -2731,7 +2732,7 @@
         "agent-system/extensions/core/scripts/tests/test-system-defect-record-signal-b.sh"
       ],
       "created": "2026-11-13T20:24:28Z",
-      "last_updated": "2026-11-17T22:20:25Z",
+      "last_updated": "2026-11-17T23:58:35Z",
       "audit_verdict": {
         "proposal": {
           "id": "defect_record_unresolvable_in_deploy_consumer"
@@ -2761,7 +2762,8 @@
           "summary": "Four-phase plan for resolving Signal B dispatched-agent attribution from a deploy-consumer repository via .claude-extensions.json source_dir."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed system-defect-record.sh's Signal B --dispatched-agent resolver so it can attribute an agent-definition file from a deploy-consumer repository (no agent-system/ subtree of its own) via a .claude-extensions.json source_dir fallback, reached only when the existing glob finds nothing and emitting the identical resolved-path string. Added a dedicated four-case regression suite, updated the governing discrimination document's resolver prose, and deployed + attested the fix end-to-end against a scratch consumer tree and a read-only replay against the real consumer repository that originally reproduced the defect."
     },
     {
       "project_number": 618,

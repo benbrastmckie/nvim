@@ -28,14 +28,26 @@
       "category": "PATTERN",
       "source_artifact": "specs/624_defect_record_unresolvable_in_deploy_consumer/summaries/01_signal-b-deploy-consumer-resolution-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["resolver-parity", "source-store-fallback", "path-reconstruction", "claude-extensions-json", "signal-b-attribution"]
+      "suggested_keywords": [
+        "resolver-parity",
+        "source-store-fallback",
+        "path-reconstruction",
+        "claude-extensions-json",
+        "signal-b-attribution"
+      ]
     },
     {
       "content": "verify-deploy.sh's gate 8 (tests/run-all.sh) supports --gate8-touched PATH[,PATH...] to narrow the shell-suite battery via suite_selection_select, independent of --only-gate (which selects which NUMBERED gates run, but still runs gate 8's FULL unnarrowed battery unless --gate8-touched is also given). Under a multi-task batch with a Batch Gate Deferral directive, always pass --gate8-touched with the task's own touched files alongside --only-gate -- omitting it, even with --skip-unchanged, silently falls through to the complete 200+ suite sweep and queues every sibling dispatch behind specs/.gate-lock. A narrowed run (via either --gate8-touched or run-all.sh's own --only) deliberately does not touch specs/.gate-lock at all, since suite narrowing already discharges a sub-full verification tier.",
       "category": "CONFIG",
       "source_artifact": "specs/624_defect_record_unresolvable_in_deploy_consumer/summaries/01_signal-b-deploy-consumer-resolution-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["gate8-touched", "verify-deploy", "batch-gate-deferral", "gate-lock-contention", "suite-narrowing"]
+      "suggested_keywords": [
+        "gate8-touched",
+        "verify-deploy",
+        "batch-gate-deferral",
+        "gate-lock-contention",
+        "suite-narrowing"
+      ]
     }
   ],
   "sapience_notes": [
@@ -92,7 +104,11 @@
     "session_id": "sess_1794942735_1748a1",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }
