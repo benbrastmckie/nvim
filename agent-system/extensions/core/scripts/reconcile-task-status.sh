@@ -676,6 +676,7 @@ case "$current_status" in
     if [[ "$DRY_RUN" == "true" ]]; then
       echo "[reconcile] Task $task_number: status=implementing, found summary $summary_basename"
       echo "[reconcile] Would promote: implementing -> completed via postflight implement"
+      echo "[reconcile] Would also attempt a postflight sapience note write — no write performed."
       link_artifact "$summary_file" "summary" "Implementation summary: $summary_basename"
     else
       echo "[reconcile] Task $task_number: status=implementing but summary exists ($summary_basename) — replaying postflight"
@@ -693,6 +694,15 @@ case "$current_status" in
         exit "$reconcile_rc"
       fi
       echo "[reconcile] Task $task_number: promoted implementing -> completed"
+      # Sapience postflight note write: this path bypasses skill_postflight_update and every
+      # propagation helper entirely (this script sources only lib/common.sh and
+      # deploy-root-guard.sh, never skill-base.sh), so it would otherwise never reach the
+      # mechanical write site the live orchestrate-cycle-postflight.sh path uses. Guarded on
+      # presence and non-fatal; only reached after a successful (reconcile_rc==0) promotion.
+      [ -f "$PROJECT_ROOT/.claude/scripts/postflight-sapience-notes.sh" ] && bash \
+        "$PROJECT_ROOT/.claude/scripts/postflight-sapience-notes.sh" --task-dir "$TASK_DIR" \
+        --task "$task_number" --session-id "$session_id" --phase implement \
+        || echo "Note: postflight sapience note write failed (non-fatal)" >&2
     fi
     ;;
 
@@ -726,6 +736,7 @@ case "$current_status" in
     if [[ "$DRY_RUN" == "true" ]]; then
       echo "[reconcile] Task $task_number: status=partial, found summary $summary_basename, handoff permits promotion"
       echo "[reconcile] Would promote: partial -> completed via postflight implement"
+      echo "[reconcile] Would also attempt a postflight sapience note write — no write performed."
       link_artifact "$summary_file" "summary" "Implementation summary: $summary_basename"
     else
       echo "[reconcile] Task $task_number: status=partial but summary exists ($summary_basename), handoff permits promotion — replaying postflight"
@@ -740,6 +751,12 @@ case "$current_status" in
         exit "$reconcile_rc"
       fi
       echo "[reconcile] Task $task_number: promoted partial -> completed"
+      # Sapience postflight note write: see the matching comment in the implementing) arm above
+      # for why this bypasses skill_postflight_update entirely and must be wired here too.
+      [ -f "$PROJECT_ROOT/.claude/scripts/postflight-sapience-notes.sh" ] && bash \
+        "$PROJECT_ROOT/.claude/scripts/postflight-sapience-notes.sh" --task-dir "$TASK_DIR" \
+        --task "$task_number" --session-id "$session_id" --phase implement \
+        || echo "Note: postflight sapience note write failed (non-fatal)" >&2
     fi
     ;;
 
