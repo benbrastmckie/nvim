@@ -231,7 +231,7 @@ and place the `--reap` short-circuit relative to the *constructs*, not those lin
 
 ---
 
-### Phase 2: writer-level `--reap` test cases [NOT STARTED]
+### Phase 2: writer-level `--reap` test cases [COMPLETED]
 
 **Goal**: the suite carries discriminating coverage for a registered-but-nonexistent project
 path, including the sharpest shapes: a mixed-server orphan row and the explicit emptied-object
@@ -239,26 +239,28 @@ end state.
 
 **Tasks**:
 
-- [ ] Append a new writer-level case block after the existing final case, following the file's
+- [x] Append a new writer-level case block after the existing final case, following the file's
       established fixture idiom (a per-case `HOME`/project pair under `$WORKDIR`, `jq -n` fixture
-      construction, `pass`/`fail` with the asserted values echoed on failure).
-- [ ] Case: an orphan row (path never created on disk) carrying **both** `sapience` and
+      construction, `pass`/`fail` with the asserted values echoed on failure). *(completed:
+      placed after the mutation-check block, before the Phase 3 hook cases, as cases 31-34 plus
+      a discrimination check)*
+- [x] Case: an orphan row (path never created on disk) carrying **both** `sapience` and
       `lean-lsp`. After `--reap`: `sapience` absent, `lean-lsp` present and byte-identical on the
       same row. This is the discriminating assertion for the "touch only the sapience key"
-      constraint.
-- [ ] Case: a row whose path **does** exist survives `--reap` untouched (no false-positive reap
+      constraint. *(completed: case 31)*
+- [x] Case: a row whose path **does** exist survives `--reap` untouched (no false-positive reap
       of a live project), asserted in the same fixture as the orphan case so one `--reap`
-      invocation proves both directions at once.
-- [ ] Case: an orphan row whose only server is `sapience`. After `--reap`, assert
+      invocation proves both directions at once. *(completed: case 31, same fixture/invocation)*
+- [x] Case: an orphan row whose only server is `sapience`. After `--reap`, assert
       `.mcpServers == {}` **explicitly** — not merely an absent `sapience` key, and not a deleted
       project row. This is the mechanical form of the "handled explicitly rather than abandoned"
-      requirement.
-- [ ] Case: `--reap --dry-run` mutates nothing, asserted by `md5sum` before/after, mirroring
-      existing case 4's pattern.
-- [ ] Case: an unrelated top-level key and an unrelated non-`sapience` project row both survive a
-      reap byte-for-byte, mirroring existing case 8's key-preservation idiom.
-- [ ] Extend the file's header case-list comment with the new case numbers and one-line
-      descriptions, in the existing numbered style.
+      requirement. *(completed: case 32)*
+- [x] Case: `--reap --dry-run` mutates nothing, asserted by `md5sum` before/after, mirroring
+      existing case 4's pattern. *(completed: case 33)*
+- [x] Case: an unrelated top-level key and an unrelated non-`sapience` project row both survive a
+      reap byte-for-byte, mirroring existing case 8's key-preservation idiom. *(completed: case 34)*
+- [x] Extend the file's header case-list comment with the new case numbers and one-line
+      descriptions, in the existing numbered style. *(completed)*
 
 **Timing**: 0.75 hours
 

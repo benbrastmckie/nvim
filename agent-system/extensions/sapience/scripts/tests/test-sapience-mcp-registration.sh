@@ -20,6 +20,17 @@
 #   (9) Interpreter inheritance: an existing top-level mcpServers.sapience.command is reused
 #       verbatim for a new project-scoped entry.
 #
+# --reap writer cases (Phase 2):
+#   (31) An orphan row (nonexistent path) carrying both sapience and lean-lsp: after --reap,
+#        sapience is absent and lean-lsp is present and byte-identical on the same row. A
+#        sibling row whose path DOES exist survives --reap untouched, proved in the same
+#        fixture/invocation.
+#   (32) An orphan row whose only server is sapience: after --reap, .mcpServers == {}
+#        explicitly (not merely an absent sapience key, and not a deleted project row).
+#   (33) --reap --dry-run mutates nothing (md5sum before/after).
+#   (34) An unrelated top-level key and an unrelated non-sapience project row both survive a
+#        --reap byte-for-byte.
+#
 # Hook cases (Phase 3, added once the hook exists):
 #   (10) Active repo (.claude-extensions.json shows extensions.sapience.status == "active")
 #        registers the project-scoped entry and emits an additionalContext notice.
@@ -293,6 +304,134 @@ else
     pass "Mutation check: with the whole-entry comparison neutralized to always-true, the divergent entry is LEFT UNCHANGED -- case 3 is discriminative, not vacuous"
   else
     fail "Mutation check: expected the file to remain unchanged under the neutralized comparison; before=$BEFORE_MUT after=$AFTER_MUT"
+  fi
+fi
+
+# =====================================================================
+# Case 31: an orphan row (nonexistent path) carrying BOTH sapience and lean-lsp -- after --reap,
+# sapience is absent and lean-lsp is present and byte-identical on the same row. A sibling row
+# whose path DOES exist survives --reap untouched, proved in the same invocation.
+# =====================================================================
+HOME31="$WORKDIR/case31/home"
+PRESENT31="$WORKDIR/case31/present-proj"
+mkdir -p "$HOME31" "$PRESENT31"
+ORPHAN31="$WORKDIR/case31/orphan-proj-never-created"
+LEAN_LSP_ENTRY31='{"command":"uvx","args":["lean-lsp-mcp"],"env":{"LEAN_PROJECT_PATH":"'"$ORPHAN31"'"}}'
+SAPIENCE_ENTRY31='{"command":"/x/python3","args":["/x/mcp.py"],"env":{}}'
+jq -n --arg orphan "$ORPHAN31" --arg present "$PRESENT31" \
+  --argjson lean "$LEAN_LSP_ENTRY31" --argjson sap "$SAPIENCE_ENTRY31" \
+  '{"projects": {
+      ($orphan): {"mcpServers": {"sapience": $sap, "lean-lsp": $lean}},
+      ($present): {"mcpServers": {"sapience": $sap}}
+    }}' \
+  > "$HOME31/.claude.json"
+
+HOME="$HOME31" bash "$WRITER_SRC" --reap > /dev/null 2>&1
+ORPHAN_SAPIENCE31=$(jq -c --arg p "$ORPHAN31" '.projects[$p].mcpServers.sapience // "ABSENT"' "$HOME31/.claude.json")
+ORPHAN_LEAN31=$(jq -c --arg p "$ORPHAN31" '.projects[$p].mcpServers."lean-lsp" // "ABSENT"' "$HOME31/.claude.json")
+PRESENT_SAPIENCE31=$(jq -c --arg p "$PRESENT31" '.projects[$p].mcpServers.sapience // "ABSENT"' "$HOME31/.claude.json")
+EXPECTED_LEAN31=$(jq -c -n --argjson lean "$LEAN_LSP_ENTRY31" '$lean')
+EXPECTED_SAP31=$(jq -c -n --argjson sap "$SAPIENCE_ENTRY31" '$sap')
+
+if [ "$ORPHAN_SAPIENCE31" = '"ABSENT"' ] && [ "$ORPHAN_LEAN31" = "$EXPECTED_LEAN31" ] && [ "$PRESENT_SAPIENCE31" = "$EXPECTED_SAP31" ]; then
+  pass "Case 31: --reap removes sapience from an orphan row while preserving lean-lsp on that row and leaving a present-path row untouched"
+else
+  fail "Case 31: orphan_sapience=$ORPHAN_SAPIENCE31 orphan_lean=$ORPHAN_LEAN31 (expected $EXPECTED_LEAN31) present_sapience=$PRESENT_SAPIENCE31 (expected $EXPECTED_SAP31)"
+fi
+
+# =====================================================================
+# Case 32: an orphan row whose ONLY server is sapience -- after --reap, .mcpServers == {}
+# explicitly (not merely an absent sapience key, and not a deleted project row).
+# =====================================================================
+HOME32="$WORKDIR/case32/home"
+mkdir -p "$HOME32"
+ORPHAN32="$WORKDIR/case32/orphan-proj-never-created"
+jq -n --arg orphan "$ORPHAN32" \
+  '{"projects": {($orphan): {"mcpServers": {"sapience": {"command":"/x/python3","args":["/x/mcp.py"],"env":{}}}}}}' \
+  > "$HOME32/.claude.json"
+
+HOME="$HOME32" bash "$WRITER_SRC" --reap > /dev/null 2>&1
+MCPSERVERS32=$(jq -c --arg p "$ORPHAN32" '.projects[$p].mcpServers' "$HOME32/.claude.json")
+HAS_ROW32=$(jq -r --arg p "$ORPHAN32" '.projects | has($p)' "$HOME32/.claude.json")
+
+if [ "$MCPSERVERS32" = '{}' ] && [ "$HAS_ROW32" = "true" ]; then
+  pass "Case 32: an orphan row whose only server is sapience ends with .mcpServers == {} explicitly, project row retained"
+else
+  fail "Case 32: expected mcpServers={} with row retained; got mcpServers=$MCPSERVERS32 has_row=$HAS_ROW32"
+fi
+
+# =====================================================================
+# Case 33: --reap --dry-run mutates nothing (md5sum before/after), mirroring case 4's pattern.
+# =====================================================================
+HOME33="$WORKDIR/case33/home"
+mkdir -p "$HOME33"
+ORPHAN33="$WORKDIR/case33/orphan-proj-never-created"
+jq -n --arg orphan "$ORPHAN33" \
+  '{"projects": {($orphan): {"mcpServers": {"sapience": {"command":"/x/python3","args":["/x/mcp.py"],"env":{}}}}}}' \
+  > "$HOME33/.claude.json"
+BEFORE33=$(md5sum "$HOME33/.claude.json" | awk '{print $1}')
+HOME="$HOME33" bash "$WRITER_SRC" --reap --dry-run > /dev/null 2>&1
+AFTER33=$(md5sum "$HOME33/.claude.json" | awk '{print $1}')
+
+if [ "$BEFORE33" = "$AFTER33" ]; then
+  pass "Case 33: --reap --dry-run mutates nothing"
+else
+  fail "Case 33: --reap --dry-run changed the file (before=$BEFORE33 after=$AFTER33)"
+fi
+
+# =====================================================================
+# Case 34: an unrelated top-level key and an unrelated non-sapience project row both survive a
+# --reap byte-for-byte, mirroring case 8's key-preservation idiom.
+# =====================================================================
+HOME34="$WORKDIR/case34/home"
+OTHER34="$WORKDIR/case34/other-proj"
+mkdir -p "$HOME34" "$OTHER34"
+ORPHAN34="$WORKDIR/case34/orphan-proj-never-created"
+jq -n --arg orphan "$ORPHAN34" --arg other "$OTHER34" \
+  '{"unrelatedTopLevelKey": {"nested": true, "value": 42},
+    "projects": {
+      ($orphan): {"mcpServers": {"sapience": {"command":"/x/python3","args":["/x/mcp.py"],"env":{}}}},
+      ($other): {"mcpServers": {"lean-lsp": {"command": "uvx", "args": ["lean-lsp-mcp"], "env": {"LEAN_PROJECT_PATH": $other}}}}
+    }}' \
+  > "$HOME34/.claude.json"
+
+HOME="$HOME34" bash "$WRITER_SRC" --reap > /dev/null 2>&1
+UNRELATED34=$(jq -c '.unrelatedTopLevelKey' "$HOME34/.claude.json")
+OTHER_ENTRY34=$(jq -c --arg o "$OTHER34" '.projects[$o].mcpServers."lean-lsp"' "$HOME34/.claude.json")
+EXPECTED_UNRELATED34='{"nested":true,"value":42}'
+EXPECTED_OTHER34=$(jq -c -n --arg o "$OTHER34" '{"command":"uvx","args":["lean-lsp-mcp"],"env":{"LEAN_PROJECT_PATH":$o}}')
+
+if [ "$UNRELATED34" = "$EXPECTED_UNRELATED34" ] && [ "$OTHER_ENTRY34" = "$EXPECTED_OTHER34" ]; then
+  pass "Case 34: an unrelated top-level key and an unrelated non-sapience project row both survive a --reap byte-for-byte"
+else
+  fail "Case 34: unrelated=$UNRELATED34 (expected $EXPECTED_UNRELATED34), other=$OTHER_ENTRY34 (expected $EXPECTED_OTHER34)"
+fi
+
+# =====================================================================
+# Discrimination check (run, not assumed): with process_reap's `[ ! -d "$p" ]` filter inverted,
+# the orphan-row cases must FAIL -- proving they depend on the real filter rather than passing
+# vacuously. Reverted immediately after; the mutated copy lives only under $WORKDIR.
+# =====================================================================
+MUTATED_REAP_WRITER="$WORKDIR/mutated-reap-setup-sapience-mcp.sh"
+sed 's/if \[ ! -d "\$path" \]; then/if [ -d "$path" ]; then/' "$WRITER_SRC" > "$MUTATED_REAP_WRITER"
+chmod +x "$MUTATED_REAP_WRITER"
+
+if ! grep -q 'if \[ -d "\$path" \]; then' "$MUTATED_REAP_WRITER"; then
+  fail "Discrimination check setup: sed substitution did not find the expected orphan filter in $WRITER_SRC -- discrimination check did not run"
+else
+  HOME_DISC="$WORKDIR/case_disc/home"
+  mkdir -p "$HOME_DISC"
+  ORPHAN_DISC="$WORKDIR/case_disc/orphan-proj-never-created"
+  jq -n --arg orphan "$ORPHAN_DISC" \
+    '{"projects": {($orphan): {"mcpServers": {"sapience": {"command":"/x/python3","args":["/x/mcp.py"],"env":{}}}}}}' \
+    > "$HOME_DISC/.claude.json"
+  HOME="$HOME_DISC" bash "$MUTATED_REAP_WRITER" --reap > /dev/null 2>&1
+  SAPIENCE_DISC=$(jq -c --arg p "$ORPHAN_DISC" '.projects[$p].mcpServers.sapience // "ABSENT"' "$HOME_DISC/.claude.json")
+
+  if [ "$SAPIENCE_DISC" != '"ABSENT"' ]; then
+    pass "Discrimination check: with the [ ! -d ] orphan filter inverted, the orphan row's sapience entry survives -- cases 31-34 depend on the real filter, not a vacuous pass"
+  else
+    fail "Discrimination check: expected the orphan's sapience entry to survive under the inverted filter; it was reaped anyway (sapience=$SAPIENCE_DISC)"
   fi
 fi
 
