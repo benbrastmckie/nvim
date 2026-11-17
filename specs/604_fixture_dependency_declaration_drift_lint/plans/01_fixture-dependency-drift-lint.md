@@ -252,35 +252,47 @@ itself.
 
 ---
 
-### Phase 2: Regression fixture suite [NOT STARTED]
+### Phase 2: Regression fixture suite [COMPLETED]
 
 **Goal**: `scripts/tests/test-lint-fixture-dependency-declaration.sh` proves the detector flags
 `lib/project-number-inuse.sh` as missing in all three measured pre-repair declarations (covering
 both shapes) and stays clean on current text and on the OPTIONAL guard shapes.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/manifest.json` immediately before editing it
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-lint-fixture-dependency-declaration.sh`
+- [x] Re-read `agent-system/extensions/core/manifest.json` immediately before editing it *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/tests/test-lint-fixture-dependency-declaration.sh`
       following `context/standards/shell-script-testing.md`'s required structural model
       (`mktemp`/trap/pass-fail counters) and the explicit
       `common_test_resolve_subject`/`common_test_declare_subject` declaration pair — gate 27
-      enforces the paired declaration on every suite in this corpus
-- [ ] Seed three positive fixtures from the exact pre-repair text:
+      enforces the paired declaration on every suite in this corpus *(completed; also added an
+      explicit self-exemption in the lint itself for this suite's own heredoc-embedded fixture
+      text, matching lint-subject-resolution-declaration.sh's own precedent, rather than relying
+      on a coincidental non-violation)*
+- [x] Seed three positive fixtures from the exact pre-repair text:
       `git show d3e45535e^:<path to test-postflight-deploy-gate.sh>`,
       `git show 1c10b01f7^:<path to test-redeploy-checkpoint-promotion.sh>`,
       `git show 4c96ccb4f^:<path to test-orchestrate-predispatch-review.sh>`. Confirm each path
       spelling actually resolves at that commit before relying on it — the source-store path may
       differ there. Assert the detector reports `lib/project-number-inuse.sh` missing for each
-- [ ] The third fixture is the Shape-2 open-coded suite, so this one fixture set exercises both
-      declaration shapes; assert that explicitly rather than leaving it implicit
-- [ ] Three matching negative fixtures from the same three suites' current text: clean, zero
-      violations
-- [ ] Dedicated OPTIONAL-shape negative cases: shape (ii) — `_RR_LIB`'s
+      *(completed: all three paths resolved as named, no spelling drift)*
+- [x] The third fixture is the Shape-2 open-coded suite, so this one fixture set exercises both
+      declaration shapes; assert that explicitly rather than leaving it implicit *(completed: each
+      case records and asserts its own shape label)*
+- [x] Three matching negative fixtures from the same three suites' current text: clean, zero
+      violations *(completed)*
+- [x] Dedicated OPTIONAL-shape negative cases: shape (ii) — `_RR_LIB`'s
       `[ -f "$V" ] && . "$V"` idiom, deliberately absent from every suite's declared list today —
       and shape (iii) — the log-and-continue `*_CANDIDATES` pass-through
-      (`OVERLAP_LIB`/`DEPLOY_FRESHNESS_LIB`). Neither may be reported as missing
-- [ ] Add the new suite to `provides.scripts`:
+      (`OVERLAP_LIB`/`DEPLOY_FRESHNESS_LIB`). Neither may be reported as missing *(completed:
+      isolated as two separate synthetic fixtures, one per shape, each declaring the OTHER
+      shape's optional dependency so a misclassification of either is independently detectable.
+      The shape-iii case surfaced and drove the fix of a real detector bug — see Plan Deviations
+      in the summary — the body-scan was not skipping comment lines, so update-task-status.sh's
+      own prose comment describing an unrelated quirk ("...which returns exit 1 at heredoc
+      EOF...") was misread as a hard-fail signal)*
+- [x] Add the new suite to `provides.scripts`:
       `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write`, then `--check`
+      *(completed)*
 
 **Timing**: 1.5 hours
 

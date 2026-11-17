@@ -388,6 +388,7 @@
       "tests/test-lint-deploy-caller-wrap.sh",
       "tests/test-lint-directory-pathspec-boundary.sh",
       "tests/test-lint-extension-readme-table.sh",
+      "tests/test-lint-fixture-dependency-declaration.sh",
       "tests/test-lint-hook-registration-paths.sh",
       "tests/test-lint-json-channel-discipline.sh",
       "tests/test-lint-lifecycle-status-var.sh",
