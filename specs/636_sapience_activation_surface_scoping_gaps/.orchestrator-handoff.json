@@ -1,0 +1,21 @@
+{
+  "status": "planned",
+  "dispatch_seq": 8,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a 6-phase, 6.5-hour implementation plan covering all five dispatched GOAL items, confined to the sapience source store. Phases 1-3 add named checks (g)/(h)/(i) to verify-sapience-mcp.sh (vendor machine-wide hook recurrence, active-but-hook-fragment-never-merged, capture/activation coupling); Phase 4 adds a --repeat N unanimous-agreement verdict to verify-sapience-context-scoping.sh with a new curl-stubbed suite; Phase 5 rewrites the two falsified doc sections; Phase 6 redeploys and runs the complete gate set. GOAL (2)'s reconciliation sub-question is ruled in favor of stopping at the verifier check, with capture.projects[].enabled writing recorded as belonging in ~/.dotfiles.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/636_sapience_activation_surface_scoping_gaps/plans/01_activation-surface-scoping-gaps.md",
+      "summary": "6-phase plan (6.5h) closing the five sapience activation-surface scoping gaps: three new verify-sapience-mcp.sh checks, an N-repeat agreement verdict in the context-scoping probe, two documentation rewrites, and a redeploy plus full gate run."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1794907446_b4b581_636",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  }
+}

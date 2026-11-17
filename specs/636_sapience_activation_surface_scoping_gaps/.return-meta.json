@@ -1,33 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/636_sapience_activation_surface_scoping_gaps/reports/01_activation-surface-scoping-gaps.md",
-      "summary": "Traces the vendor hook-recurrence mechanism, confirms live capture/activation coupling asymmetry, finds abood's unmerged-hook-fragment signal, designs the N-repeat agreement rule, and scopes the two doc rewrites for the five dispatched GOAL items."
+      "type": "plan",
+      "path": "specs/636_sapience_activation_surface_scoping_gaps/plans/01_activation-surface-scoping-gaps.md",
+      "summary": "6-phase plan (6.5h) closing the five sapience activation-surface scoping gaps: three new verify-sapience-mcp.sh checks, an N-repeat agreement verdict in the context-scoping probe, two documentation rewrites, and a redeploy plus full gate run."
     }
   ],
-  "next_steps": "Run /orchestrate 636 to create implementation plan",
+  "next_steps": "Run /orchestrate 636 to execute the plan",
   "metadata": {
     "session_id": "sess_1794907446_b4b581_636",
-    "agent_type": "general-research-agent",
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 6.5,
+    "dependency_waves": [[1, 4], [2], [3], [5], [6]]
   },
-  "dispatch_seq": 4,
+  "dispatch_seq": 8,
   "memory_candidates": [
     {
-      "content": "Sapience vendor client (~/.sapience/sapience_upkeep.py) re-adds three Claude Code hooks (SessionStart --briefing-text, SessionEnd --receipt, Stop --effect-line) to $HOME/.claude/settings.json unconditionally on every auto_update/update --wire pass, UNLESS ~/.sapience/config.json's \"hooks\" key is false or SAPIENCE_NO_HOOKS=1 is set (hooks_opted_out()). This is independent of any repository's own sapience extension load state -- a machine-wide recurrence risk any verifier for this extension should check.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/636_sapience_activation_surface_scoping_gaps/reports/01_activation-surface-scoping-gaps.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["sapience", "hooks", "vendor", "auto_update", "settings.json"]
-    },
-    {
-      "content": "Sapience transcript capture is gated by a SEPARATE opt-in list, ~/.sapience/config.json's capture.projects[].enabled (matched by longest path_prefix, mirroring sapience_capture.py's for_cwd()), unconnected to a repository's own sapience extension activation state (.claude-extensions.json's extensions.sapience.status). A repository can be active-extension with capture disabled/absent (observed: BimodalLogic, Sapience/sf1-engine) or, in principle, capture-enabled with the extension inactive (not observed but possible) -- no existing script in the extension's source store reads or writes this list.",
+      "content": "In this repository, two coupled generated surfaces each have a named one-command repair that a plan should schedule in the SAME phase that moves the input, rather than deferring: adding any script to an extension's source store requires it in manifest.json's provides.scripts (check-extension-docs.sh Rule Q), repaired by `scripts/sync-manifest-scripts.sh --write`; and editing any indexed context/** file moves that file's index-entries.json line_count (Rule R), repaired by `scripts/generate-context-line-counts.sh --write`. Neither check is commit-blocking here (no pre-commit hook is installed), but a phase whose own verification runs verify-deploy.sh gate 3 will fail on the drift, so same-phase reconciliation is the cheaper authoring choice. Separately: a plan phase that creates a NOT-YET-EXISTING test file cannot honestly claim a covering suite -- suite_selection_select returns __FULL_SWEEP__ for a path that is not on disk, and validate-artifact.sh's Tier Justification measurement check flags any named suite as fabricated.",
       "category": "PATTERN",
-      "source_artifact": "specs/636_sapience_activation_surface_scoping_gaps/reports/01_activation-surface-scoping-gaps.md",
+      "source_artifact": "specs/636_sapience_activation_surface_scoping_gaps/plans/01_activation-surface-scoping-gaps.md",
       "confidence": 0.85,
-      "suggested_keywords": ["sapience", "capture", "config.json", "activation", "coupling"]
+      "suggested_keywords": ["plan-authoring", "coupled-generated-surface", "manifest-provides-scripts", "index-entries-line-count", "suite-selection", "verification-tier"]
     }
   ]
 }

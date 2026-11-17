@@ -182,7 +182,7 @@ next_project_number: 643
 627 [PLANNING] — SOURCE STORE IS THE EDIT TARGET:...
 635 [PLANNED] — Enforce the sapience postflight wrapup write at task completion
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
-636 [PLANNING] — Close sapience activation-surface scoping gaps: vendor...
+636 [PLANNED] — Close sapience activation-surface scoping gaps: vendor...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
 628 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
@@ -522,11 +522,12 @@ TERRITORY, SETTLED AT CREATION. Task 547 ("Confirm the blocker-research aux carr
 ---
 
 ### 636. Close sapience activation-surface scoping gaps: vendor user-level hooks, capture coupling, verifier and docs
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
 - **Research**: [636_sapience_activation_surface_scoping_gaps/reports/01_activation-surface-scoping-gaps.md]
+- **Plan**: [636_sapience_activation_surface_scoping_gaps/plans/01_activation-surface-scoping-gaps.md]
 
 **Description**: Close the remaining per-repo scoping gaps in the sapience extension's activation surface: detect machine-wide vendor hooks, couple transcript capture to extension activation, and correct the documentation that claims neither gap exists.
 
