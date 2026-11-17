@@ -702,7 +702,9 @@
         "agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh",
         "agent-system/extensions/sapience/scripts/tests/test-postflight-sapience-notes.sh",
         "agent-system/extensions/core/context/standards/error-recovery-strategies.md",
-        "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"
+        "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh",
+        "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/sapience/index-entries.json"
       ]
     },
     {

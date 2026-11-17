@@ -14,28 +14,18 @@ hook surfaces total, five extension-merged. See `domain/per-repo-scoping.md`.
 
 **What this extension adds**: besides the grants and hooks above, three scripts deployed to
 `.claude/scripts/`: `scripts/sapience-retrieve.sh` (core's `orchestrate-build-dispatch.sh`
-Stage 3.5 `memory_context` block), `scripts/sapience-remember.sh` (the single prescribed write
-path, invoked below), and `scripts/postflight-sapience-notes.sh` (the mechanical write site,
-invoked below). See `domain/per-repo-scoping.md` for all three scripts' contracts and hazards,
-and for the per-project MCP-registration triad (`setup-sapience-mcp.sh`, the registration hook,
-the installer, the verifier).
+Stage 3.5 `memory_context` block), and `scripts/sapience-remember.sh` plus
+`scripts/postflight-sapience-notes.sh` (both invoked by the postflight wrapup below). See
+`domain/per-repo-scoping.md` for all three scripts' contracts/hazards and the per-project
+MCP-registration triad (`setup-sapience-mcp.sh`, the registration hook, installer, verifier).
 
-**Postflight wrapup**: the write is mechanically anchored, not instruction-dependent. The
-completing implementation agent emits 3-8 notes as the top-level `sapience_notes` array in its
-own `.return-meta.json`. At the `[IMPLEMENTING]` -> `[COMPLETED]` transition,
-`scripts/postflight-sapience-notes.sh` reads that array and performs one
-`scripts/sapience-remember.sh` call per note, non-fatally, replacing the untagged
-`sapience_wrapup` call. This fires on both the live `/orchestrate` completion path and the
-deferred completion path (a deploy-gate refusal later settled by `reconcile-task-status.sh`),
-since both invoke the write script directly rather than through a shared propagation helper
-either one might otherwise bypass. The 8-note ceiling is a pre-write length check performed
-once by the write script, never a running counter; zero notes for a completed task is recorded
-as a visible, non-blocking `knowledge-capture gap` issue row rather than silently skipped. Do
-NOT call `sapience_remember` proactively mid-run -- see `domain/review-gate-boundary.md`'s
-`## Write-Tool Disposition` section for the per-tool reasoning. A non-zero
-`sapience-remember.sh` exit (`set_aside`, `gated`, `written == 0`, `ok != true`) is MIRRORED
-non-fatally via `issue-record.sh` (`--class "infrastructure/transport unavailable"`) by the
-write script, one row per failed note; the degrade rule is unchanged.
+**Postflight wrapup**: mechanically anchored, not instruction-dependent. The completing
+implementation agent emits 3-8 notes as the top-level `sapience_notes` array in
+`.return-meta.json`; `scripts/postflight-sapience-notes.sh` performs one
+`scripts/sapience-remember.sh` call per note at the `[IMPLEMENTING]` -> `[COMPLETED]` transition
+on both completion paths, replacing the untagged `sapience_wrapup` call (full contract:
+`domain/per-repo-scoping.md`, Tagged-Write Call Site). Do NOT call `sapience_remember`
+proactively mid-run -- see `domain/review-gate-boundary.md`'s Write-Tool Disposition section.
 
 **Superseding the vendor SessionStart nudge**: the Sapience SessionStart briefing's own standing
 instruction to save a decision with `sapience_remember` as soon as it lands is superseded here

@@ -2,15 +2,23 @@
   "phase": 5,
   "phase_name": "Sapience Domain Docs State the Wired Design",
   "started_at": "2026-11-17T14:10:00Z",
-  "last_updated": "2026-11-17T14:40:00Z",
+  "last_updated": "2026-11-17T15:00:00Z",
   "objectives": [
     {"id": 1, "description": "Rewrite EXTENSION.md's Postflight wrapup and What this extension adds paragraphs to state the mechanical design", "status": "done", "files_touched": ["agent-system/extensions/sapience/EXTENSION.md"]},
-    {"id": 2, "description": "Rewrite per-repo-scoping.md's Tagged-Write Call Site and No Lifecycle Hook sections; check Hazards census and sapience-write-path.md's 14-file count", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]}
+    {"id": 2, "description": "Rewrite per-repo-scoping.md's Tagged-Write Call Site and No Lifecycle Hook sections; check Hazards census and sapience-write-path.md's 14-file count", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 3, "description": "Fix doc-lint (gate 3) regressions: trim EXTENSION.md to the 60-line limit, regenerate stale index-entries.json line_count entries", "status": "done", "files_touched": ["agent-system/extensions/sapience/EXTENSION.md", "agent-system/extensions/core/index-entries.json", "agent-system/extensions/sapience/index-entries.json"]}
   ],
-  "current_objective": 2,
+  "current_objective": 3,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": [
+    {
+      "task_id": "5-verification",
+      "description": "check-extension-docs.sh (gate 3) surfaced two real defects from Phase 5's own edit: EXTENSION.md grew to 70 lines (Rule U's 60-line limit) and per-repo-scoping.md's index-entries.json line_count entry went stale (declared 281, actual 300, Rule R)",
+      "type": "altered",
+      "reason": "Trimmed EXTENSION.md's Postflight wrapup and What-this-extension-adds paragraphs (deferring full contract detail to per-repo-scoping.md, which already carries it) back to exactly 60 lines. Ran generate-context-line-counts.sh --write (deployed copy; source-store-only refused by deploy-root-guard.sh) to regenerate every stale line_count, which also corrected two PRE-EXISTING, task-caused (not drive-by) entries in core/index-entries.json for return-metadata-file.md and issue-log.md -- both edited in Phase 1, whose line_count entries were never regenerated at the time. file_scope was widened (state-write.sh, dry-run verified first) to include both index-entries.json files before committing, since these are genuinely this task's own files, not an accidental excursion.",
+      "annotation": null
+    },
     {
       "task_id": "5.3",
       "description": "Hazards section permanent/unreviewed-write census check",
