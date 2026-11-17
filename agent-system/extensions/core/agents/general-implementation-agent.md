@@ -855,9 +855,47 @@ For each candidate, create an object with:
 
 Store the candidates array in memory for inclusion in the metadata file at Stage 7. If no candidates are worth emitting, use an empty array.
 
+### Stage 6c: Emit Sapience Notes
+
+Review work completed across all phases and emit 3-8 structured notes for the hosted Sapience
+vault — a **different destination from Stage 6b's `memory_candidates`** above: those go to this
+repository's local `specs/state.json` for `/todo` to consume at archival, while these go to the
+hosted vault via a tagged `POST /ingest-kos` call (`scripts/postflight-sapience-notes.sh`,
+invoked mechanically at the `[IMPLEMENTING]` -> `[COMPLETED]` transition — see
+`context/formats/return-metadata-file.md`'s `### sapience_notes (optional)` section). Every
+vault write is **permanent and unreviewed** — there is no delete API — so the 3-8 bound is worth
+respecting: fewer than 3 is recorded as a visible, non-blocking `knowledge-capture gap` issue
+row at the write site; more than 8 is truncated to the first 8 at that same site.
+
+**What to capture** — durable, cross-session findings, distinct from Stage 6b's in-repo
+reusable-pattern framing:
+- A decision made during this task and its rationale
+- A measured fact about an external system (a tool's actual behavior, a service's actual
+  response shape, a library's actual API surface)
+- A correction to a previously-held belief this task's work disproved
+- A non-obvious constraint discovered during the work
+
+**What NOT to capture**:
+- A reusable code pattern or technique — that belongs in Stage 6b's `memory_candidates` instead
+- Task-specific implementation detail with no standing value beyond this one task
+- Anything already recorded in `.claude/context/` or a prior Sapience note
+
+**Note Construction**:
+For each note, create an object with:
+- `subject` (string, required): what the note is about
+- `value` (string, required): the finding itself
+- `predicate` (string, optional): defaults to `"finding is"` if omitted
+- `ko_type` (string, optional): defaults to `"insight"` if omitted
+- `confidence` (number, optional): defaults to `0.8` if omitted
+- `source_loc` (string, optional): a file:line or artifact path grounding the note
+
+Store the notes array in memory for inclusion in the metadata file at Stage 7 as the top-level
+`sapience_notes` field. If genuinely nothing durable was learned, use an empty array — the
+zero-note gap is recorded visibly by the write site, never silently.
+
 ### Stage 7: Write Metadata File
 
-Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`. Include `completion_data` with `completion_summary` (all tasks). Include `memory_candidates` array (from Stage 6b) at the top level of the JSON output. Include `modified_files` (from Stage 6-modified-files) at the top level of the JSON output — this is the agent's self-reported list of every source file touched, consumed by the commit pipeline for targeted staging (see `@.claude/context/standards/git-staging-scope.md`).
+Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial|failed`. Include `completion_data` with `completion_summary` (all tasks). Include `memory_candidates` array (from Stage 6b) at the top level of the JSON output. Include `sapience_notes` array (from Stage 6c) at the top level of the JSON output — a sibling field targeting a different destination (the hosted Sapience vault, never `specs/state.json`), never nested under `completion_data` and never merged with `memory_candidates`. Include `modified_files` (from Stage 6-modified-files) at the top level of the JSON output — this is the agent's self-reported list of every source file touched, consumed by the commit pipeline for targeted staging (see `@.claude/context/standards/git-staging-scope.md`).
 
 **Preserve any `proposed_file_scope` already deposited mid-dispatch — read-modify-write, never blind-overwrite.** Before writing this final `.return-meta.json`, read the file as it currently stands on disk and check whether it already carries a `proposed_file_scope` array. It may have been deposited by `scripts/git-commit-phase.sh` itself, at a phase commit earlier in this same dispatch, when its own Containment Self-Check dropped a `files_touched` path for not being in the declared `file_scope` (see the Self-Check's step 4 above). On this path the agent is a **later writer** of the field, not its producer — `scripts/git-commit-phase.sh` is. Carry any such array through this write untouched rather than building a fresh object that omits it; losing it here silently reintroduces the exact staleness this task's mechanism exists to close, on the very next phase's commit. See `@.claude/context/formats/return-metadata-file.md`'s "Multiple Sequential Writers" section and its `proposed_file_scope` field specification for the full per-operation producer table.
 
@@ -881,6 +919,7 @@ Write to `specs/{NNN}_{SLUG}/.return-meta.json` with status `implemented|partial
   },
   "modified_files": ["path/to/file/one.ext", "path/to/file/two.ext"],
   "memory_candidates": [],
+  "sapience_notes": [],
   "metadata": {
     "session_id": "sess_...",
     "agent_type": "general-implementation-agent",

@@ -407,27 +407,27 @@ third reconcile arm) is a scope-hypothesis miss to report, not to absorb silentl
 
 ---
 
-### Phase 4: Emission Instruction Surfaces [NOT STARTED]
+### Phase 4: Emission Instruction Surfaces [IN PROGRESS]
 
 **Goal**: Make every completing implementation agent — in every domain, not only
 general/meta/markdown — actually author the notes the mechanical site writes.
 
 **Tasks**:
-- [ ] Add `### Stage 6c: Emit Sapience Notes` to
+- [x] Add `### Stage 6c: Emit Sapience Notes` to
       `agent-system/extensions/core/agents/general-implementation-agent.md`, immediately after
       Stage 6b (which currently ends at line 857) and before Stage 7. Mirror Stage 6b's
       structure: a cardinality line (3-8 notes), a "What to capture" list, a "What NOT to
-      capture" list, and a per-object construction list.
-- [ ] Scope the capture guidance to *durable, cross-session* findings — a decision and its
+      capture" list, and a per-object construction list. *(completed)*
+- [x] Scope the capture guidance to *durable, cross-session* findings — a decision and its
       rationale, a measured fact about an external system, a correction to a previously-held
       belief, a non-obvious constraint discovered in the work — and distinguish it explicitly
       from Stage 6b's in-repo reusable-pattern framing, naming the different destinations.
       State that fewer than 3 notes is recorded as a visible gap and that more than 8 are
-      truncated at the write site, so the bound is worth respecting.
-- [ ] Update that agent's Stage 7 write-up line (line 860) to name `sapience_notes` alongside
+      truncated at the write site, so the bound is worth respecting. *(completed)*
+- [x] Update that agent's Stage 7 write-up line (line 860) to name `sapience_notes` alongside
       `memory_candidates` and `modified_files` as a top-level field, and add
       `"sapience_notes": []` to the worked `.return-meta.json` example (near line 883) so the
-      shape is visible rather than only described.
+      shape is visible rather than only described. *(completed)*
 - [ ] In `agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh`, add a short
       `sapience_notes` instruction block to the dispatch body, emitted only when `$phase` is
       `implement` **and** `${SKILL_REPO_ROOT}/.claude/scripts/sapience-remember.sh` exists.
