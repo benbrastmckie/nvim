@@ -700,7 +700,9 @@
         "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
         "agent-system/extensions/sapience/manifest.json",
         "agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh",
-        "agent-system/extensions/sapience/scripts/tests/test-postflight-sapience-notes.sh"
+        "agent-system/extensions/sapience/scripts/tests/test-postflight-sapience-notes.sh",
+        "agent-system/extensions/core/context/standards/error-recovery-strategies.md",
+        "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"
       ]
     },
     {

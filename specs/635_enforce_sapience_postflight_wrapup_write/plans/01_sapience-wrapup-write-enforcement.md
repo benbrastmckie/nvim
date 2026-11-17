@@ -129,7 +129,7 @@ No `roadmap_path` was provided in this dispatch context; no roadmap phases are i
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Contract Surfaces — `sapience_notes` Field Spec and Gap Class [IN PROGRESS]
+### Phase 1: Contract Surfaces — `sapience_notes` Field Spec and Gap Class [COMPLETED]
 
 **Goal**: Land the two contract surfaces every later phase references — the
 `.return-meta.json` field specification and the `issue-record.sh` class the zero-notes gap uses —

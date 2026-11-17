@@ -2,7 +2,7 @@
   "phase": 1,
   "phase_name": "Contract Surfaces — sapience_notes Field Spec and Gap Class",
   "started_at": "2026-11-17T10:35:40Z",
-  "last_updated": "2026-11-17T10:55:00Z",
+  "last_updated": "2026-11-17T11:05:00Z",
   "objectives": [
     {"id": 1, "description": "Add ### sapience_notes (optional) section to return-metadata-file.md, including the non-interchangeable-with-memory_candidates statement", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/return-metadata-file.md"]},
     {"id": 2, "description": "Add knowledge-capture gap seed-class row to issue-log.md with seeded-on-introduction statement", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/issue-log.md"]},
@@ -19,6 +19,13 @@
       "type": "altered",
       "reason": "Scope Hypothesis expected exactly 2 files; actual was 4 files (orchestrate-conclusion-aggregate.sh carries a third, previously-unsynced seed-class JSON array, and error-recovery-strategies.md has its own reference). Updated all 4, left issue-log.md's unrelated system_defect/system-defect-record.sh row at 16 since it names a different closed enum.",
       "annotation": "*(completed: found 10 occurrences across 4 files, not 2 as hypothesized ...)*"
+    },
+    {
+      "task_id": "1.5",
+      "description": "Phase-Commit Containment Self-Check dropped error-recovery-strategies.md and orchestrate-conclusion-aggregate.sh from the objective-4 green-substep commit (not in task 635's initially-declared file_scope)",
+      "type": "altered",
+      "reason": "These two files are genuinely in-scope work (the scope-hypothesis miss above), not an accidental excursion, so file_scope was widened via state-write.sh (dry-run verified first) to include both paths, then a scoped git-commit-scoped.sh follow-up commit landed them.",
+      "annotation": null
     }
   ]
 }
