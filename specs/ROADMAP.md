@@ -140,7 +140,6 @@ pass. `/todo` and `/review` reach `--regenerate` behind the shared preflight cla
 `skill-orchestrate` names and a dedicated suite covers.
 
 ```
-/orchestrate 638   # Prioritized run: four defects in what one dispatch hands the next, in the order their files force
 /orchestrate 572, 591   # The verify-deploy.sh lane: make a declared full tier honorable under load, then rule on errors.json
 /orchestrate 527, 628, 635, 636, 627, 637   # Sapience per-repo activation: its enabling blocker, three surface defects, and the close-out
 /orchestrate 476, 624, 586, 604, 605   # Gate 8's residual roster, its two lints and the defect recorder, serialized on one suite
@@ -656,7 +655,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 
 ## Open work
 
-**Core agent system (44)**
+**Core agent system (43)**
 ```
 476 IN FLIGHT       Make the seven untracked red Gate 8 shell suites green or declared-expected
 439 blocked:431     Rule on the propagation model for the bounded-wait agent contract
@@ -701,7 +700,6 @@ None is a whole-corpus discovery scope, and none is a defect.
 604 ready           Lint-time detector for drifted test-fixture dependency declarations, in both ...
 613 ready           session_liveness_same_process_orphan_lock
 618 ready           working_tree_residue_disposition_policy
-638 ready           Make /orchestrate's phase selector pick the first enterable phase, not the fi...
 ```
 
 **Extensions (7)**
