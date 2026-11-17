@@ -6,6 +6,13 @@
     "session_id": "sess_1794907446_b4b581",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
+  },
+  "proposed_file_scope": [
+    "agent-system/extensions/sapience/index-entries.json"
+  ]
 }

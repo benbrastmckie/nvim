@@ -381,40 +381,44 @@ assert `{}` by grepping the suite for the `= '{}'` comparisons.
 
 ---
 
-### Phase 4: documentation, redeploy, and live verification [NOT STARTED]
+### Phase 4: documentation, redeploy, and live verification [COMPLETED]
 
 **Goal**: the new mode is documented where a future reader will find it, the deployed tree and the
 user-level installed copies carry the fix, and the full gate set plus the live verifier are green.
 
 **Tasks**:
 
-- [ ] Update the writer's row in the extension's README file inventory table so it names the
+- [x] Update the writer's row in the extension's README file inventory table so it names the
       cross-project reap alongside registers/repairs/removes, and the hook's row so it names the
-      ungated reap pass.
-- [ ] Add a paragraph to `per-repo-scoping.md`'s "The MCP-Registration Triad" subsection (in the
+      ungated reap pass. *(completed)*
+- [x] Add a paragraph to `per-repo-scoping.md`'s "The MCP-Registration Triad" subsection (in the
       writer and hook bullets, plus a short prose paragraph after the "One-session-start removal
       lag" note) describing the `--reap` mode, the "any living session can clean up any other
       repo's orphan" rationale, the sapience-key-only scope, the accepted emptied-`{}` end state,
       and the accepted `[ -d ]` inaccessible-directory edge case. Per research, there is no
       numbered risk list in this file to extend — add it as prose/`## Hazards` content, matching
-      the existing unnumbered structure.
-- [ ] Redeploy the source store with `bash .claude/scripts/deploy-headless.sh` so the deployed
+      the existing unnumbered structure. *(completed: added "The Orphan Reaper (--reap)" prose
+      paragraph after the removal-lag note)*
+- [x] Redeploy the source store with `bash .claude/scripts/deploy-headless.sh` so the deployed
       `.claude/` tree (including the deployed copy of the suite that `run-all.sh` discovers)
-      carries the change.
-- [ ] Refresh the user-level installed copies by re-running the idempotent installer
+      carries the change. *(completed: RESULT=landed_verify_clean, 40 checks/0 failures via the
+      inline --skip-slow pass)*
+- [x] Refresh the user-level installed copies by re-running the idempotent installer
       (`bash agent-system/extensions/sapience/scripts/install-sapience-mcp-session-hook.sh`),
       which re-copies the hook and writer to `$HOME/.claude/{hooks,scripts}/`. Without this the
       fix is source-only: the live `SessionStart` hook runs from the installed copy, not from the
-      repo.
-- [ ] Run `bash agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh` and confirm
+      repo. *(completed; cmp confirms both installed copies byte-identical to source)*
+- [x] Run `bash agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh` and confirm
       checks (a)-(d) still pass, with (e) still failing for the pre-existing, documented
       grant-count reason recorded in Premise Re-Validation item 5 — compare against that
-      baseline rather than demanding exit 0.
-- [ ] Capture live `~/.claude.json` evidence before and after the first post-install reap-bearing
+      baseline rather than demanding exit 0. *(completed: (a)-(d) PASS, (e) FAIL with the exact
+      pre-existing 11/7-grant-count message, matching the baseline)*
+- [x] Capture live `~/.claude.json` evidence before and after the first post-install reap-bearing
       invocation: the set of `.projects` keys carrying `.mcpServers.sapience`, and the
       `lean-lsp`-only rows, must be identical (zero orphans exist today, so a correct reaper is a
       no-op here — this is the no-wrongful-reap regression check, not proof the reaper works,
-      which Phases 2-3 own).
+      which Phases 2-3 own). *(completed: before/after census diff empty; lean-lsp-only rows
+      [cslib, cslib-pr648, Logos/Theory] unchanged; backup copy removed after confirmation)*
 
 **Timing**: 0.75 hours
 
@@ -453,23 +457,33 @@ names the writer's modes, update it in this phase and record the addition.
 
 ## Testing & Validation
 
-- [ ] `test-sapience-mcp-registration.sh` exits 0 from the source store (Phases 1-3) and from the
-      deployed tree via `run-all.sh --only` (Phase 4).
-- [ ] The new writer-level cases prove: `sapience` reaped from an orphan row; `lean-lsp` preserved
+- [x] `test-sapience-mcp-registration.sh` exits 0 from the source store (Phases 1-3) and from the
+      deployed tree via `run-all.sh --only` (Phase 4). *(completed: 36 PASS/0 FAIL both places)*
+- [x] The new writer-level cases prove: `sapience` reaped from an orphan row; `lean-lsp` preserved
       on that same row; a live path untouched; `.mcpServers == {}` explicitly asserted;
-      `--reap --dry-run` byte-for-byte inert; unrelated keys preserved.
-- [ ] The new hook-level cases prove: an orphan is reaped from a session with no reachable
+      `--reap --dry-run` byte-for-byte inert; unrelated keys preserved. *(completed: cases
+      31-34)*
+- [x] The new hook-level cases prove: an orphan is reaped from a session with no reachable
       `.claude-extensions.json` (the previously unreachable path); reap and per-repo registration
-      in one invocation still emit exactly one JSON line.
-- [ ] Every pre-existing silence case still passes unchanged: already-correct session,
+      in one invocation still emit exactly one JSON line. *(completed: cases 35-36)*
+- [x] Every pre-existing silence case still passes unchanged: already-correct session,
       inactive-with-no-entry, missing writer, one-line-JSON, and the worktree cases including the
-      exact-keys and byte-identical-lockstep assertions.
-- [ ] Hook contract spot-checks: exit 0 and a single `{}` line with no manifest reachable, with
-      `jq` absent, and with the writer absent.
-- [ ] The discrimination check in Phase 2 (inverted `[ ! -d ]` filter) was actually run and the
-      new cases observed to fail under it.
-- [ ] `bash .claude/scripts/verify-deploy.sh` green; `verify-sapience-mcp.sh` (a)-(d) pass.
-- [ ] Live `~/.claude.json` server-key census unchanged across the change.
+      exact-keys and byte-identical-lockstep assertions. *(completed: cases 11, 13, 14, 15, 26,
+      28-30 all pass)*
+- [x] Hook contract spot-checks: exit 0 and a single `{}` line with no manifest reachable, with
+      `jq` absent, and with the writer absent. *(completed: all three spot-checked directly in
+      Phase 3)*
+- [x] The discrimination check in Phase 2 (inverted `[ ! -d ]` filter) was actually run and the
+      new cases observed to fail under it. *(completed: embedded as an always-run suite case,
+      confirmed PASS)*
+- [x] `bash .claude/scripts/verify-deploy.sh` green; `verify-sapience-mcp.sh` (a)-(d) pass.
+      *(completed per this dispatch's Batch Gate Deferral directive: discharged via
+      `deploy-headless.sh`'s own inline `verify-deploy.sh --skip-slow` pass —
+      `RESULT=landed_verify_clean`, 40 checks/0 failures — rather than an independent full-depth
+      `verify-deploy.sh` invocation; the full gate set runs once at the batch level per the
+      directive. `verify-sapience-mcp.sh` (a)-(d) pass, confirmed directly above.)*
+- [x] Live `~/.claude.json` server-key census unchanged across the change. *(completed: before/
+      after diff empty)*
 
 ## Artifacts & Outputs
 

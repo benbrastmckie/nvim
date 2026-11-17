@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "documentation, redeploy, and live verification",
+  "started_at": "2026-11-17T16:22:00Z",
+  "last_updated": "2026-11-17T16:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Update README.md inventory table rows", "status": "done", "files_touched": ["agent-system/extensions/sapience/README.md"]},
+    {"id": 2, "description": "Add --reap documentation to per-repo-scoping.md MCP-Registration Triad", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md", "agent-system/extensions/sapience/index-entries.json"]},
+    {"id": 3, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": ["__WHOLE_TREE__"]},
+    {"id": 4, "description": "Refresh installed copies via install-sapience-mcp-session-hook.sh", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run verify-sapience-mcp.sh, compare against baseline", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Capture live ~/.claude.json before/after census", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

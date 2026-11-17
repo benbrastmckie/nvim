@@ -146,9 +146,12 @@ surface from the five `settings-fragment.json` merges (`SessionStart`, `UserProm
   `.projects["<abs project path>"].mcpServers.sapience` in `~/.claude.json` for exactly one
   project, via a whole-file `jq` merge that preserves every other key. Never touches the
   top-level `.mcpServers` key (the `--retire-global` action is a separate, standalone escape
-  hatch, not part of the normal write path).
-- **`hooks/sapience-mcp-register-project.sh`** — a bidirectional `SessionStart` hook. When the
-  session's repo shows `extensions.sapience.status == "active"` in its own
+  hatch, not part of the normal write path). `--reap` is a third, cross-project standalone
+  action: it removes `.mcpServers.sapience` from every `.projects[<path>]` row whose `<path>` is
+  no longer a directory on disk, touching no other key — see "The Orphan Reaper" below.
+- **`hooks/sapience-mcp-register-project.sh`** — a bidirectional `SessionStart` hook, now
+  preceded on every invocation by the ungated reap pass described below. For the per-repo half:
+  when the session's repo shows `extensions.sapience.status == "active"` in its own
   `.claude-extensions.json`, it invokes the writer to register/repair the entry; when it does
   not and an entry exists, it invokes the writer with `--remove`. This is the only mechanism
   that can retract the per-project `~/.claude.json` entry once the extension unloads, since the
@@ -170,6 +173,28 @@ to the calling repository's own tree.
 repo's `~/.claude.json` entry until the NEXT session start in that repo (the bidirectional hook
 above only fires at session start) — or immediately, via
 `install-sapience-mcp-session-hook.sh --remove`.
+
+**The Orphan Reaper (`--reap`).** The bidirectional register/remove pair above shares one
+structural blind spot: both halves are gated on resolving the CURRENT session's own
+`.claude-extensions.json`, a precondition a project directory that has since been deleted or
+renamed can never again satisfy. Its removal branch only ever fires for a path that still
+exists on disk AND still carries a manifest showing the extension inactive — a vanished
+repository can do neither, so its `.projects[<path>].mcpServers.sapience` entry would otherwise
+leak in `~/.claude.json` forever. The writer's `--reap` mode closes this from the one place that
+CAN see every registered path at once (the writer itself, which already owns every
+`~/.claude.json` mutation): it removes ONLY `.mcpServers.sapience` from every
+`.projects[<path>]` row whose `<path>` is not a directory on disk, leaving every other key on
+that row (another registered server, e.g. `lean-lsp`; the row's session/history/cost metadata)
+and every other `.projects` row untouched. The hook invokes `--reap` unconditionally, before and
+independent of its own manifest-reachability branch, on every session start in every
+repository — because the only session that can ever clean up after a vanished repo is some
+OTHER, still-living session, never the vanished repo's own. Two accepted edge cases, documented
+rather than engineered around: a row left with `"mcpServers": {}` after reaping `sapience` stays
+that way rather than having its whole project row deleted (the row still carries unrelated
+session/history/cost metadata a row deletion would discard); and a path that exists on disk but
+is unreadable or unmounted reads as absent and is reaped anyway — accepted because this is
+self-healing, since the next session start in that repo re-registers the entry via the hook's
+own register branch.
 
 **Narrower divergence from the lean model.** Lean's own installer writes both registration
 targets itself: `$HOME/.claude/settings.json` directly, and
