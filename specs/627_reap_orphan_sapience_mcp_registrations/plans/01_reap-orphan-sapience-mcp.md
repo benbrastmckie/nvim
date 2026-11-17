@@ -1,7 +1,7 @@
 # Implementation Plan: Task #627
 
 - **Task**: 627 - Reap orphan sapience MCP registrations
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/627_reap_orphan_sapience_mcp_registrations/reports/01_reap-orphan-sapience-mcp.md

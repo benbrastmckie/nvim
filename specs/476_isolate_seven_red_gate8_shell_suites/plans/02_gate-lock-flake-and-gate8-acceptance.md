@@ -1,7 +1,7 @@
 # Implementation Plan: Task #476
 
 - **Task**: 476 - Make the seven untracked red Gate 8 shell suites green or declared-expected
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: 423 (CLOSED), 445 (CLOSED), 568 (CLOSED) -- all three declared edges are
   satisfied; none blocks this plan. See report 02 Finding 3.

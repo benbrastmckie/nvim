@@ -23,14 +23,25 @@
       "category": "PATTERN",
       "source_artifact": "specs/476_isolate_seven_red_gate8_shell_suites/summaries/02_gate-lock-flake-and-gate8-acceptance-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["run-all.sh", "LOAD_SENSITIVE_BASENAMES", "ambient-host-state", "flake reproduction", "shell test scheduling"]
+      "suggested_keywords": [
+        "run-all.sh",
+        "LOAD_SENSITIVE_BASENAMES",
+        "ambient-host-state",
+        "flake reproduction",
+        "shell test scheduling"
+      ]
     },
     {
       "content": "A suite whose own lint/check resolves its subject via a 'deploy-tree-first' pattern (common_test_resolve_subject) will NOT reflect a source-store-only fix until the next redeploy propagates it to .claude/. Before removing a known-failures.txt row on the strength of such a fix, either redeploy first and re-verify standalone, or explicitly keep the row (with an updated, accurate reason) until the redeploy has actually landed -- removing it prematurely makes a still-genuinely-red suite silently NEW/undeclared.",
       "category": "PATTERN",
       "source_artifact": "specs/476_isolate_seven_red_gate8_shell_suites/summaries/02_gate-lock-flake-and-gate8-acceptance-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["deploy-tree-first", "source-store-deploy-boundary", "known-failures.txt", "redeploy sequencing"]
+      "suggested_keywords": [
+        "deploy-tree-first",
+        "source-store-deploy-boundary",
+        "known-failures.txt",
+        "redeploy sequencing"
+      ]
     }
   ],
   "metadata": {

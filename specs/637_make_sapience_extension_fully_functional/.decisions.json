@@ -1,0 +1,9 @@
+[
+  {
+    "question": "Two levers remain outside this repository's write surface, both the user's call: whether to enable scheduled transcript extraction (services.sapience.backgroundSync in ~/.dotfiles), and whether to enable transcript capture for the two active-but-not-captured repositories (BimodalLogic, sf1-engine).",
+    "answer": "Leave both as they stand (extraction stays manual-on-request; BimodalLogic and sf1-engine stay capture-disabled)",
+    "cycle": 3,
+    "timestamp": "2026-11-17T17:56:41Z",
+    "description_fingerprint": "fb6c09e48c6419b0283e60bf295e3363c460a7098b401497717bbedc25d8ac5e"
+  }
+]
