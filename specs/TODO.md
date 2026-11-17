@@ -175,7 +175,7 @@ next_project_number: 643
 
 ### Sapience
 
-637 [PLANNED] — Make the sapience extension fully functional across loaded...
+637 [IMPLEMENTING] — Make the sapience extension fully functional across loaded...
 
 ### Decidability
 
@@ -504,7 +504,7 @@ TERRITORY, SETTLED AT CREATION. Task 547 ("Confirm the blocker-research aux carr
 ---
 
 ### 637. Make sapience extension fully functional
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: general
 - **Topic**: sapience
 - **Dependencies**: Task 628, Task 635, Task 636

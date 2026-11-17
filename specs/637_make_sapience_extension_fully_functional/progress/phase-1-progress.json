@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Pin the cross-repo closeout baseline",
+  "started_at": "2026-11-17T17:00:00Z",
+  "last_updated": "2026-11-17T17:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create records/01_cross-repo-closeout-evidence.md", "status": "done", "files_touched": ["specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"]},
+    {"id": 2, "description": "Per-repo grant count/list, script existence, call-site occurrence counts", "status": "done", "files_touched": ["specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"]},
+    {"id": 3, "description": "Run verify-sapience-mcp.sh in each of five repos, record verdicts (checks e, i named)", "status": "done", "files_touched": ["specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"]},
+    {"id": 4, "description": "Run verify-sapience-context-scoping.sh --repeat 3 in this repo, record verdict", "status": "done", "files_touched": ["specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"]},
+    {"id": 5, "description": "Record ~/.sapience/config.json hooks + capture.projects table + mtimes", "status": "done", "files_touched": ["specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"]},
+    {"id": 6, "description": "Record confirmed extraction-trigger mechanism baseline fact", "status": "done", "files_touched": ["specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"]},
+    {"id": 7, "description": "Re-read the two acceptance bars that cannot be met, with reason+owner", "status": "done", "files_touched": ["specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md"]},
+    {"id": 8, "description": "Record via issue-record.sh any unreachable repository", "status": "done", "note": "All five repositories reachable; no exclusion needed. Instead recorded two other findings (permission-bit discrepancy, pre-(h)/(i) stale deploy) via issue-record.sh per the dispatch's general issue-logging mandate."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

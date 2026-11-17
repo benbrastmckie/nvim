@@ -1,7 +1,7 @@
 # Implementation Plan: Task #637
 
 - **Task**: 637 - Make the sapience extension fully functional across loaded repositories
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.75 hours
 - **Dependencies**: 628, 635, 636 (all three now `[COMPLETED]`)
 - **Research Inputs**: specs/637_make_sapience_extension_fully_functional/reports/02_scoping-and-remaining-gaps.md, specs/637_make_sapience_extension_fully_functional/reports/01_seed-audit-findings.md
@@ -128,7 +128,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Pin the cross-repo closeout baseline [NOT STARTED]
+### Phase 1: Pin the cross-repo closeout baseline [COMPLETED]
 
 **Goal**: Record, in one durable records file, the measured pre-change state of all four goals
 across every loaded repository, so Phase 4 can diff against it and so the two acceptance bars that
@@ -136,8 +136,8 @@ cannot be met locally are re-read on the record before any code changes.
 
 **Tasks**:
 
-- [ ] Create `specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md`.
-- [ ] For each of the five healthy loaded repositories (`/home/benjamin/.config/nvim`,
+- [x] Create `specs/637_make_sapience_extension_fully_functional/records/01_cross-repo-closeout-evidence.md`. *(completed)*
+- [x] For each of the five healthy loaded repositories (`/home/benjamin/.config/nvim`,
       `/home/benjamin/.dotfiles`, `/home/benjamin/Projects/BimodalLogic`,
       `/home/benjamin/Projects/Sapience/sf1-engine`,
       `/home/benjamin/Projects/Sapience/sapience-app`), record: the `mcp__sapience__*` grant count
@@ -145,29 +145,29 @@ cannot be met locally are re-read on the record before any code changes.
       `.claude/scripts/postflight-sapience-notes.sh` and `.claude/scripts/sapience-remember.sh`
       exist and are executable; and the occurrence count of `postflight-sapience-notes.sh` in both
       `.claude/scripts/orchestrate-cycle-postflight.sh` and
-      `.claude/scripts/reconcile-task-status.sh`.
-- [ ] Run `bash .claude/scripts/verify-sapience-mcp.sh` in each of the five repositories and record
-      each check's verdict verbatim, with check (e) and check (i) called out by name.
-- [ ] Run `bash .claude/scripts/verify-sapience-context-scoping.sh --repeat 3` once in this
+      `.claude/scripts/reconcile-task-status.sh`. *(completed: all five at 7 grants; postflight-sapience-notes.sh non-executable in all five — carried into Phase 2)*
+- [x] Run `bash .claude/scripts/verify-sapience-mcp.sh` in each of the five repositories and record
+      each check's verdict verbatim, with check (e) and check (i) called out by name. *(completed: check (e) PASS at 7/5 in all five; check (i) only observable in nvim — the other four run a pre-(h)/(i) deployed script)*
+- [x] Run `bash .claude/scripts/verify-sapience-context-scoping.sh --repeat 3` once in this
       repository and record the verdict. A unanimous `residual holds` is the expected green result;
-      record `inconclusive` as-is if that is what comes back, and do not retry more than once.
-- [ ] Record `~/.sapience/config.json`'s `hooks` value and its full `capture.projects[]`
+      record `inconclusive` as-is if that is what comes back, and do not retry more than once. *(completed: INCONCLUSIVE -- 2 RESIDUAL_HOLDS, 1 RESIDUAL_LIFTED over 3 iterations, recorded as-is, not retried)*
+- [x] Record `~/.sapience/config.json`'s `hooks` value and its full `capture.projects[]`
       path-prefix/`enabled` table, and the mtimes of `~/.sapience/extracted.json`,
       `~/.sapience/pending_kos.jsonl`, and `~/.sapience/extract_yield.json`. Name the set of
-      repositories that have the extension active but capture not enabled.
-- [ ] Record the confirmed extraction-trigger mechanism as a baseline fact for Phase 3 to document:
+      repositories that have the extension active but capture not enabled. *(completed: active-but-not-captured = BimodalLogic, sf1-engine; .dotfiles is enabled, correcting the task description's framing)*
+- [x] Record the confirmed extraction-trigger mechanism as a baseline fact for Phase 3 to document:
       the `sapience` launcher's `review|sync|coverage|backfill|pending|projects` subcommands
       dispatch to `~/.sapience/extract_local.py`; `services.sapience.backgroundSync` in
       `~/.dotfiles/modules/home/services/sapience.nix` defaults to `false` and is set nowhere, so
       `sapience-sync.timer` is defined but not installed; and no systemd user timer or crontab
-      entry for any sapience process exists on this machine.
-- [ ] Re-read the two acceptance bars that cannot be met from this repository, with the reason and
+      entry for any sapience process exists on this machine. *(completed)*
+- [x] Re-read the two acceptance bars that cannot be met from this repository, with the reason and
       the owner for each, in their own subsection: goal 2's `RESIDUAL_HOLDS` bar (vendor-owned
       foreclosure; only lever is the drafted vendor ask) and goal 3's "capture sync is restored"
       bar (manual-by-design extraction, scheduling owned by `~/.dotfiles`'s sapience module; the
-      `enabled` list writer likewise, per 636's recorded ruling).
-- [ ] Record via `bash .claude/scripts/issue-record.sh` any repository that is unreachable, and name
-      the exclusion in the records file.
+      `enabled` list writer likewise, per 636's recorded ruling). *(completed)*
+- [x] Record via `bash .claude/scripts/issue-record.sh` any repository that is unreachable, and name
+      the exclusion in the records file. *(completed: all five reachable, no exclusion; two other findings recorded instead)*
 
 **Timing**: 0.75 hours
 
