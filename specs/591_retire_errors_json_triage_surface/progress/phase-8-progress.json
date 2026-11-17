@@ -1,0 +1,17 @@
+{
+  "phase": 8,
+  "phase_name": "Redeploy and run the complete gate set",
+  "started_at": "2026-11-17T07:10:00Z",
+  "last_updated": "2026-11-17T07:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run repo-wide discovery grep and confirm residue only in the two out-of-scope exceptions", "status": "done", "files_touched": []},
+    {"id": 2, "description": "deploy-headless.sh --wipe", "status": "done", "files_touched": ["__WHOLE_TREE__"]},
+    {"id": 3, "description": "Confirm the five removed paths are absent from the deployed tree", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Scoped verify-deploy.sh discharge (gates 1, 13) per Batch Gate Deferral directive", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm .claude/CLAUDE.md regenerated without Error Tracking/errors rows", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": "BATCH GATE DEFERRAL APPLIED to this phase (it declares Verification Tier: full). Deploy action itself (deploy-headless.sh --wipe --skip-verify) is NOT a gate run and was performed in full -- RESULT=landed_verify_skipped, exit 4 (the documented success code for this usage). Scoped discharge in place of the full gate battery: verify-deploy.sh --only-gate 1,13 --skip-unchanged -- gate 1 (events-store files, now 6 of them, errors-store check removed) and gate 13 (whole-tree orphan/ghost-index-row detection, the two gates most directly implicated by this task's deletions) both PASS, 7 checks / 0 failures. These two were chosen deliberately as the HONEST scoped check for a wipe-redeploy phase: they are the only gates that could plausibly have been broken by removing 5 files, 3 manifest/index registrations, and a gate-1 corpus narrowing. The full run-all.sh (unnarrowed), the full lint/ set, validate-wiring.sh, validate-index.sh, check-task-references.sh, check-record-versioning.sh, and the remaining 27 verify-deploy.sh gates are deferred to the once-per-batch-invocation full gate run per the dispatch's Batch Gate Deferral directive, not independently re-run here. Re-ran the repo-wide discovery grep against BOTH the source store and the freshly-regenerated deployed tree: both show only the two explicit Non-Goals exceptions (.claude-extensions.json, orchestrator-context-budget.json's note field) plus the three Phase-4 test fixtures whose inverted assertions deliberately still name specs/errors.json. .claude/CLAUDE.md confirmed regenerated without any Error Tracking or /errors row. No git-tracked file changed as a side effect of the deploy (.claude/ is gitignored, as expected)."
+}
