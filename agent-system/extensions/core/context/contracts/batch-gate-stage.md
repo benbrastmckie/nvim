@@ -129,6 +129,19 @@ perpetually-unattributable (no task's `modified_files` could ever plausibly have
 needs the `WARN-FINDING ` treatment. See `verify-deploy.sh`'s own `warn()`/`warn_advisory()`
 header comments for the full rationale.
 
+**A third `WARN-FINDING ` site: gate8's contention-detected annotation.** `gate8_run()` times its
+own `specs/.gate-lock` acquire wait and samples the entry 1-minute load average; when either
+measured signal clears a declared, env-overridable threshold, it emits a `[CONTENTION]` stderr
+note and — in `--findings` mode — a `WARN-FINDING gate8 [CONTENTION] ...` line, written directly
+to the findings list rather than via an actual `warn_advisory()` call (that function also
+increments `CHECKS` and forces `GATE_DIRTY_LIST`, side effects this annotation must never cause
+independent of the gate's real verdict). This is annotation only, never a reclassification: the
+contention signal is additive evidence that a FAIL or a slow PASS may have been influenced by
+ambient contention rather than a genuine break, and it changes nothing about `fail()`/`warn()`
+call sites, `CHECKS`, `FAILURES`, exit status, or the `^FINDING ` stream itself — a genuinely
+failing suite still FAILs, with its ordinary `FINDING ` line, whether or not the contention tag
+is also set alongside it.
+
 ## Single-Capture Distinction
 
 `context/patterns/batch-orchestration-guardrails.md` records a REJECTED design that shared one

@@ -1232,10 +1232,75 @@ _gate8_signal_cleanup() {
   trap - INT TERM HUP
   kill -s "$sig" "$$"
 }
+
+# ── Gate 8 contention-detected annotation ───────────────────────────────────────────────────────
+# ANNOTATION ONLY, never a reclassification: this scaffolding adds a [CONTENTION] stderr note and
+# (in --findings mode) one WARN-FINDING-channel line when this run's own specs/.gate-lock acquire
+# waited materially, or the host's ambient load was already high at gate entry -- so a run that
+# merely queued behind a sibling's battery, or started under a loaded host, is distinguishable
+# from a genuine suite break. It changes NOTHING ELSE: pass()/fail()/warn()/warn_advisory() call
+# sites above are untouched, CHECKS/FAILURES/exit status are untouched, and the `^FINDING ` stream
+# deploy_findings_snapshot filters on is untouched (the new line uses the SAME "WARN-FINDING "
+# prefix warn_advisory() uses for its own non-escalating notices, so it is written directly to
+# FINDINGS_LIST rather than by calling warn_advisory() itself -- calling that function would also
+# increment CHECKS and force GATE_DIRTY_LIST, which this annotation must never do independent of
+# the gate's own real verdict).
+#
+# _gate8_load_1min(): reuses measure-gate-costs.sh's mgc_load_1min() read shape verbatim in
+# spirit (same two test-only override hooks, same /proc/loadavg-then-uptime fallback), kept as a
+# separate function rather than sourcing that script because measure-gate-costs.sh is a
+# measurement TOOL (a human/CI entry point with its own CLI, LOAD_THRESHOLD, and refuse-on-
+# contention posture) and verify-deploy.sh's gate8_run() is a verification GATE with a different
+# consumer contract (annotate, never refuse) -- sourcing it would pull in that tool's CLI parsing
+# and global state for one four-line read.
+_gate8_load_1min() {
+  # Test-only override hook 1 (sequence): GATE8_LOADAVG_SEQUENCE, a comma-separated list consumed
+  # one value per call via a counter file (default path below; override GATE8_LOADAVG_SEQFILE for
+  # test isolation), repeating the last value once exhausted. Lets a suite simulate load that
+  # rises partway through a run. Never set in production use.
+  if [ -n "${GATE8_LOADAVG_SEQUENCE:-}" ]; then
+    local _seqfile="${GATE8_LOADAVG_SEQFILE:-${TMPDIR:-/tmp}/gate8-loadavg-seq-idx}"
+    local _idx=0 _val _n
+    [ -f "$_seqfile" ] && _idx="$(cat "$_seqfile" 2>/dev/null || echo 0)"
+    local -a _seq_vals=()
+    IFS=',' read -r -a _seq_vals <<< "$GATE8_LOADAVG_SEQUENCE"
+    _n=${#_seq_vals[@]}
+    if [ "$_idx" -lt "$_n" ]; then
+      _val="${_seq_vals[$_idx]}"
+    else
+      _val="${_seq_vals[$((_n - 1))]}"
+    fi
+    echo "$((_idx + 1))" > "$_seqfile"
+    echo "$_val"
+    return 0
+  fi
+  # Test-only override hook 2 (static): GATE8_LOADAVG_OVERRIDE, returned verbatim. Lets a suite
+  # exercise the trigger deterministically without depending on this test host's ambient load.
+  # Never set in production use.
+  if [ -n "${GATE8_LOADAVG_OVERRIDE:-}" ]; then
+    echo "$GATE8_LOADAVG_OVERRIDE"
+    return 0
+  fi
+  if [ -r /proc/loadavg ]; then
+    awk '{print $1}' /proc/loadavg 2>/dev/null
+  else
+    uptime 2>/dev/null | sed -E 's/.*load average[s]?: *([0-9.]+).*/\1/'
+  fi
+}
+
+_gate8_now_ms() { date +%s%3N; }
+
 gate8_run() {
 if gate_selected 8; then
 say "8. Shell test suite runner (tests/run-all.sh)"
 CURRENT_GATE="gate8"
+# Contention-detection scaffolding (annotation only -- see the header comment above
+# _gate8_load_1min()). Reset on every entry to this gate so every exit path (SKIP, early fail, or
+# the full acquire/run-all/verdict path below) leaves them in a defined, never-stale state.
+GATE8_CONTENTION_DETECTED="false"
+GATE8_CONTENTION_REASON=""
+GATE8_ACQUIRE_WAIT_MS=""
+GATE8_ENTRY_LOAD="$(_gate8_load_1min)"
 if [ "$SKIP_SLOW" = "true" ]; then
   say "  [SKIP] --skip-slow: shell test suite deferred (run without --skip-slow for the full gate)"
 elif [ ! -d "$TARGET/agent-system/extensions" ]; then
@@ -1266,6 +1331,7 @@ else
     say "  Note: deployed task-lock.sh not found at '$GATE8_TASK_LOCK_SH'; specs/.gate-lock coordination is skipped for this gate (fail-open: coordination is optional, verification is not)."
   else
     gate8_token=""
+    _gate8_acquire_start_ms="$(_gate8_now_ms)"
     if gate8_token=$(bash "$GATE8_TASK_LOCK_SH" gate-acquire "verify-deploy-gate8-$$"); then
       GATE8_MUTEX_TOKEN="$gate8_token"
       GATE8_MUTEX_OWNED_HERE="true"
@@ -1278,6 +1344,44 @@ else
       trap '_gate8_signal_cleanup HUP' HUP
     else
       echo "WARNING: failed to acquire specs/.gate-lock mutex (session=verify-deploy-gate8-$$); proceeding unserialized (non-blocking, fail-open). Worst case: contention with a sibling session's full gate-set battery persists for this run; verification itself is neither skipped nor altered by this mutex -- Gate 8's own verdict, FINDING lines, and summary output are unaffected. Mirrors git-commit-scoped.sh's specs/.commit-lock fail-open posture and its explicit refusal to cite an unreproduced result as settled." >&2
+    fi
+    GATE8_ACQUIRE_WAIT_MS=$(( $(_gate8_now_ms) - _gate8_acquire_start_ms ))
+  fi
+
+  # Contention trigger: a disjunction of the two measured signals above, each independently
+  # env-overridable. Defaults: GATE8_CONTENTION_WAIT_FRACTION=0.1 (10% of
+  # GATE_MUTEX_ACQUIRE_BUDGET_MS, i.e. 60s against the 600s default budget -- a wait that long is
+  # already a meaningful fraction of the budget a caller would otherwise block on, well below the
+  # budget itself so the tag fires before a caller's own timeout, not after) and
+  # GATE8_CONTENTION_LOAD_THRESHOLD=2.0 (matching measure-gate-costs.sh's own
+  # MEASURE_GATE_COSTS_LOAD_THRESHOLD default, for consistency with that script's already-settled
+  # idle-host baseline -- see its own header comment). Never triggered from a caller's assertion;
+  # both signals are measured locally, in this gate, for this run.
+  GATE8_CONTENTION_WAIT_FRACTION="${GATE8_CONTENTION_WAIT_FRACTION:-0.1}"
+  GATE8_CONTENTION_LOAD_THRESHOLD="${GATE8_CONTENTION_LOAD_THRESHOLD:-2.0}"
+  # task-lock.sh's own GATE_MUTEX_ACQUIRE_BUDGET_MS default (600000) is defined inside that
+  # script's own process (invoked above as a separate `bash "$GATE8_TASK_LOCK_SH" ...`
+  # subprocess) and never leaks back into THIS process's environment unless this caller already
+  # exported an override -- so this read needs the identical default inline, never a bare
+  # "$GATE_MUTEX_ACQUIRE_BUDGET_MS" that would silently evaluate to empty/0 here and make the
+  # fraction threshold 0 (triggering on every acquire, including an instant one).
+  _gate8_mutex_budget_ms="${GATE_MUTEX_ACQUIRE_BUDGET_MS:-600000}"
+  if [ -n "$GATE8_ACQUIRE_WAIT_MS" ]; then
+    _gate8_wait_threshold_ms="$(awk -v b="$_gate8_mutex_budget_ms" -v f="$GATE8_CONTENTION_WAIT_FRACTION" 'BEGIN { printf "%d", b * f }')"
+    if [ "$GATE8_ACQUIRE_WAIT_MS" -ge "$_gate8_wait_threshold_ms" ]; then
+      GATE8_CONTENTION_DETECTED="true"
+      GATE8_CONTENTION_REASON="specs/.gate-lock acquire waited ${GATE8_ACQUIRE_WAIT_MS}ms (>= ${_gate8_wait_threshold_ms}ms, ${GATE8_CONTENTION_WAIT_FRACTION} of GATE_MUTEX_ACQUIRE_BUDGET_MS=${_gate8_mutex_budget_ms}ms)"
+    fi
+  fi
+  if [ -n "$GATE8_ENTRY_LOAD" ]; then
+    _gate8_load_exceeds="$(awk -v l="$GATE8_ENTRY_LOAD" -v t="$GATE8_CONTENTION_LOAD_THRESHOLD" 'BEGIN { print (l >= t) ? 1 : 0 }')"
+    if [ "$_gate8_load_exceeds" = "1" ]; then
+      GATE8_CONTENTION_DETECTED="true"
+      if [ -n "$GATE8_CONTENTION_REASON" ]; then
+        GATE8_CONTENTION_REASON="${GATE8_CONTENTION_REASON}; entry 1-minute load average ${GATE8_ENTRY_LOAD} (>= ${GATE8_CONTENTION_LOAD_THRESHOLD})"
+      else
+        GATE8_CONTENTION_REASON="entry 1-minute load average ${GATE8_ENTRY_LOAD} (>= ${GATE8_CONTENTION_LOAD_THRESHOLD})"
+      fi
     fi
   fi
 
@@ -1403,6 +1507,18 @@ else
       while IFS= read -r run_all_line; do
         FINDINGS_LIST+=("FINDING gate8 $run_all_line")
       done < <(verify_deploy_extract_verdict_lines '[FAIL]' "$run_all_output")
+    fi
+  fi
+
+  # Contention-detected annotation (see the header comment above _gate8_load_1min() for the full
+  # rationale): fires AFTER the ordinary verdict above, never instead of it, and touches none of
+  # that verdict's own state. Deliberately NOT a call to warn_advisory() -- that function also
+  # increments CHECKS and forces GATE_DIRTY_LIST, side effects this annotation must never cause
+  # independent of the gate's real outcome; the WARN-FINDING-channel line is appended directly.
+  if [ "$GATE8_CONTENTION_DETECTED" = "true" ]; then
+    echo "  [CONTENTION] gate8: ${GATE8_CONTENTION_REASON}" >&2
+    if [ "$FINDINGS" = "true" ]; then
+      FINDINGS_LIST+=("WARN-FINDING gate8 [CONTENTION] ${GATE8_CONTENTION_REASON}")
     fi
   fi
 fi

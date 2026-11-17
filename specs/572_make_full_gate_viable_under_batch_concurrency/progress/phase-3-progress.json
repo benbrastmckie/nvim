@@ -1,0 +1,72 @@
+{
+  "phase": 3,
+  "phase_name": "Give the live Gate 8 path a contention-detected signal distinct from FAIL",
+  "started_at": "2026-11-16T18:30:00Z",
+  "last_updated": "2026-11-16T19:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Confirm the lock-wait site is singular",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Instrument gate8_run() with acquire-wait timing and entry load-average sample, with test override hooks",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Define the contention trigger as a disjunction of two env-overridable thresholds",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Emit [CONTENTION] stderr note and WARN-FINDING-channel line on trigger, annotation only",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Add 10 new cases to test-gate-lock.sh (slow acquire, high load, clean, non-vacuous)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-gate-lock.sh"
+      ]
+    },
+    {
+      "id": 6,
+      "description": "Document the new WARN-FINDING site in batch-gate-stage.md's Finding Severity section",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/contracts/batch-gate-stage.md"
+      ]
+    },
+    {
+      "id": 7,
+      "description": "Regenerate index-entries.json line count for batch-gate-stage.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {
+      "approach": "Smoke-test gate8_run() by invoking the full verify-deploy.sh --only-gate 8 against the real repo repeatedly without bounded waiting",
+      "result": "failed",
+      "reason": "Caused self-inflicted gate-lock contention from multiple overlapping harness-auto-backgrounded invocations; cleaned up via SIGTERM and switched to an isolated logic-only test harness plus the real test-gate-lock.sh suite for verification instead."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -449,6 +449,117 @@ else
   common_test_pass "case: verdict identity (no-leak) -- $GATE_LOCK_DIR absent after all three invocations exited"
 fi
 
+# =====================================================================
+# Contention-detected annotation cases: gate8_run()'s [CONTENTION] stderr note and (in
+# --findings mode) its "WARN-FINDING gate8 [CONTENTION] ..." line -- annotation only, never a
+# reclassification. Each case invokes the REAL source-store verify-deploy.sh directly against
+# this fixture's own $WORKDIR, same technique as the fail-open cases above (line ~390).
+# =====================================================================
+
+# --- Case: the tag fires under a stubbed SLOW acquire -----------------------------------------
+# Hold the real specs/.gate-lock mutex from a SEPARATE holder for a short, deterministic window,
+# then invoke verify-deploy.sh with a tiny GATE8_CONTENTION_WAIT_FRACTION (so even this short real
+# wait clears the threshold) and a low GATE8_LOADAVG_OVERRIDE (isolating the wait signal from the
+# load signal, which is covered by its own case below).
+holder_token="$(bash "$FIXTURE_TASK_LOCK" gate-acquire "contention-case-holder")"
+if [ -z "$holder_token" ]; then
+  common_test_fail "case: contention tag (slow acquire) -- could not acquire the holder lease needed to induce a real wait"
+else
+  (
+    sleep 0.3
+    bash "$FIXTURE_TASK_LOCK" gate-release "$holder_token" >/dev/null 2>&1
+  ) &
+  releaser_pid=$!
+  slow_acquire_out=$(GATE8_CONTENTION_WAIT_FRACTION=0.0001 GATE8_LOADAVG_OVERRIDE=0.1 \
+    MARKER_FILE="$WORKDIR/markers-contention-slow.txt" MARKER_LABEL=cs1 \
+    bash "$VERIFY_DEPLOY_SRC" --only-gate 8 --findings "$WORKDIR" 2>&1)
+  wait "$releaser_pid" 2>/dev/null || true
+  if printf '%s\n' "$slow_acquire_out" | grep -qF '[CONTENTION] gate8:' \
+      && printf '%s\n' "$slow_acquire_out" | grep -qF 'acquire waited'; then
+    common_test_pass "case: contention tag (slow acquire) -- [CONTENTION] stderr note fires, naming the acquire wait"
+  else
+    common_test_fail "case: contention tag (slow acquire) -- expected a '[CONTENTION] gate8: ... acquire waited ...' line" "$slow_acquire_out"
+  fi
+  if printf '%s\n' "$slow_acquire_out" | grep -qF 'WARN-FINDING gate8 [CONTENTION]'; then
+    common_test_pass "case: contention tag (slow acquire) -- --findings mode emits the WARN-FINDING-channel line"
+  else
+    common_test_fail "case: contention tag (slow acquire) -- expected a 'WARN-FINDING gate8 [CONTENTION]' findings line" "$slow_acquire_out"
+  fi
+  if printf '%s\n' "$slow_acquire_out" | grep -qF '[PASS] run-all.sh: all discovered suites passed'; then
+    common_test_pass "case: contention tag (slow acquire) -- the ordinary PASS verdict is unaffected (annotation, never a reclassification)"
+  else
+    common_test_fail "case: contention tag (slow acquire) -- expected the ordinary PASS verdict to still be present" "$slow_acquire_out"
+  fi
+fi
+if [ -d "$GATE_LOCK_DIR" ]; then
+  common_test_fail "case: contention tag (slow acquire, no-leak) -- $GATE_LOCK_DIR still present after both the holder and verify-deploy.sh released"
+else
+  common_test_pass "case: contention tag (slow acquire, no-leak) -- $GATE_LOCK_DIR absent after both releases"
+fi
+
+# --- Case: the tag fires under a stubbed HIGH LOAD average ------------------------------------
+# No held lock here -- acquire is instant -- so GATE8_CONTENTION_WAIT_FRACTION stays at its
+# ordinary default and only the load signal is exercised.
+high_load_out=$(GATE8_LOADAVG_OVERRIDE=99.0 \
+  MARKER_FILE="$WORKDIR/markers-contention-load.txt" MARKER_LABEL=cl1 \
+  bash "$VERIFY_DEPLOY_SRC" --only-gate 8 --findings "$WORKDIR" 2>&1)
+if printf '%s\n' "$high_load_out" | grep -qF '[CONTENTION] gate8:' \
+    && printf '%s\n' "$high_load_out" | grep -qF 'load average 99.0'; then
+  common_test_pass "case: contention tag (high load) -- [CONTENTION] stderr note fires, naming the entry load average"
+else
+  common_test_fail "case: contention tag (high load) -- expected a '[CONTENTION] gate8: ... load average 99.0 ...' line" "$high_load_out"
+fi
+if printf '%s\n' "$high_load_out" | grep -qF 'WARN-FINDING gate8 [CONTENTION]'; then
+  common_test_pass "case: contention tag (high load) -- --findings mode emits the WARN-FINDING-channel line"
+else
+  common_test_fail "case: contention tag (high load) -- expected a 'WARN-FINDING gate8 [CONTENTION]' findings line" "$high_load_out"
+fi
+
+# --- Case: the tag does NOT fire on a clean, unloaded fixture run -----------------------------
+clean_out=$(GATE8_LOADAVG_OVERRIDE=0.1 \
+  MARKER_FILE="$WORKDIR/markers-contention-clean.txt" MARKER_LABEL=cc1 \
+  bash "$VERIFY_DEPLOY_SRC" --only-gate 8 --findings "$WORKDIR" 2>&1)
+if printf '%s\n' "$clean_out" | grep -qF '[CONTENTION]'; then
+  common_test_fail "case: contention tag (clean run) -- unexpectedly fired on an unloaded, uncontended run" "$clean_out"
+else
+  common_test_pass "case: contention tag (clean run) -- no [CONTENTION] line on a clean, unloaded fixture run"
+fi
+if printf '%s\n' "$clean_out" | grep -qF 'WARN-FINDING gate8 [CONTENTION]'; then
+  common_test_fail "case: contention tag (clean run) -- unexpectedly emitted a WARN-FINDING [CONTENTION] line" "$clean_out"
+else
+  common_test_pass "case: contention tag (clean run) -- no WARN-FINDING [CONTENTION] line on a clean run"
+fi
+
+# --- Case (non-vacuousness): a genuinely failing fixture suite still FAILs, with the contention
+# tag set alongside it -- the tag annotates, it never masks or softens a real break. ------------
+cat > "$TESTS_DIR/test-fixture-always-fails.sh" << 'EOF'
+#!/usr/bin/env bash
+echo "deliberate fixture failure for the non-vacuousness case"
+exit 1
+EOF
+chmod +x "$TESTS_DIR/test-fixture-always-fails.sh"
+real_fail_out=$(GATE8_LOADAVG_OVERRIDE=99.0 \
+  MARKER_FILE="$WORKDIR/markers-contention-realfail.txt" MARKER_LABEL=rf1 \
+  bash "$VERIFY_DEPLOY_SRC" --only-gate 8 --findings "$WORKDIR" 2>&1)
+real_fail_rc=$?
+rm -f "$TESTS_DIR/test-fixture-always-fails.sh"
+if [ "$real_fail_rc" -eq 0 ]; then
+  common_test_fail "case: contention tag (non-vacuousness) -- expected a non-zero exit from the deliberately failing fixture suite" "$real_fail_out"
+elif ! printf '%s\n' "$real_fail_out" | grep -qF '[FAIL]'; then
+  common_test_fail "case: contention tag (non-vacuousness) -- expected the ordinary [FAIL] verdict line" "$real_fail_out"
+elif ! printf '%s\n' "$real_fail_out" | grep -qF 'FINDING gate8'; then
+  common_test_fail "case: contention tag (non-vacuousness) -- expected an ordinary FINDING gate8 line for the real break" "$real_fail_out"
+elif ! printf '%s\n' "$real_fail_out" | grep -qF '[CONTENTION] gate8:'; then
+  common_test_fail "case: contention tag (non-vacuousness) -- expected the [CONTENTION] tag to ALSO be set alongside the real failure" "$real_fail_out"
+else
+  common_test_pass "case: contention tag (non-vacuousness) -- a genuinely failing fixture suite still FAILs (non-zero exit, ordinary FINDING line) while the contention tag is independently set"
+fi
+if [ -d "$GATE_LOCK_DIR" ]; then
+  common_test_fail "case: contention tag (non-vacuousness, no-leak) -- $GATE_LOCK_DIR still present after exit"
+else
+  common_test_pass "case: contention tag (non-vacuousness, no-leak) -- $GATE_LOCK_DIR absent after exit"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"

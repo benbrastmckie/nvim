@@ -313,38 +313,45 @@ set; a hit outside these three is edited in this phase rather than deferred.
 
 ---
 
-### Phase 3: Give the live Gate 8 path a contention-detected signal distinct from FAIL [NOT STARTED]
+### Phase 3: Give the live Gate 8 path a contention-detected signal distinct from FAIL [COMPLETED]
 
 **Goal**: A Gate 8 run that waited materially on `specs/.gate-lock`, or started under high ambient
 load, says so in its own output through a non-blocking channel — without altering any verdict,
 exit status, or `^FINDING ` line.
 
 **Tasks**:
-- [ ] Confirm the lock-wait site is singular: `grep -n "gate-acquire" agent-system/extensions/core/scripts/verify-deploy.sh`
-      — expect only `gate8_run()`'s acquire.
-- [ ] In `gate8_run()`, time the `gate-acquire` call (wall-clock seconds around the existing
+- [x] Confirm the lock-wait site is singular: `grep -n "gate-acquire" agent-system/extensions/core/scripts/verify-deploy.sh`
+      — expect only `gate8_run()`'s acquire. *(completed: confirmed singular)*
+- [x] In `gate8_run()`, time the `gate-acquire` call (wall-clock seconds around the existing
       invocation) and sample the 1-minute load average at gate entry, reusing
       `measure-gate-costs.sh`'s `/proc/loadavg` read shape, including an equivalent test-only
-      override hook so the condition is drivable from a suite.
-- [ ] Define the trigger as a disjunction of two measured signals — acquire wait at or above a
+      override hook so the condition is drivable from a suite. *(completed: `_gate8_load_1min()`/
+      `_gate8_now_ms()` added, with `GATE8_LOADAVG_OVERRIDE`/`GATE8_LOADAVG_SEQUENCE` test hooks)*
+- [x] Define the trigger as a disjunction of two measured signals — acquire wait at or above a
       declared fraction of `GATE_MUTEX_ACQUIRE_BUDGET_MS`, or entry load average at or above a
       declared threshold — with both knobs env-overridable and their defaults justified in a header
-      comment. Never trigger from a caller's assertion.
-- [ ] On trigger, emit a named `[CONTENTION]` stderr note and, in `--findings` mode, one
+      comment. Never trigger from a caller's assertion. *(completed: `GATE8_CONTENTION_WAIT_FRACTION`
+      default 0.1, `GATE8_CONTENTION_LOAD_THRESHOLD` default 2.0, both measured locally)*
+- [x] On trigger, emit a named `[CONTENTION]` stderr note and, in `--findings` mode, one
       `warn_advisory()`-channel line so it carries the `WARN-FINDING ` token the documented
       `grep '^FINDING '` consumer filter does not match. Verdicts, `CHECKS`, exit status, and every
-      `fail()`/`warn()` call site stay exactly as they are.
-- [ ] Add cases to `scripts/tests/test-gate-lock.sh` (which already drives the real
+      `fail()`/`warn()` call site stay exactly as they are. *(completed: emitted directly to
+      FINDINGS_LIST rather than via an actual warn_advisory() call, to avoid that function's own
+      CHECKS/GATE_DIRTY_LIST side effects)*
+- [x] Add cases to `scripts/tests/test-gate-lock.sh` (which already drives the real
       `verify-deploy.sh` gate 8 against a fixture `$WORKDIR` with a stubbed `task-lock.sh`):
       the tag fires under a stubbed slow acquire; the tag fires under a stubbed high load average;
       the tag does NOT fire on a clean, unloaded fixture run; and — the non-vacuousness case — a
       genuinely failing fixture suite still produces its ordinary `FINDING `/FAIL result and
-      non-zero outcome while the contention tag is set.
-- [ ] Document the new token in `batch-gate-stage.md`'s `## Finding Severity: FINDING vs.
+      non-zero outcome while the contention tag is set. *(completed: 10 new cases, confirmed 5
+      failing against the pre-change verify-deploy.sh via a sibling-lib-symlinked scratch copy,
+      removed before commit; full suite 27/27 passing against the post-change script)*
+- [x] Document the new token in `batch-gate-stage.md`'s `## Finding Severity: FINDING vs.
       WARN-FINDING` section as a third `warn_advisory()` call site, stating explicitly that it
-      annotates and never reclassifies.
-- [ ] Re-run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`
+      annotates and never reclassifies. *(completed)*
+- [x] Re-run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`
       for the `batch-gate-stage.md` edit and stage `index-entries.json` in this same phase.
+      *(completed: 236->249)*
 
 **Timing**: 1.5 hours
 
@@ -378,9 +385,20 @@ edit; a second acquire site would mean instrumenting both in this phase.
   finding attributable to this phase, with `test-gate-lock.sh`'s four new cases present and each
   failing before the `verify-deploy.sh` edit (non-vacuousness). Under a batch dispatch carrying the
   deferral directive, discharge scoped per that directive instead and record the deferral.
+  *(DEFERRED per this dispatch's own Batch Gate Deferral directive: ran
+  `bash agent-system/extensions/core/scripts/tests/run-all.sh --only <37-suite selector-derived
+  union covering verify-deploy.sh, test-gate-lock.sh, batch-gate-stage.md, and index-entries.json>`
+  — result: 35 passed, 2 failed (2 expected, 0 NEW), matching known-failures.txt's pre-existing
+  test-gate-cache-equivalence.sh (load-sensitive, needs-owner) and
+  test-verify-deploy-context-budget.sh (real-defect, owned elsewhere) rows, neither attributable to
+  this phase's edits. The complete gate set still runs once at the batch stage per the directive.*)
 - A clean fixture run's `--findings` output contains no contention line and is byte-identical in
-  its `^FINDING ` set to the pre-change run.
+  its `^FINDING ` set to the pre-change run. *(CONFIRMED via test-gate-lock.sh's new "clean run"
+  case: no [CONTENTION]/WARN-FINDING line, and the fixture's own FINDING set stays empty in both
+  the pre- and post-change script, as it was before this phase.)*
 - `bash agent-system/extensions/core/scripts/check-extension-docs.sh` reports no Rule R finding.
+  *(CONFIRMED: `grep -i "Rule R"` over its output returns nothing. The 3 pre-existing "deployed
+  script content drift" FAILs for core are expected pre-redeploy drift, resolved in Phase 4.)*
 
 ---
 
