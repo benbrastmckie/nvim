@@ -549,33 +549,33 @@ and work that list, not this one. Note that
 
 ---
 
-### Phase 7: Sweep the script comments and test-harness stub lists [NOT STARTED]
+### Phase 7: Sweep the script comments and test-harness stub lists [COMPLETED]
 
 **Goal**: Clear the remaining references inside shell sources — header comments, structural-model
 citations, and the scratch-tree stub lists that fabricate an `errors-append.sh` into fixture
 deploy trees.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/scripts/lib/common.sh`: remove `scripts/errors-append.sh` and
-      `scripts/tests/test-errors-append.sh` from the two header enumerations.
-- [ ] `agent-system/extensions/core/scripts/orchestrate-record-decision.sh`: the header says its
+- [x] `agent-system/extensions/core/scripts/lib/common.sh`: remove `scripts/errors-append.sh` and
+      `scripts/tests/test-errors-append.sh` from the two header enumerations. *(completed)*
+- [x] `agent-system/extensions/core/scripts/orchestrate-record-decision.sh`: the header says its
       write mechanics follow `errors-append.sh`'s `append` subcommand. Repoint that citation at a
       surviving `flock`-guarded writer (`issue-record.sh` or `events-append.sh`) or restate the
-      mechanics inline; do not leave a pointer at a deleted file.
-- [ ] `agent-system/extensions/core/scripts/validate-state.sh`: its header cites
+      mechanics inline; do not leave a pointer at a deleted file. *(completed: repointed at scripts/state-write.sh instead — the actual structural match for the read-merge-validate-atomic-mv sequence described, since neither issue-record.sh nor events-append.sh actually performs that shape; see deviation note)*
+- [x] `agent-system/extensions/core/scripts/validate-state.sh`: its header cites
       `context/formats/errors-format.md` for the hand-rolled bash+jq idiom. Repoint at a
-      surviving format document or restate the idiom.
-- [ ] `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`: drop
-      `specs/errors.json` from the engine-written-state comment list.
-- [ ] `agent-system/extensions/core/scripts/tests/test-generate-task-order.sh` and
+      surviving format document or restate the idiom. *(completed: restated inline — no surviving format document carries the specific policy statement cited)*
+- [x] `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`: drop
+      `specs/errors.json` from the engine-written-state comment list. *(completed)*
+- [x] `agent-system/extensions/core/scripts/tests/test-generate-task-order.sh` and
       `tests/test-orchestrate-record-decision.sh`: both cite `test-errors-append.sh` as their
-      structural model. Repoint at a surviving suite with the same structure.
-- [ ] Remove `errors-append.sh` from the scratch-tree stub lists in
+      structural model. Repoint at a surviving suite with the same structure. *(completed: repointed both at test-git-commit-scoped.sh)*
+- [x] Remove `errors-append.sh` from the scratch-tree stub lists in
       `tests/test-orchestrate-recover-message-findings.sh`,
       `tests/test-handoff-dispatch-identity.sh` (two occurrences),
       `tests/test-orchestrate-context-growth.sh`, and
-      `tests/test-orchestrate-cycle-postflight.sh` (two occurrences).
-- [ ] Run `bash .claude/scripts/lint/lint-shellcheck.sh` over the edited scripts.
+      `tests/test-orchestrate-cycle-postflight.sh` (two occurrences). *(completed: 6 occurrences removed across 4 files)*
+- [x] Run `bash .claude/scripts/lint/lint-shellcheck.sh` over the edited scripts. *(completed: 0 findings across the 10 touched files; full battery deferred to the batch stage per the dispatch's Batch Gate Deferral directive — see progress file verification_notes)*
 
 **Timing**: 1 hour
 

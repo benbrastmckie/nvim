@@ -2,9 +2,9 @@
 # validate-state.sh - Validate a specs/state.json-shaped file against
 # context/schemas/state-schema.json.
 #
-# Follows the hand-rolled bash+jq idiom documented in context/formats/errors-format.md (see that
-# file's explicit no-runtime-JSON-Schema-engine policy statement, which names the two tools this
-# codebase deliberately avoids). Both subcommands are hand-validated in the events-append.sh
+# Follows the same hand-rolled bash+jq idiom used throughout this codebase: no runtime
+# JSON-Schema-engine library or tool is shelled out to (a deliberate avoidance, not an
+# oversight). Both subcommands are hand-validated in the events-append.sh
 # idiom -- required-arg presence, closed-enum case checks, integer regex checks, and jq-shape
 # checks. This script references context/schemas/state-schema.json and
 # scripts/lib/status-vocabulary.sh in comments/sourcing only -- it never shells out to any

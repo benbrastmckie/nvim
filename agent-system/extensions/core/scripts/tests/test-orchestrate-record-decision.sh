@@ -3,7 +3,7 @@
 # proving the two load-bearing claims mechanically: concurrent invocation neither loses nor
 # corrupts an entry, and malformed input is rejected with the target file left byte-identical.
 #
-# Structural model: scripts/tests/test-errors-append.sh (set -uo pipefail, pass()/fail()/info()
+# Structural model: scripts/tests/test-git-commit-scoped.sh (set -uo pipefail, pass()/fail()/info()
 # helpers, PASSED/FAILED integer counters, exit 0 on all-pass / 1 on any-fail / 2 on environment
 # error). Script-under-test resolution mirrors the deploy-tree-first / source-store-fallback
 # candidate list used by that suite, so this one runs correctly both post-deploy

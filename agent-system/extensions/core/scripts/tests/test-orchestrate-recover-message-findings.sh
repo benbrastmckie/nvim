@@ -246,7 +246,7 @@ for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-loc
          orchestrate-churn.sh orchestrate-loop-guard-init.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
          state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
-         errors-append.sh events-append.sh; do
+         events-append.sh; do
   require_file "$CORE_DIR/$f"
   cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
 done

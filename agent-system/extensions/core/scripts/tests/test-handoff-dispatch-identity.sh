@@ -67,7 +67,7 @@ require_file "$SUT_SRC"
 for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-lock.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
          state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
-         errors-append.sh events-append.sh; do
+         events-append.sh; do
   require_file "$CORE_DIR/$f"
 done
 # Glob-copy the whole lib/ directory rather than a hardcoded per-file list (see
@@ -92,7 +92,7 @@ setup_sandbox() {
   for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-lock.sh \
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
            state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh \
-           errors-append.sh events-append.sh; do
+           events-append.sh; do
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
   done
   cp "$CORE_DIR"/lib/*.sh "$WORKDIR/.claude/scripts/lib/"

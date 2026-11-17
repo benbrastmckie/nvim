@@ -46,7 +46,7 @@ for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-loc
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
          state-write.sh generate-todo.sh generate-task-order.sh update-task-status.sh \
          git-commit-scoped.sh issue-record.sh \
-         errors-append.sh events-append.sh validate-return-meta.sh run-task-observers.sh \
+         events-append.sh validate-return-meta.sh run-task-observers.sh \
          validate-handoff.sh; do
   require_file "$CORE_DIR/$f"
 done
@@ -77,7 +77,7 @@ setup_sandbox() {
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
            state-write.sh generate-todo.sh generate-task-order.sh update-task-status.sh \
            git-commit-scoped.sh issue-record.sh \
-           errors-append.sh events-append.sh validate-return-meta.sh run-task-observers.sh \
+           events-append.sh validate-return-meta.sh run-task-observers.sh \
            validate-handoff.sh; do
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
   done

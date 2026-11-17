@@ -32,8 +32,9 @@
 # failure this script exists to make unreachable. Lazily creates the file ([]) on first use.
 # Additive only: existing entries are never removed or rewritten by a later append.
 #
-# Write mechanics follow errors-append.sh's append subcommand exactly: flock -x held across the
-# entire read -> merge -> validate-merged-document -> atomic-mv sequence. The document ROOT (not
+# Write mechanics follow the same shape as scripts/state-write.sh's acquire -> stage -> transform
+# -> validate -> mv -> release sequence: flock -x held across the entire read -> merge ->
+# validate-merged-document -> atomic-mv sequence. The document ROOT (not
 # a nested key) is what is validated as type == "array" both before merging and after -- a
 # pre-existing object-wrapped file is REFUSED, never silently coerced. On any failure the
 # pre-existing file is left byte-identical and nothing is written.

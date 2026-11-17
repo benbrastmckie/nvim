@@ -1,0 +1,47 @@
+{
+  "phase": 7,
+  "phase_name": "Sweep the script comments and test-harness stub lists",
+  "started_at": "2026-11-17T06:30:00Z",
+  "last_updated": "2026-11-17T07:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "scripts/lib/common.sh: drop both header enumeration entries", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/common.sh"]},
+    {"id": 2, "description": "scripts/orchestrate-record-decision.sh: repoint write-mechanics citation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-record-decision.sh"]},
+    {"id": 3, "description": "scripts/validate-state.sh: repoint bash+jq idiom citation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-state.sh"]},
+    {"id": 4, "description": "scripts/orchestrate-cycle-postflight.sh: drop errors.json from comment list", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 5, "description": "test-generate-task-order.sh and test-orchestrate-record-decision.sh: repoint structural-model citations", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-generate-task-order.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh"]},
+    {"id": 6, "description": "Remove errors-append.sh from scratch-tree stub lists (5 test files, 6 occurrences)", "status": "done", "files_touched": [
+      "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-message-findings.sh",
+      "agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh",
+      "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
+      "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+    ]},
+    {"id": 7, "description": "Run lint-shellcheck.sh over edited scripts", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "7.2",
+      "description": "scripts/orchestrate-record-decision.sh: repoint the write-mechanics citation at a surviving flock-guarded writer",
+      "type": "altered",
+      "reason": "Neither issue-record.sh nor events-append.sh actually performs the read -> merge -> validate-merged-document -> atomic-mv sequence the original citation described (both are pure JSONL appends, not document rewrites). scripts/state-write.sh's acquire -> stage -> transform -> validate -> mv -> release sequence is the actual structural match, so repointed there instead of to one of the two scripts the plan's bullet suggested.",
+      "annotation": "*(deviation: altered — repointed to state-write.sh instead of issue-record.sh/events-append.sh, the actual structural match)*"
+    },
+    {
+      "task_id": "7.3",
+      "description": "scripts/validate-state.sh: repoint the bash+jq idiom citation at a surviving format document",
+      "type": "altered",
+      "reason": "No surviving format document restates the specific 'no-runtime-JSON-Schema-engine policy statement' that errors-format.md (now deleted) documented; restated the idiom inline instead of pointing at a non-existent surviving citation target, per the plan's own 'or restate the idiom' alternative.",
+      "annotation": "*(deviation: altered — restated the idiom inline rather than citing a non-existent surviving document)*"
+    },
+    {
+      "task_id": "7-finding",
+      "description": "Discovered but NOT fixed: test-common-lib.sh's 'mode=deploy-tree-first (both exist)' case fails (NEW, in Phase 7's broad selector run), traced to commit 53e141696 (task 555, landed before this dispatch started) which modified common.sh's actual resolver function logic -- unrelated to this task's comment-only edit to common.sh.",
+      "type": "deferred",
+      "reason": "Confirmed via git diff that this task's edit to common.sh touches only two comment lines, no function logic. Recorded via issue-record.sh as a pre-existing, out-of-scope defect rather than attempted as an opportunistic fix.",
+      "annotation": "*(deviation: deferred — pre-existing test-common-lib.sh failure traced to an unrelated prior commit, out of this task's scope)*"
+    }
+  ],
+  "verification_notes": "Batch Gate Deferral applied (this phase declares Verification Tier: full). lint-shellcheck.sh run scoped to the 10 files this phase touched: 0 findings. Selector-resolved run-all.sh --only (CORE_TEST_SUBJECT_MODE=source-store), resolved to 168 of ~190 total suites (common.sh's centrality makes the narrowed selection effectively the whole corpus, exactly as the plan's own Tier Justification anticipated): 164 passed, 4 failed (2 expected per known-failures.txt: test-gate-cache-equivalence.sh, test-verify-deploy-context-budget.sh; 2 NEW: test-git-commit-scoped.sh's U5 case, already traced in Phase 4 to a foreign uncommitted edit by a different task; test-common-lib.sh's deploy-tree-first fixture case, traced to a pre-existing, already-committed defect from task 555, unrelated to this task's comment-only edit). The unnarrowed/full run-all.sh and verify-deploy.sh gate set are deferred to the batch-level stage per the dispatch directive, not independently run again in this phase. grep -rn 'errors-append' over scripts/ returns nothing (clean)."
+}

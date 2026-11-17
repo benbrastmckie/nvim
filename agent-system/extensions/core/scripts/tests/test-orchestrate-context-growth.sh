@@ -70,7 +70,7 @@ SCRIPTS=(
   orchestrate-recover-outcome.sh orchestrate-churn.sh
   deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh
   state-write.sh generate-todo.sh update-task-status.sh git-commit-scoped.sh
-  errors-append.sh events-append.sh
+  events-append.sh
 )
 # Glob-copy the whole lib/ directory rather than a hardcoded per-file list (see
 # test-force-phases.sh:106 for the precedent): a hardcoded list drifts silently whenever any

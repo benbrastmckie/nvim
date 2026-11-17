@@ -100,7 +100,7 @@
 #   caller's shell); sourcing common.sh is confirmed not to change that (see
 #   tests/test-common-lib.sh's $-/`set -o` assertions, exercised directly against both files).
 #   Root-resolution (common_repo_root), migrated in Phase 4:
-#     scripts/errors-append.sh, scripts/events-append.sh,
+#     scripts/events-append.sh,
 #     scripts/events-query.sh, scripts/export-to-markdown.sh, scripts/generate-task-order.sh,
 #     scripts/generate-todo.sh, scripts/git-commit-scoped.sh, scripts/install-extension.sh,
 #     scripts/lint/lint-postflight-boundary.sh,
@@ -115,7 +115,7 @@
 #     (scripts/test-conflict-predicate.sh, scripts/test-four-tier-conflict.sh,
 #     scripts/test-session-registry.sh, scripts/test-session-runtime-files.sh,
 #     scripts/test-state-write-concurrency.sh, scripts/test-state-write-regen-timing.sh,
-#     scripts/test-task-lock-reap.sh, scripts/tests/test-errors-append.sh,
+#     scripts/test-task-lock-reap.sh,
 #     scripts/tests/test-git-commit-scoped.sh, scripts/tests/test-orchestrate-triage-classify.sh),
 #     plus three now-quarantined scripts under scripts/deprecated/ (archive-task, roadmap-sync,
 #     vault-operation) whose source still calls this function even though none has a live caller

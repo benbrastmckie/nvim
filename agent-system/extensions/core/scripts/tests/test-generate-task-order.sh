@@ -16,7 +16,7 @@
 # not accidentally inert) AND that the script's actual output IS safe -- so a fixture both a
 # broken and a fixed implementation would render identically never counts as coverage.
 #
-# Structural model: test-errors-append.sh (mktemp -d TOP_WORKDIR with an EXIT-trap cleanup,
+# Structural model: test-git-commit-scoped.sh (mktemp -d TOP_WORKDIR with an EXIT-trap cleanup,
 # pass()/fail()/info() helpers, integer PASSED/FAILED counters, exit 0 all-pass / 1 any-fail /
 # 2 environment error; per-case isolated scratch built via build_scratch()).
 #

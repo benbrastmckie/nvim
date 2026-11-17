@@ -1740,7 +1740,7 @@ if [ "$(echo "$file_scope_json" | jq 'length')" -gt 0 ] 2>/dev/null; then
   # git-staging-scope.md's "Three Containment sites, not one"): the shared source
   # scripts/lib/engine-written-state-paths-lib.sh defines the fixed set of paths written by the
   # engine on behalf of EVERY task (currently specs/TODO.md, specs/state.json,
-  # specs/events.jsonl, specs/errors.json), never declarable in any one task's own file_scope,
+  # specs/events.jsonl), never declarable in any one task's own file_scope,
   # so none of them is ever a genuine excursion no matter which task reports it in
   # modified_files. All three Containment sites now consult this same shared source rather than
   # each hand-copying the list. Decision 2's fallback: a source/resolution failure splices the
