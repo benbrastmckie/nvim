@@ -169,6 +169,7 @@ test-plan-file-scope-harvest.sh	integration	invokes:deploy-headless.sh
 test-please-grant.sh	unit	-
 test-postflight-deploy-gate.sh	integration	invokes:deploy-headless.sh
 test-postflight-marker-schema.sh	unit	-
+test-postflight-sapience-notes.sh	unit	-
 test-quality-gate-notation.sh	unit	-
 test-reconcile-demote-stranded.sh	unit	-
 test-reconcile-handoff-status.sh	unit	-
