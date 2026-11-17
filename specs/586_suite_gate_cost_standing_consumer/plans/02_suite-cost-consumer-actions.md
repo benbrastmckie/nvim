@@ -76,6 +76,38 @@ puts the methodology in a `specs/decisions/` verdict record with a pointer comme
 countings differ over — keeping this plan's territory disjoint from both siblings and from every
 coupled generated surface.
 
+### Revision Integration (blocker-driven, 2026-11-17)
+
+This plan was revised in place after Phases 1, 2, 3 and 5 landed and committed and Phase 4 closed
+`[PARTIAL]`. The revision integrated no new research report — none was produced; the only input
+was a live blocker diagnosis, which found the blocker **environmental, not a plan or code defect**:
+
+- `measure-gate-costs.sh`'s by-design load guard refuses any measurement taken while the 1-minute
+  host load average exceeds 2.0. This is a shared 24-core desktop; load was 3.26-3.86 when Phase 4
+  reached its regeneration tasks (a concurrent `lake` build at 486% CPU, a Sapience hook at 99.6%,
+  multiple active sessions), and 1.90 (1-min) against 4.19 (5-min) / 4.09 (15-min) at this
+  revision — i.e. the instantaneous figure dips under the threshold while the sustained figure does
+  not, which is exactly the condition that produced the contaminated-suspected sample Phase 4
+  already recorded.
+- Nothing is half-written: neither probe artifact was touched, so no rollback is owed.
+- The pre-existing Rollback/Contingency section already sanctioned this outcome verbatim.
+
+What this revision therefore changes is **not the approach** but the *resumability* of the one
+open phase. Three substantive changes, each because the first attempt exposed a gap that the
+original wording left to the resuming agent's judgment:
+
+1. Phase 4's remaining tasks carry an explicit **sustained**-idleness precondition (all three
+   load-average windows, not just the 1-minute one the script itself gates on), because the
+   1-minute-only check is what admitted the contaminated re-timing.
+2. Phase 4 gains an explicit **escalation ladder with a bounded attempt budget** and a named
+   terminal exit, so a resuming dispatch converts the remainder into a follow-up record instead of
+   re-attempting it indefinitely across cycles.
+3. The contaminated-suspected 576.6s cache-equivalence figure is promoted from a parenthetical
+   task annotation into a first-class task of its own, so it cannot be read as a measured result.
+
+The already-committed Phases 1, 2, 3 and 5 are preserved verbatim and are not re-opened by this
+revision.
+
 ### Prior Plan Reference
 
 No prior plan. This is the first plan for this record.
@@ -138,7 +170,7 @@ stages it explicitly, per the dispatch's concurrency note.
 
 | Risk | Impact | Likelihood | Mitigation |
 |------|--------|------------|------------|
-| `measure-gate-costs.sh`'s load guard refuses (exit 2) because a sibling implement dispatch is building concurrently | H | H | Phase 4 checks 1-minute load *before* invoking and defers rather than forcing: the script's own `mgc_write_with_overwrite_guard` already refuses to overwrite an `ALL_VALID=true` artifact with a contaminated run, so the fail-safe exists — use it, record a `[PARTIAL]` phase, and re-run when the batch is quiet. Never raise `--load-threshold` to get a number. |
+| `measure-gate-costs.sh`'s load guard refuses (exit 2) because a sibling implement dispatch is building concurrently — **REALIZED**, and it is the one open blocker | H | H (materialized) | Mitigation held as written and is unchanged in substance: defer, never force, never raise `--load-threshold`. What the realization added is that a *1-minute-only* pre-check is insufficient — it passed at 1.49-1.77 and load reached 3.26-3.86 within the same phase. Phase 4's revised precondition therefore gates on all three load windows plus a post-run re-check, and its escalation ladder bounds how many times a dispatch may retry before the remainder becomes a named follow-up. |
 | Realized savings fall short of the ~2.3s × invocation-count estimate because some invocations are unfiltered (`--skip-slow` only, no `--only-gate`) and keep the probe | M | M | Phase 4 measures per-suite before/after directly instead of asserting the estimate; if short, the named follow-up is widening the guard to `--skip-slow`-only invocations, recorded in Phase 5 rather than attempted mid-phase. |
 | Suppressing an output line breaks an assertion in a suite that greps `verify-deploy.sh` output | H | L | A repo-wide grep for `[verify-deploy] corpus` / `--size-line` found no consumer outside `verify-deploy.sh` and `script-inventory.sh`'s own suite. The guard is additive-only and leaves the *unfiltered* path byte-identical, so only gate-narrowed invocations change. Phase 3's full gate run is the backstop. |
 | The reaper deletes a `/tmp/tmp.*` directory belonging to a live process (a sibling's in-flight fixture) | H | M | Three independent gates, all required: invoking-UID ownership, no live process reference via `/proc/*/cwd` + `/proc/*/fd` (never a process-name match), and an age threshold. Report-only by default; deletion only under `--force`, matching every existing pass's three-mode contract. |
@@ -156,6 +188,13 @@ stages it explicitly, per the dispatch's concurrency note.
 | 4 | 5 | 2, 3, 4 |
 
 Phases within the same wave can execute in parallel.
+
+**Resumption admission (post-revision)**: Phases 1, 2, 3 and 5 are `[COMPLETED]` and separately
+committed. A resuming dispatch MUST NOT re-attempt any of them — Phase 2 in particular is not
+revertable and not repeatable (its backlog is already reclaimed), and Phase 5's decision record
+already exists on disk. The only admissible work is Phase 4's remaining tasks. Phase 5 closed
+ahead of its declared `4` dependency deliberately, under the Rollback/Contingency section's
+explicit sanction; that is a recorded, intended ordering, not drift to be repaired.
 
 ### Phase 1: Leaked-Fixture Reaper Pass in claude-refresh.sh [COMPLETED]
 
@@ -406,6 +445,19 @@ measured rather than estimated.
       NOT checked during its ~580s run and was found at 3.26-3.86 immediately after -- a
       concurrent 'lake shake' Lean build and other active sessions on this shared desktop host.
       CONTAMINATED-SUSPECTED, not a confirmed regression -- see deviation below)*
+- [ ] **(revised: new gate, run this first on resume)** Confirm *sustained* idleness, not
+      instantaneous idleness: read all three fields of `/proc/loadavg` and require **every** one
+      (1-, 5- and 15-minute) at or below the 2.0 threshold, then re-read after a short settle and
+      require it again. The original 1-minute-only check is what admitted the contaminated
+      re-timing below: it read 1.49-1.77 and load reached 3.26-3.86 inside the same phase. If any
+      window is over, do not invoke anything — go to the escalation ladder below. Record the
+      three observed figures either way.
+- [ ] **(revised: promoted from an annotation to its own task)** Re-time
+      `test-gate-cache-equivalence.sh` cleanly, with load sampled *during* the run and not only
+      before it, and treat the earlier 576.6s as void rather than as a baseline. Until a clean
+      re-timing exists, the trustworthy figures for this phase are exactly two: the 543.0s hint
+      row (2026-10-16, stale) and `test-verify-deploy-gate-selection-crash-net.sh` at 78.68s
+      (measured clean, citable as-is). A delta computed against 576.6s is not a result.
 - [ ] Regenerate the suite-level hints:
       `bash agent-system/extensions/core/scripts/measure-gate-costs.sh --regen-hints
       --skip-gate-measure`, reading the written file's own `ALL_VALID` header to decide whether
@@ -424,6 +476,29 @@ measured rather than estimated.
       glob pathspec). *(deviation: deferred -- not reached, both artifacts remain unregenerated)*
 - [ ] Record the realized total saving: the regenerated hints file's new sum against the
       1,406,493 ms baseline, plus the two per-suite deltas. *(deviation: deferred -- not reached)*
+
+**Escalation ladder (revised: bounds the retry, and names the terminal exit)**
+
+The blocker is a shared host's load, which no change inside this repository can clear. A resuming
+dispatch therefore gets a bounded attempt budget rather than an open-ended one:
+
+| Attempt | Action on a failed idleness gate |
+|---|---|
+| 1st in a dispatch | Record the three load figures and stop this phase for this dispatch. Do not block, poll, or sleep-wait on the host — a waiter burns the dispatch's budget without making the host quieter. |
+| 2nd dispatch | Same, and additionally confirm via `ps` *what* is loading the host, so the record distinguishes a transient neighbor from a standing one. |
+| 3rd dispatch | **Terminal**: stop retrying. Close Phase 4 `[PARTIAL]` permanently for this record and file the remainder as its own task whose single precondition is a confirmed-idle host. Append the realized state to `specs/decisions/suite-cost-delete-keep-verdict.md`, which Phase 5 already created and which already names this regeneration as owed follow-up. |
+
+Rationale for a terminal exit rather than indefinite retry: the two stale artifacts are *already*
+stale (dated 2026-10-16 and 2026-10-19) and the system has run on them throughout. Staying stale
+costs nothing new; a contaminated regeneration would actively mislead `--max-cost` and
+`run-all.sh`'s scheduler. So the correct resting state under a persistently loaded host is
+"stale and openly recorded as stale", and this record should not hold itself open to wait for it.
+
+**Non-remedies — do not attempt any of these to get past the gate**:
+- Raising `--load-threshold` or setting `MEASURE_GATE_COSTS_LOAD_THRESHOLD` above 2.0.
+- Passing `--skip-gate-measure` to avoid the guard while still writing a cost artifact.
+- Hand-editing either artifact, or hand-patching a single row, in place of a measured run.
+- Killing, renicing, or otherwise interfering with another session's processes to lower the load.
 
 **Timing**: 1.5 hours
 
@@ -595,3 +670,11 @@ committed, so rollback is per-phase rather than wholesale:
 If the host is never quiet enough for Phase 4 within this task's budget, close Phases 1-3 and 5
 and leave Phase 4 `[PARTIAL]` with the observed load recorded — a contaminated cost artifact is
 worse than a stale one, because `--max-cost` and `run-all.sh`'s scheduler both act on it.
+
+**This contingency has now fired, and it fired as designed.** Phases 1, 2, 3 and 5 are closed and
+committed; Phase 4 is `[PARTIAL]` with the load recorded; neither probe artifact was written, so
+there is nothing to roll back and no partial state to repair. The revision adds only the missing
+half of this clause: *what happens if the host stays loaded across dispatches*. See Phase 4's
+escalation ladder — bounded at three dispatches, after which the regeneration leaves this record
+as its own idle-host-gated task and the verdict record carries the realized state. The blocker is
+environmental, so there is no code or plan change that resolves it and none should be attempted.
