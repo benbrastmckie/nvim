@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 6,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 10,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a six-phase sequential implementation plan adding Check E (a deployed (event, matcher, hook-identity) SET assertion reporting the three drift shapes as distinct findings with distinct remedies) to lint-hook-registration-paths.sh, consuming merge.lua's existing M.hook_valid_set_key identity notion via the existing batched hook_identity_cli.lua bridge rather than defining a second one. Premise re-validation against live state found two of the dispatch's three cited field instances no longer hold: lean4's shape-(c) scripts are both present on disk today and no live shape-(b) duplicate-matcher pair survives in any of the five archived task-369 fixtures or six probed deploys, so the plan satisfies acceptance criterion 1 with real-deploy-derived fixtures carrying at most one documented minimal mutation per non-surviving shape, provenance stated per shape. A plan-time probe also confirmed this repo's own deployed tree is already clean at the (event, matcher, identity) grain, so landing the check will not immediately turn Gate 21 red. The plan validates clean (validate-artifact.sh: 0 warnings) and harvests six file_scope entries including the __WHOLE_TREE__ sentinel for the mandated redeploy phase.",
+  "summary": "Landed Check E in lint-hook-registration-paths.sh: a deployed .claude/settings.json's (event, matcher, hook-identity) SET is compared against the source-declared union, reporting three distinct drift shapes (undeclared-present, duplicate-matcher double-fire, undeclared-absent) with three distinct remedies, consuming merge.lua's existing identity notion rather than redefining it. Wired into Gate 21 with zero verify-deploy.sh/gate-registry.data edits -- confirmed passing live and failing on a drifted exemplar via HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE. Added 7 regression cases (32/32 passing, including all 18 pre-existing ones) after catching and fixing a real pre-landing defect: the deployed-settings default was silently auditing the real live tree against whatever narrow declared set a fixture test's own custom scan path produced. Redeployed to RESULT=landed_verify_clean. Per this dispatch's Batch Gate Deferral directive, the complete unfiltered gate/test sweeps were deferred to the batch stage; scoped discharge (--only-gate 21,3,4 and a 5-suite run-all.sh tier) confirmed clean except one proven-unrelated pre-existing test failure (test-deploy-baseline-lib.sh, isolated via git-stash to fail identically without this task's change).",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/527_hook_registration_set_lint_assertion/plans/01_hook-registration-set-lint.md",
-      "summary": "Six-phase plan: fleet drift baseline, matcher-aware inventory plus deployed-settings input, Check E's three shapes, fixture regression suite, Gate 21 confirmation plus boundary note, redeploy and full gate battery."
+      "type": "summary",
+      "path": "specs/527_hook_registration_set_lint_assertion/summaries/01_hook-registration-set-lint-summary.md",
+      "summary": "Completion summary: Check E's three shapes, per-shape exemplar provenance (a and c live, b reconstructed), full verification evidence, and the SCAN_PATH_GIVEN defect fix."
+    },
+    {
+      "type": "record",
+      "path": "specs/527_hook_registration_set_lint_assertion/records/01_live-drift-baseline.md",
+      "summary": "Fresh 27-repo fleet drift measurement: 14 clean, 13 drifted, zero live shape-(b) instances -- supersedes every carried field figure."
     }
   ]
 }

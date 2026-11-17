@@ -1,13 +1,74 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 10,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/527_hook_registration_set_lint_assertion/summaries/01_hook-registration-set-lint-summary.md",
+      "summary": "Check E (deployed hook-registration SET assertion, three drift shapes) landed in lint-hook-registration-paths.sh, wired into Gate 21 with no verify-deploy.sh/gate-registry.data edit, regression-tested, and redeployed to RESULT=landed_verify_clean."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added Check E to lint-hook-registration-paths.sh, comparing a deployed .claude/settings.json's (event, matcher, hook-identity) SET against the source-declared union and reporting three distinct drift shapes (undeclared-present, duplicate-matcher double-fire, undeclared-absent) with distinct remedies. Added 7 regression cases (32/32 passing), a fresh 27-repo fleet drift measurement, a new existence-boundary documentation subsection, and redeployed to RESULT=landed_verify_clean with Gate 21 confirmed both passing against live state and failing against a drifted exemplar."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh",
+    "specs/527_hook_registration_set_lint_assertion/records/01_live-drift-baseline.md",
+    "specs/527_hook_registration_set_lint_assertion/summaries/01_hook-registration-set-lint-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a shell script already takes a positional scan-path argument to scope one input (e.g. 'what to check'), and gains a SECOND, independently-scoped input (e.g. 'what to audit against'), never let the second input silently default to an ambient/real-world target regardless of whether the caller explicitly scoped the first. A caller that passes a narrow custom scan path for input 1 (typical of a fixture test isolating one code path) has implicitly stated 'this is a controlled, isolated invocation' -- defaulting input 2 to the real live system in that case produces spurious findings against production state and breaks every existing fixture test that predates input 2's existence, the moment the deployed copy catches up. Fix: capture whether the first input was explicitly given (before applying its own default-fill), and withhold the second input's real-world default whenever the first was explicit without the second being explicit too -- the second input then degrades to 'no data' (same as its own missing-file case), never 'audit something not under test'.",
+      "category": "PATTERN",
+      "source_artifact": "specs/527_hook_registration_set_lint_assertion/summaries/01_hook-registration-set-lint-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "dual-input-default",
+        "scan-path-scoping",
+        "fixture-test-isolation",
+        "deployed-vs-source-audit",
+        "lint-design"
+      ]
+    },
+    {
+      "content": "This repo's shared test-subject resolver (common_test_resolve_subject in scripts/lib/common.sh) defaults to 'deploy-tree-first': a test suite resolves the DEPLOYED copy of its subject script if one exists, falling back to the source-store copy only if not. This means a source-store-only edit (not yet redeployed) is invisible to that suite's default invocation -- the suite will test the STALE deployed copy and any new behavior will appear to fail with confusing errors (e.g. an unrecognized new flag reported as 'scan path not found'). Set CORE_TEST_SUBJECT_MODE=source-store when running such a suite to verify a pending, not-yet-deployed source-store change before its own task's redeploy phase lands; this is the sanctioned override, not a suite modification. The default asymmetry is deliberate (it is the pre/post-redeploy divergence signal the Inter-Cycle Redeploy Checkpoint relies on), so never hardcode the override inside the suite itself.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/527_hook_registration_set_lint_assertion/summaries/01_hook-registration-set-lint-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "CORE_TEST_SUBJECT_MODE",
+        "deploy-tree-first",
+        "pre-redeploy-verification",
+        "common_test_resolve_subject",
+        "source-store-mode"
+      ]
+    },
+    {
+      "content": "To prove a test failure is NOT caused by your own uncommitted edit (vs. genuinely pre-existing/unrelated), use 'git stash push -- <your-one-edited-file>' (the pathspec-scoped form, safe on a shared dirty working tree -- never a bare 'git stash'), re-run the failing test, then 'git stash pop'. If the failure persists identically with your change removed, it is proven pre-existing and you can safely leave it unrepaired and document the proof rather than guessing or over-claiming 'unrelated'.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/527_hook_registration_set_lint_assertion/summaries/01_hook-registration-set-lint-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "git-stash-isolation",
+        "pre-existing-failure-proof",
+        "test-triage",
+        "scoped-stash"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794907446_b4b581",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "delegation_depth": 2,
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   }
 }

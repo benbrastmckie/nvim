@@ -13,9 +13,9 @@ next_project_number: 643
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,590,599,604,607,613,618,627,629,631,632,633,635,636,639,640 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,586,592,593,598,609,610,624,628,630 | 383,390,398,410,431,438,451,453,455,463,472,476,477,504,519,527,535,538,539,548,549,563,564,577,599,607,629 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,480,486,492,509,513,552,566,571,594,605,637 | 439,452,479,484,491,518,542,586,593,604,628,635,636 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,590,599,604,607,613,618,627,628,629,631,632,633,635,636,639,640 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,586,592,593,598,609,610,624,630,637 | 383,390,398,410,431,438,451,453,455,463,472,476,477,504,519,535,538,539,548,549,563,564,577,599,607,628,629,635,636 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,480,486,492,509,513,552,566,571,594,605 | 439,452,479,484,491,518,542,586,593,604 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,561,581,588,595 | 472,476,486,492,509,539,552,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 524,596,641 | 454,501,561,595 | core-agent-system, agent-system |
 | 6 | 642 | 641 | agent-system |
@@ -48,7 +48,6 @@ next_project_number: 643
 523 [NOT STARTED] — Make Gate 27 MISSING\_DECLARATION count call sites, not...
 525 [NOT STARTED] — Repair the always-failing extensions-directory fallback in...
 526 [NOT STARTED] — Announce completion and input-needed over TTS from the source...
-527 [IMPLEMENTING] — Assert the deployed hook registration SET matches the...
 564 [NOT STARTED] — Fix validate-artifact.sh Tier Justification false positive...
   └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
 565 [NOT STARTED] — Resolve archived prior-art paths when composing dispatch and...
@@ -180,11 +179,11 @@ next_project_number: 643
 ### Sapience
 
 627 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
-635 [PLANNED] — Enforce the sapience postflight wrapup write at task completion
-  └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
-636 [PLANNED] — Close sapience activation-surface scoping gaps: vendor...
-  └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
 628 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+  └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
+635 [PLANNED] — Enforce the sapience postflight wrapup write at task completion
+  └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
+636 [PLANNED] — Close sapience activation-surface scoping gaps: vendor...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
 
 ### Decidability
@@ -6314,12 +6313,13 @@ repository before being written.
 
 ### 527. Assert the deployed hook registration SET matches the merge-source, not only each path's form
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 369, Task 445
 - **Research**: [527_hook_registration_set_lint_assertion/reports/01_hook-registration-set-lint.md]
 - **Plan**: [527_hook_registration_set_lint_assertion/plans/01_hook-registration-set-lint.md]
+- **Summary**: [527_hook_registration_set_lint_assertion/summaries/01_hook-registration-set-lint-summary.md]
 
 **Description**: Extend the hook-registration lint so it asserts the deployed hook registration SET against the merge-source, not only the FORM of each individual command path, and wire the resulting gate into verify-deploy.sh.
 

@@ -3,7 +3,7 @@
 - **Task**: 527 - Extend the hook-registration lint so it asserts the deployed hook registration
   SET against the merge-source, not only the FORM of each individual command path, and wire the
   resulting gate into verify-deploy.sh
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: `orphan_sweep_for_removed_merge_target_entries` (task 369, archived
   `[COMPLETED]`) and `gate8_expected_vs_new_failure_distinction` (task 445, archived
