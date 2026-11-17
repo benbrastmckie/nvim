@@ -1,9 +1,92 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 10,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/604_fixture_dependency_declaration_drift_lint/summaries/01_fixture-dependency-drift-lint-summary.md",
+      "summary": "All 5 phases completed: new lint-fixture-dependency-declaration.sh (gate 30) with a regression suite seeded from the three historical pre-repair commits, documented in shell-script-testing.md, deployed and verified (scoped discharge per Batch Gate Deferral)."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented lint-fixture-dependency-declaration.sh (gate 30), a lint-time detector for fixture suites whose declared/copied sandbox set omits a mandatory scripts/lib/*.sh dependency, backed by a regression suite seeded from the three historical pre-repair commits and documented in shell-script-testing.md. All 5 plan phases closed [COMPLETED]; live-corpus run is clean (159 files checked, 15 suites selected, 0 violations) and the regression suite passes 18/18 against the deployed tree."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/gate-registry.data",
+    "agent-system/extensions/core/scripts/lint/lint-fixture-dependency-declaration.sh",
+    "agent-system/extensions/core/scripts/tests/test-lint-fixture-dependency-declaration.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "sync-manifest-scripts.sh (agent-system/extensions/core/scripts/) diffs a new script's presence against `git ls-files`, not a raw disk walk -- an untracked new file is invisible to both --check and --write until it is `git add`-ed. Add new scripts before invoking this script, not after.",
+      "category": "CONFIG",
+      "source_artifact": "specs/604_fixture_dependency_declaration_drift_lint/summaries/01_fixture-dependency-drift-lint-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["sync-manifest-scripts", "provides.scripts", "git ls-files", "manifest.json", "core extension"]
+    },
+    {
+      "content": "When writing a text-level bash lint that classifies a guard idiom as mandatory-vs-optional by scanning forward for an exit/return signal, scope the scan to the specific if-branch's own body (bounded by the next elif/else/fi), never a blind N-line window: a blind window can pull in a semantically unrelated exit from a nested, unrelated else-branch (measured: deploy-freshness-lib.sh's staleness-refusal exit nested inside an 'optional library found' else-branch), and must separately skip comment lines, since prose describing an exit code inline (e.g. documenting a bash quirk) can textually match the same signal regex.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/604_fixture_dependency_declaration_drift_lint/summaries/01_fixture-dependency-drift-lint-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash lint", "text-level classifier", "guard shape", "false positive", "comment skip"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "sync-manifest-scripts.sh",
+      "predicate": "constraint is",
+      "value": "Diffs a new script's presence against `git ls-files`, not a raw disk walk. An untracked new script under agent-system/extensions/<ext>/scripts/ is invisible to both --check and --write until it has been `git add`-ed.",
+      "source_loc": "agent-system/extensions/core/scripts/sync-manifest-scripts.sh",
+      "confidence": 0.9
+    },
+    {
+      "subject": "generate-context-line-counts.sh",
+      "predicate": "constraint is",
+      "value": "Refuses to run from the agent-system source store (a deploy-root-guard.sh-style guard); it only runs against a deployed .claude/scripts (or .opencode/scripts) tree. A source-store-only edit to a context file must have its index-entries.json line_count applied by hand (a plain wc -l) until a redeploy makes the real script runnable, at which point --check should confirm the hand-applied value was exact.",
+      "source_loc": "agent-system/extensions/core/scripts/generate-context-line-counts.sh",
+      "confidence": 0.85
+    },
+    {
+      "subject": "lint-fixture-dependency-declaration.sh",
+      "predicate": "finding is",
+      "value": "New verify-deploy.sh gate 30: detects a scripts/tests/*.sh fixture suite whose declared/copied sandbox set omits a mandatory scripts/lib/*.sh dependency of a script it copies. Classifies each lib/*.sh guard occurrence into one of four shapes (unconditional hard-fail, degrade-safe single-line guard, search-loop log-and-continue pass-through, lazy fail-closed-on-first-use function wrapper), and deliberately never flags the fourth shape at all since static text analysis cannot determine whether a given suite's own scenarios reach the CLI subcommand that triggers it.",
+      "source_loc": "agent-system/extensions/core/scripts/lint/lint-fixture-dependency-declaration.sh",
+      "confidence": 0.9
+    },
+    {
+      "subject": "update-task-status.sh's hb_lib / phase-heartbeat-lib.sh guard (update-phase-status.sh)",
+      "predicate": "finding is",
+      "value": "A bare `if [[ -n \"$VAR\" ]]; then . \"$VAR\"; fi` with no error branch at all (no echo, no exit) is a legitimate, even-more-silent degrade-safe optional-dependency shape beyond the three the original drift-lint research enumerated (single-line [ -f ] && guard; search-loop log-and-continue; lazy fail-closed function wrapper).",
+      "source_loc": "agent-system/extensions/core/scripts/update-phase-status.sh",
+      "confidence": 0.85
+    },
+    {
+      "subject": "update-task-status.sh's OVERLAP_LIB/FRESHNESS_LIB guard",
+      "predicate": "finding is",
+      "value": "The 'library found' else-branch of this degrade-safe search-loop guard nests a semantically unrelated hard exit (exit 6, the deploy-staleness refusal) two levels deep inside further nested ifs. A classifier must never treat 'any exit/return found anywhere forward of the guard' as proof the guard itself is mandatory -- it must scope strictly to the guard's own first (not-found) branch.",
+      "source_loc": "agent-system/extensions/core/scripts/update-task-status.sh",
+      "confidence": 0.85
+    },
+    {
+      "subject": "verify-deploy.sh gate timeouts on this host",
+      "predicate": "measured fact is",
+      "value": "Gates with a 60s budget (gate 3 doc-lint, gate 4 task-reference lint) can transiently time out when deploy-headless.sh's own internal fast-gate pass runs under a measured host load average of ~9; a standalone re-run of the same gates passes cleanly within ~42s. Treat a lone 60s-budget timeout during a concurrent deploy pass as a host-contention signal to re-check standalone before treating it as a regression.",
+      "source_loc": "agent-system/extensions/core/scripts/verify-deploy.sh",
+      "confidence": 0.75
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794942735_1748a1",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

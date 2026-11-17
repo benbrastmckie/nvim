@@ -538,17 +538,27 @@ deployed tree, with the complete gate set green and no previously-green gate reg
 
 ## Testing & Validation
 
-- [ ] The detector reports zero violations against the live corpus (every current suite is already
-      repaired; a first-run violation on a current suite is a false positive)
-- [ ] The detector flags `lib/project-number-inuse.sh` as missing in all three measured pre-repair
+- [x] The detector reports zero violations against the live corpus (every current suite is already
+      repaired; a first-run violation on a current suite is a false positive) *(confirmed:
+      159 files checked, 15 suites selected, 0 violations)*
+- [x] The detector flags `lib/project-number-inuse.sh` as missing in all three measured pre-repair
       declarations — the regression bar this task owes, covering both declaration shapes
-- [ ] Neither OPTIONAL guard shape (`_RR_LIB`'s single-line `[ -f ] &&` idiom; the
-      log-and-continue `*_CANDIDATES` pass-through) is reported as missing
-- [ ] The selection predicate includes the measured named-array and open-coded copy suites and
-      excludes `test-stall-reprompt-wiring.sh`
-- [ ] `lint-gate-registry.sh` accepts the new row; the id is contiguous and unique
-- [ ] `sync-manifest-scripts.sh --check` and `generate-context-line-counts.sh --check` both exit 0
-- [ ] `bash .claude/scripts/verify-deploy.sh` exits 0 post-deploy with the new gate passing
+      *(confirmed via the regression suite's Cases 1-3, seeded from `git show <sha>^:<path>`)*
+- [x] Neither OPTIONAL guard shape (`_RR_LIB`'s single-line `[ -f ] &&` idiom; the
+      log-and-continue `*_CANDIDATES` pass-through) is reported as missing *(confirmed via the
+      regression suite's dedicated Cases 7-8, each isolating one shape)*
+- [x] The selection predicate includes the measured named-array and open-coded copy suites and
+      excludes `test-stall-reprompt-wiring.sh` *(confirmed: --verbose selected-suite list is
+      exactly the 8 named-array + 7 open-coded suites)*
+- [x] `lint-gate-registry.sh` accepts the new row; the id is contiguous and unique *(confirmed:
+      7/7 structural checks pass, ids 1..30 contiguous)*
+- [x] `sync-manifest-scripts.sh --check` and `generate-context-line-counts.sh --check` both exit 0
+      *(confirmed against the deployed tree post-Phase-5-deploy)*
+- [x] `bash .claude/scripts/verify-deploy.sh` exits 0 post-deploy with the new gate passing
+      *(deviation: altered per the Batch Gate Deferral directive — discharged via the scoped
+      `--only-gate 30 --skip-unchanged` invocation (PASS) plus the gate-8 `run-all.sh --only`
+      slice for the three directly relevant suites (3/3 PASS), with the complete sweep deferred
+      to the batch-level stage; see Phase 5's own checklist annotation for the full account)*
 
 ## Artifacts & Outputs
 
