@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Fixture Regression Suite",
+  "started_at": "2026-11-17T12:10:00Z",
+  "last_updated": "2026-11-17T13:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add a failing case per shape (a, b, c) from Phase 1 exemplars", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh"]},
+    {"id": 2, "description": "Add passing case for criterion 2: hand-written custom hook survives with zero findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh"]},
+    {"id": 3, "description": "Add passing case for criterion 3: measured-clean-repo copies produce zero findings", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh"]},
+    {"id": 4, "description": "Add case for criterion 4: Check E identity agreement outside hooks/", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh"]},
+    {"id": 5, "description": "Add passing case for missing-deployed-settings degrade", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh"]},
+    {"id": 6, "description": "Number new cases contiguously, keep pass/fail/info shape and scratch WORKDIR teardown identical, plant no committed fixture files", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh"]},
+    {"id": 7, "description": "Confirm every pre-existing case still passes unchanged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Run new Check-E-exercising cases under the suite's default deploy-tree-first subject resolution", "result": "failed", "reason": "Resolves the stale deployed lint copy (pre-redeploy, no Check E yet) -> 'scan path not found: --deployed-settings'. Fixed by using CORE_TEST_SUBJECT_MODE=source-store for verification during this phase; the default resolution will agree once Phase 6 redeploys."}
+  ],
+  "deviations": [],
+  "handoff_count": 0,
+  "notes": "Added 7 new cases (19-25, with 23 split into 23a/23b) for a total of 26 case labels (19 pre-existing + 7 new). All 32 individual assertions pass under 'CORE_TEST_SUBJECT_MODE=source-store bash scripts/tests/test-lint-hook-registration-paths.sh' (0 failed). A real pre-landing defect was caught and fixed during this phase: Check E's DEPLOYED_SETTINGS default unconditionally pointed at the REAL live .claude/settings.json, which would have made every pre-existing Check-A-D fixture case (1-18, each passing its own narrow custom scan path) spuriously trip Check E against the real deployed tree once the deployed copy eventually carries Check E -- fixed by withholding the default whenever an explicit scan path was given without an explicit --deployed-settings/env override (see issue-record.sh entry, class 'design defect caught before landing'). Re-verified byte-identical default-path output after the fix. The suite's DEFAULT (deploy-tree-first) invocation of test-lint-hook-registration-paths.sh itself will continue to show the new cases as failing against the STALE deployed copy until Phase 6's redeploy -- this is the suite's own documented, intentional pre/post-redeploy divergence signal (see common_test_resolve_subject's header comment), not a defect in this phase's work; Phase 6 closes this by construction. Likewise the five-suite run-all.sh tier shows test-lint-hook-registration-paths.sh newly listed alongside the two already-logged unrelated/EXPECTED failures (test-deploy-baseline-lib.sh, test-verify-deploy-context-budget.sh) for the identical pre-redeploy reason; same deferred-to-Phase-6 resolution."
+}

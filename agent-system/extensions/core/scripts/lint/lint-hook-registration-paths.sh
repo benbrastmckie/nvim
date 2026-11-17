@@ -194,7 +194,16 @@
 # HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE, when set, supplies the same deployed-settings path
 # --deployed-settings would, for the flagless gate-21 invocation where no CLI flag can reach this
 # script. Precedence: --deployed-settings flag beats HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE beats the
-# $PROJECT_ROOT/.claude/settings.json default.
+# $PROJECT_ROOT/.claude/settings.json default -- EXCEPT that the default itself is withheld
+# entirely (Check E then sees zero deployed rows, same as the missing-file degrade) whenever an
+# explicit positional scan-path argument was given and NEITHER the flag nor the env override was.
+# An explicit scan path is a caller stating "audit THIS controlled surface for Checks A-D" (every
+# pre-existing fixture-test case does exactly this); without this exception, Check E would
+# silently widen that into an ambient audit of the REAL deployed .claude/settings.json against
+# whatever narrow declared set that one controlled surface happens to produce -- noisy, privacy-
+# leaking in test output, and liable to spuriously fail a fixture case that has nothing to do
+# with Check E at all. The flagless, scan-path-less gate-21 invocation is unaffected: it has no
+# positional scan path, so the ordinary default still applies.
 
 set -euo pipefail
 
@@ -244,6 +253,14 @@ QUIET=false
 SCAN_PATHS=()
 lint_corpus_scan_parse_flags SCAN_PATHS VERBOSE QUIET -- "$@"
 
+# Captured BEFORE the "no scan path given -> use DEFAULT_SCAN" fill below, since that fill would
+# otherwise make every invocation look identical to Check E's own default-target logic. An
+# explicit scan path is a caller stating "audit THIS controlled surface for Checks A-D", never
+# an implicit request to also compare the REAL deployed .claude/settings.json against whatever
+# narrow declared set that surface yields -- see DEPLOYED_SETTINGS's own default rule below.
+SCAN_PATH_GIVEN=false
+[[ ${#SCAN_PATHS[@]} -gt 0 ]] && SCAN_PATH_GIVEN=true
+
 # Root resolution -- identical strategy to lint-state-writer-boundary.sh and
 # lint-directory-pathspec-boundary.sh: common_repo_root <dir> 3 is correct for the DEPLOYED copy
 # (.claude/scripts/lint/), but this script also runs directly from the source store
@@ -278,10 +295,22 @@ PROJECT_ROOT="$(resolve_project_root)"
 
 # Check E's deployed-settings input: --deployed-settings flag beats
 # HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE beats the default $PROJECT_ROOT/.claude/settings.json
-# (never settings.local.json, per D6). A missing, unreadable, or non-JSON file degrades to zero
-# Check E rows -- collect_inventory's own "[[ -f \"\$f\" ]]" guard below already handles that; no
-# exit 2 here.
-DEPLOYED_SETTINGS="${DEPLOYED_SETTINGS_FLAG:-${HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE:-$PROJECT_ROOT/.claude/settings.json}}"
+# (never settings.local.json, per D6) -- but ONLY when no explicit scan path argument was given
+# (SCAN_PATH_GIVEN=false): a caller that passed its own custom/fixture scan path for Checks A-D
+# has stated a deliberately scoped, isolated invocation, and Check E must never silently widen
+# that into an ambient audit of the REAL deployed tree against whatever narrow declared set that
+# scoped scan happens to produce. An explicit scan path WITHOUT an explicit --deployed-settings
+# (or env override) means Check E runs with NO deployed input at all -- zero rows, same as the
+# missing-file degrade -- never the real file. A missing, unreadable, or non-JSON
+# --deployed-settings/override path still degrades to zero Check E rows -- collect_inventory's
+# own "[[ -f \"\$f\" ]]" guard below already handles that; no exit 2 here either way.
+if [[ -n "${DEPLOYED_SETTINGS_FLAG:-}" || -n "${HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE:-}" ]]; then
+    DEPLOYED_SETTINGS="${DEPLOYED_SETTINGS_FLAG:-$HOOK_REG_DEPLOYED_SETTINGS_OVERRIDE}"
+elif [[ "$SCAN_PATH_GIVEN" == "false" ]]; then
+    DEPLOYED_SETTINGS="$PROJECT_ROOT/.claude/settings.json"
+else
+    DEPLOYED_SETTINGS=""
+fi
 
 if [[ ${#SCAN_PATHS[@]} -eq 0 ]]; then
     DEFAULT_SCAN="$PROJECT_ROOT/agent-system/extensions"

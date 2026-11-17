@@ -663,6 +663,1148 @@ $case18_out"
 fi
 
 # =====================================================================
+# Case 19 (FAILING, acceptance criterion 1, shape (a)): a faithful copy of a real drifted
+# deploy. ModelBuilder's `~/Projects/ModelBuilder/.claude/settings.json` as measured live on
+# 2026-11-17 (specs/527_hook_registration_set_lint_assertion/records/01_live-drift-baseline.md)
+# carries three undeclared identities (`wezterm-notify.sh` under `Stop|*`, `tts-notify.sh` under
+# `Stop|*`, `wezterm-clear-status.sh` under `UserPromptSubmit|*`) plus a fourth undeclared triple
+# (`tts-notify.sh` under the WIDER `Notification|permission_prompt|idle_prompt|elicitation_dialog`
+# matcher -- the source declares it only under the narrower `permission_prompt|elicitation_dialog`).
+# All four are shape (a): each script is present on this deploy target's own filesystem (planted
+# below), so Check E's shape-(a)/(c) split must report them undeclared-but-present, never
+# undeclared-and-absent.
+# =====================================================================
+common_test_info "=== FAILING (acceptance criterion 1, shape (a)): ModelBuilder live-drift exemplar ==="
+
+CASE19_DIR="$WORKDIR/case19/deployed"
+mkdir -p "$CASE19_DIR/hooks"
+cat > "$CASE19_DIR/settings.json" << 'EOF'
+{
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(lake *)",
+      "Bash(pdflatex *)",
+      "Bash(latexmk *)",
+      "Bash(bibtex *)",
+      "Bash(biber *)",
+      "Bash(cd *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(chmod +x *)",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "WebSearch",
+      "WebFetch",
+      "Task",
+      "TodoWrite",
+      "mcp__lean-lsp__*"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(sudo *)",
+      "Bash(chmod 777 *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"state.json\"* ]]; then echo \"{\\\"permissionDecision\\\": \\\"allow\\\", \\\"permissionDecisionReason\\\": \\\"State file write\\\"}\"; else echo \"{\\\"permissionDecision\\\": \\\"allow\\\"}\"; fi'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"specs/state.json\"* ]]; then bash .claude/hooks/validate-state-sync.sh 2>/dev/null || echo \"{}\"; else echo \"{}\"; fi'"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'"
+          }
+        ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/log-session.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash ~/.config/nvim/scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-command.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/wezterm-notify.sh 2>/dev/null || echo '{}'"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/wezterm-clear-status.sh 2>/dev/null || echo '{}'"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/subagent-postflight.sh 2>/dev/null || echo '{}'",
+            "timeout": 30000
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt|idle_prompt|elicitation_dialog",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
+          }
+        ]
+      }
+    ]
+  }
+}
+EOF
+for h in post-command.sh tts-notify.sh wezterm-notify.sh wezterm-clear-task-number.sh \
+         log-session.sh wezterm-task-number.sh wezterm-clear-status.sh subagent-postflight.sh; do
+  touch "$CASE19_DIR/hooks/$h"
+done
+
+case19_out="$(bash "$LINT_SCRIPT" --deployed-settings "$CASE19_DIR/settings.json" 2>&1)"
+case19_rc=$?
+if [[ $case19_rc -ne 0 ]] \
+   && grep -q "deployed registration 'wezterm-notify.sh'.*is not declared by any source surface" <<< "$case19_out" \
+   && grep -qc "is not declared by any source surface" <<< "$case19_out"; then
+  common_test_pass "ModelBuilder live-drift exemplar: shape (a) finding text reported, non-zero exit"
+else
+  common_test_fail "ModelBuilder live-drift exemplar did not report shape (a) as expected (rc=$case19_rc):
+$case19_out"
+fi
+if ! grep -q "is undeclared AND its script is absent" <<< "$case19_out" \
+   && ! grep -q "registered under multiple matchers" <<< "$case19_out"; then
+  common_test_pass "ModelBuilder exemplar reports ONLY shape (a) -- no incidental shape (b)/(c) noise"
+else
+  common_test_fail "ModelBuilder exemplar unexpectedly also reported shape (b) or (c):
+$case19_out"
+fi
+
+# =====================================================================
+# Case 20 (FAILING, acceptance criterion 1, shape (b)): no live shape-(b) instance survives in
+# the fleet as of the Phase 1 measurement (specs/527_hook_registration_set_lint_assertion/records/
+# 01_live-drift-baseline.md), so this is the plan's one documented reconstruction: a verbatim copy
+# of Logos/Theory's real, clean `.claude/settings.json`, with ONE minimal mutation -- a second
+# `Notification` matcher block registering `tts-notify.sh` under
+# `permission_prompt|idle_prompt|elicitation_dialog` alongside the real
+# `permission_prompt|elicitation_dialog` block -- reproducing the exact matcher pair the
+# orphan-sweep record archived at
+# specs/archive/369_orphan_sweep_for_removed_merge_target_entries/records/01_baseline-measurements.md
+# states verbatim (lines 70-71: "Notification|permission_prompt|idle_prompt|elicitation_dialog ->
+# tts-notify.sh ... the cross-matcher case -- source now declares tts-notify.sh only under the
+# narrower permission_prompt|elicitation_dialog").
+# =====================================================================
+common_test_info "=== FAILING (acceptance criterion 1, shape (b)): reconstructed duplicate-matcher exemplar ==="
+
+CASE20_DIR="$WORKDIR/case20/deployed"
+mkdir -p "$CASE20_DIR/hooks"
+cat > "$CASE20_DIR/settings.json" << 'EOF'
+{
+  "permissions": {
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(sudo *)",
+      "Bash(chmod 777 *)"
+    ],
+    "allow": [
+      "Bash(git:*)",
+      "Bash(lake *)",
+      "Bash(pdflatex *)",
+      "Bash(latexmk *)",
+      "Bash(bibtex *)",
+      "Bash(biber *)",
+      "Bash(cd *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(chmod +x *)",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "WebSearch",
+      "WebFetch",
+      "Task",
+      "TodoWrite",
+      "mcp__lean-lsp__*"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-command.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/memory-nudge.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "permission_prompt|elicitation_dialog"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "permission_prompt|idle_prompt|elicitation_dialog"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash ~/.config/nvim/scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/log-session.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "startup"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 30000,
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/subagent-postflight.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"state.json\"* ]]; then echo \"{\\\"permissionDecision\\\": \\\"allow\\\", \\\"permissionDecisionReason\\\": \\\"State file write\\\"}\"; else echo \"{\\\"permissionDecision\\\": \\\"allow\\\"}\"; fi'",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-task-references.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-record-versioning.sh"
+          }
+        ],
+        "matcher": "Write|Edit"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-destructive-git.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-bounded-waiter.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-task-creation-audit.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-python-state-write.sh"
+          }
+        ],
+        "matcher": "Bash"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-git-push.sh"
+          }
+        ],
+        "matcher": "Bash|Write|Edit"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"specs/state.json\"* ]]; then bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-state-sync.sh 2>/dev/null || echo \"{}\"; else echo \"{}\"; fi'"
+          }
+        ],
+        "matcher": "Write"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-handoff-location.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-meta-write.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-plan-write.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-artifact.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "Write|Edit"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-noop-bash.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/record-stash-provenance.sh 2>/dev/null || echo '{}'"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/please-grant.sh"
+          }
+        ],
+        "matcher": "*"
+      }
+    ]
+  }
+}
+EOF
+touch "$CASE20_DIR/hooks/tts-notify.sh"
+
+case20_out="$(bash "$LINT_SCRIPT" --deployed-settings "$CASE20_DIR/settings.json" 2>&1)"
+case20_rc=$?
+if [[ $case20_rc -ne 0 ]] \
+   && grep -q "is registered under multiple matchers for event 'Notification'" <<< "$case20_out"; then
+  common_test_pass "reconstructed duplicate-matcher exemplar: shape (b) finding text reported, non-zero exit"
+else
+  common_test_fail "reconstructed duplicate-matcher exemplar did not report shape (b) as expected (rc=$case20_rc):
+$case20_out"
+fi
+if grep -q "permission_prompt|elicitation_dialog, permission_prompt|idle_prompt|elicitation_dialog" <<< "$case20_out"; then
+  common_test_pass "shape (b) finding names both distinct matcher strings"
+else
+  common_test_fail "shape (b) finding did not name both distinct matchers:
+$case20_out"
+fi
+
+# =====================================================================
+# Case 21 (FAILING, acceptance criterion 1, shape (c)): a faithful copy of a real drifted deploy.
+# SPSDemo's `~/Projects/SPSDemo/.claude/settings.json` as measured live on 2026-11-17 carries the
+# orphan-sweep-record-cited `scripts/claude-ready-signal.sh` orphan under `SessionStart|startup`,
+# undeclared by any source surface AND absent from this deploy target's own filesystem (the
+# companion `hooks/` directory below plants SPSDemo's other real hook scripts present, with the
+# cited one deliberately never created at `scripts/claude-ready-signal.sh`).
+# =====================================================================
+common_test_info "=== FAILING (acceptance criterion 1, shape (c)): SPSDemo live-drift exemplar ==="
+
+CASE21_DIR="$WORKDIR/case21/deployed"
+mkdir -p "$CASE21_DIR/hooks"
+cat > "$CASE21_DIR/settings.json" << 'EOF'
+{
+  "env": {
+    "SLASH_COMMAND_TOOL_CHAR_BUDGET": "50000"
+  },
+  "permissions": {
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(sudo *)",
+      "Bash(chmod 777 *)"
+    ],
+    "allow": [
+      "Bash(git:*)",
+      "Bash(lake *)",
+      "Bash(pdflatex *)",
+      "Bash(latexmk *)",
+      "Bash(bibtex *)",
+      "Bash(biber *)",
+      "Bash(cd *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(chmod +x *)",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "WebSearch",
+      "WebFetch",
+      "Task",
+      "TaskCreate",
+      "TaskUpdate",
+      "Skill"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"state.json\"* ]]; then echo \"{\\\"permissionDecision\\\": \\\"allow\\\", \\\"permissionDecisionReason\\\": \\\"State file write\\\"}\"; else echo \"{\\\"permissionDecision\\\": \\\"allow\\\"}\"; fi'",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write"
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash .claude/hooks/guard-destructive-git.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash .claude/hooks/validate-no-task-references.sh",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write|Edit"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bash .claude/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash .claude/hooks/log-session.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash scripts/claude-ready-signal.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ],
+        "matcher": "startup"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"specs/state.json\"* ]]; then bash .claude/hooks/validate-state-sync.sh 2>/dev/null || echo \"{}\"; else echo \"{}\"; fi'",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write"
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash .claude/hooks/validate-plan-write.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash .claude/hooks/events-log-artifact.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash .claude/hooks/validate-handoff-location.sh",
+            "type": "command"
+          },
+          {
+            "command": "bash .claude/hooks/validate-meta-write.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write|Edit"
+      },
+      {
+        "hooks": [
+          {
+            "command": "bash .claude/hooks/detect-noop-bash.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "command": "bash .claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash .claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "command": "bash .claude/hooks/subagent-postflight.sh 2>/dev/null || echo '{}'",
+            "timeout": 30000,
+            "type": "command"
+          },
+          {
+            "command": "bash .claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "command": "bash .claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ],
+        "matcher": "permission_prompt|elicitation_dialog"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "command": "bash .claude/hooks/post-command.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash .claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash .claude/hooks/memory-nudge.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash .claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ]
+  }
+}
+EOF
+for h in claude-stop-notify.sh detect-noop-bash.sh events-log-artifact.sh events-log-lifecycle.sh \
+         guard-destructive-git.sh lean-lsp-register-project.sh log-session.sh memory-nudge.sh \
+         post-command.sh subagent-postflight.sh tts-notify.sh validate-handoff-location.sh \
+         validate-meta-write.sh validate-no-task-references.sh validate-plan-write.sh \
+         validate-state-sync.sh wezterm-clear-task-number.sh wezterm-notify.sh \
+         wezterm-preflight-status.sh wezterm-task-number.sh; do
+  touch "$CASE21_DIR/hooks/$h"
+done
+# Deliberately NEVER create scripts/claude-ready-signal.sh -- that absence is the point of this
+# exemplar.
+
+case21_out="$(bash "$LINT_SCRIPT" --deployed-settings "$CASE21_DIR/settings.json" 2>&1)"
+case21_rc=$?
+if [[ $case21_rc -ne 0 ]] \
+   && grep -q "undeclared AND its script is absent from this deploy target" <<< "$case21_out" \
+   && grep -q "claude-ready-signal.sh" <<< "$case21_out"; then
+  common_test_pass "SPSDemo live-drift exemplar: shape (c) finding text reported, non-zero exit"
+else
+  common_test_fail "SPSDemo live-drift exemplar did not report shape (c) as expected (rc=$case21_rc):
+$case21_out"
+fi
+if ! grep -q "is not declared by any source surface" <<< "$case21_out" \
+   && ! grep -q "registered under multiple matchers" <<< "$case21_out"; then
+  common_test_pass "SPSDemo exemplar reports ONLY shape (c) -- no incidental shape (a)/(b) noise"
+else
+  common_test_fail "SPSDemo exemplar unexpectedly also reported shape (a) or (b):
+$case21_out"
+fi
+
+# =====================================================================
+# Case 22 (PASSING, acceptance criterion 2): a hand-written custom hook command -- not
+# recognizable as a source-store hook invocation at all (no `*.sh` registration, nil identity) --
+# survives Check E with ZERO findings. A lint that reports a user's own hook registration as
+# drift is worse than no lint.
+# =====================================================================
+common_test_info "=== PASSING (acceptance criterion 2): hand-written custom hook survives Check E ==="
+
+CASE22_DIR="$WORKDIR/case22"
+mkdir -p "$CASE22_DIR/empty-scan" "$CASE22_DIR/deployed"
+cat > "$CASE22_DIR/deployed/settings.json" << 'EOF'
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'my own custom notification' >> /tmp/my-own-log.txt"
+          }
+        ]
+      }
+    ]
+  }
+}
+EOF
+
+case22_out="$(bash "$LINT_SCRIPT" --deployed-settings "$CASE22_DIR/deployed/settings.json" "$CASE22_DIR/empty-scan" 2>&1)"
+case22_rc=$?
+if [[ $case22_rc -eq 0 ]] && grep -q "Total violations: 0" <<< "$case22_out"; then
+  common_test_pass "hand-written custom hook command produces zero Check E findings"
+else
+  common_test_fail "hand-written custom hook command unexpectedly produced a finding (rc=$case22_rc):
+$case22_out"
+fi
+
+# =====================================================================
+# Case 23 (PASSING, acceptance criterion 3): copies of deployed settings.json files from repos
+# the Phase 1 record (specs/527_hook_registration_set_lint_assertion/records/
+# 01_live-drift-baseline.md) measured clean on 2026-11-17 -- `~/Projects/protocol` (23a) and
+# `~/Projects/theorem_proving_in_lean4` (23b) -- each produce zero findings against the real
+# source declared set.
+# =====================================================================
+common_test_info "=== PASSING (acceptance criterion 3): measured-clean-repo exemplars produce zero findings ==="
+
+CASE23A_DIR="$WORKDIR/case23a/deployed"
+mkdir -p "$CASE23A_DIR"
+cat > "$CASE23A_DIR/settings.json" << 'EOF'
+{
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(lake *)",
+      "Bash(pdflatex *)",
+      "Bash(latexmk *)",
+      "Bash(bibtex *)",
+      "Bash(biber *)",
+      "Bash(cd *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(chmod +x *)",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "WebSearch",
+      "WebFetch",
+      "Task",
+      "TodoWrite",
+      "mcp__lean-lsp__*"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(sudo *)",
+      "Bash(chmod 777 *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"state.json\"* ]]; then echo \"{\\\"permissionDecision\\\": \\\"allow\\\", \\\"permissionDecisionReason\\\": \\\"State file write\\\"}\"; else echo \"{\\\"permissionDecision\\\": \\\"allow\\\"}\"; fi'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"specs/state.json\"* ]]; then bash .claude/hooks/validate-state-sync.sh 2>/dev/null || echo \"{}\"; else echo \"{}\"; fi'"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/log-session.sh 2>/dev/null || echo '{}'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-command.sh 2>/dev/null || echo '{}'"
+          }
+        ]
+      }
+    ]
+  },
+  "model": "claude-opus-4-5-20251101"
+}
+EOF
+
+case23a_out="$(bash "$LINT_SCRIPT" --deployed-settings "$CASE23A_DIR/settings.json" 2>&1)"
+case23a_rc=$?
+if [[ $case23a_rc -eq 0 ]] && grep -q "Total violations: 0" <<< "$case23a_out"; then
+  common_test_pass "protocol measured-clean exemplar produces zero findings"
+else
+  common_test_fail "protocol measured-clean exemplar unexpectedly produced a finding (rc=$case23a_rc):
+$case23a_out"
+fi
+
+CASE23B_DIR="$WORKDIR/case23b/deployed"
+mkdir -p "$CASE23B_DIR"
+cat > "$CASE23B_DIR/settings.json" << 'EOF'
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-task-number.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-preflight-status.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/please-grant.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt|elicitation_dialog",
+        "hooks": [
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/subagent-postflight.sh 2>/dev/null || echo '{}'",
+            "type": "command",
+            "timeout": 30000
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/post-command.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/claude-stop-notify.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/memory-nudge.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-lifecycle.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"specs/state.json\"* ]]; then bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-state-sync.sh 2>/dev/null || echo \"{}\"; else echo \"{}\"; fi'",
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-handoff-location.sh",
+            "type": "command"
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-meta-write.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-plan-write.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/events-log-artifact.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-noop-bash.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/record-stash-provenance.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "command": "bash -c 'FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [[ \"$FILE\" == *\"state.json\"* ]]; then echo \"{\\\"permissionDecision\\\": \\\"allow\\\", \\\"permissionDecisionReason\\\": \\\"State file write\\\"}\"; else echo \"{\\\"permissionDecision\\\": \\\"allow\\\"}\"; fi'",
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-task-references.sh",
+            "type": "command"
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-record-versioning.sh",
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-destructive-git.sh",
+            "type": "command"
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-bounded-waiter.sh",
+            "type": "command"
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-task-creation-audit.sh",
+            "type": "command"
+          },
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-no-python-state-write.sh",
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Write|Edit",
+        "hooks": [
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-git-push.sh",
+            "type": "command"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/wezterm-clear-task-number.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/log-session.sh 2>/dev/null || echo '{}'",
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "SLASH_COMMAND_TOOL_CHAR_BUDGET": "50000"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(lake *)",
+      "Bash(pdflatex *)",
+      "Bash(latexmk *)",
+      "Bash(bibtex *)",
+      "Bash(biber *)",
+      "Bash(cd *)",
+      "Bash(ls *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(chmod +x *)",
+      "Read",
+      "Write",
+      "Edit",
+      "Glob",
+      "Grep",
+      "WebSearch",
+      "WebFetch",
+      "Task",
+      "TaskCreate",
+      "TaskUpdate",
+      "Skill",
+      "mcp__lean-lsp__*"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(sudo *)",
+      "Bash(chmod 777 *)"
+    ]
+  }
+}
+EOF
+
+case23b_out="$(bash "$LINT_SCRIPT" --deployed-settings "$CASE23B_DIR/settings.json" 2>&1)"
+case23b_rc=$?
+if [[ $case23b_rc -eq 0 ]] && grep -q "Total violations: 0" <<< "$case23b_out"; then
+  common_test_pass "theorem_proving_in_lean4 measured-clean exemplar produces zero findings"
+else
+  common_test_fail "theorem_proving_in_lean4 measured-clean exemplar unexpectedly produced a finding (rc=$case23b_rc):
+$case23b_out"
+fi
+
+# =====================================================================
+# Case 24 (acceptance criterion 4): Check E's own identity resolution for a registration whose
+# path lies OUTSIDE hooks/ agrees with hook_identity.lua's direct output for the same command --
+# asserting Check E specifically (the existing Case 16 asserts this agreement for Checks C/D
+# only). Reuses the `scripts/claude-ready-signal.sh` CWD-relative command, undeclared and (in
+# this minimal fixture, with no companion scripts/ directory) absent -- shape (c) -- whose
+# finding text quotes the resolved identity directly.
+# =====================================================================
+common_test_info "=== PASSING (acceptance criterion 4): Check E identity agreement outside hooks/ ==="
+
+CASE24_DIR="$WORKDIR/case24"
+mkdir -p "$CASE24_DIR/empty-scan" "$CASE24_DIR/deployed"
+CASE24_CMD='bash scripts/claude-ready-signal.sh 2>/dev/null || echo '"'"'{}'"'"''
+cat > "$CASE24_DIR/deployed/settings.json" << EOF
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          { "type": "command", "command": "$CASE24_CMD" }
+        ]
+      }
+    ]
+  }
+}
+EOF
+
+case24_out="$(bash "$LINT_SCRIPT" --deployed-settings "$CASE24_DIR/deployed/settings.json" "$CASE24_DIR/empty-scan" 2>&1)"
+case24_lint_identity="$(grep -oE 'identity: [^)]+' <<< "$case24_out" | sed 's/^identity: //')"
+case24_module_identity="$(printf 'command\t%s\n' "$CASE24_CMD" | nvim --headless --noplugin -u NONE -l "$HOOK_IDENTITY_CLI_MODULE" 2>/dev/null)"
+
+if [[ -n "$case24_lint_identity" ]] \
+   && [[ "$case24_lint_identity" == "$case24_module_identity" ]] \
+   && [[ "$case24_lint_identity" == "command:scripts/claude-ready-signal.sh" ]]; then
+  common_test_pass "Check E's reported identity for a scripts/-shaped (outside hooks/) deployed registration equals hook_identity.lua's own direct output"
+else
+  common_test_fail "Check E identity agreement outside hooks/ did not hold: lint='$case24_lint_identity' module='$case24_module_identity'
+$case24_out"
+fi
+
+# =====================================================================
+# Case 25 (PASSING): a `--deployed-settings PATH` naming a file that does not exist degrades to
+# zero Check E findings and exit 0, never exit 2 -- mirroring every other check's missing-surface
+# degrade in this script.
+# =====================================================================
+common_test_info "=== PASSING: missing --deployed-settings file degrades to zero findings ==="
+
+CASE25_DIR="$WORKDIR/case25"
+mkdir -p "$CASE25_DIR/empty-scan"
+
+case25_out="$(bash "$LINT_SCRIPT" --deployed-settings "$CASE25_DIR/does-not-exist.json" "$CASE25_DIR/empty-scan" 2>&1)"
+case25_rc=$?
+if [[ $case25_rc -eq 0 ]] && grep -q "Total violations: 0" <<< "$case25_out"; then
+  common_test_pass "missing --deployed-settings file degrades to zero findings and exit 0"
+else
+  common_test_fail "missing --deployed-settings file did not degrade as expected (rc=$case25_rc):
+$case25_out"
+fi
+
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

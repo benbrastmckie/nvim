@@ -384,34 +384,40 @@ test-deploy-baseline-lib.sh,test-lint-corpus-scan-lib.sh,test-lint-hook-registra
 
 ---
 
-### Phase 4: Fixture Regression Suite [NOT STARTED]
+### Phase 4: Fixture Regression Suite [COMPLETED]
 
 **Goal**: Pin every acceptance criterion as a regression case in the existing both-polarity
 fixture suite, following its established scratch-`WORKDIR` idiom.
 
 **Tasks**:
 
-- [ ] Add a failing case per shape -- (a), (b), (c) -- each built from the Phase 1 exemplar: copy
+- [x] Add a failing case per shape -- (a), (b), (c) -- each built from the Phase 1 exemplar: copy
       the real deployed `settings.json` verbatim into the scratch `WORKDIR`, apply the one
       documented mutation where the record says the shape was reconstructed, and assert exit 1 plus
       a `grep` for that shape's own distinct finding text. For shape (c), also plant the companion
       `hooks/` directory with the other scripts present and the cited one deliberately absent --
-      the settings fixtures alone do not encode deploy-target filesystem state.
-- [ ] Add a passing case for criterion 2: a hand-written custom hook command -- not recognizable as
+      the settings fixtures alone do not encode deploy-target filesystem state. *(completed: cases
+      19 (a, ModelBuilder), 20 (b, reconstructed Logos/Theory + mutation), 21 (c, SPSDemo))*
+- [x] Add a passing case for criterion 2: a hand-written custom hook command -- not recognizable as
       a source-store hook invocation -- survives with zero findings. This is the dedicated
       regression case the criterion names, carrying a comment stating that a lint reporting a user's
-      own hook is worse than no lint.
-- [ ] Add a passing case for criterion 3: copies of the deployed `settings.json` from repos the
-      Phase 1 record measured clean, each producing zero findings.
-- [ ] Add a case for criterion 4: a deployed registration whose path lies OUTSIDE `hooks/` yields
+      own hook is worse than no lint. *(completed: case 22)*
+- [x] Add a passing case for criterion 3: copies of the deployed `settings.json` from repos the
+      Phase 1 record measured clean, each producing zero findings. *(completed: case 23a/23b,
+      protocol and theorem_proving_in_lean4)*
+- [x] Add a case for criterion 4: a deployed registration whose path lies OUTSIDE `hooks/` yields
       the same identity in Check E as the shared bridge does, asserting Check E specifically -- the
-      existing Case 16 asserts this for Checks C/D only.
-- [ ] Add a passing case for the missing-deployed-settings degrade: a path that does not exist
-      yields zero findings and exit 0, never exit 2.
-- [ ] Number the new cases contiguously after the existing ones and keep each case's
+      existing Case 16 asserts this for Checks C/D only. *(completed: case 24)*
+- [x] Add a passing case for the missing-deployed-settings degrade: a path that does not exist
+      yields zero findings and exit 0, never exit 2. *(completed: case 25)*
+- [x] Number the new cases contiguously after the existing ones and keep each case's
       `pass()`/`fail()`/`info()` shape, `common_test_resolve_subject` resolution, and scratch
       `WORKDIR` teardown identical to the suite's existing cases. Plant no committed fixture files.
-- [ ] Confirm every pre-existing case still passes unchanged.
+      *(completed: cases numbered 19-25 after the pre-existing 1-18; `git status --short` confirms
+      no new committed fixture files)*
+- [x] Confirm every pre-existing case still passes unchanged. *(completed: all 18 pre-existing
+      cases pass unchanged under `CORE_TEST_SUBJECT_MODE=source-store`, the mode needed to resolve
+      this phase's as-yet-undeployed source-store edit -- see Deviations)*
 
 **Timing**: 1.5 hours
 
