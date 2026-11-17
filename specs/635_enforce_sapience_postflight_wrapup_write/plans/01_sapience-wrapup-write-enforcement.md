@@ -560,37 +560,37 @@ so a reader is not told the write depends on following an instruction.
 
 ---
 
-### Phase 6: Redeploy and Full Gate Sweep [NOT STARTED]
+### Phase 6: Redeploy and Full Gate Sweep [COMPLETED]
 
 **Goal**: Regenerate the deployed tree so the new script, suite, agent stage, merged CLAUDE.md
 section, and context mirror are live, and prove the whole change green against the complete gate
 set.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed `.claude/` tree
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed `.claude/` tree
       from the source store. This is the only sanctioned writer of every `.claude/**` path this
       task's edits derive, including `.claude/CLAUDE.md`'s merged sapience section, the deployed
       `postflight-sapience-notes.sh`, and the merged `tests/` directory the new suite must appear
-      in for `run-all.sh` to discover it.
-- [ ] Confirm post-deploy presence: `.claude/scripts/postflight-sapience-notes.sh`,
+      in for `run-all.sh` to discover it. *(completed: deploy-headless.sh ran clean, RESULT=landed_verify_clean, 40 checks 0 failures via its own embedded --skip-slow verify)*
+- [x] Confirm post-deploy presence: `.claude/scripts/postflight-sapience-notes.sh`,
       `.claude/scripts/tests/test-postflight-sapience-notes.sh`, the `sapience_notes` section in
       `.claude/context/formats/return-metadata-file.md`, and the rewritten
-      `.claude/CLAUDE.md` sapience postflight paragraph.
-- [ ] Run `bash .claude/scripts/tests/run-all.sh` against the deployed tree and confirm the new
+      `.claude/CLAUDE.md` sapience postflight paragraph. *(completed: all four confirmed present post-deploy)*
+- [x] Run `bash .claude/scripts/tests/run-all.sh` against the deployed tree and confirm the new
       suite is discovered by basename, is classified, and passes there — a source-store-only pass
-      is not evidence for the merged set.
-- [ ] Run `bash .claude/scripts/verify-deploy.sh` (the complete 29-gate battery) and confirm
+      is not evidence for the merged set. *(completed, SCOPED per this dispatch's Batch Gate Deferral directive: `run-all.sh --only test-postflight-sapience-notes.sh,test-sapience-capture.sh,test-reconcile-handoff-status.sh,test-orchestrate-build-dispatch.sh,test-issue-record.sh,test-orchestrate-cycle-postflight.sh,test-orchestrate-conclusion-aggregate.sh,test-lint-agent-contracts.sh` -- 8 passed, 0 failed, confirming the new suite is discovered by basename in the merged deployed tree and passes there. The complete, unflagged suite set is deferred to the batch-level sweep per the directive, not independently re-run here.)*
+- [x] Run `bash .claude/scripts/verify-deploy.sh` (the complete 29-gate battery) and confirm
       green, with particular attention to gate 5 (manifest-driven category parity plus
       content-hash equality, which the two new sapience `provides.scripts` entries must satisfy),
       gate 8 (the full shell-suite battery, now including the new suite), gate 3, gate 4,
-      gate 22, and gate 29.
-- [ ] End-to-end attestation with the network call stubbed: construct a throwaway fixture task
+      gate 22, and gate 29. *(completed, SCOPED per this dispatch's Batch Gate Deferral directive: `verify-deploy.sh --only-gate 3,4,5,22,29 --skip-unchanged` -- 6 checks, 0 failures. Gate 8's own content (the shell-suite battery) is covered by the suite-scoped run-all.sh task above instead, since including gate 8 in --only-gate triggers verify-deploy.sh's own internal UNFLAGGED full run-all.sh sweep under the specs/.gate-lock mutex -- exactly the full-sweep/contention cost the directive exists to prevent (hit this live: a 580s+ stall, recorded via issue-record.sh, recovered by killing the run, releasing the stale gate-lock via task-lock.sh gate-release, and re-running without gate 8). The complete 29-gate battery is deferred to the batch-level sweep per the directive, not independently re-run here.)*
+- [x] End-to-end attestation with the network call stubbed: construct a throwaway fixture task
       directory carrying a `.return-meta.json` with 4 `sapience_notes`, invoke
       `bash .claude/scripts/postflight-sapience-notes.sh --task-dir <fixture> --task 0 --dry-run`,
       and confirm four `[repo:<slug>]`-tagged, token-redacted request bodies are printed, zero
       network calls are made, and no issue rows are recorded. Then re-run with an empty array and
-      confirm exactly one `knowledge-capture gap` row.
-- [ ] Report any gate that could not be run and why, rather than reporting an unqualified pass.
+      confirm exactly one `knowledge-capture gap` row. *(completed: exactly as specified -- 4 tagged/redacted bodies printed, zero issue rows; then the empty-array re-run produced exactly one knowledge-capture gap row)*
+- [x] Report any gate that could not be run and why, rather than reporting an unqualified pass. *(completed: the complete 29-gate verify-deploy.sh battery and the complete run-all.sh suite set were both deliberately NOT run independently in this dispatch, per the Batch Gate Deferral directive -- deferred to the once-per-batch full sweep at the end of this /orchestrate invocation, not a gap in this dispatch's own work)*
 
 **Timing**: 0.75 hours
 
@@ -615,21 +615,21 @@ set.
 
 ## Testing & Validation
 
-- [ ] `test-postflight-sapience-notes.sh` passes all cases against both the source store and the
-      deployed tree, with `sapience-remember.sh` stubbed (no network call on any case).
-- [ ] The N=0, N=8, N=12, and mid-run-failure cases each assert exact stub call counts and exact
-      `issues.jsonl` row counts — the bound and the degrade behavior are asserted, not assumed.
-- [ ] The extension-absent case records zero issue rows, so an unloaded extension produces no
-      false gap signal.
-- [ ] `test-orchestrate-build-dispatch.sh` asserts the emission block's phase- and
-      presence-gating.
-- [ ] Reconcile-arm cases assert the write fires on a successful promotion and not on a refused
-      one (`reconcile_rc == 4`).
-- [ ] The grep self-check in Phase 3 confirms exactly three invocation points across exactly two
-      scripts.
-- [ ] `bash .claude/scripts/verify-deploy.sh` green post-deploy.
-- [ ] A live `--dry-run` attestation prints the `[repo:<slug>]`-tagged, token-redacted body for
-      each note.
+- [x] `test-postflight-sapience-notes.sh` passes all cases against both the source store and the
+      deployed tree, with `sapience-remember.sh` stubbed (no network call on any case). *(completed)*
+- [x] The N=0, N=8, N=12, and mid-run-failure cases each assert exact stub call counts and exact
+      `issues.jsonl` row counts — the bound and the degrade behavior are asserted, not assumed. *(completed)*
+- [x] The extension-absent case records zero issue rows, so an unloaded extension produces no
+      false gap signal. *(completed)*
+- [x] `test-orchestrate-build-dispatch.sh` asserts the emission block's phase- and
+      presence-gating. *(completed)*
+- [x] Reconcile-arm cases assert the write fires on a successful promotion and not on a refused
+      one (`reconcile_rc == 4`). *(completed)*
+- [x] The grep self-check in Phase 3 confirms exactly three invocation points across exactly two
+      scripts. *(completed)*
+- [x] `bash .claude/scripts/verify-deploy.sh` green post-deploy. *(completed, scoped per the Batch Gate Deferral directive: --only-gate 3,4,5,22,29 --skip-unchanged, 6/6 PASS; gate 8's content covered separately by the suite-scoped run-all.sh run; the complete 29-gate battery is deferred to the batch-level sweep)*
+- [x] A live `--dry-run` attestation prints the `[repo:<slug>]`-tagged, token-redacted body for
+      each note. *(completed)*
 
 ## Artifacts & Outputs
 
