@@ -47,5 +47,8 @@
       ]
     }
   ],
-  "dispatch_seq": 11
+  "dispatch_seq": 11,
+  "proposed_file_scope": [
+    "agent-system/extensions/core/index-entries.json"
+  ]
 }

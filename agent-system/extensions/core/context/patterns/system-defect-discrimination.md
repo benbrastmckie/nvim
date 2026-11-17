@@ -252,10 +252,15 @@ research-agent status violation attributes to that agent's `.md` definition unde
 `agent-system/extensions/<ext>/agents/`).
 
 An agent-name → agent-file resolver for this already exists — a caller does not need to build
-one. `scripts/system-defect-record.sh --dispatched-agent NAME` globs
-`agent-system/extensions/*/agents/NAME.md` and refuses with exit 3 if it does not resolve;
-`--attributed-path` takes precedence when both are passed. `RECOVERY_DECLINED`'s recording site
-uses this resolver directly rather than hand-deriving the agent's path.
+one. `scripts/system-defect-record.sh --dispatched-agent NAME` resolves by globbing
+`agent-system/extensions/*/agents/NAME.md` in a repository holding the source store, falling
+back to a `.claude-extensions.json` per-extension `source_dir` lookup (first match wins) when
+the glob finds nothing — the route a repository carrying only the deployed `.claude/**` mirror
+needs, since it has no `agent-system/` subtree of its own. Both routes emit the identical
+`agent-system/extensions/<ext>/agents/NAME.md` string, and the resolver refuses with exit 3 if
+neither resolves; `--attributed-path` takes precedence when both are passed.
+`RECOVERY_DECLINED`'s recording site uses this resolver directly rather than hand-deriving the
+agent's path.
 
 **Detection without attribution must log only and never offer a task.** Unattributable detections
 are the main noise vector this predicate exists to suppress — a violation that cannot be pinned to

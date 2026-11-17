@@ -300,24 +300,28 @@ Verification criteria below.
 
 ---
 
-### Phase 3: Sync the discrimination document's resolver prose [NOT STARTED]
+### Phase 3: Sync the discrimination document's resolver prose [COMPLETED]
 
 **Goal**: the governing pattern document no longer describes the resolver as glob-only, so a
 future caller reading it is not re-taught the defect.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/patterns/system-defect-discrimination.md`
+- [x] Re-read `agent-system/extensions/core/context/patterns/system-defect-discrimination.md`
       around the "An agent-name → agent-file resolver for this already exists" paragraph
-      (currently lines 254-258) immediately before editing.
-- [ ] Rewrite that paragraph's mechanism sentence to name both routes — the
+      (currently lines 254-258) immediately before editing. *(completed)*
+- [x] Rewrite that paragraph's mechanism sentence to name both routes — the
       `agent-system/extensions/*/agents/NAME.md` glob and the `.claude-extensions.json`
       `source_dir` lookup that serves a repository holding no source store — while keeping the
       exit-3-on-unresolvable and `--attributed-path`-wins-when-both-passed statements intact.
-- [ ] State the current design only; do not narrate that the document previously said something
-      else (`rules/no-record-versioning-in-deliverables.md`).
-- [ ] Reference durable anchors (file and section names) rather than task numbers
-      (`rules/no-task-references-in-deliverables.md`).
-- [ ] Commit with an explicit single-file pathspec.
+      *(completed)*
+- [x] State the current design only; do not narrate that the document previously said something
+      else (`rules/no-record-versioning-in-deliverables.md`). *(completed)*
+- [x] Reference durable anchors (file and section names) rather than task numbers
+      (`rules/no-task-references-in-deliverables.md`). *(completed)*
+- [x] Commit with an explicit single-file pathspec. *(completed: the commit also carries a
+      hand-applied `index-entries.json` `line_count` correction for this file -- 578 -> 583 --
+      required because `generate-context-line-counts.sh` refuses to run from the source store;
+      see this phase's progress file notes)*
 
 **Timing**: 0.25 hours
 

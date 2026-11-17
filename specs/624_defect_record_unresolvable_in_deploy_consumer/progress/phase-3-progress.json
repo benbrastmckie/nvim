@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Sync the discrimination document's resolver prose",
+  "started_at": "2026-11-17T23:50:00Z",
+  "last_updated": "2026-11-17T23:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read system-defect-discrimination.md resolver paragraph before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Rewrite resolver paragraph to name both routes", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/system-defect-discrimination.md"]},
+    {"id": 3, "description": "State current design only, no record-versioning language", "status": "done", "files_touched": []},
+    {"id": 4, "description": "No task-number references", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Hand-apply index-entries.json line_count correction (generate-context-line-counts.sh refuses to run from source store)", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Editing the resolver paragraph grew system-defect-discrimination.md from 578 to 583 lines, which check-extension-docs.sh's Rule R flagged as an index-entries.json line_count mismatch. generate-context-line-counts.sh cannot run from the source store (deploy-root-guard.sh refusal), so the line_count field (index-entries.json line ~1067) was corrected by hand (578 -> 583) per prior-session memory guidance; --write will confirm the hand-applied value exact after Phase 4's deploy. index-entries.json is not in this task's declared file_scope, so the phase-commit wrapper's Containment Self-Check may drop it, requiring a scoped follow-up commit via git-commit-scoped.sh."
+}
