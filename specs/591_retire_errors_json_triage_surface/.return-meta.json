@@ -1,10 +1,129 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 28,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/591_retire_errors_json_triage_surface/summaries/01_retire-errors-triage-surface-summary.md",
+      "summary": "Implementation summary: errors.json/errors-append.sh//errors triage surface retired outright across 8 phases -- audit and discard, file deletion/deregistration, gate narrowing, allowlist retirement, three prose sweeps, and a wipe redeploy with a scoped gate discharge."
+    },
+    {
+      "type": "report",
+      "path": "specs/591_retire_errors_json_triage_surface/reports/01_errors-record-disposition.md",
+      "summary": "Per-record disposition audit of all 19 specs/errors.json records: 17 traced to a discharging task, 2 named as generic follow-up candidates."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Retired the specs/errors.json / errors-append.sh / /errors triage surface outright: audited and dispositioned all 19 records, deleted the command/script/test/schema/format files, removed every manifest/index/gate/allowlist registration, swept all prose and script-comment references across the source store, and redeployed with a scoped verify-deploy.sh discharge (gates 1 and 13) confirming no orphaned residue survives."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/errors.md",
+    "agent-system/extensions/core/commands/spawn.md",
+    "agent-system/extensions/core/commands/task.md",
+    "agent-system/extensions/core/context/architecture/context-layers.md",
+    "agent-system/extensions/core/context/architecture/system-overview.md",
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/context/formats/command-output.md",
+    "agent-system/extensions/core/context/formats/command-structure.md",
+    "agent-system/extensions/core/context/formats/errors-format.md",
+    "agent-system/extensions/core/context/formats/events-format.md",
+    "agent-system/extensions/core/context/formats/issue-log.md",
+    "agent-system/extensions/core/context/formats/subagent-return.md",
+    "agent-system/extensions/core/context/orchestration/architecture.md",
+    "agent-system/extensions/core/context/patterns/backlog-reconciliation.md",
+    "agent-system/extensions/core/context/patterns/checkpoint-execution.md",
+    "agent-system/extensions/core/context/patterns/context-discovery.md",
+    "agent-system/extensions/core/context/patterns/early-metadata-pattern.md",
+    "agent-system/extensions/core/context/patterns/mcp-tool-recovery.md",
+    "agent-system/extensions/core/context/patterns/system-defect-discrimination.md",
+    "agent-system/extensions/core/context/processes/implementation-workflow.md",
+    "agent-system/extensions/core/context/reference/workflow-diagrams.md",
+    "agent-system/extensions/core/context/schemas/errors-schema.json",
+    "agent-system/extensions/core/context/standards/error-handling.md",
+    "agent-system/extensions/core/context/standards/error-recovery-strategies.md",
+    "agent-system/extensions/core/context/standards/git-safety.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/context/standards/shell-strict-mode.md",
+    "agent-system/extensions/core/docs/architecture/system-overview.md",
+    "agent-system/extensions/core/docs/guides/component-selection.md",
+    "agent-system/extensions/core/docs/guides/creating-commands.md",
+    "agent-system/extensions/core/docs/guides/user-guide.md",
+    "agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/hooks/events-log-artifact.sh",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/README.md",
+    "agent-system/extensions/core/rules/error-handling.md",
+    "agent-system/extensions/core/scripts/errors-append.sh",
+    "agent-system/extensions/core/scripts/events-append.sh",
+    "agent-system/extensions/core/scripts/gate-registry.data",
+    "agent-system/extensions/core/scripts/lib/common.sh",
+    "agent-system/extensions/core/scripts/lib/engine-written-state-paths-lib.sh",
+    "agent-system/extensions/core/scripts/measure-eager-context.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/orchestrate-record-decision.sh",
+    "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt",
+    "agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-engine-written-state-paths-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-errors-append.sh",
+    "agent-system/extensions/core/scripts/tests/test-generate-task-order.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/tests/test-handoff-dispatch-identity.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-context-growth.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-record-decision.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-recover-message-findings.sh",
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/skills/skill-reviser/SKILL.md",
+    "agent-system/extensions/core/skills/skill-status-sync/SKILL.md",
+    "specs/591_retire_errors_json_triage_surface/reports/01_errors-record-disposition.md",
+    "specs/errors.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a repository test suite uses a `common_test_resolve_subject`-style helper with a `deploy-tree-first` resolution mode (prefer the deployed copy if it exists, else the source-store copy), verifying a source-store edit BEFORE the deploy step of a multi-phase plan will silently test the stale deployed copy instead, producing false failures. The library exposes a `CORE_TEST_SUBJECT_MODE=source-store` environment override for exactly this case -- use it for any mid-plan verification that runs before the plan's own final redeploy phase, rather than treating the resulting failure as a regression.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/591_retire_errors_json_triage_surface/summaries/01_retire-errors-triage-surface-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "deploy-tree-first",
+        "CORE_TEST_SUBJECT_MODE",
+        "pre-redeploy verification",
+        "common_test_resolve_subject",
+        "source-store mode"
+      ]
+    },
+    {
+      "content": "When retiring a surface end-to-end (deleting a store/script/command and sweeping every reference), a repo-wide discovery grep for the retired name will keep matching the task's OWN rewritten test fixtures, which must still literally name the retired path/string to assert its absence/drop. Treat a phase's stated zero-match verification criterion by evident intent (no PRODUCTION code path still treats it as live) rather than literally, and explicitly enumerate which remaining matches are intentional inverted-assertion fixtures versus genuine residue.",
+      "category": "PATTERN",
+      "source_artifact": "specs/591_retire_errors_json_triage_surface/summaries/01_retire-errors-triage-surface-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "retirement task",
+        "discovery grep",
+        "inverted test assertion",
+        "verification intent",
+        "surface removal"
+      ]
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794879152_8837d5",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 8,
+    "phases_total": 8
   }
 }
