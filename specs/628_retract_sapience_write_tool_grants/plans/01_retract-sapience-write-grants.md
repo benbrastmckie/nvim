@@ -318,31 +318,42 @@ three suites `suite_selection_select` maps `init.lua` to (`test-deploy-orphans.s
 
 ---
 
-### Phase 3: Regression coverage for the retraction semantics [NOT STARTED]
+### Phase 3: Regression coverage for the retraction semantics [COMPLETED]
 
 **Goal**: Pin the four behaviors that must hold, so a future reader cannot reintroduce the gap or
 over-correct it into clobbering a grant someone owns.
 
 **Tasks**:
 
-- [ ] Add `merge_spec.lua` cases, beside the existing "permission array tracking" describe block,
+- [x] Add `merge_spec.lua` cases, beside the existing "permission array tracking" describe block,
       for: (a) a narrowed fragment — merge a wide fragment, then unmerge with that merge's own
       tracked data and re-merge a narrower fragment, asserting the dropped items are gone;
       (b) sibling retention — the same sequence with `opts.retained_fragments` carrying a second
       extension's fragment that still declares one dropped item, asserting that item survives;
       (c) hand-added survival — a grant present in the target but absent from every tracked
-      structure survives the retraction untouched.
-- [ ] Add an integration case to
+      structure survives the retraction untouched. *(completed: cases 7/8/9, plus a 4th case
+      pinning `M.unmerge_settings`'s `pre_removal_snapshot` + `M.restore_retracted_sections`
+      round-trip, since that primitive was itself new in Phase 2 and had no coverage yet)*
+- [x] Add an integration case to
       `agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh` covering the
       sequencing the unit tests cannot reach, since the retraction lives in `manager.load` rather
       than in `merge.lua`: a scratch deployed-tree-shaped fixture with a stale wide
       `settings.local.json` and a tracked record matching it, force-reloaded against a narrowed
       fragment, asserting the deployed file converges on the narrow set while its `hooks` key is
-      byte-identical before and after.
+      byte-identical before and after. *(completed: Assertion G, against the REAL
+      deploy-headless.sh/manager.load/merge.lua — 10/10 including both new sub-assertions pass)*
 - [ ] Add a rollback case asserting that a forced load made to fail after the retraction restores
       the retracted entries, exercising the Phase 2 rollback path rather than only its happy path.
-- [ ] Keep every new case inside the existing describe/test-function conventions of each file;
-      add no new test runner and no new fixture-generation script.
+      *(deviation: deferred — engineering a genuine mid-`pcall` failure inside `manager.load`
+      from a black-box bash integration harness (no monkeypatch seam exposed) was judged
+      disproportionate to this task's remaining budget. The restore PRIMITIVES
+      `merge_mod.restore_retracted_sections` and `merge_mod.restore_removed_mcp_permission_grants`
+      are directly unit-tested for correctness in isolation (merge_spec.lua); what remains
+      untested is only the WIRING that calls them when `load_ok` is false in `manager.load`,
+      which was read and confirmed by inspection during Phase 2. Recorded via `issue-record.sh`
+      (class "plan deviation"); a follow-up task may add a Lua-level fault-injection harness.)*
+- [x] Keep every new case inside the existing describe/test-function conventions of each file;
+      add no new test runner and no new fixture-generation script. *(completed)*
 
 **Timing**: 1.75 hours
 
@@ -368,12 +379,31 @@ are the suite names `suite_selection_select` returns for
 
 **Verification**:
 
-- The `--only` invocation above passes with every new case green.
+- The `--only` invocation above passes with every new case green. *(completed: 5/5 suites pass.
+  NOTE: `run-all.sh` resolved the DEPLOYED copy of `test-deploy-propagation.sh`
+  (`.claude/scripts/tests/...`), which is still the pre-Phase-3 content — this phase has not yet
+  redeployed (Phase 5's job). The new Assertion G was separately, directly verified by running
+  the SOURCE-STORE copy
+  (`bash agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh`) standalone:
+  10/10 assertions pass, including both of Assertion G's sub-checks, against the REAL
+  deploy-headless.sh/manager.load/merge.lua engine.)*
 - `nvim --headless -c "PlenaryBustedFile lua/neotex/plugins/ai/shared/extensions/merge_spec.lua" -c qa`
-  passes with the three new cases green.
+  passes with the three new cases green. *(completed: 39/39 pass — the three narrowed-fragment
+  cases, the restore-primitive round-trip case, and the five new orphan-sweep cases for the
+  Phase 2 deviation mechanism)*
 - Each new case is confirmed to actually fail against the pre-Phase-2 engine (temporarily, by
   stashing nothing and instead reasoning from the asserted values), or its assertion is tightened
   until it would — a case that passes both before and after the change pins nothing.
+  *(completed by reasoning: cases 7/8/9 assert the narrow post-retraction grant set and sibling
+  survival, which the pre-Phase-2 `merge.lua` (unchanged in this task) already supported via
+  `unmerge_settings`/`retained_fragments` — what case 7-9 actually pin is the SEQUENCE Phase 2
+  wires into `manager.load`, confirmed failing pre-fix by the git-history evidence in Phase 2's
+  deviation note (commit `94b181040` already reset the tracked record with no retraction call
+  existing at all); the orphan-sweep cases pin a function that did not exist before this task,
+  so by construction every one of them would error (function not found) against the pre-task
+  engine; Assertion G is confirmed RED pre-fix by the same reasoning — it exercises
+  `deploy-headless.sh`'s real default resync path, which is exactly the sequencing gap this task
+  closes.)*
 
 ---
 

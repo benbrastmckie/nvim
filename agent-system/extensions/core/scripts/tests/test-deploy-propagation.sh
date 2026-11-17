@@ -341,6 +341,67 @@ fi
 rm -rf "$EXTSTORE_FIXTURE_ROOT"
 
 # =====================================================================
+# Assertion G: forced-reload grant retraction. The exact sequencing bug the sapience
+# write-tool-grant retraction task closed: a stale wide settings.local.json grant set (here,
+# simulated by hand-injecting entries no fragment currently declares, after a real load) plus a
+# tracked record matching the CURRENT narrow fragment, force-reloaded via a real
+# deploy-headless.sh resync -- asserts the deployed grant set converges to exactly what the
+# current fragment declares, and that the settings.local.json `hooks` key is byte-identical
+# before and after (the retraction/sweep must never perturb an unrelated top-level key).
+# =====================================================================
+common_test_info "Assertion G: forced-reload grant retraction (sapience write-tool-grant convergence)"
+SAPIENCE_EXT_ROOT="$EXT_ROOT/sapience"
+if [[ ! -f "$SAPIENCE_EXT_ROOT/manifest.json" ]]; then
+  common_test_info "Assertion G: sapience extension not found at $SAPIENCE_EXT_ROOT -- skipping (not this repository's concern if the extension is absent)"
+else
+  LOAD_OUT="$(nvim --headless -c "lua
+    local ext_config = require('neotex.plugins.ai.shared.extensions.config')
+    local ext_init = require('neotex.plugins.ai.shared.extensions.init')
+    local manager = ext_init.create(ext_config.claude())
+    local ok, err = manager.load('sapience', {confirm = false, force = true, project_dir = '$TARGET'})
+    print('SAPIENCE_LOAD=' .. tostring(ok) .. ' ' .. tostring(err))
+  " -c qa 2>&1)"
+  TARGET_SETTINGS_LOCAL="$TARGET/.claude/settings.local.json"
+  if [[ "$LOAD_OUT" != *"SAPIENCE_LOAD=true"* || ! -f "$TARGET_SETTINGS_LOCAL" ]]; then
+    common_test_fail "Assertion G: initial sapience load into scratch target failed. Output: $LOAD_OUT"
+  else
+    FRESH_GRANT_COUNT=$(jq '[.permissions.allow[]? | select(startswith("mcp__sapience__"))] | length' "$TARGET_SETTINGS_LOCAL")
+    # Hand-inject the four write-tool grants directly, simulating the historical additive
+    # leftover a now-narrowed fragment never retracted under the pre-fix engine.
+    python3 - "$TARGET_SETTINGS_LOCAL" <<'PYEOF'
+import json, sys
+p = sys.argv[1]
+d = json.load(open(p))
+extra = ["mcp__sapience__sapience_adddoc", "mcp__sapience__sapience_handoff", "mcp__sapience__sapience_remember", "mcp__sapience__sapience_wrapup"]
+d["permissions"]["allow"].extend(e for e in extra if e not in d["permissions"]["allow"])
+json.dump(d, open(p, "w"), indent=2)
+PYEOF
+    DRIFTED_GRANT_COUNT=$(jq '[.permissions.allow[]? | select(startswith("mcp__sapience__"))] | length' "$TARGET_SETTINGS_LOCAL")
+    HOOKS_HASH_BEFORE=$(jq -S '.hooks' "$TARGET_SETTINGS_LOCAL" | sha256sum)
+
+    if run_deploy "forced reload (Assertion G)"; then
+      FINAL_GRANT_COUNT=$(jq '[.permissions.allow[]? | select(startswith("mcp__sapience__"))] | length' "$TARGET_SETTINGS_LOCAL")
+      HOOKS_HASH_AFTER=$(jq -S '.hooks' "$TARGET_SETTINGS_LOCAL" | sha256sum)
+      WRITE_GRANTS_PRESENT=$(jq '[.permissions.allow[]? | select(. == "mcp__sapience__sapience_remember" or . == "mcp__sapience__sapience_wrapup" or . == "mcp__sapience__sapience_handoff" or . == "mcp__sapience__sapience_adddoc")] | length' "$TARGET_SETTINGS_LOCAL")
+
+      if [[ "$FINAL_GRANT_COUNT" -eq "$FRESH_GRANT_COUNT" && "$WRITE_GRANTS_PRESENT" -eq 0 ]]; then
+        common_test_pass "Assertion G: drifted grant count $DRIFTED_GRANT_COUNT converged back to the fresh-load count $FRESH_GRANT_COUNT, write grants absent"
+      else
+        common_test_fail "Assertion G: expected convergence to $FRESH_GRANT_COUNT grants with 0 write grants; got $FINAL_GRANT_COUNT grants, $WRITE_GRANTS_PRESENT write grant(s) still present"
+      fi
+
+      if [[ "$HOOKS_HASH_BEFORE" == "$HOOKS_HASH_AFTER" ]]; then
+        common_test_pass "Assertion G: settings.local.json hooks key byte-identical before/after the forced reload"
+      else
+        common_test_fail "Assertion G: settings.local.json hooks key CHANGED across the forced reload (before=$HOOKS_HASH_BEFORE after=$HOOKS_HASH_AFTER)"
+      fi
+    else
+      common_test_fail "Assertion G: forced reload (deploy-headless.sh resync) did not complete; cannot check convergence"
+    fi
+  fi
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

@@ -1223,4 +1223,294 @@ describe("shared.extensions.merge permission array tracking", function()
       assert.equals("echo pre-existing", after_unmerge.hooks.SessionStart[1].hooks[1].command)
     end
   )
+
+  it(
+    "case 7 -- narrowed fragment: merge a wide fragment, unmerge with that merge's own tracked "
+      .. "data, then re-merge a narrower fragment -- the dropped (write-tool-shaped) items are "
+      .. "gone and only the narrower set remains, pinning the exact sequence manager.load's "
+      .. "forced-reload retraction block performs",
+    function()
+      -- Seed a pre-existing, empty permissions.allow so the wrapper key is tracked "merged"
+      -- (recurse into children) rather than "new_object" (wholesale-removed on unmerge) -- the
+      -- realistic shape: this repository's settings.local.json already has a permissions key
+      -- from other extensions before sapience ever merges in (see case 5's own seeding note).
+      write_target(target_path, { permissions = { allow = {} } })
+
+      local wide_fragment = {
+        permissions = {
+          allow = {
+            "mcp__sapience__sapience",
+            "mcp__sapience__sapience_search",
+            "mcp__sapience__sapience_remember",
+            "mcp__sapience__sapience_wrapup",
+          },
+        },
+      }
+
+      local ok1, tracked1 = merge.merge_settings(target_path, wide_fragment)
+      assert.is_true(ok1)
+      assert.equals(4, #read_target(target_path).permissions.allow)
+
+      merge.unmerge_settings(target_path, tracked1)
+      assert.same({}, read_target(target_path).permissions.allow)
+
+      local narrow_fragment = {
+        permissions = {
+          allow = { "mcp__sapience__sapience", "mcp__sapience__sapience_search" },
+        },
+      }
+      local ok2 = merge.merge_settings(target_path, narrow_fragment)
+      assert.is_true(ok2)
+
+      local final = read_target(target_path)
+      assert.same(narrow_fragment.permissions.allow, final.permissions.allow)
+    end
+  )
+
+  it(
+    "case 8 -- sibling retention during narrowed-fragment retraction: the same unmerge-then-"
+      .. "remerge sequence as case 7, but opts.retained_fragments carries a second extension's "
+      .. "fragment that still declares one of the dropped grants -- that grant survives the "
+      .. "unmerge step, so it is still present (deduped, not doubled) after the narrower "
+      .. "fragment is re-merged",
+    function()
+      write_target(target_path, { permissions = { allow = {} } })
+
+      local wide_fragment = {
+        permissions = {
+          allow = {
+            "mcp__sapience__sapience",
+            "mcp__sapience__sapience_remember",
+            "mcp__sapience__sapience_wrapup",
+          },
+        },
+      }
+
+      local ok1, tracked1 = merge.merge_settings(target_path, wide_fragment)
+      assert.is_true(ok1)
+
+      local sibling_fragment = {
+        permissions = {
+          allow = { "mcp__sapience__sapience_remember" },
+        },
+      }
+      merge.unmerge_settings(target_path, tracked1, { retained_fragments = { sibling_fragment } })
+
+      local after_unmerge = read_target(target_path)
+      assert.same({ "mcp__sapience__sapience_remember" }, after_unmerge.permissions.allow)
+
+      local narrow_fragment = {
+        permissions = {
+          allow = { "mcp__sapience__sapience" },
+        },
+      }
+      local ok2 = merge.merge_settings(target_path, narrow_fragment)
+      assert.is_true(ok2)
+
+      local final = read_target(target_path)
+      assert.same(
+        { "mcp__sapience__sapience_remember", "mcp__sapience__sapience" },
+        final.permissions.allow
+      )
+    end
+  )
+
+  it(
+    "case 9 -- hand-added survival: a grant present in the target but absent from EVERY tracked "
+      .. "structure (never declared by any extension's fragment, coinciding or otherwise) "
+      .. "survives the retraction untouched -- remove_tracked visits only keys present in the "
+      .. "passed tracked structure, so an untracked grant is never a removal candidate",
+    function()
+      write_target(target_path, { permissions = { allow = {} } })
+
+      local fragment = {
+        permissions = {
+          allow = { "mcp__sapience__sapience", "mcp__sapience__sapience_remember" },
+        },
+      }
+      local ok, tracked = merge.merge_settings(target_path, fragment)
+      assert.is_true(ok)
+
+      -- Hand-add a grant with NO relationship to the fragment at all -- not merged by this
+      -- call, not present in `tracked` under any key.
+      local target = read_target(target_path)
+      table.insert(target.permissions.allow, "Bash(echo:*)")
+      write_target(target_path, target)
+      assert.equals(3, #read_target(target_path).permissions.allow)
+
+      merge.unmerge_settings(target_path, tracked)
+
+      local after_unmerge = read_target(target_path)
+      assert.same({ "Bash(echo:*)" }, after_unmerge.permissions.allow)
+    end
+  )
+
+  it(
+    "M.unmerge_settings's pre_removal_snapshot (2nd return value) plus "
+      .. "M.restore_retracted_sections undo the retraction exactly -- the rollback-threading "
+      .. "pair manager.load's forced-reload retraction block uses when a subsequent re-merge "
+      .. "fails: a failed forced load must leave the target exactly as it found it",
+    function()
+      write_target(target_path, {
+        permissions = { allow = { "existing-other-grant" } },
+        hooks = { SessionStart = { { hooks = { { type = "command", command = "echo pre" } } } } },
+      })
+
+      local wide_fragment = {
+        permissions = {
+          allow = {
+            "mcp__sapience__sapience",
+            "mcp__sapience__sapience_remember",
+            "mcp__sapience__sapience_wrapup",
+          },
+        },
+      }
+      local ok1, tracked1 = merge.merge_settings(target_path, wide_fragment)
+      assert.is_true(ok1)
+      local before_retraction = read_target(target_path)
+
+      local ok2, snapshot = merge.unmerge_settings(target_path, tracked1)
+      assert.is_true(ok2)
+      assert.is_not_nil(snapshot)
+      assert.same({ "existing-other-grant" }, read_target(target_path).permissions.allow)
+
+      -- Simulate the subsequent re-merge then failing: restore exactly what was retracted.
+      local restore_ok = merge.restore_retracted_sections(target_path, snapshot)
+      assert.is_true(restore_ok)
+      assert.same(before_retraction.permissions, read_target(target_path).permissions)
+      -- hooks (an untouched top-level key) is unaffected throughout.
+      assert.same(before_retraction.hooks, read_target(target_path).hooks)
+    end
+  )
+end)
+
+describe("shared.extensions.merge orphan sweep for MCP permission grants", function()
+  local scratch_dir
+  local target_path
+
+  before_each(function()
+    scratch_dir = vim.fn.tempname()
+    vim.fn.mkdir(scratch_dir, "p")
+    target_path = scratch_dir .. "/settings.json"
+  end)
+
+  after_each(function()
+    if scratch_dir and vim.fn.isdirectory(scratch_dir) == 1 then
+      vim.fn.delete(scratch_dir, "rf")
+    end
+  end)
+
+  it("extract_mcp_prefix recognizes the mcp__<server>__ shape and rejects non-MCP strings", function()
+    assert.equals("mcp__sapience__", merge.extract_mcp_prefix("mcp__sapience__sapience_search"))
+    assert.equals("mcp__nixos__", merge.extract_mcp_prefix("mcp__nixos__nix"))
+    assert.is_nil(merge.extract_mcp_prefix("Bash(echo:*)"))
+    assert.is_nil(merge.extract_mcp_prefix("Read(//home/user/**)"))
+    assert.is_nil(merge.extract_mcp_prefix(42))
+  end)
+
+  it(
+    "removes a grant left behind by a now-narrowed fragment (the real defect this task fixes): "
+      .. "the deployed file carries 4 sapience grants, the valid set names only 2, and the "
+      .. "watched prefix is mcp__sapience__ -- the sweep removes exactly the 2 absent from the "
+      .. "valid set and leaves everything else untouched",
+    function()
+      write_target(target_path, {
+        permissions = {
+          allow = {
+            "mcp__sapience__sapience",
+            "mcp__sapience__sapience_search",
+            "mcp__sapience__sapience_remember",
+            "mcp__sapience__sapience_wrapup",
+            "Bash(echo:*)",
+          },
+        },
+      })
+
+      local valid_set = { ["mcp__sapience__sapience"] = true, ["mcp__sapience__sapience_search"] = true }
+      local watched_prefixes = { ["mcp__sapience__"] = true }
+
+      local ok, removed_count, removed_items =
+        merge.remove_orphaned_mcp_permission_grants(target_path, valid_set, watched_prefixes)
+      assert.is_true(ok)
+      assert.equals(2, removed_count)
+      table.sort(removed_items)
+      assert.same({ "mcp__sapience__sapience_remember", "mcp__sapience__sapience_wrapup" }, removed_items)
+
+      local result = read_target(target_path)
+      table.sort(result.permissions.allow)
+      assert.same(
+        { "Bash(echo:*)", "mcp__sapience__sapience", "mcp__sapience__sapience_search" },
+        result.permissions.allow
+      )
+    end
+  )
+
+  it(
+    "never touches a grant under an UNWATCHED mcp prefix -- no currently-loaded extension "
+      .. "declares anything under mcp__other__, so the sweep leaves it alone even though it is "
+      .. "absent from valid_set, matching the hook sweep's own fail-safe direction (incomplete "
+      .. "or absent information about a namespace is never a reason to act on it)",
+    function()
+      write_target(target_path, {
+        permissions = {
+          allow = { "mcp__sapience__sapience_remember", "mcp__other__something" },
+        },
+      })
+
+      local valid_set = {}
+      local watched_prefixes = { ["mcp__sapience__"] = true }
+
+      local ok, removed_count, removed_items =
+        merge.remove_orphaned_mcp_permission_grants(target_path, valid_set, watched_prefixes)
+      assert.is_true(ok)
+      assert.equals(1, removed_count)
+      assert.same({ "mcp__sapience__sapience_remember" }, removed_items)
+
+      local result = read_target(target_path)
+      assert.same({ "mcp__other__something" }, result.permissions.allow)
+    end
+  )
+
+  it("is idempotent: a second sweep over the swept result removes nothing further", function()
+    write_target(target_path, {
+      permissions = {
+        allow = { "mcp__sapience__sapience", "mcp__sapience__sapience_remember" },
+      },
+    })
+
+    local valid_set = { ["mcp__sapience__sapience"] = true }
+    local watched_prefixes = { ["mcp__sapience__"] = true }
+
+    local ok1, removed_count1 =
+      merge.remove_orphaned_mcp_permission_grants(target_path, valid_set, watched_prefixes)
+    assert.is_true(ok1)
+    assert.equals(1, removed_count1)
+
+    local ok2, removed_count2 =
+      merge.remove_orphaned_mcp_permission_grants(target_path, valid_set, watched_prefixes)
+    assert.is_true(ok2)
+    assert.equals(0, removed_count2)
+  end)
+
+  it(
+    "M.restore_removed_mcp_permission_grants (the rollback-threading primitive) re-appends every "
+      .. "swept grant, recreating permissions.allow if the sweep left it absent entirely",
+    function()
+      write_target(target_path, {
+        permissions = { allow = { "mcp__sapience__sapience_remember" } },
+      })
+
+      local valid_set = {}
+      local watched_prefixes = { ["mcp__sapience__"] = true }
+      local ok, removed_count, removed_items =
+        merge.remove_orphaned_mcp_permission_grants(target_path, valid_set, watched_prefixes)
+      assert.is_true(ok)
+      assert.equals(1, removed_count)
+      assert.same({}, read_target(target_path).permissions.allow)
+
+      local restore_ok = merge.restore_removed_mcp_permission_grants(target_path, removed_items)
+      assert.is_true(restore_ok)
+      assert.same({ "mcp__sapience__sapience_remember" }, read_target(target_path).permissions.allow)
+    end
+  )
 end)
