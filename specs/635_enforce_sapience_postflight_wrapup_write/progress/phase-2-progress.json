@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "The Write Script and Its Stubbed Test Suite",
+  "started_at": "2026-11-17T11:10:00Z",
+  "last_updated": "2026-11-17T11:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create postflight-sapience-notes.sh (presence guard, read, 8-note ceiling, 0-note gap, per-note degrade, exit codes); manually smoke-tested in a scratch deployed-tree fixture", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh"]},
+    {"id": 2, "description": "Register postflight-sapience-notes.sh and tests/test-postflight-sapience-notes.sh in manifest.json's provides.scripts array", "status": "not_started", "files_touched": []},
+    {"id": 3, "description": "Create tests/test-postflight-sapience-notes.sh with the 9 specified cases, sapience-remember.sh stubbed", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Add classification row to suite-classification.data", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

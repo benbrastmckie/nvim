@@ -201,46 +201,46 @@ verification notes rather than assuming two.
 
 ---
 
-### Phase 2: The Write Script and Its Stubbed Test Suite [NOT STARTED]
+### Phase 2: The Write Script and Its Stubbed Test Suite [IN PROGRESS]
 
 **Goal**: Build the single site where the bound, the zero-notes gap, and the per-note degrade
 all live, with a suite that asserts call count and argument shape against a recording stub.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh` with
+- [x] Create `agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh` with
       interface `--task-dir PATH --task N [--session-id S] [--phase P] [--dispatch-seq N]
       [--dry-run]`. Follow `sapience-remember.sh`'s own conventions: `set -euo pipefail`, a
       `SCRIPT_DIR` resolution followed immediately by `. "${SCRIPT_DIR}/deploy-root-guard.sh"
-      || exit 1`, a `usage()` heredoc, and a header comment block stating the contract.
-- [ ] Presence guard first: if `${SCRIPT_DIR}/sapience-remember.sh` is absent, exit 0 silently
-      with no issue row. An unloaded extension is not a knowledge-capture gap.
-- [ ] Read `sapience_notes` from `<task-dir>/.return-meta.json` with
+      || exit 1`, a `usage()` heredoc, and a header comment block stating the contract. *(completed)*
+- [x] Presence guard first: if `${SCRIPT_DIR}/sapience-remember.sh` is absent, exit 0 silently
+      with no issue row. An unloaded extension is not a knowledge-capture gap. *(completed)*
+- [x] Read `sapience_notes` from `<task-dir>/.return-meta.json` with
       `jq -c '.sapience_notes // []'`, failing closed to `[]` on a missing, unreadable, or
       malformed file. The script performs this read itself so that neither call site depends on
-      a value threaded through propagation machinery the reconcile path does not exercise.
-- [ ] Compute the array length **once** via `jq 'length'` before issuing any write. On
+      a value threaded through propagation machinery the reconcile path does not exercise. *(completed)*
+- [x] Compute the array length **once** via `jq 'length'` before issuing any write. On
       `length > 8`: slice to the first 8 with `jq -c '.[0:8]'`, emit a named warning on stderr,
       and record one `issue-record.sh` entry (`--class "tooling bug or gap" --severity minor`)
       naming the emitted and the honored count. This must be a pre-write length check, never a
-      counter incremented inside the loop.
-- [ ] On `length == 0`: skip the loop entirely and record exactly one `issue-record.sh` entry
+      counter incremented inside the loop. *(completed)*
+- [x] On `length == 0`: skip the loop entirely and record exactly one `issue-record.sh` entry
       (`--class "knowledge-capture gap" --severity minor --resolution open`) whose
       `--what-happened` names the task number and states that no notes were emitted at
-      completion. Exit 0.
-- [ ] For each honored note, invoke `sapience-remember.sh` once with `--subject` and `--value`
+      completion. Exit 0. *(completed)*
+- [x] For each honored note, invoke `sapience-remember.sh` once with `--subject` and `--value`
       from the entry, plus `--predicate`/`--ko-type`/`--confidence`/`--source-loc` only when the
       corresponding key is present and non-null (so the script's own defaults apply otherwise).
       Pass `--dry-run` through when `--dry-run` was given to this script. Read each field with
       `jq -r` into a shell variable and pass it as a single argument — never build the argv by
-      string interpolation, so a note containing quotes or newlines cannot break the call.
-- [ ] Per-note degrade: a non-zero exit is mirrored by one `issue-record.sh` entry
+      string interpolation, so a note containing quotes or newlines cannot break the call. *(completed)*
+- [x] Per-note degrade: a non-zero exit is mirrored by one `issue-record.sh` entry
       (`--class "infrastructure/transport unavailable" --severity minor --resolution
       worked_around`) carrying that call's stderr, and the loop **continues** to the remaining
-      notes. Never abort on first failure, never retry.
-- [ ] Exit 0 on every degrade path; reserve non-zero for a usage error (missing `--task-dir` or
+      notes. Never abort on first failure, never retry. *(completed)*
+- [x] Exit 0 on every degrade path; reserve non-zero for a usage error (missing `--task-dir` or
       `--task`) so a caller's `|| note` guard distinguishes misuse from a degraded write. Every
       `issue-record.sh` call is itself `|| true`-guarded: a recording failure never fails this
-      script.
+      script. *(completed)*
 - [ ] Register both new files in `agent-system/extensions/sapience/manifest.json`'s
       `provides.scripts` array: `postflight-sapience-notes.sh` and
       `tests/test-postflight-sapience-notes.sh`, keeping the array's existing alphabetical
