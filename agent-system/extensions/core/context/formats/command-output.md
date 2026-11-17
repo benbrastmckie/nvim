@@ -107,7 +107,7 @@ Phases completed: 3/3
 Status: [COMPLETED]
 ```
 
-**Assigned Commands:** `/orchestrate`, `/revise`, `/errors`
+**Assigned Commands:** `/orchestrate`, `/revise`
 
 `/orchestrate` is the only lifecycle driver that exists, and it produces exactly the
 phase-metrics-and-summary-artifact output this template describes, so it is assigned here
@@ -167,7 +167,6 @@ Next Steps:
 | `/task` | Simple (A) | Task creation confirmation |
 | `/orchestrate` | Standard (B) | Phase metrics, summary artifact |
 | `/revise` | Standard (B) | Version info, key changes |
-| `/errors` | Standard (B) | Error counts, pattern summary |
 | `/todo` | Complex (C) | Grouped archives, multiple sections |
 | `/review` | Complex (C) | Grouped issues, recommendations |
 | `/meta` | Complex (C) | Multiple tasks, next steps |
@@ -358,23 +357,6 @@ Remaining: Phase 3
 
 Status: [IMPLEMENTING]
 Next: /orchestrate {N} (will resume from Phase 3)
-```
-
-**Errors command:**
-```
-Error Analysis Complete
-
-Report: specs/errors/analysis-20260312.md
-
-Errors: 15 total
-- Critical unfixed: 2
-- High unfixed: 5
-
-Tasks created: 2
-- Task #{N}: Fix delegation timeout
-- Task #{N}: Fix state sync failure
-
-Next: /orchestrate {N}
 ```
 
 ### Template C: Complex

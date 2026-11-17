@@ -4,7 +4,6 @@ Task management and agent orchestration for project development. For comprehensi
 
 - **Task List**: `specs/TODO.md`
 - **Machine State**: `specs/state.json`
-- **Error Tracking**: `specs/errors.json`
 - **Architecture**: `.claude/docs/docs-README.md`
 
 ## Project Structure
@@ -107,7 +106,6 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 | `/review` | `/review` | Analyze codebase, or brief |
 | `/project-overview` | `/project-overview` | Interactive repo scan and project-overview.md generation |
 | `/todo` | `/todo` | Archive completed/abandoned tasks, sync repository metrics |
-| `/errors` | `/errors` | Analyze error patterns, create fix plans |
 | `/meta` | `/meta` | System builder for .claude/ changes |
 | `/fix-it` | `/fix-it [PATH...]` | Scan for FIX:/NOTE:/TODO:/QUESTION: tags |
 | `/zulip` | `/zulip <zulip-url> [output-path]` | Fetch a Zulip thread via API and write formatted JSON to a file |
@@ -245,7 +243,7 @@ See `.claude/docs/reference/standards/multi-task-creation-standard.md` for the f
 
 ## Error Handling
 
-- **On failure**: Keep task in current status, log to errors.json, preserve partial progress
+- **On failure**: Keep task in current status, log via `issue-record.sh`, preserve partial progress
 - **On timeout**: Mark phase [PARTIAL], next `/orchestrate` (or resumed dispatch) picks up from there
 - **Git failures**: Non-blocking (logged, not fatal)
 

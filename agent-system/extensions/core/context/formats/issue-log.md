@@ -32,8 +32,7 @@ and `summaries/`.
 ## Lazy Creation and Never-Gitignored
 
 - The file is **not** pre-created. It comes into existence the first time `issue-record.sh` is
-  invoked for that task — mirroring `specs/events.jsonl`'s and `specs/errors.json`'s lazy-creation
-  convention.
+  invoked for that task — mirroring `specs/events.jsonl`'s lazy-creation convention.
 - Once created, it is a normal tracked file and is **never gitignored**. `issues.jsonl` is
   durable, freshness-gated provenance — the same class as `.orchestrator-handoff.json` and
   `.return-meta.json`, both of which the generated `specs/.gitignore` managed block's own header
@@ -86,7 +85,7 @@ Each line is exactly one JSON object with the fields below.
 
 | Field | Required | Type | Notes |
 |-------|----------|------|-------|
-| `entry_id` | yes | string | Unique, creation-order-sortable ID: `iss_{timestamp_ms}_{random6}`, mirroring `events.jsonl`'s `event_id` and `errors.json`'s `err_{timestamp}` conventions. |
+| `entry_id` | yes | string | Unique, creation-order-sortable ID: `iss_{timestamp_ms}_{random6}`, mirroring `events.jsonl`'s `event_id` convention. |
 | `timestamp` | yes | string | ISO 8601 UTC, matching every other timestamp convention in this codebase. |
 | `kind` | yes | string (closed: `issue` \| `win`) | Positive and negative signal share one schema and one file, on equal footing. |
 | `class` | yes | string (open, extensible) | One of the 16 seed classes below, or a new value — see "Extensibility Rule" below. |
@@ -199,24 +198,19 @@ happens automatically at read time regardless of whether any individual line use
 `tags.occurrence`. A caller that does not know its own repeat count in advance should simply write
 one line per occurrence and let the read-side grouping do its job.
 
-## The Three-Store Topology
+## The Two-Store Topology
 
-Three stores exist in this codebase for recording failures and lifecycle events, and each has a
+Two stores exist in this codebase for recording failures and lifecycle events, and each has a
 distinct, narrow verdict rather than overlapping freely:
 
 - **`issues.jsonl` via `issue-record.sh`** is the general-purpose capture surface for any failure
   or win inside a task context. This document is its schema and policy contract.
 - **`events.jsonl` via `events-append.sh`** is the append-only lifecycle store, and is the only one
-  of the three that accepts a null `task` — making it the capture surface for an error that arises
+  of the two that accepts a null `task` — making it the capture surface for an error that arises
   when no task directory exists at all. See `context/formats/events-format.md`.
-- **`errors.json` via `errors-append.sh`** is a narrower, decoupled triage surface with its own
-  living-record schema, read by the `/errors` command. It is not the general error-handling write
-  path; see `rules/error-handling.md`'s "Where Errors Are Stored" subsection for the full
-  description of its scope relative to the other two stores.
 
-A reader asking "what has gone wrong" should start from `issues.jsonl` for task-scoped work,
-`events.jsonl` for anything outside a task context, and `errors.json` only for the narrower triage
-case `/errors` serves.
+A reader asking "what has gone wrong" should start from `issues.jsonl` for task-scoped work and
+`events.jsonl` for anything outside a task context.
 
 ## Central Cross-Repo Log
 

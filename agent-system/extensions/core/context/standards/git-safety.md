@@ -248,14 +248,9 @@ See `rules/pr-prohibition.md`'s "Scoped exception" subsection for the policy sta
        ```bash
        git status
        ```
-    4. Log rollback event to errors.json:
-       {
-         "type": "git_rollback",
-         "operation": "{operation}",
-         "safety_commit": "{safety_commit_sha}",
-         "timestamp": "{ISO8601}",
-         "reason": "{failure_reason}"
-       }
+    4. Log rollback event via issue-record.sh:
+       --kind issue --class "git_rollback" --severity costly \
+       --what-happened "{operation} failed; rolled back to safety commit {safety_commit_sha}: {failure_reason}"
     5. Return error to user with rollback confirmation
   </process>
   <user_message>
@@ -412,7 +407,7 @@ See `rules/pr-prohibition.md`'s "Scoped exception" subsection for the policy sta
     If any write fails:
     1. git reset --hard {safety_commit}
     2. git clean -fd
-    3. Log rollback to errors.json
+    3. Log rollback via issue-record.sh
     4. Return error with rollback confirmation
   </git_rollback>
   <checkpoint>Files updated or rolled back</checkpoint>
@@ -500,7 +495,7 @@ Before implementing git safety in a command:
 4. Verify operation failed
 5. Verify rollback executed: `git log -1`
 6. Verify state restored: `git status`
-7. Verify error logged to errors.json
+7. Verify error logged via issue-record.sh
 8. Verify user received rollback confirmation
 
 ### Test Rollback
@@ -626,7 +621,7 @@ cat file1   # Should show original content
   <error_type name="final_commit_failure">
     <detection>git commit fails when creating final commit</detection>
     <handling>
-      1. Log error to errors.json
+      1. Log error via issue-record.sh
       2. Continue (operation already succeeded)
       3. Return success with warning
     </handling>
@@ -653,7 +648,7 @@ cat file1   # Should show original content
   <error_type name="rollback_failure">
     <detection>git reset --hard fails during rollback</detection>
     <handling>
-      1. Log critical error to errors.json
+      1. Log critical error via issue-record.sh
       2. Provide manual recovery instructions
       3. Include safety commit SHA
     </handling>

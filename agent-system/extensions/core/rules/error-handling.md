@@ -47,13 +47,9 @@ nullable-`task` contract.
 
 #### Where Errors Are Stored
 
-See `context/formats/issue-log.md`'s "The Three-Store Topology" section for the full verdict:
+See `context/formats/issue-log.md`'s "The Two-Store Topology" section for the full verdict:
 `issues.jsonl` is the general capture path for task-scoped work; `events.jsonl` is the
-append-only lifecycle store and the no-task-context path. `specs/errors.json`/`errors-append.sh`/
-`/errors` are a narrower, decoupled triage surface with their own schema — not this write path.
-`errors-append.sh` has exactly one caller today (`core/commands/errors.md`, `update` only, never
-`append`). Retiring `errors.json`/`errors-append.sh`/`/errors` outright is an open question left
-to a follow-up, not taken here.
+append-only lifecycle store and the no-task-context path.
 
 #### External Errors Mapped
 

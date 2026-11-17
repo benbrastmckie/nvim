@@ -470,9 +470,9 @@ Self-Check entirely — is unchanged and remains deliberate.
 Containment sites widen their own effective scope with the same fixed path set before testing a
 candidate path, sourced from `scripts/lib/engine-written-state-paths-lib.sh` rather than each
 site hand-copying the list separately. That library exports one function,
-`engine_written_state_paths`, printing the four admitted members:
-`specs/TODO.md`, `specs/state.json`, `specs/events.jsonl`, `specs/errors.json`. Its own header
-states the admission bar a future fifth member must clear: engine-written on behalf of
+`engine_written_state_paths`, printing the three admitted members:
+`specs/TODO.md`, `specs/state.json`, `specs/events.jsonl`. Its own header
+states the admission bar a future fourth member must clear: engine-written on behalf of
 every/many tasks, AND never legitimately declarable in any one task's own `file_scope` — a
 candidate failing either half does not belong in the set, since widening it weakens every site's
 excursion guard at once. A source or resolution failure at any site falls back to the hardcoded

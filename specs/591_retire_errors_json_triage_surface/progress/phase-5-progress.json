@@ -1,0 +1,59 @@
+{
+  "phase": 5,
+  "phase_name": "Sweep the eager and contract-bearing prose",
+  "started_at": "2026-11-17T05:05:00Z",
+  "last_updated": "2026-11-17T05:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "rules/error-handling.md: delete the triage-surface paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/rules/error-handling.md"]},
+    {"id": 2, "description": "merge-sources/claudemd.md: remove Error Tracking and /errors rows", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 3, "description": "README.md: remove the /errors command row", "status": "done", "files_touched": ["agent-system/extensions/core/README.md"]},
+    {"id": 4, "description": "context/standards/error-recovery-strategies.md: retarget onto issue-record.sh", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/error-recovery-strategies.md", "agent-system/extensions/core/index-entries.json"]},
+    {"id": 5, "description": "context/standards/orchestrator-runtime-files.md: drop .errors.lock row, repoint comparison", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md", "agent-system/extensions/core/index-entries.json"]},
+    {"id": 6, "description": "context/standards/git-staging-scope.md: four-path list becomes three", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 7, "description": "context/standards/shell-strict-mode.md: drop retired test from file list", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/shell-strict-mode.md"]},
+    {"id": 8, "description": "context/standards/error-handling.md and git-safety.md: retarget errors.json mentions", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/error-handling.md", "agent-system/extensions/core/context/standards/git-safety.md", "agent-system/extensions/core/index-entries.json"]},
+    {"id": 9, "description": "context/formats/issue-log.md: three-store topology becomes two", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/issue-log.md", "agent-system/extensions/core/index-entries.json"]},
+    {"id": 10, "description": "context/formats/events-format.md, command-output.md, command-structure.md, subagent-return.md: correct mentions", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/events-format.md", "agent-system/extensions/core/context/formats/command-output.md", "agent-system/extensions/core/context/formats/command-structure.md", "agent-system/extensions/core/context/formats/subagent-return.md", "agent-system/extensions/core/index-entries.json"]},
+    {"id": 11, "description": "Re-measure eager context and update measured_bytes/measured_at", "status": "done", "files_touched": ["agent-system/extensions/core/context/config/orchestrator-context-budget.json"]}
+  ],
+  "current_objective": 11,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.2",
+      "description": "merge-sources/claudemd.md: remove the Error Tracking and /errors rows",
+      "type": "altered",
+      "reason": "Also corrected an unlisted '## Error Handling' bullet ('log to errors.json') in the same file, already open for edit in this phase, to point at issue-record.sh instead.",
+      "annotation": "*(deviation: altered — also corrected an unlisted '## Error Handling' bullet pointing at errors.json)*"
+    },
+    {
+      "task_id": "5.5",
+      "description": "orchestrator-runtime-files.md: delete the .errors.lock row and repoint the .central-errors.lock comparison",
+      "type": "altered",
+      "reason": "Deleting the .errors.lock row left the .decisions.lock row's own comparison ('structurally identical to specs/.errors.lock above') dangling against a now-deleted row; repointed it at specs/.events.lock instead, matching the instruction given for the .central-errors.lock row. Also removed the now-dead '**/.errors.lock' gitignore-pattern enumeration line, a necessary consequence of the same row deletion the plan's bullet did not separately enumerate.",
+      "annotation": "*(deviation: altered — also retargeted the .decisions.lock comparison and removed the dead gitignore-pattern line, both necessary consequences of deleting the .errors.lock row)*"
+    },
+    {
+      "task_id": "5-finding",
+      "description": "Discovered but NOT fixed: scripts/lib/runtime-file-patterns.sh (not in any phase's file list or this task's declared file_scope) still carries a 25-member 'errors-lock' entry that is now permanently inert since errors-append.sh (its only writer) is deleted.",
+      "type": "deferred",
+      "reason": "A safe removal requires renumbering an extensive, mechanically-derived single-source-of-truth consumed by check-runtime-file-tracking.sh and two deploy-test fixtures, with cascading ordinal-position prose ('19th member', '25th member', etc.) across the file. Recorded as a follow-up candidate via issue-record.sh rather than attempted as an improvised out-of-scope edit.",
+      "annotation": "*(deviation: deferred to a follow-up — scripts/lib/runtime-file-patterns.sh's dead errors-lock member, out of this task's declared scope)*"
+    },
+    {
+      "task_id": "5.8",
+      "description": "context/standards/error-handling.md: retarget or delete each errors.json mention",
+      "type": "altered",
+      "reason": "The file's remaining 'errors.json' mention (.agent-logs/errors.json, a speculative, never-implemented permission-denial log with a completely different path and schema) is a DIFFERENT concept from specs/errors.json and was left untouched as out of this task's declared scope. Only the 2 mentions that were genuinely about the retired triage surface were retargeted.",
+      "annotation": "*(deviation: altered — left the unrelated .agent-logs/errors.json speculative mention untouched, out of scope)*"
+    },
+    {
+      "task_id": "5.10",
+      "description": "context/formats/command-output.md: correct the remaining mentions",
+      "type": "altered",
+      "reason": "Removed a full '**Errors command:**' illustrative output-example block (not individually named in the plan's bullet, but the same class of /errors-specific reference the bullet's intent covers) in addition to the two table-row removals.",
+      "annotation": "*(deviation: altered — also removed the /errors command's own illustrative output-example block)*"
+    }
+  ]
+}

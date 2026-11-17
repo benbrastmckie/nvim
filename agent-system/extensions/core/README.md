@@ -35,7 +35,6 @@ All 19 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE 
 | `/meta` | `/meta` | Interactive system builder for .claude/ changes |
 | `/review` | `/review` | Analyze codebase and create analysis reports |
 | `/revise` | `/revise N` | Create new plan version or update description |
-| `/errors` | `/errors` | Analyze error patterns, create fix plans |
 | `/fix-it` | `/fix-it [PATH...]` | Scan for FIX:/NOTE:/TODO:/QUESTION: tags |
 | `/refresh` | `/refresh` | Clean orphaned processes and old files |
 | `/spawn` | `/spawn N` | Spawn new tasks to unblock a blocked task |

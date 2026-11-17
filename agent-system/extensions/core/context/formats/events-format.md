@@ -17,13 +17,12 @@ This document specifies the per-line schema. The formal machine-checkable contra
 specs/events.jsonl
 ```
 
-Repo-root-relative, sibling to `specs/errors.json`, `specs/state.json`, and `specs/TODO.md`.
+Repo-root-relative, sibling to `specs/state.json` and `specs/TODO.md`.
 
 ## Lazy Creation and Never-Gitignored
 
 - The file is **not** pre-created. It comes into existence the first time
-  `scripts/events-append.sh` is invoked -- mirroring the existing `specs/errors.json` convention
-  (which also does not exist until the first error is logged).
+  `scripts/events-append.sh` is invoked.
 - Once created, it is a normal tracked file and is **never gitignored**. It accumulates for the
   lifetime of the repository.
 - Both helper scripts (`events-append.sh`, `events-query.sh`) must tolerate the file's absence:
@@ -55,14 +54,14 @@ risks JSON-escaping bugs. See `scripts/events-append.sh` for the reference imple
 | `event_id` | yes | string | Unique, creation-order-sortable ID: `evt_{timestamp_ms}_{random6}`. Mirrors the existing `err_{timestamp}` / `sess_{timestamp}_{random}` ID conventions rather than inventing a new scheme (e.g. UUID). |
 | `event_type` | yes | string (open) | The specific kind of event -- finer-grained than `category`. Free-form but documented (see below); new values may be added by future consumers without a schema revision. |
 | `category` | yes | string (closed enum) | Exactly one of `deviation`, `blocker`, `milestone`, `success`. The primary filterable/groupable taxonomy for aggregate queries. |
-| `timestamp` | yes | string | ISO 8601, matching every other timestamp convention in this codebase (`errors.json`, return-metadata files, `state.json`). |
+| `timestamp` | yes | string | ISO 8601, matching every other timestamp convention in this codebase (return-metadata files, `state.json`). |
 | `duration_seconds` | no (nullable) | number \| null | Nullable -- point events (e.g. hitting a blocker) have no duration; a completed lifecycle stage does. Named `duration_seconds`, not `duration_ms`, to match the existing `metadata.duration_seconds` convention in `return-metadata-file.md`. |
 | `session_id` | yes | string | The exact `sess_{timestamp}_{random}` value already generated at command gate-in -- the shared cross-link key joining events to a run. |
-| `task` | no (nullable) | integer \| null | Bare (unpadded) task/project number, matching `errors.json`'s `context.task` and `state.json`'s `project_number` -- **not** the zero-padded directory string. Nullable because some events (e.g. a `/refresh` sweep) are not task-scoped. |
+| `task` | no (nullable) | integer \| null | Bare (unpadded) task/project number, matching `state.json`'s `project_number` -- **not** the zero-padded directory string. Nullable because some events (e.g. a `/refresh` sweep) are not task-scoped. |
 | `checkpoint` | no (nullable) | string \| null (open) | The lifecycle point the event occurred at. Open string with documented common values (see below); nullable for events with no single associated checkpoint. |
-| `message` | yes | string | Short, human-readable one-line summary, mirroring `errors.json`'s `message` field. |
+| `message` | yes | string | Short, human-readable one-line summary. |
 | `detail` | no | object (open) | Open, `event_type`-specific structured payload -- e.g. a completion-time reflection's `what_worked`/`what_was_hard`/`what_was_missed`/`successes` fields nest here without requiring a schema revision. Defaults to `{}` when absent. |
-| `error_ref` | no (nullable) | string \| null | Optional cross-link to an `errors.json` entry's `id` (e.g. `"err_1736700000"`). **Always optional, never a hard foreign key** -- consumers must work correctly whether or not `specs/errors.json` exists or contains the referenced ID. |
+| `error_ref` | no (nullable) | string \| null | Optional cross-link to an external error/issue entry id (e.g. an `issues.jsonl` `entry_id`). **Always optional, never a hard foreign key** -- consumers must work correctly whether or not the referenced id exists. |
 | `cwd` | no (nullable) | string \| null | The invoking working directory (absolute path), when the caller supplied `--cwd`. Null for older rows written before this field existed, or for call sites with no reliable `cwd` source. **`cwd` is the only field stored for cross-repo federation** -- `repo` is deliberately NOT a stored field (see below). |
 | `cc_session_id` | no (nullable) | string \| null | Claude Code's own native session UUID, captured verbatim from hook stdin's top-level `.session_id` field. The exact join key to OTel's `session.id` resource attribute (and to `history.jsonl`'s `sessionId`) -- see "Claude Code OTel Correlation" below. **Distinct from `session_id` above**: `session_id` is this schema's pre-existing `sess_{timestamp}_{random}` agent-system id; `cc_session_id` is Claude Code's own UUIDv4. The two ids live in different id spaces and neither replaces the other. Null when the event is emitted outside any hook context. |
 
@@ -159,12 +158,13 @@ When absent, treat `detail` as `{}`.
 
 ## `error_ref` Cross-Link Contract
 
-`error_ref`, when present, holds the `id` of an entry in `specs/errors.json` (e.g.
-`"err_1736700000"`). It is:
+`error_ref`, when present, holds an external error/issue entry id (e.g. an `issues.jsonl`
+`entry_id` such as `"iss_1759539743123_a1b2c3"`). It is:
 
 - **Always optional** -- most events have no associated error.
-- **Never a hard foreign key** -- readers and writers must not assume `specs/errors.json` exists,
-  and must not fail if the referenced ID cannot be resolved. The cross-link is informational only.
+- **Never a hard foreign key** -- readers and writers must not assume the referenced store or
+  entry exists, and must not fail if the referenced ID cannot be resolved. The cross-link is
+  informational only.
 
 ## Claude Code OTel Correlation
 
@@ -304,6 +304,6 @@ reliable source for either field.
 
 - [Events Schema](../schemas/events-schema.json) -- formal draft-07 JSON Schema for a single line
 - [Return Metadata Format](return-metadata-file.md) -- `session_id`/`duration_seconds` convention
-- [Error Handling Rule](../../rules/error-handling.md) -- `errors.json` schema and `error_ref` target
+- [Error Handling Rule](../../rules/error-handling.md) -- where errors are stored and the `error_ref` target
 - [Telemetry Guardrails](../standards/telemetry-guardrails.md) -- the full four-tier source
   model and binding design constraints for telemetry-consuming sub-modes

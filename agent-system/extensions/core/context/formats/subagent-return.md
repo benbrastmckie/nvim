@@ -147,7 +147,7 @@ All subagents MUST return this JSON structure:
 ### Validation Failures
 
 If validation fails:
-1. Log error to errors.json
+1. Log error via issue-record.sh
 2. Return failed status to user
 3. Include validation errors in response
 4. Recommendation: "Fix {agent} subagent return format"

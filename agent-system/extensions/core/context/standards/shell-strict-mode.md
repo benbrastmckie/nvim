@@ -54,7 +54,7 @@ Every `scripts/tests/test-*.sh` and flat `scripts/test-*.sh` file uses the `PASS
 `test-state-write-regen-timing.sh`, `test-task-lock-reap.sh`, `tests/test-census-count.sh`,
 `tests/test-claude-refresh-matcher.sh`, `tests/test-common-lib.sh`,
 `tests/test-corroborate-phase-counts.sh`, `tests/test-deploy-propagation.sh`,
-`tests/test-errors-append.sh`, `tests/test-git-commit-scoped.sh`,
+`tests/test-git-commit-scoped.sh`,
 `tests/test-handoff-reader-parity.sh`, `tests/test-index-entries-schema.sh`,
 `tests/test-lint-agent-contracts.sh`, `tests/test-loop-guard-staleness.sh`,
 `tests/test-orchestrate-triage-classify.sh`, `tests/test-phase-heading-patterns.sh`,

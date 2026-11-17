@@ -387,47 +387,47 @@ literal, fix it in this phase rather than deferring.
 
 ---
 
-### Phase 5: Sweep the eager and contract-bearing prose [NOT STARTED]
+### Phase 5: Sweep the eager and contract-bearing prose [COMPLETED]
 
 **Goal**: Correct every rule, standard, format, and claudemd-merged surface that still documents
 the retired store as live, starting with the eager-loaded files where the correction also
 recovers context budget.
 
 **Tasks**:
-- [ ] `agent-system/extensions/core/rules/error-handling.md`: delete the paragraph describing
+- [x] `agent-system/extensions/core/rules/error-handling.md`: delete the paragraph describing
       `specs/errors.json`/`errors-append.sh`/`/errors` as a narrower decoupled triage surface and
       the sentence leaving its retirement open. The surrounding text already names
-      `issue-record.sh` as the live write path and needs no addition.
-- [ ] `agent-system/extensions/core/merge-sources/claudemd.md`: remove the `**Error Tracking**:
-      specs/errors.json` quick-reference row and the `/errors` Command Reference row.
-- [ ] `agent-system/extensions/core/README.md`: remove the `/errors` command table row.
-- [ ] `agent-system/extensions/core/context/standards/error-recovery-strategies.md`: replace the
+      `issue-record.sh` as the live write path and needs no addition. *(completed: also retargeted an unlisted '## Error Handling' bullet in merge-sources/claudemd.md — see deviation note)*
+- [x] `agent-system/extensions/core/merge-sources/claudemd.md`: remove the `**Error Tracking**:
+      specs/errors.json` quick-reference row and the `/errors` Command Reference row. *(completed)*
+- [x] `agent-system/extensions/core/README.md`: remove the `/errors` command table row. *(completed)*
+- [x] `agent-system/extensions/core/context/standards/error-recovery-strategies.md`: replace the
       `errors-append.sh append` invocation block and the full CLI/field spec with the
       `issue-record.sh` form already documented in `context/formats/issue-log.md`, and retarget
       the two numbered "Log to errors.json" steps. Point at `issue-log.md` rather than restating
-      its schema.
-- [ ] `agent-system/extensions/core/context/standards/orchestrator-runtime-files.md`: delete the
+      its schema. *(completed)*
+- [x] `agent-system/extensions/core/context/standards/orchestrator-runtime-files.md`: delete the
       `specs/.errors.lock` row. In the `specs/.central-errors.lock` row, replace the
       "structurally identical to `specs/.errors.lock` above" comparison with one against
-      `specs/.events.lock`, which remains.
-- [ ] `agent-system/extensions/core/context/standards/git-staging-scope.md`: change the
-      four-path engine-written-state list to three.
-- [ ] `agent-system/extensions/core/context/standards/shell-strict-mode.md`: drop
-      `tests/test-errors-append.sh` from its file list.
-- [ ] `agent-system/extensions/core/context/standards/error-handling.md` and
-      `context/standards/git-safety.md`: retarget or delete each `errors.json` mention.
-- [ ] `agent-system/extensions/core/context/formats/issue-log.md`: rewrite the "Three-Store
+      `specs/.events.lock`, which remains. *(completed: also retargeted the .decisions.lock row's comparison, which pointed at the deleted .errors.lock row, and removed the `**/.errors.lock` gitignore-pattern line — both necessary consequences of the same row deletion)*
+- [x] `agent-system/extensions/core/context/standards/git-staging-scope.md`: change the
+      four-path engine-written-state list to three. *(completed)*
+- [x] `agent-system/extensions/core/context/standards/shell-strict-mode.md`: drop
+      `tests/test-errors-append.sh` from its file list. *(completed)*
+- [x] `agent-system/extensions/core/context/standards/error-handling.md` and
+      `context/standards/git-safety.md`: retarget or delete each `errors.json` mention. *(completed: 2 mentions in error-handling.md retargeted to issue-record.sh; left the unrelated, never-implemented `.agent-logs/errors.json` speculative permission-log mention untouched — different path/schema, out of this task's scope. 5 mentions in git-safety.md retargeted to issue-record.sh)*
+- [x] `agent-system/extensions/core/context/formats/issue-log.md`: rewrite the "Three-Store
       Topology" section as a two-store topology (`issues.jsonl`, `events.jsonl`), delete the
       `errors.json` bullet and the closing reader-guidance sentence's third clause, and remove
       `errors.json`'s lazy-creation mention and the `err_{timestamp}` id-convention citation in
-      the `entry_id` row.
-- [ ] `agent-system/extensions/core/context/formats/`: correct the remaining mentions in
-      `events-format.md`, `command-output.md`, `command-structure.md`, and `subagent-return.md`.
-- [ ] Re-measure the eager context and record the new figure: run
+      the `entry_id` row. *(completed)*
+- [x] `agent-system/extensions/core/context/formats/`: correct the remaining mentions in
+      `events-format.md`, `command-output.md`, `command-structure.md`, and `subagent-return.md`. *(completed: command-output.md required removing a full "/errors command" output example block, not named explicitly but the same class of reference)*
+- [x] Re-measure the eager context and record the new figure: run
       `REPO_ROOT=$(pwd) bash .claude/scripts/measure-eager-context.sh --check`, then update only
       `eager_load.measured_bytes` and `eager_load.measured_at` in
       `agent-system/extensions/core/context/config/orchestrator-context-budget.json`. Do not
-      touch `baseline_bytes` and do not edit the `note` field.
+      touch `baseline_bytes` and do not edit the `note` field. *(completed: 70389 -> 69930 B, still below the 70400 B baseline_bytes ceiling)*
 
 **Timing**: 1.5 hours
 

@@ -139,7 +139,7 @@ If issues persist, contact support with this error log.
     <detection>{How to detect this error}</detection>
     <handling>{How to handle this error}</handling>
     <recovery>{Recovery instructions for user}</recovery>
-    <logging>{What to log to errors.json}</logging>
+    <logging>{What to log via issue-record.sh}</logging>
   </error_type>
 </error_handling>
 ```
@@ -165,7 +165,7 @@ If issues persist, contact support with this error log.
 - Contact information if needed
 
 **`<logging>`**: Error logging requirements
-- What to log to errors.json
+- What to log via issue-record.sh
 - Log level (error, warning, critical)
 - Context to include
 - Correlation IDs or session IDs

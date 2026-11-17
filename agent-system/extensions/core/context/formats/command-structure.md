@@ -669,7 +669,7 @@ Benefit: Clear separation, easy to test, flexible composition
     - Subagent execution failure
     - State update failure (if critical)
     
-    Action: Log to errors.json, return error to orchestrator
+    Action: Log via issue-record.sh, return error to orchestrator
   </critical_errors>
   
   <non_critical_errors>
