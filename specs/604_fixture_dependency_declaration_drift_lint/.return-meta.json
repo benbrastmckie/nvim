@@ -27,14 +27,26 @@
       "category": "CONFIG",
       "source_artifact": "specs/604_fixture_dependency_declaration_drift_lint/summaries/01_fixture-dependency-drift-lint-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["sync-manifest-scripts", "provides.scripts", "git ls-files", "manifest.json", "core extension"]
+      "suggested_keywords": [
+        "sync-manifest-scripts",
+        "provides.scripts",
+        "git ls-files",
+        "manifest.json",
+        "core extension"
+      ]
     },
     {
       "content": "When writing a text-level bash lint that classifies a guard idiom as mandatory-vs-optional by scanning forward for an exit/return signal, scope the scan to the specific if-branch's own body (bounded by the next elif/else/fi), never a blind N-line window: a blind window can pull in a semantically unrelated exit from a nested, unrelated else-branch (measured: deploy-freshness-lib.sh's staleness-refusal exit nested inside an 'optional library found' else-branch), and must separately skip comment lines, since prose describing an exit code inline (e.g. documenting a bash quirk) can textually match the same signal regex.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/604_fixture_dependency_declaration_drift_lint/summaries/01_fixture-dependency-drift-lint-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash lint", "text-level classifier", "guard shape", "false positive", "comment skip"]
+      "suggested_keywords": [
+        "bash lint",
+        "text-level classifier",
+        "guard shape",
+        "false positive",
+        "comment skip"
+      ]
     }
   ],
   "sapience_notes": [
@@ -85,7 +97,11 @@
     "session_id": "sess_1794942735_1748a1",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }
