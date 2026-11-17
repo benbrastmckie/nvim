@@ -1,5 +1,5 @@
 ---
-next_project_number: 639
+next_project_number: 643
 ---
 
 # TODO
@@ -13,11 +13,12 @@ next_project_number: 639
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,590,599,604,607,613,618,627,629,631,632,633,635,636 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,476,477,484,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,527,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,590,599,604,607,613,618,627,629,631,632,633,635,636,639,640 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,473,474,479,481,486,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,586,592,593,598,609,610,624,628,630 | 383,390,398,410,431,438,451,453,455,463,472,476,484,504,519,527,535,538,539,548,549,563,564,577,599,607,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,480,492,501,508,509,513,552,566,571,594,605,637 | 439,452,472,476,479,486,491,518,542,586,593,604,628,635,636 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 524,561,581,588,595 | 492,501,509,539,552,580,594 | core-agent-system, agent-system |
-| 5 | 596 | 595 | agent-system |
+| 5 | 596,641 | 454,561,595 | agent-system |
+| 6 | 642 | 641 | agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -137,6 +138,8 @@ next_project_number: 639
   └─ 542 [NOT STARTED] — Record the launch-side PID-fidelity condition on the...
     └─ 552 [NOT STARTED] — Extend the bounded-waiter lint beyond Rule 2 to the...
       └─ 561 [NOT STARTED] — Record the load-sized bound and the diagnostic-preserving...
+        └─ 641 [NOT STARTED] — Re-ground the documented foreground-wait cap and make the...
+          └─ 642 [NOT STARTED] — Re-propagate the amended bounded-wait contract bullets to the...
 539 [NOT STARTED] — State the precedence and snapshot-prerequisite rules for a...
   └─ 540 [NOT STARTED] — Record five measured lean4 facts: the decide-synthesis...
   └─ 544 [NOT STARTED] — Make a fixture-dependent Lean gate statement expressible and...
@@ -166,6 +169,8 @@ next_project_number: 639
 631 [NOT STARTED] — Replace test-typescript-verify.sh's fixed-depth REPO\_ROOT...
 632 [NOT STARTED] — Stop orchestrator-context-budget.json's derivation log from...
 633 [NOT STARTED] — Resolve the stray duplicate .claude-extensions.json sitting...
+639 [NOT STARTED] — Make issue-record.sh failures visible instead of silently...
+640 [NOT STARTED] — Add a derived-percentage bug class to the census methodology...
 533 [NOT STARTED] — lake-build-guard replays stale result for env lean FILE
 546 [NOT STARTED] — Diagnose the zero-result literature retrieval and settle the...
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
@@ -189,6 +194,276 @@ next_project_number: 639
 ### Uncategorized
 
 ## Tasks
+
+### 642. Re-propagate the amended bounded-wait contract bullets to the carrying agent contracts and reconcile the lint checks
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 641
+
+**Description**: Re-propagate the amended bounded-wait contract bullets to the carrying agent contracts and reconcile the lint checks.
+
+== WHY ==
+
+`bounded-build-waiter.md`'s "Canonical Agent-Contract Bullet (Generated-Copy Source)" section is the single authoritative source for a MUST/MUST NOT bullet pair that is copied VERBATIM into the `## Critical Requirements` lists of dispatchable agent contracts. Its own Brittleness Note states the consequence directly: a wording change at the source "is expected to be followed by a mechanical re-propagation pass across every literal copy."
+
+The upstream task re-grounds that wording against a measured harness foreground cap, and the current MUST bullet contains exactly the two claims the measurement falsifies -- that the idiom belongs "all inside one Bash call that does not return control until the wait resolves," and that the plain foreground form is preferable "whenever the command plausibly fits within the Bash tool's own ceiling." Left unpropagated, 23 agent contracts keep instructing the single-call shape that was auto-backgrounded at roughly 180 seconds, which is the defect the upstream change exists to remove. A fix that lands only in the pattern document is a fix no dispatched agent reads at its point of use.
+
+MEASURED SURFACE: 23 files under `agent-system/extensions/*/agents/` reference `bounded-build-waiter` (core 2, books 2, cslib 3, nix 2, nvim 2, python 2, rust 2, web 2, z3 2, email 1, latex 1, lean 1, typst 1). `extensions/core/scripts/lint/lint-agent-contracts.sh` enforces this surface mechanically and reads its forbidden phrasings from the source document's own fenced blocks at runtime: Check H verifies PRESENCE of the bullet pair across a curated in-scope array, Check K verifies ABSENCE of contradicting prose across every dispatchable agent contract using four anchor lines read verbatim from the "Forbidden-Shape Lint Anchor" block, and Check M covers the research-agent in-scope array (`BOUNDED_WAIT_RESEARCH_IN_SCOPE_RELATIVE_PATHS`).
+
+Because the checks read from source at runtime, a wording change upstream shifts what the lint demands without any edit to the lint itself -- so this task must verify the lint still passes against the amended text rather than assume it does.
+
+== DEPENDS ON ==
+
+The upstream re-grounding task. Do not start until the amended bullet wording exists at its authoritative source; this task propagates that wording, it does not decide it.
+
+== EDIT TARGET ==
+
+SOURCE STORE, not the deployed tree. Per `.claude/rules/source-store-deploy-boundary.md`, read `source_dir` from `.claude-extensions.json` and edit at the mirroring path beneath it -- `/home/benjamin/.config/nvim/agent-system/extensions/` for the agent contracts and the lint script.
+
+== SCOPE ==
+
+(1) Determine which of the 23 referencing files actually carry a literal copy of the bullet pair versus merely a by-path pointer to the pattern document. Only the literal copies need the mechanical pass; a by-path pointer resolves to the amended text on its own. Record the classification -- the upstream document already models this with its own per-file measured classification tables, and the same standard of evidence applies here.
+
+(2) Propagate the amended wording verbatim into every literal copy, honoring the source document's stated copy discipline: both bullets on a single physical line each, inserted as the next sequential item of the MUST and MUST NOT lists respectively, with no renumbering or rewording of surrounding bullets, and no divergent second copy left anywhere.
+
+(3) Re-run `lint-agent-contracts.sh` and reconcile Checks H, K, and M against the amended text. Check K's predicate is the live hazard: it FAILs a file where a notification phrase and a background phrase co-occur in one window without a prohibitive marker, and the upstream task adds affirmative prose about what `run_in_background` IS for -- prose that could legitimately place those phrases near each other. If the amended text trips the predicate, fix the text or the window, not the predicate's intent; `CHECK_K_EXCLUDED_RELATIVE_PATHS` is currently empty and should stay empty unless a genuine domain-adapted mechanism justifies an entry, recorded inline with its reason.
+
+(4) Confirm the curated in-scope arrays are still accurate. The upstream document records that three `-hard`-suffixed research agents were retired in the `routing_agents_hard` -> `hard_contracts` migration (23 research agents measured, now 20); verify the arrays reflect the current file set rather than carrying stale entries.
+
+== OUT OF SCOPE ==
+
+Do not re-litigate the bullet wording -- it is settled upstream, and a second divergent wording is the specific failure the single-source discipline exists to prevent.
+
+Do not widen the propagation to agents that have never carried the bullet pair. The upstream document's Item 4 ruling and its Rule 5 Non-Propagation Ruling both record deliberate scope boundaries with stated reasons; extending coverage to new files is separate work, not part of a wording refresh.
+
+Do not change any script's actual waiting behavior, including `lake-build-guard.sh`.
+
+== ACCEPTANCE CRITERIA ==
+
+(1) Every literal copy of the bullet pair matches the amended authoritative text exactly; a repository-wide search finds no surviving copy of the superseded wording and no divergent variant.
+(2) The by-path-pointer-only files are identified as such and left unmodified, with the classification recorded.
+(3) `lint-agent-contracts.sh` passes, with Checks H, K, and M each confirmed against the amended text rather than assumed.
+(4) Any lint exclusion added carries an inline reason naming the domain-adapted mechanism that justifies it; no exclusion is added merely to make a check pass.
+(5) Per `.claude/rules/no-task-references-in-deliverables.md`, no edited agent contract or lint script carries a task-number reference.
+(6) Every edit lands in the source store, not under `.claude/**`.
+
+== MIGRATION PROVENANCE (appended on relocation; everything above is the original record, verbatim) ==
+
+RELOCATED into this repository on 2026-11-16 from the Logos/Verification repository
+(~/Projects/Logos/Verification/specs/), where it was filed as `repropagate_bounded_wait_agent_bullets`. Every edit target it
+names resolves only under this repository's source store at `agent-system/extensions/**`, and the
+originating repository carries no `agent-system/` directory at all -- only a deployed `.claude/`
+tree plus a `.claude-extensions.json` whose `source_dir` points here. A dispatch picking this
+record up there could read nothing it was meant to edit and commit nothing it managed to write.
+Procedure followed: `context/patterns/cross-repo-task-migration.md`.
+
+CITATION RESOLVABILITY: every `specs/{NNN}_{slug}/issues.jsonl` path and `iss_*` entry_id cited
+above resolves under the ORIGINATING repository, not this one. Read them repository-qualified --
+`~/Projects/Logos/Verification/specs/<task-dir>/issues.jsonl`. No evidence was copied across; that
+repository remains the single store of record for those entries.
+
+PARENT RECORD STAYS BEHIND: authored as a child of the originating repository's
+`produce_fresh_complete_gate_record`, COMPLETED there and not migrating. `parent_task` is null
+here; the relation is prose, not an edge.
+
+DEPENDENCY EDGES AT MIGRATION: the single declared edge -- on the upstream re-grounding record,
+`reground_foreground_wait_cap_and_idiom` -- survives the move because both ends migrated
+together, remapped into this repository's numbering space. Note also that this repository already
+holds `audit_cross_extension_bounded_wait_duplication`, which rules on whether the bullet pair
+should be INHERITED from one canonical place instead of copied into each contract. If that ruling
+lands first, the mechanical propagation this record prescribes changes shape, so check it before
+dispatch. No separate edge was added for it: it is already transitively upstream, via the
+`same_turn_gate_runs_foreground` edge carried by the re-grounding record this one depends on.
+
+FILE SCOPE AT MIGRATION: DERIVED -- the record carried none. Derived from its `== EDIT TARGET ==`
+and `== MEASURED SURFACE ==` sections: the lint script plus the carrying agent contracts.
+
+RE-MEASURED AT MIGRATION, and the body above is now stale on this point: the description states
+23 files under `agent-system/extensions/*/agents/` reference `bounded-build-waiter`. Today the
+count in this repository is TWENTY-FIVE (`grep -rl bounded-build-waiter agent-system/extensions/*/agents/`),
+per extension: books 2, core 2, cslib 3, email 1, latex 1, lean 1, nix 2, nvim 2, python 2,
+rust 2, typescript 2, typst 1, web 2, z3 2. The typescript extension's two agents are the
+addition. Treat 25 as the live figure, re-derive again at dispatch, and keep Scope item (1)'s
+literal-copy-versus-by-path-pointer classification as the thing that actually governs which of
+them need the mechanical pass.
+
+---
+
+### 641. Re-ground the documented foreground-wait cap and make the bounded-waiter idiom survive a long wait
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: Task 454, Task 561
+
+**Description**: Re-ground the documented foreground-wait cap and make the bounded-waiter idiom survive a long wait.
+
+== WHY ==
+
+The canonical bounded-waiter idiom does not behave as documented, and two agents in one orchestration run lost real wall-clock to it.
+
+MEASURED (task 286, issues.jsonl entry_id iss_1794369582063_zvzSyC, class waiter-infra-deviation, severity minor): the canonical idiom -- an inner `timeout 540 bash -c 'while kill -0 "$pid"; do sleep N; done'` loop issued with the Bash tool's own `timeout` parameter raised to 600000 -- was auto-backgrounded by the harness at roughly the 180-second mark DESPITE the raised parameter. This is a harness-level foreground cap distinct from the documented 120000ms Bash-tool default, and neither pattern document anticipates it. The implement agent recovered without ending its turn by switching to a sequence of ~150-second-bounded foreground `kill -0` polls on the same captured PID, issued back-to-back across 8 segments until the process exited naturally with EXIT=0.
+
+This falsifies load-bearing prose in both documents, not a detail. `external-process-wait.md` Rule 1 step (2) states that raising the tool parameter to 600000 is what makes an inner bound "meaningful at all," and its "Why 540 < 600" paragraph derives the 60-second margin from a 600-second foreground budget that the measurement says does not exist. `bounded-build-waiter.md`'s canonical idiom carries `timeout 3000`, and its shape taxonomy declares sub-case 3a ("the call fits under the 600s ceiling but the parameter was left at its default") resolvable by raising the parameter alone. If the real cap is near 180s, 3a's remedy is wrong for everything above the cap and the 3b sequencing path is the normal case rather than the exception.
+
+CORROBORATING OBSERVATION from the same run, attributed to the orchestrate lead's own transcript rather than to a logged entry: the research-phase agent on the same task stalled the orchestration loop across FOUR separate returns because it launched its waiters with `run_in_background` -- which returns immediately -- and therefore idled instead of waiting, returning no-op text of the form "I'll wait for this notification before continuing" each time. The orchestrate lead had to hold the bounded wait itself in the foreground to keep the loop alive. The failure mode therefore has two distinct faces: (a) the documented foreground idiom silently exceeding a harness cap it does not know about, and (b) an agent reaching for `run_in_background` as the apparent fix and thereby not waiting at all. Both cost wall-clock in a run already dominated by a 26-minute gate, so the remedy's value is concrete rather than stylistic.
+
+Face (b) is a documentation gap even though both documents already forbid the shape. `external-process-wait.md` Rule 3 prohibits `run_in_background` for CI waits inside a subagent, and `bounded-build-waiter.md`'s taxonomy shape 1 prohibits it for agent-chosen local-gate backgrounding. The prohibition did not stick because it is stated only negatively: neither document states the mechanical reason -- that `run_in_background` returns control immediately, so it is structurally incapable of being a wait -- nor what the affordance IS legitimately for.
+
+== EDIT TARGET ==
+
+SOURCE STORE, not the deployed tree. Per `.claude/rules/source-store-deploy-boundary.md`, read `source_dir` from `.claude-extensions.json` and edit at the mirroring path beneath it. For the core extension this resolves to:
+
+- `/home/benjamin/.config/nvim/agent-system/extensions/core/context/patterns/external-process-wait.md`
+- `/home/benjamin/.config/nvim/agent-system/extensions/core/context/patterns/bounded-build-waiter.md`
+
+Note the source-store copy of `bounded-build-waiter.md` is ahead of the deployed copy (35572 vs 26113 bytes); read the source copy, never the deployed one, as the basis for any edit.
+
+== SCOPE ==
+
+(1) Establish what the real foreground cap actually is. One observation at ~180s is a signal, not a specification. Measure it rather than writing 180 into the documents as given -- determine whether the cap is wall-clock on the call, whether the raised `timeout` parameter has any effect on it at all, and whether it varies. If the measurement cannot pin a single number, the documents should say what is known and prescribe a margin that is safe under the uncertainty, rather than asserting precision that was not measured.
+
+(2) Make the documented idiom one that survives a long wait. The chained-bounded-segments shape is what empirically worked, so prescribe a loop of bounded segments against a captured PID with an explicit re-entry instruction -- not a single call with a large inner timeout. This means `bounded-build-waiter.md`'s "Sizing a Wait Near the Per-Call Ceiling" subsection stops being an edge case for jobs near a 600s ceiling and becomes the governing shape for any wait beyond the measured cap, and `external-process-wait.md` Rule 1's four steps plus its "Why 540 < 600" derivation are restated against the measured cap.
+
+(3) Reconcile the 3a/3b sub-case split in `bounded-build-waiter.md`'s shape taxonomy and in `external-process-wait.md` Rule 1 against the measurement. Whatever band 3a still covers after the measurement, state it; do not leave prose asserting that raising the parameter is sufficient for calls the measurement shows it is not sufficient for.
+
+(4) State plainly why `run_in_background` is NOT the fix for a wait -- it returns immediately, so it cannot block -- and say what it IS for, so the affirmative mechanism is on the page next to the prohibition rather than the prohibition standing alone.
+
+(5) Record the cost of both faces concretely, so a reader can see the remedy is load-bearing rather than cosmetic.
+
+== OUT OF SCOPE ==
+
+Do not change any script's actual waiting behavior as part of this task. If a script needs changing, record it as a separate finding rather than absorbing the work here.
+
+Do not update the literal bullet-pair copies carried by the 23 agent contracts that reference `bounded-build-waiter`, and do not touch `extensions/core/scripts/lint/lint-agent-contracts.sh`. That propagation is a separate, downstream task; `bounded-build-waiter.md`'s own Brittleness Note anticipates it as a mechanical pass following any wording change here. Amend the "Copy this exact text" fenced block in this task only insofar as it is the authoritative source for that wording -- leave its downstream copies alone.
+
+== ACCEPTANCE CRITERIA ==
+
+(1) The real foreground cap is established by measurement, with the method and the result recorded; no number appears in either document that is not either measured or explicitly flagged as a safety margin under stated uncertainty.
+(2) Both documents prescribe a chained-bounded-segments shape with a captured PID and an explicit re-entry instruction for any wait beyond the measured cap.
+(3) No surviving prose in either document asserts a 600-second foreground budget, or asserts that raising the Bash `timeout` parameter alone resolves a call above the measured cap.
+(4) Both documents state affirmatively why `run_in_background` cannot serve as a wait, and what it is for.
+(5) The cost of both failure faces is recorded with its source: the implement-side cap overrun cited to the issue-log entry above, the research-side idling attributed to the orchestrate lead's transcript and NOT presented as a logged entry.
+(6) Per `.claude/rules/no-task-references-in-deliverables.md`, the documentation edits themselves carry NO task-number references. Task numbers and the entry_id are permitted in this description and in specs/** artifacts only; in the pattern documents, cite durable anchors (file names, section headings, the measured behavior itself).
+(7) Every edit lands in the source store, not under `.claude/**`.
+
+== MIGRATION PROVENANCE (appended on relocation; everything above is the original record, verbatim) ==
+
+RELOCATED into this repository on 2026-11-16 from the Logos/Verification repository
+(~/Projects/Logos/Verification/specs/), where it was filed as `reground_foreground_wait_cap_and_idiom`. Every edit target it
+names resolves only under this repository's source store at `agent-system/extensions/**`, and the
+originating repository carries no `agent-system/` directory at all -- only a deployed `.claude/`
+tree plus a `.claude-extensions.json` whose `source_dir` points here. A dispatch picking this
+record up there could read nothing it was meant to edit and commit nothing it managed to write.
+Procedure followed: `context/patterns/cross-repo-task-migration.md`.
+
+CITATION RESOLVABILITY: every `specs/{NNN}_{slug}/issues.jsonl` path and `iss_*` entry_id cited
+above resolves under the ORIGINATING repository, not this one. Read them repository-qualified --
+`~/Projects/Logos/Verification/specs/<task-dir>/issues.jsonl`. No evidence was copied across; that
+repository remains the single store of record for those entries.
+
+PARENT RECORD STAYS BEHIND: this record was authored as a child of the originating repository's
+`produce_fresh_complete_gate_record`, which is COMPLETED there and is not migrating. That edge
+cannot be expressed in this repository's numbering space, so `parent_task` is null here and the
+relation is recorded as prose instead. The parent is the run the measurement came from, not
+unfinished upstream work.
+
+DEPENDENCY EDGES AT MIGRATION: the downstream propagation record
+(`repropagate_bounded_wait_agent_bullets`) migrated together with this one, so the edge between
+them survives, remapped into this repository's numbering space. Two further edges were ADDED at
+migration, against the two tails of the serialized chains already standing in this record's exact
+two-file territory: `same_turn_gate_runs_foreground` (which declares both of this record's files)
+and `bounded_waiter_load_sizing_and_output_capture` (tail of the
+detach-form -> lint-coverage -> load-sizing chain over `bounded-build-waiter.md`). Unlike the
+`git-commit-phase.sh` territory, the bounded-waiter cluster here IS serialized by observed house
+practice, and this record amends the same load-bearing prose those records amend; dispatching it
+concurrently would produce a three-way race on one document.
+
+FILE SCOPE AT MIGRATION: DERIVED -- the record carried none, which the pre-dispatch review
+reports as a defect in its own right. Derived from its own `== EDIT TARGET ==` section, which
+names both pattern documents explicitly.
+
+---
+
+### 640. Add a derived-percentage bug class to the census methodology standard
+- **Effort**: 30 minutes
+- **Status**: [NOT STARTED]
+- **Task Type**: markdown
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Observed during task 275's research phase, session sess_1791884846_4f1288; cited evidence: entry_id iss_1791885300710_wlLHuY in specs/275_refactor_repo_tooling_to_four_layer_architecture/issues.jsonl. MEASURED: task 275's seed report claimed 'docs/ci.md is 94% generated (1,372 of 1,457 lines inside GENERATED markers)'. The true figure is 7% (103 lines). The author measured the span from the first BEGIN marker to the last END marker, rather than summing the content inside each marker pair; the numerator was thereby inflated by every line lying between the generated regions, and 1,354 lines of hand-written prose were counted as generated. The false figure was load-bearing -- it was the stated justification for the program's entire recommended first wave -- and it was caught only because the research phase was instructed to re-derive rather than trust the seed. context/standards/census-methodology.md already codifies a Three-Part Rule (derive once; record the exact command; cross-check before publishing or acting) and a 'Three Bug Classes' catalogue, each class a specific previously-observed way a repo-wide count silently comes out wrong. This defect is a fourth such class and belongs in that catalogue: for a RATIO or PERCENTAGE over delimited regions, measuring the outer span between the first opening delimiter and the last closing delimiter instead of summing each delimiter pair's own interior. SCOPE DISCIPLINE -- this is deliberately the smallest and lowest-value of the three items in its batch, approved on the understanding that this instance was already caught and corrected. It must not be inflated. Add the bug class as prose, with the concrete 94%-vs-7% numbers as its worked example and both measurement methods named, plus the authoring/review instruction that a published percentage states its numerator and denominator separately and is cross-checked per part 3 of the existing Three-Part Rule. Do NOT add a new enforcement script, a new census-count.sh subcommand, a lint, or a hook. ACCEPTANCE CRITERIA: (1) census-methodology.md carries the new bug class in the same shape as the three existing ones, with the measured 94%/7% worked example and both the wrong (outer-span) and right (per-pair sum) methods named; (2) the authoring instruction for derived-percentage claims is stated explicitly and tied to the existing Three-Part Rule rather than restating it; (3) no new script, subcommand, test or hook is added by this task; (4) the file stays internally consistent with its own claim that census-count.sh is the shipped tool implementing the method -- if the new class has no corresponding subcommand, say so plainly rather than implying one exists. EDIT TARGET: the source store at /home/benjamin/.config/nvim/agent-system/extensions/core -- this repo's .claude/ is a gitignored deploy artifact and edits there are wiped by the next regeneration.
+
+== MIGRATION PROVENANCE (appended on relocation; everything above is the original record, verbatim) ==
+
+RELOCATED into this repository on 2026-11-16 from the Logos/Verification repository
+(~/Projects/Logos/Verification/specs/), where it was filed as `guard_derived_percentage_claims`. Every edit target it
+names resolves only under this repository's source store at `agent-system/extensions/**`, and the
+originating repository carries no `agent-system/` directory at all -- only a deployed `.claude/`
+tree plus a `.claude-extensions.json` whose `source_dir` points here. A dispatch picking this
+record up there could read nothing it was meant to edit and commit nothing it managed to write.
+Procedure followed: `context/patterns/cross-repo-task-migration.md`.
+
+CITATION RESOLVABILITY: every `specs/{NNN}_{slug}/issues.jsonl` path and `iss_*` entry_id cited
+above resolves under the ORIGINATING repository, not this one. Read them repository-qualified --
+`~/Projects/Logos/Verification/specs/<task-dir>/issues.jsonl`. No evidence was copied across; that
+repository remains the single store of record for those entries.
+
+DEPENDENCY EDGES AT MIGRATION: none in either direction, before or after the move.
+
+FILE SCOPE AT MIGRATION: the single declared path, rewritten from the originating repository's
+absolute source-store form to this repository's relative house style. Nothing dropped, nothing
+derived.
+
+TERRITORY CONTENTION: none. No open record in this repository declares
+`context/standards/census-methodology.md`.
+
+---
+
+### 639. Make issue-record.sh failures visible instead of silently losing the evidence entry
+- **Effort**: 2 hours
+- **Status**: [NOT STARTED]
+- **Task Type**: general
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: Observed during task 275's orchestration, session sess_1791884846_4f1288; cited evidence: entry_id iss_1791890048067_odYrN3 in specs/275_refactor_repo_tooling_to_four_layer_architecture/issues.jsonl. MEASURED: scripts/issue-record.sh accepts --session SID (parsing arm at line 139); --session-id falls through to the *) arm at line 141, which prints 'error: unknown argument' and calls usage(), exiting 1 with nothing written. The script's own documented invocation contract (lines 52-55) prescribes 'bash .claude/scripts/issue-record.sh ... >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2', and every in-repo call site was verified to follow it (git-commit-phase.sh:268, orchestrate-cycle-plan.sh:1666 and :1691, orchestrate-cycle-postflight.sh:1042, :1278, :1363, :1384, :1445, :1866). The contract is right that recording must never fail a dispatch -- but the prescribed redirection discards the script's own diagnostic, so a mistyped flag is indistinguishable from any other validation failure, and in the hand-typed agent-facing invocation template emitted by orchestrate-build-dispatch.sh:578 it produces no signal at all. The entry is simply lost. This is a silent-data-loss path in the very mechanism /orchestrate's conclusion stage depends on for its entire evidence base: an empty issues.jsonl is indistinguishable from a dispatch that genuinely had nothing to record. THE DEFECT IS THE SILENCE, NOT THE FLAG NAME. Candidate fixes for the implementing task to choose among and justify: accept both flag spellings; separate an argument/usage error from a write error with distinct exit codes and make the former survive output redirection (an unconditional diagnostic on a path the contract does not redirect, or a breadcrumb written beside the task's issues.jsonl); or revise the prescribed invocation form so stderr is no longer swallowed. ACCEPTANCE CRITERIA: (1) a deliberately mistyped flag, invoked in the exact form the documented contract prescribes, produces a diagnostic a reader or agent can attribute to the mistyped flag -- no evidence entry is dropped without signal; (2) a genuine recording failure still never fails the calling dispatch, preserving the non-fatal guarantee at lines 52-53; (3) scripts/tests/test-issue-record.sh gains a regression case covering the mistyped-flag path under output redirection; (4) the invocation-contract comment in issue-record.sh and context/formats/issue-log.md both agree with the implemented behaviour; (5) the full test-issue-record.sh suite passes. EDIT TARGET: the source store at /home/benjamin/.config/nvim/agent-system/extensions/core -- this repo's .claude/ is a gitignored deploy artifact and edits there are wiped by the next regeneration. issue-record.sh is NOT runnable from the source store (deploy-root-guard.sh refuses by design), so deploy into a tree before exercising it.
+
+== MIGRATION PROVENANCE (appended on relocation; everything above is the original record, verbatim) ==
+
+RELOCATED into this repository on 2026-11-16 from the Logos/Verification repository
+(~/Projects/Logos/Verification/specs/), where it was filed as `make_issue_record_failures_visible`. Every edit target it
+names resolves only under this repository's source store at `agent-system/extensions/**`, and the
+originating repository carries no `agent-system/` directory at all -- only a deployed `.claude/`
+tree plus a `.claude-extensions.json` whose `source_dir` points here. A dispatch picking this
+record up there could read nothing it was meant to edit and commit nothing it managed to write.
+Procedure followed: `context/patterns/cross-repo-task-migration.md`.
+
+CITATION RESOLVABILITY: every `specs/{NNN}_{slug}/issues.jsonl` path and `iss_*` entry_id cited
+above resolves under the ORIGINATING repository, not this one. Read them repository-qualified --
+`~/Projects/Logos/Verification/specs/<task-dir>/issues.jsonl`. No evidence was copied across; that
+repository remains the single store of record for those entries.
+
+DEPENDENCY EDGES AT MIGRATION: none survive. This record declared no outgoing edges. The one
+record that depended on it, `carve_runtime_files_out_of_containment`, was abandoned in the
+originating repository at migration time as a duplicate of this repository's own
+`phase_commit_drops_own_plan_artifact`, so that incoming edge is gone rather than remapped.
+
+FILE SCOPE AT MIGRATION: carried across unchanged in membership and rewritten from the
+originating repository's absolute source-store paths to this repository's relative house style.
+Nothing was dropped and nothing was derived.
+
+TERRITORY CONTENTION, measured at migration and recorded rather than serialized: twenty open
+records in this repository declare at least one of this record's seven paths -- notably
+`collapse_perpath_scope_excursion_issue_rows_into_one` (four of the seven, including
+`issue-record.sh` and its test suite), `normalize_issue_log_class_vocabulary`
+(`context/formats/issue-log.md`), and `phase_commit_drops_own_plan_artifact` plus
+`snapshot_artifacts_contaminate_phase_commits` (`git-commit-phase.sh`). No dependency edges were
+added, because the overlapping records themselves carry none against one another in this
+territory -- observed house practice here is contention without serialization. Re-derive the
+overlap and rule on batching at dispatch time rather than trusting this list.
+
+---
 
 ### 638. Make /orchestrate's phase selector pick the first enterable phase, not the first open-by-marker heading
 - **Effort**: medium
@@ -5808,6 +6083,60 @@ Read every bare specs/... path above as repo-qualified to /home/benjamin/Project
 FILE SCOPE (procedure step 7): deployed .claude/** mirror entries were stripped as a consequence of the move,
 not as a correction -- they were declared so the source repository overlap gate could see a collision
 surface, and that rationale does not survive into this repository.
+
+== TRANSPLANTED CORROBORATION (added when a duplicate record was absorbed; not part of the original body above) ==
+
+SECOND, INDEPENDENT OCCURRENCE, from a different run in a different repository. The same
+containment predicate fired TWICE in one task during an /orchestrate run over the
+Logos/Verification repository (session sess_1791884846_4f1288; entry_ids iss_1791888446824_Oqtk8w
+and iss_1791890067571_cDgLtQ, both in
+~/Projects/Logos/Verification/specs/275_refactor_repo_tooling_to_four_layer_architecture/issues.jsonl,
+which is where those ids resolve -- they are NOT resolvable in this repository). A second
+reproduction in an unrelated repository establishes this as the predicate's normal behaviour
+rather than a one-off.
+
+A DIFFERENT DROPPED PATH CLASS, AND THE ONE THAT COSTS MORE. There the dropped paths were not the
+task's own plan artifact but `specs/{NNN}_{SLUG}/issues.jsonl` and
+`specs/{NNN}_{SLUG}/.orchestrator-handoff.json` -- files the SYSTEM writes for every task, never
+chosen by the task author. Both sit inside `specs/{NNN}_{SLUG}/`, so the carve-out prescribed
+above resolves them; what the transplant adds is what the omission COSTS.
+`context/standards/orchestrator-runtime-files.md`'s Two-Class Split classifies both as DURABLE
+PROVENANCE, deliberately tracked and deliberately NOT members of the ephemeral gitignored class
+(see that file's "issues.jsonl is durable, not ephemeral" note). A drop here does not merely
+produce a spurious scope-excursion warning -- it leaves durable provenance uncommitted, and an
+empty issues.jsonl is indistinguishable from a dispatch that genuinely had nothing to record.
+
+WHERE THE ABSORBED RECORD GOES FURTHER THAN THE BODY ABOVE, STATED PRECISELY. The body already
+names `scripts/lib/runtime-file-patterns.sh` and says a runtime-file predicate "already exists and
+should be reused rather than re-derived" -- that much is not new. What the absorbed record adds is
+that reuse AS WRITTEN is not yet sufficient: that library today exports only the 24-member
+EPHEMERAL class and EXPLICITLY EXCLUDES the durable-provenance files at issue, so there is no
+existing predicate that admits `issues.jsonl` or `.orchestrator-handoff.json` and something must be
+added to it. The absorbed record therefore raised class membership to an acceptance criterion --
+criterion (c) below -- rather than leaving it as advice, and asked the broader framing question
+behind it: whether orchestrator-runtime-class paths belong in the containment predicate's
+denominator AT ALL, as against a path-shaped carve-out of `specs/{NNN}_{SLUG}/` that happens to
+cover them. Rule on which shape the fix takes, and check the library's actual exports before
+assuming reuse is free.
+
+THREE ACCEPTANCE CRITERIA THE ABSORBED RECORD CARRIED AND THE BODY ABOVE DOES NOT:
+(a) no "scope excursion" entry is RECORDED for a carved-out path -- not merely that the path still
+    lands; the spurious evidence row is itself part of the defect;
+(b) a genuinely out-of-scope non-runtime path is still dropped and still recorded, and fail-open
+    behaviour on a missing, empty, unreadable or malformed file_scope is unchanged;
+(c) the carve-out's class membership derives from a single source of truth shared with
+    orchestrator-runtime-files.md, not a second hand-typed list.
+
+SEQUENCING NOTE, carried across as prose rather than as an edge. The absorbed record depended on
+`make_issue_record_failures_visible` (migrated into this repository alongside this transplant),
+because criterion (a) is only trustworthy once an issue-record.sh failure is itself visible, and
+because the two share edit territory in `git-commit-phase.sh`. No dependency edge was added here:
+this record's own acceptance criteria do not yet include (a), so the edge is warranted only if (a)
+is adopted. Adopt (a) and add the edge.
+
+FILE SCOPE EXTENDED by this transplant with `context/standards/orchestrator-runtime-files.md` and
+`scripts/lib/runtime-file-patterns.sh`, admitted as permissible territory for the class-membership
+question above -- not as a mandate to edit either.
 
 ---
 
