@@ -1,15 +1,31 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "partial",
+  "phases_completed": 4,
   "phases_total": 5,
-  "summary": "Wrote a five-phase plan that acts on the audit's 0-DELETE/14-KEEP verdict instead of deleting suites. Re-derived every carried figure live first: the /tmp leak is 1,739 entries / 1.4 GB with 165 of them carrying non-writable content (far more prevalent than the research's sample suggested), gate-cost-model.csv is a single-row 1-of-26-gates model dated 2026-10-19, and the real cost lever was isolated by direct timing -- verify-deploy.sh's standing corpus probe costs 2.37s of a 4.07s minimal --only-gate invocation and fires in both fixture shapes the expensive suites build. The plan lands a claude-refresh.sh reaper pass and backlog sweep, suppresses the corpus probe on gate-narrowed invocations with a --corpus-probe opt-in, regenerates both stale probe artifacts against the optimized system, and records the verdict plus the four-way suite-population counting methodology in specs/decisions/. The research report's recommended documentation target (context/standards/shell-script-testing.md) was redirected because it sits in concurrent sibling 604's declared file_scope and carries an index-entries.json line_count coupling; this plan's file_scope is disjoint from both siblings.",
-  "blockers": [],
-  "artifacts": [
+  "dispatch_seq": 7,
+  "summary": "Implemented four of five plan phases cleanly and committed each separately: a leaked-fixture reaper pass in claude-refresh.sh with fixture-driven test coverage (Phase 1), a 1,493-entry/~851MB /tmp backlog reclamation (Phase 2), a --corpus-probe suppression guard in verify-deploy.sh saving ~2.4s per gate-narrowed invocation (Phase 3), and a standing specs/decisions/ verdict record carrying the 0-DELETE/14-KEEP verdict, the four-way suite-population counting methodology, and the demotion-tier non-recommendation (Phase 5). Phase 4 (re-measure gate-cost-model.csv/suite-cost-hints.txt) closed [PARTIAL]: host load rose to 3.26-3.86 (above measure-gate-costs.sh's 2.0 threshold) partway through its own measurement pass -- a contaminated cost artifact is worse than a stale one, and the plan's own Rollback/Contingency section explicitly sanctions closing Phase 5 anyway while leaving Phase 4 partial. deploy-headless.sh ran clean (RESULT=landed_verify_clean) so every edited script is live in the deployed tree.",
+  "blockers": [
     {
-      "type": "plan",
-      "path": "specs/586_suite_gate_cost_standing_consumer/plans/02_suite-cost-consumer-actions.md",
-      "summary": "Five-phase, 7-hour plan across four dependency waves: reaper pass, backlog sweep, corpus-probe suppression, probe-artifact regeneration, and the standing verdict record."
+      "type": "host_load_contention",
+      "description": "Phase 4's probe-artifact regeneration (measure-gate-costs.sh --regen-hints --skip-gate-measure, then measure-gate-costs.sh) requires a 1-minute host load average at or below 2.0 throughout the measurement window. Load was 1.49-1.77 at this phase's start but rose to 3.26-3.86 (confirmed via ps: a concurrent Lean build at 486% CPU, a Sapience hook at 99.6% CPU, multiple other active sessions) before the regeneration tasks could run. Resumable once the host is confirmed idle -- see the Phase 4 handoff for the exact resume commands.",
+      "resume_path": "specs/586_suite_gate_cost_standing_consumer/handoffs/phase-4-handoff-20261117T205800Z.md"
     }
   ],
-  "dispatch_seq": 5
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/586_suite_gate_cost_standing_consumer/summaries/02_suite-cost-consumer-actions-summary.md",
+      "summary": "Implementation summary covering all five plan phases, including Phase 4's deferred artifact regeneration."
+    },
+    {
+      "type": "decision",
+      "path": "specs/decisions/suite-cost-delete-keep-verdict.md",
+      "summary": "Standing verdict record: 0-DELETE/14-KEEP over the recursive meta-suite class, the four-way suite-population counting methodology, the demotion-tier non-recommendation, and realized savings/residual state."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/586_suite_gate_cost_standing_consumer/handoffs/phase-4-handoff-20261117T205800Z.md",
+      "summary": "Resume point for Phase 4's deferred probe-artifact regeneration once the host is confirmed idle."
+    }
+  ]
 }

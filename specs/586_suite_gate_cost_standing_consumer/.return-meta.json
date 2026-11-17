@@ -1,10 +1,112 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "dispatch_seq": 7,
+  "partial_progress": {
+    "stage": "phase_4_host_contention_deferred",
+    "details": "Phases 1, 2, 3, and 5 completed fully and are committed. Phase 4 (re-measure gate-cost-model.csv and suite-cost-hints.txt) closed [PARTIAL]: the host-idleness pre-check passed (load 1.49-1.77) and both expensive suites were re-timed, but host load rose to 3.26-3.86 (above measure-gate-costs.sh's 2.0 threshold) before the artifact-regeneration tasks could run, and a contaminated cost artifact is worse than a stale one. This exact outcome is explicitly sanctioned by the plan's own Rollback/Contingency section. The decision record written in Phase 5 names this as owed follow-up explicitly.",
+    "handoff_path": "specs/586_suite_gate_cost_standing_consumer/handoffs/phase-4-handoff-20261117T205800Z.md",
+    "phases_completed": 4,
+    "phases_total": 5
+  },
   "metadata": {
     "session_id": "sess_1794942735_1748a1",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
+  },
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/586_suite_gate_cost_standing_consumer/summaries/02_suite-cost-consumer-actions-summary.md",
+      "summary": "Implementation summary covering all five plan phases: the leaked-fixture reaper pass, the backlog sweep, the corpus-probe suppression, the deferred probe-artifact regeneration, and the standing verdict record."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/586_suite_gate_cost_standing_consumer/handoffs/phase-4-handoff-20261117T205800Z.md",
+      "summary": "Resume point for Phase 4's deferred probe-artifact regeneration once the host is confirmed idle."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented four of five plan phases cleanly (leaked-fixture reaper pass in claude-refresh.sh with fixture-driven test coverage, a 1,493-entry/~851MB /tmp backlog reclamation, a --corpus-probe suppression guard in verify-deploy.sh saving ~2.4s per gate-narrowed invocation, and a standing specs/decisions/ verdict record), with the fifth (probe-artifact regeneration) deliberately deferred due to measured host-load contention rather than forced through contaminated."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/claude-refresh.sh",
+    "agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh",
+    "agent-system/extensions/core/scripts/tests/run-all.sh",
+    "specs/decisions/suite-cost-delete-keep-verdict.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Avoid per-entry subprocess forking (stat, du, readlink) when a shell script must gather metadata or resolve symlinks over many filesystem entries -- batch instead: ONE `find -printf '%U|%T@|%p\\n'` call gathers uid/mtime/path for every entry; ONE `du --files0-from=-` call (fed via `printf '%s\\0' \"${paths[@]}\"`) sizes every candidate at once, consuming output positionally since GNU du preserves input order; ONE `readlink -f <many args>` call resolves many symlink targets at once (a failed argument among many simply produces no output line for it, which is fine when only the SET of resolved targets matters, not positional correspondence). Measured: a leaked-/tmp-fixture reaper pass that forked per-entry cost ~44s against a 1,733-entry real backlog (23s of that inside a naive /proc/*/cwd+fd scan over 604 processes/7,186 fds alone); batching brought the same pass down to ~3s.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/586_suite_gate_cost_standing_consumer/summaries/02_suite-cost-consumer-actions-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["shell batching", "find -printf", "du --files0-from", "readlink -f multiple args", "per-entry fork avoidance"]
+    },
+    {
+      "content": "This harness auto-backgrounds a plain foreground Bash tool call at a fixed ~180s wall-clock mark REGARDLESS of the Bash tool's own `timeout` parameter being raised to 600000ms -- the documented '120000ms default / 600000ms ceiling, raise the parameter to avoid backgrounding' remedy did not prevent it in this environment. When this happens and the agent needs the PID to resolve the wait via the canonical kill-0 bounded-waiter idiom but did not launch the command with a captured `pid=$!` itself, the PID can be recovered safely (no process-name/argv self-match risk) by matching `/proc/*/fd/1`'s readlink target against the known output-log path: `for p in /proc/[0-9]*; do [ \"$(readlink \"$p/fd/1\" 2>/dev/null)\" = \"$logfile\" ] && echo \"${p#/proc/}\"; done`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/586_suite_gate_cost_standing_consumer/summaries/02_suite-cost-consumer-actions-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["bash tool auto-background", "bounded-build-waiter", "PID recovery", "proc fd matching", "kill -0"]
+    },
+    {
+      "content": "measure-gate-costs.sh's load guard (default threshold 2.0, 1-minute load average) is a real, load-bearing refusal, not a formality: on a shared desktop host with other concurrent sessions/builds, load can rise from under 1.8 to over 3.8 within the ~10 minutes a single expensive test suite takes to run, contaminating any hand-timed re-measurement taken without checking load throughout (not just before) the run. When this happens mid-phase, the correct response is to close the phase [PARTIAL] with the observed load recorded and defer the artifact regeneration to a later, confirmed-idle invocation -- never raise --load-threshold or accept the contaminated figure, per this repo's own explicit Rollback/Contingency precedent for exactly this scenario.",
+      "category": "PATTERN",
+      "source_artifact": "specs/586_suite_gate_cost_standing_consumer/summaries/02_suite-cost-consumer-actions-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["measure-gate-costs.sh", "load guard", "contaminated measurement", "PARTIAL phase closure", "host contention"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "verify-deploy.sh standing corpus-size probe",
+      "value": "The probe (shells out to script-inventory.sh --size-line on every invocation) cost ~2.4s of a ~3.8-4.1s minimal --only-gate invocation against a real agent-system/extensions/ copy -- roughly 58-60% of a gate-narrowed invocation's total wall time. It is now suppressed on any --only-gate/--max-cost-narrowed invocation (GATES_FILTER non-empty) unless a new --corpus-probe opt-in flag is passed; an unfiltered invocation is byte-identical to before.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/verify-deploy.sh"
+    },
+    {
+      "subject": "Claude Code harness Bash tool auto-backgrounding threshold",
+      "value": "In this environment, a plain foreground Bash call is auto-backgrounded by the harness at a fixed ~180s wall-clock mark, independent of the Bash tool's own `timeout` parameter (observed with the parameter explicitly set to 600000ms, its documented ceiling). The documented remedy of raising that parameter to 600000 did not prevent the auto-backgrounding in practice.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85
+    },
+    {
+      "subject": "claude-refresh.sh leaked-/tmp-fixture reaper pass",
+      "value": "A sixth, independently-gated pass (run_tmp_fixture_pass) was added to claude-refresh.sh, reclaiming tests/run-all.sh's leaked `/tmp/tmp.*` fixtures (SIGKILL from the `-k` grace-period escalation skips a suite's own EXIT trap). It follows the Claude/Lean passes' FORCE-gated three-mode contract, not the build-waiter pass's age-threshold-only one, because removal is irrecoverable. Default age threshold: TMP_FIXTURE_REAP_MIN=1440 minutes (1 day).",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/claude-refresh.sh"
+    },
+    {
+      "subject": "Naive recursive-meta-suite classification grep",
+      "value": "grep -lE '(run-all\\.sh|verify-deploy\\.sh)' over this repo's core test-suite corpus matches 36 files, but only 14 genuinely re-invoke the orchestration layer as a subject under test (the owner's DELETE/KEEP ruling's actual target). The other 22 are either narrow unit/lint suites using the real script only as plumbing (9), or files that only mention the script name in a comment or a planted fixture string a lint asserts against, never executing it for real (13). A bare occurrence count over-counts the genuine class by roughly 2.6x.",
+      "predicate": "correction is",
+      "ko_type": "correction",
+      "confidence": 0.9,
+      "source_loc": "specs/decisions/suite-cost-delete-keep-verdict.md"
+    },
+    {
+      "subject": "This repository's suite-population count",
+      "value": "There is no single answer to 'how many test suites exist' -- four different, legitimate countings coexist: core source-store test-*.sh (157), all-loaded-extensions source-store (197), this repository's deployed .claude/scripts/tests/ tree (179, or 189 including flat siblings), and script-inventory.sh's own corpus-scan test_suites field (204). Each answers a different question; a bare citation of any one without naming which is not safe.",
+      "predicate": "finding is",
+      "ko_type": "fact",
+      "confidence": 0.9,
+      "source_loc": "specs/decisions/suite-cost-delete-keep-verdict.md"
+    },
+    {
+      "subject": "gate-cost-model.csv and suite-cost-hints.txt standing consumer",
+      "value": "ROADMAP Settled decision 16 (script-inventory.sh had no standing consumer since its own landing) is now also true of measure-gate-costs.sh's two probe artifacts: specs/decisions/suite-cost-delete-keep-verdict.md is their standing consumer, recording the 0-DELETE/14-KEEP verdict and naming any deferred regeneration as owed follow-up directly in the record rather than only in issues.jsonl.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.8,
+      "source_loc": "specs/decisions/suite-cost-delete-keep-verdict.md"
+    }
+  ]
 }
