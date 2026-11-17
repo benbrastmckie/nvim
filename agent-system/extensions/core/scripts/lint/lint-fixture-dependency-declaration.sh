@@ -546,6 +546,13 @@ mandatory_libs_of_script() {
                             if [[ $j -gt $ifstart ]] && [[ "${LINES[$j]}" =~ ^[[:space:]]*(elif|else|fi)([[:space:]]|$) ]]; then
                                 break
                             fi
+                            # Comment lines are skipped for the exit/return signal check --
+                            # measured live: update-task-status.sh's own prose comment on this
+                            # exact guard ("... which returns exit 1 at heredoc EOF ...")
+                            # textually contains "exit 1" while describing an unrelated quirk,
+                            # which a naive scan previously misread as this branch's own
+                            # hard-fail signal.
+                            [[ "${LINES[$j]}" =~ ^[[:space:]]*# ]] && continue
                             if [[ "${LINES[$j]}" =~ exit[[:space:]]+[1-9] ]] || [[ "${LINES[$j]}" =~ exit[[:space:]]+\$ ]] \
                                 || [[ "${LINES[$j]}" =~ return[[:space:]]+[1-9] ]] || [[ "${LINES[$j]}" =~ return[[:space:]]+\$ ]]; then
                                 status="MANDATORY"
@@ -625,6 +632,17 @@ $QUIET || {
 
 for file in "${FILES[@]}"; do
     ((FILES_CHECKED++)) || true
+
+    # Self-exemption, matching lint-subject-resolution-declaration.sh's own precedent for its
+    # regression suite: this lint's own test suite necessarily embeds heredoc-literal
+    # require_file/cp/array text reproducing the exact shapes this lint targets, to prove it
+    # detects them. Today that heredoc content happens to declare a LIBSET union that covers
+    # both embedded fixtures' mandatory sets, so it is coincidentally clean -- exempted
+    # explicitly here rather than relying on that coincidence surviving a future edit.
+    if [[ "$(basename "$file")" == "test-lint-fixture-dependency-declaration.sh" ]]; then
+        $VERBOSE && echo -e "${YELLOW}[EXEMPT]${NC} $file: this lint's own regression suite -- its seeded fixtures are heredoc-embedded literal strings reproducing the shapes under test, necessarily present in its own source"
+        continue
+    fi
 
     if ! suite_is_candidate "$file"; then
         $VERBOSE && echo -e "${YELLOW}[OUT OF POPULATION]${NC} $file: declares no require_file call and no REQUIRED_* array"
