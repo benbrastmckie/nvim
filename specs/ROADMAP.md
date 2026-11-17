@@ -140,7 +140,7 @@ pass. `/todo` and `/review` reach `--regenerate` behind the shared preflight cla
 `skill-orchestrate` names and a dedicated suite covers.
 
 ```
-/orchestrate 527, 628, 635, 636, 627, 637   # Sapience per-repo activation: its enabling blocker, three surface defects, and the close-out
+/orchestrate 628, 636, 627, 637   # Sapience per-repo activation: its enabling blocker, three surface defects, and the close-out
 /orchestrate 476, 624, 586, 604, 605   # Gate 8's residual roster, its two lints and the defect recorder, serialized on one suite
 /orchestrate 577, 609   # The failure-accounting chain's tail, held behind the prioritized head both members depend on
 /orchestrate 629, 630, 631, 632, 633   # Five already-diagnosed findings one full battery filed: two gate hits, a roster gap, two defects
@@ -644,17 +644,17 @@ None is a whole-corpus discovery scope, and none is a defect.
 **Coverage appendix (uncovered tasks)**:
 ```
 /orchestrate 338,383,390,410,421,431,437,453
-/orchestrate 455,456,472,475,477,484,502,503
-/orchestrate 506,510,511,514,519,520,521,522
-/orchestrate 523,525,526,529,530,535,536,537
-/orchestrate 538,545,548,551,556,557,558,559
-/orchestrate 560,563,564,565,567,574,575,613
-/orchestrate 618
+/orchestrate 455,456,472,475,477,502,503,506
+/orchestrate 510,511,514,519,520,521,522,523
+/orchestrate 525,526,529,530,535,536,537,538
+/orchestrate 545,548,551,556,557,558,559,560
+/orchestrate 563,564,565,567,574,575,613,618
+/orchestrate 639,640
 ```
 
 ## Open work
 
-**Core agent system (42)**
+**Core agent system (41)**
 ```
 476 IN FLIGHT       Make the seven untracked red Gate 8 shell suites green or declared-expected
 439 blocked:431     Rule on the propagation model for the bounded-wait agent contract
@@ -688,7 +688,6 @@ None is a whole-corpus discovery scope, and none is a defect.
 523 ready           Make Gate 27 MISSING_DECLARATION count call sites, not whole-file substring m...
 525 ready           Repair the always-failing extensions-directory fallback in the task-type dete...
 526 ready           Announce completion and input-needed over TTS from the source store, with a c...
-527 ready           Assert the deployed hook registration SET matches the merge-source, not only ...
 564 ready           Fix validate-artifact.sh Tier Justification false positive from sentinel path...
 565 ready           Resolve archived prior-art paths when composing dispatch and task-description...
 574 ready           Correct the cycle-budget contract to state shared-pool semantics wherever rem...
@@ -724,12 +723,12 @@ None is a whole-corpus discovery scope, and none is a defect.
 
 **File scope lifecycle (7)**
 ```
+484 blocked:477     Collapse per-path scope excursion issue rows into one record per drop event
 486 blocked:484     Stop a required extension manifest.json registration being dropped from a pha...
 501 blocked:472,476,484,486  Give the cycle-postflight containment site predicate parity and a gu...
 508 blocked:486     Rule on where shared extension metadata belongs in the containment allowlist,...
 509 blocked:452     Make a redeploy phase declarable without polluting file_scope, and bar a pre-...
 455 ready           Pre-flag the predictable first-run module-invariant failures that wiring a ne...
-484 ready           Collapse per-path scope excursion issue rows into one record per drop event
 567 ready           Port the deployed-tree containment strip into git-commit-scoped.sh
 ```
 
@@ -755,7 +754,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 514 ready           Convergence guard blind to zero-dispatch cycles
 ```
 
-**Agent system (49)**
+**Agent system (53)**
 ```
 481 blocked:390     Rule on and migrate the 32-record mis-sited agent-system task delta accumulat...
 533 blocked:410     lake-build-guard replays stale result for env lean FILE
@@ -779,6 +778,8 @@ None is a whole-corpus discovery scope, and none is a defect.
 598 blocked:548     Provide a sanctioned in-dispatch remedy for a mechanically coupled pair path ...
 609 blocked:577     Stop a pending user question from charging its own task into failed_tasks and...
 630 blocked:629     Give test-deploy-propagation.sh and test-gate-registry-resolution.sh declared...
+641 blocked:454,561 Re-ground the documented foreground-wait cap and make the bounded-waiter idio...
+642 blocked:641     Re-propagate the amended bounded-wait contract bullets to the carrying agent ...
 390 ready           Migrate seven mis-sited agent-system tasks out of BimodalLogic and retire one...
 438 ready           Dependency edges conflate semantic and serialization rationale, and a semanti...
 510 ready           Fix a missing lib dependency in the predispatch-review test fixture
@@ -806,14 +807,15 @@ None is a whole-corpus discovery scope, and none is a defect.
 631 ready           Replace test-typescript-verify.sh's fixed-depth REPO_ROOT walk with a boundar...
 632 ready           Stop orchestrator-context-budget.json's derivation log from re-breaking the t...
 633 ready           Resolve the stray duplicate .claude-extensions.json sitting inside the core e...
+639 ready           Make issue-record.sh failures visible instead of silently losing the evidence...
+640 ready           Add a derived-percentage bug class to the census methodology standard
 ```
 
-**Sapience (5)**
+**Sapience (4)**
 ```
-628 blocked:527     retract_sapience_write_tool_grants
-637 blocked:628,635,636  make_sapience_extension_fully_functional
+637 blocked:628,636 make_sapience_extension_fully_functional
 627 ready           reap_orphan_sapience_mcp_registrations
-635 ready           Enforce the sapience postflight wrapup write at task completion
+628 ready           retract_sapience_write_tool_grants
 636 ready           Close sapience activation-surface scoping gaps: vendor user-level hooks, capt...
 ```
 
