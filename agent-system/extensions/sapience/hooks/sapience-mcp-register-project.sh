@@ -37,10 +37,23 @@
 # session start in that repo. install-sapience-mcp-session-hook.sh --remove covers the
 # immediate case.
 #
+# Reap pass (runs first, ungated): the bidirectional register/remove logic above is gated on
+# resolving THIS session's own .claude-extensions.json, a precondition an orphaned (deleted or
+# renamed) project directory can never again satisfy -- its removal branch can only ever fire
+# for a path that still exists AND still carries a manifest showing sapience inactive. The only
+# session that can ever clean up after a vanished repo is therefore some OTHER, still-living
+# session, which is why this hook invokes `setup-sapience-mcp.sh --reap` unconditionally, before
+# and independent of the manifest-reachability branch below, on every session start in every
+# repository. The `jq`-present and writer-exists guards are hoisted above that branch for the
+# same reason: the reap pass depends on both and must still run when no manifest is reachable at
+# all.
+#
 # Contract: always exits 0; always emits exactly one line of valid JSON ({} or
 # {"additionalContext": "..."}) on stdout; never fails the session even if $HOME/.claude.json is
 # unwritable, jq is missing, or the writer errors -- every failure path below degrades to a
-# silent {}, never to non-JSON noise that could break the harness hook contract.
+# silent {}, never to non-JSON noise that could break the harness hook contract. This holds
+# whether zero, one, or both of the reap pass and the per-repo half have something to report:
+# notices are assembled into an array and joined into exactly one JSON line.
 
 set -uo pipefail
 
@@ -73,34 +86,17 @@ resolve_checkout_toplevel() {
 }
 # === END sapience-worktree-checkout-resolution ===
 
-# Project-root / activation detection. The git root resolved below is the PARENT CHECKOUT for a
-# linked worktree (never the worktree itself); registration is keyed on the checkout
-# exclusively. Keep in lockstep with verify-sapience-mcp.sh's own copy (see the marker block
-# above).
-GIT_ROOT="$(resolve_checkout_toplevel 2>/dev/null || true)"
-
-if [ -f ".claude-extensions.json" ]; then
-    PROJECT_PATH="$(pwd)"
-    EXTENSIONS_FILE="$(pwd)/.claude-extensions.json"
-elif [ -n "$GIT_ROOT" ] && [ -f "$GIT_ROOT/.claude-extensions.json" ]; then
-    PROJECT_PATH="$GIT_ROOT"
-    EXTENSIONS_FILE="$GIT_ROOT/.claude-extensions.json"
-else
-    # No .claude-extensions.json reachable at all: cannot determine activation. Silent, exit 0.
-    echo '{}'
-    exit 0
-fi
-
+# Preconditions common to BOTH halves below (the reap pass and the per-repo register/remove
+# half): a working jq, and an installed writer. Hoisted above the manifest-reachability branch
+# -- unlike the pre-reap version of this hook, which gated both guards on a reachable
+# .claude-extensions.json -- because the reap pass depends on both and must still run when no
+# manifest is reachable at all; that is exactly the previously-unreachable path this phase
+# closes.
 if ! command -v jq > /dev/null 2>&1; then
-    # No jq available: cannot read activation status or emit safe JSON. Silent, exit 0.
+    # No jq available: cannot reap, cannot read activation status, cannot emit any JSON beyond a
+    # literal {}. Silent, exit 0.
     echo '{}'
     exit 0
-fi
-
-SAPIENCE_STATUS="$(jq -r '.extensions.sapience.status // empty' "$EXTENSIONS_FILE" 2>/dev/null || echo "")"
-IS_ACTIVE=false
-if [ "$SAPIENCE_STATUS" = "active" ]; then
-    IS_ACTIVE=true
 fi
 
 WRITER="$HOME/.claude/scripts/setup-sapience-mcp.sh"
@@ -114,43 +110,94 @@ if [ ! -f "$WRITER" ]; then
 fi
 
 CLAUDE_CONFIG="$HOME/.claude.json"
-HAS_EXISTING_ENTRY=false
-if [ -f "$CLAUDE_CONFIG" ]; then
-    EXISTING="$(jq -c --arg path "$PROJECT_PATH" '.projects[$path].mcpServers.sapience // empty' "$CLAUDE_CONFIG" 2>/dev/null || echo "")"
-    if [ -n "$EXISTING" ] && [ "$EXISTING" != "null" ]; then
-        HAS_EXISTING_ENTRY=true
-    fi
+NOTICES=()
+
+# --- Reap pass: ungated, cross-project, runs on every session start regardless of THIS
+# session's own repo's manifest reachability or activation state (see the header comment above
+# for the full rationale). A nonzero exit or empty output -- nothing to reap, or a transient
+# failure -- degrades silently, exactly like every writer invocation in the per-repo half below.
+REAP_OUTPUT="$(bash "$WRITER" --reap --quiet 2>&1)"
+REAP_RC=$?
+if [ "$REAP_RC" -eq 0 ] && [ -n "$REAP_OUTPUT" ]; then
+    NOTICES+=("sapience: reaped one or more orphaned per-project entries whose project directory no longer exists on disk.")
 fi
 
-if $IS_ACTIVE; then
-    WRITE_OUTPUT="$(bash "$WRITER" --project "$PROJECT_PATH" --scope project --quiet 2>&1)"
-    WRITER_RC=$?
-    ACTION="registered/repaired"
-else
-    if ! $HAS_EXISTING_ENTRY; then
-        # Inactive, and nothing to remove: silent, exit 0. The common steady-state case for a
-        # repo that has never loaded sapience at all.
-        echo '{}'
-        exit 0
+# Project-root / activation detection for the per-repo half. The git root resolved below is the
+# PARENT CHECKOUT for a linked worktree (never the worktree itself); registration is keyed on
+# the checkout exclusively. Keep in lockstep with verify-sapience-mcp.sh's own copy (see the
+# marker block above).
+GIT_ROOT="$(resolve_checkout_toplevel 2>/dev/null || true)"
+
+HAVE_PROJECT=false
+PROJECT_PATH=""
+EXTENSIONS_FILE=""
+if [ -f ".claude-extensions.json" ]; then
+    PROJECT_PATH="$(pwd)"
+    EXTENSIONS_FILE="$(pwd)/.claude-extensions.json"
+    HAVE_PROJECT=true
+elif [ -n "$GIT_ROOT" ] && [ -f "$GIT_ROOT/.claude-extensions.json" ]; then
+    PROJECT_PATH="$GIT_ROOT"
+    EXTENSIONS_FILE="$GIT_ROOT/.claude-extensions.json"
+    HAVE_PROJECT=true
+fi
+# No .claude-extensions.json reachable at all: HAVE_PROJECT stays false and the per-repo half
+# below contributes no notice -- this is no longer an early exit (the reap pass above may
+# already have something to report, and either way exactly one JSON line is still emitted at
+# the end of this script).
+
+if $HAVE_PROJECT; then
+    SAPIENCE_STATUS="$(jq -r '.extensions.sapience.status // empty' "$EXTENSIONS_FILE" 2>/dev/null || echo "")"
+    IS_ACTIVE=false
+    if [ "$SAPIENCE_STATUS" = "active" ]; then
+        IS_ACTIVE=true
     fi
-    WRITE_OUTPUT="$(bash "$WRITER" --project "$PROJECT_PATH" --scope project --remove --quiet 2>&1)"
-    WRITER_RC=$?
-    ACTION="removed"
+
+    HAS_EXISTING_ENTRY=false
+    if [ -f "$CLAUDE_CONFIG" ]; then
+        EXISTING="$(jq -c --arg path "$PROJECT_PATH" '.projects[$path].mcpServers.sapience // empty' "$CLAUDE_CONFIG" 2>/dev/null || echo "")"
+        if [ -n "$EXISTING" ] && [ "$EXISTING" != "null" ]; then
+            HAS_EXISTING_ENTRY=true
+        fi
+    fi
+
+    WRITE_OUTPUT=""
+    WRITER_RC=0
+    ACTION=""
+    if $IS_ACTIVE; then
+        WRITE_OUTPUT="$(bash "$WRITER" --project "$PROJECT_PATH" --scope project --quiet 2>&1)"
+        WRITER_RC=$?
+        ACTION="registered/repaired"
+    elif $HAS_EXISTING_ENTRY; then
+        # Inactive, but an entry exists: remove it. This is the only mechanism that can
+        # un-register the per-project entry once the extension is unloaded.
+        WRITE_OUTPUT="$(bash "$WRITER" --project "$PROJECT_PATH" --scope project --remove --quiet 2>&1)"
+        WRITER_RC=$?
+        ACTION="removed"
+    fi
+    # Inactive with no existing entry: WRITE_OUTPUT/ACTION stay empty -- the common steady-state
+    # case for a repo that has never loaded sapience at all. This no longer exits early; it
+    # simply contributes no notice below, exactly like a no-op write does.
+
+    if [ "$WRITER_RC" -eq 0 ] && [ -n "$WRITE_OUTPUT" ]; then
+        # The writer wrote something (registered, repaired, or removed the entry). Per the
+        # session-start snapshot trap, tell the session so a sapience MCP call in THIS session
+        # is understood rather than mistaken for a deeper bug.
+        NOTICES+=("sapience: ${ACTION} the per-project entry for $PROJECT_PATH. If a sapience MCP tool call in this session reports the server as unavailable, restart the session -- MCP server registration is snapshotted at session start, and a just-written entry is not guaranteed to be visible in the session that wrote it.")
+    fi
+    # A nonzero WRITER_RC (writer failed) or empty WRITE_OUTPUT (no-op: entry already
+    # correct/already absent) degrades silently -- a SessionStart hook must never surface a
+    # scary error on every session start for a transient jq/disk issue.
 fi
 
-if [ "$WRITER_RC" -ne 0 ] || [ -z "$WRITE_OUTPUT" ]; then
-    # Either the writer failed (degrade silently -- a SessionStart hook must never surface a
-    # scary error on every session start for a transient jq/disk issue) or it was a no-op
-    # (entry already correct/already absent, the steady-state case): silent, exit 0.
+# Notice assembly: emit {} when neither half had anything to report, or exactly one
+# {"additionalContext": "..."} line joining whichever of the reap notice and the per-repo notice
+# fired (either, both, or neither) -- so the always-exit-0 / exactly-one-JSON-line contract holds
+# regardless of which half(s) had something to say.
+if [ "${#NOTICES[@]}" -eq 0 ]; then
     echo '{}'
     exit 0
 fi
 
-# The writer wrote something (registered, repaired, or removed the entry). Per the session-start
-# snapshot trap, tell the session so a sapience MCP call in THIS session is understood rather
-# than mistaken for a deeper bug.
-NOTICE="sapience: ${ACTION} the per-project entry for $PROJECT_PATH. If a sapience MCP tool call in this session reports the server as unavailable, restart the session -- MCP server registration is snapshotted at session start, and a just-written entry is not guaranteed to be visible in the session that wrote it."
-
-printf '%s' "$NOTICE" | jq -cRs '{additionalContext: .}' 2>/dev/null || echo '{}'
+printf '%s\n' "${NOTICES[@]}" | jq -cRs '{additionalContext: .}' 2>/dev/null || echo '{}'
 
 exit 0

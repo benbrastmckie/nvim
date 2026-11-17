@@ -40,6 +40,14 @@
 #   (14) Missing writer is silent ({}).
 #   (15) Every hook invocation emits exactly one line of parseable JSON.
 #
+# --reap hook cases (Phase 3, added once the hook's unconditional reap invocation exists):
+#   (35) An orphan is reaped from a session with NO reachable .claude-extensions.json at all --
+#        the previously unreachable path -- asserting the orphan's sapience key is gone and the
+#        output is a single parseable JSON object carrying additionalContext.
+#   (36) An orphan AND an active current repo in the same fixture: one invocation reaps the
+#        orphan, registers the current repo, and still emits exactly one JSON line mentioning
+#        both actions.
+#
 # Installer cases (Phase 4, added once the installer exists):
 #   (16) Install into a temporary HOME; a second run changes nothing (byte-identical settings
 #        file and both installed files).
@@ -515,6 +523,59 @@ else
     pass "Case 15: every hook invocation path emits exactly one line of parseable JSON"
   else
     fail "Case 15: at least one hook invocation did not emit exactly one line of parseable JSON"
+  fi
+
+  # Case 35: an orphan is reaped from a session with NO reachable .claude-extensions.json at
+  # all -- the previously unreachable path, since the hook's own manifest-reachability branch
+  # could never satisfy this precondition for an orphaned (deleted/renamed) project directory.
+  HOME35="$WORKDIR/case35/home"
+  mkdir -p "$HOME35/.sapience" "$HOME35/.claude/scripts"
+  echo '{}' > "$HOME35/.sapience/config.json"
+  cp "$WRITER_SRC" "$HOME35/.claude/scripts/setup-sapience-mcp.sh"
+  chmod +x "$HOME35/.claude/scripts/setup-sapience-mcp.sh"
+  ORPHAN35="$WORKDIR/case35/orphan-proj-never-created"
+  jq -n --arg o "$ORPHAN35" \
+    '{"projects": {($o): {"mcpServers": {"sapience": {"command":"/x/python3","args":["/x/mcp.py"],"env":{}}}}}}' \
+    > "$HOME35/.claude.json"
+  NOMANIFEST35="$WORKDIR/case35/no-manifest-dir"
+  mkdir -p "$NOMANIFEST35"
+
+  OUT35=$(cd "$NOMANIFEST35" && HOME="$HOME35" bash "$HOOK_SRC" 2>&1)
+  ENTRY35=$(jq -c --arg p "$ORPHAN35" '.projects[$p].mcpServers.sapience // "ABSENT"' "$HOME35/.claude.json")
+
+  if [ "$ENTRY35" = '"ABSENT"' ] && printf '%s' "$OUT35" | jq -e '.additionalContext' > /dev/null 2>&1; then
+    pass "Case 35: an orphan is reaped from a session with no reachable .claude-extensions.json at all, emitting a single parseable JSON notice"
+  else
+    fail "Case 35: expected orphan reaped and a notice; entry=$ENTRY35 output=$OUT35"
+  fi
+
+  # Case 36: an orphan AND an active current repo in the same fixture -- one invocation reaps
+  # the orphan, registers the current repo, and still emits exactly one JSON line mentioning
+  # both actions.
+  HOME36="$WORKDIR/case36/home"
+  REPO36="$WORKDIR/case36/repo"
+  mkdir -p "$HOME36/.sapience" "$HOME36/.claude/scripts" "$REPO36"
+  echo '{}' > "$HOME36/.sapience/config.json"
+  cp "$WRITER_SRC" "$HOME36/.claude/scripts/setup-sapience-mcp.sh"
+  chmod +x "$HOME36/.claude/scripts/setup-sapience-mcp.sh"
+  ORPHAN36="$WORKDIR/case36/orphan-proj-never-created"
+  jq -n --arg o "$ORPHAN36" \
+    '{"projects": {($o): {"mcpServers": {"sapience": {"command":"/x/python3","args":["/x/mcp.py"],"env":{}}}}}}' \
+    > "$HOME36/.claude.json"
+  jq -n '{"extensions": {"sapience": {"status": "active"}}}' > "$REPO36/.claude-extensions.json"
+  (cd "$REPO36" && git init -q 2>/dev/null || true)
+
+  OUT36=$(cd "$REPO36" && HOME="$HOME36" bash "$HOOK_SRC" 2>&1)
+  ORPHAN_ENTRY36=$(jq -c --arg p "$ORPHAN36" '.projects[$p].mcpServers.sapience // "ABSENT"' "$HOME36/.claude.json")
+  REPO_ENTRY36=$(jq -c --arg p "$REPO36" '.projects[$p].mcpServers.sapience // "ABSENT"' "$HOME36/.claude.json")
+  LINES36=$(printf '%s' "$OUT36" | wc -l)
+  CTX36=$(printf '%s' "$OUT36" | jq -r '.additionalContext // ""' 2>/dev/null)
+
+  if [ "$ORPHAN_ENTRY36" = '"ABSENT"' ] && [ "$REPO_ENTRY36" != '"ABSENT"' ] && [ "$LINES36" -eq 0 ] \
+     && printf '%s' "$CTX36" | grep -q "reaped" && printf '%s' "$CTX36" | grep -q "registered/repaired"; then
+    pass "Case 36: an orphan and an active current repo in one invocation both land, mentioned in a single JSON line"
+  else
+    fail "Case 36: orphan_entry=$ORPHAN_ENTRY36 repo_entry=$REPO_ENTRY36 lines=$LINES36 output=$OUT36"
   fi
 fi
 

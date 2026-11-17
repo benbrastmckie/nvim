@@ -294,7 +294,7 @@ immediately before editing, and number from whatever is actually there.
 
 ---
 
-### Phase 3: unconditional reap pass in the SessionStart hook [NOT STARTED]
+### Phase 3: unconditional reap pass in the SessionStart hook [COMPLETED]
 
 **Goal**: the hook invokes `--reap` on every session start regardless of manifest reachability or
 activation state, while preserving its always-exit-0 / exactly-one-JSON-line / never-fail-a-session
@@ -302,41 +302,44 @@ contract.
 
 **Tasks**:
 
-- [ ] Re-read `hooks/sapience-mcp-register-project.sh` in full, then restructure its control flow:
+- [x] Re-read `hooks/sapience-mcp-register-project.sh` in full, then restructure its control flow:
       move the `command -v jq` guard and the `WRITER` existence guard **above** the
       `.claude-extensions.json` reachability branch (both are preconditions of the reap pass), and
       leave the marker-delimited `sapience-worktree-checkout-resolution` block byte-identical —
-      the suite's lockstep case asserts it matches four other copies exactly.
-- [ ] Convert the reachability branch's `else` arm from `echo '{}'; exit 0` into a
+      the suite's lockstep case asserts it matches four other copies exactly. *(completed;
+      lockstep diff confirmed byte-identical against verify-sapience-mcp.sh's copy)*
+- [x] Convert the reachability branch's `else` arm from `echo '{}'; exit 0` into a
       `HAVE_PROJECT=false` flag with `PROJECT_PATH=""`/`EXTENSIONS_FILE=""` initialized, so the
       per-repo half is skipped rather than exiting. Under `set -uo pipefail` every later
-      reference to those variables must be guarded by the flag.
-- [ ] Insert the reap invocation after both guards and before the per-repo half:
+      reference to those variables must be guarded by the flag. *(completed)*
+- [x] Insert the reap invocation after both guards and before the per-repo half:
       `REAP_OUTPUT="$(bash "$WRITER" --reap --quiet 2>&1)"`, with its own `rc`, degrading silently
-      on a nonzero exit or empty output exactly as the existing writer invocations do.
-- [ ] Guard the per-repo register/remove half behind `$HAVE_PROJECT`, leaving its internal
+      on a nonzero exit or empty output exactly as the existing writer invocations do. *(completed)*
+- [x] Guard the per-repo register/remove half behind `$HAVE_PROJECT`, leaving its internal
       `IS_ACTIVE` / `HAS_EXISTING_ENTRY` logic otherwise unchanged — and remove its two interior
       `echo '{}'; exit 0` early returns in favor of "contribute no notice", so a reap notice is
-      never swallowed by the per-repo half deciding it has nothing to say.
-- [ ] Replace the single-`NOTICE` tail with notice assembly over an array: collect the reap
+      never swallowed by the per-repo half deciding it has nothing to say. *(completed)*
+- [x] Replace the single-`NOTICE` tail with notice assembly over an array: collect the reap
       notice (when reap produced output) and the per-repo notice (when the writer wrote
       something), then emit `{}` when the array is empty, or one
       `jq -cRs '{additionalContext: .}'` line built from `printf '%s\n' "${NOTICES[@]}"` when it
       is not — so either, both, or neither firing still yields exactly one JSON line. Keep the
-      existing `|| echo '{}'` fallback on the `jq` call and the terminal `exit 0`.
-- [ ] Update the hook's header comment block: the reap pass, why it is ungated (an orphan can
+      existing `|| echo '{}'` fallback on the `jq` call and the terminal `exit 0`. *(completed)*
+- [x] Update the hook's header comment block: the reap pass, why it is ungated (an orphan can
       never host the session that would clean it up), and that it runs before the reachability
-      branch.
-- [ ] Add a hook-level case: a fixture `HOME` whose `.claude.json` carries an orphan row, with the
+      branch. *(completed)*
+- [x] Add a hook-level case: a fixture `HOME` whose `.claude.json` carries an orphan row, with the
       hook invoked from a directory that has **no reachable `.claude-extensions.json` at all** —
       exactly the path that previously exited early. Assert the orphan's `sapience` key is gone
-      and the output is a single parseable JSON object carrying `additionalContext`.
-- [ ] Add a hook-level case: an orphan row *and* an active current repo in the same fixture — one
+      and the output is a single parseable JSON object carrying `additionalContext`. *(completed:
+      case 35)*
+- [x] Add a hook-level case: an orphan row *and* an active current repo in the same fixture — one
       invocation reaps the orphan, registers the current repo, and still emits exactly one JSON
-      line mentioning both actions.
-- [ ] Re-run the pre-existing hook and worktree silence cases unchanged as the regression net
+      line mentioning both actions. *(completed: case 36)*
+- [x] Re-run the pre-existing hook and worktree silence cases unchanged as the regression net
       (the already-correct session, inactive-with-no-entry, missing-writer, one-line-JSON, and
-      the worktree cases including the exact-keys and lockstep assertions).
+      the worktree cases including the exact-keys and lockstep assertions). *(completed: cases
+      11, 13, 14, 15, 26, 28 and the full 36-case suite all pass)*
 
 **Timing**: 1.25 hours
 

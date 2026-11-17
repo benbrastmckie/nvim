@@ -1,0 +1,16 @@
+{
+  "phase": 3,
+  "phase_name": "unconditional reap pass in the SessionStart hook",
+  "started_at": "2026-11-17T16:08:00Z",
+  "last_updated": "2026-11-17T16:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Restructure hook: hoist jq/writer guards above reachability branch, convert else-arm to HAVE_PROJECT flag", "status": "done", "files_touched": ["agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh"]},
+    {"id": 2, "description": "Insert ungated --reap invocation before per-repo half", "status": "done", "files_touched": ["agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh"]},
+    {"id": 3, "description": "Array-based notice assembly replacing single-NOTICE tail", "status": "done", "files_touched": ["agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh"]},
+    {"id": 4, "description": "Update header comment", "status": "done", "files_touched": ["agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh"]},
+    {"id": 5, "description": "Add hook-level cases 35-36", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
