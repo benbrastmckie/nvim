@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Document the capture-extraction trigger and the residual-probe dispositions",
+  "started_at": "2026-11-17T18:15:00Z",
+  "last_updated": "2026-11-17T18:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add ### Capture Scheduling and the Manual-Only Trigger subsection to per-repo-scoping.md", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 2, "description": "Cross-reference the new subsection from the adjacent Capture/Activation Reconciliation subsection", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 3, "description": "Rewrite Verifying This Residual Is Still Current in injection-site-scoping.md naming the three outcomes' dispositions", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/injection-site-scoping.md"]},
+    {"id": 4, "description": "State that no change available to this repository can move the verdict", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/injection-site-scoping.md"]},
+    {"id": 5, "description": "Run generate-context-line-counts.sh --write and confirm index-entries.json reconciled", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]},
+    {"id": 6, "description": "Re-read both edited files for forbidden task-reference/record-versioning language", "status": "done", "note": "Confirmed clean via git diff grep; no new occurrences introduced."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

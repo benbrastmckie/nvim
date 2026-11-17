@@ -19,8 +19,9 @@
       "task_id": "2.extra",
       "description": "Phase 1 found postflight-sapience-notes.sh deployed non-executable (git mode 100644) in the source store, which would make check (j)'s literal 'exist and are executable' condition fail in this repository even though the plan's own verification claims it passes today.",
       "type": "altered",
-      "reason": "chmod +x applied to agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh (source store) and this repository's already-deployed .claude/scripts/postflight-sapience-notes.sh copy, plus a one-repository deploy-headless.sh run to land the check (j) edit itself into this repository's deployed verify-sapience-mcp.sh ahead of Phase 4's formal five-repository sweep, so Phase 2's own verification claim ('check (j) PASS in this repository today') actually holds.",
-      "annotation": "*(deviation: altered -- see Plan Deviations in the implementation summary)*"
+      "reason": "chmod +x applied to agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh (source store) and this repository's already-deployed .claude/scripts/postflight-sapience-notes.sh copy, plus a one-repository deploy-headless.sh run to land the check (j) edit itself into this repository's deployed verify-sapience-mcp.sh ahead of Phase 4's formal five-repository sweep, so Phase 2's own verification claim ('check (j) PASS in this repository today') actually holds. The mode-change path was initially omitted from this phase's files_touched and so was not swept into the phase-closing commit; landed via a scoped follow-up commit (6ddf734cc) instead of a widened pathspec.",
+      "annotation": "*(deviation: altered -- see Plan Deviations in the implementation summary)*",
+      "files_touched": ["agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh"]
     }
   ]
 }

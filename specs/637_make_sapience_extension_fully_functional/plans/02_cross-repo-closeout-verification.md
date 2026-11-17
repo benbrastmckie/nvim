@@ -272,7 +272,7 @@ against the suite's own current tail and confirms `manifest.json` needs no edit 
 
 ---
 
-### Phase 3: Document the capture-extraction trigger and the residual-probe dispositions [NOT STARTED]
+### Phase 3: Document the capture-extraction trigger and the residual-probe dispositions [COMPLETED]
 
 **Goal**: Put the two measured facts this task's description frames as open defects into the durable
 design corpus, so each is diagnosed from documentation rather than re-measured from live machine
@@ -280,7 +280,7 @@ state as both research rounds had to do.
 
 **Tasks**:
 
-- [ ] Add a `### Capture Scheduling and the Manual-Only Trigger` subsection to
+- [x] Add a `### Capture Scheduling and the Manual-Only Trigger` subsection to
       `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`,
       immediately after the existing `### Capture/Activation Reconciliation` subsection (confirmed
       present at that file's tail during planning). State: which verbs drive extraction
@@ -290,27 +290,27 @@ state as both research rounds had to do.
       `~/.dotfiles/modules/home/services/sapience.nix` (default `false`) and its
       `sapience-sync.timer` are the only scheduling lever and live outside this source store; and
       the consequence — a gap in `extracted.json`/`pending_kos.jsonl` freshness is not a defect of
-      this extension and no script here drives that pipeline.
-- [ ] Cross-reference that new subsection from the adjacent `### Capture/Activation Reconciliation`
+      this extension and no script here drives that pipeline. *(completed)*
+- [x] Cross-reference that new subsection from the adjacent `### Capture/Activation Reconciliation`
       subsection's existing `~/.dotfiles` siting sentence, so the two out-of-repository capture
       concerns (who writes `enabled`, who schedules extraction) read as one coherent boundary
-      rather than two unrelated notes.
-- [ ] Rewrite `## Verifying This Residual Is Still Current` in
+      rather than two unrelated notes. *(completed)*
+- [x] Rewrite `## Verifying This Residual Is Still Current` in
       `agent-system/extensions/sapience/context/project/sapience/domain/injection-site-scoping.md`
       (confirmed present, currently five lines) to state each of the three probe outcomes' standing
       disposition by name: `residual holds` is the expected green result and confirms the measured
       foreclosure rather than reporting a failure; `residual lifted` means the vendor ask landed and
       the Ruling above should be revisited; `inconclusive` means re-run. Name the `--repeat N`
-      unanimous-agreement rule as the reason a single-run verdict is not relied on.
-- [ ] State in that same rewritten section that no change available to this repository can move the
+      unanimous-agreement rule as the reason a single-run verdict is not relied on. *(completed)*
+- [x] State in that same rewritten section that no change available to this repository can move the
       verdict, naming the two already-recorded foreclosures as the reason, so a future reader does
-      not open a defect against a green probe.
-- [ ] Run `bash .claude/scripts/generate-context-line-counts.sh --write` and confirm
+      not open a defect against a green probe. *(completed)*
+- [x] Run `bash .claude/scripts/generate-context-line-counts.sh --write` and confirm
       `agent-system/extensions/sapience/index-entries.json` now carries the edited files' actual
-      line counts.
-- [ ] Re-read both edited files for forbidden language: no task-number references and no
+      line counts. *(completed: 377 and 178 lines respectively, reconciled; second pass reports zero corrections)*
+- [x] Re-read both edited files for forbidden language: no task-number references and no
       record-versioning phrasing ("previously", "no longer", "formerly") anywhere in content
-      landing under `agent-system/**`.
+      landing under `agent-system/**`. *(completed: confirmed clean via diff-scoped grep)*
 
 **Timing**: 1.25 hours
 

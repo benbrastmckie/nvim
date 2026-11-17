@@ -318,7 +318,9 @@ store would create the two-writers-disagreeing hazard the Hazards census above a
 about for the MCP-registration entry -- where byte-identical convergence across writers is
 deliberately maintained and no equivalent guarantee would exist here. If active reconciliation
 between extension activation and capture enablement is built at all, it belongs in
-`~/.dotfiles`, per `rules/source-store-deploy-boundary.md`'s task-siting rule.
+`~/.dotfiles`, per `rules/source-store-deploy-boundary.md`'s task-siting rule. The capture-map
+`enabled` list and the extraction-scheduling lever below share this same `~/.dotfiles` owner --
+see the "Capture Scheduling and the Manual-Only Trigger" subsection for the second lever.
 
 **The primary-session hook path has no scoping mechanism at all, independent of tagging
 state.** `SessionStart`, `UserPromptSubmit`, and `PreToolUse` never read `provenance` and never
@@ -346,3 +348,30 @@ calling agent's own turn. The only available remedy is agent self-report: when a
 `--class "infrastructure/transport unavailable"` and the tool's own error text as
 `--what-happened` -- but this is explicitly best-effort, not a substitute for mechanical capture,
 and an agent that does not notice or does not record it leaves no trace, exactly as today.
+
+### Capture Scheduling and the Manual-Only Trigger
+
+Transcript capture extraction -- turning a captured transcript into the knowledge objects that
+land in `~/.sapience/extracted.json` and `~/.sapience/pending_kos.jsonl` -- is driven entirely by
+manual invocation of the nix-provided `sapience` launcher. Its `review`, `pending`, `sync`,
+`coverage`, and `backfill` subcommands each `exec` straight into
+`~/.sapience/extract_local.py --<verb>`; no script in this repository, and no script anywhere in
+this source store, calls `extract_local.py` or schedules a call to it.
+
+The only scheduling lever that exists is `services.sapience.backgroundSync` in
+`~/.dotfiles/modules/home/services/sapience.nix`, which defaults to `false` with the module's own
+recorded cost rationale: extraction spends real money or real CPU on every run, so the module
+does not run it unattended by default. The module always defines a
+`systemd.user.timers.sapience-sync` unit, but installs it only when `backgroundSync` is `true`
+(`lib.mkIf cfg.backgroundSync`); with the default `false`, the timer is defined but never
+installed, and no other systemd user timer or crontab entry drives this pipeline.
+
+**Consequence for a future reader**: a staleness gap in `extracted.json`/`pending_kos.jsonl` --
+their mtimes unchanged since the last manual `sapience <verb>` invocation -- is not a defect of
+this extension and is not evidence that anything here is broken. Diagnose it from this section
+first: check whether `backgroundSync` is enabled in `~/.dotfiles`, and if not, the gap is fully
+explained by "nobody has run `sapience sync`/`review`/etc. since that date," not by a failure
+anywhere in this source store's own scripts. Enabling scheduled extraction is the user's call,
+made in `~/.dotfiles`, outside this repository's write surface; this section documents the
+mechanism and its owner so that choice does not need to be re-discovered by live measurement each
+time the question comes up.

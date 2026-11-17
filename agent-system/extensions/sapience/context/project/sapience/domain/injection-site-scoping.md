@@ -152,6 +152,27 @@ of known-true and known-false examples before any rollout, given that risk.
 
 ## Verifying This Residual Is Still Current
 
-`scripts/verify-sapience-context-scoping.sh` re-runs the Foreclosure 1 comparison on demand and
-reports one of three outcomes (residual holds, residual lifted, inconclusive), so the day the
-vendor ask above lands is detected rather than assumed. See that script's own header for usage.
+`scripts/verify-sapience-context-scoping.sh` re-runs the Foreclosure 1 comparison on demand,
+repeating it `--repeat N` times (default 3) and reporting only on UNANIMOUS agreement across all
+iterations -- a single-run result is not relied on, because the comparison depends on a live
+server response that can vary run to run. Each of the three possible outcomes has a standing
+disposition, stated here by name so a future reader does not have to re-derive it:
+
+- **`residual holds`** (unanimous across all iterations) is the EXPECTED GREEN RESULT. It
+  confirms the measured foreclosure above is still in effect -- `POST /v1/cli/context` is still
+  ignoring the `project` field. This is not a failure to act on; it is the probe doing its job.
+- **`residual lifted`** (unanimous across all iterations) means the vendor ask in "Owner Action
+  1" above has landed upstream and the server now honors the `project` field. This is the one
+  outcome that should prompt revisiting the Ruling above: re-read Foreclosure 1 and Foreclosure 2
+  against the new server behavior before assuming either foreclosure still holds.
+- **`inconclusive`** (the iterations disagree, or any iteration hit a non-200 response, an empty
+  body, or a network failure) means re-run the probe later rather than treating either named
+  outcome as current. It is not itself a third disposition to act on.
+
+**No change available to this repository can move the verdict in either direction.** Both
+foreclosures recorded above (`project` ignored on the hook-facing endpoint; no per-item
+attribution to filter or label by) are server-side, vendor-owned behaviors — the only lever that
+can change the outcome is the vendor ask, external to this source store. A `residual holds`
+result is therefore never grounds to open a defect against this repository's own scripts or
+hooks: there is no local fix to apply, and the probe returning `residual holds` on a given run is
+the system working as designed, not a gap in it.
