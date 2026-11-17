@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a 6-phase, 6-hour implementation plan anchoring the Sapience postflight wrapup write mechanically. The design adds a top-level sapience_notes array to .return-meta.json, a standalone postflight-sapience-notes.sh in the sapience extension that enforces the 8-note ceiling and records a visible knowledge-capture gap on zero notes, and wires it at three invocation points across two core scripts so the deferred reconcile completion path is covered alongside the live one. Two deliberate divergences from the research recommendation (standalone script rather than a skill-base.sh function; sapience extension rather than core) are documented with rationale in the plan's Research Integration section.",
+  "summary": "Mechanically anchored the Sapience postflight wrapup write at a new single site, postflight-sapience-notes.sh, wired at exactly three invocation points across orchestrate-cycle-postflight.sh and reconcile-task-status.sh's two promotion arms, covering both the live and deferred completion paths. The 3-8 note bound and the zero-note gap are enforced mechanically and visibly at that one site; a 9-case stubbed test suite, reconcile-arm regression cases, and a phase/presence-gated dispatch-builder instruction block (reaching every domain implementation agent) were added. Redeployed and verified green against a scoped gate/suite set per this dispatch's Batch Gate Deferral directive, with a live dry-run attestation confirming the specified 4-note and 0-note behavior.",
   "blockers": [],
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/635_enforce_sapience_postflight_wrapup_write/summaries/01_sapience-wrapup-write-enforcement-summary.md",
+      "summary": "Mechanically anchored the Sapience postflight wrapup write at a single new site, wired at 3 invocation points across 2 core scripts covering both the live and deferred completion paths, with the 3-8 note bound and zero-note gap enforced mechanically and visibly at that one site."
+    },
     {
       "type": "plan",
       "path": "specs/635_enforce_sapience_postflight_wrapup_write/plans/01_sapience-wrapup-write-enforcement.md",
       "summary": "Six-phase plan mechanically anchoring the repo-tagged Sapience wrapup write at every implement-completion path, with bound enforcement, a visible zero-notes gap, and a stubbed test suite."
     }
   ],
-  "dispatch_seq": 7
+  "dispatch_seq": 12
 }

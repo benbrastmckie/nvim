@@ -1,16 +1,97 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 12,
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/635_enforce_sapience_postflight_wrapup_write/summaries/01_sapience-wrapup-write-enforcement-summary.md",
+      "summary": "Mechanically anchored the Sapience postflight wrapup write at a single new site (postflight-sapience-notes.sh), wired at 3 invocation points across 2 core scripts covering both the live and deferred completion paths, with the 3-8 note bound and zero-note gap enforced mechanically and visibly at that one site."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added postflight-sapience-notes.sh as the single mechanical write site for the Sapience postflight wrapup, wired at exactly 3 invocation points across orchestrate-cycle-postflight.sh and reconcile-task-status.sh's two promotion arms (covering both the live and deferred completion paths), with a new 9-case stubbed test suite and the matching sapience_notes field spec, seed-class gap, and emission-instruction surfaces (general-implementation-agent.md's Stage 6c plus a phase/presence-gated orchestrate-build-dispatch.sh block reaching every domain agent). Redeployed and verified green against a scoped gate/suite set per this dispatch's Batch Gate Deferral directive, with a live dry-run attestation confirming the 4-note and 0-note fixture behavior exactly as specified."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/context/formats/issue-log.md",
+    "agent-system/extensions/core/context/formats/return-metadata-file.md",
+    "agent-system/extensions/core/context/standards/error-recovery-strategies.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/issue-record.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/reconcile-task-status.sh",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh",
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/EXTENSION.md",
+    "agent-system/extensions/sapience/index-entries.json",
+    "agent-system/extensions/sapience/manifest.json",
+    "agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-postflight-sapience-notes.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "verify-deploy.sh's gate 8, when selected via --only-gate N, runs its OWN internal UNFLAGGED full run-all.sh sweep (all suites) under the specs/.gate-lock mutex rather than a scoped subset. Under a Batch Gate Deferral directive (or any scoped-verification intent), never include gate 8 in --only-gate; cover its content instead with a separate run-all.sh --only SUITE[,...] invocation, which does not touch specs/.gate-lock for a narrowed run.",
+      "category": "PATTERN",
+      "source_artifact": "specs/635_enforce_sapience_postflight_wrapup_write/summaries/01_sapience-wrapup-write-enforcement-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["verify-deploy.sh", "gate 8", "only-gate", "gate-lock", "batch-gate-deferral"]
+    },
+    {
+      "content": "bash's `read -r a b < <(cmd)` reads only ONE line from the process substitution and splits it by IFS into the named variables -- it does not read successive output lines into successive variables. To capture several output lines from one command substitution into separate variables, use `mapfile -t arr < <(cmd)` and index into the array.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/635_enforce_sapience_postflight_wrapup_write/summaries/01_sapience-wrapup-write-enforcement-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "read", "mapfile", "process-substitution", "multi-line"]
+    },
+    {
+      "content": "`grep -c PATTERN FILE 2>/dev/null || echo 0` can print TWO lines when FILE exists and has zero matches: grep prints '0' to stdout on a clean zero-match run but still exits 1, which also triggers the `|| echo 0` fallback, yielding '0\\n0' where a single integer was expected downstream (e.g. in a `[ \"$n\" -eq 0 ]` test). Capture grep's own stdout via `n=\"$(grep -c ...)\" || true; echo \"${n:-0}\"` instead of appending a bare `|| echo 0` fallback after a `-c` count.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/635_enforce_sapience_postflight_wrapup_write/summaries/01_sapience-wrapup-write-enforcement-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["grep", "bash", "exit-code", "count", "fallback-bug"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "verify-deploy.sh gate 8 --only-gate selection hazard",
+      "value": "Selecting gate 8 via verify-deploy.sh --only-gate N triggers the script's own internal UNFLAGGED full run-all.sh sweep (all suites) under the specs/.gate-lock mutex, rather than a scoped subset -- this defeats scoped-verification intent and can stall for minutes. The correct scoped substitute for gate 8's content is a separate run-all.sh --only SUITE[,...] invocation, which does not touch specs/.gate-lock for a narrowed run. Never include gate 8 in a --only-gate list when trying to avoid a full sweep.",
+      "source_loc": "agent-system/extensions/core/scripts/verify-deploy.sh:1133"
+    },
+    {
+      "subject": "bash read vs mapfile for multi-line command substitution",
+      "value": "bash's `read -r a b < <(cmd)` only reads ONE line and splits it by IFS into the named variables; it does not read successive lines into successive variables. To capture multiple output lines from a process substitution into separate variables, use `mapfile -t arr < <(cmd)` and index into the array.",
+      "confidence": 0.85
+    },
+    {
+      "subject": "grep -c with an || fallback can double-print on a clean zero-match run",
+      "value": "`grep -c PATTERN FILE 2>/dev/null || echo 0` can print TWO lines when FILE exists and has zero matches: grep itself prints '0' to stdout but still exits 1 (no match found), which also triggers the `|| echo 0` fallback. Capture grep's own stdout via `n=\"$(grep -c ...)\" || true; echo \"${n:-0}\"` instead.",
+      "confidence": 0.8
+    },
+    {
+      "subject": "deploy-root-guard.sh constrains live attestation of new core/extension scripts",
+      "value": "A newly-written script that sources deploy-root-guard.sh (the standard pattern for core/extension scripts) refuses to run from the agent-system source store -- it must be smoke-tested either against a scratch deployed-tree-shaped fixture (copy the script plus its sibling dependencies into <scratch>/.claude/scripts/) or, for the real thing, only after deploy-headless.sh has actually run. Plan a phase's own verification section accordingly: a literal source-store invocation named in a plan's Verification bullet will not execute as written pre-deploy.",
+      "source_loc": "agent-system/extensions/core/scripts/deploy-root-guard.sh"
+    },
+    {
+      "subject": "A seed-class enum can accumulate silent duplicate copies across a codebase",
+      "value": "A single open/extensible enum (issue-record.sh's seed-class list) had, prior to this task, THREE independently-maintained copies across the codebase (issue-log.md's doc table, issue-record.sh's own comment+array, and orchestrate-conclusion-aggregate.sh's separate SEED_CLASSES_JSON for conclusion-stage tallying) plus at least four more loose count-reference strings scattered across unrelated files, none updated in lockstep historically. When growing such an enum, grep the whole repo for every count-reference string before editing; never trust a plan's own named file list as exhaustive.",
+      "confidence": 0.8
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794907446_b4b581",
     "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
     "delegation_path": [
       "orchestrator",
       "implement",
       "general-implementation-agent"
     ],
-    "phases_completed": 0,
+    "phases_completed": 6,
     "phases_total": 6
   },
   "proposed_file_scope": [
