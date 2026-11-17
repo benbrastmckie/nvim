@@ -1948,6 +1948,70 @@ fi
 build_fixture
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 23: sapience_notes_instruction block -- phase=implement AND sapience-remember.sh present
+# emits "## Sapience Notes"; any other combination (phase=research/plan, or sapience-remember.sh
+# absent) is byte-identical to a dispatch built before this feature existed. Unlike
+# memory_context, this block is NOT suppressed by --clean (case (b)).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Group 23: sapience_notes_instruction block (phase + presence gating)"
+
+# (a) phase=implement, sapience-remember.sh present, no --clean -- the block is emitted.
+printf '#!/usr/bin/env bash\nexit 0\n' > "$FIXTURE/.claude/scripts/sapience-remember.sh"
+chmod +x "$FIXTURE/.claude/scripts/sapience-remember.sh"
+run_sut implement --seq 23a --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_sapn_present="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_sapn_present" "## Sapience Notes" "(a) phase=implement, script present, no --clean: block present"
+  assert_contains "$content_sapn_present" "sapience_notes" "(a) phase=implement, script present, no --clean: names the sapience_notes field"
+else
+  common_test_fail "(a) phase=implement, script present, no --clean: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# (b) phase=implement, sapience-remember.sh present, WITH --clean -- the block is STILL emitted:
+# --clean suppresses memory_context (retrieval), never this emission instruction.
+run_sut implement --clean --seq 23b --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_sapn_clean="$(cat "$LAST_DISPATCH_FILE")"
+  assert_contains "$content_sapn_clean" "## Sapience Notes" "(b) phase=implement, script present, --clean: block still present (not suppressed by --clean)"
+else
+  common_test_fail "(b) phase=implement, script present, --clean: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# (c) phase=research, sapience-remember.sh present -- the block is absent (phase-gated).
+run_sut research --clean --seq 23c
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_sapn_research="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_sapn_research" "## Sapience Notes" "(c) phase=research, script present: block absent (phase-gated)"
+else
+  common_test_fail "(c) phase=research, script present: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# (d) phase=plan, sapience-remember.sh present -- the block is absent (phase-gated).
+run_sut plan --clean --seq 23d
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_sapn_plan="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_sapn_plan" "## Sapience Notes" "(d) phase=plan, script present: block absent (phase-gated)"
+else
+  common_test_fail "(d) phase=plan, script present: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# (e) phase=implement, sapience-remember.sh ABSENT -- the block is absent (presence-gated). An
+# unloaded sapience extension must never produce a dangling instruction naming a script that
+# cannot run.
+rm -f "$FIXTURE/.claude/scripts/sapience-remember.sh"
+run_sut implement --clean --seq 23e --dispatch-start-ts 1234567890
+if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
+  content_sapn_absent="$(cat "$LAST_DISPATCH_FILE")"
+  assert_not_contains "$content_sapn_absent" "## Sapience Notes" "(e) phase=implement, script absent: block absent (presence-gated)"
+else
+  common_test_fail "(e) phase=implement, script absent: SUT did not exit 0 (exit=$LAST_EXIT stderr=$LAST_STDERR)"
+fi
+
+# Restore fixture state for symmetry with other groups' own restore convention (sapience-
+# remember.sh was already removed in (e) above; build_fixture never creates it).
+build_fixture
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 # Summary
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 echo ""
