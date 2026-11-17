@@ -1,10 +1,97 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 9,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/636_sapience_activation_surface_scoping_gaps/summaries/01_activation-surface-scoping-gaps-summary.md",
+      "summary": "All six plan phases completed: three new verify-sapience-mcp.sh checks (g)/(h)/(i), an N-repeat unanimous-agreement verdict in verify-sapience-context-scoping.sh, two documentation rewrites, and a redeploy plus scoped gate verification."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed all five dispatched sapience activation-surface scoping gaps: verify-sapience-mcp.sh gained checks (g) machine-wide vendor hook recurrence, (h) active-but-hook-fragment-never-merged, and (i) capture/activation coupling with the reconciliation ruling; verify-sapience-context-scoping.sh gained a --repeat N unanimous-agreement verdict; injection-site-scoping.md and per-repo-scoping.md were rewritten to state the actual design. Redeployed and verified end-to-end (47+6 new/extended test cases pass; both checks reproduce their dispatched evidence live against ~/Projects/abood and ~/Projects/BimodalLogic)."
+  },
+  "modified_files": [
+    "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh",
+    "agent-system/extensions/sapience/scripts/verify-sapience-context-scoping.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-context-scoping.sh",
+    "agent-system/extensions/sapience/manifest.json",
+    "agent-system/extensions/sapience/context/project/sapience/domain/injection-site-scoping.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "sync-manifest-scripts.sh --write derives its 'on disk' set from `git ls-files`, not a raw filesystem walk. A newly-created test script must be `git add`-staged BEFORE running the sync, or it silently does not appear as a missing entry to add.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/636_sapience_activation_surface_scoping_gaps/summaries/01_activation-surface-scoping-gaps-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["sync-manifest-scripts.sh", "git ls-files", "provides.scripts", "manifest.json", "staging"]
+    },
+    {
+      "content": "Pattern for extending an existing two-call curl-stub-on-PATH test technique (CURL_STUB_CODE_1/_2 fallback to unsuffixed) to an arbitrary-length N-call sequence: use bash indirect variable expansion (`${!varname}`) inside the stub to look up CURL_STUB_CODE_<call_index> dynamically, still falling back to the unsuffixed var and then a hardcoded default. Avoids hand-writing a fixed number of tiers.",
+      "category": "PATTERN",
+      "source_artifact": "specs/636_sapience_activation_surface_scoping_gaps/summaries/01_activation-surface-scoping-gaps-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["curl-stub", "bash indirect expansion", "shell-test", "PATH shadow", "sequenced response table"]
+    },
+    {
+      "content": "A sapience-extension shell script that unconditionally sources ${SCRIPT_DIR}/lib/common.sh cannot be invoked directly from the source store pre-deploy, since sapience itself carries no scripts/lib/ of its own (it is flattened into .claude/scripts/lib/ only post-deploy). A regression suite for such a script must build a scratch deployed-tree-shaped fixture (<scratch>/.claude/scripts/{script,lib/common.sh}) rather than invoking the source-store copy directly.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/636_sapience_activation_surface_scoping_gaps/summaries/01_activation-surface-scoping-gaps-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sapience", "scripts/lib/common.sh", "deploy-root-guard", "pre-deploy source store", "scratch fixture"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "sapience_upkeep.py wire_hooks() REQUIRED set",
+      "value": "On this machine, ~/.sapience/sapience_upkeep.py's REQUIRED constant is the string 'ebr' (effect/briefing/receipt), and wire_hooks() unconditionally re-adds three hooks -- SessionStart 'python3 mp --briefing-text', SessionEnd 'python3 mp --receipt', Stop 'python3 mp --effect-line' -- to $HOME/.claude/settings.json on every auto_update/update --wire pass, UNLESS hooks_opted_out() is true (env SAPIENCE_NO_HOOKS == '1', or config.json's 'hooks' key is false). This recurs regardless of any individual repository's own extension activation state.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.9,
+      "source_loc": "~/.sapience/sapience_upkeep.py"
+    },
+    {
+      "subject": "sapience_capture.py capture/activation coupling",
+      "value": "Transcript capture extraction is gated by a SEPARATE opt-in list from extension activation: ~/.sapience/config.json's capture.projects[].enabled, matched by longest path_prefix (sapience_capture.py's for_cwd()/match_project(), using _under(): cwd == prefix or cwd.startswith(prefix.rstrip('/') + '/')). Measured live: BimodalLogic and Sapience/sf1-engine both have the sapience extension active but capture disabled/absent, while nvim/.dotfiles/abood/sapience-app have both active and capture enabled -- the two lists happen to be a subset relationship today but nothing enforces it in either direction.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.9,
+      "source_loc": "~/.sapience/sapience_capture.py; ~/.sapience/config.json"
+    },
+    {
+      "subject": "verify-sapience-context-scoping.sh single-run reliability",
+      "value": "A single POST /v1/cli/context real-vs-sentinel project comparison is measurably unreliable: three consecutive runs on this machine returned RESIDUAL_LIFTED once and RESIDUAL_HOLDS twice. A live --repeat 3 run during this task's implementation reproduced that same instability as a genuine 2-vs-1 tally, confirming the instability is a property of the live endpoint (likely server-side per-session repeat-suppression interacting with session-id timing), not a flaw in the probe script itself.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/sapience/scripts/verify-sapience-context-scoping.sh"
+    },
+    {
+      "subject": "~/Projects/abood sapience extension merge state",
+      "value": "~/Projects/abood's .claude-extensions.json records extensions.sapience.status == 'active' but merged_sections.settings carries only 'permissions', no 'hooks' key -- a load that predates this extension's hooks fragment and was never re-merged. This is a ledger-recorded cause distinct from (and can co-occur with) a deployed-file grant/hook-count symptom; both are worth checking independently rather than treating one as redundant with the other.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "~/Projects/abood/.claude-extensions.json"
+    },
+    {
+      "subject": "sync-manifest-scripts.sh git-tracking dependency",
+      "value": "sync-manifest-scripts.sh --write derives each extension's 'on disk' script set from `git ls-files <ext>/scripts`, not a raw filesystem walk. A newly-authored script must be `git add`-staged (not necessarily committed) before the sync will detect it as a missing provides.scripts entry -- an untracked new file is invisible to it.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.9,
+      "source_loc": ".claude/scripts/sync-manifest-scripts.sh"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794933948_6af122",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 9
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
+  }
 }

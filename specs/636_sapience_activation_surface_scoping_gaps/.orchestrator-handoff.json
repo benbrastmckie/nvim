@@ -1,21 +1,26 @@
 {
-  "status": "planned",
-  "dispatch_seq": 8,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 9,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a 6-phase, 6.5-hour implementation plan covering all five dispatched GOAL items, confined to the sapience source store. Phases 1-3 add named checks (g)/(h)/(i) to verify-sapience-mcp.sh (vendor machine-wide hook recurrence, active-but-hook-fragment-never-merged, capture/activation coupling); Phase 4 adds a --repeat N unanimous-agreement verdict to verify-sapience-context-scoping.sh with a new curl-stubbed suite; Phase 5 rewrites the two falsified doc sections; Phase 6 redeploys and runs the complete gate set. GOAL (2)'s reconciliation sub-question is ruled in favor of stopping at the verifier check, with capture.projects[].enabled writing recorded as belonging in ~/.dotfiles.",
+  "summary": "Closed all five dispatched GOAL items in the sapience source store: verify-sapience-mcp.sh gained checks (g) machine-wide vendor hook recurrence, (h) active-but-hook-fragment-never-merged, and (i) capture/activation coupling with the reconciliation ruling recorded inline; verify-sapience-context-scoping.sh gained a --repeat N unanimous-agreement verdict with a new curl-stubbed suite; injection-site-scoping.md and per-repo-scoping.md were rewritten to state the actual design. Redeployed (RESULT=landed_verify_clean) and verified end-to-end: 47 and 6 test cases pass respectively, both new checks reproduce their dispatched live evidence against ~/Projects/abood and ~/Projects/BimodalLogic, and the scoped gate discharge (doc-lint, task-reference lint, the four relevant suites) passes with the full unflagged sweep deferred to the batch-level stage per this dispatch's Batch Gate Deferral directive.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/636_sapience_activation_surface_scoping_gaps/summaries/01_activation-surface-scoping-gaps-summary.md",
+      "summary": "All six plan phases completed: three new verify-sapience-mcp.sh checks (g)/(h)/(i), an N-repeat unanimous-agreement verdict in verify-sapience-context-scoping.sh, two documentation rewrites, and a redeploy plus scoped gate verification."
+    },
+    {
       "type": "plan",
       "path": "specs/636_sapience_activation_surface_scoping_gaps/plans/01_activation-surface-scoping-gaps.md",
-      "summary": "6-phase plan (6.5h) closing the five sapience activation-surface scoping gaps: three new verify-sapience-mcp.sh checks, an N-repeat agreement verdict in the context-scoping probe, two documentation rewrites, and a redeploy plus full gate run."
+      "summary": "6-phase plan, all phases [COMPLETED]."
     }
   ],
   "metadata": {
-    "session_id": "sess_1794907446_b4b581_636",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1794933948_6af122",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }
