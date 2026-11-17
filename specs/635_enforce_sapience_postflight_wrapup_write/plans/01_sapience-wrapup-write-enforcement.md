@@ -480,7 +480,7 @@ budget lock) and report the delta rather than assuming zero.
 
 ---
 
-### Phase 5: Sapience Domain Docs State the Wired Design [IN PROGRESS]
+### Phase 5: Sapience Domain Docs State the Wired Design [COMPLETED]
 
 **Goal**: Make `EXTENSION.md` and `per-repo-scoping.md` describe the mechanism that now exists,
 so a reader is not told the write depends on following an instruction.
