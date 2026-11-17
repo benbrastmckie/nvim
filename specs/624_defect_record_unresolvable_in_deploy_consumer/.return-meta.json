@@ -1,0 +1,37 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/624_defect_record_unresolvable_in_deploy_consumer/reports/01_signal-b-deploy-consumer-resolution.md",
+      "summary": "Reproduces the Signal B --dispatched-agent exit-3 defect live against a real deploy-consumer repository and recommends resolving through .claude-extensions.json's per-extension source_dir field, preserving the existing agent-system/extensions/<ext>/agents/<name>.md resolved-path shape required by the recursion guard and dedup key."
+    }
+  ],
+  "next_steps": "Run /orchestrate 624 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1794942735_1748a1_624",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "A deploy-consumer repository's .claude-extensions.json records, per loaded extension, an absolute source_dir path back to the source-store-holding repository's agent-system/extensions/<ext> directory on the same machine. Any script needing to resolve a source-store-relative identity string (e.g. agent-system/extensions/<ext>/agents/<name>.md for Signal B defect attribution) from a repository that does not itself hold the source store should read this field rather than globbing PROJECT_ROOT/agent-system/**, which only ever exists in the one repository physically hosting the store. Verified live against three real deploy-consumer repos (cslib, ModelChecker, .dotfiles) on this machine.",
+      "category": "PATTERN",
+      "source_artifact": "specs/624_defect_record_unresolvable_in_deploy_consumer/reports/01_signal-b-deploy-consumer-resolution.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["deploy-consumer", "source_dir", "claude-extensions.json", "signal-b-attribution", "system-defect-record"]
+    },
+    {
+      "content": "system-defect-record.sh's resolved_path (Signal B attribution) feeds three downstream consumers that all require its agent-system/extensions/<ext>/** shape to stay stable across repositories: the recursion guard (self_mod_match against orchestrator-critical-paths.json), the defect_key dedup identity, and the persisted attributed_source_path detail field. A fix to its resolution mechanism must reproduce that exact string shape rather than substituting a differently-shaped identifier (a bare agent name, or a deployed .claude/** path), or it silently forks the dedup/recursion-guard key space per repository for the same underlying agent file.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/624_defect_record_unresolvable_in_deploy_consumer/reports/01_signal-b-deploy-consumer-resolution.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["resolved-path-shape", "dedup-key", "recursion-guard", "system-defect-record", "signal-b"]
+    }
+  ],
+  "modified_files": [
+    "specs/624_defect_record_unresolvable_in_deploy_consumer/reports/01_signal-b-deploy-consumer-resolution.md"
+  ],
+  "dispatch_seq": 1
+}

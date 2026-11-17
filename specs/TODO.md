@@ -53,7 +53,7 @@ next_project_number: 643
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
-604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
+604 [RESEARCHING] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — GOAL. Determine what leaves files behind in this repository's...
@@ -112,7 +112,7 @@ next_project_number: 643
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-624 [NOT STARTED] — Make system-defect-record.sh able to attribute a...
+624 [RESEARCHED] — Make system-defect-record.sh able to attribute a...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
@@ -179,7 +179,7 @@ next_project_number: 643
 
 ### Uncategorized
 
-586 [NOT STARTED] — Stand up the suite and gate wall-clock cost consumer: delete,...
+586 [RESEARCHING] — Stand up the suite and gate wall-clock cost consumer: delete,...
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
@@ -861,10 +861,11 @@ duplication -- do not convert it into a dependency edge.
 ---
 
 ### 624. Defect record unresolvable in deploy consumer
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 476, Task 568
+- **Research**: [624_defect_record_unresolvable_in_deploy_consumer/reports/01_signal-b-deploy-consumer-resolution.md]
 
 **Description**: Make system-defect-record.sh able to attribute a dispatched-agent defect from a deploy-consumer repository. Signal B attribution resolves --dispatched-agent by globbing PROJECT_ROOT/agent-system/extensions/*/agents/NAME.md (system-defect-record.sh around line 233), a path that exists only in the repository holding the source store. In any deploy consumer (a repo carrying only the regenerated .claude/** mirror and a .claude-extensions.json) that glob can never match, so the recorder refuses with exit 3 and the message "Signal B attribution unresolvable ... did not resolve to a path under agent-system/extensions/**", and the defect is lost to a non-fatal log line. Reproduced directly: invoking the deployed recorder with --defect-class RECOVERY_DECLINED --dispatched-agent general-research-agent from a consumer repo exits 3 with that message. Observed in the wild twice in one orchestration run, where cycle postflight printed "Note: system-defect recording failed (non-fatal)" for two RECOVERY_DECLINED detections that consequently never reached any durable store. Candidate directions: resolve the source store through .claude-extensions.json source_dir the way the source-store boundary rule already prescribes for edit targets; accept a bare agent name as attribution when no source store is reachable locally; or record the defect against the deployed .claude/agents/NAME.md path. Note the nearest closed records settled adjacent questions and not this one: 258 fixed which defect class and which attribution target apply to a declined recovery, and 426 separated stall from agent fault; neither addresses the resolver being structurally unable to find an agent file outside the source-store repository.
 
@@ -1277,7 +1278,7 @@ failure-side direction.
 ---
 
 ### 604. Lint-time detector for drifted test-fixture dependency declarations, in both the named-array and open-coded shapes
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -2166,7 +2167,7 @@ The documentary check (the rule present at the sited section, reachable from the
 ---
 
 ### 586. Stand up the suite and gate wall-clock cost consumer: delete, optimize, or demote every suite the probe indicts
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Dependencies**: Task 476
 
