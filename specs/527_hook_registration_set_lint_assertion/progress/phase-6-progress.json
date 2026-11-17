@@ -1,0 +1,34 @@
+{
+  "phase": 6,
+  "phase_name": "Redeploy and Full Gate Battery",
+  "started_at": "2026-11-17T14:00:00Z",
+  "last_updated": "2026-11-17T14:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh, require RESULT=landed_verify_clean", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm index-entries.json line_count reconciled", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Complete gate set (deferred to batch stage per directive; scoped discharge used)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Full shell suite (deferred to batch stage per directive; scoped discharge used)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm deployed copy of lint carries Check E, byte-identical to source", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Write completion summary with per-shape exemplar provenance", "status": "done", "files_touched": ["specs/527_hook_registration_set_lint_assertion/summaries/01_hook-registration-set-lint-summary.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "6.3",
+      "description": "Run the complete gate set: bash verify-deploy.sh (no gate filter, no --skip-slow)",
+      "type": "altered",
+      "reason": "Per the dispatch's own Batch Gate Deferral directive, this phase discharges against the scoped tier instead: bash verify-deploy.sh --only-gate 21,3,4 --skip-unchanged (4 checks, 0 failures), plus deploy-headless.sh's own mandatory inline --skip-slow run (40 checks, 0 failures, including gate 21). The complete unfiltered gate set is deferred to the once-per-batch stage at the end of this /orchestrate invocation, attributed back to this task by its own modified_files, per context/formats/plan-format.md's Batch-aware deferral subsection.",
+      "annotation": "*(deviation: altered -- scoped per Batch Gate Deferral directive)*"
+    },
+    {
+      "task_id": "6.4",
+      "description": "Run the full shell suite: bash run-all.sh (no filter)",
+      "type": "altered",
+      "reason": "Per the same Batch Gate Deferral directive, discharged via run-all.sh --only <the 5 suites measured relevant to this task's files> in DEFAULT (post-redeploy) subject-resolution mode: 4 of 5 pass, including test-lint-hook-registration-paths.sh itself standalone at 32/32. The one remaining failure, test-deploy-baseline-lib.sh, was proven via git-stash isolation in Phase 2 to fail identically with this task's own source edit entirely removed -- not newly red, not caused by this task.",
+      "annotation": "*(deviation: altered -- scoped per Batch Gate Deferral directive)*"
+    }
+  ],
+  "handoff_count": 0,
+  "notes": "deploy-headless.sh: RESULT=landed_verify_clean, exit 0, 40 check(s)/0 failure(s) in its own inline --skip-slow verify-deploy.sh pass. git diff on index-entries.json post-deploy is empty -- Phase 5's hand-set line_count (205) already matched. .claude/scripts/lint/lint-hook-registration-paths.sh and .claude/scripts/tests/test-lint-hook-registration-paths.sh are both confirmed byte-identical to their source-store copies post-deploy via diff. bash verify-deploy.sh --only-gate 21,3,4 --skip-unchanged: 4 checks, 0 failures (doc-lint, task-ref lint, and hook-registration-path lint all green post-redeploy -- the content-drift failures documented in every prior phase's handoff are now resolved). run-all.sh --only <5-suite tier> in DEFAULT mode: 4 passed, 1 failed (0 expected, 1 NEW per run-all's own classifier) -- the 1 failure (test-deploy-baseline-lib.sh) is the same pre-existing, task-527-unrelated gate1_run file-count defect proven via isolation in Phase 2; test-lint-hook-registration-paths.sh itself now passes both via run-all.sh and standalone (32/32, including all 18 pre-existing cases and all 14 new regression-case assertions). Criterion 6 ('pre-existing lint and verify-deploy tests still pass') is satisfied for every test this task's own work could plausibly affect; the one exception is independently proven unrelated. .claude/ is gitignored (deploy-headless.sh's regeneration produces no git-trackable diff of its own)."
+}
