@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794792661_b8da9f_637",
-  "dispatch_seq": 1,
-  "findings_count": 7,
-  "next_steps": "Run /orchestrate 637 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/637_make_sapience_extension_fully_functional/reports/02_scoping-and-remaining-gaps.md",
-      "summary": "Resolves the absorb/depend/expand question for tasks 635/636/628 (recommends depend-on, not absorb/expand), confirms F5 (prompt-time injection scoping) is already a closed, vendor-owned residual with no further local action, and narrows the open F6 capture-stall question with live-machine evidence pointing to a manual-invocation gap rather than a code defect, recommending it be appended to task 636 rather than filed separately."
+      "type": "plan",
+      "path": "specs/637_make_sapience_extension_fully_functional/plans/02_cross-repo-closeout-verification.md",
+      "summary": "4-phase (3-wave, 4.75h) closeout plan: cross-repo baseline, verify-sapience-mcp.sh check (j) with fixtures, capture-scheduling and residual-probe documentation, then five-repository redeploy and acceptance sweep."
     }
   ],
+  "phase_count": 4,
+  "estimated_hours": 4.75,
+  "dependency_waves": 3,
+  "next_steps": "Run /orchestrate 637 to execute the plan",
   "memory_candidates": [
     {
-      "content": "Sapience's live per-turn transcript capture (sapience_cli.py's cc_capture/cc_flush, posting to POST /v1/cc/turn via a ~/.sapience/cc-outbox/ queue, gated on a server-driven cc_sessions flag in cli-state.json) is architecturally SEPARATE from the batch extraction pipeline that populates ~/.sapience/extracted.json and pending_kos.jsonl. The two can diverge independently: cc-outbox/ may never have fired (directory absent) while the batch pipeline ran once and then stalled, with no systemd timer or crontab entry driving either on this machine -- the batch pipeline's triggering verb (sapience sync/review/coverage) appears to be manual-only.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/637_make_sapience_extension_fully_functional/reports/02_scoping-and-remaining-gaps.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["sapience", "transcript-capture", "cc_outbox", "extracted.json", "scheduling"]
-    },
-    {
-      "content": "verify-sapience-context-scoping.sh's RESIDUAL_HOLDS outcome is documented, in the script's own header and in injection-site-scoping.md, as the EXPECTED green state today (a vendor-owned foreclosure with no local remedy), not a failure condition. A task description that frames eliminating RESIDUAL_HOLDS as an acceptance criterion is describing something this repository has no mechanism to close -- check the extension's own domain docs before writing an acceptance bar against one of its documented verification probes.",
+      "content": "A research recommendation that requires mutating ANOTHER open task's description (e.g. 'append this goal item to task X before X enters planning') has no mechanical carrier in the orchestrate lifecycle: nothing re-reads a prior task's research report at the next task's dispatch, so the append silently never happens and the item is unowned once X completes. Site such an item in the task whose own plan phase will execute it, or in a records/ file the dependent task's dispatch actually reads.",
       "category": "PATTERN",
-      "source_artifact": "specs/637_make_sapience_extension_fully_functional/reports/02_scoping-and-remaining-gaps.md",
+      "source_artifact": "specs/637_make_sapience_extension_fully_functional/plans/02_cross-repo-closeout-verification.md",
       "confidence": 0.8,
-      "suggested_keywords": ["sapience", "verify-sapience-context-scoping", "RESIDUAL_HOLDS", "vendor-owned", "acceptance-criteria"]
+      "suggested_keywords": ["research-recommendation", "cross-task-dependency", "orchestrate-lifecycle", "unowned-scope", "task-siting"]
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1794933948_6af122_637",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "dispatch_seq": 10
 }

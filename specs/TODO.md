@@ -175,7 +175,7 @@ next_project_number: 643
 
 ### Sapience
 
-637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
+637 [PLANNED] — Make the sapience extension fully functional across loaded...
 
 ### Decidability
 
@@ -504,11 +504,12 @@ TERRITORY, SETTLED AT CREATION. Task 547 ("Confirm the blocker-research aux carr
 ---
 
 ### 637. Make sapience extension fully functional
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: general
 - **Topic**: sapience
 - **Dependencies**: Task 628, Task 635, Task 636
 - **Research**: [637_make_sapience_extension_fully_functional/reports/02_scoping-and-remaining-gaps.md]
+- **Plan**: [637_make_sapience_extension_fully_functional/plans/02_cross-repo-closeout-verification.md]
 
 **Description**: Make the sapience extension fully functional across loaded repositories: tagged postflight writes fire reliably in every loaded repo (no tagged notes after Nov 13 anywhere; zero ever in .dotfiles, BimodalLogic, sf1-engine despite completed tasks, with no failures logged), prompt-time hook injection is repo-filtered or otherwise bounded (POST /v1/cli/context ignores the repo identifier; probe returns RESIDUAL_HOLDS), transcript capture sync is restored and its opt-in project list agrees with the set of loaded repos (stalled since Nov 13; BimodalLogic disabled, sf1-engine absent), and verify-sapience-mcp.sh check (e) stops failing on the additive-merge 11-vs-7 grant residual. Out of scope: repairing the half-deployed abood repo (on hold). Overlaps open tasks 635, 636 and 628. Seed report: specs/637_make_sapience_extension_fully_functional/reports/01_seed-audit-findings.md
 

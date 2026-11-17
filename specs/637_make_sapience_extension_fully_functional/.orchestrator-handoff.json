@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 10,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase, 4.75-hour plan (3 waves) closing task 637 as a cross-repo verification pass plus one new mechanism. Planning-time measurement confirmed the three dependency tasks (628, 635, 636) all completed and that goals 1 and 4 are already satisfied in all five healthy loaded repos, so the plan builds only verify-sapience-mcp.sh check (j) (postflight tagged-write reachability, with fixture coverage) and otherwise measures, documents, and redeploys. Goal 2's RESIDUAL_HOLDS bar and goal 3's capture-restoration bar are re-read on the record as a vendor-owned foreclosure and an out-of-repository (~/.dotfiles) scheduling/ownership matter respectively, with the two user-owned levers raised as a non-blocking user_decision in the final phase.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/637_make_sapience_extension_fully_functional/plans/02_cross-repo-closeout-verification.md",
+      "summary": "4-phase (3-wave, 4.75h) closeout plan: cross-repo baseline, verify-sapience-mcp.sh check (j) with fixtures, capture-scheduling and residual-probe documentation, then five-repository redeploy and acceptance sweep."
+    }
+  ]
+}
