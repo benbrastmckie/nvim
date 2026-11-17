@@ -197,6 +197,7 @@ test-stall-reprompt-wiring.sh	unit	-
 test-status-vocabulary.sh	unit	-
 test-subagent-postflight-marker.sh	unit	-
 test-sweep-invalidated-claims.sh	unit	-
+test-system-defect-record-signal-b.sh	unit	-
 test-task-lock-liveness.sh	unit	-
 test-task-lock-queue.sh	unit	-
 test-task-reference-patterns-lib.sh	unit	-

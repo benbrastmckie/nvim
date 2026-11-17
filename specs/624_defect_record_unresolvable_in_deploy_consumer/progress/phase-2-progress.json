@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Regression suite for Signal B resolution",
+  "started_at": "2026-11-17T23:05:00Z",
+  "last_updated": "2026-11-17T23:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-system-defect-record-signal-b.sh fixture suite, cases (a)-(d)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-system-defect-record-signal-b.sh"]},
+    {"id": 2, "description": "Build per-case .claude/scripts-shaped fixtures with subject + sibling deps", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Case (a) consumer route resolves", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Case (b) non-core extension discrimination", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Case (c) glob route unchanged", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Case (d) refusal preserved", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Add suite-classification.data row", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/suite-classification.data"]},
+    {"id": 8, "description": "sync-manifest-scripts.sh --write then --check", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "verify-deploy.sh --skip-slow --only-gate 3,4 reports gate 3 FAIL solely due to Rule F deployed-vs-source content drift for system-defect-record.sh and suite-classification.data -- both files this plan is actively editing and not yet deployed. This is the exact caveat the plan's Phase 2 Verification note anticipates ('a pass here is never evidence doc-sync pins hold -- Phase 4 carries that'); no other/unexpected finding was reported, and gate 4 (task-reference lint) passed clean. Resolution deferred to Phase 4's deploy-headless.sh run."
+}

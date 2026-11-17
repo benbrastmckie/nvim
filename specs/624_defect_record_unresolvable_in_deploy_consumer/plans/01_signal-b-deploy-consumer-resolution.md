@@ -208,46 +208,52 @@ covering check is `bash agent-system/extensions/core/scripts/tests/run-all.sh --
 
 ---
 
-### Phase 2: Regression suite for Signal B resolution [NOT STARTED]
+### Phase 2: Regression suite for Signal B resolution [COMPLETED]
 
 **Goal**: a dedicated fixture suite pins consumer-route resolution, the exact resolved-path
 string, the unchanged glob route, and the preserved exit-3 refusal — and is declared everywhere
 the corpus requires.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-system-defect-record-signal-b.sh`,
+- [x] Create `agent-system/extensions/core/scripts/tests/test-system-defect-record-signal-b.sh`,
       modelled structurally on `tests/test-deploy-root-guard.sh`: `common_test_repo_root`,
       `common_test_resolve_subject "system-defect-record.sh" "source-store" ...`,
       `common_test_declare_subject`, `common_test_workdir_init`, `common_test_pass`/`_fail`,
-      exit 0/1/2 convention.
-- [ ] Build each case's fixture as `<workdir>/<case>/.claude/scripts/` (so
+      exit 0/1/2 convention. *(completed)*
+- [x] Build each case's fixture as `<workdir>/<case>/.claude/scripts/` (so
       `common_repo_root "$SCRIPT_DIR" 2` resolves `PROJECT_ROOT` to `<workdir>/<case>` by pure
       path arithmetic, no git root needed) holding the resolved subject plus its four sibling
       dependencies — `deploy-root-guard.sh`, `lib/common.sh`, `lib/file-scope-overlap.sh` — and,
       where the case needs it, `<case>/.claude/context/reference/orchestrator-critical-paths.json`.
-- [ ] Case (a) consumer route resolves: fixture root has a `.claude-extensions.json` whose
+      *(completed: the subject's own source lists exactly three sourced sibling dependencies —
+      `deploy-root-guard.sh`, `lib/common.sh`, `lib/file-scope-overlap.sh` — confirmed by reading
+      the subject before editing; the plan's "four" count here is a slip against its own listed
+      three names, not a missed dependency)*
+- [x] Case (a) consumer route resolves: fixture root has a `.claude-extensions.json` whose
       `.extensions.core.source_dir` points at a throwaway `<case>/fake-store/core` containing
       `agents/fixture-probe-agent.md`, and NO `agent-system/` subtree. Fixture critical-paths
       file marks `agent-system/extensions/core/agents/fixture-probe-agent.md` as
       `recursion_guard: true`; assert exit 0, stdout `SUPPRESSED:recursion_guard`, and stderr
-      quoting that exact path — pinning both resolution and the path shape.
-- [ ] Case (b) non-core extension discrimination: same shape with the `source_dir` under a second
+      quoting that exact path — pinning both resolution and the path shape. *(completed)*
+- [x] Case (b) non-core extension discrimination: same shape with the `source_dir` under a second
       extension key (e.g. `lean`), asserting the resolved path names that key, not `core`.
-- [ ] Case (c) glob route unchanged: fixture root has a literal
+      *(completed)*
+- [x] Case (c) glob route unchanged: fixture root has a literal
       `<case>/agent-system/extensions/core/agents/fixture-probe-agent.md` and NO
       `.claude-extensions.json`; assert the identical resolved path, proving no regression.
-- [ ] Case (d) refusal preserved: `.claude-extensions.json` present but `core.source_dir` points
+      *(completed)*
+- [x] Case (d) refusal preserved: `.claude-extensions.json` present but `core.source_dir` points
       at a nonexistent directory, and no agents file anywhere; assert exit 3 and the unchanged
-      `Signal B attribution unresolvable` message.
-- [ ] Add one `suite-classification.data` row for the new suite (`unit` — the cases are
+      `Signal B attribution unresolvable` message. *(completed)*
+- [x] Add one `suite-classification.data` row for the new suite (`unit` — the cases are
       self-contained fixtures spawning no nested orchestration), satisfying
       `lint/lint-unit-integration-boundary.sh`'s coverage-gap rule that an unclassified
-      discovered suite is itself a violation.
-- [ ] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` to insert
+      discovered suite is itself a violation. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` to insert
       the new suite into `agent-system/extensions/core/manifest.json`'s `provides.scripts`, then
       `--check` to confirm clean; this is the generated surface `check-extension-docs.sh`'s
-      Rule Q (gate 3) blocks on.
-- [ ] Commit with an explicit three-file pathspec.
+      Rule Q (gate 3) blocks on. *(completed)*
+- [x] Commit with an explicit three-file pathspec. *(completed)*
 
 **Timing**: 1.5 hours
 
