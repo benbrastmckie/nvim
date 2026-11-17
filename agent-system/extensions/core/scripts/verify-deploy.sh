@@ -2400,6 +2400,34 @@ say ""
 fi
 }
 
+gate30_run() {
+if gate_selected 30; then
+say "30. Fixture dependency declaration lint (lint-fixture-dependency-declaration.sh)"
+CURRENT_GATE="gate30"
+if [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- fixture dependency declaration lint does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/lint/lint-fixture-dependency-declaration.sh" ]; then
+  fail "lint-fixture-dependency-declaration.sh not found in source store"
+else
+  fixture_dependency_declaration_lint_output=$(cd "$TARGET" && REPO_ROOT="$TARGET" bash "$TARGET/agent-system/extensions/core/scripts/lint/lint-fixture-dependency-declaration.sh" --verbose 2>&1)
+  fixture_dependency_declaration_lint_status=$?
+  if [ "$fixture_dependency_declaration_lint_status" -eq 0 ]; then
+    pass "fixture dependency declaration lint reports no undeclared mandatory fixture dependency"
+  else
+    fail "fixture dependency declaration lint reported an undeclared mandatory fixture dependency" \
+         "re-run for detail: bash agent-system/extensions/core/scripts/lint/lint-fixture-dependency-declaration.sh --verbose" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r fixture_dependency_declaration_lint_line; do
+        FINDINGS_LIST+=("FINDING gate30 $fixture_dependency_declaration_lint_line")
+      done < <(verify_deploy_extract_verdict_lines '[VIOLATION]' "$fixture_dependency_declaration_lint_output")
+    fi
+  fi
+fi
+
+say ""
+fi
+}
+
 # Per-gate bounded execution (Phase 6, "Uniform Bounded Timeouts Per Gate and Per Suite"): each
 # gate's declared `timeout_s` (gate-registry.data) is now enforced via
 # gate_registry_exec_bounded, which runs the gate's invoke function and, on a clean finish,

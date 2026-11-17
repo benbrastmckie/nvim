@@ -328,32 +328,36 @@ this phase creates (every case passing) plus `bash <repo_root>/.claude/scripts/v
 
 ---
 
-### Phase 3: Gate registration [NOT STARTED]
+### Phase 3: Gate registration [COMPLETED]
 
 **Goal**: the detector is registered as the next contiguous `verify-deploy.sh` gate (route (a)),
 with a `gate<id>_run` function structurally copied from `gate29_run`.
 
 **Tasks**:
-- [ ] **RE-READ `agent-system/extensions/core/scripts/gate-registry.data` immediately before
+- [x] **RE-READ `agent-system/extensions/core/scripts/gate-registry.data` immediately before
       editing.** Compute the new id as `max(existing id) + 1` at edit time; do **not** hardcode
       30. Concurrent siblings #584 and #601 may each have appended a row, and
       `lint-gate-registry.sh` enforces a contiguous range starting at 1, so a stale assumed id
-      breaks the registry
-- [ ] Append one TAB-separated 9-field row:
+      breaks the registry *(completed: re-read at edit time found max=29 unchanged, so the
+      computed id is in fact 30 -- no concurrent sibling had appended a row yet)*
+- [x] Append one TAB-separated 9-field row:
       `<id>` / `Fixture dependency declaration lint (lint-fixture-dependency-declaration.sh)` /
       `gate<id>_run` / `-` / `true` / `30` / `free` / `false` /
       `agent-system/extensions/core/scripts/tests/*.sh`. The `timeout_s=30` / `cost_class=free`
       budget is matched to gates 27 and 29, which scan this same corpus. `-` for `dependencies`
-      is the required placeholder, never a genuinely empty field
-- [ ] Re-read `agent-system/extensions/core/scripts/verify-deploy.sh`, then add `gate<id>_run` as
+      is the required placeholder, never a genuinely empty field *(completed)*
+- [x] Re-read `agent-system/extensions/core/scripts/verify-deploy.sh`, then add `gate<id>_run` as
       a verbatim structural copy of `gate29_run`: the `gate_selected <id>` guard, the
       `say "<id>. ..."` line, `CURRENT_GATE`, the `[SKIP]` branch for a `$TARGET` that is a deploy
       consumer rather than the source store, the `fail` branch for a missing lint script, and the
       `pass`/`fail` + `FINDINGS_LIST` population from
       `verify_deploy_extract_verdict_lines '[VIOLATION]'`. No new `verify-deploy.sh` mechanism is
-      required
-- [ ] Add no `gate-cost-model.csv` row, no `suite-cost-hints.txt` or `known-failures.txt` entry,
-      and no `utility-scripts-inventory.md` entry (see Decisions for each)
+      required *(completed: gate30_run added verbatim-structurally after gate29_run, before the
+      Per-gate bounded execution comment block; no central dispatch table needed editing, since
+      the gate loop derives `gate${id}_run` from the registry automatically)*
+- [x] Add no `gate-cost-model.csv` row, no `suite-cost-hints.txt` or `known-failures.txt` entry,
+      and no `utility-scripts-inventory.md` entry (see Decisions for each) *(completed: none
+      added)*
 
 **Timing**: 45 minutes
 
