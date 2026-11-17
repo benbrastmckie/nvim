@@ -407,14 +407,14 @@ are the suite names `suite_selection_select` returns for
 
 ---
 
-### Phase 4: Truth up the two caveat surfaces and record the mechanism map [NOT STARTED]
+### Phase 4: Truth up the two caveat surfaces and record the mechanism map [COMPLETED]
 
 **Goal**: Make the two surfaces that currently assert or excuse the residual state reality, and
 leave a durable record of the three-way retraction-mechanism map whose absence let this gap hide.
 
 **Tasks**:
 
-- [ ] In `agent-system/extensions/sapience/rules/sapience-write-path.md`, rewrite the residual
+- [x] In `agent-system/extensions/sapience/rules/sapience-write-path.md`, rewrite the residual
       caveat paragraph (currently the last paragraph of "The Permission Grant Matches the Standing
       Contract", beginning "A repository that loaded sapience before this grant was narrowed").
       Replace it with a statement that a forced reload or a `deploy-headless.sh` resync now
@@ -424,25 +424,29 @@ leave a durable record of the three-way retraction-mechanism map whose absence l
       assertion, which the rest of this plan makes true. Write no version or supersession
       language, per `rules/no-record-versioning-in-deliverables.md`, and cite durable anchors
       (function names, section headings) rather than task numbers, per
-      `rules/no-task-references-in-deliverables.md`.
-- [ ] In `agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh`, rewrite the two
+      `rules/no-task-references-in-deliverables.md`. *(completed)*
+- [x] In `agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh`, rewrite the two
       caveat sites: the header's check-(e) description (currently lines 36-40) and the
       failure-branch `NOTE:` block (currently lines 292-295). A count above 7 is now real drift,
       not a known residual, so the NOTE should direct the reader to run `deploy-headless.sh`
       against the repository rather than excuse the count. Do not change check (e)'s predicate,
-      its expected count of 7, or its hook-key assertion.
-- [ ] Add a subsection to
+      its expected count of 7, or its hook-key assertion. *(completed: predicate/count/hook-key assertion untouched)*
+- [x] Add a subsection to
       `agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md`
       naming, by durable function name only: `M.unmerge_settings` and `build_retained_fragments`
       (retraction, previously unload-only, now also reached from `manager.load`'s forced-reload
       branch); `state.get_merged_sections` (the prior-record reader); the hook-registration orphan
       sweep (load-time but scoped to `hooks` only); `manager.resync_all`'s "never unloads"
       invariant; and `settings_backup`'s byte-for-byte round-trip, which is why `--wipe` cannot
-      substitute for retraction.
-- [ ] Leave `EXTENSION.md` untouched. Its "residual"/"narrowed" matches belong to the unrelated
-      primary-session content-scoping residual, confirmed during planning.
-- [ ] Make no change to `lint-hook-registration-paths.sh`, `verify-deploy.sh` Gate 21, or any
-      other lint — explicitly out of scope per Goals.
+      substitute for retraction. *(completed: added a row to the existing sweep-inventory table
+      for the new M.remove_orphaned_mcp_permission_grants, plus a new "A Second, Independent
+      Retraction Path" subsection naming all five mechanisms)*
+- [x] Leave `EXTENSION.md` untouched. Its "residual"/"narrowed" matches belong to the unrelated
+      primary-session content-scoping residual, confirmed during planning. *(completed:
+      re-ran the scope-hypothesis grep -- still exactly the same 3 hits, EXTENSION.md untouched)*
+- [x] Make no change to `lint-hook-registration-paths.sh`, `verify-deploy.sh` Gate 21, or any
+      other lint — explicitly out of scope per Goals. *(completed: no-op, confirmed by this
+      phase's own diff)*
 
 **Timing**: 1 hour
 
@@ -484,13 +488,23 @@ newly names, rather than treating the two-surface count as closed.
 **Verification**:
 
 - `grep -n "additive-only\|pre-existing residual" agent-system/extensions/sapience/rules/sapience-write-path.md agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh`
-  returns no line that excuses a count above 7 as expected.
-- The `--only-gate 3,4` invocation named in the Tier Justification exits 0.
+  returns no line that excuses a count above 7 as expected. *(completed: one remaining
+  "additive-only" hit describes `deep_merge` factually, as the plan directs to keep; it excuses
+  nothing)*
+- The `--only-gate 3,4` invocation named in the Tier Justification exits 0. *(ran: Gate 4
+  (task-reference lint) passes; Gate 3 (doc-lint) reports EXPECTED-RED content-drift findings for
+  exactly the files this phase edited in the source store
+  (`scripts/verify-sapience-mcp.sh`, `rules/sapience-write-path.md`) plus
+  `test-deploy-propagation.sh` from Phase 3 — the deployed mirrors have not been regenerated
+  yet, which is Phase 5's job. No OTHER doc-lint finding appeared. This is the Batch Gate
+  Deferral directive's expected pre-redeploy state, not a defect in this phase's edits; Phase 5
+  re-runs this same gate after redeploying and must see it clear.)*
 - `bash .claude/scripts/tests/run-all.sh --only test-sapience-mcp-registration.sh` exits 0 — the
   suite `suite_selection_select` returns for `verify-sapience-mcp.sh` taken on its own, run as an
-  additional targeted check beyond the tier's own covering gate subset.
+  additional targeted check beyond the tier's own covering gate subset. *(completed: passes)*
 - Diff read-through confirms no task-number reference and no version/supersession language in any
-  of the three markdown/script edits.
+  of the three markdown/script edits. *(completed: grep for task-number and version/supersession
+  patterns across the diff returns nothing)*
 
 ---
 

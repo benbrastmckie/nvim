@@ -103,6 +103,7 @@ up after itself"):
 |---|---|---|
 | Context index entries (`.claude/context/index.json`) | `M.remove_orphaned_index_entries` | `manager.load`, before `process_merge_targets` |
 | Hook registrations (`.claude/settings.json` / `.claude/settings.local.json`'s `hooks` key) | `M.remove_orphaned_hook_registrations` | `manager.load`, inside `process_merge_targets`, immediately before the settings merge |
+| `permissions.allow` MCP-tool grants (`mcp__<server>__*` strings, within `merge_targets.settings`) | `M.remove_orphaned_mcp_permission_grants` | `manager.load`, inside `process_merge_targets`, immediately before the settings merge |
 | MCP server registrations (`merge_targets.mcp`, e.g. a project's `.mcp.json`) | **none** | — |
 
 The MCP-server row is a known, deliberately uncovered gap: `merge_targets.mcp` rides the exact
@@ -110,6 +111,38 @@ same `merge_settings`/`deep_merge` path as hook registrations and has the identi
 add-and-change-but-not-delete exposure, but no orphan sweep exists for it today. A removed MCP
 server declaration will survive in an already-deployed `.mcp.json` the exact same way an
 unswept hook registration does.
+
+### A Second, Independent Retraction Path: the Tracked-Record Unmerge
+
+Distinct from the three orphan sweeps in the table above (which reason from what CURRENTLY
+LOADED extensions' CURRENT fragments declare, never from history), a SECOND retraction
+mechanism exists, reached from a different call site: `M.unmerge_settings` plus its
+sibling-retention guard `build_retained_fragments`. Before this task, the only caller was
+`manager.unload` — an explicit, user-initiated unload of an extension, which reads the
+extension's own prior tracked record via `state.get_merged_sections` and reverses exactly what
+that record says this extension's own most recent merge added.
+
+`manager.load`'s forced-reload branch (`manager.resync_all`'s "never unloads" invariant, which
+`deploy-headless.sh`'s default resync mode always exercises, force-reloads every active
+extension in place rather than unloading and reloading it) now ALSO calls this same pair,
+retracting the extension's own prior tracked `merged_sections` immediately before
+`process_merge_targets` re-merges its current fragment. This closes a gap that let a narrowed
+fragment's removed entries survive indefinitely in an already-loaded repository: before this
+addition, a forced reload only ever ADDED (via `deep_merge`'s additive-only semantics,
+unchanged and still load-bearing for `manager.unload` itself), never retracted.
+
+**Why the orphan sweep above exists ALONGSIDE this tracked-record retraction, not instead of
+it**: `state.mark_loaded` overwrites an extension's tracked `merged_sections` wholesale on every
+load/reload, so once a fragment has been narrowed and then force-reloaded even ONCE under an
+engine that lacks this retraction step, the wide historical tracked record is gone for good —
+there is nothing left on disk recording that an already-removed-from-the-fragment grant was
+ever this extension's own. The tracked-record retraction is correct and sufficient for a
+fragment narrowed AFTER this fix exists; the orphan sweep is what recovers a repository whose
+drift already happened before it did. `settings_backup`'s byte-for-byte round-trip (see "Why No
+Loader Operation Heals a Pre-Sweep Deploy" above) is why `deploy-headless.sh --wipe` cannot
+substitute for either mechanism: a wipe restores the pre-wipe snapshot as the merge base before
+re-running fragments on top of it, reintroducing the exact same stale grants rather than
+clearing them.
 
 **The hook-registration sweep's mandatory carve-out** is part of the invariant, not an
 implementation detail: a command not recognizable as a source-store hook invocation — including

@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Truth up the two caveat surfaces and record the mechanism map",
+  "started_at": "2026-11-17T19:20:00Z",
+  "last_updated": "2026-11-17T19:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite sapience-write-path.md residual caveat paragraph", "status": "done", "files_touched": ["agent-system/extensions/sapience/rules/sapience-write-path.md"]},
+    {"id": 2, "description": "Rewrite verify-sapience-mcp.sh header description and failure-branch NOTE", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh"]},
+    {"id": 3, "description": "Add mechanism-map subsection to source-store-deploy-boundary-narrative.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md"]},
+    {"id": 4, "description": "Reconcile index-entries.json line_count for the narrative file", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 5, "description": "Confirm EXTENSION.md untouched and no other lint changed", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

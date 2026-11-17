@@ -34,10 +34,9 @@
 #   (d) the SessionStart entry is present in $HOME/.claude/settings.json (catches a post-switch
 #       durability loss)
 #   (e) the merged .claude/settings.local.json carries all 7 permission grants and all 5 hooks,
-#       when the extension is loaded in this project. A repository that loaded sapience BEFORE
-#       the grant was narrowed to 7 keeps its already-merged write-tool entries (the merge
-#       engine is additive-only), so a count above 7 there is a known pre-existing residual, not
-#       new drift.
+#       when the extension is loaded in this project. manager.load's forced-reload branch
+#       retracts a narrowed grant on a `deploy-headless.sh` resync, so a count above 7 here is
+#       real drift -- re-run `deploy-headless.sh` against this repository to converge it.
 #   (f) when CWD is a linked git worktree, asserts the worktree itself carries NO
 #       mcp__sapience__* permission grant and none of the five sapience hook keys -- the
 #       hook/permission-grant channel is deliberately absent from a worktree even though MCP
@@ -289,10 +288,10 @@ if [ -f "$MERGED_SETTINGS" ]; then
         else
             fail "(e) merged $MERGED_SETTINGS has $GRANT_COUNT/7 sapience grants and hook keys $HOOK_KEYS (expected $EXPECTED_HOOK_KEYS)"
             log ""
-            log "  NOTE: a repository that loaded sapience before the grant was narrowed to 7"
-            log "  keeps its already-merged write-tool entries (the merge engine is"
-            log "  additive-only); a count above 7 there is a known pre-existing residual, not"
-            log "  new drift introduced by this check."
+            log "  NOTE: a grant count above 7 is real drift, not an expected residual -- run"
+            log "  deploy-headless.sh against this repository: manager.load's forced-reload"
+            log "  branch retracts a narrowed grant (and sweeps any leftover mcp__sapience__*"
+            log "  write-tool entry) on an ordinary resync."
             OVERALL_OK=false
         fi
     else

@@ -68,7 +68,9 @@ in a headless/autonomous run, rather than succeeding silently. Nothing legitimat
 prescribed write path (`scripts/sapience-remember.sh`'s `POST /ingest-kos` call) needs no MCP
 grant at all, because it is a Bash script call, not an MCP tool invocation.
 
-A repository that loaded sapience before this grant was narrowed keeps the already-merged
-write-tool entries in its own `.claude/settings.local.json` until the additive-only merge engine
-gains retraction, or the file is hand-edited; a fresh load or a fresh deploy gets the seven-tool
-grant directly.
+`deep_merge` itself remains additive-only by design (load-bearing for `manager.unload`'s own
+tracked-removal path, which a merge's own tracking record depends on). Retraction is a separate
+step: `manager.load`'s forced-reload branch now unmerges an extension's own prior tracked record
+before re-merging its current fragment, and sweeps any `mcp__<server>__`-prefixed grant left
+behind by a fragment that has since narrowed. Both a forced reload of an already-loaded
+repository and a fresh load/deploy converge on the seven-tool grant.
