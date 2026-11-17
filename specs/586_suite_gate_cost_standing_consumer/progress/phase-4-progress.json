@@ -1,0 +1,29 @@
+{
+  "phase": 4,
+  "phase_name": "Re-Measure Both Probe Artifacts Against the Optimized System",
+  "started_at": "2026-11-17T20:44:27Z",
+  "last_updated": "2026-11-17T21:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Check host idleness (1-minute load) before invoking anything", "status": "done", "files_touched": [], "note": "1-minute load 1.49-1.77 before starting, under the 2.0 threshold"},
+    {"id": 2, "description": "Re-time the two expensive suites via bounded waiter", "status": "done", "files_touched": [], "note": "test-verify-deploy-gate-selection-crash-net.sh: 78.68s (down from 148.6s hint, clean foreground run, load confirmed idle throughout). test-gate-cache-equivalence.sh: 576.6s wall time, via a properly PID-captured bounded kill-0 waiter after harness auto-backgrounding; load was NOT checked during this ~580s run and was found at 3.26-3.86 immediately after (concurrent lake shake build at 486% CPU, a Sapience hook at 99.6% CPU, multiple other claude sessions/zoom/browser active) -- CONTAMINATED-SUSPECTED, not a confirmed regression."},
+    {"id": 3, "description": "Regenerate suite-level hints (measure-gate-costs.sh --regen-hints)", "status": "blocked", "files_touched": [], "note": "NOT attempted: host load 3.26-3.86 at decision point, above the 2.0 threshold. Per the plan's Risk table, do not raise --load-threshold; do not let a contaminated sample overwrite an ALL_VALID=true artifact."},
+    {"id": 4, "description": "Regenerate gate cost model (measure-gate-costs.sh)", "status": "blocked", "files_touched": [], "note": "Blocked for the same reason as objective 3."},
+    {"id": 5, "description": "Re-read both artifacts, confirm no foreign modification, stage explicitly", "status": "not_started", "files_touched": []},
+    {"id": 6, "description": "Record realized total saving", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "Plain foreground `timeout 580 bash test-gate-cache-equivalence.sh` with Bash tool timeout=600000ms", "result": "failed", "reason": "Harness auto-backgrounded the call at a fixed ~180s mark regardless of the declared 600000ms tool timeout parameter -- a harness behavior distinct from the documented 120000ms-default/600000ms-ceiling model. Recovered the real PID via /proc/*/fd/1 symlink matching against the known log path (never a process-name/argv search, per bounded-build-waiter.md Rule 2), then used the canonical kill-0 idiom to resolve the wait properly."},
+    {"approach": "A second redundant poll-loop Bash call (brxrn7awd) watching the same log file", "result": "failed", "reason": "Also got auto-backgrounded at 180s, creating a second overlapping waiter -- violates bounded-build-waiter.md Rule 4 (one waiter per log). Stopped via TaskStop immediately; replaced with a single PID-captured kill-0 poll instead."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.3-4.6",
+      "description": "Regenerate gate-cost-model.csv and suite-cost-hints.txt",
+      "type": "deferred",
+      "reason": "Host load rose to 3.26-3.86 (above the 2.0 threshold) by the time objective 2's measurements completed; measure-gate-costs.sh's own load guard would refuse to record under this load, and the plan's own Risk table and Rollback/Contingency section explicitly sanction leaving Phase 4 [PARTIAL] with the observed load recorded rather than raising --load-threshold or accepting a contaminated artifact.",
+      "annotation": "*(deviation: deferred -- host load 3.26-3.86 at decision point, above the 2.0 threshold)*"
+    }
+  ]
+}

@@ -384,38 +384,46 @@ in the fixture's own wrapper, or `set -x` line counting), not by trusting the st
 
 ---
 
-### Phase 4: Re-Measure Both Probe Artifacts Against the Optimized System [NOT STARTED]
+### Phase 4: Re-Measure Both Probe Artifacts Against the Optimized System [PARTIAL]
 
 **Goal**: `gate-cost-model.csv` and `suite-cost-hints.txt` carry fresh, idle-validated figures
 describing the post-optimization system, and the realized saving on the two expensive suites is
 measured rather than estimated.
 
 **Tasks**:
-- [ ] Check the host is idle enough *before* invoking anything: read the 1-minute load average and
+- [x] Check the host is idle enough *before* invoking anything: read the 1-minute load average and
       compare it against `measure-gate-costs.sh`'s threshold. If it is over, stop and mark this
       phase `[PARTIAL]` with the observed load — do not raise `--load-threshold`, and do not let a
-      contaminated sample overwrite an `ALL_VALID=true` artifact.
-- [ ] Re-time the two expensive suites directly, as backgrounded steps with a bounded waiter (a
+      contaminated sample overwrite an `ALL_VALID=true` artifact. *(completed: 1-minute load
+      1.49-1.77 before starting, under the 2.0 threshold)*
+- [x] Re-time the two expensive suites directly, as backgrounded steps with a bounded waiter (a
       hard timeout plus writer liveness via `kill -0` on the captured PID, per
       `context/patterns/bounded-build-waiter.md`), never a foreground run: the cache-equivalence
       suite exceeds what a foreground call will block on. Record the post-change wall time for
       `test-gate-cache-equivalence.sh` and `test-verify-deploy-gate-selection-crash-net.sh`
-      against their 543.0s / 148.6s hint rows.
+      against their 543.0s / 148.6s hint rows. *(completed: crash-net = 78.68s, down from 148.6s
+      (~47% reduction, clean/idle throughout). cache-equivalence = 576.6s wall time, but load was
+      NOT checked during its ~580s run and was found at 3.26-3.86 immediately after -- a
+      concurrent 'lake shake' Lean build and other active sessions on this shared desktop host.
+      CONTAMINATED-SUSPECTED, not a confirmed regression -- see deviation below)*
 - [ ] Regenerate the suite-level hints:
       `bash agent-system/extensions/core/scripts/measure-gate-costs.sh --regen-hints
       --skip-gate-measure`, reading the written file's own `ALL_VALID` header to decide whether
       the sample is trustworthy — never stderr alone, per that script's own header.
+      *(deviation: deferred -- host load 3.26-3.86 at decision point, above the 2.0 threshold;
+      see Phase 4's progress file)*
 - [ ] Regenerate the gate cost model with
       `bash agent-system/extensions/core/scripts/measure-gate-costs.sh`, and note in the commit
       message whether the result still covers only `gate8` or now carries rows for the other
       registered gates. The current single-row file is a 1-of-~26 model dated 2026-10-19; if the
       regeneration still produces one row, say so explicitly rather than leaving the reader to
-      infer the model's real coverage.
+      infer the model's real coverage. *(deviation: deferred for the same reason as the task
+      immediately above)*
 - [ ] Re-read both artifacts immediately before staging, confirm `git status --short` shows no
       foreign modification to either, and stage them by explicit path only (never a directory or
-      glob pathspec).
+      glob pathspec). *(deviation: deferred -- not reached, both artifacts remain unregenerated)*
 - [ ] Record the realized total saving: the regenerated hints file's new sum against the
-      1,406,493 ms baseline, plus the two per-suite deltas.
+      1,406,493 ms baseline, plus the two per-suite deltas. *(deviation: deferred -- not reached)*
 
 **Timing**: 1.5 hours
 
