@@ -53,6 +53,12 @@
 #       re-added by ~/.sapience/sapience_upkeep.py's wire_hooks() on every auto_update/update
 #       --wire pass unless config.json's "hooks" opt-out holds. Reports that opt-out value
 #       (false/true/absent) unconditionally, pass or fail.
+#   (i) capture/activation coupling, scoped to this project: resolves
+#       ~/.sapience/config.json's capture.projects[] entry whose path_prefix is the longest
+#       match for this project (mirroring sapience_capture.py's for_cwd()), and fails only on
+#       (capture enabled + extension inactive). (active + capture not enabled) is reported
+#       informationally, never a failure. This source store stops at this check -- it does not
+#       write capture.projects[].enabled; see the check's own inline comment for the ruling.
 #
 # The project root detected above (and used for checks a/b) is the PARENT CHECKOUT for a linked
 # worktree, never the worktree itself -- see the marker-delimited resolution block below.
@@ -408,6 +414,68 @@ else
     HOOKS_OPT_VALUE="absent"
 fi
 log "  (g) ~/.sapience/config.json hooks opt-out value: ${HOOKS_OPT_VALUE}"
+
+# Check (i): capture/activation coupling, scoped to this project. Resolves the
+# ~/.sapience/config.json capture.projects[] entry whose path_prefix is the LONGEST prefix of
+# (or equal to) $EXPECTED_PROJECT_PATH, mirroring ~/.sapience/sapience_capture.py's
+# for_cwd()/match_project() longest-prefix-wins rule (_under(): cwd == prefix, or
+# cwd.startswith(prefix.rstrip('/') + '/')) rather than reinventing a match rule. Four outcomes:
+# active+enabled -> pass; active+not-enabled-or-absent -> informational (never a failure);
+# inactive+enabled -> fail (a capture-enabled path whose repository never opted into this
+# extension's grants/hooks); inactive+not-enabled -> silent. An unreadable config.json or one
+# carrying no "capture" key at all is a skip, not a failure.
+#
+# RECONCILIATION RULING (GOAL 2's sub-question, ruled on rather than deferred): this source
+# store stops at this verifier check and does NOT write capture.projects[].enabled from either
+# the SessionStart registration hook or the installer. Two reasons: (1) no script in this
+# extension reads or writes the "capture" key today -- adding a writer here would be new,
+# unreviewed surface, not a fix to an existing one; (2) ~/.dotfiles already owns a capture-map
+# writer, so a second independent writer in this source store would create the
+# two-writers-disagreeing hazard this extension's own Hazards census already warns about for the
+# MCP-registration entry (where byte-identical convergence across writers is deliberately
+# maintained and no equivalent guarantee would exist here). If active reconciliation is built at
+# all, it belongs in ~/.dotfiles -- see per-repo-scoping.md's reconciliation-ruling subsection.
+if [ -r "$SAPIENCE_CONFIG" ] && jq -e 'has("capture")' "$SAPIENCE_CONFIG" > /dev/null 2>&1; then
+    CAPTURE_MATCH="$(jq -c --arg proj "$EXPECTED_PROJECT_PATH" '
+        (.capture.projects // []) as $projects |
+        ($projects | map(select(
+            (.path_prefix // "") as $p |
+            $p != "" and
+            ($proj == $p or ($proj | startswith(($p | rtrimstr("/")) + "/")))
+        ))) as $matches |
+        if ($matches | length) == 0 then null
+        else ($matches | sort_by((.path_prefix // "") | length) | last)
+        end
+    ' "$SAPIENCE_CONFIG" 2>/dev/null)"
+    [ -z "$CAPTURE_MATCH" ] && CAPTURE_MATCH="null"
+
+    CAPTURE_ENABLED="false"
+    CAPTURE_NAME=""
+    if [ "$CAPTURE_MATCH" != "null" ]; then
+        CAPTURE_ENABLED="$(jq -r '.enabled // false' <<< "$CAPTURE_MATCH")"
+        CAPTURE_NAME="$(jq -r '.name // .path_prefix // "?"' <<< "$CAPTURE_MATCH")"
+    fi
+
+    if $SAPIENCE_ACTIVE; then
+        if [ "$CAPTURE_ENABLED" = "true" ]; then
+            pass "(i) sapience extension active and capture enabled for $EXPECTED_PROJECT_PATH (project '$CAPTURE_NAME')"
+        else
+            log "  (i) sapience extension active but capture not enabled for $EXPECTED_PROJECT_PATH (resolved entry: '${CAPTURE_NAME:-none}') -- informational only, not a failure"
+        fi
+    else
+        if [ "$CAPTURE_ENABLED" = "true" ]; then
+            fail "(i) capture is enabled for $EXPECTED_PROJECT_PATH (project '$CAPTURE_NAME') but the sapience extension is not active here"
+            log ""
+            log "  A capture-enabled path whose repository never opted into this extension's grants"
+            log "  and hooks is a scoping gap: transcripts are extracted for a repository that"
+            log "  cannot read them back through this extension's own surfaces."
+            OVERALL_OK=false
+        fi
+        # inactive + not-enabled: silent, no output at all -- this is the correct, expected case.
+    fi
+else
+    log "  (i) ~/.sapience/config.json unreadable or carries no capture key; skipping capture/activation coupling check"
+fi
 
 # Note: this machine's home-manager activation no longer creates a top-level
 # ~/.claude.json .mcpServers.sapience entry (modules/home/services/sapience.nix's

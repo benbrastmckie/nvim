@@ -79,6 +79,15 @@
 #   (42) An active fixture carrying both "hooks" and "permissions" passes check (h).
 #   (43) An inactive fixture logs a skip and neither passes nor fails check (h).
 #
+# Check (i) cases -- capture/activation coupling, scoped to this project (added once the
+# verifier carries check (i)):
+#   (44) An inactive fixture with a capture-enabled matching prefix fails check (i) by name with
+#        exit 1 (synthetic -- no live instance of this direction exists on this machine).
+#   (45) An active fixture with `enabled: false` emits the informational line and does NOT fail.
+#   (46) An active fixture with no matching path_prefix emits the same informational line.
+#   (47) A nested-prefix fixture (a shorter enabled prefix and a longer disabled one both
+#        matching) resolves to the LONGER entry.
+#
 # Worktree cases (added once worktree-aware checkout resolution lands; skipped if `git worktree`
 # is unusable or the hook/verifier sources do not exist yet):
 #   (25) A worktree of a LOADED checkout registers an entry keyed on the checkout's path, with
@@ -838,6 +847,85 @@ else
     pass "Case 43: an inactive fixture logs a skip and neither passes nor fails check (h)"
   else
     fail "Case 43: expected a skip line and no [PASS]/[FAIL] (h); output=$OUT43"
+  fi
+
+  # =====================================================================
+  # Case 44: an inactive fixture with a capture-enabled matching prefix fails check (i) by name
+  # with exit 1 (synthetic -- no live instance of this direction exists on this machine).
+  # =====================================================================
+  HOME44="$WORKDIR/case44/home"
+  PROJ44="$WORKDIR/case44/repo"
+  mkdir -p "$HOME44/.sapience" "$PROJ44"
+  echo '{}' > "$HOME44/.claude.json"
+  jq -n --arg p "$PROJ44" '{"capture": {"mode": "opt-in", "projects": [{"path_prefix": $p, "name": "case44", "enabled": true}]}}' > "$HOME44/.sapience/config.json"
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$PROJ44/.claude-extensions.json"
+
+  RC44=0
+  OUT44=$(cd "$PROJ44" && HOME="$HOME44" bash "$VERIFIER_SRC" --project "$PROJ44" 2>&1) || RC44=$?
+  if [ "$RC44" -eq 1 ] && printf '%s' "$OUT44" | grep -q '\[FAIL\] (i)'; then
+    pass "Case 44: an inactive fixture with a capture-enabled matching prefix fails check (i) by name with exit 1"
+  else
+    fail "Case 44: expected exit 1 and [FAIL] (i); rc=$RC44 output=$OUT44"
+  fi
+
+  # =====================================================================
+  # Case 45: an active fixture with enabled:false emits the informational line and does NOT
+  # fail check (i).
+  # =====================================================================
+  HOME45="$WORKDIR/case45/home"
+  PROJ45="$WORKDIR/case45/repo"
+  mkdir -p "$HOME45/.sapience" "$PROJ45"
+  echo '{}' > "$HOME45/.claude.json"
+  jq -n --arg p "$PROJ45" '{"capture": {"mode": "opt-in", "projects": [{"path_prefix": $p, "name": "case45", "enabled": false}]}}' > "$HOME45/.sapience/config.json"
+  jq -n '{"extensions": {"sapience": {"status": "active", "merged_sections": {"settings": {"hooks": true, "permissions": true}}}}}' > "$PROJ45/.claude-extensions.json"
+
+  OUT45=$(cd "$PROJ45" && HOME="$HOME45" bash "$VERIFIER_SRC" --project "$PROJ45" 2>&1)
+  if printf '%s' "$OUT45" | grep -q 'capture not enabled' && ! printf '%s' "$OUT45" | grep -q '\[FAIL\] (i)'; then
+    pass "Case 45: an active fixture with enabled:false emits the informational line and does not fail check (i)"
+  else
+    fail "Case 45: expected an informational line and no [FAIL] (i); output=$OUT45"
+  fi
+
+  # =====================================================================
+  # Case 46: an active fixture with no matching path_prefix emits the same informational line.
+  # =====================================================================
+  HOME46="$WORKDIR/case46/home"
+  PROJ46="$WORKDIR/case46/repo"
+  OTHER46="$WORKDIR/case46/other-unrelated-path"
+  mkdir -p "$HOME46/.sapience" "$PROJ46"
+  echo '{}' > "$HOME46/.claude.json"
+  jq -n --arg p "$OTHER46" '{"capture": {"mode": "opt-in", "projects": [{"path_prefix": $p, "name": "unrelated", "enabled": true}]}}' > "$HOME46/.sapience/config.json"
+  jq -n '{"extensions": {"sapience": {"status": "active", "merged_sections": {"settings": {"hooks": true, "permissions": true}}}}}' > "$PROJ46/.claude-extensions.json"
+
+  OUT46=$(cd "$PROJ46" && HOME="$HOME46" bash "$VERIFIER_SRC" --project "$PROJ46" 2>&1)
+  if printf '%s' "$OUT46" | grep -q 'capture not enabled' && ! printf '%s' "$OUT46" | grep -q '\[FAIL\] (i)'; then
+    pass "Case 46: an active fixture with no matching path_prefix emits the same informational line"
+  else
+    fail "Case 46: expected an informational line and no [FAIL] (i); output=$OUT46"
+  fi
+
+  # =====================================================================
+  # Case 47: a nested-prefix fixture (a shorter enabled prefix and a longer disabled one, both
+  # matching) resolves to the LONGER entry, mirroring sapience_capture.py's longest-prefix-wins
+  # rule.
+  # =====================================================================
+  HOME47="$WORKDIR/case47/home"
+  PARENT47="$WORKDIR/case47/parent"
+  PROJ47="$PARENT47/nested-child"
+  mkdir -p "$HOME47/.sapience" "$PROJ47"
+  echo '{}' > "$HOME47/.claude.json"
+  jq -n --arg outer "$PARENT47" --arg inner "$PROJ47" \
+    '{"capture": {"mode": "opt-in", "projects": [
+        {"path_prefix": $outer, "name": "nested-outer", "enabled": true},
+        {"path_prefix": $inner, "name": "nested-inner", "enabled": false}
+      ]}}' > "$HOME47/.sapience/config.json"
+  jq -n '{"extensions": {"sapience": {"status": "active", "merged_sections": {"settings": {"hooks": true, "permissions": true}}}}}' > "$PROJ47/.claude-extensions.json"
+
+  OUT47=$(cd "$PROJ47" && HOME="$HOME47" bash "$VERIFIER_SRC" --project "$PROJ47" 2>&1)
+  if printf '%s' "$OUT47" | grep -q "'nested-inner'" && ! printf '%s' "$OUT47" | grep -q "'nested-outer'"; then
+    pass "Case 47: a nested-prefix fixture resolves to the LONGER (inner) entry, not the shorter outer one"
+  else
+    fail "Case 47: expected resolution to the longer 'nested-inner' entry; output=$OUT47"
   fi
 fi
 

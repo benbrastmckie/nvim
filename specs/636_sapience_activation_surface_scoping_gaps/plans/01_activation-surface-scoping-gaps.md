@@ -256,25 +256,25 @@ stated remedy.
 
 ---
 
-### Phase 3: Check (i) — Capture/Activation Coupling, and the Reconciliation Ruling [NOT STARTED]
+### Phase 3: Check (i) — Capture/Activation Coupling, and the Reconciliation Ruling [COMPLETED]
 
 **Goal**: a per-project capture/activation coupling check covering both directions, with the
 reconciliation-ownership ruling recorded at the check site.
 
 **Tasks**:
-- [ ] Re-read `verify-sapience-mcp.sh` immediately before editing.
-- [ ] Add check (i): resolve the `capture.projects[]` entry in `~/.sapience/config.json` whose
+- [x] Re-read `verify-sapience-mcp.sh` immediately before editing. *(completed)*
+- [x] Add check (i): resolve the `capture.projects[]` entry in `~/.sapience/config.json` whose
       `path_prefix` is the **longest** prefix of (or equal to) `EXPECTED_PROJECT_PATH`, mirroring
       `~/.sapience/sapience_capture.py`'s `for_cwd()` rather than reinventing a match rule, and
-      read that entry's `enabled` field.
-- [ ] Implement the four outcomes: active + enabled -> silent (or a brief pass line);
+      read that entry's `enabled` field. *(completed)*
+- [x] Implement the four outcomes: active + enabled -> silent (or a brief pass line);
       active + not-enabled-or-absent -> informational `log` line naming the repository and the
       resolved entry, **not** a failure; inactive + enabled -> `fail` with
       `OVERALL_OK=false` (a capture-enabled path whose repository never opted into this
-      extension's grants and hooks); inactive + not-enabled -> silent.
-- [ ] Handle an unreadable or `capture`-less `~/.sapience/config.json` as a skip `log` line, not
-      a failure.
-- [ ] Record the ruling in the check's own inline comment block: this source store stops at the
+      extension's grants and hooks); inactive + not-enabled -> silent. *(completed)*
+- [x] Handle an unreadable or `capture`-less `~/.sapience/config.json` as a skip `log` line, not
+      a failure. *(completed)*
+- [x] Record the ruling in the check's own inline comment block: this source store stops at the
       verifier check and does **not** write `capture.projects[].enabled` from either the
       `SessionStart` registration hook or the installer. Name the two reasons the research
       established — no script here reads or writes the `capture` key today, and `~/.dotfiles`
@@ -282,15 +282,15 @@ reconciliation-ownership ruling recorded at the check site.
       two-writers-disagreeing hazard this extension's own Hazards census warns about for the
       MCP-registration entry (where byte-identical convergence is deliberately maintained and no
       equivalent guarantee would exist here) — and state that active reconciliation, if built at
-      all, belongs in `~/.dotfiles`.
-- [ ] Update the script's header check list to document (i).
-- [ ] Add regression cases to `test-sapience-mcp-registration.sh`: an inactive fixture with a
+      all, belongs in `~/.dotfiles`. *(completed)*
+- [x] Update the script's header check list to document (i). *(completed)*
+- [x] Add regression cases to `test-sapience-mcp-registration.sh`: an inactive fixture with a
       capture-enabled matching prefix fails with exit 1 and names (i) (synthetic — no live
       instance of this direction exists on this machine); an active fixture with
       `enabled: false` emits the informational line and does **not** fail; an active fixture with
       no matching `path_prefix` emits the same informational line; a nested-prefix fixture
       (a shorter enabled prefix and a longer disabled one both matching) resolves to the
-      **longer** entry. Extend the suite header case list.
+      **longer** entry. Extend the suite header case list. *(completed: cases 44-47)*
 
 **Timing**: 1.25 hours
 

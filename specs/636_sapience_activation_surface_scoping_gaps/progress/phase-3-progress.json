@@ -1,0 +1,14 @@
+{
+  "phase": 3,
+  "phase_name": "Check (i) — Capture/Activation Coupling, and the Reconciliation Ruling",
+  "started_at": "2026-11-17T00:45:00Z",
+  "last_updated": "2026-11-17T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add check (i) with longest-prefix capture resolution and the reconciliation ruling comment", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh"]},
+    {"id": 2, "description": "Add regression cases to test-sapience-mcp-registration.sh", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
