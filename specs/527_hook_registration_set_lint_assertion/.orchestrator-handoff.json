@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 6,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a six-phase sequential implementation plan adding Check E (a deployed (event, matcher, hook-identity) SET assertion reporting the three drift shapes as distinct findings with distinct remedies) to lint-hook-registration-paths.sh, consuming merge.lua's existing M.hook_valid_set_key identity notion via the existing batched hook_identity_cli.lua bridge rather than defining a second one. Premise re-validation against live state found two of the dispatch's three cited field instances no longer hold: lean4's shape-(c) scripts are both present on disk today and no live shape-(b) duplicate-matcher pair survives in any of the five archived task-369 fixtures or six probed deploys, so the plan satisfies acceptance criterion 1 with real-deploy-derived fixtures carrying at most one documented minimal mutation per non-surviving shape, provenance stated per shape. A plan-time probe also confirmed this repo's own deployed tree is already clean at the (event, matcher, identity) grain, so landing the check will not immediately turn Gate 21 red. The plan validates clean (validate-artifact.sh: 0 warnings) and harvests six file_scope entries including the __WHOLE_TREE__ sentinel for the mandated redeploy phase.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/527_hook_registration_set_lint_assertion/plans/01_hook-registration-set-lint.md",
+      "summary": "Six-phase plan: fleet drift baseline, matcher-aware inventory plus deployed-settings input, Check E's three shapes, fixture regression suite, Gate 21 confirmation plus boundary note, redeploy and full gate battery."
+    }
+  ]
+}

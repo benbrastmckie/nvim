@@ -48,7 +48,7 @@ next_project_number: 643
 523 [NOT STARTED] — Make Gate 27 MISSING\_DECLARATION count call sites, not...
 525 [NOT STARTED] — Repair the always-failing extensions-directory fallback in...
 526 [NOT STARTED] — Announce completion and input-needed over TTS from the source...
-527 [RESEARCHED] — Assert the deployed hook registration SET matches the...
+527 [PLANNED] — Assert the deployed hook registration SET matches the...
 564 [NOT STARTED] — Fix validate-artifact.sh Tier Justification false positive...
   └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
 565 [NOT STARTED] — Resolve archived prior-art paths when composing dispatch and...
@@ -179,10 +179,10 @@ next_project_number: 643
 
 ### Sapience
 
-627 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
-635 [RESEARCHED] — Enforce the sapience postflight wrapup write at task completion
+627 [PLANNING] — SOURCE STORE IS THE EDIT TARGET:...
+635 [PLANNING] — Enforce the sapience postflight wrapup write at task completion
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
-636 [RESEARCHED] — Close sapience activation-surface scoping gaps: vendor...
+636 [PLANNING] — Close sapience activation-surface scoping gaps: vendor...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
 628 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
@@ -522,7 +522,7 @@ TERRITORY, SETTLED AT CREATION. Task 547 ("Confirm the blocker-research aux carr
 ---
 
 ### 636. Close sapience activation-surface scoping gaps: vendor user-level hooks, capture coupling, verifier and docs
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
@@ -543,7 +543,7 @@ GOAL. (1) verify-sapience-mcp.sh gains a check that fails when $HOME/.claude/set
 ---
 
 ### 635. Enforce the sapience postflight wrapup write at task completion
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
@@ -695,7 +695,7 @@ ACCEPTANCE. All five repositories' .claude/settings.local.json grant exactly the
 ---
 
 ### 627. Reap orphan sapience mcp registrations
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
@@ -6311,11 +6311,12 @@ repository before being written.
 
 ### 527. Assert the deployed hook registration SET matches the merge-source, not only each path's form
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 369, Task 445
 - **Research**: [527_hook_registration_set_lint_assertion/reports/01_hook-registration-set-lint.md]
+- **Plan**: [527_hook_registration_set_lint_assertion/plans/01_hook-registration-set-lint.md]
 
 **Description**: Extend the hook-registration lint so it asserts the deployed hook registration SET against the merge-source, not only the FORM of each individual command path, and wire the resulting gate into verify-deploy.sh.
 

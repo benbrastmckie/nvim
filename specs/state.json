@@ -221,12 +221,12 @@
     {
       "project_number": 636,
       "project_name": "sapience_activation_surface_scoping_gaps",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "description": "Close the remaining per-repo scoping gaps in the sapience extension's activation surface: detect machine-wide vendor hooks, couple transcript capture to extension activation, and correct the documentation that claims neither gap exists.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**. ~/.dotfiles files are out of bounds for this task (a companion task is filed in ~/.dotfiles for the nix-side default). Related but distinct: tasks 627 (orphan MCP registration reaper) and 628 (write-grant retraction) -- do not duplicate either.\n\nMEASURED EVIDENCE (2026-11-14).\n(a) ~/.claude/settings.json carried three vendor-written, machine-wide hooks -- SessionStart `python3 ~/.sapience/mcp.py --briefing-text`, SessionEnd `--receipt`, Stop `--effect-line` -- written by ~/.sapience/sapience_upkeep.py's wire_hooks() on its daily auto-update because ~/.sapience/config.json had \"hooks\": true. Effect: every repository, extension loaded or not, received the unfiltered cross-project briefing, and extension repos received it twice. context/project/sapience/domain/injection-site-scoping.md's \"No Machine-Wide Duplicate Hook Surface\" section asserts the opposite, and scripts/verify-sapience-mcp.sh has no check for it. The three entries were removed by hand and config.json set to \"hooks\": false (the vendor's documented opt-out, hooks_opted_out()); nothing in this extension detects a recurrence.\n(b) Transcript capture is governed by a separate opt-in list, ~/.sapience/config.json's capture.projects[].enabled, unconnected to extension activation: enabled for .dotfiles, nvim, abood, Sapience/sapience-app; disabled/absent for BimodalLogic and Sapience/sf1-engine although both have the extension active. Today the capture set happens to be a subset of the extension set, but nothing enforces it in either direction.\n(c) ~/Projects/abood shows extensions.sapience.status == \"active\" with merged_sections.settings carrying only `permissions` -- no hooks merged and no ~/.claude.json MCP registration -- i.e. a load that predates the hook fragment and was never re-merged; verify-sapience-mcp.sh should name this state rather than leave it to inspection.\n(d) scripts/verify-sapience-context-scoping.sh returned RESIDUAL_LIFTED once and RESIDUAL_HOLDS twice in three consecutive runs; its single-run verdict is unreliable.\n\nGOAL. (1) verify-sapience-mcp.sh gains a check that fails when $HOME/.claude/settings.json carries any ~/.sapience/mcp.py or sapience_cli.py injection/reporting hook, and reports ~/.sapience/config.json's `hooks` opt-out value. (2) Rule on capture coupling and implement the ruling: at minimum a verifier check reporting any capture-enabled path whose repository lacks the active extension (and, informationally, the converse); decide whether the SessionStart registration hook or the installer should also reconcile capture.projects[].enabled, given that the dotfiles sapience module also manages a capture map -- if reconciliation belongs in ~/.dotfiles, record that and stop at the verifier check. (3) verify-sapience-mcp.sh distinguishes \"active but hook fragment never merged\" as its own named failure with the remedy (reload/redeploy). (4) verify-sapience-context-scoping.sh repeats its comparison N times and reports a verdict only on agreement, otherwise \"inconclusive\". (5) Rewrite injection-site-scoping.md's \"No Machine-Wide Duplicate Hook Surface\" section and per-repo-scoping.md's population-3 text to state the actual design: the vendor updater re-adds user-level hooks unless config.json \"hooks\" is false; capture is a separate opt-in list.",
       "topic": "sapience",
       "created": "2026-11-15T07:03:25Z",
-      "last_updated": "2026-11-17T09:35:36Z",
+      "last_updated": "2026-11-17T09:36:52Z",
       "audit_verdict": {
         "proposal": {
           "id": "sapience_activation_surface_scoping_gaps",
@@ -415,7 +415,7 @@
         "degradations_count": 47
       },
       "title": "Close sapience activation-surface scoping gaps: vendor user-level hooks, capture coupling, verifier and docs",
-      "session_id": "sess_1794907446_b4b581",
+      "session_id": "sess_1794907446_b4b581_636",
       "artifacts": [
         {
           "path": "specs/636_sapience_activation_surface_scoping_gaps/reports/01_activation-surface-scoping-gaps.md",
@@ -428,12 +428,12 @@
     {
       "project_number": 635,
       "project_name": "enforce_sapience_postflight_wrapup_write",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "description": "Enforce the sapience postflight wrapup write at task completion so repo-tagged notes are actually written for every completed task, rather than depending on an instruction-level step the orchestrator can skip.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** and, where the call site lives there, agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve each source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**. Follow rules/sapience-write-path.md: the only prescribed write path is scripts/sapience-remember.sh, and the 3-8-note bound per completed task must be inherited, never duplicated.\n\nMEASURED EVIDENCE. `/orchestrate 436, 626` (session sess_1794696615_44948d, Claude Code session 75e6dabf-51fd-4c67-ba3f-77a3e96d83a3) drove both tasks to [COMPLETED], yet neither the lead transcript nor any of its 12 subagent transcripts contains a single `sapience-remember.sh --subject` invocation; other sessions in the same repo and week do contain them, so the write is intermittent. The call site is prose only (EXTENSION.md's postflight wrapup instruction at the [IMPLEMENTING] -> [COMPLETED] transition); context/project/sapience/domain/per-repo-scoping.md's \"No Lifecycle Hook\" section records why a manifest hooks.postflight entry can never fire for a typeless extension. Meanwhile untagged MCP write-tool calls (sapience_remember/wrapup/handoff/adddoc) still occur in extension repos (4 BimodalLogic session files in three days), prompted by the vendor SessionStart nudge.\n\nGOAL. (1) Decide and implement where the wrapup write is mechanically anchored: e.g. the completing implementation agent emits a bounded `sapience_notes` array in its return metadata and the completion postflight script (the path that already propagates completion_summary) calls sapience-remember.sh once per note, non-fatally, mirroring failures via issue-record.sh under \"infrastructure/transport unavailable\"; or an equivalent design with the same properties. The notes' content stays agent-authored; only the write is mechanical. (2) Zero notes for a completed task is recorded as a visible, non-blocking gap (an event or issue row), never silent. (3) The 3-8 bound is enforced at that one site. (4) Works in deferred-completion paths too (deploy-gate refusal later settled by reconcile-task-status.sh -- the exact path task 626 took). (5) Update per-repo-scoping.md's \"The Tagged-Write Call Site\" / \"No Lifecycle Hook\" sections and EXTENSION.md to state the resulting design; add tests with the network call stubbed (--dry-run).",
       "topic": "sapience",
       "created": "2026-11-15T07:02:57Z",
-      "last_updated": "2026-11-17T09:35:13Z",
+      "last_updated": "2026-11-17T09:36:40Z",
       "audit_verdict": {
         "proposal": {
           "id": "enforce_sapience_postflight_wrapup_write",
@@ -654,7 +654,7 @@
         "degradations_count": 45
       },
       "title": "Enforce the sapience postflight wrapup write at task completion",
-      "session_id": "sess_1794907446_b4b581",
+      "session_id": "sess_1794907446_b4b581_635",
       "artifacts": [
         {
           "path": "specs/635_enforce_sapience_postflight_wrapup_write/reports/01_sapience-postflight-wrapup-enforcement.md",
@@ -2351,12 +2351,12 @@
     {
       "project_number": 627,
       "project_name": "reap_orphan_sapience_mcp_registrations",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/sapience/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json. REDEPLOY AFTERWARDS via deploy-headless.sh.\n\nGOAL. Close the unreachable-.claude-extensions.json branch in the per-project sapience MCP registration design, so a deleted or moved repository's registration is reaped instead of leaking forever.\n\nMEASURED EVIDENCE. ~/.claude.json carries .projects[\"/home/benjamin/Projects/sapience-app\"].mcpServers.sapience, but that directory does not exist on disk (the repository moved to /home/benjamin/Projects/Sapience/sapience-app, which has its own correct active registration). hooks/sapience-mcp-register-project.sh cannot remove the stale entry: its project-root detection requires a reachable .claude-extensions.json at the CWD or at the git root, and finding none it emits '{}' and exits 0 before reaching the removal branch at all. The bidirectional removal path is therefore structurally unable to clean up any registration whose project path has been deleted or renamed -- removal only ever fires for a path that still exists AND still carries an extensions manifest showing sapience inactive.\n\nSCOPE. Add a reaper pass that removes .projects[<path>].mcpServers.sapience entries whose <path> no longer exists on disk. Decide and record where it belongs: a new --reap mode in scripts/setup-sapience-mcp.sh invoked by the SessionStart hook, the hook itself, or scripts/verify-sapience-mcp.sh promoted from detect-only to fix. Preserve the hook's existing contract exactly: always exit 0, always emit exactly one line of valid JSON, never fail a session on a missing jq or an unwritable ~/.claude.json. Touch only the sapience key -- a project row carrying other servers (e.g. lean-lsp) keeps them, and a row left with no servers is handled explicitly rather than abandoned as a stale empty object.\n\nACCEPTANCE. The stale /home/benjamin/Projects/sapience-app entry is gone from ~/.claude.json; /home/benjamin/Projects/Sapience/sapience-app keeps its entry; /home/benjamin/Projects/Logos/Theory and the other lean-lsp-only rows are untouched; scripts/tests/test-sapience-mcp-registration.sh gains a case covering a registered-but-nonexistent project path; verify-sapience-mcp.sh still passes its (a)-(d) checks in this repository.",
       "topic": "sapience",
       "created": "2026-11-14T09:19:47Z",
-      "last_updated": "2026-11-17T09:35:58Z",
+      "last_updated": "2026-11-17T09:37:03Z",
       "audit_verdict": {
         "proposal": {
           "id": "reap_orphan_sapience_mcp_registrations",
@@ -2576,7 +2576,7 @@
         },
         "degradations_count": 42
       },
-      "session_id": "sess_1794907446_b4b581",
+      "session_id": "sess_1794907446_b4b581_627",
       "artifacts": [
         {
           "path": "specs/627_reap_orphan_sapience_mcp_registrations/reports/01_reap-orphan-sapience-mcp.md",
@@ -2935,7 +2935,7 @@
     {
       "project_number": 527,
       "project_name": "hook_registration_set_lint_assertion",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Assert the deployed hook registration SET matches the merge-source, not only each path's form",
       "description": "Extend the hook-registration lint so it asserts the deployed hook registration SET against the merge-source, not only the FORM of each individual command path, and wire the resulting gate into verify-deploy.sh.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored disposable deploy artifact regenerated from the source store). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh to RESULT=landed_verify_clean. No task-number references and no record-versioning language in any file landing under agent-system/** or lua/**; both are permitted in this description.\n\n--- DEPENDENCIES: TWO EDGES ---\n\n1. orphan_sweep_for_removed_merge_target_entries (task 369). That record's acceptance criterion 3 requires the registration-identity notion to be defined in exactly ONE place consumed by both its sweep and this lint, with a test asserting the two agree on a path outside hooks/. This lint must CONSUME that settled identity notion rather than define a second one, so 369 must land first.\n2. gate8_expected_vs_new_failure_distinction (task 445) -- a territory edge on verify-deploy.sh's gate surface, which both records touch.\n\n--- DIAGNOSIS IS COMPLETE: DO NOT RE-DERIVE IT ---\n\nGOAL. scripts/lint/lint-hook-registration-paths.sh checks the FORM of each hook command path -- whether a registration uses the fixed \"$CLAUDE_PROJECT_DIR\"-prefixed shape or the stale CWD-relative one. It does not check the SET. Three drift shapes therefore pass it silently, all three observed in the field:\n\n(a) a registration for a hook script that no source surface declares anywhere;\n(b) the same hook script registered under two different matcher strings for one event, so a single notification fires it twice;\n(c) a registration whose hook script file does not exist on disk at all, failing open behind its own `2>/dev/null || echo '{}'`.\n\nMEASURED FIELD INSTANCES as of 2026-11-07, across the repos this loader deploys into:\n- Logos/Theory carried all three: shape (a) (Stop|* registrations of tts-notify.sh and a bare wezterm-notify.sh, neither declared by any source surface), shape (b) (two Notification blocks, matchers permission_prompt|idle_prompt|elicitation_dialog and permission_prompt|elicitation_dialog, both registering tts-notify.sh, so one permission event fired two announcements), and shape (c) (wezterm-clear-status.sh, whose file is absent).\n- ModelBuilder and Logos/Website carry the same shape (a) and (b) pair.\n- theorem_proving_in_lean4 carries shape (c) twice (claude-stop-notify.sh, wezterm-preflight-status.sh).\n- Fourteen other deployed repos are clean, which is what makes a set assertion useful rather than noisy: the drift is real but rare, so a gate on it will not fire constantly.\n\nFIX. Extend the lint to compare the deployed (event, matcher, hook-identity) set against the union of what the merge-source and root-files surfaces declare, and report (a), (b) and (c) as distinct findings with distinct remedies. Then wire it into verify-deploy.sh's gate suite so the drift class fails a check instead of accumulating.\n\n--- MANDATORY CONSTRAINTS ---\n\n- Consume the single shared identity notion the orphan-sweep record establishes. Defining a second notion here is the specific failure the first dependency edge exists to prevent -- the hook-path lint and the loader's own hook_identity() have a DOCUMENTED historical divergence (the lint keyed coverage on any invoked script path, hook_identity() recognized only paths under hooks/), and resolving it in one place is that record's criterion, not this one's to re-litigate.\n- A hand-written custom hook -- a command not recognizable as a source-store hook invocation -- is NEVER a finding. The carve-out is mandatory, not best-effort. A lint that reports a user's own hook registration as drift is worse than no lint.\n- Anchor detection on the \"command\" JSON key, never a text grep over the file. A naive .claude/hooks/ grep matches root-files/settings.json's own _comment field -- a false-positive hazard already recorded by this lint's prior research.\n- Shape (b) must be reported even when both registrations are individually well-formed. Form-correctness is exactly why it passes today.\n- env, permissions, statusLine and every non-hooks key are out of scope for this lint; it must not report or touch them.\n\n--- ACCEPTANCE CRITERIA ---\n\n1. Each of shapes (a), (b) and (c) produces a distinct finding with its own remedy text, demonstrated against a faithful copy of a real drifted deploy, not only a synthetic fixture.\n2. A hand-written hook command survives the lint with zero findings, with a dedicated regression case.\n3. A clean deploy produces zero findings -- verified against several of the fourteen clean repos, so the gate is not noisy by construction.\n4. The identity notion is imported from its single shared definition; a test asserts this lint and the loader's sweep agree on a path outside hooks/.\n5. The gate is wired into verify-deploy.sh and a deliberately drifted fixture fails it.\n6. Pre-existing lint and verify-deploy tests still pass; a newly red pre-existing test is treated as caused by this task.",
@@ -2946,17 +2946,26 @@
         445
       ],
       "file_scope": [
+        "__WHOLE_TREE__",
+        "agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md",
+        "agent-system/extensions/core/index-entries.json",
         "agent-system/extensions/core/scripts/lint/lint-hook-registration-paths.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh",
         "agent-system/extensions/core/scripts/verify-deploy.sh",
-        "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh"
+        "specs/527_hook_registration_set_lint_assertion/records/01_live-drift-baseline.md"
       ],
       "created": "2026-11-07T22:23:46Z",
-      "last_updated": "2026-11-17T09:34:52Z",
+      "last_updated": "2026-11-17T09:48:33Z",
       "artifacts": [
         {
           "path": "specs/527_hook_registration_set_lint_assertion/reports/01_hook-registration-set-lint.md",
           "type": "report",
           "summary": "Confirms both dependency edges (tasks 369, 445) landed; identifies the shared merge.lua hook_valid_set_key(event,matcher,identity) as the exact tuple to reuse; finds the lint has no deployed-tree concept today and needs a new Check E with a matcher-aware inventory; finds Gate 21 already wires the gate with zero verify-deploy.sh/gate-registry.data changes needed; finds shape-(c) existence must be checked against the deploy target's own directory (not the source store) to actually catch the dispatch's own cited lean4 example; and re-validates the dispatch's field-instance premises (Logos/Theory and Logos/Website already remediated by task 369; ModelBuilder still genuinely drifted; lean4's cited shape (c) is a different, still-open defect)."
+        },
+        {
+          "path": "specs/527_hook_registration_set_lint_assertion/plans/01_hook-registration-set-lint.md",
+          "type": "plan",
+          "summary": "Six-phase plan: fleet drift baseline, matcher-aware inventory plus deployed-settings input, Check E's three shapes, fixture regression suite, Gate 21 confirmation plus boundary note, redeploy and full gate battery."
         }
       ],
       "audit_verdict": {
