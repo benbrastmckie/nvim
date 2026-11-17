@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Wire the Three Completion Invocation Points",
+  "started_at": "2026-11-17T12:20:00Z",
+  "last_updated": "2026-11-17T13:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Wire the guarded, postflight_rc==0-gated, non-fatal call in orchestrate-cycle-postflight.sh's implemented) case, plus its dry-run notice", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Wire the same guarded, non-fatal call in both reconcile-task-status.sh promotion arms (implementing), partial)), plus their dry-run notices", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/reconcile-task-status.sh"]},
+    {"id": 3, "description": "Add reconcile-arm invocation/refusal/dry-run cases to test-reconcile-handoff-status.sh; run it and the sapience suite to confirm both green; run the grep self-check and report actual counts", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

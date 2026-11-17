@@ -320,55 +320,55 @@ classification row, report it rather than silently adding a runner change to thi
 
 ---
 
-### Phase 3: Wire the Three Completion Invocation Points [NOT STARTED]
+### Phase 3: Wire the Three Completion Invocation Points [IN PROGRESS]
 
 **Goal**: Make the write fire on both the live and the deferred completion paths, each site
 guarded on the extension's presence and each non-fatal.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`, add the call
+- [x] In `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`, add the call
       inside the `implemented)` case's `is_live` branch, immediately after the existing
       `skill_orchestrate_propagate_completion` calls (lines 1439 and 1442) — placed once, after
       the `if [ "$skeleton_active" = "true" ]` / `else` fork closes, so both the skeleton and
-      non-skeleton paths reach it without duplicating the block.
-- [ ] Gate that call on `postflight_rc` being 0. On `postflight_rc == 6` the completion-deploy
+      non-skeleton paths reach it without duplicating the block. *(completed)*
+- [x] Gate that call on `postflight_rc` being 0. On `postflight_rc == 6` the completion-deploy
       gate refused the transition and the task is **not** completed; writing notes there would
       produce a permanent vault write for a task still in flight, and the reconcile arms wired
       below cover that task when the next cycle's Inter-Cycle Redeploy Checkpoint settles it.
-      State this reasoning in a comment at the call site.
-- [ ] Guard on presence and make the call non-fatal:
+      State this reasoning in a comment at the call site. *(completed)*
+- [x] Guard on presence and make the call non-fatal:
       `[ -f "${SKILL_REPO_ROOT}/.claude/scripts/postflight-sapience-notes.sh" ] && bash
       "${SKILL_REPO_ROOT}/.claude/scripts/postflight-sapience-notes.sh" --task-dir "$TASK_DIR"
       --task "$task_number" --session-id "$session_id" --phase implement
       ${handoff_dispatch_seq:+--dispatch-seq "$handoff_dispatch_seq"} || echo "Note:
       postflight sapience note write failed (non-fatal)" >&2`. Use `SKILL_REPO_ROOT`-qualified
-      paths, matching this script's existing collaborator-call convention.
-- [ ] Add the matching `[dry-run]` notice to the existing `else` branch (the one already printing
+      paths, matching this script's existing collaborator-call convention. *(completed)*
+- [x] Add the matching `[dry-run]` notice to the existing `else` branch (the one already printing
       "would transition task ... to completed and propagate completion_summary/roadmap_items"),
-      so a dry-run cycle states that the note write would also have been attempted.
-- [ ] In `agent-system/extensions/core/scripts/reconcile-task-status.sh`, add the same guarded,
+      so a dry-run cycle states that the note write would also have been attempted. *(completed)*
+- [x] In `agent-system/extensions/core/scripts/reconcile-task-status.sh`, add the same guarded,
       non-fatal call in **both** promotion arms: the `implementing)` arm immediately after its
       `promoted implementing -> completed` log line (line 695) and the `partial)` arm immediately
       after its `promoted partial -> completed` log line (line 742). Place each inside the live
       (non-`DRY_RUN`) branch only, after the `reconcile_rc` success checks, so a refused or failed
-      promotion never triggers a write.
-- [ ] Resolve the paths in that script from the variables already in scope: `$PROJECT_ROOT` for
+      promotion never triggers a write. *(completed)*
+- [x] Resolve the paths in that script from the variables already in scope: `$PROJECT_ROOT` for
       the deployed script path, `$TASK_DIR` (line 139) for `--task-dir`, `$task_number`, and
       `$session_id` (line 103). Pass `--phase implement` and no `--dispatch-seq` (the reconcile
       path has none). Add the corresponding "would also attempt" line to each arm's `DRY_RUN`
-      branch.
-- [ ] Add reconcile-arm cases to `agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh`
+      branch. *(completed)*
+- [x] Add reconcile-arm cases to `agent-system/extensions/core/scripts/tests/test-reconcile-handoff-status.sh`
       — the existing suite that already owns reconcile promotion-arm fixtures — asserting that
       both the `implementing)` and `partial)` arms invoke the write script on a successful
       promotion, do **not** invoke it when the arm refuses with `reconcile_rc == 4`, and do not
       invoke it under `--dry-run`. Keep these cases in this suite rather than in the new sapience
-      suite: the subject under test here is the reconcile arm, not the write primitive.
-- [ ] Close the phase on an explicit grep self-check: `grep -rn
+      suite: the subject under test here is the reconcile arm, not the write primitive. *(completed)*
+- [x] Close the phase on an explicit grep self-check: `grep -rn
       "postflight-sapience-notes.sh" agent-system/extensions/core/scripts/` must report
       **exactly three** invocation lines across **exactly two** files (one in
       `orchestrate-cycle-postflight.sh`, two in `reconcile-task-status.sh`), plus whatever
       non-invocation comment lines the edits added. Report the actual counts. A function or
-      script existing in this codebase is not evidence it is called — this check is the evidence.
+      script existing in this codebase is not evidence it is called — this check is the evidence. *(completed: grep reports 6 literal matching lines across the 2 expected files -- 2 lines in orchestrate-cycle-postflight.sh (the presence-guard `-f` test and the call itself, one logical invocation point) and 4 lines in reconcile-task-status.sh (2 per promotion arm x 2 arms), i.e. 3 logical invocation points total, matching the expected 1+2 shape exactly. Zero additional non-invocation comment lines name the script by filename -- the added comments reference each other by section name instead.)*
 
 **Timing**: 1 hour
 

@@ -1442,6 +1442,17 @@ ${skel_bullets}" \
             skill_orchestrate_propagate_completion "$task_number" "$task_type" "$TASK_DIR" \
               "$dispatch_start_ts" "${recover_json:-}" "$notice_prefix"
           fi
+          # Sapience postflight note write: gated on postflight_rc==0 specifically, not merely
+          # on reaching this point. postflight_rc==6 above means the completion-deploy gate
+          # refused the transition and state.json was NOT updated to "completed" -- writing
+          # notes here would be a permanent vault write for a task that is still in flight. The
+          # deferred/reconcile path wires the matching calls for the task this defers to.
+          if [ "$postflight_rc" -eq 0 ]; then
+            [ -f "${SKILL_REPO_ROOT}/.claude/scripts/postflight-sapience-notes.sh" ] && bash \
+              "${SKILL_REPO_ROOT}/.claude/scripts/postflight-sapience-notes.sh" --task-dir "$TASK_DIR" \
+              --task "$task_number" --session-id "$session_id" --phase implement \
+              ${handoff_dispatch_seq:+--dispatch-seq "$handoff_dispatch_seq"} || echo "Note: postflight sapience note write failed (non-fatal)" >&2
+          fi
           fi
         else
           echo "${notice_prefix} [dry-run] would transition task ${task_number} to completed and propagate completion_summary/roadmap_items — no write performed." >&2
@@ -1449,6 +1460,7 @@ ${skel_bullets}" \
             skel_count=$(echo "$skeleton_follow_ups" | jq 'length' 2>/dev/null) || skel_count=0
             echo "${notice_prefix} [dry-run] would record ${skel_count} skeleton follow-up(s) and augment completion_summary — no write performed." >&2
           fi
+          echo "${notice_prefix} [dry-run] would also attempt a postflight sapience note write — no write performed." >&2
         fi
       else
         implemented_gate_passed=false
