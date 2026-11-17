@@ -982,11 +982,12 @@ print_help() {
     echo "Usage: $0 [--force|--dry-run]"
     echo "       $0 --lean-tree=<pid>:<starttime> [--force]"
     echo ""
-    echo "Runs five passes every invocation, in this fixed order: Claude-process reclamation,"
+    echo "Runs six passes every invocation, in this fixed order: Claude-process reclamation,"
     echo "Lean LSP process-tree reclamation, orphaned build-waiter poll-loop reaping, zombie"
-    echo "(unreaped-child) reporting, and MCP server fan-out reporting. The first two terminate"
-    echo "only under --force; the build-waiter pass terminates whenever --dry-run is not set,"
-    echo "unaffected by --force (age-threshold-only gate); the last two never terminate anything."
+    echo "(unreaped-child) reporting, MCP server fan-out reporting, and leaked test-fixture"
+    echo "reaping. The first two and the last terminate/remove only under --force; the"
+    echo "build-waiter pass terminates whenever --dry-run is not set, unaffected by --force"
+    echo "(age-threshold-only gate); the zombie and MCP fan-out passes never terminate anything."
     echo ""
     echo "--lean-tree=<pid>:<starttime> is a SEPARATE, early-return invocation mode -- not a sixth"
     echo "pass -- that re-verifies a single Lean tree's identity, idleness, and memory-floor"
@@ -1012,6 +1013,8 @@ print_help() {
     echo "                                orphaned build-waiter poll-loop pass (default: 60)"
     echo "  BUILD_WAITER_CEILING_MIN      Secondary ceiling in minutes for a build-waiter whose"
     echo "                                embedded writer PID may have been reused (default: 240)"
+    echo "  TMP_FIXTURE_REAP_MIN          Age threshold in minutes for the leaked test-fixture"
+    echo "                                reaper pass (default: 1440, i.e. 1 day)"
 }
 
 # Run the existing Claude-process orphan pass: report (default/--dry-run) or terminate
@@ -2340,6 +2343,259 @@ run_mcp_fanout_pass() {
     echo ""
 }
 
+# --- Leaked test-fixture reaper pass: independently-gated, FORCE-gated like rows 1-2 ---
+#
+# A sixth, independently-gated pass. `tests/run-all.sh` dispatches each suite under
+# `timeout -k 5 "$RUN_ALL_SUITE_TIMEOUT_S"` (see that script's own lines around 702 and 894); a
+# SIGKILL delivered by the `-k 5` grace-period escalation skips the suite's own `EXIT` trap, so a
+# `mktemp -d` fixture the suite created is never cleaned up. This pass exists to reclaim that
+# leaked `/tmp/tmp.*` backlog -- measured live at 1,739 entries / 1.4 GB on 2026-11-17, growing
+# continuously at 107-475 entries/day. It follows the SAME three-mode contract as
+# run_claude_pass()/run_lean_pass() above (no-flag/--dry-run report, --force acts), not the
+# age-threshold-only contract run_build_waiter_pass() uses -- removal here is NOT recoverable
+# (unlike a terminated process, which can simply be restarted), so an explicit --force opt-in is
+# the right gate, matching the two other destructive-and-irrecoverable passes' own posture.
+#
+# Three candidacy gates, ALL required (never merely preferred -- unlike the Claude pass's
+# defense-in-depth exclusions, each of these three is independently necessary for a leaked
+# fixture to be a safe reap target):
+#   (a) ownership by the invoking UID -- reuses is_owned_by_current_uid() unmodified, fed from a
+#       `stat` read rather than a `ps` snapshot field.
+#   (b) no live process reference -- resolved through /proc/*/cwd and /proc/*/fd (readlink
+#       against each live PID's cwd symlink and every one of its fd symlinks), NEVER a
+#       process-name or command-line match. A fixture still referenced this way is a live
+#       sibling's in-flight working directory or open file, not a leak.
+#   (c) an age threshold (TMP_FIXTURE_REAP_MIN below) -- the observed leak spans 2026-11-10
+#       through today with no gap, so a conservative 1-day (1440-minute) default leaves today's
+#       live fixtures alone while still reclaiming the backlog.
+#
+# Removal carries BOTH observed leak mechanisms, not just the SIGKILL/EXIT-trap one above: 165 of
+# 1,739 live entries (9.5%, measured 2026-11-17) contain at least one non-writable path --
+# `chmod -R u+w` the candidate before `rm -rf`, or a plain `rm -rf` silently leaves exactly these
+# entries behind, which is the failure mode a reaper built against the EXIT-trap mechanism alone
+# would have.
+TMP_FIXTURE_ROOT="${TMP_FIXTURE_ROOT:-/tmp}"
+TMP_FIXTURE_REAP_MIN="${TMP_FIXTURE_REAP_MIN:-1440}"
+
+# Take ONE frozen snapshot of every live process's cwd and fd targets that resolve under
+# $TMP_FIXTURE_ROOT, matching this script's "one frozen snapshot per pass" convention -- taken
+# once per invocation, never re-queried per candidate (which would make this pass's cost scale
+# with candidate_count x process_count x fd_count instead of process_count x fd_count once).
+# Echoes one resolved path per line, deduplicated. Routed through PROC_ROOT, the same overridable
+# seam get_vmswap_kb()/get_pss_reclaimable_kb() already use, so a test can point this at a
+# synthetic /proc tree without instrumenting this function.
+#
+# Batched, not per-symlink: an earlier version of this function forked `readlink -f` once PER
+# cwd/fd symlink, which measured at ~23s against a live system with 604 processes and 7,186 total
+# fds during this phase's own development -- the dominant share of the ~44s per-invocation cost
+# this header's sibling comment on run_tmp_fixture_pass() describes. GNU `readlink -f` accepts
+# many targets in one invocation and prints one resolved line per target that succeeds, so every
+# cwd/fd symlink path is collected first (a glob expansion -- no fork), then resolved in a SINGLE
+# `readlink -f` call. Positional correspondence between an input path and its output line is not
+# needed here -- only the SET of resolved targets, for the prefix match below -- so a resolution
+# failure for one argument among many (permission denied on another user's /proc/PID/fd, a fd
+# that closed between the glob and the readlink) silently dropping its own output line never
+# misaligns anything.
+take_tmp_fixture_live_refs() {
+    local proc_pid_dir fd_dir fd_link
+    local -a probe_paths=()
+
+    for proc_pid_dir in "$PROC_ROOT"/[0-9]*; do
+        [ -d "$proc_pid_dir" ] || continue
+
+        if [ -L "$proc_pid_dir/cwd" ]; then
+            probe_paths+=("$proc_pid_dir/cwd")
+        fi
+
+        fd_dir="$proc_pid_dir/fd"
+        [ -d "$fd_dir" ] || continue
+        for fd_link in "$fd_dir"/*; do
+            [ -e "$fd_link" ] || continue
+            probe_paths+=("$fd_link")
+        done
+    done
+
+    if [ "${#probe_paths[@]}" -eq 0 ]; then
+        return 0
+    fi
+
+    local resolved already r
+    local -a refs=()
+    while IFS= read -r resolved; do
+        [ -z "$resolved" ] && continue || true
+        case "$resolved" in
+            "$TMP_FIXTURE_ROOT"/*)
+                already=false
+                for r in "${refs[@]}"; do
+                    [ "$r" = "$resolved" ] && { already=true; break; }
+                done
+                $already || refs+=("$resolved")
+                ;;
+        esac
+    done < <(readlink -f "${probe_paths[@]}" 2>/dev/null)
+
+    printf '%s\n' "${refs[@]}"
+}
+
+# Returns 0 (true, i.e. "still referenced -- exclude from candidacy") when $1 (an absolute path)
+# equals, or is a descendant of, any path in $2 (a newline-delimited set from
+# take_tmp_fixture_live_refs(), captured ONCE per pass invocation -- see that function's header).
+tmp_fixture_is_live_referenced() {
+    local target="$1"
+    # Named distinctly from take_tmp_fixture_live_refs()'s own local array `refs` above -- the
+    # lint tool's scoping model conflates same-named locals across sibling functions (false
+    # positives on the array-vs-scalar checks), so this is a scalar blob under a deliberately
+    # different name, not a renamed copy of that array.
+    local live_refs_blob="$2"
+    local ref
+
+    while IFS= read -r ref; do
+        [ -z "$ref" ] && continue || true
+        case "$ref" in
+            "$target"|"$target"/*)
+                return 0
+                ;;
+        esac
+    done <<< "$live_refs_blob"
+
+    return 1
+}
+
+# Run the leaked test-fixture reaper pass: report (default/--dry-run) or remove (--force).
+#
+# Batched, not per-entry: an earlier version of this pass forked `stat` twice and `du` once PER
+# CANDIDATE, which measured at ~44s against the real, 1,733-entry live /tmp backlog during this
+# phase's own development -- the exact "fixed per-invocation cost paid many times over" defect
+# class this whole task exists to eliminate elsewhere (`verify-deploy.sh`'s corpus probe), now
+# reproduced inside the very reaper meant to fix it. `find -printf` below gathers every entry's
+# uid/mtime/path in ONE subprocess call, and `du --files0-from=-` sizes every surviving candidate
+# in a second ONE subprocess call -- the same batching technique the plan's own Phase 2 before/
+# after figures use (`find ... -print0 | du -sch --files0-from=-`), applied here instead of
+# invoking either tool once per entry.
+run_tmp_fixture_pass() {
+    local FORCE="$1"
+    local DRY_RUN="$2"
+
+    echo ""
+    echo -e "${GREEN}Leaked Test-Fixture Report${NC}"
+    echo "=========================="
+
+    local live_refs
+    live_refs=$(take_tmp_fixture_live_refs)
+
+    local reap_seconds=$((TMP_FIXTURE_REAP_MIN * 60))
+    local now_epoch
+    now_epoch=$(date +%s)
+
+    # %U is the numeric uid (never %u, which renders the user NAME and would defeat the direct
+    # numeric compare is_owned_by_current_uid() expects); %T@ is the mtime as seconds.fractional.
+    local find_out
+    find_out=$(find "$TMP_FIXTURE_ROOT" -maxdepth 1 -name 'tmp.*' -printf '%U|%T@|%p\n' 2>/dev/null) || true
+
+    local total_count=0
+    local -a candidate_paths=() candidate_ages=()
+
+    local line owner_uid rest mtime_raw mtime path age_seconds
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue || true
+        total_count=$((total_count + 1))
+
+        owner_uid="${line%%|*}"
+        rest="${line#*|}"
+        mtime_raw="${rest%%|*}"
+        path="${rest#*|}"
+
+        is_owned_by_current_uid "$owner_uid" || continue
+
+        mtime="${mtime_raw%%.*}"
+        [[ "$mtime" =~ ^[0-9]+$ ]] || continue
+        age_seconds=$((now_epoch - mtime))
+        [ "$age_seconds" -ge "$reap_seconds" ] || continue
+
+        tmp_fixture_is_live_referenced "$path" "$live_refs" && continue
+
+        candidate_paths+=("$path")
+        candidate_ages+=("$((age_seconds / 86400))d")
+    done <<< "$find_out"
+
+    local n_candidates="${#candidate_paths[@]}"
+
+    if [ "$n_candidates" -eq 0 ]; then
+        echo ""
+        echo "No leaked test fixtures found ($total_count total tmp.* entries scanned)."
+        return 0
+    fi
+
+    if $DRY_RUN; then
+        echo ""
+        echo -e "${BLUE}[DRY RUN]${NC} Preview only -- nothing will be removed."
+    fi
+
+    # One batched size read for every surviving candidate -- see this function's header comment.
+    # `du --files0-from=-` reports in the exact order its NUL-delimited input was given (verified
+    # against this script's own test fixture, not assumed), so the result is consumed by a plain
+    # positional read, needing no per-candidate match/lookup (which would reintroduce the same
+    # per-entry forking this batching exists to avoid).
+    local du_out
+    du_out=$(printf '%s\0' "${candidate_paths[@]}" | du -sk --files0-from=- 2>/dev/null) || true
+
+    local -a candidate_size_kb=()
+    local du_line du_kb
+    while IFS= read -r du_line; do
+        [ -z "$du_line" ] && continue || true
+        du_kb="${du_line%%$'\t'*}"
+        [[ "$du_kb" =~ ^[0-9]+$ ]] || du_kb=0
+        candidate_size_kb+=("$du_kb")
+    done <<< "$du_out"
+    # Fail-safe if `du`'s line count ever disagrees with the candidate count (should not happen
+    # given the input was built from the same array): pad with zeros rather than index out of
+    # bounds below.
+    while [ "${#candidate_size_kb[@]}" -lt "$n_candidates" ]; do
+        candidate_size_kb+=("0")
+    done
+
+    echo ""
+    echo "Found $n_candidates leaked test-fixture candidate(s):"
+    echo ""
+    printf "%-55s %-12s %s\n" "Path" "Size" "Age"
+    printf "%-55s %-12s %s\n" "-------------------------------------------------------" "------------" "-------"
+
+    local i
+    for ((i = 0; i < n_candidates; i++)); do
+        printf "%-55s %-12s %s\n" "${candidate_paths[$i]}" "$(format_memory "${candidate_size_kb[$i]}")" "${candidate_ages[$i]}"
+    done
+
+    if ! $FORCE; then
+        echo ""
+        # Return here, matching run_claude_pass()/run_lean_pass()'s own non-force return -- the
+        # skill handles confirmation (or re-invokes with --force) from this report.
+        return 0
+    fi
+
+    echo ""
+    echo -e "${GREEN}Removing leaked test fixtures...${NC}"
+
+    local removed=0
+    local failed=0
+    local path
+
+    for path in "${candidate_paths[@]}"; do
+        # Carries BOTH leak mechanisms (see header comment above): a non-writable path inside the
+        # fixture defeats a plain `rm -rf`, so the candidate is made writable first.
+        chmod -R u+w "$path" 2>/dev/null || true
+        if rm -rf "$path" 2>/dev/null; then
+            removed=$((removed + 1))
+        else
+            failed=$((failed + 1))
+            echo "  $path: failed to remove"
+        fi
+    done
+
+    echo ""
+    echo "Removed: $removed fixture(s)"
+    echo "Failed:  $failed fixture(s)"
+}
+
 main() {
     local FORCE=false
     local DRY_RUN=false
@@ -2383,10 +2639,10 @@ main() {
     validate_cgroup_support
 
     # --lean-tree=<pid>:<starttime>: an explicit early-return invocation mode, dispatched AFTER
-    # validate_cgroup_support (the safety predicates still apply) but BEFORE the five-pass
-    # sequence below -- NEVER folded into that sequence as a sixth pass. See
+    # validate_cgroup_support (the safety predicates still apply) but BEFORE the six-pass
+    # sequence below -- NEVER folded into that sequence as a seventh pass. See
     # systemd/claude-refresh.service's "New-passes ruling" header comment, which documents that
-    # EVERY invocation runs all five passes unconditionally; this branch returns before ever
+    # EVERY invocation runs all six passes unconditionally; this branch returns before ever
     # reaching that sequence, so the ruling's safety argument is unaffected for every other
     # invocation shape (no flag, --dry-run, --force).
     if [ -n "$LEAN_TREE_TARGET" ]; then
@@ -2414,7 +2670,7 @@ main() {
     fi
 
     # --lean-tree-snooze=<pid>:<starttime>: same early-return posture as --lean-tree= above --
-    # dispatched before the five-pass sequence, never folded into it. Malformed values are
+    # dispatched before the six-pass sequence, never folded into it. Malformed values are
     # rejected the same way, loudly and non-fatally-logged-only (never a silent no-op).
     if [ -n "$LEAN_TREE_SNOOZE_TARGET" ]; then
         if [[ ! "$LEAN_TREE_SNOOZE_TARGET" =~ ^[0-9]+:[0-9]+$ ]]; then
@@ -2425,18 +2681,22 @@ main() {
         exit 0
     fi
 
-    # All five passes always run, in this order, regardless of what any of them find -- this is
+    # All six passes always run, in this order, regardless of what any of them find -- this is
     # the structural fix that makes the Lean pass (and every pass added since) reachable at all.
     # Restructured from the original main() (which had two early `exit 0` sites inside what is now
     # run_claude_pass()) into returning functions called unconditionally in sequence. The build-
     # waiter pass runs immediately after run_lean_pass(), keeping the two destructive passes
     # adjacent; it is the first pass here whose destructive action is not gated by $FORCE (see its
-    # own header comment).
+    # own header comment). The leaked test-fixture pass runs last: it follows the Claude/Lean
+    # passes' own FORCE-gated three-mode contract (see its header comment for why, unlike the
+    # build-waiter pass immediately before it), so its placement after the report-only zombie/MCP
+    # passes is immaterial to any of their output.
     run_claude_pass "$FORCE" "$DRY_RUN"
     run_lean_pass "$FORCE" "$DRY_RUN"
     run_build_waiter_pass "$FORCE" "$DRY_RUN"
     run_zombie_pass "$FORCE" "$DRY_RUN"
     run_mcp_fanout_pass "$FORCE" "$DRY_RUN"
+    run_tmp_fixture_pass "$FORCE" "$DRY_RUN"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

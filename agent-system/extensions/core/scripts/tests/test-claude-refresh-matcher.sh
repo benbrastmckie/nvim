@@ -133,6 +133,21 @@ cp "$SRC_SCRIPTS_DIR/$SCRIPT_UNDER_TEST" "$WORKDIR/$SCRIPT_UNDER_TEST"
 # code path, so reaching this line at all already proves sourcing had no side effects.
 common_test_pass "sourcing $SCRIPT_UNDER_TEST defined functions without executing main() (this line was reached)"
 
+# Global test-isolation override for the leaked test-fixture reaper pass, wired into main()'s
+# unconditional six-pass sequence: every subprocess invocation of $SCRIPT_UNDER_TEST in this
+# suite below inherits this exported TMP_FIXTURE_ROOT (child processes inherit an exported var
+# unless a call site's own prefix assignment overrides it), pointed at an empty, isolated
+# directory rather than the real, ever-growing live /tmp -- scanning the real host's live
+# /tmp/tmp.* backlog from inside an unrelated subprocess case run by THIS suite would be both a
+# test-isolation violation (none of those other cases are testing this pass) and a real multi-
+# second cost added to every one of them (measured during this phase's own development: ~3s per
+# invocation against the live backlog, times 17+ full-script subprocess invocations in this
+# file). Assertion (l) below overrides this per-case for its own dedicated, synthetic fixture
+# tree, and restores it (never merely unsets it) once done, since this global override must still
+# cover any subprocess invocation later in the file.
+export TMP_FIXTURE_ROOT="$WORKDIR/.empty-tmpfix-root"
+mkdir -p "$TMP_FIXTURE_ROOT"
+
 # =====================================================================
 # Assertion (a): system-slice cgroup exclusion
 # =====================================================================
@@ -2539,6 +2554,119 @@ else
 fi
 
 # =====================================================================
+# Assertion (l): leaked test-fixture reaper pass -- candidacy gates and removal mechanics
+# =====================================================================
+# Real mktemp -d fixtures under a synthetic TMP_FIXTURE_ROOT (never the real /tmp), a synthetic
+# PROC_ROOT for the /proc/*/cwd and /proc/*/fd live-reference checks, and run_tmp_fixture_pass()
+# called directly (sourced function, not a subprocess), matching the direct-call convention this
+# suite already uses for get_vmswap_kb/get_pss_reclaimable_kb above.
+TMPFIX_ROOT="$WORKDIR/tmpfixroot"
+mkdir -p "$TMPFIX_ROOT"
+
+TMPFIX_OLD_UNREF="$TMPFIX_ROOT/tmp.old-unreferenced"
+TMPFIX_OLD_REFERENCED="$TMPFIX_ROOT/tmp.old-referenced"
+TMPFIX_YOUNG="$TMPFIX_ROOT/tmp.young"
+TMPFIX_NONWRITABLE="$TMPFIX_ROOT/tmp.nonwritable"
+
+mkdir -p "$TMPFIX_OLD_UNREF" "$TMPFIX_OLD_REFERENCED" "$TMPFIX_YOUNG" "$TMPFIX_NONWRITABLE/sub"
+chmod 555 "$TMPFIX_NONWRITABLE/sub"
+
+touch -d "2 days ago" "$TMPFIX_OLD_UNREF" "$TMPFIX_OLD_REFERENCED" "$TMPFIX_NONWRITABLE"
+touch -d "5 minutes ago" "$TMPFIX_YOUNG"
+
+TMPFIX_PROC_DIR="$WORKDIR/tmpfix-fakeproc"
+mkdir -p "$TMPFIX_PROC_DIR/88001"
+ln -s "$TMPFIX_OLD_REFERENCED" "$TMPFIX_PROC_DIR/88001/cwd"
+
+TMP_FIXTURE_ROOT="$TMPFIX_ROOT"
+# shellcheck disable=SC2034  # read by run_tmp_fixture_pass()/take_tmp_fixture_live_refs(),
+# defined in the dynamically-sourced $SCRIPT_UNDER_TEST, which shellcheck cannot follow -- this
+# is the last assignment of these two names in the file, hence the false "appears unused".
+TMP_FIXTURE_REAP_MIN=1440
+# shellcheck disable=SC2034  # see the disable comment immediately above -- same reason.
+PROC_ROOT="$TMPFIX_PROC_DIR"
+
+# Case: the no-flag/--dry-run paths report candidates but remove nothing.
+TMPFIX_DRYRUN_OUT="$(run_tmp_fixture_pass false true)"
+
+if [ -d "$TMPFIX_OLD_UNREF" ] && [ -d "$TMPFIX_OLD_REFERENCED" ] && [ -d "$TMPFIX_YOUNG" ] && [ -d "$TMPFIX_NONWRITABLE" ]; then
+  common_test_pass "run_tmp_fixture_pass (l): --dry-run removes nothing (all fixtures still present)"
+else
+  common_test_fail "run_tmp_fixture_pass (l): --dry-run removed at least one fixture -- should never remove anything"
+fi
+
+# Case: an owned, old, unreferenced directory is a candidate (reported).
+if echo "$TMPFIX_DRYRUN_OUT" | grep -q "tmp.old-unreferenced"; then
+  common_test_pass "run_tmp_fixture_pass (l): owned/old/unreferenced fixture is reported as a candidate"
+else
+  common_test_fail "run_tmp_fixture_pass (l): owned/old/unreferenced fixture was NOT reported as a candidate"
+  common_test_info "output was: $TMPFIX_DRYRUN_OUT"
+fi
+
+# Case: a directory referenced by a live process's cwd is NOT a candidate.
+if echo "$TMPFIX_DRYRUN_OUT" | grep -q "tmp.old-referenced"; then
+  common_test_fail "run_tmp_fixture_pass (l): cwd-referenced fixture was wrongly reported as a candidate"
+else
+  common_test_pass "run_tmp_fixture_pass (l): cwd-referenced fixture is correctly excluded (/proc/*/cwd detection)"
+fi
+
+# Case: a directory younger than the age threshold is NOT a candidate.
+if echo "$TMPFIX_DRYRUN_OUT" | grep -q "tmp.young"; then
+  common_test_fail "run_tmp_fixture_pass (l): fixture younger than the age threshold was wrongly reported as a candidate"
+else
+  common_test_pass "run_tmp_fixture_pass (l): fixture younger than the age threshold is correctly excluded"
+fi
+
+# Second live-reference mechanism, independent of cwd: a directory reachable only through a live
+# process's open file descriptor (/proc/*/fd) must also be excluded.
+TMPFIX_FD_TARGET="$TMPFIX_ROOT/tmp.old-fd-referenced"
+mkdir -p "$TMPFIX_FD_TARGET"
+touch -d "2 days ago" "$TMPFIX_FD_TARGET"
+mkdir -p "$TMPFIX_PROC_DIR/88002/fd"
+ln -s "$TMPFIX_FD_TARGET" "$TMPFIX_PROC_DIR/88002/fd/5"
+
+TMPFIX_FD_OUT="$(run_tmp_fixture_pass false true)"
+if echo "$TMPFIX_FD_OUT" | grep -q "tmp.old-fd-referenced"; then
+  common_test_fail "run_tmp_fixture_pass (l): fd-referenced fixture was wrongly reported as a candidate"
+else
+  common_test_pass "run_tmp_fixture_pass (l): fd-referenced fixture is correctly excluded (/proc/*/fd detection)"
+fi
+rm -rf "$TMPFIX_FD_TARGET" "$TMPFIX_PROC_DIR/88002"
+
+# Case: a directory with non-writable content is still removed under --force -- carries BOTH
+# observed leak mechanisms (chmod -R u+w before rm -rf).
+run_tmp_fixture_pass true false >/dev/null
+
+if [ ! -e "$TMPFIX_NONWRITABLE" ]; then
+  common_test_pass "run_tmp_fixture_pass (l): --force removes a fixture containing non-writable content"
+else
+  common_test_fail "run_tmp_fixture_pass (l): --force left the non-writable-content fixture behind"
+fi
+
+if [ ! -e "$TMPFIX_OLD_UNREF" ]; then
+  common_test_pass "run_tmp_fixture_pass (l): --force removes the owned/old/unreferenced fixture"
+else
+  common_test_fail "run_tmp_fixture_pass (l): --force left the owned/old/unreferenced fixture behind"
+fi
+
+if [ -d "$TMPFIX_OLD_REFERENCED" ]; then
+  common_test_pass "run_tmp_fixture_pass (l): --force leaves the cwd-referenced fixture alone"
+else
+  common_test_fail "run_tmp_fixture_pass (l): --force incorrectly removed the cwd-referenced fixture"
+fi
+
+if [ -d "$TMPFIX_YOUNG" ]; then
+  common_test_pass "run_tmp_fixture_pass (l): --force leaves the too-young fixture alone"
+else
+  common_test_fail "run_tmp_fixture_pass (l): --force incorrectly removed the too-young fixture"
+fi
+
+# Restore (never merely unset) the global isolation override set right after sourcing above --
+# this must still cover any subprocess invocation of $SCRIPT_UNDER_TEST later in this file.
+TMP_FIXTURE_ROOT="$WORKDIR/.empty-tmpfix-root"
+unset TMP_FIXTURE_REAP_MIN PROC_ROOT
+
+# =====================================================================
 # Mutation check: pre-fix script cannot run any of this suite's assertions
 # =====================================================================
 # NOTE: this deliberately pins the specific commit immediately BEFORE the matcher rewrite
@@ -2574,6 +2702,11 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
   # run_build_waiter_pass are all brand-NEW functions this change adds, so their absence from the
   # same pinned pre-fix commit is the identical non-vacuousness proof for assertion (k) above.
   #
+  # Further extended for the leaked test-fixture reaper pass: take_tmp_fixture_live_refs,
+  # tmp_fixture_is_live_referenced, and run_tmp_fixture_pass are all brand-NEW functions this
+  # change adds, so their absence from the same pinned pre-fix commit is the identical
+  # non-vacuousness proof for assertion (l) above.
+  #
   # Further extended for PSS-based reclaimable accounting: get_pss_reclaimable_kb is a brand-NEW
   # function this change adds, so its absence from the same pinned pre-fix commit is the identical
   # non-vacuousness proof for assertion (e)'s new cases above.
@@ -2592,7 +2725,7 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
   # maybe_prompt_for_lean_tree are all brand-NEW functions this change adds (bringing the
   # function-name list to thirty-eight), so their absence from the same pinned pre-fix commit is
   # the identical non-vacuousness proof for this assertion block's new cases.
-  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb get_pss_reclaimable_kb read_proc_stat_fields read_lean_tree_state write_lean_tree_state update_lean_tree_cpu_state is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot detect_lean_candidate_trees terminate_pid terminate_lean_tree_ordered run_lean_tree_targeted_termination have_notify_send have_systemd_run_for_prompt have_dbus_session record_lean_tree_snooze maybe_prompt_for_lean_tree run_claude_pass run_lean_pass take_zombie_snapshot zombie_row_is_defunct run_zombie_pass mcp_playwright_evidence_of_use mcp_lean_lsp_evidence_of_use mcp_server_evidence_of_use run_mcp_fanout_pass take_build_waiter_snapshot is_shell_comm build_waiter_family build_waiter_row_is_idle build_self_exclusion_set run_build_waiter_pass; do
+  for fn in is_claude_executable_comm is_system_slice_cgroup is_owned_by_current_uid is_live_inhibitor_target get_vmswap_kb get_pss_reclaimable_kb read_proc_stat_fields read_lean_tree_state write_lean_tree_state update_lean_tree_cpu_state is_lean_serve_comm is_lean_server_comm is_lean_worker_comm take_lean_snapshot detect_lean_candidate_trees terminate_pid terminate_lean_tree_ordered run_lean_tree_targeted_termination have_notify_send have_systemd_run_for_prompt have_dbus_session record_lean_tree_snooze maybe_prompt_for_lean_tree run_claude_pass run_lean_pass take_zombie_snapshot zombie_row_is_defunct run_zombie_pass mcp_playwright_evidence_of_use mcp_lean_lsp_evidence_of_use mcp_server_evidence_of_use run_mcp_fanout_pass take_build_waiter_snapshot is_shell_comm build_waiter_family build_waiter_row_is_idle build_self_exclusion_set run_build_waiter_pass take_tmp_fixture_live_refs tmp_fixture_is_live_referenced run_tmp_fixture_pass; do
     if ! grep -q "^${fn}()" "$PREFIX_SCRIPT"; then
       MISSING_IN_PREFIX+=("$fn")
     fi
@@ -2601,11 +2734,11 @@ if git -C "$SRC_SCRIPTS_DIR" show "${PREFIX_COMMIT}:agent-system/extensions/core
     MISSING_IN_PREFIX+=("main()/BASH_SOURCE dual-mode guard")
   fi
 
-  if [ "${#MISSING_IN_PREFIX[@]}" -eq 38 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 39 ]; then
-    common_test_pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the thirty-eight predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
+  if [ "${#MISSING_IN_PREFIX[@]}" -eq 41 ] || [ "${#MISSING_IN_PREFIX[@]}" -eq 42 ]; then
+    common_test_pass "mutation check: pre-fix script (commit $PREFIX_COMMIT) defines none of the forty-one predicates/helpers or the main() guard -- every assertion above would fail with 'command not found' against it (RED confirmed)"
     common_test_info "absent in pre-fix: ${MISSING_IN_PREFIX[*]}"
   else
-    common_test_fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 39 markers absent"
+    common_test_fail "mutation check: pre-fix script unexpectedly already defines some of these functions -- ${MISSING_IN_PREFIX[*]} were reported missing, expected all 42 markers absent"
   fi
 else
   echo "ERROR: mutation check could not recover the pre-fix script via 'git show ${PREFIX_COMMIT}:...' -- this is a hard requirement, not a skippable case" >&2

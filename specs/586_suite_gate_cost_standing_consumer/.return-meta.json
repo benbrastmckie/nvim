@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/586_suite_gate_cost_standing_consumer/plans/02_suite-cost-consumer-actions.md",
-      "summary": "Five-phase plan acting on the audit's 0-DELETE/14-KEEP verdict rather than deleting suites: a leaked-fixture reaper pass in claude-refresh.sh plus a live backlog sweep, suppression of verify-deploy.sh's fixed corpus probe on gate-narrowed invocations (measured live at 2.2-2.4s of a 4.07s minimal invocation, paid 26-29 times by each of the two most expensive suites), regeneration of both stale probe artifacts against the optimized system, and a specs/decisions/ verdict record carrying the KEEP roster, the four-way suite-population counting methodology, and the demotion-tier non-recommendation."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 7,
   "metadata": {
-    "session_id": "sess_1794942735_1748a1_586",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 7,
-    "dependency_waves": 4
-  },
-  "memory_candidates": [
-    {
-      "content": "verify-deploy.sh ends every invocation with a 'standing corpus-size probe' that shells out to script-inventory.sh --size-line. Measured live 2026-11-17: 2.37s against the repo root and 2.22s against a non-git rsync copy of agent-system/extensions/, out of 4.07s total for `verify-deploy.sh --only-gate 1` -- i.e. ~58% of a minimal gate-narrowed invocation, and it fires in BOTH fixture shapes test suites build, because script-inventory.sh falls back to a filesystem walk when `git ls-files` finds nothing. Any suite that invokes verify-deploy.sh many times with --only-gate (cache-equivalence: 29 static run_vd call sites; the crash-net suite: one invocation per registered gate id) therefore pays this fixed cost per invocation, and its wall clock is dominated by invocation_count x fixed_overhead rather than by the gates it names. The probe's guard is `[ -d $TARGET/agent-system/extensions ] && [ -f $TARGET/.../script-inventory.sh ]`, so a deploy-consumer-shaped fixture with no agent-system/extensions directory never pays it -- which is why the cheapest verify-deploy-touching suites are the ones whose fixtures lack that directory.",
-      "category": "PATTERN",
-      "source_artifact": "specs/586_suite_gate_cost_standing_consumer/plans/02_suite-cost-consumer-actions.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["verify-deploy.sh", "script-inventory.sh", "corpus probe", "per-invocation overhead", "only-gate", "fixture shape"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 586 to execute the plan",
-  "dispatch_seq": 5
+    "session_id": "sess_1794942735_1748a1",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

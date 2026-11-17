@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Leaked-Fixture Reaper Pass in claude-refresh.sh",
+  "started_at": "2026-11-17T19:52:58Z",
+  "last_updated": "2026-11-17T20:32:11Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read claude-refresh.sh and study existing pass shape", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add leaked-fixture pass with three candidacy gates", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 3, "description": "Carry both leak mechanisms (chmod -R u+w before rm -rf)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 4, "description": "Document why fixtures leak in pass header comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 5, "description": "Wire pass into usage text and dry-run/force dispatch", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/claude-refresh.sh"]},
+    {"id": 6, "description": "Add test cases to test-claude-refresh-matcher.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh"]},
+    {"id": 7, "description": "Run lint-shellcheck.sh over both edited files", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Per-entry stat/du/readlink forks for candidacy + sizing + live-reference detection", "result": "failed", "reason": "Measured ~44s against the real 1,733-entry live /tmp backlog and ~23s of that inside the /proc/*/cwd+fd live-reference scan alone (604 processes, 7,186 fds) -- the exact fixed-per-invocation-cost-paid-many-times-over defect class this task exists to eliminate, reproduced inside the reaper meant to fix it. Replaced with batched `find -printf`/`du --files0-from=-`/`readlink -f <many args>` calls, bringing a full dry-run against the real backlog down to ~3s."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

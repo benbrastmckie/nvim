@@ -179,7 +179,7 @@ next_project_number: 643
 
 ### Uncategorized
 
-586 [PLANNED] — Stand up the suite and gate wall-clock cost consumer: delete,...
+586 [IMPLEMENTING] — Stand up the suite and gate wall-clock cost consumer: delete,...
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
@@ -2170,7 +2170,7 @@ The documentary check (the rule present at the sited section, reachable from the
 ---
 
 ### 586. Stand up the suite and gate wall-clock cost consumer: delete, optimize, or demote every suite the probe indicts
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Dependencies**: Task 476
 - **Research**: [586_suite_gate_cost_standing_consumer/reports/02_suite-cost-verdict-table.md]

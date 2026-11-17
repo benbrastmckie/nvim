@@ -1,7 +1,7 @@
 # Implementation Plan: Task #586
 
 - **Task**: 586 - Suite/gate wall-clock cost standing consumer
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: None blocking. Two concurrent siblings (604, 624) share this cycle's working
   tree; their declared `file_scope` sets are disjoint from this plan's — see Territory below.
@@ -157,40 +157,49 @@ stages it explicitly, per the dispatch's concurrency note.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Leaked-Fixture Reaper Pass in claude-refresh.sh [NOT STARTED]
+### Phase 1: Leaked-Fixture Reaper Pass in claude-refresh.sh [COMPLETED]
 
 **Goal**: `claude-refresh.sh` gains an independently-gated pass that finds and (under `--force`)
 removes leaked `/tmp/tmp.*` test fixtures, carrying both leak mechanisms in one pass, with test
 coverage.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/claude-refresh.sh` and study the three
+- [x] Re-read `agent-system/extensions/core/scripts/claude-refresh.sh` and study the three
       existing passes' shared shape: independently-gated predicates, one frozen snapshot per pass,
       and the documented three-mode contract (no-flag = report, `--dry-run` = identical output plus
       a banner, `--force` = act). The new pass must match that shape rather than invent one.
-- [ ] Add a leaked-fixture pass with all three candidacy gates required, not merely preferred:
+      *(completed: new pass follows run_claude_pass()/run_lean_pass()'s FORCE-gated contract,
+      documented as deliberately distinct from run_build_waiter_pass()'s age-threshold-only one)*
+- [x] Add a leaked-fixture pass with all three candidacy gates required, not merely preferred:
       (a) ownership by the invoking UID; (b) no live process reference — resolved through
       `/proc/*/cwd` and `/proc/*/fd`, never a process-name or command-line match; (c) an age
       threshold with a named default (the observed leak spans 2026-11-10 to today, so a
-      conservative default such as 1 day leaves today's live fixtures alone).
-- [ ] Carry **both** leak mechanisms in the removal step: `chmod -R u+w` the candidate before
+      conservative default such as 1 day leaves today's live fixtures alone). *(completed:
+      run_tmp_fixture_pass()/take_tmp_fixture_live_refs(), TMP_FIXTURE_REAP_MIN default 1440 min)*
+- [x] Carry **both** leak mechanisms in the removal step: `chmod -R u+w` the candidate before
       `rm -rf`, because 165 of 1,739 live entries contain non-writable paths a plain `rm -rf`
       cannot remove. A reaper built against the `EXIT`-trap mechanism alone would silently fail on
-      exactly the entries most worth reclaiming.
-- [ ] Document, in the pass's own header comment, *why* the fixtures leak at all:
+      exactly the entries most worth reclaiming. *(completed)*
+- [x] Document, in the pass's own header comment, *why* the fixtures leak at all:
       `tests/run-all.sh` dispatches each suite under `timeout -k 5 "$RUN_ALL_SUITE_TIMEOUT_S"`
       (lines 702 and 894), and a `SIGKILL` from `-k` skips the suite's own `EXIT` trap. This is
-      the pass's reason to exist and must not be rediscovered later.
-- [ ] Wire the pass into the usage text and the `--dry-run`/`--force` dispatch alongside the
+      the pass's reason to exist and must not be rediscovered later. *(completed)*
+- [x] Wire the pass into the usage text and the `--dry-run`/`--force` dispatch alongside the
       existing passes, preserving the documented no-flag/`--dry-run` output equivalence.
-- [ ] Add cases to `agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh`
+      *(completed: main()'s six-pass sequence, print_help(), and the --lean-tree/-snooze
+      five-pass->six-pass comment corrections)*
+- [x] Add cases to `agent-system/extensions/core/scripts/tests/test-claude-refresh-matcher.sh`
       asserting, against a synthetic fixture: an owned, old, unreferenced directory is a
       candidate; a directory with non-writable content is still removed under `--force`; a
       directory referenced by a live process is NOT a candidate; a directory younger than the
-      threshold is NOT a candidate; and the no-flag/`--dry-run` paths remove nothing.
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` over both edited
+      threshold is NOT a candidate; and the no-flag/`--dry-run` paths remove nothing. *(completed:
+      assertion (l), 9 new cases including a bonus /proc/*/fd case beyond the required cwd case,
+      plus the mutation-check function-name list/count extension)*
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` over both edited
       files (gate 22 runs in full even under `--skip-slow`, so a shellcheck finding here would
-      surface later at the worst time).
+      surface later at the worst time). *(completed: 0 findings after fixing two SC2178/SC2128
+      same-name-across-functions false positives and two SC2034 false positives on the test
+      file's final TMP_FIXTURE_REAP_MIN/PROC_ROOT assignments)*
 
 **Timing**: 2 hours
 
