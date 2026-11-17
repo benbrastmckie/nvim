@@ -1,33 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/635_enforce_sapience_postflight_wrapup_write/reports/01_sapience-postflight-wrapup-enforcement.md",
-      "summary": "Locates the two live call sites (orchestrate-cycle-postflight.sh and reconcile-task-status.sh) needed to mechanically anchor the Sapience postflight wrapup write, and recommends a sapience_notes field plus a skill_propagate_sapience_notes function mirroring the existing memory_candidates pattern."
+      "type": "plan",
+      "path": "specs/635_enforce_sapience_postflight_wrapup_write/plans/01_sapience-wrapup-write-enforcement.md",
+      "summary": "Six-phase plan mechanically anchoring the repo-tagged Sapience wrapup write at every implement-completion path, with bound enforcement, a visible zero-notes gap, and a stubbed test suite."
     }
   ],
-  "next_steps": "Run /orchestrate 635 to create implementation plan",
+  "next_steps": "Run /orchestrate 635 to execute the plan",
   "metadata": {
     "session_id": "sess_1794907446_b4b581_635",
-    "agent_type": "general-research-agent",
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 6,
+    "dependency_waves": 5
   },
   "memory_candidates": [
     {
-      "content": "In this codebase, a skill-base.sh skill_propagate_* function's mere existence does not imply it is wired into any live completion path -- skill_propagate_memory_candidates is fully implemented but has zero live callers across orchestrate-cycle-postflight.sh, orchestrate-stage5-postflight.sh, and reconcile-task-status.sh. Verify wiring by grepping the function's own name across those three files, never by inferring from its presence in skill-base.sh.",
+      "content": "When planning a change that must fire at every implement-completion in this codebase, prefer a standalone script invoked as a subprocess over a new skill-base.sh function: reconcile-task-status.sh (the deferred/deploy-gate-refusal completion path) sources only lib/common.sh and deploy-root-guard.sh, never skill-base.sh, and already reaches core behavior by sibling-script call (update-task-status.sh). A skill-base.sh function would require sourcing a multi-thousand-line lifecycle library into that script for one call, and is also harder to test because the suite then needs a sourcing fixture.",
       "category": "PATTERN",
-      "source_artifact": "specs/635_enforce_sapience_postflight_wrapup_write/reports/01_sapience-postflight-wrapup-enforcement.md",
+      "source_artifact": "specs/635_enforce_sapience_postflight_wrapup_write/plans/01_sapience-wrapup-write-enforcement.md",
       "confidence": 0.85,
-      "suggested_keywords": ["skill-base.sh", "postflight", "memory_candidates", "live-caller", "wiring-verification"]
-    },
-    {
-      "content": "The live implement-completed status transition has two structurally independent call sites in this codebase: skill_postflight_update (skill-base.sh, used by orchestrate-cycle-postflight.sh and command-gate-out.sh) for the normal path, and reconcile-task-status.sh's implementing)/partial) arms, which call update-task-status.sh postflight directly, bypassing skill_postflight_update and skill_orchestrate_propagate_completion entirely. Any new postflight-completion propagation (e.g. a new .return-meta.json field consumer) must be wired at both sites to cover the deferred/deploy-gate-refusal completion path, not just the normal one.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/635_enforce_sapience_postflight_wrapup_write/reports/01_sapience-postflight-wrapup-enforcement.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["reconcile-task-status.sh", "skill_postflight_update", "deferred-completion", "deploy-gate", "completion_summary"]
+      "suggested_keywords": ["reconcile-task-status.sh", "skill-base.sh", "completion-path", "standalone-script", "deferred-completion"]
     }
   ],
-  "dispatch_seq": 3
+  "dispatch_seq": 7
 }

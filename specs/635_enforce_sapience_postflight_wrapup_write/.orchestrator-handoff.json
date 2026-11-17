@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a 6-phase, 6-hour implementation plan anchoring the Sapience postflight wrapup write mechanically. The design adds a top-level sapience_notes array to .return-meta.json, a standalone postflight-sapience-notes.sh in the sapience extension that enforces the 8-note ceiling and records a visible knowledge-capture gap on zero notes, and wires it at three invocation points across two core scripts so the deferred reconcile completion path is covered alongside the live one. Two deliberate divergences from the research recommendation (standalone script rather than a skill-base.sh function; sapience extension rather than core) are documented with rationale in the plan's Research Integration section.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/635_enforce_sapience_postflight_wrapup_write/plans/01_sapience-wrapup-write-enforcement.md",
+      "summary": "Six-phase plan mechanically anchoring the repo-tagged Sapience wrapup write at every implement-completion path, with bound enforcement, a visible zero-notes gap, and a stubbed test suite."
+    }
+  ],
+  "dispatch_seq": 7
+}

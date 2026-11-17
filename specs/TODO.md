@@ -180,7 +180,7 @@ next_project_number: 643
 ### Sapience
 
 627 [PLANNING] — SOURCE STORE IS THE EDIT TARGET:...
-635 [PLANNING] — Enforce the sapience postflight wrapup write at task completion
+635 [PLANNED] — Enforce the sapience postflight wrapup write at task completion
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded...
 636 [PLANNING] — Close sapience activation-surface scoping gaps: vendor...
   └─ 637 [RESEARCHED] — Make the sapience extension fully functional across loaded... (see above)
@@ -543,11 +543,12 @@ GOAL. (1) verify-sapience-mcp.sh gains a check that fails when $HOME/.claude/set
 ---
 
 ### 635. Enforce the sapience postflight wrapup write at task completion
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
 - **Research**: [635_enforce_sapience_postflight_wrapup_write/reports/01_sapience-postflight-wrapup-enforcement.md]
+- **Plan**: [635_enforce_sapience_postflight_wrapup_write/plans/01_sapience-wrapup-write-enforcement.md]
 
 **Description**: Enforce the sapience postflight wrapup write at task completion so repo-tagged notes are actually written for every completed task, rather than depending on an instruction-level step the orchestrator can skip.
 
