@@ -201,7 +201,7 @@ verification notes rather than assuming two.
 
 ---
 
-### Phase 2: The Write Script and Its Stubbed Test Suite [IN PROGRESS]
+### Phase 2: The Write Script and Its Stubbed Test Suite [COMPLETED]
 
 **Goal**: Build the single site where the bound, the zero-notes gap, and the per-note degrade
 all live, with a suite that asserts call count and argument shape against a recording stub.
