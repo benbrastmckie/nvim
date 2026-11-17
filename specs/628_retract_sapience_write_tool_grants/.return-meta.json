@@ -1,10 +1,78 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 15,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/628_retract_sapience_write_tool_grants/plans/01_retract-sapience-write-grants.md",
-      "summary": "5-phase plan (6h, 4 waves) retracting sapience write-tool grants via forced-reload retraction in the merge engine, regression coverage, two caveat rewrites, and a five-repository redeploy."
+      "type": "summary",
+      "path": "specs/628_retract_sapience_write_tool_grants/summaries/01_retract-sapience-write-grants-summary.md",
+      "summary": "Retracted sapience's four MCP write-tool grants from all five deployed repositories via a tracked-record retraction plus a newly-added MCP-permission-grant orphan sweep in manager.load, regression coverage, truthed-up caveat surfaces, and a five-repository redeploy."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Retracted the sapience extension's four MCP write-tool grants from all five deployed repositories. Wired a tracked-record retraction into manager.load's forced-reload branch and, when that alone proved insufficient against repositories whose tracked history had already been clobbered, added a complementary MCP-permission-grant orphan sweep; both are regression-tested (39/39 and 10/10 passing suites) and all five repositories now converge to exactly the seven read-shaped sapience grants."
+  },
+  "modified_files": [
+    "lua/neotex/plugins/ai/shared/extensions/init.lua",
+    "lua/neotex/plugins/ai/shared/extensions/merge.lua",
+    "lua/neotex/plugins/ai/shared/extensions/merge_spec.lua",
+    "agent-system/extensions/core/scripts/tests/test-deploy-propagation.sh",
+    "agent-system/extensions/sapience/rules/sapience-write-path.md",
+    "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh",
+    "agent-system/extensions/core/context/standards/source-store-deploy-boundary-narrative.md",
+    "agent-system/extensions/core/index-entries.json",
+    "specs/628_retract_sapience_write_tool_grants/records/01_pre-change-baseline.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When fixing a merge-engine 'additive-only never retracts' defect, a retraction keyed off the extension's own TRACKED history (merged_sections) is correct going forward but can be a provable no-op against already-affected repositories: state.mark_loaded overwrites merged_sections wholesale on every load/reload, so if even one ordinary resync already ran after the fragment narrowed (before the fix existed), the wide historical tracked record is gone for good -- confirmed empirically against a scratch fixture reproducing the exact drift, and against real git history (a routine redeploy commit had already reset the tracked record from 11 to 7 items while the deployed file stayed at 11). The remedy that actually recovers already-lost history is a sweep that reasons from what CURRENTLY LOADED siblings' CURRENT fragments declare (mirroring an existing hook-registration orphan sweep), not from any historical record. Keep both mechanisms: tracked-record retraction for future narrowings, current-fragment-driven sweep for recovering from drift that already happened before the fix existed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/628_retract_sapience_write_tool_grants/summaries/01_retract-sapience-write-grants-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["merge-engine", "retraction", "orphan-sweep", "tracked-record", "additive-only", "mark_loaded"]
+    },
+    {
+      "content": "When building a valid-set/watched-prefix style orphan sweep (e.g. for MCP tool permission grants namespaced mcp__<server>__*), the extension's OWN current fragment is usually the PRIMARY (often only) source of its own watched prefix -- no sibling extension typically shares the same server namespace. Omitting it when building the valid set (reasoning 'the subsequent merge re-adds these anyway, so it's cosmetic') is a real bug, not a harmless simplification: it leaves watched_prefixes empty and makes the sweep a permanent, silent no-op. Confirmed by direct observation during implementation: the first version of this call omitted the extension's own fragment and swept nothing at all against a fixture reproducing the real drift.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/628_retract_sapience_write_tool_grants/summaries/01_retract-sapience-write-grants-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["orphan-sweep", "valid-set", "mcp-permission-grant", "watched-prefix", "build_permission_valid_set"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "Neotex extension system: manager.load forced-reload grants retraction",
+      "value": "manager.load's forced-reload branch now retracts an extension's own prior tracked merged_sections before re-merging its current fragment, and separately sweeps any mcp__<server>__-prefixed permission grant left behind by a now-narrowed fragment. Both mechanisms are needed: the tracked-record retraction alone cannot recover a repository whose tracked history was already overwritten by a prior ordinary redeploy.",
+      "predicate": "finding is",
+      "ko_type": "decision",
+      "confidence": 0.85
+    },
+    {
+      "subject": "Neotex extension system: state.mark_loaded overwrite semantics",
+      "value": "state.mark_loaded replaces an extension's merged_sections tracked record wholesale on every load/reload -- it does not accumulate or union across loads. Once a fragment narrows and a single ordinary resync runs before any retraction mechanism exists, the wide historical tracked record is permanently lost; only the narrow current-fragment record remains on disk thereafter.",
+      "predicate": "finding is",
+      "ko_type": "fact",
+      "confidence": 0.9
+    },
+    {
+      "subject": "Neotex extension system: deploy-headless.sh default mode never unloads",
+      "value": "deploy-headless.sh's default (non-wipe) mode force-loads core then calls manager.resync_all, which deliberately 'never unloads' -- it force-reloads every active extension in place. This is why an additive-only merge engine's drift (a grant, hook, or server registration removed from a source fragment) accumulates indefinitely in an already-deployed repository until an explicit retraction step is added to the load path itself.",
+      "predicate": "finding is",
+      "ko_type": "fact",
+      "confidence": 0.85
+    },
+    {
+      "subject": "Neotex extension system: robust orphan-sweep design for namespaced permission grants",
+      "value": "For an MCP-tool-shaped permission grant (mcp__<server>__<tool>), scoping an orphan sweep by the server-name prefix extracted from CURRENTLY LOADED extensions' CURRENT fragments (not historical tracked data) correctly recovers from drift whose tracked history is already lost, while never touching an unrelated hand-added grant (which never matches the mcp__ shape at all). The extension's own current fragment must be included when building the watched-prefix set -- it is the usual sole source of its own prefix, not a cosmetic addition.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8
+    },
+    {
+      "subject": "Neotex extension system: settings.json drift across infrequently-redeployed repositories",
+      "value": "Two of five repositories that had not been redeployed recently (.dotfiles, sf1-engine) carried settings.json merge-target drift unrelated to sapience, healed as a side effect of this task's generalized (uniform-across-settings/mcp-keys) retraction fix. Confirmed benign by checking the post-redeploy content was byte-identical to an already-current sibling repository, and that every hand-written custom hook in both repositories survived untouched.",
+      "predicate": "finding is",
+      "ko_type": "fact",
+      "confidence": 0.75
     }
   ],
   "metadata": {
@@ -12,8 +80,7 @@
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "phases_completed": 5,
     "phases_total": 5
-  },
-  "dispatch_seq": 15
+  }
 }

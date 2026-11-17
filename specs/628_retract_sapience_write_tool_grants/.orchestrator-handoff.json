@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a 5-phase, 6-hour plan adopting the research report's merge-engine retraction route: wire the already-existing unmerge_settings / build_retained_fragments / get_merged_sections primitives into manager.load's forced-reload branch via the existing reverse_merge_targets helper, with rollback symmetry mirroring the settings_swept precedent. Re-measured every carried figure live: all five repositories still carry 11 sapience grants against a 7-grant fragment, confirmed unchanged. Corrected two research-report details -- the tracked-record jq path omits a 'children' level, and exactly two source-store surfaces (not one) carry the now-false residual caveat. No migration script and no new lint; redeploy is the remediation.",
+  "summary": "Retracted sapience's four MCP write-tool grants from all five deployed repositories. The planned tracked-record retraction in manager.load's forced-reload branch was wired in as planned, but proved insufficient alone against the real repositories (their tracked history was already overwritten by a prior ordinary redeploy, confirmed via git history) -- added a complementary MCP-permission-grant orphan sweep, modeled on the existing hook-registration orphan sweep, which closed the gap. Added regression coverage (39/39 merge_spec.lua cases, 10/10 test-deploy-propagation.sh assertions), truthed up the two caveat surfaces, and redeployed all five repositories, each now converging to exactly the seven read-shaped grants with zero write grants. verify-sapience-mcp.sh check (e) passes.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/628_retract_sapience_write_tool_grants/summaries/01_retract-sapience-write-grants-summary.md",
+      "summary": "Full implementation summary: both retraction mechanisms, regression coverage, caveat rewrites, mechanism-map subsection, and the five-repository redeploy with its one investigated finding."
+    },
+    {
       "type": "plan",
       "path": "specs/628_retract_sapience_write_tool_grants/plans/01_retract-sapience-write-grants.md",
-      "summary": "5-phase plan (6h, 4 waves) retracting sapience write-tool grants via forced-reload retraction in the merge engine, regression coverage, two caveat rewrites, and a five-repository redeploy."
+      "summary": "5-phase plan, all phases [COMPLETED], with Phase 2/3 deviations and Phase 5's investigated settings.json finding annotated inline."
     }
   ],
-  "dispatch_seq": 13
+  "dispatch_seq": 15
 }
