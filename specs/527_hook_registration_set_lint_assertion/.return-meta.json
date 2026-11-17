@@ -1,30 +1,13 @@
 {
-  "status": "planned",
-  "dispatch_seq": 6,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/527_hook_registration_set_lint_assertion/plans/01_hook-registration-set-lint.md",
-      "summary": "Six-phase sequential plan adding Check E (deployed (event, matcher, hook-identity) SET assertion, three distinct drift shapes) to lint-hook-registration-paths.sh, with regression cases, Gate 21 confirmation requiring no verify-deploy.sh or gate-registry.data edit, and a redeploy/full-gate close."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "Adding a new CLI flag to one member of this repo's seven-lint cluster requires a pre-pass in that lint's own body that strips the flag from \"$@\" BEFORE calling lint_corpus_scan_parse_flags: the shared parser (scripts/lib/lint-corpus-scan-lib.sh) is byte-identical across all seven and treats every unrecognized token as a positional scan path, so an unstripped flag lands as a scan path and the caller exits 2 with 'scan path not found: --myflag'. Never widen the shared parser for one lint's flag. Separately, when a gate harness (verify-deploy.sh's gateNN_run) invokes a tool with FIXED arguments, no CLI flag can reach it, so a fixture-driven gate-level demonstration needs an environment-variable override on the tool instead -- lint-hook-registration-paths.sh's own HOOK_IDENTITY_CLI_OVERRIDE is the established precedent, introduced for exactly this purpose (point a test at a deliberate fixture without mutating the real file).",
-      "category": "PATTERN",
-      "source_artifact": "specs/527_hook_registration_set_lint_assertion/plans/01_hook-registration-set-lint.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["lint-corpus-scan-lib", "shared-flag-parser", "env-var-override", "gate-fixture-injection", "verify-deploy-gate"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 527 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 10,
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1794907446_b4b581_527",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 8,
-    "dependency_waves": [[1], [2], [3], [4], [5], [6]]
+    "session_id": "sess_1794907446_b4b581",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_depth": 2,
+    "phases_completed": 0,
+    "phases_total": 6
   }
 }

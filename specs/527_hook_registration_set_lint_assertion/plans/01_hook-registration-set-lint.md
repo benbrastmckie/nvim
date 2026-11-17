@@ -3,7 +3,7 @@
 - **Task**: 527 - Extend the hook-registration lint so it asserts the deployed hook registration
   SET against the merge-source, not only the FORM of each individual command path, and wire the
   resulting gate into verify-deploy.sh
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: `orphan_sweep_for_removed_merge_target_entries` (task 369, archived
   `[COMPLETED]`) and `gate8_expected_vs_new_failure_distinction` (task 445, archived
@@ -179,7 +179,7 @@ included.
 Phases within the same wave can execute in parallel. This plan is fully sequential: each phase
 consumes the previous phase's output directly.
 
-### Phase 1: Live Fleet Drift Baseline and Fixture Provenance [NOT STARTED]
+### Phase 1: Live Fleet Drift Baseline and Fixture Provenance [COMPLETED]
 
 **Goal**: Replace every carried field figure with a measurement taken today, using the real
 identity bridge rather than a basename approximation, and settle per shape whether its criterion-1
@@ -187,24 +187,26 @@ exemplar is a live capture or a documented reconstruction.
 
 **Tasks**:
 
-- [ ] Enumerate every deployed tree on this machine carrying a `.claude/settings.json` (start from
+- [x] Enumerate every deployed tree on this machine carrying a `.claude/settings.json` (start from
       the repos holding a `.claude-extensions.json`, then widen to any other `.claude/settings.json`
-      found), and record the enumeration method and the resulting repo list.
-- [ ] For each enumerated repo, build the `(event, matcher, command)` inventory with the same jq
+      found), and record the enumeration method and the resulting repo list. *(completed: 27 repos
+      enumerated)*
+- [x] For each enumerated repo, build the `(event, matcher, command)` inventory with the same jq
       `.hooks` walk the lint uses, resolve every command's identity through ONE batched
-      `hook_identity_cli.lua` call, and drop nil-identity rows first.
-- [ ] Record per repo: shape (a) candidates (triple absent from the source-declared union), shape
+      `hook_identity_cli.lua` call, and drop nil-identity rows first. *(completed: 681 rows resolved
+      in one batched bridge call)*
+- [x] Record per repo: shape (a) candidates (triple absent from the source-declared union), shape
       (b) candidates (an `(event, identity)` group with more than one distinct matcher), and shape
-      (c) candidates (normalized path absent at `<repo>/.claude/<norm>`).
-- [ ] Record the set of repos measured clean today -- zero candidates of any shape. This is
+      (c) candidates (normalized path absent at `<repo>/.claude/<norm>`). *(completed)*
+- [x] Record the set of repos measured clean today -- zero candidates of any shape. This is
       criterion 3's evidence set and supersedes the dispatch's already-refuted "fourteen clean
-      repos" figure.
-- [ ] For each of the three shapes, record either the live instance chosen as its criterion-1
+      repos" figure. *(completed: 14 of 27 measured clean)*
+- [x] For each of the three shapes, record either the live instance chosen as its criterion-1
       exemplar, or -- where none survives -- the archived fixture to be copied verbatim, the single
       minimal mutation to be applied, and the verbatim line in
       `specs/archive/369_orphan_sweep_for_removed_merge_target_entries/records/01_baseline-measurements.md`
-      that the mutation reproduces.
-- [ ] Write all of the above to `specs/527_hook_registration_set_lint_assertion/records/01_live-drift-baseline.md`.
+      that the mutation reproduces. *(completed: (a) and (c) both live, (b) reconstructed)*
+- [x] Write all of the above to `specs/527_hook_registration_set_lint_assertion/records/01_live-drift-baseline.md`. *(completed)*
 
 **Timing**: 1 hour
 
