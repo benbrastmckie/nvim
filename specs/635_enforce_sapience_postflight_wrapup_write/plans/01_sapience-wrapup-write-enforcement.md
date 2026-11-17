@@ -407,7 +407,7 @@ third reconcile arm) is a scope-hypothesis miss to report, not to absorb silentl
 
 ---
 
-### Phase 4: Emission Instruction Surfaces [IN PROGRESS]
+### Phase 4: Emission Instruction Surfaces [COMPLETED]
 
 **Goal**: Make every completing implementation agent — in every domain, not only
 general/meta/markdown — actually author the notes the mechanical site writes.
