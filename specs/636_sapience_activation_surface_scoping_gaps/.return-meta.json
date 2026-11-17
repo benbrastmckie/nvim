@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/636_sapience_activation_surface_scoping_gaps/reports/01_activation-surface-scoping-gaps.md",
+      "summary": "Traces the vendor hook-recurrence mechanism, confirms live capture/activation coupling asymmetry, finds abood's unmerged-hook-fragment signal, designs the N-repeat agreement rule, and scopes the two doc rewrites for the five dispatched GOAL items."
+    }
+  ],
+  "next_steps": "Run /orchestrate 636 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1794907446_b4b581_636",
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "dispatch_seq": 4,
+  "memory_candidates": [
+    {
+      "content": "Sapience vendor client (~/.sapience/sapience_upkeep.py) re-adds three Claude Code hooks (SessionStart --briefing-text, SessionEnd --receipt, Stop --effect-line) to $HOME/.claude/settings.json unconditionally on every auto_update/update --wire pass, UNLESS ~/.sapience/config.json's \"hooks\" key is false or SAPIENCE_NO_HOOKS=1 is set (hooks_opted_out()). This is independent of any repository's own sapience extension load state -- a machine-wide recurrence risk any verifier for this extension should check.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/636_sapience_activation_surface_scoping_gaps/reports/01_activation-surface-scoping-gaps.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["sapience", "hooks", "vendor", "auto_update", "settings.json"]
+    },
+    {
+      "content": "Sapience transcript capture is gated by a SEPARATE opt-in list, ~/.sapience/config.json's capture.projects[].enabled (matched by longest path_prefix, mirroring sapience_capture.py's for_cwd()), unconnected to a repository's own sapience extension activation state (.claude-extensions.json's extensions.sapience.status). A repository can be active-extension with capture disabled/absent (observed: BimodalLogic, Sapience/sf1-engine) or, in principle, capture-enabled with the extension inactive (not observed but possible) -- no existing script in the extension's source store reads or writes this list.",
+      "category": "PATTERN",
+      "source_artifact": "specs/636_sapience_activation_surface_scoping_gaps/reports/01_activation-surface-scoping-gaps.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sapience", "capture", "config.json", "activation", "coupling"]
+    }
+  ]
+}
