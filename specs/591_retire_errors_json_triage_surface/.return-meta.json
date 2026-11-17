@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/591_retire_errors_json_triage_surface/plans/01_retire-errors-triage-surface.md",
-      "summary": "8-phase, 4-wave plan retiring the errors.json/errors-append.sh//errors triage surface outright, with the retention verdict and the 19 records' disposition settled on evidence."
-    }
-  ],
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 28,
   "metadata": {
-    "session_id": "sess_1794879152_8837d5_591",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 10,
-    "dependency_waves": 4
-  },
-  "next_steps": "Run /orchestrate 591 to execute the plan",
-  "dispatch_seq": 27
+    "session_id": "sess_1794879152_8837d5",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

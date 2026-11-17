@@ -1,7 +1,7 @@
 # Implementation Plan: Task #591
 
 - **Task**: 591 - Decide the fate of the errors.json triage surface
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: 572, 585
 - **Research Inputs**: None (planned directly from the task description plus direct source-store reads; see Decision Record below for the evidence gathered)
@@ -142,7 +142,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Audit the 19 records and discard the store [NOT STARTED]
+### Phase 1: Audit the 19 records and discard the store [COMPLETED]
 
 **Goal**: Give every record in `specs/errors.json` a recorded disposition, then delete the file.
 
@@ -152,21 +152,21 @@ cleanly without a file-scope excursion. Reversing the order would force the dele
 scope exception for no benefit.
 
 **Tasks**:
-- [ ] Dump all records with `jq -r '.errors[] | "\(.id)\t\(.timestamp)\t\(.type)\t\(.severity)\t\(.fix_status)\t\(.message)"' specs/errors.json`.
-- [ ] For each record, search `specs/archive/` and `specs/state.json` for a task whose name or
+- [x] Dump all records with `jq -r '.errors[] | "\(.id)\t\(.timestamp)\t\(.type)\t\(.severity)\t\(.fix_status)\t\(.message)"' specs/errors.json`. *(completed: 19 records confirmed)*
+- [x] For each record, search `specs/archive/` and `specs/state.json` for a task whose name or
       description covers the same finding. Record the match (archived directory name) or the
-      absence of one.
-- [ ] Check whether any record's `fix_status` is `in_progress`, or whether any record carries a
+      absence of one. *(completed: 17 of 19 matched to a discharging task via fix_task field, title/scope match, or git log; 2 have no specific discharging task)*
+- [x] Check whether any record's `fix_status` is `in_progress`, or whether any record carries a
       `fix_task` value — direct evidence of whether `/errors --fix` was ever run. Record the
       answer; it is the empirical half of the "mutable lifecycle field" argument in the Decision
-      Record above.
-- [ ] Write `specs/591_retire_errors_json_triage_surface/reports/01_errors-record-disposition.md`:
+      Record above. *(completed: zero records at in_progress across full git history; 9 records carry a fix_task value but none show evidence of errors-append.sh update/`/errors --fix` ever being run — all 9 were closed by direct edits to specs/errors.json from within the discharging task)*
+- [x] Write `specs/591_retire_errors_json_triage_surface/reports/01_errors-record-disposition.md`:
       the retirement verdict, the capability comparison in condensed form, a table with one row
       per record (`id`, `type`, `fix_status`, discharging archived task or `none found`), and an
       explicit list of any record with no discharging task, labelled as follow-up candidates that
-      this task deliberately does not turn into tasks.
-- [ ] `git rm specs/errors.json`.
-- [ ] Confirm the deleted blob is reachable in history: `git log --oneline -1 -- specs/errors.json`.
+      this task deliberately does not turn into tasks. *(completed)*
+- [x] `git rm specs/errors.json`. *(completed)*
+- [x] Confirm the deleted blob is reachable in history: `git log --oneline -1 -- specs/errors.json`. *(completed: commit 464df494c)*
 
 **Timing**: 1 hour
 

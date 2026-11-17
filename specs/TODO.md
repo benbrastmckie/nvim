@@ -56,7 +56,7 @@ next_project_number: 639
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
-591 [PLANNED] — Decide the fate of the errors.json triage surface
+591 [IMPLEMENTING] — Decide the fate of the errors.json triage surface
 604 [NOT STARTED] — Lint-time detector for drifted test-fixture dependency...
   └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite... (see above)
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
@@ -1798,7 +1798,7 @@ repository's own space.
 
 ### 591. Decide the fate of the errors.json triage surface
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 572, Task 585

@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Audit the 19 records and discard the store",
+  "started_at": "2026-11-17T03:07:48Z",
+  "last_updated": "2026-11-17T03:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Dump all records from specs/errors.json", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Match each record against specs/archive/ or specs/state.json for a discharging task", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Check fix_status/fix_task fields for evidence /errors --fix was ever used", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Write disposition report 01_errors-record-disposition.md", "status": "done", "files_touched": ["specs/591_retire_errors_json_triage_surface/reports/01_errors-record-disposition.md"]},
+    {"id": 5, "description": "git rm specs/errors.json and confirm history reachable", "status": "done", "files_touched": ["specs/errors.json"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
