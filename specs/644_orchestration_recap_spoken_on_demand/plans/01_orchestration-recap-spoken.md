@@ -189,7 +189,7 @@ Phase 5's `full` gate is what covers everything these subsets do not.
 
 ---
 
-### Phase 1: Resolver and the recap script [IN PROGRESS]
+### Phase 1: Resolver and the recap script [COMPLETED]
 
 **Goal**: The path resolver and the `orchestrate-recap.sh` script exist, are registered, and work
 standalone — both modes, every fallback branch — with no caller wired up yet.
