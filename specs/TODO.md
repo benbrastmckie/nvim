@@ -113,7 +113,7 @@ next_project_number: 645
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-643 [NOT STARTED] — Align /orchestrate's conclusion-stage next-batch suggestion...
+643 [RESEARCHED] — Align /orchestrate's conclusion-stage next-batch suggestion...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
@@ -246,10 +246,11 @@ PROVENANCE. Created via `/meta` in prompt mode, session `sess_1794955120_meta643
 ---
 
 ### 643. Next batch suggestion ignores roadmap ordering
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
+- **Research**: [643_next_batch_suggestion_ignores_roadmap_ordering/reports/01_roadmap_aware_suggester.md]
 
 **Description**: Align /orchestrate's conclusion-stage next-batch suggestion with the authored roadmap ordering, or render both so the divergence is visible
 
