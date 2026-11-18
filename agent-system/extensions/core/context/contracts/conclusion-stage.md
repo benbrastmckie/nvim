@@ -26,6 +26,12 @@ channel's approval. This invariant is the stage's load-bearing acceptance claim 
 mechanically, not only stated in prose — see "The Approval Ledger" below and
 `scripts/orchestrate-conclusion-aggregate.sh`'s `--record-approval` / `--check-approval` pair.
 
+A task description or plan phase that names this stage as the filer of channel (b) or (c)
+follow-on work is malformed — only channel (a) executes anything, as stated above. Such a
+description must instead ask its dispatch for the evidence this stage consumes; see
+`docs/reference/standards/multi-task-creation-standard.md`'s "Requesting a Proposal Packet, Not
+Filing, From an Autonomous Dispatch" subsection.
+
 This file's companion section, "## The Executable Stage Body" (added once the mechanical half of
 the stage exists), is the verbatim-executed procedure. This half — the derivation contract — is
 loaded first and describes *where the stage's content comes from* and *how an entry becomes a

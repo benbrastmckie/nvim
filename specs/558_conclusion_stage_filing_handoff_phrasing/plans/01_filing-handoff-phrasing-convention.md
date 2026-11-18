@@ -224,7 +224,7 @@ is claimed.
 
 ---
 
-### Phase 2: Add the pointer-only note at the conclusion-stage Overview [NOT STARTED]
+### Phase 2: Add the pointer-only note at the conclusion-stage Overview [COMPLETED]
 
 **Goal**: A reader reasoning from the conclusion stage's own vocabulary — the surface the
 originating phrasing came from — is told the phrasing is malformed and sent to the single
@@ -232,22 +232,23 @@ statement.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/context/contracts/conclusion-stage.md`'s Overview,
+- [x] Re-read `agent-system/extensions/core/context/contracts/conclusion-stage.md`'s Overview,
       specifically the channel (b)/(c) bullets ("never dispatched or executed by this stage",
       "never created as task directories by this stage") and the "Only channel (a) executes
-      anything" paragraph that follows them.
-- [ ] Add at most two sentences immediately after that paragraph stating that a task description
+      anything" paragraph that follows them. *(completed)*
+- [x] Add at most two sentences immediately after that paragraph stating that a task description
       or plan phase naming this stage as the filer of follow-up tasks or agent-system changes is
       malformed, and that such a description must instead ask its dispatch for issue-log entries
-      plus a rendered candidate list.
-- [ ] Point to the Phase 1 subsection by document path and heading, verbatim as Phase 1 wrote it.
+      plus a rendered candidate list. *(completed)*
+- [x] Point to the Phase 1 subsection by document path and heading, verbatim as Phase 1 wrote it.
       Do **not** restate the forbidden shape, the required shape, or the WHY citations here —
-      the pointer defers.
-- [ ] Confirm no change was made to the Overview's channel descriptions, to the Filter Predicate,
+      the pointer defers. *(completed)*
+- [x] Confirm no change was made to the Overview's channel descriptions, to the Filter Predicate,
       the Exactly-One-Channel Rule, the Hint-Versus-Decision Rule, the Citation Requirement, or
-      to any step of The Executable Stage Body.
-- [ ] Read the new hunk back against the no-task-references and no-record-versioning rules, as in
-      Phase 1.
+      to any step of The Executable Stage Body. *(completed: diff confined to the two new
+      sentences, above ## The Evidence Base)*
+- [x] Read the new hunk back against the no-task-references and no-record-versioning rules, as in
+      Phase 1. *(completed: no violations found)*
 
 **Timing**: 0.25 hours
 

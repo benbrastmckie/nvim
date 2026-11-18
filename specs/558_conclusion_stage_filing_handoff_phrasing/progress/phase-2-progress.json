@@ -1,0 +1,26 @@
+{
+  "phase": 2,
+  "phase_name": "Add the pointer-only note at the conclusion-stage Overview",
+  "started_at": "2026-11-17T00:15:00Z",
+  "last_updated": "2026-11-17T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read conclusion-stage.md Overview channel b/c bullets and the Only-channel-(a) paragraph", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add at most two sentences pointer note after that paragraph", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/conclusion-stage.md"]},
+    {"id": 3, "description": "Point to Phase 1 heading verbatim, no restatement", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/conclusion-stage.md"]},
+    {"id": 4, "description": "Confirm no change to channel descriptions/filter predicate/rules/citation requirement/executable stage body", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Read back against no-task-references and no-record-versioning rules", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Fix index-entries.json line_count drift tripped by Gate 3 doc-lint", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.6",
+      "description": "Gate 3 doc-lint failed on index-entries.json line_count mismatch for contracts/conclusion-stage.md (declared 500, actual 506) after the Phase 2 prose addition.",
+      "type": "altered",
+      "reason": "Not an original plan task, but required to satisfy Phase 2's own verification criterion (Gate 3/4 passing). generate-context-line-counts.sh --write refuses to run from the source store (deploy-root-guard.sh), so the line_count field was hand-updated in agent-system/extensions/core/index-entries.json to 506.",
+      "annotation": "*(deviation: altered — added index-entries.json line_count fix to satisfy Gate 3)*"
+    }
+  ]
+}
