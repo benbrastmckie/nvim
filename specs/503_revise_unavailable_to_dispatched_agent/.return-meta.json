@@ -1,33 +1,31 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "task_number": 503,
-  "session_id": "sess_1794985308_f67716_503",
-  "dispatch_seq": 1,
-  "findings_count": 5,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/503_revise_unavailable_to_dispatched_agent/reports/01_revise-unavailable-dispatched-agent.md",
-      "summary": "Establishes that /revise is unreachable from a dispatched agent for two compounding reasons (structural command->skill->agent unidirectionality, and an unsanctioned direct skill-reviser path that would skip GATE IN/OUT), and recommends documenting the unavailability plus the existing state-write.sh Stage 7 description-update fallback on both commands/revise.md and skills/skill-reviser/SKILL.md, rejecting postflight-tool-restrictions.md as the home."
+      "type": "plan",
+      "path": "specs/503_revise_unavailable_to_dispatched_agent/plans/01_revise-unavailability-point-of-use.md",
+      "summary": "3-phase documentation plan adding point-of-use /revise unavailability notes plus the named state-write.sh fallback route to commands/revise.md and skills/skill-reviser/SKILL.md, then running the full gate set and redeploying."
     }
   ],
+  "task_number": 503,
+  "dispatch_seq": 5,
+  "phase_count": 3,
+  "estimated_hours": 1.5,
+  "dependency_waves": [[1, 2], [3]],
   "memory_candidates": [
     {
-      "content": "commands/revise.md and skills/skill-reviser/SKILL.md document no agent-unavailability note despite /revise being structurally unreachable from a dispatched subagent (creating-commands.md's command->skill->agent flow has no reverse arrow) and skill-reviser itself being unsanctioned for direct invocation (it is not user-only like skill-tag, but direct invocation skips commands/revise.md's GATE IN task-lock acquisition and GATE OUT .return-meta.json cleanup). The correct fallback for a dispatched agent updating a sibling task's description is skill-reviser/SKILL.md's own Stage 7 'For Description Update' state-write.sh object-merge block, already verified correct by a live incident (884, iss_1793913745294_dZNuX5).",
+      "content": "suite_selection_select (scripts/lib/suite-selection-lib.sh) returns the bare __FULL_SWEEP__ sentinel whenever ANY argument path has no mapped suite -- the sentinel DOMINATES the union rather than being merged with the other paths' real suites. A plan author who measures a multi-path phase (or several phases' paths) in one call therefore gets a false 'no suite covers this' reading and writes a dishonest Tier Justification. Always call the selector one path per call. Second coupled hazard: the DEPLOYED .claude/scripts/lib copy and the agent-system source-store copy can disagree (measured: 28 vs 26 suites for skills/skill-reviser/SKILL.md while the deployed core tree was stale), and scripts/validate-artifact.sh's Tier-Justification honesty scan uses the DEPLOYED copy -- so name the superset to over-cover rather than under-cover. Both errors were caught mechanically by validate-artifact.sh at plan-acceptance time, which is worth running before returning any plan carrying a below-full tier claim.",
       "category": "PATTERN",
-      "source_artifact": "specs/503_revise_unavailable_to_dispatched_agent/reports/01_revise-unavailable-dispatched-agent.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["revise", "skill-reviser", "dispatched-agent", "state-write.sh", "tool-withholding"]
-    },
-    {
-      "content": "postflight-tool-restrictions.md's scope is the skill-postflight-phase tool boundary (what a postflight script may do after a subagent returns), audience 'Skill authors, /meta agent, system maintainers' -- it is the WRONG home for a statement about what a dispatched AGENT may invoke mid-execution (a different actor, different lifecycle point). Point-of-use documentation on the actual surfaces an agent will meet (e.g. commands/revise.md, skill-reviser/SKILL.md) is the established pattern in this codebase, mirroring how the AskUserQuestion withholding is documented at agent-frontmatter-standard.md and push-consent-relay.md rather than in a generic registry.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/503_revise_unavailable_to_dispatched_agent/reports/01_revise-unavailable-dispatched-agent.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["postflight-tool-restrictions", "documentation-placement", "point-of-use", "agent-availability"]
+      "source_artifact": "specs/503_revise_unavailable_to_dispatched_agent/plans/01_revise-unavailability-point-of-use.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["suite-selection-lib", "verification-tier", "tier-justification", "validate-artifact", "full-sweep-sentinel", "plan-authoring"]
     }
   ],
-  "next_steps": "Run /orchestrate 503 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1794985308_f67716_503",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  },
+  "next_steps": "Run /orchestrate 503 to execute the plan"
 }

@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 5,
+  "summary": "Created a 3-phase, 1.5-hour documentation plan: an Agent Availability note on agent-system/extensions/core/commands/revise.md, a mirror note extending skill-reviser/SKILL.md's Trigger Conditions, and a final gate-verification-plus-redeploy phase. The state-write.sh invocation shape stays single-sourced in SKILL.md Stage 7; commands/revise.md points at it. postflight-tool-restrictions.md is excluded with the rejection recorded under Decisions, and all three dispatch-extracted carried figures were re-checked live (the file_scope/external-store claim is confirmed no longer true: agent-system has no .git here and its paths are tracked and committable).",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/503_revise_unavailable_to_dispatched_agent/plans/01_revise-unavailability-point-of-use.md",
+      "summary": "3-phase documentation plan adding point-of-use /revise unavailability notes plus the named state-write.sh fallback route to commands/revise.md and skills/skill-reviser/SKILL.md, then verifying and redeploying."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 3,
+  "plan_markers_verified": true,
+  "blockers": [],
+  "next_action_hint": "Dispatch implement phase; Phases 1 and 2 are wave-1 parallel (disjoint files), Phase 3 depends on both and carries the __WHOLE_TREE__ claim."
+}
