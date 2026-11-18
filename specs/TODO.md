@@ -44,7 +44,7 @@ next_project_number: 645
 520 [NOT STARTED] — Emit deploy ordering in implement dispatch body
 521 [NOT STARTED] — Fix the agent glob to match the -implement-agent.md variant
 525 [NOT STARTED] — Repair the always-failing extensions-directory fallback in...
-526 [RESEARCHING] — Announce completion and input-needed over TTS from the source...
+526 [RESEARCHED] — Announce completion and input-needed over TTS from the source...
   └─ 644 [NOT STARTED] — Leave a spoken-word recap at the end of an orchestration and... (see above)
 564 [NOT STARTED] — Fix validate-artifact.sh Tier Justification false positive...
   └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
@@ -6467,10 +6467,11 @@ FIX. Extend the lint to compare the deployed (event, matcher, hook-identity) set
 
 ### 526. Announce completion and input-needed over TTS from the source store, with a cooldown
 - **Effort**: medium
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 435
+- **Research**: [526_tts_announce_completion_and_input_needed/reports/01_tts-completion-input-needed.md]
 
 **Description**: Make every repo the loader deploys into announce the two things that actually matter -- work finished, and input needed -- and make repeat announcements harmless by construction. Today neither fires.
 

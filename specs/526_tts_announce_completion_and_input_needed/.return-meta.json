@@ -1,25 +1,43 @@
 {
-  "status": "tasks_created",
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "dispatch_seq": 2,
   "artifacts": [
     {
-      "type": "task",
-      "path": "/home/benjamin/.config/nvim/specs/526_tts_announce_completion_and_input_needed/",
-      "summary": "Task #526 (tts_announce_completion_and_input_needed) created by /meta in prompt mode"
+      "type": "report",
+      "path": "specs/526_tts_announce_completion_and_input_needed/reports/01_tts-completion-input-needed.md",
+      "summary": "Confirms Defects 1-3 verbatim against the live source store, finds that lifecycle-notify.sh's 'orchestrate-active' marker has no writer anywhere (dead), that orchestrator-postflight.sh and skill_lifecycle_notify are orphaned for core task types, flags that no existing check or test covers any of the three hook scripts, and designs the Stop-branch utterance, cooldown, and matcher-parity-check fixes for planning."
     }
   ],
-  "next_steps": "Run /orchestrate 526 once its dependencies have landed",
   "metadata": {
-    "session_id": "sess_1794089958_e8996c",
-    "agent_type": "meta-builder-agent",
+    "session_id": "sess_1794985308_f67716_526",
+    "agent_type": "general-research-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
-    "mode": "prompt",
-    "mode_target": "global",
-    "target_root": "/home/benjamin/.config/nvim",
-    "tasks_created": 2
+    "findings_count": 9
   },
-  "modified_files": [
-    "specs/TODO.md",
-    "specs/state.json"
-  ]
+  "memory_candidates": [
+    {
+      "content": "In this repo's agent-system source store, scripts/orchestrator-postflight.sh and skill-base.sh's skill_lifecycle_notify function are confirmed orphaned for core task types (general/meta/markdown): those task types route directly to agents from skill-orchestrate, bypassing the lifecycle-skill layer (skill-nix-research etc.) that is the only live caller of skill_lifecycle_notify. Only extension task types with their own dedicated lifecycle SKILL.md files reach lifecycle-notify.sh's TTS path at all today.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/526_tts_announce_completion_and_input_needed/reports/01_tts-completion-input-needed.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["orchestrator-postflight", "skill_lifecycle_notify", "orphaned", "core task types", "TTS"]
+    },
+    {
+      "content": "lifecycle-notify.sh's .claude/tmp/orchestrate-active marker (checked at its line ~56 to auto-suppress TTS mid-orchestrate) has zero writers anywhere in the agent-system source store or deployed tree -- it is dead code, distinct from the genuinely live workflow-active-<CLAUDE_CODE_SESSION_ID> marker that update-task-status.sh preflight writes and claude-stop-notify.sh/wezterm-preflight-status.sh actually read/clear. The two markers have similar names but must not be conflated when reading or rewording this file's header.",
+      "category": "PATTERN",
+      "source_artifact": "specs/526_tts_announce_completion_and_input_needed/reports/01_tts-completion-input-needed.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["orchestrate-active", "workflow-active", "marker", "lifecycle-notify", "dead code"]
+    },
+    {
+      "content": "hooks/memory-nudge.sh is the one existing Stop-hook sibling with a working cooldown pattern in this codebase: a plain timestamp file (specs/tmp/memory-nudge-last) compared via NOW-LAST_TIME against a threshold, with mkdir -p before the write. No existing hook keys a cooldown by WEZTERM_PANE, but this timestamp-comparison shape is the directly transferable template for a pane-keyed cooldown elsewhere in the hook family.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/526_tts_announce_completion_and_input_needed/reports/01_tts-completion-input-needed.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["cooldown", "memory-nudge", "stop hook", "WEZTERM_PANE", "dedup"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 526 to create implementation plan"
 }
