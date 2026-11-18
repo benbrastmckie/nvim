@@ -1,7 +1,7 @@
 # Implementation Plan: Task #650
 
 - **Task**: 650 - Touched path verify entry and unmapped fallback
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 13 hours
 - **Dependencies**: None (territory edges to 610, 599, 586, 579, 651; no blocking edge in either direction)
 - **Research Inputs**: specs/650_touched_path_verify_entry_and_unmapped_fallback/reports/01_touched-path-entry-and-fallback.md
@@ -181,25 +181,29 @@ No `roadmap_path` was provided in this dispatch and no roadmap phases are includ
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Repository-level `verification_scope` declaration [NOT STARTED]
+### Phase 1: Repository-level `verification_scope` declaration [COMPLETED]
 
 **Goal**: One sibling key on `.claude-extensions.json` carrying this repository's verification
 topology, with a reader library following the established fail-open-on-absence contract, and the
 schema documented so the two adjacent records add fields rather than competing keys.
 
 **Tasks**:
-- [ ] Write `scripts/lib/verification-scope-lib.sh`: load the `verification_scope` object with the
+- [x] Write `scripts/lib/verification-scope-lib.sh`: load the `verification_scope` object with the
       precedent fail-open table (no file / no `jq` / key absent / malformed entry all yield empty,
       never a block), exposing accessors for `tree_roots`, `project_suite_roots` and `resolver`.
-- [ ] Model the loader on `derived-artifact-probe-lib.sh`'s `_derived_probe_load_entries_json`
-      shape rather than writing a new JSON-reading idiom.
-- [ ] Default when undeclared: `tree_roots` is the single resolved repository root,
+      *(completed)*
+- [x] Model the loader on `derived-artifact-probe-lib.sh`'s `_derived_probe_load_entries_json`
+      shape rather than writing a new JSON-reading idiom. *(completed)*
+- [x] Default when undeclared: `tree_roots` is the single resolved repository root,
       `project_suite_roots` is empty, `resolver` is the default backend — i.e. today's behaviour.
-- [ ] Add the `scripts/lib/verification-scope-lib.sh` row to `manifest.json`'s `provides.scripts`.
-- [ ] Document the schema in `context/standards/repo-level-declarations.md`: the object's fields,
+      *(completed)*
+- [x] Add the `scripts/lib/verification-scope-lib.sh` row to `manifest.json`'s `provides.scripts`.
+      *(completed)*
+- [x] Document the schema in `context/standards/repo-level-declarations.md`: the object's fields,
       the fail-open table, bash-glob matching semantics where relevant, the reserved
       `project_gates` / `closing_gate` field names with the record each is reserved for, and why
-      this is one key rather than three.
+      this is one key rather than three. *(completed: no bash-glob matching applies -- tree_roots
+      and project_suite_roots are plain directory paths, not globs)*
 
 **Timing**: 1.5 hours
 

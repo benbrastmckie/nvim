@@ -165,6 +165,7 @@
       "lib/task-reference-patterns.sh",
       "lib/task-type-detect.sh",
       "lib/territory-contention-lib.sh",
+      "lib/verification-scope-lib.sh",
       "lifecycle-notify.sh",
       "lint/collapsed-blocks/early-metadata-stage0-cslib-agents-cslib-implementation-agent.txt",
       "lint/collapsed-blocks/early-metadata-stage0-cslib-agents-cslib-research-agent.txt",

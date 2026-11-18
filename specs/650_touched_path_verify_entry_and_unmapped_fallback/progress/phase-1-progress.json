@@ -1,0 +1,29 @@
+{
+  "phase": 1,
+  "phase_name": "Repository-level verification_scope declaration",
+  "started_at": "2026-11-18T19:55:14Z",
+  "last_updated": "2026-11-18T20:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write scripts/lib/verification-scope-lib.sh reader library, modeled on derived-artifact-probe-lib.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/verification-scope-lib.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Add manifest.json provides.scripts row for the new library",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    },
+    {
+      "id": 3,
+      "description": "Document the verification_scope schema in context/standards/repo-level-declarations.md",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/repo-level-declarations.md"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

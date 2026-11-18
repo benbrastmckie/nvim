@@ -7,8 +7,10 @@ loader itself owns (`extensions`, `version`). This document names the declaratio
 generically, documents its survival guarantee, and records the declaration schemas the agent
 system currently reads from it: `derived_artifact_probes`, the repo-declared, build-free
 derived-artifact staleness probe (see `scripts/lib/derived-artifact-probe-lib.sh` for the reader
-and the two call sites that consume it), and `coupled_generated_surfaces`, the repo-declared,
-advisory plan-authoring completeness check described below.
+and the two call sites that consume it); `coupled_generated_surfaces`, the repo-declared,
+advisory plan-authoring completeness check described below; and `verification_scope`, the
+repo-declared touched-path-verification topology (tree roots, project-owned suite roots, and a
+declarable resolver backend) described below.
 
 ## Why `.claude-extensions.json` Survives a Hand-Authored Sibling Key
 
@@ -115,6 +117,72 @@ does not conflate a staleness probe with an authoring-completeness check.
 promoted to a shared library file because it has exactly one consumer; a second consumer is the
 recorded trigger to promote it to `scripts/lib/`.
 
+## The `verification_scope` Entry Schema
+
+```json
+{
+  "verification_scope": {
+    "tree_roots": ["<repo-root-relative dir>", "..."],
+    "project_suite_roots": ["<repo-root-relative dir>", "..."],
+    "resolver": {
+      "command": "<a single shell command string>",
+      "compose": "union"
+    },
+    "project_gates": "<reserved for the project-sources record>",
+    "closing_gate": "<reserved for the orchestration-close record>"
+  }
+}
+```
+
+One object, one key, read by `scripts/lib/verification-scope-lib.sh`
+(`verification_scope_tree_roots` / `verification_scope_project_suite_roots` /
+`verification_scope_resolver_command` / `verification_scope_resolver_compose`) and consumed by
+`scripts/verify-touched.sh`, `scripts/lib/suite-resolver-lib.sh`, and
+`scripts/report-suite-coverage.sh`.
+
+- `tree_roots` (array of strings, optional) — the repository tree(s) a touched-path scoped run
+  covers (a consumer repository running a copied `.claude/` tree under several deploy roots, or
+  with its own project tree alongside it). Default when absent, empty, or malformed: a single
+  root, the repository root itself — today's one-tree behaviour.
+- `project_suite_roots` (array of strings, optional) — directories holding a consumer
+  repository's OWN suites outside the deploy tree (a non-shell test corpus, for example). Default
+  when absent: empty — no project-owned suites declared.
+- `resolver.command` (string, optional) — a single shell command invoked by
+  `suite-resolver-lib.sh` as the DECLARED backend (see that library's own header for the full
+  invocation and output-shape contract). Default when absent: no declared backend; the default
+  `suite_selection_select` basename-resolution backend runs alone.
+- `resolver.compose` (string, optional, one of `"union"` or `"replace"`) — whether the declared
+  backend's selection is unioned with the default backend's or fully replaces it. Default when
+  absent or malformed: `"union"`.
+- `project_gates`, `closing_gate` — RESERVED field names on this same object, for the
+  project-sources narrowing record and the orchestration-close record respectively (see
+  "Decisions Settled" below). `verification-scope-lib.sh` does not read or validate either one;
+  they are named here so those two records add fields to this one object rather than declaring a
+  second, competing top-level key.
+
+**Why one key, not three.** `.claude-extensions.json`'s hand-authored-sibling-key surface already
+hosts `derived_artifact_probes` and `coupled_generated_surfaces` above; a third concern
+(verification topology) reuses the same surface rather than adding a fourth. `project_gates` and
+`closing_gate` reserve room on `verification_scope` itself for the two adjacent records' own
+needs, rather than each adding its own sibling key — "not a second declaration surface" applies
+across records, not only within one.
+
+**Fail-open-on-absence guarantee** (same shape as `derived_artifact_probes` and
+`coupled_generated_surfaces` above):
+
+| Condition | Result |
+|-----------|--------|
+| No `.claude-extensions.json` file | `tree_roots` = `["."]`, everything else empty/default |
+| `jq` unavailable | same as above |
+| Key absent | same as above |
+| Key present, malformed (wrong type) | same as above, field-by-field |
+| `resolver.command` absent | no declared backend; default backend only |
+| `resolver.compose` absent or not `union`/`replace` | `"union"` |
+
+A repository that declares nothing — this repository included — is byte-for-byte unaffected: the
+reader returns exactly today's one-tree, no-project-roots, default-backend-only behaviour, with
+no warning and no behaviour change.
+
 ## Fail-Open-on-Absence Guarantee
 
 A repo that declares nothing — no `derived_artifact_probes` key at all, this repo included — is
@@ -186,6 +254,9 @@ general advisory-to-blocking migration.
 ## See Also
 
 - `scripts/lib/derived-artifact-probe-lib.sh` — the reader and probe-runner this document backs.
+- `scripts/lib/verification-scope-lib.sh` — the reader for `verification_scope`, consumed by
+  `scripts/verify-touched.sh`, `scripts/lib/suite-resolver-lib.sh`, and
+  `scripts/report-suite-coverage.sh`.
 - `scripts/validate-artifact.sh` — the sole current reader of `coupled_generated_surfaces`, and
   the enforcing consumer `context/formats/plan-format.md`'s "Coupled-generated-surface
   declaration obligation" cross-references.
