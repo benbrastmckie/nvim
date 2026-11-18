@@ -303,34 +303,34 @@ re-derives and re-confirms the list once that suite is created.
 
 ---
 
-### Phase 3: Fire the Stop-branch announcement from `claude-stop-notify.sh` [NOT STARTED]
+### Phase 3: Fire the Stop-branch announcement from `claude-stop-notify.sh` [COMPLETED]
 
 **Goal**: the no-workflow-marker branch announces a finished run, with both existing suppression
 guards left byte-identical and each covered by its own regression check.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/hooks/claude-stop-notify.sh` immediately before
+- [x] Re-read `agent-system/extensions/core/hooks/claude-stop-notify.sh` immediately before
       editing.
-- [ ] In the no-marker branch, AFTER the existing `wezterm-notify.sh` invocation and before
+- [x] In the no-marker branch, AFTER the existing `wezterm-notify.sh` invocation and before
       `exit_success`, add a guarded call: resolve `$SCRIPT_DIR/tts-notify.sh`, test `-f`, and
       invoke `bash "$tts_script" --stop 2>/dev/null || true` — the same shape the sibling
       `wezterm-notify.sh` call already uses, so `set -euo pipefail` cannot turn a missing or
       failing hook into a Stop-hook failure.
-- [ ] Replace the now-false inline comment "Fire needs_input wezterm color only (no TTS for
+- [x] Replace the now-false inline comment "Fire needs_input wezterm color only (no TTS for
       non-lifecycle stops)" with one stating what the branch now does.
-- [ ] Leave the agent_id subagent guard and the global `workflow-active-*` glob suppression loop
+- [x] Leave the agent_id subagent guard and the global `workflow-active-*` glob suppression loop
       untouched, including the header paragraphs documenting why the suppression is deliberately
       global across sessions. Extend the header's architecture summary to mention the new TTS call
       in the no-marker branch; do not weaken or rescope the suppression rationale.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-claude-stop-notify.sh` following the
+- [x] Create `agent-system/extensions/core/scripts/tests/test-claude-stop-notify.sh` following the
       house convention. Cases: (a) stdin JSON carrying `agent_id` exits via the subagent guard
       with zero TTS invocation; (b) a present `workflow-active-<anything>` marker exits via the
       suppression loop with zero TTS invocation, including a marker belonging to a DIFFERENT
       session id (the global-scope property); (c) no marker and no `agent_id` reaches exactly one
       `tts-notify.sh --stop` invocation; (d) the hook still emits valid `{}` JSON on stdout and
       exits 0 on every one of those paths.
-- [ ] Observe `tts-notify.sh` invocation by shimming it inside the test's `mktemp -d` fixture
+- [x] Observe `tts-notify.sh` invocation by shimming it inside the test's `mktemp -d` fixture
       (a deployed-tree-shaped `hooks/` directory holding the real `claude-stop-notify.sh` beside a
       recording stub), not by relying on audio or on the real script. The hook resolves its
       siblings through `SCRIPT_DIR`, so a fixture directory is the correct and only reliable

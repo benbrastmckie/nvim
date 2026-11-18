@@ -7,7 +7,11 @@
 #      session UUID -- see that script's header comment for the two-id-spaces rationale)
 #   2. This Stop hook checks whether ANY session's workflow-active marker is present:
 #      - If any marker exists: some workflow is active (orchestrator pause) -> exit silently
-#      - If no marker at all: interactive/non-lifecycle stop -> fire needs_input wezterm color
+#      - If no marker at all: interactive/non-lifecycle stop -> fire needs_input wezterm color,
+#        then announce the finished run over TTS (tts-notify.sh --stop, "Tab N done") -- the
+#        same no-marker branch that already fires the wezterm color, now also announcing by ear.
+#        tts-notify.sh's own cooldown gate (see its header) collapses this with any coinciding
+#        Notification-hook fire into a single utterance.
 #
 # Suppression is deliberately GLOBAL (any session's marker suppresses this hook's own fire),
 # even though storage is per-session: this hook's job is "don't reset the tab color while ANY
@@ -83,10 +87,15 @@ for marker in $WORKFLOW_ACTIVE_GLOB; do
 done
 
 # --- No active workflow: interactive / non-lifecycle stop ---
-# Fire needs_input wezterm color only (no TTS for non-lifecycle stops)
+# Fire needs_input wezterm color, then announce the finished run over TTS.
 wezterm_script="$SCRIPT_DIR/wezterm-notify.sh"
 if [[ -f "$wezterm_script" ]]; then
     bash "$wezterm_script" 2>/dev/null || true
+fi
+
+tts_script="$SCRIPT_DIR/tts-notify.sh"
+if [[ -f "$tts_script" ]]; then
+    bash "$tts_script" --stop 2>/dev/null || true
 fi
 
 exit_success
