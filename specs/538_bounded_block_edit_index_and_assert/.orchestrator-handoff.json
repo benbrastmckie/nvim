@@ -1,0 +1,19 @@
+{
+  "status": "planned",
+  "task_number": 538,
+  "phase": "plan",
+  "session_id": "sess_1794985308_f67716_538",
+  "dispatch_seq": 7,
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Authored a five-phase plan (waves [1],[2,3],[4],[5], 3.25h) for the guidance-only deliverable: create agent-system/extensions/core/context/patterns/bounded-block-edit.md carrying the assertion half plus the anchor paragraph transplanted verbatim from the lean implementation flow, wire the implementer audience via general-implementation-agent.md and the plan-author/broad audience via merge-sources/claudemd.md, register and reconcile both index entries, and close on a landed_verify_clean deploy. Both siting branches were re-confirmed against live files: the predecessor jq record extended jq-escaping-workarounds.md in place (so the new file is created), and the sibling anchor record is archived with its rule sited only in the lean flow file (so this file becomes the shared home it invited). Every non-final Tier Justification names measured suite_selection_select output, and a baseline generate-context-line-counts.sh --check (602 entries, all exact) bounded the coupled-generated-surface declarations to the two index files this task owns. validate-artifact.sh passes with zero warnings and the file-scope harvest yields all seven expected entries including the __WHOLE_TREE__ sentinel.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/538_bounded_block_edit_index_and_assert/plans/01_bounded-block-edit-guidance.md",
+      "summary": "Five-phase plan for the bounded-block-edit guidance file and its wiring, including the lean-side anchor-rule consolidation."
+    }
+  ],
+  "next_steps": "Run /orchestrate 538 to execute the plan; plan-postflight harvest widens file_scope to the two lean paths Phase 3 needs."
+}

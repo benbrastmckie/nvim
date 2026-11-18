@@ -1,20 +1,27 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/538_bounded_block_edit_index_and_assert/reports/01_bounded-block-edit-guidance.md",
-      "summary": "Resolves both siting branches (predecessor jq-record extended jq-escaping-workarounds.md in place; sibling lean anchor-record landed only in lean-implementation-flow.md with no core home) and names the exact mechanical templates (referrer bullet shape, index-entries.json schema, claudemd.md pointer-section shape) for creating bounded-block-edit.md and wiring it in."
+      "type": "plan",
+      "path": "specs/538_bounded_block_edit_index_and_assert/plans/01_bounded-block-edit-guidance.md",
+      "summary": "Five-phase, four-wave plan creating the shared core pattern file bounded-block-edit.md (assertion half plus the transplanted anchor half), wiring both audiences via general-implementation-agent.md and claudemd.md, registering and reconciling both index entries, and closing on a landed_verify_clean deploy."
     }
   ],
-  "next_steps": "Run /orchestrate 538 to create implementation plan",
+  "next_steps": "Run /orchestrate 538 to execute the plan",
   "metadata": {
     "session_id": "sess_1794985308_f67716_538",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 3.25,
+    "dependency_waves": [[1], [2, 3], [4], [5]]
   },
+  "proposed_file_scope": [
+    "agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md",
+    "agent-system/extensions/lean/index-entries.json",
+    "__WHOLE_TREE__"
+  ],
   "memory_candidates": [],
-  "dispatch_seq": 3
+  "dispatch_seq": 7
 }
