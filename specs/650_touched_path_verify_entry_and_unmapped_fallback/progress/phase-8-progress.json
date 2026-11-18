@@ -1,0 +1,50 @@
+{
+  "phase": 8,
+  "phase_name": "Coverage suite, registration, redeploy, and the complete gate set",
+  "started_at": "2026-11-19T00:35:00Z",
+  "last_updated": "2026-11-19T02:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write scripts/tests/test-verify-touched.sh covering all required axes, following the required structural model",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-verify-touched.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Add the suite's row to suite-classification.data and manifest.json",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/suite-classification.data",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Add map rows for this plan's own new files so the next touched-path run resolves instead of escalating",
+      "status": "done",
+      "note": "rows already added in Phase 2; re-confirmed via report-suite-coverage.sh after the redeploy (unconverged count 0 for every new file)"
+    },
+    {
+      "id": 4,
+      "description": "Redeploy via deploy-headless.sh",
+      "status": "done",
+      "note": "RESULT=landed_verify_clean, 41 checks 0 failures (deploy-headless.sh's own inline --skip-slow fast-gate check); every new script confirmed present under .claude/scripts/"
+    },
+    {
+      "id": 5,
+      "description": "Run the complete gate set and record the result",
+      "status": "done",
+      "note": "NOT reported clean. bash .claude/scripts/verify-deploy.sh (no --skip-slow): gate 8 FAIL. Direct tests/run-all.sh over the complete 204-suite corpus: 200 passed, 4 failed. test-gate-cache-equivalence.sh = EXPECTED (already in known-failures.txt). test-gate-out-repair-reporting.sh and test-mcp-merge-target.sh = NEW, reproducible in isolation and on re-run; git log confirms neither suite nor its subjects (validate-artifact.sh, command-gate-out.sh, mcp merge-target handling) were ever touched by any task-650 commit -- pre-existing, unrelated to this plan's file_scope, logged via issue-record.sh, not fixed. test-lint-state-writer-boundary.sh = NEW on the full run only, under a verify-deploy.sh [CONTENTION] marker (ambient load average 6.71-9.09 from unrelated concurrent processes); re-ran clean twice afterward (once alone, once in a repeat 3-suite group) -- trusted as a load-induced flake over the single contended reading, logged as such."
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "common_test_resolve_subject call with the function name also spelled out in a nearby header comment",
+      "result": "failed",
+      "reason": "lint-subject-resolution-declaration.sh counts grep -c occurrences of the literal function names across the WHOLE file including comments, so the comment's own mention of 'common_test_resolve_subject' made the resolve-count (2) exceed the declare-count (1), falsely flagging MISSING-DECLARATION; fixed by rewording the comment to describe the mechanism without repeating the literal identifier"
+    }
+  ],
+  "handoff_count": 0
+}

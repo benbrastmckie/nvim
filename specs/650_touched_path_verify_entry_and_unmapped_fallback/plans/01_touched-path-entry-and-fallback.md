@@ -615,26 +615,43 @@ Hypothesis holds; no second composer exists and no file was added.
 
 ---
 
-### Phase 8: Coverage suite, registration, redeploy, and the complete gate set [NOT STARTED]
+### Phase 8: Coverage suite, registration, redeploy, and the complete gate set [COMPLETED]
 
 **Goal**: Lock the new entry point's behaviour into a suite whose own authority follows the Phase 7
 rule, register everything, regenerate the deployed tree, and close on the complete gate set.
 
 **Tasks**:
-- [ ] Write `scripts/tests/test-verify-touched.sh` covering: a one-file-edit run executing a strict
+- [x] Write `scripts/tests/test-verify-touched.sh` covering: a one-file-edit run executing a strict
       subset and saying so; the three fallback outcomes under seeded map/class data; an owed record
       surviving until a discharge run clears it; the preflight failing on a seeded bad map row; the
       resolver conformance check refusing a malformed fixture backend; `--full-sweep` restoring the
-      unnarrowed behaviour.
-- [ ] Follow the required structural model for a new suite (fixtures mutate sandbox copies, never
+      unnarrowed behaviour. *(completed: 24 assertions, Cases A-L, 0 failed)*
+- [x] Follow the required structural model for a new suite (fixtures mutate sandbox copies, never
       the source store; explicit deployed/source-store subject resolution; non-vacuousness check on
-      every axis).
-- [ ] Add the suite's row to `scripts/tests/suite-classification.data` and its `manifest.json` row.
-- [ ] Add map rows for the data files and libraries this plan created, so the next touched-path run
-      over them resolves instead of escalating.
-- [ ] Redeploy via `deploy-headless.sh`, which also reconciles `index-entries.json`'s line counts
-      for every context file this plan edited.
-- [ ] Run the complete gate set and record the result.
+      every axis). *(completed; a declared-subject lint violation was found and fixed -- see Phase
+      8's own progress-file approaches_tried)*
+- [x] Add the suite's row to `scripts/tests/suite-classification.data` and its `manifest.json` row.
+      *(completed: classified `integration`, reason `invokes:run-all.sh`)*
+- [x] Add map rows for the data files and libraries this plan created, so the next touched-path run
+      over them resolves instead of escalating. *(completed in Phase 2; re-confirmed via
+      report-suite-coverage.sh after the redeploy: unconverged count 0 for every new file)*
+- [x] Redeploy via `deploy-headless.sh`, which also reconciles `index-entries.json`'s line counts
+      for every context file this plan edited. *(completed: RESULT=landed_verify_clean, 41
+      checks, 0 failures; every new script confirmed present under .claude/scripts/)*
+- [x] Run the complete gate set and record the result. *(completed, recorded HONESTLY as NOT
+      clean: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`) FAILed gate 8.
+      `tests/run-all.sh` over the complete 204-suite corpus: 200 passed, 4 failed --
+      `test-gate-cache-equivalence.sh` (EXPECTED, already in known-failures.txt);
+      `test-gate-out-repair-reporting.sh` and `test-mcp-merge-target.sh` (NEW, but confirmed
+      reproducible in isolation and on a re-run, and confirmed via `git log` that neither suite
+      nor its subjects were ever touched by this task's own commits -- pre-existing defects
+      unrelated to this plan's file_scope, logged via issue-record.sh, not fixed here);
+      `test-lint-state-writer-boundary.sh` (NEW on this one run only, under a verify-deploy.sh
+      `[CONTENTION]` marker naming a 6.71-9.09 ambient load average from unrelated concurrent
+      processes on this machine; re-ran clean twice afterward -- trusted as a load-induced flake,
+      logged as such via issue-record.sh). deploy-headless.sh's own inline `--skip-slow` fast-gate
+      check is clean (41/41). The complete gate set is NOT reported clean for this dispatch; the
+      two confirmed-unrelated pre-existing failures and the one flaky suite are the full account.)*
 
 **Timing**: 2 hours
 

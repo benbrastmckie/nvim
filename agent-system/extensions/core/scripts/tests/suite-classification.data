@@ -227,4 +227,5 @@ test-validate-wiring.sh	unit	-
 test-verify-deploy-context-budget.sh	integration	invokes:verify-deploy.sh,run-all.sh
 test-verify-deploy-gate-selection-crash-net.sh	integration	invokes:verify-deploy.sh,run-all.sh
 test-verify-deploy-gate-selection.sh	integration	invokes:verify-deploy.sh,run-all.sh
+test-verify-touched.sh	integration	invokes:run-all.sh
 test-zotero-generate-export.sh	unit	-

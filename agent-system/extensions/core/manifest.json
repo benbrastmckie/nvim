@@ -494,6 +494,7 @@
       "tests/test-verify-deploy-context-budget.sh",
       "tests/test-verify-deploy-gate-selection-crash-net.sh",
       "tests/test-verify-deploy-gate-selection.sh",
+      "tests/test-verify-touched.sh",
       "tier-selection.sh",
       "uninstall-extension.sh",
       "update-phase-status.sh",
