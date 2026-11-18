@@ -1,5 +1,5 @@
 ---
-next_project_number: 651
+next_project_number: 652
 ---
 
 # TODO
@@ -15,7 +15,7 @@ next_project_number: 651
 |------|-------|------------|--------|
 | 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640,645,646,647,650 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,579,583,592,593,598,605,609,610,630,648 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,564,577,586,599,607,629,647 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,473,480,486,492,509,513,518,561,566,594,649 | 439,452,472,479,484,491,552,593,648 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 3 | 454,473,480,486,492,509,513,518,561,566,594,649,651 | 439,452,472,479,484,491,552,593,610,648,650 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,571,581,588,595,641 | 454,472,486,492,509,518,539,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 524,596,642 | 501,595,641 | core-agent-system, agent-system |
 
@@ -108,10 +108,12 @@ next_project_number: 651
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 650 [NOT STARTED] — Add one touched-path verification entry point over...
+  └─ 651 [NOT STARTED] — Make the orchestration, not the task, the unit that closes on...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+  └─ 651 [NOT STARTED] — Make the orchestration, not the task, the unit that closes on... (see above)
 
 ### Agent System
 
@@ -185,6 +187,55 @@ next_project_number: 651
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 651. Orchestration close owns full battery
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 650, Task 610
+
+**Description**: Make the orchestration, not the task, the unit that closes on the full gate battery, for every invocation shape including a batch of one
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** ; both are permitted in this description and elsewhere in specs/**.
+
+OWNER RULING. Orchestrations close on the full battery. Individual tasks do not. A task's final phase closes on a scoped, touched-path check; the complete gate set runs once per /orchestrate invocation, after the last task's work.
+
+WHAT THE DESIGN DOES TODAY (re-derive before editing):
+- context/formats/plan-format.md's Verification Tiers section mandates `full` on every plan's final phase and says so as an invariant ("The final phase's `full` is mandated by the invariant").
+- context/contracts/batch-gate-stage.md's "Single-task and single-task-implement-dispatch invariance" paragraph records that Mechanism A (the dispatch-time '## Batch Gate Deferral' directive) is gated on `.task_numbers | length > 1` in orchestrate-cycle-plan.sh's build_args composition, so a single-task /orchestrate never defers and its final phase runs the complete gate set inline.
+- Mechanism B (orchestrate-batch-gate.sh, Move 4) already runs the complete gate set once per invocation whenever an implement dispatch occurred.
+Net effect: a batch of one pays the full battery inside the task, a batch of many is asked in prose to defer it, and a serialized chain of N single-task invocations pays it N times.
+
+DELIVERABLES.
+
+1. Extend deferral to every /orchestrate invocation shape. Remove the length > 1 gate so a batch of one receives the same directive and the same Move 4 discharge. Rewrite batch-gate-stage.md's invariance paragraph to state the current design only.
+
+2. Amend plan-format.md's final-phase invariant. The invariant that must survive is "the complete gate set runs once before the invocation's tasks are done, deferred and never forgiven". What changes is who discharges it: under /orchestrate, a final phase declares the scoped touched-path check plus deferral to the orchestration close. Settle the vocabulary in research: either a final phase keeps `full` with a stated "discharged at orchestration close" form, or the tier set gains a named value for it. Update rules/plan-format-enforcement.md, the planner and reviser agent contracts, and scripts/validate-artifact.sh's tier check together so no surface still tells a planner to run the battery inside a task.
+
+3. Keep the non-orchestrated path honest. A task implemented outside /orchestrate has no Move 4. Decide and record which holds: it runs the complete gate set inline exactly as today, or it leaves a durable "close battery owed" record that the next orchestration or an explicit command discharges. Do not let this path silently lose the battery.
+
+4. Make the close battery's result bind the tasks it covers. Today a batch gate finding is rendered as a batch-level result and no task status changes. If tasks no longer run the battery themselves, decide what a red close battery means for tasks already marked completed in that invocation: at minimum a durable, attributed, visible record per implicated task and an explicit operator remedy; research whether completion should be held until the close battery is green, and record the rejected alternative. An orchestration that ends without running its close battery (stop verdict, crash, operator interrupt) must leave an open, reported obligation rather than nothing.
+
+5. Consumer repositories with their own closing gate. The close battery in a consumer repository is that repository's declared gate set, which may not be verify-deploy.sh at all. Move 4 must run what the repository declares. This is the same declaration surface the project-sources narrowing record designs; consume it, do not invent a parallel one.
+
+6. Discharge of owed sweeps. The touched-path entry point's "full sweep owed" records are discharged here, at Move 4, and the consolidated output lists what was owed and that it was paid.
+
+HARD CONSTRAINTS.
+- The battery still runs at least once per invocation that implemented anything. This record relocates it; it does not remove it.
+- Advisory prose is not a mechanism: three of three dispatches in one measured batch ignored the deferral directive. This record depends on the mechanical guard below rather than restating the request more firmly.
+- Changing the copied agent-contract bullets requires changing every consuming agent file in the same commit, with scripts/lint/lint-agent-contracts.sh still passing.
+
+TERRITORY EDGES.
+- 610 (full_gate_verification_ceiling_and_stall): its research question 2 owns the MECHANICAL guard that stops an individual implement dispatch from invoking a full battery, and its other questions own making the battery fit and not stall. This record owns the policy, the batch-of-one extension, the plan-format invariant and the status semantics of a red close. The guard is what makes this record's policy enforceable; sequence 610 first or land the guard jointly.
+- 599 (batch_gate_deferral_narrowing_for_project_sources): owns the directive's resolution of a consumer repository's own gates. Deliverable 5 consumes its declaration surface. Both edit scripts/orchestrate-build-dispatch.sh's directive and scripts/tests/test-orchestrate-build-dispatch.sh; reconcile by hand.
+- 454 (same_turn_gate_runs_foreground): owns agent-side wait discipline; untouched here.
+- 452 (baseline_relative_gate_criteria): adjacent; a red close battery judged against a baseline is its subject.
+- 564 (validate-artifact.sh tier-justification false positive): touches the same tier check as deliverable 2; sequence deliberately.
+- Depends on the touched-path verification entry point record filed alongside this one: a task cannot stop closing on the full battery until a trustworthy scoped check exists for its final phase.
+
+VERIFY: a single-task /orchestrate emits the deferral directive and runs the complete gate set exactly once, at Move 4; a seeded red close battery produces an attributed per-task record and the documented remedy; an interrupted invocation leaves a reported open obligation; validate-artifact.sh accepts a final phase written under the amended invariant and still rejects an untiered phase. Use scoped narrowing rather than the full aggregator while other sessions are live.
+
+---
 
 ### 650. Touched path verify entry and unmapped fallback
 - **Status**: [NOT STARTED]
