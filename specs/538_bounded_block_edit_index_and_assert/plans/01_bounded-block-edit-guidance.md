@@ -1,7 +1,7 @@
 # Implementation Plan: Task #538
 
 - **Task**: 538 - Bounded in-file block edits: index and assert, never string-splice
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.25 hours
 - **Dependencies**: None (live `dependencies: []`; the predecessor jq-reserialization record has
   landed and its outcome is readable directly from `jq-escaping-workarounds.md`)
@@ -166,7 +166,7 @@ included.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Author the Shared Core Pattern File [NOT STARTED]
+### Phase 1: Author the Shared Core Pattern File [COMPLETED]
 
 **Goal**: Create `agent-system/extensions/core/context/patterns/bounded-block-edit.md` carrying
 every content obligation in the task description's acceptance list, structured like
@@ -174,10 +174,10 @@ every content obligation in the task description's acceptance list, structured l
 boundary -> reopen condition -> references).
 
 **Tasks**:
-- [ ] Read `agent-system/extensions/core/context/patterns/jq-escaping-workarounds.md` lines
+- [x] Read `agent-system/extensions/core/context/patterns/jq-escaping-workarounds.md` lines
       282-351 for the section shape to mirror (conjunctive trigger, numbered recipe, reopen
-      condition, "not a general indictment" boundary paragraph).
-- [ ] Write the new file with these sections, in this order:
+      condition, "not a general indictment" boundary paragraph). *(completed)*
+- [x] Write the new file with these sections, in this order: *(completed)*
       - **Trigger condition**, stated conjunctively and checkable before acting: the target is a
         bounded block inside a larger line-structured text file (name at least one concrete shape:
         a phase inside a plan file; a section inside a document; a record inside a log), AND the
@@ -217,15 +217,15 @@ boundary -> reopen condition -> references).
         the question of a helper wrapper then.
       - **References**: `.claude/rules/git-workflow.md`,
         `context/patterns/jq-escaping-workarounds.md`, `context/contracts/pre-edit-gate.md`.
-- [ ] Read the file back and confirm a reader can reach every acceptance obligation without
+- [x] Read the file back and confirm a reader can reach every acceptance obligation without
       knowing the term "slice-and-splice" in advance (the trigger condition is stated in
-      mechanism terms, not jargon).
-- [ ] Check the prose against `.claude/rules/no-task-references-in-deliverables.md` and
+      mechanism terms, not jargon). *(completed)*
+- [x] Check the prose against `.claude/rules/no-task-references-in-deliverables.md` and
       `.claude/rules/no-record-versioning-in-deliverables.md`: no task number, no issue entry id,
       no narration of a past incident's draft history, no "previously/no longer/formerly" framing.
       `grep -nE 'task [0-9]|iss_[0-9]|previously|no longer|formerly|supersedes'` over the new file
-      must return nothing.
-- [ ] Commit this phase's single file with an explicit-file-list `git add`.
+      must return nothing. *(completed: grep returned no matches)*
+- [x] Commit this phase's single file with an explicit-file-list `git add`. *(completed)*
 
 **Timing**: 1 hour
 
