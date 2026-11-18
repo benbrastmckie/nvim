@@ -268,12 +268,21 @@ it will not independently pass `validate-handoff.sh`):
 
 `phase` and `target` are required per entry; `verbatim_goal`, `what_was_tried`, and
 `why_it_failed` are optional but expected in practice. **The older `{description, phase,
-severity}` shape is retired**: verified by grep-audit (see the research report this plan is built
-on) that neither orchestrate engine reads `.description` or `.severity` anywhere — they are dead
-fields, not an alternate accepted shape. `target` is read by the hard engine's H5 divergence audit
-and blocked-escalation flow; `verbatim_goal` is read by the hard engine's blocked-escalation flow
-for re-dispatch prompts. The base engine only ever reads `blockers | length`, never individual
-field content.
+severity}` shape is retired**: it is not an alternate accepted shape, and an entry written that
+way is reported as a defect by `validate-handoff.sh`'s missing-`target` check. `.severity` is a
+dead field, read nowhere. `.description` is read on exactly one path, as a labelled RECOVERY and
+not as support for the retired shape: `orchestrate-cycle-postflight.sh`'s `partial`-outcome
+renderer substitutes it (prefixed `[retired {description} shape, no target]`, and with
+`.resume_hint` appended) when `target` is absent, because rendering such an entry as the bare
+string `"phase N: "` discarded the author's whole blocker text on a path where nothing
+downstream could recover it — the orchestrator then propagated `"Unspecified blocker"` into the
+aux blocker-research chain. That same fallback also participates in the renderer's
+identity-dedup key, so two distinct retired-shape blockers on one phase do not collide.
+
+`target` is read by the hard engine's H5 divergence audit and blocked-escalation flow;
+`verbatim_goal` is read by the hard engine's blocked-escalation flow for re-dispatch prompts.
+The base engine reads `blockers | length` for its own gating, and — at the `partial`-outcome arm
+described above — the per-entry field content it renders into the issue-log record.
 
 ### `next_action_hint` (optional)
 Suggested next action. The orchestrator's state machine may override this hint. It is advisory only.

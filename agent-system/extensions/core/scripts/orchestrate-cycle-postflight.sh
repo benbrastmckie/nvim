@@ -1514,8 +1514,20 @@ ${skel_bullets}" \
           # being silently swallowed into the generic fallback below. The `[ -z ... ]` fallback
           # still fires identically on an empty result either way -- only the visibility of
           # *why* the result came back empty changes.
-          partial_blockers_detail=$(echo "${handoff:-null}" | jq -r '(.blockers // []) | map(if type == "object" then "phase \(.phase // ""): \(.target // "")" + (if (.verbatim_goal // "") != "" then " | goal: \(.verbatim_goal)" else "" end) + (if (.what_was_tried // "") != "" then " | tried: \(.what_was_tried)" else "" end) + (if (.why_it_failed // "") != "" then " | failed: \(.why_it_failed)" else "" end) else tostring end) | join("; ")')
-          [ -z "$partial_blockers_detail" ] && partial_blockers_detail="partial outcome with ${partial_blocker_count} blocker(s) (detail unavailable)"
+          # RETIRED-SHAPE RECOVERY: `target` is the canonical field (handoff-schema.md), but an
+          # entry carrying the retired `{phase, description}` shape instead rendered as the bare
+          # non-empty string "phase N: " under the previous expression -- non-empty, so the
+          # `[ -z ... ]` fallback below could not fire, and the entry's whole description was
+          # discarded on a path where nothing downstream could recover it (the orchestrator then
+          # propagates "Unspecified blocker" into the aux chain). Recover `.description`
+          # (and `.resume_hint`) when `target` is absent, and LABEL the recovery inline so the
+          # schema violation stays visible rather than being silently normalised away: the
+          # validator's own missing-`target` warning remains the place it is reported as a defect.
+          partial_blockers_detail=$(echo "${handoff:-null}" | jq -r '(.blockers // []) | map(if type == "object" then "phase \(.phase // ""): " + (if (.target // "") != "" then (.target) elif (.description // "") != "" then ("[retired {description} shape, no target] " + .description) else "" end) + (if (.verbatim_goal // "") != "" then " | goal: \(.verbatim_goal)" else "" end) + (if (.what_was_tried // "") != "" then " | tried: \(.what_was_tried)" else "" end) + (if (.why_it_failed // "") != "" then " | failed: \(.why_it_failed)" else "" end) + (if (.target // "") == "" and (.resume_hint // "") != "" then " | resume: \(.resume_hint)" else "" end) else tostring end) | join("; ")')
+          # Also fires when every entry rendered to just "phase N: " with no recoverable text.
+          case "$partial_blockers_detail" in
+            ""|phase*:\ ) partial_blockers_detail="partial outcome with ${partial_blocker_count} blocker(s) (detail unavailable)" ;;
+          esac
           # Identity-keyed dedup: collapses N near-duplicate blocking entries from N partial
           # dispatches against the same unresolved blocker into one. Computed from the
           # schema-guaranteed subfields only (phase, target) -- verbatim_goal/what_was_tried/
@@ -1526,7 +1538,11 @@ ${skel_bullets}" \
           # exact JSON field comparison rather than a substring search over what_happened --
           # which this same arm is simultaneously reformatting. No 2>/dev/null on the identity
           # computation itself; a safe empty-string fallback covers a jq failure here.
-          partial_blocker_identity_raw=$(echo "${handoff:-null}" | jq -r '[.blockers[]? | "\(.phase // "")|\(.target // "")"] | sort | join(",")')
+          # `.description` participates in the key ONLY as a fallback for an absent `target`
+          # (same retired-shape recovery as the renderer above): without it, two distinct
+          # retired-shape blockers on one phase both key as "N|" and collide, so the second
+          # would be silently deduped against the first as a recurrence of the same blocker.
+          partial_blocker_identity_raw=$(echo "${handoff:-null}" | jq -r '[.blockers[]? | "\(.phase // "")|\(if (.target // "") != "" then .target else (.description // "") end)"] | sort | join(",")')
           partial_blocker_identity=""
           [ -n "$partial_blocker_identity_raw" ] && partial_blocker_identity=$(printf '%s' "$partial_blocker_identity_raw" | sha256sum | awk '{print substr($1,1,16)}')
           # Skip predicate: any read failure, missing issues.jsonl, or unparseable line degrades
