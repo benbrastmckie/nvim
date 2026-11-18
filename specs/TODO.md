@@ -13,7 +13,7 @@ next_project_number: 645
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640,644 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,523,533,540,541,544,546,550,552,553,570,576,579,583,592,593,598,605,609,610,630 | 383,390,398,410,431,438,451,453,455,463,472,477,504,511,519,535,539,542,548,549,563,564,577,586,599,607,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,480,486,492,509,513,561,566,571,594 | 439,452,479,484,491,518,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,581,588,595,641 | 454,472,486,492,509,539,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
@@ -51,7 +51,6 @@ next_project_number: 645
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — GOAL. Determine what leaves files behind in this repository's...
-644 [IMPLEMENTING] — Leave a spoken-word recap at the end of an orchestration and...
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
@@ -180,7 +179,7 @@ next_project_number: 645
 
 ### 644. Leave a spoken-word recap at the end of an orchestration and recommend /recap to hear it
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 503, Task 526, Task 538, Task 558, Task 643
