@@ -1123,6 +1123,10 @@ TERRITORY EDGES:
 
 DUPLICATE CHECK PERFORMED. audit-task-proposals.sh surfaced 454 (semantic_score 0.6875, highest), 452 (0.50) and 476 (0.4375) among a large low-confidence set with mechanical_class "none" and no shared paths. 454 was read in full and is handled as an explicit scope boundary above rather than assumed disjoint. No absorption candidate found.
 
+TERRITORY EDGES ADDED 2026-11-18 (two records filed against the same incident class, re-observed in the sf1-engine consumer repository):
+- 650 (touched_path_verify_entry_and_unmapped_fallback): owns the scoped touched-path entry point over run-all.sh --only/--jobs auto/--timings and suite-selection-lib.sh, and the replacement of the unmapped-path full sweep. It answers the "faster default suite selection" arm of research question 1; this record keeps sharding, the jobs cap and slow-suite splitting.
+- 651 (orchestration_close_owns_full_battery): owns the POLICY that the orchestration, not the task, closes on the full battery, including for a batch of one, and the plan-format final-phase invariant. It depends on this record: research question 2's mechanical guard is what makes that policy enforceable. Design the guard so a batch of one is covered too, not only multi-task batches.
+
 ---
 
 ### 609. Stop a pending user question from charging its own task into failed_tasks and killing its dependents
@@ -1388,6 +1392,12 @@ above, is this record's to settle.
 RELATED LIVE RECORD HERE (not an edge). dispatch_starting_position_reverification, migrated in the
 same sweep, carries an edge onto this record because it rewrites the same
 orchestrate-build-dispatch.sh and its test suite.
+
+
+TERRITORY EDGES ADDED 2026-11-18:
+- 650 (touched_path_verify_entry_and_unmapped_fallback) adds a single scoped-verification entry point that takes its tree root and deploy-root set from a repository-level declaration. That declaration must be THIS record's surface, not a second one.
+- 651 (orchestration_close_owns_full_battery) makes the batch gate stage run the consumer repository's own declared closing gate. Whatever this record chooses for the narrowing form should therefore declare two things per repository: the narrowing form and the closing gate.
+- Second measured consumer: sf1-engine verifies a copied core tree under extensions/core/** through its own three-root harness (integration/tools/run-core-suite-three-roots.sh), which neither named narrowing form reaches.
 
 ---
 
