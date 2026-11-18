@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/650_touched_path_verify_entry_and_unmapped_fallback/reports/01_touched-path-entry-and-fallback.md",
+      "summary": "Confirms run-all.sh/suite-selection-lib.sh's existing surface, designs the entry point, classified fallback, preflight authority, timings-non-consumption, and the shared .claude-extensions.json declaration surface for deliverables 5-6, corroborated by sf1-engine task 33 and sapience-app task 50."
+    }
+  ],
+  "next_steps": "Run /orchestrate 650 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1795030396_b9c560_650",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "dispatch_seq": 1,
+  "memory_candidates": [
+    {
+      "content": "The agent-system core corpus's established declaration surface for 'this repository declares its own X' is .claude-extensions.json's top-level sibling-key convention (context/standards/repo-level-declarations.md), not a new config file or env var. It already carries two schemas (derived_artifact_probes, coupled_generated_surfaces) with a shared fail-open-on-absence contract, because the Lua loader (lua/neotex/plugins/ai/shared/extensions/state.lua) round-trips the whole top-level table without stripping unknown keys. Any future 'repository declares its own gates/roots/backend' need should add a sibling key here rather than inventing a second surface.",
+      "category": "PATTERN",
+      "source_artifact": "specs/650_touched_path_verify_entry_and_unmapped_fallback/reports/01_touched-path-entry-and-fallback.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["claude-extensions.json", "repo-level-declarations", "declaration-surface", "sibling-key", "fail-open"]
+    },
+    {
+      "content": "measure-gate-costs.sh --regen-hints is the sole, idle-guarded (refuses above a load threshold), multi-run-averaged, overwrite-protected regeneration path for tests/suite-cost-hints.txt. Any other script producing a run-all.sh --timings CSV (e.g. a scoped/touched-path narrowing caller) must treat that output as diagnostic-only and never feed it into suite-cost-hints.txt directly -- a scoped, single-sample, ambient-load run cannot meet measure-gate-costs.sh's own guards, and doing so anyway would reintroduce the self-maintaining mutable cache run-all.sh's own --jobs header explicitly rejects as a design.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/650_touched_path_verify_entry_and_unmapped_fallback/reports/01_touched-path-entry-and-fallback.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["suite-cost-hints.txt", "measure-gate-costs.sh", "timings", "regen-hints", "mutable-cache"]
+    },
+    {
+      "content": "verify-deploy.sh's gate0 (argument/target validation, run strictly before any gate selection, never itself filterable by --only-gate) is the established precedent shape for 'a preflight that sits outside the selection mechanism it validates' -- any new scoped-selection entry point (e.g. a touched-path verification caller) that needs to validate its own map/class data and fallback-set non-emptiness before resolving suites should model that preflight on gate0's structural position, not add a check inside the selection path itself.",
+      "category": "PATTERN",
+      "source_artifact": "specs/650_touched_path_verify_entry_and_unmapped_fallback/reports/01_touched-path-entry-and-fallback.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["gate0", "preflight", "verify-deploy.sh", "selection-authority", "outside-selection"]
+    }
+  ]
+}

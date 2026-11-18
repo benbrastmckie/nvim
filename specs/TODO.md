@@ -107,7 +107,7 @@ next_project_number: 652
 
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-650 [NOT STARTED] — Add one touched-path verification entry point over...
+650 [RESEARCHED] — Add one touched-path verification entry point over...
   └─ 651 [NOT STARTED] — Make the orchestration, not the task, the unit that closes on...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
@@ -238,10 +238,11 @@ VERIFY: a single-task /orchestrate emits the deferral directive and runs the com
 ---
 
 ### 650. Touched path verify entry and unmapped fallback
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
+- **Research**: [650_touched_path_verify_entry_and_unmapped_fallback/reports/01_touched-path-entry-and-fallback.md]
 
 **Description**: Add one touched-path verification entry point over run-all.sh's existing flags and suite-selection-lib.sh, and replace the unmapped-path full sweep with a classified, owed-not-paid fallback
 
