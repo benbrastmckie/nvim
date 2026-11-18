@@ -16832,7 +16832,7 @@
       "project_number": 607,
       "project_name": "gate_20_context_budget_and_timeout_sensitivity",
       "title": "Resolve the gate 20 orchestrator context-budget overage and the per-gate timeout sensitivity under concurrent load",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.\n\nverify-deploy.sh gate 20 (orchestrator context budget) reports the eager-load total over its baseline: commands/orchestrate.md plus skills/skill-orchestrate/SKILL.md measure 71712B against a 70400B baseline. Decide between trimming the eager-load footprint of those two files -- moving inline contract prose behind on-demand backticked pointers, the pattern the rest of the system already uses -- and re-baselining the gate to a justified new figure, then apply the chosen remedy in the source store.\n\nSecond, narrower question: during a concurrent batch run, gates 8 and 10 of the same sweep were killed by their own 60s per-gate timeout; gate 10's underlying check (validate-state.sh --deep) then passed in 61s when re-run in isolation, confirming resource contention rather than a regression. Assess whether the per-gate timeout should scale with observed concurrency or simply be raised, so a loaded run does not report a timeout as a finding.\n\nOUT OF SCOPE: making the red Gate 8 shell suites green or declared-expected. That is a separate, already-open piece of work and must not be duplicated here.\n\nCHANNEL: /orchestrate conclusion channel (c), follow-up task.",
       "effort": "medium",
@@ -16840,7 +16840,7 @@
       "topic": "agent-system",
       "dependencies": [],
       "created": "2026-11-11T20:14:44Z",
-      "last_updated": "2026-11-16T08:36:53Z",
+      "last_updated": "2026-11-18T22:14:58Z",
       "artifacts": [
         {
           "path": "specs/607_gate_20_context_budget_and_timeout_sensitivity/reports/01_gate20-budget-and-timeout-sensitivity.md",
@@ -17081,7 +17081,7 @@
         "agent-system/extensions/core/scripts/verify-deploy.sh",
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
       ],
-      "session_id": "sess_1794815389_748c3d",
+      "session_id": "sess_1795039913_ab1940",
       "next_artifact_number": 2
     },
     {

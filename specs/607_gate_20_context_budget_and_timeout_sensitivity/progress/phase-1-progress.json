@@ -1,0 +1,26 @@
+{
+  "phase": 1,
+  "phase_name": "Gate 20 deliberate headroom re-baseline",
+  "started_at": "2026-11-18T14:16:00Z",
+  "last_updated": "2026-11-18T14:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-measure eager-load total and per-file sizes before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Move eager_load.baseline_bytes to a deliberate headroom value", "status": "done", "files_touched": ["agent-system/extensions/core/context/config/orchestrator-context-budget.json"]},
+    {"id": 3, "description": "Move commands/orchestrate.md ceiling_bytes 21500 -> 22000", "status": "done", "files_touched": ["agent-system/extensions/core/context/config/orchestrator-context-budget.json"]},
+    {"id": 4, "description": "Move skills/skill-orchestrate/SKILL.md ceiling_bytes 26000 -> 26500", "status": "done", "files_touched": ["agent-system/extensions/core/context/config/orchestrator-context-budget.json"]},
+    {"id": 5, "description": "Append dated derivation entries for all three figures", "status": "done", "files_touched": ["agent-system/extensions/core/context/config/orchestrator-context-budget.json"]},
+    {"id": 6, "description": "Confirm JSON still parses", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "1.1",
+      "description": "Re-measure immediately before editing (expect TOTAL: 70400 B)",
+      "type": "altered",
+      "reason": "Live figure drifted to 70472 B against an ALREADY-MOVED baseline of 70500 (task 644 phase 5, landed same-day for the /recap command row, dated 2026-11-18, before this dispatch started) -- not the 70400 B the plan's premise re-validation table recorded. Per the plan's own instruction ('recompute the targets below from the live measurement using the same rules'), the new baseline target was recomputed from live 70472 B (+1,100 B headroom, rounded to the next 100 B per this field's established convention) = 71,600 B, instead of the plan's literal 71,500 B. Per-file ceiling figures (21496/25692) matched the plan's assumption exactly, so those two targets (22000/26500) were applied unchanged.",
+      "annotation": "*(deviation: altered -- baseline target recomputed from live 70472 B/70500 B drift, not the plan's literal 70400 B/71500 B)*"
+    }
+  ],
+  "handoff_count": 0
+}

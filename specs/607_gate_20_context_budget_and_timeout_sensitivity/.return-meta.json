@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/607_gate_20_context_budget_and_timeout_sensitivity/plans/01_gate20-headroom-and-timeout-raise.md",
-      "summary": "3-phase config-only plan: gate-20 budget headroom re-baseline, gates 3/4/10 timeout_s 60->180, redeploy plus full-sweep verification."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 17,
   "metadata": {
-    "session_id": "sess_1794815389_748c3d_607",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 3,
-    "estimated_hours": 2.75,
-    "dependency_waves": 2
-  },
-  "memory_candidates": [
-    {
-      "content": "In this repo's agent-system, a plan whose phase touches scripts/gate-registry.data or scripts/tests/known-failures.txt must verify against the MECHANICALLY SELECTED suite set, not a hand-picked suite: suite-selection-lib.sh's suite_selection_select returns 10 suites for those paths (test-gate-registry-resolution.sh, test-gate-cache-lib.sh, test-gate-cache-equivalence.sh, test-deploy-baseline-lib.sh, test-gate8-expected-new-distinction.sh, test-orchestrate-cycle-plan.sh, test-run-all-failure-reporting.sh, test-run-all-selection.sh, test-verify-deploy-gate-selection.sh, test-verify-deploy-gate-selection-crash-net.sh). validate-artifact.sh catches an under-verifying Tier Justification against this selection at plan-acceptance time, so run it before returning any plan. Pair the --only list with --fail-on-new, since test-gate-cache-equivalence.sh already carries a declared load-sensitive known-failures row and costs ~543s.",
-      "category": "PATTERN",
-      "source_artifact": "specs/607_gate_20_context_budget_and_timeout_sensitivity/plans/01_gate20-headroom-and-timeout-raise.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["gate-registry", "suite-selection", "tier-justification", "validate-artifact", "fail-on-new", "plan-authoring"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 607 to execute the plan",
-  "dispatch_seq": 16
+    "session_id": "sess_1795039913_ab1940",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

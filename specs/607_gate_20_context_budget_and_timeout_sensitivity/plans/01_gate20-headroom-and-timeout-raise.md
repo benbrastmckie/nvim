@@ -1,7 +1,7 @@
 # Implementation Plan: Task #607
 
 - **Task**: 607 - Resolve the gate 20 orchestrator context-budget overage and the per-gate timeout sensitivity under concurrent load
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/607_gate_20_context_budget_and_timeout_sensitivity/reports/01_gate20-budget-and-timeout-sensitivity.md
@@ -105,40 +105,44 @@ have no ordering constraint between them.
 
 ---
 
-### Phase 1: Gate 20 deliberate headroom re-baseline [NOT STARTED]
+### Phase 1: Gate 20 deliberate headroom re-baseline [COMPLETED]
 
 **Goal**: Move all three gate-20 budget figures to values carrying real slack, with a dated
 justification entry in the config's own narrative style, while the gate is green.
 
 **Tasks**:
-- [ ] Re-measure immediately before editing, to confirm the figures have not moved under
+- [x] Re-measure immediately before editing, to confirm the figures have not moved under
       concurrent sibling activity: `cd <repo-root> && REPO_ROOT=$(pwd) bash
       agent-system/extensions/core/scripts/measure-eager-context.sh --check` (expect
       `TOTAL: 70400 B`) and `wc -c agent-system/extensions/core/commands/orchestrate.md
       agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` (expect 21496 / 25692).
       If any figure differs, recompute the targets below from the live measurement using the
       same rules, and record the live figure in the derivation entry — never carry the figures
-      above forward unchecked.
-- [ ] Set `eager_load.baseline_bytes`: 70400 -> **71500**. Rule: the config's own 2026-10-18
+      above forward unchecked. *(deviation: altered — live total was 70472 B against an
+      ALREADY-MOVED baseline of 70500 (task 644 phase 5, same-day /recap-row move), not 70400 B;
+      per-file figures 21496/25692 matched exactly)*
+- [x] Set `eager_load.baseline_bytes`: 70400 -> **71500**. Rule: the config's own 2026-10-18
       entry names ~1,488 B of headroom as "enough to absorb an ordinary eager addition without
       immediately re-firing the gate"; 71500 leaves 1,100 B against the live 70400 B total,
       the same order of magnitude, versus the 0-200 B margins every reactive move since has
-      left.
-- [ ] Set `files["commands/orchestrate.md"].ceiling_bytes`: 21500 -> **22000**. Rule: the
+      left. *(deviation: altered — set to 71600, recomputed from live 70472 B + 1,100 B
+      headroom rounded to the next 100 B, per the pre-edit re-measurement above)*
+- [x] Set `files["commands/orchestrate.md"].ceiling_bytes`: 21500 -> **22000**. Rule: the
       file's own documented convention is "measured, rounded up to the next 500 B"; this is
       that convention plus one deliberate 500 B headroom step (21496 -> 21500 would be the
       reactive value; 22000 is the preventive one). Refresh `measured_bytes`/`measured_at` to
-      the live figure and today's date.
-- [ ] Set `files["skills/skill-orchestrate/SKILL.md"].ceiling_bytes`: 26000 -> **26500**. Same
+      the live figure and today's date. *(completed)*
+- [x] Set `files["skills/skill-orchestrate/SKILL.md"].ceiling_bytes`: 26000 -> **26500**. Same
       rule and same one-step headroom addition. Refresh `measured_bytes`/`measured_at`.
-- [ ] Append one dated entry to EACH of the three `derivation` / `note` narrative strings,
+      *(completed)*
+- [x] Append one dated entry to EACH of the three `derivation` / `note` narrative strings,
       matching the surrounding voice and explicitly framed as **preventive headroom, not a
       response to an overage** — stating that the gate was green at the time of the move, that
       no trim was attempted because the three most recent entries already record "no further
       redistributable bloat found nearby", and naming the one-step-beyond-the-rounding-
       convention derivation used. Do not restate the other two entries' content in each note;
-      each note covers only its own figure.
-- [ ] Confirm the file still parses: `jq -e . agent-system/extensions/core/context/config/orchestrator-context-budget.json >/dev/null`.
+      each note covers only its own figure. *(completed)*
+- [x] Confirm the file still parses: `jq -e . agent-system/extensions/core/context/config/orchestrator-context-budget.json >/dev/null`. *(completed)*
 
 **Timing**: 0.75 hours
 
