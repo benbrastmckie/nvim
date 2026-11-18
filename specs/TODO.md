@@ -6475,6 +6475,7 @@ FIX. Extend the lint to compare the deployed (event, matcher, hook-identity) set
 - **Dependencies**: Task 435
 - **Research**: [526_tts_announce_completion_and_input_needed/reports/01_tts-completion-input-needed.md]
 - **Plan**: [526_tts_announce_completion_and_input_needed/plans/01_tts-completion-input-needed.md]
+- **Summary**: [526_tts_announce_completion_and_input_needed/summaries/01_tts-completion-input-needed-summary.md]
 
 **Description**: Make every repo the loader deploys into announce the two things that actually matter -- work finished, and input needed -- and make repeat announcements harmless by construction. Today neither fires.
 

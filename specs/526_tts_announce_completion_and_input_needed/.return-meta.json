@@ -35,21 +35,40 @@
       "category": "PATTERN",
       "source_artifact": "specs/526_tts_announce_completion_and_input_needed/summaries/01_tts-completion-input-needed-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["cooldown", "notification-hook", "tts", "dedup", "pane-keyed", "rate-limit"]
+      "suggested_keywords": [
+        "cooldown",
+        "notification-hook",
+        "tts",
+        "dedup",
+        "pane-keyed",
+        "rate-limit"
+      ]
     },
     {
       "content": "When a mechanical git-commit wrapper (e.g. a Containment Self-Check comparing files_touched against a task's declared file_scope) drops an out-of-scope path and deposits it into .return-meta.json's proposed_file_scope, do NOT expect a direct git-commit-scoped.sh call for that same path to succeed afterward -- that script carries its OWN, independent copy of the same containment predicate against the SAME still-unwidened file_scope, so it refuses too (by design, to avoid silently landing an out-of-scope path one layer downstream). The actual remedy is to widen the task's own declared file_scope in specs/state.json first (a targeted, minimal text-level or precise single-field edit, append-only), THEN retry the scoped commit.",
       "category": "WORKFLOW",
       "source_artifact": "specs/526_tts_announce_completion_and_input_needed/summaries/01_tts-completion-input-needed-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["file_scope", "git-commit-scoped", "containment-check", "proposed_file_scope", "scope-widening"]
+      "suggested_keywords": [
+        "file_scope",
+        "git-commit-scoped",
+        "containment-check",
+        "proposed_file_scope",
+        "scope-widening"
+      ]
     },
     {
       "content": "Never use Python's json.load/json.dump (or any full parse-and-reserialize) to append one field to a LARGE shared JSON file (e.g. specs/state.json) -- json.dump's default ensure_ascii=True silently re-escapes every literal non-ASCII character anywhere else in the file (e.g. em-dashes in unrelated records' prose) into \\\\uXXXX sequences, producing a diff many lines larger than intended and polluting unrelated records' formatting. This is the exact same class of hazard CLAUDE.md's jq-escaping section already documents for jq, just via a different tool. Use a targeted text-level edit (str.replace on an exact, uniquely-matching substring) or json.dump(ensure_ascii=False) instead, and always verify with 'git diff --stat' that the changed-line count matches what was actually intended before committing.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/526_tts_announce_completion_and_input_needed/summaries/01_tts-completion-input-needed-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["json-reflow", "ensure_ascii", "state.json", "targeted-edit", "diff-verification"]
+      "suggested_keywords": [
+        "json-reflow",
+        "ensure_ascii",
+        "state.json",
+        "targeted-edit",
+        "diff-verification"
+      ]
     }
   ],
   "sapience_notes": [
@@ -104,8 +123,14 @@
     "session_id": "sess_1794985308_f67716",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

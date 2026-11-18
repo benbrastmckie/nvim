@@ -3489,6 +3489,11 @@
           "path": "specs/526_tts_announce_completion_and_input_needed/plans/01_tts-completion-input-needed.md",
           "type": "plan",
           "summary": "6-phase plan: cooldown plus --stop mode, matcher widening with a parity check, Stop-hook wiring, documentation reconciliation, manifest/redeploy, live acceptance."
+        },
+        {
+          "path": "specs/526_tts_announce_completion_and_input_needed/summaries/01_tts-completion-input-needed-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 6 phases, decisions, verification evidence per acceptance criterion, and follow-ups."
         }
       ],
       "audit_verdict": {
@@ -3526,7 +3531,8 @@
         "degradations_count": 41
       },
       "session_id": "sess_1794985308_f67716",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a pane-keyed cooldown gate and a distinguishable --stop mode to tts-notify.sh, wired claude-stop-notify.sh's no-marker branch to fire it, widened the Notification matcher to include idle_prompt in both settings surfaces with a new parity check, reconciled two stale documentation surfaces, registered three new test suites, and redeployed to RESULT=landed_verify_clean. All six acceptance criteria were demonstrated against the deployed tree, including replaying the real measured notification cadence from an external repo's log."
     },
     {
       "project_number": 458,
