@@ -1,0 +1,19 @@
+{
+  "phase": 6,
+  "phase_name": "Demonstrate every acceptance criterion against the deployed tree",
+  "started_at": "2026-11-18T00:00:00Z",
+  "last_updated": "2026-11-18T03:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Criterion 1: one announcement, distinguishable by ear", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Criterion 2: idle re-fire cooldown against real cadence", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Criterion 3: mid-orchestrate pause still silent (regression suite vs deployed hook)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Criterion 4: matcher parity check discovered by run-all.sh without --only", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/suite-classification.data"]},
+    {"id": 5, "description": "Criterion 5: no documentation claim contradicted", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Criterion 6: TTS_ENABLED=0 disables everything", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Run complete gate set and record verdict (scoped per Batch Gate Deferral)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

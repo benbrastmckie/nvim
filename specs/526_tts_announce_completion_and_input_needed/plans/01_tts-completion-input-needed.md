@@ -517,39 +517,39 @@ rather than any one file.
 
 ---
 
-### Phase 6: Demonstrate every acceptance criterion against the deployed tree [NOT STARTED]
+### Phase 6: Demonstrate every acceptance criterion against the deployed tree [COMPLETED]
 
 **Goal**: each of the six acceptance criteria is discharged against the deployed hooks, with the
 one part that only a real operator session can supply named as such rather than claimed.
 
 **Tasks**:
 
-- [ ] Criterion 1 (exactly one announcement, distinguishable by ear): drive the deployed
+- [x] Criterion 1 (exactly one announcement, distinguishable by ear): drive the deployed
       `.claude/hooks/claude-stop-notify.sh` with no `workflow-active-*` marker present and stdin
       JSON carrying no `agent_id`, and assert the log records exactly one `--stop` fire whose
       utterance contains `done`. Then drive the Notification path and assert its utterance is the
       bare tab prefix with no `done`. Record that the final by-ear confirmation happens on the
       operator's next real `/orchestrate` run; do not report having heard it.
-- [ ] Criterion 2 (idle re-fire inside the window silent, outside it audible — against the real
+- [x] Criterion 2 (idle re-fire inside the window silent, outside it audible — against the real
       cadence, not only a synthetic repeat): replay the measured inter-announcement intervals from
       the cited `claude-tts-notify.log` corpus against the deployed script by pre-seeding the
       pane-keyed stamp at each real interval offset, and assert that every interval in the
       observed 10-70 second band is suppressed while the following re-fire (beyond the window
       since the last actual utterance) fires. Record the per-interval outcome table as the
       evidence, not a single pass/fail.
-- [ ] Criterion 3 (mid-orchestrate pause still silent, both guards intact): re-run the Phase 3
+- [x] Criterion 3 (mid-orchestrate pause still silent, both guards intact): re-run the Phase 3
       regression suite against the DEPLOYED hook, confirming the marker-suppression path and the
       `agent_id` path each reach zero TTS invocations.
-- [ ] Criterion 4 (matcher parity asserted by a check): re-run the Phase 2 parity suite and
+- [x] Criterion 4 (matcher parity asserted by a check): re-run the Phase 2 parity suite and
       confirm it is discovered by `run-all.sh` without `--only`, so it participates in Gate 8 from
       now on rather than only when named.
-- [ ] Criterion 5 (no documentation claim contradicted by landed code): re-read both reconciled
+- [x] Criterion 5 (no documentation claim contradicted by landed code): re-read both reconciled
       files against the landed deployed scripts and record the confirmation.
-- [ ] Criterion 6 (`TTS_ENABLED=0` disables everything): invoke the deployed `tts-notify.sh` with
+- [x] Criterion 6 (`TTS_ENABLED=0` disables everything): invoke the deployed `tts-notify.sh` with
       `TTS_ENABLED=0` in all three modes, and the deployed `claude-stop-notify.sh` with
       `TTS_ENABLED=0` exported, asserting zero fires and that the cooldown stamp is left
       unperturbed on every one of those paths.
-- [ ] Run the complete gate set and record its verdict.
+- [x] Run the complete gate set and record its verdict.
 
 **Timing**: 1.5 hours
 
