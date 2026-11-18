@@ -1416,6 +1416,44 @@ uncorroborated noise -- the scorer's known inflation against verbose corpus reco
 record that built the EXPECTED/NEW machinery this task inverts was checked; the absence of any
 roster-side iteration in today's run-all.sh is the direct evidence that it stopped at the
 failure-side direction.
+=== AMENDMENT: A SECOND STALENESS DIMENSION -- DANGLING PATH CITATIONS ===
+
+The check this task builds must cover TWO kinds of roster rot, not one. The original dimension
+above is "the named suite now passes". The second, added here, is "a path this row CITES no
+longer resolves".
+
+MEASURED INSTANCE. known-failures.txt's test-gate-cache-equivalence.sh row cites
+`specs/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md` as its triage
+home. That task has since been archived, so the live path is
+`specs/archive/170_isolate_shell_suites_from_host_state/reports/02_corpus-triage-ledger.md`. The
+cited path does not resolve. Nothing flagged it; it was found only because a human followed the
+citation while triaging that suite.
+
+WHY THIS BELONGS HERE RATHER THAN IN ITS OWN TASK. It is the same silent rot in the same advisory
+file, discovered the same way (a human happening to look), and closable by the same check at the
+same site. A roster row's value is almost entirely in its reason text and the pointers that text
+carries -- a row whose citation dead-ends has already lost most of its worth, exactly like a row
+whose suite now passes. Building a separate scanner for it would duplicate this task's own
+machinery.
+
+SCOPE OF THE PATH CHECK. Validate `specs/`-rooted path citations appearing in a roster row's
+reason field: flag a cited path that does not exist on disk, and where an archived sibling DOES
+exist at `specs/archive/<same-basename>/...`, say so in the finding so the fix is obvious. Do not
+attempt to repair the row automatically -- a citation may be stale for reasons other than
+archival (a renamed report, a genuinely deleted record), and guessing is worse than reporting.
+Do not extend this to arbitrary URLs or to prose mentions that are not path-shaped.
+
+THE ADVISORY-STATUS AND PASSED-vs-NOT-RUN RULINGS ABOVE APPLY UNCHANGED to this second dimension.
+A dangling citation is a REPORT, never a new failure mode, and must not change the exit status of
+an otherwise-green run absent an explicit opt-in.
+
+=== CORRECTION TO "CURRENT ROSTER STATE" ABOVE ===
+
+That section states the roster carries exactly three rows. It now carries FOUR -- a
+test-double-loading-check.sh row (class real-defect, Case 5 bucket-classification assertion) has
+been added since this description was written. The section's substantive point is unaffected: the
+three stale rows that motivated this task are still gone, and this task is still purely the
+missing check. Verify the live roster contents before relying on any count stated here.
 
 ---
 
