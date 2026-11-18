@@ -1,0 +1,33 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 503,
+  "session_id": "sess_1794985308_f67716_503",
+  "dispatch_seq": 1,
+  "findings_count": 5,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/503_revise_unavailable_to_dispatched_agent/reports/01_revise-unavailable-dispatched-agent.md",
+      "summary": "Establishes that /revise is unreachable from a dispatched agent for two compounding reasons (structural command->skill->agent unidirectionality, and an unsanctioned direct skill-reviser path that would skip GATE IN/OUT), and recommends documenting the unavailability plus the existing state-write.sh Stage 7 description-update fallback on both commands/revise.md and skills/skill-reviser/SKILL.md, rejecting postflight-tool-restrictions.md as the home."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "commands/revise.md and skills/skill-reviser/SKILL.md document no agent-unavailability note despite /revise being structurally unreachable from a dispatched subagent (creating-commands.md's command->skill->agent flow has no reverse arrow) and skill-reviser itself being unsanctioned for direct invocation (it is not user-only like skill-tag, but direct invocation skips commands/revise.md's GATE IN task-lock acquisition and GATE OUT .return-meta.json cleanup). The correct fallback for a dispatched agent updating a sibling task's description is skill-reviser/SKILL.md's own Stage 7 'For Description Update' state-write.sh object-merge block, already verified correct by a live incident (884, iss_1793913745294_dZNuX5).",
+      "category": "PATTERN",
+      "source_artifact": "specs/503_revise_unavailable_to_dispatched_agent/reports/01_revise-unavailable-dispatched-agent.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["revise", "skill-reviser", "dispatched-agent", "state-write.sh", "tool-withholding"]
+    },
+    {
+      "content": "postflight-tool-restrictions.md's scope is the skill-postflight-phase tool boundary (what a postflight script may do after a subagent returns), audience 'Skill authors, /meta agent, system maintainers' -- it is the WRONG home for a statement about what a dispatched AGENT may invoke mid-execution (a different actor, different lifecycle point). Point-of-use documentation on the actual surfaces an agent will meet (e.g. commands/revise.md, skill-reviser/SKILL.md) is the established pattern in this codebase, mirroring how the AskUserQuestion withholding is documented at agent-frontmatter-standard.md and push-consent-relay.md rather than in a generic registry.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/503_revise_unavailable_to_dispatched_agent/reports/01_revise-unavailable-dispatched-agent.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["postflight-tool-restrictions", "documentation-placement", "point-of-use", "agent-availability"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 503 to create implementation plan"
+}
