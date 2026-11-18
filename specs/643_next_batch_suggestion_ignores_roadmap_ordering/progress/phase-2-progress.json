@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "Add the roadmap-batch candidate source to Mode A",
+  "started_at": "2026-11-17T22:06:00Z",
+  "last_updated": "2026-11-17T22:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add read_roadmap_batches() reader tolerating absent/empty key identically", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 2, "description": "Add suggest_from_roadmap_batches() walking batches, filtering via task_is_ready, skipping empty-filtered without probing", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 3, "description": "Return success as soon as one batch renders; suppress mechanical criteria on success", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 4, "description": "Note proper-subset filtering, naming omitted members", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 5, "description": "Explicit fallback line on exhaustion naming checked/skipped/deferred counts", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 6, "description": "Check PROBE_CAP_HIT after each probing batch, stop walk via existing convention, no second cap message", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 7, "description": "Wire call into mode_next_batch() after empty-ready-pool early exit, before criteria loop", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 8, "description": "Extend header with roadmap walk/fallback/readiness-admissibility split; widen usage() sed range", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

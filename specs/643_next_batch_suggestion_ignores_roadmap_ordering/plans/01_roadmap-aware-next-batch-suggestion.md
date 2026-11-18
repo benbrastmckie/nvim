@@ -207,39 +207,39 @@ is the covering check for a refactor confined to one file with no CLI or output 
 
 ---
 
-### Phase 2: Add the roadmap-batch candidate source to Mode A [NOT STARTED]
+### Phase 2: Add the roadmap-batch candidate source to Mode A [COMPLETED]
 
 **Goal**: Mode A walks `roadmap_batches` in authored order, probes the first non-empty
 readiness-filtered batch through the existing engine, renders it with its `description`, and
 otherwise falls through to the mechanical options with an explicit stated reason.
 
 **Tasks**:
-- [ ] Add a `read_roadmap_batches()` reader: `jq` over `STATE_FILE` emitting one line per batch
+- [x] Add a `read_roadmap_batches()` reader: `jq` over `STATE_FILE` emitting one line per batch
       (`task_ids` CSV plus `description`), tolerating an absent key and an empty array identically
-      (both yield zero lines, zero probes).
-- [ ] Add `suggest_from_roadmap_batches()`: for each batch in array order, filter `task_ids` through
+      (both yield zero lines, zero probes). *(completed)*
+- [x] Add `suggest_from_roadmap_batches()`: for each batch in array order, filter `task_ids` through
       `task_is_ready` (Phase 1); on an empty filtered set, record the skip and continue WITHOUT
       calling `probe_candidate_set()`; on a non-empty filtered set, print the batch's authored
       position and `description`, then call the existing, unmodified
-      `suggest_from_candidates()` with the filtered members.
-- [ ] Return success as soon as one batch renders; on success `mode_next_batch()` must NOT also run
-      the three mechanical criteria for that invocation.
-- [ ] Note in the rendered output when a batch's filtered set is a proper subset of its authored
+      `suggest_from_candidates()` with the filtered members. *(completed)*
+- [x] Return success as soon as one batch renders; on success `mode_next_batch()` must NOT also run
+      the three mechanical criteria for that invocation. *(completed)*
+- [x] Note in the rendered output when a batch's filtered set is a proper subset of its authored
       `task_ids`, naming the omitted members (mirroring `render_next()`'s omit-and-say convention),
-      so a partial batch is never presented as the whole authored batch.
-- [ ] On exhausting every batch, print one explicit line naming how many authored batches were
+      so a partial batch is never presented as the whole authored batch. *(completed)*
+- [x] On exhausting every batch, print one explicit line naming how many authored batches were
       checked, how many were skipped as empty-filtered, and how many were probed but deferred, then
       fall through to the existing three-criterion mechanical render with its existing text
-      unchanged.
-- [ ] Check `PROBE_CAP_HIT` after each probing batch and stop the walk through the existing
-      cap-reached convention; add no second cap message.
-- [ ] Wire the call into `mode_next_batch()` immediately after the empty-ready-pool early exit and
+      unchanged. *(completed)*
+- [x] Check `PROBE_CAP_HIT` after each probing batch and stop the walk through the existing
+      cap-reached convention; add no second cap message. *(completed)*
+- [x] Wire the call into `mode_next_batch()` immediately after the empty-ready-pool early exit and
       before the `criteria` loop; leave the empty-ready-pool message, the option labels, and the
-      "every candidate deferred" message untouched.
-- [ ] Extend the script's header (sections describing Mode A's selection doctrine) with the roadmap
+      "every candidate deferred" message untouched. *(completed)*
+- [x] Extend the script's header (sections describing Mode A's selection doctrine) with the roadmap
       walk, the fallback statement, and the readiness/admissibility split — then widen `usage()`'s
       `sed -n '2,94p'` range (`orchestrate-suggest-next-batch.sh:99`) to the new header end line so
-      the added lines actually appear in `--help`.
+      the added lines actually appear in `--help`. *(completed: widened to 2,114p)*
 
 **Timing**: 2 hours
 

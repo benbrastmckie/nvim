@@ -56,6 +56,26 @@
 # source of truth. Mode A and Mode B both leave `specs/state.json` unchanged in their default
 # (non-`--write-edges`) form.
 #
+# ── (f) Roadmap-aware candidate source (Mode A primary) ─────────────────────────────────────────
+# Mode A (`--next-batch`) now walks `specs/state.json`'s authored `roadmap_batches` array, in
+# authored order, BEFORE trying the three mechanical selection-doctrine criteria (shared
+# territory, topic cohesion, graph width). Each authored batch's `task_ids` are readiness-filtered
+# locally (the same shared predicate the mechanical path uses — see `build_ready_set()` /
+# `task_is_ready()` below); an empty-filtered batch is skipped at zero probe cost. The first
+# non-empty filtered batch is probed through the SAME unmodified `suggest_from_candidates()` ->
+# `probe_candidate_set()` -> `orchestrate-batch-admit.sh` chain every other candidate source uses
+# — readiness is local and pre-probe, but admissibility is established exclusively by that chain,
+# per binding constraint (a) above; the roadmap source changes WHICH sets get probed, never WHAT
+# establishes admissibility. On success, the rendered suggestion names the batch's authored
+# position and `description`, and the three mechanical criteria are NOT also rendered for that
+# invocation. A batch whose filtered set is a proper subset of its authored `task_ids` says so
+# explicitly, naming the omitted members, rather than presenting the subset as the whole batch.
+# When `roadmap_batches` is absent, empty, or every authored batch's filtered set is either empty
+# or probed-but-deferred, ONE explicit line states how many batches were checked and why none was
+# usable, then execution falls through to today's three mechanical options unchanged — the
+# roadmap walk is a primary source with an explicit stated fallback, never a silent, always-on
+# dual render. Absent is deliberately a zero-probe skip straight to the mechanical render.
+#
 # Usage:
 #   orchestrate-suggest-next-batch.sh --next-batch --session-id <id> [--max-tasks <N>] [--write-edges]
 #       Mode A: build the ready-candidate pool from specs/state.json, select a candidate set by
@@ -96,7 +116,7 @@
 set -euo pipefail
 
 usage() {
-  sed -n '2,94p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,114p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 # --- Paths (sourced BEFORE argument parsing, including --help — same universal-refusal
@@ -360,6 +380,91 @@ build_ready_pool() {
     return 0
   fi
   printf '%s\n' "${!READY_SET[@]}" | sort -n
+}
+
+# ── read_roadmap_batches(): reads specs/state.json's authored `roadmap_batches` array, in
+#    authored array order, emitting one TSV line per batch ("task_ids_csv<TAB>description").
+#    An absent `roadmap_batches` key and an explicit `roadmap_batches: []` are tolerated
+#    IDENTICALLY — both yield zero lines (`// []` normalizes the absent case to the empty-array
+#    case before `.[]` ever runs), so both are a zero-probe skip straight to the mechanical
+#    render, never a usage error. ─────────────────────────────────────────────────────────────
+read_roadmap_batches() {
+  jq -r '
+    (.roadmap_batches // [])[]
+    | [((.task_ids // []) | map(tostring) | join(",")), (.description // "")]
+    | @tsv
+  ' "$STATE_FILE"
+}
+
+# ── suggest_from_roadmap_batches(): Mode A's primary candidate source (see header section (f)).
+#    Walks read_roadmap_batches() in authored order; for each batch, filters `task_ids` through
+#    task_is_ready() (Phase 1's shared readiness predicate — never a second one) WITHOUT calling
+#    probe_candidate_set() at all for an empty-filtered batch (zero probe cost). The first
+#    non-empty filtered batch is handed, unmodified, to suggest_from_candidates() — the same
+#    engine every other candidate source uses, so admissibility stays exclusively
+#    orchestrate-batch-admit.sh's per binding constraint (a). Returns 0 the moment one batch
+#    renders (the caller must not also run the mechanical criteria for this invocation); returns
+#    1 when no authored batch exists at all (silent — the absent/empty-array zero-probe skip) OR
+#    when at least one authored batch was checked but none rendered (an explicit fallback line is
+#    printed in that second case only, naming how many batches were checked, how many were
+#    skipped as empty-filtered, and how many were probed but deferred). Checks PROBE_CAP_HIT
+#    after each probed batch and stops the walk via the existing cap-reached convention (the cap
+#    message itself is already printed inside run_candidate_round() — this function adds no
+#    second one). ─────────────────────────────────────────────────────────────────────────────
+suggest_from_roadmap_batches() {
+  local batches_total=0 batches_skipped_empty=0 batches_deferred=0
+  local task_ids_csv description tid
+  local -a task_ids=() filtered=() omitted=()
+
+  while IFS=$'\t' read -r task_ids_csv description; do
+    [ -z "$task_ids_csv" ] && continue
+    batches_total=$((batches_total + 1))
+
+    task_ids=()
+    IFS=',' read -ra task_ids <<< "$task_ids_csv"
+    filtered=()
+    omitted=()
+    for tid in "${task_ids[@]}"; do
+      [ -z "$tid" ] && continue
+      if task_is_ready "$tid"; then
+        filtered+=("$tid")
+      else
+        omitted+=("$tid")
+      fi
+    done
+
+    if [ "${#filtered[@]}" -eq 0 ]; then
+      batches_skipped_empty=$((batches_skipped_empty + 1))
+      continue
+    fi
+
+    echo ""
+    echo "Authored roadmap batch ${batches_total} -- ${description}:"
+    if [ "${#omitted[@]}" -gt 0 ]; then
+      local IFS=', '
+      echo "  (omitting not-ready member(s): ${omitted[*]} -- rendering only the ready subset)"
+      unset IFS
+    fi
+
+    if suggest_from_candidates "${filtered[@]}"; then
+      return 0
+    fi
+    batches_deferred=$((batches_deferred + 1))
+
+    if [ "$PROBE_CAP_HIT" = true ]; then
+      break
+    fi
+  done < <(read_roadmap_batches)
+
+  if [ "$batches_total" -eq 0 ]; then
+    return 1
+  fi
+
+  echo ""
+  echo "No authored roadmap batch admissible: checked ${batches_total} authored batch(es)"
+  echo "(${batches_skipped_empty} skipped as empty-filtered, ${batches_deferred} probed but"
+  echo "deferred); falling back to the mechanical selection-doctrine options below."
+  return 1
 }
 
 # ── derive_phase_map(): shell out to orchestrate-triage-classify.sh mt (never re-derive the
@@ -997,6 +1102,13 @@ mode_next_batch() {
   if [ "${#ready[@]}" -eq 0 ]; then
     echo "No suggestible batch: the ready-candidate pool is empty (no non-terminal,"
     echo "non-hold/implementing/blocked/partial task with every dependency completed)."
+    exit 0
+  fi
+
+  # Primary candidate source (header section (f)): walk the authored roadmap_batches in order
+  # before trying the mechanical selection-doctrine criteria. On success, render exactly the
+  # roadmap batch and stop — the mechanical criteria are NOT also rendered for this invocation.
+  if suggest_from_roadmap_batches; then
     exit 0
   fi
 
