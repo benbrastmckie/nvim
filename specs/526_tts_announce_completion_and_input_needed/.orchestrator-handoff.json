@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 6,
+  "summary": "Authored a 6-phase plan for the TTS completion/input-needed fix, in 5 dependency waves at 8.5 hours total. All three defects re-confirmed verbatim against the live source store before planning. Plan settles the two choices research left open (75s non-sliding cooldown window, runtime-dir pane-keyed stamp) and encodes one ordering constraint neither the description nor the research states: the additive-only merge engine makes the cooldown a hard prerequisite for the matcher widening, so Phase 2 depends on Phase 1.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/526_tts_announce_completion_and_input_needed/plans/01_tts-completion-input-needed.md",
+      "summary": "6-phase plan: cooldown plus --stop mode, matcher widening with a parity check, Stop-hook wiring, documentation reconciliation, manifest/redeploy, live acceptance."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": [],
+  "next_action_hint": "Run /orchestrate 526 to execute the plan. Phase 1 (tts-notify.sh cooldown) must land before Phase 2 (matcher widening)."
+}
