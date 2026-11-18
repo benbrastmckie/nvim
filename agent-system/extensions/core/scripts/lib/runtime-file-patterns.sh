@@ -112,6 +112,17 @@
 # `specs/central-errors.jsonl` ITSELF IS DELIBERATELY NOT ignored -- it is durable, freshness-
 # gated provenance, the same class as `issues.jsonl` and `metrics.jsonl`; only its lock file is
 # ephemeral.
+#
+# `gate-cache` and `gate-lock` (26th and 27th members) are the gate layer's two machine-local
+# runtime directories: `specs/.gate-cache/` (gate-cache-lib.sh's content-addressed, composite-key
+# green-result store) and `specs/.gate-lock/` (task-lock.sh's `gate-acquire`/`gate-release`
+# mutex). Both sit at a FIXED repo-level path rather than under `specs/{NNN}_{slug}/`, so they
+# take the same `**/`-prefixed directory-class shape as `.deploy-lock/`/`.scope-lock/` above.
+# They were omitted when the gate cache and gate mutex landed, which left `specs/.gate-cache/`
+# reported as untracked in `git status` in a consuming repository after any gated run -- the
+# cache is content-key-gated on read, so a git-restored copy is exactly the stale-state hazard
+# this ephemeral class exists to prevent. A repository that had already hand-authored these two
+# patterns into its own root `.gitignore` is unaffected: the managed block is additive.
 
 declare -a RUNTIME_FILE_IDS=(
   "lock"
@@ -139,6 +150,8 @@ declare -a RUNTIME_FILE_IDS=(
   "orchestration"
   "runs-lock"
   "observations-lock"
+  "gate-cache"
+  "gate-lock"
 )
 
 # Exact gitignore pattern line for each member, as emitted by runtime_ignore_block().
@@ -168,6 +181,8 @@ declare -a RUNTIME_FILE_PATTERNS=(
   "**/.orchestration/"
   "**/.runs.lock"
   "**/.observations.lock"
+  "**/.gate-cache/"
+  "**/.gate-lock/"
 )
 
 # Check A representative probe path: a concrete file this pattern must `git check-ignore -q`.
@@ -201,6 +216,8 @@ declare -a RUNTIME_FILE_PROBES=(
   "specs/.orchestration/.orchestrator-multi-state-sess_0000000000_probe.json"
   "specs/books-evidence/.runs.lock"
   "specs/books-evidence/.observations.lock"
+  "specs/.gate-cache/gate4.json"
+  "specs/.gate-lock/owner"
 )
 
 # Check B tracked-file regex: `grep -E` pattern matched against `git ls-files` output. Any hit
@@ -232,16 +249,18 @@ declare -a RUNTIME_FILE_B_REGEX=(
   '/\.orchestration/'
   '\.runs\.lock$'
   '\.observations\.lock$'
+  '/\\.gate-cache/'
+  '/\\.gate-lock/'
 )
 
 # Directory-class flag ("1" or "0"): governs which `git rm` remediation form Check B prints for
 # a hit at this index. A "1" member's bare directory basename is given in
 # RUNTIME_FILE_DIR_BASENAME at the same index (empty string for "0" members, where it is unused).
 declare -a RUNTIME_FILE_IS_DIR=(
-  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "0" "0" "0" "0" "1" "0" "1" "0" "0"
+  "1" "0" "0" "0" "0" "0" "0" "0" "0" "1" "0" "1" "1" "1" "1" "0" "0" "0" "0" "0" "1" "0" "1" "0" "0" "1" "1"
 )
 declare -a RUNTIME_FILE_DIR_BASENAME=(
-  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "" "" "" "" "tmp" "" ".orchestration" "" ""
+  ".lock" "" "" "" "" "" "" "" "" ".sessions" "" ".dispatch" ".deploy-lock" ".scope-lock" ".commit-lock" "" "" "" "" "" "tmp" "" ".orchestration" "" "" ".gate-cache" ".gate-lock"
 )
 
 # ─── Accessors ──────────────────────────────────────────────────────────────────────────────────

@@ -436,6 +436,8 @@ repo's **own root** `/.gitignore` **by hand**:
 **/.orchestration/
 **/.runs.lock
 **/.observations.lock
+**/.gate-cache/
+**/.gate-lock/
 ```
 
 Run `check-runtime-file-tracking.sh` afterward to confirm coverage (see "Verification" below).
