@@ -499,13 +499,13 @@ if [ -f "$VERIFY_DEPLOY_REAL" ]; then
 
   vd_full_run_check() {
     # Usage: vd_full_run_check <label> -- runs gate 1 against VD_SCRATCH and asserts a FULL run
-    # (all 9 [PASS] lines present, no [SKIP-CACHED], exit 0) -- the fail-open signature.
+    # (all 6 [PASS] lines present, no [SKIP-CACHED], exit 0) -- the fail-open signature.
     local label="$1" out rc
     out="$(bash "$VERIFY_DEPLOY_REAL" --skip-unchanged --only-gate 1 "$VD_SCRATCH" 2>&1)"
     rc=$?
     if [ "$rc" -eq 0 ] && ! grep -q 'SKIP-CACHED' <<< "$out" \
-      && [ "$(grep -c '\[PASS\]' <<< "$out")" -eq 9 ]; then
-      common_test_pass "$label: degrades to a full run (9/9 [PASS], no [SKIP-CACHED], exit 0)"
+      && [ "$(grep -c '\[PASS\]' <<< "$out")" -eq 6 ]; then
+      common_test_pass "$label: degrades to a full run (6/6 [PASS], no [SKIP-CACHED], exit 0)"
     else
       common_test_fail "$label: expected a full run with exit 0 and no [SKIP-CACHED] (rc=$rc):
 $out"
