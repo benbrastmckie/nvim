@@ -1,0 +1,17 @@
+{
+  "status": "planned",
+  "summary": "Authored an 8-phase implementation plan from the research report. It relocates the 9-suite slow cost-class bucket onto its own serialized gate so Gate 8 fits under the 600s foreground ceiling with no coverage reduction, replaces the advisory batch-gate-deferral directive with a staleness-bounded marker plus entry guards in verify-deploy.sh and run-all.sh (covering a batch of one, which the current -gt 1 gate excludes), generalizes Gate 8's contention tagging to every gate's timeout kill, and wires the already-existing dispatch-strand-probe.sh into a watchdog launched beside the dispatches. Research question 5's blocking open item is closed by building on background Bash rather than an unverified background-Agent capability.",
+  "phase": "plan",
+  "phases_completed": 0,
+  "phases_total": 8,
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/610_full_gate_verification_ceiling_and_stall/plans/01_gate-ceiling-fit-and-stall-detection.md",
+      "summary": "8-phase plan covering the gate-8 ceiling fit, the mechanical batch-gate guard, generalized contention tagging, and orchestrator-side stall detection."
+    }
+  ],
+  "dispatch_seq": 19,
+  "next_action_hint": "Run /orchestrate 610 --implement to execute the plan. Phase 1's measurement needs a confirmed-idle host; it carries a documented deferred branch if one is not available."
+}
