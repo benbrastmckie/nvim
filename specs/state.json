@@ -3474,7 +3474,8 @@
         "agent-system/extensions/core/scripts/tests/test-notification-matcher-parity.sh",
         "agent-system/extensions/core/scripts/tests/test-tts-notify.sh",
         "agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md",
-        "agent-system/extensions/nvim/index-entries.json"
+        "agent-system/extensions/nvim/index-entries.json",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data"
       ],
       "created": "2026-11-07T22:23:37Z",
       "last_updated": "2026-11-18T07:58:54Z",

@@ -56,6 +56,7 @@ test-central-log-lib.sh	unit	-
 test-check-record-versioning.sh	unit	-
 test-check-task-references.sh	integration	invokes:verify-deploy.sh
 test-claude-refresh-matcher.sh	integration	invokes:verify-deploy.sh
+test-claude-stop-notify.sh	unit	-
 test-commit-source-store-path.sh	unit	-
 test-common-lib.sh	integration	invokes:run-all.sh
 test-consumer-freshness.sh	unit	-
@@ -145,6 +146,7 @@ test-mcp-merge-target.sh	integration	invokes:deploy-headless.sh
 test-measure-gate-costs.sh	integration	invokes:verify-deploy.sh,run-all.sh
 test-migrate-roadmap-next-to-state.sh	unit	-
 test-mint-dispatch-seq.sh	unit	-
+test-notification-matcher-parity.sh	unit	-
 test-orchestrate-batch-admit.sh	unit	-
 test-orchestrate-batch-gate.sh	integration	invokes:verify-deploy.sh
 test-orchestrate-build-aux-dispatch.sh	unit	-
@@ -205,6 +207,7 @@ test-task-type-detect.sh	unit	-
 test-title-sim-dedup.sh	unit	-
 test-todo-archived-projects-scan.sh	unit	-
 test-todo-move-pair-staging.sh	unit	-
+test-tts-notify.sh	unit	-
 test-update-plan-status.sh	unit	-
 test-update-task-status.sh	unit	-
 test-validate-artifact.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh,run-all.sh
