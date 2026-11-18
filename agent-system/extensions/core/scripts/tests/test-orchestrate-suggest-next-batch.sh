@@ -18,9 +18,10 @@
 # render (n); a first empty-filtered batch's skip is visible even when a later batch succeeds
 # (o); a proper-subset filtered batch names its omitted member rather than presenting the
 # subset as the whole batch (p); a stale task_id absent from active_projects is treated as
-# not-ready, never silently admitted (q); and an authored batch with an internal file_scope
+# not-ready, never silently admitted (q); an authored batch with an internal file_scope
 # collision renders through the same unmodified ordered-sequence engine, no new collision code
-# path (r).
+# path (r); and the highest-numbered ready-pool-scan task having an unmet dependency on the
+# last line build_ready_set() reads never silently aborts the whole script under set -e (s).
 #
 # Structural model: scripts/tests/test-orchestrate-conclusion-aggregate.sh (set -uo pipefail,
 # pass()/fail()/info() helpers, PASSED/FAILED integer counters, exit 0 all-pass / 1 any-fail /
@@ -672,6 +673,30 @@ SID="sess_test_$$_suggest"
     common_test_pass "(r) internal file_scope collision inside an authored batch: existing ordered-sequence rendering fires, no new collision code path"
   else
     common_test_fail "(r) internal file_scope collision inside an authored batch: rc=$rc -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (s): the set -e footgun regression -- the HIGHEST-numbered task in the ready-pool
+# scan order has all_ok=false (an unmet dependency), reaching build_ready_set()'s final
+# `if [ "$all_ok" = true ]; then READY_SET[...]=1; fi` with the condition false on the LAST
+# line read. A bare `[ cond ] && action` there would silently abort the whole script under
+# `set -e` at exactly that point (the short-circuited list's nonzero exit status propagates,
+# since build_ready_set() is now called directly in the caller's shell, not insulated inside
+# a process-substitution subshell as the pre-refactor build_ready_pool() one-liner was).
+# Asserts the script still renders a suggestion and exits 0, never a silent exit 1 with no
+# output.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  add_task "$scratch" 200 not_started '["agent-system/extensions/core/s200"]' '[]'
+  add_task "$scratch" 201 not_started '["agent-system/extensions/core/s201"]' '[200]'
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
+  rc=$?
+  if [ "$rc" -eq 0 ] && [ -n "$out" ] && echo "$out" | grep -q 'task 200: admit'; then
+    common_test_pass "(s) set -e footgun regression: the highest-numbered ready-pool-scan task having an unmet dependency (all_ok=false) on the last line read does not silently abort the script"
+  else
+    common_test_fail "(s) set -e footgun regression: rc=$rc -- $out"
   fi
 }
 

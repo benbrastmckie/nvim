@@ -348,7 +348,18 @@ build_ready_set() {
         fi
       done
     fi
-    [ "$all_ok" = true ] && READY_SET["$task_num"]=1
+    # if/then, never a bare `[ ... ] && READY_SET[...]=1`: under `set -e`, a short-circuited
+    # && list (left side false) propagates ITS exit status (nonzero) to the enclosing
+    # statement, which aborts the whole script the moment the LAST line read happens to have
+    # all_ok=false -- latent in the pre-refactor one-liner (`[ "$all_ok" = true ] && echo
+    # "$task_num"`) too, but silently harmless there because that call ran inside a process
+    # substitution subshell whose death coincided with the pipe's own natural EOF. Calling
+    # build_ready_set() directly in the caller's own shell (required so READY_SET actually
+    # persists -- see mode_next_batch()) removes that accidental insulation, so the footgun is
+    # fixed here rather than re-introduced.
+    if [ "$all_ok" = true ]; then
+      READY_SET["$task_num"]=1
+    fi
   done < <(jq -r '
     (.active_projects | map({(.project_number|tostring): .status}) | add // {}) as $smap
     | .active_projects[]
