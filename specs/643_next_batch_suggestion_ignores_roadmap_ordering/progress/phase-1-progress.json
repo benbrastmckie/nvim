@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Factor the readiness predicate into a reusable ready set",
+  "started_at": "2026-11-17T21:55:00Z",
+  "last_updated": "2026-11-17T22:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read build_ready_pool() and header comment in full before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Introduce READY_SET + build_ready_set() carrying the predicate verbatim", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 3, "description": "Reduce build_ready_pool() to emitting the same ascending stream from READY_SET", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 4, "description": "Add task_is_ready() accessor (set membership test)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 5, "description": "Update build_ready_pool()'s header comment to attribute the predicate to build_ready_set()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

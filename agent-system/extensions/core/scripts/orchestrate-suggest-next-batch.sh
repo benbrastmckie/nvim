@@ -290,17 +290,23 @@ probe_candidate_set() {
   run_capture_stdout "$__outvar" bash "$ADMIT_SCRIPT" "${__admit_args[@]}" "${__candidates[@]}"
 }
 
-# ── build_ready_pool(): Decision 4's readiness predicate. Emits one task_number per line,
-#    ascending, for every specs/state.json active_projects entry that is (1) non-terminal
-#    (is_terminal_status() false — sourced, never re-transcribed), (2) not itself
-#    hold/implementing/blocked/partial (a status-exclusion set distinct from "terminal": a held
-#    task is paused by a human, not finished; implementing/blocked/partial tasks are already
-#    mid-dispatch or stuck and are not ready for a FRESH next-batch suggestion), and (3) every
-#    dependencies[] entry is either absent from active_projects (already completed and
-#    archived, or never existed as a live task — treated as satisfied) or itself "completed".
-#    This is readiness only — a small, independent, local predicate. It never establishes
-#    ADMISSIBILITY; that always comes from probe_candidate_set() below. ─────────────────────────
-build_ready_pool() {
+# ── build_ready_set(): Decision 4's readiness predicate, the SOLE computation of it. Populates
+#    the script-level associative set READY_SET (declared below) with one key per
+#    specs/state.json active_projects entry that is (1) non-terminal (is_terminal_status()
+#    false — sourced, never re-transcribed), (2) not itself hold/implementing/blocked/partial (a
+#    status-exclusion set distinct from "terminal": a held task is paused by a human, not
+#    finished; implementing/blocked/partial tasks are already mid-dispatch or stuck and are not
+#    ready for a FRESH next-batch suggestion), and (3) every dependencies[] entry is either
+#    absent from active_projects (already completed and archived, or never existed as a live
+#    task — treated as satisfied) or itself "completed". This is readiness only — a small,
+#    independent, local predicate. It never establishes ADMISSIBILITY; that always comes from
+#    probe_candidate_set() below. Two consumers share this one set: build_ready_pool() (the flat
+#    ascending stream below) and, from Phase 2 on, the roadmap-batch walk's per-batch filtering
+#    via task_is_ready(). Idempotent — safe to call more than once; it always starts from an
+#    empty set. ─────────────────────────────────────────────────────────────────────────────────
+declare -A READY_SET=()
+build_ready_set() {
+  READY_SET=()
   local task_num status dep_statuses_csv all_ok dep_status
   while IFS=$'\t' read -r task_num status dep_statuses_csv; do
     [ -z "$task_num" ] && continue
@@ -322,7 +328,7 @@ build_ready_pool() {
         fi
       done
     fi
-    [ "$all_ok" = true ] && echo "$task_num"
+    [ "$all_ok" = true ] && READY_SET["$task_num"]=1
   done < <(jq -r '
     (.active_projects | map({(.project_number|tostring): .status}) | add // {}) as $smap
     | .active_projects[]
@@ -333,6 +339,27 @@ build_ready_pool() {
       ]
     | @tsv
   ' "$STATE_FILE" | sort -n -k1,1)
+}
+
+# ── task_is_ready(): membership test against READY_SET (build_ready_set() must have been
+#    called first). A task_id absent from active_projects entirely — e.g. a stale
+#    roadmap_batches member left behind by vault renumbering — is false here rather than
+#    silently true, since an absent key never populates READY_SET. ────────────────────────────
+task_is_ready() {
+  local task_num="$1"
+  [ -n "${READY_SET["$task_num"]:-}" ]
+}
+
+# ── build_ready_pool(): thin consumer of READY_SET (Decision 4's shared readiness predicate,
+#    now computed once by build_ready_set() above). Emits one task_number per line, ascending —
+#    the exact pre-existing output contract (sort -n -k1,1 ordering, one number per line, no
+#    trailing noise) — preserved byte-identical to before this refactor. ───────────────────────
+build_ready_pool() {
+  build_ready_set
+  if [ "${#READY_SET[@]}" -eq 0 ]; then
+    return 0
+  fi
+  printf '%s\n' "${!READY_SET[@]}" | sort -n
 }
 
 # ── derive_phase_map(): shell out to orchestrate-triage-classify.sh mt (never re-derive the

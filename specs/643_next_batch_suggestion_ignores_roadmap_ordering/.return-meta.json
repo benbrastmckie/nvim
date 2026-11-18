@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/643_next_batch_suggestion_ignores_roadmap_ordering/plans/01_roadmap-aware-next-batch-suggestion.md",
-      "summary": "5-phase plan (6h) making roadmap_batches the primary candidate source for /orchestrate's conclusion-stage next-batch suggestion, with an explicit mechanical fallback and 8 new regression cases."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1794980176_60fcdb_643",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 6,
-    "dependency_waves": [[1], [2], [3, 4], [5]]
+    "session_id": "sess_1794980176_60fcdb",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "orchestrate-suggest-next-batch.sh renders its --help by a FIXED line range (usage() does `sed -n '2,94p'` on its own source, at the function's definition site around line 99), so any header documentation added below line 94 is silently absent from --help output unless that range is widened in the same edit. This is a general hazard for every script in agent-system/extensions/core/scripts that implements usage() this way: a header edit and a usage() range edit are one atomic change, and no gate detects the mismatch -- the script still runs, --help still exits 0, and the new documentation simply never prints. Separately: editing any indexed context/** file moves that file's line_count entry in agent-system/extensions/core/index-entries.json (check-extension-docs.sh Rule R), which deploy-headless.sh auto-repairs; since no pre-commit hook is installed in this repository the check is advisory, so a plan may declare index-entries.json in the phase that moves the count and reconcile it in a later deploy phase.",
-      "category": "PATTERN",
-      "source_artifact": "specs/643_next_batch_suggestion_ignores_roadmap_ordering/plans/01_roadmap-aware-next-batch-suggestion.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["usage-sed-range", "help-output-drift", "index-entries-line-count", "plan-authoring", "coupled-generated-surface"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 643 to execute the plan",
-  "dispatch_seq": 2
+  "dispatch_seq": 3
 }

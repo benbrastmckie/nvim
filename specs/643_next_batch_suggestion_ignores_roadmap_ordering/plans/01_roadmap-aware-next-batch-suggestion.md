@@ -1,7 +1,7 @@
 # Implementation Plan: Task #643
 
 - **Task**: 643 - Align /orchestrate's conclusion-stage next-batch suggestion with the authored roadmap ordering, or render both so the divergence is visible
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/643_next_batch_suggestion_ignores_roadmap_ordering/reports/01_roadmap_aware_suggester.md
@@ -165,26 +165,26 @@ roadmap is *consumed* by the suggester; it does not author or reorder `roadmap_b
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Factor the readiness predicate into a reusable ready set [NOT STARTED]
+### Phase 1: Factor the readiness predicate into a reusable ready set [COMPLETED]
 
 **Goal**: One readiness computation, two consumers — the existing flat ascending ready-pool list
 and (in Phase 2) per-batch filtering — with no observable change to today's output.
 
 **Tasks**:
-- [ ] Read `build_ready_pool()` (`orchestrate-suggest-next-batch.sh`, around lines 303-336) and its
-      header comment in full before editing.
-- [ ] Introduce a script-level associative set (e.g. `declare -A READY_SET=()`) populated once by a
+- [x] Read `build_ready_pool()` (`orchestrate-suggest-next-batch.sh`, around lines 303-336) and its
+      header comment in full before editing. *(completed)*
+- [x] Introduce a script-level associative set (e.g. `declare -A READY_SET=()`) populated once by a
       new `build_ready_set()` that carries the existing three-condition predicate verbatim
       (non-terminal via the sourced `is_terminal_status`; not hold/implementing/blocked/partial;
       every `dependencies[]` entry absent-or-completed). Do not restate or re-derive the predicate
-      — move it.
-- [ ] Reduce `build_ready_pool()` to emitting the same ascending `task_number`-per-line stream from
+      — move it. *(completed)*
+- [x] Reduce `build_ready_pool()` to emitting the same ascending `task_number`-per-line stream from
       that set, preserving its exact current output contract (`sort -n -k1,1` ordering, one number
-      per line, no trailing noise).
-- [ ] Add a `task_is_ready <num>` accessor (a set membership test) so an absent-from-`active_projects`
-      task id is false rather than silently true.
-- [ ] Update `build_ready_pool()`'s header comment to say the predicate now lives in
-      `build_ready_set()` and is shared, keeping the Decision-4 attribution intact.
+      per line, no trailing noise). *(completed)*
+- [x] Add a `task_is_ready <num>` accessor (a set membership test) so an absent-from-`active_projects`
+      task id is false rather than silently true. *(completed)*
+- [x] Update `build_ready_pool()`'s header comment to say the predicate now lives in
+      `build_ready_set()` and is shared, keeping the Decision-4 attribution intact. *(completed)*
 
 **Timing**: 0.75 hours
 
