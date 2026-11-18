@@ -1,0 +1,14 @@
+{
+  "phase": 4,
+  "phase_name": "Reconcile both documentation surfaces to the landed behavior",
+  "started_at": "2026-11-18T00:00:00Z",
+  "last_updated": "2026-11-18T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Reconcile tts-stt-integration.md to landed behavior", "status": "done", "files_touched": ["agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md"]},
+    {"id": 2, "description": "Reconcile lifecycle-notify.sh header decision table", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lifecycle-notify.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

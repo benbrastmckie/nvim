@@ -372,37 +372,37 @@ created.
 
 ---
 
-### Phase 4: Reconcile both documentation surfaces to the landed behavior [NOT STARTED]
+### Phase 4: Reconcile both documentation surfaces to the landed behavior [COMPLETED]
 
 **Goal**: no claim in either documentation surface survives that the landed code contradicts,
 including the second, independently-dead `orchestrate-active` contract in the same header.
 
 **Tasks**:
 
-- [ ] Re-read both files immediately before editing.
-- [ ] In `agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md`,
+- [x] Re-read both files immediately before editing.
+- [x] In `agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md`,
       replace the assertion "The Stop hook does NOT trigger TTS. This eliminates random 'Tab N'
       announcements during mid-workflow orchestrator pauses." with a statement of the implemented
       behavior: the Stop hook DOES announce, in its no-marker branch only, with its own utterance;
       mid-workflow pauses stay silent because of the workflow-active-marker suppression and the
       subagent guard, not because the hook declines to announce.
-- [ ] Add `idle_prompt` to that file's "Notification Event Types" table with its real trigger
+- [x] Add `idle_prompt` to that file's "Notification Event Types" table with its real trigger
       (Claude has been waiting for user input) and its utterance ("Tab N"), and add a row for the
       Stop-branch completion announcement ("Tab N done").
-- [ ] Update that file's embedded hook-configuration JSON snippet so its matcher matches the
+- [x] Update that file's embedded hook-configuration JSON snippet so its matcher matches the
       landed `permission_prompt|idle_prompt|elicitation_dialog`.
-- [ ] Replace that file's "No cooldown or signal file mechanism" claim under "The --lifecycle Flag
+- [x] Replace that file's "No cooldown or signal file mechanism" claim under "The --lifecycle Flag
       in tts-notify.sh" with the real cooldown contract: pane-keyed stamp, default window,
       `TTS_COOLDOWN` override, applies to all three modes, fails open.
-- [ ] Document the three modes and their three distinct utterances in one place in that file, and
+- [x] Document the three modes and their three distinct utterances in one place in that file, and
       add `TTS_COOLDOWN` to its environment-variable table.
-- [ ] In `agent-system/extensions/core/scripts/lifecycle-notify.sh`, restate the header's
+- [x] In `agent-system/extensions/core/scripts/lifecycle-notify.sh`, restate the header's
       four-bullet decision table so every bullet matches the code. The two bullets promising
       Stop-hook TTS are now TRUE and stay, pointing at the no-marker branch as the mechanism. The
       two `orchestrate-active` bullets are restated honestly: the file-existence check exists in
       code, and nothing in the source store writes that file, so that auto-suppression path does
       not currently engage.
-- [ ] Confirm the reconciliation leaves no remaining claim in either file that the landed code
+- [x] Confirm the reconciliation leaves no remaining claim in either file that the landed code
       contradicts, by re-reading both files end to end against the Phase 1-3 diffs rather than
       spot-checking the lines this phase edited.
 

@@ -83,7 +83,7 @@ mv vosk-model-small-en-us-0.15 vosk-model-small-en-us
 
 ### How It Works
 
-TTS fires in two categories:
+TTS fires in three categories:
 
 1. **Lifecycle transitions**: After a task status transition, a lifecycle skill's own postflight
    Stage 8a calls `skill_lifecycle_notify "$status"` (a shared function in `skill-base.sh`), which
@@ -92,11 +92,24 @@ TTS fires in two categories:
    directly from `orchestrator-postflight.sh` instead of going through a skill's Stage 8a.
    `update-task-status.sh` itself does not invoke any TTS script; it only writes task status.
 
-2. **Interactive prompts**: `permission_prompt` and `elicitation_dialog` Notification hook events
-   trigger `tts-notify.sh` with no args, which speaks "Tab N" to alert the user that input is needed.
+2. **Interactive prompts**: `permission_prompt`, `idle_prompt`, and `elicitation_dialog`
+   Notification hook events trigger `tts-notify.sh` with no args, which speaks "Tab N" to alert
+   the user that input is needed. `idle_prompt` fires once Claude has been waiting 60 seconds or
+   more for user input — the actionable "a question needs answering" case.
 
-The Stop hook does NOT trigger TTS. This eliminates random "Tab N" announcements during
-mid-workflow orchestrator pauses.
+3. **Stop-hook completion**: the Stop hook's no-workflow-marker branch (`claude-stop-notify.sh`,
+   fired when no lifecycle workflow is mid-flight and the stop is not a subagent's own) calls
+   `tts-notify.sh --stop`, speaking "Tab N done" — a distinct word from the bare "Tab N"
+   interactive utterance above, so the two are distinguishable by ear. Mid-workflow orchestrator
+   pauses stay silent not because the Stop hook declines to announce, but because of two
+   existing guards this call sits behind: the workflow-active-marker suppression (any session's
+   marker present means some workflow is mid-flight, so this branch never runs) and the
+   subagent `agent_id` guard (a subagent's own Stop event is suppressed before either branch is
+   reached).
+
+Every mode above shares a pane-keyed cooldown gate (see "The --lifecycle Flag in tts-notify.sh"
+below), so an `idle_prompt` re-fire, a coinciding Stop-plus-Notification pair, or any future
+double hook registration collapses to a single utterance rather than a burst.
 
 ### Lifecycle Vocabulary
 
@@ -118,7 +131,7 @@ The hooks are configured in `.claude/settings.json`:
   "hooks": {
     "Notification": [
       {
-        "matcher": "permission_prompt|elicitation_dialog",
+        "matcher": "permission_prompt|idle_prompt|elicitation_dialog",
         "hooks": [
           {
             "type": "command",
@@ -151,6 +164,7 @@ correctly-scoped variable local to that one script's own status-vocabulary mappi
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `TTS_ENABLED` | `1` | Set to `0` to disable notifications |
+| `TTS_COOLDOWN` | `75` | Seconds a WezTerm pane must wait between actual utterances (any mode) |
 
 ### Examples
 
@@ -165,18 +179,29 @@ export TTS_ENABLED=0
 |-------|---------|---------|
 | Lifecycle (skill postflight Stage 8a / orchestrator-postflight.sh) | Task status transition completes | "Tab N researched/planned/completed" |
 | permission_prompt | Claude needs tool permission | "Tab N" |
+| idle_prompt | Claude has been waiting 60s+ for user input | "Tab N" |
 | elicitation_dialog | Claude asks a clarifying question | "Tab N" |
+| Stop hook (no-workflow-marker branch) | An `/orchestrate` run (or any non-lifecycle session) finishes with no workflow mid-flight | "Tab N done" |
 
-### The --lifecycle Flag in tts-notify.sh
+### The Three Modes and the Cooldown in tts-notify.sh
 
-When called with `--lifecycle STATUS`:
-- Speaks "Tab N STATUS" (e.g., "Tab 3 researched")
-- Non-blocking background invocation
-- No cooldown or signal file mechanism
+`tts-notify.sh` supports three mutually exclusive modes, each with its own utterance:
 
-When called with no args (Notification hook):
-- Speaks "Tab N" immediately
-- For permission_prompt and elicitation_dialog only
+| Mode | Invocation | Utterance |
+|------|------------|-----------|
+| Lifecycle | `--lifecycle STATUS` | "Tab N STATUS" (e.g., "Tab 3 researched") |
+| Stop | `--stop` | "Tab N done" |
+| Interactive | no args | "Tab N" |
+
+All three are non-blocking background invocations, and all three share one pane-keyed cooldown
+gate: a stamp at `${XDG_RUNTIME_DIR:-/tmp}/claude-tts-cooldown-${UID}-${WEZTERM_PANE:-nopane}`
+records the last time an utterance actually fired (written only on a path that reaches `speak()`,
+never on a suppressed invocation). Any invocation within `TTS_COOLDOWN` seconds (default 75,
+env-overridable) of that stamp is suppressed — logged, but silent — so an `idle_prompt` re-fire,
+a coinciding Stop-plus-Notification pair, or a future double hook registration collapses to one
+utterance. The cooldown is keyed by `WEZTERM_PANE`, so concurrent panes never suppress each
+other, and every file operation degrades to "cooldown never engages" on failure (announcing is
+the fail-open direction, never silence).
 
 ### Troubleshooting
 
