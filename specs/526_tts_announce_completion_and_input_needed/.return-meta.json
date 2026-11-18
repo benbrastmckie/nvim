@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/526_tts_announce_completion_and_input_needed/plans/01_tts-completion-input-needed.md",
-      "summary": "6-phase plan in 5 dependency waves (8.5h) for the Stop-branch completion announcement, the idle_prompt matcher widening, the pane-keyed cooldown, and the two documentation reconciliations."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 11,
   "metadata": {
-    "session_id": "sess_1794985308_f67716_526",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 8.5,
-    "dependency_waves": [[1], [2, 3], [4], [5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a hook/trigger matcher STRING is widened in a system whose deploy merge engine is additive-only (it adds a fragment's blocks but never retracts a changed or removed one), the already-deployed tree ends up carrying BOTH the old and the new matcher block. An event matching both then fires the same handler twice. The planning consequence is a hard phase-ordering constraint that is invisible if you reason only about the source store: any dedup, cooldown, or idempotence guard must land in an EARLIER phase than the matcher widening, otherwise the widening itself manufactures the duplicate-fire burst the guard exists to prevent. Generalizes to any additive-only config merge (permission grants, server registrations, hook blocks), not just TTS matchers.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/526_tts_announce_completion_and_input_needed/plans/01_tts-completion-input-needed.md",
-      "confidence": 0.78,
-      "suggested_keywords": ["additive-only-merge", "hook-matcher", "phase-ordering", "duplicate-registration", "deploy-drift", "cooldown"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 526 to execute the plan",
-  "dispatch_seq": 6
+    "session_id": "sess_1794985308_f67716",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

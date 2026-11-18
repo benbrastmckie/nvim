@@ -1,0 +1,13 @@
+{
+  "phase": 1,
+  "phase_name": "Cooldown gate and distinguishable --stop mode in tts-notify.sh",
+  "started_at": "2026-11-18T00:00:00Z",
+  "last_updated": "2026-11-18T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read tts-notify.sh; add cooldown config/helpers/gate and --stop mode", "status": "done", "files_touched": ["agent-system/extensions/core/hooks/tts-notify.sh"]},
+    {"id": 2, "description": "Create test-tts-notify.sh covering all cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-tts-notify.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

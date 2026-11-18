@@ -1,7 +1,7 @@
 # Implementation Plan: Task #526
 
 - **Task**: 526 - Announce completion and input-needed over TTS from the source store, with a cooldown
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8.5 hours
 - **Dependencies**: Territory edge to the open record `reword_dead_lifecycle_command_prose_per_class` (task 435) — serialization only, no subject overlap. NOT YET RECORDED in `specs/state.json` (`depends_on: null` as of plan authoring); see Risks & Mitigations.
 - **Research Inputs**: specs/526_tts_announce_completion_and_input_needed/reports/01_tts-completion-input-needed.md
@@ -159,7 +159,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Cooldown gate and distinguishable `--stop` mode in `tts-notify.sh` [NOT STARTED]
+### Phase 1: Cooldown gate and distinguishable `--stop` mode in `tts-notify.sh` [COMPLETED]
 
 **Goal**: `tts-notify.sh` gains a pane-keyed cooldown that collapses any repeat utterance inside
 the window, and a third mode whose utterance is distinguishable by ear from the input-needed one.
@@ -167,30 +167,30 @@ This is the load-bearing change every later phase depends on.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/hooks/tts-notify.sh` immediately before editing (a
+- [x] Re-read `agent-system/extensions/core/hooks/tts-notify.sh` immediately before editing (a
       sibling task may have touched the tree). If the file is absent or its mode-parsing block no
       longer matches what this plan describes, STOP and report rather than editing by inference.
-- [ ] Add `TTS_COOLDOWN="${TTS_COOLDOWN:-75}"` and
+- [x] Add `TTS_COOLDOWN="${TTS_COOLDOWN:-75}"` and
       `COOLDOWN_FILE="${XDG_RUNTIME_DIR:-/tmp}/claude-tts-cooldown-${UID:-0}-${WEZTERM_PANE:-nopane}"`
       to the configuration block, with a comment stating why the stamp is pane-keyed and why it
       lives in the runtime dir rather than beside the log.
-- [ ] Extend argument parsing with a `--stop` mode flag, leaving the existing
+- [x] Extend argument parsing with a `--stop` mode flag, leaving the existing
       `--lifecycle STATUS` parse untouched.
-- [ ] Add a `cooldown_blocked()` helper reading the stamp and comparing `NOW - LAST_TIME` against
+- [x] Add a `cooldown_blocked()` helper reading the stamp and comparing `NOW - LAST_TIME` against
       `TTS_COOLDOWN`, and a `cooldown_stamp()` helper writing `date +%s`. Both wrap every file
       operation in `2>/dev/null || true` so a failure degrades to "cooldown never engages".
       `cooldown_stamp()` is called only on a path that actually reaches `speak()`.
-- [ ] Insert the cooldown check ONCE, after the existing `TTS_ENABLED` and `piper` early-exit
+- [x] Insert the cooldown check ONCE, after the existing `TTS_ENABLED` and `piper` early-exit
       guards and before the first mode branch. On suppression, log a line naming the mode and the
       elapsed seconds, then `exit_success` — the log stays a complete record of every invocation,
       suppressed or not.
-- [ ] Add the `--stop` branch after the `--lifecycle` branch and before the no-args interactive
+- [x] Add the `--stop` branch after the `--lifecycle` branch and before the no-args interactive
       branch, composing `get_tab_prefix` with the fixed suffix `done` (utterance: "Tab N done").
       Leave the interactive branch's bare "Tab N" and the lifecycle branch's "Tab N STATUS"
       vocabulary byte-identical.
-- [ ] Update the file's own header comment block to document the third mode, the cooldown, the two
+- [x] Update the file's own header comment block to document the third mode, the cooldown, the two
       new environment variables, and the stamp location.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-tts-notify.sh` following the house
+- [x] Create `agent-system/extensions/core/scripts/tests/test-tts-notify.sh` following the house
       convention in `context/standards/shell-script-testing.md`: `set -uo pipefail`, `source
       lib/common.sh`, a loud-skip `REQUIRED_SCRIPTS` existence check, `PASSED`/`FAILED` counters,
       `mktemp -d` workdir with an `EXIT` trap, and content-based assertions. Cases: (a) `--stop`
@@ -200,7 +200,7 @@ This is the load-bearing change every later phase depends on.
       invocations separated by more than `TTS_COOLDOWN` produce two fires; (e) `TTS_ENABLED=0`
       produces zero fires in all three modes; (f) two distinct `WEZTERM_PANE` values do not
       suppress each other.
-- [ ] Drive the cooldown cases by setting `TTS_COOLDOWN` small and by pre-seeding the stamp file
+- [x] Drive the cooldown cases by setting `TTS_COOLDOWN` small and by pre-seeding the stamp file
       with a chosen `date +%s` offset, rather than by sleeping — the window's semantics are what
       is under test, not wall-clock duration.
 
