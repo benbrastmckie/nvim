@@ -107,7 +107,7 @@ next_project_number: 654
 
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+610 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 651 [NOT STARTED] — Make the orchestration, not the task, the unit that closes on...
   └─ 653 [NOT STARTED] — Give the gate mutex a host-scoped form, because every lock...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
@@ -1161,10 +1161,11 @@ ACCEPTANCE.
 ---
 
 ### 610. Full gate verification ceiling and stall
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 476, Task 607
+- **Research**: [610_full_gate_verification_ceiling_and_stall/reports/01_gate-verification-ceiling-and-stall.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

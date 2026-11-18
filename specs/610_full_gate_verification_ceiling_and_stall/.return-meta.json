@@ -1,0 +1,42 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/610_full_gate_verification_ceiling_and_stall/reports/01_gate-verification-ceiling-and-stall.md",
+      "summary": "Research on gate-8 timing ceiling, gate-lock fail-open posture, load-adaptive gate bounds, advisory-vs-mechanical batch gate deferral, and the orchestrator's unbounded wait on its own dispatched agents."
+    }
+  ],
+  "dispatch_seq": 18,
+  "next_steps": "Run /orchestrate 610 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1795039913_ab1940_610",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 5
+  },
+  "memory_candidates": [
+    {
+      "content": "verify-deploy.sh's gate8_run() already implements a load-aware contention-tagging mechanism (GATE8_CONTENTION_DETECTED), triggered by either the .gate-lock acquire wait time (>= 10% of GATE_MUTEX_ACQUIRE_BUDGET_MS, i.e. >=60s of the 600s default) or the entry 1-minute loadavg (>= 2.0, GATE8_CONTENTION_LOAD_THRESHOLD, matching measure-gate-costs.sh's own MEASURE_GATE_COSTS_LOAD_THRESHOLD default). It only annotates Gate 8's own finding as WARN-FINDING [CONTENTION] rather than adjusting the timeout bound, and no other gate in gate-registry.data has an equivalent -- this is the precedent shape to extend rather than inventing a new load-adaptive mechanism for the other 29 gates' fixed 30-180s timeouts.",
+      "category": "PATTERN",
+      "source_artifact": "specs/610_full_gate_verification_ceiling_and_stall/reports/01_gate-verification-ceiling-and-stall.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["gate8", "contention", "load-adaptive", "verify-deploy", "timeout"]
+    },
+    {
+      "content": "measure-gate-costs.sh is the existing, checked-in, load-gated (default threshold 2.0 on the 1-minute loadavg), per-run-contamination-detecting, overwrite-protected averaging harness for per-gate/per-suite wall-clock baselines (writes scripts/gate-cost-model.csv and, via --regen-hints, scripts/tests/suite-cost-hints.txt). Any future need to re-measure a gate or the full battery's wall-clock should reuse this script rather than building a new ad hoc timing harness; it already refuses (exit 2) to record a measurement taken above the load threshold.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/610_full_gate_verification_ceiling_and_stall/reports/01_gate-verification-ceiling-and-stall.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["measure-gate-costs", "baseline", "load-guard", "benchmarking", "suite-cost-hints"]
+    },
+    {
+      "content": "skill-orchestrate's Move 2 issues every dispatch[]/aux_dispatch[] row's Agent call in ONE message, and Move 3 (postflight, which is also where stall_suspected is computed from orchestrate-cycle-postflight.sh's JSON) runs only 'after ALL Agent calls from Move 2 complete' per SKILL.md's own text. This means stall detection is structurally wired downstream of the exact event (a dispatch returning) it needs to detect the absence of -- a silent sibling dispatch blocks postflight for every task in the wave, not just its own, and no per-dispatch timeout exists anywhere in this path today. Fixing it requires confirming whether the orchestrator's own top-level session (not a dispatched subagent, whose own Agent tool explicitly lacks run_in_background) has a background/async Agent-dispatch capability it could poll instead.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/610_full_gate_verification_ceiling_and_stall/reports/01_gate-verification-ceiling-and-stall.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["orchestrate", "stall_suspected", "Move 2", "Move 3", "background dispatch"]
+    }
+  ]
+}
