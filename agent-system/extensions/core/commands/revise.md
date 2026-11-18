@@ -11,6 +11,28 @@ Create a new version of an implementation plan, or update task description if no
 
 **Artifact Numbering Note**: Plan revision creates a new plan file within the same artifact round. The revised plan uses the SAME artifact number (not incremented) because it replaces the previous plan in the same round. Only a research-phase dispatch — or a forced `/orchestrate --plan`/`--implement` dispatch that skips research — advances the artifact number to start a new round; an unforced plan or implement dispatch shares the round its preceding research already opened.
 
+## Agent Availability
+
+`/revise` is a user-facing slash command: it is reachable only from a literal user/session
+slash-command parse. The documented command->skill->agent flow
+(`docs/guides/creating-commands.md`) is strictly unidirectional — no tool lets a dispatched
+subagent execute a slash command — so this unavailability is structural and independent of any
+frontmatter `tools:`/`disallowedTools:` configuration a given agent carries.
+
+Dispatching `skill-reviser` directly via the Skill tool is **not** the substitute for a
+dispatched agent, because doing so bypasses this command's own CHECKPOINT 1 (task-lock
+acquisition via `task-lock.sh acquire-retry`, plus the cross-task `file_scope` overlap check)
+and CHECKPOINT 3 (which owns `.return-meta.json`'s deletion for the Description Update path —
+`skill_cleanup` does not delete it at the skill's own Stage 9). A bare direct skill dispatch
+therefore leaves a stale `.return-meta.json` sidecar in the target task's directory and carries
+no lock protection against a concurrent sibling dispatch touching the same target task.
+
+A dispatched agent that needs another task's description updated should instead follow the
+sanctioned mechanical route already named in `skills/skill-reviser/SKILL.md`'s Stage 7, under
+the "For Description Update" heading — that block calls `state-write.sh`, the single
+mutex-guarded `specs/state.json` writer, whose mutex is internal to the script and therefore
+safe to call without the command-level task lock above.
+
 ## Arguments
 
 - `$1` - Task number (required)

@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Agent-Availability Note on commands/revise.md",
+  "started_at": "2026-11-17T23:40:00Z",
+  "last_updated": "2026-11-17T23:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read commands/revise.md in full before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add ## Agent Availability section after header block, before ## Arguments, stating mechanisms (i) and (ii) with reasons and pointer to Stage 7", "status": "done", "files_touched": ["agent-system/extensions/core/commands/revise.md"]},
+    {"id": 3, "description": "Verify diff scope, grep checks, and run verify-deploy.sh --skip-slow --only-gate 3,4", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

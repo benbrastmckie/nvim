@@ -1,7 +1,7 @@
 # Implementation Plan: Task #503
 
 - **Task**: 503 - MIGRATED FROM BimodalLogic 2026-11-05: `/revise` unavailable to a dispatched agent, undocumented at point of use
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/503_revise_unavailable_to_dispatched_agent/reports/01_revise-unavailable-dispatched-agent.md
@@ -151,40 +151,42 @@ Phases within the same wave can execute in parallel. Phases 1 and 2 touch disjoi
 share no edit surface; their mutual pointers are deterministic (each names the other file by
 path, plus a stable heading), so neither needs the other's text in hand.
 
-### Phase 1: Agent-Availability Note on `commands/revise.md` [NOT STARTED]
+### Phase 1: Agent-Availability Note on `commands/revise.md` [COMPLETED]
 
 **Goal**: A dispatched agent reading `commands/revise.md` learns, before CHECKPOINT 1, that
 `/revise` is unreachable from a dispatch, why a direct `skill-reviser` dispatch is not the
 substitute, and exactly where the sanctioned description-update route lives.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/commands/revise.md` in full immediately before
-      editing (sibling dispatches are live on this same tree this cycle).
-- [ ] Add a new `## Agent Availability` section placed after the `# /revise Command` heading
+- [x] Re-read `agent-system/extensions/core/commands/revise.md` in full immediately before
+      editing (sibling dispatches are live on this same tree this cycle). *(completed)*
+- [x] Add a new `## Agent Availability` section placed after the `# /revise Command` heading
       block and before `## Arguments` (so a reader meets it before the Execution checkpoints),
       modeled in spirit on `commands/tag.md`'s "Agent Restrictions" section but with this
       record's own content — NOT a copy of `tag.md`'s user-only wording, which does not apply.
-- [ ] State mechanism (i): `/revise` is a user-facing slash command, reachable only from a
+      *(completed)*
+- [x] State mechanism (i): `/revise` is a user-facing slash command, reachable only from a
       literal user/session slash-command parse. The documented command->skill->agent flow
       (`docs/guides/creating-commands.md`) is strictly unidirectional — no tool lets a dispatched
       subagent execute a slash command — so this is structural and independent of any
-      frontmatter `tools:`/`disallowedTools:` configuration.
-- [ ] State mechanism (ii) with its reasons, not as a bare prohibition: dispatching
+      frontmatter `tools:`/`disallowedTools:` configuration. *(completed)*
+- [x] State mechanism (ii) with its reasons, not as a bare prohibition: dispatching
       `skill-reviser` directly via the Skill tool is NOT the substitute, because it bypasses this
       command's own CHECKPOINT 1 (task-lock acquisition via `task-lock.sh acquire-retry`, plus
       the cross-task `file_scope` overlap check) and CHECKPOINT 3 (which owns
       `.return-meta.json`'s deletion — `skill_cleanup` does not delete it at the skill's Stage
       9), leaving a stale sidecar in the target task's directory and no lock protection against a
-      concurrent sibling dispatch touching the same target task.
-- [ ] Name the sanctioned route as a POINTER, not a second copy: the "For Description Update"
+      concurrent sibling dispatch touching the same target task. *(completed)*
+- [x] Name the sanctioned route as a POINTER, not a second copy: the "For Description Update"
       block in Stage 7 of `skills/skill-reviser/SKILL.md`, which calls `state-write.sh` — the
       single mutex-guarded `specs/state.json` writer, whose mutex is internal to the script and
-      therefore safe without the command-level task lock.
-- [ ] Write no `task N`-shaped citation anywhere in the new text (the write-time hook
+      therefore safe without the command-level task lock. *(completed)*
+- [x] Write no `task N`-shaped citation anywhere in the new text (the write-time hook
       `hooks/validate-no-task-references.sh` blocks it); cite durable anchors only — file paths,
-      stage numbers, section headings.
-- [ ] Stage and commit by explicit single-path pathspec:
+      stage numbers, section headings. *(completed)*
+- [x] Stage and commit by explicit single-path pathspec:
       `git add -- agent-system/extensions/core/commands/revise.md`. Never a directory or glob.
+      *(completed)*
 
 **Timing**: 0.4 hours
 
