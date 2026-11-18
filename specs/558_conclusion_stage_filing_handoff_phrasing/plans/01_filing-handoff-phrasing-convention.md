@@ -288,25 +288,36 @@ plus the `prose` row's diff read-through — no sentinel is claimed.
 
 ---
 
-### Phase 3: Redeploy and verify the full gate set [NOT STARTED]
+### Phase 3: Redeploy and verify the full gate set [COMPLETED]
 
 **Goal**: Both edits are present in the deployed `.claude/` tree, the `core` staleness the
 dispatch reported is cleared, and the complete gate set is green.
 
 **Tasks**:
 
-- [ ] Confirm Phases 1 and 2 are committed (each as its own scoped commit, explicit file list,
-      never a directory or glob pathspec).
-- [ ] Run the deploy with a bounded wait:
+- [x] Confirm Phases 1 and 2 are committed (each as its own scoped commit, explicit file list,
+      never a directory or glob pathspec). *(completed: phase 1 commit a43b8f74e, phase 2 commit
+      5d23cfccd plus scoped follow-up commit 473667611 for the dropped
+      agent-system/extensions/core/index-entries.json path)*
+- [x] Run the deploy with a bounded wait:
       `timeout 540 bash .claude/scripts/deploy-headless.sh`, invoked with the Bash tool's
       `timeout` parameter raised to 600000 per `context/patterns/external-process-wait.md`
-      Rule 1.
-- [ ] Confirm the deploy reports `RESULT=landed_verify_clean`. Any other RESULT is a phase
-      failure: stop, report it, and do not proceed to attest the gate set.
-- [ ] Confirm both edits are present in the deployed mirror at
+      Rule 1. *(completed)*
+- [x] Confirm the deploy reports `RESULT=landed_verify_clean`. Any other RESULT is a phase
+      failure: stop, report it, and do not proceed to attest the gate set. *(completed:
+      RESULT=landed_verify_clean, 41 checks, 0 failures)*
+- [x] Confirm both edits are present in the deployed mirror at
       `.claude/docs/reference/standards/multi-task-creation-standard.md` and
-      `.claude/context/contracts/conclusion-stage.md`.
-- [ ] Run the complete gate set and observe it green in this dispatch.
+      `.claude/context/contracts/conclusion-stage.md`. *(completed: both headings/pointer
+      confirmed present via grep)*
+- [x] Run the complete gate set and observe it green in this dispatch. *(deviation: altered —
+      this dispatch carries a Batch Gate Deferral directive for this phase's declared `full`
+      tier; discharged against the scoped narrowing invocation
+      `verify-deploy.sh --only-gate 3,4 --skip-unchanged` (both PASS, post-deploy) plus the
+      `deploy-headless.sh` run's own internal `verify-deploy.sh --skip-slow` pass (41 checks, 0
+      failures) rather than an additional independent unflagged full sweep; the complete gate
+      set for the whole batch runs once at the end of this /orchestrate invocation per the
+      directive)*
 
 **Timing**: 0.5 hours
 
@@ -336,20 +347,25 @@ dispatch reported is cleared, and the complete gate set is green.
 
 ## Testing & Validation
 
-- [ ] The convention appears exactly once as a definition: a repo-wide grep for the new
+- [x] The convention appears exactly once as a definition: a repo-wide grep for the new
       heading's distinctive wording finds the statement in
       `multi-task-creation-standard.md` and a pointer in `conclusion-stage.md`, and no third
-      restatement.
-- [ ] The statement names the forbidden shape, the required shape, and both WHY citations by
-      path.
-- [ ] No new packet format is specified; the required shape cites
-      `context/formats/issue-log.md`'s `suggested_channel` field.
-- [ ] No edit touched Component 7's Foreground Requirement text, any confirmation gate, the
+      restatement. *(completed: confirmed in both source-store files and their deployed mirror,
+      no other hit)*
+- [x] The statement names the forbidden shape, the required shape, and both WHY citations by
+      path. *(completed)*
+- [x] No new packet format is specified; the required shape cites
+      `context/formats/issue-log.md`'s `suggested_channel` field. *(completed)*
+- [x] No edit touched Component 7's Foreground Requirement text, any confirmation gate, the
       conclusion stage's channel routing / filter predicate / exactly-one-channel rule, or the
-      skeleton-plan follow-up mechanism.
-- [ ] New prose carries no task numbers, no `iss_*` ids, and no record-versioning language
-      (gate 4 plus diff read-through).
-- [ ] Deploy reports `RESULT=landed_verify_clean` and the full gate set is green.
+      skeleton-plan follow-up mechanism. *(completed)*
+- [x] New prose carries no task numbers, no `iss_*` ids, and no record-versioning language
+      (gate 4 plus diff read-through). *(completed: gate 4 passed; diff read-through found no
+      violations)*
+- [x] Deploy reports `RESULT=landed_verify_clean` and the full gate set is green. *(completed:
+      RESULT=landed_verify_clean; full gate set deferred to the batch stage per this dispatch's
+      Batch Gate Deferral directive, discharged here against the scoped narrowing invocation —
+      see Phase 3's task-list annotation)*
 
 ## Artifacts & Outputs
 
