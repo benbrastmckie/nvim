@@ -1,7 +1,244 @@
 {
   "version": "1.1.0",
-  "next_project_number": 646,
+  "next_project_number": 647,
   "active_projects": [
+    {
+      "project_number": 646,
+      "project_name": "return_meta_terminal_status_vocabulary",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description and elsewhere in specs/**.\n\nGOAL. Decide, once and for the whole corpus, how `.return-meta.json`'s status vocabulary accommodates terminal statuses that are legitimate outcomes but are not lifecycle-phase names -- then implement that decision. Today four such values are emitted by instruction surfaces across five extensions, and every one of them is rejected by the validator that is supposed to govern them.\n\nTHE DEFECT, MEASURED. `scripts/lib/return-meta-status-vocabulary.sh` defines:\n  RETURN_META_STATUS_VALUES=(in_progress researched planned implemented needs_research partial failed blocked)\n`scripts/validate-return-meta.sh` fails any `.return-meta.json` whose status is outside that list. But these instruction surfaces REQUIRE values outside it:\n  \"description_updated\" -- core: agents/reviser-agent.md, skills/skill-reviser/SKILL.md (the latter at its \"For Description Update\" postflight branch)\n  \"converted\"           -- filetypes: agents/document-agent.md, agents/filetypes-spreadsheet-agent.md, agents/presentation-agent.md, skills/skill-filetypes/SKILL.md, skills/skill-filetypes-spreadsheet/SKILL.md, skills/skill-presentation/SKILL.md\n  \"consulted\"           -- founder: agents/legal-analysis-agent.md\n  \"assembled\"           -- present: agents/pptx-assembly-agent.md, agents/slidev-assembly-agent.md, skills/skill-grant/SKILL.md\nConsequence: every one of those paths writes a metadata file its own validator refuses. Confirmed live on the `description_updated` path -- a `/revise` run against a task with no plan produced exactly this, and the update had to be applied from the metadata file by hand because the validator would not pass it.\n\nTHIS IS A KNOWN, ALREADY-DEFERRED QUESTION. `return-meta-status-vocabulary.sh`'s own header carries a deferred follow-up, recorded against `orchestrate-recover-outcome.sh`'s success arm, asking \"whether it should widen to admit intentional extension-local terminal vocabularies (consulted, converted, assembled)\". That note names three of the four values above. `description_updated` is the fourth instance of the same question and the one with a confirmed live failure behind it. Do not re-litigate whether the question is real -- it is recorded in the source. Decide it.\n\nTHE DECISION TO MAKE. Choose ONE and record the rationale in the plan; do not implement a blend without saying why:\n  (a) Widen RETURN_META_STATUS_VALUES to admit the four values as first-class members.\n  (b) Add a declared extension-local terminal-status mechanism, so an extension registers its own\n      terminal vocabulary and the validator consults the union. More machinery; keeps the core\n      enum small and makes each addition deliberate.\n  (c) Have the emitting surfaces use an existing enum member and carry the specific outcome in a\n      separate metadata field. No vocabulary change; costs the status field its expressiveness and\n      requires editing 12+ instruction surfaces.\nWeigh at minimum: whether any consumer BRANCHES on these status values (not merely validates them); whether RETURN_META_SUCCESS_STATUSES, a deliberate 3-value subset documented in the same file, must widen in step; and whether a terminal status outside the lifecycle set can break a postflight path that maps status to a task-level status token.\n\nDO NOT narrow the blast radius by fixing only `description_updated`. A per-caller patch is what produced four instances of one question. The decision must cover all four, and the implementation must leave the system in a state where a fifth such value has a defined, documented route rather than a precedent to copy.\n\nSCOPE BOUNDARY. `completed` stays forbidden. It is deliberately excluded with its own\nRETURN_META_FORBIDDEN_STATUS constant and a recorded reason (it triggers Claude stop behavior), and it is a member of the UNRELATED task-level `scripts/lib/status-vocabulary.sh` enum. Nothing here loosens that; if anything the chosen mechanism should make the distinction between the two vocabularies harder to confuse, since the file's own header already warns about the trap.\n\nACCEPTANCE CRITERIA:\n1. `validate-return-meta.sh` accepts a `.return-meta.json` carrying each of the four values, via whichever mechanism the decision selects, and still rejects `completed` and an unknown garbage value.\n2. A test covers each of the four values plus both rejection cases; the suite is registered in `scripts/tests/suite-classification.data` with the correct unit/integration class.\n3. Every emitting surface named above is consistent with the decision -- either unchanged because the vocabulary widened, or edited because option (c) was chosen. No surface is left requiring a value the validator refuses.\n4. A `/revise` run against a task with no plan completes without the validator refusing its metadata, demonstrated end to end.\n5. The deferred follow-up note in `return-meta-status-vocabulary.sh` is resolved in place -- replaced by a statement of what was decided and the route a future value takes, not left as an open question beside the now-implemented answer.\n6. `deploy-headless.sh` reports RESULT=landed_verify_clean and `verify-deploy.sh` reports no new findings.",
+      "topic": "core-agent-system",
+      "file_scope": [
+        "agent-system/extensions/core/scripts/lib/return-meta-status-vocabulary.sh",
+        "agent-system/extensions/core/scripts/validate-return-meta.sh",
+        "agent-system/extensions/core/context/formats/return-metadata-file.md",
+        "agent-system/extensions/core/skills/skill-reviser/SKILL.md",
+        "agent-system/extensions/core/agents/reviser-agent.md",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data"
+      ],
+      "created": "2026-11-18T17:31:38Z",
+      "last_updated": "2026-11-18T17:31:38Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "return_meta_terminal_status_vocabulary",
+          "project_number": null,
+          "title": "Decide and implement the return-meta terminal-status vocabulary for non-lifecycle outcomes"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 60,
+          "duplicate-of-open": 36,
+          "scope-blind": 42
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 630,
+            "project_name": "known_failures_rows_for_two_red_suites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44537815126050423
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 631,
+            "project_name": "gate29_typescript_test_fixed_depth_walk",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4519230769230769
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.4150326797385621
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 610,
+            "project_name": "full_gate_verification_ceiling_and_stall",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40522875816993464
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.545751633986928
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4542483660130719
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4117647058823529
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5130718954248366
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.48366013071895425
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41830065359477125
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.46078431372549017
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4934640522875817
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 477,
+            "project_name": "normalize_issue_log_class_vocabulary",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40522875816993464
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4542483660130719
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45751633986928103
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4542483660130719
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4411764705882353
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 516,
+            "project_name": "lean_compliance_check_end_state_goal_polarity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40522875816993464
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 517,
+            "project_name": "stage_regenerated_derived_files_in_phase_commits",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49673202614379086
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 523,
+            "project_name": "gate27_missing_declaration_call_site_counting",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4084967320261438
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43137254901960786
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 533,
+            "project_name": "lake_build_guard_stale_replay_env_lean_file",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4150326797385621
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5718954248366013
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49673202614379086
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 42
+      }
+    },
     {
       "project_number": 645,
       "project_name": "repair_seven_failing_gate8_suites",

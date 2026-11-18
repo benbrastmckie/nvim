@@ -1,5 +1,5 @@
 ---
-next_project_number: 646
+next_project_number: 647
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 646
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640,645 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640,645,646 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,523,533,540,541,544,546,550,552,553,570,576,579,583,592,593,598,605,609,610,630 | 383,390,398,410,431,438,451,453,455,463,472,477,504,511,519,535,539,542,548,549,563,564,577,586,599,607,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,480,486,492,509,513,561,566,571,594 | 439,452,479,484,491,518,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,581,588,595,641 | 454,472,486,492,509,539,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
@@ -51,6 +51,7 @@ next_project_number: 646
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — GOAL. Determine what leaves files behind in this repository's...
+646 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/...
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
@@ -177,6 +178,52 @@ next_project_number: 646
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 646. Return meta terminal status vocabulary
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description and elsewhere in specs/**.
+
+GOAL. Decide, once and for the whole corpus, how `.return-meta.json`'s status vocabulary accommodates terminal statuses that are legitimate outcomes but are not lifecycle-phase names -- then implement that decision. Today four such values are emitted by instruction surfaces across five extensions, and every one of them is rejected by the validator that is supposed to govern them.
+
+THE DEFECT, MEASURED. `scripts/lib/return-meta-status-vocabulary.sh` defines:
+  RETURN_META_STATUS_VALUES=(in_progress researched planned implemented needs_research partial failed blocked)
+`scripts/validate-return-meta.sh` fails any `.return-meta.json` whose status is outside that list. But these instruction surfaces REQUIRE values outside it:
+  "description_updated" -- core: agents/reviser-agent.md, skills/skill-reviser/SKILL.md (the latter at its "For Description Update" postflight branch)
+  "converted"           -- filetypes: agents/document-agent.md, agents/filetypes-spreadsheet-agent.md, agents/presentation-agent.md, skills/skill-filetypes/SKILL.md, skills/skill-filetypes-spreadsheet/SKILL.md, skills/skill-presentation/SKILL.md
+  "consulted"           -- founder: agents/legal-analysis-agent.md
+  "assembled"           -- present: agents/pptx-assembly-agent.md, agents/slidev-assembly-agent.md, skills/skill-grant/SKILL.md
+Consequence: every one of those paths writes a metadata file its own validator refuses. Confirmed live on the `description_updated` path -- a `/revise` run against a task with no plan produced exactly this, and the update had to be applied from the metadata file by hand because the validator would not pass it.
+
+THIS IS A KNOWN, ALREADY-DEFERRED QUESTION. `return-meta-status-vocabulary.sh`'s own header carries a deferred follow-up, recorded against `orchestrate-recover-outcome.sh`'s success arm, asking "whether it should widen to admit intentional extension-local terminal vocabularies (consulted, converted, assembled)". That note names three of the four values above. `description_updated` is the fourth instance of the same question and the one with a confirmed live failure behind it. Do not re-litigate whether the question is real -- it is recorded in the source. Decide it.
+
+THE DECISION TO MAKE. Choose ONE and record the rationale in the plan; do not implement a blend without saying why:
+  (a) Widen RETURN_META_STATUS_VALUES to admit the four values as first-class members.
+  (b) Add a declared extension-local terminal-status mechanism, so an extension registers its own
+      terminal vocabulary and the validator consults the union. More machinery; keeps the core
+      enum small and makes each addition deliberate.
+  (c) Have the emitting surfaces use an existing enum member and carry the specific outcome in a
+      separate metadata field. No vocabulary change; costs the status field its expressiveness and
+      requires editing 12+ instruction surfaces.
+Weigh at minimum: whether any consumer BRANCHES on these status values (not merely validates them); whether RETURN_META_SUCCESS_STATUSES, a deliberate 3-value subset documented in the same file, must widen in step; and whether a terminal status outside the lifecycle set can break a postflight path that maps status to a task-level status token.
+
+DO NOT narrow the blast radius by fixing only `description_updated`. A per-caller patch is what produced four instances of one question. The decision must cover all four, and the implementation must leave the system in a state where a fifth such value has a defined, documented route rather than a precedent to copy.
+
+SCOPE BOUNDARY. `completed` stays forbidden. It is deliberately excluded with its own
+RETURN_META_FORBIDDEN_STATUS constant and a recorded reason (it triggers Claude stop behavior), and it is a member of the UNRELATED task-level `scripts/lib/status-vocabulary.sh` enum. Nothing here loosens that; if anything the chosen mechanism should make the distinction between the two vocabularies harder to confuse, since the file's own header already warns about the trap.
+
+ACCEPTANCE CRITERIA:
+1. `validate-return-meta.sh` accepts a `.return-meta.json` carrying each of the four values, via whichever mechanism the decision selects, and still rejects `completed` and an unknown garbage value.
+2. A test covers each of the four values plus both rejection cases; the suite is registered in `scripts/tests/suite-classification.data` with the correct unit/integration class.
+3. Every emitting surface named above is consistent with the decision -- either unchanged because the vocabulary widened, or edited because option (c) was chosen. No surface is left requiring a value the validator refuses.
+4. A `/revise` run against a task with no plan completes without the validator refusing its metadata, demonstrated end to end.
+5. The deferred follow-up note in `return-meta-status-vocabulary.sh` is resolved in place -- replaced by a statement of what was decided and the route a future value takes, not left as an open question beside the now-implemented answer.
+6. `deploy-headless.sh` reports RESULT=landed_verify_clean and `verify-deploy.sh` reports no new findings.
+
+---
 
 ### 645. Repair seven failing gate8 suites
 - **Status**: [NOT STARTED]
