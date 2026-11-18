@@ -100,555 +100,541 @@ before it is cited (standing rule 5).
 
 ## Next
 
-Priority is **fan-out**: how many other open records a record transitively gates. It is not
-urgency or effort, it changes with every edge and closure, and it is re-derived, never remembered
-(standing rule 10). Re-derive with `generate-task-order.sh --print`.
+**The order of this list is set by instruction, not by fan-out.** An operator asked that the most essential work for agent-system health, functionality and speed lead it, and the batches were re-ordered against exactly three questions, applied in this order: does the system still make progress at all; does one dispatch hand the next the truth; and what does a run cost. Fan-out -- how many open records a record transitively gates -- is recorded below because it is cheap to re-derive, but it did not choose this order and must not be read as if it had. Re-derive with `generate-task-order.sh --print`.
 
-**The head of this list is set by instruction, not by fan-out.** An operator asked for `543`,
-`547` and `638` to be prioritized, and the three lead it as one run together with `534` --
-`543`'s own still-open predecessor, admitted as an ordering constraint rather than cut. A fourth
-number in that request, `34`, resolves to no open record (in the vault it was a completed
-statusline record), so nothing was substituted for it. A multi-task run is still live as this is
-written -- started 2026-11-16 07:50, with `476`, `586`, `572` and `607` still open in it and
-`505`, `568`, `584` and `585` landed -- so every batch it touches keeps its membership and its
-relative order; this pass re-measured their prose and nothing else.
+**The ranking rule, stated so it can be argued with.** A batch ranks higher when its members decide whether work happens (a write path that refuses, a lock that never reaps, a guard that never converges), or whether a verdict can be trusted (a gate reporting a red nobody can attribute, a validator refusing conforming input, a detection charged to the wrong task). It ranks lower when its members improve what a future plan or document says without unblocking anything currently stuck. Cost sits immediately below verdict-truth rather than at the head: an optimisation measured against a red gate set is measured against noise, so batch four waits on batch one by construction.
 
-Re-derived 2026-11-16 over the 135 open records. **The backlog is broad and shallow**: depth is
-5 waves, the waves run 78 / 36 / 13 / 6 / 2, and **78 of 135 records have no open predecessor**.
-The widest gate is still `599` at 5 direct dependents (592-596, all batched behind it in one
-run); then `476`, `479` and `543` at 4, and `451`, `472`, `484` and `539` at 3. **Fan-out does
-not discriminate between candidates, so it does not choose the order**; what moved the list this
-pass was an unbatched cluster, not a gate.
+Re-derived 2026-11-18 over the 122 open records. **The backlog is broad and shallow**: depth is 5 waves, the waves run 69 / 34 / 10 / 6 / 3, and **69 of 122 records have no open predecessor**. The widest gates are `479` and `599` at 3 direct open dependents each, then `431`, `451`, `452`, `472`, `484`, `539`, `548`, `593` and `597`-rooted chains at 2. **Fan-out does not discriminate between candidates at this shape, so it cannot choose the order** -- with more than half the backlog immediately ready, the binding question is which ready work matters, which is a judgment and not a measurement.
 
-**The verification substrate is now three runs, all batched.** The Gate 8 roster run
-(`476` and the records behind it) owns what the suites report. A five-record sweep below it owns
-the single, already-diagnosed findings one full battery filed together. A new pair below that
-(`607`, `610`) owns what a full battery costs under concurrent load, alongside `572` in the
-`verify-deploy.sh` lane near the head. `test-orchestrate-cycle-postflight.sh` remains the most
-contended single path in the backlog at ten open claimants (re-measured 2026-11-16), five of
-them batched: `624` and `476` in the Gate 8 run, `534` and `543` in the prioritized head, `609`
-in its tail.
+**The verification substrate is the head of the list for the first time.** Batch one is the whole of the currently-known red surface: the one substantive defect left of seven Gate 8 findings a full battery filed, the three standing findings blocking `RESULT=landed_verify_clean`, the two-engine defect that makes one suite red by design plus the roster rows for it, and the single repo-wide violation each of gates 4 and 29 report. Until that lands, every batch below it dispatches against a gate verdict an operator has a rational incentive to ignore. Batch four then owns what the battery costs -- the orchestrator eager-load ceiling, per-gate timeout sensitivity at two widths, and the first standing consumer the suite/gate cost probes have ever had.
 
-**The renderer is sound and all three of its callers are wired.** `## Next` and `## Open work`
-are rendered wholly from `state.json`'s `roadmap_batches` / `roadmap_notes` entries by
-`roadmap-integration.sh`, which makes no judgment calls. A batch naming only terminal members
-now drops out of the rendering entirely -- its `/orchestrate` line and its `Why this order:`
-bullet alike (measured this pass against the covering-suite sweep, whose only member `584` had
-landed) -- so retiring one by hand is tidiness, not correctness. That batch was retired this
-pass. `/todo` and `/review` reach `--regenerate` behind the shared preflight classifier, and
-`/orchestrate`'s conclusion stage has its own script, `orchestrate-conclusion-roadmap.sh`, which
-`skill-orchestrate` names and a dedicated suite covers.
+**The renderer is sound and all three of its callers are wired.** `## Next` and `## Open work` are rendered wholly from `state.json`'s `roadmap_batches` / `roadmap_notes` entries by `roadmap-integration.sh`, which makes no judgment calls. A batch naming only terminal members drops out of the rendering entirely -- its `/orchestrate` line and its `Why this order:` bullet alike -- so retiring one by hand is tidiness, not correctness. Three such batches were retired this pass (the prioritized handoff-defect head, the `verify-deploy.sh` honorable-full-tier lane, and the sapience per-repo activation run), every member of all three having landed. `/todo` and `/review` reach `--regenerate` behind the shared preflight classifier, and `/orchestrate`'s conclusion stage has its own script, `orchestrate-conclusion-roadmap.sh`, which `skill-orchestrate` names and a dedicated suite covers.
 
 ```
-/orchestrate 586, 605   # Gate 8's residual roster, its two lints and the defect recorder, serialized on one suite
-/orchestrate 577, 609   # The failure-accounting chain's tail, held behind the prioritized head both members depend on
-/orchestrate 629, 630, 631, 632, 633   # Five already-diagnosed findings one full battery filed: two gate hits, a roster gap, two defects
-/orchestrate 607, 610   # Per-gate timeout and gate 20 ceiling first, then the load-adaptive gate 8 and dispatch-stall fix
-/orchestrate 512   # whole-tree claimant: runs alone -- RE-MEASURE FIRST, Gate 24 passes
-/orchestrate 590   # RE-MEASURE FIRST: may already be satisfied in the source store; its declared lint path is wrong
-/orchestrate 580, 491, 479, 492   # the operator-facing selection surface
-/orchestrate 438, 581   # Pair 581 with its one unbatched predecessor so the shared renderer is reachable at all
-/orchestrate 398, 399, 451, 462, 504, 516, 463   # Close the lean extension's own strand: three short chains over its context and scripts
-/orchestrate 539, 540, 544   # Settle the pinned Challenge block's precedence rules, then the two records that quote them
+/orchestrate 645, 560, 629, 630, 631, 632, 633   # Make verify-deploy's verdict mean something again: the red suites, the roster, three single reds
+/orchestrate 475, 613, 514, 574   # Hard stops: task creation dies on a big verdict, a lock never reaps, a run never converges
+/orchestrate 556, 472, 646, 551, 519, 570, 577, 609   # What one dispatch hands the next: settle the handoff/return-meta shapes, fix failure accounting
+/orchestrate 607, 586, 605, 610   # Make a full verification affordable: eager-load ceiling, per-gate timeouts, suite cost verdicts
+/orchestrate 639, 477, 484, 486, 501, 508, 524   # Evidence integrity: stop losing issue entries, normalize classes, collapse scope-excursion rows
+/orchestrate 548, 567, 553, 598, 536, 535, 541   # Commit containment: stop phase commits dropping legitimate files and carrying foreign ones
+/orchestrate 545, 564, 579, 575   # Four false-failure signals in the artifact and ceiling validators, each costing a dispatch
+/orchestrate 599, 592, 520, 565, 518, 571   # Dispatch composition: gate narrowing, starting position, deploy order, prior art, stale seq
+/orchestrate 506, 542, 552, 561   # Bounded-waiter: unstrand the dispatches a blocked wait killed, and stop the hook self-refusing
+/orchestrate 521, 525, 510, 511, 523   # Enforcement that silently does not run: a half-matching glob, two dead fixtures, grep counts
+/orchestrate 431, 474, 439, 454, 641, 642   # Settle the duplication-exclusion record, then propagate the bounded-wait contract it gates
+/orchestrate 512, 590   # The dead-command-recommendation lint, both claimants together: builtin exemption and /ide reds
+/orchestrate 455, 502, 457, 517   # Declare the generated surfaces a dispatch stales, and stop repo content leaking to the store
+/orchestrate 618, 338   # Rule on what the system leaves behind: a per-class residue policy and the tracked/ignored split
+/orchestrate 438, 479, 491, 492, 559, 580, 581   # Task creation and the backlog/selection surfaces: landing targets, corroboration, one renderer
+/orchestrate 480, 513   # Two detectors over the landing-target contract: stranded research, a commit-less plan phase
+/orchestrate 563, 583   # Make the cross-repo extension registry usable for deploy enumeration, then surface defaults
+/orchestrate 451, 462, 452, 566, 509, 588   # Snapshot the Lean Challenge at plan time, then the baseline-relative and redeploy gate rules
+/orchestrate 504, 516, 398, 399, 463, 550, 537   # The Lean compliance checker and its context strand: harvest contract, trust surfaces, probes
 /orchestrate 549, 576   # The narrow unusedArguments remedy, then the gate-naming and replay-window record over it
-/orchestrate 599, 592, 593, 594, 595, 596   # Open the widest gate in the backlog and drain all five records it blocks, in one ordered run
+/orchestrate 539, 540, 544, 593, 594, 595, 596   # Settle the pinned Challenge block's authoring rules, then the five plan records quoting them
+/orchestrate 390, 481   # Migrate the mis-sited agent-system records, first the seven then the delta accumulated since
+/orchestrate 410, 533   # Close the lake-build-guard replay hole at both entry points it is reachable from
+/orchestrate 453, 546, 437   # Literature: the degraded-retrieval contract, the zero-result case, and the Zotero export
+/orchestrate 383, 384, 342   # The books extension's reconciliation surface; its corpus refactor stays held on an external pin
+/orchestrate 456, 421, 529, 530   # Four standalone rulings: /tag's version gate, the telemetry consumer, routing, cslib context
+/orchestrate 473, 522, 640, 557   # Documentation and standards conformance: boundary docs, skeletons, census method, one note
 ```
 
 Why this order:
-- - **The order is forced, not chosen.** `534` -> `543` -> `547` -> `638` is a single linear chain
-    already carried by `dependencies[]`, and every adjacent pair shares real territory:
-    `534`/`543` over `orchestrate-cycle-postflight.sh` and its suite, `543`/`547` over
-    `docs/architecture/orchestrate-state-machine.md`, `547`/`638` over `orchestrate-cycle-plan.sh`
-    and `test-orchestrate-cycle-plan.sh`. Array position is not what sequences this run; the graph
-    is.
+- - **This is the head because every other batch's gate stage reads it.** A batch that runs while
+    the gate set returns a red verdict nobody can attribute gets one of two outcomes: the gate
+    blocks work that did nothing wrong, or the operator learns to ignore the gate. Both destroy the
+    signal the rest of this list is ordered around, so restoring the verdict precedes everything.
 
-  - **`534` is here as an ordering constraint, not as a fourth priority.** The request named `543`,
-    `547` and `638`. `543` declares `534` as a predecessor and `534` is still open, so admitting
-    the three without it would mean dispatching `543` against an unmet dependency. It leads the run
-    rather than being cut from it.
+  - **The members are the whole of the currently-known red surface, measured.** `645` holds the one
+    substantive defect left of seven Gate 8 findings one full battery filed (six are recorded closed
+    in its own provenance section -- read that before spending a dispatch). `560` clears the three
+    standing findings that keep `deploy-headless.sh` from reaching `RESULT=landed_verify_clean` at
+    all. `629` fixes the two-engine allow-list drop that makes `test-deploy-propagation.sh`
+    expected-red BY DESIGN, and `630` writes the roster rows for that suite and
+    `test-gate-registry-resolution.sh` so `run-all.sh` stops calling an expected failure NEW --
+    that pair is already edged, `630` behind `629`. `631` and `632` each close the single
+    unexempted violation gate 29 and gate 4 report repo-wide. `633` deletes a 68KB duplicate deploy
+    ledger sitting inside the core source store whose contents disagree with the root ledger a
+    resolver is supposed to read.
 
-  - **What unites the four is the handoff, not the file.** Each is a defect in what `/orchestrate`
-    hands the NEXT dispatch: `534` writes a detail-free blocking issue entry on a partial, `543`
-    hands down an error count whose provenance the resumer is never told to distrust, `547` writes
-    the blocker-research aux carrier on instruction alone and admits an implement round for a task
-    owed a plan revision, and `638` scopes that admitted round to the first heading that merely
-    parses as open rather than to the first ENTERABLE phase. Fixing any one of them leaves the next
-    dispatch misinformed by the others.
+  - **`632` before `607` is deliberate and preserved from the prior ordering.** `632` makes
+    `orchestrator-context-budget.json`'s append-only derivation log stop re-breaking the
+    task-reference gate every time the ceiling moves; `607` (one batch below) moves that ceiling
+    again. Fixing the recurrence first means the move does not immediately re-open the gate.
 
-  - **`638` names this pairing itself.** Its own territory note, settled at creation, records that
-    `547` also writes `orchestrate-cycle-plan.sh`, that the two mechanisms differ (admission of an
-    implement round versus selection of a phase within an admitted one), and that they are good
-    batch-mates in that order. The edge was declared then; nothing new is asserted here.
+  - **The lane is free.** No member declares `__WHOLE_TREE__`, and the only cross-batch overlap is
+    `560`'s `lean-plan-compliance-check.sh` against the Lean compliance strand far below, resolved
+    by array position rather than an edge.
+- - **Each member is a measured way the system stops making progress, not a way it makes wrong
+    progress.** That is why they sit above every correctness batch below: a correctness fix lands
+    one dispatch at a time, and these three decide whether a dispatch happens at all.
 
-  - **The lane is free, and one declaration is worth noticing before probing.** None of the four
-    declares `__WHOLE_TREE__`, so the run contends only with itself and with whatever a
-    cross-session claimant holds. `638` declares `specs/TODO.md` and `specs/state.json` alongside
-    its four real targets, which collides it advisorily with the two migration records that declare
-    the same pair; no member of this run declares either, so nothing in-batch is affected.
+  - `475` is the sharpest: the audit-evidence gate passes the whole verdict as one `--argjson`,
+    bypassing the transparent spill `state-write.sh` already implements for caller-supplied values,
+    so a large verdict kills the write with `Argument list too long` and **no task can be created**.
+    The single writer for `specs/state.json` failing closed on size is a whole-system stop.
 
-  - **`638` renders detached from this chain in the wave table and is not detached from it.** Its
-    `topic` is `core-agent-system` while the other three are `agent-system`, and
-    `generate-task-order.sh` groups by topic before it indents by edge, so `638` prints as a root
-    under its own heading. The edge behind `547` is present, verified directly in `dependencies[]`.
-- - **`585` landed; the lane is now two records on one path, ordered by the graph.** `572` and
-    `591` both declare `agent-system/extensions/core/scripts/verify-deploy.sh`, and `591` carries a
-    direct edge on `572` (its edge on `585` is now satisfied). `572` is mid-research inside the
-    live multi-task run and `591` is researched, so the overlap fires only at implement -- an
-    admission probe run today returns 0 deferred for the pair and means nothing.
+  - `613` is an availability defect in the lock layer. `session_liveness()` confirms liveness with
+    `kill -0` on a pid that is `pid_source: ancestor-claude` -- the shared process -- so every
+    session ever registered from one claude process reads pid-alive forever, and
+    `cmd_acquire`'s stale-overlap escalation overrides the 30-minute heartbeat threshold that would
+    have recovered it. Observed live: an orphaned `/revise` lock blocked an `/orchestrate` task for
+    two full cycles.
 
-  - **The concurrent-load pair two batches below is a neighbour, not a member, and is not edged to
-    `572`.** `572` and `610` share `verify-deploy.sh` and `context/contracts/batch-gate-stage.md`
-    and both ask what a full battery should cost under concurrency, but `572`'s research report
-    deliberately scopes itself away from rebuilding the `.gate-lock` lease, which is exactly
-    `610`'s third research question. They divide the territory rather than sequencing it, so array
-    position resolves the overlap and the two runs never dispatch concurrently.
+  - `514` is the cost side of the same shape. The convergence guard counts `probed_dispatch`, not
+    the dispatch set actually emitted, so two byte-identically zero-dispatch cycles incremented
+    nothing and the run had to be stopped by operator judgment. Every such cycle is budget spent
+    for no work.
 
-  - **`verify-deploy.sh` has five open claimants** (re-measured 2026-11-16): `572` and `591` here,
-    `527` in the sapience batch directly below, and `607` and `610` in the concurrent-load pair.
-    Per the standing ruling, no clique is backfilled across that path.
+  - `574` is here because it is the documentation half of `514`'s subject and shares `task-lock.sh`
+    with `613`: the cycle-budget contract describes remaining budget without stating shared-pool
+    semantics, which is how an operator mis-reads what a stalled run has left.
 
-  - **Two further cross-batch overlaps, both advisory, both resolved by array position.** `591`
-    collides with `492` on `commands/errors.md`, and that run sits below. `572` is one of fifteen
-    claimants on `agent-system/extensions/core/context/formats/plan-format.md`, among them `504`
-    and `516` in the lean strand and five members of the `599` run, all below.
-- the sapience extension's per-repo activation surface, which converges on nothing today
+  - **No in-batch path overlap carries an unordered collision**: `475` is alone on
+    `state-write.sh`, `613` declares no territory at all (see the scope note in the trailing prose),
+    and `514`/`574` share only the state-machine document.
+- - **One surface, eight defects, and the surface is the handoff itself.** Six of the eight declare
+    `orchestrate-cycle-postflight.sh` and its suite -- still the most contended single path in the
+    backlog. Batching is the default here precisely because of that overlap, not in spite of it.
 
-  - **The strand has grown from two records to five, and it now has a close-out.** The previous
-    reading held `628` (five loaded repositories still grant eleven `mcp__sapience__*` tools where
-    the merge source grants seven read-shaped ones, because the merge engine is additive-only and
-    structurally cannot retract) and `627` (a `~/.claude.json` per-project registration for a
-    directory that no longer exists, which the registration hook cannot reap -- its project-root
-    detection needs a reachable `.claude-extensions.json`, finds none, emits `{}` and exits 0 before
-    the removal branch). Three more have been filed since: `635` (the postflight tagged write is
-    prose-only at the `[IMPLEMENTING]` -> `[COMPLETED]` transition and fires intermittently -- one
-    recent orchestration completed two tasks across 13 transcripts with no
-    `sapience-remember.sh --subject` invocation anywhere), `636` (machine-wide vendor hooks the
-    extension's own documentation asserts cannot exist, plus a transcript-capture opt-in list
-    unconnected to extension activation), and `637`, the researched close-out that measures the
-    whole surface and whose own seed audit found no tagged note written anywhere after Nov 13.
+  - **`556` leads and an edge was written for it.** `556` and `472` are the same incident
+    (`validate-handoff.sh` Check 7 indexing a string-shaped `blockers` element, jq exit 5 escaping
+    `set -euo pipefail` as an undocumented crash) filed twice, from opposite ends. `556` owns the
+    ruling -- three authorities disagree about the canonical `blockers` shape and it says in its own
+    text to settle that FIRST, because the ruling decides which side of the fix is the
+    non-conforming one. `472` then conforms the validator, the postflight attribution and the
+    authoring instructions to whatever `556` ruled. The two share three declared paths
+    (`validate-handoff.sh`, its suite, `orchestrator-handoff-schema.json`), so this is an order a
+    record states over real shared territory: **`472` is now declared behind `556`**.
 
-  - **`527` is in this batch as `628`'s enabling mechanism, not because its subject is sapience.**
-    Its topic is `core-agent-system` and its territory is core lint plus `verify-deploy.sh`. It is
-    here because it settles the same deployed-set-vs-merge-source convergence problem for hook
-    registrations that `628` has to settle for permission grants, and the edge `628` behind `527` is
-    already declared and is what actually orders them. Co-membership only keeps the blocker
-    SCHEDULED: leaving a ready blocker uncovered while batching its dependent is exactly what
-    strands a record indefinitely.
+  - **`646` is the same class on the other carrier.** `.return-meta.json`'s status vocabulary has
+    no room for terminal outcomes that are legitimate but are not lifecycle-phase names, and all
+    four such values emitted across five extensions are rejected by the validator meant to govern
+    them. A validator that refuses every legitimate value is indistinguishable, to a caller, from
+    one that found a real fault -- the identical failure mode `556` and `472` close on the handoff.
 
-  - **`637` closes the batch because the graph says so, and its edge set is its own, not inherited.**
-    It depends on `628`, `635` and `636`, which puts it in wave 3 and makes this batch drain in
-    three waves. It takes NO edge to `627`, and that is a measured decision rather than an omission:
-    `637`'s own description enumerates its overlaps as `635`, `636` and `628`, and `636` names `627`
-    explicitly as "related but distinct -- do not duplicate". The reaper is a sibling in cause, not
-    in sequence.
+  - **`551`, `519`, `570`, `577`, `609` are the failure-accounting half.** `551` closes a
+    stale-handoff detection that has fired across at least twelve distinct records (one of them ten
+    times) plus a detection that reached the user with no ledger entry behind it. `519` stops an
+    infrastructure transport death being charged as the task's own failure, and `570` -- already
+    edged behind it -- stops the stall signal counting commits it cannot attribute to the dispatch
+    under judgement. `577` makes a blocker-triggered aux revision consumable by triage, and `609`
+    (already edged behind `577`) stops a pending user question charging its own task into
+    `failed_tasks` and killing its dependents. A mis-charged failure propagates: it kills dependents
+    that were never broken, which is why this sits above the correctness batches rather than among
+    them.
 
-  - **Five of this batch's six members declare no territory at all, and for this batch that is a
-    live hazard rather than a hygiene note.** `627`, `628`, `635`, `636` and `637` were all created
-    through Create Task Mode, which sets no `file_scope`, so an admission probe over this batch
-    returns a clean result that means nothing. All five will edit
-    `agent-system/extensions/sapience/**`; `628` additionally edits the core merge engine where it
-    may well meet `527`, and `635` says outright that its call site may live under
-    `agent-system/extensions/core/**`. **Declare territory on all five before dispatching this
-    batch**, or the probe cannot tell you anything about the overlap it exists to find.
+  - **The remaining in-batch overlaps were deliberately left unedged.** Five members claim
+    `orchestrate-cycle-postflight.sh`; edging all ten unordered pairs would chain defects that are
+    genuinely independent, and co-membership is this list's ordering judgment, not graph evidence.
+    The admission gate's own `file_scope_collision` deferral serializes them within the batch
+    mechanically, and array position states the intended order.
+- - **This is the speed batch, and it is placed fourth rather than first for a reason.** Cost work
+    is measured against the gate set, so it has to run after the gate set returns an honest verdict
+    (batch one) -- otherwise an optimisation is judged against noise. It sits above every
+    correctness batch below because the cost it removes is charged to all of them.
 
-  - **`527` carries this batch's one visible contended path, and array position is what resolves
-    it.** `verify-deploy.sh` has seven open claimants; three are the lane directly above, which is
-    the reason this batch sits below it rather than at the head. Cross-batch overlap is advisory; no
-    edge is written across that boundary.
-- - **`568` landed in the live run, and `476` has committed its final phase but not its
-    postflight.** `git log` carries `task 476: complete implementation`, while `state.json` still
-    reads `implementing` and the live session still lists it. Until its postflight lands, `624`,
-    `586` and `605` stay blocked behind it; re-read its status before dispatching this run rather
-    than trusting either surface alone.
+  - `607` is already PLANNED and holds two measurements at once: gate 20's orchestrator eager-load
+    total over its baseline (`commands/orchestrate.md` plus `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md`), which is
+    context budget spent on every single dispatch, and the per-gate timeout sensitivity that makes
+    gate verdicts load-dependent. `610`, already edged behind it, asks the same per-gate-timeout
+    question at full-battery width and adds the dispatch-stall fix.
 
-  - **`624` is here because it declares the suite this batch is serialized on.** It declares
-    exactly `agent-system/extensions/core/scripts/system-defect-record.sh` and
-    `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`, and appending
-    assertions to a suite whose roster verdict `476` owns is sequenced by that verdict. Its edge
-    on `476` is direct, as the collision-scan exemption requires (direct-edge only, never
-    transitive).
+  - `586` is the standing consumer for the suite and gate wall-clock probes
+    (`measure-gate-costs.sh` -> `gate-cost-model.csv`, `agent-system/extensions/core/scripts/tests/suite-cost-hints.txt`), neither of
+    which has had anything acting on its output. Its remit is a verdict per suite -- delete,
+    optimize, or demote -- which is the only member here that reduces the battery's cost rather
+    than its variance. It is PARTIAL, so it resumes rather than starts. `605`, already edged behind
+    it, then stops the advisory roster carrying rows for suites that now pass.
 
-  - **Every declared overlap inside this batch is edged, re-verified 2026-11-16.** `476`/`624` on
-    the postflight suite; `476`/`586` on `scripts/tests/run-all.sh` and
-    `test-gate-cache-equivalence.sh`; `476`/`605` and `586`/`605` on `run-all.sh` and
-    `known-failures.txt`; `604`/`605` on `context/standards/shell-script-testing.md`. Nothing is
-    missing.
+  - **Batching these four is forced by territory and serializes to width one.** They share
+    `verify-deploy.sh`, `agent-system/extensions/core/scripts/tests/run-all.sh` and `agent-system/extensions/core/scripts/tests/known-failures.txt` three ways over, and both
+    `607` and `586` declare `__WHOLE_TREE__`, so the sentinel defer will run them one at a time
+    regardless. Shared territory is a reason to batch even at width one; splitting them would mean
+    two runs colliding on the same three files with no stated order between them.
 
-  - **`test-orchestrate-cycle-postflight.sh` has ten open claimants, and this batch deliberately
-    does not own all of it.** `624` and `476` are here; `534` and `543` lead the prioritized head and
-    `609` sits in its tail, and array position resolves both boundaries; `472`, `501`, `519`, `551`
-    and `570` are unbatched. Do NOT backfill a ten-way clique.
+  - **Cross-batch note**: `630` (batch one) and `607`/`586`/`605` all claim
+    `agent-system/extensions/core/scripts/tests/known-failures.txt`. That overlap is left to array position, since the two batches never
+    dispatch concurrently.
+- - **`639` leads because it is silent data loss in the evidence base everything downstream reads.**
+    `issue-record.sh` accepts `--session` and rejects `--session-id` through its catch-all arm, and
+    the script's own prescribed invocation form redirects both streams to `/dev/null`, so a mistyped
+    flag writes nothing and says nothing. An empty `issues.jsonl` is then indistinguishable from a
+    dispatch that genuinely had nothing to record -- and `/orchestrate`'s conclusion stage treats
+    that file as its entire evidence base. Every judgment this list makes about recurrence rests on
+    that store being complete.
 
-  - **`known-failures.txt` has five open claimants**: `476`, `586` and `605` here, `630` in the
-    sweep batch below, and `607` in the concurrent-load pair below that. Both outside claimants were
-    placed after this run so that `476`'s roster rewrite lands first.
+  - **`477` is the vocabulary the same store is written in**, and it shares
+    `context/formats/issue-log.md` with both `639` and `484`. Normalizing the class enum and
+    rejecting the aggregate's malformed repeated-flag call before anything else rewrites rows is the
+    cheap order.
 
-  - **`476`'s title overstates it.** The title still says seven suites; the roster last re-measured
-    2026-11-11 was five, with one since owned and landed by `568`. **Re-measure before sizing** --
-    that measurement was not re-run this pass.
+  - **`484` -> `486` -> `501`/`508` -> `524` is a chain the graph already carries, and it is the
+    scope-excursion half of the same concern.** `484` collapses per-path excursion rows into one
+    record per drop event, which is what makes the rows readable at all; `486` stops a required
+    extension `manifest.json` registration being dropped from a phase commit as an excursion;
+    `501` gives the cycle-postflight containment site predicate parity plus a guarded recovery route
+    for a dropped path; `508` rules on where shared extension metadata belongs in the allowlist and
+    narrows the repo-wide sync tools' writes; `524` rules on the staged-vs-working-tree divergence
+    signal and names the partial-stage trap. A dropped path is lost work, so this is functionality,
+    not hygiene.
 
-  - **Declaration hygiene inside this batch is clean.** Seven open records carry no `file_scope`
-    (`613`, `618`, `627`, `628`, `635`, `636`, `637`) and none is here, so an admission probe over
-    this batch's implement wave reports a real result.
-- - **Split from the head deliberately, not cut.** `577` and `609` are the same failure-accounting
-    chain and keep every edge they had: `577` behind `543` and `547`; `609` behind `534`, `543`,
-    `547` and `577`. They sit here rather than in the prioritized run because the request did not
-    name them, and because a six-record serial run is the shape this list has already measured as
-    landing one implement rather than six.
+  - **`501` depends on `472`, one batch above.** That is an ordering constraint satisfied by array
+    position, not a reason to move either record.
+- - **Both failure directions of one mechanism, batched because they are the same files.** Seven
+    members over `git-commit-scoped.sh`/`git-commit-phase.sh` and their suites: under-staging loses
+    work a dispatch actually did, over-staging commits another session's edits. Neither is
+    recoverable by re-running the dispatch, which is why this ranks above the validator and
+    composition batches below.
 
-  - **The one real overlap left unedged is `638` against `577`**, over `orchestrate-cycle-plan.sh`
-    and `test-orchestrate-cycle-plan.sh`. Neither depends on the other and no transitive order
-    separates them, so the only available justification for an edge would be co-membership -- which
-    they no longer even have, now that the two sit in separate runs that never dispatch
-    concurrently. Array position resolves it, exactly as the standing ruling below requires.
+  - **The drop side, rooted at `548`**: `548` harvests a plan's declared contingency files into
+    `file_scope` so a legitimately-modified file stops being dropped; `553` (edged behind it) names
+    the typst-sync gate as the cause when a refused commit is reported, instead of leaving the
+    operator with an unattributed refusal; `598` (also edged behind it) provides the sanctioned
+    in-dispatch remedy for a mechanically coupled pair path the V10 containment guard drops. `567`
+    ports the deployed-tree containment strip into `git-commit-scoped.sh` so the two commit paths
+    stop disagreeing, and `536` adds the source-store-aware commit path plus plan-time registration
+    review.
 
-  - **`609` waits on everything above it**, the whole prioritized head included, so it cannot run
-    earlier whatever this list says. Its own two-path overlap with `577` (`skill-orchestrate`'s
-    SKILL.md and the state-machine document) is carried by a direct edge.
-- - **Five small records filed together from one full `verify-deploy.sh` run, each already
-    diagnosed.** `629` is the `sync_scan` allow-list post-filter that drops manifest-declared
-    entries, which `test-deploy-propagation.sh` pins red by design; `630` gives that suite and
-    `test-gate-registry-resolution.sh` the roster rows they lack; `631` is gate 29's only violation;
-    `632` is gate 4's only unexempted occurrence, and a recurring one; `633` is an untracked,
-    divergent 68KB copy of the root ledger sitting inside the core source store. None needs design,
-    and together they take the battery's standing reds down to the ones larger records own.
+  - **The contamination side, `535` -> `541`**: a phase commit drops its own plan artifact, and
+    `git-snapshot.sh --no-revert` artifacts contaminate phase commits with other tasks' files. The
+    edge is already carried.
 
-  - **One in-batch order, semantic and already edged: `630` behind `629`.** No pair of members
-    shares a declared path (checked mechanically this pass), so no serialization edge is missing. `629` is a `neovim` record (it edits
-    `lua/neotex/plugins/ai/claude/commands/picker/operations/sync.lua`) and routes accordingly; the
-    rest are `meta`.
+  - **Cross-batch overlap, left to array position**: `484`, `486`, `501`, `508` and `524` (batch
+    five) claim `git-commit-scoped.sh` and `git-staging-scope.md` too. Batch five runs first and the
+    two never dispatch concurrently, so no edge is asserted between them.
+- - **A validator that fails a conforming artifact costs a full dispatch every time it fires**, and
+    unlike a missed check it costs that dispatch loudly -- the agent re-does work that was already
+    correct. Three of the four members declare `validate-artifact.sh` and its suite, so this is one
+    file's worth of false positives.
 
-  - **Below the Gate 8 run on purpose.** `630` writes `known-failures.txt`, which `476` is
-    rewriting; array position lets the roster verdict land first.
+  - `545` reports a reversed `validate-artifact.sh` invocation as a missing file rather than an
+    argument-order fault, which sends the reader after the wrong thing. `564` fixes the Tier
+    Justification false positive arising from sentinel path-set membership, and `579` (already edged
+    behind it) records the selector's full-path-set aggregation rule in the authoring contract so
+    the fix is reachable at plan time rather than only in the script. `575` stops the cross-phase
+    ceiling check reading a stop-word as a unit and false-positiving on N-of-M prose.
 
-  - **Above the concurrent-load pair on purpose.** `632` and `607` both declare
-    `context/config/orchestrator-context-budget.json`, and one of `607`'s two remedies is
-    re-baselining the gate 20 ceiling -- a ceiling move is exactly the event that re-breaks the
-    derivation log `632` fixes. Landing `632` first means `607` cannot reintroduce the finding.
-    This is a sibling overlap with no order either record states, so it is resolved by position,
-    not edged.
+  - **Placed below the containment batches** because a false failure wastes a dispatch, while a
+    containment drop loses its output. Both are real; the loss ranks higher.
+- - **What the dispatch body says is what the agent believes.** Four of the six declare
+    `orchestrate-build-dispatch.sh` and its suite; the batch is the composition surface itself.
 
-  - **Re-measure `633` before acting.** The root `.claude-extensions.json` it compares against
-    currently carries uncommitted local modifications, so the recorded diff may not be the diff
-    that exists.
-- - **`607`'s second question is `610`'s fourth, asked narrowly.** `607` asks whether per-gate
-    timeouts should scale with concurrency or simply rise; `610` asks whether per-gate bounds should
-    scale with measured host load, as part of the timing, concurrency and enforcement mechanics its
-    own scope boundary claims. `607` is planned and narrower, and the two also share
-    `verify-deploy.sh`, `gate-registry.data` and `skills/skill-orchestrate/SKILL.md`. **Edge written
-    this pass: `610` behind `607`**, so `610` builds on a settled per-gate bound instead of
-    re-litigating it.
+  - `599` gives the batch-gate-deferral directive a narrowing form covering a phase that touches
+    only project sources rather than the agent-system deploy tree -- today that directive defers
+    work it has no reason to defer, which is throughput. `592`, already edged behind it,
+    re-verifies or timestamps a task's recorded starting position at composition time, so a
+    dispatch stops being briefed from a stale read.
 
-  - **`610` names its own predecessor and nothing carried it.** Its territory note says to
-    sequence `476` first if both are live, because a faster or sharded gate 8 changes the surface
-    `476` works against. **Edge written this pass: `610` behind `476`.**
+  - `520` emits deploy ordering in the implement dispatch body, `565` resolves archived prior-art
+    paths when composing dispatch and task-description context (today an archived path silently
+    resolves to nothing), and `571` invalidates an in-flight dispatch whose `dispatch_seq` has been
+    superseded, at consumption time -- a superseded dispatch that still gets consumed is work done
+    against a decision already reversed.
 
-  - **`607` is a whole-tree claimant inside the live multi-task run**, so `610` waits on it
-    regardless; the edge records why, not merely when.
+  - **`518` sits immediately before `571` on purpose.** `571` is edged behind it, and `518` is the
+    propagation record: it states the `blockers[]` admission contract and the
+    continuation-on-partial requirement at every handoff-authoring site, across 47 agent files. It
+    depends on `472` (batch three), which is where the shape it propagates gets ruled -- propagating
+    before the ruling would write the wrong contract into 47 files at once.
+- - **A stranded wait is a dispatch that produces nothing and still spends its budget.** Two
+    dispatches were stranded by the backgrounded-and-blocked shape, and the lint that exists to
+    catch that shape only covers Rule 2. All four members declare
+    `context/patterns/bounded-build-waiter.md`.
 
-  - **`610`'s research cannot run inside a loaded batch.** Its deliverable is a full-battery
-    wall-clock baseline taken with no other dispatch live, as the control. Dispatch its research
-    alone, or accept that the baseline must be re-taken.
+  - `506` is PLANNED and is the self-inflicted case: the bounded-waiter hook refuses a write whose
+    prose documents the very anti-pattern the hook enforces, so the contract cannot be edited
+    without an override. Fixing the enforcement before extending it is the cheap order. It declares
+    `__WHOLE_TREE__`, so it serializes against the rest of the batch -- which is fine, and the
+    reason it leads rather than trails.
 
-  - **Two neighbours, neither edged.** `572` (two batches above) divides this territory with `610`
-    rather than sequencing it -- see the lane's rationale. `454` owns the agent-side wait-discipline
-    prose in `bounded-build-waiter.md` and `external-process-wait.md`; `610` declares neither path
-    today, so reconcile by hand if its plan adds them.
-- whole-tree claimant: runs alone -- RE-MEASURE FIRST, Gate 24 passes
+  - `542` -> `552` -> `561` is the existing chain: record the launch-side PID-fidelity condition on
+    the detach form, extend the lint past Rule 2 to the shape that actually stranded the two
+    dispatches, then record the load-sized bound and the diagnostic-preserving output capture.
 
-  - **The Gate 24 pair is held pending a re-measure, not ordered.** The gate passed when last
-    measured on 2026-11-11, so neither `512` nor `590` has a confirmed live finding and **neither
-    should be sized until re-measured**. This pass did not re-run the gate; treat the 2026-11-11
-    reading as the latest, not as current.
+  - **`641` and `642` are NOT here**, even though they are the same contract's propagation, because
+    `641` also depends on `454`, which depends on `439`, which depends on `431`. That chain is one
+    batch below; splitting it out keeps this batch dispatchable now instead of blocked on a
+    four-deep predecessor.
+- - **Every member is a check that exists on paper and does not fire**, which is strictly worse
+    than a check that is absent: the absent one is visible in a coverage review, the dead one reads
+    as coverage.
 
-  - **The two cannot see each other, and that is a declaration defect rather than independence.**
-    Both edit the same lint, but `590` declares it directly under the core extension's `scripts/`
-    directory, a path re-confirmed absent from disk on 2026-11-15, while the file actually lives one
-    level further down under `scripts/lint/`, which is what `512` declares. The collision scan
-    therefore sees no overlap between them at all. They are ordered here by array position only, and
-    `590`'s declaration should be corrected before either is dispatched.
+  - `521` fixes the agent glob so it matches the `-implement-agent.md` variant -- today whole
+    classes of agent file pass a completeness check they were never measured by. `525` repairs the
+    always-failing extensions-directory fallback in the task-type detection suite and `510` the
+    missing lib dependency in the predispatch-review test fixture; both are suites that cannot
+    report a real result at all.
 
-  - **If both survive the re-measure the ordering still holds.** `512` owns the exemption mechanism
-    (a `builtin-cmd-ok` inline marker, following the `task-ref-ok`/`version-ok` idiom) and is a
-    claimant, so it runs alone; `590` can only mark prose once that marker exists.
+  - `511` -> `523` is the counting half, already edged: require `git grep` rather than plain `grep`
+    for scope-hypothesis counts (plain `grep` sweeps a gitignored venv and inflates every count
+    derived from it), then make Gate 27's `MISSING_DECLARATION` count call sites instead of
+    whole-file substring mentions. `511` and `523` share `shell-script-testing.md`.
 
-  - **`512`'s own `file_scope` additionally declares two deployed `.claude/scripts/**` paths**, which
-    the source-store boundary rule says are a disposable deploy artifact and never an edit target --
-    harmless to the overlap predicate, wrong as a declaration.
-- RE-MEASURE FIRST: may already be satisfied in the source store; its declared lint path is absent from disk (re-confirmed 2026-11-15) and must be corrected to the `scripts/lint/` form before dispatch.
-- the operator-facing selection surface
+  - **Placed below the composition batch** because a dead check costs correctness slowly, while a
+    mis-composed dispatch costs it immediately.
+- - **One four-deep chain, batched in the order the graph forces.** `431` (PLANNED) records the
+    gate-enforced verbatim-duplication exclusion class as durable context, derived from the lint's
+    own fragment paths. `474` and `439` both depend on it; `454` depends on `439`; `641` depends on
+    `454` and on `561` (batch nine, above); `642` depends on `641`. No member of this chain can be
+    pulled forward without pulling the whole chain.
 
-  - **The operator-surface objective is unchanged, and runs after the substrate.** `580` is the
-    prerequisite for `581` and constrains `492`'s prompt design, because a confirm gate already
-    using three options cannot simply grow a fourth set of per-verdict fold actions. `491` precedes
-    `492` by a declared edge, and `492`'s own precondition requires re-measuring against the
-    corrected scorer before its consumer edits -- do not dispatch `492` expecting its full scope to
-    survive that re-measurement. `479` joins the run because `581` needs it and it is ready; it
-    collides with `492` on `commands/task.md` and `context/workflows/meta-interview.md`, so `492` is
-    edged behind `479` and the member order above places `479` ahead of it.
+  - **Why it sits here and not with the bounded-waiter batch above**: the content is the same
+    contract, but the depth is not. Batch nine's four members are all dispatchable now; these six
+    are gated on a record that has to be ruled first. Keeping them apart means the ready work does
+    not wait on the gated work, and the ordering constraint between them is expressed by array
+    position.
 
-  - **No edge is missing inside this batch.** Re-measured 2026-11-15: every declared path overlap
-    among the four is already carried by a direct edge.
+  - `431` declares `__WHOLE_TREE__`, so it serializes against every other claimant in-batch and
+    cross-batch alike, including one held by another live session. It leads, so the rest of the
+    chain queues behind it anyway.
 
-  - **Three cross-batch overlaps worth knowing before dispatch.** `492` shares `commands/errors.md`
-    with `591` (the verify-deploy lane, which runs first). More consequentially, both `479` and `492`
-    share `commands/task.md` and `context/workflows/meta-interview.md` with `438`, which runs in the
-    pair directly BELOW this one -- so this run dispatches first and the collision never fires. That
-    is array position doing its job; no edge is written across the boundary.
+  - `439` rules on the propagation model, `454` states the result-needed-this-turn criterion for
+    choosing the foreground form and names the arrived-but-unconsumed notification as its own wait
+    failure shape, `641` re-grounds the documented foreground-wait cap and makes the idiom survive a
+    long wait, and `642` re-propagates the amended bullets to the carrying agent contracts and
+    reconciles the lint checks. The order is the ruling, then the statement, then the propagation --
+    never the reverse.
+- - **Batched because they edit the same lint, not because they are both small.** `512` (PLANNED)
+    exempts built-in commands from the dead-command-recommendation lint; `590` (RESEARCHED) resolves
+    the findings that lint reports for `/ide`. Running them as separate batches would mean two runs
+    rewriting one file with no stated order between them.
 
-  - **`581` runs last by construction**, paired with `438` in the batch below: it declares three
-    paths `492` also declares (`context/workflows/meta-interview.md`, `skills/skill-fix-it/SKILL.md`,
-    `skills/skill-spawn/SKILL.md`) plus `context/standards/interactive-selection.md` which `580`
-    declares, and its four edges exist to serialize rather than exclude.
-- the selection surface's last two records: the authoring-time edge check, then the shared option renderer
+  - **RE-MEASURE BOTH BEFORE PLANNING.** `590` may already be satisfied in the source store, and
+    its declared `file_scope` names the lint one directory above where the file actually sits -- so
+    it cannot collide with `512` mechanically even though the two edit the same lint. That
+    declaration defect is the reason no edge is written here: there is no measured
+    `file_scope_collision` to write one against, and co-membership alone is not evidence of a
+    missing graph edge. Fix `590`'s declaration as part of the work.
 
-  - **`438` is READY, and all six of its declared predecessors are closed.** `312`, `313`, `401`,
-    `446`, `458` and `500` are archived or completed, re-verified 2026-11-15. `581` sits in wave 3.
+  - `512` declares `__WHOLE_TREE__`, so the pair serializes to width one regardless.
+- - **A generated surface nobody declared is a surface nobody regenerates**, and the stale copy is
+    then read as truth by the next dispatch. All four members are about making that surface visible
+    at the point it is created.
 
-  - **Without `438` scheduled, `581` is stranded permanently, and that is why this pair exists.**
-    `581` carries four edges: `580`, `479` and `492` all sit in the operator-surface run directly
-    above, while `438` sat in no run at all. A record whose last predecessor is in no batch is not
-    waiting -- it is unreachable. Pairing the two is the whole content of this batch.
+  - `455` pre-flags the predictable first-run module-invariant failures that wiring a new module
+    forces, where the generated-surface knowledge already lives. `502` requires research reports to
+    enumerate the generated doc-sync surfaces they touch -- the research-phase counterpart. `517`
+    (edged behind `455`) requires a phase commit to regenerate and stage the derived surfaces it
+    stales, which is the enforcement end.
 
-  - **`438`'s overlap with the run above is real and is deliberately left UNEDGED.** `438` shares
-    `commands/task.md` and `context/workflows/meta-interview.md` with `479`, and those two plus
-    `docs/reference/standards/multi-task-creation-standard.md` with `492`. That is a genuine
-    `file_scope_collision`, but it is a CROSS-batch one: the operator-surface run dispatches first,
-    so the pair never contends concurrently, and array position resolves it without asserting a
-    semantic dependency neither record's own description supports. `438` is an authoring-time
-    semantic check on declared edge rationale; `479` is a landing-target gate on task creation.
-    Neither presupposes the other, and co-membership would have been the only argument for the edge
-    -- which is not an argument.
+  - `457` is here because it is the same leak in the other direction: repo-specific content has
+    leaked into the shared agent-system source store, where every consuming repository reads it. It
+    is edged behind `455` already and shares `plan-file-scope-harvest.sh` with it.
 
-  - **The in-batch pair is already edged.** `438` and `581` share
-    `context/workflows/meta-interview.md`, and `581` already depends on `438`. No edge is missing.
+  - **Below the enforcement batch** because these are contracts to be written rather than checks
+    that are currently lying.
+- - **A pair, because `338` is the mechanical half of `618`'s ruling.** `618` is a GOAL record: work
+    out what leaves files behind in this repository's working tree, uncommitted and un-ignored, and
+    produce a per-class disposition verdict -- ignored where the file is runtime state, committed
+    where it is durable provenance, never a third pile a human triages by eye. `338` then classifies
+    every task-support file as tracked or ignored against that verdict.
 
-  - **Four further advisory overlaps on `438`.** `commands/revise.md` with `503`;
-    `multi-task-creation-standard.md` with `558` and `559`;
-    `agent-system/extensions/core/scripts/update-task-status.sh` with `568` (the Gate 8 run above)
-    and `598`. None is batched with it.
-- the lean extension's own strand; ordered late on the two most contended paths in the backlog
+  - **This is health, but diagnostic health**, which is why it sits mid-list rather than at the
+    head: residue does not break a dispatch, it makes every `git status` read untrustworthy and so
+    makes the commit-scope batches above harder to verify. Doing it after those batches land also
+    means the census is taken against a tree whose known drop/contamination paths are already fixed,
+    rather than against one where they are not.
 
-  - **Three edged chains plus one independent, and every edge already exists.** `399` behind `398`
-    (both declare `agent-system/extensions/lean/index-entries.json`); `462` behind `451` (both
-    declare `lean-challenge-snapshot.sh`, its test, and `challenge-snapshot.md`); `516` behind `504`
-    (both declare `lean-plan-compliance-check.sh`, its test, and `plan-format.md`). `463` shares no
-    declared path with any of the other six. Re-measured 2026-11-15: **no edge is missing inside
-    this batch.** It dispatches as two waves -- `398`, `451`, `463`, `504`, then `399`, `462`, `516`
-    -- on the edges already in the graph, and the member order above groups each chain with its own
-    dependent.
+  - `618` declares no `file_scope` at all -- see the scope note in the trailing prose. Narrow that
+    declaration before probing this batch.
+- - **The operator-facing surface, batched on real shared territory**: `context/workflows/
+    meta-interview.md` is claimed by `438`, `479`, `492` and `581`; `commands/task.md` by `438`,
+    `479` and `492`; `context/patterns/backlog-reconciliation.md` by `491`, `492` and `559`;
+    `multi-task-creation-standard.md` by `438`, `492` and `559`. Seven records over four shared
+    files is a batch by measurement, not by theme.
 
-  - **It runs late because its two densest paths are the most contended files on the board.**
-    `agent-system/extensions/core/context/formats/plan-format.md` has fifteen open claimants; `504`
-    and `516` are two of them, and eight of the other thirteen are now batched -- `572` in the
-    verify-deploy lane above, and `599` plus its four plan-authoring dependents in the run at the
-    foot of this list. `agent-system/extensions/lean/index-entries.json` has six: `398`, `399`,
-    `539`, `540` and `576` (the next two batches) and the unbatched `536`. Cross-batch overlap is
-    advisory, and array position is what resolves it. **Do not backfill edges across those
-    claimants** -- the edges worth declaring are the ones inside the batch being dispatched.
+  - **The order is the graph's**: `438` (dependency-edge rationale conflates semantic and
+    serialization grounds, and a semantic edge is filed with no check against landed artifacts) ->
+    `479` (every task must name a landing target) -> `492` (corroboration computable, confirm prompt
+    gated on it), with `491` (the Pass-2 semantic scorer whose normalization inflates against
+    verbose records) ahead of `492` and `580` (AskUserQuestion's real four-option ceiling) ahead of
+    `581`. `581` extracts one shared option renderer and adopts it across all four selection
+    surfaces, and depends on `580`, `438`, `479` and `492` -- so it is last by necessity.
 
-  - **This batch now precedes rather than follows the Lean-facing plan-authoring records, and that
-    is the one ordering change here.** `593` declares an edge to `451`, so the plan-format run at
-    the foot of this list is reachable only once this batch has landed. Three narrower cross-batch
-    overlaps carry into sizing: `451` shares `agent-system/extensions/lean/rules/plan-compliance.md`
-    with `452`, `539` and `593`, and `orchestrate-cycle-plan.sh` with `514`, `547` and `577`; `451`
-    and `462` share `lean-challenge-snapshot.sh` and its test with `544`; `504` and `516` share
-    `lean-plan-compliance-check.sh` and its test with `560`, `593` and `595`; `516` shares
-    `lean-implementation-agent.md` with `472`, `518` and `537`. Of those, `539`, `544`, `593` and
-    `595` are batched below; the rest are unbatched. All advisory.
-- the Challenge-block authoring records: one ruling, two dependents that cannot be written before it
+  - `559` settles the low-specificity shared-path case that produces spurious duplicate-of-open
+    verdicts, plus Component 7 under `/orchestrate`.
 
-  - **This is a star, not a chain, and the centre was unbatched.** `539` states the precedence and
-    snapshot-prerequisite rules for a lean plan's pinned Challenge block; `540` (five measured lean4
-    facts) and `544` (a fixture-dependent gate statement made expressible and mechanically checkable
-    in a Challenge block) both depend on it and on nothing else. `539` also has a third dependent,
-    `595`, in the plan-format run at the foot of this list -- which is the reason this batch sits
-    above it rather than below.
+  - **Placed below the correctness batches** because this is the quality of what gets filed and
+    chosen, not whether a filed task can be executed. It is the highest-ranked batch that is not
+    about the machinery itself.
+- - **Both depend on `479`, immediately above, and on nothing else that is open.** Splitting them
+    out of that batch keeps it at seven rather than nine and makes the dependency explicit by array
+    position: the contract is stated first, then detected.
 
-  - **Why it is not in the lean-extension batch above.** All three records name Lean, but their
-    territory is Challenge-block and plan-authoring content under the `agent-system` topic, not the
-    extension's own scripts and context corpus. `539` does share
-    `agent-system/extensions/lean/index-entries.json` with `398` and `399` above and
-    `agent-system/extensions/lean/rules/plan-compliance.md` with `451` above; both are cross-batch,
-    advisory, and resolved by that batch running first.
+  - `480` is the advisory detector for research tasks stranded at RESEARCHED with artifacts but no
+    named landing target -- the backlog shape `479`'s gate prevents going forward, applied
+    retroactively to what is already filed. `513` mechanically detects a plan phase that closed
+    without its own commit.
 
-  - **One in-batch overlap, already edged, and one deliberate split.** `539`/`540` share
-    `index-entries.json` and the edge exists. `576` was NOT admitted to this batch even though it
-    declares the same `index-entries.json` as `539` and `540`: it is `549`'s dependent, not `539`'s,
-    and admitting it would have left two unedged in-batch overlaps whose only available justification
-    was co-membership. It runs in the pair directly below instead, where its one real edge orders it.
-- the second Lean plan-authoring pair, split out of the Challenge-block star above on measured grounds
+  - They share `context/contracts/phase-closure.md` with `518` (batch eight), which runs earlier;
+    that cross-batch overlap is left to array position.
+- - `563` rules between refusing test-fixture registration and pruning on read: the registry at
+    `~/.local/share/nvim/neotex-ai/extension-repo-registry.json` held 313 entries of which 311 were
+    `/tmp` paths and 2 were real repositories, which makes it unusable as a deploy-enumeration
+    source. `583` (already edged behind it) then adds the settings-defaults surface to the loader
+    picker.
 
-  - **A two-record chain, fully edged, and it exists as its own run for a stated reason.** `549`
-    gives the Lean `unusedArguments` remedy a narrow route instead of the wholesale
-    `runLinter --update` rewrite; `576` records the verification-tier gate-naming rule, the
-    Constraints-consumed marker duty and the build-guard replay window on top of it. `576` depends
-    on `549` and the two share
-    `agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md`,
-    so the one overlap is edged.
+  - **Both are `neovim`-typed and both edit `lua/neotex/plugins/ai/`**, a subtree no other open
+    record in this list claims, so the pair runs without contending against the agent-system work
+    above. That independence is why it can sit here rather than competing for a slot near the head:
+    it is loader/picker functionality, not orchestration correctness.
+- - **One chain, and every edge in it is already carried.** `451` takes the Lean Challenge snapshot
+    in the plan phase, where it is still meaningful, instead of leaving it to an implement phase the
+    status gate correctly refuses. `462` gives `lean-challenge-snapshot.sh --check` a scope limit so
+    a research prototype under `specs/` stops forcing a false ambiguity failure. `452` depends on
+    `451` and requires a verification criterion over a repo-wide gate with standing pre-existing
+    findings to be baseline-relative rather than absolute; `566` and `509` depend on `452`, and
+    `588` on `509`.
 
-  - **It is separate from the batch above because merging them would have cost two unjustifiable
-    edges.** `576` declares `agent-system/extensions/lean/index-entries.json`, which `539` and `540`
-    also declare, with no edge in either direction and no transitive order between them -- `576` sits
-    behind `549`, not behind `539`. Writing those two edges would have asserted an ordering neither
-    record's description supports, on co-membership alone; splitting the run resolves the same
-    collision by array position instead. `536` is a third unbatched claimant of that file; same
-    disposition.
-- the plan-authoring strand behind `599`: the backlog's widest gate, which until this pass was in no batch at all
+  - **`452` is the hinge, and it is the reason this batch is not lower.** An absolute criterion over
+    a gate that already carries standing findings is unsatisfiable, so it either blocks a conforming
+    dispatch or gets waived -- the same signal-destroying choice batch one exists to remove, one
+    level up in the plan contract. `509` then makes a redeploy phase declarable without polluting
+    `file_scope` and bars a pre-redeploy phase from asserting a deployed-vs-source drift gate, and
+    `588` bars a pre-redeploy step from naming a deploy-tree-resolved subject unless it declares how
+    it gets a true read.
 
-  - **This is the one place fan-out actually said something, and the list was not acting on it.**
-    `599` (give the batch-gate-deferral directive a narrowing form for a phase touching only project
-    sources) is the widest gate in the backlog at five direct dependents -- `592`, `593`, `594`,
-    `595`, `596` -- it is ready, and neither it nor any of the five was batched. Its own predecessor
-    is closed, so nothing was holding it except absence from this list.
+  - `566` documents that the `validate-state.sh` cycle check requires `--deep` at every call site
+    that specifies it.
 
-  - **It runs at the foot because two of its members reach outside it, and both predecessors are
-    scheduled above.** `593` depends on `451`, in the lean-extension strand; `595` depends on `539`,
-    in the Challenge-block star. Both of those batches now precede this one, which is the whole
-    reason this run is placed last rather than first. Dispatch order inside the batch is `599` and
-    `592`, then `593`, then `594`, then `595`, then `596` -- five waves on edges already in the
-    graph.
+  - **Cross-batch overlap, left to array position**: `452`, `509` and `588` claim
+    `validate-artifact.sh` alongside batch seven's members, and `plan-format.md` alongside the plan
+    authoring batch below. Fourteen open records claim `plan-format.md`; edging on that path would
+    merge most of the backlog into one run.
+- - **Batched on `lean-plan-compliance-check.sh` and `lean/index-entries.json`**, each claimed
+    several ways across these members. `504` reconciles the Goals-block harvester with its documented
+    contract and `516` (edged behind it) stops the compliance check failing on not-yet-reached
+    end-state deliverables; `537` closes the spot-check's evidence-probe-scoped Goals miss.
 
-  - **Eleven in-batch overlaps, all now edged; three edges were written this pass and none changed
-    the order.** `593`/`595`, `593`/`596` and `594`/`596` overlapped on
-    `agent-system/extensions/core/context/formats/plan-format.md` (and `593`/`595` additionally on
-    `lean-plan-compliance-check.sh` and its test) with no direct edge, while the chain
-    `593` -> `594` -> `595` -> `596` already forced every one of those orders transitively. The three
-    edges make them direct so the collision-scan exemption fires, which it does not do transitively;
-    the wave table is unchanged at 82 / 36 / 15 / 5 / 2 after the writes, which is the check that
-    they asserted nothing new.
+  - **The trust-surface half**: `463` states that `lean_goal`'s empty `goals_after` is not evidence
+    a declaration elaborates and points step verification at that statement, and `550` (edged behind
+    it) probes the Lean LSP index state at dispatch start and propagates the degraded evidence tier
+    downstream. A verification step that reads an empty result as a pass is a false green, which is
+    why these two rank above the authoring records below.
 
-  - **`plan-format.md` is the densest path in the backlog at fifteen open claimants, and this batch
-    owns five of them.** The other ten are `452`, `504`, `509`, `516`, `548`, `566`, `572`, `575`,
-    `579` and `588`; `504`, `516` and `572` are batched above, and the remaining seven are not. Do
-    NOT backfill a fifteen-way clique: cross-batch overlap is advisory and array position resolves
-    it.
+  - **The context half**: `398` records that a grep for dependents misses rw-site definitional
+    unfolding and makes that guidance reachable at plan time; `399` (edged behind it) records three
+    measured gotchas -- IO-forced timing harnesses, docstring/`set_option` order, shadowed `decide`.
 
-  - **Two further cross-batch overlaps.** `592` and `599` share `orchestrate-build-dispatch.sh` with
-    the unbatched `558`; `593` and `595` share `lean-plan-compliance-check.sh` with `504` and `516`
-    above and with the unbatched `560`. Both advisory.
+  - **Cross-batch note**: `560` (batch one) claims `lean-plan-compliance-check.sh` too. It clears a
+    deploy-blocking shellcheck finding in that file and runs first; the overlap is resolved by array
+    position rather than an edge.
+- - `549` gives the Lean `unusedArguments` remedy a narrow route instead of the wholesale
+    `runLinter --update` rewrite; `576`, already edged behind it, then records the verification-tier
+    gate-naming rule, the Constraints-consumed marker duty, and the build-guard replay window over
+    the result.
 
-**The `__WHOLE_TREE__` claim is the binding constraint on batch width, not fan-out.** A record
-declaring the sentinel serializes absolutely against every other claimant, in-batch and
-cross-batch alike, including a claimant owned by another live session. Measured 2026-11-06: a
-six-record batch landed research and planning for all six in parallel, then implemented only one,
-because the remaining four queued behind a single claimant and then behind a cross-batch claimant
-in another session; three were still unimplemented when the convergence guard stopped the run.
+  - **Kept as its own two-record run rather than folded into the Lean batches on either side.**
+    `576` also claims `lean/index-entries.json`, which `398`, `399`, `536`, `539` and `540` claim
+    across three different batches; splitting those into separate runs rather than edging them on
+    co-membership is the standing treatment for that path.
+- - **`539` is the root and everything else here quotes it.** It states the precedence and
+    snapshot-prerequisite rules for a Lean plan's pinned Challenge block; `540`, `544` and `595`
+    depend on it directly, and `593`-`596` form a further chain among themselves. Eleven in-batch
+    path overlaps, all already carried by direct edges.
 
-**The claimant roster is five: `431`, `476`, `506`, `512` and `607`** (re-measured 2026-11-16:
-`585` landed, and `476` declares the sentinel too). The sentinel remains the binding constraint
-on batch width rather than fan-out or edges. Batch claimants one at a time and group the
-non-claimants freely around them. Two claimants, `476` and `607`, sit inside the live multi-task
-run, so every other claimant's implement wave defers until that run releases them. **The lane is
-free for the head**: no member of the prioritized run declares the sentinel, so its four contend
-only with each other and with whatever a cross-session claimant holds.
+  - `540` records five measured Lean facts (the `decide`-synthesis working form, the axiom-free
+    `maxRecDepth` remedy, the probe guard's total arithmetic, instance synthesis at a coerced
+    carrier, structural recursion not reducing by `rfl`). `544` makes a fixture-dependent gate
+    statement expressible and mechanically checkable in a Challenge block. `593` requires pinned
+    signatures to be measured at plan time, `594` sizes symmetric-pair phases and iteration
+    obligations separately, `595` defines Goal Polarity semantics for decision-gate plans, and `596`
+    separates generator-written files from hand-edited read-only scope declarations.
 
-**What changed structurally this pass: the verification-cost cluster was batched, and one landed
-batch was retired.** `607` and `610` -- the only two `verify-deploy.sh` claimants in no batch,
-asking the same per-gate-timeout question at two widths -- now run as a pair, placed below the
-Gate 8 run that `610` itself says must land first. The five records filed together from one full
-battery (`629`-`633`) now run as one sweep between the two, placed so `632` lands before `607`
-can move the context-budget ceiling again. The covering-suite sweep's batch was retired because
-`584` landed. Every other batch keeps its membership and relative order; the Gate 8 run and the
-`verify-deploy.sh` lane had their prose re-measured.
+  - **`593`-`596` all depend on `599` (batch eight) and `593` on `451` (batch eighteen)**, both of
+    which run earlier. Those are ordering constraints satisfied by array position.
 
-The gate exempts research and plan dispatches (neither regenerates the tree) and defers only
-implement, so a claimant still researches and plans freely while the lane is occupied.
+  - **Placed here because it is plan-authoring quality, not execution correctness.** Every member
+    makes a future plan better; none unblocks a dispatch that is currently stuck.
+- - `390` migrates seven mis-sited agent-system tasks out of the consumer repository and retires one
+    duplicated upstream; `481`, already edged behind it, rules on and migrates the 32-record delta
+    accumulated since that first migration. The order is forced -- `481` is defined relative to
+    `390`'s result.
 
-**Admission-probed only in part, and every probe recorded so far is weaker than it looks.** Each
-one put only research or plan dispatches in cycle 0, and both phases are exempt from the claim
-gate and the collision gate alike -- so no probe has yet exercised the implement-wave
-`file_scope` collisions these batches are ordered around. Treat an unprobed batch as unprobed:
-probe before committing to one (standing rule 5), and check `task-lock.sh session-list` for a
-live session whose scope overlaps, since a cross-session claimant is invisible to the edge graph.
-Two batches cannot be meaningfully probed at all until their members declare territory -- see the
-scope paragraph below.
+  - **This is backlog siting, not machinery**, so it ranks below everything that changes how a
+    dispatch runs. It does matter: a task sited in a repository whose filesystem does not contain
+    its declared edit target cannot be executed there at all.
+- - `410` gates result sharing on a `pre==post` fingerprint in `lake-build-guard.sh`; `533`, already
+    edged behind it, closes the same stale-replay behaviour for the `env lean FILE` entry point. One
+    mechanism, two call sites, and the second is only expressible once the first has settled what a
+    valid share looks like.
+
+  - **A stale replay is a false green on a build**, which is why this is not lower; it sits here
+    rather than higher because the surface is one script in the Lean extension and nothing in the
+    core lifecycle reads it.
+- - `453` carries the degraded-retrieval signal into the zero-result case, where the briefing drops
+    it today and the agent is left to invent a fallback; `546`, already edged behind it, diagnoses
+    the zero-result retrieval itself and settles the contract. A briefing that silently reports
+    nothing found, when what happened was degraded retrieval, is a false negative the agent cannot
+    detect -- the same failure shape as a crashing validator, in a surface only `--lit` dispatches
+    read.
+
+  - `437` repairs the Zotero sqlite-reconstruction export path: lost CSL fields and a shrink guard
+    calibrated against a corrupt baseline.
+
+  - **Below the core batches because the blast radius is bounded to literature-mode dispatches**,
+    which are a minority of runs.
+- - `383` adds a `/reconcile` command aggregating `docs-stage.sh` and `book-health.sh --json` drift
+    into one report and proposing follow-up tasks; `384`, already edged behind it, then adjudicates
+    whether a reconciliation postflight lifecycle hook is warranted and adds it only if the ruling is
+    yes. All three members claim `books/manifest.json`, which is why they run together.
+
+  - **`342` is HOLD and is listed as an ordering constraint, not as available work.** The corpus
+    refactor waits on an external version stamp reaching `0.1.0` in the consuming repository; the
+    lift is an owner action, and `/orchestrate` admits a held record only under an explicit forcing
+    flag. It is kept in the batch rather than cut so the territory overlap stays visible.
+
+  - **Last of the extension batches** because nothing in the core lifecycle depends on any of it.
+- - **A batch of genuinely independent records, grouped because each is a single ruling with no
+    predecessor and no shared territory to serialize against.** This is the one place in the list
+    where membership is not a shared-file claim, and it is stated rather than disguised.
+
+  - `456` exempts private npm/Cargo manifests from `/tag`'s version gate -- today that gate is
+    unpassable for a private manifest, so the command cannot complete. `421` closes three gaps in
+    the telemetry `--meta` evidence consumer. `529` evaluates whether `formal:logic` implement
+    routing should resolve to a Lean-capable agent. `530` lands the three agent-system context
+    extensions recorded by the cslib omega-automata survey.
+
+  - **Each is small and each is real**; none is on a path another record waits for, which is
+    precisely why they rank here rather than higher.
+- - **The tail is explicitly the tail.** Every member improves a document; none changes what a
+    dispatch does, which is the measure this ordering uses. Stating that plainly is better than
+    promoting them on the grounds that they are cheap.
+
+  - `473` (RESEARCHED, edged behind `472` in batch three) strips record-versioning language from the
+    boundary-owned architecture docs. `522` fixes report/summary heading-skeleton conformance across
+    agents. `640` adds a derived-percentage bug class to the census methodology standard. `557`
+    (RESEARCHED) records the half-line test as a Lean context pattern note.
+
+  - `557` carries topic `decidability`, which is not declared in `active_topics` and so renders
+    after the curated topics -- a declaration defect worth fixing while the record is open, not a
+    reason to reorder it.
+
+**The `__WHOLE_TREE__` claim is the binding constraint on batch width, not fan-out.** A record declaring the sentinel serializes absolutely against every other claimant, in-batch and cross-batch alike, including a claimant owned by another live session. Measured 2026-11-06: a six-record batch landed research and planning for all six in parallel, then implemented only one, because the remaining four queued behind a single claimant and then behind a cross-batch claimant in another session; three were still unimplemented when the convergence guard stopped the run.
+
+**The claimant roster is five: `431`, `506`, `512`, `586` and `607`** (re-measured 2026-11-18; `476` and `585` have landed). Two of the five now sit in one batch by design: `586` and `607` share `verify-deploy.sh`, `agent-system/extensions/core/scripts/tests/run-all.sh` and `agent-system/extensions/core/scripts/tests/known-failures.txt`, so batch four serializes to width one and says so. The other three lead their own batches (`506` batch nine, `431` batch eleven, `512` batch twelve) for the same reason -- a claimant placed first lets the rest of its batch queue behind it instead of colliding with it mid-run. **The head is clear**: no member of batches one, two or three declares the sentinel, so the three highest-priority runs contend only with each other and with whatever a cross-session claimant holds.
+
+**What changed structurally this pass.** Three fully-landed batches were retired. The whole list was re-ordered against the health/functionality/speed rule stated above, which moved four things materially: the verification-substrate work rose from the middle to batch one; a new batch two was assembled from three previously unbatched records that each stop progress outright (`475`, a large audit verdict killing `state-write.sh` with `Argument list too long` so no task can be created; `613`, an orphaned same-process lock that the liveness path can never reap; `514`, a convergence guard counting the probe set instead of the emitted dispatch set) plus `574`, the budget documentation they are read through; the handoff and return-meta validation work was consolidated into one eight-record batch three, since a mis-charged failure kills dependents that were never broken; and the cost batch settled at four, below verdict-truth and above every correctness batch. Eighty-one previously unbatched open records were placed. **121 of 122 open records are now batched**; the single exception is the held email substrate (`498`), which is an owner decision, not available work.
+
+The gate exempts research and plan dispatches (neither regenerates the tree) and defers only implement, so a claimant still researches and plans freely while the lane is occupied.
+
+**Admission-probed only in part, and every probe recorded so far is weaker than it looks.** Each one put only research or plan dispatches in cycle 0, and both phases are exempt from the claim gate and the collision gate alike -- so no probe has yet exercised the implement-wave `file_scope` collisions these batches are ordered around. Treat an unprobed batch as unprobed: probe before committing to one, and check `task-lock.sh session-list` for a live session whose scope overlaps, since a cross-session claimant is invisible to the edge graph. Batch three is the one most worth probing before dispatch: five of its eight members claim `orchestrate-cycle-postflight.sh`, and the batch deliberately relies on the collision gate to serialize them rather than on edges.
 
 **On edge declaration**, three rulings stand:
 
-- **Only a `file_scope_collision` verdict means an edge is missing.** `whole_tree_claim` and
-  `self_modifying` verdicts say so themselves -- *"this is an ORDERING CONSTRAINT, not an
-  exclusion"* -- and resolve in a later cycle unaided. **An edge belongs to a path overlap; a
-  sentinel overlap is left to the sentinel defer.** Declaring an edge between two records whose
-  only shared territory is `__WHOLE_TREE__` asserts a semantic claim neither record supports and
-  chains unrelated strands together for nothing.
+- **Only a `file_scope_collision` verdict means an edge is missing.** `whole_tree_claim` and `self_modifying` verdicts say so themselves -- *"this is an ORDERING CONSTRAINT, not an exclusion"* -- and resolve in a later cycle unaided. **An edge belongs to a path overlap; a sentinel overlap is left to the sentinel defer.** Declaring an edge between two records whose only shared territory is `__WHOLE_TREE__` asserts a semantic claim neither record supports and chains unrelated strands together for nothing.
 
-- **The exemption is direct-edge only, never transitive, and it is scoped to the batch being
-  dispatched.** A pair ordered through an intermediate still collides and still defers, which is
-  why `624` is declared behind both `568` and `476` rather than relying on the chain through
-  `568`. The converse discipline matters just as much: a heavily shared path is NOT grounds for
-  edging every record that touches it. Re-measured 2026-11-16,
-  `test-orchestrate-cycle-postflight.sh` has ten open claimants,
-  `context/formats/plan-format.md` has fifteen and `verify-deploy.sh` has five; the edges worth
-  declaring are the ones inside the batch actually being dispatched, and every other overlap is
-  advisory, resolved by array position. `438`'s three-path collision with `492` is the worked
-  example: real, measured, and deliberately left unedged because the two sit in adjacent batches
-  that never dispatch concurrently.
+- **The exemption is direct-edge only, never transitive, and it is scoped to the batch being dispatched.** A heavily shared path is NOT grounds for edging every record that touches it. Re-measured 2026-11-18, `context/formats/plan-format.md` has fourteen open claimants, `agents/planner-agent.md` nine, `git-commit-scoped.sh` eight, and `orchestrate-cycle-postflight.sh`, `test-git-commit-scoped.sh` and `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` seven each; the edges worth declaring are the ones inside the batch actually being dispatched, and every other overlap is advisory, resolved by array position. The worked example this pass is batch three: five members claim `orchestrate-cycle-postflight.sh` with only two of the ten pairs ordered, and the eight remaining pairs were left to the collision deferral rather than chained, because they are independent defects on one file and co-membership is this list's own judgment, not graph evidence.
 
-- **A transitive order made direct, or an order a record states itself, is the edge class this
-  list writes; a bare sibling overlap is not.** Two edges were written this pass, both on `610`.
-  `610` behind `476` is an order `610`'s own territory note states. `610` behind `607` orders the
-  two members of the new concurrent-load pair, which ask the same per-gate-timeout question at two
-  widths and share three paths, narrower record first. The sibling overlaps left unedged are
-  `632`/`607` on `context/config/orchestrator-context-budget.json` and `572`/`610` on
-  `verify-deploy.sh` and `batch-gate-stage.md`, each split across batches that never dispatch
-  concurrently, so array position resolves them. The contrast that earned the rule is `576`,
-  which declares the same `index-entries.json` as `539` and `540` with no order between them in
-  either direction; those were split into separate runs rather than edged on co-membership alone.
-  Two further proposals are still held for an owner ruling rather than written: `452` behind `451`
-  and `473` behind `472`.
+- **A transitive order made direct, or an order a record states itself, is the edge class this list writes; a bare sibling overlap is not.** One edge was written this pass: **`472` behind `556`**. The two are the same incident filed twice -- `validate-handoff.sh` Check 7 indexing a string-shaped `blockers` element, jq exiting 5, and `set -euo pipefail` converting that into an undocumented crash a caller cannot tell from a real validation failure. `556` owns the ruling (three authorities disagree about the canonical `blockers` shape, and its own text says to settle that FIRST because the ruling decides which side of the fix is non-conforming); `472` conforms the validator, the postflight attribution and the authoring instructions to it, and `518` then propagates that contract to 47 agent files. The pair shares three declared paths, so this is an order a record states over measured shared territory. The sibling overlaps left unedged include `560`/`504`/`516` on `lean-plan-compliance-check.sh`, `630`/`607`/`586`/`605` on `agent-system/extensions/core/scripts/tests/known-failures.txt`, and `632`/`607` on `orchestrator-context-budget.json` -- each split across batches that never dispatch concurrently. Two older proposals are still held for an owner ruling rather than written: `452` behind `451` and `473` behind `472`.
 
-**Every batch was scanned mechanically for a missing in-batch edge this pass.** Across all
-fifteen batches every declared path overlap between two open members of the same batch is
-carried by a direct `dependencies[]` edge: three in the prioritized head, five in the Gate 8 run,
-eleven in the `599` run, three in the lean strand, two in the selection surface, one in each of
-the lane, the tail, the concurrent-load pair and each of the three remaining runs. The sweep batch has no
-in-batch path overlap at all. The one place the scan returns silence rather than a clean result
-is the sapience batch, whose members largely declare no territory.
+**Every batch was scanned mechanically this pass for a member listed ahead of an open predecessor, and the list is clean**: across all 27 batches, no member appears in an earlier batch than, or at an earlier position than, any still-open record it depends on. One violation was found and fixed during authoring (`630` ahead of `629` inside batch one). The scan returns silence rather than a clean result in exactly two places -- `613` and `618` declare no territory at all, so no collision scan over them means anything.
 
-**The batch-proposal lint was run against this rendering and its findings are dispositioned, not
-merely acknowledged.** `scripts/lint/lint-roadmap-batch-proposals.sh` reports 187 advisory
-findings over 15 authored run lines (re-run 2026-11-16): zero of class (c) (no run line over the
-8-task cap), zero of class (d) (no cited task resolving to nothing or to a terminal status), 180
-of class (a) and 7 of class (f). **Class (a) is the advisory cross-batch-overlap class this list
-resolves by array position**, and it cannot be driven to zero by authoring: with fifteen open
-claimants on one plan-format file and ten on one test suite, satisfying it would mean merging
-most of the backlog into single runs past the 8-task cap. It rose from 172 because two new run
-lines now report each other's and their neighbours' members as absent. It was read for the one
-thing it can show, an in-batch overlap missing an edge, and by construction it reports only
-absent tasks, so the mechanical in-batch scan above is the check that answers it. **Class (f) is
-a stale-citation class**; all seven sit in authored-verbatim sections of `specs/ROADMAP.md`
-outside `## Next` and `## Open work`, which this list does not render and must not write.
+**The two held records are not waiting on engineering.** The books-corpus refactor (`342`) waits on an external version stamp reaching `0.1.0` (the consuming repository's own book-convention record still reads a pre-release stamp) and is kept inside batch twenty-five so its territory overlap with `383`/`384` stays visible. The email preference-harvest substrate (`498`) waits on an operator decision about integrating email into the hosted store and is the one open record in no batch. Neither lift is engineering work, and `/orchestrate` admits a held record only under an explicit forcing flag. Nothing depends on either.
 
-**The two held records are not waiting on engineering.** The books-corpus refactor (`342`) waits
-on an external version stamp reaching `0.1.0` (the consuming repository's own book-convention
-record still reads a pre-release stamp); the email preference-harvest substrate (`498`) waits on
-an operator decision about integrating email into the hosted store. Neither is available work,
-both lifts are owner actions, and `/orchestrate` admits a held record only under an explicit
-forcing flag. Nothing depends on either.
-
-**Scopes worth narrowing first.** Re-measured 2026-11-16: **seven** open records carry no
-`file_scope` at all -- `613`, `618`, `627`, `628`, `635`, `636` and `637`, every one of them
-created through Create Task Mode, which sets none -- and that is the entire class, since no open
-record declares an empty array. Five of the seven are the sapience run, so an admission probe over
-that batch returns a clean result that means nothing. **Fix those declarations before probing
-it.** A record with no declared territory is invisible to every collision scan rather than merely
-coarse in it. Two narrower declaration defects are live: `590` declares its lint one directory
-above where the file actually sits, so it cannot collide with `512` even though the two edit the
-same lint; and `638` declares `specs/TODO.md` and `specs/state.json` alongside its four real
-targets, which collides it advisorily with the two migration records that declare the same pair
-and with nothing else. Of the directory-form declarations that remain, every one is scoped to a
-single extension subtree -- `342` (three `books/` directories), `384`, `453`, `530` and `544`.
-None is a whole-corpus discovery scope, and none is a defect.
-**Coverage appendix (uncovered tasks)**:
-```
-/orchestrate 338,383,390,410,421,431,437,453
-/orchestrate 455,456,472,475,477,502,506,510
-/orchestrate 511,514,519,520,521,522,525,529
-/orchestrate 530,535,536,537,542,545,548,551
-/orchestrate 556,557,559,560,563,564,565,567
-/orchestrate 574,575,613,618,639,640,645,646
-```
+**Scopes worth narrowing first.** Re-measured 2026-11-18: **two** open records carry no `file_scope` at all -- `613` and `618` -- down from seven, and that is the entire class, since no open record declares an empty array. Both sit in batches whose other members are narrowly scoped (`613` in batch two with `475`/`514`/`574`, `618` in batch fourteen with `338`), so an admission probe over either batch returns a result that is clean for the wrong reason. **Fix those two declarations before probing.** Two narrower declaration defects remain live: `590` declares its lint one directory above where the file actually sits, so it cannot collide with `512` even though the two edit the same lint -- which is why batch twelve pairs them without an edge; and `557` carries topic `decidability`, undeclared in `active_topics`, so it renders after the curated topics. Of the directory-form declarations that remain, every one is scoped to a single extension subtree -- `342` (three `books/` directories), `384`, `453`, `530` and `544`. None is a whole-corpus discovery scope, and none is a defect.
 
 ## Open work
 
@@ -740,10 +726,10 @@ None is a whole-corpus discovery scope, and none is a defect.
 
 **Orchestrator (6)**
 ```
+472 blocked:556     Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop...
 513 blocked:479     Mechanically detect a plan phase that closed without its own commit
 518 blocked:472     State the blockers[] admission contract and continuation-on-partial requireme...
 610 blocked:607     full_gate_verification_ceiling_and_stall
-472 ready           Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop...
 477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
 514 ready           Convergence guard blind to zero-dispatch cycles
 ```
