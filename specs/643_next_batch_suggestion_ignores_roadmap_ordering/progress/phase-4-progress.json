@@ -1,0 +1,25 @@
+{
+  "phase": 4,
+  "phase_name": "Record the new render case and the shared-readiness relationship",
+  "started_at": "2026-11-17T23:00:00Z",
+  "last_updated": "2026-11-17T23:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add roadmap-batch render case to orchestrate-batch-results-template.md's Suggested next batch section", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"]},
+    {"id": 2, "description": "Add shared-readiness-concept subsection to batch-orchestration-guardrails.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"]},
+    {"id": 3, "description": "Confirm conclusion-stage.md's Step 7 invocation line needs no edit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "Ran verify-deploy.sh --skip-slow --only-gate 3,4 at default INDEX_TRUTH_GATE_MODE", "result": "failed", "reason": "default mode is 'hard' (not advisory as the plan's Decision 4 text implied), so the declared line_count drift surfaces as a hard FAIL rather than an advisory note; re-ran with INDEX_TRUTH_GATE_MODE=advisory to confirm the drift is the ONLY core-extension finding beyond the expected pre-redeploy script-content drift"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4 (verification)",
+      "description": "Phase 4's own Verification bullet expects verify-deploy.sh --skip-slow --only-gate 3,4 to pass (exit 0)",
+      "type": "altered",
+      "reason": "check-extension-docs.sh's INDEX_TRUTH_GATE_MODE defaults to 'hard', not advisory, so the declared index-entries.json line_count drift (expected, per plan Decision 4) produces a hard FAIL at Phase 4 time, before Phase 5's redeploy reconciles it. Phase 4 closes on the evidence that (a) with INDEX_TRUTH_GATE_MODE=advisory exported, the ONLY core-extension findings are the two expected/declared categories (line_count drift and pre-redeploy script-content drift), and (b) task-reference lint is independently clean -- not on a literal zero-exit run, which cannot happen until Phase 5.",
+      "annotation": "*(deviation: altered — verification closed on advisory-mode evidence plus a clean task-reference lint, not a literal zero-exit verify-deploy.sh run, since the declared line_count drift cannot resolve until Phase 5's redeploy)*"
+    }
+  ]
+}

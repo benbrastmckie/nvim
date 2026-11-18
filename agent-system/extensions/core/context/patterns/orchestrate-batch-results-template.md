@@ -234,10 +234,23 @@ only.
 **Roadmap**: regenerated (`specs/ROADMAP.md`).
 
 **Suggested next batch**: from `orchestrate-suggest-next-batch.sh --next-batch`
-(`context/contracts/conclusion-stage.md`'s Step 7). Up to `MAX_BATCH_OPTIONS` (3) distinct,
-labelled, probe-verified options render — one per selection-doctrine criterion (shared
-territory / topic cohesion / graph width) — each under its own `Option N -- {criterion}:`
-header naming why it coheres, each carrying its own admission evidence
+(`context/contracts/conclusion-stage.md`'s Step 7). The suggester first walks
+`specs/state.json`'s authored `roadmap_batches` array, in authored order: each batch's members
+are readiness-filtered locally, an empty-filtered batch is skipped at zero probe cost, and the
+first non-empty filtered batch is probed through the same admission chain every other candidate
+source uses. On success, the render names the batch's authored position and `description`
+(`Authored roadmap batch N -- {description}:`), notes any omitted not-ready member by name when
+the filtered set is a proper subset of the authored `task_ids`, and the three mechanical options
+below are NOT also rendered for that invocation. When no authored batch survives filtering and
+probing — including when `roadmap_batches` is absent or an empty array, which is a silent,
+zero-probe fallback with no extra line — and at least one authored batch WAS checked, one
+explicit line states how many batches were checked, how many were skipped as empty-filtered, and
+how many were probed but deferred, before falling through to the mechanical options.
+
+Only once the roadmap walk yields nothing does Mode A fall back to up to `MAX_BATCH_OPTIONS` (3)
+distinct, labelled, probe-verified mechanical options — one per selection-doctrine criterion
+(shared territory / topic cohesion / graph width) — each under its own `Option N --
+{criterion}:` header naming why it coheres, each carrying its own admission evidence
 (`render_verdict_evidence()`'s `task N: admit`/`defer (reason)` lines). A criterion whose own
 candidate pool is empty is skipped; an option whose task set duplicates an already-rendered
 option's is skipped rather than printed twice.

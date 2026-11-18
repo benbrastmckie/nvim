@@ -550,6 +550,23 @@ MT path but a defect in them fails loudly or is merely cosmetic, not a silent wr
 | `scripts/lifecycle-notify.sh` | A notification/logging hook — a defect at worst drops or garbles a notification; it does not feed back into any admission, wave, lock, or completion decision |
 | `scripts/deploy-headless.sh` | Executed from Move 1 (the inter-cycle redeploy checkpoint) immediately before `verify-deploy.sh`, so it is reachable on the MT dispatch path, but its primary failure mode is loud (`exit 1`/`2`, triggering the documented failure-path warning and `deferred_deploy_checkpoint` population) — matching the exclusion rationale already used for `validate-artifact.sh` above. Judged call, not an unconsidered omission: a hypothetical silent partial-sync defect (some files copied, some not, exit 0 anyway) would clear decision-relevance and belong in the Inclusion Table instead; the current implementation's failure mode is the loud one, so it stays here. |
 
+### Shared Readiness Concept: Two Bars, One Idea, Two Call Sites
+
+`orchestrate-suggest-next-batch.sh`'s `build_ready_set()` (non-terminal; not itself
+hold/implementing/blocked/partial; every `dependencies[]` entry absent-or-completed) and
+`roadmap-integration.sh`'s `render_next()` (a batch all of whose `task_ids` members are now
+terminal is omitted entirely; a batch with a mix of terminal and non-terminal members renders
+its still-live members only) are the SAME readiness concept — "is this task still something to
+act on, or has it already finished" — applied at two different bars for two different purposes.
+`build_ready_set()`'s bar is stricter (it also excludes hold/implementing/blocked/partial, which
+`render_next()` does not need to, since those statuses are non-terminal and still rendered as
+live), and the two functions live in different scripts for different consumers (a next-batch
+suggestion vs. a roadmap render). They are not unified into one shared function — no live
+caller needs both bars at once, and premature unification would couple two scripts that
+currently change independently. This row exists so a future reader changing one terminal-status
+filter knows to check whether the other should move too, not because either implementation is
+wrong as it stands.
+
 ### The Deploy-Manual Analysis and the Surviving Hazards
 
 The research behind this gate initially hypothesized that a source-store edit to orchestrator

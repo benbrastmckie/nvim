@@ -330,27 +330,27 @@ than absorbing it silently.
 
 ---
 
-### Phase 4: Record the new render case and the shared-readiness relationship [NOT STARTED]
+### Phase 4: Record the new render case and the shared-readiness relationship [COMPLETED]
 
 **Goal**: The conclusion report's documented output cases include the roadmap-batch case and its
 fallback, and the shared readiness concept is recorded where this script's guardrail row already
 lives.
 
 **Tasks**:
-- [ ] In `context/patterns/orchestrate-batch-results-template.md`'s `**Suggested next batch**:`
+- [x] In `context/patterns/orchestrate-batch-results-template.md`'s `**Suggested next batch**:`
       section (the anchor at line 236, confirmed present at plan time), add the new case: a
       suggestion naming an authored roadmap batch with its `description` and any omitted-member
       note, and the fallback form stating how many authored batches were checked and that the
       mechanical options follow. Keep the existing colliding-pair, cap-reached, and
-      nothing-suggestible paragraphs intact.
-- [ ] In `context/patterns/batch-orchestration-guardrails.md`, add a short subsection recording
+      nothing-suggestible paragraphs intact. *(completed)*
+- [x] In `context/patterns/batch-orchestration-guardrails.md`, add a short subsection recording
       that `build_ready_set()`'s predicate and `roadmap-integration.sh`'s `render_next()`
       terminal-member filtering are the same readiness concept applied at two different bars, so a
       future reader changing one knows to check the other (the research report's context-extension
-      recommendation). Do not alter the existing Exclusion Table row.
-- [ ] Confirm `context/contracts/conclusion-stage.md`'s Step 7 invocation line needs no edit (the
+      recommendation). Do not alter the existing Exclusion Table row. *(completed)*
+- [x] Confirm `context/contracts/conclusion-stage.md`'s Step 7 invocation line needs no edit (the
       call site is unchanged) and state that confirmation in the phase's commit message rather than
-      editing the file.
+      editing the file. *(completed: line 427's invocation carries no new flags, unchanged)*
 
 **Timing**: 0.75 hours
 
