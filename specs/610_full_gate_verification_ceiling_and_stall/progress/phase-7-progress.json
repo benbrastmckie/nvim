@@ -1,0 +1,45 @@
+{
+  "phase": 7,
+  "phase_name": "Dispatch Watchdog Launched Beside the Dispatches, Not After Them",
+  "started_at": "2026-11-18T23:55:00Z",
+  "last_updated": "2026-11-19T00:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write orchestrate-dispatch-watchdog.sh with bounded sweep loop over dispatch-strand-probe.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-dispatch-watchdog.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "New test suite pinning stranded/live/unknown/outer-bound/idempotency/forbidden-shape cases",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-dispatch-watchdog.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Declare script and suite in manifest.json and suite-classification.data",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Wire SKILL.md Move 2 launch (never awaited) and Move 3 first-act alert-file read plus Move 4 non-blocking reap",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+      ]
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

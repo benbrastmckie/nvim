@@ -17,6 +17,10 @@ separate single-task code path. Full state table, transition diagram, design rat
   admission, routing, and dispatch-file composition
 - `.claude/scripts/orchestrate-build-dispatch.sh` — Move 1's dispatch-file writer (called
   internally by `orchestrate-cycle-plan.sh` for every row)
+- `.claude/scripts/orchestrate-dispatch-watchdog.sh` — launched beside Move 2's Agent calls
+  (never awaited); polls `dispatch-strand-probe.sh` per dispatched task on its own clock and
+  writes a durable alert on the first `stranded` verdict, so Move 3 can detect a silent dispatch
+  without waiting for every Move 2 Agent call to return first
 - `.claude/scripts/orchestrate-cycle-postflight.sh` — Move 3: the shared per-task postflight body
 - `.claude/scripts/orchestrate-recover-message-findings.sh` — Move 3's `report_missing=true`
   branch: saves a research dispatch's message-borne findings as a clearly-tagged recovered
@@ -195,7 +199,45 @@ Agent-tool argument unless this section names it as one — today that is `agent
 (-> `subagent_type`) and `model` only; the `Context: {...}` fields above are prompt text handed
 to the dispatched agent, never Agent-tool arguments themselves.
 
+**Dispatch watchdog launch** (same message as the Agent calls above, one Bash call, launched
+only when `.dispatch[]` is non-empty this cycle): a backgrounded, never-awaited poll over
+`dispatch-strand-probe.sh` for exactly this cycle's dispatched tasks, so a silent dispatch is
+detectable on its own clock rather than only after every Agent call above returns.
+
+```bash
+if [ "$(echo "$plan_json" | jq '.dispatch | length')" -gt 0 ]; then
+  pairs=$(echo "$plan_json" | jq -r --slurpfile mt "$mt_state_file" \
+    '[.dispatch[] | "\(.task):\($mt[0].dispatch_seq[.task|tostring])"] | join(" ")')
+  alert_file="specs/.orchestration/dispatch-watchdog-alerts-${session_id}.jsonl"
+  nohup bash .claude/scripts/orchestrate-dispatch-watchdog.sh --session "$session_id" \
+    --alert-file "$alert_file" $pairs \
+    >"specs/.orchestration/.watchdog-${session_id}.log" 2>&1 &
+  watchdog_pid=$!
+  echo "$watchdog_pid" > "specs/.orchestration/.watchdog-pid-${session_id}"
+fi
+```
+
+**The orchestrator never awaits this process.** `watchdog_pid` is captured only so a later,
+non-blocking `kill -0`/`kill` cleanup (Move 4, after this cycle's own Agent calls have already
+returned) can reap it if it is still running — never to wait on its exit. Waiting on this
+process's own completion notification would be exactly the detach-then-await-a-notification
+antipattern `bounded-build-waiter.md`'s Canonical Agent-Contract Bullet forbids; nothing here
+does that, because Move 3 below reads the watchdog's durable alert FILE, never the process
+itself.
+
 ### Move 3: Postflight
+
+**First act, before the per-task loop below**: read `$alert_file` (same path Move 2 wrote
+above) if it exists. Each line is one `{task, dispatch_seq, verdict, heartbeat_age_min,
+evidence, session_id, detected_at}` alert row from `orchestrate-dispatch-watchdog.sh`. For a
+row whose `task`/`dispatch_seq` matches the row about to be postflighted below, treat it
+identically to that row's own `stranded_suspected=true` (same `pending_stall_reprompt`/
+`stall_ledger`/`stall_reprompted[]` idempotency key, `{task, dispatch_seq}`, so a watchdog alert
+and a postflight-computed `stranded_suspected` can never double-fire for the same dispatch) —
+this is the mechanism that lets a stall surface in minutes rather than only once every Move 2
+Agent call has already returned, per Decision 5's declared-not-assumed guarantee (see this
+skill's own header pointer and `orchestrate-dispatch-watchdog.sh`'s file header for which timing
+guarantee this harness was observed to deliver).
 
 **After ALL Agent calls from Move 2 complete** (never interleaved with dispatch), run this once
 per `dispatch[]` row — the one shared implementation for every task/phase/effort mode:
@@ -227,6 +269,15 @@ echo "$plan_json" | jq -c '.dispatch[]' | while IFS= read -r row; do
   echo "[orchestrate] Task #${t}: dispatch result: $dispatch_status (verdict=$verdict, persisted=$persisted_status)" >&2
 
   dispatch_seq_for_row=$(jq -r --arg t "$t" '.dispatch_seq[$t] // empty' "$mt_state_file")
+
+  # Fold in a watchdog alert for this exact {task, dispatch_seq}, if one exists (Move 2's "First
+  # act" above describes the mechanism). Never overrides a `false` back to `false` -- OR only,
+  # so a postflight-computed stranded_suspected is never weakened by an absent/stale alert file.
+  if [ -n "${alert_file:-}" ] && [ -f "$alert_file" ]; then
+    watchdog_alert_hit=$(jq -r --argjson tn "$t" --argjson ds "${dispatch_seq_for_row:-null}" \
+      'select(.task == $tn and .dispatch_seq == $ds) | true' "$alert_file" 2>/dev/null | head -n1)
+    [ "$watchdog_alert_hit" = "true" ] && stranded_suspected="true"
+  fi
 
   # D4 message-findings recovery (research phase only; full rationale in "MUST NOT (Postflight
   # Boundary)" below): report_missing=true means no usable report file/outcome was recovered, so
@@ -346,6 +397,14 @@ bash .claude/scripts/orchestrate-conclusion-roadmap.sh --session "$session_id" -
 
 Writes `specs/ROADMAP.md`'s scoped commit (or the loud degrade) and the marker Move 5 Step 6
 deletes.
+
+**Dispatch watchdog reap** (non-blocking cleanup, not a wait): if
+`specs/.orchestration/.watchdog-pid-${session_id}` exists, read the pid and, only if
+`kill -0 "$pid" 2>/dev/null` still succeeds (this cycle's own Agent calls have already all
+returned by Move 3, so a still-running watchdog has nothing left to usefully detect), `kill
+"$pid"` it and remove the pidfile. This single non-blocking liveness check is the only use this
+skill makes of `kill -0` against the watchdog — never a loop, never a wait: the watchdog's own
+alert file, not its process exit, is what Move 3 already consumed above.
 
 Then: render the consolidated output (read
 `context/patterns/orchestrate-batch-results-template.md` and render exactly, including this

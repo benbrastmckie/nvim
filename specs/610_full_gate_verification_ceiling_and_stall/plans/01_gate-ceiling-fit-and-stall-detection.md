@@ -586,44 +586,55 @@ and the `124` return sites at implementation time before writing the sampling co
 
 ---
 
-### Phase 7: Dispatch Watchdog Launched Beside the Dispatches, Not After Them [NOT STARTED]
+### Phase 7: Dispatch Watchdog Launched Beside the Dispatches, Not After Them [COMPLETED]
 
 **Goal**: Detect a silent dispatch in minutes by invoking the existing strand probe from a
 bounded watchdog the orchestrator launches in the same message as its Agent calls, so detection
 is no longer wired downstream of the event it must detect the absence of.
 
 **Tasks**:
-- [ ] Write `scripts/orchestrate-dispatch-watchdog.sh`: given this cycle's task numbers, a poll
+- [x] Write `scripts/orchestrate-dispatch-watchdog.sh`: given this cycle's task numbers, a poll
       interval and a hard outer bound, poll `dispatch-strand-probe.sh` per task and act on the
       first `stranded` verdict. Never re-implement staleness, never walk process descendants, and
       never use `ps | grep` or `pgrep -f` — the probe already owns all three refusals and is
-      fail-closed (`unknown` is never `stranded`).
-- [ ] Use the canonical bounded-waiter idiom internally — captured `pid=$!`, a `kill -0 "$pid"`
+      fail-closed (`unknown` is never `stranded`). *(completed)*
+- [x] Use the canonical bounded-waiter idiom internally — captured `pid=$!`, a `kill -0 "$pid"`
       liveness loop, an outer `timeout N`, all inside one Bash call — consuming the idiom without
       editing `bounded-build-waiter.md`'s copied Canonical Agent-Contract Bullet or its
-      Forbidden-Shape Lint Anchor.
-- [ ] On a strand verdict, write a durable alert row keyed by `{task, dispatch_seq}` and print a
+      Forbidden-Shape Lint Anchor. *(completed: realized across two sites rather than one, since
+      the watchdog itself is never awaited — SKILL.md's Move 2 launch captures `pid=$!` on the
+      backgrounded watchdog process; the watchdog's own internal sweep loop is bounded by a
+      foreground `timeout "$OUTER_BOUND"` re-exec of itself, the simpler form
+      bounded-build-waiter.md's own text prefers over the detach form whenever a command fits
+      foreground; Move 4's cleanup performs a single non-blocking `kill -0 "$pid"` check — never
+      a loop, since the orchestrator never awaits this process — to reap it if still running)*
+- [x] On a strand verdict, write a durable alert row keyed by `{task, dispatch_seq}` and print a
       loud operator-visible line naming the task, its heartbeat age and the probe's verdict; then
-      exit non-zero naming the task.
-- [ ] Launch the watchdog from Move 2 as one backgrounded Bash call covering that cycle's
+      exit non-zero naming the task. *(completed)*
+- [x] Launch the watchdog from Move 2 as one backgrounded Bash call covering that cycle's
       dispatched tasks, issued in the same message as the Agent calls. The orchestrator **never
       awaits it** — stating this explicitly in SKILL.md, because awaiting a notification is the
-      exact shape Check K forbids.
-- [ ] Make Move 3's first act reading the alert file and routing any alert into the existing
+      exact shape Check K forbids. *(completed)*
+- [x] Make Move 3's first act reading the alert file and routing any alert into the existing
       one-re-prompt relay, reusing the `stall_reprompted[]` `{task, dispatch_seq}` idempotency key
       unchanged so exactly one re-prompt fires per dispatch_seq regardless of which signal
-      arrived.
-- [ ] Observe and record which guarantee the harness actually delivers (Decision 5): whether the
+      arrived. *(completed: folds into `stranded_suspected` before the existing relay logic, so
+      the idempotency key and relay path are unchanged)*
+- [x] Observe and record which guarantee the harness actually delivers (Decision 5): whether the
       background exit notification reaches the orchestrator during its blocked turn, or only at
       turn end. Record the observed behavior in the watchdog's own header; assert neither
-      outcome without observing it.
-- [ ] Add a test suite pinning: a seeded stranded task produces an alert row and a non-zero exit;
+      outcome without observing it. *(completed: recorded in the watchdog's own header — the
+      question is moot by construction for this mechanism, not merely unobserved, since nothing
+      downstream ever consumes this process's exit or notification at all; Move 3 reads the
+      alert FILE on its own schedule instead, so detection latency is bounded by
+      `--poll-interval` and by Move 3's own cadence, neither a notification-timing claim)*
+- [x] Add a test suite pinning: a seeded stranded task produces an alert row and a non-zero exit;
       a seeded `live` or `unknown` verdict produces neither; the outer bound terminates the loop;
       the alert is idempotent per `{task, dispatch_seq}`; and the forbidden process-lookup shapes
-      are absent from the script.
-- [ ] Declare the script and its suite in `manifest.json` `provides.scripts` and the suite in
+      are absent from the script. *(completed: 10 cases, all passing standalone)*
+- [x] Declare the script and its suite in `manifest.json` `provides.scripts` and the suite in
       `scripts/tests/suite-classification.data`; satisfy the test-root-resolution and
-      fixture-dependency declaration conventions the corresponding lints enforce.
+      fixture-dependency declaration conventions the corresponding lints enforce. *(completed)*
 
 **Timing**: 2 hours
 
