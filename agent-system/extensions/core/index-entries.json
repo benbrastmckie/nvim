@@ -2573,7 +2573,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Orchestration conclusion stage (Move 5): derives three gated channels (direct fixes, agent-system changes, follow-up tasks) from aggregated per-task issues.jsonl logs, each firing only on its own explicit approval; the coexistence boundary with the skeleton-plan follow-up mechanism; the executable stage body",
-      "line_count": 500,
+      "line_count": 506,
       "keywords": [
         "conclusion-stage",
         "move-5",
