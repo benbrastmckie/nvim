@@ -1,7 +1,7 @@
 # Implementation Plan: Task #558
 
 - **Task**: 558 - Document the convention that a task description must request a PROPOSAL PACKET, never task FILING, from an autonomous dispatch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/558_conclusion_stage_filing_handoff_phrasing/reports/01_filing-handoff-phrasing-convention.md

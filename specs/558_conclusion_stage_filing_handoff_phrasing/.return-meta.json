@@ -1,5 +1,56 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 10,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/558_conclusion_stage_filing_handoff_phrasing/summaries/01_filing-handoff-phrasing-convention-summary.md",
+      "summary": "Documents the proposal-packet-vs-filing phrasing convention: a new subsection at Component 7 in multi-task-creation-standard.md, a pointer-only note in conclusion-stage.md's Overview, redeployed with RESULT=landed_verify_clean."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a new Component 7-adjacent subsection to multi-task-creation-standard.md stating the forbidden/required phrasing shapes and the WHY, plus a two-sentence pointer in conclusion-stage.md's Overview deferring to it. Fixed an index-entries.json line_count drift triggered by the edit, redeployed (RESULT=landed_verify_clean), and confirmed both edits present in the deployed mirror."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md",
+    "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [],
+  "sapience_notes": [
+    {
+      "subject": "conclusion-stage.md channel (b)/(c) execution",
+      "value": "The orchestration conclusion stage never files anything itself for channels (b) (agent-system changes) and (c) (follow-up tasks) -- it only aggregates and classifies evidence into the durable evidence store. Confirmed creation happens at a separate, deliberately-batched foreground invocation downstream. A task description or plan phase must describe this chain accurately rather than naming the conclusion stage as the filer.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.95,
+      "source_loc": "agent-system/extensions/core/context/contracts/conclusion-stage.md"
+    },
+    {
+      "subject": "Autonomous dispatch task-filing instructions",
+      "value": "A task description or plan phase must never instruct an autonomous research/plan/implement dispatch to itself file, create, or confirm creation of a follow-up task or agent-system change request -- AskUserQuestion is categorically withheld from dispatched subagents (docs/reference/standards/agent-frontmatter-standard.md's Tool Withholding section) and confirmation must execute in the foreground skill layer only. The correct instruction asks the dispatch to record issue-log entries (suggested_channel: follow_up_task | agent_system) plus a rendered candidate list, leaving confirmed creation to a foreground surface.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.95,
+      "source_loc": "agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md"
+    },
+    {
+      "subject": "index-entries.json line_count drift",
+      "value": "Editing a context file tracked by a source-store index-entries.json entry (e.g. agent-system/extensions/core/index-entries.json's entry for contracts/conclusion-stage.md) trips Gate 3 doc-lint's line_count check immediately, before any deploy. generate-context-line-counts.sh --write refuses to run from the source store (deploy-root-guard.sh), so after any line-count-changing edit to a tracked context file, the index-entries.json line_count field must be hand-updated in the source store rather than regenerated.",
+      "predicate": "constraint is",
+      "ko_type": "constraint",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/index-entries.json"
+    },
+    {
+      "subject": "git-commit-phase.sh Containment Self-Check and .claude/** paths",
+      "value": "git-commit-phase.sh's Containment Self-Check refuses to deposit any .claude/** path into a task's proposed_file_scope even when dropped from a phase commit, citing rules/source-store-deploy-boundary.md -- a deployed-tree path is never a legitimate file_scope member. Confirmed live: dropping .claude/context/contracts/conclusion-stage.md and .claude/docs/reference/standards/multi-task-creation-standard.md from a phase 3 commit (after deploy-headless.sh regenerated them) produced a WARNING for each but no proposed_file_scope deposit, unlike an in-scope source-store path drop which does deposit.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": ".claude/scripts/git-commit-phase.sh"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794985308_f67716",
     "agent_type": "general-implementation-agent",
@@ -8,10 +59,8 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
-  },
-  "dispatch_seq": 10,
-  "proposed_file_scope": [
-    "agent-system/extensions/core/index-entries.json"
-  ]
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
+  }
 }

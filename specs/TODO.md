@@ -13,8 +13,8 @@ next_project_number: 645
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,526,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,523,533,540,541,542,544,546,550,553,570,576,579,583,592,593,598,605,609,610,630,644 | 383,390,398,410,431,438,451,453,455,463,472,477,504,511,519,526,535,538,539,548,549,558,563,564,577,586,599,607,629 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,526,529,530,535,536,537,538,539,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,523,533,540,541,542,544,546,550,553,570,576,579,583,592,593,598,605,609,610,630,644 | 383,390,398,410,431,438,451,453,455,463,472,477,504,511,519,526,535,538,539,548,549,563,564,577,586,599,607,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,480,486,492,509,513,552,566,571,594 | 439,452,479,484,491,518,542,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,561,581,588,595 | 472,486,492,509,539,552,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 524,596,641 | 454,501,561,595 | core-agent-system, agent-system |
@@ -147,7 +147,6 @@ next_project_number: 645
   └─ 576 [NOT STARTED] — Record the Lean verification-tier gate-naming rule, the...
 551 [NOT STARTED] — Close the recurring stale-handoff defect and find out why the...
 556 [NOT STARTED] — Fix validate-handoff.sh crash-as-false-negative and settle...
-558 [IMPLEMENTING] — Require task descriptions to request a proposal packet...
 559 [NOT STARTED] — Stop one low-specificity shared path from producing...
 560 [RESEARCHED] — Clear the three standing verify-deploy findings blocking a...
 577 [NOT STARTED] — Make a blocker-triggered aux plan-revision consumable by...
@@ -3797,12 +3796,13 @@ repository numbering space and is recorded here as provenance.
 
 ### 558. Require task descriptions to request a proposal packet instead of instructing a dispatch to file tasks
 - **Effort**: small
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: Task 313
 - **Research**: [558_conclusion_stage_filing_handoff_phrasing/reports/01_filing-handoff-phrasing-convention.md]
 - **Plan**: [558_conclusion_stage_filing_handoff_phrasing/plans/01_filing-handoff-phrasing-convention.md]
+- **Summary**: [558_conclusion_stage_filing_handoff_phrasing/summaries/01_filing-handoff-phrasing-convention-summary.md]
 
 **Description**: Document the convention that a task description must ask an autonomous dispatch for a PROPOSAL PACKET, never for task FILING, because filing requires a foreground user confirmation no dispatched agent can perform.
 
