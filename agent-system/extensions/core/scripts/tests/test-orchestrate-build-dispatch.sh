@@ -203,7 +203,7 @@ if [ "$LAST_EXIT" -eq 0 ] && [ -n "$LAST_DISPATCH_FILE" ] && [ -f "$LAST_DISPATC
   assert_contains "$content" "--task-dir \"${FIXTURE}/${TASK_DIR_REL}\"" "research: Issue Log --task-dir is the resolved absolute task directory, not a placeholder"
   assert_contains "$content" "kind: win" "research: Issue Log states wins are recordable"
   assert_contains "$content" "context/formats/issue-log.md" "research: Issue Log points at the format doc"
-  assert_not_contains "$content" "design-record defect or ambiguity" "research: Issue Log does not inline the 15-class seed enum"
+  assert_not_contains "$content" "design-record defect or ambiguity" "research: Issue Log does not inline the 17-class seed enum"
   assert_contains "$content" "user-decision-contract.md" "research: user-decision contract reference always present"
   assert_not_contains "$content" "<memory-context>" "research --clean: memory block suppressed"
   assert_not_contains "$content" "<literature-briefing>" "research (no --lit): lit block suppressed"

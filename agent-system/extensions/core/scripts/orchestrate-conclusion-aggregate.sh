@@ -13,7 +13,7 @@
 #   orchestrate-conclusion-aggregate.sh --aggregate --session SID --tasks "N N N"
 #       Reads every listed task's specs/{NNN}_{SLUG}/issues.jsonl (when present), groups
 #       open/worked_around entries by class across tasks into proposals, separates kind:"win"
-#       entries, tallies classes outside the 15-class seed enum, and lists touched tasks with
+#       entries, tallies classes outside the 17-class seed enum, and lists touched tasks with
 #       no contribution. A null or omitted `resolution` on a non-win entry is read identically to
 #       `"open"`, so it enters classification rather than being silently dropped; the output's
 #       `implicit_open_count` field reports how many candidates arrived that way, informational

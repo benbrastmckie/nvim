@@ -205,7 +205,7 @@ place of the planned approach, a gate collision, or an unusually smooth or time-
 (`kind: "win"`, recorded on equal footing with an issue). Do not wait to reconstruct this at the
 final `.return-meta.json` write or handoff — that end-of-dispatch reconstruction is exactly what
 produces the free prose this log exists to replace. See `context/formats/issue-log.md` for the
-full field contract, the severity scale, and the 15-class seed enum; the dispatch file's own
+full field contract, the severity scale, and the 17-class seed enum; the dispatch file's own
 "## Issue Log" section carries the exact resolved `--task-dir` and non-fatal call form for this
 dispatch.
 

@@ -272,7 +272,7 @@ extension's own `generic` join and books-specific computed fields are unaffected
 ## Related
 
 - `patterns/signal-tagging.md` — how working agents populate the `tags` seam this standard reads.
-- `context/formats/issue-log.md` — the `tags` seam itself, and the 15-class issue taxonomy.
+- `context/formats/issue-log.md` — the `tags` seam itself, and the 17-class issue taxonomy.
 - `context/formats/dispatch-metrics.md` — the sibling generic log, the `figure_provenance` shape,
   and the `--backfill` marking contract this standard's own `--backfill` mirrors.
 - `domain/gate-tiers.md` — the vacuous-pass concept this standard makes first-class.

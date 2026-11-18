@@ -200,5 +200,5 @@ was also recorded for the same task.
 
 - `standards/observation-record.md` — the full schema these tags feed, including the
   computed-vs-supplied division of labour and the paired-burden schema requirement.
-- `context/formats/issue-log.md` — the `tags` seam itself, the 15-class seed enum, and the
+- `context/formats/issue-log.md` — the `tags` seam itself, the 17-class seed enum, and the
   severity scale.
