@@ -1268,6 +1268,7 @@ DURABLE EVIDENCE (in the BimodalLogic repo, /home/benjamin/Projects/BimodalLogic
 - **Parent**: Task 532
 - **Research**: [607_gate_20_context_budget_and_timeout_sensitivity/reports/01_gate20-budget-and-timeout-sensitivity.md]
 - **Plan**: [607_gate_20_context_budget_and_timeout_sensitivity/plans/01_gate20-headroom-and-timeout-raise.md]
+- **Summary**: [607_gate_20_context_budget_and_timeout_sensitivity/summaries/01_gate20-headroom-and-timeout-raise-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
 

@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 16,
-  "phases_completed": 0,
+  "dispatch_seq": 17,
+  "status": "implemented",
+  "phases_completed": 3,
   "phases_total": 3,
-  "summary": "Wrote a 3-phase, 2.75h plan adopting both of the research report's branch decisions: a deliberate gate-20 headroom re-baseline (70400->71500 eager baseline, 21500->22000 and 26000->26500 per-file ceilings) rather than a fourth compaction pass, and a static timeout_s raise 60->180 on gates 3, 4 and 10 rather than a load-adaptive mechanism (left to task 610). Premise re-validation confirmed live: the description's 71712B figure is stale and mis-attributed (gate 20 passes at exactly 70400B), and its 'gates 8 and 10' claim is half wrong -- gate 8 declares 1500s and runs serialized, so the remedy retargets onto gates 3/4/10. Phase 3 redeploys via deploy-headless.sh and runs the full gate sweep; it declares __WHOLE_TREE__.",
+  "summary": "Implemented both remedies for task 607: moved gate 20's three budget figures to deliberate preventive headroom (recomputed from a live measurement that had drifted past the plan's stale premise due to a concurrent sibling task's own baseline move) and raised gates 3, 4, and 10's timeout_s from 60 to 180, with a dated derivation note and a cross-reference for task 610's eventual load-adaptive design. Redeployed and confirmed all three edited files content-hash equal between source and deployed tree. A residual gate 5 failure during scoped verification was traced via git log timestamps to concurrent sibling commits outside this task's file_scope, not this task's own work, and is deferred to the batch's own close sweep.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/607_gate_20_context_budget_and_timeout_sensitivity/summaries/01_gate20-headroom-and-timeout-raise-summary.md",
+      "summary": "Gate 20 budget headroom move and gate 3/4/10 timeout raise, redeployed and verified."
+    },
+    {
       "type": "plan",
       "path": "specs/607_gate_20_context_budget_and_timeout_sensitivity/plans/01_gate20-headroom-and-timeout-raise.md",
-      "summary": "3-phase config-only plan: gate-20 budget headroom re-baseline, gates 3/4/10 timeout_s 60->180, redeploy plus full-sweep verification."
+      "summary": "Three-phase plan, all phases COMPLETED with inline deviation annotations."
     }
   ]
 }

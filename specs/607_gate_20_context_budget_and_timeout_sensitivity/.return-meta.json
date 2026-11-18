@@ -1,10 +1,132 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 17,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/607_gate_20_context_budget_and_timeout_sensitivity/summaries/01_gate20-headroom-and-timeout-raise-summary.md",
+      "summary": "Gate 20 budget figures moved to deliberate preventive headroom; gates 3/4/10 timeout_s raised 60->180; redeploy and scoped verification, with a foreign gate-5 drift attributed to concurrent sibling commits."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Moved gate 20's three budget figures to deliberate preventive headroom (recomputed from a live measurement that had drifted past the plan's stale premise), raised gates 3/4/10's timeout_s from 60 to 180 with a dated derivation note and task-610 cross-reference, corrected a stale known-failures.txt citation, and redeployed with all three edited files diff-confirmed content-hash equal between source and deployed tree."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/scripts/gate-registry.data",
+    "agent-system/extensions/core/scripts/tests/known-failures.txt"
+  ],
+  "memory_candidates": [
+    {
+      "content": "run-all.sh's known-failures.txt EXPECTED/NEW classification matches purely by suite basename, not by which specific finding/gate caused the failure. A declared row can stay correctly classified EXPECTED even when the proximate cause differs run to run (observed: a suite's cold-baseline case failed on gate4's timeout in one run and would ordinarily cite gate10's in known-failures.txt's own text) -- do not assume the declared reason is still the live cause; verify it independently before trusting a known-failures.txt citation.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/607_gate_20_context_budget_and_timeout_sensitivity/summaries/01_gate20-headroom-and-timeout-raise-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "run-all.sh",
+        "known-failures.txt",
+        "EXPECTED",
+        "suite classification",
+        "verify-deploy"
+      ]
+    },
+    {
+      "content": "When a plan's premise re-validation cites a live/mutable figure (a measured byte count, a row count) and the plan instructs recomputing targets from a fresh pre-edit measurement rather than carrying the plan's literal number forward, apply the SAME derivation rule to the live figure (e.g. live + fixed headroom, rounded to the field's own established convention) instead of either the plan's stale number or an ad hoc new one. This kept the gate-20 baseline move internally consistent with the config's own derivation history despite a same-day sibling task moving the live figure between planning and implementation.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/607_gate_20_context_budget_and_timeout_sensitivity/summaries/01_gate20-headroom-and-timeout-raise-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "premise re-validation",
+        "carried-figure discipline",
+        "live measurement",
+        "derivation rule",
+        "plan drift"
+      ]
+    },
+    {
+      "content": "test-gate-cache-equivalence.sh's cold-baseline case checks out the real repo's specs/state.json inside a fresh `git worktree add --detach HEAD` fixture, which reads only COMMITTED history. It is structurally immune to any in-flight uncommitted edit in the working tree -- useful when assessing whether a concurrent sibling task's declared file_scope overlap on a file this fixture touches poses a real contamination risk (it does not, for uncommitted state).",
+      "category": "INSIGHT",
+      "source_artifact": "specs/607_gate_20_context_budget_and_timeout_sensitivity/summaries/01_gate20-headroom-and-timeout-raise-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "test-gate-cache-equivalence.sh",
+        "git worktree",
+        "detached HEAD",
+        "fixture isolation",
+        "territory risk"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "verify-deploy.sh gate 20 (orchestrator context budget) preventive headroom moves",
+      "value": "A deliberate, dated headroom move for gate 20's eager_load.baseline_bytes is computed as live_measurement + ~1,100 B, rounded up to the next 100 B (the field's own established rounding convention); a per-file ceiling_bytes gets the file's documented 'round up to the next 500 B' convention plus one additional 500 B step. Both are applied while the gate is green, explicitly framed as preventive, breaking the repository's own recurring ~0-200 B reactive-margin pattern (visible across at least 5 prior dated moves in the config's own derivation history).",
+      "predicate": "finding is",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/context/config/orchestrator-context-budget.json"
+    },
+    {
+      "subject": "gate-registry.data timeout_s for gates 3, 4, and 10",
+      "value": "Raised from 60s to 180s because gate-cost-model.csv carries only a gate8 row and cannot supply the clean avg_ms the registry's documented '3x headroom over the measured average' rule requires for gates 3/4/10. Derived instead from gate 10's own independently corroborated worst standalone runtime (66s, re-passing cleanly in 61-66s across three 2026-11-16 incidents) at the same ~3x headroom factor -- a deliberate, recorded deviation from the documented derivation rule, not an ad hoc number.",
+      "predicate": "finding is",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/gate-registry.data"
+    },
+    {
+      "subject": "Concurrent /orchestrate batch deploy races",
+      "value": "Running deploy-headless.sh inside a multi-task /orchestrate batch can surface gate 5 (content-hash equality) and gate 3 (doc-lint) failures attributable to OTHER tasks' commits landing in the same few-minute window as the redeploy, not to the redeploying task's own edits. git log --format=%cI on the implicated files reliably distinguishes this from a genuine regression: a commit timestamp within minutes of the deploy invocation, by a differently-named task, is the signature of this race rather than an own-task defect.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "specs/607_gate_20_context_budget_and_timeout_sensitivity/issues.jsonl"
+    },
+    {
+      "subject": "Batch Gate Deferral directive's scoped-discharge mechanics",
+      "value": "verify-deploy.sh --only-gate N[,M...] --skip-unchanged is the sanctioned narrowing for a batch-deferred final phase that still needs its own gate confirmed. verify-touched.sh is the other sanctioned option but derives its own touched-path list from git diff against a determined base, and can itself fail its preflight (a referenced test file not yet present in a mid-transition deployed tree) when run during active concurrent sibling redeploys -- the --only-gate form proved more robust under that condition in this dispatch.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.75,
+      "source_loc": "agent-system/extensions/core/scripts/verify-touched.sh"
+    },
+    {
+      "subject": "run-all.sh known-failures.txt classification granularity",
+      "value": "run-all.sh's EXPECTED vs. NEW failure classification matches by suite basename only, never by which specific assertion or underlying gate caused the failure. A declared known-failures.txt row can continue to report '0 NEW' correctly even when the live proximate cause differs from the one named in the row's own prose (observed twice in one dispatch: a gate5 content-hash cause substituting for a documented gate24 cause, and a gate4 timeout substituting for a documented gate10 timeout, both under the same suite name).",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/tests/known-failures.txt"
+    },
+    {
+      "subject": "test-gate-cache-equivalence.sh cold-baseline fixture isolation",
+      "value": "This suite's cold-baseline case checks out the real repository's specs/state.json inside a fresh `git worktree add --detach HEAD` fixture, reading only committed history. It is structurally immune to any in-flight uncommitted edit in the working tree at the time the suite runs.",
+      "predicate": "finding is",
+      "ko_type": "fact",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh"
+    },
+    {
+      "subject": "gate 3/4/10 timeout-raise scope decision (gate_20_context_budget_and_timeout_sensitivity task)",
+      "value": "The implementation extended the raise to gates 3 and 4 alongside gate 10, beyond the research report's conditional recommendation for only 3 and 4, because all three gates share the exact same 60s bound and the same corroborated resource-contention incident class (confirmed via specs/562_*/issues.jsonl and specs/634_*/issues.jsonl); a split remedy would have left two of the three evidenced gates unfixed.",
+      "predicate": "finding is",
+      "ko_type": "decision",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/gate-registry.data"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795039913_ab1940",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
