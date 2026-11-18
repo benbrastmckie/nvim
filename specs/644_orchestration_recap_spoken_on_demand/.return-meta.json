@@ -1,0 +1,43 @@
+{
+  "status": "researched",
+  "session_id": "sess_1794985308_f67716_644",
+  "dispatch_seq": 13,
+  "summary": "Confirmed all dispatch grounding live (conclusion-stage.md Step 6 emission site, Move 5 Bash allowlist, runtime-file-patterns.sh resolver family, tts-notify.sh's closed vocabulary, piper invocation shape, /recap name freedom) and designed the fix: a new orchestrate-recap.sh script (--write mode called from Move 5 Step 6, default speak mode called by the new user-only /recap command), a new runtime_recap_path() resolver (no new gitignore array member needed -- specs/.orchestration/ already covers it), and the user-only enforcement rationale tied directly to the BINDING no-autonomous-audio constraint.",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/644_orchestration_recap_spoken_on_demand/reports/01_orchestration-recap-design.md",
+      "summary": "Research report confirming current file state against dispatch grounding and designing the orchestrate-recap.sh / /recap architecture, the runtime-file-patterns.sh resolver addition, the Move 5 allowlist and conclusion-stage.md Step 6 amendments, and the user-only enforcement ruling."
+    }
+  ],
+  "modified_files": [],
+  "metadata": {
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 9
+  },
+  "memory_candidates": [
+    {
+      "content": "In this agent-system codebase, a new per-session ephemeral runtime file placed under specs/.orchestration/ needs NO new RUNTIME_FILE_PATTERNS array member in scripts/lib/runtime-file-patterns.sh -- the directory already carries a **/.orchestration/ gitignore pattern (the 'orchestration' 19th member) that covers any file inside it. Only a new resolver function (mirroring runtime_mt_state_path/runtime_return_meta_multi_path/runtime_conclusion_pending_marker_path's exact (specs_dir, session_id) -> path shape) is needed. Confirmed precedent: orchestrate-conclusion-aggregate.sh's own approval ledger file (.conclusion-approval-{session_id}.json) relies on the same directory coverage rather than its own array entry.",
+      "category": "PATTERN",
+      "source_artifact": "specs/644_orchestration_recap_spoken_on_demand/reports/01_orchestration-recap-design.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["runtime-file-patterns", "orchestration directory", "gitignore", "session-scoped file", "resolver function"]
+    },
+    {
+      "content": "hooks/tts-notify.sh's speak() helper interpolates its message into a single-quoted shell string nested inside a second `bash -c` invocation (printf '%s' '${message}' | piper ... ), which is safe only because every existing caller passes a closed, punctuation-free vocabulary ('Tab N', lifecycle status words). Any future TTS-speaking path for free-form/arbitrary prose must NOT reuse this exact quoting shape -- an apostrophe or embedded quote in the spoken text would break it. Use a file/stdin-based piper invocation instead.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/644_orchestration_recap_spoken_on_demand/reports/01_orchestration-recap-design.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["tts-notify.sh", "piper", "shell quoting", "injection safety", "arbitrary text speaking"]
+    },
+    {
+      "content": "This codebase's user-only command enforcement (skill-tag precedent) is a three-layer mechanism: (1) `user-only: true` in the skill's YAML frontmatter, (2) an explicit 'Agents MUST NOT invoke' statement in both the skill and command markdown files, (3) omission of the skill from CLAUDE.md's Skill-to-Agent Mapping table. All three layers are needed together; omitting the skill from the mapping table alone is not treated as sufficient documentation.",
+      "category": "PATTERN",
+      "source_artifact": "specs/644_orchestration_recap_spoken_on_demand/reports/01_orchestration-recap-design.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["user-only", "skill-tag", "enforcement layers", "frontmatter", "agent restrictions"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 644 to create implementation plan"
+}
