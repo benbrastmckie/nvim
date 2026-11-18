@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1794985308_f67716_558",
+  "dispatch_seq": 4,
+  "findings_count": 7,
+  "next_steps": "Run /orchestrate 558 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/558_conclusion_stage_filing_handoff_phrasing/reports/01_filing-handoff-phrasing-convention.md",
+      "summary": "Diagnoses siting (a/b/c) for the task-description filing-vs-proposal-packet convention; recommends stating it once in multi-task-creation-standard.md Component 7, with a pointer-only note in conclusion-stage.md, and pointing (not re-specifying) the existing issue-log suggested_channel shape as the proposal packet."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this codebase's source store, docs/reference/standards/multi-task-creation-standard.md is referenced by /task, /meta, /fix-it, /review, meta-builder-agent, and skill-fix-it, but NOT by planner-agent.md, reviser-agent.md, spawn-agent.md, or general-implementation-agent.md. Any convention meant to reach plan-authoring or implementation-executing agents cannot rely on that document alone being read; it needs either a second pointer at a doc those agents do consult, or an update to those agent files themselves.",
+      "category": "PATTERN",
+      "source_artifact": "specs/558_conclusion_stage_filing_handoff_phrasing/reports/01_filing-handoff-phrasing-convention.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["multi-task-creation-standard", "planner-agent", "reader-discipline", "documentation-siting", "Component 7"]
+    },
+    {
+      "content": "conclusion-stage.md's channels (b) and (c) never dispatch or create anything synchronously; they only append events.jsonl evidence. The actual Component-7-compliant confirmed task/change creation happens later and separately, via /telemetry --meta delegating to meta-builder-agent (the current name for what the contract's prose calls '/distill --meta'). Read 'routes ... through a confirmed dispatch' in that contract as describing this eventual, batched consumption chain, not an immediate action inside Step 4b/4c themselves.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/558_conclusion_stage_filing_handoff_phrasing/reports/01_filing-handoff-phrasing-convention.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["conclusion-stage", "channel b", "channel c", "telemetry --meta", "meta-builder-agent"]
+    },
+    {
+      "content": "docs/reference/standards/agent-frontmatter-standard.md's 'Tool Withholding from Dispatched Subagents (Measured)' section is the canonical, mechanically-measured citation for 'AskUserQuestion is unreachable from a dispatched agent' -- stronger than Component 7's own 'does not reliably surface' phrasing (categorical withholding across 5 live dispatches/4 configs, not merely unreliable). Cite this section rather than re-deriving or re-measuring the claim in future work that needs this justification.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/558_conclusion_stage_filing_handoff_phrasing/reports/01_filing-handoff-phrasing-convention.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["AskUserQuestion", "tool-withholding", "agent-frontmatter-standard", "foreground-requirement", "measured"]
+    }
+  ]
+}
