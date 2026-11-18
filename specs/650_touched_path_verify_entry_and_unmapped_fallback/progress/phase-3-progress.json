@@ -1,0 +1,29 @@
+{
+  "phase": 3,
+  "phase_name": "Classified unmapped fallback and the owed record",
+  "started_at": "2026-11-18T20:50:00Z",
+  "last_updated": "2026-11-18T21:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create scripts/tests/suite-selection-noclass.data",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/suite-selection-noclass.data"]
+    },
+    {
+      "id": 2,
+      "description": "Write scripts/lib/unmapped-fallback-lib.sh: classify UNRESOLVED paths into no-suite-by-class / owed, fallback-set selection via --cost-class, owed-record writer",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/unmapped-fallback-lib.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Add both new files to manifest.json",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

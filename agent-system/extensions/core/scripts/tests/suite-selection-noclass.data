@@ -1,0 +1,29 @@
+# suite-selection-noclass.data - Path classes whose edits cannot change ANY suite's own
+# PASS/FAIL outcome individually (no basename pairing, no grep-based reference, and no explicit
+# map row in suite-selection-map.data covers them), but which ARE read by one or more named
+# lint suites as part of THEIR OWN corpus-wide or registry-driven scan. A path matching a row
+# here is classified NO-SUITE-BY-CLASS by scripts/lib/unmapped-fallback-lib.sh: it runs ONLY the
+# named lint suite(s), never the OWED-NOT-PAID fallback set and never silently nothing.
+#
+# Format: one row per path pattern, TAB-separated, 3 fields: path_glob  lints  reason
+#   path_glob  A bash glob pattern (matched via `[[ "$path" == $path_glob ]]`, under which `*`
+#              CROSSES `/` -- the same matching semantics suite-selection-map.data and
+#              `.claude-extensions.json`'s `coupled_generated_surfaces.trigger_glob` already use.
+#   lints      Comma-separated suite basename(s) (real run-all.sh suites, each must exist on
+#              disk -- the entry point's preflight refuses on a named suite that does not exist)
+#              that read this path class as part of their own scan, independent of which specific
+#              file in the class changed.
+#   reason     Free text: why this path's class has no per-file suite, and why the named lint(s)
+#              genuinely read it. Never interpreted; diagnostic only.
+#
+# Rows are checked in file order; the FIRST matching row wins. A path matching no row here, and
+# no row in suite-selection-map.data, and unmapped by the default/declared backend, is OWED, not
+# NO-SUITE-BY-CLASS -- see unmapped-fallback-lib.sh.
+#
+# A row naming a lint whose own scan behavior is PER-FIXTURE (unaffected by any real repo file's
+# content, e.g. a fixture-driven regression suite for the lint SCRIPT itself) does not belong
+# here -- that suite's PASS/FAIL is not actually sensitive to this path class, so naming it would
+# be dishonest coverage, not a real check. Every row below was confirmed against the named
+# lint's own live-corpus scan scope, not merely its filename pairing with the path class.
+agent-system/extensions/*/agents/*.md	test-lint-agent-contracts.sh,test-lint-agent-contracts-handoff-section.sh,test-lint-agent-contracts-heartbeat.sh,test-lint-agent-contracts-await-notification.sh	dispatchable agent definition markdown has no per-file basename-paired suite, but lint-agent-contracts.sh and its three sibling variants scan EVERY file under agent-system/extensions/*/agents/** (and the equivalent context/project/*/agents/** path) as part of their own corpus-wide contract checks, confirmed from lint-agent-contracts.sh's own header
+agent-system/extensions/core/scripts/lint/collapsed-blocks/*.txt	test-lint-anchor-pointer-collapse.sh	a collapsed-block registry fixture has no per-file basename-paired suite; lint-anchor-pointer-collapse.sh's own header states it checks ONLY the files actually named in this registry (never a whole-corpus scan), so a new or edited registry entry is read exclusively by that one suite

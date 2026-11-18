@@ -302,30 +302,33 @@ own notes, and that file is added to this phase's `Files to modify` before the e
 
 ---
 
-### Phase 3: Classified unmapped fallback and the owed record [NOT STARTED]
+### Phase 3: Classified unmapped fallback and the owed record [COMPLETED]
 
 **Goal**: Replace "unmapped means run everything now" with a per-path classified outcome:
 NO-SUITE-BY-CLASS from checked-in class data, EXPLICIT MAP ROW already handled in Phase 2, and
 OWED-NOT-PAID which runs a declared cheap fallback set now and writes a durable owed record.
 
 **Tasks**:
-- [ ] Create `scripts/tests/suite-selection-noclass.data` (TAB-separated `path_glob`, `lints`,
+- [x] Create `scripts/tests/suite-selection-noclass.data` (TAB-separated `path_glob`, `lints`,
       `reason`): path classes whose edits cannot change suite behaviour, each row naming the lints
       that do read those paths and a reason. Seed rows for the classes the description names
-      (prose/guidance markdown, data files read only by a named lint).
-- [ ] Write `scripts/lib/unmapped-fallback-lib.sh`: classify each `UNRESOLVED` path from the
+      (prose/guidance markdown, data files read only by a named lint). *(completed: two rows,
+      each confirmed against the named lint's own live-corpus scan scope, not merely filename
+      pairing -- agent-definition markdown via lint-agent-contracts.sh's four variants, and
+      lint/collapsed-blocks/*.txt registry fixtures via lint-anchor-pointer-collapse.sh)*
+- [x] Write `scripts/lib/unmapped-fallback-lib.sh`: classify each `UNRESOLVED` path from the
       Phase 2 resolver into (a) no-suite-by-class, (b) already-mapped (never reaches here), or
-      (c) owed; emit a per-path line for each, never silent.
-- [ ] (c)'s fallback set is selected through `run-all.sh --cost-class free` (or a declared
+      (c) owed; emit a per-path line for each, never silent. *(completed)*
+- [x] (c)'s fallback set is selected through `run-all.sh --cost-class free` (or a declared
       `--class`), never a hand-written suite list; the selecting invocation is recorded in the
-      library header as the only sanctioned form.
-- [ ] Owed-record writer: append one row per owed path to
+      library header as the only sanctioned form. *(completed)*
+- [x] Owed-record writer: append one row per owed path to
       `<task_dir>/records/full-sweep-owed.jsonl` (`path`, `reason`, `session_id`, `dispatch_seq`,
       `recorded_ts`, `discharged_ts: null`). Plain rows, inspectable, under the directory the
-      batch gate already iterates.
-- [ ] Owed is never forgiven: the writer never deletes a row, and the only mutation it permits is
-      Phase 6's discharge stamp.
-- [ ] Add both new files to `manifest.json`.
+      batch gate already iterates. *(completed)*
+- [x] Owed is never forgiven: the writer never deletes a row, and the only mutation it permits is
+      Phase 6's discharge stamp. *(completed)*
+- [x] Add both new files to `manifest.json`. *(completed)*
 
 **Timing**: 2 hours
 
