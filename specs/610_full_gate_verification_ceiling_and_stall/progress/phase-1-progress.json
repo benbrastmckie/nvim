@@ -1,0 +1,42 @@
+{
+  "phase": 1,
+  "phase_name": "Measured Baseline and the Gate-Lock Posture Record",
+  "started_at": "2026-11-18T23:20:00Z",
+  "last_updated": "2026-11-18T23:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Sample nproc/loadavg, decide idle vs deferred branch",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Deferred branch: write records/baseline-deferred.md",
+      "status": "done",
+      "files_touched": [
+        "specs/610_full_gate_verification_ceiling_and_stall/records/baseline-deferred.md"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Record gate-lock posture ruling and deferred-measurement note in shell-script-testing.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/shell-script-testing.md"
+      ]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.idle-measurement",
+      "description": "Idle-branch measurement via measure-gate-costs.sh",
+      "type": "skipped",
+      "reason": "Host non-idle: loadavg 3.42 >= threshold 2.0, plus concurrent sibling dispatches live (impl-607 and others); deferred branch taken per the phase's own decision gate.",
+      "annotation": "*(deviation: skipped — host non-idle, loadavg 3.42 >= 2.0 threshold; deferred to records/baseline-deferred.md)*"
+    }
+  ]
+}

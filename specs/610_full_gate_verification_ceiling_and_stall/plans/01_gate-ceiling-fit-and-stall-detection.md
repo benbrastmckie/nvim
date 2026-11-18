@@ -1,7 +1,7 @@
 # Implementation Plan: Task #610
 
 - **Task**: 610 - Full gate verification ceiling and stall
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 12 hours
 - **Dependencies**: None blocking. Territory edges 454, 476, 452, 650, 651, `host_scoped_gate_mutex` (see Goals & Non-Goals)
 - **Research Inputs**: specs/610_full_gate_verification_ceiling_and_stall/reports/01_gate-verification-ceiling-and-stall.md
@@ -221,33 +221,33 @@ than reconciling a collision. Wave 1's three phases are genuinely disjoint in fi
 
 ---
 
-### Phase 1: Measured Baseline and the Gate-Lock Posture Record [NOT STARTED]
+### Phase 1: Measured Baseline and the Gate-Lock Posture Record [COMPLETED]
 
 **Goal**: Produce the record's measured-baseline deliverable under a confirmed-idle control, and
 record the `.gate-lock` fail-open posture ruling durably where the dependent record can cite it.
 
 **Tasks**:
-- [ ] Sample `nproc` and `/proc/loadavg` and decide the gate: if the 1-minute loadavg is at or
+- [x] Sample `nproc` and `/proc/loadavg` and decide the gate: if the 1-minute loadavg is at or
       above `measure-gate-costs.sh`'s own `MEASURE_GATE_COSTS_LOAD_THRESHOLD` default, or any
-      other session is active, take the **deferred branch** below instead of measuring.
+      other session is active, take the **deferred branch** below instead of measuring. *(completed: nproc=24, loadavg 3.42 >= 2.0 threshold, concurrent siblings live — deferred branch taken)*
 - [ ] Idle branch: run `bash agent-system/extensions/core/scripts/measure-gate-costs.sh` for a
       Gate 8 / full-battery wall-clock baseline. Reuse this script rather than building an ad hoc
       timing harness — it already averages runs, refuses (exit 2) a measurement taken above its
-      load threshold, and protects against overwrite.
+      load threshold, and protects against overwrite. *(deviation: skipped — host non-idle, deferred branch taken instead)*
 - [ ] Idle branch: take a second measurement under representative concurrent load, so the table
-      has both the control and the loaded figure the record asks for.
-- [ ] Deferred branch: write `records/baseline-deferred.md` under this task directory stating the
+      has both the control and the loaded figure the record asks for. *(deviation: skipped — moot without a control measurement to compare against; see records/baseline-deferred.md)*
+- [x] Deferred branch: write `records/baseline-deferred.md` under this task directory stating the
       observed `nproc`/loadavg, which sessions were live, and that the control was not taken —
-      never a contaminated measurement presented as a control.
-- [ ] Update `context/standards/shell-script-testing.md`'s "Measured Before/After" section with
+      never a contaminated measurement presented as a control. *(completed)*
+- [x] Update `context/standards/shell-script-testing.md`'s "Measured Before/After" section with
       whichever figures were actually obtained, each row carrying `nproc` and the loadavg at
-      measurement time, so a future reader can tell a real regression from an environmental one.
-- [ ] In the same section, record the `.gate-lock` posture ruling: fail-open is kept, with its
+      measurement time, so a future reader can tell a real regression from an environmental one. *(completed: no new measured row added — deferral noted in a new "Gate 8 Ceiling Fit: Control Measurement Deferred" subsection instead, since no figure was obtained)*
+- [x] In the same section, record the `.gate-lock` posture ruling: fail-open is kept, with its
       existing loud warning; `GATE_MUTEX_ACQUIRE_BUDGET_MS`, `GATE_MUTEX_STALE_SEC` and the
       fail-open/fail-closed choice are unchanged; the leverage point is the mechanical guard, not
       the mutex; and lock *scope* is a separate, orthogonal question owned elsewhere. State it as
       a current ruling with its grounds, citing the durable anchors (the script and section
-      names), never a record number.
+      names), never a record number. *(completed: new "Gate Mutex (specs/.gate-lock) Posture Ruling" subsection)*
 
 **Timing**: 1.5 hours (plus unattended measurement wall-clock on the idle branch)
 

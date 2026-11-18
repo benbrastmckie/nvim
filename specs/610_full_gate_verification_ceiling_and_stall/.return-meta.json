@@ -1,37 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/610_full_gate_verification_ceiling_and_stall/plans/01_gate-ceiling-fit-and-stall-detection.md",
-      "summary": "8-phase plan: slow-bucket gate split for the 600s foreground ceiling, batch-gate-pending marker plus entry guards replacing the advisory deferral directive, generalized contention tagging, and a dispatch watchdog over the existing strand probe."
-    }
-  ],
-  "dispatch_seq": 19,
-  "next_steps": "Run /orchestrate 610 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 20,
   "metadata": {
-    "session_id": "sess_1795039913_ab1940_610",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 8,
-    "estimated_hours": 12,
-    "dependency_waves": [[1, 3, 7], [2], [4], [5], [6], [8]]
-  },
-  "memory_candidates": [
-    {
-      "content": "scripts/dispatch-strand-probe.sh already implements the heartbeat-based dispatch-strand detector that a stall-detection design would otherwise propose building: a read-only, fail-closed probe classifying one task's dispatch live/stranded/unknown from a three-signal conjunction (task-lock.sh heartbeat staleness, task-directory artifact quiescence, commit quiescence), explicitly rejecting process-descendant walks and system load as signals. Its three consumers (orchestrate-cycle-postflight.sh's stranded_suspected, skill-orchestrate Move 3, reconcile-task-status.sh's demotion gate) all invoke it at or after postflight, which is downstream of the dispatch returning. The general shape worth remembering: when a detector seems missing, check whether it exists but is sited downstream of the event it must detect the absence of -- the fix is then an invocation site, not a new detector.",
-      "category": "PATTERN",
-      "source_artifact": "specs/610_full_gate_verification_ceiling_and_stall/plans/01_gate-ceiling-fit-and-stall-detection.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["dispatch-strand-probe", "stall-detection", "detector-siting", "heartbeat", "orchestrate"]
-    },
-    {
-      "content": "A new orchestrator runtime marker file placed under specs/.orchestration/ inherits wholesale gitignore coverage (specs/.gitignore's **/.orchestration/ rule) and therefore needs NO new ephemeral class. A new top-level specs/.<name> marker instead costs four coordinated surfaces: a class member in scripts/lib/runtime-file-patterns.sh (the single canonical definition), a .gitignore entry under the core manifest's provides.root_files, an orchestrator-runtime-files.md Consumer Repo Setup update, and a change to the test pinning those two to each other (check-runtime-file-tracking.sh is gate 14, so the omission is gate-visible). Prefer the .orchestration/ siting for any session-scoped per-invocation marker.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/610_full_gate_verification_ceiling_and_stall/plans/01_gate-ceiling-fit-and-stall-detection.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["runtime-file-patterns", "gitignore", "orchestration-marker", "ephemeral-class", "gate14"]
-    }
-  ]
+    "session_id": "sess_1795039913_ab1940",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 8
+  }
 }

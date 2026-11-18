@@ -1518,6 +1518,43 @@ verification gate silently gets.
 observed (`test-gate-cache-equivalence.sh`) is listed in `known-failures.txt` as `EXPECTED` and
 every run's own tally line confirms `0 NEW`.
 
+## Gate 8 Ceiling Fit: Control Measurement Deferred
+
+A control measurement attempt for Gate 8's idle and representative-concurrent-load wall-clock
+found the host non-idle at capture time: `/proc/loadavg` 1-minute figure 3.42 against
+`measure-gate-costs.sh`'s own `MEASURE_GATE_COSTS_LOAD_THRESHOLD` default of 2.0, with multiple
+concurrent sessions live on the same host. A contaminated figure presented as a control would be
+worse than no figure, since a future reader could not distinguish it from a genuine idle
+baseline, so no new row is added to the table above from this attempt. The existing Gate 8 rows
+already in that table (457,197ms idle; 662,354ms under load 1.69-2.26) stand uncontested. A
+future idle-host window should re-run `measure-gate-costs.sh` and add both an idle and a loaded
+row, each carrying its own `nproc`/loadavg per this section's existing convention.
+
+## Gate Mutex (`specs/.gate-lock`) Posture Ruling
+
+The gate mutex (`scripts/task-lock.sh`'s `gate-acquire`/`acquire_named_mutex`, guarding a full,
+unfiltered gate battery) keeps its existing fail-open posture: `GATE_MUTEX_ACQUIRE_BUDGET_MS`
+(default 600000ms) and `GATE_MUTEX_STALE_SEC` (default 1800s) are unchanged, and both of its
+call sites inside `verify-deploy.sh`'s Gate 8 bracket continue to log a loud, named warning and
+proceed unserialized on acquire failure rather than ever refusing verification outright —
+`acquire_named_mutex` itself still fails CLOSED (a real contention error aborts that one call),
+only the two call sites around it choose to treat that failure as non-fatal.
+
+The grounds: failing open trades a theoretical serialization guarantee for an operational
+guarantee that verification itself is never the thing skipped when the mutex is unavailable
+(missing `task-lock.sh`, a stale holder outlasting its own staleness window, or budget
+exhaustion). The leverage point for reducing *how often* an unfiltered battery collides with a
+sibling one at all is a mechanical entry guard against a nested unfiltered invocation when a
+batch-level close already owes one (see `context/contracts/batch-gate-stage.md`), not a change
+to this mutex's acquire/staleness arithmetic or its fail-open/fail-closed choice. Mutex *scope*
+— today resolved per-repository (`$PROJECT_ROOT/specs/.gate-lock`), making a battery started
+from a different repository against the same shared scripts structurally invisible to this
+mutex — is a distinct, orthogonal question from the posture ruling stated here: a fail-closed,
+repository-scoped lock would still be blind to a sibling repository's battery, and a host-wide
+or otherwise differently-scoped lock would still need a posture (fail-open vs. fail-closed) of
+its own. This section rules on posture only; lock scope is addressed separately, inheriting this
+ruling rather than re-deriving one.
+
 ## Related
 
 - `context/standards/testing.md` — a generic JS/AAA-pattern testing primer. It predates this
