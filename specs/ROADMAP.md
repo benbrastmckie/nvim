@@ -647,12 +647,12 @@ None is a whole-corpus discovery scope, and none is a defect.
 /orchestrate 511,514,519,520,521,522,525,529
 /orchestrate 530,535,536,537,542,545,548,551
 /orchestrate 556,557,559,560,563,564,565,567
-/orchestrate 574,575,613,618,639,640
+/orchestrate 574,575,613,618,639,640,645,646
 ```
 
 ## Open work
 
-**Core agent system (37)**
+**Core agent system (38)**
 ```
 439 blocked:431     Rule on the propagation model for the bounded-wait agent contract
 452 blocked:451     Require a verification criterion over a repo-wide gate with standing pre-exis...
@@ -691,6 +691,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 590 ready           Resolve the /ide dead-command-recommendation findings
 613 ready           session_liveness_same_process_orphan_lock
 618 ready           working_tree_residue_disposition_policy
+646 ready           return_meta_terminal_status_vocabulary
 ```
 
 **Extensions (7)**
@@ -747,7 +748,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 514 ready           Convergence guard blind to zero-dispatch cycles
 ```
 
-**Agent system (51)**
+**Agent system (52)**
 ```
 481 blocked:390     Rule on and migrate the 32-record mis-sited agent-system task delta accumulat...
 533 blocked:410     lake-build-guard replays stale result for env lean FILE
@@ -800,6 +801,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 633 ready           Resolve the stray duplicate .claude-extensions.json sitting inside the core e...
 639 ready           Make issue-record.sh failures visible instead of silently losing the evidence...
 640 ready           Add a derived-percentage bug class to the census methodology standard
+645 ready           repair_seven_failing_gate8_suites
 ```
 
 **Decidability (1)**
