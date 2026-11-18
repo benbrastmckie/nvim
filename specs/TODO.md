@@ -186,6 +186,7 @@ next_project_number: 645
 - **Dependencies**: Task 503, Task 526, Task 538, Task 558, Task 643
 - **Research**: [644_orchestration_recap_spoken_on_demand/reports/01_orchestration-recap-design.md]
 - **Plan**: [644_orchestration_recap_spoken_on_demand/plans/01_orchestration-recap-spoken.md]
+- **Summary**: [644_orchestration_recap_spoken_on_demand/summaries/01_orchestration-recap-spoken-summary.md]
 
 **Description**: Give an orchestration a short spoken-word recap at its end: the conclusion stage writes a speech-shaped prose summary and recommends `/recap` by name in its final written output, and the user runs `/recap` when they want to hear it read aloud through piper.
 

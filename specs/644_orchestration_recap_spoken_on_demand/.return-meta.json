@@ -40,21 +40,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/644_orchestration_recap_spoken_on_demand/summaries/01_orchestration-recap-spoken-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["verify-deploy", "gate20", "eager-load-budget", "orchestrator-context-budget", "claudemd-eager"]
+      "suggested_keywords": [
+        "verify-deploy",
+        "gate20",
+        "eager-load-budget",
+        "orchestrator-context-budget",
+        "claudemd-eager"
+      ]
     },
     {
       "content": "A test suite asserting a binary's ABSENCE from PATH (e.g. 'piper is not installed, confirm fallback behavior') must build a fully self-contained isolated bin directory (every real coreutils dependency symlinked in once from the test process's own PATH, PLUS the bare interpreter used to invoke the subject script resolved once via `command -v bash` before PATH is narrowed) and set PATH to ONLY that directory with no real-PATH fallback. A 'fakebin:$PATH' style PATH silently lets a genuinely-installed system binary (piper/paplay/espeak-ng are commonly present on a NixOS dev host) leak through and defeat the absence assertion -- the test can pass for the wrong reason, or fail outright if the real binary behaves differently than the fake.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/644_orchestration_recap_spoken_on_demand/summaries/01_orchestration-recap-spoken-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["shell-test-isolation", "PATH-shimming", "fakebin", "binary-absence-testing", "deploy-root-guard"]
+      "suggested_keywords": [
+        "shell-test-isolation",
+        "PATH-shimming",
+        "fakebin",
+        "binary-absence-testing",
+        "deploy-root-guard"
+      ]
     },
     {
       "content": "A bash helper using `find \"$dir\" -maxdepth 1 -name PATTERN ... | sort | head | cut` to find the newest matching file degrades safely under `set -e`/`pipefail` when $dir EXISTS but has zero matches (find exits 0, empty output) -- but NOT when $dir was never created at all: find then exits non-zero before the pipe even starts, and pipefail propagates that failure, aborting the whole script. Guard with `[ -d \"$dir\" ] || return 0` before the find call whenever the directory's existence is not already guaranteed by an earlier step in the same run.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/644_orchestration_recap_spoken_on_demand/summaries/01_orchestration-recap-spoken-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["find-newest-file", "set-e-pipefail", "bash-find-nonexistent-dir", "defensive-bash"]
+      "suggested_keywords": [
+        "find-newest-file",
+        "set-e-pipefail",
+        "bash-find-nonexistent-dir",
+        "defensive-bash"
+      ]
     }
   ],
   "sapience_notes": [
@@ -103,8 +120,14 @@
     "session_id": "sess_1794985308_f67716",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

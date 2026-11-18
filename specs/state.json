@@ -21693,6 +21693,11 @@
           "path": "specs/644_orchestration_recap_spoken_on_demand/plans/01_orchestration-recap-spoken.md",
           "type": "plan",
           "summary": "Five-phase plan wiring a speech-shaped recap into the conclusion stage's emission step and a user-only /recap command that speaks it through piper or prints it."
+        },
+        {
+          "path": "specs/644_orchestration_recap_spoken_on_demand/summaries/01_orchestration-recap-spoken-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all five phases, the two mid-implementation deviations, and the full acceptance-criteria verification record."
         }
       ],
       "parent_task": null,
@@ -21920,7 +21925,8 @@
         "degradations_count": 39
       },
       "session_id": "sess_1794985308_f67716",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added a speech-shaped recap composed at /orchestrate's conclusion-stage Step 6 and persisted to a session-keyed file, plus a new user-only /recap command (backed by orchestrate-recap.sh and skill-recap) that speaks it through piper or recomposes/prints it when no recap or no TTS engine is available. Registered the Move 5 Bash allowlist entry and the Next Steps recommendation, added a nine-case regression suite, and closed out with a clean deploy-headless.sh run (RESULT=landed_verify_clean, 41/41 gates) and all seven acceptance criteria demonstrated."
     }
   ],
   "completed_projects": [],
