@@ -217,7 +217,7 @@ case "$kind" in
     # this fork's own returned text, so a response that describes findings without writing the
     # file leaves nothing for a later cycle to act on and the obligation is retried rather than
     # dropped (confirm-then-clear).
-    prompt="Research this specific blocker for task ${task_number}: ${blocker_desc}. Find the root cause and a concrete solution path. Write compact JSON to '${TASK_DIR_ABS}/.blocker-research.json' with fields: summary (string), root_cause (string), solution_path (string). Write this file every time, unconditionally, regardless of what you also report in your own returned text — the chain's plan-revision hop reads only this file, and a response that describes findings without writing it leaves nothing for a later cycle to act on."
+    prompt="Research this specific blocker for task ${task_number}: ${blocker_desc}. Find the root cause and a concrete solution path. Write compact JSON to '${TASK_DIR_ABS}/.blocker-research.json' with fields: summary (string), root_cause (string), solution_path (string). Write this file every time, unconditionally, regardless of what you also report in your own returned text — it is the ONLY carrier the chain reads, and a response that describes findings without writing it leaves nothing for a later cycle to act on. Note for the plan-revision hop that consumes this: the file is read ONCE, by the next cycle's orchestrate-cycle-plan.sh, which inlines its summary into that hop's own dispatch prompt and then DELETES it. The plan-revision agent therefore finds no .blocker-research.json on disk and must not read the absence as a broken chain — its dispatch prompt already carries the findings."
     ;;
   plan-revision)
     if [ "$revision_reason" = "blocker" ]; then
