@@ -1,0 +1,42 @@
+{
+  "phase": 5,
+  "phase_name": "Coverage convergence report",
+  "started_at": "2026-11-18T22:20:00Z",
+  "last_updated": "2026-11-18T22:55:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write scripts/report-suite-coverage.sh using git-corpus-enum-lib.sh, resolving each file through the Phase 2 resolver and Phase 3 classifier",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/report-suite-coverage.sh",
+        "agent-system/extensions/core/scripts/tests/suite-selection-map.data",
+        "agent-system/extensions/core/scripts/tests/suite-selection-noclass.data"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add the script to manifest.json's provides.scripts",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {
+      "approach": "Classify UNRESOLVED paths by calling unmapped_fallback_classify directly",
+      "result": "failed",
+      "reason": "that function also writes a durable owed record for every OWED path, which would spam records/full-sweep-owed.jsonl for the entire whole-tree unconverged backlog on a read-only advisory scan; replaced with a local, read-only re-implementation of the same NO-SUITE-BY-CLASS glob lookup"
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "5.correction",
+      "description": "suite-selection-map.data rows (seeded in Phase 2) used core-extension-scripts-relative paths instead of the repo-root-relative paths real touched-path derivation always produces",
+      "type": "altered",
+      "reason": "discovered via this phase's own report run (three Phase 1-3 library files wrongly reported as unconverged); fixed all map rows to the repo-root-relative form and documented the convention in both data files' headers",
+      "annotation": "*(deviation: altered -- fixed path_glob base in a prior phase's data file; see Phase 3's checklist is unaffected since the noclass rows were already repo-root-relative)*"
+    }
+  ],
+  "handoff_count": 0
+}

@@ -1,4 +1,5 @@
-# suite-selection-map.data - Explicit map rows for a touched path `scripts/lib/suite-resolver-lib.sh`'s
+# suite-selection-map.data - Explicit map rows for a touched path (e.g.
+# `agent-system/extensions/core/scripts/lib/suite-resolver-lib.sh`) that a
 # default-backend pre-pass (basename resolution via suite-selection-lib.sh) leaves unresolved.
 # This is the "adding a row is the normal repair" surface deliverable 2(b) of the originating
 # record names: when a real, covering suite exists for a path that basename pairing and the
@@ -10,7 +11,12 @@
 #              CROSSES `/` -- the same matching semantics `.claude-extensions.json`'s
 #              `coupled_generated_surfaces.trigger_glob` already uses; see
 #              context/standards/repo-level-declarations.md). Matched against the repo-relative
-#              touched path exactly as given to the resolver.
+#              touched path exactly as given to the resolver -- REPO-ROOT-RELATIVE, the
+#              same base `git diff --name-only` always returns touched paths in (never
+#              relative to this extension's own scripts/ root), since scripts/verify-touched.sh's
+#              default touched-path derivation is git-diff-driven. Every row below therefore
+#              names the full `agent-system/extensions/core/...` path, not a scripts/-relative
+#              shorthand.
 #   suites     Comma-separated suite basename(s) this path pattern maps to (e.g.
 #              "test-verify-touched.sh" or "test-verify-touched.sh,test-run-all-selection.sh").
 #              Each basename must exist on disk -- the entry-point's own preflight
@@ -28,10 +34,10 @@
 # but is not yet discoverable by name pairing until the suite itself lands (self-referential at
 # authoring time, resolved once the suite is committed), and a checked-in *.data file with no
 # "test-" counterpart at all.
-scripts/lib/verification-scope-lib.sh	test-verification-scope-lib.sh	new library; its own suite test-verification-scope-lib.sh is added in a later phase of the record that created it
-scripts/lib/suite-resolver-lib.sh	test-suite-resolver-lib.sh	new library; its own suite test-suite-resolver-lib.sh is added in a later phase of the record that created it
-scripts/lib/unmapped-fallback-lib.sh	test-unmapped-fallback-lib.sh	new library; its own suite test-unmapped-fallback-lib.sh is added in a later phase of the record that created it
-scripts/verify-touched.sh	test-verify-touched.sh	new entry point; basename pairing alone would already find test-verify-touched.sh, this row documents the intent explicitly so the entry point never falls through to the classified fallback for its own source file
-scripts/report-suite-coverage.sh	test-verify-touched.sh	coverage report is exercised by the same suite as the entry point it is published alongside; no dedicated suite exists for this reporter alone
-scripts/tests/suite-selection-map.data	test-suite-resolver-lib.sh	checked-in data file with no "test-" counterpart basename; the resolver library's own suite covers its format and lookup behaviour
-scripts/tests/suite-selection-noclass.data	test-unmapped-fallback-lib.sh	checked-in data file with no "test-" counterpart basename; the fallback classification library's own suite covers its format and lookup behaviour
+agent-system/extensions/core/scripts/lib/verification-scope-lib.sh	test-verification-scope-lib.sh	new library; its own suite test-verification-scope-lib.sh is added in a later phase of the record that created it
+agent-system/extensions/core/scripts/lib/suite-resolver-lib.sh	test-suite-resolver-lib.sh	new library; its own suite test-suite-resolver-lib.sh is added in a later phase of the record that created it
+agent-system/extensions/core/scripts/lib/unmapped-fallback-lib.sh	test-unmapped-fallback-lib.sh	new library; its own suite test-unmapped-fallback-lib.sh is added in a later phase of the record that created it
+agent-system/extensions/core/scripts/verify-touched.sh	test-verify-touched.sh	new entry point; basename pairing alone would already find test-verify-touched.sh, this row documents the intent explicitly so the entry point never falls through to the classified fallback for its own source file
+agent-system/extensions/core/scripts/report-suite-coverage.sh	test-verify-touched.sh	coverage report is exercised by the same suite as the entry point it is published alongside; no dedicated suite exists for this reporter alone
+agent-system/extensions/core/scripts/tests/suite-selection-map.data	test-suite-resolver-lib.sh	checked-in data file with no "test-" counterpart basename; the resolver library's own suite covers its format and lookup behaviour
+agent-system/extensions/core/scripts/tests/suite-selection-noclass.data	test-unmapped-fallback-lib.sh	checked-in data file with no "test-" counterpart basename; the fallback classification library's own suite covers its format and lookup behaviour

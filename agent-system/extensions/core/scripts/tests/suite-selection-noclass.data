@@ -9,6 +9,10 @@
 #   path_glob  A bash glob pattern (matched via `[[ "$path" == $path_glob ]]`, under which `*`
 #              CROSSES `/` -- the same matching semantics suite-selection-map.data and
 #              `.claude-extensions.json`'s `coupled_generated_surfaces.trigger_glob` already use.
+#              Matched against the touched path REPO-ROOT-RELATIVE, the same base
+#              `git diff --name-only` always returns touched paths in (see
+#              suite-selection-map.data's identical note) -- every row below therefore names
+#              the full `agent-system/extensions/...` path.
 #   lints      Comma-separated suite basename(s) (real run-all.sh suites, each must exist on
 #              disk -- the entry point's preflight refuses on a named suite that does not exist)
 #              that read this path class as part of their own scan, independent of which specific

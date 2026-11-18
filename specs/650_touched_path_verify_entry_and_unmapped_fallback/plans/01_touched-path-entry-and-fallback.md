@@ -432,21 +432,38 @@ locked into a suite in Phase 8.
 
 ---
 
-### Phase 5: Coverage convergence report [NOT STARTED]
+### Phase 5: Coverage convergence report [COMPLETED]
 
 **Goal**: A report listing every tree file that resolves to no suite, no map row and no class, so
 the map can converge — advisory by default, strict on request, adding no gate.
 
 **Tasks**:
-- [ ] Write `scripts/report-suite-coverage.sh`: enumerate the tree's tracked files (reusing
+- [x] Write `scripts/report-suite-coverage.sh`: enumerate the tree's tracked files (reusing
       `scripts/lib/git-corpus-enum-lib.sh` rather than a new walk), resolve each through the
       Phase 2 resolver and the Phase 3 classifier, and print the roster of files with no suite, no
-      map row and no class, plus a count.
-- [ ] Exit 0 by default even on a nonzero count; `--strict` exits 1 on a nonzero count.
-- [ ] Header records the decision and its rejected alternative: this is not registered as a
+      map row and no class, plus a count. *(completed: the Phase 3 classifier's NO-SUITE-BY-CLASS
+      lookup logic is reused verbatim rather than calling `unmapped_fallback_classify` directly,
+      because that function also WRITES a durable owed record for every OWED path -- correct for
+      a real touched-path run, wrong for a whole-tree advisory scan, which would otherwise spam
+      records/full-sweep-owed.jsonl for the entire unconverged backlog on every run; recorded in
+      the script's own header)*
+- [x] Exit 0 by default even on a nonzero count; `--strict` exits 1 on a nonzero count.
+      *(completed and verified: default exit 0 on a 23-file unconverged scope, `--strict` exit 1
+      on the same scope)*
+- [x] Header records the decision and its rejected alternative: this is not registered as a
       blocking gate, because the map is expected to converge gradually and a blocking gate would
-      refuse commits until convergence completed.
-- [ ] Add the script to `manifest.json`'s `provides.scripts`.
+      refuse commits until convergence completed. *(completed)*
+- [x] Add the script to `manifest.json`'s `provides.scripts`. *(completed)*
+
+**Correction discovered during this phase's own verification**: `suite-selection-map.data`'s rows
+(seeded in Phase 2) and the first `suite-selection-noclass.data` row were authored and partly
+tested against CORE-EXTENSION-SCRIPTS-RELATIVE paths (e.g. `scripts/lib/suite-resolver-lib.sh`),
+but `scripts/verify-touched.sh`'s real touched-path derivation (`git diff --name-only`) and this
+phase's own `git_corpus_enum`-based enumeration both always produce REPO-ROOT-RELATIVE paths
+(e.g. `agent-system/extensions/core/scripts/lib/suite-resolver-lib.sh`). Every `suite-selection-
+map.data` row is fixed to the repo-root-relative form (both data files' headers now say so
+explicitly); re-verified against the live, corrected data that the three Phase 1-3 libraries'
+own files are no longer reported as unconverged.
 - [ ] Add a pointer to the report from the standards text Phase 7 writes (the text itself is
       Phase 7's edit, not this phase's).
 
