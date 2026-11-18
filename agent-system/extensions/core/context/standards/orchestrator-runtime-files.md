@@ -426,6 +426,7 @@ repo's **own root** `/.gitignore` **by hand**:
 **/.deploy-lock/
 **/.scope-lock/
 **/.commit-lock/
+**/.errors.lock
 **/.decisions.lock
 **/.issues.lock
 **/.metrics.lock
