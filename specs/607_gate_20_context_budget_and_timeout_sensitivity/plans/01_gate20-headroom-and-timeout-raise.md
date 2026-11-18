@@ -179,29 +179,33 @@ a full sweep buys nothing here.
 
 ---
 
-### Phase 2: Raise the contention-prone gates' static timeout bound [NOT STARTED]
+### Phase 2: Raise the contention-prone gates' static timeout bound [COMPLETED]
 
 **Goal**: Raise `timeout_s` from 60 to 180 for gates 3, 4, and 10; record the derivation and
 its deliberate deviation from the idle-cost-model rule; leave the task-610 cross-reference and
 correct one stale citation.
 
 **Tasks**:
-- [ ] **Re-read `agent-system/extensions/core/scripts/gate-registry.data` immediately before
+- [x] **Re-read `agent-system/extensions/core/scripts/gate-registry.data` immediately before
       editing.** It is inside concurrent sibling task 584's declared `file_scope`. If a foreign
       uncommitted modification or a foreign commit touching it is present (check `git log` to
       confirm the work is not this task's own), STOP and report rather than proceeding.
-- [ ] Confirm the row set before editing: exactly gates 3, 4, and 10 declare `timeout_s=60`
+      *(completed — `git status --porcelain` and `git log -3` on the file showed no foreign
+      uncommitted change and no recent foreign commit)*
+- [x] Confirm the row set before editing: exactly gates 3, 4, and 10 declare `timeout_s=60`
       (gate 8 declares 1500 and `serialized=true`; gate 17 declares 40; gate 22 declares 170;
       every other row declares 30). Verify with
       `grep -v '^#' agent-system/extensions/core/scripts/gate-registry.data | awk -F'\t' '$6==60 {print $1, $2}'`.
       If the set differs from {3, 4, 10}, reconcile against the live rows before editing — do
-      not edit a row this plan did not name.
-- [ ] Edit gate 3's row (`Doc-lint (check-extension-docs.sh)`): `timeout_s` 60 -> **180**.
+      not edit a row this plan did not name. *(completed — confirmed exactly {3, 4, 10})*
+- [x] Edit gate 3's row (`Doc-lint (check-extension-docs.sh)`): `timeout_s` 60 -> **180**.
       Preserve the row's TAB separation exactly; the format is 9 TAB-separated fields.
-- [ ] Edit gate 4's row (`Task-reference lint (check-task-references.sh)`): 60 -> **180**.
-- [ ] Edit gate 10's row (`specs/state.json schema validation (validate-state.sh --deep)`):
-      60 -> **180**.
-- [ ] Append a dated note to the `timeout_s` field documentation in the file's own header
+      *(completed)*
+- [x] Edit gate 4's row (`Task-reference lint (check-task-references.sh)`): 60 -> **180**.
+      *(completed)*
+- [x] Edit gate 10's row (`specs/state.json schema validation (validate-state.sh --deep)`):
+      60 -> **180**. *(completed)*
+- [x] Append a dated note to the `timeout_s` field documentation in the file's own header
       comment block recording: (a) that these three values deviate deliberately from the
       documented "roughly 3x headroom over the measured average, floor 30s" derivation because
       `gate-cost-model.csv` currently carries only a `gate8` row and cannot supply a clean
@@ -211,8 +215,8 @@ correct one stale citation.
       bound remains hard and killable, so a genuine runtime regression still surfaces; and
       (d) a one-line cross-reference stating that a general load-adaptive or
       concurrency-scaled timeout mechanism was deliberately NOT built here and that these three
-      static values are the floor any such future design should start from.
-- [ ] Correct the stale citation in `agent-system/extensions/core/scripts/tests/known-failures.txt`
+      static values are the floor any such future design should start from. *(completed)*
+- [x] Correct the stale citation in `agent-system/extensions/core/scripts/tests/known-failures.txt`
       (the `test-gate-cache-equivalence.sh|load-sensitive` row, confirmed present at line 33 of
       the live file during planning). It currently reads "gate10's declared timeout_s (30,
       gate-registry.data)" — a figure stale by two moves. Restate it as the current declared
@@ -222,8 +226,10 @@ correct one stale citation.
       rewritten the file), search `known-failures.txt` for `test-gate-cache-equivalence.sh`;
       if no such row exists at all, skip this task, record the absence via `issue-record.sh`,
       and proceed — this task is a correctness touch-up, not a precondition for the rest of the
-      phase.
-- [ ] Confirm the registry still lints: `bash agent-system/extensions/core/scripts/lint/lint-gate-registry.sh`.
+      phase. *(completed — row found at line 33, citation corrected to 180 with the 60->180
+      provenance, needs-owner note updated to reflect the raise without removing the row)*
+- [x] Confirm the registry still lints: `bash agent-system/extensions/core/scripts/lint/lint-gate-registry.sh`.
+      *(completed — 7 passed, 0 failed)*
 
 **Timing**: 1 hour
 

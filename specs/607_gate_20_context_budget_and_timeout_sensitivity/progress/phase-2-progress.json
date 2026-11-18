@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Raise the contention-prone gates' static timeout bound",
+  "started_at": "2026-11-18T14:35:00Z",
+  "last_updated": "2026-11-18T15:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read gate-registry.data for foreign modification before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm timeout_s=60 row set is exactly {3,4,10}", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Edit gate 3, 4, 10 rows timeout_s 60 -> 180", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/gate-registry.data"]},
+    {"id": 4, "description": "Append dated note to timeout_s field documentation", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/gate-registry.data"]},
+    {"id": 5, "description": "Correct stale citation in known-failures.txt", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/known-failures.txt"]},
+    {"id": 6, "description": "Confirm registry still lints", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

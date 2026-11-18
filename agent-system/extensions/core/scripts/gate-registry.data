@@ -53,6 +53,23 @@
 #                          (gate id + invoke name + bound) rather than hanging the whole battery
 #                          indefinitely. Still also validated for presence/well-formedness by
 #                          lint-gate-registry.sh.
+#
+#                          2026-11-18: gates 3, 4, and 10 raised from 60 to 180 (the
+#                          gate_20_context_budget_and_timeout_sensitivity task) -- a deliberate
+#                          deviation from the "derive from the idle cost model's clean avg_ms"
+#                          rule above, because gate-cost-model.csv currently carries only a
+#                          gate8 row and cannot supply a clean avg_ms for gates 3/4/10. Derived
+#                          instead from gate 10's own independently corroborated worst
+#                          standalone figure (66s, re-passing cleanly in 61-66s across three
+#                          separate 2026-11-16 incidents) at the same ~3x headroom factor used
+#                          by the documented rule, confirming resource contention under
+#                          concurrent dispatch load rather than a check regression (specs/562_*/
+#                          issues.jsonl, specs/634_*/issues.jsonl). The bound remains hard and
+#                          killable, so a genuine runtime regression still surfaces; it is not
+#                          a removal of the guard. A general load-adaptive or
+#                          concurrency-scaled timeout mechanism was deliberately NOT built here;
+#                          these three static values (180s) are the floor any such future
+#                          design should start from.
 #   cost_class              One of free/moderate/slow, copied directly from gate-cost-model.csv's
 #                          own classification (see measure-gate-costs.sh's header for the class
 #                          boundaries). Used by Phase 5's generalized selection surface (selection
@@ -122,14 +139,14 @@
 # here plus a `gateN_run` function definition, not a 40-line copy-pasted if/fi block.
 1	Event-store files	gate1_run	-	false	30	free	false	.claude/scripts/events-append.sh,.claude/scripts/events-query.sh,.claude/hooks/events-log-artifact.sh,.claude/hooks/events-log-lifecycle.sh,.claude/context/schemas/events-schema.json,.claude/context/formats/events-format.md
 2	Hook registrations in the deployed settings.json	gate2_run	-	false	30	free	false	.claude/settings.json
-3	Doc-lint (check-extension-docs.sh)	gate3_run	-	true	60	moderate	false	@extensions,.claude
-4	Task-reference lint (check-task-references.sh)	gate4_run	-	false	60	moderate	false	@repo,!specs/**
+3	Doc-lint (check-extension-docs.sh)	gate3_run	-	true	180	moderate	false	@extensions,.claude
+4	Task-reference lint (check-task-references.sh)	gate4_run	-	false	180	moderate	false	@repo,!specs/**
 5	Manifest-driven category parity + content-hash equality (verify.lua)	gate5_run	-	true	30	free	false	@extensions,.claude
 6	Agent contracts lint (lint-agent-contracts.sh)	gate6_run	-	true	30	moderate	false	@extensions
 7	Routing wiring lint (lint-routing-wiring.sh)	gate7_run	-	true	30	free	false	@extensions
 8	Shell test suite runner (tests/run-all.sh)	gate8_run	-	true	1500	slow	true	@extensions
 9	Postflight boundary lint (lint-postflight-boundary.sh, full corpus)	gate9_run	-	true	30	free	false	.claude/skills,.claude/extensions
-10	specs/state.json schema validation (validate-state.sh --deep)	gate10_run	-	true	60	moderate	false	specs/state.json,specs/TODO.md
+10	specs/state.json schema validation (validate-state.sh --deep)	gate10_run	-	true	180	moderate	false	specs/state.json,specs/TODO.md
 11	Contract compliance lint (lint-contract-compliance.sh)	gate11_run	-	true	30	free	false	@extensions
 12	State-writer boundary lint (lint-state-writer-boundary.sh)	gate12_run	-	true	30	moderate	false	@extensions
 13	Whole-tree orphan detection (find_orphans, headless nvim)	gate13_run	-	true	30	free	false	@extensions,.claude
