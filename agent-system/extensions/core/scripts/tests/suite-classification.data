@@ -201,6 +201,7 @@ test-source-store-path-lib.sh	unit	-
 test-stall-reprompt-wiring.sh	unit	-
 test-status-vocabulary.sh	unit	-
 test-subagent-postflight-marker.sh	unit	-
+test-suite-resolver-lib.sh	unit	-
 test-sweep-invalidated-claims.sh	unit	-
 test-system-defect-record-signal-b.sh	unit	-
 test-task-lock-liveness.sh	unit	-
@@ -211,6 +212,7 @@ test-title-sim-dedup.sh	unit	-
 test-todo-archived-projects-scan.sh	unit	-
 test-todo-move-pair-staging.sh	unit	-
 test-tts-notify.sh	unit	-
+test-unmapped-fallback-lib.sh	unit	-
 test-update-plan-status.sh	unit	-
 test-update-task-status.sh	unit	-
 test-validate-artifact.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh,run-all.sh
@@ -224,6 +226,7 @@ test-validate-return-meta.sh	unit	-
 test-validate-state.sh	integration	invokes:deploy-headless.sh
 test-validate-task-creation-audit.sh	unit	-
 test-validate-wiring.sh	unit	-
+test-verification-scope-lib.sh	unit	-
 test-verify-deploy-context-budget.sh	integration	invokes:verify-deploy.sh,run-all.sh
 test-verify-deploy-gate-selection-crash-net.sh	integration	invokes:verify-deploy.sh,run-all.sh
 test-verify-deploy-gate-selection.sh	integration	invokes:verify-deploy.sh,run-all.sh
