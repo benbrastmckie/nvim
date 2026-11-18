@@ -1,5 +1,5 @@
 ---
-next_project_number: 647
+next_project_number: 650
 ---
 
 # TODO
@@ -13,10 +13,10 @@ next_project_number: 647
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640,645,646 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,523,533,540,541,544,546,550,552,553,570,576,579,583,592,593,598,605,609,610,630 | 383,390,398,410,431,438,451,453,455,463,472,477,504,511,519,535,539,542,548,549,563,564,577,586,599,607,629 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,480,486,492,509,513,561,566,571,594 | 439,452,479,484,491,518,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
-| 4 | 501,508,581,588,595,641 | 454,472,486,492,509,539,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640,645,646,647 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,579,583,592,593,598,605,609,610,630,648 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,564,577,586,599,607,629,647 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,473,480,486,492,509,513,518,561,566,594,649 | 439,452,472,479,484,491,552,593,648 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 4 | 501,508,571,581,588,595,641 | 454,472,486,492,509,518,539,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 524,596,642 | 501,595,641 | core-agent-system, agent-system |
 
 **Grouped by Topic** (indented = depends on parent):
@@ -105,10 +105,10 @@ next_project_number: 647
 
 ### Orchestrator
 
-472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
-  └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
+472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
+  └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
@@ -168,6 +168,12 @@ next_project_number: 647
 570 [NOT STARTED] — Stop the stall signal firing on commits it cannot attribute...
 571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
 
+### Sapience
+
+647 [NOT STARTED] — Bind a repo to a Sapience project and read the vault's shared...
+  └─ 648 [NOT STARTED] — Add the four Sapience write-surface publishers with...
+    └─ 649 [NOT STARTED] — Add the /sapience command: draft assembly and the...
+
 ### Decidability
 
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
@@ -178,6 +184,148 @@ next_project_number: 647
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 649. Add the /sapience command: draft assembly and the approval-gated surface picker
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: sapience
+- **Dependencies**: Task 647, Task 648
+
+**Description**: Add the /sapience command: assemble a draft update from local and vault state, then gate every outward write behind ONE approval picker. DEPENDS ON BOTH the project-binding task (for .sapience/project.json, the shared API library, and the read side) AND the publishers task (the picker needs the publishers' exact interfaces and their literal --dry-run payloads).
+
+EDIT TARGET (source store, never the deploy tree): /home/benjamin/.config/nvim/agent-system/extensions/sapience (confirmed as .extensions.sapience.source_dir in .claude-extensions.json and present on this filesystem). NEVER hand-author under .claude/** -- it is a disposable deploy artifact wiped by the next regeneration. Extension layout convention (confirmed against the literature extension): commands/<name>.md, skills/skill-<name>/SKILL.md, scripts/, scripts/lib/, scripts/tests/.
+
+FILE SCOPE:
+- commands/sapience.md (new)
+- skills/skill-sapience/SKILL.md (new)
+- manifest.json (wire provides.commands / provides.skills / provides.scripts)
+- EXTENSION.md (document the command)
+- index-entries.json (register the new context/instruction surfaces)
+
+COMMAND SHAPE:
+- /sapience [message text] -- default: prepare an update for the project bound to the current repo.
+- /sapience --message Oliver [text] -- also DM that collaborator.
+- /sapience --message [text] -- present a collaborator picker (roster from GET /v1/people).
+- The run ALWAYS ends in ONE AskUserQuestion checkbox multi-select showing each candidate surface with its LITERAL payload, recommended ones pre-checked, then a single confirm. Nothing leaves the machine unapproved.
+- Pre-checked by default: (a) doc comment on the most relevant doc, (b) decision-log row when the update is decision-shaped, (c) repo-tagged KOs into the bound project, (d) DM to the collaborator ONLY when --message was passed (otherwise unchecked/absent).
+
+LOAD-BEARING ARCHITECTURAL CONSTRAINT: the picker MUST run in the skill's OWN execution, before any agent dispatch. AskUserQuestion is categorically withheld from every Agent-tool dispatch of a named subagent_type, independent of frontmatter -- see agent-frontmatter-standard.md's "Tool Withholding from Dispatched Subagents". This is the same shape skill-meta and skill-roadmap already use: collect every user choice in the skill, then dispatch (or just execute) with the choices already resolved. A design that defers the picker into a subagent CANNOT work.
+
+COORDINATION NOTE (no dependency edge, by explicit user decision): task 581 (shared_askuserquestion_option_renderer) extracts one shared AskUserQuestion option renderer and adopts it across all four existing selection surfaces. This picker would be a fifth. This task must NOT block on 581; instead, use whatever shared renderer 581 established if it has already landed, and otherwise keep the picker's option construction in ONE place so 581 can absorb it later without hunting for scattered call sites.
+
+DRAFT ASSEMBLY (read side, provided by the project-binding task's scripts/sapience-vault-read.sh):
+Local inputs: git log / git diff since the last run; specs/state.json completions; specs/events.jsonl; specs/central-errors.jsonl; recent Claude Code session history.
+Vault inputs (all read-only, all verified): GET /v1/people/projects, GET /v1/docs, GET /v1/docs/<slug> (?versions=1), GET /v1/docs/<slug>/comments, GET /v1/people/projects/<cid>/notes, GET /v1/people/projects/suggestions, GET /v1/notifications, plus the seven granted read-shaped MCP tools. A draft should be able to RESPOND to a collaborator's latest rather than talk past it -- that is the point of reading the comment and notification surfaces, not just the doc bodies.
+
+MANIFEST WIRING (item 6): the extension currently declares "commands": [] and "skills": [] in manifest.json -- confirming no command surface exists yet. Wire provides.commands, provides.skills, and provides.scripts for every script this group adds. routing_exempt: true STAYS. Also update EXTENSION.md and index-entries.json.
+
+HARD CONSTRAINTS:
+1. rules/sapience-write-path.md: NO instruction surface may name an MCP write tool (sapience_remember, sapience_wrapup, sapience_handoff, sapience_adddoc) as a prescribed write path. Every prescribed write in commands/sapience.md and skills/skill-sapience/SKILL.md routes through scripts/sapience-publish.sh doing a direct authenticated POST. This keeps the 7-tool read-only grant in settings-fragment.json intact -- no new MCP grant is needed, because a Bash script call is not an MCP tool invocation.
+2. Inherit the existing 3-8-note-per-task bound for KO writes; do NOT add a second, independently-sized bound.
+3. THERE IS NO DELETE API (three probed routes all 404; deletion is web-app-only), so every KO write is PERMANENT and bypasses the vault's auto_approve:false review gate. The approval picker is the ONLY safety -- which is why it is mandatory, single, and shows literal payloads rather than summaries.
+4. Credential/host precedence lives in the shared scripts/lib/sapience-api-lib.sh; never re-derive it in an instruction surface, and never print the token.
+5. Creating the bound project is an OUTWARD-FACING mutation that notifies the collaborator: the command must never trigger it autonomously or during an unattended run.
+
+LIVE REFERENCE VALUES (2026-11-18) -- discover at runtime, NEVER hardcode: collaborator person id 0f0191b3b0d2; own me_id 3951304fedbf; connections: 1. Received projects: "Oliver Ben" mEdYrFW_qClSGDfx (key oliver-ben, slug prefix shared-6ff50e4f-, 10 docs all can_edit:true, 0 room notes, auto:false, contributed:0) and "Constraint Gain An Information-Theoretic Foundation for Valu" GDWWDB-PnLSWNpQc (slug prefix shared-44a870dc-). A third channel g7ZdVZvZx4f9XkxI exists with 0 received. Local capture-map projects: nvim (319 KOs), bimodallogic (1200), dotfiles (272), possibleworlds (13). The Oliver+Ben docs include oliver-ben-decisions (a 177-char empty markdown table whose own header says "One line per decision: date, what was decided, who decided, link to the discussion" -- this is the decision-log row target), oliver-ben-agenda (992 chars), oliver-ben-rules, and oliver-ben-updates (the collaborator's SF-1 digest FOR Ben). All three Oliver+Ben docs currently have ZERO comments.
+
+DEAD PATH -- recorded so it is not rediscovered: the purpose-built repo-link mechanism (.sapience/project.json consumed server-side + project_cid on every call + project_room_contribute writing straight into the room) is OFF for this token. Two independent confirmations: a bogus project_cid probe against /ask returned a normal answer with NO project_rejected key (an enabled REPO_LINK_FOR would have returned no_such_project), and the installed ~/.sapience/mcp.py has ZERO occurrences of project_cid. Design the command so it migrates cleanly to the project_cid path when that flag is enabled -- treat the dark path as the eventual target, not a rejected design.
+
+SOURCE REFERENCES for the implementer: /home/benjamin/Projects/Sapience/sapience-app/brain_server.py (routes and handlers), repo_link.py, cli_project_scope.py, and ~/.sapience/extract_local.py (the installed client's channel logic).
+
+All mechanisms above were VERIFIED LIVE against the vault at app.spnc.ai during the investigation that produced this breakdown. Nothing was written to the vault.
+
+---
+
+### 648. Add the four Sapience write-surface publishers with loud-failure discipline
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: sapience
+- **Dependencies**: Task 647
+
+**Description**: Add the four Sapience write-surface publishers behind one script, each with loud-failure discipline, so the /sapience command's approval picker has concrete publisher interfaces to call. DEPENDS ON the project-binding task: this task consumes that task's scripts/lib/sapience-api-lib.sh for host/token/API resolution and its .sapience/project.json binding reader.
+
+EDIT TARGET (source store, never the deploy tree): /home/benjamin/.config/nvim/agent-system/extensions/sapience (confirmed as .extensions.sapience.source_dir in .claude-extensions.json and present on this filesystem). NEVER hand-author under .claude/** -- it is a disposable deploy artifact wiped by the next regeneration.
+
+FILE SCOPE:
+- scripts/sapience-publish.sh (new)
+- scripts/tests/test-sapience-publish.sh (new)
+
+THE FOUR WRITE SURFACES -- all VERIFIED LIVE against app.spnc.ai; nothing was written to the vault during verification:
+
+1. DOC COMMENT: POST /v1/docs/<slug>/comments {body, quote?, reply_to?, resolve?} -> 201 {slug,n,hash,author,at}. people_after_comment propagates to all members; only_tokens=None when the caller is NOT the channel creator. A comment is NEVER a version of the doc. The DOC_COMMENT_MAX bound applies.
+
+2. DOC VERSION: POST /v1/docs/<slug> {body, base_rev, title?}. Optimistic concurrency is keyed on base_rev == the GET's `rev` -- NOT base_hash, which misses an in-place update that kept the hash (see doc_rev). On conflict the server returns 409 {code:"head_moved", head:{...}}, which MUST be surfaced to the user, NEVER auto-overwritten. With can_edit:true the save writes directly and people_after_save pushes the new version to the owner's original; with can_edit:false it instead routes to people_propose and returns 202 -- the publisher must handle both. A shared-* slug that does not already exist CANNOT be created (PEOPLE_COPY_SLUG_RE -> 404 share_gone), so there is no create-on-write path for shared docs.
+
+3. DIRECT MESSAGE: POST /v1/people/dm {to:"<person id>"} -> 201 new / 200 reused {slug, share}, then POST /v1/docs/<slug>/comments {body}. Gated on APP_OVERHAUL_FOR, confirmed ON for this token (GET /overhaul -> 200). The recipient is resolved server-side and is never taken from the body. Rate-limited by DM_NEW_PER_HOUR. An existing conversation with that person is REUSED rather than duplicated. A conversation doc has kind:'chat', so its message op is chat-msg.
+
+4. REPO-TAGGED KO: POST /ingest-kos with each ko carrying project:"<bound project key>". The `project` field is what _ko_matches_channel reads; the current sapience-remember.sh never sets it, which is part of why shared_by_me is 0 on all three existing channels.
+   Related confirm step: POST /v1/people/projects/<cid>/notes {add:[hashes], remove:[hashes]} -- the `add` book works by hash INDEPENDENT of tag.
+   CRITICAL: /ingest-kos returns NO hashes. Verified reply shape: {written, threads, spend, filtered, staged} (plus project / project_rejected / project_contributed ONLY when a project_cid was server-verified, which requires the currently-dark flag below). Any flow needing hashes for the {add:[hashes]} confirm must recover them with a follow-up search. Owning the bound project (follow:true) is preferred precisely because it makes that confirm step unnecessary.
+
+HARD CONSTRAINTS:
+1. rules/sapience-write-path.md: NO instruction surface may name an MCP write tool (sapience_remember, sapience_wrapup, sapience_handoff, sapience_adddoc) as a prescribed write path. Every prescribed write routes through this script doing a direct authenticated POST. This keeps the 7-tool read-only grant in settings-fragment.json intact -- no new MCP grant is needed, because a Bash script call is not an MCP tool invocation.
+2. Inherit the existing 3-8-note-per-task bound for KO writes; do NOT add a second, independently-sized bound.
+3. Reuse sapience-remember.sh's loud-failure discipline at EVERY new write call site: treat gated >= 1, a non-empty set_aside array, and an absent/zero `written` as non-zero-exit failures, never success-shaped responses. THERE IS NO DELETE API (three probed routes all 404; deletion is web-app-only), so every KO write is PERMANENT and bypasses the vault's auto_approve:false review gate -- the /sapience approval picker is the only safety. A publisher that silently swallows a gated or set-aside response therefore produces an unreviewable permanent write.
+4. Credential/host precedence must come from the shared scripts/lib/sapience-api-lib.sh (SAPIENCE_HOST env, else ~/.sapience/config.json .host, else the https://app.spnc.ai literal; SAPIENCE_TOKEN env, else that file's .token) -- do not re-derive it here. Never echo, print, log, or expose the token to `set -x`; redact it under --dry-run.
+5. If this script needs repo-root resolution, reuse the byte-identical marker-delimited `sapience-worktree-checkout-resolution` block that scripts/tests/test-sapience-mcp-registration.sh's lockstep case extracts from every copy and asserts identical. Also source deploy-root-guard.sh as the existing scripts do.
+6. Every publisher needs a --dry-run that prints the LITERAL payload it would POST, because the /sapience picker shows that literal payload to the user before approval.
+
+DEAD PATH -- recorded so it is not rediscovered: the purpose-built repo-link mechanism (.sapience/project.json consumed server-side + project_cid on every call + project_room_contribute writing straight into the room) is OFF for this token. Two independent confirmations: a bogus project_cid probe against /ask returned a normal answer with NO project_rejected key (an enabled REPO_LINK_FOR would have returned no_such_project), and the installed ~/.sapience/mcp.py has ZERO occurrences of project_cid. Separately, channel_push_matching -- the only thing that forwards a KO to a channel -- is called ONLY from four call sites inside extract_local.py (the local sync/review paths); /ingest-kos is NOT one of them, and _ko_matches_channel additionally requires ko['project'] to equal the channel workstream. Together these are why shared_by_me is 0 on all three existing channels. Design the publishers so they migrate cleanly to the project_cid path when that flag is enabled -- treat the dark path as the eventual target, not a rejected design.
+
+LIVE REFERENCE VALUES (2026-11-18) -- discover at runtime, NEVER hardcode: collaborator person id 0f0191b3b0d2; own me_id 3951304fedbf. The Oliver+Ben project is mEdYrFW_qClSGDfx (key oliver-ben, slug prefix shared-6ff50e4f-, 10 docs all can_edit:true, auto:false). Its docs include oliver-ben-decisions (a 177-char EMPTY markdown table whose own header says "One line per decision: date, what was decided, who decided, link to the discussion"), oliver-ben-agenda (992 chars), oliver-ben-rules, and oliver-ben-updates (the collaborator's SF-1 digest written FOR Ben). All three Oliver+Ben docs currently have ZERO comments -- so the doc-comment publisher's first real use will be the first comment on any of them.
+
+SOURCE REFERENCES for the implementer: /home/benjamin/Projects/Sapience/sapience-app/brain_server.py (routes and handlers), repo_link.py, cli_project_scope.py, and ~/.sapience/extract_local.py (the installed client's channel logic).
+
+---
+
+### 647. Bind a repo to a Sapience project and read the vault's shared state
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: sapience
+- **Dependencies**: None
+
+**Description**: Create the foundation for a /sapience command: bind a repo to a dedicated Sapience project, and read the vault's shared state so a draft can respond to a collaborator's latest rather than talk past it. This task owns the shared host/token/API-resolution library the other two tasks in this group depend on.
+
+EDIT TARGET (source store, never the deploy tree): /home/benjamin/.config/nvim/agent-system/extensions/sapience (confirmed as .extensions.sapience.source_dir in .claude-extensions.json and present on this filesystem). NEVER hand-author under .claude/** -- it is a disposable deploy artifact wiped by the next regeneration. Extension layout convention (confirmed against the literature extension): commands/<name>.md, skills/skill-<name>/SKILL.md, scripts/, scripts/lib/, scripts/tests/.
+
+FILE SCOPE:
+- scripts/sapience-project-bind.sh (new)
+- scripts/sapience-vault-read.sh (new)
+- scripts/lib/sapience-api-lib.sh (new -- shared host/token/API resolution)
+- scripts/tests/test-sapience-project-bind.sh (new)
+- scripts/tests/test-sapience-vault-read.sh (new)
+
+DELIVERABLE 1 -- scripts/lib/sapience-api-lib.sh (shared, consumed by every other script in this group):
+Credential and host precedence MUST mirror ~/.sapience/mcp.py EXACTLY: SAPIENCE_HOST env, else ~/.sapience/config.json's .host, else the https://app.spnc.ai literal; SAPIENCE_TOKEN env, else that same file's .token. Read the token into a local variable once; never echo, print, log, or expose it to `set -x`; redact it under --dry-run. Provide one authenticated-POST and one authenticated-GET helper every consumer calls rather than re-rolling curl.
+
+DELIVERABLE 2 -- scripts/sapience-project-bind.sh:
+USER DECISION (already made, do not re-litigate): create a FRESH, EMPTY project for agent-system work and share it with the collaborator. Do NOT reuse either existing received project.
+Creation call (verified against brain_server.py's _people_project_share, route /v1/people/projects/share):
+  POST /v1/people/projects/share {to:["<person id>"], project:{kind:"project",key:"<key>"}, follow:true}
+This is an OUTWARD-FACING mutation that notifies the collaborator, so it MUST happen interactively with the user confirming the project NAME -- never autonomously, never during an unattended run. The script therefore needs a confirm-or-refuse posture (e.g. require an explicit name argument plus an explicit non-default confirm flag) rather than a bare autonomous create path.
+Persist the binding in .sapience/project.json at the repo root using repo_link.py's EXACT format:
+  {"project": "<cid>", "name": "<display name>", "repo": "<short name>"}
+Exactly three string keys. repo_link.py's parse_link returns None for a dict carrying any token/key/secret/password-shaped key, for a `repo` value not matching ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$ (no /, no ..), or for a path-shaped `repo`. Rationale for adopting this exact format: the file is just committed JSON and find_link is the only server-side part, so our own scripts can read it TODAY, and the identical file becomes natively supported the moment REPO_LINK_FOR is enabled. Support multiple repos, each with its own file.
+Why OWNERSHIP matters mechanically (not a preference): as a non-creator member with auto:false, project_split_confirmed computes cross = doors & (sent|added) = empty, so tagged notes land as suggestions only the author sees. As owner with follow:true they flow without a per-note confirm. Creating the project is what makes us owner.
+
+DELIVERABLE 3 -- scripts/sapience-vault-read.sh:
+Read-only draft inputs. Local side: git log / git diff since the last run; specs/state.json completions; specs/events.jsonl; specs/central-errors.jsonl; recent Claude Code session history.
+Vault side (all read-only, all VERIFIED LIVE): GET /v1/people/projects (project list, member/doc counts, last_sync), GET /v1/docs (updated/edited/unread/rev per doc), GET /v1/docs/<slug> (body + rev, ?versions=1), GET /v1/docs/<slug>/comments, GET /v1/people/projects/<cid>/notes, GET /v1/people/projects/suggestions, GET /v1/notifications, plus the seven granted read-shaped MCP tools. The /sapience draft-assembly task consumes this output.
+
+HARD CONSTRAINTS:
+1. rules/sapience-write-path.md: NO instruction surface may name an MCP write tool (sapience_remember, sapience_wrapup, sapience_handoff, sapience_adddoc) as a prescribed write path. Every prescribed write routes through a script doing a direct authenticated POST. This keeps the 7-tool read-only grant in settings-fragment.json intact -- no new MCP grant is needed, because a Bash script call is not an MCP tool invocation.
+2. Reuse sapience-remember.sh's loud-failure discipline at every write call site: treat gated >= 1, a non-empty set_aside array, and an absent/zero `written` as non-zero-exit failures, never success-shaped responses.
+3. For repo-root resolution, reuse the byte-identical marker-delimited `sapience-worktree-checkout-resolution` block that scripts/tests/test-sapience-mcp-registration.sh's lockstep case extracts from every copy and asserts identical. Also source deploy-root-guard.sh as the existing scripts do.
+
+DEAD PATH -- recorded so it is not rediscovered: the purpose-built repo-link mechanism (.sapience/project.json consumed server-side + project_cid on every call + project_room_contribute writing straight into the room) is OFF for this token. Two independent confirmations: a bogus project_cid probe against /ask returned a normal answer with NO project_rejected key (an enabled REPO_LINK_FOR would have returned no_such_project), and the installed ~/.sapience/mcp.py has ZERO occurrences of project_cid. Design for clean migration to the project_cid path when that flag is enabled -- treat the dark path as the eventual target, not a rejected design.
+
+LIVE REFERENCE VALUES (2026-11-18) -- discover at runtime, NEVER hardcode: collaborator person id 0f0191b3b0d2; own me_id 3951304fedbf. Received projects: "Oliver Ben" mEdYrFW_qClSGDfx (key oliver-ben, slug prefix shared-6ff50e4f-, 10 docs all can_edit:true, 0 room notes, auto:false, contributed:0) and "Constraint Gain An Information-Theoretic Foundation for Valu" GDWWDB-PnLSWNpQc (slug prefix shared-44a870dc-). A third channel g7ZdVZvZx4f9XkxI exists with 0 received. Local capture-map projects: nvim (319 KOs), bimodallogic (1200), dotfiles (272), possibleworlds (13).
+
+SOURCE REFERENCES for the implementer: /home/benjamin/Projects/Sapience/sapience-app/brain_server.py (routes and handlers), repo_link.py, cli_project_scope.py, and ~/.sapience/extract_local.py (the installed client's channel logic).
+
+All mechanisms above were VERIFIED LIVE against the vault at app.spnc.ai during the investigation that produced this breakdown. Nothing was written to the vault. No implementer should need to rediscover them.
+
+---
 
 ### 646. Return meta terminal status vocabulary
 - **Status**: [NOT STARTED]
@@ -7704,7 +7852,7 @@ CONCURRENT TERRITORY NOTE: orchestrate-state-machine.md and the surrounding arch
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 328, Task 378, Task 428, Task 435
+- **Dependencies**: Task 328, Task 378, Task 428, Task 435, Task 556
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**, a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
 
