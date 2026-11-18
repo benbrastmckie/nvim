@@ -1,10 +1,118 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/643_next_batch_suggestion_ignores_roadmap_ordering/summaries/01_roadmap-aware-next-batch-suggestion-summary.md",
+      "summary": "All 5 plan phases completed: orchestrate-suggest-next-batch.sh's Mode A now walks specs/state.json's authored roadmap_batches as its primary candidate source, falling back to the mechanical options with an explicit stated reason; 27/27 regression cases pass; full gate set 41/41 PASS after redeploy; live attestation confirms the suggestion matches specs/ROADMAP.md."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Made specs/state.json's authored roadmap_batches array the primary candidate source for /orchestrate's conclusion-stage next-batch suggestion (walked in authored order, readiness-filtered locally, probed through the existing unmodified admission chain), with a mandatory explicit fallback to the pre-existing mechanical options. Discovered and fixed a latent set -e crash in the readiness predicate during live attestation, locking it in with a new regression case. All 5 phases complete; 27/27 tests green; full gate set 41/41 PASS; live suggestion against this repository's real state now names an authored batch identical to specs/ROADMAP.md's own rendering."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A bare `[ cond ] && action` as the LAST statement of a bash while-loop body under `set -e` silently aborts the whole script the moment `cond` is false on the final line of input -- the short-circuited list's nonzero exit status propagates to the enclosing context. This is insulated (harmless) when the loop producing/consuming the data runs inside a process-substitution subshell (`done < <(producer)`), because the subshell's death coincides with the pipe's own natural EOF and nothing downstream checks its exit code -- but calling the SAME function directly in the caller's own shell (e.g. to let a sibling function read a populated associative array afterward) removes that accidental insulation and the crash becomes real and silent (exit 1, zero stdout/stderr, no error message). Always use explicit `if`/`then` instead of a bare `&&`-guarded action as a loop's last statement when the guard can legitimately be false on real data's last record.",
+      "category": "PATTERN",
+      "source_artifact": "specs/643_next_batch_suggestion_ignores_roadmap_ordering/summaries/01_roadmap-aware-next-batch-suggestion-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "set-e-footgun",
+        "process-substitution-insulation",
+        "bash-loop-last-statement",
+        "silent-crash",
+        "and-list-short-circuit"
+      ]
+    },
+    {
+      "content": "This repository's shell-test-suite common.sh (`common_test_resolve_subject`) defaults subject resolution to `deploy-tree-first`: it silently resolves and copies the STALE deployed `.claude/scripts/` copy ahead of a source-store edit whenever both exist, by design (so a pre/post-redeploy run pair produces the Inter-Cycle Redeploy Checkpoint's divergence signal). For a multi-phase task whose plan edits the source store with redeploy deferred to a final phase, every intermediate phase's own `run-all.sh --only SUITE` verification must export `CORE_TEST_SUBJECT_MODE=source-store` to actually validate the edits being made -- otherwise the check silently passes by testing pre-edit behavior, producing false-confidence (not necessarily a false PASS, but an unearned one) until the final redeploy phase makes the two trees identical again.",
+      "category": "CONFIG",
+      "source_artifact": "specs/643_next_batch_suggestion_ignores_roadmap_ordering/summaries/01_roadmap-aware-next-batch-suggestion-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "core-test-subject-mode",
+        "deploy-tree-first",
+        "source-store-verification",
+        "false-confidence",
+        "multi-phase-plan"
+      ]
+    },
+    {
+      "content": "check-extension-docs.sh's INDEX_TRUTH_GATE_MODE (governing Rule R, index-entries.json line_count accuracy) defaults to 'hard', not advisory -- a direct invocation (or verify-deploy.sh --only-gate 3,4) genuinely exits 1 on a declared-but-not-yet-reconciled line_count drift. 'Rule R is advisory here (no pre-commit hook installed)' -- a framing that appears in plan-authoring guidance for a source-store-edit task that defers index-entries.json reconciliation to a later redeploy phase -- is true only for git commits (no pre-commit hook invokes this script); it does NOT mean the script's own default gate mode is lenient. Export INDEX_TRUTH_GATE_MODE=advisory to confirm no OTHER finding exists beneath an expected, declared drift before a later phase's redeploy reconciles it.",
+      "category": "CONFIG",
+      "source_artifact": "specs/643_next_batch_suggestion_ignores_roadmap_ordering/summaries/01_roadmap-aware-next-batch-suggestion-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "index-truth-gate-mode",
+        "rule-r",
+        "check-extension-docs",
+        "advisory-vs-hard-default",
+        "line-count-drift"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "orchestrate-suggest-next-batch.sh build_ready_set()",
+      "predicate": "contained a bug that is",
+      "value": "A latent set -e crash: `[ \"$all_ok\" = true ] && READY_SET[\"$task_num\"]=1` as a while-loop's last statement silently aborts the script (exit 1, zero output) when the LAST line read has all_ok=false. It was harmless pre-refactor because it ran inside a process-substitution subshell; became live-crashing once the shell had to run directly so a sibling function could see the populated array. Fixed with if/then.",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"
+    },
+    {
+      "subject": "this repository's shell-test common_test_resolve_subject()",
+      "predicate": "has the measured behavior that",
+      "value": "Its default deploy-tree-first mode silently resolves the stale deployed .claude/scripts/ copy ahead of a source-store edit whenever both exist. A multi-phase implementation task editing the source store with redeploy deferred to a final phase must export CORE_TEST_SUBJECT_MODE=source-store on every intermediate verification run, or the check tests pre-edit behavior without any visible warning.",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/lib/common.sh"
+    },
+    {
+      "subject": "check-extension-docs.sh's INDEX_TRUTH_GATE_MODE",
+      "predicate": "has the measured default that",
+      "value": "Defaults to 'hard', not advisory -- contradicting a common plan-authoring framing ('Rule R is advisory here, no pre-commit hook installed') that conflates 'no git pre-commit hook blocks this' with 'the script's own default gate mode is lenient'. A direct invocation genuinely exits 1 on a declared, not-yet-reconciled index-entries.json line_count drift.",
+      "ko_type": "correction",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/check-extension-docs.sh"
+    },
+    {
+      "subject": "deploy-headless.sh's internal verification call",
+      "predicate": "has the measured behavior that",
+      "value": "Runs verify-deploy.sh with --skip-slow automatically as part of normal deploy operation, deferring gate 8 (the shell test suite) regardless of any batch-gate-deferral directive -- this is deploy-headless.sh's own standing default, not something a dispatch has to request. A phase requiring the full test suite result must separately run the scoped run-all.sh --only invocation.",
+      "ko_type": "finding",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/deploy-headless.sh"
+    },
+    {
+      "subject": "build_ready_set() and roadmap-integration.sh's render_next()",
+      "predicate": "share the architectural relationship that",
+      "value": "Both implement the same readiness concept (is this task still something to act on, or has it already finished) at two different bars for two different purposes -- build_ready_set()'s bar is stricter (also excludes hold/implementing/blocked/partial). They are deliberately not unified into one shared function since no live caller needs both bars at once; a future change to one terminal-status filter should prompt checking the other.",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794980176_60fcdb",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
   },
-  "dispatch_seq": 3
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

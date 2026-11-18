@@ -82,9 +82,15 @@
           "path": "specs/643_next_batch_suggestion_ignores_roadmap_ordering/plans/01_roadmap-aware-next-batch-suggestion.md",
           "type": "plan",
           "summary": "5-phase plan (6h) making roadmap_batches the primary candidate source for /orchestrate's conclusion-stage next-batch suggestion, with an explicit mechanical fallback and 8 new regression cases."
+        },
+        {
+          "path": "specs/643_next_batch_suggestion_ignores_roadmap_ordering/summaries/01_roadmap-aware-next-batch-suggestion-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 5 phases, deviations, and live attestation evidence."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Made specs/state.json's authored roadmap_batches array the primary candidate source for /orchestrate's conclusion-stage next-batch suggestion (walked in authored order, readiness-filtered locally, probed through the existing unmodified admission chain), with a mandatory explicit fallback to the pre-existing mechanical options. Discovered and fixed a latent set -e crash in the readiness predicate during live attestation, locking it in with a new regression case. All 5 phases complete; 27/27 tests green; full gate set 41/41 PASS; live suggestion against this repository's real state now names an authored batch identical to specs/ROADMAP.md's own rendering."
     },
     {
       "project_name": "repropagate_bounded_wait_agent_bullets",

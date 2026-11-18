@@ -252,6 +252,7 @@ PROVENANCE. Created via `/meta` in prompt mode, session `sess_1794955120_meta643
 - **Dependencies**: None
 - **Research**: [643_next_batch_suggestion_ignores_roadmap_ordering/reports/01_roadmap_aware_suggester.md]
 - **Plan**: [643_next_batch_suggestion_ignores_roadmap_ordering/plans/01_roadmap-aware-next-batch-suggestion.md]
+- **Summary**: [643_next_batch_suggestion_ignores_roadmap_ordering/summaries/01_roadmap-aware-next-batch-suggestion-summary.md]
 
 **Description**: Align /orchestrate's conclusion-stage next-batch suggestion with the authored roadmap ordering, or render both so the divergence is visible
 
