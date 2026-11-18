@@ -286,6 +286,7 @@
       "orchestrate-cycle-postflight.sh",
       "orchestrate-loop-guard-init.sh",
       "orchestrate-predispatch-review.sh",
+      "orchestrate-recap.sh",
       "orchestrate-record-decision.sh",
       "orchestrate-recover-message-findings.sh",
       "orchestrate-recover-outcome.sh",

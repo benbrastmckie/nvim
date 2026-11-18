@@ -370,3 +370,17 @@ runtime_conclusion_pending_marker_path() {
   local specs_dir="$1" session_id="$2"
   echo "${specs_dir}/.orchestration/.conclusion-pending-${session_id}.json"
 }
+
+# runtime_recap_path <specs_dir> <session_id>
+# Fourth per-session resolver: the spoken-recap file written by
+# scripts/orchestrate-recap.sh's `--write` mode (called at Move 5 Step 6, after the combined
+# report is rendered) and read back by that same script's default speak mode. Same contract as
+# the three resolvers above: caller supplies its own resolved `specs/` directory and ensures
+# `.orchestration/` exists before writing; this function only computes the path. No new
+# runtime-file-pattern class member is needed for this path -- `specs/.orchestration/` is
+# already covered, directory-class, by this file's own class membership, the same reasoning the
+# conclusion-stage pending marker above already relies on.
+runtime_recap_path() {
+  local specs_dir="$1" session_id="$2"
+  echo "${specs_dir}/.orchestration/.recap-${session_id}.json"
+}

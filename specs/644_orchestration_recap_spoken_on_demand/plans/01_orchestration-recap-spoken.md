@@ -1,7 +1,7 @@
 # Implementation Plan: Task #644
 
 - **Task**: 644 - Leave a spoken-word recap at the end of an orchestration and recommend /recap to hear it
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 7 hours
 - **Dependencies**: 503, 526, 538, 558, 643 (all territory edges, not subject edges; all five are [COMPLETED] as of this plan's authoring)
 - **Research Inputs**: specs/644_orchestration_recap_spoken_on_demand/reports/01_orchestration-recap-design.md
@@ -189,50 +189,55 @@ Phase 5's `full` gate is what covers everything these subsets do not.
 
 ---
 
-### Phase 1: Resolver and the recap script [NOT STARTED]
+### Phase 1: Resolver and the recap script [IN PROGRESS]
 
 **Goal**: The path resolver and the `orchestrate-recap.sh` script exist, are registered, and work
 standalone — both modes, every fallback branch — with no caller wired up yet.
 
 **Tasks**:
 
-- [ ] Append `runtime_recap_path()` to `agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh`,
+- [x] Append `runtime_recap_path()` to `agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh`,
       directly after `runtime_conclusion_pending_marker_path()`, taking `(specs_dir, session_id)`
       and echoing `${specs_dir}/.orchestration/.recap-${session_id}.json`. Carry a header comment
       in the same voice as its three siblings, stating that no new runtime-file-pattern class
       member is needed because the containing directory is already covered directory-class, and
-      that the caller owns directory creation.
-- [ ] Create `agent-system/extensions/core/scripts/orchestrate-recap.sh` with `set -euo pipefail`,
-      a header documenting both modes and the environment variables, and `--help`.
-- [ ] Implement `--write --session <sid>`: read the recap text from **stdin** (never a `--text`
+      that the caller owns directory creation. *(completed)*
+- [x] Create `agent-system/extensions/core/scripts/orchestrate-recap.sh` with `set -euo pipefail`,
+      a header documenting both modes and the environment variables, and `--help`. *(completed)*
+- [x] Implement `--write --session <sid>`: read the recap text from **stdin** (never a `--text`
       argument — the text is free-form prose and must not travel through argument quoting), write
       `{session_id, created_ts, text}` JSON to the resolver's path, creating
       `specs/.orchestration/` first. Empty stdin is a loud non-zero refusal with a message naming
-      the cause.
-- [ ] Implement the default speak mode's text resolution: newest `.recap-*.json` under
+      the cause. *(completed)*
+- [x] Implement the default speak mode's text resolution: newest `.recap-*.json` under
       `specs/.orchestration/` by mtime; use its `text` when the file parses and the field is
-      non-empty.
-- [ ] Implement the recompose fallback: when no usable recap file exists, take the newest
+      non-empty. *(completed)*
+- [x] Implement the recompose fallback: when no usable recap file exists, take the newest
       `.return-meta-multi-*.json` by mtime, validate it parses and carries the expected metadata
       keys, and compose a short mechanical prose string from the task outcomes it records. When
       that file is absent, unparseable, or missing those keys, fall back to one fixed generic
-      sentence. Every branch exits `0`.
-- [ ] Implement output and playback: always print the resolved text to stdout first. Then exit `0`
+      sentence. Every branch exits `0`. *(completed)*
+- [x] Implement output and playback: always print the resolved text to stdout first. Then exit `0`
       without audio when `TTS_ENABLED=0`, when `piper` is not on `PATH`, or when the resolved
       `PIPER_VOICE` model file does not exist. Otherwise write the text to a `mktemp` file and run
       a backgrounded, `timeout`-bounded `piper --model "$voice" --output_file - --quiet < "$tmp" | paplay`,
       removing the temp file afterwards. Honor `TTS_ENABLED` (default `1`) and `PIPER_VOICE`
       (default `$HOME/.local/share/piper/en_US-lessac-medium.onnx`) with the same spellings and
-      defaults the existing notification hook uses.
-- [ ] MUST NOT reuse the existing notification hook's `speak()` quoting shape: the recap text is
+      defaults the existing notification hook uses. *(completed: also gated on paplay presence,
+      an additive safety branch not contradicting any task item)*
+- [x] MUST NOT reuse the existing notification hook's `speak()` quoting shape: the recap text is
       never interpolated into a single-quoted string inside a nested `bash -c`. No espeak-ng
-      branch anywhere in the file.
-- [ ] Add `"orchestrate-recap.sh"` to `manifest.json`'s `provides.scripts` array, in that array's
-      existing sort position.
-- [ ] Smoke both modes by hand: write a recap with an apostrophe in it, read it back with
+      branch anywhere in the file. *(completed: text reaches piper only via file redirection on
+      stdin)*
+- [x] Add `"orchestrate-recap.sh"` to `manifest.json`'s `provides.scripts` array, in that array's
+      existing sort position. *(completed)*
+- [x] Smoke both modes by hand: write a recap with an apostrophe in it, read it back with
       `TTS_ENABLED=0`, confirm the text round-trips byte-identically and the exit status is `0`.
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` (or its deployed
-      equivalent) over the new script and clear every finding.
+      *(completed: via a fake .claude/scripts/ deploy tree under the scratchpad directory, since
+      this script's deploy-root-guard.sh gate refuses a bare source-store invocation by the same
+      convention as its orchestrate-*.sh siblings — see progress file's approaches_tried)*
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-shellcheck.sh` (or its deployed
+      equivalent) over the new script and clear every finding. *(completed: 0 findings)*
 
 **Timing**: 2 hours
 

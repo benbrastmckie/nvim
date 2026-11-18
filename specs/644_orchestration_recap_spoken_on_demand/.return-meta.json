@@ -1,33 +1,13 @@
 {
-  "status": "planned",
-  "session_id": "sess_1794985308_f67716_644",
-  "dispatch_seq": 14,
-  "summary": "Five-phase plan for the spoken orchestration recap: a fourth per-session path resolver plus a new two-mode orchestrate-recap.sh (Phase 1), the user-only /recap command and skill with its CLAUDE.md row and the nvim TTS guide note (Phase 2), a nine-case test suite with its classification row (Phase 3), the conclusion-stage Step 6 amendment plus the Move 5 Bash allowlist entry and the results-template recommendation (Phase 4), and deploy/verify/acceptance (Phase 5). The user-only ruling is recorded explicitly with its structural rationale. Two gate collisions were found at authoring time and designed around via phase ordering.",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/644_orchestration_recap_spoken_on_demand/plans/01_orchestration-recap-spoken.md",
-      "summary": "Five-phase, 7-hour plan wiring a speech-shaped recap into the conclusion stage's emission step and a user-only /recap command that speaks or prints it."
-    }
-  ],
-  "modified_files": [],
+  "status": "in_progress",
+  "session_id": "sess_1794985308_f67716",
+  "dispatch_seq": 15,
   "metadata": {
-    "session_id": "sess_1794985308_f67716_644",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 7,
-    "dependency_waves": [[1], [2, 3], [4], [5]]
-  },
-  "memory_candidates": [
-    {
-      "content": "scripts/lib/suite-selection-lib.sh's suite_selection_select has UNION semantics across multiple path arguments: if ANY argument path has no mapped suite, the function returns the single __FULL_SWEEP__ sentinel for the whole call, regardless of how many real suites the other paths map to. validate-artifact.sh's Tier Justification check calls it with a phase's entire harvested Files-to-modify list, so a plan phase that creates even one new file (or touches one unmapped markdown file) must assert __FULL_SWEEP__ in its Tier Justification, never a per-path suite list -- naming real suites there is flagged as a fabricated claim even when each name is individually correct. Author the sentinel claim plus a gate subset, and put the genuinely-mapped suite names in the phase's Verification block instead.",
-      "category": "PATTERN",
-      "source_artifact": "specs/644_orchestration_recap_spoken_on_demand/plans/01_orchestration-recap-spoken.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["suite-selection", "tier-justification", "validate-artifact", "FULL_SWEEP", "plan-authoring"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 644 to execute the plan"
+    "session_id": "sess_1794985308_f67716",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 5
+  }
 }

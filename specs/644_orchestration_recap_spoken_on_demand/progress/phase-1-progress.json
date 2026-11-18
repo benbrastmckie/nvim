@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Resolver and the recap script",
+  "started_at": "2026-11-18T02:00:00Z",
+  "last_updated": "2026-11-18T02:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append runtime_recap_path() to runtime-file-patterns.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"]},
+    {"id": 2, "description": "Create orchestrate-recap.sh with --write and speak modes", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recap.sh"]},
+    {"id": 3, "description": "Register orchestrate-recap.sh in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 4, "description": "Smoke test both modes by hand; run lint-shellcheck.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Tested orchestrate-recap.sh standalone from the source store using DEPLOY_ROOT_GUARD_SELF_CORRECT=1", "result": "failed", "reason": "common_repo_root() ignores the guard's self-corrected REPO_ROOT and recomputes a pure 2-levels-up path, landing inside agent-system/extensions/specs/ instead of the real specs/ -- this script is not one of the few self-correcting scripts (sync-manifest-scripts.sh, check-extension-docs.sh) that explicitly use $REPO_ROOT instead of common_repo_root(), so it correctly refuses/misresolves from the source store by the same convention as its sibling orchestrate-*.sh scripts"},
+    {"approach": "Built a minimal fake .claude/scripts/ deploy tree under the scratchpad directory (copying orchestrate-recap.sh, deploy-root-guard.sh, lib/common.sh, lib/runtime-file-patterns.sh) to smoke-test both modes without a real deploy", "result": "success", "reason": "deploy-root-guard.sh's case match on the parent directory name (.claude) is satisfied structurally, and common_repo_root resolves correctly 2 levels up to the fake root; every Phase 1 smoke scenario (--help, write+round-trip with apostrophe/double-quote, TTS_ENABLED=0, no-file generic sentence, recompose from a fixture .return-meta-multi-*.json, piper-absent, malformed-meta-file) passed with exit 0 and correct text"}
+  ],
+  "handoff_count": 0
+}
