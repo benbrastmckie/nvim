@@ -25,21 +25,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/538_bounded_block_edit_index_and_assert/summaries/01_bounded-block-edit-guidance-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["bounded-block-edit", "line-indexing", "assertions", "anchoring", "plan-file-edit"]
+      "suggested_keywords": [
+        "bounded-block-edit",
+        "line-indexing",
+        "assertions",
+        "anchoring",
+        "plan-file-edit"
+      ]
     },
     {
       "content": "Restoring one clobbered file after a botched in-file edit is `git show HEAD:<path>` piped to a write (blob read to stdout plus an ordinary file write) -- this has no interaction with the destructive-git guard at all, needs no snapshot, and works on a dirty tree. git checkout --, git restore, and git reset --hard are neither needed nor appropriate for restoring a single file from its last commit.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/538_bounded_block_edit_index_and_assert/summaries/01_bounded-block-edit-guidance-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["git-show", "recovery", "destructive-git-guard", "dirty-tree"]
+      "suggested_keywords": [
+        "git-show",
+        "recovery",
+        "destructive-git-guard",
+        "dirty-tree"
+      ]
     },
     {
       "content": "An eager-load context budget (orchestrator-context-budget.json's eager_load.baseline_bytes, enforced by verify-deploy.sh Gate 20) can be breached by an innocuous-looking small addition to merge-sources/claudemd.md (any text eagerly assembled into the generated root CLAUDE.md). The established, repository-reviewed remedy order is: always attempt a wording trim of the new or adjacent content first (same facts, fewer bytes), and only perform a deliberate, dated baseline move when no further non-duplicative trim is available. A ~550 B two-paragraph addition was trimmed to ~350 B (two sentences, same trigger-plus-mechanism content) to clear a 166 B overage with margin to spare.",
       "category": "INSIGHT",
       "source_artifact": "specs/538_bounded_block_edit_index_and_assert/summaries/01_bounded-block-edit-guidance-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["eager-context-budget", "gate-20", "claudemd", "baseline-trim"]
+      "suggested_keywords": [
+        "eager-context-budget",
+        "gate-20",
+        "claudemd",
+        "baseline-trim"
+      ]
     }
   ],
   "sapience_notes": [
@@ -88,8 +104,14 @@
     "session_id": "sess_1794985308_f67716",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

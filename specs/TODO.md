@@ -5866,6 +5866,7 @@ as a number resolving to an unrelated record here.
 - **Dependencies**: None
 - **Research**: [538_bounded_block_edit_index_and_assert/reports/01_bounded-block-edit-guidance.md]
 - **Plan**: [538_bounded_block_edit_index_and_assert/plans/01_bounded-block-edit-guidance.md]
+- **Summary**: [538_bounded_block_edit_index_and_assert/summaries/01_bounded-block-edit-guidance-summary.md]
 
 **Description**: Add agent-system guidance for the ASSERTION half of a bounded in-file block edit: assert the expected pre-state before writing, and assert an expected post-state invariant immediately after writing, so that a block edit which goes wrong is caught at once instead of being committed. The ANCHOR-SELECTION half of this same failure class is ALREADY CLAIMED by a sibling record in the source-store repository's own task space -- see the sibling-coverage section below. This record must not restate that half, and is not a licence to rewrite it.
 
