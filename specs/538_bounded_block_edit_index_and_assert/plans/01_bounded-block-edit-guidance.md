@@ -339,43 +339,51 @@ deployed path does not resolve).
 
 ---
 
-### Phase 3: Consolidate the Anchor Half into the Shared Home [NOT STARTED]
+### Phase 3: Consolidate the Anchor Half into the Shared Home [COMPLETED]
 
 **Goal**: Move the landed section-anchoring paragraph from the lean implementation flow into the
 new core file verbatim, and reduce the lean copy to a pointer, so one place serves both the
 implementer and the plan author.
 
 **Tasks**:
-- [ ] Confirm the task's live `file_scope` already contains both lean paths:
+- [x] Confirm the task's live `file_scope` already contains both lean paths:
       `jq -r '.active_projects[] | select(.project_number==538) | .file_scope[]' specs/state.json`.
       They are declared in this plan, so plan-postflight harvest adds them. If they are absent,
       do NOT edit the lean files: record the paths in `proposed_file_scope` in
       `.return-meta.json` and stop this phase there, per the task description's widen-first
-      instruction.
-- [ ] Extract lines 120-128 of
+      instruction. *(completed: both lean paths present in live file_scope)*
+- [x] Extract lines 120-128 of
       `agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md`
       (the `**Section-anchoring rule for any multi-line plan-file edit**` paragraph) to a scratch
       file with `sed -n '120,128p'`, after confirming by `grep -n 'Section-anchoring rule'` that
-      the paragraph still starts where expected.
-- [ ] Replace the placeholder line Phase 1 left in the new core file's anchoring subsection with
+      the paragraph still starts where expected. *(completed: the re-run repository-wide grep also
+      matched a second, pre-existing, already-pointer-shaped condensed paragraph in
+      agents/lean-implementation-agent.md, outside this task's file_scope and predating this
+      plan's authoring; recorded as a non-blocking issue and left unedited)*
+- [x] Replace the placeholder line Phase 1 left in the new core file's anchoring subsection with
       that extracted block, unchanged. Any generalization beyond markdown plan files is added as a
-      sentence of framing around the block, never by editing the block's own sentences.
-- [ ] Assert the transplant was faithful: `diff` the scratch extract against the corresponding
-      lines of the new core file and confirm it is empty.
-- [ ] Reduce the lean paragraph to a pointer: replace the same nine lines with two or three lines
+      sentence of framing around the block, never by editing the block's own sentences. *(completed)*
+- [x] Assert the transplant was faithful: `diff` the scratch extract against the corresponding
+      lines of the new core file and confirm it is empty. *(completed: diff empty)*
+- [x] Reduce the lean paragraph to a pointer: replace the same nine lines with two or three lines
       giving the rule's one-line gist (anchor both ends on heading LINES, search the end anchor
       forward from the section's own start) plus a pointer to
       `.claude/context/patterns/bounded-block-edit.md` for the full rule and the assertion
       discipline. Do this with the `Edit` tool on the paragraph's unique opening sentence as
-      `old_string`, not a scripted splice.
-- [ ] Leave line 177's Stage 4D cross-reference working: re-read it and adjust its wording only if
+      `old_string`, not a scripted splice. *(completed)*
+- [x] Leave line 177's Stage 4D cross-reference working: re-read it and adjust its wording only if
       it no longer resolves to a rule that is still stated there (the pointer keeps the gist, so it
-      should still read correctly).
-- [ ] Assert the post-state of the lean edit immediately: the file's `^### ` and `^## ` heading
+      should still read correctly). *(completed: re-read at its new line 173; still reads correctly
+      against the pointer)*
+- [x] Assert the post-state of the lean edit immediately: the file's `^### ` and `^## ` heading
       counts are unchanged, and `wc -l` has decreased by roughly six to seven lines and by nothing
-      like a whole section.
-- [ ] Check both edited files against the two deliverable-hygiene rules as in Phase 1.
-- [ ] Commit with an explicit two-file `git add`.
+      like a whole section. *(completed: heading counts unchanged (13 `##`, 10 `###`); wc -l
+      decreased by 4 (261 -> 257), close to but slightly under the estimated range, nothing like a
+      whole section)*
+- [x] Check both edited files against the two deliverable-hygiene rules as in Phase 1. *(completed:
+      hygiene grep clean on both; the lean file's one hit on "previously loaded" is pre-existing,
+      unrelated prose)*
+- [x] Commit with an explicit two-file `git add`. *(completed)*
 
 **Timing**: 0.75 hours
 

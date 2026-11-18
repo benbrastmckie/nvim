@@ -117,15 +117,11 @@ Update phase status marker in plan file:
 ### Phase {P}: {phase_name} [NOT STARTED] -> [IN PROGRESS]
 ```
 
-**Section-anchoring rule for any multi-line plan-file edit**: when an edit replaces or splices a
-whole section of a markdown plan file, anchor both ends on LINES that begin with heading markers
-(a line starting with two or three hash characters and a space), and search the end anchor
-FORWARD from the target section's own start line. Never anchor on a bare heading substring: the
-same text commonly recurs in prose earlier in the file (for example inside a Goals or Overview
-paragraph), and a whole-file match on it splices at the wrong place, duplicating the span between
-the two matches. The single-line phase-marker swap shown above is already safe by construction
-(the heading text plus its bracketed status marker is unique); this rule governs edits spanning
-from one heading to the next.
+**Section-anchoring rule for any multi-line plan-file edit**: anchor both ends on LINES that
+begin with heading markers, searching the end anchor FORWARD from the target section's own start
+line, never on a bare heading substring that may recur in prose elsewhere in the file. See
+`.claude/context/patterns/bounded-block-edit.md` for the full rule and the index-and-assert
+discipline it pairs with.
 
 ### 4B. Execute Proof Development
 

@@ -112,7 +112,15 @@ recipe is genuinely being hand-typed often.
 
 ## Anchoring a Multi-Line Section (Transplanted)
 
-<!-- ANCHOR-RULE-TRANSPLANT-PLACEHOLDER: replaced with the transplanted section-anchoring rule -->
+**Section-anchoring rule for any multi-line plan-file edit**: when an edit replaces or splices a
+whole section of a markdown plan file, anchor both ends on LINES that begin with heading markers
+(a line starting with two or three hash characters and a space), and search the end anchor
+FORWARD from the target section's own start line. Never anchor on a bare heading substring: the
+same text commonly recurs in prose earlier in the file (for example inside a Goals or Overview
+paragraph), and a whole-file match on it splices at the wrong place, duplicating the span between
+the two matches. The single-line phase-marker swap shown above is already safe by construction
+(the heading text plus its bracketed status marker is unique); this rule governs edits spanning
+from one heading to the next.
 
 
 ## References

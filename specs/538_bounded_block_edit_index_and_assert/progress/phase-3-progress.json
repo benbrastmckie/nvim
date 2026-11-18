@@ -1,0 +1,30 @@
+{
+  "phase": 3,
+  "phase_name": "Consolidate the Anchor Half into the Shared Home",
+  "started_at": "2026-11-18T09:50:00Z",
+  "last_updated": "2026-11-18T10:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm live file_scope contains both lean paths", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Extract lines 120-128 of the lean flow file to a scratch file", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Replace the core file's placeholder with the extracted block", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/bounded-block-edit.md"]},
+    {"id": 4, "description": "Assert transplant diff is empty", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Reduce the lean paragraph to a pointer", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md"]},
+    {"id": 6, "description": "Verify Stage 4D cross-reference still reads correctly", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Assert lean file post-state (heading counts unchanged, line count down modestly)", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Check both files against deliverable-hygiene rules", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Commit phase 3 with explicit two-file git add", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "Re-run repository-wide grep for 'Section-anchoring rule' per the phase's Scope Hypothesis",
+      "type": "altered",
+      "reason": "Grep returned a second match outside specs/**: a pre-existing condensed, already-pointer-shaped paragraph in agent-system/extensions/lean/agents/lean-implementation-agent.md (added by an unrelated prior task), not covered by this task's file_scope. The plan's Scope Hypothesis called for stopping and reporting on a second match; recorded as a non-blocking issue (see issues.jsonl) and proceeded with the transplant as planned since the second copy already defers to the flow file as canonical and is not a competing full restatement.",
+      "annotation": "*(deviation: altered -- see progress note; recorded via issue-record.sh, not re-derived here)*"
+    }
+  ],
+  "verification_notes": "The Phase 3 gate check (verify-deploy.sh --skip-slow --only-gate 3,4) currently reports FAIL via check-extension-docs.sh Rule R: the lean index-entries.json line_count for lean-implementation-flow.md (declared 261) now mismatches the live file (257), because this phase is the one that moved the quantity. This is the exact, explicitly anticipated drift the plan's Phase 1 and Phase 3 'Files to modify' notes schedule for Phase 4 reconciliation ('declared only, not written in this phase'). Phase 4 (next, in this same dispatch) reconciles it and re-runs the check to confirm a clean pass before the task closes."
+}
