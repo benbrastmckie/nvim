@@ -511,33 +511,49 @@ derived quantity this phase reconciles.
 
 ---
 
-### Phase 5: Deploy, Verify, and Close [NOT STARTED]
+### Phase 5: Deploy, Verify, and Close [COMPLETED]
 
 **Goal**: Regenerate the deployed tree from the source store and confirm the complete gate set is
 green, discharging the task description's final acceptance criterion.
 
 **Tasks**:
-- [ ] Read `git status --short` and confirm the working tree carries only this task's own
+- [x] Read `git status --short` and confirm the working tree carries only this task's own
       committed work plus whatever a concurrent sibling legitimately owns; report rather than
-      absorb anything foreign.
-- [ ] Run the deploy with the bounded-wait idiom the dispatch requires:
+      absorb anything foreign. *(completed: no file_scope overlap with any foreign dirty/untracked
+      path observed)*
+- [x] Run the deploy with the bounded-wait idiom the dispatch requires:
       `timeout 540 bash .claude/scripts/deploy-headless.sh`, with the Bash tool timeout raised to
       600000 ms (not the 120000 ms default), per
-      `context/patterns/external-process-wait.md` Rule 1.
-- [ ] Confirm the deploy reports `RESULT=landed_verify_clean`. On any other result, read the
+      `context/patterns/external-process-wait.md` Rule 1. *(completed)*
+- [x] Confirm the deploy reports `RESULT=landed_verify_clean`. On any other result, read the
       deploy's own findings, fix forward in the source store, and re-run — never hand-patch
-      anything under `.claude/**`.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (the full aggregator, not
+      anything under `.claude/**`. *(completed: first run reported RESULT=landed_verify_red on an
+      unanticipated Gate 20 eager-context-budget finding caused by the claudemd.md pointer section;
+      fixed forward by tightening that section's wording, then re-ran and got
+      RESULT=landed_verify_clean, 41/41 checks)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh` (the full aggregator, not
       a `--only-gate` subset and not `--skip-slow`), and confirm it is green — including the
       doc-lint and task-reference gates that check the new guidance's prose.
-- [ ] Confirm the new guidance is reachable in the deployed tree:
+      *(deviation: altered -- this dispatch's `## Batch Gate Deferral` directive discharges this
+      phase against a scoped tier instead: `verify-deploy.sh --only-gate
+      3,4,5,6,7,9,11,12,13,15,17,18,19,20,21,23,24,26,28 --skip-unchanged`, covering every gate
+      whose declared input corpus reaches this task's touched files, excluding gate 8's
+      mutex-contending full battery, already discharged in Phases 1-4 via targeted `run-all.sh
+      --only`. Result: PASS, 21 checks, 0 failures, 2 cached. deploy-headless.sh's own inline
+      --skip-slow pass additionally confirmed 41/41 at the deploy step above. The full,
+      unfiltered sweep is deferred to the batch stage per the directive, never independently
+      forced a second time in this dispatch.)*
+- [x] Confirm the new guidance is reachable in the deployed tree:
       `.claude/context/patterns/bounded-block-edit.md` exists, the deployed root `CLAUDE.md`
       carries the pointer section, and the deployed
       `.claude/agents/general-implementation-agent.md` carries the new bullet.
-- [ ] Walk the task description's eight acceptance criteria one by one and record the evidence for
-      each in the implementation summary.
-- [ ] Commit any files the deploy itself rewrote in the source store (line counts), with an
-      explicit file list.
+- [x] Walk the task description's eight acceptance criteria one by one and record the evidence for
+      each in the implementation summary. *(completed: see the implementation summary's Evidence
+      table)*
+- [x] Commit any files the deploy itself rewrote in the source store (line counts), with an
+      explicit file list. *(completed: the deploy itself rewrote nothing further -- the two
+      index-entries.json files were already reconciled in Phase 4; the only uncommitted change
+      entering this phase's commit was this phase's own Gate-20 trim of claudemd.md)*
 
 **Timing**: 0.75 hours
 
@@ -567,27 +583,29 @@ green, discharging the task description's final acceptance criterion.
 
 ## Testing & Validation
 
-- [ ] `agent-system/extensions/core/context/patterns/bounded-block-edit.md` exists and states the
+- [x] `agent-system/extensions/core/context/patterns/bounded-block-edit.md` exists and states the
       conjunctive trigger condition with at least one concrete qualifying file shape named
-      (acceptance 1).
-- [ ] It carries a copyable recipe covering all three parts — line indexing, the bounded range with
+      (acceptance 1). *(completed)*
+- [x] It carries a copyable recipe covering all three parts — line indexing, the bounded range with
       its pre-state assertion, and the post-write invariant assertion — not merely a prohibition
-      (acceptance 2).
-- [ ] It names the `Edit`-tool-with-unique-`old_string` path as the first choice and says when the
-      scripted path earns its place instead (acceptance 3).
-- [ ] It states the `git show HEAD:<path>` recovery nuance, including that this is a plain write
+      (acceptance 2). *(completed)*
+- [x] It names the `Edit`-tool-with-unique-`old_string` path as the first choice and says when the
+      scripted path earns its place instead (acceptance 3). *(completed)*
+- [x] It states the `git show HEAD:<path>` recovery nuance, including that this is a plain write
       with no destructive-git-guard interaction, and does not restate the guard's own rules
-      (acceptance 4).
-- [ ] It does not generalize into a prohibition on scripted editing (acceptance 5).
-- [ ] A reader arriving from `agents/general-implementation-agent.md` or from the root `CLAUDE.md`
+      (acceptance 4). *(completed)*
+- [x] It does not generalize into a prohibition on scripted editing (acceptance 5). *(completed)*
+- [x] A reader arriving from `agents/general-implementation-agent.md` or from the root `CLAUDE.md`
       pointer reaches the guidance without knowing the term "slice-and-splice" in advance
-      (acceptance 6).
-- [ ] The `index-entries.json` entry's `line_count` and `keywords` agree with the file as landed,
-      and at least one referrer exists (acceptance 7).
-- [ ] `bash .claude/scripts/deploy-headless.sh` reports `RESULT=landed_verify_clean` (acceptance 8).
-- [ ] `bash .claude/scripts/generate-context-line-counts.sh --check` passes clean.
-- [ ] No edited file outside `specs/**` carries a task number, an issue entry id, or
-      record-versioning language.
+      (acceptance 6). *(completed)*
+- [x] The `index-entries.json` entry's `line_count` and `keywords` agree with the file as landed,
+      and at least one referrer exists (acceptance 7). *(completed)*
+- [x] `bash .claude/scripts/deploy-headless.sh` reports `RESULT=landed_verify_clean` (acceptance 8).
+      *(completed)*
+- [x] `bash .claude/scripts/generate-context-line-counts.sh --check` passes clean. *(completed:
+      603/603 exact)*
+- [x] No edited file outside `specs/**` carries a task number, an issue entry id, or
+      record-versioning language. *(completed: hygiene grep clean on all edited files)*
 
 ## Artifacts & Outputs
 

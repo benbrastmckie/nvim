@@ -269,11 +269,9 @@ Formatting" section for the checkable trigger condition and the copyable recipe.
 
 ## Bounded Block Edits
 
-Editing a bounded block inside a larger line-structured text file (a phase inside a plan, a
-section inside a document) by reconstructing the file from string slices of its own content, as
-opposed to replacing identified lines in place, risks silently re-emitting or dropping a region
-of the file. The `Edit` tool with a unique `old_string` is the first-choice mechanism for a small
-bounded edit, since it already fails loudly on an absent or ambiguous match.
+A multi-line block edit that reconstructs the file from string slices of its own content, rather
+than replacing identified lines in place, risks silently duplicating or dropping a region. Prefer
+the `Edit` tool with a unique `old_string` for a small edit.
 
 Full documentation: `.claude/context/patterns/bounded-block-edit.md`
 
