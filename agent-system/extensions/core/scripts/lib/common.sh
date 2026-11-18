@@ -440,6 +440,20 @@ common_test_resolve_subject() {
       ;;
     deploy-tree-first)
       if [ -f "$_common_deployed" ]; then
+        # STALENESS GUARD: deploy-tree-first is a preference, not a correctness requirement
+        # (see the MODE VOCABULARY note above), and the Inter-Cycle Redeploy Checkpoint
+        # deliberately relies on it resolving the stale deployed copy pre-redeploy -- so this
+        # guard never changes which path is returned or the function's exit code. It only adds
+        # an unmissable stderr warning when the source-store copy is NEWER than the deployed
+        # copy, which otherwise means a caller is silently verifying against stale deployed
+        # code without noticing (the exact defect CORE_TEST_SUBJECT_MODE=source-store exists to
+        # work around, but only if the caller remembers to set it).
+        if [ -f "$_common_store" ] && [ "$_common_store" -nt "$_common_deployed" ]; then
+          echo "WARNING: $_common_desc: resolved the DEPLOYED copy (mode=deploy-tree-first), but the source-store copy is NEWER -- verification may be running against STALE deployed code:" >&2
+          echo "  deployed (stale?):  $_common_deployed" >&2
+          echo "  source-store (new): $_common_store" >&2
+          echo "  Export CORE_TEST_SUBJECT_MODE=source-store to verify against the edited source instead, or redeploy first." >&2
+        fi
         printf '%s\n' "$_common_deployed"
         unset _common_desc _common_mode _common_deployed _common_store _common_effective_mode
         return 0

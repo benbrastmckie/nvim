@@ -453,6 +453,44 @@ else
   common_test_fail "checkpoint property: default mode resolved='$subj_resolved' (want '$D1'), exit=$subj_exit (want 1)"
 fi
 
+# -- Staleness guard: when the source-store copy is newer than the deployed copy, the default
+# (unset CORE_TEST_SUBJECT_MODE, mode deploy-tree-first) resolution must still return the
+# deployed path (same as the checkpoint-property fixture above -- the guard never changes WHAT
+# resolves) but must ALSO emit an unmissable stderr WARNING naming both paths and the override,
+# rather than silently proceeding against stale code. Force an unambiguous mtime gap with
+# `touch -d` so this does not depend on filesystem mtime granularity. --
+STALE_FIXTURE="$WORKDIR/staleness-fixture"
+mkdir -p "$STALE_FIXTURE/deployed" "$STALE_FIXTURE/store"
+STALE_DEPLOYED="$STALE_FIXTURE/deployed/subject.sh"
+STALE_STORE="$STALE_FIXTURE/store/subject.sh"
+printf '#!/usr/bin/env bash\nexit 1\n' > "$STALE_DEPLOYED"
+printf '#!/usr/bin/env bash\nexit 0\n' > "$STALE_STORE"
+chmod +x "$STALE_DEPLOYED" "$STALE_STORE"
+touch -d "2020-01-01T00:00:00Z" "$STALE_DEPLOYED"
+touch -d "2020-01-02T00:00:00Z" "$STALE_STORE"
+
+unset CORE_TEST_SUBJECT_MODE
+subj_err=$(common_test_resolve_subject "subject" "" "$STALE_DEPLOYED" "$STALE_STORE" 2>&1 1>/dev/null)
+subj_resolved=$(common_test_resolve_subject "subject" "" "$STALE_DEPLOYED" "$STALE_STORE" 2>/dev/null)
+if [ "$subj_resolved" = "$STALE_DEPLOYED" ] && [[ "$subj_err" == *"WARNING:"* ]] \
+  && [[ "$subj_err" == *"STALE deployed code"* ]] \
+  && [[ "$subj_err" == *"$STALE_DEPLOYED"* ]] && [[ "$subj_err" == *"$STALE_STORE"* ]] \
+  && [[ "$subj_err" == *"CORE_TEST_SUBJECT_MODE=source-store"* ]]; then
+  common_test_pass "staleness guard: newer source-store copy triggers an unmissable stderr WARNING naming both paths and the override, while still resolving the deployed path"
+else
+  common_test_fail "staleness guard (store newer): resolved='$subj_resolved' (want '$STALE_DEPLOYED'), stderr='$subj_err'"
+fi
+
+# -- Staleness guard, negative case: when the deployed copy is NOT older than the source-store
+# copy, no WARNING is emitted -- the guard fires only on genuine staleness, never unconditionally. --
+touch -d "2020-01-03T00:00:00Z" "$STALE_DEPLOYED"
+subj_err=$(common_test_resolve_subject "subject" "" "$STALE_DEPLOYED" "$STALE_STORE" 2>&1 1>/dev/null)
+if [[ "$subj_err" != *"WARNING:"* ]]; then
+  common_test_pass "staleness guard: no WARNING when the deployed copy is not older than the source-store copy"
+else
+  common_test_fail "staleness guard (deployed newer): unexpected stderr='$subj_err'"
+fi
+
 # ── common_test_workdir_init: creates WORKDIR and tears it down on EXIT ──────
 # Called as a bare statement, per the function's own contract: a command-substitution capture
 # would run it in a subshell whose own EXIT trap fires (deleting the directory) the instant the
