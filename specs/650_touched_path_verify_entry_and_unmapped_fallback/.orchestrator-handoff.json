@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 2,
+  "phases_completed": 0,
+  "phases_total": 8,
+  "summary": "Wrote an 8-phase, 13-hour implementation plan for the touched-path verify entry point and the classified unmapped fallback. Phases are ordered so the externally-consumed contracts land first: the single .claude-extensions.json verification_scope declaration key (with project_gates/closing_gate field names reserved for the adjacent records), then the resolver interface whose default backend is suite_selection_select unchanged, then the classified fallback and owed record, the verify-touched.sh entry point, the coverage report, the batch-gate discharge, the standards/directive rewrite, and a closing suite plus redeploy. Six design decisions are settled with rejected alternatives recorded, including sentinel-survives-as-opt-in, union composition, and warn-not-fail coverage.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/650_touched_path_verify_entry_and_unmapped_fallback/plans/01_touched-path-entry-and-fallback.md",
+      "summary": "8-phase plan covering all six deliverables, with measured premise re-validation and six settled design decisions."
+    }
+  ]
+}
