@@ -203,6 +203,18 @@ utterance. The cooldown is keyed by `WEZTERM_PANE`, so concurrent panes never su
 other, and every file operation degrades to "cooldown never engages" on failure (announcing is
 the fail-open direction, never silence).
 
+### The Arbitrary-Text Speaking Path (/recap)
+
+Alongside `tts-notify.sh`'s fixed-vocabulary lifecycle/Stop/interactive utterances above, a
+second, arbitrary-text speaking path exists: `orchestrate-recap.sh`, which reads free-form prose
+text (never a shell-quoted argument) and speaks it through piper on demand. It backs the
+user-only `/recap` command, which prints and speaks a short recap of the most recent
+`/orchestrate` run. It reuses the same documented piper invocation shape and the same
+`TTS_ENABLED`/`PIPER_VOICE` environment-variable conventions as `tts-notify.sh` above, and is
+subject to the same no-second-engine rule. Unlike `tts-notify.sh`, it is never invoked by the
+orchestration itself: an orchestration only ever writes a recap file and recommends `/recap` by
+name; speaking only happens when a person runs `/recap`.
+
 ### Troubleshooting
 
 **No lifecycle TTS fires**:

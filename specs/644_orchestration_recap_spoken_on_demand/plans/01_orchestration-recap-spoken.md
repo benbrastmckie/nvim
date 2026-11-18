@@ -278,7 +278,7 @@ sentence.
 
 ---
 
-### Phase 2: The `/recap` command and skill [NOT STARTED]
+### Phase 2: The `/recap` command and skill [COMPLETED]
 
 **Goal**: `/recap` exists as a user-only, direct-execution command backed by a user-only skill,
 registered in the manifest and in the Command Reference table, with the never-autonomous-audio
@@ -286,27 +286,28 @@ constraint restated in both new files.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/core/commands/recap.md`: purpose, `**User Only**: YES -
+- [x] Create `agent-system/extensions/core/commands/recap.md`: purpose, `**User Only**: YES -
       Agents MUST NOT invoke this command`, direct-execution layer, delegation to `skill-recap`,
       and a short statement that an orchestration never plays audio by itself — speaking is always
-      this separately invoked step.
-- [ ] Create `agent-system/extensions/core/skills/skill-recap/SKILL.md` with frontmatter
+      this separately invoked step. *(completed)*
+- [x] Create `agent-system/extensions/core/skills/skill-recap/SKILL.md` with frontmatter
       `name: skill-recap`, a description ending in the user-only sentence, `allowed-tools: Bash`,
       and `user-only: true`. Body: an "Agent Restrictions" section stating agents MUST NOT invoke
       it, the never-autonomous-audio constraint, and the single call into
-      `orchestrate-recap.sh`'s speak mode.
-- [ ] Add one Command Reference row to `agent-system/extensions/core/merge-sources/claudemd.md`,
+      `orchestrate-recap.sh`'s speak mode. *(completed)*
+- [x] Add one Command Reference row to `agent-system/extensions/core/merge-sources/claudemd.md`,
       matching the existing user-only rows' shape, marked `(user-only)`. MUST NOT add a
-      Skill-to-Agent Mapping row — the omission is the third enforcement layer.
-- [ ] Add `"recap.md"` to `provides.commands` and `"skill-recap"` to `provides.skills` in
-      `manifest.json`, each in its array's existing sort position.
-- [ ] Add a short subsection to the nvim extension's TTS guide documenting that an arbitrary-text
+      Skill-to-Agent Mapping row — the omission is the third enforcement layer. *(completed)*
+- [x] Add `"recap.md"` to `provides.commands` and `"skill-recap"` to `provides.skills` in
+      `manifest.json`, each in its array's existing sort position. *(completed)*
+- [x] Add a short subsection to the nvim extension's TTS guide documenting that an arbitrary-text
       speaking path now exists alongside the fixed-vocabulary notification hook, naming the same
       documented piper invocation and the `TTS_ENABLED`/`PIPER_VOICE` conventions it reuses. Keep
       it additive — MUST NOT restructure or renumber the guide's existing sections, and MUST NOT
-      touch any event-announcement hook file.
-- [ ] Check both new files and the claudemd row for task-number references and record-versioning
-      language; neither is permitted under `agent-system/**`.
+      touch any event-announcement hook file. *(completed: inserted as a new "### The
+      Arbitrary-Text Speaking Path (/recap)" subsection, no renumbering)*
+- [x] Check both new files and the claudemd row for task-number references and record-versioning
+      language; neither is permitted under `agent-system/**`. *(completed: zero hits)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,27 @@
+{
+  "phase": 2,
+  "phase_name": "The /recap command and skill",
+  "started_at": "2026-11-18T02:05:00Z",
+  "last_updated": "2026-11-18T02:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create commands/recap.md (user-only)", "status": "done", "files_touched": ["agent-system/extensions/core/commands/recap.md"]},
+    {"id": 2, "description": "Create skills/skill-recap/SKILL.md (user-only)", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-recap/SKILL.md"]},
+    {"id": 3, "description": "Add Command Reference row to merge-sources/claudemd.md", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/claudemd.md"]},
+    {"id": 4, "description": "Register recap.md/skill-recap in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 5, "description": "Additive TTS guide subsection in nvim extension", "status": "done", "files_touched": ["agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md"]},
+    {"id": 6, "description": "Check new files for task-ref/record-versioning language", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Mid-phase discovery: add /recap row to agent-system/extensions/core/README.md (check-extension-docs.sh Rule: manifest commands must be mentioned in README.md)", "status": "done", "files_touched": ["agent-system/extensions/core/README.md"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.7",
+      "description": "agent-system/extensions/core/README.md was not in the plan's Phase 2 Files-to-modify list",
+      "type": "altered",
+      "reason": "The scoped Batch-Gate-Deferral verification (verify-deploy.sh --only-gate 3,4) surfaced a real check-extension-docs.sh FAIL (manifest-declared /recap command not mentioned in README.md) that the plan did not anticipate. Added the missing row to discharge the full verification tier honestly rather than suppress the finding.",
+      "annotation": "*(deviation: altered -- added README.md row not in original Files-to-modify list, to satisfy check-extension-docs.sh)*"
+    }
+  ]
+}
