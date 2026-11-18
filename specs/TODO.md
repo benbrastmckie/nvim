@@ -1,5 +1,5 @@
 ---
-next_project_number: 650
+next_project_number: 651
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 650
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640,645,646,647 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640,645,646,647,650 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,579,583,592,593,598,605,609,610,630,648 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,564,577,586,599,607,629,647 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,486,492,509,513,518,561,566,594,649 | 439,452,472,479,484,491,552,593,648 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,571,581,588,595,641 | 454,472,486,492,509,518,539,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
@@ -107,6 +107,7 @@ next_project_number: 650
 
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
+650 [NOT STARTED] — Add one touched-path verification entry point over...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -184,6 +185,58 @@ next_project_number: 650
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 650. Touched path verify entry and unmapped fallback
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Add one touched-path verification entry point over run-all.sh's existing flags and suite-selection-lib.sh, and replace the unmapped-path full sweep with a classified, owed-not-paid fallback
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** ; both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN. Observed in a consumer repository (sf1-engine) during an /orchestrate batch: one task's phases each paid a serial full battery over a 77-suite tree, three times over for three deploy roots, with two copies of the harness running concurrently. The narrowing machinery to avoid this already ships in core and nothing on the path called it. The same shape recurs in every repository this system deploys into, so the fix belongs here rather than in each consumer.
+
+WHAT EXISTS AND IS NOT WIRED TOGETHER (re-derive; do not trust these as carried figures):
+- scripts/tests/run-all.sh accepts --only SUITE[,..], --jobs N|auto, --timings FILE, --class, --tag, --cost-class, --fail-on-new.
+- scripts/lib/suite-selection-lib.sh exposes suite_selection_select, suite_selection_unmapped, suite_selection_classify and suite_selection_select_annotated, and returns the sentinel __FULL_SWEEP__ for a touched path with no mapped suite.
+- The dispatch-time '## Batch Gate Deferral' directive and context/formats/plan-format.md's Verification Tiers section tell an agent to narrow with run-all.sh --only SUITE, and leave the agent to resolve the suite list, pick a job count and decide what to do on __FULL_SWEEP__ by hand. There is no script an agent can call with "these are the files I touched" and get a correct, parallel, timed, recorded scoped run back.
+
+BINDING: this record adds a CALLER and a fallback policy. It does not add a second selection engine, a second scheduler or a second timing format. Changes to run-all.sh or suite-selection-lib.sh are limited to what the fallback policy strictly needs, and each is justified in the plan.
+
+DELIVERABLES.
+
+1. One entry point (name to be settled in planning) that takes touched paths (default: working-tree plus staged diff against a named base), resolves them through suite_selection_select, and runs run-all.sh --only <resolved> --jobs auto --timings <file>. It prints the resolved suites, the unresolved paths, and a verdict that can never be mistaken for a full-battery pass. It works in source-store mode and in deployed mode in any consumer repository. Make it the form the Batch Gate Deferral directive and plan-format.md name, so "narrow" means one command.
+
+2. Unmapped path no longer means "run everything now". __FULL_SWEEP__ on any unmapped path makes the fast path collapse on the commonest edits (a new file, a doc, a data file) and is the reason agents fall back to the full aggregator. Replace it with a per-path classified outcome, never silent:
+   (a) NO-SUITE-BY-CLASS: paths whose class cannot change suite behaviour run only the lints that read them. The class list is checked-in data with a reason per row.
+   (b) EXPLICIT MAP ROW: checked-in data naming suites for paths basename resolution misses. Adding a row is the normal repair.
+   (c) OWED, NOT PAID: a path still unmapped runs a small declared fallback set now (selected through --cost-class or --class, never a hand list) and writes a durable "full sweep owed" record. The batch gate stage discharges it. Owed is never forgiven: an orchestration that ends without discharging it leaves the record open and reports it.
+   (d) A coverage report listing every tree file that resolves to no suite, no map row and no class, so the map converges. Decide in research whether a nonzero count warns or fails, and at what tier.
+   Decide explicitly, and record the rejected alternative: whether __FULL_SWEEP__ survives as an opt-in strict mode for callers that genuinely want it.
+
+3. Selection must not be guarded only by suites inside the battery it narrows. Suites such as test-run-all-selection.sh and test-verify-deploy-gate-selection.sh assert properties of selection, and a selected run can deselect them. Establish and document where their verdict is authoritative: an unfiltered run at orchestration close, plus a cheap preflight outside run-all.sh's discovery that runs before any scoped selection is trusted (map and class files parse, every named suite exists, the fallback set is non-empty). State the rule once in context/standards/shell-script-testing.md.
+
+4. Timings have a consumer. Every scoped run writes --timings; say where the file lands, who reads it, and how it refreshes tests/suite-cost-hints.txt without becoming the self-maintaining mutable cache run-all.sh's own header already rejected.
+
+5. Multi-root and project trees. A consumer repository may run a copied tree under several deploy roots, or have its own project suites outside the deploy tree. The entry point takes its tree root and its root set as parameters or reads them from a repository-level declaration, never from a hardcoded path. Coordinate the declaration shape with the record that owns narrowing forms for project sources (see edges).
+
+HARD CONSTRAINTS.
+- No reduction in what eventually runs. Every deferral names the later moment that discharges it.
+- A subset pass is never rendered as a full pass, in output or in any record.
+- Coverage for the new entry point lives in a suite, and that suite's own authority follows deliverable 3.
+
+TERRITORY EDGES.
+- 610 (full_gate_verification_ceiling_and_stall): it owns fitting gate 8 under the foreground ceiling, the .gate-lock posture, load-adaptive bounds and the mechanical guard against a nested full battery. This record owns the scoped entry point and the unmapped fallback. Its research question 1 ("a faster default suite selection") is answered here; do not answer it twice.
+- 599 (batch_gate_deferral_narrowing_for_project_sources): it owns how the directive resolves a consumer repository's own gates. Deliverable 5's declaration must be the same surface, not a second one. Sequence by hand if both are live; both rewrite scripts/orchestrate-build-dispatch.sh's directive text and its test suite.
+- 586 (suite_gate_cost_standing_consumer): it owns deleting and slimming expensive suites and is the standing consumer of the cost probes. Deliverable 4 feeds it and must not duplicate it.
+- 579 (selector_aggregation_rule_in_plan_authoring): adjacent plan-authoring prose on selectors; read before editing plan-format.md.
+- The orchestration-close record filed alongside this one depends on this one: a task can only stop closing on the full battery once a trustworthy scoped check exists.
+
+VERIFY: the entry point run on a one-file edit executes a strict subset and says so; a seeded unmapped path yields each of outcomes (a), (b) and (c) under the matching data; an owed record survives until a batch gate run discharges it; the preflight fails on a seeded bad map row. Use scoped narrowing rather than the full aggregator while other sessions are live.
+
+---
 
 ### 649. Add the /sapience command: draft assembly and the approval-gated surface picker
 - **Status**: [NOT STARTED]

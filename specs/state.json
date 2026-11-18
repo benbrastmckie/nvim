@@ -1,7 +1,246 @@
 {
   "version": "1.1.0",
-  "next_project_number": 650,
+  "next_project_number": 651,
   "active_projects": [
+    {
+      "project_number": 650,
+      "project_name": "touched_path_verify_entry_and_unmapped_fallback",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Add one touched-path verification entry point over run-all.sh's existing flags and suite-selection-lib.sh, and replace the unmapped-path full sweep with a classified, owed-not-paid fallback\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** ; both are permitted in this description and elsewhere in specs/**.\n\nORIGIN. Observed in a consumer repository (sf1-engine) during an /orchestrate batch: one task's phases each paid a serial full battery over a 77-suite tree, three times over for three deploy roots, with two copies of the harness running concurrently. The narrowing machinery to avoid this already ships in core and nothing on the path called it. The same shape recurs in every repository this system deploys into, so the fix belongs here rather than in each consumer.\n\nWHAT EXISTS AND IS NOT WIRED TOGETHER (re-derive; do not trust these as carried figures):\n- scripts/tests/run-all.sh accepts --only SUITE[,..], --jobs N|auto, --timings FILE, --class, --tag, --cost-class, --fail-on-new.\n- scripts/lib/suite-selection-lib.sh exposes suite_selection_select, suite_selection_unmapped, suite_selection_classify and suite_selection_select_annotated, and returns the sentinel __FULL_SWEEP__ for a touched path with no mapped suite.\n- The dispatch-time '## Batch Gate Deferral' directive and context/formats/plan-format.md's Verification Tiers section tell an agent to narrow with run-all.sh --only SUITE, and leave the agent to resolve the suite list, pick a job count and decide what to do on __FULL_SWEEP__ by hand. There is no script an agent can call with \"these are the files I touched\" and get a correct, parallel, timed, recorded scoped run back.\n\nBINDING: this record adds a CALLER and a fallback policy. It does not add a second selection engine, a second scheduler or a second timing format. Changes to run-all.sh or suite-selection-lib.sh are limited to what the fallback policy strictly needs, and each is justified in the plan.\n\nDELIVERABLES.\n\n1. One entry point (name to be settled in planning) that takes touched paths (default: working-tree plus staged diff against a named base), resolves them through suite_selection_select, and runs run-all.sh --only <resolved> --jobs auto --timings <file>. It prints the resolved suites, the unresolved paths, and a verdict that can never be mistaken for a full-battery pass. It works in source-store mode and in deployed mode in any consumer repository. Make it the form the Batch Gate Deferral directive and plan-format.md name, so \"narrow\" means one command.\n\n2. Unmapped path no longer means \"run everything now\". __FULL_SWEEP__ on any unmapped path makes the fast path collapse on the commonest edits (a new file, a doc, a data file) and is the reason agents fall back to the full aggregator. Replace it with a per-path classified outcome, never silent:\n   (a) NO-SUITE-BY-CLASS: paths whose class cannot change suite behaviour run only the lints that read them. The class list is checked-in data with a reason per row.\n   (b) EXPLICIT MAP ROW: checked-in data naming suites for paths basename resolution misses. Adding a row is the normal repair.\n   (c) OWED, NOT PAID: a path still unmapped runs a small declared fallback set now (selected through --cost-class or --class, never a hand list) and writes a durable \"full sweep owed\" record. The batch gate stage discharges it. Owed is never forgiven: an orchestration that ends without discharging it leaves the record open and reports it.\n   (d) A coverage report listing every tree file that resolves to no suite, no map row and no class, so the map converges. Decide in research whether a nonzero count warns or fails, and at what tier.\n   Decide explicitly, and record the rejected alternative: whether __FULL_SWEEP__ survives as an opt-in strict mode for callers that genuinely want it.\n\n3. Selection must not be guarded only by suites inside the battery it narrows. Suites such as test-run-all-selection.sh and test-verify-deploy-gate-selection.sh assert properties of selection, and a selected run can deselect them. Establish and document where their verdict is authoritative: an unfiltered run at orchestration close, plus a cheap preflight outside run-all.sh's discovery that runs before any scoped selection is trusted (map and class files parse, every named suite exists, the fallback set is non-empty). State the rule once in context/standards/shell-script-testing.md.\n\n4. Timings have a consumer. Every scoped run writes --timings; say where the file lands, who reads it, and how it refreshes tests/suite-cost-hints.txt without becoming the self-maintaining mutable cache run-all.sh's own header already rejected.\n\n5. Multi-root and project trees. A consumer repository may run a copied tree under several deploy roots, or have its own project suites outside the deploy tree. The entry point takes its tree root and its root set as parameters or reads them from a repository-level declaration, never from a hardcoded path. Coordinate the declaration shape with the record that owns narrowing forms for project sources (see edges).\n\nHARD CONSTRAINTS.\n- No reduction in what eventually runs. Every deferral names the later moment that discharges it.\n- A subset pass is never rendered as a full pass, in output or in any record.\n- Coverage for the new entry point lives in a suite, and that suite's own authority follows deliverable 3.\n\nTERRITORY EDGES.\n- 610 (full_gate_verification_ceiling_and_stall): it owns fitting gate 8 under the foreground ceiling, the .gate-lock posture, load-adaptive bounds and the mechanical guard against a nested full battery. This record owns the scoped entry point and the unmapped fallback. Its research question 1 (\"a faster default suite selection\") is answered here; do not answer it twice.\n- 599 (batch_gate_deferral_narrowing_for_project_sources): it owns how the directive resolves a consumer repository's own gates. Deliverable 5's declaration must be the same surface, not a second one. Sequence by hand if both are live; both rewrite scripts/orchestrate-build-dispatch.sh's directive text and its test suite.\n- 586 (suite_gate_cost_standing_consumer): it owns deleting and slimming expensive suites and is the standing consumer of the cost probes. Deliverable 4 feeds it and must not duplicate it.\n- 579 (selector_aggregation_rule_in_plan_authoring): adjacent plan-authoring prose on selectors; read before editing plan-format.md.\n- The orchestration-close record filed alongside this one depends on this one: a task can only stop closing on the full battery once a trustworthy scoped check exists.\n\nVERIFY: the entry point run on a one-file edit executes a strict subset and says so; a seeded unmapped path yields each of outcomes (a), (b) and (c) under the matching data; an owed record survives until a batch gate run discharges it; the preflight fails on a seeded bad map row. Use scoped narrowing rather than the full aggregator while other sessions are live.",
+      "topic": "orchestrator",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh",
+        "agent-system/extensions/core/scripts/tests/run-all.sh",
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+        "agent-system/extensions/core/context/formats/plan-format.md",
+        "agent-system/extensions/core/context/standards/shell-script-testing.md",
+        "agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"
+      ],
+      "created": "2026-11-18T19:18:48Z",
+      "last_updated": "2026-11-18T19:18:48Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "touched_path_verify_entry_and_unmapped_fallback",
+          "project_number": null,
+          "title": "Add one touched-path verification entry point over run-all.sh's existing flags and suite-selection-lib.sh, and replace the unmapped-path full sweep with a classified, owed-not-paid fallback"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 48,
+          "duplicate-of-open": 27,
+          "scope-blind": 43
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 630,
+            "project_name": "known_failures_rows_for_two_red_suites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.47058823529411764
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 631,
+            "project_name": "gate29_typescript_test_fixed_depth_walk",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.47115384615384615
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 632,
+            "project_name": "context_budget_derivation_task_reference_recurrence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4225352112676056
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 610,
+            "project_name": "full_gate_verification_ceiling_and_stall",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.46335078534031415
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4738219895287958
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42408376963350786
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4869109947643979
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.46596858638743455
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4397905759162304
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44502617801047123
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4109947643979058
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4109947643979058
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4476439790575916
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4162303664921466
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 517,
+            "project_name": "stage_regenerated_derived_files_in_phase_commits",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4214659685863874
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40575916230366493
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5287958115183246
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4214659685863874
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4293193717277487
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49476439790575916
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 548,
+            "project_name": "plan_contingency_file_scope_and_containment_drop",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4319371727748691
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 561,
+            "project_name": "bounded_waiter_load_sizing_and_output_capture",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.47643979057591623
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 564,
+            "project_name": "fix_validateartifactsh_tier_justification_false_po",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40575916230366493
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 575,
+            "project_name": "fix_ceiling_check_stopword_unit_false_positive",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4031413612565445
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 579,
+            "project_name": "selector_aggregation_rule_in_plan_authoring",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.418848167539267
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 43
+      }
+    },
     {
       "project_number": 646,
       "project_name": "return_meta_terminal_status_vocabulary",
