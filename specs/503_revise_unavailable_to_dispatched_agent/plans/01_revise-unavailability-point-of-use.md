@@ -307,7 +307,7 @@ rather than a `prose` claim this path's selector output does not support.
 
 ---
 
-### Phase 3: Full Gate Verification and Deploy to the Live Tree [NOT STARTED]
+### Phase 3: Full Gate Verification and Deploy to the Live Tree [COMPLETED]
 
 **Goal**: The complete gate set runs green over both edits, and the notes reach the deployed
 `.claude/` tree, so an agent reading the deployed copy of either surface actually sees them.
@@ -315,26 +315,38 @@ Without this, the deliverable exists only in the source store and the two mechan
 that read the DEPLOYED copies (doc-lint Rule D, `validate-context-budgets.sh`) never observe it.
 
 **Tasks**:
-- [ ] `git status --short` and `git log --oneline -5`: confirm the working tree holds only this
+- [x] `git status --short` and `git log --oneline -5`: confirm the working tree holds only this
       task's own changes. If a foreign commit, a foreign uncommitted source-store modification,
       or a running build not started here is observed, STOP and report per the territory
       contract's rule (5) — do not deploy over a sibling's in-flight work and do not dismiss it
-      as noise.
-- [ ] Run the complete gate set: `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh
+      as noise. *(completed: observed sibling task 558's own commits interleaved on this shared
+      tree, including its own whole-tree redeploy — not foreign/unexpected, declared in this
+      dispatch's own territory payload; see Decisions below)*
+- [x] Run the complete gate set: `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh
       /home/benjamin/.config/nvim`. No `--skip-slow`, no `--only-gate` — a narrowed pass is not
-      evidence the doc-sync pins hold and is never a substitute for the final gate.
-- [ ] Redeploy with the bounded-wait idiom the dispatch names:
+      evidence the doc-sync pins hold and is never a substitute for the final gate. *(deviation:
+      altered — this dispatch's own Batch Gate Deferral directive constrains this phase
+      [Verification Tier: full, final such phase] to a scoped `--only-gate 3,4,5
+      --skip-unchanged` narrowing instead, deferring the independent unflagged sweep to the
+      batch's own conclusion stage; see progress file deviation entry)*
+- [x] Redeploy with the bounded-wait idiom the dispatch names:
       `timeout 540 bash /home/benjamin/.config/nvim/.claude/scripts/deploy-headless.sh`, with the
       Bash tool `timeout` parameter raised to 600000 (not its 120000 default), per
-      `context/patterns/external-process-wait.md` Rule 1.
-- [ ] Hand-patch no file under `.claude/**` under any circumstance, including to "fix" a
+      `context/patterns/external-process-wait.md` Rule 1. *(completed: ran once, foreground,
+      within the Bash tool's own ceiling — 41 checks, 0 failures, RESULT=landed_verify_clean.
+      Content was already in sync via the sibling's earlier redeploy; this run's real effect was
+      updating the stale `source_git_head` provenance marker)*
+- [x] Hand-patch no file under `.claude/**` under any circumstance, including to "fix" a
       deploy-time difference — that masks divergence instead of healing it
-      (`rules/source-store-deploy-boundary.md`).
-- [ ] Confirm the deployed copies now carry the notes, then re-run the complete gate set once
+      (`rules/source-store-deploy-boundary.md`). *(completed)*
+- [x] Confirm the deployed copies now carry the notes, then re-run the complete gate set once
       more post-deploy so the two deployed-copy consumers are exercised against the new content.
-- [ ] Stage and commit only this task's own hunks by explicit path list. `.claude/**` is
+      *(completed: grep checks against deployed `.claude/commands/revise.md` and
+      `.claude/skills/skill-reviser/SKILL.md` both match; `grep -oP 'subagent_type:...'` still
+      prints `reviser-agent`; post-deploy scoped gate recheck PASS, 4 checks, 0 failures)*
+- [x] Stage and commit only this task's own hunks by explicit path list. `.claude/**` is
       gitignored, so the deploy itself contributes nothing to stage; if it unexpectedly does,
-      stop and report rather than committing it.
+      stop and report rather than committing it. *(completed)*
 
 **Timing**: 0.7 hours
 
@@ -373,27 +385,32 @@ this phase.
 
 ## Testing & Validation
 
-- [ ] Both notes state mechanism (i) (structural command unreachability) AND mechanism (ii)
+- [x] Both notes state mechanism (i) (structural command unreachability) AND mechanism (ii)
       (unsanctioned direct skill dispatch) with reasons, not bare prohibitions — a reader learns
-      why the lock bypass and the stale `.return-meta.json` matter.
-- [ ] The exact `state-write.sh` object-merge invocation appears in exactly one file across the
+      why the lock bypass and the stale `.return-meta.json` matter. *(completed)*
+- [x] The exact `state-write.sh` object-merge invocation appears in exactly one file across the
       repository's source store (`skills/skill-reviser/SKILL.md` Stage 7). Confirm with
       `grep -rn -- "--argjson num" agent-system/extensions/core/commands/ agent-system/extensions/core/skills/skill-reviser/`
-      matching only the Stage 7 block.
-- [ ] Each note reaches the other: `commands/revise.md` names
+      matching only the Stage 7 block. *(completed: `commands/revise.md`'s new text contains
+      zero `--argjson num` / `active_projects[] | select` occurrences — confirmed at Phase 1;
+      the grep's other matches are pre-existing, unrelated uses in `spawn.md`/`orchestrate.md`
+      and SKILL.md's own other stages, none touched by this task)*
+- [x] Each note reaches the other: `commands/revise.md` names
       `skills/skill-reviser/SKILL.md` Stage 7, and `skills/skill-reviser/SKILL.md` names
-      `commands/revise.md`'s `## Agent Availability` section.
-- [ ] No `user-only` field or `tools:`/`disallowedTools:` change was introduced in either file:
-      `git diff` over both files shows no frontmatter hunk.
-- [ ] No `task N`-shaped citation in either file's new text; the write-time hook did not fire and
-      gate 4 is green.
-- [ ] `skill-reviser`'s revision workflow is textually unchanged: `git diff` shows no hunk inside
-      Stages 1-11 bodies, only the Trigger Conditions addition.
-- [ ] `context/standards/postflight-tool-restrictions.md` is unmodified:
+      `commands/revise.md`'s `## Agent Availability` section. *(completed)*
+- [x] No `user-only` field or `tools:`/`disallowedTools:` change was introduced in either file:
+      `git diff` over both files shows no frontmatter hunk. *(completed)*
+- [x] No `task N`-shaped citation in either file's new text; the write-time hook did not fire and
+      gate 4 is green. *(completed)*
+- [x] `skill-reviser`'s revision workflow is textually unchanged: `git diff` shows no hunk inside
+      Stages 1-11 bodies, only the Trigger Conditions addition. *(completed)*
+- [x] `context/standards/postflight-tool-restrictions.md` is unmodified:
       `git diff --stat -- agent-system/extensions/core/context/standards/postflight-tool-restrictions.md`
-      is empty.
-- [ ] The complete gate set is green both before the deploy (source-store content) and after it
-      (deployed content).
+      is empty. *(completed)*
+- [x] The complete gate set is green both before the deploy (source-store content) and after it
+      (deployed content). *(completed: scoped `--only-gate 3,4,5 --skip-unchanged` green both
+      pre- and post-deploy per this dispatch's Batch Gate Deferral directive; deploy-headless.sh's
+      own internal 41-check verify-deploy.sh run also passed with 0 failures)*
 
 ## Artifacts & Outputs
 
