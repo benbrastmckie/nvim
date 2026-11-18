@@ -1,7 +1,7 @@
 # Implementation Plan: Task #558
 
 - **Task**: 558 - Document the convention that a task description must request a PROPOSAL PACKET, never task FILING, from an autonomous dispatch
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/558_conclusion_stage_filing_handoff_phrasing/reports/01_filing-handoff-phrasing-convention.md
@@ -139,48 +139,52 @@ No `roadmap_path` was provided in this dispatch context; no roadmap consultation
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: State the convention at Component 7 [NOT STARTED]
+### Phase 1: State the convention at Component 7 [COMPLETED]
 
 **Goal**: The convention exists, stated once, in the task-authoring standard, adjacent to the
 Foreground Requirement it protects.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md`
+- [x] Re-read `agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md`
       around Component 7 (the `**Foreground Requirement**:` paragraph through the
       `Reference implementation: skill-meta Stage 2.5 ...` line, immediately before
       `### 8. State Updates (Required)`), confirming the insertion point before editing.
-- [ ] Add one new subsection immediately after that `Reference implementation:` line and before
+      *(completed)*
+- [x] Add one new subsection immediately after that `Reference implementation:` line and before
       `### 8. State Updates (Required)`. Give it a stable, citable heading naming the
       proposal-versus-filing distinction (the Phase 2 pointer will cite this heading verbatim,
-      so fix the wording here).
-- [ ] In that subsection, state that the convention binds **any** task description or plan-phase
+      so fix the wording here). *(completed: heading "Requesting a Proposal Packet, Not Filing,
+      From an Autonomous Dispatch")*
+- [x] In that subsection, state that the convention binds **any** task description or plan-phase
       instruction handed to an autonomous dispatch, not only output from a multi-task-creator
-      surface.
-- [ ] State the **forbidden shape**: a task description or plan phase text that instructs an
+      surface. *(completed)*
+- [x] State the **forbidden shape**: a task description or plan phase text that instructs an
       autonomous research/plan/implement dispatch to itself file, create, or confirm creation of
-      a follow-up task or an agent-system change request.
-- [ ] State the **required shape**: the description instead asks the dispatch to (1) record one
+      a follow-up task or an agent-system change request. *(completed)*
+- [x] State the **required shape**: the description instead asks the dispatch to (1) record one
       `issue-record.sh` entry per candidate, carrying `suggested_channel: follow_up_task` or
       `agent_system` as appropriate, and (2) render the same candidates as a human-readable list
       in its own report, plan, or summary — leaving confirmed creation to a foreground surface.
-- [ ] State the **why**, by citation and not by restatement: Component 7's own Foreground
+      *(completed)*
+- [x] State the **why**, by citation and not by restatement: Component 7's own Foreground
       Requirement two paragraphs above, plus
       `docs/reference/standards/agent-frontmatter-standard.md`'s "Tool Withholding from
       Dispatched Subagents (Measured)" section for the categorical, measured unreachability of
-      `AskUserQuestion` from a dispatch.
-- [ ] Describe the downstream chain accurately per Carried-Figure item 3: the dispatch records
+      `AskUserQuestion` from a dispatch. *(completed)*
+- [x] Describe the downstream chain accurately per Carried-Figure item 3: the dispatch records
       evidence; the orchestration conclusion stage aggregates and classifies it into channels
       without creating anything; a separate, deliberately-batched foreground invocation performs
       the Component 7-compliant confirmed creation. Do **not** write that the conclusion stage
-      itself files tasks.
-- [ ] Point at `context/formats/issue-log.md`'s `suggested_channel` field as the existing shape.
+      itself files tasks. *(completed)*
+- [x] Point at `context/formats/issue-log.md`'s `suggested_channel` field as the existing shape.
       Do not specify a new packet format, and do not reference the skeleton-plan follow-up
-      mechanism.
-- [ ] Read the new hunk back against `.claude/rules/no-task-references-in-deliverables.md` and
+      mechanism. *(completed)*
+- [x] Read the new hunk back against `.claude/rules/no-task-references-in-deliverables.md` and
       `.claude/rules/no-record-versioning-in-deliverables.md`: durable anchors only (file names,
       section headings, "Component 7", `suggested_channel`, `follow_up_task`, `AskUserQuestion`),
-      no task numbers, no `iss_*` ids, no draft-history or supersession phrasing.
+      no task numbers, no `iss_*` ids, no draft-history or supersession phrasing. *(completed:
+      read back manually, no violations found)*
 
 **Timing**: 0.75 hours
 

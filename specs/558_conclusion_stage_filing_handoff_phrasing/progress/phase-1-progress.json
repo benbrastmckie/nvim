@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "State the convention at Component 7",
+  "started_at": "2026-11-17T00:00:00Z",
+  "last_updated": "2026-11-17T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read multi-task-creation-standard.md around Component 7 insertion point", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add new subsection with stable heading after Reference implementation line, before Component 8", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md"]},
+    {"id": 3, "description": "State scope: binds any task description/plan-phase instruction to any autonomous dispatch", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md"]},
+    {"id": 4, "description": "State forbidden shape", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md"]},
+    {"id": 5, "description": "State required shape (issue-record.sh + suggested_channel, rendered list)", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md"]},
+    {"id": 6, "description": "State WHY by citation (Foreground Requirement + Tool Withholding section)", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md"]},
+    {"id": 7, "description": "Describe downstream chain accurately per Carried-Figure item 3", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md"]},
+    {"id": 8, "description": "Point at suggested_channel field, no new packet format, no skeleton-plan reference", "status": "done", "files_touched": ["agent-system/extensions/core/docs/reference/standards/multi-task-creation-standard.md"]},
+    {"id": 9, "description": "Read back against no-task-references and no-record-versioning rules", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/558_conclusion_stage_filing_handoff_phrasing/plans/01_filing-handoff-phrasing-convention.md",
-      "summary": "3-phase documentation-only plan: convention stated once at Component 7, pointer-only note at conclusion-stage.md Overview, redeploy plus full gate set."
-    }
-  ],
-  "phase_count": 3,
-  "estimated_hours": 1.5,
-  "dependency_waves": 3,
-  "next_steps": "Run /orchestrate 558 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "suite_selection_select (scripts/lib/suite-selection-lib.sh) invoked with MULTIPLE paths at once collapses to the bare __FULL_SWEEP__ sentinel as soon as ANY one path is unmapped, hiding the real suites the other paths map to. Measured: the two paths docs/reference/standards/multi-task-creation-standard.md (unmapped) and context/contracts/conclusion-stage.md (mapped to test-orchestrate-conclusion-{aggregate,backstop,roadmap}.sh) return __FULL_SWEEP__ together, but the real three suites when the second path is queried alone. When authoring a per-phase Tier Justification, always invoke the selector once per phase with that phase's own paths only -- a combined run produces a false sentinel claim that validate-artifact.sh will reject.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/558_conclusion_stage_filing_handoff_phrasing/plans/01_filing-handoff-phrasing-convention.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["suite-selection-lib", "__FULL_SWEEP__", "Tier Justification", "validate-artifact", "plan-authoring"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1794985308_f67716_558",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1794985308_f67716",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 8
+  "dispatch_seq": 10
 }

@@ -506,6 +506,34 @@ own `overlaps-open` auto-added edge is annotated the same way, in the Backlog Ch
 
 Reference implementation: `skill-meta` Stage 2.5 (Pre-Confirmation) + `meta-builder-agent` Stage 3D (Confirmed Task Creation).
 
+### Requesting a Proposal Packet, Not Filing, From an Autonomous Dispatch
+
+This convention binds **any** task description or plan-phase instruction handed to an
+autonomous research, plan, or implement dispatch — not only output produced by one of the
+multi-task-creation surfaces this standard otherwise governs.
+
+**Forbidden shape**: a task description or plan-phase instruction that directs an autonomous
+dispatch to itself file, create, or confirm creation of a follow-up task or an agent-system
+change request. No dispatched subagent can satisfy such an instruction: the Foreground
+Requirement above makes confirmed creation a foreground-only operation, and `AskUserQuestion` is
+categorically withheld from dispatched subagents — see
+`docs/reference/standards/agent-frontmatter-standard.md`'s "Tool Withholding from Dispatched
+Subagents (Measured)" section.
+
+**Required shape**: the description instead asks the dispatch to (1) record one
+`issue-record.sh` entry per candidate, carrying `suggested_channel: follow_up_task` or
+`suggested_channel: agent_system` as appropriate (`context/formats/issue-log.md`), and (2)
+render the same candidates as a human-readable list in its own report, plan, or summary.
+Confirmed creation is left to a separate foreground surface; no new packet format is defined by
+this convention.
+
+**The chain, named accurately**: a dispatch records evidence; the orchestration conclusion
+stage (`context/contracts/conclusion-stage.md`) aggregates and classifies that evidence into
+channels without creating anything; a separate, deliberately-batched foreground invocation then
+performs the Foreground-Requirement-compliant confirmed creation. A task description or plan
+phase must describe this chain accurately and must not instruct the conclusion stage, or any
+other dispatch, to file the resulting tasks itself.
+
 ### 8. State Updates (Required)
 
 Update state.json and TODO.md atomically with correct dependency information.
