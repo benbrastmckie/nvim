@@ -635,6 +635,10 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 **The two held records are not waiting on engineering.** The books-corpus refactor (`342`) waits on an external version stamp reaching `0.1.0` (the consuming repository's own book-convention record still reads a pre-release stamp) and is kept inside batch twenty-five so its territory overlap with `383`/`384` stays visible. The email preference-harvest substrate (`498`) waits on an operator decision about integrating email into the hosted store and is the one open record in no batch. Neither lift is engineering work, and `/orchestrate` admits a held record only under an explicit forcing flag. Nothing depends on either.
 
 **Scopes worth narrowing first.** Re-measured 2026-11-18: **two** open records carry no `file_scope` at all -- `613` and `618` -- down from seven, and that is the entire class, since no open record declares an empty array. Both sit in batches whose other members are narrowly scoped (`613` in batch two with `475`/`514`/`574`, `618` in batch fourteen with `338`), so an admission probe over either batch returns a result that is clean for the wrong reason. **Fix those two declarations before probing.** Two narrower declaration defects remain live: `590` declares its lint one directory above where the file actually sits, so it cannot collide with `512` even though the two edit the same lint -- which is why batch twelve pairs them without an edge; and `557` carries topic `decidability`, undeclared in `active_topics`, so it renders after the curated topics. Of the directory-form declarations that remain, every one is scoped to a single extension subtree -- `342` (three `books/` directories), `384`, `453`, `530` and `544`. None is a whole-corpus discovery scope, and none is a defect.
+**Coverage appendix (uncovered tasks)**:
+```
+/orchestrate 647
+```
 
 ## Open work
 
@@ -724,12 +728,13 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 504 ready           Reconcile the Lean Goals-block harvester with its documented contract
 ```
 
-**Orchestrator (6)**
+**Orchestrator (7)**
 ```
 472 blocked:556     Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop...
 513 blocked:479     Mechanically detect a plan phase that closed without its own commit
 518 blocked:472     State the blockers[] admission contract and continuation-on-partial requireme...
 610 blocked:607     full_gate_verification_ceiling_and_stall
+651 blocked:610     orchestration_close_owns_full_battery
 477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
 514 ready           Convergence guard blind to zero-dispatch cycles
 ```
@@ -788,6 +793,13 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 639 ready           Make issue-record.sh failures visible instead of silently losing the evidence...
 640 ready           Add a derived-percentage bug class to the census methodology standard
 645 ready           repair_seven_failing_gate8_suites
+```
+
+**Sapience (3)**
+```
+648 blocked:647     Add the four Sapience write-surface publishers with loud-failure discipline
+649 blocked:647,648 Add the /sapience command: draft assembly and the approval-gated surface picker
+647 ready           Bind a repo to a Sapience project and read the vault's shared state
 ```
 
 **Decidability (1)**
