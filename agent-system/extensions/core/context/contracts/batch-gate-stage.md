@@ -109,6 +109,41 @@ was added):
    shape for a function whose JOB is to positively enumerate the unattributed set, including
    identifier-free lines.
 
+## Owed-Sweep Discharge
+
+This stage's once-per-invocation complete, unnarrowed `verify-deploy.sh` run is the ONLY event
+that discharges a task's own OWED-NOT-PAID fallback obligation
+(`scripts/verify-touched.sh` / `scripts/lib/unmapped-fallback-lib.sh`'s durable
+`records/full-sweep-owed.jsonl` row per owed path, written when a touched-path run resolves a
+path to neither a real suite nor an explicit map/class row). Owed is never forgiven: a row is
+appended once and never deleted, and the only mutation ever applied to an existing row is this
+stage's own discharge stamp.
+
+**Discharge fires only when this run was clean.** Immediately after `gate_exit_code` is settled
+(the same value the confirmed-findings summary line above reports), and before this script's own
+`batch_gate` JSON is built: for every task number in `.task_numbers`, resolve that task's
+directory (the same `find specs -maxdepth 1 -type d -name "${padded}_*"` glob
+`scripts/git-snapshot.sh`/`scripts/task-lock.sh` already use elsewhere) and, if its
+`records/full-sweep-owed.jsonl` exists and carries at least one row with `discharged_ts == null`,
+stamp every such row with the current timestamp **if and only if** `gate_exit_code -eq 0` AND
+this invocation is not `--dry-run`. A failing run (any nonzero `gate_exit_code`, including the
+sentinel case) or a `--dry-run` invocation discharges NOTHING — every open row stays exactly as
+it was, and is rostered into `batch_gate.owed_open_roster` instead so it is still visible in the
+consolidated output.
+
+**Carried in the `batch_gate` record**: `owed_discharged_count` (rows stamped this run, 0 when
+nothing was due or the run was not clean/was dry-run), `owed_open_count` (rows still open after
+this run, across every iterated task), and `owed_open_roster` (an array of `{task, path}`
+objects for every row still open) — read by
+`context/patterns/orchestrate-batch-results-template.md`'s Batch Gate Stage Result section to
+render an undischarged owed record in the consolidated output rather than leaving it visible only
+in each task's own `records/` directory.
+
+**Why this lives here, not in a dedicated discharge script**: this stage already iterates
+`.task_numbers` once for finding attribution (see "Evidence Base" above) and is the ONE place a
+"this run was clean" verdict exists at all; a separate discharge pass would need to re-derive or
+duplicate that verdict rather than reading it directly off `gate_exit_code`.
+
 ## Finding Severity: `FINDING ` vs. `WARN-FINDING `
 
 The evidence pipeline's `deploy_findings_snapshot` (`scripts/lib/deploy-baseline-lib.sh`) filters

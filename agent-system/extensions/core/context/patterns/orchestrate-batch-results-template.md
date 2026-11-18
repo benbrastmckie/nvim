@@ -191,6 +191,26 @@ this shared run found something new, and conversely a task's presence in `### Su
 contradicted by this section (the two answer different questions: "did this task's own dispatch
 succeed" vs. "did the complete gate set, run once for the whole batch, find anything").
 
+**Owed-sweep sub-result** (rendered only when `batch_gate.owed_discharged_count` or
+`batch_gate.owed_open_count` is nonzero — both are 0, and this sub-result is omitted entirely,
+when no task this invocation iterated ever wrote an owed record at all; see
+`context/contracts/batch-gate-stage.md`'s "Owed-Sweep Discharge" section for the full discharge
+contract this renders):
+
+[OWED SWEEP: {owed_discharged_count} full-sweep-owed record(s) discharged this run, {owed_open_count} still open]
+
+A still-open row is NEVER silently dropped from view — it stays in its task's own
+`records/full-sweep-owed.jsonl` until a future clean batch-gate run discharges it, and is listed
+below every time this template renders until then:
+
+| Task | Owed Path |
+|------|-----------|
+| #42 | `agent-system/extensions/core/scripts/some-new-untracked-file.sh` |
+
+An empty table with `{owed_open_count}` of 0 means every owed record this invocation could see
+was just discharged (or none existed); it does NOT mean no task anywhere has an open owed record
+— only tasks this invocation's own `.task_numbers` iterated are ever checked.
+
 ### Conclusion
 
 (Rendered once per invocation, as part of Move 5's own Step 6 — the single site that EMITS this

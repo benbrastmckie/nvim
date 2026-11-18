@@ -496,23 +496,26 @@ edit) and the deviation is recorded in the phase notes.
 
 ---
 
-### Phase 6: Owed-sweep discharge at the batch gate [NOT STARTED]
+### Phase 6: Owed-sweep discharge at the batch gate [COMPLETED]
 
 **Goal**: The once-per-invocation complete gate run discharges owed records; an orchestration that
 ends without discharging leaves them open and reports them.
 
 **Tasks**:
-- [ ] In `scripts/orchestrate-batch-gate.sh`: after the complete unnarrowed `verify-deploy.sh` run
+- [x] In `scripts/orchestrate-batch-gate.sh`: after the complete unnarrowed `verify-deploy.sh` run
       succeeds, stamp `discharged_ts` on every open row in each iterated task's
       `records/full-sweep-owed.jsonl`, and record the count in the `batch_gate` key it already
-      writes.
-- [ ] A batch-gate run that did not happen, or that failed, discharges nothing — rows stay open.
-- [ ] Add the open-owed count and roster to the `batch_gate` payload so the consolidated output can
-      render it.
-- [ ] Update `context/patterns/orchestrate-batch-results-template.md` so an undischarged owed
-      record is rendered in the consolidated output rather than only living in state.
-- [ ] Update `context/contracts/batch-gate-stage.md` to state the discharge obligation as part of
-      the stage's contract.
+      writes. *(completed; verified in isolation with gate_exit_code=0 discharging a seeded open
+      row in task 650's own, temporary `records/` directory)*
+- [x] A batch-gate run that did not happen, or that failed, discharges nothing — rows stay open.
+      *(completed and verified: gate_exit_code=1 and --dry-run both leave the seeded row open and
+      roster it)*
+- [x] Add the open-owed count and roster to the `batch_gate` payload so the consolidated output can
+      render it. *(completed: owed_discharged_count, owed_open_count, owed_open_roster)*
+- [x] Update `context/patterns/orchestrate-batch-results-template.md` so an undischarged owed
+      record is rendered in the consolidated output rather than only living in state. *(completed)*
+- [x] Update `context/contracts/batch-gate-stage.md` to state the discharge obligation as part of
+      the stage's contract. *(completed)*
 
 **Timing**: 1.5 hours
 

@@ -1,0 +1,29 @@
+{
+  "phase": 6,
+  "phase_name": "Owed-sweep discharge at the batch gate",
+  "started_at": "2026-11-18T23:00:00Z",
+  "last_updated": "2026-11-18T23:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "orchestrate-batch-gate.sh: stamp discharged_ts on every open row in each iterated task's records/full-sweep-owed.jsonl after a successful complete run; carry counts in batch_gate",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-gate.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Update orchestrate-batch-results-template.md to render an undischarged owed record",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"]
+    },
+    {
+      "id": 3,
+      "description": "Update batch-gate-stage.md to state the discharge obligation",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/contracts/batch-gate-stage.md"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

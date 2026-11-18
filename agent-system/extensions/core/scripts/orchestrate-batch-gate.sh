@@ -178,18 +178,64 @@ unattributed_count="$(printf '%s\n' "$unattributed_findings" | grep -c . || true
 [ -z "$unattributed_findings" ] && unattributed_count=0
 echo "[orchestrate-batch-gate] summary: gate_exit_code=${gate_exit_code} confirmed=${confirmed_count} unattributed=${unattributed_count}" >&2
 
+# ─── Owed-sweep discharge: this invocation's complete, unnarrowed run above is the ONLY event
+# that discharges a task's own `records/full-sweep-owed.jsonl` open rows (scripts/verify-touched.sh
+# / scripts/lib/unmapped-fallback-lib.sh's OWED-NOT-PAID fallback). Discharge fires ONLY when
+# gate_exit_code -eq 0 (this run was clean, including the all-flaky-dropped case above) AND this
+# is not a --dry-run -- a failing or skipped run discharges nothing, and a dry-run mutates
+# nothing, in both cases leaving every open row exactly as it was and reported as still open. ───
+owed_discharge_ts="$(common_timestamp_iso 2>/dev/null || date -u +%Y-%m-%dT%H:%M:%SZ)"
+owed_discharged_total=0
+owed_open_roster_json="[]"
+
+while IFS= read -r _bg_t; do
+  [ -z "$_bg_t" ] && continue
+  _bg_padded="$(printf '%03d' "$_bg_t" 2>/dev/null)" || continue
+  _bg_task_dir="$(find "${PROJECT_ROOT}/specs" -maxdepth 1 -type d -name "${_bg_padded}_*" 2>/dev/null | head -1)"
+  [ -z "$_bg_task_dir" ] && continue
+  _bg_owed_file="${_bg_task_dir}/records/full-sweep-owed.jsonl"
+  [ -f "$_bg_owed_file" ] || continue
+
+  _bg_open_before="$(jq -s '[.[] | select(.discharged_ts == null)] | length' "$_bg_owed_file" 2>/dev/null)"
+  case "$_bg_open_before" in ''|*[!0-9]*) _bg_open_before=0 ;; esac
+  [ "$_bg_open_before" -eq 0 ] && continue
+
+  if [ "$gate_exit_code" -eq 0 ] && [ "$dry_run" != "true" ]; then
+    jq -c --arg ts "$owed_discharge_ts" \
+      'if .discharged_ts == null then .discharged_ts = $ts else . end' \
+      "$_bg_owed_file" > "${_bg_owed_file}.tmp" && mv "${_bg_owed_file}.tmp" "$_bg_owed_file"
+    owed_discharged_total=$((owed_discharged_total + _bg_open_before))
+  else
+    _bg_still_open_json="$(jq -s --arg t "$_bg_t" \
+      '[.[] | select(.discharged_ts == null) | {task: $t, path: .path}]' \
+      "$_bg_owed_file" 2>/dev/null)"
+    [ -z "$_bg_still_open_json" ] && _bg_still_open_json="[]"
+    owed_open_roster_json="$(jq -c -n --argjson a "$owed_open_roster_json" --argjson b "$_bg_still_open_json" '$a + $b')"
+  fi
+done < <(echo "$mt_json" | jq -r '(.task_numbers // [])[]' 2>/dev/null)
+
+owed_open_total="$(echo "$owed_open_roster_json" | jq 'length' 2>/dev/null)"
+case "$owed_open_total" in ''|*[!0-9]*) owed_open_total=0 ;; esac
+echo "[orchestrate-batch-gate] owed sweep: discharged=${owed_discharged_total} still_open=${owed_open_total}" >&2
+
 batch_gate_record="$(jq -n -c \
   --argjson exit_code "$gate_exit_code" \
   --arg findings "$confirmed_findings" \
   --argjson attributed "$attributed_json" \
   --arg unattributed "$unattributed_findings" \
+  --argjson owed_discharged "$owed_discharged_total" \
+  --argjson owed_open "$owed_open_total" \
+  --argjson owed_open_roster "$owed_open_roster_json" \
   --arg ts "$(common_timestamp_iso 2>/dev/null || date -u +%Y-%m-%dT%H:%M:%SZ)" \
   '{
     ran_at: $ts,
     gate_exit_code: $exit_code,
     confirmed_findings: ($findings | split("\n") | map(select(length > 0))),
     attributed: $attributed,
-    unattributed: ($unattributed | split("\n") | map(select(length > 0)))
+    unattributed: ($unattributed | split("\n") | map(select(length > 0))),
+    owed_discharged_count: $owed_discharged,
+    owed_open_count: $owed_open,
+    owed_open_roster: $owed_open_roster
   }')"
 
 if [ "$dry_run" = "true" ]; then
