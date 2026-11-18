@@ -1,18 +1,23 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 5,
-  "summary": "Created a 3-phase, 1.5-hour documentation plan: an Agent Availability note on agent-system/extensions/core/commands/revise.md, a mirror note extending skill-reviser/SKILL.md's Trigger Conditions, and a final gate-verification-plus-redeploy phase. The state-write.sh invocation shape stays single-sourced in SKILL.md Stage 7; commands/revise.md points at it. postflight-tool-restrictions.md is excluded with the rejection recorded under Decisions, and all three dispatch-extracted carried figures were re-checked live (the file_scope/external-store claim is confirmed no longer true: agent-system has no .git here and its paths are tracked and committable).",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 9,
+  "summary": "Implemented the 3-phase documentation plan: added a point-of-use ## Agent Availability section to commands/revise.md and a mirror dispatched-agent note to skills/skill-reviser/SKILL.md's Trigger Conditions, each stating why /revise and a direct skill-reviser dispatch are unavailable/unsanctioned for a dispatched agent and pointing at SKILL.md Stage 7's single-sourced state-write.sh fallback route. Verified against the Batch Gate Deferral directive's scoped tier (gates 3/4/5 plus a Gate-8 suite subset with --fail-on-new), redeployed, and confirmed both notes live in the deployed .claude/ tree with no residual core-extension staleness.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/503_revise_unavailable_to_dispatched_agent/summaries/01_revise-unavailability-point-of-use-summary.md",
+      "summary": "Implementation summary covering both edited files, decisions, plan deviations, and verification evidence."
+    },
     {
       "type": "plan",
       "path": "specs/503_revise_unavailable_to_dispatched_agent/plans/01_revise-unavailability-point-of-use.md",
-      "summary": "3-phase documentation plan adding point-of-use /revise unavailability notes plus the named state-write.sh fallback route to commands/revise.md and skills/skill-reviser/SKILL.md, then verifying and redeploying."
+      "summary": "3-phase plan, all phases [COMPLETED], checklist items annotated with completion/deviation notes."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 3,
   "phases_total": 3,
   "plan_markers_verified": true,
   "blockers": [],
-  "next_action_hint": "Dispatch implement phase; Phases 1 and 2 are wave-1 parallel (disjoint files), Phase 3 depends on both and carries the __WHOLE_TREE__ claim."
+  "next_action_hint": "Task is complete; no further dispatch needed for task 503."
 }

@@ -1,11 +1,101 @@
 {
-  "status": "in_progress",
-  "task_number": 503,
+  "status": "implemented",
   "dispatch_seq": 9,
+  "task_number": 503,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/503_revise_unavailable_to_dispatched_agent/summaries/01_revise-unavailability-point-of-use-summary.md",
+      "summary": "Documentation summary: added point-of-use /revise unavailability notes (structural command unreachability plus the lock-bypass/stale-sidecar reason not to dispatch skill-reviser directly) and the named state-write.sh fallback route to commands/revise.md and skills/skill-reviser/SKILL.md, verified, and deployed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a point-of-use `## Agent Availability` section to commands/revise.md and a mirror note to skills/skill-reviser/SKILL.md's Trigger Conditions, each stating why /revise is structurally unreachable from a dispatched agent and why a direct skill-reviser dispatch is not the substitute, and pointing at SKILL.md Stage 7's single-sourced state-write.sh fallback route. Both notes are confirmed live in the deployed .claude/ tree with the scoped gate set green."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/revise.md",
+    "agent-system/extensions/core/skills/skill-reviser/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "run-all.sh's default exit-code semantics (no --fail-on-new) are exit 1 on ANY suite failure, EXPECTED-per-known-failures.txt or not -- only --fail-on-new collapses an all-EXPECTED failure set to exit 0 (0 NEW). A plan/dispatch verification bullet that names a bare `run-all.sh --only ...` invocation and requires exit 0 will spuriously fail whenever the named suite subset happens to include an already-known EXPECTED-failing suite (e.g. test-verify-deploy-context-budget.sh, which fails today for a documented, unrelated real-defect reason tied to pre-existing core-extension deploy staleness). Re-running the identical suite list with --fail-on-new added gives the authoritative 0-NEW signal without masking a genuine new regression.",
+      "category": "PATTERN",
+      "source_artifact": "specs/503_revise_unavailable_to_dispatched_agent/summaries/01_revise-unavailability-point-of-use-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "run-all.sh",
+        "fail-on-new",
+        "known-failures",
+        "verification-tier",
+        "expected-failure"
+      ]
+    },
+    {
+      "content": "check-deploy-freshness.sh's STALE/FRESH verdict compares .claude-extensions.json's recorded source_git_head against `git log -1 --format=%H -- <source_dir>` -- a COMMIT-HASH provenance marker, not a content diff. It can report STALE even when the deployed tree is already byte-identical to the source store (e.g. because a concurrent sibling's own whole-tree redeploy happened to run after this dispatch's edits landed on disk but before they were committed): the marker just hasn't caught up to the newest commit touching source_dir yet. Running deploy-headless.sh again is still the correct remedy even when gate5's content-hash equality check already passes, because deploy-headless.sh is what rewrites the marker.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/503_revise_unavailable_to_dispatched_agent/summaries/01_revise-unavailability-point-of-use-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "check-deploy-freshness",
+        "source_git_head",
+        "deploy-headless",
+        "staleness-marker",
+        "gate5-content-hash"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "run-all.sh --fail-on-new flag",
+      "value": "Without --fail-on-new, run-all.sh exits 1 on any suite failure regardless of known-failures.txt classification (EXPECTED or NEW); only --fail-on-new collapses an all-EXPECTED failure set to exit 0. A verification step naming a bare --only invocation can spuriously read as red when the named subset includes an already-known EXPECTED failure.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/tests/run-all.sh"
+    },
+    {
+      "subject": "check-deploy-freshness.sh staleness marker",
+      "value": "check-deploy-freshness.sh compares .claude-extensions.json's recorded source_git_head against the latest git commit touching source_dir -- a commit-hash provenance check, not a content diff. It can report STALE even when deployed content already matches the source store byte-for-byte, if a newer commit landed after the last deploy-headless.sh run recorded its marker.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/lib/deploy-freshness-lib.sh"
+    },
+    {
+      "subject": "/revise unavailability to a dispatched agent",
+      "value": "/revise is structurally unreachable from a dispatched subagent (the command->skill->agent flow is strictly unidirectional, independent of frontmatter tools:/disallowedTools: config), and dispatching skill-reviser directly is not a sanctioned substitute because it bypasses commands/revise.md's CHECKPOINT 1 task-lock acquisition and CHECKPOINT 3 .return-meta.json cleanup. The sanctioned route for a dispatched agent needing another task's description updated is skill-reviser/SKILL.md Stage 7's 'For Description Update' state-write.sh object-merge block, called directly.",
+      "predicate": "finding is",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/commands/revise.md:## Agent Availability"
+    },
+    {
+      "subject": "Documentation placement for dispatched-agent restrictions",
+      "value": "This codebase's existing precedent for documenting 'what a dispatched agent cannot invoke' is point-of-use placement on the two surfaces an agent actually meets, not a consolidated registry file. postflight-tool-restrictions.md was considered and rejected as a home for this restriction because its documented audience/purpose (skill postflight phase, skill authors / /meta agent) governs a different actor and lifecycle point than a dispatched agent needing a route mid-execution.",
+      "predicate": "finding is",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "specs/503_revise_unavailable_to_dispatched_agent/plans/01_revise-unavailability-point-of-use.md"
+    },
+    {
+      "subject": "Concurrent whole-tree redeploy claims in a multi-task batch",
+      "value": "Two sibling tasks in the same /orchestrate batch cycle can each declare a __WHOLE_TREE__ file_scope claim; one sibling's redeploy (deploy-headless.sh) can incidentally sync another sibling's in-progress, uncommitted source-store edits into the deployed tree, since the deploy reads current disk content rather than git history. This is benign (content lands correctly) but can leave the deploy-freshness provenance marker (source_git_head) stale relative to the edit-making task's own later commits, requiring that task to still run its own deploy-headless.sh pass to update the marker even though content already matched.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "specs/503_revise_unavailable_to_dispatched_agent/progress/phase-3-progress.json"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794985308_f67716",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #503
 
 - **Task**: 503 - MIGRATED FROM BimodalLogic 2026-11-05: `/revise` unavailable to a dispatched agent, undocumented at point of use
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/503_revise_unavailable_to_dispatched_agent/reports/01_revise-unavailable-dispatched-agent.md
