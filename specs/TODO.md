@@ -13,9 +13,9 @@ next_project_number: 654
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640,645,646,647,652,653 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,579,583,592,593,598,605,609,610,630,648 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,564,577,586,599,607,629,647 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,473,480,486,492,509,513,518,561,566,594,649,651 | 439,452,472,479,484,491,552,593,610,648 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,610,613,618,629,631,632,633,639,640,645,646,647 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,579,583,592,593,598,605,609,630,648,651,652,653 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,564,577,586,599,610,629,647 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,473,480,486,492,509,513,518,561,566,594,649 | 439,452,472,479,484,491,552,593,648 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,571,581,588,595,641 | 454,472,486,492,509,518,539,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 524,596,642 | 501,595,641 | core-agent-system, agent-system |
 
@@ -107,13 +107,13 @@ next_project_number: 654
 
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-652 [NOT STARTED] — Resolve validate-artifact.sh's Tier-Justification corpus...
-653 [NOT STARTED] — Give the gate mutex a host-scoped form, because every lock...
+610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+  └─ 651 [NOT STARTED] — Make the orchestration, not the task, the unit that closes on...
+  └─ 653 [NOT STARTED] — Give the gate mutex a host-scoped form, because every lock...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
-610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-  └─ 651 [NOT STARTED] — Make the orchestration, not the task, the unit that closes on...
+652 [NOT STARTED] — Resolve validate-artifact.sh's Tier-Justification corpus...
 
 ### Agent System
 
@@ -156,7 +156,6 @@ next_project_number: 654
   └─ 593 [NOT STARTED] — Require pinned Lean Challenge signatures to be measured at...
     └─ 594 [NOT STARTED] — Size symmetric-pair phases and iteration obligations separately
       └─ 595 [NOT STARTED] — Define Goal Polarity semantics for decision-gate plans (see above)
-607 [IMPLEMENTING] — Resolve the gate 20 orchestrator context-budget overage and...
 629 [NOT STARTED] — Fix the two-engine defect: scan\_all\_artifacts' sync\_scan...
   └─ 630 [NOT STARTED] — Give test-deploy-propagation.sh and...
 631 [NOT STARTED] — Replace test-typescript-verify.sh's fixed-depth REPO\_ROOT...
@@ -192,7 +191,7 @@ next_project_number: 654
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 610
 
 **Description**: Give the gate mutex a host-scoped form, because every lock this system ships is invisible to a sibling repository running the same battery
 
@@ -225,13 +224,18 @@ CROSS-REPOSITORY NOTE (prose, not a state edge). A consumer repository (sf1-engi
 
 DONE WHEN: a host-scoped acquire form exists and is opt-in; the repo-scoped default is provably unchanged; the gate battery's bracket uses it with the repo-scoped lock retained inside; the guard's binds-only-cooperating-callers limit is stated in its own contract; a cross-directory double-start test fails without the change and passes with it; and the lock-root degradation path is covered and fails open.
 
+TERRITORY EDGES.
+- The full-gate-verification ceiling-and-stall record is a HARD prerequisite and the edge is filed, because its research question 3 ALREADY OWNS the posture question for this very mutex: whether specs/.gate-lock's deliberate fail-open on budget exhaustion is the right trade, or whether fail-closed-with-queueing or a longer acquire budget is. Its own measured finding (b) is the thundering-herd analysis of that same fail-open behaviour. This record must NOT pre-empt that ruling: its own fail-open hard constraint is written to match cmd_gate_acquire's posture AS IT STANDS, and if that record changes the posture, this record's host-scoped form inherits the NEW posture rather than re-litigating it.
+- THE DIVISION OF TERRITORY, stated so neither record re-derives the other: that record owns the gate mutex's POSTURE (fail-open vs. fail-closed, acquire budget, staleness, queueing) and the battery's timing and enforcement mechanics. This record owns the mutex's SCOPE, which that record does not address anywhere -- its entire analysis assumes contending sessions within one repository, and the defect here is that a battery started from a DIFFERENT PROJECT_ROOT is structurally invisible to a lock resolved as "$PROJECT_ROOT/specs/<name>". Scope and posture are orthogonal: a fail-closed repo-scoped lock is still blind to a sibling repository.
+- Mechanical overlap exists with other claimants of verify-deploy.sh and task-lock.sh (the cycle-budget pool-semantics record, the suite-gate-cost consumer, the gate-20 context-budget record, and the gate8 suite-repair record). Subject matter is disjoint; no edge is filed for those -- batch them if admitted together.
+
 ---
 
 ### 652. Validate artifact corpus resolution
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 650, Task 564
 
 **Description**: Resolve validate-artifact.sh's Tier-Justification corpus against the repository under validation, not the deployed agent-system tree
 
@@ -260,6 +264,11 @@ HARD CONSTRAINTS.
 - Do not weaken or remove the fabricated-claim detection. It catches a real authoring error; this record only makes it attributable.
 
 DONE WHEN: a consumer repository declaring its own project suite root gets Tier-Justification verdicts measured against that corpus; an undeclared repository's behaviour is byte-identical to today; every advisory warning names the corpus it was measured against; and the three cases above are covered in that script's own suite.
+
+TERRITORY EDGES.
+- The record that owns the repo-level verification_scope declaration and verification-scope-lib.sh's project_suite_roots reader is a HARD prerequisite: this record's deliverable 1 consumes that reader and cannot be implemented before it exists. Filed as a dependency rather than prose.
+- The record for the sentinel-dominated set semantics of suite_selection_select (a mixed path set containing one unmappable member collapsing the whole set to __FULL_SWEEP__) is ADJACENT AND NOT A DUPLICATE, but IS a sequencing prerequisite, so an edge is filed rather than relying on a bare exclusion. The two causes are disjoint: that record fixes set COMPOSITION within one corpus; this record fixes which CORPUS is consulted at all, and a consumer repository running its own copied suite tree would still be judged against the wrong corpus after perfect set semantics. The reason for the edge is that record's own point (2), which decides whether the selector layer or validate-artifact.sh's consumption of it owns the fix: if it rules for the consumer layer it rewrites the exact resolution site this record changes. Land it first, then re-derive this defect against the changed consumer before editing.
+- Mechanical overlap exists with several other claimants of validate-artifact.sh and tests/test-validate-artifact.sh (baseline-relative gate criteria, redeploy phase declaration, argument-order fault, ceiling-check stop-word, deploy-tree-first subject rule, and the orchestration-close record). Subject matter is disjoint from each, so NO edge is filed for those, matching how this backlog already treats broad-prefix declarations on these two files; batch them rather than excluding either if admitted together.
 
 ---
 
@@ -1209,6 +1218,7 @@ DUPLICATE CHECK PERFORMED. audit-task-proposals.sh surfaced 454 (semantic_score 
 TERRITORY EDGES ADDED 2026-11-18 (two records filed against the same incident class, re-observed in the sf1-engine consumer repository):
 - 650 (touched_path_verify_entry_and_unmapped_fallback): owns the scoped touched-path entry point over run-all.sh --only/--jobs auto/--timings and suite-selection-lib.sh, and the replacement of the unmapped-path full sweep. It answers the "faster default suite selection" arm of research question 1; this record keeps sharding, the jobs cap and slow-suite splitting.
 - 651 (orchestration_close_owns_full_battery): owns the POLICY that the orchestration, not the task, closes on the full battery, including for a batch of one, and the plan-format final-phase invariant. It depends on this record: research question 2's mechanical guard is what makes that policy enforceable. Design the guard so a batch of one is covered too, not only multi-task batches.
+- host_scoped_gate_mutex: DEPENDS ON THIS RECORD, and the edge exists to stop it pre-empting research question 3 above. It owns the gate mutex's SCOPE only: every lock this system ships resolves as "$PROJECT_ROOT/specs/<name>", so a battery started from a different repository is structurally invisible and a single-flight guard built on gate-acquire reports single-flight while a second battery runs (measured in the sf1-engine consumer repo: a timing baseline started at loadavg 2.76 was contaminated to 12.52 by a concurrent battery against this very source store). THIS record keeps the POSTURE ruling -- fail-open vs. fail-closed, acquire budget, staleness, queueing -- and that record inherits whatever posture question 3 settles rather than re-litigating it. Scope and posture are orthogonal: a fail-closed repo-scoped lock is still blind to a sibling repository.
 
 ---
 
@@ -1261,7 +1271,7 @@ DURABLE EVIDENCE (in the BimodalLogic repo, /home/benjamin/Projects/BimodalLogic
 
 ### 607. Resolve the gate 20 orchestrator context-budget overage and the per-gate timeout sensitivity under concurrent load
 - **Effort**: medium
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -3054,6 +3064,8 @@ IMPLICATION FOR THIS RECORD'S POINT (2) -- which layer owns the fix: this sighti
 ALSO WORTH PINNING, if cheap: a caller-facing statement of the composition contract. The library's PUBLIC API header already documents the sentinel escalation for `suite_selection_select`, but nothing warns a caller that composing per-path results is NOT equivalent to one multi-path call, which is the mistake both sightings record an author making. A line in the header, or in whatever document instructs an author to run the selector for a Tier Justification, would close the authoring half of this defect alongside the mechanical half.
 
 NO SEPARATE RECORD WAS FILED for the cited entry's selector half, specifically to avoid a duplicate of this record. The same entry's OTHER defect -- validate-artifact.sh's cross-phase ceiling-consistency check misreading a stop-word as a unit noun -- is a disjoint concern in a different code block and is filed separately as fix_ceiling_check_stopword_unit_false_positive, which declares scripts/validate-artifact.sh and tests/test-validate-artifact.sh and so overlaps this record mechanically. That record files no dependency edge to this one, matching the treatment this record already states for the other validate-artifact.sh claimants; if both are admitted together, batch them rather than excluding either.
+
+TERRITORY EDGE ADDED 2026-11-18: validate_artifact_corpus_resolution DEPENDS ON THIS RECORD. It addresses a THIRD escalation mode behind the same Tier-Justification warning, disjoint in cause from both modes this record distinguishes: validate-artifact.sh resolves its library as "$_validate_script_dir/lib/suite-selection-lib.sh", i.e. the DEPLOYED agent-system corpus, so a consumer repository carrying its own copied suite tree has every Tier Justification judged against a corpus its phases never run against -- measured in sf1-engine, where four phases of one plan drew false "fabricated claim" warnings that the plan had to carry a dedicated decision to explain. The edge is filed, rather than left as a bare mechanical overlap, specifically because THIS record's point (2) decides whether the selector layer or validate-artifact.sh's consumption of it owns its fix: a ruling for the consumer layer rewrites the exact resolution site that record changes. Perfect set semantics would not fix the corpus mismatch, and fixing the corpus would not fix sentinel domination; both are needed.
 
 ---
 
