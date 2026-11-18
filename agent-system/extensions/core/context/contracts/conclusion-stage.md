@@ -490,9 +490,29 @@ declined, or not-asked-because-empty) with its citations, channels (b) and (c)'s
 zero-contribution dispatch list (`no_contribution_tasks[]`, cross-referenced with
 `context/contracts/phase-closure.md`'s mandatory-attempt requirement — a listed task either
 genuinely had nothing to record, or skipped the attestation). Render per
-`context/patterns/orchestrate-batch-results-template.md`'s conclusion report block. Step 5's
-advisory batch-proposal-lint findings (if any) appear with Step 5's own output above, not as a
-separate section of this report.
+`context/patterns/orchestrate-batch-results-template.md`'s conclusion report block, whose
+`### Next Steps` block recommends `/recap` by name unconditionally — the recap this step writes
+below lands on every invocation that reaches this point. Step 5's advisory batch-proposal-lint
+findings (if any) appear with Step 5's own output above, not as a separate section of this
+report.
+
+After rendering the report above, and before the marker deletion below, compose a short
+speech-shaped prose recap of this run and persist it:
+
+```bash
+orchestrate-recap.sh --write --session "$session_id" <<'RECAP_TEXT'
+{the composed recap text}
+RECAP_TEXT
+```
+
+The recap text is composed by the lead itself, from the wins/channel-outcome/next-batch data
+already in hand at this point — the script only stores and plays, it never synthesizes prose.
+Keep it short, plainly worded, and pleasant read aloud: name what landed, what failed if
+anything, and the single most useful next action. No tables, no path strings, no session ids,
+no command-line flags — all of that belongs in the written report above, not the spoken text.
+This call is non-fatal: a failure warns on stderr and the step proceeds to the marker deletion
+below unchanged. Nothing in this step, or anywhere else on the orchestration path, ever speaks
+this text out loud — that only happens when the user separately runs `/recap`.
 
 After rendering the report above, delete this invocation's own conclusion-stage pending marker
 (written by `orchestrate-conclusion-roadmap.sh` at Move 4; see Step 5 above and

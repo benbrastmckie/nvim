@@ -281,4 +281,5 @@ line, quoted here) rather than left blank.
 - Re-run failed tasks: /orchestrate {failed_task_numbers}
 - **When ZERO DISPATCH fired**: there are no failed tasks to re-run — point at the re-run
   sequence in the ZERO DISPATCH section above instead of this line.
+- Hear a short spoken recap of this run: Run /recap
 ```

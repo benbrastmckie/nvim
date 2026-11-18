@@ -426,33 +426,37 @@ the row; if it passes without the row, add the row anyway and record the surpris
 
 ---
 
-### Phase 4: Conclusion-stage wiring [NOT STARTED]
+### Phase 4: Conclusion-stage wiring [COMPLETED]
 
 **Goal**: The conclusion stage composes and persists the recap at its emission step, its call is
 in-contract against the Move 5 Bash allowlist, and the rendered report recommends `/recap` by name.
 
 **Tasks**:
 
-- [ ] Amend `context/contracts/conclusion-stage.md`'s Step 6: after the report is rendered and
+- [x] Amend `context/contracts/conclusion-stage.md`'s Step 6: after the report is rendered and
       **before** the step's existing final action (deleting the invocation's conclusion-stage
       pending marker), instruct the lead to compose a speech-shaped prose recap and persist it via
       `orchestrate-recap.sh --write --session "$session_id"` with the text on stdin through a
       quoted heredoc. Show the invocation shape, and state that the call is non-fatal: a failure
-      warns on stderr and the step proceeds to the marker deletion unchanged.
-- [ ] In that same amendment, state the prose constraints plainly: short, plainly worded, pleasant
+      warns on stderr and the step proceeds to the marker deletion unchanged. *(completed)*
+- [x] In that same amendment, state the prose constraints plainly: short, plainly worded, pleasant
       read aloud; names what landed, what failed if anything, and the single most useful next
       action; no tables, no path strings, no session ids, no command-line flags — those belong in
-      the written report, not the spoken text.
-- [ ] MUST NOT move, reorder, or re-scope the marker deletion; it stays the step's final action.
+      the written report, not the spoken text. *(completed)*
+- [x] MUST NOT move, reorder, or re-scope the marker deletion; it stays the step's final action.
       MUST NOT touch the channel routing, the filter predicate, or the exactly-one-channel rule.
-- [ ] Add `orchestrate-recap.sh` (its `--write` form only, named as Step 6's own recap
+      *(completed: marker deletion paragraph and its bash block left byte-identical, only the new
+      recap paragraph was inserted before it)*
+- [x] Add `orchestrate-recap.sh` (its `--write` form only, named as Step 6's own recap
       persistence) to the Move 5 `Bash` row in
       `context/standards/postflight-tool-restrictions.md`, inline with the existing enumerated
-      scripts.
-- [ ] Add one line to `context/patterns/orchestrate-batch-results-template.md`'s `### Next Steps`
+      scripts. *(completed)*
+- [x] Add one line to `context/patterns/orchestrate-batch-results-template.md`'s `### Next Steps`
       block recommending `/recap` by name, unconditionally — the recap is written on every
-      invocation that reaches the emission step.
-- [ ] Re-read all three edited blocks for task-number references and record-versioning language.
+      invocation that reaches the emission step. *(completed: "Run /recap" wording matches the
+      dead-command-recommendation lint's detected shape)*
+- [x] Re-read all three edited blocks for task-number references and record-versioning language.
+      *(completed: zero hits)*
 
 **Timing**: 1 hour
 

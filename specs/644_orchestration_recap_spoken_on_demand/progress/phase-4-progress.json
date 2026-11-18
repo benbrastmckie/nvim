@@ -1,0 +1,15 @@
+{
+  "phase": 4,
+  "phase_name": "Conclusion-stage wiring",
+  "started_at": "2026-11-18T03:00:00Z",
+  "last_updated": "2026-11-18T03:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Amend conclusion-stage.md Step 6: compose + persist recap before marker deletion", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/conclusion-stage.md"]},
+    {"id": 2, "description": "Add orchestrate-recap.sh to Move 5 Bash row in postflight-tool-restrictions.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/postflight-tool-restrictions.md"]},
+    {"id": 3, "description": "Add /recap recommendation line to orchestrate-batch-results-template.md Next Steps", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"]},
+    {"id": 4, "description": "Re-check all three edited blocks for task-ref/record-versioning language", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
