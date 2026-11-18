@@ -1,7 +1,7 @@
 # Implementation Plan: Task #538
 
 - **Task**: 538 - Bounded in-file block edits: index and assert, never string-splice
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.25 hours
 - **Dependencies**: None (live `dependencies: []`; the predecessor jq-reserialization record has
   landed and its outcome is readable directly from `jq-escaping-workarounds.md`)

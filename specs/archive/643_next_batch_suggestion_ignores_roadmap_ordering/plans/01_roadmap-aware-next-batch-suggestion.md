@@ -1,7 +1,7 @@
 # Implementation Plan: Task #643
 
 - **Task**: 643 - Align /orchestrate's conclusion-stage next-batch suggestion with the authored roadmap ordering, or render both so the divergence is visible
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/643_next_batch_suggestion_ignores_roadmap_ordering/reports/01_roadmap_aware_suggester.md

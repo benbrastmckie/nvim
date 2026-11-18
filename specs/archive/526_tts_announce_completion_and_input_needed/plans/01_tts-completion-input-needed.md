@@ -1,7 +1,7 @@
 # Implementation Plan: Task #526
 
 - **Task**: 526 - Announce completion and input-needed over TTS from the source store, with a cooldown
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8.5 hours
 - **Dependencies**: Territory edge to the open record `reword_dead_lifecycle_command_prose_per_class` (task 435) — serialization only, no subject overlap. NOT YET RECORDED in `specs/state.json` (`depends_on: null` as of plan authoring); see Risks & Mitigations.
 - **Research Inputs**: specs/526_tts_announce_completion_and_input_needed/reports/01_tts-completion-input-needed.md

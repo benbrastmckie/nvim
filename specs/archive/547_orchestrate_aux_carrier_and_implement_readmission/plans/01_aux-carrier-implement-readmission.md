@@ -1,7 +1,7 @@
 # Implementation Plan: Task #547
 
 - **Task**: 547 - Close the orchestrate aux blocker-research carrier defect and the implement-readmission gap
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7.5 hours
 - **Dependencies**: None declared in this plan (the record's own cross-repo edge on `docs/architecture/orchestrate-state-machine.md` is carried at the task level, not the phase level)
 - **Research Inputs**: specs/547_orchestrate_aux_carrier_and_implement_readmission/reports/01_aux-carrier-implement-readmission.md

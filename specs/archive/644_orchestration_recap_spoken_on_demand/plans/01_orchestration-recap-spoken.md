@@ -1,7 +1,7 @@
 # Implementation Plan: Task #644
 
 - **Task**: 644 - Leave a spoken-word recap at the end of an orchestration and recommend /recap to hear it
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 7 hours
 - **Dependencies**: 503, 526, 538, 558, 643 (all territory edges, not subject edges; all five are [COMPLETED] as of this plan's authoring)
 - **Research Inputs**: specs/644_orchestration_recap_spoken_on_demand/reports/01_orchestration-recap-design.md
