@@ -1,7 +1,74 @@
 {
   "version": "1.1.0",
-  "next_project_number": 643,
+  "next_project_number": 644,
   "active_projects": [
+    {
+      "project_number": 643,
+      "project_name": "next_batch_suggestion_ignores_roadmap_ordering",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Align /orchestrate's conclusion-stage next-batch suggestion with the authored roadmap ordering, or render both so the divergence is visible\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.\n\nPROBLEM (measured 2026-11-17 at the end of a live four-task orchestration; do NOT re-derive these facts). The conclusion stage's Step 7 suggester and specs/ROADMAP.md's `## Next` recommend DISJOINT task sets -- zero overlap -- even though the roadmap was regenerated minutes earlier by that same invocation's own conclusion stage. The operator reads the roadmap as the authority on what to run next; the suggestion that actually ends the run contradicts it silently.\n\nMEASURED DIVERGENCE. The roadmap's `## Next` code block (authored 2026-11-16 into state.json's roadmap_batches, rendered 19:51 the same run) leads with: `586, 605`; then `577, 609`; `629, 630, 631, 632, 633`; `607, 610`; `512`; `590`; `580, 491, 479, 492`. The suggester rendered instead: `511, then 523` (ordered sequence), `338,398,431,438,451,455`, `383,522,563,338,410,421,431,456`, and `338,383,390,398,410,421,431,437`.\n\nCAUSE 1 -- NO COUPLING AT ALL. scripts/orchestrate-suggest-next-batch.sh (1,085 lines) contains ZERO occurrences of `roadmap_batches`, `roadmap_notes` or `ROADMAP`, verified by grep over the whole file. Its Mode A candidate pool reads only state.json's active_projects status, dependencies, file_scope and topic fields. The authored batch ordering -- the one artifact in this system carrying operator priority and fan-out judgment -- is structurally invisible to it.\n\nCAUSE 2 -- ASCENDING-NUMBER TRUNCATION, NOT A READINESS DISAGREEMENT. build_ready_pool() emitted 67 ready tasks ascending. All three selection-doctrine criteria (select_candidates_for_criterion territory/topic/width) sort ascending by project_number and truncate to MAX_TASKS=8, so every rendered option is drawn from the lowest-numbered ready records (the first 15 ready were 338,383,390,398,410,421,431,437,438,451,453,455,456,463,472). The roadmap-recommended records are NOT excluded by the readiness predicate -- 629, 631, 632, 633 (not_started, no open deps), 607 and 512 (planned) and 590 (researched) were all verified individually present in the ready pool. They are simply unreachable past the truncation. The divergence is an ORDERING fault, not a disagreement about what is runnable.\n\nThe `width` criterion additionally degenerates: its own header comment documents it as \"the plain ready pool in ascending order, no grouping at all\" -- i.e. the 8 lowest-numbered ready tasks, a proxy for task age, which is the ordering signal most directly opposed to the roadmap's fan-out-plus-operator-priority order.\n\nNEAREST CLOSED RECORD, CHECKED AND NOT COVERING. The archived conclusion_stage_next_batch_proposal_quality record refactored these exact functions (it introduced select_candidates_for_criterion and the three-option render) but its own plan states the net selection was preserved \"byte-identical to before\", and its only roadmap work was recording the roadmap-integration.sh --prune/--regenerate equivalence. It never considered roadmap_batches as a selection input, so the roadmap-blindness and the ascending-number bias both survive it untouched.\n\nNO PRIOR OWNER, NO SETTLED DECOUPLING RULING. No active_projects entry declares orchestrate-suggest-next-batch.sh in its file_scope. context/patterns/batch-orchestration-guardrails.md records only the script's self-modification-hazard exclusion; context/contracts/conclusion-stage.md's Step 7 records only that the suggester is informational and NOT a fourth channel. Neither rules that the two surfaces are deliberately decoupled, so nothing settled is overturned by fixing this.\n\nBINDING CONSTRAINT ANY FIX MUST PRESERVE. The script's own header constraint (a): admissibility is established ONLY by invoking orchestrate-batch-admit.sh and reading its NDJSON verdicts, never by a second locally-reimplemented copy of the collision predicate. A roadmap-aware candidate source changes WHICH sets get probed; it must not change WHAT establishes admissibility.\n\nCANDIDATE DIRECTIONS (decide at plan time; do not pre-commit). (a) Make roadmap_batches the primary candidate source: walk the authored batches in roadmap order, probe each through the real admission predicate, render the first admissible one, falling back to the existing mechanical doctrine only when no authored batch is admissible or the array is absent/empty. (b) Keep the two independent but render BOTH in the conclusion report, labelled by provenance, so a divergence is visible to the operator instead of silently resolved in the mechanical surface's favour. (c) Leave the suggester roadmap-unaware but replace the ascending-number tiebreak with the roadmap's own priority signal (fan-out, via generate-task-order.sh --print), removing the age bias without adding a dependency on authored prose.\n\nACCEPTANCE. A conclusion-stage suggestion either names an authored roadmap batch, or states plainly why no authored batch was admissible and what it fell back to. The existing suite scripts/tests/test-orchestrate-suggest-next-batch.sh must cover the new behaviour including the absent/empty-roadmap_batches path and the no-admissible-authored-batch path.",
+      "topic": "orchestrator",
+      "file_scope": [
+        "agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh",
+        "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+        "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"
+      ],
+      "created": "2026-11-18T05:19:52Z",
+      "last_updated": "2026-11-18T05:19:52Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "next_batch_suggestion_ignores_roadmap_ordering",
+          "project_number": null,
+          "title": "Align /orchestrate's conclusion-stage next-batch suggestion with the authored roadmap ordering"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 13,
+          "duplicate-of-open": 4,
+          "scope-blind": 43
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4418604651162791
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.46511627906976744
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.46511627906976744
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 551,
+            "project_name": "orchestrate_stale_handoff_recurrence_and_missing_defect_record",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4186046511627907
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 43
+      }
+    },
     {
       "project_name": "repropagate_bounded_wait_agent_bullets",
       "status": "not_started",
@@ -10745,7 +10812,8 @@
       "topic": "core-agent-system",
       "parent_task": 418,
       "dependencies": [
-        448
+        448,
+        511
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh",

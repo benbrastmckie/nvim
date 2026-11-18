@@ -1,20 +1,20 @@
 ---
-next_project_number: 643
+next_project_number: 644
 ---
 
 # TODO
 
 ## Task Order
 
-*Updated 2026-11-17. Generated from state.json dependency graph.*
+*Updated 2026-11-18. Generated from state.json dependency graph.*
 
 **Goal**: Make specs/ROADMAP.md generated (306, 307, 308, 313) so planning stops drifting, then push consent and admission posture.
 
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,503,504,506,510,511,512,514,519,520,521,522,523,525,526,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,533,540,541,542,544,546,550,553,570,576,579,583,592,593,598,605,609,610,630 | 383,390,398,410,431,438,451,453,455,463,472,477,504,519,535,538,539,548,549,563,564,577,586,599,607,629 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,503,504,506,510,511,512,514,519,520,521,522,525,526,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640,643 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,523,533,540,541,542,544,546,550,553,570,576,579,583,592,593,598,605,609,610,630 | 383,390,398,410,431,438,451,453,455,463,472,477,504,511,519,535,538,539,548,549,563,564,577,586,599,607,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,480,486,492,509,513,552,566,571,594 | 439,452,479,484,491,518,542,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,561,581,588,595 | 472,486,492,509,539,552,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 524,596,641 | 454,501,561,595 | core-agent-system, agent-system |
@@ -42,7 +42,6 @@ next_project_number: 643
 519 [NOT STARTED] — Infra exempt transport error dispatch deaths
 520 [NOT STARTED] — Emit deploy ordering in implement dispatch body
 521 [NOT STARTED] — Fix the agent glob to match the -implement-agent.md variant
-523 [NOT STARTED] — Make Gate 27 MISSING\_DECLARATION count call sites, not...
 525 [NOT STARTED] — Repair the always-failing extensions-directory fallback in...
 526 [NOT STARTED] — Announce completion and input-needed over TTS from the source...
 564 [NOT STARTED] — Fix validate-artifact.sh Tier Justification false positive...
@@ -62,6 +61,7 @@ next_project_number: 643
   └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
   └─ 492 [NOT STARTED] — Make backlog-audit corroboration computable and gate the... (see above)
 517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
+523 [NOT STARTED] — Make Gate 27 MISSING\_DECLARATION count call sites, not...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
@@ -111,6 +111,7 @@ next_project_number: 643
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
+643 [NOT STARTED] — Align /orchestrate's conclusion-stage next-batch suggestion...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
 610 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
@@ -181,6 +182,38 @@ next_project_number: 643
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 643. Next batch suggestion ignores roadmap ordering
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Align /orchestrate's conclusion-stage next-batch suggestion with the authored roadmap ordering, or render both so the divergence is visible
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh.
+
+PROBLEM (measured 2026-11-17 at the end of a live four-task orchestration; do NOT re-derive these facts). The conclusion stage's Step 7 suggester and specs/ROADMAP.md's `## Next` recommend DISJOINT task sets -- zero overlap -- even though the roadmap was regenerated minutes earlier by that same invocation's own conclusion stage. The operator reads the roadmap as the authority on what to run next; the suggestion that actually ends the run contradicts it silently.
+
+MEASURED DIVERGENCE. The roadmap's `## Next` code block (authored 2026-11-16 into state.json's roadmap_batches, rendered 19:51 the same run) leads with: `586, 605`; then `577, 609`; `629, 630, 631, 632, 633`; `607, 610`; `512`; `590`; `580, 491, 479, 492`. The suggester rendered instead: `511, then 523` (ordered sequence), `338,398,431,438,451,455`, `383,522,563,338,410,421,431,456`, and `338,383,390,398,410,421,431,437`.
+
+CAUSE 1 -- NO COUPLING AT ALL. scripts/orchestrate-suggest-next-batch.sh (1,085 lines) contains ZERO occurrences of `roadmap_batches`, `roadmap_notes` or `ROADMAP`, verified by grep over the whole file. Its Mode A candidate pool reads only state.json's active_projects status, dependencies, file_scope and topic fields. The authored batch ordering -- the one artifact in this system carrying operator priority and fan-out judgment -- is structurally invisible to it.
+
+CAUSE 2 -- ASCENDING-NUMBER TRUNCATION, NOT A READINESS DISAGREEMENT. build_ready_pool() emitted 67 ready tasks ascending. All three selection-doctrine criteria (select_candidates_for_criterion territory/topic/width) sort ascending by project_number and truncate to MAX_TASKS=8, so every rendered option is drawn from the lowest-numbered ready records (the first 15 ready were 338,383,390,398,410,421,431,437,438,451,453,455,456,463,472). The roadmap-recommended records are NOT excluded by the readiness predicate -- 629, 631, 632, 633 (not_started, no open deps), 607 and 512 (planned) and 590 (researched) were all verified individually present in the ready pool. They are simply unreachable past the truncation. The divergence is an ORDERING fault, not a disagreement about what is runnable.
+
+The `width` criterion additionally degenerates: its own header comment documents it as "the plain ready pool in ascending order, no grouping at all" -- i.e. the 8 lowest-numbered ready tasks, a proxy for task age, which is the ordering signal most directly opposed to the roadmap's fan-out-plus-operator-priority order.
+
+NEAREST CLOSED RECORD, CHECKED AND NOT COVERING. The archived conclusion_stage_next_batch_proposal_quality record refactored these exact functions (it introduced select_candidates_for_criterion and the three-option render) but its own plan states the net selection was preserved "byte-identical to before", and its only roadmap work was recording the roadmap-integration.sh --prune/--regenerate equivalence. It never considered roadmap_batches as a selection input, so the roadmap-blindness and the ascending-number bias both survive it untouched.
+
+NO PRIOR OWNER, NO SETTLED DECOUPLING RULING. No active_projects entry declares orchestrate-suggest-next-batch.sh in its file_scope. context/patterns/batch-orchestration-guardrails.md records only the script's self-modification-hazard exclusion; context/contracts/conclusion-stage.md's Step 7 records only that the suggester is informational and NOT a fourth channel. Neither rules that the two surfaces are deliberately decoupled, so nothing settled is overturned by fixing this.
+
+BINDING CONSTRAINT ANY FIX MUST PRESERVE. The script's own header constraint (a): admissibility is established ONLY by invoking orchestrate-batch-admit.sh and reading its NDJSON verdicts, never by a second locally-reimplemented copy of the collision predicate. A roadmap-aware candidate source changes WHICH sets get probed; it must not change WHAT establishes admissibility.
+
+CANDIDATE DIRECTIONS (decide at plan time; do not pre-commit). (a) Make roadmap_batches the primary candidate source: walk the authored batches in roadmap order, probe each through the real admission predicate, render the first admissible one, falling back to the existing mechanical doctrine only when no authored batch is admissible or the array is absent/empty. (b) Keep the two independent but render BOTH in the conclusion report, labelled by provenance, so a divergence is visible to the operator instead of silently resolved in the mechanical surface's favour. (c) Leave the suggester roadmap-unaware but replace the ascending-number tiebreak with the roadmap's own priority signal (fan-out, via generate-task-order.sh --print), removing the age bias without adding a dependency on authored prose.
+
+ACCEPTANCE. A conclusion-stage suggestion either names an authored roadmap batch, or states plainly why no authored batch was admissible and what it fell back to. The existing suite scripts/tests/test-orchestrate-suggest-next-batch.sh must cover the new behaviour including the absent/empty-roadmap_batches path and the no-admissible-authored-batch path.
+
+---
 
 ### 642. Re-propagate the amended bounded-wait contract bullets to the carrying agent contracts and reconcile the lint checks
 - **Status**: [NOT STARTED]
@@ -6586,7 +6619,7 @@ PRIOR ART -- DISPOSED OF EXPLICITLY AT CREATION TIME, DO NOT REDISCOVER OR RE-LI
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
-- **Dependencies**: Task 448
+- **Dependencies**: Task 448, Task 511
 - **Parent**: Task 418
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
