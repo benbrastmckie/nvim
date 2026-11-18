@@ -383,29 +383,29 @@ the `local` row's diff read-through.
 
 ---
 
-### Phase 5: Redeploy, run the full gate set, and attest live behavior [NOT STARTED]
+### Phase 5: Redeploy, run the full gate set, and attest live behavior [COMPLETED]
 
 **Goal**: The change is live in the deployed tree, the complete gate set is green, and the
 suggester's real behavior against this repository's own `specs/state.json` is observed, not
 assumed.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the repository's
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the repository's
       standard headless deploy entry point) to regenerate the deployed `.claude/**` tree from the
       source store, which also auto-repairs the `index-entries.json` `line_count` drift declared in
-      Phase 4.
-- [ ] Confirm `git diff` on `agent-system/extensions/core/index-entries.json` shows only the
-      expected `line_count` updates for the two files Phase 4 edited — no unrelated churn.
-- [ ] Run the full gate set: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`, no
-      `--only-gate`), and record the result.
-- [ ] Invoke the deployed suggester live against this repository's real state:
+      Phase 4. *(completed: run twice — once before, once after fixing a set -e footgun discovered during live attestation, see deviations)*
+- [x] Confirm `git diff` on `agent-system/extensions/core/index-entries.json` shows only the
+      expected `line_count` updates for the two files Phase 4 edited — no unrelated churn. *(completed)*
+- [x] Run the full gate set: `bash .claude/scripts/verify-deploy.sh` (no `--skip-slow`, no
+      `--only-gate`), and record the result. *(completed: discharged by deploy-headless.sh's own internal verify-deploy.sh call, per the Batch Gate Deferral directive — 41/41 PASS after the fix and second redeploy; the one gate it skips, gate 8 the shell test suite, was separately discharged via the scoped run-all.sh --only invocation)*
+- [x] Invoke the deployed suggester live against this repository's real state:
       `bash .claude/scripts/orchestrate-suggest-next-batch.sh --next-batch --session-id "$session_id"`,
       and confirm the output either names an authored roadmap batch with its `description` or states
       how many authored batches were checked and that it fell back — i.e. the task's ACCEPTANCE
-      sentence, observed rather than inferred. Capture the output in the phase's summary.
-- [ ] Cross-check that output against `specs/ROADMAP.md`'s `## Next` block: the named batch must be
+      sentence, observed rather than inferred. Capture the output in the phase's summary. *(completed: named authored batch 5, [577, 609], "The failure-accounting chain's tail..."; first attempt crashed silently — see deviations)*
+- [x] Cross-check that output against `specs/ROADMAP.md`'s `## Next` block: the named batch must be
       one of the authored batches, or the fallback reason must be consistent with the live
-      readiness of the leading batches.
+      readiness of the leading batches. *(completed: ROADMAP.md's `## Next` renders the identical `/orchestrate 577, 609` line with the identical description)*
 
 **Timing**: 1 hour
 
@@ -429,22 +429,27 @@ assumed.
 
 ## Testing & Validation
 
-- [ ] Existing cases (a)-(g) of `test-orchestrate-suggest-next-batch.sh` pass unchanged after every
+- [x] Existing cases (a)-(j) of `test-orchestrate-suggest-next-batch.sh` pass unchanged after every
       phase (no fixture in them declares `roadmap_batches`, so they exercise the absent-key path).
-- [ ] New case: clean authored batch renders, names its `description`, and suppresses the mechanical
+- [x] New case: clean authored batch renders, names its `description`, and suppresses the mechanical
       options.
-- [ ] New case: absent `roadmap_batches` key -> mechanical fallback, zero roadmap probes.
-- [ ] New case: `roadmap_batches: []` -> mechanical fallback, asserted independently.
-- [ ] New case: every authored batch unready -> explicit fallback line naming the batches checked.
-- [ ] New case: first batch empty-filtered, second admissible -> second renders, first's skip visible.
-- [ ] New case: proper-subset filtering -> omitted member named, not silently dropped.
-- [ ] New case: a `task_id` absent from `active_projects` -> treated as not-ready.
-- [ ] New case: internal `file_scope` collision -> existing ordered-sequence rendering, no new
+- [x] New case: absent `roadmap_batches` key -> mechanical fallback, zero roadmap probes.
+- [x] New case: `roadmap_batches: []` -> mechanical fallback, asserted independently.
+- [x] New case: every authored batch unready -> explicit fallback line naming the batches checked.
+- [x] New case: first batch empty-filtered, second admissible -> second renders, first's skip visible.
+- [x] New case: proper-subset filtering -> omitted member named, not silently dropped.
+- [x] New case: a `task_id` absent from `active_projects` -> treated as not-ready.
+- [x] New case: internal `file_scope` collision -> existing ordered-sequence rendering, no new
       collision code path.
-- [ ] `--help` output includes the new roadmap-walk header documentation.
-- [ ] Full `verify-deploy.sh` gate set green after redeploy.
-- [ ] Live `--next-batch` output satisfies the ACCEPTANCE sentence and is consistent with
-      `specs/ROADMAP.md`'s `## Next`.
+- [x] New case (added at Phase 5, not originally planned): the `set -e` footgun regression -- the
+      highest-numbered ready-pool-scan task having an unmet dependency on the last line read never
+      silently aborts the script. See Phase 5 deviations.
+- [x] `--help` output includes the new roadmap-walk header documentation.
+- [x] Full `verify-deploy.sh` gate set green after redeploy (41/41 PASS, including the deferred
+      gate 8 shell-test-suite check discharged via the scoped `run-all.sh --only` invocation).
+- [x] Live `--next-batch` output satisfies the ACCEPTANCE sentence and is consistent with
+      `specs/ROADMAP.md`'s `## Next` (named authored batch `[577, 609]`, identical to the roadmap's
+      own rendered line and description).
 
 ## Artifacts & Outputs
 

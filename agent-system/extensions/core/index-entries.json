@@ -2792,7 +2792,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Non-negotiables and hazards for batch orchestration wave dispatch, admission, and commit scope",
-      "line_count": 2328,
+      "line_count": 2345,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -3434,7 +3434,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Consolidated-output template for /orchestrate batch (multi-task) results, with per-section rendering gates",
-      "line_count": 271,
+      "line_count": 284,
       "keywords": [
         "patterns",
         "orchestrate",

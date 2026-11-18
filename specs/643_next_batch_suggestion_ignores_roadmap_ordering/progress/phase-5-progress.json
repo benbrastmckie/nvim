@@ -1,0 +1,27 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy, run the full gate set, and attest live behavior",
+  "started_at": "2026-11-17T23:20:00Z",
+  "last_updated": "2026-11-17T23:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh to regenerate the deployed tree", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 2, "description": "Confirm git diff on index-entries.json shows only expected line_count updates", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run the full gate set and record the result", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Invoke the deployed suggester live, confirm ACCEPTANCE sentence", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Cross-check live output against specs/ROADMAP.md's ## Next", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "First live --next-batch invocation against the real 152-task specs/state.json, immediately after the first redeploy", "result": "failed", "reason": "silent exit 1, zero stdout/stderr, no documented exit code -- root-caused to a set -e footgun in build_ready_set()'s final `[ \"$all_ok\" = true ] && READY_SET[...]=1` line, triggered because the real state.json's highest-numbered active task (644) sorts last and has an unmet dependency (all_ok=false). Fixed with an explicit if/then, added regression case (s), redeployed again, re-ran the live invocation successfully."}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1/5.4",
+      "description": "Run deploy-headless.sh; invoke the deployed suggester live and confirm the ACCEPTANCE sentence",
+      "type": "altered",
+      "reason": "The first live invocation (after the first redeploy) crashed silently -- a latent set -e footgun inherited verbatim from the pre-refactor build_ready_pool() one-liner, exposed only because Phase 2's READY_SET-persistence fix requires build_ready_set() to run directly in the caller's shell rather than inside an insulating process-substitution subshell. Fixed in orchestrate-suggest-next-batch.sh, added regression case (s) to the test suite (a declared scope excursion, see issue log), re-ran the full source-store suite (27/27 green), redeployed a second time, and re-ran the live invocation successfully.",
+      "annotation": "*(deviation: altered — required an unplanned bug fix and one additional regression test case, both recorded via issue-record.sh)*"
+    }
+  ]
+}
