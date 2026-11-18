@@ -353,25 +353,29 @@ basis for the headroom claim.
 
 ---
 
-### Phase 3: Narrow the Self-Re-Entrant Nested Battery Call Site [NOT STARTED]
+### Phase 3: Narrow the Self-Re-Entrant Nested Battery Call Site [COMPLETED]
 
 **Goal**: Stop (or confirm the absence of) a suite inside Gate 8 re-invoking the full
 `verify-deploy.sh` battery, which makes the gate tree re-enter itself.
 
 **Tasks**:
-- [ ] Re-derive the live cost of `test-verify-deploy-context-budget.sh` and the live shape of its
+- [x] Re-derive the live cost of `test-verify-deploy-context-budget.sh` and the live shape of its
       `verify-deploy.sh` call sites before editing. The two available figures disagree (30,962ms
       in the live hints file against 228,595ms carried in the research report), so neither is
-      acted on directly.
-- [ ] Enumerate that suite's `verify-deploy.sh` invocations and classify each as full-battery or
-      `--only-gate` scoped.
+      acted on directly. *(completed: live hints file confirms 30,962ms)*
+- [x] Enumerate that suite's `verify-deploy.sh` invocations and classify each as full-battery or
+      `--only-gate` scoped. *(completed: 4 invocations — two `--only-gate 20` scoped, one baseline at `--skip-slow --max-cost moderate` with no `--only-gate`, one non-invocation existence check)*
 - [ ] If a full-battery (even `--skip-slow`) invocation remains, narrow it to the `--only-gate`
       scoped form its sibling call sites already use, preserving exactly what the assertion needs
       to observe. If narrowing would change what the suite can assert, leave it and record why in
-      the suite's own header instead.
-- [ ] **No-op branch**: if no full-battery invocation remains (plausible given the cost
+      the suite's own header instead. *(deviation: skipped — no-op branch taken, see below)*
+- [x] **No-op branch**: if no full-battery invocation remains (plausible given the cost
       movement), record that finding in the suite's header comment and close the phase with no
       functional change — a confirmed absence is the phase's legitimate outcome, not a skip.
+      *(completed: the one non-`--only-gate` invocation was already narrowed to `--max-cost moderate`
+      by prior work with its own rationale recorded; added a "RE-ENTRANT-BATTERY CHECK" paragraph
+      to the suite's header confirming the live re-derivation and the absence of any remaining
+      full-battery call site)*
 
 **Timing**: 1 hour
 

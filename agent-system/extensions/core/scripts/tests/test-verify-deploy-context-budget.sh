@@ -42,6 +42,15 @@
 # (3, 22), which a bare `--skip-slow` full battery would otherwise cost here on every run (see
 # the baseline's own comment for the measured figures).
 #
+# RE-ENTRANT-BATTERY CHECK (re-derived live, not carried): this suite's own measured cost is
+# 30,962ms per `scripts/tests/suite-cost-hints.txt`. All four `verify-deploy.sh` invocations in
+# this file were enumerated: two are `--only-gate 20`-scoped, one is a file-existence check (no
+# invocation at all), and the BASELINE above is the one non-`--only-gate` call, already narrowed
+# to `--max-cost moderate` (never the unfiltered full battery) with its own rationale recorded in
+# the INVOCATION COUNT paragraph above. No full-battery (even `--skip-slow`-only) call site
+# remains in this suite -- confirmed absent, not narrowed further, since narrowing the baseline
+# to `--only-gate 20` would drop the free/moderate regression net it exists to provide.
+#
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error
 # (verify-deploy.sh, rsync, git, or jq not found).
 
