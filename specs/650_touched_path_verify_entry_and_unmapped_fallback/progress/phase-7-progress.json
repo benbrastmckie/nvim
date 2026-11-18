@@ -1,0 +1,42 @@
+{
+  "phase": 7,
+  "phase_name": "Authority rule, backend contract, and the directive that names one command",
+  "started_at": "2026-11-18T23:45:00Z",
+  "last_updated": "2026-11-19T00:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "shell-script-testing.md: state the authority rule for selection-asserting suites",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]
+    },
+    {
+      "id": 2,
+      "description": "shell-script-testing.md: publish the resolver backend contract; point to report-suite-coverage.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/standards/shell-script-testing.md"]
+    },
+    {
+      "id": 3,
+      "description": "plan-format.md: rewrite narrowing guidance to name verify-touched.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]
+    },
+    {
+      "id": 4,
+      "description": "orchestrate-build-dispatch.sh: rewrite the Batch Gate Deferral directive to name verify-touched.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"]
+    },
+    {
+      "id": 5,
+      "description": "test-orchestrate-build-dispatch.sh: update assertions for the changed directive text",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": "Batch Gate Deferral directive in THIS dispatch applies (Phases 7, 8 declare full). Scoped discharge performed: run-all.sh --only test-orchestrate-build-dispatch.sh (1/1 PASS); REPO_ROOT-override check-task-references.sh / check-record-versioning.sh on every edited file (0 BLOCKING each); verify-deploy.sh --only-gate 3,4 --skip-unchanged against the deployed tree -- gate 4 PASS, gate 3 FAIL on index-entries.json line_count staleness for the edited context files, which is the EXPECTED, plan-acknowledged condition this phase's own Files-to-modify list already names ('not commit-blocking here; reconciled by the Phase 8 redeploy'), not a new defect. The complete, unfiltered gate set is deferred to the once-per-invocation batch stage per context/contracts/batch-gate-stage.md, never independently run in this dispatch."
+}

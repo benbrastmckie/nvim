@@ -1464,7 +1464,7 @@ else
 fi
 
 # Default fixture carries NEITHER narrowing-invocation candidate (no
-# .claude/scripts/tests/run-all.sh, no .claude/scripts/verify-deploy.sh) -- this run therefore
+# .claude/scripts/verify-touched.sh, no .claude/scripts/verify-deploy.sh) -- this run therefore
 # exercises the DEGRADATION path (neither candidate resolves). The two assertions this replaces
 # (bare "run-all.sh" / "--only-gate" substring checks) are too weak to detect the resolved-path
 # fix either way, because the degraded wording below does not even mention those invocations --
@@ -1487,22 +1487,22 @@ else
 fi
 
 # Resolved-path positive case: install stub files at the DEPLOYED-mirror candidate paths
-# (.claude/scripts/tests/run-all.sh, .claude/scripts/verify-deploy.sh) and confirm the emitted
+# (.claude/scripts/verify-touched.sh, .claude/scripts/verify-deploy.sh) and confirm the emitted
 # directive interpolates those resolved, deployed paths rather than the bare, unresolvable
 # "agent-system/extensions/core/scripts/..." string a deploy-target repository never carries.
-mkdir -p "$FIXTURE/.claude/scripts/tests"
-: > "$FIXTURE/.claude/scripts/tests/run-all.sh"
+mkdir -p "$FIXTURE/.claude/scripts"
+: > "$FIXTURE/.claude/scripts/verify-touched.sh"
 : > "$FIXTURE/.claude/scripts/verify-deploy.sh"
 run_sut implement --clean --seq 19 --dispatch-start-ts 1234567890 --batch-gate-deferral
 if [ "$LAST_EXIT" -eq 0 ] && [ -f "$LAST_DISPATCH_FILE" ]; then
   content_bgd_resolved="$(cat "$LAST_DISPATCH_FILE")"
-  assert_contains "$content_bgd_resolved" "${FIXTURE}/.claude/scripts/tests/run-all.sh --only SUITE" "implement (--batch-gate-deferral, deployed candidates present): names the resolved deployed run-all.sh path"
+  assert_contains "$content_bgd_resolved" "${FIXTURE}/.claude/scripts/verify-touched.sh" "implement (--batch-gate-deferral, deployed candidates present): names the resolved deployed verify-touched.sh path"
   assert_contains "$content_bgd_resolved" "${FIXTURE}/.claude/scripts/verify-deploy.sh --only-gate N[,M...] --skip-unchanged" "implement (--batch-gate-deferral, deployed candidates present): names the resolved deployed verify-deploy.sh path with the --skip-unchanged cheap probe"
-  run_all_line="$(printf '%s\n' "$content_bgd_resolved" | grep -F -- "run-all.sh --only SUITE" || true)"
-  if [ -n "$run_all_line" ] && ! printf '%s' "$run_all_line" | grep -qF -- "--skip-unchanged"; then
-    common_test_pass "implement (--batch-gate-deferral, deployed candidates present): run-all.sh invocation stays unflagged"
+  verify_touched_line="$(printf '%s\n' "$content_bgd_resolved" | grep -F -- "verify-touched.sh" | head -1 || true)"
+  if [ -n "$verify_touched_line" ] && ! printf '%s' "$verify_touched_line" | grep -qF -- "--skip-unchanged"; then
+    common_test_pass "implement (--batch-gate-deferral, deployed candidates present): verify-touched.sh invocation stays unflagged"
   else
-    common_test_fail "implement (--batch-gate-deferral, deployed candidates present): run-all.sh invocation line missing or must never carry --skip-unchanged (unparsed flag) (line='$run_all_line')"
+    common_test_fail "implement (--batch-gate-deferral, deployed candidates present): verify-touched.sh invocation line missing or must never carry --skip-unchanged (unparsed flag) (line='$verify_touched_line')"
   fi
   assert_not_contains "$content_bgd_resolved" "agent-system/extensions/core/scripts/" "implement (--batch-gate-deferral, deployed candidates present): does not also print the bare source-store path"
   assert_contains "$content_bgd_resolved" "CHEAP PROBE:" "implement (--batch-gate-deferral, deployed candidates present): CHEAP PROBE paragraph present"
@@ -1512,7 +1512,7 @@ else
 fi
 # Restore the fixture to its original shape (no narrowing-invocation candidates) so later groups
 # are unaffected by these two stub files.
-rm -f "$FIXTURE/.claude/scripts/tests/run-all.sh" "$FIXTURE/.claude/scripts/verify-deploy.sh"
+rm -f "$FIXTURE/.claude/scripts/verify-touched.sh" "$FIXTURE/.claude/scripts/verify-deploy.sh"
 
 # Full-tier phase-scan cases: the directive's wording must name every phase of $plan_path
 # declaring `**Verification Tier**: full`, not only the plan's literal final phase, and must

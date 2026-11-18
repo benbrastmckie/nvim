@@ -672,17 +672,17 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
     # runs inside the agent-system repo itself). Neither hardcoded "agent-system/..." path on
     # its own exists in a deploy-target repository -- see context/contracts/batch-gate-stage.md
     # for the contract this discharges.
-    run_all_candidates=(
-      "${SKILL_REPO_ROOT}/.claude/scripts/tests/run-all.sh"
-      "${SKILL_REPO_ROOT}/agent-system/extensions/core/scripts/tests/run-all.sh"
+    verify_touched_candidates=(
+      "${SKILL_REPO_ROOT}/.claude/scripts/verify-touched.sh"
+      "${SKILL_REPO_ROOT}/agent-system/extensions/core/scripts/verify-touched.sh"
     )
     verify_deploy_candidates=(
       "${SKILL_REPO_ROOT}/.claude/scripts/verify-deploy.sh"
       "${SKILL_REPO_ROOT}/agent-system/extensions/core/scripts/verify-deploy.sh"
     )
-    resolved_run_all=""
-    for _bgd_candidate in "${run_all_candidates[@]}"; do
-      if [ -f "$_bgd_candidate" ]; then resolved_run_all="$_bgd_candidate"; break; fi
+    resolved_verify_touched=""
+    for _bgd_candidate in "${verify_touched_candidates[@]}"; do
+      if [ -f "$_bgd_candidate" ]; then resolved_verify_touched="$_bgd_candidate"; break; fi
     done
     resolved_verify_deploy=""
     for _bgd_candidate in "${verify_deploy_candidates[@]}"; do
@@ -754,14 +754,18 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
       echo "hand when each such phase's own verification step runs."
     fi
     echo ""
-    if [ -n "$resolved_run_all" ] || [ -n "$resolved_verify_deploy" ]; then
+    if [ -n "$resolved_verify_touched" ] || [ -n "$resolved_verify_deploy" ]; then
       echo "THIS dispatch discharges that phase against a SCOPED tier instead of independently"
       echo "running the complete gate set: run the narrowing invocation that actually covers the"
       echo "files this phase touched in THIS repository —"
-      if [ -n "$resolved_run_all" ]; then
-        echo "\`bash ${resolved_run_all} --only SUITE[,SUITE...]\`"
+      if [ -n "$resolved_verify_touched" ]; then
+        echo "\`bash ${resolved_verify_touched}\` (no arguments: it derives touched paths itself"
+        echo "from the working tree plus the committed diff against its own determined base;"
+        echo "resolves them, classifies anything it cannot resolve, and runs the narrowed battery"
+        echo "— \"narrow\" means this one command, never a hand-assembled \`run-all.sh --only"
+        echo "SUITE[,SUITE...]\` invocation)"
       fi
-      if [ -n "$resolved_run_all" ] && [ -n "$resolved_verify_deploy" ]; then
+      if [ -n "$resolved_verify_touched" ] && [ -n "$resolved_verify_deploy" ]; then
         echo "or"
       fi
       if [ -n "$resolved_verify_deploy" ]; then
@@ -786,10 +790,12 @@ dispatch_file="${dispatch_dir}/${dispatch_seq}.md"
       echo "unreachable criterion in the phase's own verification notes."
       echo ""
       echo "UNMAPPABLE CRITERION: if the phase's own declared verification criterion names a"
-      echo "repository-specific check that neither narrowing invocation above can express (no"
-      echo "matching suite basename for --only, no matching gate number for --only-gate), run"
-      echo "that named check directly instead — scoped to this phase's own touched files where"
-      echo "the check itself supports scoping — and record THAT as the scoped discharge. An"
+      echo "repository-specific check that neither narrowing invocation above can express —"
+      echo "\`verify-touched.sh\`'s own OWED-NOT-PAID fallback already covers an unmapped touched"
+      echo "path, so this is now vanishingly rare on the suite side; it remains real on the gate"
+      echo "side (no matching gate number for --only-gate) — run that named check directly"
+      echo "instead — scoped to this phase's own touched files where the check itself supports"
+      echo "scoping — and record THAT as the scoped discharge. An"
       echo "unmappable criterion is never waived, dropped, or treated as satisfied by a"
       echo "narrowing that does not actually reach it. If that named check cannot itself be"
       echo "scoped and so runs unscoped, run it DETACHED with a bounded \`kill -0\` wait per"

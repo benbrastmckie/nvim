@@ -453,15 +453,25 @@ justification line. Every non-final phase carries exactly one `**Tier Justificat
 one sentence, never an essay:
 
 - A non-final phase declaring a tier **below** `full` names the specific check that covers the
-  edit — the command, not a description of one — and the claim is honest only when the author
-  ran `suite_selection_select` over the phase's `Files to modify` paths and the line's suite
-  names or sentinel match that output verbatim, never an asserted guess at what the selector
-  would return. Two narrowing mechanisms exist today:
+  edit — the command, not a description of one. **`scripts/verify-touched.sh` is the one command
+  "narrow" means**: it derives touched paths (or takes them explicitly), resolves them,
+  classifies whatever it cannot resolve, and runs the narrowed `run-all.sh` pass itself, printing
+  a verdict that cannot be mistaken for a full-battery pass — see
+  `context/standards/shell-script-testing.md`'s resolver-backend-contract subsection and
+  `scripts/verify-touched.sh`'s own header for the full mechanics. Name it directly:
+  `bash .claude/scripts/verify-touched.sh PATH[...]` in a deploy-target repository, or
+  `bash agent-system/extensions/core/scripts/verify-touched.sh PATH[...]` as the source-store-
+  repository form (the same resolve-whichever-exists rule "Batch-aware deferral" below states for
+  its own two narrowing invocations). The claim is honest only when the author ran it (or the
+  underlying `suite_selection_select`) over the phase's `Files to modify` paths and the line's
+  suite names or sentinel match that output verbatim, never an asserted guess at what the
+  selector would return.
+
+  `verify-touched.sh` invokes two narrowing mechanisms underneath — an agent names
+  `verify-touched.sh` itself, never assembles either of these by hand:
   - a suite subset within Gate 8: `bash .claude/scripts/tests/run-all.sh --only SUITE[,SUITE,...]`
     in a deploy-target repository, or `bash agent-system/extensions/core/scripts/tests/run-all.sh --only SUITE[,SUITE,...]`
-    as the source-store-repository form — see "Batch-aware deferral" below for the
-    resolve-whichever-exists rule governing which of the two names an entry point that actually
-    resolves in the repository the dispatch is running in. `scripts/lib/suite-selection-lib.sh`'s
+    as the source-store-repository form. `scripts/lib/suite-selection-lib.sh`'s
     `suite_selection_select` function resolves a touched path to its covering suite basenames (see
     `context/standards/shell-script-testing.md`'s suite-selection-lib.sh subsection);
   - a gate subset of the full aggregator: `bash .claude/scripts/verify-deploy.sh --only-gate N[,M,...]`.
@@ -548,12 +558,16 @@ tier is the CEILING the standalone path (a single-task implement-phase dispatch,
 **What the override changes**: EVERY phase of the plan that declares `**Verification Tier**:
 full` — not only the plan's literal final phase — has its own in-dispatch obligation narrowed
 from the complete gate set to a scoped tier (`local` or `interface`) naming a concrete narrowing
-invocation — `bash .claude/scripts/tests/run-all.sh --only SUITE[,SUITE...]` or
+invocation — `bash .claude/scripts/verify-touched.sh` or
 `bash .claude/scripts/verify-deploy.sh --only-gate N[,M...] --skip-unchanged` in a deploy-target
-repository, or the parallel `bash agent-system/extensions/core/scripts/tests/run-all.sh --only
-SUITE[,SUITE...]` / `bash agent-system/extensions/core/scripts/verify-deploy.sh --only-gate
+repository, or the parallel `bash agent-system/extensions/core/scripts/verify-touched.sh` /
+`bash agent-system/extensions/core/scripts/verify-deploy.sh --only-gate
 N[,M...] --skip-unchanged` form when the dispatch is composed from inside the agent-system
-source-store repository itself — covering only the files that dispatch itself touched. The
+source-store repository itself — covering only the files that dispatch itself touched.
+`verify-touched.sh` with no arguments derives those touched paths itself (working tree plus the
+committed diff against its own determined base) and resolves, classifies, and runs the narrowed
+`run-all.sh` pass underneath — "narrow" means naming this one command, never hand-assembling a
+`run-all.sh --only SUITE[,SUITE...]` invocation. The
 directive names the qualifying phase(s) by number, derived by scanning the plan for every phase
 section declaring `**Verification Tier**: full` regardless of that phase's own status marker
 (content-derived, not status-derived, so the rendered set stays stable across cycles while the
@@ -562,9 +576,10 @@ phase also declares `full`. The composer resolves and interpolates whichever of 
 invocations actually exists in the repository the dispatch is running in (never a hardcoded path
 that cannot resolve there); if neither exists, the directive degrades to stating the full gate set
 as such instead of naming a dead path.
-`--skip-unchanged` is carried only on the `verify-deploy.sh --only-gate` form — `run-all.sh` does
-not parse that flag — as the sanctioned cheap probe for a repeat or exploratory re-check of an
-already-green scoped tier; running the complete gate set again instead, unflagged, is the
+`--skip-unchanged` is carried only on the `verify-deploy.sh --only-gate` form — `verify-touched.sh`
+does not parse that flag (its own `run-all.sh` invocation underneath never carries it either) — as
+the sanctioned cheap probe for a repeat or exploratory re-check of an already-green scoped tier;
+running the complete gate set again instead, unflagged, is the
 specific waste the override exists to prevent under batch concurrency (each such sweep queues
 single-file behind Gate 8's `specs/.gate-lock` mutex). This cheap-probe carve-out extends, and
 does not relax, the "never a tier" reading already stated above for `--skip-slow` and
@@ -579,8 +594,10 @@ forgiven. A phase closing under the override records, in its own verification no
 full set was deferred to the batch stage rather than independently run.
 
 **Unmappable criterion**: a phase's own declared verification criterion sometimes names a
-repository-specific check that neither narrowing invocation above can express — no suite
-basename the `run-all.sh --only` form resolves, no gate number the `verify-deploy.sh
+repository-specific check that neither narrowing invocation above can express — `verify-touched.sh`
+cannot even attempt to classify it (vanishingly rare, since its own OWED-NOT-PAID fallback already
+covers an unmapped touched path — see `context/standards/shell-script-testing.md`'s resolver-
+backend-contract subsection), or no gate number the `verify-deploy.sh
 --only-gate` form resolves. The override's narrowing does not reach a check it cannot name. In
 that case the implementer runs the named check directly instead of either narrowing invocation
 — scoped to this phase's own touched files where the check itself supports scoping — and

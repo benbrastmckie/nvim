@@ -993,6 +993,106 @@ Regression coverage for the narrowing, the sentinel fallback, the absent-flag by
 guarantee, and the forced cache-ineligibility invariant lives in
 `tests/test-gate8-suite-selection.sh`.
 
+### Selection's own guard suites: where their verdict is authoritative
+
+Selection is not guarded only by suites inside the battery it narrows. `test-run-all-selection.sh`
+and the `test-*-gate-selection*.sh` family (`test-gate8-suite-selection.sh`,
+`test-verify-deploy-gate-selection.sh`, `test-verify-deploy-gate-selection-crash-net.sh`) assert
+PROPERTIES of selection itself (the escalation rule, the sentinel fallback, the narrowed-pass
+verdict string's distinctness, the forced cache-ineligibility invariant) — and a selected,
+narrowed run can itself DESELECT exactly these suites, since nothing structurally prevents a
+touched-path set from resolving to a battery that excludes its own guards.
+
+**The authority rule, stated once here rather than at every narrowing call site**: these suites'
+own `PASS` is authoritative ONLY under the complete, unfiltered run (no `--only`, no
+`--gate8-touched`, no `verify-touched.sh` narrowing of any kind) — ordinarily the once-per-
+invocation batch-gate run (`context/contracts/batch-gate-stage.md`) or a standalone task's own
+final `full`-tier phase. A narrowed run that happens to include one of these suites is not
+thereby exempt from eventually facing the complete run; a narrowed run that excludes them says
+nothing about their current state at all, neither pass nor fail.
+
+This does not mean every scoped selection must force these suites into its own `--only` list —
+doing so would defeat the narrowing itself (every edit anywhere would need to re-run the guard
+suites "just in case", collapsing back toward a full sweep) and would not even close the gap
+honestly: a suite CAN be force-included in one narrowed run while the mechanism it guards is
+broken in a way that specific run's own touched paths never exercise. Instead, a SECOND,
+INDEPENDENT guard exists for the mechanical defect class a forced inclusion would be trying to
+catch anyway: `scripts/verify-touched.sh`'s own preflight (see `context/formats/plan-format.md`'s
+narrowing guidance and this document's "Mapping a touched file to its suite" section above) runs
+STRUCTURALLY OUTSIDE the selection it validates — map/class data parses, every named suite exists
+on disk, the declared fallback set is non-empty, a declared backend conforms — and so can never
+itself be deselected by the very selection it is checking. The preflight and the complete-run
+authority rule are deliberately two separate mechanisms: the preflight catches a STATIC defect
+(a bad row, a missing suite, an empty fallback set) before any suite runs; the authority rule
+settles which run's PASS/FAIL actually certifies selection's own DYNAMIC behaviour. Neither
+substitutes for the other.
+
+### The resolver backend contract (for a repository declaring its own backend)
+
+`scripts/lib/suite-resolver-lib.sh` composes `suite_selection_select`'s default, unchanged
+basename-resolution backend with an OPTIONAL declared backend
+(`.claude-extensions.json`'s `verification_scope.resolver.command` — see
+`context/standards/repo-level-declarations.md`'s `verification_scope` schema), for a consumer
+repository whose own suite corpus is not shell (a pytest suite, for example, where basename
+resolution to `test-*.sh` resolves nothing at all). This section states the contract a declared
+backend must satisfy, written for a reader who will never see this repository's own source — the
+contract is the interface, not an invitation to read `suite-resolver-lib.sh`'s implementation.
+
+**Invocation.** A declared backend is invoked as a single shell command,
+`<command> <tree_root>`, with every touched path written one-per-line on STDIN. `<tree_root>` is
+the repo-root-relative or absolute tree root the caller resolved (see
+`repo-level-declarations.md`'s `tree_roots` field); the backend reads touched paths from STDIN,
+never from `argv`, so the caller never needs to worry about an OS argument-length ceiling on a
+large touched-path set.
+
+**Output shape — stdout, nothing else:**
+```
+SELECT <suite-or-selection-token>
+UNRESOLVED <path>
+```
+One `SELECT` line per resolved token (the backend's own namespace — for a non-shell backend this
+need not be a `test-*.sh` basename at all, only a token the backend's OWN run invocation
+understands), de-duplicated or not (the caller de-duplicates). One `UNRESOLVED` line per touched
+path the backend could not resolve. No other line shape is permitted on stdout — a banner, a
+progress indicator, or any other text makes the backend NON-CONFORMING (see "Conformance check"
+below). Diagnostics go to stderr, never stdout.
+
+**Exit codes — the only three a backend may use:**
+| Code | Meaning |
+|------|---------|
+| `0` | Resolved — possibly to the empty `SELECT` set (every given path legitimately `UNRESOLVED`). This is NOT the same as "cannot resolve"; see `3` below. |
+| `2` | Usage/shape error — malformed invocation (e.g. no `tree_root` argument). |
+| `3` | This backend cannot resolve AT ALL (e.g. a transient failure reaching whatever index it consults) — distinct from exit `0` with zero `SELECT` lines, which means "I tried and genuinely found nothing," not "I could not try." A caller reports these two cases differently rather than collapsing them into one "narrowed to nothing" outcome. |
+
+**Composition.** `verification_scope.resolver.compose` is `"union"` (default) or `"replace"`.
+Under `"union"`, the declared backend's resolution is unioned with the default basename backend's
+own resolution — a repository whose primary suite is non-shell but which also ships a few
+core-authored shell suites keeps BOTH covered. Under `"replace"`, the declared backend's
+resolution is used ALONE for that repository; the default backend is not consulted at all.
+*Rejected alternative*: replacement-only (no `"union"` option) — would silently drop core's own
+basename coverage for a repository that ships any shell suites alongside its primary non-shell
+one, discovered as a real case (the `--lit` composer's own core-authored shell helpers) rather
+than a hypothetical.
+
+**Conformance check.** `suite_resolver_conformance_check <command> <tree_root>`
+(`scripts/lib/suite-resolver-lib.sh`) runs a declared backend against a FIXED, deliberately
+synthetic two-path probe input (never a real touched-path set — this checks SHAPE, not
+correctness of any real resolution) and refuses — loud, named reason on stderr, non-zero return,
+NO selection from that backend ever trusted — on: a stdout line not matching `SELECT ` or
+`UNRESOLVED `; any other exit code than `0`/`2`/`3`. `scripts/verify-touched.sh`'s own preflight
+calls this check before trusting a declared backend's output in a real run (see "Selection's own
+guard suites" above for why the preflight sits outside the selection it validates), so a
+non-conforming backend is refused at the one choke point every real invocation passes through,
+never discovered mid-run as a silently-wrong narrowing.
+
+**Convergence surface.** `scripts/report-suite-coverage.sh` is the advisory report naming every
+tree file that resolves to no suite, no explicit map row
+(`scripts/tests/suite-selection-map.data`), and no class row
+(`scripts/tests/suite-selection-noclass.data`) — the roster a maintainer (in this repository) or
+a declared-backend author (in a consumer repository) reads to grow coverage over time. It is
+never a blocking gate (`--strict` is opt-in; see that script's own header for the rejected
+blocking-gate alternative).
+
 ### End-of-run failure roster and the known-failures baseline
 
 `run-all.sh` prints two things beyond the per-suite `[FAIL] <path>` lines: an end-of-run roster

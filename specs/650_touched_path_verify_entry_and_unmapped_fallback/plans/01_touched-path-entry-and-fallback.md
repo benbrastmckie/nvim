@@ -543,34 +543,41 @@ check is `run-all.sh --only test-orchestrate-batch-gate.sh,test-gate8-expected-n
 
 ---
 
-### Phase 7: Authority rule, backend contract, and the directive that names one command [NOT STARTED]
+### Phase 7: Authority rule, backend contract, and the directive that names one command [COMPLETED]
 
 **Goal**: State once where selection's own guard suites are authoritative, publish the backend
 contract a consumer repository implements against, and rewrite the two prose surfaces so "narrow"
 means one command instead of two raw invocations the agent must assemble.
 
 **Tasks**:
-- [ ] In `context/standards/shell-script-testing.md`, alongside the existing suite-selection
+- [x] In `context/standards/shell-script-testing.md`, alongside the existing suite-selection
       subsection: state the authority rule — `test-run-all-selection.sh` and the
       `test-*-gate-selection*.sh` suites' PASS is authoritative only under the complete, unfiltered
       run; the entry point's preflight is a second, independent, pre-selection guard for the
       mechanical defect class it can catch; neither requires forcing those suites into every
-      scoped selection.
-- [ ] In the same file, publish the resolver backend contract: the output shape, the exit codes,
+      scoped selection. *(completed: new "Selection's own guard suites" subsection)*
+- [x] In the same file, publish the resolver backend contract: the output shape, the exit codes,
       how "cannot resolve" is reported distinctly from "resolved to nothing", the union/replace
       composition rule, and the conformance check that refuses a non-conforming backend before its
       output is trusted. Write it for a reader who will never see this repository's source.
-- [ ] Point from there to `report-suite-coverage.sh` as the convergence surface.
-- [ ] Rewrite `context/formats/plan-format.md`'s Verification Tiers narrowing guidance to name
+      *(completed: new "The resolver backend contract" subsection)*
+- [x] Point from there to `report-suite-coverage.sh` as the convergence surface. *(completed)*
+- [x] Rewrite `context/formats/plan-format.md`'s Verification Tiers narrowing guidance to name
       `verify-touched.sh` as the single command, keeping the existing `--only` / `--only-gate`
       forms documented as what the entry point invokes underneath rather than as what an agent
-      assembles by hand. Read the adjacent selector-aggregation prose before editing.
-- [ ] Rewrite `scripts/orchestrate-build-dispatch.sh`'s `## Batch Gate Deferral` directive text to
+      assembles by hand. Read the adjacent selector-aggregation prose before editing. *(completed;
+      the adjacent selector-aggregation prose at "Decision and rejected alternative" / "Scope" /
+      "Promotion criterion" -- validate-artifact.sh's Tier-Justification honesty check -- was read
+      and is untouched; it governs a separate mechanical check, not this narrowing guidance)*
+- [x] Rewrite `scripts/orchestrate-build-dispatch.sh`'s `## Batch Gate Deferral` directive text to
       name the resolved `verify-touched.sh` path (same two-candidate resolution the composer
-      already performs, same degrade-to-prose branch when neither exists).
-- [ ] Update `scripts/tests/test-orchestrate-build-dispatch.sh` for the changed directive text.
-- [ ] Coordinate by hand with the project-sources record before committing the directive edit:
-      both records rewrite this directive and its suite.
+      already performs, same degrade-to-prose branch when neither exists). *(completed)*
+- [x] Update `scripts/tests/test-orchestrate-build-dispatch.sh` for the changed directive text.
+      *(completed; 238/238 assertions pass, including every Batch Gate Deferral group)*
+- [x] Coordinate by hand with the project-sources record before committing the directive edit:
+      both records rewrite this directive and its suite. *(completed: checked live state -- task
+      599 is `not_started` with no plan/report on disk, so there is nothing yet to coordinate
+      against; this record's edit is the first to land)*
 
 **Timing**: 2 hours
 
@@ -587,6 +594,10 @@ phase's four paths resolves to roughly 50 suites, which is the battery rather th
 `orchestrate-build-dispatch.sh`'s `## Batch Gate Deferral` block (one `echo` sequence) and its one
 suite. The implementer confirms by grepping for other composers of the same directive text before
 editing; any second composer found is added to this phase's file list before the edit.
+**Confirmed**: `grep -rl "Batch Gate Deferral" scripts/*.sh` names only
+`orchestrate-build-dispatch.sh` (the composer) and `orchestrate-batch-gate.sh` (a pointer
+reference in a header comment, not a second emitter of the directive text) — the Scope
+Hypothesis holds; no second composer exists and no file was added.
 
 **Files to modify**:
 - `agent-system/extensions/core/context/standards/shell-script-testing.md` - authority rule plus the published backend contract
