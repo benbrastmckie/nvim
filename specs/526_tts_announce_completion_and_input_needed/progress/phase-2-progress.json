@@ -1,0 +1,14 @@
+{
+  "phase": 2,
+  "phase_name": "Widen the Notification matcher in both declaring surfaces",
+  "started_at": "2026-11-18T00:00:00Z",
+  "last_updated": "2026-11-18T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Widen Notification matcher in merge-sources/settings-hooks.json and root-files/settings.json", "status": "done", "files_touched": ["agent-system/extensions/core/merge-sources/settings-hooks.json", "agent-system/extensions/core/root-files/settings.json"]},
+    {"id": 2, "description": "Create test-notification-matcher-parity.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-notification-matcher-parity.sh"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

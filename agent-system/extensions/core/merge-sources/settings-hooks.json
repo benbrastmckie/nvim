@@ -61,7 +61,7 @@
     ],
     "Notification": [
       {
-        "matcher": "permission_prompt|elicitation_dialog",
+        "matcher": "permission_prompt|idle_prompt|elicitation_dialog",
         "hooks": [
           { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'" }
         ]

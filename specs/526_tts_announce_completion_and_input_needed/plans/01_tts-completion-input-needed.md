@@ -239,27 +239,27 @@ disk, so the implementer re-derives and re-confirms this list once that suite is
 
 ---
 
-### Phase 2: Widen the `Notification` matcher in both declaring surfaces [NOT STARTED]
+### Phase 2: Widen the `Notification` matcher in both declaring surfaces [COMPLETED]
 
 **Goal**: `idle_prompt` — the actionable "has been waiting for input" notification type — gains a
 trigger, in both surfaces that declare the matcher, with a check that asserts the two agree.
 
 **Tasks**:
 
-- [ ] Re-read both settings files immediately before editing.
-- [ ] Change the `Notification` matcher in
+- [x] Re-read both settings files immediately before editing.
+- [x] Change the `Notification` matcher in
       `agent-system/extensions/core/merge-sources/settings-hooks.json` from
       `permission_prompt|elicitation_dialog` to `permission_prompt|idle_prompt|elicitation_dialog`.
-- [ ] Make the identical change in `agent-system/extensions/core/root-files/settings.json`.
+- [x] Make the identical change in `agent-system/extensions/core/root-files/settings.json`.
       These two edits are one atomic unit: landing one without the other leaves a fresh deploy and
       a resynced deploy disagreeing.
-- [ ] Validate both files parse: `jq empty` on each.
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-notification-matcher-parity.sh`
+- [x] Validate both files parse: `jq empty` on each.
+- [x] Create `agent-system/extensions/core/scripts/tests/test-notification-matcher-parity.sh`
       following the same house convention as Phase 1's suite. Cases: (a) the `.hooks.Notification`
       matcher list extracted from each file via `jq` is byte-equal across the two files; (b) that
       shared matcher contains `idle_prompt`; (c) a deliberately divergent fixture pair is detected
       as a failure, so the check is proven to be able to fail.
-- [ ] Record in the test's header that this closes acceptance criterion 4 and that no prior check
+- [x] Record in the test's header that this closes acceptance criterion 4 and that no prior check
       compared these two files against each other.
 
 **Timing**: 1 hour
