@@ -276,32 +276,32 @@ exercises the whole Mode A/Mode B surface of the one file this phase edits.
 
 ---
 
-### Phase 3: Extend the regression suite with the roadmap-walk cases [NOT STARTED]
+### Phase 3: Extend the regression suite with the roadmap-walk cases [COMPLETED]
 
 **Goal**: The suite proves each new behavior mechanically, including both acceptance-named
 degenerate paths (absent key, empty array) and the no-admissible-authored-batch path.
 
 **Tasks**:
-- [ ] Add a `set_roadmap_batches <scratch> <json>` helper beside the existing
+- [x] Add a `set_roadmap_batches <scratch> <json>` helper beside the existing
       `add_task`/`add_task_topic`/`add_queue_entry` helpers, writing `.roadmap_batches` onto the
-      scratch `state.json` via `jq` (same tmp-file-then-`mv` convention).
-- [ ] Case: a clean authored batch, all members ready and disjoint -> the batch renders, its
-      `description` appears, and the `Option 1 -- shared territory` mechanical header does NOT.
-- [ ] Case: `roadmap_batches` key absent -> mechanical render fires exactly as today (regression
-      guard for the pre-existing cases' fixture shape).
-- [ ] Case: `roadmap_batches: []` -> same fallback behavior, asserted separately from the absent
-      case.
-- [ ] Case: two authored batches, every member not ready -> the explicit "no authored batch"
-      fallback line names the batches checked, and the mechanical options then render.
-- [ ] Case: first batch empty-filtered, second batch admissible -> the second renders and the
-      first's skip is visible in the output.
-- [ ] Case: a batch whose filtered set is a non-empty proper subset (one member `implementing`) ->
-      the suggestion omits that member and says so.
-- [ ] Case: a batch containing a `task_id` absent from `active_projects` entirely -> treated as
-      not-ready, never silently admitted.
-- [ ] Case: a batch with an internal `file_scope` collision -> the existing ordered-sequence +
-      `--depends-on-add` rendering fires, proving no new collision code path was introduced.
-- [ ] Update the suite's header comment to enumerate the new cases alongside (a)-(g).
+      scratch `state.json` via `jq` (same tmp-file-then-`mv` convention). *(completed)*
+- [x] Case: a clean authored batch, all members ready and disjoint -> the batch renders, its
+      `description` appears, and the `Option 1 -- shared territory` mechanical header does NOT. *(completed: case k)*
+- [x] Case: `roadmap_batches` key absent -> mechanical render fires exactly as today (regression
+      guard for the pre-existing cases' fixture shape). *(completed: case l)*
+- [x] Case: `roadmap_batches: []` -> same fallback behavior, asserted separately from the absent
+      case. *(completed: case m)*
+- [x] Case: two authored batches, every member not ready -> the explicit "no authored batch"
+      fallback line names the batches checked, and the mechanical options then render. *(completed: case n)*
+- [x] Case: first batch empty-filtered, second batch admissible -> the second renders and the
+      first's skip is visible in the output. *(completed: case o; required a Phase 2 bug fix, see deviations)*
+- [x] Case: a batch whose filtered set is a non-empty proper subset (one member `implementing`) ->
+      the suggestion omits that member and says so. *(completed: case p)*
+- [x] Case: a batch containing a `task_id` absent from `active_projects` entirely -> treated as
+      not-ready, never silently admitted. *(completed: case q)*
+- [x] Case: a batch with an internal `file_scope` collision -> the existing ordered-sequence +
+      `--depends-on-add` rendering fires, proving no new collision code path was introduced. *(completed: case r)*
+- [x] Update the suite's header comment to enumerate the new cases alongside (a)-(g). *(completed)*
 
 **Timing**: 1.5 hours
 

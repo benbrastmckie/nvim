@@ -435,6 +435,7 @@ suggest_from_roadmap_batches() {
 
     if [ "${#filtered[@]}" -eq 0 ]; then
       batches_skipped_empty=$((batches_skipped_empty + 1))
+      echo "Authored roadmap batch ${batches_total}: skipped (every member not ready)."
       continue
     fi
 
@@ -1093,11 +1094,22 @@ suggest_from_pool() {
 #    line stating the option list was cut short by the cap, retains whatever already rendered,
 #    and stops -- never a silent truncation of the option list. ───────────────────────────────
 mode_next_batch() {
+  # build_ready_set() (not build_ready_pool() via a process substitution) is called directly
+  # here, in THIS shell, not a subshell: READY_SET is a script-global associative array, and a
+  # process substitution (`< <(...)`) runs its command in a forked subshell whose variable
+  # assignments never propagate back to the caller. suggest_from_roadmap_batches() below calls
+  # task_is_ready(), which reads READY_SET in THIS shell's scope, so it must be populated here
+  # rather than inside build_ready_pool()'s own internal call (which Mode B's two call sites
+  # below still make via process substitution, harmlessly, since Mode B never calls
+  # task_is_ready()).
+  build_ready_set
   local -a ready=()
-  local t
-  while IFS= read -r t; do
-    [ -n "$t" ] && ready+=("$t")
-  done < <(build_ready_pool)
+  if [ "${#READY_SET[@]}" -gt 0 ]; then
+    local t
+    while IFS= read -r t; do
+      [ -n "$t" ] && ready+=("$t")
+    done < <(printf '%s\n' "${!READY_SET[@]}" | sort -n)
+  fi
 
   if [ "${#ready[@]}" -eq 0 ]; then
     echo "No suggestible batch: the ready-candidate pool is empty (no non-terminal,"

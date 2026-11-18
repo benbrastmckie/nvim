@@ -10,7 +10,17 @@
 # off the end (e); no copy of the admission predicate exists anywhere in the new script's
 # source, and the real schema document's own Complete JSON Schema section stays untouched (f);
 # and the alternatives search's probe-invocation cap is honored and rendered explicitly, never
-# silently truncated (g).
+# silently truncated (g). Mode A's roadmap-aware candidate source is covered by: a clean
+# authored batch renders with its description, suppressing the mechanical options (k); the
+# absent-roadmap_batches-key and empty-array paths both fall through to the mechanical render
+# with zero roadmap-walk output, asserted independently (l, m); every authored batch unready
+# produces an explicit fallback line naming the batches checked before the mechanical options
+# render (n); a first empty-filtered batch's skip is visible even when a later batch succeeds
+# (o); a proper-subset filtered batch names its omitted member rather than presenting the
+# subset as the whole batch (p); a stale task_id absent from active_projects is treated as
+# not-ready, never silently admitted (q); and an authored batch with an internal file_scope
+# collision renders through the same unmodified ordered-sequence engine, no new collision code
+# path (r).
 #
 # Structural model: scripts/tests/test-orchestrate-conclusion-aggregate.sh (set -uo pipefail,
 # pass()/fail()/info() helpers, PASSED/FAILED integer counters, exit 0 all-pass / 1 any-fail /
@@ -161,6 +171,18 @@ add_queue_entry() {
       started_at: $now, heartbeat_at: $now, finished_at: null, archived_at: null,
       disposition_reason: null
     }' > "$scratch/specs/.orchestration/queue/${id}.json"
+}
+
+# set_roadmap_batches <scratch> <json> -- writes .roadmap_batches onto the scratch state.json
+# via jq (same tmp-file-then-mv convention as add_task()/add_task_topic()/add_queue_entry()).
+# <json> is a JSON array of {task_ids: [...], description: "..."} objects, matching the real
+# roadmap_batches schema (specs/state.json's own authored shape).
+set_roadmap_batches() {
+  local scratch="$1" json="$2"
+  local tmp
+  tmp="$(mktemp)"
+  jq --argjson rb "$json" '.roadmap_batches = $rb' "$scratch/specs/state.json" > "$tmp"
+  mv "$tmp" "$scratch/specs/state.json"
 }
 
 # run_suggest <scratch> [args...] -- invokes orchestrate-suggest-next-batch.sh from the
@@ -470,6 +492,186 @@ SID="sess_test_$$_suggest"
     common_test_pass "(j) Defect 2 budget: the shared probe cap, exhausted mid-multi-option-render, is rendered explicitly and retains the option(s) already rendered"
   else
     common_test_fail "(j) Defect 2 budget: rc=$rc -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (k): roadmap-walk acceptance -- a clean authored batch, all members ready and disjoint.
+# The batch renders, its description appears, and the mechanical "Option 1 -- shared
+# territory" header does NOT (the roadmap source suppresses the mechanical criteria on
+# success, per header section (f)).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  add_task "$scratch" 100 not_started '["agent-system/extensions/core/k100"]' '[]'
+  add_task "$scratch" 101 not_started '["agent-system/extensions/core/k101"]' '[]'
+  set_roadmap_batches "$scratch" '[{"task_ids":[100,101],"description":"Case k roadmap batch"}]'
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
+  rc=$?
+  if [ "$rc" -eq 0 ] \
+    && echo "$out" | grep -q 'Authored roadmap batch 1' \
+    && echo "$out" | grep -q 'Case k roadmap batch' \
+    && echo "$out" | grep -q 'task 100: admit' \
+    && echo "$out" | grep -q 'task 101: admit' \
+    && ! echo "$out" | grep -q 'Option 1 -- shared territory'; then
+    common_test_pass "(k) clean authored batch: renders with its description and admit evidence, mechanical options suppressed on success"
+  else
+    common_test_fail "(k) clean authored batch: rc=$rc -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (l): roadmap_batches key absent -- mechanical render fires exactly as today, zero
+# roadmap-walk output at all (regression guard for the pre-existing cases' fixture shape,
+# which never sets roadmap_batches).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  add_task "$scratch" 110 not_started '["agent-system/extensions/core/l110"]' '[]'
+  add_task "$scratch" 111 not_started '["agent-system/extensions/core/l111"]' '[]'
+  add_task "$scratch" 112 not_started '["agent-system/extensions/core/l112"]' '[]'
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
+  rc=$?
+  if [ "$rc" -eq 0 ] \
+    && echo "$out" | grep -q 'task 110: admit' \
+    && echo "$out" | grep -q 'task 111: admit' \
+    && echo "$out" | grep -q 'task 112: admit' \
+    && ! echo "$out" | grep -q 'Authored roadmap batch' \
+    && ! echo "$out" | grep -q 'No authored roadmap batch admissible'; then
+    common_test_pass "(l) roadmap_batches key absent: mechanical render fires exactly as today, zero roadmap-walk output"
+  else
+    common_test_fail "(l) roadmap_batches key absent: rc=$rc -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (m): roadmap_batches: [] -- the identical zero-probe, zero-output fallback as the
+# absent-key case, asserted independently per the acceptance criterion's own split.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  add_task "$scratch" 120 not_started '["agent-system/extensions/core/m120"]' '[]'
+  set_roadmap_batches "$scratch" '[]'
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
+  rc=$?
+  if [ "$rc" -eq 0 ] \
+    && echo "$out" | grep -q 'task 120: admit' \
+    && ! echo "$out" | grep -q 'Authored roadmap batch' \
+    && ! echo "$out" | grep -q 'No authored roadmap batch admissible'; then
+    common_test_pass "(m) roadmap_batches: []: identical zero-output fallback, asserted independently of the absent-key case"
+  else
+    common_test_fail "(m) roadmap_batches: []: rc=$rc -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (n): every authored batch's filtered set is empty (both members not ready) -- the
+# explicit "no authored batch admissible" fallback line names the batches checked, and the
+# mechanical options (over a SEPARATE ready task) then render.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  add_task "$scratch" 130 implementing '["agent-system/extensions/core/n130"]' '[]'
+  add_task "$scratch" 131 blocked '["agent-system/extensions/core/n131"]' '[]'
+  add_task "$scratch" 132 not_started '["agent-system/extensions/core/n132"]' '[]'
+  set_roadmap_batches "$scratch" '[{"task_ids":[130],"description":"Case n batch one"},{"task_ids":[131],"description":"Case n batch two"}]'
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
+  rc=$?
+  if [ "$rc" -eq 0 ] \
+    && echo "$out" | grep -q 'No authored roadmap batch admissible: checked 2 authored batch' \
+    && echo "$out" | grep -q 'task 132: admit'; then
+    common_test_pass "(n) every authored batch unready: explicit fallback line names batches checked, mechanical options then render"
+  else
+    common_test_fail "(n) every authored batch unready: rc=$rc -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (o): first authored batch empty-filtered, second admissible -- the second batch
+# renders, and the first batch's skip is visible in the output (not silently absorbed into
+# a counter the operator never sees).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  add_task "$scratch" 140 implementing '["agent-system/extensions/core/o140"]' '[]'
+  add_task "$scratch" 141 not_started '["agent-system/extensions/core/o141"]' '[]'
+  set_roadmap_batches "$scratch" '[{"task_ids":[140],"description":"Case o batch one (unready)"},{"task_ids":[141],"description":"Case o batch two (ready)"}]'
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
+  rc=$?
+  if [ "$rc" -eq 0 ] \
+    && echo "$out" | grep -q 'Authored roadmap batch 1: skipped' \
+    && echo "$out" | grep -q 'Authored roadmap batch 2 -- Case o batch two' \
+    && echo "$out" | grep -q 'task 141: admit'; then
+    common_test_pass "(o) first batch empty-filtered, second admissible: second renders, first's skip visible in output"
+  else
+    common_test_fail "(o) first batch empty-filtered, second admissible: rc=$rc -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (p): a batch whose filtered set is a non-empty PROPER SUBSET of its authored
+# task_ids (one member status "implementing", hence not ready) -- the suggestion omits
+# that member and says so explicitly, never presenting the subset as the whole batch.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  add_task "$scratch" 150 not_started '["agent-system/extensions/core/p150"]' '[]'
+  add_task "$scratch" 151 implementing '["agent-system/extensions/core/p151"]' '[]'
+  set_roadmap_batches "$scratch" '[{"task_ids":[150,151],"description":"Case p partial batch"}]'
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
+  rc=$?
+  if [ "$rc" -eq 0 ] \
+    && echo "$out" | grep -q 'Case p partial batch' \
+    && echo "$out" | grep -q 'omitting not-ready member(s): 151' \
+    && echo "$out" | grep -q 'task 150: admit' \
+    && ! echo "$out" | grep -q 'task 151: admit'; then
+    common_test_pass "(p) proper-subset filtering: the not-ready member (151) is omitted and named, not silently dropped"
+  else
+    common_test_fail "(p) proper-subset filtering: rc=$rc -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (q): an authored batch names a task_id entirely absent from active_projects
+# (stale authoring / vault renumbering) -- treated as not-ready, never silently admitted,
+# exactly like a genuinely unready member.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  add_task "$scratch" 160 not_started '["agent-system/extensions/core/q160"]' '[]'
+  set_roadmap_batches "$scratch" '[{"task_ids":[160,9999],"description":"Case q batch with a stale member"}]'
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
+  rc=$?
+  if [ "$rc" -eq 0 ] \
+    && echo "$out" | grep -q 'Case q batch with a stale member' \
+    && echo "$out" | grep -q 'omitting not-ready member(s): 9999' \
+    && echo "$out" | grep -q 'task 160: admit'; then
+    common_test_pass "(q) stale task_id absent from active_projects: treated as not-ready, omitted and named, never silently admitted"
+  else
+    common_test_fail "(q) stale task_id absent from active_projects: rc=$rc -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (r): an authored batch whose members collide on file_scope -- the existing
+# ordered-sequence + --depends-on-add rendering fires (via the unmodified
+# suggest_from_candidates() engine), proving no new collision code path was introduced
+# for the roadmap source.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  add_task "$scratch" 170 researched '["agent-system/extensions/core/r-shared-territory"]' '[]'
+  add_task "$scratch" 171 researched '["agent-system/extensions/core/r-shared-territory"]' '[]'
+  set_roadmap_batches "$scratch" '[{"task_ids":[170,171],"description":"Case r colliding batch"}]'
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
+  rc=$?
+  if [ "$rc" -eq 0 ] \
+    && echo "$out" | grep -q 'Case r colliding batch' \
+    && echo "$out" | grep -q '170, then 171' \
+    && echo "$out" | grep -q -- '--depends-on-add=\[170\]'; then
+    common_test_pass "(r) internal file_scope collision inside an authored batch: existing ordered-sequence rendering fires, no new collision code path"
+  else
+    common_test_fail "(r) internal file_scope collision inside an authored batch: rc=$rc -- $out"
   fi
 }
 

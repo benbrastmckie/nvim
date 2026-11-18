@@ -1,0 +1,32 @@
+{
+  "phase": 3,
+  "phase_name": "Extend the regression suite with the roadmap-walk cases",
+  "started_at": "2026-11-17T22:30:00Z",
+  "last_updated": "2026-11-17T22:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add set_roadmap_batches <scratch> <json> helper", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh"]},
+    {"id": 2, "description": "Case: clean authored batch renders, Option 1 header absent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh"]},
+    {"id": 3, "description": "Case: roadmap_batches key absent -> mechanical fires exactly as today", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh"]},
+    {"id": 4, "description": "Case: roadmap_batches: [] -> same fallback asserted separately", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh"]},
+    {"id": 5, "description": "Case: two authored batches, every member not ready -> explicit fallback line", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh"]},
+    {"id": 6, "description": "Case: first batch empty-filtered, second admissible -> second renders, first's skip visible", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh", "agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh"]},
+    {"id": 7, "description": "Case: proper-subset filtering -> omitted member named", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh"]},
+    {"id": 8, "description": "Case: task_id absent from active_projects -> not-ready", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh"]},
+    {"id": 9, "description": "Case: internal file_scope collision -> existing ordered-sequence rendering, no new collision path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh"]},
+    {"id": 10, "description": "Update suite header comment to enumerate new cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh"]}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [
+    {"approach": "Ran suite verification without CORE_TEST_SUBJECT_MODE=source-store override", "result": "failed", "reason": "deploy-tree-first default resolved the stale deployed .claude/scripts/ copy, not the source-store edits; discovered when 6 of 8 new cases failed against behavior that should have been correct per source review"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.6/3.9",
+      "description": "First batch empty-filtered, second admissible -> second's skip visible in output",
+      "type": "altered",
+      "reason": "Writing this case surfaced a real Phase 2 bug (READY_SET populated inside a process-substitution subshell, never persisting to the parent shell) and a missing visible skip line; both were fixed in orchestrate-suggest-next-batch.sh during Phase 3, beyond that phase's test-file-only Scope Hypothesis -- recorded via issue-record.sh as a declared scope excursion, not silently absorbed.",
+      "annotation": "*(deviation: altered — fixed a READY_SET subshell-scoping bug and added a visible skip line in orchestrate-suggest-next-batch.sh, discovered while writing this case)*"
+    }
+  ]
+}
