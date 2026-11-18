@@ -1,20 +1,110 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "session_id": "sess_1794985308_f67716",
   "dispatch_seq": 15,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/644_orchestration_recap_spoken_on_demand/summaries/01_orchestration-recap-spoken-summary.md",
+      "summary": "Spoken-recap feature complete: conclusion-stage Step 6 composes and persists a recap; user-only /recap speaks or prints it. All 5 phases done, deployed tree clean (41/41 gates), all 7 acceptance criteria demonstrated."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added a speech-shaped recap composed at /orchestrate's conclusion-stage Step 6 and persisted to a session-keyed file, plus a new user-only /recap command (backed by orchestrate-recap.sh and skill-recap) that speaks it through piper or recomposes/prints it when no recap or no TTS engine is available. Registered the Move 5 Bash allowlist entry and the Next Steps recommendation, added a nine-case regression suite, and closed out with a clean deploy-headless.sh run (RESULT=landed_verify_clean, 41/41 gates) and all seven acceptance criteria demonstrated."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/README.md",
+    "agent-system/extensions/core/commands/recap.md",
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+    "agent-system/extensions/core/scripts/orchestrate-recap.sh",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-recap.sh",
+    "agent-system/extensions/core/skills/skill-recap/SKILL.md",
+    "agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md",
+    "agent-system/extensions/nvim/index-entries.json"
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/README.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "verify-deploy.sh Gate 20 (orchestrator context budget lock) compares a live-predicted eager-load byte total (measure-eager-context.sh, source-store-only prediction of the regenerated CLAUDE.md + eager rules) against a fixed, dated, manually-reviewed eager_load.baseline_bytes in orchestrator-context-budget.json. Any new eager-loaded content (e.g. a one-line Command Reference row added to merge-sources/claudemd.md) can push the live total over the recorded baseline even though the addition itself is tiny -- the fix is NOT re-deriving the baseline from the new measurement casually, but a reviewed, dated note entry following that file's own established per-addition convention (first try to trim redistributable duplication elsewhere in the new content; only if none exists, round the new total up to the next 100 B and record why).",
+      "category": "PATTERN",
+      "source_artifact": "specs/644_orchestration_recap_spoken_on_demand/summaries/01_orchestration-recap-spoken-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["verify-deploy", "gate20", "eager-load-budget", "orchestrator-context-budget", "claudemd-eager"]
+    },
+    {
+      "content": "A test suite asserting a binary's ABSENCE from PATH (e.g. 'piper is not installed, confirm fallback behavior') must build a fully self-contained isolated bin directory (every real coreutils dependency symlinked in once from the test process's own PATH, PLUS the bare interpreter used to invoke the subject script resolved once via `command -v bash` before PATH is narrowed) and set PATH to ONLY that directory with no real-PATH fallback. A 'fakebin:$PATH' style PATH silently lets a genuinely-installed system binary (piper/paplay/espeak-ng are commonly present on a NixOS dev host) leak through and defeat the absence assertion -- the test can pass for the wrong reason, or fail outright if the real binary behaves differently than the fake.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/644_orchestration_recap_spoken_on_demand/summaries/01_orchestration-recap-spoken-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["shell-test-isolation", "PATH-shimming", "fakebin", "binary-absence-testing", "deploy-root-guard"]
+    },
+    {
+      "content": "A bash helper using `find \"$dir\" -maxdepth 1 -name PATTERN ... | sort | head | cut` to find the newest matching file degrades safely under `set -e`/`pipefail` when $dir EXISTS but has zero matches (find exits 0, empty output) -- but NOT when $dir was never created at all: find then exits non-zero before the pipe even starts, and pipefail propagates that failure, aborting the whole script. Guard with `[ -d \"$dir\" ] || return 0` before the find call whenever the directory's existence is not already guaranteed by an earlier step in the same run.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/644_orchestration_recap_spoken_on_demand/summaries/01_orchestration-recap-spoken-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["find-newest-file", "set-e-pipefail", "bash-find-nonexistent-dir", "defensive-bash"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "orchestrate-recap.sh deploy-root-guard self-correct",
+      "value": "deploy-root-guard.sh's DEPLOY_ROOT_GUARD_SELF_CORRECT=1 opt-in widens REPO_ROOT via a validated git-toplevel candidate, but a script that derives its own working root via lib/common.sh's common_repo_root() (a pure N-levels-up computation) ignores that widened REPO_ROOT entirely and recomputes a naive, wrong path when invoked bare from the agent-system source store. Only a small number of scripts (sync-manifest-scripts.sh, check-extension-docs.sh) are written to consume $REPO_ROOT directly after sourcing the guard; an ordinary deployed-only script (the orchestrate-*.sh family) is not self-correcting and must be smoke-tested via a fake .claude/scripts/ tree or CORE_TEST_SUBJECT_MODE=source-store, never via the self-correct env var alone.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/deploy-root-guard.sh"
+    },
+    {
+      "subject": "measure-eager-context.sh vs verify-deploy.sh gate 20 baseline check",
+      "value": "measure-eager-context.sh --check only validates there are no volatile-file hits; it does NOT itself compare the live total against orchestrator-context-budget.json's eager_load.baseline_bytes. That comparison lives inside verify-deploy.sh's own gate20_run function, which reads BUDGET_CONFIG from $TARGET/agent-system/extensions/core/context/config/orchestrator-context-budget.json directly (the SOURCE STORE path, not a deployed copy), so editing that JSON takes effect immediately without a redeploy.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/verify-deploy.sh:2070"
+    },
+    {
+      "subject": "check-extension-docs.sh README-command-mention rule",
+      "value": "check-extension-docs.sh's check_readme_vs_manifest() fails loudly if any command name in manifest.json's provides.commands array is not textually mentioned (as /<name>) in that extension's own README.md -- this check runs independently of, and is not anticipated by, a plan's own Files-to-modify list when a plan adds a new command but only updates merge-sources/claudemd.md (the CLAUDE.md merge source) without also touching the extension's top-level README.md.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/check-extension-docs.sh:1178"
+    },
+    {
+      "subject": "dead-command-recommendation lint shape",
+      "value": "lint-dead-command-recommendations.sh's Layer 2 shape requires a recommendation line to read 'Next:' (optionally followed by 'Run') or the standalone word 'Run' directly followed by '/<name>', after stripping markdown emphasis characters. A results-template Next Steps line recommending a new command must use exactly this shape (e.g. 'Run /recap') to be recognized as a real, checkable recommendation rather than silently exempt as non-matching prose.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh"
+    },
+    {
+      "subject": "git-commit-phase.sh Containment Self-Check and __WHOLE_TREE__",
+      "value": "A task's declared file_scope containing the literal sentinel __WHOLE_TREE__ (used by a plan phase that invokes whole-tree regeneration, e.g. a deploy-headless.sh phase) is NOT treated as a wildcard match by git-commit-phase.sh's Containment Self-Check -- a genuinely out-of-scope path (not individually listed in file_scope) is still dropped and warned on even when __WHOLE_TREE__ is present in that same file_scope array. The sentinel is a declarative marker for human/plan readers, not a predicate the mechanical containment check interprets specially.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/git-commit-phase.sh"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794985308_f67716",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ],
-    "phases_completed": 4,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
     "phases_total": 5
-  },
-  "proposed_file_scope": [
-    "agent-system/extensions/core/context/config/orchestrator-context-budget.json"
-  ]
+  }
 }

@@ -1,17 +1,17 @@
 {
-  "status": "planned",
-  "session_id": "sess_1794985308_f67716_644",
-  "dispatch_seq": 14,
+  "status": "implemented",
+  "session_id": "sess_1794985308_f67716",
+  "dispatch_seq": 15,
   "task_number": 644,
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a five-phase, 7-hour implementation plan for the spoken orchestration recap, adopting the research report's architecture in full: a fourth per-session path resolver plus a new two-mode orchestrate-recap.sh, the user-only /recap command and skill, a nine-case test suite, the conclusion-stage Step 6 amendment with its Move 5 Bash allowlist entry and results-template recommendation, and a deploy/verify/acceptance phase. The user-only ruling the description demanded is recorded explicitly, with a structural rationale tied to the binding never-autonomous-audio constraint rather than the tagging skill's deployment-timing reasoning. Two gate collisions found at authoring time (the dead-command-recommendation lint, and the mandatory suite-classification row) are designed around through phase ordering rather than left to be discovered mid-implementation.",
+  "summary": "Implemented all five plan phases for the spoken orchestration recap: a fourth per-session path resolver plus the new two-mode orchestrate-recap.sh script (Phase 1), the user-only /recap command and skill plus a CLAUDE.md/README row and an additive nvim TTS-guide subsection (Phase 2), a nine-case regression suite (Phase 3), the conclusion-stage Step 6 amendment plus the Move 5 Bash allowlist entry and the results-template recommendation (Phase 4), and a deploy/verify/acceptance pass (Phase 5) that ended with deploy-headless.sh reporting RESULT=landed_verify_clean (41/41 gates) and all seven acceptance criteria demonstrated against the deployed tree. Two mid-implementation discoveries beyond the plan's own Files-to-modify lists were resolved in-phase: a missing README command mention (Phase 2) and an eager-load context-budget baseline move plus removal of a self-created stray test-artifact directory (Phase 5).",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/644_orchestration_recap_spoken_on_demand/plans/01_orchestration-recap-spoken.md",
-      "summary": "Five-phase plan wiring a speech-shaped recap into the conclusion stage's emission step and a user-only /recap command that speaks it through piper or prints it."
+      "type": "summary",
+      "path": "specs/644_orchestration_recap_spoken_on_demand/summaries/01_orchestration-recap-spoken-summary.md",
+      "summary": "Implementation summary covering all five phases, the two mid-implementation deviations, and the full acceptance-criteria verification record."
     }
   ]
 }
