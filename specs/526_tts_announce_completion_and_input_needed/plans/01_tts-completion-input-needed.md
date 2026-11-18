@@ -448,33 +448,33 @@ and the source-store doc-lint plus task-reference-lint gate subset is the honest
 
 ---
 
-### Phase 5: Register the new suites, reconcile the derived line count, and redeploy [NOT STARTED]
+### Phase 5: Register the new suites, reconcile the derived line count, and redeploy [COMPLETED]
 
 **Goal**: the three new test suites are declared in their extension manifest, the derived
 line_count is reconciled, and the source store is landed into this repo's deployed tree.
 
 **Tasks**:
 
-- [ ] Stage the three new test suites with an explicit file list (`git add -- <three paths>`),
+- [x] Stage the three new test suites with an explicit file list (`git add -- <three paths>`),
       never a directory or glob pathspec. `sync-manifest-scripts.sh` diffs against `git ls-files`,
       so an untracked new suite is invisible to it; staging must precede the sync.
-- [ ] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` to see the
+- [x] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` to see the
       gap, then `--write` to insert the three `provides.scripts` entries into
       `agent-system/extensions/core/manifest.json`.
-- [ ] Re-run `--check` and confirm it reports clean in both directions.
-- [ ] Redeploy with the bounded-wait idiom required for this repo's stale deployed tree:
+- [x] Re-run `--check` and confirm it reports clean in both directions.
+- [x] Redeploy with the bounded-wait idiom required for this repo's stale deployed tree:
       `timeout 540 bash .claude/scripts/deploy-headless.sh`, invoked with the Bash tool's
       `timeout` parameter raised to 600000. Confirm `RESULT=landed_verify_clean`. If the deploy
       reports any other RESULT, treat it as a blocker to report, not a step to retry blindly.
-- [ ] Confirm the redeploy repaired `agent-system/extensions/nvim/index-entries.json`'s
+- [x] Confirm the redeploy repaired `agent-system/extensions/nvim/index-entries.json`'s
       `line_count` for `tts-stt-integration.md` to the post-Phase-4 value. If it did not, run
       `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` and
       confirm.
-- [ ] Inspect the deployed `.claude/settings.json`'s `Notification` blocks and RECORD what landed:
+- [x] Inspect the deployed `.claude/settings.json`'s `Notification` blocks and RECORD what landed:
       whether the additive-only merge left both the old and the widened matcher block present.
       Record the observation in this task's issue log. Do NOT hand-patch the deployed file — that
       would mask the divergence, and the remediation is the orphan-sweep record's territory.
-- [ ] Confirm the deployed `.claude/hooks/tts-notify.sh` and `.claude/hooks/claude-stop-notify.sh`
+- [x] Confirm the deployed `.claude/hooks/tts-notify.sh` and `.claude/hooks/claude-stop-notify.sh`
       carry this task's changes, as evidence the source-store edits actually propagated.
 
 **Timing**: 1 hour
