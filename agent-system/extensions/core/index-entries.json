@@ -281,7 +281,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Implementation plan file format specification",
-      "line_count": 1275,
+      "line_count": 1292,
       "keywords": [
         "format",
         "plan",
@@ -1916,7 +1916,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Core shell-test harness convention: location rule, helper naming, fixture and mutation-check discipline",
-      "line_count": 1427,
+      "line_count": 1527,
       "keywords": [
         "standards",
         "shell",
@@ -2629,7 +2629,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Batch gate stage (Move 4): the once-per-invocation shared verify-deploy.sh gate run, with confirmation and per-task finding attribution, for a multi-task /orchestrate batch; single-task/bare-implement invariance; coexistence boundary with the conclusion stage",
-      "line_count": 249,
+      "line_count": 284,
       "keywords": [
         "batch-gate-stage",
         "move-4",
@@ -3462,7 +3462,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Consolidated-output template for /orchestrate batch (multi-task) results, with per-section rendering gates",
-      "line_count": 285,
+      "line_count": 305,
       "keywords": [
         "patterns",
         "orchestrate",
@@ -3920,7 +3920,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Repo-level hand-authored sibling keys in .claude-extensions.json: the derived_artifact_probes declaration, its fail-open guarantee, bounded execution, and why this is the first blocking staleness gate",
-      "line_count": 195,
+      "line_count": 266,
       "keywords": [
         "derived-artifact-probes",
         "staleness",
