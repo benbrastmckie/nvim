@@ -430,20 +430,21 @@ plus the `prose` row's diff read-through and the `diff`-empty transplant asserti
 
 ---
 
-### Phase 4: Register and Reconcile the Index Entries [NOT STARTED]
+### Phase 4: Register and Reconcile the Index Entries [COMPLETED]
 
 **Goal**: Add the `index-entries.json` entry for the new pattern file with a `line_count` and
 `keywords` that agree with the file as landed, and reconcile the lean entry's `line_count` for the
 file Phase 3 shrank.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/index-entries.json` and extract the
+- [x] Re-read `agent-system/extensions/core/index-entries.json` and extract the
       `patterns/jq-escaping-workarounds.md` and `patterns/checkpoint-before-overflow.md` entries as
       the schema templates (`path`, `domain`, `subdomain`, `summary`, `line_count`, `keywords`,
-      `topics`, `load_when`).
-- [ ] Compute `line_count` with `wc -l` on the finished
-      `context/patterns/bounded-block-edit.md`, after Phases 1 and 3 are both closed.
-- [ ] Add one entry: `path: "patterns/bounded-block-edit.md"`, `domain: "core"`,
+      `topics`, `load_when`). *(completed)*
+- [x] Compute `line_count` with `wc -l` on the finished
+      `context/patterns/bounded-block-edit.md`, after Phases 1 and 3 are both closed. *(completed:
+      132 lines)*
+- [x] Add one entry: `path: "patterns/bounded-block-edit.md"`, `domain: "core"`,
       `subdomain: "patterns"`, a one-line `summary` naming both halves (bounded in-file block edits:
       line indexing, pre- and post-state assertions, and section anchoring), the measured
       `line_count`, `keywords` drawn from the file's own vocabulary (for example `patterns`,
@@ -451,21 +452,22 @@ file Phase 3 shrank.
       `topics: ["troubleshooting"]`, and
       `load_when: {"agents": ["general-implementation-agent", "lean-implementation-agent"],
       "task_types": [], "commands": ["/meta"]}` — the lean agent is included so the relocation does
-      not cost it the reach the lean-sited paragraph used to give it.
-- [ ] Apply the edit as an `Edit`-tool insertion on a unique neighbouring entry's text, not a
+      not cost it the reach the lean-sited paragraph used to give it. *(completed)*
+- [x] Apply the edit as an `Edit`-tool insertion on a unique neighbouring entry's text, not a
       whole-file `jq` rewrite: piping the file through `jq` reflows every unrelated record (see
-      `context/patterns/jq-escaping-workarounds.md`'s reflow section).
-- [ ] Run `bash .claude/scripts/generate-context-line-counts.sh --check` to learn the exact
+      `context/patterns/jq-escaping-workarounds.md`'s reflow section). *(completed)*
+- [x] Run `bash .claude/scripts/generate-context-line-counts.sh --check` to learn the exact
       expected numbers and confirm the only reported mismatches are the two files this task
-      touched.
-- [ ] Apply the lean entry's corrected `line_count` as a single-value targeted `Edit` on
+      touched. *(completed: exactly one mismatch reported, lean-implementation-flow.md
+      261->257; core's new entry was already exact)*
+- [x] Apply the lean entry's corrected `line_count` as a single-value targeted `Edit` on
       `agent-system/extensions/lean/index-entries.json`. Use
       `generate-context-line-counts.sh --write` only if `--check` reports drift the targeted edit
       cannot express, and in that case read `git status --short` afterwards and stage only the two
-      declared files.
-- [ ] Re-run `--check` and confirm it passes clean for all entries.
-- [ ] Validate JSON well-formedness of both files (`python3 -m json.tool` or equivalent) before
-      committing, and commit with an explicit two-file `git add`.
+      declared files. *(completed: targeted Edit sufficed, --write not needed)*
+- [x] Re-run `--check` and confirm it passes clean for all entries. *(completed: 603/603 exact)*
+- [x] Validate JSON well-formedness of both files (`python3 -m json.tool` or equivalent) before
+      committing, and commit with an explicit two-file `git add`. *(completed)*
 
 **Timing**: 0.5 hours
 

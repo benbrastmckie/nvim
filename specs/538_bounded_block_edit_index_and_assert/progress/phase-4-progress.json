@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "Register and Reconcile the Index Entries",
+  "started_at": "2026-11-18T10:10:00Z",
+  "last_updated": "2026-11-18T10:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read core index-entries.json and extract schema templates", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Compute line_count of the finished core pattern file", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add the new index entry via Edit tool", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 4, "description": "Run generate-context-line-counts.sh --check to learn exact numbers", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Apply targeted line_count fix on lean index-entries.json", "status": "done", "files_touched": ["agent-system/extensions/lean/index-entries.json"]},
+    {"id": 6, "description": "Re-run --check and confirm clean", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Validate JSON well-formedness and commit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "generate-context-line-counts.sh --check: 603/603 exact after this phase (was 602/603 before, with the one mismatch being the lean file Phase 3 shrank). verify-deploy.sh --skip-slow --only-gate 3,4 re-run and confirmed PASS (the Phase 3 handoff's anticipated FAIL is now resolved). Scoped suite (test-context-reachability.sh,test-deploy-orphans.sh,test-index-entries-schema.sh,test-install-uninstall-extension.sh,test-manifest-scripts-sync.sh,test-roadmap-command-registration.sh) passed 6/6. git diff --stat confirmed exactly two index-entries.json files changed, matching the Scope Hypothesis."
+}

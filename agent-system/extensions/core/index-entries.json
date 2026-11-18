@@ -1036,6 +1036,34 @@
       }
     },
     {
+      "path": "patterns/bounded-block-edit.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "Bounded in-file block edits: line indexing, pre- and post-state assertions, and section anchoring",
+      "line_count": 132,
+      "keywords": [
+        "patterns",
+        "file-editing",
+        "assertions",
+        "line-indexing",
+        "anchoring",
+        "plan-file-edit"
+      ],
+      "topics": [
+        "troubleshooting"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent",
+          "lean-implementation-agent"
+        ],
+        "task_types": [],
+        "commands": [
+          "/meta"
+        ]
+      }
+    },
+    {
       "path": "patterns/infra-failure-discrimination.md",
       "domain": "core",
       "subdomain": "patterns",
