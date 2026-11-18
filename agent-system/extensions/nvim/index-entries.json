@@ -567,7 +567,7 @@
         "audio"
       ],
       "summary": "TTS/STT setup, configuration, and troubleshooting for Claude Code and Neovim",
-      "line_count": 433,
+      "line_count": 458,
       "load_when": {
         "agents": [],
         "task_types": [
