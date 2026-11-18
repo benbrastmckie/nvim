@@ -1,5 +1,5 @@
 ---
-next_project_number: 644
+next_project_number: 645
 ---
 
 # TODO
@@ -14,7 +14,7 @@ next_project_number: 644
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,503,504,506,510,511,512,514,519,520,521,522,525,526,529,530,535,536,537,538,539,545,548,549,551,556,557,558,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640,643 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,523,533,540,541,542,544,546,550,553,570,576,579,583,592,593,598,605,609,610,630 | 383,390,398,410,431,438,451,453,455,463,472,477,504,511,519,535,538,539,548,549,563,564,577,586,599,607,629 | core-agent-system, extensions, neovim, ... |
+| 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,523,533,540,541,542,544,546,550,553,570,576,579,583,592,593,598,605,609,610,630,644 | 383,390,398,410,431,438,451,453,455,463,472,477,503,504,511,519,526,535,538,539,548,549,558,563,564,577,586,599,607,629,643 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,480,486,492,509,513,552,566,571,594 | 439,452,479,484,491,518,542,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,561,581,588,595 | 472,486,492,509,539,552,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 524,596,641 | 454,501,561,595 | core-agent-system, agent-system |
@@ -38,12 +38,14 @@ next_project_number: 644
     └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt...
 502 [NOT STARTED] — Require research reports to enumerate generated doc-sync surfaces
 503 [NOT STARTED] — Document /revise's unavailability to a dispatched agent
+  └─ 644 [NOT STARTED] — Leave a spoken-word recap at the end of an orchestration and...
 506 [PLANNED] — Stop the bounded-waiter hook refusing a write whose prose...
 519 [NOT STARTED] — Infra exempt transport error dispatch deaths
 520 [NOT STARTED] — Emit deploy ordering in implement dispatch body
 521 [NOT STARTED] — Fix the agent glob to match the -implement-agent.md variant
 525 [NOT STARTED] — Repair the always-failing extensions-directory fallback in...
 526 [NOT STARTED] — Announce completion and input-needed over TTS from the source...
+  └─ 644 [NOT STARTED] — Leave a spoken-word recap at the end of an orchestration and... (see above)
 564 [NOT STARTED] — Fix validate-artifact.sh Tier Justification false positive...
   └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
 565 [NOT STARTED] — Resolve archived prior-art paths when composing dispatch and...
@@ -182,6 +184,66 @@ next_project_number: 644
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 644. Leave a spoken-word recap at the end of an orchestration and recommend /recap to hear it
+- **Effort**: medium
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 503, Task 526, Task 538, Task 558, Task 643
+
+**Description**: Give an orchestration a short spoken-word recap at its end: the conclusion stage writes a speech-shaped prose summary and recommends `/recap` by name in its final written output, and the user runs `/recap` when they want to hear it read aloud through piper.
+
+WHAT THE USER ASKED FOR, IN THEIR OWN FRAMING. When an orchestration ends, a short summary should be prepared that they can then have read aloud by running a follow-up command recommended in the final written output when the orchestration lands.
+
+THE ORCHESTRATION MUST NEVER PLAY AUDIO BY ITSELF -- BINDING. Speaking is a separate, explicitly user-invoked step. The conclusion stage only WRITES the recap and RECOMMENDS the command; nothing in the orchestration path invokes piper, paplay, or any other audio sink. An implementation that makes a run speak on its own has failed this record regardless of what else it gets right.
+
+FOUR SETTLED DESIGN DECISIONS -- COLLECTED FROM THE USER, DO NOT REOPEN.
+  (1) The command name is `/recap`. Verified free of collision in `core/commands/` and `core/scripts/` at creation time; confirm the name is still free before writing, but do not re-litigate the choice.
+  (2) BOTH write-at-end AND recompose-on-demand. The conclusion stage writes the recap file at orchestration end; `/recap` falls back to composing a recap on demand when no file exists -- an older run predating this feature, or a run that died before the conclusion stage's Step 6 ran.
+  (3) LATEST RUN ONLY. The bare command reads the most recent orchestration. No session_id argument and no `--list` mode.
+  (4) PRINT THE SUMMARY AS TEXT when no TTS engine is available. No espeak-ng fallback -- piper or print, nothing in between.
+
+GROUNDING ALREADY VERIFIED AT CREATION TIME -- CITE IT, DO NOT RE-DERIVE IT. Research should confirm current file state and DESIGN THE FIX; it must not spend its budget re-diagnosing what is settled below.
+  - THE CONCLUSION STAGE IS MOVE 5 OF skill-orchestrate. Its contract is `core/context/contracts/conclusion-stage.md`, section "## The Executable Stage Body", Steps 1-7. STEP 6 IS THE SOLE EMISSION SITE for the combined report, and is also the step that deletes the pending marker as its own final action. The rendered report shape is `core/context/patterns/orchestrate-batch-results-template.md`; its `### Conclusion` and `### Next Steps` blocks are where a recommended follow-up command belongs.
+  - MOVE 5'S ALLOWED BASH SURFACE IS A CLOSED LIST, enumerated in `core/context/standards/postflight-tool-restrictions.md`'s "Conclusion Stage (Move 5) Tool Restrictions" section. The new `orchestrate-recap.sh` MUST be added to that list, or the conclusion stage calling it is a boundary violation. That is why that file is in scope.
+  - PER-INVOCATION DURABLE ARTIFACTS ALREADY LAND UNDER `specs/.orchestration/` -- e.g. `.return-meta-multi-{session_id}.json` and `.conclusion-pending-{session_id}.json`. The recap file is naturally a sibling keyed on session_id. `core/scripts/lib/runtime-file-patterns.sh` is the existing path resolver for this family and was confirmed present; USE IT rather than hardcoding paths.
+  - TTS PLAYBACK INFRASTRUCTURE EXISTS AND MUST BE REUSED, NOT REBUILT. `piper` and `espeak-ng` are installed; the NixOS configuration provisions the Lessac medium voice via `packages/piper-voices.nix`. The documented invocation is `echo TEXT | piper --model ~/.local/share/piper/en_US-lessac-medium.onnx --output_file - | paplay`, with `PIPER_VOICE` as the override environment variable and `~/.local/share/piper/en_US-lessac-medium.onnx` as the default. Full reference: `agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md`.
+  - CRITICAL CONSTRAINT -- THE EXISTING `core/hooks/tts-notify.sh` CANNOT SERVE THIS. It speaks only "Tab N" / "Tab N STATUS" from a closed lifecycle vocabulary (researching, researched, planning, planned, implementing, completed, blocked) and accepts no arbitrary text. A NEW arbitrary-text speaking path is required. It MUST honor the same `TTS_ENABLED=0` disable convention, and should follow the same non-blocking backgrounded `piper | paplay` invocation shape.
+
+THE RECAP MUST BE SPEECH-SHAPED PROSE, NOT A RENDERED TABLE OR A BULLET LIST. Short, plainly worded, pleasant read aloud. It should name what landed, what failed if anything, and the single most useful next action. Markdown tables, path strings, session ids, and command-line flags read badly aloud and belong in the written report, not in the spoken text.
+
+RULE EXPLICITLY ON USER-ONLY STATUS. `/recap` is a user-invoked command. The plan must decide, and record its reasoning, whether `/recap` should be marked user-only in the same sense `skill-tag` is -- the user runs it, and an agent has no reason to make the machine speak. State the ruling either way; do not leave it implicit.
+
+DEPENDENCIES ARE TERRITORY EDGES, NOT SUBJECT EDGES. All five are declared solely because they share an edit path with this record, per `context/patterns/batch-orchestration-guardrails.md` ("shared file territory is a reason to add the edge and serialize, never to exclude"). A future reader must not mistake them for subject coupling:
+  - #526 `tts_announce_completion_and_input_needed` shares `agent-system/extensions/nvim/context/project/neovim/guides/tts-stt-integration.md`
+  - #558 `conclusion_stage_filing_handoff_phrasing` shares `agent-system/extensions/core/context/contracts/conclusion-stage.md`
+  - #503 `revise_unavailable_to_dispatched_agent` shares `agent-system/extensions/core/context/standards/postflight-tool-restrictions.md`
+  - #538 `bounded_block_edit_index_and_assert` shares `agent-system/extensions/core/merge-sources/claudemd.md`
+  - #643 `next_batch_suggestion_ignores_roadmap_ordering` shares BOTH `agent-system/extensions/core/context/contracts/conclusion-stage.md` AND `agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md`
+
+THE #643 EDGE WAS DISCOVERED AFTER THE BREAKDOWN WAS CONFIRMED -- RECORDED SO THE DEVIATION IS VISIBLE. The user confirmed a four-edge breakdown (#503, #526, #538, #558) when `next_project_number` stood at 643, so #643 did not yet exist and could not have been enumerated. The creation-time backlog audit then returned `overlaps-open` for it with `mechanical_class: overlap` on the two shared paths named above -- a real, mechanically corroborated territory collision, not a semantic guess. The fifth edge was added on the strength of the same rule the user applied to the other four (`context/patterns/batch-orchestration-guardrails.md`: shared file territory is a reason to add the edge and serialize, never to exclude), not on any new subject judgment. #643 concerns next-batch suggestion ordering against the roadmap; it has no subject overlap with a spoken recap. If the edge is unwanted, drop it with `update-task-status.sh --depends-on-remove`.
+
+DO NOT ABSORB TASK #526'S WORK. #526 makes short EVENT announcements fire: a Stop-branch "Tab N done", an `idle_prompt` matcher widening, and a WEZTERM_PANE-keyed cooldown/dedup stamp. That is event beeps with dedup; this record is prose content composed and spoken on request. The two share only the documentation file. Keep the subjects separate and DO NOT EDIT #526's hook files -- `tts-notify.sh`, `claude-stop-notify.sh`, `settings-hooks.json`, `root-files/settings.json`, `scripts/lifecycle-notify.sh`.
+
+ACCEPTANCE CRITERIA.
+  (1) An `/orchestrate` run reaching its conclusion stage leaves a recap file keyed on its session_id under `specs/.orchestration/`, and its final written output recommends `/recap` by name.
+  (2) Running `/recap` after such a run speaks that recap through piper.
+  (3) Running `/recap` when no recap file exists for the latest run recomposes one from durable metadata rather than failing.
+  (4) With no piper binary or no voice model present, `/recap` prints the recap text and exits successfully -- it does not error and does not fall back to another engine.
+  (5) `TTS_ENABLED=0` fully suppresses audio on every path, leaving the printed-text behaviour intact.
+  (6) `postflight-tool-restrictions.md`'s Move 5 allowed-Bash list names `orchestrate-recap.sh`, so the conclusion stage's call to it is in-contract.
+  (7) No file landing under `agent-system/**` carries a task-number reference or record-versioning language. Both are permitted in this description, which lives under `specs/**`; neither is permitted in any deliverable.
+
+NON-GOALS. No session_id argument, no `--list` mode, no recap history browsing (settled decision 3). No espeak-ng or any second TTS engine (settled decision 4). No change to the conclusion stage's channel routing, filter predicate, or exactly-one-channel rule. No change to #526's event-announcement hooks. No audio played by the orchestration itself.
+
+SOURCE-STORE BOUNDARY -- BINDING. `.claude/**` in this repository is a gitignored, disposable deploy artifact regenerated from a source store; a hand edit there is silently wiped by the next regeneration and will appear to succeed while having no lasting effect. The owning extensions are `core` and `nvim`. Resolve each store with `jq -r '.extensions.core.source_dir' .claude-extensions.json` -- note `source_dir` is PER-EXTENSION, so a top-level `jq -r '.source_dir'` returns `null`, which must NOT be read as the key being absent. Both `.claude-extensions.json` and the core source store were confirmed PRESENT at `/home/benjamin/.config/nvim` at creation time. Edit at the paths mirroring the deployed ones under those stores, per `.claude/rules/source-store-deploy-boundary.md`, then REDEPLOY via `bash .claude/scripts/deploy-headless.sh` and confirm `RESULT=landed_verify_clean`. Never hand-author under `.claude/**`.
+
+BACKLOG-RECONCILIATION RULING, RECORDED HONESTLY -- TWO AUDIT RUNS, BOTH RECORDED. The pre-dispatch audit ran against all 124 open tasks and returned five `duplicate-of-open` verdicts -- #390, #452, #472, #535, #561 -- every one at 40-42% semantic similarity with an unrelated subject. All five were judged scorer noise and the proposal was ruled genuinely new; that call was made deliberately rather than missed. The creation-time re-run (`scripts/audit-task-proposals.sh`, whose verbatim output is recorded in this entry's own `audit_verdict` field) returned a wider set against the grown corpus and the fuller description text: 23 `duplicate-of-open`, of which 19 are PURE-SEMANTIC with `mechanical_class: none` and the highest at `semantic_score: 0.506` -- below any corroboration threshold, and so ruled noise on the same reading. The remaining four carry `mechanical_class: overlap` and are exactly #503, #526, #538 and #558, the four territory edges already declared above; the matcher independently corroborated the territory analysis rather than contradicting it. One further verdict, `overlaps-open` for #643, is the mechanically corroborated collision that produced the fifth edge. The 115 `covered-by-closed` verdicts top out at `semantic_score: 0.548`, also pure-semantic, and the 39 `scope-blind` entries are the matcher's unconditional emission for corpus records declaring no `file_scope` -- known noise, per that script's own stated trade-off, not evidence of coverage.
+
+PROVENANCE. Created via `/meta` in prompt mode, session `sess_1794955120_meta643`, from a user request stated in the "WHAT THE USER ASKED FOR" paragraph above. The four design decisions were collected from the user interactively before dispatch and confirmed.
+
+---
 
 ### 643. Next batch suggestion ignores roadmap ordering
 - **Status**: [NOT STARTED]
