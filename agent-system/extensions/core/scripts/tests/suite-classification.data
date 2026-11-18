@@ -159,6 +159,7 @@ test-orchestrate-context-growth.sh	unit	-
 test-orchestrate-cycle-plan.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh
 test-orchestrate-cycle-postflight.sh	unit	-
 test-orchestrate-predispatch-review.sh	unit	-
+test-orchestrate-recap.sh	unit	-
 test-orchestrate-record-decision.sh	unit	-
 test-orchestrate-recover-message-findings.sh	unit	-
 test-orchestrate-recover-outcome.sh	unit	-

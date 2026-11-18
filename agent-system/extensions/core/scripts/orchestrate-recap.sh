@@ -93,9 +93,15 @@ USAGE
 }
 
 # find_newest <dir> <glob-name-pattern> - echoes the newest matching path by mtime, or nothing.
-# Uses find (not a bare glob) so a zero-match directory never trips `set -e`.
+# Uses find (not a bare glob) so a zero-match directory never trips `set -e`. Guarded on
+# directory existence FIRST: unlike a zero-match glob inside an existing directory (which find
+# handles fine, exit 0, no output), `find` on a directory that was never created at all (e.g. a
+# fresh session with no prior --write and no runtime metadata written yet) exits non-zero before
+# ever reaching the pipe -- that non-zero would otherwise propagate through `pipefail` and abort
+# the whole script under `set -e`.
 find_newest() {
   local dir="$1" pattern="$2"
+  [ -d "$dir" ] || return 0
   find "$dir" -maxdepth 1 -name "$pattern" -printf '%T@ %p\n' 2>/dev/null \
     | sort -rn \
     | head -n1 \

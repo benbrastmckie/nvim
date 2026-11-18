@@ -351,35 +351,45 @@ headroom has closed, trim elsewhere in that file rather than exceeding the ceili
 
 ---
 
-### Phase 3: Test suite for the recap script [NOT STARTED]
+### Phase 3: Test suite for the recap script [COMPLETED]
 
 **Goal**: Every acceptance-relevant branch of `orchestrate-recap.sh` is covered by a registered,
 passing suite, including the quoting-hazard regression guard and the no-second-engine guarantee.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-orchestrate-recap.sh` following the
+- [x] Create `agent-system/extensions/core/scripts/tests/test-orchestrate-recap.sh` following the
       conventions of the sibling orchestrate suites, with a self-contained fixture directory and
-      cleanup.
-- [ ] Case: `--write` persists to the resolver's path with `session_id`, `created_ts`, and `text`
-      present and the text byte-identical to stdin.
-- [ ] Case: speak mode with a recap file present prints that file's text and exits `0`.
-- [ ] Case: speak mode with no recap file recomposes from a fixture runtime metadata file and
-      exits `0` with non-empty output.
-- [ ] Case: speak mode with neither file present prints the generic sentence and exits `0`.
-- [ ] Case: a malformed/truncated runtime metadata file yields the generic sentence and exit `0`,
-      never a non-zero exit.
-- [ ] Case: `TTS_ENABLED=0` prints the text and leaves a `PATH`-shimmed piper stub's marker file
-      unwritten — audio suppressed, text intact.
-- [ ] Case: with piper absent from a shimmed `PATH`, the script prints and exits `0`, and an
+      cleanup. *(completed)*
+- [x] Case: `--write` persists to the resolver's path with `session_id`, `created_ts`, and `text`
+      present and the text byte-identical to stdin. *(completed)*
+- [x] Case: speak mode with a recap file present prints that file's text and exits `0`.
+      *(completed)*
+- [x] Case: speak mode with no recap file recomposes from a fixture runtime metadata file and
+      exits `0` with non-empty output. *(completed)*
+- [x] Case: speak mode with neither file present prints the generic sentence and exits `0`.
+      *(completed: this case exposed and drove the fix for a real bug in `find_newest()` — see
+      progress file's approaches_tried)*
+- [x] Case: a malformed/truncated runtime metadata file yields the generic sentence and exit `0`,
+      never a non-zero exit. *(completed)*
+- [x] Case: `TTS_ENABLED=0` prints the text and leaves a `PATH`-shimmed piper stub's marker file
+      unwritten — audio suppressed, text intact. *(completed)*
+- [x] Case: with piper absent from a shimmed `PATH`, the script prints and exits `0`, and an
       espeak-ng stub's marker file is never written — the no-second-engine guarantee.
-- [ ] Case: recap text containing an apostrophe and a double quote round-trips `--write` → speak
-      unmangled — the regression guard against the existing hook's quoting shape.
-- [ ] Add the suite's row to `agent-system/extensions/core/scripts/tests/suite-classification.data`
+      *(completed: required a fully isolated PATH harness, since piper/paplay/espeak-ng are all
+      genuinely installed on the authoring host — see progress file's approaches_tried)*
+- [x] Case: recap text containing an apostrophe and a double quote round-trips `--write` → speak
+      unmangled — the regression guard against the existing hook's quoting shape. *(completed)*
+- [x] Add the suite's row to `agent-system/extensions/core/scripts/tests/suite-classification.data`
       (TAB-separated, class `unit`) and `"tests/test-orchestrate-recap.sh"` to `manifest.json`'s
-      `provides.scripts`.
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-unit-integration-boundary.sh` and
-      confirm the new suite is classified, not flagged.
+      `provides.scripts`. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-unit-integration-boundary.sh` and
+      confirm the new suite is classified, not flagged. *(completed: 1 unrelated pre-existing
+      violation found, naming a different, untouched suite — see issues.jsonl)*
+- [x] Added a ninth case beyond the eight explicit `Case:` bullets above, to match this phase's
+      own Goal/header framing of "nine-case test suite": paplay absent from a shimmed `PATH`
+      (piper present) also prints and exits `0`, with piper never invoked when there is no audio
+      sink to pipe into. *(completed, deviation noted in progress file)*
 
 **Timing**: 1.5 hours
 

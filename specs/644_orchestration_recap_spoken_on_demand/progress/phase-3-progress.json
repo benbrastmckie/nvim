@@ -1,0 +1,40 @@
+{
+  "phase": 3,
+  "phase_name": "Test suite for the recap script",
+  "started_at": "2026-11-18T02:35:00Z",
+  "last_updated": "2026-11-18T02:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-orchestrate-recap.sh with nine cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-recap.sh"]},
+    {"id": 2, "description": "Register suite in suite-classification.data and manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/suite-classification.data", "agent-system/extensions/core/manifest.json"]},
+    {"id": 3, "description": "Run lint-unit-integration-boundary.sh and lint-shellcheck.sh", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Fix a real bug in orchestrate-recap.sh's find_newest() surfaced by Case 4", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-recap.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {
+      "approach": "Ran the new suite with default (deploy-tree-first) subject resolution",
+      "result": "failed",
+      "reason": "resolved the DEPLOYED (stale) copy of lib/runtime-file-patterns.sh, which predates Phase 1's new runtime_recap_path() resolver -- 'command not found'. Fixed by running with CORE_TEST_SUBJECT_MODE=source-store during development, ahead of Phase 5's redeploy, per the resolver's own printed guidance."
+    },
+    {
+      "approach": "Case 4 (neither recap file nor meta file present) against a freshly-built sandbox with no prior --write call",
+      "result": "failed",
+      "reason": "exposed a REAL bug: find_newest()'s `find \"$dir\" ...` exits non-zero when $dir (specs/.orchestration/) was never created at all (distinct from an existing-but-empty directory, which find handles fine) -- under pipefail this non-zero propagated and set -e aborted the whole script before it could ever print the generic fallback sentence. Fixed by adding a `[ -d \"$dir\" ] || return 0` guard at the top of find_newest() in orchestrate-recap.sh."
+    },
+    {
+      "approach": "Cases 7 and 9 (piper-absent / paplay-absent) using a PATH of '<fakebin>:<real PATH>'",
+      "result": "failed",
+      "reason": "the authoring host genuinely has real piper, paplay, and espeak-ng installed system-wide, so 'absent from PATH' cases silently resolved the real binaries instead of exercising the intended absence branch -- Case 7 passed for the wrong reason (espeak-ng is never called by the script on ANY branch, so its assertion held regardless) and Case 9 failed outright (real paplay let real piper actually get invoked). Fixed by making each case's bin directory fully self-contained (every CORE_DEPS coreutil symlinked in from the real PATH once, plus only the fake audio binaries each case explicitly requests) and setting PATH to ONLY that directory with no real-PATH fallback -- a binary build_fakebin did not place there is now genuinely unreachable."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "3.9",
+      "description": "Added a ninth test case (paplay absent, piper present -> prints+exit 0, piper never invoked) beyond the eight explicit 'Case:' bullets in the plan's task list",
+      "type": "altered",
+      "reason": "The phase's own Goal and the plan's Research Integration section both describe a 'nine-case test suite', but only eight distinct Case: bullets are enumerated in the task list. Added a ninth case exercising the paplay-absence safety branch (an additive guard beyond the plan's three documented no-audio conditions, already noted as a Phase 1 deviation) to reconcile the stated case count with the enumerated list.",
+      "annotation": "*(deviation: altered -- added a ninth case not explicitly enumerated, to match the phase's own stated case count)*"
+    }
+  ]
+}
