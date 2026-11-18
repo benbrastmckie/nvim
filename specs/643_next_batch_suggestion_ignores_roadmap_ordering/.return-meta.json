@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1794980176_60fcdb_643",
-  "dispatch_seq": 1,
-  "findings_count": 10,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/643_next_batch_suggestion_ignores_roadmap_ordering/reports/01_roadmap_aware_suggester.md",
-      "summary": "Recommends Direction (a): walk roadmap_batches in authored array order inside orchestrate-suggest-next-batch.sh's mode_next_batch(), readiness-filter each batch's task_ids (reusing build_ready_pool()'s predicate and render_next()'s terminal-member-omission precedent), probe the first non-empty filtered batch through the unmodified suggest_from_candidates()/orchestrate-batch-admit.sh machinery, and fall back to the existing three mechanical options with an explicit stated reason only when no authored batch is admissible. Validated the rule against the live state.json corpus (4 leading batches skip at zero probe cost; batch 5's singleton [577] is the first live candidate) and enumerates the required test-suite additions (absent/empty roadmap_batches, no-admissible-batch, partial-filtered-batch, internal-collision) and the one doc anchor (orchestrate-batch-results-template.md) to update."
+      "type": "plan",
+      "path": "specs/643_next_batch_suggestion_ignores_roadmap_ordering/plans/01_roadmap-aware-next-batch-suggestion.md",
+      "summary": "5-phase plan (6h) making roadmap_batches the primary candidate source for /orchestrate's conclusion-stage next-batch suggestion, with an explicit mechanical fallback and 8 new regression cases."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1794980176_60fcdb_643",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 6,
+    "dependency_waves": [[1], [2], [3, 4], [5]]
+  },
   "memory_candidates": [
     {
-      "content": "orchestrate-suggest-next-batch.sh (core extension) has zero coupling to specs/state.json's roadmap_batches array -- its three selection-doctrine criteria (territory/topic/width) all sort the ready pool ascending by project_number and truncate to MAX_TASKS=8, an age bias structurally blind to the authored roadmap ordering. orchestrate-batch-admit.sh (the real admissibility predicate) has no readiness notion at all -- it checks only file-scope collision and self-modification hazard. Readiness (non-terminal, not hold/implementing/blocked/partial, every dependency completed) is a separate local predicate, already implemented twice independently: build_ready_pool() in the suggester, and a terminal-member filter inside roadmap-integration.sh's render_next() (\"a batch with a mix of terminal and non-terminal members renders its still-live members only\"). Any roadmap-aware candidate source should reuse build_ready_pool()'s fuller bar and render_next()'s precedent rather than inventing a third readiness check.",
+      "content": "orchestrate-suggest-next-batch.sh renders its --help by a FIXED line range (usage() does `sed -n '2,94p'` on its own source, at the function's definition site around line 99), so any header documentation added below line 94 is silently absent from --help output unless that range is widened in the same edit. This is a general hazard for every script in agent-system/extensions/core/scripts that implements usage() this way: a header edit and a usage() range edit are one atomic change, and no gate detects the mismatch -- the script still runs, --help still exits 0, and the new documentation simply never prints. Separately: editing any indexed context/** file moves that file's line_count entry in agent-system/extensions/core/index-entries.json (check-extension-docs.sh Rule R), which deploy-headless.sh auto-repairs; since no pre-commit hook is installed in this repository the check is advisory, so a plan may declare index-entries.json in the phase that moves the count and reconcile it in a later deploy phase.",
       "category": "PATTERN",
-      "source_artifact": "specs/643_next_batch_suggestion_ignores_roadmap_ordering/reports/01_roadmap_aware_suggester.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["orchestrate-suggest-next-batch", "roadmap_batches", "build_ready_pool", "render_next", "readiness-predicate"]
-    },
-    {
-      "content": "roadmap_batches array position IS the batch's priority (state-schema.json's roadmapBatchEntry description is explicit: no separate priority field is ever read for batch ordering). When validating any roadmap-consuming selection rule against the live specs/state.json corpus, simulate readiness-filtering each batch's task_ids (status + dependency-completion) BEFORE assuming the batch is probe-worthy -- on the live corpus checked 2026-11-17, the 4 highest-priority authored batches all filtered to empty (every member already mid-lifecycle from an in-flight orchestration), and the 5th batch was the first with a non-empty filtered set. A walk-and-filter rule should skip an empty-filtered batch at zero probe-invocation cost rather than spending a probe call to discover emptiness.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/643_next_batch_suggestion_ignores_roadmap_ordering/reports/01_roadmap_aware_suggester.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["roadmap_batches", "array-position-priority", "readiness-filter", "probe-invocation-budget"]
+      "source_artifact": "specs/643_next_batch_suggestion_ignores_roadmap_ordering/plans/01_roadmap-aware-next-batch-suggestion.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["usage-sed-range", "help-output-drift", "index-entries-line-count", "plan-authoring", "coupled-generated-surface"]
     }
   ],
-  "next_steps": "Run /orchestrate 643 to create implementation plan"
+  "next_steps": "Run /orchestrate 643 to execute the plan",
+  "dispatch_seq": 2
 }

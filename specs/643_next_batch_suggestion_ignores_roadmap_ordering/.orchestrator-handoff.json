@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Authored a 5-phase, 6-hour plan implementing the research report's Direction (a): factor orchestrate-suggest-next-batch.sh's readiness predicate into a shared set, add a roadmap_batches walk as Mode A's primary candidate source (readiness-filter, zero-probe skip on empty, probe the first non-empty batch through the unmodified suggest_from_candidates/orchestrate-batch-admit.sh chain), then fall back to the three mechanical options only with an explicit stated reason. Phases 3 and 4 (test suite, docs) run in parallel; the final phase redeploys and runs the complete verify-deploy.sh gate set plus a live acceptance attestation. Re-validated all four carried description figures (1085 lines, zero roadmap refs, source_dir, binding constraint) and found two new mechanical couplings the research missed: usage()'s fixed sed -n '2,94p' header range and index-entries.json's line_count drift.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/643_next_batch_suggestion_ignores_roadmap_ordering/plans/01_roadmap-aware-next-batch-suggestion.md",
+      "summary": "5-phase plan (6h) making roadmap_batches the primary candidate source for /orchestrate's conclusion-stage next-batch suggestion, with an explicit mechanical fallback and 8 new regression cases."
+    }
+  ],
+  "dispatch_seq": 2
+}
