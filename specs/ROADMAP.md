@@ -140,7 +140,7 @@ pass. `/todo` and `/review` reach `--regenerate` behind the shared preflight cla
 `skill-orchestrate` names and a dedicated suite covers.
 
 ```
-/orchestrate 624, 586, 604, 605   # Gate 8's residual roster, its two lints and the defect recorder, serialized on one suite
+/orchestrate 586, 605   # Gate 8's residual roster, its two lints and the defect recorder, serialized on one suite
 /orchestrate 577, 609   # The failure-accounting chain's tail, held behind the prioritized head both members depend on
 /orchestrate 629, 630, 631, 632, 633   # Five already-diagnosed findings one full battery filed: two gate hits, a roster gap, two defects
 /orchestrate 607, 610   # Per-gate timeout and gate 20 ceiling first, then the load-adaptive gate 8 and dispatch-stall fix
@@ -653,7 +653,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 
 ## Open work
 
-**Core agent system (40)**
+**Core agent system (39)**
 ```
 439 blocked:431     Rule on the propagation model for the bounded-wait agent contract
 452 blocked:451     Require a verification criterion over a repo-wide gate with standing pre-exis...
@@ -669,7 +669,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 579 blocked:564     Record the selector's full-path-set aggregation rule in the Tier Justificatio...
 581 blocked:438,479,492,580  Extract one shared AskUserQuestion option renderer and adopt it acro...
 588 blocked:509     Bar a pre-redeploy plan step from naming a deploy-tree-resolved subject unles...
-605 blocked:586,604 Flag an advisory known-failures roster row whose named suite now passes
+605 blocked:586     Flag an advisory known-failures roster row whose named suite now passes
 338 ready           Classify every task-support file as tracked or ignored
 410 ready           Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on ...
 421 ready           Close three gaps in the telemetry --meta evidence consumer
@@ -692,7 +692,6 @@ None is a whole-corpus discovery scope, and none is a defect.
 575 ready           Stop the cross-phase ceiling check reading a stop-word as a unit and false-po...
 580 ready           Correct the interactive-selection threshold model to AskUserQuestion's real f...
 590 ready           Resolve the /ide dead-command-recommendation findings
-604 ready           Lint-time detector for drifted test-fixture dependency declarations, in both ...
 613 ready           session_liveness_same_process_orphan_lock
 618 ready           working_tree_residue_disposition_policy
 ```
@@ -741,7 +740,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 504 ready           Reconcile the Lean Goals-block harvester with its documented contract
 ```
 
-**Orchestrator (7)**
+**Orchestrator (6)**
 ```
 513 blocked:479     Mechanically detect a plan phase that closed without its own commit
 518 blocked:472     State the blockers[] admission contract and continuation-on-partial requireme...
@@ -749,7 +748,6 @@ None is a whole-corpus discovery scope, and none is a defect.
 472 ready           Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop...
 477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
 514 ready           Convergence guard blind to zero-dispatch cycles
-624 ready           defect_record_unresolvable_in_deploy_consumer
 ```
 
 **Agent system (53)**
@@ -816,7 +814,7 @@ None is a whole-corpus discovery scope, and none is a defect.
 
 **Uncategorized (1)**
 ```
-586 ready           Stand up the suite and gate wall-clock cost consumer: delete, optimize, or de...
+586 PARTIAL         Stand up the suite and gate wall-clock cost consumer: delete, optimize, or de...
 ```
 
 ## Checks before and after every call
