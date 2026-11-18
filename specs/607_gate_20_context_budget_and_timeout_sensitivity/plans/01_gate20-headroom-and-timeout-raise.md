@@ -279,29 +279,48 @@ itself.
 
 ---
 
-### Phase 3: Redeploy and full-gate verification [NOT STARTED]
+### Phase 3: Redeploy and full-gate verification [COMPLETED]
 
 **Goal**: Regenerate the deployed tree from the edited source store and confirm the whole gate
 battery is green, with the two edited files' deployed mirrors content-hash equal to their
 sources.
 
 **Tasks**:
-- [ ] Confirm Phases 1 and 2 are both committed before deploying — a deploy mid-edit publishes
-      a half-applied state.
-- [ ] Run the redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the
+- [x] Confirm Phases 1 and 2 are both committed before deploying — a deploy mid-edit publishes
+      a half-applied state. *(completed — `git log --oneline -3` showed both phase commits
+      landed, with no uncommitted change to either of this task's edited files)*
+- [x] Run the redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh` (or the
       invocation the repo's own deploy path documents, if it differs at implementation time).
-- [ ] Confirm the two deployed mirrors now match their sources:
+      *(completed)*
+- [x] Confirm the two deployed mirrors now match their sources:
       `diff agent-system/extensions/core/context/config/orchestrator-context-budget.json .claude/context/config/orchestrator-context-budget.json`
       and
       `diff agent-system/extensions/core/scripts/gate-registry.data .claude/scripts/gate-registry.data`,
-      both silent.
-- [ ] Run the full gate sweep and confirm gate 5 (content-hash equality) is green — it is
+      both silent. *(completed — both silent, plus a third confirming diff on
+      known-failures.txt, also silent)*
+- [x] Run the full gate sweep and confirm gate 5 (content-hash equality) is green — it is
       expected RED between the Phase 1/2 edits and this redeploy, and its return to green is
-      the specific signal this phase exists to produce.
-- [ ] Confirm the raised bounds behave as intended: gate 10 completes without a TIMEOUT finding
+      the specific signal this phase exists to produce. *(deviation: altered — per this
+      dispatch's Batch Gate Deferral directive, the full unflagged sweep was NOT independently
+      re-run; discharged instead via `verify-deploy.sh --only-gate 5,10,20 --skip-unchanged`.
+      Gate 5 still FAILs, but its 4 findings are exclusively on files OUTSIDE this task's
+      file_scope -- context/standards/orchestrator-runtime-files.md,
+      scripts/lib/runtime-file-patterns.sh, scripts/orchestrate-build-aux-dispatch.sh,
+      scripts/tests/test-runtime-file-tracking.sh -- committed by concurrent sibling tasks at
+      2026-11-18T14:33-14:39, landing in the window around this task's own deploy. This task's
+      own three edited files are separately diff-confirmed content-hash equal above. The
+      full-sweep gate-5 return to green is deferred to the batch's own close sweep, which will
+      pick up the now-settled sibling commits; see issues.jsonl for the full attribution.)*
+- [x] Confirm the raised bounds behave as intended: gate 10 completes without a TIMEOUT finding
       in the sweep. If the host is idle at verification time the raise will not be *exercised*;
-      record that honestly rather than claiming the contention case was proven.
-- [ ] Record issues and wins for this phase via `issue-record.sh` as they arise.
+      record that honestly rather than claiming the contention case was proven. *(completed —
+      gate 10 PASSed cleanly and quickly in this scoped run; the host was not under the kind of
+      concurrent load that previously triggered the 60s timeout, so the raise's contention-case
+      benefit is not directly exercised/proven here, only its non-interference with the idle
+      case)*
+- [x] Record issues and wins for this phase via `issue-record.sh` as they arise. *(completed —
+      three issues recorded across this dispatch: two verification nuances in Phases 1-2, one
+      scope-excursion attribution in this phase)*
 
 **Timing**: 1 hour
 
