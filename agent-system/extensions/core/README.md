@@ -22,7 +22,7 @@ Core is not a domain extension and is never loaded via the extension picker. It 
 
 ## Commands
 
-All 19 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (skill/agent) -> GATE OUT (postflight) -> COMMIT. (`/please` is the one exception: it is a direct-execution, user-only confirmation surface with no GATE IN/OUT lifecycle of its own — see its own doc.)
+All 20 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (skill/agent) -> GATE OUT (postflight) -> COMMIT. (`/please` is the one exception: it is a direct-execution, user-only confirmation surface with no GATE IN/OUT lifecycle of its own — see its own doc.)
 
 | Command | Usage | Description |
 |---------|-------|-------------|
@@ -43,6 +43,7 @@ All 19 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE 
 | `/merge` | `/merge` | Create pull/merge request for current branch |
 | `/project-overview` | `/project-overview` | Interactive repo scan and project-overview.md generation |
 | `/tag` | `/tag` | Create semantic version tag (user-only) |
+| `/recap` | `/recap` | Speak the latest `/orchestrate` run's recap through piper, or print it (user-only) |
 | `/zulip` | `/zulip` | Fetch a Zulip thread via API and write formatted JSON to a file |
 
 Multi-task syntax: the research, plan, and implement phases (dispatched via `/orchestrate`) accept comma-separated and range task numbers (e.g., `/orchestrate 7,22-24 --research`). Flags like `--force`, `--fast`, `--hard` modify behavior.
