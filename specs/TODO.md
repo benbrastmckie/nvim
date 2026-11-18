@@ -1,5 +1,5 @@
 ---
-next_project_number: 652
+next_project_number: 654
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 652
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640,645,646,647 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640,645,646,647,652,653 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,579,583,592,593,598,605,609,610,630,648 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,564,577,586,599,607,629,647 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,486,492,509,513,518,561,566,594,649,651 | 439,452,472,479,484,491,552,593,610,648 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,571,581,588,595,641 | 454,472,486,492,509,518,539,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
@@ -107,6 +107,8 @@ next_project_number: 652
 
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
+652 [NOT STARTED] — Resolve validate-artifact.sh's Tier-Justification corpus...
+653 [NOT STARTED] — Give the gate mutex a host-scoped form, because every lock...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -185,6 +187,81 @@ next_project_number: 652
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 653. Host scoped gate mutex
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Give the gate mutex a host-scoped form, because every lock this system ships is invisible to a sibling repository running the same battery
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** ; both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN, MEASURED. In a consumer repository (sf1-engine) an implementation phase started a deliberately-idle-host timing baseline at loadavg 2.76 on 24 cores, having first confirmed via ps that no run-all.sh/verify-deploy.sh process was running. Five minutes in, concurrent run-all.sh --jobs auto invocations were observed against BOTH that repository's own tree AND the agent-system source store at a different PROJECT_ROOT. One-minute loadavg reached 12.52 and the capture was killed rather than reported as a clean baseline. The phase closed PARTIAL and the batch made no further progress.
+
+THE STRUCTURAL FINDING, RE-DERIVE BEFORE EDITING. scripts/task-lock.sh's cmd_gate_acquire locks "$PROJECT_ROOT/specs/.gate-lock", and its siblings (.commit-lock, .scope-lock, .deploy-lock) are the same shape: every mutex this system ships is REPO-SCOPED BY CONSTRUCTION. A second battery started from a different repository is therefore not merely unserialized -- it is structurally invisible. A single-flight guard built on gate-acquire would have acquired uncontested and reported single-flight while a second battery ran. Confirm this by reading the four lock call sites before designing anything.
+
+WHAT THIS RECORD OWNS: the host-scoped locking primitive and its contract. It does NOT own any consumer repository's own harness, and it does not own the orchestration-close ownership question.
+
+DELIVERABLES.
+
+1. A host-scoped lock root, resolved rather than hardcoded: $XDG_RUNTIME_DIR when set, else /run/user/$UID, else a documented temp-dir fallback. Research must settle, with evidence rather than assumption: that root's lifetime across logout and reboot; its permissions under a single-user and a multi-user host; what happens when it is absent, unwritable, or on a filesystem where flock behaves differently; and whether a stale holder from a killed process is reaped by the same liveness logic task-lock.sh already uses for its repo-scoped locks (scripts/test-task-lock-liveness.sh and test-task-lock-reap.sh are the existing precedent and must keep passing).
+
+2. An OPT-IN host-scoped acquire form alongside the existing repo-scoped one. The repo-scoped behaviour stays the default and stays byte-for-byte unchanged: a caller that does not ask for host scope must observe exactly today's semantics. Name the new form explicitly in the usage block.
+
+3. State the guard's REAL limit in its own contract text, prominently: a mutex binds only callers that acquire it. A host-scoped lock does not stop a battery started by a process that never asked for the lock -- a hand-run command, an editor task, another tool. This record must not leave a reader believing the guard makes contamination impossible; it makes CO-OPERATING callers serialize, which is a strictly weaker and honest claim.
+
+4. Wire the gate layer's own single-flight bracket to the host-scoped form, since a full gate battery is exactly the cross-repository-contending workload that motivated this. Keep the repo-scoped bracket as an inner lock rather than replacing it, so per-repo serialization is not lost.
+
+5. Coverage: a double-start test whose second invocation runs FROM A DIFFERENT WORKING DIRECTORY. A same-repository double-start demo cannot distinguish a host-scoped guard from the repo-scoped one it replaces, so a same-repo test would pass identically before and after this change and prove nothing. Also cover the absent/unwritable lock-root degradation path.
+
+HARD CONSTRAINTS.
+- Fail-open on lock-root trouble, matching cmd_gate_acquire's existing posture: a guard that cannot acquire must not block the work it guards. A verification mechanism that can refuse to let verification run is a worse failure than the contention it prevents.
+- Do not change the default scope of any existing lock call site as a side effect. Every scope change is deliberate, named, and justified in the plan.
+- No second mutex implementation: this extends task-lock.sh, it does not add a parallel locking library.
+
+CROSS-REPOSITORY NOTE (prose, not a state edge). A consumer repository (sf1-engine) carries its own open record for a three-root battery harness whose own plan independently decided its single-flight guard must be host-scoped and must not be built on gate-acquire. That record builds its guard locally and does not block on this one; if this lands and is redeployed first, that harness should call this primitive instead of rolling its own. Neither record is a hard dependency of the other.
+
+DONE WHEN: a host-scoped acquire form exists and is opt-in; the repo-scoped default is provably unchanged; the gate battery's bracket uses it with the repo-scoped lock retained inside; the guard's binds-only-cooperating-callers limit is stated in its own contract; a cross-directory double-start test fails without the change and passes with it; and the lock-root degradation path is covered and fails open.
+
+---
+
+### 652. Validate artifact corpus resolution
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Resolve validate-artifact.sh's Tier-Justification corpus against the repository under validation, not the deployed agent-system tree
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** ; both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN, MEASURED IN A CONSUMER REPOSITORY. Observed in sf1-engine, which carries its own copied 77-suite battery under extensions/core/scripts/tests/ (a copy of an upstream reference snapshot, not an authored divergence). A plan whose phases verify against THAT corpus had every Tier Justification measured against it, correctly. scripts/validate-artifact.sh's own advisory per-phase Tier-Justification scan then reported __FULL_SWEEP__ and a "fabricated claim" warning for four phases, because the scan sources the DEPLOYED library at "$_validate_script_dir/lib/suite-selection-lib.sh" -- the agent system's own ~170-suite corpus -- rather than the corpus the plan's phases actually run against. The cost was not merely cosmetic: the plan had to carry a dedicated decision explaining the four warnings purely so a later implementer would not "fix" a correct suite name to silence a false warning. That is a durable tax on every consumer repository running its own suite corpus.
+
+RE-DERIVE BEFORE EDITING (figures and line numbers move):
+- scripts/validate-artifact.sh resolves its library via a candidate list rooted at its own script directory; confirm the exact resolution site and whether any other scan in the same script shares it.
+- scripts/lib/verification-scope-lib.sh ALREADY exposes verification_scope_project_suite_roots <repo_root>, read from <repo_root>/.claude-extensions.json's verification_scope key, defaulting to empty output when undeclared. This is the existing declaration surface; do NOT add a second one.
+- context/standards/repo-level-declarations.md carries that key's schema and its survival guarantee across load/unload/redeploy cycles.
+- scripts/lib/suite-resolver-lib.sh is the precedent for composing a declared backend with the default one, including its conformance check and its union/replace composition rule.
+
+DELIVERABLES.
+
+1. Resolve the scan's corpus through an ordered candidate list rather than a single script-relative path: the repository-under-validation's own declared project suite root(s) first (verification_scope_project_suite_roots), then the deployed tree as today's fallback. A repository declaring nothing must be byte-for-byte unaffected -- this is the fail-open posture verification-scope-lib.sh already commits to, not a new policy.
+
+2. Name the corpus in the warning text. Whatever corpus the scan used, the advisory line must say which one and where it was resolved from, so a reader can tell a genuine fabricated-claim finding from a corpus mismatch without reading this script. A warning that cannot be attributed to a corpus is the actual defect being fixed; silencing the warning is NOT the goal and must not be the outcome.
+
+3. Keep the scan ADVISORY. It does not gain blocking power here. Its exit code contract is unchanged.
+
+4. Coverage in scripts/tests/test-validate-artifact.sh: a declared-project-suite-root repository resolves against its own corpus; an undeclared one resolves exactly as today; a declared-but-absent root degrades to the fallback with a named warning rather than a hard failure. That suite is classified `integration` in scripts/tests/suite-classification.data (it invokes deploy-headless.sh, verify-deploy.sh and run-all.sh), so budget for its cost and do not convert it to a unit suite as a side effect.
+
+HARD CONSTRAINTS.
+- Do not add a second declaration surface, a second resolver, or a second corpus-discovery engine. verification_scope is the declaration point and suite-selection-lib.sh remains the default backend.
+- Do not weaken or remove the fabricated-claim detection. It catches a real authoring error; this record only makes it attributable.
+
+DONE WHEN: a consumer repository declaring its own project suite root gets Tier-Justification verdicts measured against that corpus; an undeclared repository's behaviour is byte-identical to today; every advisory warning names the corpus it was measured against; and the three cases above are covered in that script's own suite.
+
+---
 
 ### 651. Orchestration close owns full battery
 - **Status**: [NOT STARTED]
