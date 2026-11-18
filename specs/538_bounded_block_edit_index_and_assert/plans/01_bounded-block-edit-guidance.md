@@ -266,36 +266,36 @@ read-through.
 
 ---
 
-### Phase 2: Wire Both Audiences' Referrers [NOT STARTED]
+### Phase 2: Wire Both Audiences' Referrers [COMPLETED]
 
 **Goal**: Make the new guidance reachable from the implementer path
 (`agents/general-implementation-agent.md`) and from the plan-author/broad path
 (`merge-sources/claudemd.md`), each using the mechanism already established in that file.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md`'s
+- [x] Re-read `agent-system/extensions/core/agents/general-implementation-agent.md`'s
       `## Context References` section immediately before editing (a sibling dispatch may have
-      touched the file).
-- [ ] Add exactly one bullet to that list, same shape as its existing sibling-pattern bullets
+      touched the file). *(completed)*
+- [x] Add exactly one bullet to that list, same shape as its existing sibling-pattern bullets
       (`` - `@.claude/context/patterns/bounded-block-edit.md` - `` plus a short when-to-load
       clause). The clause must name the situation in mechanism terms a reader recognizes without
       prior jargon: an in-file edit to a bounded block of a line-structured file, especially one
       done by reconstructing the file from string slices. Apply it with the `Edit` tool on a unique
-      `old_string` (the adjacent `plan-revision-notification.md` bullet line).
-- [ ] Re-read `agent-system/extensions/core/merge-sources/claudemd.md` around its
+      `old_string` (the adjacent `plan-revision-notification.md` bullet line). *(completed)*
+- [x] Re-read `agent-system/extensions/core/merge-sources/claudemd.md` around its
       `## jq Command Safety` section (lines 250-268 as of authoring) for the pointer-section
-      precedent.
-- [ ] Add one short `##` section to `claudemd.md`, mirroring that precedent's shape: two or three
+      precedent. *(completed)*
+- [x] Add one short `##` section to `claudemd.md`, mirroring that precedent's shape: two or three
       sentences stating the trigger and the first-choice mechanism inline, then a
       `Full documentation:` line pointing at
       `.claude/context/patterns/bounded-block-edit.md`. Do not duplicate the recipe there. Place it
-      adjacent to `## jq Command Safety` so the two editing-hazard pointers sit together.
-- [ ] Assert the post-state of each edit in the same breath as the write: the `##` section count of
+      adjacent to `## jq Command Safety` so the two editing-hazard pointers sit together. *(completed)*
+- [x] Assert the post-state of each edit in the same breath as the write: the `##` section count of
       `claudemd.md` increased by exactly one and its total line count increased by only the lines
       added; the `- `@`` bullet count in the agent file's `## Context References` increased by
-      exactly one.
-- [ ] Commit with an explicit two-file `git add`, after reading `git status --short` and
-      `git diff --staged`.
+      exactly one. *(completed: 18->19 sections, 282->292 lines, 12->13 bullets)*
+- [x] Commit with an explicit two-file `git add`, after reading `git status --short` and
+      `git diff --staged`. *(completed)*
 
 **Timing**: 0.75 hours
 

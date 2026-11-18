@@ -267,6 +267,16 @@ Piping an entire JSON file through jq also reflows every record's formatting reg
 which fields the filter targets; see that same file's "jq Rewrites Reflow Unrelated JSON
 Formatting" section for the checkable trigger condition and the copyable recipe.
 
+## Bounded Block Edits
+
+Editing a bounded block inside a larger line-structured text file (a phase inside a plan, a
+section inside a document) by reconstructing the file from string slices of its own content, as
+opposed to replacing identified lines in place, risks silently re-emitting or dropping a region
+of the file. The `Edit` tool with a unique `old_string` is the first-choice mechanism for a small
+bounded edit, since it already fails loudly on an absent or ambiguous match.
+
+Full documentation: `.claude/context/patterns/bounded-block-edit.md`
+
 ## Syncprotect
 
 The `.syncprotect` file at the **project root** (not inside `.claude/`) lists relative paths

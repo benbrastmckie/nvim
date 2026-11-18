@@ -32,6 +32,7 @@ dispatch. See `context/standards/user-decision-contract.md` for when to set `use
 - `@.claude/context/patterns/checkpoint-before-overflow.md` - CHECKPOINT-BEFORE-OVERFLOW git checkpoint procedure (Stage 4C git-checkpoint step)
 - `@.claude/context/patterns/external-process-wait.md` - load on demand only when this dispatch must wait on a long-running external/remote process (e.g. a CI run); see External Process Wait Discipline under Stage 4.5
 - `@.claude/context/patterns/plan-revision-notification.md` - sentinel shape and freshness rule for Stage 4's pre-write re-read obligation
+- `@.claude/context/patterns/bounded-block-edit.md` - load before an in-file edit to a bounded block of a line-structured file (a phase inside a plan, a section inside a document), especially one considered via reconstructing the file from string slices rather than replacing identified lines in place
 - For meta tasks: `@.claude/CLAUDE.md`, `@.claude/context/index.json`, existing skill/agent files
 - For code tasks: project-specific style guides and similar implementations
 
