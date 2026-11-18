@@ -1301,7 +1301,7 @@ cat > "$CASE21_DIR/settings.json" << 'EOF'
             "type": "command"
           }
         ],
-        "matcher": "permission_prompt|elicitation_dialog"
+        "matcher": "permission_prompt|idle_prompt|elicitation_dialog"
       }
     ],
     "Stop": [
@@ -1526,7 +1526,7 @@ cat > "$CASE23B_DIR/settings.json" << 'EOF'
     ],
     "Notification": [
       {
-        "matcher": "permission_prompt|elicitation_dialog",
+        "matcher": "permission_prompt|idle_prompt|elicitation_dialog",
         "hooks": [
           {
             "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tts-notify.sh 2>/dev/null || echo '{}'",
