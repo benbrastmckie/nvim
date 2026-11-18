@@ -1,17 +1,22 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 6,
-  "summary": "Authored a 6-phase plan for the TTS completion/input-needed fix, in 5 dependency waves at 8.5 hours total. All three defects re-confirmed verbatim against the live source store before planning. Plan settles the two choices research left open (75s non-sliding cooldown window, runtime-dir pane-keyed stamp) and encodes one ordering constraint neither the description nor the research states: the additive-only merge engine makes the cooldown a hard prerequisite for the matcher widening, so Phase 2 depends on Phase 1.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 11,
+  "summary": "Implemented all 6 plan phases: a pane-keyed cooldown gate and a distinguishable --stop mode in tts-notify.sh, Stop-hook wiring in claude-stop-notify.sh (both existing guards preserved byte-identical), the Notification matcher widened to include idle_prompt in both settings surfaces with a new parity check, two documentation surfaces reconciled, three new test suites created and registered, and a redeploy to RESULT=landed_verify_clean. All six acceptance criteria were demonstrated against the deployed tree, including replaying the real measured notification cadence from an external repository's log.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/526_tts_announce_completion_and_input_needed/summaries/01_tts-completion-input-needed-summary.md",
+      "summary": "Full implementation summary covering all 6 phases, decisions, verification evidence per acceptance criterion, and follow-ups."
+    },
     {
       "type": "plan",
       "path": "specs/526_tts_announce_completion_and_input_needed/plans/01_tts-completion-input-needed.md",
-      "summary": "6-phase plan: cooldown plus --stop mode, matcher widening with a parity check, Stop-hook wiring, documentation reconciliation, manifest/redeploy, live acceptance."
+      "summary": "6-phase plan, all phases marked [COMPLETED]."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
   "blockers": [],
-  "next_action_hint": "Run /orchestrate 526 to execute the plan. Phase 1 (tts-notify.sh cooldown) must land before Phase 2 (matcher widening)."
+  "next_action_hint": "Task complete. Follow-ups recorded for other owners: hook_registration_set_lint_assertion's frozen theorem_proving_in_lean4 exemplar fixture needs refreshing to the new matcher value; test-lint-fixture-dependency-declaration.sh's pre-existing suite-classification.data gap (unrelated, from a different completed task) remains open."
 }
