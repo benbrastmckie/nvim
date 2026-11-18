@@ -501,35 +501,58 @@ structure rather than this sentence.
 
 ---
 
-### Phase 5: Deploy, verify, and acceptance walkthrough [NOT STARTED]
+### Phase 5: Deploy, verify, and acceptance walkthrough [COMPLETED]
 
 **Goal**: The source-store work is deployed, the full gate set is green, and all seven acceptance
 criteria are demonstrated against the deployed tree.
 
 **Tasks**:
 
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` and confirm `RESULT=landed_verify_clean`. This
+- [x] Run `bash .claude/scripts/deploy-headless.sh` and confirm `RESULT=landed_verify_clean`. This
       also regenerates both extensions' `index-entries.json` line counts, reconciling the deferred
-      coupled surfaces declared in Phases 2 and 4.
-- [ ] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Resolve every newly
+      coupled surfaces declared in Phases 2 and 4. *(completed: first pass was landed_verify_red
+      -- 3 findings, two fixed in this phase (gate 20 baseline move, a self-created stray
+      directory removed) and one deferred-coupled-surface that this same redeploy resolved; final
+      redeploy reported RESULT=landed_verify_clean, 41/41 gates)*
+- [x] Run the complete gate set: `bash .claude/scripts/verify-deploy.sh`. Resolve every newly
       introduced finding; a pre-existing finding is recorded, not silently absorbed.
-- [ ] Acceptance (1): run an orchestration that reaches its conclusion stage, or exercise the Step
+      *(deviation: per this dispatch's Batch Gate Deferral directive (final-phase-only
+      carve-out), the standalone unscoped invocation was replaced with a scoped narrowing run
+      plus deploy-headless.sh's own pre-existing inline --skip-slow pass, which is what actually
+      produced the 41/41-clean result recorded above; the full gate set including gate 8 is
+      deferred to the once-per-invocation batch-level stage -- see progress file's
+      batch_gate_deferral_notes)*
+- [x] Acceptance (1): run an orchestration that reaches its conclusion stage, or exercise the Step
       6 invocation shape directly, and confirm a `.recap-{session_id}.json` lands under
-      `specs/.orchestration/` and the written output names `/recap`.
-- [ ] Acceptance (2): run `/recap` and confirm the recap is spoken through piper.
-- [ ] Acceptance (3): move the recap file aside, run `/recap`, and confirm it recomposes rather
-      than failing.
-- [ ] Acceptance (4): with piper shimmed off `PATH` (or the voice model path pointed at a
+      `specs/.orchestration/` and the written output names `/recap`. *(confirmed: a --write call
+      against the deployed script landed the expected JSON under the real specs/.orchestration/,
+      and orchestrate-batch-results-template.md's Next Steps block names /recap)*
+- [x] Acceptance (2): run `/recap` and confirm the recap is spoken through piper. *(confirmed: the
+      deployed script's speak mode exited 0 with the correct printed text, and the exact
+      piper|paplay pipeline shape it uses was independently run in the foreground end-to-end with
+      real audio synthesis and playback, exit 0)*
+- [x] Acceptance (3): move the recap file aside, run `/recap`, and confirm it recomposes rather
+      than failing. *(confirmed: recomposed a real sentence from a genuine prior orchestration's
+      .return-meta-multi-*.json, exit 0)*
+- [x] Acceptance (4): with piper shimmed off `PATH` (or the voice model path pointed at a
       non-existent file), confirm `/recap` prints the text and exits `0`, with no second engine
-      invoked.
-- [ ] Acceptance (5): with `TTS_ENABLED=0`, confirm audio is suppressed on every path and the
-      printed text is unchanged.
-- [ ] Acceptance (6): confirm the Move 5 allowlist names the script in the deployed tree.
-- [ ] Acceptance (7): grep every file this task touched under `agent-system/**` for task-number
-      references and record-versioning language; both must be absent.
-- [ ] Confirm no file under `.claude/**` was hand-authored at any point in this task, and that no
-      event-announcement hook file was modified.
-- [ ] Record issues and wins in `issues.jsonl` as they arise, and write the completion summary.
+      invoked. *(confirmed: a nonexistent PIPER_VOICE path printed the text and exited 0)*
+- [x] Acceptance (5): with `TTS_ENABLED=0`, confirm audio is suppressed on every path and the
+      printed text is unchanged. *(confirmed)*
+- [x] Acceptance (6): confirm the Move 5 allowlist names the script in the deployed tree.
+      *(confirmed: .claude/context/standards/postflight-tool-restrictions.md's Bash row names
+      orchestrate-recap.sh; the deployed script/command/skill files all exist)*
+- [x] Acceptance (7): grep every file this task touched under `agent-system/**` for task-number
+      references and record-versioning language; both must be absent. *(confirmed: zero
+      task-number hits; the handful of "used to"/"previously" string matches are either
+      pre-existing content this task never wrote, or ordinary English describing code behavior
+      rather than this repository's own draft history -- see progress file)*
+- [x] Confirm no file under `.claude/**` was hand-authored at any point in this task, and that no
+      event-announcement hook file was modified. *(confirmed via full git status review: zero
+      event-hook files touched; the only `.claude/**` changes are the sanctioned
+      deploy-headless.sh regeneration)*
+- [x] Record issues and wins in `issues.jsonl` as they arise, and write the completion summary.
+      *(completed)*
 
 **Timing**: 1 hour
 
