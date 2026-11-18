@@ -229,33 +229,37 @@ check is `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh --sk
 
 ---
 
-### Phase 2: Mirror Note on `skills/skill-reviser/SKILL.md` [NOT STARTED]
+### Phase 2: Mirror Note on `skills/skill-reviser/SKILL.md` [COMPLETED]
 
 **Goal**: A dispatched agent that reaches the skill directly (it is listed as an available skill
 in a dispatched session and carries no `user-only` marker) learns at the top of the file that
 direct invocation is not sanctioned, and is sent to the file's own Stage 7 block.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/skills/skill-reviser/SKILL.md` in full immediately
-      before editing.
-- [ ] Extend the existing `## Trigger Conditions` section (which already states the skill
+- [x] Re-read `agent-system/extensions/core/skills/skill-reviser/SKILL.md` in full immediately
+      before editing. *(completed)*
+- [x] Extend the existing `## Trigger Conditions` section (which already states the skill
       activates when "`/revise` command is invoked") with the mirror note, or add a short
       sibling subsection directly beneath it — not a new top-level section competing with it.
-- [ ] State that this skill is not a sanctioned direct-invocation target for a dispatched agent,
+      *(completed)*
+- [x] State that this skill is not a sanctioned direct-invocation target for a dispatched agent,
       with the same two reasons Phase 1 gives (the wrapping command owns task-lock acquisition
       and `.return-meta.json` cleanup; neither happens on a bare skill dispatch) — reasons, not a
-      bare prohibition.
-- [ ] Point a dispatched reader down to this same file's Stage 7 "For Description Update" block
+      bare prohibition. *(completed)*
+- [x] Point a dispatched reader down to this same file's Stage 7 "For Description Update" block
       as the route to call directly, and across to `commands/revise.md`'s `## Agent Availability`
-      section for the command-side statement.
-- [ ] Introduce no `subagent_type:` literal anywhere in the new text. Two consumers read the
+      section for the command-side statement. *(completed)*
+- [x] Introduce no `subagent_type:` literal anywhere in the new text. Two consumers read the
       FIRST such line in this file and would silently reroute:
       `scripts/validate-context-budgets.sh`'s `_dlc_subagent_type`
       (`grep -oP 'subagent_type:\s*"\K[^"]+' ... | head -1`) and doc-lint's Rule D
-      (`check_deployed_skill_agents`).
-- [ ] Write no `task N`-shaped citation anywhere in the new text; durable anchors only.
-- [ ] Stage and commit by explicit single-path pathspec:
-      `git add -- agent-system/extensions/core/skills/skill-reviser/SKILL.md`.
+      (`check_deployed_skill_agents`). *(completed)*
+- [x] Write no `task N`-shaped citation anywhere in the new text; durable anchors only.
+      *(completed)*
+- [x] Stage and commit by explicit single-path pathspec:
+      `git add -- agent-system/extensions/core/skills/skill-reviser/SKILL.md`. *(completed:
+      re-ran suite subset with --fail-on-new — exit 0, 27 passed, 1 EXPECTED pre-existing
+      failure, 0 NEW; see progress file deviation entry)*
 
 **Timing**: 0.4 hours
 

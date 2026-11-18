@@ -29,6 +29,21 @@ This skill activates when:
 - `/revise` command is invoked
 - Task exists in state.json
 
+**Not a sanctioned direct-invocation target for a dispatched agent.** This skill carries no
+`user-only` marker and is listed as an available skill in a dispatched session, but a direct
+Skill-tool dispatch of `skill-reviser` bypasses `commands/revise.md`'s own CHECKPOINT 1
+(task-lock acquisition, plus the cross-task `file_scope` overlap check) and CHECKPOINT 3 (which
+owns `.return-meta.json`'s deletion for the Description Update path — `skill_cleanup` does not
+delete it at this skill's own Stage 9 below). A bare direct dispatch therefore leaves a stale
+`.return-meta.json` sidecar in the target task's directory and carries no lock protection against
+a concurrent sibling dispatch touching the same target task.
+
+A dispatched agent that needs another task's description updated should instead call this same
+file's own Stage 7 "For Description Update" block directly (the `state-write.sh` object-merge
+invocation below), which is the sanctioned route — its mutex is internal to the script and
+therefore safe without the command-level task lock. See `commands/revise.md`'s
+`## Agent Availability` section for the command-side statement of this same unavailability.
+
 ---
 
 ## Execution Flow

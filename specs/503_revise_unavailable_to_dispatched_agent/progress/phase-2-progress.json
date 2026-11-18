@@ -1,0 +1,23 @@
+{
+  "phase": 2,
+  "phase_name": "Mirror Note on skills/skill-reviser/SKILL.md",
+  "started_at": "2026-11-17T23:58:00Z",
+  "last_updated": "2026-11-18T00:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read skill-reviser/SKILL.md in full before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Extend ## Trigger Conditions with dispatched-agent note, pointing to this file's own Stage 7 and to commands/revise.md's Agent Availability section, no subagent_type literal introduced", "status": "done", "files_touched": ["agent-system/extensions/core/skills/skill-reviser/SKILL.md"]},
+    {"id": 3, "description": "Verify diff scope, subagent_type grep checks, run-all.sh suite subset, and verify-deploy.sh --skip-slow --only-gate 3,4", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.verify",
+      "description": "Plan's named run-all.sh --only invocation (without --fail-on-new) exits 1 due to a pre-existing EXPECTED failure (test-verify-deploy-context-budget.sh, unrelated to this phase)",
+      "type": "altered",
+      "reason": "Re-ran with --fail-on-new to obtain the authoritative 0-NEW-failures signal (exit 0) rather than treating the pre-existing EXPECTED failure as a regression from this phase's edits",
+      "annotation": "*(deviation: altered — re-ran with --fail-on-new for the authoritative 0-NEW signal)*"
+    }
+  ]
+}
