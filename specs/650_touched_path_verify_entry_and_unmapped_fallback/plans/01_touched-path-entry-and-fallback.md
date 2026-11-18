@@ -231,7 +231,7 @@ among others, so the covering check is those two suites under `run-all.sh --only
 
 ---
 
-### Phase 2: Resolver interface, default backend, declared backend, conformance check [NOT STARTED]
+### Phase 2: Resolver interface, default backend, declared backend, conformance check [COMPLETED]
 
 **Goal**: A resolver wrapper whose input is a touched-path set plus a tree root and whose output
 is a selection token set plus a per-path unresolved list, with `suite_selection_select` as the
@@ -239,27 +239,31 @@ unchanged default backend, explicit map rows consulted for what basename resolut
 invocable declared backend, and a conformance check that refuses a non-conforming backend.
 
 **Tasks**:
-- [ ] Write `scripts/lib/suite-resolver-lib.sh` with the published output shape: `SELECT <token>`
+- [x] Write `scripts/lib/suite-resolver-lib.sh` with the published output shape: `SELECT <token>`
       lines, `UNRESOLVED <path>` lines, nothing else on stdout; exit 0 = resolved (possibly to the
       empty set), exit 3 = this backend cannot resolve at all, exit 2 = usage/shape error. The
       empty-set and cannot-resolve cases are distinguishable by exit code, never by output alone.
-- [ ] Default backend: call `suite_selection_select` / `suite_selection_unmapped` per path, with
+      *(completed)*
+- [x] Default backend: call `suite_selection_select` / `suite_selection_unmapped` per path, with
       no edit to `suite-selection-lib.sh` (the union-escalation sentinel is handled by the wrapper,
-      which resolves per path and never escalates the whole call).
-- [ ] Explicit-map pre-pass: for a path the default backend leaves unresolved, consult
+      which resolves per path and never escalates the whole call). *(completed: verified
+      suite-selection-lib.sh untouched; Scope Hypothesis confirmed)*
+- [x] Explicit-map pre-pass: for a path the default backend leaves unresolved, consult
       `scripts/tests/suite-selection-map.data` (TAB-separated `path_glob`, `suites`, `reason`) and
-      emit its suites. This is the "adding a row is the normal repair" surface.
-- [ ] Create `scripts/tests/suite-selection-map.data` with its format header and the rows this
+      emit its suites. This is the "adding a row is the normal repair" surface. *(completed)*
+- [x] Create `scripts/tests/suite-selection-map.data` with its format header and the rows this
       plan's own authoring already demonstrates are needed (data files and new libraries under
-      `scripts/lib/`).
-- [ ] Declared backend: invoke `verification_scope.resolver.command` as a command, feeding touched
+      `scripts/lib/`). *(completed)*
+- [x] Declared backend: invoke `verification_scope.resolver.command` as a command, feeding touched
       paths on stdin and the tree root as `$1`, reading its stdout under the same shape.
-- [ ] Composition: union with the default backend's selection by default; `"replace"` honoured
-      when declared. Record both in the library header.
-- [ ] Conformance check `suite_resolver_conformance_check`: run the declared backend against a
+      *(completed)*
+- [x] Composition: union with the default backend's selection by default; `"replace"` honoured
+      when declared. Record both in the library header. *(completed)*
+- [x] Conformance check `suite_resolver_conformance_check`: run the declared backend against a
       fixed probe input and refuse (loud, named, non-narrowing) on a malformed line, a stray
-      stdout token, or an undocumented exit code.
-- [ ] Add both new files to `manifest.json`'s `provides.scripts` / data inventory as appropriate.
+      stdout token, or an undocumented exit code. *(completed)*
+- [x] Add both new files to `manifest.json`'s `provides.scripts` / data inventory as appropriate.
+      *(completed)*
 
 **Timing**: 2 hours
 

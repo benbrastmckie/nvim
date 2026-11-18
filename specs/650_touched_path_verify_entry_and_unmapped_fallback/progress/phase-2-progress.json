@@ -1,0 +1,35 @@
+{
+  "phase": 2,
+  "phase_name": "Resolver interface, default backend, declared backend, conformance check",
+  "started_at": "2026-11-18T20:16:00Z",
+  "last_updated": "2026-11-18T20:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write scripts/lib/suite-resolver-lib.sh with the SELECT/UNRESOLVED output shape, default backend, explicit map pre-pass, declared backend invocation, composition, conformance check",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/lib/suite-resolver-lib.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Create scripts/tests/suite-selection-map.data",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/tests/suite-selection-map.data"]
+    },
+    {
+      "id": 3,
+      "description": "Add both new files to manifest.json",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    }
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {
+      "approach": "Match declared-backend output tags via case \"${_sr_tag} ${_sr_val}\" to skip blank lines",
+      "result": "failed",
+      "reason": "shellcheck SC2195: the concatenated string with an embedded space can never equal the empty-string pattern; replaced with a direct [ -z \"${_sr_tag}\" ] guard"
+    }
+  ],
+  "handoff_count": 0
+}
