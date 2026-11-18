@@ -1,5 +1,5 @@
 ---
-next_project_number: 645
+next_project_number: 646
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 645
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,472,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,607,613,618,629,631,632,633,639,640,645 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,473,474,479,481,484,516,517,518,523,533,540,541,544,546,550,552,553,570,576,579,583,592,593,598,605,609,610,630 | 383,390,398,410,431,438,451,453,455,463,472,477,504,511,519,535,539,542,548,549,563,564,577,586,599,607,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,480,486,492,509,513,561,566,571,594 | 439,452,479,484,491,518,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,581,588,595,641 | 454,472,486,492,509,539,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
@@ -160,6 +160,7 @@ next_project_number: 645
 633 [NOT STARTED] — Resolve the stray duplicate .claude-extensions.json sitting...
 639 [NOT STARTED] — Make issue-record.sh failures visible instead of silently...
 640 [NOT STARTED] — Add a derived-percentage bug class to the census methodology...
+645 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 533 [NOT STARTED] — lake-build-guard replays stale result for env lean FILE
 546 [NOT STARTED] — Diagnose the zero-result literature retrieval and settle the...
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
@@ -176,6 +177,46 @@ next_project_number: 645
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 645. Repair seven failing gate8 suites
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: measured during an /orchestrate batch gate run. verify-deploy.sh's full gate set returned exit 1 with seven confirmed Gate 8 findings, all of which survived the gate's own flakiness confirmation re-run. Every finding was unattributable to any task in that batch (attributed={} , unattributed=7), so these are pre-existing reds, not regressions the batch introduced. Each therefore needs its own diagnosis rather than a revert.
+
+MEASURED STATE -- each suite run directly from agent-system/extensions/core/scripts/tests/:
+
+(1) test-deploy-baseline-lib.sh -- 27 passed, 3 failed. All three share one shape: "expected a full run with exit 0 and no [SKIP-CACHED] (rc=0)" for the "unreadable cache entry", "sentinel-valued cache key", and "format_version mismatch" cases. The suite expects each degenerate cache state to force a full uncached run; the library appears to serve a cached result instead. Determine whether the defect is in the cache-invalidation predicate or in the suite's expectation, and fix whichever is actually wrong.
+
+(2) test-lint-hook-registration-paths.sh -- 30 passed, 2 failed: "SPSDemo exemplar unexpectedly also reported shape (a) or (b)" and "theorem_proving_in_lean4 measured-clean exemplar unexpectedly produced a finding (rc=1)". The second has a cause already recorded in this repository's issue logs: the frozen theorem_proving_in_lean4 exemplar fixture is stale against the widened Notification hook matcher (permission_prompt|idle_prompt|elicitation_dialog). Refreshing a frozen exemplar is a deliberate act -- state what the exemplar pins and why the new value is the correct pin; do not merely re-record current output. Diagnose the SPSDemo failure separately; do not assume it shares that cause.
+
+(3) test-lint-unit-integration-boundary.sh -- 14 passed, 1 failed: "live corpus: unexpected violation(s) against the real tree". This asserts against the live repository rather than a fixture, so either a real boundary violation exists and should be fixed at its source, or the boundary rule must admit a shape it currently rejects. Name the offending path(s) explicitly in the summary.
+
+(4) test-runtime-file-tracking.sh -- 8 passed, 1 failed: "Case 3: the standards file's block DIFFERS from runtime_ignore_block() -- doc-sync pin broken". A documentation-to-code sync pin has drifted. Resolve by making the standards file match the function, or the reverse if the function is what moved; determine which side moved by reading history and say which in the summary.
+
+(5) test-mcp-merge-target.sh -- "Assertion C (requirement d): hand-written='MISSING' fixture='stdio' (expected my-own-server / stdio)". A hand-written .mcp.json server entry is expected to survive a load/regenerate cycle alongside the fixture's generated entry, but is being dropped. This is a data-loss shape: a user's own hand-authored MCP server entry disappearing. Treat correctness of the merge as the default and the test expectation as correct unless evidence says otherwise.
+
+(6) test-gate-cache-equivalence.sh -- exceeded a 180-second direct run without reporting a result line. Establish FIRST whether this suite genuinely fails or merely runs long. If it is long but green, the real defect may be its classification or a missing timeout allowance rather than an assertion. Do not assume it fails.
+
+(7) test-gate-lock.sh -- reported 27 passed, 0 failed on a direct run, yet the batch gate named it as a confirmed finding (it survived the confirmation re-run, unlike test-lint-state-writer-boundary.sh, which that same run dropped as flaky). Investigate the discrepancy between the direct run and the gate run -- likely a concurrency or environment difference the gate introduces. If it proves to be flakiness the confirmation re-run failed to filter, say so plainly and fix the flakiness rather than the assertion.
+
+BINDING CONSTRAINTS:
+- Do not silence a failure by deleting, skipping, or loosening an assertion to make it pass. If a suite's expectation is genuinely wrong, correct it and state in the plan why the new expectation is right.
+- Do not add any of these seven suites to known-failures.txt as the remedy. That roster exists for deliberately-expected reds; using it here would convert a fixable defect into a permanent exemption.
+- Do not expand scope into the adjacent open work on the same directory: the known-failures roster for test-deploy-propagation.sh and its sibling, and the orchestrator's stall-on-backgrounded-verify-deploy behavior, are separately tracked and are not part of this task.
+
+ACCEPTANCE CRITERIA:
+1. bash .claude/scripts/verify-deploy.sh completes its full gate set with exit 0 and zero Gate 8 findings.
+2. Each of the seven suites passes on a direct run, with its pass/fail counts quoted verbatim in the summary.
+3. For each of the seven, the summary names which side was wrong -- the code under test or the test's own expectation -- and why.
+4. The known-failures.txt entry count is unchanged or lower, never higher.
+5. deploy-headless.sh reports RESULT=landed_verify_clean.
+
+---
 
 ### 644. Leave a spoken-word recap at the end of an orchestration and recommend /recap to hear it
 - **Effort**: medium

@@ -1,7 +1,245 @@
 {
   "version": "1.1.0",
-  "next_project_number": 645,
+  "next_project_number": 646,
   "active_projects": [
+    {
+      "project_number": 645,
+      "project_name": "repair_seven_failing_gate8_suites",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.\n\nORIGIN: measured during an /orchestrate batch gate run. verify-deploy.sh's full gate set returned exit 1 with seven confirmed Gate 8 findings, all of which survived the gate's own flakiness confirmation re-run. Every finding was unattributable to any task in that batch (attributed={} , unattributed=7), so these are pre-existing reds, not regressions the batch introduced. Each therefore needs its own diagnosis rather than a revert.\n\nMEASURED STATE -- each suite run directly from agent-system/extensions/core/scripts/tests/:\n\n(1) test-deploy-baseline-lib.sh -- 27 passed, 3 failed. All three share one shape: \"expected a full run with exit 0 and no [SKIP-CACHED] (rc=0)\" for the \"unreadable cache entry\", \"sentinel-valued cache key\", and \"format_version mismatch\" cases. The suite expects each degenerate cache state to force a full uncached run; the library appears to serve a cached result instead. Determine whether the defect is in the cache-invalidation predicate or in the suite's expectation, and fix whichever is actually wrong.\n\n(2) test-lint-hook-registration-paths.sh -- 30 passed, 2 failed: \"SPSDemo exemplar unexpectedly also reported shape (a) or (b)\" and \"theorem_proving_in_lean4 measured-clean exemplar unexpectedly produced a finding (rc=1)\". The second has a cause already recorded in this repository's issue logs: the frozen theorem_proving_in_lean4 exemplar fixture is stale against the widened Notification hook matcher (permission_prompt|idle_prompt|elicitation_dialog). Refreshing a frozen exemplar is a deliberate act -- state what the exemplar pins and why the new value is the correct pin; do not merely re-record current output. Diagnose the SPSDemo failure separately; do not assume it shares that cause.\n\n(3) test-lint-unit-integration-boundary.sh -- 14 passed, 1 failed: \"live corpus: unexpected violation(s) against the real tree\". This asserts against the live repository rather than a fixture, so either a real boundary violation exists and should be fixed at its source, or the boundary rule must admit a shape it currently rejects. Name the offending path(s) explicitly in the summary.\n\n(4) test-runtime-file-tracking.sh -- 8 passed, 1 failed: \"Case 3: the standards file's block DIFFERS from runtime_ignore_block() -- doc-sync pin broken\". A documentation-to-code sync pin has drifted. Resolve by making the standards file match the function, or the reverse if the function is what moved; determine which side moved by reading history and say which in the summary.\n\n(5) test-mcp-merge-target.sh -- \"Assertion C (requirement d): hand-written='MISSING' fixture='stdio' (expected my-own-server / stdio)\". A hand-written .mcp.json server entry is expected to survive a load/regenerate cycle alongside the fixture's generated entry, but is being dropped. This is a data-loss shape: a user's own hand-authored MCP server entry disappearing. Treat correctness of the merge as the default and the test expectation as correct unless evidence says otherwise.\n\n(6) test-gate-cache-equivalence.sh -- exceeded a 180-second direct run without reporting a result line. Establish FIRST whether this suite genuinely fails or merely runs long. If it is long but green, the real defect may be its classification or a missing timeout allowance rather than an assertion. Do not assume it fails.\n\n(7) test-gate-lock.sh -- reported 27 passed, 0 failed on a direct run, yet the batch gate named it as a confirmed finding (it survived the confirmation re-run, unlike test-lint-state-writer-boundary.sh, which that same run dropped as flaky). Investigate the discrepancy between the direct run and the gate run -- likely a concurrency or environment difference the gate introduces. If it proves to be flakiness the confirmation re-run failed to filter, say so plainly and fix the flakiness rather than the assertion.\n\nBINDING CONSTRAINTS:\n- Do not silence a failure by deleting, skipping, or loosening an assertion to make it pass. If a suite's expectation is genuinely wrong, correct it and state in the plan why the new expectation is right.\n- Do not add any of these seven suites to known-failures.txt as the remedy. That roster exists for deliberately-expected reds; using it here would convert a fixable defect into a permanent exemption.\n- Do not expand scope into the adjacent open work on the same directory: the known-failures roster for test-deploy-propagation.sh and its sibling, and the orchestrator's stall-on-backgrounded-verify-deploy behavior, are separately tracked and are not part of this task.\n\nACCEPTANCE CRITERIA:\n1. bash .claude/scripts/verify-deploy.sh completes its full gate set with exit 0 and zero Gate 8 findings.\n2. Each of the seven suites passes on a direct run, with its pass/fail counts quoted verbatim in the summary.\n3. For each of the seven, the summary names which side was wrong -- the code under test or the test's own expectation -- and why.\n4. The known-failures.txt entry count is unchanged or lower, never higher.\n5. deploy-headless.sh reports RESULT=landed_verify_clean.",
+      "topic": "agent-system",
+      "file_scope": [
+        "agent-system/extensions/core/scripts/tests/test-deploy-baseline-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-cache-equivalence.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-lock.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-hook-registration-paths.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-unit-integration-boundary.sh",
+        "agent-system/extensions/core/scripts/tests/test-mcp-merge-target.sh",
+        "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"
+      ],
+      "created": "2026-11-18T13:50:56Z",
+      "last_updated": "2026-11-18T13:50:56Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "repair_seven_failing_gate8_suites",
+          "project_number": null,
+          "title": "Repair the seven failing gate-8 test suites so verify-deploy.sh's full gate set returns exit 0"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 45,
+          "duplicate-of-open": 31,
+          "scope-blind": 43
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 629,
+            "project_name": "sync_lua_two_engine_allow_list_drop",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4016393442622951
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 630,
+            "project_name": "known_failures_rows_for_two_red_suites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5462184873949579
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 631,
+            "project_name": "gate29_typescript_test_fixed_depth_walk",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49038461538461536
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 632,
+            "project_name": "context_budget_derivation_task_reference_recurrence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4154929577464789
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 610,
+            "project_name": "full_gate_verification_ceiling_and_stall",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4294478527607362
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5153374233128835
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.401840490797546
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4570552147239264
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4785276073619632
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4294478527607362
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4785276073619632
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.48773006134969327
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42024539877300615
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4447852760736196
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 510,
+            "project_name": "predispatch_review_test_temp_lib_incomplete",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43529411764705883
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 517,
+            "project_name": "stage_regenerated_derived_files_in_phase_commits",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4171779141104294
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 523,
+            "project_name": "gate27_missing_declaration_call_site_counting",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4171779141104294
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40797546012269936
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5521472392638037
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4570552147239264
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44171779141104295
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.48773006134969327
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 546,
+            "project_name": "literature_search_zero_result_degraded_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41411042944785276
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 548,
+            "project_name": "plan_contingency_file_scope_and_containment_drop",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44785276073619634
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 553,
+            "project_name": "git_commit_scoped_gate_refusal_diagnostic",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4171779141104294
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 43
+      }
+    },
     {
       "project_number": 643,
       "project_name": "next_batch_suggestion_ignores_roadmap_ordering",
