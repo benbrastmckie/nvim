@@ -1,10 +1,95 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/538_bounded_block_edit_index_and_assert/summaries/01_bounded-block-edit-guidance-summary.md",
+      "summary": "Records the five-phase implementation: the new shared core pattern file (assertion half plus transplanted anchor half), both audience referrers, both reconciled index entries, and a clean deploy with the complete gate set green."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Created agent-system/extensions/core/context/patterns/bounded-block-edit.md as the shared core home for bounded-in-file-block-edit guidance (index-and-assert discipline plus the transplanted lean section-anchoring rule), wired both audiences (general-implementation-agent.md and claudemd.md), registered and reconciled both index-entries.json entries, and closed with deploy-headless.sh reporting RESULT=landed_verify_clean and the complete gate set green."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/context/patterns/bounded-block-edit.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md",
+    "agent-system/extensions/lean/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a bounded block inside a line-structured file (a plan phase, a document section) must be edited mechanically rather than via a single Edit-tool call, the safe recipe is: (1) index by line, never splice by character offset; (2) bound the range by an explicit terminator and assert the pre-state (marker present, items match, terminator actually found) before writing, aborting on assertion failure; (3) assert a structural post-write invariant (a heading/section count) in the same breath as the write. The Edit tool with a unique old_string is the first choice for a small bounded edit since it already fails loudly on an absent/ambiguous match; the scripted path earns its place only when the edit is repetitive across many sites or mechanical enough that enumerating Edit calls is impractical.",
+      "category": "PATTERN",
+      "source_artifact": "specs/538_bounded_block_edit_index_and_assert/summaries/01_bounded-block-edit-guidance-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bounded-block-edit", "line-indexing", "assertions", "anchoring", "plan-file-edit"]
+    },
+    {
+      "content": "Restoring one clobbered file after a botched in-file edit is `git show HEAD:<path>` piped to a write (blob read to stdout plus an ordinary file write) -- this has no interaction with the destructive-git guard at all, needs no snapshot, and works on a dirty tree. git checkout --, git restore, and git reset --hard are neither needed nor appropriate for restoring a single file from its last commit.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/538_bounded_block_edit_index_and_assert/summaries/01_bounded-block-edit-guidance-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["git-show", "recovery", "destructive-git-guard", "dirty-tree"]
+    },
+    {
+      "content": "An eager-load context budget (orchestrator-context-budget.json's eager_load.baseline_bytes, enforced by verify-deploy.sh Gate 20) can be breached by an innocuous-looking small addition to merge-sources/claudemd.md (any text eagerly assembled into the generated root CLAUDE.md). The established, repository-reviewed remedy order is: always attempt a wording trim of the new or adjacent content first (same facts, fewer bytes), and only perform a deliberate, dated baseline move when no further non-duplicative trim is available. A ~550 B two-paragraph addition was trimmed to ~350 B (two sentences, same trigger-plus-mechanism content) to clear a 166 B overage with margin to spare.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/538_bounded_block_edit_index_and_assert/summaries/01_bounded-block-edit-guidance-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["eager-context-budget", "gate-20", "claudemd", "baseline-trim"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "verify-deploy.sh Gate 20 (orchestrator context budget lock)",
+      "value": "Adding a short new section to agent-system/extensions/core/merge-sources/claudemd.md (eagerly assembled into the generated root CLAUDE.md) can push the eager-load total over its recorded baseline (orchestrator-context-budget.json eager_load.baseline_bytes) even for a two-paragraph, ~550 byte addition; the repository's own established remedy is to trim wording before ever moving the baseline.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/context/config/orchestrator-context-budget.json"
+    },
+    {
+      "subject": "verify-deploy.sh gate-registry.data input_corpus declarations",
+      "value": "Gates declaring input_corpus '@extensions' (doc-lint, manifest-parity, agent-contracts lint, routing-wiring lint, and most of the 20-30 range lints) all re-run as cache misses under --skip-unchanged whenever ANY file under agent-system/extensions/** changes, regardless of whether that gate's own logic cares about the changed file -- the declared corpus is coarse-grained per extension tree, not per the gate's actual concern.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.8,
+      "source_loc": ".claude/scripts/gate-registry.data"
+    },
+    {
+      "subject": "A cross-repository sibling task record (lean section-anchoring rule) landed with an audience-reach gap",
+      "value": "A correct, specific fix-paragraph landed only inside a file one audience (lean implementation) loads; a different audience (plan authoring) that needed the same rule never read that file, so the same failure mode recurred in a plan phase after the rule was already correctly documented elsewhere. The remedy was relocating the rule to a shared, broadly-indexed core-extension pattern file reachable from both audiences' own entry points, with the original site reduced to a pointer rather than left as the sole copy.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "specs/538_bounded_block_edit_index_and_assert/plans/01_bounded-block-edit-guidance.md"
+    },
+    {
+      "subject": "git-commit-phase.sh's Phase-Commit Containment Self-Check",
+      "value": "Running five consecutive phase commits via git-commit-phase.sh, each deriving its stage list from that phase's own progress-file files_touched union plus the fixed task-directory scope, produced zero dropped paths and zero proposed_file_scope deposits across this task -- the mechanized containment check never fired because every touched path was already a declared file_scope member.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.75,
+      "source_loc": ".claude/scripts/git-commit-phase.sh"
+    },
+    {
+      "subject": "A repository-wide grep for a distinctive phrase, used as a plan's Scope Hypothesis gate",
+      "value": "A plan's authoring-time research claimed a repository-wide grep for a paragraph's distinctive phrase matched exactly one file; at implementation time the same grep (outside specs/**) matched two files, because a second, pre-existing condensed copy (added by an unrelated prior task, already structured as a pointer back to the first file) had been missed by the earlier research rather than having newly appeared. Scope Hypothesis gates authored at plan time can be stale against live state by the time a later phase re-checks them, independent of any drift introduced during the task's own execution.",
+      "predicate": "finding is",
+      "ko_type": "correction",
+      "confidence": 0.8,
+      "source_loc": "specs/538_bounded_block_edit_index_and_assert/progress/phase-3-progress.json"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1794985308_f67716",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 12
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }
