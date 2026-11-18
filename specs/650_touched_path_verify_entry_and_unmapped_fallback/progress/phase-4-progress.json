@@ -1,0 +1,34 @@
+{
+  "phase": 4,
+  "phase_name": "verify-touched.sh entry point",
+  "started_at": "2026-11-18T21:15:00Z",
+  "last_updated": "2026-11-18T22:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Write scripts/verify-touched.sh: touched-path derivation, preflight, dual-mode/multi-root resolution, resolve+classify+run, --full-sweep, distinct verdict, timings",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/scripts/verify-touched.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Add the script to manifest.json's provides.scripts",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/core/manifest.json"]
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [
+    {
+      "approach": "Preflight validated scripts/tests/suite-selection-map.data / suite-selection-noclass.data via hardcoded SCRIPT_DIR paths",
+      "result": "failed",
+      "reason": "diverged from the env-var overrides suite-resolver-lib.sh/unmapped-fallback-lib.sh themselves honour; fixed to read SUITE_RESOLVER_MAP_DATA/UNMAPPED_FALLBACK_NOCLASS_DATA so preflight always validates the exact files resolution will consult, and so manual verification could use a sandbox data file instead of the live, still-forward-referencing one"
+    },
+    {
+      "approach": "Verify Phase 4 end-to-end against the LIVE scripts/tests/suite-selection-map.data",
+      "result": "failed",
+      "reason": "that file's own rows (seeded in Phase 2) forward-reference Phase 8's not-yet-written test-verify-touched.sh/test-suite-resolver-lib.sh/etc., so the preflight correctly refuses every invocation until Phase 8 lands; verified instead against a temporary sandbox map/noclass data pair via the env-var override"
+    }
+  ],
+  "handoff_count": 0
+}

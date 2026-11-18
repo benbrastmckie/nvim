@@ -358,36 +358,48 @@ probe run by hand against a temporary task directory.
 
 ---
 
-### Phase 4: `verify-touched.sh` entry point [NOT STARTED]
+### Phase 4: `verify-touched.sh` entry point [COMPLETED]
 
 **Goal**: The one command the deferral directive and the authoring contract can name: touched paths
 in, preflight, resolve, narrowed parallel timed run out, with a verdict no reader can mistake for
 a full battery.
 
 **Tasks**:
-- [ ] Write `scripts/verify-touched.sh`. Default touched-path derivation: working-tree plus staged
+- [x] Write `scripts/verify-touched.sh`. Default touched-path derivation: working-tree plus staged
       diff against a named base (`--base REF`, default the repository's own default branch);
-      explicit `PATH...` arguments override.
-- [ ] Preflight, modeled on `verify-deploy.sh`'s `gate0` and running strictly before any
+      explicit `PATH...` arguments override. *(completed)*
+- [x] Preflight, modeled on `verify-deploy.sh`'s `gate0` and running strictly before any
       resolution: the map and class data files parse, every suite basename any data row names
       exists on disk, the declared fallback set is non-empty, and a declared backend passes
       `suite_resolver_conformance_check`. Exit non-zero with a named finding on failure; this
-      check sits outside the selection it validates and cannot be deselected by it.
-- [ ] Dual-mode resolution: deployed mirror first, source store second, via the shared helper
-      rather than a third inline candidate array; refuse loudly if neither resolves.
-- [ ] Multi-root: read `tree_roots` / `project_suite_roots` from `verification_scope`, or take
-      `--tree-root`/`--root-set` parameters; never a hardcoded path.
-- [ ] On a resolved set: `run-all.sh --only <resolved> --jobs auto --timings <file>`.
-- [ ] On unresolved paths: the Phase 3 classified fallback, never a blind full sweep.
-- [ ] `--full-sweep`: opt-in strict mode that restores today's behaviour for a caller that wants it.
-- [ ] Output: the resolved suites, the unresolved paths with their classification, the owed record
+      check sits outside the selection it validates and cannot be deselected by it. *(completed;
+      verified with a malformed row, a row naming a nonexistent suite, and the live map data's
+      own forward-referencing rows for Phase 8's not-yet-written suite)*
+- [x] Dual-mode resolution: deployed mirror first, source store second, via the shared helper
+      rather than a third inline candidate array; refuse loudly if neither resolves. *(completed
+      with a scope decision: suite NAMES resolve once against this script's own co-located
+      tree -- multiple declared roots are identical copies of the same corpus per deliverable 5's
+      own framing -- and only the run-all.sh BINARY LOCATION is re-resolved dual-mode per root, in
+      an inline two-candidate helper local to this script rather than a new shared library file,
+      since no such file is declared in this phase's own Files-to-modify; recorded here rather
+      than silently deviating)*
+- [x] Multi-root: read `tree_roots` / `project_suite_roots` from `verification_scope`, or take
+      `--tree-root`/`--root-set` parameters; never a hardcoded path. *(completed; `--root-set` is
+      the same comma-separated-list parameter as `--tree-root`, not a second mechanism; verified
+      with a second, non-existent root loudly skipped rather than silently ignored)*
+- [x] On a resolved set: `run-all.sh --only <resolved> --jobs auto --timings <file>`. *(completed)*
+- [x] On unresolved paths: the Phase 3 classified fallback, never a blind full sweep. *(completed)*
+- [x] `--full-sweep`: opt-in strict mode that restores today's behaviour for a caller that wants it.
+      *(completed)*
+- [x] Output: the resolved suites, the unresolved paths with their classification, the owed record
       path when one was written, and a verdict string deliberately distinct from both the
-      unnarrowed `run-all.sh` pass string and `--gate8-touched`'s narrowed pass string.
-- [ ] Timings: `--timings FILE`, default `mktemp`, path always printed. Header states explicitly
+      unnarrowed `run-all.sh` pass string and `--gate8-touched`'s narrowed pass string. *(completed;
+      byte-distinctness confirmed by grep against both source files)*
+- [x] Timings: `--timings FILE`, default `mktemp`, path always printed. Header states explicitly
       that this output is diagnostic-only and is NOT an input to `suite-cost-hints.txt`, whose
       regeneration stays with `measure-gate-costs.sh --regen-hints` — with the reason (idle-guard,
-      multi-run averaging) so a later reader does not helpfully wire it in.
-- [ ] Add the script to `manifest.json`'s `provides.scripts`.
+      multi-run averaging) so a later reader does not helpfully wire it in. *(completed)*
+- [x] Add the script to `manifest.json`'s `provides.scripts`. *(completed)*
 
 **Timing**: 2 hours
 

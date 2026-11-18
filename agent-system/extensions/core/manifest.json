@@ -506,7 +506,8 @@
       "validate-return-meta.sh",
       "validate-state.sh",
       "validate-wiring.sh",
-      "verify-deploy.sh"
+      "verify-deploy.sh",
+      "verify-touched.sh"
     ],
     "hooks": [
       "claude-stop-notify.sh",
