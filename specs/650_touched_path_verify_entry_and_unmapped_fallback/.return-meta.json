@@ -1,12 +1,141 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/650_touched_path_verify_entry_and_unmapped_fallback/summaries/01_touched-path-entry-and-fallback-summary.md",
+      "summary": "Full implementation summary covering all 8 phases, decisions, deviations, and the honest complete-gate-set verification account."
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795030396_b9c560",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 0,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 8,
     "phases_total": 8
-  }
+  },
+  "completion_data": {
+    "completion_summary": "Implemented verify-touched.sh (the single touched-path narrowing entry point), its declarable resolver interface, the classified NO-SUITE-BY-CLASS/OWED-NOT-PAID fallback, the coverage convergence report, owed-sweep discharge at the batch gate, and the authoring/dispatch surface rewrite naming verify-touched.sh as the one narrowing command -- all 8 plan phases complete, redeployed clean (41/41 fast checks); the complete gate set surfaced 2 confirmed pre-existing, task-unrelated failures and 1 load-induced flake, logged via issue-record.sh and left unfixed as out of scope."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/contracts/batch-gate-stage.md",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/context/standards/repo-level-declarations.md",
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lib/suite-resolver-lib.sh",
+    "agent-system/extensions/core/scripts/lib/unmapped-fallback-lib.sh",
+    "agent-system/extensions/core/scripts/lib/verification-scope-lib.sh",
+    "agent-system/extensions/core/scripts/orchestrate-batch-gate.sh",
+    "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/report-suite-coverage.sh",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/tests/suite-selection-map.data",
+    "agent-system/extensions/core/scripts/tests/suite-selection-noclass.data",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-verify-touched.sh",
+    "agent-system/extensions/core/scripts/verify-touched.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "lint-subject-resolution-declaration.sh's MISSING-DECLARATION check counts `grep -c common_test_resolve_subject` vs `grep -c common_test_declare_subject` ACROSS THE WHOLE FILE, including comments. A header comment that spells out 'common_test_resolve_subject' by name (common when documenting the technique) inflates the resolve-count past the declare-count and trips a false VIOLATION even when every real call is correctly paired. Fix: describe the mechanism in prose without repeating the literal function identifier, or add a throwaway extra common_test_declare_subject call.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/650_touched_path_verify_entry_and_unmapped_fallback/summaries/01_touched-path-entry-and-fallback-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "lint-subject-resolution-declaration",
+        "common_test_resolve_subject",
+        "false-positive",
+        "shell-script-testing",
+        "fixture-suite"
+      ]
+    },
+    {
+      "content": "A checked-in glob-matched data file keying on a touched-path string (e.g. suite-selection-map.data, suite-selection-noclass.data) must use REPO-ROOT-RELATIVE path globs, never a sub-tree-relative shorthand -- `git diff --name-only` (and any git-ls-files-based enumeration) always returns repo-root-relative paths regardless of invocation cwd, and a bash glob match (`[[ path == glob ]]`) requires the exact base to line up. Authoring rows while manually testing from within a subdirectory can silently bake in the wrong base; verify against the real derivation path (git diff from the repo root), not a convenient manual-test shorthand.",
+      "category": "PATTERN",
+      "source_artifact": "specs/650_touched_path_verify_entry_and_unmapped_fallback/summaries/01_touched-path-entry-and-fallback-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "glob-matching",
+        "repo-root-relative",
+        "touched-path",
+        "suite-selection-map.data",
+        "path-base-convention"
+      ]
+    },
+    {
+      "content": "For a fast, deterministic test of a script that wraps run-all.sh (or any other heavyweight battery runner), stub the wrapped script entirely: have the stub record every argument it received to a marker file beside itself and return a controllable pass/fail via a toggle file, rather than copying the real ~200-suite corpus into a fixture. This lets the test assert on the WRAPPER's own constructed invocation (presence/absence of --only, --cost-class, etc.) directly, in milliseconds, without paying the real battery's cost -- precedent: test-gate8-suite-selection.sh's stubbed run-all.sh.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/650_touched_path_verify_entry_and_unmapped_fallback/scripts/tests/test-verify-touched.sh",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "stub",
+        "fixture",
+        "run-all.sh",
+        "test-gate8-suite-selection",
+        "fast-deterministic-testing"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "suite-resolver-lib.sh's union-escalation avoidance",
+      "predicate": "decision is",
+      "value": "suite_resolver_resolve calls suite_selection_select/suite_selection_unmapped ONE PATH AT A TIME rather than multi-path, specifically to avoid suite-selection-lib.sh's own union-escalation rule (one unmappable path among several escalates the WHOLE call to __FULL_SWEEP__). No edit to suite-selection-lib.sh was needed; this is purely a different call pattern over its existing, unchanged public functions.",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/lib/suite-resolver-lib.sh"
+    },
+    {
+      "subject": "lint-subject-resolution-declaration.sh detection method",
+      "predicate": "finding is",
+      "value": "The MISSING-DECLARATION check is a naive grep -c count of the literal strings common_test_resolve_subject and common_test_declare_subject across a whole test-suite file, including comments -- a comment that names the resolve function for documentation purposes can falsely trip the lint even when every real call is correctly paired with a declaration.",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/lint/lint-subject-resolution-declaration.sh:242-243"
+    },
+    {
+      "subject": "touched-path glob data files (suite-selection-map.data, suite-selection-noclass.data)",
+      "predicate": "finding is",
+      "value": "Their path_glob column must be REPO-ROOT-RELATIVE, matching git diff --name-only's own always-repo-root-relative output, never a sub-tree-relative shorthand convenient for manual testing from within a subdirectory. A mismatch silently makes every row fail to match in real use while still appearing to work under a manual test run from the wrong cwd.",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/tests/suite-selection-map.data"
+    },
+    {
+      "subject": "lint-agent-contracts.sh's scan scope for NO-SUITE-BY-CLASS classification",
+      "predicate": "correction is",
+      "value": "An existing agent-definition markdown file (e.g. agents/general-implementation-agent.md) is NOT a reliable NO-SUITE-BY-CLASS probe, because suite-selection-lib.sh's grep-based reference stratum already resolves it via existing fixtures that mention its filename -- it never reaches the classified fallback at all. Only a genuinely new, unreferenced agent-file path exercises that classification branch.",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/tests/suite-selection-noclass.data"
+    },
+    {
+      "subject": "report-suite-coverage.sh's read-only design",
+      "predicate": "decision is",
+      "value": "report-suite-coverage.sh deliberately re-implements the NO-SUITE-BY-CLASS glob lookup locally rather than calling unmapped-fallback-lib.sh's public unmapped_fallback_classify, because that function also WRITES a durable owed record for every OWED path -- calling it from a whole-tree advisory scan would spuriously populate records/full-sweep-owed.jsonl for the entire unconverged backlog on every run.",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/report-suite-coverage.sh"
+    },
+    {
+      "subject": "owed-sweep discharge gating in orchestrate-batch-gate.sh",
+      "predicate": "decision is",
+      "value": "Owed-record discharge is gated on the WHOLE batch-gate run's gate_exit_code, never per-task: an owed path is owed against 'the complete gate set passing', so a failure anywhere in that run -- even one attributed to a different task -- means the obligation is not yet met for any task, not only the one that caused the failure.",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/orchestrate-batch-gate.sh"
+    },
+    {
+      "subject": "pre-existing, task-650-unrelated gate-8 failures as of this task's completion",
+      "predicate": "finding is",
+      "value": "test-gate-out-repair-reporting.sh (validate-artifact.sh's SKILL_VALIDATE_FIXES/SKILL_VALIDATE_FIXED_FILES globals reporting 0 fixes where cases 3/4/6/6b expect nonzero) and test-mcp-merge-target.sh (a hand-written .mcp.json entry not surviving a force-reload/regenerate cycle, assertions C and E) both fail reproducibly in isolation on this repository as of 2026-11-19, confirmed via git log to be unrelated to task 650 (neither suite nor its subjects were ever touched by that task's commits). Logged via issue-record.sh; not fixed.",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh"
+    }
+  ],
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

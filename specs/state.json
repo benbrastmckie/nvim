@@ -511,9 +511,15 @@
           "path": "specs/650_touched_path_verify_entry_and_unmapped_fallback/plans/01_touched-path-entry-and-fallback.md",
           "type": "plan",
           "summary": "8-phase plan covering all six deliverables, with measured premise re-validation and six settled design decisions."
+        },
+        {
+          "path": "specs/650_touched_path_verify_entry_and_unmapped_fallback/summaries/01_touched-path-entry-and-fallback-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 8 phases, decisions, deviations, and the honest complete-gate-set verification account."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented verify-touched.sh (the single touched-path narrowing entry point), its declarable resolver interface, the classified NO-SUITE-BY-CLASS/OWED-NOT-PAID fallback, the coverage convergence report, owed-sweep discharge at the batch gate, and the authoring/dispatch surface rewrite naming verify-touched.sh as the one narrowing command -- all 8 plan phases complete, redeployed clean (41/41 fast checks); the complete gate set surfaced 2 confirmed pre-existing, task-unrelated failures and 1 load-induced flake, logged via issue-record.sh and left unfixed as out of scope."
     },
     {
       "project_number": 646,

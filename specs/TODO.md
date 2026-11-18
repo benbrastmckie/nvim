@@ -244,6 +244,7 @@ VERIFY: a single-task /orchestrate emits the deferral directive and runs the com
 - **Dependencies**: None
 - **Research**: [650_touched_path_verify_entry_and_unmapped_fallback/reports/01_touched-path-entry-and-fallback.md]
 - **Plan**: [650_touched_path_verify_entry_and_unmapped_fallback/plans/01_touched-path-entry-and-fallback.md]
+- **Summary**: [650_touched_path_verify_entry_and_unmapped_fallback/summaries/01_touched-path-entry-and-fallback-summary.md]
 
 **Description**: Add one touched-path verification entry point over run-all.sh's existing flags and suite-selection-lib.sh, and replace the unmapped-path full sweep with a classified, owed-not-paid fallback
 

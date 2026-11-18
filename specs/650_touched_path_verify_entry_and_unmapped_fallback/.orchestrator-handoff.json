@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 2,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "phases_completed": 8,
   "phases_total": 8,
-  "summary": "Wrote an 8-phase, 13-hour implementation plan for the touched-path verify entry point and the classified unmapped fallback. Phases are ordered so the externally-consumed contracts land first: the single .claude-extensions.json verification_scope declaration key (with project_gates/closing_gate field names reserved for the adjacent records), then the resolver interface whose default backend is suite_selection_select unchanged, then the classified fallback and owed record, the verify-touched.sh entry point, the coverage report, the batch-gate discharge, the standards/directive rewrite, and a closing suite plus redeploy. Six design decisions are settled with rejected alternatives recorded, including sentinel-survives-as-opt-in, union composition, and warn-not-fail coverage.",
+  "summary": "Implemented all 8 phases: verification_scope declaration, the declarable resolver interface (suite-resolver-lib.sh), the classified NO-SUITE-BY-CLASS/OWED-NOT-PAID fallback replacing __FULL_SWEEP__'s collapse, the verify-touched.sh entry point, the coverage convergence report, owed-sweep discharge at the batch gate, the authority-rule/backend-contract/directive rewrite naming verify-touched.sh as the one narrowing command, and a closing coverage suite plus redeploy. deploy-headless.sh landed clean (41/41 fast checks). The complete gate set (verify-deploy.sh, no --skip-slow) is NOT clean: 200/204 suites pass; 1 expected failure already in known-failures.txt; 2 confirmed pre-existing failures unrelated to this task (test-gate-out-repair-reporting.sh, test-mcp-merge-target.sh -- neither ever touched by this task's commits, logged via issue-record.sh, not fixed, out of scope); 1 load-induced flake (test-lint-state-writer-boundary.sh, re-ran clean twice). This task's own deliverables are fully verified and complete.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/650_touched_path_verify_entry_and_unmapped_fallback/summaries/01_touched-path-entry-and-fallback-summary.md",
+      "summary": "Full implementation summary covering all 8 phases, decisions, deviations, and the honest complete-gate-set verification account."
+    },
+    {
       "type": "plan",
       "path": "specs/650_touched_path_verify_entry_and_unmapped_fallback/plans/01_touched-path-entry-and-fallback.md",
-      "summary": "8-phase plan covering all six deliverables, with measured premise re-validation and six settled design decisions."
+      "summary": "8-phase plan, all phases marked [COMPLETED]."
     }
   ]
 }
