@@ -7,7 +7,7 @@
       "topics": ["sapience", "navigation", "index"],
       "keywords": ["sapience", "vault", "on-demand", "index"],
       "summary": "Navigation index for the Sapience extension's domain notes, all read-on-demand with no eager load hook",
-      "line_count": 19,
+      "line_count": 20,
       "load_when": {},
       "on_demand": true
     },
@@ -63,6 +63,17 @@
       "keywords": ["source_skip", "harness-started", "subagent", "SAPIENCE_INCLUDE_HEADLESS", "upload.py"],
       "summary": "source_skip() classification mechanics in upload.py and why orchestrated/subagent work cannot reach the vault except by explicit tool call",
       "line_count": 45,
+      "load_when": {},
+      "on_demand": true
+    },
+    {
+      "path": "project/sapience/domain/command-draft-and-picker.md",
+      "domain": "project",
+      "subdomain": "sapience",
+      "topics": ["sapience", "command-draft-and-picker", "askuserquestion"],
+      "keywords": ["most-relevant-doc", "decision-shaped", "sapience-publish.sh", "literal-payload", "option-construction", "3-8-note-bound"],
+      "summary": "The /sapience draft-assembly heuristics (most-relevant-doc, decision-shaped), the single approval picker's pre-check defaults and literal-payload discipline, the option-construction marker site, and the dark project_cid migration path",
+      "line_count": 108,
       "load_when": {},
       "on_demand": true
     },

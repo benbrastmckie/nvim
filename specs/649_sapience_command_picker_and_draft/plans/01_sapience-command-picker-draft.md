@@ -1,7 +1,7 @@
 # Implementation Plan: Task #649
 
 - **Task**: 649 - Add the /sapience command: draft assembly and the approval-gated surface picker
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: 647 (sapience_project_binding_and_vault_read, completed), 648 (sapience_publish_write_surfaces, completed)
 - **Research Inputs**: specs/649_sapience_command_picker_and_draft/reports/01_sapience-command-picker-draft.md
@@ -181,34 +181,34 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Design Record for the Draft and Picker [NOT STARTED]
+### Phase 1: Design Record for the Draft and Picker [COMPLETED]
 
 **Goal**: Land the durable design record that Phases 2-4 implement against, so the heuristics are
 written once, checkably, rather than re-decided inside an instruction surface.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/sapience/context/project/sapience/domain/command-draft-and-picker.md`
+- [x] Create `agent-system/extensions/sapience/context/project/sapience/domain/command-draft-and-picker.md`
       documenting: the four candidate write surfaces and their 1:1 mapping onto
       `sapience-publish.sh` subcommands (`doc-comment`, `doc-version`, `ko`, `dm`); the
       pre-check defaults (doc comment and KOs by default, decision-log row only when D4 is true,
       DM only when `--message` was passed); D3's "most relevant doc" rule verbatim; D4's
       "decision-shaped" rule verbatim; D6's dry-run-equals-confirmed-payload discipline; D5's
       body-fetch fallback; D7's single-`ko`-call and inherited 3-8 bound; and D2's
-      option-construction marker so task 581 can find the site.
-- [ ] Record the no-delete-API consequence explicitly: every confirmed KO and doc-version is
+      option-construction marker so task 581 can find the site. *(completed)*
+- [x] Record the no-delete-API consequence explicitly: every confirmed KO and doc-version is
       permanent and bypasses the vault's `auto_approve:false` review gate, which is why the
-      picker is single, mandatory, and payload-literal.
-- [ ] Record the `project_cid`/`REPO_LINK_FOR` dark path as the eventual target, naming the two
+      picker is single, mandatory, and payload-literal. *(completed)*
+- [x] Record the `project_cid`/`REPO_LINK_FOR` dark path as the eventual target, naming the two
       live confirmations that it is currently off, and state that migrating is a change inside
-      the scripts, not in the command or skill (so this design does not foreclose it).
-- [ ] Add a nav row for the new file to
+      the scripts, not in the command or skill (so this design does not foreclose it). *(completed)*
+- [x] Add a nav row for the new file to
       `agent-system/extensions/sapience/context/project/sapience/README.md`'s Loading Strategy
-      table, matching the existing "Need to …" phrasing of its sibling rows.
-- [ ] Add the matching `index-entries.json` entry with the five Rule-T-required keys (`path`,
+      table, matching the existing "Need to …" phrasing of its sibling rows. *(completed)*
+- [x] Add the matching `index-entries.json` entry with the five Rule-T-required keys (`path`,
       `domain`, `subdomain`, `summary`, `line_count`) plus `topics`, `keywords`, `load_when: {}`
-      and `on_demand: true`, exactly as every other sapience entry is shaped.
-- [ ] Set `line_count` from the finished file (`wc -l`), and update the existing
-      `project/sapience/README.md` entry's `line_count` for the nav row just added.
+      and `on_demand: true`, exactly as every other sapience entry is shaped. *(completed)*
+- [x] Set `line_count` from the finished file (`wc -l`), and update the existing
+      `project/sapience/README.md` entry's `line_count` for the nav row just added. *(completed: new file 108 lines, README.md entry corrected to 20 lines)*
 
 **Timing**: 1 hour
 

@@ -169,7 +169,7 @@ next_project_number: 654
 
 ### Sapience
 
-649 [PLANNED] — Add the /sapience command: draft assembly and the...
+649 [IMPLEMENTING] — Add the /sapience command: draft assembly and the...
 
 ### Decidability
 
@@ -383,7 +383,7 @@ VERIFY: the entry point run on a one-file edit executes a strict subset and says
 ---
 
 ### 649. Add the /sapience command: draft assembly and the approval-gated surface picker
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: Task 647, Task 648

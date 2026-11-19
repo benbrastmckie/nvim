@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Design Record for the Draft and Picker",
+  "started_at": "2026-11-19T04:46:00Z",
+  "last_updated": "2026-11-19T05:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create command-draft-and-picker.md design record", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/command-draft-and-picker.md"]},
+    {"id": 2, "description": "Record no-delete-API consequence", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/command-draft-and-picker.md"]},
+    {"id": 3, "description": "Record project_cid/REPO_LINK_FOR dark path", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/command-draft-and-picker.md"]},
+    {"id": 4, "description": "Add nav row to project/sapience/README.md", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/README.md"]},
+    {"id": 5, "description": "Add index-entries.json entry with required keys", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]},
+    {"id": 6, "description": "Set line_count for new file and correct README.md nav row entry", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
