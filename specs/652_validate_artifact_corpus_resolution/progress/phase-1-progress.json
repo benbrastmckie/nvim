@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Resolve the Corpus Through an Ordered Candidate List",
+  "started_at": "2026-11-19T00:00:00Z",
+  "last_updated": "2026-11-19T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive resolution site and reorder repo-root usage ahead of the candidate-list block without moving function definitions' bodies", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 2, "description": "Fail-soft source verification-scope-lib.sh and guard with command -v", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 3, "description": "Derive declared-root candidates ahead of fallback, record winning corpus path/kind", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 4, "description": "Confirm advisory posture / exit-code contract unchanged", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.2",
+      "description": "Hoist the single _cgs_repo_root assignment to run before the candidate-list block; leave the _cgs_find_repo_root/_cgs_resolve_repo_root function definitions where they are.",
+      "type": "altered",
+      "reason": "Literal hoist is bash-impossible as worded: _cgs_find_repo_root/_cgs_resolve_repo_root are defined at (pre-edit) lines 397-426, textually AFTER the candidate-list block at 353-376, so moving only the assignment above the candidate-list block while leaving the functions in place would call an undefined function under set -euo pipefail. Implemented the equivalent-order outcome instead: left the _cgs_repo_root assignment and the two function bodies completely untouched at their original positions, and relocated the suite-selection-lib candidate-array block (edited anyway, to add declared-root derivation) to sit immediately after the existing _cgs_declared_count computation -- i.e. after the single _cgs_repo_root assignment, never before it. Net effect matches the directive's actual intent (one repo-root walk, reused; _cgs_repo_root available before the candidate array is built) and both invariants the mitigation entry cared about hold: `grep -c '_cgs_repo_root=' validate-artifact.sh` is still exactly 1, and neither function's body was edited.",
+      "annotation": "*(deviation: altered — relocated the candidate-array block after the existing _cgs_repo_root assignment instead of literally hoisting the assignment, which bash's function-definition-before-use ordering made impossible as literally worded; net ordering and single-assignment invariant both preserved)*"
+    }
+  ]
+}

@@ -1,30 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/652_validate_artifact_corpus_resolution/plans/01_corpus-resolution-candidate-list.md",
-      "summary": "Five-phase plan extending validate-artifact.sh's existing suite-selection-lib candidate list with the repository-under-validation's declared project suite root(s), naming the resolved corpus in every advisory Tier-Justification warning, adding declared/undeclared/declared-but-absent coverage, a consumer-list doc sync, and a redeploy close."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "validate-artifact.sh resolves 'the repository under validation' via _cgs_resolve_repo_root: walk up from the ARTIFACT path's own directory looking for .claude-extensions.json, then fall back to _cgs_find_repo_root \"$(pwd)\". A test fixture written into a bare `mktemp -d` therefore does NOT get a neutral repo root -- the upward walk finds nothing and the pwd fallback silently hands it the real repository's own .claude-extensions.json and every declaration in it. Any plan phase adding declaration-sensitive fixtures for this script must plant the plan file INSIDE its own scratch root (alongside a scratch .claude-extensions.json), not merely plant the scratch root somewhere and validate from outside it; otherwise the fixture tests the host repository's declarations while appearing to test its own.",
-      "category": "PATTERN",
-      "source_artifact": "specs/652_validate_artifact_corpus_resolution/plans/01_corpus-resolution-candidate-list.md",
-      "confidence": 0.78,
-      "suggested_keywords": ["validate-artifact", "repo-root resolution", "test fixture isolation", "claude-extensions.json", "pwd fallback"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795104475_9fe2d8_652",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 5.5,
-    "dependency_waves": [[1], [2], [3, 4], [5]]
+    "session_id": "sess_1795104475_9fe2d8",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "next_steps": "Run /orchestrate 652 to execute the plan",
-  "dispatch_seq": 5
+  "dispatch_seq": 6
 }

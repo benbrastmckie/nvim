@@ -1,7 +1,7 @@
 # Implementation Plan: Task #652
 
 - **Task**: 652 - Resolve validate-artifact.sh's Tier-Justification corpus against the repository under validation, not the deployed agent-system tree
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: Tasks 650 and 564 (both `[COMPLETED]`, re-confirmed live in `specs/state.json` at plan authoring)
 - **Research Inputs**: specs/652_validate_artifact_corpus_resolution/reports/01_validate-artifact-corpus-resolution.md
@@ -153,7 +153,7 @@ Neither drift changes the design.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Resolve the Corpus Through an Ordered Candidate List [NOT STARTED]
+### Phase 1: Resolve the Corpus Through an Ordered Candidate List [COMPLETED]
 
 **Goal**: The Tier-Justification scan sources its suite-selection backend from the
 repository-under-validation's own declared project suite root when one is declared and resolvable,
@@ -161,38 +161,52 @@ falling back to today's single script-relative path otherwise, and records which
 the warning text Phase 2 adds.
 
 **Tasks**:
-- [ ] Re-derive the resolution site before editing. Confirm `_suite_selection_lib_candidates` is
+- [x] Re-derive the resolution site before editing. Confirm `_suite_selection_lib_candidates` is
       still a single-element array followed by the first-found-wins loop and the loud `exit 5`
       miss branch, and that this is still the only site in the script sourcing
       `suite-selection-lib.sh`. If either has moved, re-read the surrounding block rather than
-      applying the edits below positionally.
-- [ ] Hoist the single `_cgs_repo_root` assignment (`_cgs_repo_root="$(_cgs_resolve_repo_root
+      applying the edits below positionally. *(completed: confirmed live at array 358-360, loop
+      362-367, miss branch 368-374, source 376, sole sourcing site)*
+- [x] Hoist the single `_cgs_repo_root` assignment (`_cgs_repo_root="$(_cgs_resolve_repo_root
       "$(dirname "$artifact_path")")"`) to run before the candidate-list block. Move the
       assignment only: leave the `_cgs_find_repo_root` / `_cgs_resolve_repo_root` function
       definitions where they are, and leave the existing `coupled_generated_surfaces` consumer
-      reading the same variable rather than recomputing it.
-- [ ] Confirm after the move that exactly one `_cgs_repo_root=` assignment exists in the file and
-      that the hoisted assignment precedes both consumers in file order.
-- [ ] Add a fail-soft source of `verification-scope-lib.sh` from the fixed sibling path
+      reading the same variable rather than recomputing it. *(deviation: altered — a literal
+      hoist of the assignment above the candidate-list block is bash-impossible as worded: the
+      two functions are defined textually AFTER that block, so the assignment would call an
+      undefined function under `set -euo pipefail`. Relocated the candidate-array block (already
+      being edited to add declared-root derivation) to sit after the existing, unmoved
+      `_cgs_repo_root` assignment instead — same net ordering and single-assignment invariant,
+      neither function body touched; see progress file deviation 1.2 for the full account)*
+- [x] Confirm after the move that exactly one `_cgs_repo_root=` assignment exists in the file and
+      that the hoisted assignment precedes both consumers in file order. *(completed: `grep -c
+      '_cgs_repo_root=' validate-artifact.sh` returns 1; the assignment precedes both the
+      `coupled_generated_surfaces` reader and the relocated suite-selection-lib candidate block)*
+- [x] Add a fail-soft source of `verification-scope-lib.sh` from the fixed sibling path
       `"$_validate_script_dir/lib/verification-scope-lib.sh"`, following the
       `source-store-path-lib.sh` precedent (`2>/dev/null || true`). Do not use the loud `exit 5`
-      idiom for it.
-- [ ] Guard every use of the reader with `command -v verification_scope_project_suite_roots`, so a
-      missing or broken library degrades to today's behaviour instead of aborting.
-- [ ] For each line printed by `verification_scope_project_suite_roots "$_cgs_repo_root"`, in
+      idiom for it. *(completed)*
+- [x] Guard every use of the reader with `command -v verification_scope_project_suite_roots`, so a
+      missing or broken library degrades to today's behaviour instead of aborting. *(completed)*
+- [x] For each line printed by `verification_scope_project_suite_roots "$_cgs_repo_root"`, in
       declared order, derive `"$_cgs_repo_root/$(dirname "$line")/lib/suite-selection-lib.sh"` and
       place it in `_suite_selection_lib_candidates` ahead of today's single
       `"$_validate_script_dir/lib/suite-selection-lib.sh"` entry. Leave the first-found-wins loop
-      and the `exit 5` miss branch textually unchanged.
-- [ ] Skip the derivation entirely when `_cgs_repo_root` is empty, the reader is unavailable, or
+      and the `exit 5` miss branch textually unchanged. *(completed)*
+- [x] Skip the derivation entirely when `_cgs_repo_root` is empty, the reader is unavailable, or
       the reader prints nothing, so an undeclared repository's candidate array is identical to
-      today's single-element array.
-- [ ] Record, where the winning candidate is chosen, the two values Phase 2 consumes: the winning
+      today's single-element array. *(completed: confirmed byte-identical `[PASS] plan artifact
+      is valid (0 warning(s))` output against this undeclared repository, matching the captured
+      pre-edit baseline)*
+- [x] Record, where the winning candidate is chosen, the two values Phase 2 consumes: the winning
       candidate's own path, and a corpus kind distinguishing a declared project suite root (naming
-      the declared root it was derived from) from the deployed/sibling fallback.
-- [ ] Confirm no new `log_error` call, no new non-zero exit path, and no change to the pre-existing
+      the declared root it was derived from) from the deployed/sibling fallback. *(completed:
+      `_suite_selection_lib`, `_suite_selection_corpus_kind`,
+      `_suite_selection_corpus_declared_root`, and `_suite_selection_unresolved_declared_roots`)*
+- [x] Confirm no new `log_error` call, no new non-zero exit path, and no change to the pre-existing
       `exit 5` library-missing branch, so the scan's advisory posture and the script's exit-code
-      contract are untouched (deliverable 3).
+      contract are untouched (deliverable 3). *(completed: `log_error` count unchanged at 12
+      against `git show HEAD`)*
 
 **Timing**: 1.5 hours
 

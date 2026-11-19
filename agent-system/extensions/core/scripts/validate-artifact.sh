@@ -350,31 +350,6 @@ if [ "$artifact_type" = "plan" ]; then
   # shellcheck disable=SC1090
   . "$_status_line_lib"
 
-  # --- Shared suite-selection library (lazy: only the Tier Justification measurement check
-  # below needs it). Same lazy, ${BASH_SOURCE[0]}-relative, exit-5-on-missing idiom as the two
-  # libraries above -- correct in both the source store and the deployed tree. The library sets
-  # no shell options and never calls `exit` itself (see its own header contract), so sourcing it
-  # is safe under this script's `set -euo pipefail` posture.
-  _suite_selection_lib_candidates=(
-    "$_validate_script_dir/lib/suite-selection-lib.sh"
-  )
-  _suite_selection_lib=""
-  for _candidate in "${_suite_selection_lib_candidates[@]}"; do
-    if [ -f "$_candidate" ]; then
-      _suite_selection_lib="$_candidate"
-      break
-    fi
-  done
-  if [ -z "$_suite_selection_lib" ]; then
-    echo "Error: shared library suite-selection-lib.sh not found at any of:" >&2
-    for _candidate in "${_suite_selection_lib_candidates[@]}"; do
-      echo "  $_candidate" >&2
-    done
-    exit 5
-  fi
-  # shellcheck disable=SC1090
-  . "$_suite_selection_lib"
-
   # --- Coupled-generated-surfaces declaration reader (inline, not a scripts/lib/ file). Single
   # consumer today: this script's own per-phase "Files to modify" loop below. Modelled
   # structurally on scripts/lib/derived-artifact-probe-lib.sh's `_derived_probe_load_entries_json`
@@ -512,6 +487,67 @@ if [ "$artifact_type" = "plan" ]; then
   _cgs_declared_entries="$(_cgs_entries "$_cgs_repo_root")"
   _cgs_declared_count="$(echo "$_cgs_declared_entries" | jq 'length' 2>/dev/null)"
   case "$_cgs_declared_count" in ''|*[!0-9]*) _cgs_declared_count=0 ;; esac
+
+  # --- Shared suite-selection library (lazy: only the Tier Justification measurement check
+  # below needs it). Corpus resolution follows an ordered candidate list, first-found-wins, same
+  # engine as every other lazy library on this page: the repository-under-validation's own
+  # declared `verification_scope.project_suite_roots` entries first (in declared order, each
+  # resolved relative to the already-computed `_cgs_repo_root` above -- reused, not recomputed,
+  # so there is exactly one repo-root walk per run), then today's single script-relative
+  # deployed/sibling path as the fallback, unchanged. A repository declaring nothing yields the
+  # same one-element candidate array as before this change -- fail-open, byte-identical. See
+  # context/standards/repo-level-declarations.md's "The verification_scope Entry Schema" section
+  # for the declaration point and scripts/lib/verification-scope-lib.sh for the reader (sourced
+  # fail-soft immediately below, following the source-store-path-lib.sh precedent above: an
+  # absent/broken reader degrades this feature to today's single-candidate behaviour rather than
+  # aborting). This block sits after `_cgs_repo_root` is resolved and before its first actual use
+  # at the Tier Justification measurement check further down, so moving it here (rather than
+  # literally hoisting the repo-root assignment up past it) is what lets `_cgs_repo_root` stay a
+  # single, unmoved assignment while the `_cgs_find_repo_root` / `_cgs_resolve_repo_root`
+  # function bodies above are left completely untouched.
+  # shellcheck disable=SC1091
+  . "$_validate_script_dir/lib/verification-scope-lib.sh" 2>/dev/null || true
+  _suite_selection_lib_candidates=()
+  _suite_selection_declared_roots=()
+  if [ -n "$_cgs_repo_root" ] && command -v verification_scope_project_suite_roots >/dev/null 2>&1; then
+    while IFS= read -r _vsl_root; do
+      [ -z "$_vsl_root" ] && continue
+      _suite_selection_declared_roots+=("$_vsl_root")
+      _suite_selection_lib_candidates+=("$_cgs_repo_root/$(dirname "$_vsl_root")/lib/suite-selection-lib.sh")
+    done < <(verification_scope_project_suite_roots "$_cgs_repo_root")
+  fi
+  _suite_selection_declared_count=${#_suite_selection_declared_roots[@]}
+  _suite_selection_lib_candidates+=(
+    "$_validate_script_dir/lib/suite-selection-lib.sh"
+  )
+  _suite_selection_lib=""
+  _suite_selection_corpus_kind="fallback"
+  _suite_selection_corpus_declared_root=""
+  _suite_selection_unresolved_declared_roots=()
+  _suite_selection_idx=0
+  for _candidate in "${_suite_selection_lib_candidates[@]}"; do
+    if [ -f "$_candidate" ]; then
+      _suite_selection_lib="$_candidate"
+      if [ "$_suite_selection_idx" -lt "$_suite_selection_declared_count" ]; then
+        _suite_selection_corpus_kind="declared"
+        _suite_selection_corpus_declared_root="${_suite_selection_declared_roots[$_suite_selection_idx]}"
+      fi
+      break
+    fi
+    if [ "$_suite_selection_idx" -lt "$_suite_selection_declared_count" ]; then
+      _suite_selection_unresolved_declared_roots+=("${_suite_selection_declared_roots[$_suite_selection_idx]}")
+    fi
+    _suite_selection_idx=$((_suite_selection_idx + 1))
+  done
+  if [ -z "$_suite_selection_lib" ]; then
+    echo "Error: shared library suite-selection-lib.sh not found at any of:" >&2
+    for _candidate in "${_suite_selection_lib_candidates[@]}"; do
+      echo "  $_candidate" >&2
+    done
+    exit 5
+  fi
+  # shellcheck disable=SC1090
+  . "$_suite_selection_lib"
 
   # --- Plan-level Status-line grammar check (error level: DEFECT 2 -- the validator previously
   # checked only field PRESENCE via the whole-document grep above, so a hand-typed, bracket-losing
