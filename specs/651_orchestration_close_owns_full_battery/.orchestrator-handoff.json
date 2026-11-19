@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 7,
+  "summary": "Authored a 7-phase, 10-hour plan for making the orchestration close own the full gate battery. Research found Deliverables 1 and 6 already shipped by prior work, so the plan covers only the genuinely open ground: the plan-format final-phase vocabulary amendment, a durable attributed per-task record for a red close plus an attributed-cause-only status demotion, the interrupted-invocation obligation, and the consumer-repository closing-gate reader. Two stale prose surfaces beyond the research report were found at planning time and folded into Phase 1. The plan validates clean with zero warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/651_orchestration_close_owns_full_battery/plans/01_orchestration-close-owns-battery.md",
+      "summary": "Seven-phase linear plan: current-design prose sweep, final-phase invariant amendment, red-close per-task record, attributed-cause status binding, interrupted-invocation obligation, declared closing-gate consumption, redeploy and orchestration close."
+    }
+  ],
+  "dispatch_seq": 22
+}

@@ -107,7 +107,7 @@ next_project_number: 654
 
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-651 [RESEARCHED] — Make the orchestration, not the task, the unit that closes on...
+651 [PLANNED] — Make the orchestration, not the task, the unit that closes on...
 653 [NOT STARTED] — Give the gate mutex a host-scoped form, because every lock...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
@@ -272,11 +272,12 @@ TERRITORY EDGES.
 ---
 
 ### 651. Orchestration close owns full battery
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 650, Task 610
 - **Research**: [651_orchestration_close_owns_full_battery/reports/01_orchestration-close-owns-battery.md]
+- **Plan**: [651_orchestration_close_owns_full_battery/plans/01_orchestration-close-owns-battery.md]
 
 **Description**: Make the orchestration, not the task, the unit that closes on the full gate battery, for every invocation shape including a batch of one
 

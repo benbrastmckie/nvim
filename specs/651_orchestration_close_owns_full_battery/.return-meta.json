@@ -1,40 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1795039913_ab1940_651",
-  "dispatch_seq": 21,
-  "task_number": 651,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/651_orchestration_close_owns_full_battery/reports/01_orchestration-close-owns-battery.md",
-      "summary": "Re-derives the 6-deliverable dispatch against live state: deliverables 1 (batch-of-one deferral) and 6 (owed-sweep discharge) are already fully implemented by tasks 610/650; deliverable 5's declaration surface (verification_scope.closing_gate) is already reserved by name in repo-level-declarations.md; deliverables 2 (plan-format.md vocabulary), 3 (non-orchestrated path, found largely vacuous), and 4 (red-close task-status binding, the one genuinely open design question) are resolved with explicit decisions and rejected alternatives recorded."
+      "type": "plan",
+      "path": "specs/651_orchestration_close_owns_full_battery/plans/01_orchestration-close-owns-battery.md",
+      "summary": "Seven-phase, 10-hour plan relocating the full gate battery's ownership to the orchestration close: vocabulary amendment, red-close per-task record and status binding, interrupted-invocation obligation, and consumer-repository closing-gate consumption."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1795039913_ab1940_651",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 10,
+    "dependency_waves": 7
+  },
   "memory_candidates": [
     {
-      "content": "Task 610 (full_gate_verification_ceiling_and_stall, COMPLETED) already removed orchestrate-cycle-plan.sh's `.task_numbers | length > 1` gate on --batch-gate-deferral and shipped the batch-gate-pending marker + verify-deploy.sh/run-all.sh entry guards that make unconditional deferral safe. context/contracts/batch-gate-stage.md already documents this as current ('Single-task invariance... superseded a task-count-gated predecessor'). A dispatch description's 'WHAT THE DESIGN DOES TODAY' framing can go stale between authoring and execution when a sequenced prerequisite task lands in between -- always re-derive against live state before trusting it.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/651_orchestration_close_owns_full_battery/reports/01_orchestration-close-owns-battery.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["batch-gate-deferral", "orchestrate-cycle-plan.sh", "task-610", "stale-dispatch-description", "re-derivation"]
-    },
-    {
-      "content": "context/standards/repo-level-declarations.md's verification_scope object on .claude-extensions.json already reserves two field names, project_gates and closing_gate, explicitly for two named future records (batch_gate_deferral_narrowing_for_project_sources and orchestration_close_owns_full_battery respectively) -- verification-scope-lib.sh does not yet read or validate either. This is the established pattern for adding a new declaration concern to this repo: reuse the one hand-authored sibling-key surface via a reserved field name, never add a second competing top-level key.",
+      "content": "A plan that edits any context/**, rules/**, or agents/** markdown file in the agent-system source store moves a line_count that agent-system/extensions/core/index-entries.json declares, and check-extension-docs.sh Rule R fails on that drift with a hard (not advisory) default gate mode. Every such phase therefore owes index-entries.json as an entry in its own Files to modify block plus an in-phase `generate-context-line-counts.sh --write` reconciliation step -- this is the coupled-generated-surface obligation's most frequently triggered instance in this repository, and it applies to documentation-only phases that look like they have no generated surface at all.",
       "category": "PATTERN",
-      "source_artifact": "specs/651_orchestration_close_owns_full_battery/reports/01_orchestration-close-owns-battery.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["verification_scope", "closing_gate", "project_gates", "repo-level-declarations", "declaration-surface-reuse"]
-    },
-    {
-      "content": "No skill or command other than skill-orchestrate dispatches any implementation agent in this repository (confirmed by grep across every skills/*/SKILL.md and commands/*.md for general-implementation-agent, email-implementation-agent, lean-implementation-agent, nix-implementation-agent, neovim-implementation-agent -- zero hits outside skill-orchestrate). A design question premised on 'a task implemented outside /orchestrate' should be checked against this before building a fallback mechanism for a path that may not exist live.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/651_orchestration_close_owns_full_battery/reports/01_orchestration-close-owns-battery.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["skill-orchestrate", "implementation-agent-dispatch", "non-orchestrated-path", "command-route-agent"]
+      "source_artifact": "specs/651_orchestration_close_owns_full_battery/plans/01_orchestration-close-owns-battery.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index-entries", "line_count", "coupled-generated-surface", "check-extension-docs", "plan-authoring", "source-store"]
     }
   ],
-  "next_steps": "Run /orchestrate 651 to create implementation plan"
+  "next_steps": "Run /orchestrate 651 to execute the plan",
+  "dispatch_seq": 22
 }
