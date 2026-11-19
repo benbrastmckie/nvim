@@ -227,6 +227,8 @@ CONSTRAINT ON THE RECOMMENDATION. Recommend one option and say plainly why the o
 
 DONE WHEN. A report states the options, the per-option verdict against the criteria above, and one recommendation; a short durability statement suitable for a reader of the rules is drafted for the docs task to place.
 
+SCOPE DECLARATION (2026-11-19). This record's file_scope is deliberately EMPTY, and that is the honest declaration rather than an omission to be repaired. By its own contract above it writes no file under agent-system/**: its two outputs are a report under its own specs/ artifact directory (in-scope derived output, never a file_scope excursion) and a drafted durability paragraph handed to the documentation record for placement. A declaration of the whole context/standards/ directory overlapped 23 distinct non-terminal records for no real territory and tripped validate-state.sh's coarse-declaration check; do not re-broaden it, and do not substitute context/standards/orchestrator-runtime-files.md either -- that file has four other claimants, one of which is this group's own scaffolding record and another its never-co-admit counterpart. Reading a standards file is not declaring it.
+
 ---
 
 ### 660. Init specs ignores specs by default
@@ -277,6 +279,8 @@ SHARED TERRITORY, DECLARED NOT BLOCKING. Task 501 (cycle_postflight_containment_
 
 DONE WHEN. An ignored-specs repository drives a task to completed with the skip recorded and the status intact; a genuine commit failure still demotes; every history reader named above has a stated and implemented answer for an absent specs history; and a tracked-specs repository's postflight behaviour is unchanged.
 
+MEASURED SCOPE CORRECTION (2026-11-19, after this record was written). THE HISTORY READERS list above is overstated: three of its six named members issue no git read whatsoever. scripts/reconcile-task-status.sh and scripts/task-lock.sh contain no git log, git show, git ls-files, git rev-list or git diff invocation at all; scripts/lib/territory-contention-lib.sh's git log mentions are prose inside an agent-facing advisory note, not code. Those three need no change and no verdict beyond recording that measurement. What genuinely remains is three items, not six: (1) scripts/validate-state.sh's --deep artifact-loss check, which fetches the prior committed state.json via git show <sha>:<path> -- this is the one real casualty of an absent specs history and needs a defined answer rather than a silent zero; (2) scripts/dispatch-metrics.sh's churn split, which yields zero rather than an error and needs only the stated verdict this description already calls for; (3) scripts/init-specs.sh's git ls-files -- specs/ probe, which is the scaffolding record's own subject and not this one's. Re-measure before planning rather than trusting either list.
+
 ---
 
 ### 658. Ignored specs predicate and commit path
@@ -302,6 +306,8 @@ VERIFICATION. One negative control per rule, each biting exactly the case it tar
 SHARED TERRITORY, DECLARED NOT BLOCKING. Task 618 (working_tree_residue_disposition_policy) edits git-commit-scoped.sh as well, and its Class 1 asks a question overlapping (b) above: whether that script drops a tracked-but-gitignore-matching path and reports it non-fatally where nobody reads it. No dependency edge is set in either direction by the user's ruling, but the two must never be co-admitted into one batch, and 618's own starting evidence should be re-measured after this task lands rather than assumed still accurate.
 
 DONE WHEN. The predicate exists in one place with its own tests; git-commit-scoped.sh distinguishes an all-ignored pathspec from a staging failure in its exit-code contract and its header documents the new outcome beside the existing V-codes; context/standards/git-staging-scope.md states the per-operation contract for both postures; and a tracked-specs repository's commit behaviour is demonstrably unchanged.
+
+MEASURED SCOPE CORRECTION (2026-11-19, after this record was written). The sentence above about the 95 files that reference git-commit-scoped.sh states a REFERENCE count, not an edit surface, and must not be read as one. The engine-written state-path question already funnels through scripts/lib/engine-written-state-paths-lib.sh -- the seam this description already names -- and that lib has exactly THREE production consumers: scripts/orchestrate-cycle-postflight.sh, scripts/git-commit-phase.sh, and git-commit-scoped.sh itself. The rest of its grep footprint is its own test suites, suite-classification.data, and context/standards/git-staging-scope.md. The predicate lands in that lib and is consulted from those three sites. A plan that fans a per-call-site change across the 95 referencing files has mis-scoped this task; the no-caller-reimplements criterion is satisfied by three call sites, not ninety-five.
 
 ---
 
