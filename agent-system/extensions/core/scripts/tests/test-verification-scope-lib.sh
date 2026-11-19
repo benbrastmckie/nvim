@@ -17,9 +17,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 
 REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
-LIB_UNDER_TEST="$(common_test_resolve_candidate "verification-scope-lib.sh" \
+LIB_UNDER_TEST="$(common_test_resolve_subject "verification-scope-lib.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lib/verification-scope-lib.sh" \
   "$SCRIPT_DIR/../lib/verification-scope-lib.sh")" || exit 2
+common_test_declare_subject "$LIB_UNDER_TEST"
 
 PASSED=0
 FAILED=0

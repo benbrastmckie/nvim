@@ -30,12 +30,11 @@
 #     }
 #   }
 #
-# `project_gates` is still a RESERVED field name on this same object (owned by the
-# project-sources narrowing record; see repo-level-declarations.md) -- this library does not read
-# or validate it, so a future reader adding it does not need to touch this file. `closing_gate`
-# is NO LONGER reserved-but-unread: function (e) below is its reader, added once the
-# orchestration-close record actually needed it (see repo-level-declarations.md's "Decisions
-# Settled" section).
+# `project_gates` is a RESERVED field name on this same object (owned by the project-sources
+# narrowing record; see repo-level-declarations.md) -- this library does not read or validate it,
+# so a future reader adding it does not need to touch this file. `closing_gate` has its own
+# reader: function (e) below (see repo-level-declarations.md's "Decisions Settled" section for
+# the field's own resolution).
 #
 # Five exported functions:
 #

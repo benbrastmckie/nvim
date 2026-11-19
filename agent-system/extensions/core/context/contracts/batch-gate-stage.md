@@ -352,6 +352,12 @@ that file for the exact bounded-waiter invocation. In outline:
    back, when present, by the consolidated-output renderer
    (`context/patterns/orchestrate-batch-results-template.md`'s batch-gate result section) and by
    the final `.return-meta-multi-${session_id}.json` write (`context/formats/return-metadata-file.md`).
+3b. Immediately after step 2, invoke
+    `scripts/orchestrate-close-status-bind.sh --session "$session_id" --state-file
+    "$mt_state_file"` (no bounded-waiter idiom needed — sub-second, no `verify-deploy.sh` call of
+    its own). Reads `batch_gate.close_red_roster` step 2 may just have written and binds it to
+    the attributed task's own status; see "Red-Close Per-Task Record" below and that script's own
+    header for the full contract.
 4. This stage writes a durable, attributed, per-task record under an implicated task's own
    `records/close-battery-red.jsonl` on a red close (see "Red-Close Per-Task Record" below), but
    no task's own `state.json` entry, status, or completion verdict is touched BY THIS STAGE

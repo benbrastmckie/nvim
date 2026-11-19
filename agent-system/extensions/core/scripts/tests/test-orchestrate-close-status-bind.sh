@@ -66,6 +66,9 @@ run_sut() {
   stdout_file="$(mktemp)"; stderr_file="$(mktemp)"
   bash "$SUT" "$@" >"$stdout_file" 2>"$stderr_file"
   LAST_EXIT=$?
+  # shellcheck disable=SC2034 # captured for run_sut helper parity with sibling suites
+  # (test-orchestrate-batch-gate.sh's own run_sut); this suite's own cases assert on exit code
+  # and stderr only, never stdout, but the field stays available for a future case.
   LAST_STDOUT="$(cat "$stdout_file")"
   LAST_STDERR="$(cat "$stderr_file")"
   rm -f "$stdout_file" "$stderr_file"
