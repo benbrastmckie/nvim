@@ -130,14 +130,33 @@ still terminates at `[COMPLETED]` exactly as before; it never passes through `[P
 **state.json Value**: `"status": "completed"`  
 **Meaning**: Task is finished successfully.
 
-**Valid Transitions**: Terminal state, with one sanctioned exception: a postflight-synthesized
-demotion to `[PARTIAL]` when that same dispatch window's per-cycle scoped commit demonstrably did
-not land (`git-commit-scoped.sh` exit 2, 3, 4, or 5 at `orchestrate-cycle-postflight.sh`'s
-WORK (i) commit call site). The demotion carries a named handoff blocker and flips that cycle's
-verdict to `defer`, so the next cycle routes the task to `needs_human` rather than treating it as
-finished with its deliverable changes still uncommitted on disk. A landed-commit exit code (6 or
-7) and every other outcome leave `[COMPLETED]` untouched. See
-`context/standards/git-staging-scope.md`'s exit-code table for what each commit exit code means.
+**Valid Transitions**: Terminal state, with two sanctioned exceptions.
+
+1. A postflight-synthesized demotion to `[PARTIAL]` when that same dispatch window's per-cycle
+   scoped commit demonstrably did not land (`git-commit-scoped.sh` exit 2, 3, 4, or 5 at
+   `orchestrate-cycle-postflight.sh`'s WORK (i) commit call site). The demotion carries a named
+   handoff blocker and flips that cycle's verdict to `defer`, so the next cycle routes the task
+   to `needs_human` rather than treating it as finished with its deliverable changes still
+   uncommitted on disk. A landed-commit exit code (6 or 7) and every other outcome leave
+   `[COMPLETED]` untouched. See `context/standards/git-staging-scope.md`'s exit-code table for
+   what each commit exit code means.
+2. A close-battery-synthesized demotion to `[PARTIAL]` when a task is the ATTRIBUTED CAUSE of a
+   red once-per-invocation close battery (Move 4's batch gate stage,
+   `context/contracts/batch-gate-stage.md`). Gated on a four-way conjunction, enforced by
+   `scripts/orchestrate-close-status-bind.sh`: `batch_gate.gate_exit_code` nonzero, that task's
+   own attributed finding set non-empty (i.e. the task is present in
+   `batch_gate.close_red_roster`), the invocation is not `--dry-run`, and the task is present in
+   this invocation's `completed_tasks`. The demotion names the close battery and the attributed
+   findings as its reason, following the same shape as exception 1 above rather than inventing a
+   new status value or a new writer. A task implicated only through the batch-level
+   `unattributed` set, or whose own attribution is empty, is NEVER demoted by this exception —
+   every other outcome leaves `[COMPLETED]` untouched. **Rejected alternative**: holding every
+   implicated task's completion open pending a green close, rejected because it couples one
+   task's completion to unrelated siblings' files under concurrency — the same attribution hazard
+   `context/contracts/batch-gate-stage.md`'s Single-Capture Distinction section already argues
+   against on a different axis. See that file's "Red-Close Per-Task Record" section for the
+   record this demotion reads and `scripts/orchestrate-close-status-bind.sh`'s own header for the
+   full gate.
 
 **Required Information**:
 - `- **Completed**: YYYY-MM-DD` timestamp
@@ -540,10 +559,13 @@ All files are updated via temp-file + atomic rename so no partial state is writt
 **Permissive Rule**: Any command can run from any non-terminal status.
 
 **Terminal States** (block all ordinary command transitions):
-- `[COMPLETED]` - No further transitions via any ordinary command. One sanctioned, narrowly-gated
-  exception: `orchestrate-cycle-postflight.sh`'s own WORK (i) commit-landing status correction
+- `[COMPLETED]` - No further transitions via any ordinary command. Two sanctioned, narrowly-gated
+  exceptions: `orchestrate-cycle-postflight.sh`'s own WORK (i) commit-landing status correction
   demotes to `[PARTIAL]` when that same dispatch window's per-cycle scoped commit demonstrably did
-  not land — see this file's `[COMPLETED]` subsection above for the full gate and rationale.
+  not land; and `scripts/orchestrate-close-status-bind.sh`'s close-battery status correction
+  demotes to `[PARTIAL]` when the task is the attributed cause of a red once-per-invocation close
+  battery — see this file's `[COMPLETED]` subsection above for the full gate and rationale on
+  both.
 - `[ABANDONED]` - No further transitions (use `/task --recover` to restart)
 - `[EXPANDED]` - No further transitions (work continues in subtasks)
 

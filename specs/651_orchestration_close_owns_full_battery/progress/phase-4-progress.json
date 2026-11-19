@@ -1,0 +1,33 @@
+{
+  "phase": 4,
+  "phase_name": "Bind the Close Battery's Verdict to the Attributed Task",
+  "started_at": "2026-11-18T23:05:00Z",
+  "last_updated": "2026-11-18T23:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add orchestrate-close-status-bind.sh", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-close-status-bind.sh"]},
+    {"id": 2, "description": "Gate demotion on four-way conjunction", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Demote via sanctioned status writer", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Record second sanctioned exception in status-markers.md", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/standards/status-markers.md"]},
+    {"id": 5, "description": "Record rejected alternative in batch-gate-stage.md", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/contracts/batch-gate-stage.md"]},
+    {"id": 6, "description": "Extend results-template.md demotion rendering", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"]},
+    {"id": 7, "description": "Update SKILL.md Move 4 invocation", "status": "done",
+     "files_touched": ["agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"]},
+    {"id": 8, "description": "Add test-orchestrate-close-status-bind.sh (5 cases, 12 assertions)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-close-status-bind.sh"]},
+    {"id": 9, "description": "Register script+suite in manifest.json via sync-manifest-scripts.sh; reconcile index-entries.json", "status": "done",
+     "files_touched": ["agent-system/extensions/core/manifest.json", "agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "4.1", "description": "Script reads batch_gate.attributed and batch_gate.close_red_roster",
+     "type": "altered",
+     "reason": "close_red_roster already carries exactly the attributed-task/finding_count information needed for the bind decision; reading .attributed separately would be redundant since orchestrate-batch-gate.sh's own write gate for close_red_roster already encodes non-empty attribution.",
+     "annotation": "*(deviation: altered -- reads only close_red_roster, not .attributed separately)*"}
+  ]
+}

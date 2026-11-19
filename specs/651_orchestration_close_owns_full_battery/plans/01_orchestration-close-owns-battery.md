@@ -372,45 +372,49 @@ edited script, its suite, and the two context files is the covering check — it
 
 ---
 
-### Phase 4: Bind the Close Battery's Verdict to the Attributed Task [NOT STARTED]
+### Phase 4: Bind the Close Battery's Verdict to the Attributed Task [COMPLETED]
 
 **Goal**: A task that is itself the attributed cause of a red close does not remain `[COMPLETED]`
 on the strength of its own scoped check; every other implicated task keeps its status and carries
 Phase 3's record. The rejected alternative is recorded.
 
 **Tasks**:
-- [ ] Add a sibling script `scripts/orchestrate-close-status-bind.sh`, invoked in Move 4
+- [x] Add a sibling script `scripts/orchestrate-close-status-bind.sh`, invoked in Move 4
       immediately after the batch gate stage (the same foreground, sub-second siting
       `orchestrate-conclusion-roadmap.sh` already uses). It reads `batch_gate.attributed` and
       `batch_gate.close_red_roster` from the multi-task state file and performs the status binding
       through the sanctioned status writer — keeping `orchestrate-batch-gate.sh`'s own "never reads
       or writes `specs/state.json`" contract intact. Implementing the binding as a script rather
       than as a Move 4 prose instruction is deliberate: advisory prose is not a mechanism.
-- [ ] Gate the demotion on a four-way conjunction: `gate_exit_code` nonzero, that task's own
+- [x] Gate the demotion on a four-way conjunction: `gate_exit_code` nonzero, that task's own
       attributed finding set non-empty, not `--dry-run`, and the task present in this invocation's
       `completed_tasks`. A task attributed to nothing, or implicated only through the batch-level
       unattributed set, keeps `[COMPLETED]` and carries Phase 3's record.
-- [ ] Demote a qualifying task to `[PARTIAL]` with a named reason naming the close battery and the
+- [x] Demote a qualifying task to `[PARTIAL]` with a named reason naming the close battery and the
       attributed findings, following the shape of the existing commit-landing demotion rather than
-      inventing a new status value or a new writer.
-- [ ] Record the second sanctioned exception in `context/standards/status-markers.md`'s
+      inventing a new status value or a new writer. *(completed: implemented via `skill_postflight_update`,
+      the same sanctioned writer the commit-landing demotion uses.)*
+- [x] Record the second sanctioned exception in `context/standards/status-markers.md`'s
       `[COMPLETED]` subsection, alongside the existing commit-landing exception: same structure,
       the gate stated explicitly, and the statement that every other outcome leaves `[COMPLETED]`
       untouched.
-- [ ] Record the rejected alternative in `context/contracts/batch-gate-stage.md`: holding every
+- [x] Record the rejected alternative in `context/contracts/batch-gate-stage.md`: holding every
       implicated task's completion open pending a green close, rejected because it couples one
       task's completion to unrelated siblings' files under concurrency — the attribution hazard the
       shared-capture design already argues against.
-- [ ] Extend `context/patterns/orchestrate-batch-results-template.md` so a demotion is visible in
+- [x] Extend `context/patterns/orchestrate-batch-results-template.md` so a demotion is visible in
       the consolidated output, not only in `state.json`.
-- [ ] Update `skills/skill-orchestrate/SKILL.md`'s Move 4 to invoke the new script at the stated
+- [x] Update `skills/skill-orchestrate/SKILL.md`'s Move 4 to invoke the new script at the stated
       siting.
-- [ ] Add `scripts/tests/test-orchestrate-close-status-bind.sh`: an attributed-cause completed task
+- [x] Add `scripts/tests/test-orchestrate-close-status-bind.sh`: an attributed-cause completed task
       is demoted; an unattributed-only task is not; a clean close demotes nothing; a `--dry-run`
-      demotes nothing; a task not in `completed_tasks` is untouched.
-- [ ] Register the new script and the new suite wherever this repository requires registration
+      demotes nothing; a task not in `completed_tasks` is untouched. *(completed: 12 passed, 0 failed.)*
+- [x] Register the new script and the new suite wherever this repository requires registration
       (extension manifest script list via `sync-manifest-scripts.sh`, and the suite inventory
-      `run-all.sh` reads), then reconcile `index-entries.json` line counts.
+      `run-all.sh` reads), then reconcile `index-entries.json` line counts. *(completed: run-all.sh
+      discovers test suites by glob, no registration needed there per sync-manifest-scripts.sh's
+      own header; manifest.json's two provides.scripts arrays updated via sync-manifest-scripts.sh
+      --write.)*
 
 **Timing**: 2 hours
 

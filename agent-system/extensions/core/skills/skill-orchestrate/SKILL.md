@@ -26,6 +26,9 @@ separate single-task code path. Full state table, transition diagram, design rat
 - `.claude/scripts/orchestrate-batch-gate.sh` and `context/contracts/batch-gate-stage.md` —
   Move 4's batch gate stage: the once-per-invocation shared `verify-deploy.sh` run, its per-task
   finding attribution, and the script's own contract
+- `.claude/scripts/orchestrate-close-status-bind.sh` — Move 4's close-status-bind stage,
+  immediately after the batch gate stage: demotes an attributed-cause completed task to
+  `[PARTIAL]` on a red close
 - `context/contracts/conclusion-stage.md` — Move 5
 
 ---
@@ -366,6 +369,24 @@ above, with `bg_log="specs/.orchestration/.batch-gate-${session_id}.log"` and `b
 "$mt_state_file"` substituted for `cycle_log`/`orchestrate-cycle-plan.sh`. Durable side effect
 only: the `batch_gate` key it may add to `$mt_state_file` (absent on the no-implement-dispatch
 no-op path).
+
+**Close-status-bind stage** (sibling script, same site, immediately after the batch gate stage
+above and before the roadmap-update stage below; foreground, sub-second — reads
+`batch_gate.close_red_roster`, which the batch gate stage may just have written, so it must run
+after that stage, not concurrently with it): binds a red close battery's verdict to the
+attributed task(s) it covers, demoting a qualifying completed task to `[PARTIAL]` through the
+sanctioned status writer. Full contract: `context/contracts/batch-gate-stage.md`'s "Red-Close
+Per-Task Record" section and `scripts/orchestrate-close-status-bind.sh`'s own header.
+
+```bash
+bash .claude/scripts/orchestrate-close-status-bind.sh --session "$session_id" --state-file "$mt_state_file"
+```
+
+No bounded-waiter idiom needed here (unlike the batch gate stage above): this script never
+invokes `verify-deploy.sh` or any other long-running process — it only reads `$mt_state_file` and
+writes through `skill_postflight_update`, both sub-second. Durable side effect: a qualifying
+task's own `state.json` entry/TODO.md status demoted to `partial` (never anything else — see
+`context/standards/status-markers.md`'s `[COMPLETED]` subsection for the exact four-way gate).
 
 **Roadmap-update stage** (sibling script, same site; executes `conclusion-stage.md`'s Step 5;
 unconditional, unlike the batch gate's `.implement_agents` gate; foreground, sub-second):
