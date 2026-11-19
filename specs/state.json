@@ -2382,14 +2382,14 @@
       "project_number": 633,
       "project_name": "stray_duplicate_deploy_ledger_in_core_source_store",
       "title": "Resolve the stray duplicate .claude-extensions.json sitting inside the core extension source store",
-      "status": "not_started",
+      "status": "completed",
       "task_type": "meta",
       "description": "A 68KB file exists at agent-system/extensions/core/.claude-extensions.json. It is untracked (git status reports ??), dated 2026-11-12, and its contents DIFFER from the real root ledger at ./.claude-extensions.json (verified by diff). The deploy ledger belongs at the project root; the source-store/deploy boundary rule resolves .extensions.<name>.source_dir from the ROOT ledger, so a second copy nested inside an extension's own source tree has no defined role.\n\nWHY IT IS NOT MERELY UNTIDY: it is a 68KB near-copy of a load-bearing config, sitting at a path where a future resolver walking upward from inside agent-system/extensions/core/ could plausibly find IT FIRST instead of the root ledger -- and the two disagree. That is a latent wrong-answer, not just clutter. It also already shows up as a Reasoned Exclusion in unrelated work (a grep for a deleted skill name hit this file), meaning it is actively costing triage attention.\n\nDETERMINE AND THEN ACT: establish how it got there (a mis-targeted write, an interrupted deploy, a manual copy), whether anything reads it today, and in what way it diverges from the root ledger. Then either delete it, or -- if some path genuinely depends on it -- give it a declared role and get it tracked, rather than leaving a 68KB untracked near-duplicate of the ledger in place.\n\nACCEPTANCE: the path is either gone, or tracked with a documented purpose; and in either case no resolver can reach the wrong ledger.",
       "effort": "small",
       "topic": "agent-system",
       "dependencies": [],
       "created": "2026-11-14T09:49:33Z",
-      "last_updated": "2026-11-14T09:49:33Z",
+      "last_updated": "2026-11-19T21:17:10Z",
       "artifacts": [],
       "file_scope": [
         "agent-system/extensions/core/.claude-extensions.json",
@@ -2613,7 +2613,8 @@
           "semantic": true
         },
         "degradations_count": 44
-      }
+      },
+      "session_id": "sess_1795122931_1e705d"
     },
     {
       "project_number": 618,
