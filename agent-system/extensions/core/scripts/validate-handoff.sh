@@ -315,9 +315,17 @@ if [[ "$blockers_count" -gt 0 ]]; then
   # Validate each blocker has the minimum expected fields
   invalid_blockers=0
   for i in $(seq 0 $((blockers_count - 1))); do
-    has_phase=$(jq -r ".blockers[$i].phase // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
-    has_target=$(jq -r ".blockers[$i].target // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
-    if [[ "$has_phase" == "__MISSING__" ]] || [[ "$has_target" == "__MISSING__" ]]; then
+    blocker_type=$(jq -r ".blockers[$i] | type" "$HANDOFF_FILE" 2>/dev/null || echo "unknown")
+    if [[ "$blocker_type" == "object" ]]; then
+      has_phase=$(jq -r ".blockers[$i].phase // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
+      has_target=$(jq -r ".blockers[$i].target // \"__MISSING__\"" "$HANDOFF_FILE" 2>/dev/null)
+      if [[ "$has_phase" == "__MISSING__" ]] || [[ "$has_target" == "__MISSING__" ]]; then
+        invalid_blockers=$((invalid_blockers + 1))
+      fi
+    elif [[ "$blocker_type" == "string" ]]; then
+      # String-form blocker: a valid shorthand with no phase/target fields to check.
+      :
+    else
       invalid_blockers=$((invalid_blockers + 1))
     fi
   done

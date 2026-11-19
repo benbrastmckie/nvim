@@ -24,6 +24,13 @@
 #   null                                                     -- neither form present, or the
 #                                                                handoff file is missing/unparseable
 #
+# The nested-form read is TYPE-GUARDED (`if type == "object"`), not merely null-guarded. Some live
+# writers emit `continuation_context` as a free-text STRING describing where to resume rather than
+# as the deprecated object; indexing that string with `.handoff_path` is a jq ERROR, and because
+# the call site swallows stderr and falls back to `null`, the error used to discard a perfectly
+# valid flat `continuation_path` alongside it -- misrouting a `partial` task from `implement` to
+# `needs_human`. The guard makes a non-object `continuation_context` fall through to `$flat`.
+#
 # Callers needing only a boolean (e.g. orchestrate-triage-classify.sh's continuation_ok) test the
 # function's own output for the literal string "null":
 #   result=$(resolve_continuation_pointer "$handoff_path")
@@ -36,7 +43,7 @@ resolve_continuation_pointer() {
     return 0
   fi
   jq -c '
-    ((.continuation_context // null) | if . != null then (.handoff_path // null) else null end) as $nested |
+    ((.continuation_context // null) | if type == "object" then (.handoff_path // null) else null end) as $nested |
     (.continuation_path // null) as $flat |
     ($nested // $flat) as $resolved |
     if $resolved != null then {handoff_path: $resolved, orchestrator_mode: true} else null end

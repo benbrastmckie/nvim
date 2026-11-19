@@ -33,4 +33,6 @@
 **/.orchestration/
 **/.runs.lock
 **/.observations.lock
+**/.gate-cache/
+**/.gate-lock/
 # END managed block: runtime-file-patterns.sh

@@ -65,8 +65,11 @@
 # tempfile, time) and sapience.nix's home-manager module pins a plain `pkgs.python3` (no
 # `withPackages`), so resolving `python3` via `command -v` is functionally equivalent to the
 # nix-store-pinned interpreter the top-level entry already names -- this writer prefers
-# inheriting that pinned path when present, and falls back to `command -v` only when no
-# top-level entry exists yet to inherit from.
+# inheriting that pinned path when it still resolves to an executable, and falls back to
+# `command -v` both when no top-level entry exists yet to inherit from and when the one that
+# does exist names a path that can no longer spawn the server. That executability test is what
+# keeps a single unusable top-level value from propagating into every project entry written
+# after it: an inherited pin is a candidate, never an answer.
 #
 # After running, restart Claude Code for changes to take effect (MCP server registration is
 # snapshotted at session start; a just-written entry is not guaranteed to be visible in the
@@ -242,16 +245,40 @@ if [ -z "$PROJECT_PATH" ]; then
 fi
 
 # resolve_interpreter -- prefer the pinned nix-store path the existing top-level entry already
-# names (if any), else fall back to a plain `command -v python3` resolved to an absolute path.
-# Refuses loudly (non-zero exit) if neither resolves, rather than writing a command that cannot
-# spawn the server.
+# names, but only while that path still resolves to an executable; otherwise fall back to a
+# plain `command -v python3` resolved to an absolute path. Refuses loudly (non-zero exit) if
+# neither resolves, rather than writing a command that cannot spawn the server.
 resolve_interpreter() {
-    local inherited
+    local inherited inherited_resolved
     if [ -f "$CLAUDE_CONFIG" ]; then
         inherited=$(jq -r '.mcpServers.sapience.command // empty' "$CLAUDE_CONFIG" 2>/dev/null || echo "")
         if [ -n "$inherited" ] && [ "$inherited" != "null" ]; then
-            printf '%s' "$inherited"
-            return 0
+            # An inherited value is a candidate, not an answer: it is only usable if it still
+            # resolves to something that can actually spawn the server. A value carrying a
+            # slash is tested directly; a bare command name is resolved through PATH so this
+            # function's contract of returning an absolute path still holds.
+            inherited_resolved=""
+            case "$inherited" in
+                */*)
+                    if [ -x "$inherited" ]; then
+                        inherited_resolved="$inherited"
+                    fi
+                    ;;
+                *)
+                    inherited_resolved=$(command -v "$inherited" 2>/dev/null || echo "")
+                    ;;
+            esac
+            if [ -n "$inherited_resolved" ]; then
+                printf '%s' "$inherited_resolved"
+                return 0
+            fi
+            # The inherited pin cannot spawn the server -- a nix generation was collected out
+            # from under it, or it names a profile path that no longer exists. Fall through to
+            # a fresh resolution rather than copy a dead interpreter into this scope's entry:
+            # copying it is what would make one stale top-level value permanent across every
+            # project registered after it. Written to stderr, never stdout, because this
+            # function's stdout IS the resolved interpreter.
+            echo "Note: ignoring top-level mcpServers.sapience.command '$inherited' (does not resolve to an executable); resolving python3 afresh." >&2
         fi
     fi
 
@@ -262,7 +289,7 @@ resolve_interpreter() {
         return 0
     fi
 
-    echo "Error: could not resolve a python3 interpreter (no top-level mcpServers.sapience.command to inherit, and 'command -v python3' found nothing)." >&2
+    echo "Error: could not resolve a usable python3 interpreter (no executable top-level mcpServers.sapience.command to inherit, and 'command -v python3' found nothing)." >&2
     exit 1
 }
 
