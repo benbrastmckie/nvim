@@ -84,6 +84,7 @@ test-gate-cache-equivalence.sh	integration	invokes:deploy-headless.sh,verify-dep
 test-gate-cache-lib.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh
 test-gate-contention-tagging.sh	integration	invokes:verify-deploy.sh
 test-gate-lock.sh	integration	invokes:verify-deploy.sh,run-all.sh
+test-gate-lock-host-scope.sh	integration	invokes:run-all.sh,task-lock.sh
 test-gate-out-derived-staleness.sh	unit	-
 test-gate-out-repair-reporting.sh	unit	-
 test-gate-out-self-attribution.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh

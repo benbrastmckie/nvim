@@ -373,47 +373,53 @@ the grep shows more.
 
 ---
 
-### Phase 4: Cross-directory double-start and lock-root degradation coverage [NOT STARTED]
+### Phase 4: Cross-directory double-start and lock-root degradation coverage [COMPLETED]
 
 **Goal**: Prove the regression the host form fixes with a test that could not pass before the
 change, prove that test is non-vacuous, and cover the absent/unwritable lock-root degradation path.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/core/scripts/tests/test-gate-lock-host-scope.sh`, built on
+- [x] Create `agent-system/extensions/core/scripts/tests/test-gate-lock-host-scope.sh`, built on
       `test-gate-lock.sh`'s fixture technique but constructing TWO independent fixture repository
       roots: two separate `mktemp -d` trees, each with its own
       `agent-system/extensions/core/scripts/tests/`, `.claude/scripts/` (copied `task-lock.sh`,
       `deploy-root-guard.sh`, `lib/common.sh`, `lib/task-lookup-lib.sh`,
       `lib/file-scope-overlap.sh`), `specs/`, and a copied `run-all.sh` plus marker fixture suite.
       Keep the two-levels-up nesting `test-gate-lock.sh`'s header documents — both roots need it for
-      `PROJECT_ROOT`/`EXTENSIONS_ROOT` arithmetic to agree.
-- [ ] Clear `RUN_ALL_NESTED`, `GATE_MUTEX_HELD` and `GATE_MUTEX_HOST_HELD` at the top of the suite,
+      `PROJECT_ROOT`/`EXTENSIONS_ROOT` arithmetic to agree. *(completed)*
+- [x] Clear `RUN_ALL_NESTED`, `GATE_MUTEX_HELD` and `GATE_MUTEX_HOST_HELD` at the top of the suite,
       following `test-gate-lock.sh`'s documented precedent, so the cases are not silently vacuous
-      when this suite is itself discovered by an outer `run-all.sh`.
-- [ ] Case **cross-directory serialization**: both roots share ONE
+      when this suite is itself discovered by an outer `run-all.sh`. *(completed)*
+- [x] Case **cross-directory serialization**: both roots share ONE
       `TASK_LOCK_HOST_ROOT_OVERRIDE`; launch two concurrent unfiltered fixture batteries, one `cd`'d
-      into each root; assert their start/finish marker intervals do not overlap.
-- [ ] Case **non-vacuousness control**: the same two roots, each given its OWN distinct
+      into each root; assert their start/finish marker intervals do not overlap. *(completed)*
+- [x] Case **non-vacuousness control**: the same two roots, each given its OWN distinct
       `TASK_LOCK_HOST_ROOT_OVERRIDE` — exactly what repo-scoping reduces to; assert the intervals
       DO overlap, proving the first case measures host scope and not some same-repo artifact.
-- [ ] Case **degradation, override unwritable**: point the override at a `chmod 000` directory with
+      *(completed)*
+- [x] Case **degradation, override unwritable**: point the override at a `chmod 000` directory with
       `XDG_RUNTIME_DIR` unset; assert the battery still runs, prints a real verdict, and emits the
-      named fail-open `WARNING:` line.
-- [ ] Case **degradation, every tier exhausted**: `XDG_RUNTIME_DIR` unset, `TMPDIR` pointed at an
+      named fail-open `WARNING:` line. *(completed; deviation: run unfiltered rather than `--only`
+      -- a narrowed run skips the acquire branch entirely, see progress file `approaches_tried`)*
+- [x] Case **degradation, every tier exhausted**: `XDG_RUNTIME_DIR` unset, `TMPDIR` pointed at an
       unwritable path; assert `resolve_host_lock_root()` returns non-zero and the call site fails
-      open rather than blocking.
-- [ ] Case **no leak**: no host-scoped lock directory survives a completed invocation at either
-      root.
-- [ ] Add the suite's row to `agent-system/extensions/core/scripts/tests/suite-classification.data`
+      open rather than blocking. *(completed; deviation: tested as a direct CLI call against the
+      fixture's deployed task-lock.sh, using a UID-override technique to defeat tier 3, rather than
+      through the full battery -- TMPDIR also governs run-all.sh's own internal mktemp calls, so a
+      whole-subprocess override broke unrelated plumbing; see progress file `approaches_tried`)*
+- [x] Case **no leak**: no host-scoped lock directory survives a completed invocation at either
+      root. *(completed)*
+- [x] Add the suite's row to `agent-system/extensions/core/scripts/tests/suite-classification.data`
       (class `integration`, `invokes:` naming `run-all.sh` and `task-lock.sh`) —
       `lint/lint-unit-integration-boundary.sh` fails loudly on an unclassified discovered suite, so
       this row is commit-blocking and belongs in this phase, not a later reconciliation.
-- [ ] Add `tests/test-gate-lock-host-scope.sh` to `agent-system/extensions/core/manifest.json`'s
+      *(completed)*
+- [x] Add `tests/test-gate-lock-host-scope.sh` to `agent-system/extensions/core/manifest.json`'s
       `provides.scripts[]` — the manifest enumerates every test file individually and
       `test-manifest-scripts-sync.sh` enforces the sync; an unlisted suite never reaches the
-      deployed `.claude/scripts/tests/` directory Gate 8 discovers.
-- [ ] Run the new suite from a working directory that is NEITHER fixture root, and never against
-      the real `$XDG_RUNTIME_DIR`.
+      deployed `.claude/scripts/tests/` directory Gate 8 discovers. *(completed)*
+- [x] Run the new suite from a working directory that is NEITHER fixture root, and never against
+      the real `$XDG_RUNTIME_DIR`. *(completed)*
 
 **Timing**: 1.5 hours
 

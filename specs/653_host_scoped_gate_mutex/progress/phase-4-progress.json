@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "Cross-directory double-start and lock-root degradation coverage",
+  "started_at": "2026-11-19T02:05:00Z",
+  "last_updated": "2026-11-19T02:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-gate-lock-host-scope.sh with two independent fixture roots (serialization, non-vacuousness control, 2 degradation cases, no-leak)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate-lock-host-scope.sh"]},
+    {"id": 2, "description": "Register suite in suite-classification.data (integration, invokes run-all.sh,task-lock.sh)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/suite-classification.data"]},
+    {"id": 3, "description": "Register suite in manifest.json provides.scripts[]", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]},
+    {"id": 4, "description": "Verify: suite passes from neither-fixture-root dir, lint-unit-integration-boundary clean, test-manifest-scripts-sync passes, shellcheck clean", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Tested the 'every tier exhausted' degradation case by pointing the whole battery subprocess's TMPDIR at an unwritable directory", "result": "rejected", "reason": "run-all.sh's own internal mktemp calls (shared fixture build, SUITE_OUT, OUT_DIR) also honor TMPDIR, so this broke run-all.sh's own unrelated plumbing, not just the resolver's tier 4 -- confirmed directly"},
+    {"approach": "Tested 'every tier exhausted' as a direct CLI call against the fixture's deployed task-lock.sh (gate-acquire-host) instead of through the full run-all.sh battery, using the UID-override technique (UID=999999999) to defeat tier 3 (/run/user/$UID) without touching the real path or changing the process's real uid", "result": "adopted", "reason": "isolates exactly what needs proving (resolver returns non-zero with the named ERROR line) without colliding with run-all.sh's own TMPDIR-dependent internals; the override-unwritable case already proves the call site's general fail-open wiring since it does not inspect WHY gate-acquire-host failed"},
+    {"approach": "First attempt at the two degradation cases used --only <fixture suite> to keep the battery fast", "result": "failed", "reason": "a --only-narrowed run skips the whole gate-lock acquire branch entirely ('specs/.gate-lock is not touched for a narrowed run') by design, so neither degradation case ever reached the acquire branch it meant to exercise -- discovered by direct reproduction outside the suite before fixing"}
+  ],
+  "handoff_count": 0,
+  "verification_notes": "test-gate-lock-host-scope.sh: 7/7 passed, run from /home/benjamin/.config/nvim (neither fixture root). Non-vacuousness control case genuinely observed overlap (confirmed in output, not a failed proof). lint-shellcheck.sh clean. test-manifest-scripts-sync.sh: 21/21 passed once the new suite file was `git add`-ed (the check resolves 'on disk' via `git ls-files`, so an untracked new file transiently reports as declared-but-absent until staged -- confirmed this is a git-tracking timing artifact, not a registration defect, by re-running after `git add`; the normal phase-closing commit stages it for real). lint-unit-integration-boundary.sh direct run: 1 violation total, naming only test-orchestrate-close-status-bind.sh (task 651's concurrent uncommitted new test file, same foreign file observed in Phase 3); this task's own new suite is NOT named in the violation output, confirming its classification row is complete and correct. Per the plan's own Tier Justification ('the selector returns the __FULL_SWEEP__ sentinel... the honest in-phase check is the new suite's own run plus the two registration lints'), no separate verify-touched.sh pass was run for this phase -- the three checks above (suite run, lint-unit-integration-boundary.sh, test-manifest-scripts-sync.sh) ARE this phase's discharge, as the plan itself specifies."
+}

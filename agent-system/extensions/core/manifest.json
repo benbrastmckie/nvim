@@ -369,6 +369,7 @@
       "tests/test-gate-cache-lib.sh",
       "tests/test-gate-contention-tagging.sh",
       "tests/test-gate-lock.sh",
+      "tests/test-gate-lock-host-scope.sh",
       "tests/test-gate-out-derived-staleness.sh",
       "tests/test-gate-out-repair-reporting.sh",
       "tests/test-gate-out-self-attribution.sh",
