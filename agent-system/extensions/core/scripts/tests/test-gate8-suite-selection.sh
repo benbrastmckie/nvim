@@ -335,6 +335,52 @@ else
   common_test_fail "case F (argument validation): expected exit 2 with the named error for an explicitly empty value" "$case_f_empty_out"
 fi
 
+# =====================================================================
+# Case G (mixed mapped+unmapped path, fail-safe regression): suite_selection_select's
+# aggregation is now compositional (returns the sentinel ALONGSIDE real suites for a mixed set,
+# never the sentinel alone -- see lib/suite-selection-lib.sh's PUBLIC API header). Gate 8's own
+# fail-safe must still fall back to the full, unnarrowed battery whenever the resolved set
+# CONTAINS the sentinel at all, exactly as it does for an all-unmappable set in Case D above --
+# never silently narrow to just the mapped path's suite while leaving the unmapped path's own
+# coverage unresolved. This is the exact hazard the implementation plan's Risk table names for
+# this phase's edit.
+#
+# A BYSTANDER suite (test-bystander.sh, never named in --gate8-touched) is added alongside the
+# mapped test-foo.sh specifically so this case can distinguish "correctly fell back to full
+# discovery" from "incorrectly narrowed to only the mapped path's suite" -- Gate 8's own
+# slow-bucket-relocation filter (Decision 2) always builds an explicit --only list from whichever
+# base suite set it ends up with (narrowed or not; see this file's own "GATE8_FINAL_SUITES is
+# non-empty whenever any suite exists at all" comment), so "--only was passed" alone, unlike
+# Case D's genuinely suite-less fixture, cannot distinguish the two outcomes here.
+# =====================================================================
+FX_G="$WORKDIR/case-g"
+build_fixture "$FX_G"
+touch "$(fixture_tests_dir "$FX_G")/test-foo.sh" "$(fixture_tests_dir "$FX_G")/test-bystander.sh"
+
+case_g_out="$(run_gate8 "$FX_G" --gate8-touched foo.sh,this-path-has-no-covering-suite-xyz.sh)"
+case_g_rc=$?
+if [ "$case_g_rc" -eq 0 ]; then
+  common_test_pass "case G (mixed mapped+unmapped path): exit 0"
+else
+  common_test_fail "case G (mixed mapped+unmapped path): expected exit 0, got $case_g_rc" "$case_g_out"
+fi
+if printf '%s\n' "$case_g_out" | grep -q 'Note:.*full-sweep sentinel'; then
+  common_test_pass "case G (mixed mapped+unmapped path): emits the sentinel-fallback Note: line"
+else
+  common_test_fail "case G (mixed mapped+unmapped path): expected a sentinel-fallback Note: line" "$case_g_out"
+fi
+if printf '%s\n' "$case_g_out" | grep -qF '[PASS] run-all.sh: all discovered suites passed'; then
+  common_test_pass "case G (mixed mapped+unmapped path): falls back to the full, unnarrowed battery (never narrows to only the mapped path's suite)"
+else
+  common_test_fail "case G (mixed mapped+unmapped path): expected the unnarrowed pass string on mixed-set fallback" "$case_g_out"
+fi
+case_g_only="$(stub_only_value "$FX_G")"
+if [ "$case_g_only" = "test-bystander.sh,test-foo.sh" ] || [ "$case_g_only" = "test-foo.sh,test-bystander.sh" ]; then
+  common_test_pass "case G (mixed mapped+unmapped path): --only (when Gate 8's own slow-exclusion filter builds one) carries BOTH discovered suites, not just the mapped path's own -- proving full discovery was used, never the narrowed GATE8_SUITES"
+else
+  common_test_fail "case G (mixed mapped+unmapped path): expected --only to carry the full discovered set (test-foo.sh AND test-bystander.sh), not a subset" "stub argv: $(stub_args "$FX_G")"
+fi
+
 echo ""
 echo "==================================================================="
 echo "Results: $PASSED passed, $FAILED failed"
