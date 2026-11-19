@@ -449,6 +449,7 @@ TERRITORY EDGES.
 - **Dependencies**: Task 650, Task 564
 - **Research**: [652_validate_artifact_corpus_resolution/reports/01_validate-artifact-corpus-resolution.md]
 - **Plan**: [652_validate_artifact_corpus_resolution/plans/01_corpus-resolution-candidate-list.md]
+- **Summary**: [652_validate_artifact_corpus_resolution/summaries/01_corpus-resolution-candidate-list-summary.md]
 
 **Description**: Resolve validate-artifact.sh's Tier-Justification corpus against the repository under validation, not the deployed agent-system tree
 

@@ -23,21 +23,39 @@
       "category": "PATTERN",
       "source_artifact": "specs/652_validate_artifact_corpus_resolution/summaries/01_corpus-resolution-candidate-list-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["bash", "function-ordering", "set -euo pipefail", "hoist", "validate-artifact.sh"]
+      "suggested_keywords": [
+        "bash",
+        "function-ordering",
+        "set -euo pipefail",
+        "hoist",
+        "validate-artifact.sh"
+      ]
     },
     {
       "content": "scripts/lib/verification-scope-lib.sh's verification_scope_project_suite_roots (and its sibling readers) use the ${1:?msg} parameter-expansion guard for their repo_root argument. Under set -u/set -e in the CALLER, this guard aborts the calling shell outright if repo_root is an EMPTY STRING, not only if it is unset -- ':' treats empty and unset identically. Any caller must guard with '[ -n \"$repo_root\" ]' before calling, never rely on the library's own fail-open posture to absorb an empty argument.",
       "category": "INSIGHT",
       "source_artifact": "specs/652_validate_artifact_corpus_resolution/summaries/01_corpus-resolution-candidate-list-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["verification-scope-lib", "bash parameter expansion", "set -u", "fail-open", "guard"]
+      "suggested_keywords": [
+        "verification-scope-lib",
+        "bash parameter expansion",
+        "set -u",
+        "fail-open",
+        "guard"
+      ]
     },
     {
       "content": "When deploy-headless.sh's full local regeneration of a shared generated-index file (index-entries.json) also reflects OTHER concurrently-live dispatches' own uncommitted drift (because the regenerator scans the whole working tree, not just this task's files), committing the whole regenerated file would prematurely land those other dispatches' in-flight changes under this task's own commit. The safe remedy: take the file's HEAD (committed) version, apply ONLY this task's own single-field correction via a targeted jq transform, and commit just that scoped diff -- leaving every other entry's drift exactly as HEAD had it, for its own owning dispatch to reconcile later.",
       "category": "PATTERN",
       "source_artifact": "specs/652_validate_artifact_corpus_resolution/summaries/01_corpus-resolution-candidate-list-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["index-entries.json", "scoped commit", "multi-agent working tree", "jq", "deploy-headless.sh"]
+      "suggested_keywords": [
+        "index-entries.json",
+        "scoped commit",
+        "multi-agent working tree",
+        "jq",
+        "deploy-headless.sh"
+      ]
     }
   ],
   "sapience_notes": [
@@ -94,8 +112,14 @@
     "session_id": "sess_1795104475_9fe2d8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

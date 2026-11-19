@@ -17735,8 +17735,14 @@
           "path": "specs/652_validate_artifact_corpus_resolution/plans/01_corpus-resolution-candidate-list.md",
           "type": "plan",
           "summary": "Five-phase implementation plan for corpus-aware Tier-Justification resolution in validate-artifact.sh, with named-corpus warnings and three-case test coverage."
+        },
+        {
+          "path": "specs/652_validate_artifact_corpus_resolution/summaries/01_corpus-resolution-candidate-list-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all 5 phases, decisions, deviations, and verification evidence."
         }
-      ]
+      ],
+      "completion_summary": "Extended validate-artifact.sh's Tier-Justification scan to resolve its suite-selection corpus through an ordered candidate list (a declared verification_scope.project_suite_roots entry first, the deployed/sibling path as fallback), named the resolved corpus in every advisory warning, added 9 new declared/undeclared/declared-but-absent test cases to test-validate-artifact.sh, documented the new consumer in repo-level-declarations.md, and redeployed cleanly (deploy-headless.sh RESULT=landed_verify_clean, 41/41 checks)."
     },
     {
       "project_number": 653,
