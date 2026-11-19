@@ -467,8 +467,21 @@ invocation, not a plan-authored justification. Every non-final phase carries exa
   repository form (the same resolve-whichever-exists rule "Batch-aware deferral" below states for
   its own two narrowing invocations). The claim is honest only when the author ran it (or the
   underlying `suite_selection_select`) over the phase's `Files to modify` paths and the line's
-  suite names or sentinel match that output verbatim, never an asserted guess at what the
-  selector would return.
+  suite names or sentinel match that output, never an asserted guess at what the selector would
+  return — with one qualification on "match verbatim" below for a mixed-output phase: when that
+  output contains the sentinel ALONGSIDE real suite basenames (at least one touched path mapped,
+  at least one did not), the honest claim names the real suites and does NOT reproduce the
+  sentinel token — the sentinel is not a claimable suite name, and a suite-list claim that
+  includes it is a malformed claim, not a more complete one. A sentinel-only output (every
+  touched path unmapped) is the one case where the sentinel itself is the honest claim; see the
+  `__FULL_SWEEP__` case bullet below for the full rule.
+
+  Run the selector ONCE over the phase's WHOLE `Files to modify` set, never once per path with
+  the per-path results unioned by hand afterward — this check itself calls
+  `suite_selection_select` as a single multi-path invocation, and a per-path-composed claim can
+  genuinely disagree with that one call even when every individual per-path call was itself
+  accurate (a touched set mixing a mapped and an unmapped path is exactly the case where the two
+  methods diverge; see `scripts/lib/suite-selection-lib.sh`'s PUBLIC API header for why).
 
   `verify-touched.sh` invokes two narrowing mechanisms underneath — an agent names
   `verify-touched.sh` itself, never assembles either of these by hand:
@@ -485,9 +498,15 @@ invocation, not a plan-authored justification. Every non-final phase carries exa
     that file**, and the justification MUST NOT claim one. Claiming the sentinel is itself a
     measurable claim, subject to the same run-and-match obligation as a suite-list claim above: a
     justification asserting `__FULL_SWEEP__` for a path the selector actually maps to one or more
-    real suites is exactly as dishonest as a fabricated suite name, not a lesser omission. The
-    honest covering check then depends on WHERE the touched path lives — three sub-cases, not
-    one:
+    real suites is exactly as dishonest as a fabricated suite name, not a lesser omission.
+    **The sentinel claim is honest only when it is the selector's ENTIRE output** for the
+    phase's touched paths — every one of them unmapped. The moment even one other touched path
+    in the same phase DOES map to a real suite, the selector's output is a MIXED output
+    (the sentinel alongside real suite basenames), and the honest claim is a suite-list claim
+    naming the real suites, never a sentinel claim. A phase cannot drop its bookkeeping path (or
+    any other genuinely unmapped path) from `Files to modify` to avoid this — the real path stays
+    declared, and the justification names what actually covers the declared set. The honest
+    covering check then depends on WHERE the touched path lives — three sub-cases, not one:
     - **(a) Every touched path lies entirely under `specs/**`.** `--only-gate 3,4` is never the
       answer here: `specs/**` is the task-reference lint's own exempt tree by design (category 1
       of its taxonomy), and doc-lint has no bearing on `specs/**` content at all. The honest
@@ -880,7 +899,12 @@ already named by the "Enforcement level" and "Enforcement level (Cross-phase cei
 consistency)" subsections above. A detected mismatch emits a warning via `log_warn`, never an
 error, so default-mode validation exits 0 on the warning alone; `--strict` mode promotes it today
 through the same pre-existing `total_issues = errors + warnings` branch the other checks on this
-page already rely on — no new strictness logic is added for this check.
+page already rely on — no new strictness logic is added for this check. The check's own
+comparison honors the mixed-output rule above: a sentinel-only claim is compared against whether
+the actual output is the sentinel AND NOTHING ELSE (not merely whether the sentinel appears), and
+a suite-list claim is compared against the actual output with the sentinel token stripped out
+first, so an honest suite-list claim over a mixed touched set is never misread as fabricating or
+under-verifying the sentinel itself.
 
 **Decision and rejected alternative.** A mechanical lint was chosen over a prose-only
 requirement because the filed defect is precisely the failure a prose-only rule cannot prevent:

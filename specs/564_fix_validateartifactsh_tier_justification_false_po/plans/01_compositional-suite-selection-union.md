@@ -275,28 +275,30 @@ gate-selection and validate-artifact suites that exercise the two edited branche
 
 ---
 
-### Phase 3: Bring the authoring contract text into line [NOT STARTED]
+### Phase 3: Bring the authoring contract text into line [COMPLETED]
 
 **Goal**: `plan-format.md`'s Tier Justification contract describes the mixed-set case, so an
 author measuring with the fixed selector knows what to name and what to leave out.
 
 **Tasks**:
-- [ ] In the `**Tier Justification**:` subsection, qualify the "match that output verbatim"
+- [x] In the `**Tier Justification**:` subsection, qualify the "match that output verbatim"
       obligation: when the selector's output contains the sentinel alongside real suite names, the
       honest claim names the real suites and does not reproduce the sentinel token, which is not a
-      claimable suite name.
-- [ ] In the `__FULL_SWEEP__` case bullet, state that the sentinel is the honest claim only when
+      claimable suite name. *(completed)*
+- [x] In the `__FULL_SWEEP__` case bullet, state that the sentinel is the honest claim only when
       it is the selector's *entire* output for the phase's touched paths -- a mixed set is a
-      suite-list claim, not a sentinel claim.
-- [ ] Add the per-path-composition warning in the author-facing voice: run the selector once over
+      suite-list claim, not a sentinel claim. *(completed)*
+- [x] Add the per-path-composition warning in the author-facing voice: run the selector once over
       the whole `Files to modify` set, never once per path with the results unioned by hand, since
-      the check itself makes a single multi-path call.
-- [ ] Verify the "Enforcement level (Tier Justification measurement)" subsection's description of
+      the check itself makes a single multi-path call. *(completed)*
+- [x] Verify the "Enforcement level (Tier Justification measurement)" subsection's description of
       what the check compares still matches `validate-artifact.sh` after Phase 2, and correct it
-      if not.
-- [ ] Keep the edit free of task-number references and record-versioning language (this file lands
+      if not. *(completed: added a sentence stating the sentinel-only-vs-sentinel-stripped
+      comparison rule explicitly)*
+- [x] Keep the edit free of task-number references and record-versioning language (this file lands
       under `agent-system/**`): state the current contract only, with no "previously"/"no longer"
-      framing.
+      framing. *(completed: grep-verified clean; one "no longer" draft phrase caught and rephrased
+      before commit)*
 
 **Timing**: 0.5 hours
 

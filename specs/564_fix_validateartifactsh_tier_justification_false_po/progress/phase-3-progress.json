@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "Bring the authoring contract text into line",
+  "started_at": "2026-11-19T01:15:00Z",
+  "last_updated": "2026-11-19T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Qualify the match-verbatim obligation for a mixed-output phase", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 2, "description": "State the sentinel-entire-output rule in the __FULL_SWEEP__ case bullet", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 3, "description": "Add per-path-composition warning in author-facing voice", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 4, "description": "Verify/correct Enforcement-level subsection against validate-artifact.sh after Phase 2", "status": "done", "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 5, "description": "Keep edit free of task-number references and record-versioning language", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "verify-touched.sh over context/formats/plan-format.md (repo-root/deployed vantage) resolved and ran exactly 4 suites (test-orchestrate-build-dispatch.sh, test-phase-heading-patterns.sh, test-plan-file-scope-harvest.sh, test-resume-scan-nonconformance.sh), all passing -- matches the phase's own Verification bullet ('runs the four suites named above and passes'); the Tier Justification prose lists a fifth name (test-lean-challenge-snapshot.sh) that did not appear in this live resolution, a pre-existing authoring/corpus-resolution discrepancy the plan's own prose already flags as out of this task's scope (owned by a separate corpus-resolution record), not a new finding. git diff grep-checked clean for task-number references and record-versioning phrasing (an initial 'no longer' draft was caught and rephrased before commit)."
+}
