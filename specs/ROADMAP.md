@@ -114,8 +114,7 @@ Re-derived 2026-11-19 over the 125 open records, and re-verified against `genera
 /orchestrate 645, 560, 629, 630, 631, 632, 633   # Make verify-deploy's verdict mean something again: the live reds, the roster, two latent gates
 /orchestrate 475, 613, 514, 574   # Hard stops: task creation dies on a big verdict, a lock never reaps, a run never converges
 /orchestrate 556, 472, 646, 551, 519, 570, 577, 609   # What one dispatch hands the next: settle the handoff/return-meta shapes, fix failure accounting
-/orchestrate 653, 586, 605   # Make a full battery's numbers trustworthy: host-scope the gate mutex, then the cost verdicts
-/orchestrate 647, 648, 649   # Stand up /sapience in three edged steps: API/binding foundation, publishers, approval picker
+/orchestrate 586, 605   # Make a full battery's numbers trustworthy: host-scope the gate mutex, then the cost verdicts
 /orchestrate 545, 564, 652, 579, 575   # Five false failures in the artifact and ceiling validators, now including a wrong-corpus verdict
 /orchestrate 639, 477, 484, 486, 501, 508, 524   # Evidence integrity: stop losing issue entries, normalize classes, collapse scope-excursion rows
 /orchestrate 548, 567, 553, 598, 536, 535, 541   # Commit containment: stop phase commits dropping legitimate files and carrying foreign ones
@@ -755,7 +754,7 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 504 ready           Reconcile the Lean Goals-block harvester with its documented contract
 ```
 
-**Orchestrator (7)**
+**Orchestrator (6)**
 ```
 472 blocked:556     Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop...
 513 blocked:479     Mechanically detect a plan phase that closed without its own commit
@@ -763,7 +762,6 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 652 blocked:564     validate_artifact_corpus_resolution   <- the verification_scope project-suite-roots reader it consumes has landed; defect site unchanged
 477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
 514 ready           Convergence guard blind to zero-dispatch cycles
-653 ready           host_scoped_gate_mutex   <- gate-acquire now has two brackets to wire: gate 8 and the new serialized gate 31
 ```
 
 **Agent system (51)**
@@ -819,13 +817,6 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 639 ready           Make issue-record.sh failures visible instead of silently losing the evidence...
 640 ready           Add a derived-percentage bug class to the census methodology standard
 645 ready           repair_seven_failing_gate8_suites   <- the unit/integration boundary suite is red again from a later cause its provenance list predates
-```
-
-**Sapience (3)**
-```
-648 blocked:647     Add the four Sapience write-surface publishers with loud-failure discipline
-649 blocked:647,648 Add the /sapience command: draft assembly and the approval-gated surface picker
-647 ready           Bind a repo to a Sapience project and read the vault's shared state
 ```
 
 **Decidability (1)**
