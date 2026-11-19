@@ -436,7 +436,8 @@ Creates (or, if a plan already exists, revises) a phased implementation plan and
 - **Verification Tier**: How broadly verification must run *during* the phase -- one of `prose`,
   `local`, `interface`, `full` (strictest); see `context/formats/plan-format.md`'s
   `## Verification Tiers` section for the full vocabulary. This does not replace or weaken the
-  final gate, which still runs before a phase closes and before the task completes.
+  complete gate set, which is owed once per orchestration invocation and discharged at the
+  orchestration close -- never run independently inside a phase under `/orchestrate`.
 - **Verification**: How to confirm each phase succeeded
 
 **Example Plan Phases**:
