@@ -239,35 +239,37 @@ than making it silently.
 
 ---
 
-### Phase 2: Opt-in host-scoped verb pair and its contract text [NOT STARTED]
+### Phase 2: Opt-in host-scoped verb pair and its contract text [COMPLETED]
 
 **Goal**: Expose the host-scoped acquire/release as an explicitly named, opt-in CLI verb pair with
 the repo-scoped form unchanged as the default, and state the guard's real limit in the script's own
 contract text.
 
 **Tasks**:
-- [ ] Add `acquire_gate_host_mutex` / `release_gate_host_mutex` wrappers that call
+- [x] Add `acquire_gate_host_mutex` / `release_gate_host_mutex` wrappers that call
       `resolve_host_lock_root()` for the base and reuse `GATE_MUTEX_STALE_SEC`,
       `GATE_MUTEX_ACQUIRE_BUDGET_MS` and `GATE_MUTEX_PROGRESS_INTERVAL_S` unchanged — no new
       constants. Use a distinct progress label (e.g. `gate-lock-host`) so a waiting host-scoped run
-      is distinguishable in logs from a waiting repo-scoped one.
-- [ ] Add `cmd_gate_acquire_host` / `cmd_gate_release_host` mirroring `cmd_gate_acquire` /
+      is distinguishable in logs from a waiting repo-scoped one. *(completed)*
+- [x] Add `cmd_gate_acquire_host` / `cmd_gate_release_host` mirroring `cmd_gate_acquire` /
       `cmd_gate_release` exactly: same owner-token format, same owner-file write, same
       no-trap-of-its-own contract, same owner-token-verified release that never force-removes a
-      successor's mutex.
-- [ ] On resolver failure, return the same non-zero code the budget-exhaustion path returns, with
+      successor's mutex. *(completed)*
+- [x] On resolver failure, return the same non-zero code the budget-exhaustion path returns, with
       an `ERROR:` line naming the lock-root failure, so every call site's existing fail-open branch
-      covers it (Decision 4).
-- [ ] Register both verbs in the CLI `case` dispatch and in the final `Usage: $0 {...}` line.
-- [ ] Add both verbs to the top-of-file `Usage:` block.
-- [ ] Add a contract paragraph to the top-of-file comment that states, prominently and without
+      covers it (Decision 4). *(completed: confirmed via manual smoke test, rc=2 with named ERROR:
+      line)*
+- [x] Register both verbs in the CLI `case` dispatch and in the final `Usage: $0 {...}` line.
+      *(completed)*
+- [x] Add both verbs to the top-of-file `Usage:` block. *(completed)*
+- [x] Add a contract paragraph to the top-of-file comment that states, prominently and without
       hedging: this mutex binds only callers that acquire it; a battery started by a process that
       never calls `gate-acquire-host` — a hand-run command, an editor task, another tool — is not
       serialized by it; the honest claim is that **co-operating callers serialize**, never that
       contamination is impossible. The same paragraph records that repo scope remains the default,
       that host scope is opt-in, that `GATE_MUTEX_HOST_HELD` is a fourth, distinct reentrancy flag,
       and that reclaim here is time-elapsed only for the same documented reason the repo-scoped
-      family gives.
+      family gives. *(completed: "Host-Scoped Mutex" paragraph added to the top-of-file comment)*
 
 **Timing**: 1 hour
 

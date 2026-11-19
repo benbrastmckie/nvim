@@ -26,6 +26,8 @@
 #   task-lock.sh commit-release <token>
 #   task-lock.sh gate-acquire <session_id> [stale_sec]
 #   task-lock.sh gate-release <token>
+#   task-lock.sh gate-acquire-host <session_id> [stale_sec]   (OPT-IN; see "Host-Scoped Mutex" below)
+#   task-lock.sh gate-release-host <token>
 #   task-lock.sh claim-acquire <path> <task_number> <session_id> [stale_sec]
 #   task-lock.sh claim-release <path> [task_number]
 #   task-lock.sh session-register <session_id> <command> <task_numbers_csv> [--pid N]
@@ -80,6 +82,41 @@
 # the SAME window, not its own default), and release is owner-token-verified (an unconditional
 # rm -rf on release would be unsafe once acquire and release are separate processes -- a
 # stale-reclaimed holder's release must never delete a successor's mutex).
+#
+# --- Host-Scoped Mutex (gate-acquire-host/gate-release-host) ---
+# Every mutex above resolves its directory under "$PROJECT_ROOT/specs/", which makes it REPO-
+# SCOPED BY CONSTRUCTION: a battery started from a DIFFERENT repository on the same host resolves
+# its own, separate specs/.gate-lock and so is not merely unserialized against this one -- it is
+# structurally invisible to it. gate-acquire-host/gate-release-host are an explicitly named,
+# OPT-IN sibling of gate-acquire/gate-release that resolves the SAME .gate-lock directory name
+# under a HOST-scoped root instead (resolve_host_lock_root() above: TASK_LOCK_HOST_ROOT_OVERRIDE,
+# then $XDG_RUNTIME_DIR, then /run/user/$UID, then a UID-qualified ${TMPDIR:-/tmp} fallback --
+# first usable tier wins, fails open with nothing created when every tier is unusable). The
+# repo-scoped gate-acquire/gate-release pair is UNCHANGED and remains the default every existing
+# caller observes -- host scope is never silently substituted for it.
+#
+# STATE THE REAL LIMIT PROMINENTLY, WITHOUT HEDGING: a mutex binds only callers that acquire it.
+# gate-acquire-host does not and cannot stop a battery started by a process that never calls it --
+# a hand-run command, an editor task, another tool, a different, unmodified copy of this script.
+# The honest claim this guard makes is that CO-OPERATING callers serialize, never that
+# contamination across repositories is made impossible. Treat any claim to the contrary as a
+# misreading of this contract.
+#
+# GATE_MUTEX_HOST_HELD is a FOURTH, DISTINCT reentrancy flag -- never conflated with
+# GATE_MUTEX_HELD (the repo-scoped flag) or either of SCOPE_MUTEX_HELD/COMMIT_MUTEX_HELD. A
+# recursive invocation that inherited GATE_MUTEX_HELD=1 but not GATE_MUTEX_HOST_HELD=1 still
+# correctly skips only the repo-scoped nested acquire; the two flags are checked and exported
+# independently at every wired call site (tests/run-all.sh, verify-deploy.sh's two gate brackets).
+#
+# Reclaim for the host-scoped form is TIME-ELAPSED ONLY, for the identical reason the repo-scoped
+# family above gives: the recorded pid in $mutex_dir/owner is always the short-lived acquiring
+# subprocess, never the long-lived holder, so a kill -0 liveness check would be unsound here too.
+# No new constants: GATE_MUTEX_STALE_SEC/GATE_MUTEX_ACQUIRE_BUDGET_MS/
+# GATE_MUTEX_PROGRESS_INTERVAL_S are reused unchanged, so the posture they encode (fail-open,
+# minutes-scale budget, holder-declared staleness) is INHERITED from the repo-scoped family, not
+# chosen independently here -- the posture question itself belongs to a different record, not this
+# one. Fail-open on lock-root trouble matches cmd_gate_acquire's existing posture: a guard that
+# cannot acquire must never block the work it guards.
 #
 # Lockfile layout (per task):
 #   specs/{NNN}_{SLUG}/.lock/            <- directory, created via `mkdir` (POSIX-atomic
@@ -926,6 +963,34 @@ release_gate_mutex() {
   release_named_mutex ".gate-lock"
 }
 
+# --- Host-scoped form of the .gate-lock mutex (OPT-IN; see the top-of-file usage comment's
+# "Host-Scoped Mutex" paragraph for the full contract, most importantly its binds-only-
+# cooperating-callers limit). Reuses GATE_MUTEX_STALE_SEC/GATE_MUTEX_ACQUIRE_BUDGET_MS/
+# GATE_MUTEX_PROGRESS_INTERVAL_S UNCHANGED -- no new constants, so the documented
+# ACQUIRE_BUDGET_MS <= STALE_SEC*1000 invariant and the posture it encodes are inherited rather
+# than forked for this form. A DISTINCT progress label ("gate-lock-host") from the repo-scoped
+# "gate-lock" label keeps a waiting host-scoped run distinguishable in logs from a waiting
+# repo-scoped one; everything else about the wait/reclaim loop is the same primitive. ---
+
+# acquire_gate_host_mutex [stale_sec]
+#
+# Resolves the host lock root via resolve_host_lock_root() and passes it as acquire_named_mutex's
+# trailing mutex_base_dir. Returns 1 (the SAME non-zero acquire_named_mutex's own budget-exhaustion
+# path returns) when the resolver itself fails, so every call site's existing fail-open branch
+# covers lock-root trouble with no new branch -- see cmd_gate_acquire_host below, which is the one
+# that also emits the named ERROR: line for that case.
+acquire_gate_host_mutex() {
+  local requested_stale="${1:-}" host_root
+  host_root=$(resolve_host_lock_root) || return 1
+  acquire_named_mutex ".gate-lock" "$requested_stale" "$GATE_MUTEX_STALE_SEC" "$GATE_MUTEX_ACQUIRE_BUDGET_MS" "gate-lock-host" "$host_root"
+}
+
+release_gate_host_mutex() {
+  local host_root
+  host_root=$(resolve_host_lock_root) || return 0
+  release_named_mutex ".gate-lock" "$host_root"
+}
+
 # --- acquire-retry bounded wait-and-retry constants (Tier 2 of the four-tier conflict-response
 # ladder; see context/patterns/task-lock.md's "Four-Tier Conflict Response" section) ---
 # Sized on the .scope-lock/.commit-lock seconds-scale mutex-acquire budgets above
@@ -1631,6 +1696,88 @@ cmd_gate_release() {
   fi
 
   release_gate_mutex
+  return 0
+}
+
+# =====================================================================
+# gate-acquire-host <session_id> [stale_sec]
+# =====================================================================
+# OPT-IN host-scoped sibling of gate-acquire/gate-release above, mirroring cmd_gate_acquire
+# exactly (same owner-token format, same owner-file write, same no-trap-of-its-own contract) but
+# serving the HOST-scoped .gate-lock mutex (resolve_host_lock_root()'s root, outside any
+# repository tree) instead of the repo-scoped one. See the top-of-file usage comment's
+# "Host-Scoped Mutex" paragraph for the full contract -- most importantly, this mutex binds only
+# callers that acquire it; the repo-scoped gate-acquire/gate-release pair above is completely
+# unaffected by this verb's existence and remains the default every existing caller observes.
+# On resolver failure, returns the SAME non-zero (2) that the budget-exhaustion branch below
+# returns, with its own named ERROR: line, so every call site's pre-existing fail-open branch for
+# a timed-out acquire covers "no usable host lock root" too, with no new branch required
+# anywhere (Decision 4).
+cmd_gate_acquire_host() {
+  local session_id="$1" stale_sec="${2:-}"
+  local host_root
+  if ! host_root=$(resolve_host_lock_root); then
+    echo "ERROR: could not resolve a host-scoped lock root (session=$session_id); every tier (TASK_LOCK_HOST_ROOT_OVERRIDE, \$XDG_RUNTIME_DIR, /run/user/\$UID, \${TMPDIR:-/tmp} fallback) is unusable." >&2
+    return 2
+  fi
+  local mutex_dir="$host_root/.gate-lock"
+
+  if ! acquire_gate_host_mutex "$stale_sec"; then
+    local holder_session holder_pid
+    holder_session=$(jq -r '.session_id // empty' "$mutex_dir/owner" 2>/dev/null) || true
+    holder_pid=$(jq -r '.pid // empty' "$mutex_dir/owner" 2>/dev/null) || true
+    echo "ERROR: timed out waiting for the host-scoped .gate-lock mutex at $mutex_dir (session=$session_id); current holder: session=${holder_session:-unknown} pid=${holder_pid:-unknown}." >&2
+    return 2
+  fi
+
+  local pid claimed_epoch token
+  pid=$$
+  claimed_epoch=$(now_epoch)
+  token="${session_id}:${pid}:${claimed_epoch}"
+
+  jq -n \
+    --arg session_id "$session_id" \
+    --argjson pid "$pid" \
+    --argjson claimed_epoch "$claimed_epoch" \
+    --arg token "$token" \
+    '{session_id: $session_id, pid: $pid, claimed_epoch: $claimed_epoch, token: $token}' \
+    > "$mutex_dir/owner" 2>/dev/null || true
+
+  echo "$token"
+  return 0
+}
+
+# =====================================================================
+# gate-release-host <token>
+# =====================================================================
+# Owner-token-verified release, mirroring cmd_gate_release exactly, for the host-scoped mutex.
+# Always exits 0 -- release is best-effort and must never fail a caller's cleanup path. If the
+# host lock root itself cannot be resolved at release time (ambient environment changed between
+# acquire and release, which should not happen within one process's lifetime but is handled
+# defensively), there is nothing to release and this still exits 0 rather than erroring.
+cmd_gate_release_host() {
+  local token="$1"
+  local host_root
+  if ! host_root=$(resolve_host_lock_root); then
+    echo "WARN: gate-release-host (token=$token) could not resolve the host-scoped lock root -- nothing to release." >&2
+    return 0
+  fi
+  local mutex_dir="$host_root/.gate-lock"
+
+  if [ ! -d "$mutex_dir" ]; then
+    echo "WARN: gate-release-host (token=$token) found no host-scoped .gate-lock mutex at $mutex_dir -- already released or never held." >&2
+    return 0
+  fi
+
+  local owner_token
+  owner_token=$(jq -r '.token // empty' "$mutex_dir/owner" 2>/dev/null) || true
+
+  if [ "$owner_token" != "$token" ]; then
+    echo "WARN: gate-release-host token mismatch (given=$token current-holder=${owner_token:-unknown}); NOT releasing. This means the critical section overran its declared staleness window and a concurrent writer may have reclaimed the mutex -- investigate rather than ignore." >&2
+    return 0
+  fi
+
+  release_gate_host_mutex
   return 0
 }
 
@@ -2753,6 +2900,22 @@ case "$SUBCMD" in
     cmd_gate_release "$@"
     exit $?
     ;;
+  gate-acquire-host)
+    if [ "$#" -lt 1 ]; then
+      echo "Usage: $0 gate-acquire-host <session_id> [stale_sec]" >&2
+      exit 2
+    fi
+    cmd_gate_acquire_host "$@"
+    exit $?
+    ;;
+  gate-release-host)
+    if [ "$#" -lt 1 ]; then
+      echo "Usage: $0 gate-release-host <token>" >&2
+      exit 2
+    fi
+    cmd_gate_release_host "$@"
+    exit $?
+    ;;
   claim-acquire)
     if [ "$#" -lt 3 ]; then
       echo "Usage: $0 claim-acquire <path> <task_number> <session_id> [stale_sec]" >&2
@@ -2842,7 +3005,7 @@ case "$SUBCMD" in
     exit $?
     ;;
   *)
-    echo "Usage: $0 {acquire|acquire-retry|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release|gate-acquire|gate-release|claim-acquire|claim-release|session-register|session-heartbeat|session-release|session-reap|session-list|queue-register|queue-heartbeat|queue-finish|queue-reap|queue-list|queue-check} ..." >&2
+    echo "Usage: $0 {acquire|acquire-retry|heartbeat|release|check|reap|init-marker|scope-acquire|scope-release|commit-acquire|commit-release|gate-acquire|gate-release|gate-acquire-host|gate-release-host|claim-acquire|claim-release|session-register|session-heartbeat|session-release|session-reap|session-list|queue-register|queue-heartbeat|queue-finish|queue-reap|queue-list|queue-check} ..." >&2
     exit 2
     ;;
 esac

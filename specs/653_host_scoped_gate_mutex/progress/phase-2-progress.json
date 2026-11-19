@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "Opt-in host-scoped verb pair and its contract text",
+  "started_at": "2026-11-19T01:06:00Z",
+  "last_updated": "2026-11-19T01:12:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add acquire_gate_host_mutex/release_gate_host_mutex wrappers", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 2, "description": "Add cmd_gate_acquire_host/cmd_gate_release_host mirroring cmd_gate_acquire/cmd_gate_release", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "Register both verbs in CLI case dispatch, final Usage line, and top-of-file Usage block", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 4, "description": "Add contract paragraph stating binds-only-cooperating-callers limit", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 5, "description": "Verify unchanged repo-scoped behavior + smoke-test host verbs", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Manual smoke-tested gate-acquire-host/gate-release-host against a copied-fixture deployed task-lock.sh with default GATE_MUTEX_ACQUIRE_BUDGET_MS (600000ms) for the unwritable-override case", "result": "too slow for a manual check (would have taken 10 minutes); killed the process", "reason": "matches the repo-scoped family's existing design (mkdir retried until budget exhaustion, not a fast synthetic check) -- not a defect, just slow when unoverridden"}
+  ],
+  "handoff_count": 0,
+  "verification_notes": "test-gate-lock.sh 27/27 unchanged; lint-shellcheck.sh clean; usage line names both new verbs (confirmed against a copied-fixture deployed task-lock.sh, source-store copy refuses to run directly per deploy-root-guard.sh); manual smoke acquire/release against TASK_LOCK_HOST_ROOT_OVERRIDE succeeded, token returned, mutex created only under the override root (never under specs/), release cleaned it up; manual acquire against an unwritable override (with GATE_MUTEX_ACQUIRE_BUDGET_MS=300 to keep the check fast) returned non-zero (2) with the named ERROR: line rather than hanging or creating anything."
+}
