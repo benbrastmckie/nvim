@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Compositional union in suite_selection_select",
+  "started_at": "2026-11-19T00:00:00Z",
+  "last_updated": "2026-11-19T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read suite_selection_select short-circuit and confirm shape before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace short-circuit with compositional accumulation (push sentinel, continue)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 3, "description": "Update PUBLIC API paragraph for new return contract", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 4, "description": "Rewrite header Usage snippet to contains-check idiom", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 5, "description": "Add per-path-composition warning sentence to PUBLIC API header", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 6, "description": "Check/update suite_selection_select_annotated for new contract", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"]},
+    {"id": 7, "description": "Write point-(2) layer-ownership ruling into commit message body", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Direct probes confirmed: all-mappable output byte-identical to pre-edit capture; mixed set returns union+sentinel; all-unmappable returns sentinel alone. test-run-all-selection.sh (source-store vantage): 35 passed, 1 failed (Case 3, the expected pre-fix pin to be flipped in Phase 4) -- matches plan's Phase 1 expectation exactly. verify-touched.sh's deployed-vantage run additionally surfaced test-gate-slow-bucket-split.sh failing, confirmed pre-existing/unrelated (passes 9/9 from source-store vantage; not in this phase's file scope) and recorded via issue-record.sh."
+}

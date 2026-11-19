@@ -1,34 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/564_fix_validateartifactsh_tier_justification_false_po/plans/01_compositional-suite-selection-union.md",
-      "summary": "5-phase plan making suite_selection_select's multi-path aggregation compositional, adapting its two production call sites, updating the Tier Justification authoring contract, pinning the semantics with fixtures, and closing with a redeploy plus dual-vantage verification."
-    }
-  ],
-  "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/verify-deploy.sh",
-    "agent-system/extensions/core/context/formats/plan-format.md"
-  ],
-  "memory_candidates": [
-    {
-      "content": "A plan's Tier Justification suite list must be measured with the SAME library copy validate-artifact.sh will use, not whichever is convenient. validate-artifact.sh resolves its selector as \"$_validate_script_dir/lib/suite-selection-lib.sh\", so running .claude/scripts/validate-artifact.sh measures against the DEPLOYED corpus while sourcing agent-system/extensions/core/scripts/lib/suite-selection-lib.sh measures against the source store. Measured live on this repo: plan-format.md resolves to 4 suites from the source-store copy and 5 from the deployed copy (the extra one being a lean-extension suite). A planner who measures from the source store and is validated from the deployed tree draws a spurious 'under-verifies' warning. Measure with the deployed library, or state the divergence inline in the justification.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/564_fix_validateartifactsh_tier_justification_false_po/plans/01_compositional-suite-selection-union.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["tier-justification", "suite-selection", "validate-artifact", "deployed-corpus", "plan-authoring"]
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1795104475_9fe2d8_564",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 5,
-    "dependency_waves": 4
-  },
-  "next_steps": "Run /orchestrate 564 to execute the plan",
-  "dispatch_seq": 2
+    "session_id": "sess_1795104475_9fe2d8",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #564
 
 - **Task**: 564 - Fix validate-artifact.sh Tier Justification false-positive (sentinel domination in `suite_selection_select`)
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5 hours
 - **Dependencies**: 505 (`suite_selection_non_core_extension_paths`) -- already archived/[COMPLETED]; satisfied, no remaining blocker
 - **Research Inputs**: specs/564_fix_validateartifactsh_tier_justification_false_po/reports/01_tier-justification-sentinel-domination.md
@@ -143,37 +143,40 @@ modified by this plan.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Compositional union in `suite_selection_select` [NOT STARTED]
+### Phase 1: Compositional union in `suite_selection_select` [COMPLETED]
 
 **Goal**: The selector accumulates every path's resolution into the union instead of
 short-circuiting, with the sentinel contributed as a member; the library header documents the new
 contract and warns against per-path composition.
 
 **Tasks**:
-- [ ] Re-read `suite_selection_select` (the loop that `echo`s the sentinel and `return`s on the
+- [x] Re-read `suite_selection_select` (the loop that `echo`s the sentinel and `return`s on the
       first empty `_ssl_resolve_one` result) and confirm the short-circuit is still shaped as the
-      research report describes before editing.
-- [ ] Replace the short-circuit: on an empty per-path resolution, push
+      research report describes before editing. *(completed: confirmed shape unchanged before editing)*
+- [x] Replace the short-circuit: on an empty per-path resolution, push
       `$SUITE_SELECTION_FULL_SWEEP_SENTINEL` into the accumulator and continue the loop. Leave the
       trailing `sort -u` emission unchanged, so an all-unmappable set collapses to the sentinel
       alone and an all-mappable set is provably untouched (no code path to the sentinel runs).
-- [ ] Update the PUBLIC API paragraph for `suite_selection_select` to state the new return
+      *(completed: direct probe confirmed all-mappable output byte-identical to pre-edit capture)*
+- [x] Update the PUBLIC API paragraph for `suite_selection_select` to state the new return
       contract: the sorted, de-duplicated union of resolved suite basenames across every given
       path, with the sentinel present as one more line whenever at least one path was unmappable;
-      the sentinel alone when no path mapped.
-- [ ] Rewrite the header's canonical Usage snippet from the `-eq 1 && == sentinel` idiom to a
+      the sentinel alone when no path mapped. *(completed)*
+- [x] Rewrite the header's canonical Usage snippet from the `-eq 1 && == sentinel` idiom to a
       "does the output CONTAIN the sentinel" test, with the `--only` branch running over the
-      output with the sentinel token removed.
-- [ ] Add one sentence to the PUBLIC API header, immediately after the `suite_selection_select`
+      output with the sentinel token removed. *(completed)*
+- [x] Add one sentence to the PUBLIC API header, immediately after the `suite_selection_select`
       entry, stating that composing per-path invocations and unioning the results by hand is not
       equivalent to one multi-path call (the two agree when no member is unmappable and can
       legitimately differ when one is), modeled on `suite-resolver-lib.sh`'s own header framing.
-- [ ] Check `suite_selection_select_annotated`, which wraps both functions and today emits "the
+      *(completed)*
+- [x] Check `suite_selection_select_annotated`, which wraps both functions and today emits "the
       sentinel alone, or one row per selected suite": make it consistent with the new contract
       (a mixed set must not lose its real suites' rows), and update its header entry if its
-      behavior changes.
-- [ ] Write the point-(2) layer-ownership ruling and its reasoning into this phase's commit
-      message body.
+      behavior changes. *(completed: mixed set now emits a bare sentinel line plus classified rows
+      for every real suite; header entry updated)*
+- [x] Write the point-(2) layer-ownership ruling and its reasoning into this phase's commit
+      message body. *(completed: see phase-closing commit message)*
 
 **Timing**: 1 hour
 

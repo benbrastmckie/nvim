@@ -127,9 +127,23 @@
 #
 # ─── PUBLIC API ──────────────────────────────────────────────────────────────────────────────
 #   suite_selection_select PATH [PATH...]
-#       Stdout: either the single line "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" (any touched path
-#       unmappable), or the sorted, de-duplicated UNION of resolved suite basenames across every
-#       given path, one per line. Always returns 0.
+#       Stdout: the sorted, de-duplicated UNION of resolved suite basenames across every given
+#       path, one per line. An unmappable given path contributes
+#       "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" as one more member of that union rather than
+#       replacing it -- the sentinel is a FLOOR contributed by its own member, never a ceiling
+#       imposed on the whole set. An all-unmappable set therefore still returns the sentinel
+#       alone (every member contributes it, `sort -u` collapses the duplicates); a mixed set
+#       returns the sentinel ALONGSIDE the real suite basenames the other paths resolved to; an
+#       all-mappable set never produces the sentinel at all. A caller detects "no suite covers
+#       this [remaining] path" by checking whether the output CONTAINS the sentinel, never by
+#       checking output length -- `[ #out -eq 1 ] && [ out[0] = sentinel ]` is the PRE-FIX idiom
+#       and under-detects a mixed set. Always returns 0.
+#       Composing per-path invocations and unioning the results by hand is NOT equivalent to one
+#       multi-path call over the same paths: the two agree when no given path is unmappable, and
+#       can legitimately differ when one is, since only the multi-path union reflects every other
+#       path's real coverage alongside that one path's sentinel contribution. Call this function
+#       ONCE over the whole touched-path set; never once per path with the per-path sentinel
+#       lines discarded and the rest unioned by hand.
 #   suite_selection_unmapped PATH [PATH...]
 #       Stdout: the subset of the given touched paths (verbatim, as given) that strata (a)+(b)
 #       could not map, one per line. Empty output means none were unmapped. Always returns 0.
@@ -142,9 +156,12 @@
 #       _ssl_roots_for_path gives the selection half. Always returns 0; emits `source-only` if the
 #       suite file cannot be found anywhere or cannot be read.
 #   suite_selection_select_annotated PATH [PATH...]
-#       Convenience wrapper over the two functions above: either the sentinel alone, or one
-#       "SUITE_BASENAME|CLASSIFICATION" row per selected suite (classification computed against
-#       the first given touched path's basename each suite was selected for).
+#       Convenience wrapper over the two functions above: the sentinel alone (as a bare line, no
+#       classification) when every given path is unmappable; for a mixed set, that same bare
+#       sentinel line PLUS one "SUITE_BASENAME|CLASSIFICATION" row per real selected suite
+#       (classification computed against the first given touched path's basename each suite was
+#       selected for); for an all-mappable set, purely classified rows with no sentinel line at
+#       all.
 #   suite_selection_known_classes / suite_selection_known_tags / suite_selection_known_cost_classes
 #       Stdout: the closed vocabulary for the class/tag/cost-class axis, one value per line. A
 #       caller validates an incoming selector token against these BEFORE calling the matching
@@ -158,10 +175,24 @@
 # Usage:
 #   source agent-system/extensions/core/scripts/lib/suite-selection-lib.sh
 #   mapfile -t _resolved < <(suite_selection_select "$touched1" "$touched2")
-#   if [ "${#_resolved[@]}" -eq 1 ] && [ "${_resolved[0]}" = "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" ]; then
-#     # fall back to a full run-all.sh invocation (no --only)
+#   _any_unmapped=0
+#   _narrowed=()
+#   for _r in "${_resolved[@]}"; do
+#     if [ "$_r" = "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" ]; then
+#       _any_unmapped=1
+#       continue
+#     fi
+#     _narrowed+=("$_r")
+#   done
+#   if [ "$_any_unmapped" -eq 1 ]; then
+#     # fall back to a full run-all.sh invocation (no --only) -- the conservative default
+#     # whenever at least one touched path is unmappable. A caller that can tolerate leaving an
+#     # unmapped path's own coverage unresolved may instead run --only over "${_narrowed[@]}"
+#     # (the output with the sentinel token removed), as validate-artifact.sh's Tier
+#     # Justification check does for its own advisory comparison -- never hand the literal
+#     # sentinel string to --only.
 #   else
-#     run-all.sh --only "$(IFS=,; echo "${_resolved[*]}")"
+#     run-all.sh --only "$(IFS=,; echo "${_narrowed[*]}")"
 #   fi
 
 _SSL_SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"
@@ -321,9 +352,12 @@ suite_selection_select() {
   for _ssl_p in "${_ssl_args[@]}"; do
     _ssl_resolved="$(_ssl_resolve_one "${_ssl_p}")"
     if [ -z "${_ssl_resolved}" ]; then
-      echo "${SUITE_SELECTION_FULL_SWEEP_SENTINEL}"
-      unset _ssl_args _ssl_p _ssl_resolved _ssl_all
-      return 0
+      # Compositional accumulation: an unmappable path contributes the sentinel as one more
+      # member of the running union rather than short-circuiting the whole call -- the sentinel
+      # is a floor contributed by its own member, never a ceiling imposed on the set. Continue
+      # resolving the remaining paths so their real suites are not discarded.
+      _ssl_all+=("${SUITE_SELECTION_FULL_SWEEP_SENTINEL}")
+      continue
     fi
     while IFS= read -r _ssl_resolved; do
       [ -n "${_ssl_resolved}" ] && _ssl_all+=("${_ssl_resolved}")
@@ -448,6 +482,13 @@ suite_selection_select_annotated() {
   fi
 
   for _ssl_line in "${_ssl_selected[@]}"; do
+    if [ "${_ssl_line}" = "${SUITE_SELECTION_FULL_SWEEP_SENTINEL}" ]; then
+      # Mixed set: carry the sentinel through as a bare, unclassified line -- it is not a real
+      # suite file, so classifying it against suite_selection_classify would be nonsensical.
+      # The real suites' rows below are never dropped on its account.
+      echo "${_ssl_line}"
+      continue
+    fi
     _ssl_class="$(suite_selection_classify "${_ssl_line}" "${_ssl_first_base}")"
     echo "${_ssl_line}|${_ssl_class}"
   done
