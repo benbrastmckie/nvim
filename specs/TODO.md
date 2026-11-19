@@ -13,9 +13,9 @@ next_project_number: 654
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,613,618,629,631,632,633,639,640,645,646,647,653 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,579,583,592,593,598,605,609,630,648,652 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,564,577,586,599,629,647 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,473,480,486,492,509,513,518,561,566,594,649 | 439,452,472,479,484,491,552,593,648 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,613,618,629,631,632,633,639,640,645,646,648,653 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,579,583,592,593,598,605,609,630,649,652 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,564,577,586,599,629,648 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,473,480,486,492,509,513,518,561,566,594 | 439,452,472,479,484,491,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,571,581,588,595,641 | 454,472,486,492,509,518,539,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 524,596,642 | 501,595,641 | core-agent-system, agent-system |
 
@@ -170,9 +170,8 @@ next_project_number: 654
 
 ### Sapience
 
-647 [IMPLEMENTING] — Bind a repo to a Sapience project and read the vault's shared...
-  └─ 648 [NOT STARTED] — Add the four Sapience write-surface publishers with...
-    └─ 649 [NOT STARTED] — Add the /sapience command: draft assembly and the...
+648 [NOT STARTED] — Add the four Sapience write-surface publishers with...
+  └─ 649 [NOT STARTED] — Add the /sapience command: draft assembly and the...
 
 ### Decidability
 
@@ -478,12 +477,13 @@ SOURCE REFERENCES for the implementer: /home/benjamin/Projects/Sapience/sapience
 ---
 
 ### 647. Bind a repo to a Sapience project and read the vault's shared state
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
 - **Research**: [647_sapience_project_binding_and_vault_read/reports/01_project-binding-vault-read-foundation.md]
 - **Plan**: [647_sapience_project_binding_and_vault_read/plans/01_project-binding-vault-read-foundation.md]
+- **Summary**: [647_sapience_project_binding_and_vault_read/summaries/01_project-binding-vault-read-foundation-summary.md]
 
 **Description**: Create the foundation for a /sapience command: bind a repo to a dedicated Sapience project, and read the vault's shared state so a draft can respond to a collaborator's latest rather than talk past it. This task owns the shared host/token/API-resolution library the other two tasks in this group depend on.
 
