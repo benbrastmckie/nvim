@@ -170,6 +170,18 @@ deploy_findings_snapshot() {
     fi
     _dfs_filtered_args+=("$_dfs_arg")
   done
+  # --override-batch-gate-deferral (gate-ceiling-fit Phase 5/8): added UNCONDITIONALLY, for
+  # every caller, never only on explicit request. verify-deploy.sh's own entry guard refuses an
+  # unfiltered invocation while a batch-gate-pending marker exists, aimed at the ACTUAL incident
+  # this work traces to -- a DISPATCHED AGENT shelling out to verify-deploy.sh directly from
+  # inside its own implement phase, ignoring the advisory deferral directive. Every real caller
+  # of THIS function (command-gate-out.sh's Inter-Cycle Redeploy Checkpoint,
+  # orchestrate-cycle-plan.sh's own pre/post redeploy snapshots, orchestrate-batch-gate.sh's
+  # shared capture) is infrastructure-level before/after drift detection around a redeploy
+  # action, categorically different from that incident and never itself "a task's own duplicate
+  # full battery" -- so none of them should ever be deferred by this guard. Harmless if a
+  # caller already passed the same flag (a boolean, idempotent either way).
+  _dfs_filtered_args+=(--override-batch-gate-deferral)
   local rc=0
   local out
   out="$(bash "$verify_deploy_path" --findings --quiet "${_dfs_filtered_args[@]}" 2>/dev/null)" || rc=$?
