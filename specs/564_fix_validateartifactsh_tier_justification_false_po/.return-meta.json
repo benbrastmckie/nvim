@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795104475_9fe2d8_564",
+  "dispatch_seq": 1,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/564_fix_validateartifactsh_tier_justification_false_po/reports/01_tier-justification-sentinel-domination.md",
+      "summary": "Confirms live the suite_selection_select sentinel-domination defect (a mixed set of one unmappable and one mappable path collapses to pure __FULL_SWEEP__, losing real suites); finds an existing compositional-union precedent in suite-resolver-lib.sh; enumerates the two production call sites (validate-artifact.sh, verify-deploy.sh Gate 8) sharing the fragile -eq-1-sentinel idiom; recommends a selector-layer fix plus required call-site adaptations in both consumers and the library's own header Usage example."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "agent-system/extensions/core's suite-selection-lib.sh suite_selection_select(PATH...) short-circuits: the moment ANY given path resolves to zero covering suites, it echoes the __FULL_SWEEP__ sentinel and returns immediately, discarding every real suite already resolved for other paths in the same multi-path call. suite_selection_unmapped (same library) does NOT have this flaw -- it correctly reports only the genuinely-unmapped subset per path. Any caller that must call the selector over a mixed set should be aware the raw multi-path suite_selection_select call is unsafe for that purpose; scripts/lib/suite-resolver-lib.sh already works around it by calling the selector one path at a time and unioning SELECT/UNRESOLVED results instead.",
+      "category": "PATTERN",
+      "source_artifact": "specs/564_fix_validateartifactsh_tier_justification_false_po/reports/01_tier-justification-sentinel-domination.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["suite_selection_select", "sentinel", "suite-selection-lib.sh", "FULL_SWEEP", "Tier Justification"]
+    },
+    {
+      "content": "In agent-system/extensions/core, validate-artifact.sh's Tier Justification check (line ~821) and verify-deploy.sh's Gate 8 --gate8-touched narrowing (line ~1536) both detect 'no suite covers this' via the identical idiom: array length == 1 AND the single element equals SUITE_SELECTION_FULL_SWEEP_SENTINEL. Any change to suite_selection_select's return-value contract (e.g. making it return a union that can include the sentinel alongside real suite names) must update BOTH call sites to a 'does the output contain the sentinel' test instead, or Gate 8's fail-safe full-battery fallback silently regresses.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/564_fix_validateartifactsh_tier_justification_false_po/reports/01_tier-justification-sentinel-domination.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-deploy.sh", "Gate 8", "gate8-touched", "suite_selection_select", "fail-safe"]
+    },
+    {
+      "content": "test-validate-artifact.sh (agent-system/extensions/core/scripts/tests/) carries a reusable Tier Justification fixture-builder pattern: make_tj_fixture() builds a synthetic two-phase plan with a caller-supplied Files-to-modify block and Tier Justification line; TJ_UNMAPPED_PATH is PID-suffixed ($$) specifically so the fixture's own literal path text never becomes a spurious stratum-(b) grep self-match against the test file once committed (confirmed live: an unsuffixed static placeholder DID self-match and flipped a sentinel-claim case into a suite-list case). Any new Tier-Justification-measurement fixture elsewhere in this corpus should reuse this PID-suffix precaution.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/564_fix_validateartifactsh_tier_justification_false_po/reports/01_tier-justification-sentinel-domination.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["test-validate-artifact.sh", "fixture", "Tier Justification", "PID-suffix", "stratum-b self-match"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 564 to create implementation plan"
+}
