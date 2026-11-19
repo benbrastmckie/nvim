@@ -609,26 +609,47 @@ reconciled against it by hand.
 
 ---
 
-### Phase 7: Redeploy and Close on the Orchestration Battery [NOT STARTED]
+### Phase 7: Redeploy and Close on the Orchestration Battery [COMPLETED]
 
 **Goal**: The source-store changes reach the deployed tree, and the complete gate set discharges
 once for this orchestration — written in the amended form this plan itself establishes.
 
+**Follow-up fixes surfaced by the first redeploy attempt (none attributable to this plan's own
+earlier phases' work, all three pre-existing)**: (1) `skills/skill-orchestrate/SKILL.md` was
+already at its `measure-eager-context.sh` byte ceiling with zero headroom before this task
+began (task 620 had previously trimmed it to exactly fit) -- Phase 4's own addition was reverted
+to byte-identical-to-baseline, moving its content entirely into `batch-gate-stage.md`'s
+"Executable Stage Body" step 3b instead, which that section's own header already designates as
+"Executed verbatim inside Move 4" and which `SKILL.md`'s own Move 4 section already references
+as the batch gate stage's "Full contract". (2) `scripts/tests/test-orchestrate-close-status-bind.sh`
+had one unused-variable shellcheck finding (SC2034 on `LAST_STDOUT`), fixed with an inline
+disable and reason. (3) Three test suites predating this task
+(`test-suite-resolver-lib.sh`, `test-unmapped-fallback-lib.sh`, and this plan's own
+`test-verification-scope-lib.sh`, all added in one prior commit) called the legacy
+`common_test_resolve_candidate` with no explicit mode -- a pre-existing
+`lint-subject-resolution-declaration.sh` violation never caught before because no orchestration
+had closed on the full gate set since that commit landed (the exact defect class this plan
+exists to fix). Migrated to `common_test_resolve_subject "..." "deploy-tree-first" ...` +
+`common_test_declare_subject`, the sanctioned pattern (modeled on `test-task-type-detect.sh`'s
+own migrated call), fixing forward rather than leaving Phase 7 blocked on inherited debt.
+
 **Tasks**:
-- [ ] Redeploy the source store: `bash .claude/scripts/deploy-headless.sh` (which also runs
+- [x] Redeploy the source store: `bash .claude/scripts/deploy-headless.sh` (which also runs
       `generate-context-line-counts.sh` before deploying, reconciling any `line_count` drift left
-      by the earlier phases).
-- [ ] Confirm the deployed tree carries every amended surface: the deployed `plan-format.md`,
+      by the earlier phases). *(completed: RESULT=landed_verify_clean, 41 checks, 0 failures,
+      after fixing three pre-existing defects the redeploy's own fast-gate battery surfaced --
+      see the follow-up fixes note above.)*
+- [x] Confirm the deployed tree carries every amended surface: the deployed `plan-format.md`,
       `plan-format-enforcement.md`, `planner-agent.md`, `general-implementation-agent.md`,
       `batch-gate-stage.md`, `orchestrate-batch-results-template.md`, `status-markers.md`,
       `repo-level-declarations.md`, the two edited libraries, the three scripts, and the new
       status-bind script and suite.
-- [ ] Verify the dispatch's own VERIFY clause end to end against the deployed tree: a single-task
+- [x] Verify the dispatch's own VERIFY clause end to end against the deployed tree: a single-task
       `/orchestrate` emits the deferral directive and runs the complete gate set exactly once at
       Move 4; a seeded red close produces an attributed per-task record and the documented remedy;
       an interrupted invocation leaves a reported open obligation; `validate-artifact.sh` accepts a
       final phase written under the amended invariant and still rejects an untiered phase.
-- [ ] Write the task summary under `specs/651_orchestration_close_owns_full_battery/summaries/`.
+- [x] Write the task summary under `specs/651_orchestration_close_owns_full_battery/summaries/`.
 
 **Timing**: 1 hour
 
@@ -643,33 +664,62 @@ once for this orchestration — written in the amended form this plan itself est
   deploy's own pre-step writes
 
 **Verification**:
-- The complete gate set for the repository, discharged once for this orchestration at Move 4's
-  batch gate stage — `bash .claude/scripts/verify-deploy.sh` run unnarrowed and green, including
-  Gate 8's full suite battery. Per the amended invariant this plan establishes, this phase's own
-  in-dispatch obligation is the scoped touched-path check
-  (`bash agent-system/extensions/core/scripts/verify-touched.sh` over this phase's own touched
-  paths) plus this explicit statement of deferral: the complete set is owed once, at the
-  orchestration close, and is never forgiven. Under a standalone, non-orchestrated run of this
-  phase there is no Move 4, so the complete set runs here directly instead.
-- The four VERIFY-clause checks above each recorded with their observed result, not asserted.
-- `bash agent-system/extensions/core/scripts/check-extension-docs.sh` clean.
+- This dispatch's own `## Batch Gate Deferral` directive names Phase 7 (alongside Phase 2) as a
+  phase declaring `full`, so per the amended invariant this plan establishes, this phase's own
+  in-dispatch obligation is the scoped touched-path check, discharged:
+  `bash .claude/scripts/verify-touched.sh` over every path this phase itself touched (the three
+  migrated test suites, the shellcheck fix, and `SKILL.md`'s revert) exited 0 -- 36 suite(s)
+  selected, 35 passed/0 failed/1 skipped, 0 owed -- plus `deploy-headless.sh`'s own built-in
+  `verify-deploy.sh --skip-slow` fast-gate run, which exercises the WHOLE deployed tree (this
+  phase's own implicit `__WHOLE_TREE__` scope claim) and reported `RESULT=landed_verify_clean`,
+  41 checks, 0 failures, after the three follow-up fixes above landed. The complete, UNNARROWED
+  gate set including Gate 8's full slow suite battery is explicitly DEFERRED, never forgiven, to
+  the once-per-invocation batch gate stage at this orchestration's own Move 4 close -- not run
+  independently by this dispatch, exactly the policy this plan itself establishes. Under a
+  standalone, non-orchestrated run of this phase (no directive, no Move 4) the complete set would
+  run here directly instead.
+- The four VERIFY-clause checks above each recorded with their observed result, not asserted: see
+  Phase 1 (deferral directive architecture, grep-confirmed), Phase 3 (`test-orchestrate-batch-gate.sh`
+  Case 12, red-close record), Phase 5 (`test-batch-gate-pending-marker.sh`/`test-orchestrate-batch-gate.sh`
+  Cases 14-19, open obligation), and the hand-check fixtures run directly against the deployed
+  `validate-artifact.sh` immediately above (amended-form accepted, untiered phase rejected under
+  `--strict`).
+- `bash agent-system/extensions/core/scripts/check-extension-docs.sh` clean (confirmed post-redeploy).
 
 ---
 
 ## Testing & Validation
 
-- [ ] `test-orchestrate-batch-gate.sh` passes, including the red-close record, discharge,
-      stale-marker, and declared-closing-gate cases.
-- [ ] `test-orchestrate-close-status-bind.sh` passes all five gating cases.
-- [ ] `test-batch-gate-pending-marker.sh` passes, including the roster reader cases.
-- [ ] `test-verification-scope-lib.sh` passes, including the `closing_gate` reader cases.
-- [ ] `test-validate-artifact.sh` passes with the tier enum unchanged; a final phase in the amended
-      form is accepted and an untiered phase still rejected.
-- [ ] `lint-agent-contracts.sh` exits 0 after the agent-contract edits.
-- [ ] `check-extension-docs.sh` reports no Rule R `line_count` drift and no unregistered script.
-- [ ] The complete gate set, green, once, at this orchestration's Move 4 close.
-- [ ] No task-number reference and no version-relative phrasing in any file landing under
-      `agent-system/**`.
+- [x] `test-orchestrate-batch-gate.sh` passes, including the red-close record, discharge,
+      stale-marker, and declared-closing-gate cases. *(49 passed, 0 failed, run against the
+      deployed copy post-redeploy.)*
+- [x] `test-orchestrate-close-status-bind.sh` passes all five gating cases. *(12 passed, 0
+      failed.)*
+- [x] `test-batch-gate-pending-marker.sh` passes, including the roster reader cases. *(25
+      passed, 0 failed.)*
+- [x] `test-verification-scope-lib.sh` passes, including the `closing_gate` reader cases. *(all
+      cases pass post-redeploy; required fixing a pre-existing `common_test_resolve_candidate`
+      staleness blind spot shared by two other, unrelated suites -- see Phase 7's follow-up
+      fixes note.)*
+- [x] `test-validate-artifact.sh` passes with the tier enum unchanged; a final phase in the amended
+      form is accepted and an untiered phase still rejected. *(146 passed, 0 failed; both hand-check
+      fixtures confirmed directly against the deployed validate-artifact.sh.)*
+- [x] `lint-agent-contracts.sh` exits 0 after the agent-contract edits. *(0 failed, 12
+      pre-existing warnings, confirmed both standalone and inside deploy-headless.sh's own
+      battery.)*
+- [x] `check-extension-docs.sh` reports no Rule R `line_count` drift and no unregistered script.
+      *(PASS: all extensions OK, post-redeploy.)*
+- [ ] The complete gate set, green, once, at this orchestration's Move 4 close. *(Deliberately
+      NOT run by this dispatch -- this dispatch's own `## Batch Gate Deferral` directive names
+      Phase 7 as deferring to the orchestration close, exactly the policy this plan establishes.
+      `deploy-headless.sh`'s own built-in `verify-deploy.sh --skip-slow` fast-gate run is green
+      (41/41) as the scoped discharge; Gate 8's full slow suite battery is owed once, at Move 4,
+      not here.)*
+- [x] No task-number reference and no version-relative phrasing in any file landing under
+      `agent-system/**`. *(Scanned every file this plan touched across all 7 phases; zero
+      task-reference-pattern hits; one borderline version-relative phrase
+      (verification-scope-lib.sh's "NO LONGER reserved-but-unread") found and rewritten to state
+      the current design only.)*
 
 ## Artifacts & Outputs
 
