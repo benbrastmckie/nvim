@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Wrote a 5-phase implementation plan for the sentinel-domination defect in suite_selection_select. The plan rules for the selector layer (point 2), makes multi-path aggregation compositional, adapts the two production call sites (validate-artifact.sh's Tier Justification comparison and verify-deploy.sh's Gate 8 fail-safe), updates plan-format.md's authoring contract, pins the semantics with the dispatch's required fixtures (a)/(b)/(c) plus an all-mappable invariant case and a Gate 8 regression, and closes with a redeploy plus dual-vantage verification. The plan validates with 0 warnings.",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/564_fix_validateartifactsh_tier_justification_false_po/plans/01_compositional-suite-selection-union.md",
+      "summary": "5-phase plan: compositional union in suite_selection_select, call-site adaptation, authoring-contract text, fixtures, redeploy and dual-vantage verification."
+    }
+  ],
+  "dispatch_seq": 2
+}

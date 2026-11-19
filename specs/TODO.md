@@ -41,7 +41,7 @@ next_project_number: 654
 520 [NOT STARTED] — Emit deploy ordering in implement dispatch body
 521 [NOT STARTED] — Fix the agent glob to match the -implement-agent.md variant
 525 [NOT STARTED] — Repair the always-failing extensions-directory fallback in...
-564 [RESEARCHED] — Fix validate-artifact.sh Tier Justification false positive...
+564 [PLANNED] — Fix validate-artifact.sh Tier Justification false positive...
   └─ 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
 565 [NOT STARTED] — Resolve archived prior-art paths when composing dispatch and...
 574 [NOT STARTED] — Correct the cycle-budget contract to state shared-pool...
@@ -3031,11 +3031,12 @@ NON-GOALS. No hand-authored file under any deployed .claude/** tree; no un-archi
 ---
 
 ### 564. Fix validate-artifact.sh Tier Justification false positive from sentinel path-set membership
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 505
 - **Research**: [564_fix_validateartifactsh_tier_justification_false_po/reports/01_tier-justification-sentinel-domination.md]
+- **Plan**: [564_fix_validateartifactsh_tier_justification_false_po/plans/01_compositional-suite-selection-union.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
