@@ -1,0 +1,42 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/653_host_scoped_gate_mutex/reports/01_host-scoped-gate-mutex.md",
+      "summary": "Re-derives the four repo-scoped lock call sites, finds three (not one) gate-acquire wiring points, confirms the named-mutex family is mkdir-based with no flock and no PID-liveness reclaim, measures the XDG_RUNTIME_DIR/run/user/UID/tmp fallback chain on the live host, and recommends parameterizing acquire_named_mutex with a base-directory argument plus a new opt-in gate-acquire-host/gate-release-host subcommand pair and a cross-directory double-start test."
+    }
+  ],
+  "dispatch_seq": 2,
+  "next_steps": "Run /orchestrate 653 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1795076371_5115f3_653",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 7
+  },
+  "memory_candidates": [
+    {
+      "content": "task-lock.sh's acquire_named_mutex family (.scope-lock/.commit-lock/.gate-lock) uses mkdir-based atomicity and purely time-elapsed staleness reclaim -- no flock, no PID-liveness check anywhere. A PID-liveness fast path was prototyped and reverted (see task-lock.sh:674-694 comment): the recorded pid for a {scope,commit,gate}-acquire CLI invocation is always the short-lived acquiring subprocess's own $$, not the long-lived holder (e.g. verify-deploy.sh), so a dead-pid check against it misclassifies a live holder as dead. This is a separate mechanism from the per-task .lock/holder.json family (cmd_acquire/cmd_reap), which DOES have PID-liveness via session_liveness()/kill -0 -- the two are easy to conflate but share no code path.",
+      "category": "PATTERN",
+      "source_artifact": "specs/653_host_scoped_gate_mutex/reports/01_host-scoped-gate-mutex.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["task-lock.sh", "acquire_named_mutex", "gate-lock", "PID-liveness", "mkdir-lock", "staleness-reclaim"]
+    },
+    {
+      "content": "The gate layer's single-flight bracket (task-lock.sh's gate-acquire/gate-release) has THREE independent call sites, not one: tests/run-all.sh's top level, and TWO inside verify-deploy.sh (gate8_run() and a second gate-8-sibling battery). Any change to how/when the gate mutex is acquired must account for all three identically-shaped guard blocks (skip if narrowed/--only, skip if nested, run as guest if GATE_MUTEX_HELD inherited, else acquire-and-export) or risk leaving one entry point on the old behavior.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/653_host_scoped_gate_mutex/reports/01_host-scoped-gate-mutex.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["gate-lock", "run-all.sh", "verify-deploy.sh", "gate8_run", "single-flight"]
+    },
+    {
+      "content": "On this host (systemd/elogind), XDG_RUNTIME_DIR=/run/user/$UID is tmpfs, mode 0700, owned by that uid, and per pam_systemd(8) is created at first login and removed at final logout (so never survives reboot either). An abandoned lock/file placed there is reclaimed by the OS independent of any application-level staleness window, but the same man page explicitly warns applications must still tolerate stale files across a logout/login cycle (same path can be reused by an unrelated new session). /tmp on this host is ext3/ext4-backed (not tmpfs), mode 1777 (world-writable + sticky), cleaned periodically by systemd-tmpfiles' tmp.conf by file age on boot, not wiped wholesale at reboot -- making it the MOST durable of a three-tier XDG_RUNTIME_DIR -> /run/user/$UID -> /tmp fallback chain, not the least. hooks/tts-notify.sh already has a working two-tier precedent: COOLDOWN_FILE=\"${XDG_RUNTIME_DIR:-/tmp}/claude-tts-cooldown-${UID:-0}-${WEZTERM_PANE:-nopane}\" -- UID-qualifying the filename to stay safe on a shared, world-writable /tmp.",
+      "category": "CONFIG",
+      "source_artifact": "specs/653_host_scoped_gate_mutex/reports/01_host-scoped-gate-mutex.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["XDG_RUNTIME_DIR", "run-user-uid", "tmpfs", "pam_systemd", "tmp-fallback", "host-scoped-lock"]
+    }
+  ]
+}
