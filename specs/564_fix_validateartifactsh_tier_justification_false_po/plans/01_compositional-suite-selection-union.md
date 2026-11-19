@@ -1,7 +1,7 @@
 # Implementation Plan: Task #564
 
 - **Task**: 564 - Fix validate-artifact.sh Tier Justification false-positive (sentinel domination in `suite_selection_select`)
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5 hours
 - **Dependencies**: 505 (`suite_selection_non_core_extension_paths`) -- already archived/[COMPLETED]; satisfied, no remaining blocker
 - **Research Inputs**: specs/564_fix_validateartifactsh_tier_justification_false_po/reports/01_tier-justification-sentinel-domination.md

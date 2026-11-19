@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "summary": "Wrote a 5-phase implementation plan for the sentinel-domination defect in suite_selection_select. The plan rules for the selector layer (point 2), makes multi-path aggregation compositional, adapts the two production call sites (validate-artifact.sh's Tier Justification comparison and verify-deploy.sh's Gate 8 fail-safe), updates plan-format.md's authoring contract, pins the semantics with the dispatch's required fixtures (a)/(b)/(c) plus an all-mappable invariant case and a Gate 8 regression, and closes with a redeploy plus dual-vantage verification. The plan validates with 0 warnings.",
-  "phases_completed": 0,
+  "status": "implemented",
+  "summary": "Fixed suite_selection_select's sentinel-domination defect across all 5 plan phases: the selector's multi-path aggregation is now compositional (the sentinel is a floor contributed by its own member, never a ceiling over the whole set), its two production call sites (Gate 8 narrowing in verify-deploy.sh, the Tier Justification check in validate-artifact.sh) are adapted to the new contract, plan-format.md's authoring contract documents the mixed-set case, the semantics are pinned with fixtures across three test suites, and the deployed tree has been regenerated with confirmed byte-for-byte source-store/deployed parity.",
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/564_fix_validateartifactsh_tier_justification_false_po/plans/01_compositional-suite-selection-union.md",
-      "summary": "5-phase plan: compositional union in suite_selection_select, call-site adaptation, authoring-contract text, fixtures, redeploy and dual-vantage verification."
+      "type": "summary",
+      "path": "specs/564_fix_validateartifactsh_tier_justification_false_po/summaries/01_compositional-suite-selection-union-summary.md",
+      "summary": "Implementation summary covering all 5 phases, the layer-ownership decision, the Gate 8 fail-safe-regression file-placement deviation, and the three recurring batch-contention verify-touched.sh deviations."
     }
   ],
-  "dispatch_seq": 2
+  "dispatch_seq": 3
 }

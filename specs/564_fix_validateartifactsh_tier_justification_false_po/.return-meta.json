@@ -1,6 +1,90 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/564_fix_validateartifactsh_tier_justification_false_po/summaries/01_compositional-suite-selection-union-summary.md",
+      "summary": "All 5 phases complete: suite_selection_select's multi-path aggregation is now compositional, its two production call sites (Gate 8 narrowing, Tier Justification check) are adapted, plan-format.md's authoring contract documents the mixed-set case, the new semantics are pinned with fixtures across three suites, and the deployed tree has been regenerated and verified byte-identical to the source store."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Fixed suite_selection_select's sentinel-domination defect by making its multi-path aggregation compositional (the sentinel is now a floor contributed by its own member, never a ceiling over the whole set), adapted verify-deploy.sh's Gate 8 narrowing and validate-artifact.sh's Tier Justification check to the new contract, updated plan-format.md's authoring contract, pinned the semantics with fixtures in three test suites, and redeployed with confirmed source-store/deployed parity."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh",
+    "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-artifact.sh",
+    "agent-system/extensions/core/scripts/validate-artifact.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When regression-testing a fallback-to-full-battery behavior in verify-deploy.sh's Gate 8 (--gate8-touched), a fixture asserting only 'the stub received no --only argument' cannot distinguish a correct full-discovery fallback from an incorrect narrow-to-the-touched-suite-alone bug, once the fixture contains ANY real suite file -- Gate 8's own slow-bucket-relocation filter (Decision 2) always builds an explicit --only list from whatever base suite set it ends up with (narrowed or not), so 'no --only' only ever happens when the fixture is genuinely suite-less. Add a BYSTANDER suite (never named in --gate8-touched) to the fixture and assert the --only value contains it alongside the touched-mapped suite, proving full discovery (not the narrowed set) was used.",
+      "category": "PATTERN",
+      "source_artifact": "specs/564_fix_validateartifactsh_tier_justification_false_po/summaries/01_compositional-suite-selection-union-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "gate8-touched",
+        "verify-deploy",
+        "test-fixture",
+        "bystander-suite",
+        "fail-safe-regression"
+      ]
+    },
+    {
+      "content": "Under a heavy concurrent multi-task /orchestrate batch (measured load average 8.28 in one observed session), three specific load-sensitive shell suites (test-gate-lock.sh, test-lint-shellcheck-parallel.sh, test-run-all-parallel.sh) that each complete in well under a minute when run standalone can stall for a full bounded-wait timeout (540s) when run together inside one run-all.sh --only invocation, reproduced three separate times across three different phases of one dispatch. This is real host/scheduling contention from concurrent sibling dispatches, not a code defect -- confirmed by running each suite standalone during the same session and getting fast, clean results. When this pattern recurs, prefer direct standalone suite runs (source-store and/or deployed vantage) over repeatedly retrying the same combined --only invocation.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/564_fix_validateartifactsh_tier_justification_false_po/summaries/01_compositional-suite-selection-union-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "batch-contention",
+        "verify-touched",
+        "load-sensitive-suites",
+        "gate-lock",
+        "bounded-wait"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "suite_selection_select sentinel-domination fix",
+      "predicate": "decision is",
+      "value": "The selector layer (suite-selection-lib.sh), not the consumer (validate-artifact.sh's Tier Justification check), owns the fix for a multi-path call collapsing to the __FULL_SWEEP__ sentinel alone when any one touched path is unmappable. Rationale: plan-format.md's own Tier Justification scope is bounded to claims grounded in suite_selection_select's direct return value, the asymmetry is observable from the library alone with no plan/validator in the loop, and a second independent sighting (an under-naming defect from a per-path-composing author) reproduces the identical asymmetry with zero consumer code involved.",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"
+    },
+    {
+      "subject": "Gate 8's --gate8-touched narrowing, post slow-bucket-relocation split",
+      "predicate": "finding is",
+      "value": "verify-deploy.sh's gate8_run() ALWAYS builds an explicit --only list for its internal run-all.sh invocation once any suite exists in the discovered corpus, whether or not --gate8-touched actually narrowed anything -- GATE8_FINAL_SUITES is non-empty whenever any suite exists at all, by the comment's own words. 'No --only was passed' is therefore only a valid signal of an unnarrowed/fallback run in a fixture with zero suites; a fixture with real suite files needs to check the CONTENTS of --only (does it carry every discovered suite, not just the touched one) to tell narrowed from unnarrowed.",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/verify-deploy.sh:gate8_run"
+    },
+    {
+      "subject": "suite_selection_select's stratum (b) grep-based reference matching",
+      "predicate": "finding is",
+      "value": "A single lint fixture basename (lint-agent-contracts.sh) resolves via suite_selection_select to 9 suites, not just its strict basename-paired test-lint-agent-contracts.sh -- several unrelated suites (test-askuserquestion-rehome.sh, test-deploy-baseline-lib.sh, test-gate-cache-equivalence.sh, test-gate-cache-lib.sh, several test-lint-agent-contracts-*.sh variants, and even test-run-all-selection.sh's own source text) textually reference that basename. Any test that assumes a single-suite result for a basename already covered by an existing suite's own membership assertion (which only checks inclusion, never exclusivity) will be wrong; always re-derive the actual per-path output live rather than assuming it from an unrelated earlier assertion.",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"
+    },
+    {
+      "subject": "context/ directory resolution relative to a scripts root",
+      "predicate": "finding is",
+      "value": "context/ is always a sibling of the scripts root, identically at both the source-store vantage point (agent-system/extensions/core/{scripts,context}) and a deploy (.claude/{scripts,context}) -- resolving it as $(cd \"$SCRIPTS_ROOT/..\" && pwd)/context works unmodified at both vantage points with no special-casing needed, unlike the agent-system/extensions/ parent (which only exists in source-store mode and requires the core/manifest.json marker check).",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"
+    },
+    {
+      "subject": "Heavy concurrent /orchestrate batch load and shell-suite timing assertions",
+      "predicate": "finding is",
+      "value": "Three load-sensitive shell suites (test-gate-lock.sh, test-lint-shellcheck-parallel.sh, test-run-all-parallel.sh) that each complete in well under a minute standalone stalled for the full 540s bounded-wait timeout three separate times in one session, when run together as part of a combined --only invocation under measured load average 8.28 from many concurrently-active /orchestrate dispatches sharing the same repository. Standalone re-runs during the same session completed quickly and cleanly every time, confirming real host/scheduling contention rather than a code defect. Direct standalone suite runs are a reliable substitute for a combined scoped check when this pattern is observed.",
+      "confidence": 0.75,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-gate-lock.sh"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795104475_9fe2d8",
     "agent_type": "general-implementation-agent",
@@ -9,7 +93,9 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh"
