@@ -194,44 +194,57 @@ is the covering check — the path is a single new file with no caller yet, and 
 
 ---
 
-### Phase 2: Project binder [NOT STARTED]
+### Phase 2: Project binder [COMPLETED]
 
 **Goal**: `scripts/sapience-project-bind.sh` creates a fresh, named Sapience project only under
 explicit human confirmation, and persists the binding to `.sapience/project.json` in bytes
 identical to `repo_link.py`'s own serializer.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/sapience/scripts/sapience-project-bind.sh`, sourcing
+- [x] Create `agent-system/extensions/sapience/scripts/sapience-project-bind.sh`, sourcing
       `scripts/lib/sapience-api-lib.sh` and `deploy-root-guard.sh` as the existing scripts do.
-- [ ] Copy the marker-delimited `# === BEGIN sapience-worktree-checkout-resolution ... # === END
+      *(completed)*
+- [x] Copy the marker-delimited `# === BEGIN sapience-worktree-checkout-resolution ... # === END
       sapience-worktree-checkout-resolution ===` block **byte-for-byte** from
       `sapience-remember.sh` into this script. Do NOT move it into the lib — the lockstep test
       compares N independent copies and a single lib copy would have nothing to compare against.
-- [ ] Argument contract: require BOTH `--name "<display name>"` and a separate `--confirm` flag.
+      *(completed: diff confirms byte-identical)*
+- [x] Argument contract: require BOTH `--name "<display name>"` and a separate `--confirm` flag.
       Refuse with a clear message and a non-zero exit if either is missing. Default posture is
       `--dry-run`: print the literal payload (`to`, `project.kind`, `project.key`, `follow`) and
-      exit 0 without a network call.
-- [ ] Discover the collaborator person id and own `me_id` at runtime from the vault — never
+      exit 0 without a network call. *(completed: dry-run uses a "<person id>" placeholder,
+      matching the dispatch's own creation-call template, so even the GET /v1/people discovery
+      call is skipped under dry-run — a deviation from a literal reading that would have resolved
+      the real collaborator id even without --confirm; see Plan Deviations)*
+- [x] Discover the collaborator person id and own `me_id` at runtime from the vault — never
       hardcode the values the dispatch cites as live reference. Derive `project.key` from the
-      display name as a slug, validated against `^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`.
-- [ ] On the confirmed path, POST `/v1/people/projects/share` with
+      display name as a slug, validated against `^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`. *(completed:
+      only on the --confirm path, and only when --to is not given explicitly)*
+- [x] On the confirmed path, POST `/v1/people/projects/share` with
       `{to:["<person id>"], project:{kind:"project", key:"<key>"}, follow:true}` via
       `sapience_post`. Record, in a header comment, why creating the project matters mechanically:
       `project_split_confirmed` computes `cross = doors & (sent | added | first_doors-if-owner-and-not-sent)`,
       so only the creator/owner's `follow:true` notes flow without a per-note confirm.
-- [ ] Apply loud-failure discipline to the response, written against the confirmed
+      *(completed)*
+- [x] Apply loud-failure discipline to the response, written against the confirmed
       `{ok, project, to}` shape — an empty `to` array, a non-2xx status, a non-JSON body, or a
       response lacking `ok: true` is a loud non-zero-exit failure, never a success-shaped guess.
       Do NOT copy `sapience-remember.sh`'s `written`/`gated`/`set_aside` field names: this
-      response carries none of them.
-- [ ] Resolve the repo toplevel via the copied block, then write `<toplevel>/.sapience/project.json`
+      response carries none of them. *(completed: all four shapes verified by fixture to exit
+      non-zero with no file write; sapience_post extended to expose the HTTP status via
+      sapience_api_post_http_status for the non-2xx check)*
+- [x] Resolve the repo toplevel via the copied block, then write `<toplevel>/.sapience/project.json`
       with EXACTLY three string keys in the order `project`, `name`, `repo`, two-space indent, one
       trailing newline — reproducing `repo_link.py`'s `link_text` byte-for-byte. Add no fourth key:
       `parse_link` returns `None` for a dict carrying ANY key matching
       `(token|key|secret|password)`, case-insensitive. Validate `repo` against
       `^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$` and reject a path-shaped value before writing.
-- [ ] `git add` the new file, run `sync-manifest-scripts.sh --write`, confirm via `git diff --stat`
-      that only the sapience manifest changed.
+      *(completed: byte-identical fixture confirmed via cmp; the fourth-key case is vacuously
+      guaranteed by construction since the writer always emits exactly {project, name, repo}
+      via jq object construction, verified with an adversarial --name containing literal
+      "token": text that lands as an escaped string value, never a new key)*
+- [x] `git add` the new file, run `sync-manifest-scripts.sh --write`, confirm via `git diff --stat`
+      that only the sapience manifest changed. *(completed)*
 
 **Timing**: 2 hours
 

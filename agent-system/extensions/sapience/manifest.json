@@ -13,6 +13,7 @@
       "install-sapience-mcp-session-hook.sh",
       "lib/sapience-api-lib.sh",
       "postflight-sapience-notes.sh",
+      "sapience-project-bind.sh",
       "sapience-remember.sh",
       "sapience-retrieve.sh",
       "setup-sapience-mcp.sh",

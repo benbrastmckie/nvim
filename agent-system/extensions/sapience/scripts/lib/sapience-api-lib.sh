@@ -113,14 +113,17 @@ _sapience_redact_url() {
 # header. Echoes the raw response body on stdout and returns 0 on a transport success (ANY HTTP
 # status -- the caller inspects the body/status itself, matching sapience-remember.sh's own
 # curl-exit-only transport check); returns 1 on a genuine curl transport failure with a message
-# on stderr.
+# on stderr. The resolved HTTP status is additionally left in sapience_api_post_http_status (set
+# into the CALLER's shell, since this file is sourced, not subshelled) for a caller that needs to
+# distinguish a non-2xx status from a 2xx one carrying a failure-shaped body -- captured via
+# `curl --write-out` on the SAME request, never a second network call.
 #
 # Under SAPIENCE_DRY_RUN=1: prints "POST <url-with-redacted-token>" then the body with
 # `.token = "***REDACTED***"` merged in (if the body is a JSON object) on stdout, makes no
-# network call, and returns 0.
+# network call, leaves sapience_api_post_http_status unset, and returns 0.
 sapience_post() {
   local _path="${1:-}" _body="${2:-}"
-  local _encoded_token _url _response _curl_exit _dry_body
+  local _encoded_token _url _raw _curl_exit _dry_body
 
   if [ -z "${sapience_token:-}" ]; then
     echo "sapience-api-lib.sh: sapience_post called before sapience_api_init resolved a token" >&2
@@ -144,20 +147,23 @@ sapience_post() {
   fi
 
   _curl_exit=0
-  _response="$(curl -sS --connect-timeout 3 --max-time 8 \
+  _raw="$(curl -sS --connect-timeout 3 --max-time 8 \
     -H 'content-type: application/json' \
     -H 'X-Sapience-Client: sapience-api-lib.sh' \
     --data "$_body" \
+    -w $'\n%{http_code}' \
     "$_url" 2>/dev/null)" || _curl_exit=$?
 
   if [ "$_curl_exit" -ne 0 ]; then
     echo "sapience-api-lib.sh: POST ${_path}: curl transport failure (exit ${_curl_exit})" >&2
-    unset _path _body _encoded_token _url _response _curl_exit
+    unset _path _body _encoded_token _url _raw _curl_exit
     return 1
   fi
 
-  printf '%s' "$_response"
-  unset _path _body _encoded_token _url _response _curl_exit
+  # shellcheck disable=SC2034 # consumed by the sourcing caller, not within this file
+  sapience_api_post_http_status="${_raw##*$'\n'}"
+  printf '%s' "${_raw%$'\n'*}"
+  unset _path _body _encoded_token _url _raw _curl_exit
   return 0
 }
 
