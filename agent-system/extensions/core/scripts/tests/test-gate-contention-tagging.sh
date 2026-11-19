@@ -27,12 +27,10 @@ source "$SCRIPT_DIR/../lib/common.sh"
 CORE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 GSF_LIB="$CORE_DIR/lib/gate-store-fixture-lib.sh"
 
-for req in "$GSF_LIB"; do
-  if [ ! -f "$req" ]; then
-    echo "ERROR: expected $req" >&2
-    exit 2
-  fi
-done
+if [ ! -f "$GSF_LIB" ]; then
+  echo "ERROR: expected $GSF_LIB" >&2
+  exit 2
+fi
 # shellcheck source=../lib/gate-store-fixture-lib.sh
 source "$GSF_LIB"
 

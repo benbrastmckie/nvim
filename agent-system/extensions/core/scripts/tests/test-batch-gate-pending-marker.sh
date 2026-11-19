@@ -15,6 +15,21 @@
 
 set -uo pipefail
 
+# ANTI-RECURSION / ANTI-INHERITANCE INVARIANT: this suite's own Cases 7-13 test verify-deploy.sh
+# and run-all.sh's entry guards specifically in their NON-nested, NON-guest shape -- but this
+# suite is itself one of gate 8's own discovered suites, which gate 8's own run-all.sh runs
+# with RUN_ALL_NESTED=1 (and, transitively, VERIFY_DEPLOY_NESTED=1/GATE_MUTEX_HELD) already
+# exported. Those three vars are plain exported shell variables, inherited by every child
+# process unless explicitly cleared -- left inherited, every verify-deploy.sh/run-all.sh
+# subprocess THIS suite spawns would silently run in nested/guest mode, exempting it from the
+# very guard these cases exist to exercise (a nested/guest call is BY DESIGN never refused), and
+# every rc/output assertion below would fail not because of a real defect but because this
+# suite was itself discovered and run nested. Measured live: this suite passed 20/0 standalone
+# but failed within gate 8's own real battery, every time, until this fix. Mirrors
+# test-deploy-verify-wiring.sh's own documented "ANTI-RECURSION INVARIANT" precedent for the
+# identical class of hazard.
+unset RUN_ALL_NESTED VERIFY_DEPLOY_NESTED GATE_MUTEX_HELD
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../lib/common.sh"
 SRC_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -162,8 +177,27 @@ TMPTARGET="$(mktemp -d "${TMPDIR:-/tmp}/batch-gate-entry-guard-test.XXXXXX")"
 cleanup_target() { [ -n "${TMPTARGET:-}" ] && [ -d "$TMPTARGET" ] && rm -rf "$TMPTARGET"; }
 trap cleanup_target EXIT
 mkdir -p "$TMPTARGET/.claude" "$TMPTARGET/specs/.orchestration" \
-         "$TMPTARGET/agent-system/extensions/core/scripts/lib"
+         "$TMPTARGET/agent-system/extensions/core/scripts/lib" \
+         "$TMPTARGET/agent-system/extensions/core/scripts/tests"
 cp "$LIB" "$TMPTARGET/agent-system/extensions/core/scripts/lib/batch-gate-marker-lib.sh"
+# A throwaway, path-mirrored copy of run-all.sh, resolved entirely under TMPTARGET -- NEVER the
+# real repo's own specs/.orchestration/. A fixed-name marker in the REAL repo's own
+# specs/.orchestration/ (an earlier draft of this suite) was measured live to leak under a
+# SIGKILL-bypassed-trap condition (run-all.sh's own per-suite timeout, under extreme host load,
+# kills a slow suite before its EXIT trap can fire) -- a $$-unique filename closes the race
+# between two CONCURRENT instances of this same suite, but a kill-before-cleanup can still leak
+# a file into shared, production state; an isolated TMPTARGET has no such consequence. A bare
+# `: > manifest.json` is enough to satisfy run-all.sh's own source-store MODE detection (it only
+# checks the file's existence, never its content).
+: > "$TMPTARGET/agent-system/extensions/core/manifest.json"
+cp "$RUN_ALL" "$TMPTARGET/agent-system/extensions/core/scripts/tests/run-all.sh"
+RUN_ALL_FIXTURE="$TMPTARGET/agent-system/extensions/core/scripts/tests/run-all.sh"
+# A single trivial suite, so run-all.sh's own discovery is non-empty (TOTAL_DISCOVERED > 0) --
+# with zero discovered suites it refuses with its own "zero test suites discovered" harness
+# error (exit 2) BEFORE ever reaching the entry guard this case means to exercise. The guard
+# fires before any suite runs regardless, so this stub's own content is never executed.
+printf '#!/usr/bin/env bash\nexit 0\n' > "$TMPTARGET/agent-system/extensions/core/scripts/tests/test-stub.sh"
+chmod +x "$TMPTARGET/agent-system/extensions/core/scripts/tests/test-stub.sh"
 
 write_target_marker() {
   # Usage: write_target_marker <session_id> <written_at_iso>
@@ -183,18 +217,12 @@ if [ "$vd_rc" -eq 3 ] && echo "$vd_out" | grep -q "DEFERRED"; then
 else
   common_test_fail "Case 7: verify-deploy.sh expected exit 3 + DEFERRED, got rc=$vd_rc: $vd_out"
 fi
-# run-all.sh resolves its OWN repo root from its own script location (always the real repo,
-# never TMPTARGET) -- so seed the REAL repo's marker directory for this one case, clearing it
-# immediately after. This is the only case in this suite that touches the real tree's own
-# specs/.orchestration/, and only for the lifetime of this one assertion.
-REAL_REPO_ROOT="$(cd "$SRC_DIR/../../../.." && pwd)"
-real_marker_dir="$REAL_REPO_ROOT/specs/.orchestration"
-mkdir -p "$real_marker_dir"
-jq -n -c --arg sid "sess_ra_refuse_probe" --argjson pid 42 --arg wa "$(iso_minutes_ago 1)" --argjson tn '[1]' --argjson ds '{"1": 1}' \
-  '{session_id: $sid, pid: $pid, written_at: $wa, task_numbers: $tn, dispatch_seq: $ds}' \
-  > "$real_marker_dir/batch-gate-pending-sess_ra_refuse_probe.json"
-ra_out="$(bash "$RUN_ALL" --quiet 2>&1)"; ra_rc=$?
-rm -f "$real_marker_dir/batch-gate-pending-sess_ra_refuse_probe.json"
+# run-all.sh's guard check: run against RUN_ALL_FIXTURE (the throwaway, path-mirrored copy
+# under TMPTARGET -- see its own setup comment above for why this is NEVER the real repo). Its
+# own repo-root resolution lands on TMPTARGET, the SAME tree write_target_marker/
+# clear_target_markers already manage for the verify-deploy.sh cases above, so no separate
+# marker-management code is needed here at all.
+ra_out="$(bash "$RUN_ALL_FIXTURE" --quiet 2>&1)"; ra_rc=$?
 if [ "$ra_rc" -eq 3 ] && echo "$ra_out" | grep -q "DEFERRED"; then
   common_test_pass "Case 7: run-all.sh unfiltered + pending marker -> exit 3 with a DEFERRED line"
 else
