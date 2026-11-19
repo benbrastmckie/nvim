@@ -1,0 +1,10 @@
+{
+  "status": "in_progress",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "metadata": {
+    "session_id": "sess_1795130570_6d4a1f_658",
+    "task_number": 658
+  },
+  "dispatch_seq": 2
+}
