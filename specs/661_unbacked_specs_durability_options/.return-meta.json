@@ -1,0 +1,27 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/661_unbacked_specs_durability_options/reports/01_unbacked_specs_durability.md",
+      "summary": "Evaluates sibling-repo, orphan-branch-commit, external-sync, and do-nothing options for recovering an ignored specs/ tree; recommends documenting the exposure and building no mechanism, since every recoverability option reintroduces the cross-branch/cross-repo churn the ignored posture exists to avoid."
+    }
+  ],
+  "next_steps": "Run /orchestrate 661 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1795130570_6d4a1f_661",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "When evaluating a proposed durability/backup mechanism for an ignored specs/ tree, apply the 'does it reintroduce cross-branch/cross-repo churn' test first: sibling repositories and orphan-branch archive commits both recover bytes but add a second branch/repo that every branch-enumerating tool (CI, stale-branch sweeps, PR listings) must now learn to skip -- the same cost class the ignored posture was adopted to remove.",
+      "category": "PATTERN",
+      "source_artifact": "specs/661_unbacked_specs_durability_options/reports/01_unbacked_specs_durability.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["specs durability", "gitignore specs", "orphan branch", "cross-branch churn", "backup mechanism"]
+    }
+  ]
+}

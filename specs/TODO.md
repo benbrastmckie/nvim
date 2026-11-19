@@ -51,12 +51,12 @@ next_project_number: 664
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — Determine what leaves files in the working tree and give...
 646 [NOT STARTED] — Decide and implement how .return-meta.json's status...
-658 [NOT STARTED] — Ignored specs predicate and commit path
+658 [RESEARCHING] — Ignored specs predicate and commit path
   └─ 659 [NOT STARTED] — Never demote on ignored specs skip
     └─ 662 [NOT STARTED] — Reframe docs for ignored specs default
   └─ 660 [NOT STARTED] — Init specs ignores specs by default
     └─ 662 [NOT STARTED] — Reframe docs for ignored specs default (see above)
-661 [NOT STARTED] — Unbacked specs durability options
+661 [RESEARCHED] — Unbacked specs durability options
   └─ 662 [NOT STARTED] — Reframe docs for ignored specs default (see above)
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
@@ -234,10 +234,11 @@ DONE WHEN. No surface asserts that the specs tree is committed as an invariant; 
 ---
 
 ### 661. Unbacked specs durability options
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
+- **Research**: [661_unbacked_specs_durability_options/reports/01_unbacked_specs_durability.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). No task-number references and no record-versioning language under agent-system/**; both are permitted in this description.
 
@@ -308,7 +309,7 @@ MEASURED SCOPE CORRECTION (2026-11-19, after this record was written). THE HISTO
 ---
 
 ### 658. Ignored specs predicate and commit path
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
