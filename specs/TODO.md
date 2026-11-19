@@ -1,5 +1,5 @@
 ---
-next_project_number: 654
+next_project_number: 656
 ---
 
 # TODO
@@ -13,8 +13,8 @@ next_project_number: 654
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,633,639,640,645,646,652 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,583,592,593,598,605,609,630 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,577,586,599,629 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,633,639,640,645,646,652,654 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,583,592,593,598,605,609,630,655 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,577,586,599,629,654 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,486,492,509,513,518,561,566,594 | 439,452,472,479,484,491,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,571,581,588,595,641 | 454,472,486,492,509,518,539,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 524,596,642 | 501,595,641 | core-agent-system, agent-system |
@@ -106,7 +106,9 @@ next_project_number: 654
 
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-652 [RESEARCHED] — Resolve validate-artifact.sh's Tier-Justification corpus...
+652 [PLANNING] — Resolve validate-artifact.sh's Tier-Justification corpus...
+654 [NOT STARTED] — Reconcile the open commit-layer cluster and write its...
+  └─ 655 [NOT STARTED] — Make orchestration branch-aware with a per-invocation branch...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -177,6 +179,106 @@ next_project_number: 654
 
 ## Tasks
 
+### 655. Branch aware orchestration and squash landing
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 654
+
+**Description**: Make orchestration branch-aware with a per-invocation branch and squash landing
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in /home/benjamin/.config/nvim (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
+
+=== BINDING CONSTRAINT, NOT RE-OPENABLE ===
+
+Every dispatch runs in the repository's SINGLE working tree. Per-dispatch `git worktree` isolation was built, was found to cause silent data loss, was removed rather than narrowed, and the removal was formally re-opened under new evidence and CONFIRMED. See specs/decisions/worktree-isolation-removal-verdict.md and specs/decisions/worktree-isolation-removal-reaffirmation.md. This task MUST NOT propose, design, or implement worktree isolation, and MUST NOT route around that verdict. Concurrency safety rests on declared file_scope, dependencies[] edges, and the contention inputs already in service.
+
+The direct consequence, which shapes the whole design: a single working tree can be checked out on exactly one branch at a time, so a branch per TASK is unachievable for a multi-task batch. The settled design is therefore a branch per INVOCATION.
+
+=== MEASURED EVIDENCE -- RE-DERIVABLE, DO NOT RE-DERIVE FROM SCRATCH ===
+
+GAP 1 -- orchestration has ZERO branch awareness. In agent-system/extensions/core:
+- `grep -rn "git checkout -b\|git switch -c" scripts/ hooks/` returns exactly ONE hit: git-snapshot.sh, inside its `--branch` rollback-snapshot path. That is a recovery feature, not a workflow.
+- `grep -rn "rev-parse --abbrev-ref" scripts/` returns four hits, three in scripts/tests/, the fourth in git-snapshot.sh saving the original branch for its revert.
+- Nothing in orchestrate-cycle-plan.sh, orchestrate-cycle-postflight.sh, git-commit-scoped.sh or git-commit-phase.sh reads, asserts, or creates a branch. Every phase commit lands on whatever branch the operator happened to leave checked out.
+
+GAP 2 -- the written Branch Strategy is aspirational prose with no mechanical backing. context/standards/git-workflow-narrative.md's "## Branch Strategy" section is eleven lines: "Work on `main` or feature branches", then "### Task Branches (Optional)" naming a `task-{N}-{slug}` convention. Optional, unenforced, unverified. rules/git-workflow.md specifies commit GRANULARITY in detail -- Commit Timing, the Commit-Per-Green-Substep Mandate -- and says nothing about branch TARGET.
+
+GAP 3 -- measured consequence in a consumer repository. One long-lived branch accumulated 2150 commits ahead of the release branch: 3461 files, +893,545/-19,420. Its open pull request sat at zero reviews for three days, against an unintended base branch. Four earlier per-task branches in the same repository all fork from one identical stale commit because nothing re-pointed them, leaving all four 2150 commits behind the live line. Of those 893,545 insertions, roughly 250,000 are generated or vendored: two hunspell dictionaries at 99,171 lines, dated measurement-run JSON at roughly 70,000, task-management artifacts at 64,641, a baseline ledger at 39,544, a single test fixture at 22,099. The failure mode is repo-agnostic; no part of it depends on that repository's specifics.
+
+=== WHAT TO BUILD (repo-agnostic throughout: no literal branch name, no consumer-repo path, in any deliverable) ===
+
+A. ADMISSION-TIME STARTING-BRANCH VERIFICATION, in orchestrate-cycle-plan.sh's preflight, beside the existing lock probe and queue-check gates. Resolve the intended integration branch from CONFIGURATION, never a literal: a per-repo declaration site, falling back to the current branch with a loud advisory when undeclared. Follow the advisory-vs-blocking posture the existing predispatch-review defect classes already establish rather than inventing a new one. The depended-on reconciliation task may have ruled that this element also satisfies the dispatch starting-position reverification task -- read its decision record and honor that ruling.
+
+B. PER-INVOCATION BRANCH CREATION, deterministic and idempotent: one branch per orchestrate invocation, cut from the resolved integration branch, named from the invocation's own session identity. Reused rather than recreated when an invocation resumes. Must interact correctly with the existing task-lock, session-registry and orchestration-queue machinery, and must not disturb the MAX_TASKS batch cap or the batching-by-default doctrine in context/patterns/batch-orchestration-guardrails.md -- preserving batching is a design requirement, since batching is that document's stated default way to work the system.
+
+C. PHASE COMMITS LAND ON THAT BRANCH, with the existing one-commit-per-phase rule and Commit-Per-Green-Substep Mandate granularity fully preserved. Additive: no change to commit SCOPE, pathspec containment, or message convention -- only to branch target. Phase commits from different tasks in one batch interleave on the shared branch, so each commit must remain attributable to its own task; the existing `task {N}: ...` message convention already supplies that, and the design must not weaken it, because element D depends on it.
+
+D. PER-TASK SQUASH LANDING at each task's own [IMPLEMENTING] -> [COMPLETED] transition in orchestrate-cycle-postflight.sh: collapse that task's own task-tagged commit range from the invocation branch into ONE commit on the integration branch, message `task {N}: {title}`, with the session identity and the phase list in the body so per-phase detail survives as prose rather than as commits. Per-task ranges on a shared branch are the central mechanical problem of this element -- solve it from commit attribution, not from assuming contiguity. Constraints: never a retroactive rewrite of an already-pushed branch; respect guard-destructive-git.sh (no bare amend, no HEAD-moving reset while another writer is live); prefer `git merge --squash` over interactive rebase, which this environment does not support (`git rebase -i` is unavailable).
+
+E. FAILURE AND PARTIAL RETENTION: a task ending [PARTIAL], [BLOCKED] or failed leaves its commits on the invocation branch un-squashed, so a later invocation resumes from them. Only a clean completion squashes. Define explicitly what happens to an abandoned task's commits and to an invocation branch whose tasks have all landed. State the disposition of a branch holding both a completed task's already-squashed range and a failed task's retained range.
+
+F. GENERATED-FILE DECLARATION for reviewability: a repo-agnostic mechanism declaring machine-written paths so they collapse by default in review (`.gitattributes` with `linguist-generated=true` is the mechanism; the declaration site and whether it is generated or hand-maintained is the design question). The system already knows which paths it generates -- task-management artifacts under specs/, the deployed .claude/** tree, the regenerated task list and roadmap -- so it can declare them rather than asking the operator to enumerate them. Must not change what is COMMITTED, only how it RENDERS in review.
+
+G. DOCUMENTATION PARITY: replace context/standards/git-workflow-narrative.md's "## Branch Strategy" section with the mechanically-backed contract this task implements, and add the branch-target rule to rules/git-workflow.md beside its existing granularity rules. A contract that the scripts enforce but the rules do not state is the defect GAP 2 names; do not reproduce it in the other direction.
+
+=== CONSTRAINTS ===
+
+- Repo-agnostic: no literal branch name and no consumer-repo-specific path in any deliverable. Integration-branch identity and branch naming come from configuration.
+- git push and pull-request creation stay prohibited for agents (rules/pr-prohibition.md). The deliverable hands the operator a squashed commit on the integration branch; the operator merges to the release branch themselves.
+- Must not break the existing lock, session-registry, queue, containment, or snapshot machinery. Additive wherever possible.
+- No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md).
+- The depended-on reconciliation task's rulings are INPUTS to this task, not suggestions: read its decision record during research and honor its prerequisite, revision and detector-scope rulings.
+- Size realistically. This spans two orchestration scripts, two commit scripts, one rule file and two standards documents, and it changes a contract every phase commit in every repository flows through. Expect systematic refactoring; do not plan it as a one-file change.
+
+VERIFICATION. A multi-task invocation produces one branch, phase commits from every task on it, and one squashed commit per completed task on the integration branch with its phase list in the body. A task failing mid-batch leaves its commits on the branch while its sibling still lands. An invocation started from the wrong branch is caught at admission. The declared generated paths render collapsed in review. The rules and the narrative state the same contract the scripts enforce.
+
+---
+
+### 654. Reconcile commit layer cluster and ordering
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Reconcile the open commit-layer cluster and write its dependency ordering
+
+SOURCE STORE IS THE EDIT TARGET for any file this task touches outside specs/: agent-system/extensions/core/** in /home/benjamin/.config/nvim (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). This task is expected to modify NO script at all; its deliverables are a decision record and dependency edges.
+
+THIS TASK IMPLEMENTS NOTHING IN THE COMMIT LAYER. It produces (1) a ruling per cluster member, (2) dependency edges written with `update-task-status.sh --depends-on-add`, and (3) a decision record stating the ordering and its basis. It must not modify git-commit-scoped.sh, git-commit-phase.sh, orchestrate-cycle-plan.sh or orchestrate-cycle-postflight.sh -- the task that depends on this one owns those.
+
+WHY THIS EXISTS. A branch-aware orchestration feature sits directly on top of a dense cluster of open tasks that all touch the same surface: phase-commit composition, containment filtering, staging scope, and scoped committing. Shipping the branch feature without first ruling on that cluster's ordering means the branch work either duplicates a fix already queued or lands on top of a surface another task is about to rewrite. Writing the edges is the deliverable, not a note recommending that someone write them.
+
+THE CLUSTER TO RULE ON. Each entry below is an open task in this store. For each, rule exactly one of: SUBSUMED (the branch feature's own work closes it -- then say by which element), NEEDS REVISION (its description or scope must change given the branch feature -- then write the revision), NEEDS EDGE (it must precede or follow specific other members -- then write the edge), or UNAFFECTED (no relationship; state why, so the ruling is falsifiable).
+
+- manifest_registration_dropped_from_phase_commit
+- cycle_postflight_containment_parity
+- shared_extension_metadata_commit_containment
+- phase_commit_boundary_mechanical_check -- supplies the missing mechanical check for the one-commit-per-phase rule
+- stage_regenerated_derived_files_in_phase_commits
+- scoped_commit_staged_vs_worktree_divergence
+- phase_commit_drops_own_plan_artifact -- containment filter drops a task's own plan from its own phase commit
+- source_store_commit_and_registration_review -- git-commit-scoped.sh resolves PROJECT_ROOT from its own BASH_SOURCE and cd's there, so it can only commit in the repository whose deploy tree holds it
+- snapshot_artifacts_contaminate_phase_commits
+- git_commit_scoped_gate_refusal_diagnostic
+- port_containment_strip_to_git_commit_scoped -- the third of three documented containment sites, still unpatched
+- stall_signal_counts_unattributed_commits
+- dispatch_starting_position_reverification -- the dispatch file's hand-authored "VERIFIED STARTING POSITION" block goes stale
+
+THREE JUDGMENT CALLS THIS TASK MUST SETTLE, not defer to the dependent task:
+
+1. Are source-store commit scoping and the third containment site HARD PREREQUISITES for branch-aware orchestration? Both govern where scoped committing can commit and what it includes. A commit layer that cannot target a chosen repository, or that silently strips paths, plausibly cannot be made to target a chosen BRANCH correctly either. Rule yes or no and say what evidence decides it.
+
+2. Should the dispatch starting-position reverification task be REVISED so that an admission-time branch check satisfies it, rather than implemented separately? Both concern verifying the starting position of a dispatch; one at the dispatch-file authoring layer, one at the admission layer. Determine whether these are the same defect at two layers or two genuinely separate defects, and if the former, which layer is the right fix site.
+
+3. Should the phase-commit boundary mechanical check be extended to cover commit BRANCH TARGET in the same pass? Branch target is a second unchecked property of a phase commit, exactly parallel to the unchecked one-commit-per-phase property that task already exists to detect. Decide whether one detector covering both is right, or two separate detectors, and revise the affected task accordingly.
+
+VERIFICATION. Every ruling appears in the decision record with its basis. Every NEEDS EDGE ruling has a corresponding edge actually present in specs/state.json, checkable with jq. Every NEEDS REVISION ruling has the revision actually applied to that task's description. A ruling with no corresponding state change is an incomplete deliverable.
+
+CONSTRAINTS. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md) -- cite durable anchors: task project_name slugs, filenames, section headings. The decision record itself lives under specs/decisions/ and may name tasks by slug.
+
+---
+
 ### 653. Host scoped gate mutex
 - **Status**: [COMPLETED]
 - **Task Type**: meta
@@ -225,7 +327,7 @@ TERRITORY EDGES.
 ---
 
 ### 652. Validate artifact corpus resolution
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 650, Task 564
