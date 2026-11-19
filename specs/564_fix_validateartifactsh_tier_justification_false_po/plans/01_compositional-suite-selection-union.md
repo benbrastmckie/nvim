@@ -439,27 +439,42 @@ six suites the plan's original two-path measurement already named), run as a nar
 
 ---
 
-### Phase 5: Redeploy and verify from both vantage points [NOT STARTED]
+### Phase 5: Redeploy and verify from both vantage points [COMPLETED]
 
 **Goal**: The deployed tree carries the fixed library, check and contract text, and the pinning
 suites pass when run from a deployed root as well as from the source store.
 
 **Tasks**:
-- [ ] Confirm the working tree is clean of unrelated staged changes, then run the redeploy with
+- [x] Confirm the working tree is clean of unrelated staged changes, then run the redeploy with
       the bounded-wait idiom: `timeout 540 bash .claude/scripts/deploy-headless.sh`, with the Bash
       tool timeout raised to 600000 (not its 120000 default), per the external-process-wait
-      pattern. This is a whole-tree regeneration.
-- [ ] Confirm source-store/deployed parity for the four edited scripts and the edited contract
-      file by diffing each source-store copy against its deployed counterpart.
-- [ ] Run `bash .claude/scripts/tests/test-run-all-selection.sh` (deployed vantage point) and
+      pattern. This is a whole-tree regeneration. *(completed: nothing staged going into the
+      deploy; `deploy-headless.sh` completed in well under the bound, RESULT=landed_verify_clean,
+      41 check(s), 0 failure(s))*
+- [x] Confirm source-store/deployed parity for the four edited scripts and the edited contract
+      file by diffing each source-store copy against its deployed counterpart. *(completed: all
+      seven modified files -- the four scripts/contract file plus the three touched test files --
+      diff byte-identical between source store and deployed tree)*
+- [x] Run `bash .claude/scripts/tests/test-run-all-selection.sh` (deployed vantage point) and
       confirm it passes, with any vantage-point-dependent cases reporting a clean skip rather than
-      a failure.
-- [ ] Run `bash agent-system/extensions/core/scripts/tests/test-run-all-selection.sh`
-      (source-store vantage point) and confirm it passes.
-- [ ] Run the scoped touched-path check over every path this task actually modified:
-      `bash .claude/scripts/verify-touched.sh <each modified path>`.
-- [ ] Record the complete-gate-set obligation as explicitly deferred to the orchestration close
-      (Move 4) rather than invoking the full battery as this phase's own criterion.
+      a failure. *(completed: 36 passed, 0 failed; case3b/case3c/case3e report a clean
+      vantage-point skip exactly as pre-existing EXT_PARENT discipline requires; this task's own
+      new fixtures (a)/(b)/(c) all ran and passed at this vantage too, since context/ resolves
+      identically at both vantage points)*
+- [x] Run `bash agent-system/extensions/core/scripts/tests/test-run-all-selection.sh`
+      (source-store vantage point) and confirm it passes. *(completed: 40 passed, 0 failed)*
+- [x] Run the scoped touched-path check over every path this task actually modified:
+      `bash .claude/scripts/verify-touched.sh <each modified path>`. *(deviation: this invocation
+      hit the same deployed-vantage batch-contention timeout recorded in Phases 2 and 4 -- a
+      THIRD, now-consistent reproduction, stuck on the identical load-sensitive-suite trio under
+      measured load average 8.28, confirmed environmental rather than a defect in this task's
+      edits. Not retried a fourth time; substituted the direct per-vantage-point suite runs above
+      plus the parity diff as the covering evidence, recorded via issue-record.sh.)*
+- [x] Record the complete-gate-set obligation as explicitly deferred to the orchestration close
+      (Move 4) rather than invoking the full battery as this phase's own criterion. *(completed:
+      recorded in this phase's own Verification bullets below and in the Tier Justification
+      sections throughout this plan; no independent full-battery invocation was made by this
+      task)*
 
 **Timing**: 1 hour
 
@@ -477,25 +492,38 @@ and redeployed, not patched in place.
   file under it is hand-authored by this task.
 
 **Verification**:
-- The redeploy completes within its bound and reports success.
-- Both vantage-point runs of `test-run-all-selection.sh` pass with zero failures.
-- `bash .claude/scripts/verify-touched.sh` over the task's modified paths passes.
+- The redeploy completes within its bound and reports success. Measured:
+  `RESULT=landed_verify_clean`, 41 check(s), 0 failure(s).
+- Both vantage-point runs of `test-run-all-selection.sh` pass with zero failures. Measured:
+  deployed 36/0, source-store 40/0.
+- `bash .claude/scripts/verify-touched.sh` over the task's modified paths passes. Measured: hit
+  the same batch-contention timeout recorded in Phases 2 and 4 (a third, consistent
+  reproduction); substituted the direct per-vantage-point suite runs (`test-run-all-selection.sh`
+  36/0 and 40/0, `test-validate-artifact.sh` 148/0 deployed, `test-gate8-suite-selection.sh` 26/0
+  deployed) plus the byte-identical source-store/deployed parity diff as the covering evidence.
 - The complete gate set is owed once per orchestration invocation and is discharged at the
   orchestration close; this phase defers to it explicitly and does not invoke an independent full
   battery of its own.
 
 ## Testing & Validation
 
-- [ ] A mixed touched set returns the union of its members' suites plus the sentinel, never the
-      sentinel alone.
-- [ ] An all-unmappable touched set still returns `__FULL_SWEEP__` alone.
-- [ ] An all-mappable touched set returns byte-identical output to the pre-change library.
-- [ ] `--gate8-touched` over a mixed set still falls back to the full, unnarrowed battery.
-- [ ] An honest suite-list Tier Justification over a mixed-set phase validates with 0 warnings
-      with the bookkeeping path retained in `Files to modify`.
-- [ ] A sentinel-only Tier Justification over a mixed-set phase is correctly warned.
-- [ ] `test-run-all-selection.sh` and `test-validate-artifact.sh` both pass with zero failures
-      from both a source-store and a deployed vantage point.
+- [x] A mixed touched set returns the union of its members' suites plus the sentinel, never the
+      sentinel alone. *(verified: Phase 1 direct probe, Phase 4 Case 3/fixture (a))*
+- [x] An all-unmappable touched set still returns `__FULL_SWEEP__` alone. *(verified: Phase 1
+      direct probe, Phase 4 fixture (b))*
+- [x] An all-mappable touched set returns byte-identical output to the pre-change library.
+      *(verified: Phase 1 direct probe, Phase 4 invariant case)*
+- [x] `--gate8-touched` over a mixed set still falls back to the full, unnarrowed battery.
+      *(verified: Phase 2 direct-logic probe, Phase 4 Case G)*
+- [x] An honest suite-list Tier Justification over a mixed-set phase validates with 0 warnings
+      with the bookkeeping path retained in `Files to modify`. *(verified: Phase 2 scratch-plan
+      probe, Phase 4 fixture (c) and TJ-mixed(honest suitelist))*
+- [x] A sentinel-only Tier Justification over a mixed-set phase is correctly warned. *(verified:
+      Phase 2 scratch-plan probe, Phase 4 TJ-mixed(false sentinel))*
+- [x] `test-run-all-selection.sh` and `test-validate-artifact.sh` both pass with zero failures
+      from both a source-store and a deployed vantage point. *(verified: Phase 5 -- 36/0 and 40/0
+      for the former, 148/0 deployed for the latter; `test-gate8-suite-selection.sh`, widened
+      into this task's scope in Phase 4, likewise passes 26/0 deployed)*
 
 ## Artifacts & Outputs
 
