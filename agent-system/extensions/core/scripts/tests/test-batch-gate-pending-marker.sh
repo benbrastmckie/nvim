@@ -134,6 +134,140 @@ else
 fi
 rm -f "$TMPROOT/specs/.orchestration"/batch-gate-pending-*.json
 
+rm -f "$TMPROOT/specs/.orchestration"/batch-gate-pending-*.json
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+# PHASE 5 CASES: the entry guards in verify-deploy.sh and run-all.sh -- the consumer half of
+# the marker this suite's own Cases 1-6 already prove correct at the library level.
+#
+# Invoked directly from their real source-store location (never copied): both scripts resolve
+# their OWN collaborators (gate-registry-lib.sh, etc.) relative to their own script directory,
+# which is unaffected by TARGET -- only the files THIS guard itself reads
+# (batch-gate-marker-lib.sh, the marker file) are resolved under the scratch TARGET passed as
+# the positional argument, so a minimal scratch TARGET (a bare .claude/ dir plus a real copy of
+# the lib at the documented nested path) is enough to reach and exercise the guard without a
+# full rich fixture. The signal checked is deliberately narrow: exit status 3 and/or a
+# "DEFERRED" line, never full gate correctness (irrelevant to what this guard decides).
+# ═══════════════════════════════════════════════════════════════════════════════════════════
+VERIFY_DEPLOY="$SRC_DIR/verify-deploy.sh"
+RUN_ALL="$SRC_DIR/tests/run-all.sh"
+for req in "$VERIFY_DEPLOY" "$RUN_ALL"; do
+  if [ ! -f "$req" ]; then
+    echo "ERROR: expected $req" >&2
+    exit 2
+  fi
+done
+
+TMPTARGET="$(mktemp -d "${TMPDIR:-/tmp}/batch-gate-entry-guard-test.XXXXXX")"
+cleanup_target() { [ -n "${TMPTARGET:-}" ] && [ -d "$TMPTARGET" ] && rm -rf "$TMPTARGET"; }
+trap cleanup_target EXIT
+mkdir -p "$TMPTARGET/.claude" "$TMPTARGET/specs/.orchestration" \
+         "$TMPTARGET/agent-system/extensions/core/scripts/lib"
+cp "$LIB" "$TMPTARGET/agent-system/extensions/core/scripts/lib/batch-gate-marker-lib.sh"
+
+write_target_marker() {
+  # Usage: write_target_marker <session_id> <written_at_iso>
+  jq -n -c --arg sid "$1" --argjson pid 42 --arg wa "$2" --argjson tn '[1]' --argjson ds '{"1": 1}' \
+    '{session_id: $sid, pid: $pid, written_at: $wa, task_numbers: $tn, dispatch_seq: $ds}' \
+    > "$TMPTARGET/specs/.orchestration/batch-gate-pending-$1.json"
+}
+clear_target_markers() { rm -f "$TMPTARGET/specs/.orchestration"/batch-gate-pending-*.json; }
+
+# ─── Case 7: an unfiltered call is refused with the reserved status (exit 3) while a
+# non-stale marker is pending -- both verify-deploy.sh and run-all.sh. ──────────────────────
+clear_target_markers
+write_target_marker "sess_vd_refuse" "$(iso_minutes_ago 1)"
+vd_out="$(bash "$VERIFY_DEPLOY" --quiet "$TMPTARGET" 2>&1)"; vd_rc=$?
+if [ "$vd_rc" -eq 3 ] && echo "$vd_out" | grep -q "DEFERRED"; then
+  common_test_pass "Case 7: verify-deploy.sh unfiltered + pending marker -> exit 3 with a DEFERRED line"
+else
+  common_test_fail "Case 7: verify-deploy.sh expected exit 3 + DEFERRED, got rc=$vd_rc: $vd_out"
+fi
+# run-all.sh resolves its OWN repo root from its own script location (always the real repo,
+# never TMPTARGET) -- so seed the REAL repo's marker directory for this one case, clearing it
+# immediately after. This is the only case in this suite that touches the real tree's own
+# specs/.orchestration/, and only for the lifetime of this one assertion.
+REAL_REPO_ROOT="$(cd "$SRC_DIR/../../../.." && pwd)"
+real_marker_dir="$REAL_REPO_ROOT/specs/.orchestration"
+mkdir -p "$real_marker_dir"
+jq -n -c --arg sid "sess_ra_refuse_probe" --argjson pid 42 --arg wa "$(iso_minutes_ago 1)" --argjson tn '[1]' --argjson ds '{"1": 1}' \
+  '{session_id: $sid, pid: $pid, written_at: $wa, task_numbers: $tn, dispatch_seq: $ds}' \
+  > "$real_marker_dir/batch-gate-pending-sess_ra_refuse_probe.json"
+ra_out="$(bash "$RUN_ALL" --quiet 2>&1)"; ra_rc=$?
+rm -f "$real_marker_dir/batch-gate-pending-sess_ra_refuse_probe.json"
+if [ "$ra_rc" -eq 3 ] && echo "$ra_out" | grep -q "DEFERRED"; then
+  common_test_pass "Case 7: run-all.sh unfiltered + pending marker -> exit 3 with a DEFERRED line"
+else
+  common_test_fail "Case 7: run-all.sh expected exit 3 + DEFERRED, got rc=$ra_rc: $ra_out"
+fi
+
+# ─── Case 8: a scoped call (--only-gate / --only) is never refused, marker or not. ──────────
+clear_target_markers
+write_target_marker "sess_vd_scoped" "$(iso_minutes_ago 1)"
+vd_scoped_out="$(bash "$VERIFY_DEPLOY" --only-gate 1 --quiet "$TMPTARGET" 2>&1)"; vd_scoped_rc=$?
+if [ "$vd_scoped_rc" -ne 3 ] && ! echo "$vd_scoped_out" | grep -q "DEFERRED"; then
+  common_test_pass "Case 8: verify-deploy.sh --only-gate is never refused by the entry guard"
+else
+  common_test_fail "Case 8: verify-deploy.sh --only-gate was wrongly refused (rc=$vd_scoped_rc): $vd_scoped_out"
+fi
+
+# ─── Case 9: a nested invocation is unaffected (byte-identical guard path) regardless of a
+# pending marker. ─────────────────────────────────────────────────────────────────────────
+clear_target_markers
+write_target_marker "sess_vd_nested" "$(iso_minutes_ago 1)"
+vd_nested_out="$(VERIFY_DEPLOY_NESTED=1 bash "$VERIFY_DEPLOY" --quiet "$TMPTARGET" 2>&1)"; vd_nested_rc=$?
+if [ "$vd_nested_rc" -ne 3 ] && ! echo "$vd_nested_out" | grep -q "DEFERRED"; then
+  common_test_pass "Case 9: verify-deploy.sh a nested invocation is never refused by the entry guard"
+else
+  common_test_fail "Case 9: verify-deploy.sh nested invocation was wrongly refused (rc=$vd_nested_rc): $vd_nested_out"
+fi
+
+# ─── Case 10: a guest invocation (GATE_MUTEX_HELD inherited) is unaffected regardless of a
+# pending marker. ─────────────────────────────────────────────────────────────────────────
+clear_target_markers
+write_target_marker "sess_vd_guest" "$(iso_minutes_ago 1)"
+vd_guest_out="$(GATE_MUTEX_HELD=1 bash "$VERIFY_DEPLOY" --quiet "$TMPTARGET" 2>&1)"; vd_guest_rc=$?
+if [ "$vd_guest_rc" -ne 3 ] && ! echo "$vd_guest_out" | grep -q "DEFERRED"; then
+  common_test_pass "Case 10: verify-deploy.sh a guest invocation is never refused by the entry guard"
+else
+  common_test_fail "Case 10: verify-deploy.sh guest invocation was wrongly refused (rc=$vd_guest_rc): $vd_guest_out"
+fi
+
+# ─── Case 11: a stale marker is ignored (never refused), with a loud named warning. ──────────
+clear_target_markers
+write_target_marker "sess_vd_stale" "$(iso_minutes_ago $(( (BATCH_GATE_MARKER_STALE_SEC / 60) + 10 )))"
+vd_stale_out="$(bash "$VERIFY_DEPLOY" --quiet "$TMPTARGET" 2>&1)"; vd_stale_rc=$?
+if [ "$vd_stale_rc" -ne 3 ] && ! echo "$vd_stale_out" | grep -q "DEFERRED"; then
+  common_test_pass "Case 11: verify-deploy.sh a stale marker is never refused"
+else
+  common_test_fail "Case 11: verify-deploy.sh stale marker was wrongly refused (rc=$vd_stale_rc): $vd_stale_out"
+fi
+if echo "$vd_stale_out" | grep -qi "WARNING.*ignored\|WARNING.*stale"; then
+  common_test_pass "Case 11: verify-deploy.sh prints a loud named warning for the ignored stale marker"
+else
+  common_test_fail "Case 11: verify-deploy.sh expected a loud stale-marker warning, got: $vd_stale_out"
+fi
+
+# ─── Case 12: --override-batch-gate-deferral is honored even with a fresh, pending marker. ──
+clear_target_markers
+write_target_marker "sess_vd_override" "$(iso_minutes_ago 1)"
+vd_override_out="$(bash "$VERIFY_DEPLOY" --override-batch-gate-deferral --quiet "$TMPTARGET" 2>&1)"; vd_override_rc=$?
+if [ "$vd_override_rc" -ne 3 ] && ! echo "$vd_override_out" | grep -q "DEFERRED"; then
+  common_test_pass "Case 12: verify-deploy.sh --override-batch-gate-deferral is honored despite a pending marker"
+else
+  common_test_fail "Case 12: verify-deploy.sh override was wrongly refused (rc=$vd_override_rc): $vd_override_out"
+fi
+
+# ─── Case 13: an absent marker leaves output byte-identical to today's (never refused). ─────
+clear_target_markers
+vd_absent_out="$(bash "$VERIFY_DEPLOY" --quiet "$TMPTARGET" 2>&1)"; vd_absent_rc=$?
+if [ "$vd_absent_rc" -ne 3 ] && ! echo "$vd_absent_out" | grep -q "DEFERRED"; then
+  common_test_pass "Case 13: verify-deploy.sh an absent marker is never refused"
+else
+  common_test_fail "Case 13: verify-deploy.sh absent-marker case was wrongly refused (rc=$vd_absent_rc): $vd_absent_out"
+fi
+clear_target_markers
+
 echo ""
 echo "$PASSED passed, $FAILED failed"
 [ "$FAILED" -eq 0 ] && exit 0 || exit 1

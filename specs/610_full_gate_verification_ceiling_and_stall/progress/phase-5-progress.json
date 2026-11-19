@@ -1,0 +1,57 @@
+{
+  "phase": 5,
+  "phase_name": "Entry Guards That Mechanically Refuse a Deferred Unfiltered Battery",
+  "started_at": "2026-11-19T04:00:00Z",
+  "last_updated": "2026-11-19T05:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "verify-deploy.sh entry guard, reserved exit 3, --override-batch-gate-deferral flag",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "run-all.sh parallel entry guard, reserved exit 3, --override-batch-gate-deferral flag",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/run-all.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "orchestrate-batch-gate.sh passes the override on both deploy_findings_snapshot calls",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-batch-gate.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "7 new test cases (refusal/scoped/nested/guest/stale/override/absent) in test-batch-gate-pending-marker.sh; fixed a now-broken assumption in test-gate-registry-resolution.sh",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-batch-gate-pending-marker.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh"
+      ]
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {
+      "approach": "Warning call nested inside the is_pending true-branch",
+      "result": "failed",
+      "reason": "A stale/malformed marker is by definition never 'pending', so nesting the warning call inside that branch makes it unreachable -- caught by Case 11's own second assertion. Moved to print unconditionally, before the pending check."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Scope Hypothesis confirmed live: exactly 3 real gate-acquire call sites exist (run-all.sh's own top-level bracket, plus verify-deploy.sh's gate8_run and gate31_run), but only 2 TOP-LEVEL entry points need a guard -- gate8_run/gate31_run's acquires are both downstream of verify-deploy.sh's single top-level guard and never reached if it refuses first.",
+    "A test-authoring bug (a stray duplicate run-all.sh invocation that ran before its marker was seeded) hung the new suite against the REAL repository's own full 209-suite battery; found via bash -x tracing and fixed. No real harm (no mutation, just wall-clock cost), but recorded since it is exactly the risk class this body of work is about.",
+    "test-verify-deploy-gate-selection.sh (29/0) and test-verify-deploy-gate-selection-crash-net.sh (1/1, auto-discovering and cleanly running all 31 registered gates including the new gate 31) both re-run green with no changes needed -- both are registry-driven and absorbed the new gate automatically.",
+    "test-gate-registry-resolution.sh's own case32 broke: it runs '--only-gate <live max>' for REAL as a cheap acceptance probe, an assumption that held while the live max was a fast lint (gate 30) and silently stopped holding once gate 31 (the slow-bucket gate this phase's sibling Phase 2 created) became the new max -- the probe then ran the real 10-15-minute slow battery. Fixed by adding --skip-slow (gate-agnostic no-op for every gate but 8/31) and relaxing the case's own exit-code assertion to check the ABSENCE of the out-of-range rejection text instead of a bare 'rc -eq 0' (a --skip-slow selection whose only gate defers entirely trips the pre-existing, unrelated zero-check-under-filter guard, exit 2 -- a different exit-2 cause than an out-of-range rejection, now told apart by message text). Added to this task's declared file_scope and landed in the same follow-up commit as the other Phase 5 work."
+  ]
+}

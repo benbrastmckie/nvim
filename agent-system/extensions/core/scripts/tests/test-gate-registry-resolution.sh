@@ -714,9 +714,20 @@ fi
 # and VERIFY_DEPLOY are defined once, near the top of this file (used by case1-NC too). ─────────
 
 # Case 32: --only-gate <REGISTRY_MAX> (the current live max, independently derived above) is
-# accepted and selects exactly that gate.
-out32="$(bash "$VERIFY_DEPLOY" --only-gate "$REGISTRY_MAX" "$REPO_ROOT" 2>&1)"; rc32=$?
-if [ "$rc32" -eq 0 ] && echo "$out32" | grep -q "^${REGISTRY_MAX}\. "; then
+# accepted and selects exactly that gate. --skip-slow: the live max is gate 31 (the slow-bucket
+# gate the gate-ceiling-fit work relocated there), genuinely expensive to run for real (the
+# slow-bucket battery can run multiple minutes under load) -- this case's own job is only to
+# confirm ACCEPTANCE and SELECTION (the header line appears, and the id was never rejected as
+# out-of-range), not that gate's functional correctness, so --skip-slow keeps this case's own
+# cost independent of which gate happens to be the live max. Deliberately NOT asserting
+# `rc32 -eq 0` any more: a --skip-slow selection whose only selected gate defers entirely trips
+# verify-deploy.sh's own, unrelated "cannot attest: ... 0 check(s) ran" zero-check-under-filter
+# guard (exit 2) -- a correct, pre-existing refusal to certify a run that verified nothing, NOT
+# an out-of-range rejection. The two exit-2 causes are told apart by their own message text
+# (case33 below pins the out-of-range message's exact wording), which is what this case checks
+# the ABSENCE of instead.
+out32="$(bash "$VERIFY_DEPLOY" --skip-slow --only-gate "$REGISTRY_MAX" "$REPO_ROOT" 2>&1)"; rc32=$?
+if echo "$out32" | grep -q "^${REGISTRY_MAX}\. " && ! echo "$out32" | grep -q "ERROR: --only-gate:.*out of range"; then
   common_test_pass "case32: --only-gate $REGISTRY_MAX is accepted against an explicit source-store TARGET and selects gate $REGISTRY_MAX"
 else
   common_test_fail "case32: expected --only-gate $REGISTRY_MAX to be accepted and select gate $REGISTRY_MAX (rc=$rc32)" "$out32"

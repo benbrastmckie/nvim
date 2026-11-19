@@ -173,6 +173,12 @@
 #   1  one or more discovered suites failed (or, under --fail-on-new, at least one was NEW)
 #   2  zero suites were discovered (harness failure, not a pass), or an internal scheduling
 #      invariant was violated (scheduled count != discovered count)
+#   3  DEFERRED (RESERVED -- never 0, never 1, never 2): this invocation is unfiltered (no
+#      --only/--class/--tag/--cost-class), not nested, not a guest, and a non-stale
+#      batch-gate-pending marker exists for some session -- refused before any suite runs, in
+#      favor of that session's own once-per-invocation batch-gate stage. See
+#      scripts/lib/batch-gate-marker-lib.sh and verify-deploy.sh's own identically-shaped guard
+#      for the full contract, including the `--override-batch-gate-deferral` escape.
 #
 # Machine-greppable output: every failing suite prints a line of the exact form
 #   [FAIL] <suite path>
@@ -246,9 +252,16 @@ ONLY_SUITES=""
 CLASS_FILTER=""
 TAG_FILTER=""
 COST_CLASS_FILTER=""
+# BATCH_GATE_OVERRIDE: --override-batch-gate-deferral, defaulting off. Mirrors
+# verify-deploy.sh's identically-named flag (gate-ceiling-fit Phase 5) -- lets the ONE sanctioned
+# discharger (orchestrate-batch-gate.sh) run its own unfiltered battery even while a
+# batch-gate-pending marker exists for this session. See the entry guard below, sited just
+# before the specs/.gate-lock bracket, for the full contract.
+BATCH_GATE_OVERRIDE=false
 while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=true; shift ;;
+    --override-batch-gate-deferral) BATCH_GATE_OVERRIDE=true; shift ;;
     --timings)
       if [ $# -lt 2 ]; then
         echo "ERROR: --timings requires a FILE argument" >&2
@@ -406,9 +419,11 @@ fi
 # here.
 if [ "$MODE" = "deployed" ]; then
   GATE_TASK_LOCK_SH="$DEPLOY_SCRIPTS_ROOT/task-lock.sh"
+  RUN_ALL_REPO_ROOT="$(cd "$DEPLOY_SCRIPTS_ROOT/../.." 2>/dev/null && pwd || true)"
 else
   GATE_REPO_ROOT="$(cd "$EXTENSIONS_ROOT/../.." 2>/dev/null && pwd || true)"
   GATE_TASK_LOCK_SH="${GATE_REPO_ROOT:+$GATE_REPO_ROOT/.claude/scripts/task-lock.sh}"
+  RUN_ALL_REPO_ROOT="$GATE_REPO_ROOT"
 fi
 
 # Exclude this script itself, defensively (it never matches test-*.sh, but guards against a
@@ -587,6 +602,27 @@ trap run_all_exit_cleanup EXIT
 # -- the mutex is opaque to this string's shape; it is only ever echoed back in a holder-identity
 # WARN/Note line.
 GATE_SESSION_STR="run-all-$$"
+
+# ── Batch-Gate Entry Guard (gate-ceiling-fit Phase 5; consumer half of Phase 4's marker) ──────
+# Parallel to verify-deploy.sh's own guard of the same name (see that script's own header for
+# the full contract this mirrors). REFUSE iff ALL of: unfiltered (no --only, no --class/--tag/
+# --cost-class); not nested; not a guest; not overridden; AND a non-stale batch-gate-pending
+# marker exists for SOME session.
+RUN_ALL_BG_LIB="${RUN_ALL_REPO_ROOT:+$RUN_ALL_REPO_ROOT/agent-system/extensions/core/scripts/lib/batch-gate-marker-lib.sh}"
+if [ -z "$ONLY_SUITES" ] && [ -z "$CLASS_FILTER" ] && [ -z "$TAG_FILTER" ] && [ -z "$COST_CLASS_FILTER" ] \
+   && [ "$RUN_ALL_WAS_NESTED_AT_ENTRY" != "1" ] && [ -z "${GATE_MUTEX_HELD:-}" ] \
+   && [ "$BATCH_GATE_OVERRIDE" != "true" ] && [ -n "$RUN_ALL_BG_LIB" ] && [ -f "$RUN_ALL_BG_LIB" ]; then
+  # shellcheck source=lib/batch-gate-marker-lib.sh
+  . "$RUN_ALL_BG_LIB"
+  # Printed unconditionally (not nested inside the pending check below) -- see
+  # verify-deploy.sh's own identically-shaped guard comment for why.
+  batch_gate_marker_pending_warning "$RUN_ALL_REPO_ROOT" >&2
+  if batch_gate_marker_is_pending "$RUN_ALL_REPO_ROOT"; then
+    echo "[run-all] DEFERRED: a batch-gate-pending marker exists and this invocation is unfiltered -- the complete gate set is already owed to that session's own once-per-invocation batch-gate stage. Pass --only/--class/--tag/--cost-class to run a scoped tier now, or --override-batch-gate-deferral if you are that session's own discharger." >&2
+    exit 3
+  fi
+fi
+unset RUN_ALL_BG_LIB
 
 if [ -n "$ONLY_SUITES" ]; then
   echo "Note: --only narrowed this run to ${TOTAL_DISCOVERED} suite(s); specs/.gate-lock is not touched for a narrowed run (suite narrowing already discharges a sub-full verification tier; it must not wait out a sibling's full battery)." >&2

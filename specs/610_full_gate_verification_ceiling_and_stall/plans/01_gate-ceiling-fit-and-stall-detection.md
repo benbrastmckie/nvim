@@ -514,35 +514,51 @@ phase changes.
 
 ---
 
-### Phase 5: Entry Guards That Mechanically Refuse a Deferred Unfiltered Battery [NOT STARTED]
+### Phase 5: Entry Guards That Mechanically Refuse a Deferred Unfiltered Battery [COMPLETED]
 
 **Goal**: Make a nested unfiltered full battery a structural no-op returning a documented
 deferral, rather than a directive three of three dispatches can ignore — the consumer half of the
 guard.
 
 **Tasks**:
-- [ ] Add an entry guard to `verify-deploy.sh`: when a non-stale marker exists, this invocation is
+- [x] Add an entry guard to `verify-deploy.sh`: when a non-stale marker exists, this invocation is
       **not** nested (`VERIFY_DEPLOY_WAS_NESTED_AT_ENTRY`) and **not** a guest
       (`GATE_MUTEX_HELD`), the invocation is unfiltered (no `--only-gate`, no `--gate8-touched`),
       and no override was passed, refuse before any gate runs and print a DEFERRED line naming
-      the marker's session and age.
-- [ ] Add the parallel guard to `run-all.sh`'s top level for the bare-suite-runner path, scoped
+      the marker's session and age. *(completed; also prints any stale/malformed markers'
+      warning unconditionally, not nested inside the pending branch — a bug caught by this
+      phase's own test suite, since a stale marker is by definition never "pending", so the
+      warning call would otherwise be unreachable)*
+- [x] Add the parallel guard to `run-all.sh`'s top level for the bare-suite-runner path, scoped
       the same way: unfiltered only (no `--only`, no `--class`/`--tag`/`--cost-class`), non-nested
-      (`RUN_ALL_WAS_NESTED_AT_ENTRY`), non-guest.
-- [ ] Exit with the new reserved status per Decision 3 — never 0, never 1, never 2 — and document
-      it in both scripts' exit-code headers alongside the existing codes.
-- [ ] Add the documented override flag and have `orchestrate-batch-gate.sh` pass it, since that
+      (`RUN_ALL_WAS_NESTED_AT_ENTRY`), non-guest. *(completed)*
+- [x] Exit with the new reserved status per Decision 3 — never 0, never 1, never 2 — and document
+      it in both scripts' exit-code headers alongside the existing codes. *(completed: exit 3,
+      confirmed unused by either script beforehand)*
+- [x] Add the documented override flag and have `orchestrate-batch-gate.sh` pass it, since that
       stage is the discharger and must never refuse itself. Verify the nested/guest path is
-      byte-identical to today's, so a suite running under Gate 8 is unaffected.
-- [ ] Leave every scoped invocation unguarded: `--only-gate N`, `--only SUITE`, the
+      byte-identical to today's, so a suite running under Gate 8 is unaffected. *(completed:
+      `--override-batch-gate-deferral` on both scripts, passed by orchestrate-batch-gate.sh's own
+      two deploy_findings_snapshot calls; the nested/guest conditions are checked identically to
+      every pre-existing bracket in both files, so a suite running under gate 8/31 is unaffected
+      by construction — it never reaches either top-level guard in the first place)*
+- [x] Leave every scoped invocation unguarded: `--only-gate N`, `--only SUITE`, the
       `--cost-class`/`--class`/`--tag` axes, and `--gate8-touched` must all behave exactly as
-      today whether or not a marker exists.
-- [ ] Extend the Phase 4 suite (or add a sibling) pinning: a seeded unfiltered call is refused
+      today whether or not a marker exists. *(completed; confirmed by Case 8 and by
+      gate8_run/gate31_run's own internal `--only` invocations never even reaching run-all.sh's
+      guard, since ONLY_SUITES is non-empty by construction once Phase 2 landed)*
+- [x] Extend the Phase 4 suite (or add a sibling) pinning: a seeded unfiltered call is refused
       with the reserved status; a seeded scoped call is not; a nested call defers to the existing
       guest path unchanged; a stale marker is ignored with the warning; the override is honored;
-      and an absent marker leaves output byte-identical to today's.
-- [ ] Record the mechanism in `context/contracts/batch-gate-stage.md`'s own Trigger/discharge
-      narrative, so the contract and the code cannot drift.
+      and an absent marker leaves output byte-identical to today's. *(completed: 7 new cases
+      (Cases 7-13) in the same `test-batch-gate-pending-marker.sh` the Phase 4 note already named
+      as the likely extension point; one test-authoring bug found and fixed along the way — a
+      stray duplicate run-all.sh invocation that ran the real unfiltered battery before the
+      marker was seeded, hanging the suite — and one production bug found and fixed, see above)*
+- [x] Record the mechanism in `context/contracts/batch-gate-stage.md`'s own Trigger/discharge
+      narrative, so the contract and the code cannot drift. *(completed in Phase 4's own
+      commit, since both phases' documentation landed together — see that phase's own checklist
+      note)*
 
 **Timing**: 2 hours
 

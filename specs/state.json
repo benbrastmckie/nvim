@@ -2653,6 +2653,7 @@
         "agent-system/extensions/core/scripts/tests/test-batch-gate-pending-marker.sh",
         "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
         "agent-system/extensions/core/scripts/tests/test-gate-contention-tagging.sh",
+        "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
         "agent-system/extensions/core/scripts/tests/test-gate-slow-bucket-split.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",

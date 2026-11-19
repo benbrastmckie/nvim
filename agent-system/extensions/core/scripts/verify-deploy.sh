@@ -83,6 +83,14 @@
 #      (failure), never as a pass: a checkpoint that cannot establish the redeploy landed is in
 #      the same position as one that established it did not, and a selection that attested to
 #      nothing is in that same position too.
+#   3  DEFERRED (RESERVED -- never 0, never 1, never 2): this invocation is unfiltered (no
+#      --only-gate, no --gate8-touched), not nested, not a guest, and a non-stale
+#      batch-gate-pending marker exists for some session -- the complete gate set is already
+#      owed to that session's own once-per-invocation batch-gate stage, so this call refuses
+#      before any gate runs rather than duplicating that work. NEVER a pass and NEVER a failure
+#      -- a caller must not read exit 3 as either. See "Batch-Gate Entry Guard" below for the
+#      full contract, including the `--override-batch-gate-deferral` escape for the one
+#      sanctioned discharger.
 #
 # Slow-gate selection (--skip-slow):
 #   Skips gate 8 (the shell test suite runner, tests/run-all.sh) ONLY. Gate 8 was measured at
@@ -411,6 +419,12 @@ GATE8_TOUCHED=""
 # simple-flag default declared in one place rather than split across the file.
 CORPUS_PROBE=false
 
+# BATCH_GATE_OVERRIDE: --override-batch-gate-deferral, defaulting off. Lets the ONE sanctioned
+# discharger (orchestrate-batch-gate.sh) run its own unfiltered battery even while a
+# batch-gate-pending marker exists for this session -- it must never refuse itself. See the
+# entry guard below (sited after TARGET/CLAUDE_DIR resolution) for the full contract.
+BATCH_GATE_OVERRIDE=false
+
 while [ $# -gt 0 ]; do
   case "$1" in
     --quiet) QUIET=true; shift ;;
@@ -418,6 +432,7 @@ while [ $# -gt 0 ]; do
     --skip-slow) SKIP_SLOW=true; shift ;;
     --skip-unchanged) SKIP_UNCHANGED=true; shift ;;
     --corpus-probe) CORPUS_PROBE=true; shift ;;
+    --override-batch-gate-deferral) BATCH_GATE_OVERRIDE=true; shift ;;
     --jobs)
       if [ $# -lt 2 ] || [ -z "$2" ]; then
         echo "ERROR: --jobs requires N or 'auto'" >&2
@@ -626,6 +641,42 @@ if [ -n "$MINIMAL_INIT_DIR" ] && [ ! -d "$MINIMAL_INIT_DIR" ]; then
   [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy could not run: --minimal-init directory does not exist: $MINIMAL_INIT_DIR"
   exit 2
 fi
+
+# ── Batch-Gate Entry Guard (gate-ceiling-fit Phase 5; consumer half of Phase 4's marker) ──────
+# A nested unfiltered full battery used to be merely ASKED not to run (the advisory
+# `## Batch Gate Deferral` dispatch directive) -- three of three dispatches in the incident this
+# body of work traces to ignored it anyway. This guard makes it a structural no-op instead.
+#
+# REFUSE iff ALL of: (a) this invocation is UNFILTERED (no --only-gate, no --gate8-touched --
+# GATES_FILTER and GATE8_TOUCHED are both still their argument-parsing-time values here, before
+# any later resolution mutates them further); (b) NOT nested
+# (VERIFY_DEPLOY_WAS_NESTED_AT_ENTRY != 1); (c) NOT a guest (GATE_MUTEX_HELD unset); (d) NOT
+# overridden (--override-batch-gate-deferral absent); AND (e) a non-stale batch-gate-pending
+# marker exists for SOME session (scripts/lib/batch-gate-marker-lib.sh's own staleness window,
+# never re-derived here). A scoped invocation (--only-gate and/or --gate8-touched) is NEVER
+# refused by this guard, regardless of marker state -- narrowing already discharges a sub-full
+# verification tier, exactly as the pre-existing "specs/.gate-lock is not touched for a narrowed
+# run" comment elsewhere in this file already establishes for a different mechanism. A nested or
+# guest invocation is byte-identical to before this guard existed, for the same reason gate8_run
+# itself already skips its own mutex acquire in both those cases.
+_VDBG_LIB="$TARGET/agent-system/extensions/core/scripts/lib/batch-gate-marker-lib.sh"
+if [ -z "$GATES_FILTER" ] && [ -z "$GATE8_TOUCHED" ] \
+   && [ "$VERIFY_DEPLOY_WAS_NESTED_AT_ENTRY" != "1" ] && [ -z "${GATE_MUTEX_HELD:-}" ] \
+   && [ "$BATCH_GATE_OVERRIDE" != "true" ] && [ -f "$_VDBG_LIB" ]; then
+  # shellcheck source=lib/batch-gate-marker-lib.sh
+  . "$_VDBG_LIB"
+  # Printed unconditionally (not nested inside the pending check below): the warning's own job
+  # is to name a STALE/malformed marker that is about to be IGNORED, which by definition means
+  # batch_gate_marker_is_pending would NOT report it as pending -- nesting this call inside
+  # that predicate's own true-branch would make it unreachable by construction.
+  batch_gate_marker_pending_warning "$TARGET" >&2
+  if batch_gate_marker_is_pending "$TARGET"; then
+    echo "[verify-deploy] DEFERRED: a batch-gate-pending marker exists and this invocation is unfiltered -- the complete gate set is already owed to that session's own once-per-invocation batch-gate stage. Pass --only-gate/--gate8-touched to run a scoped tier now, or --override-batch-gate-deferral if you are that session's own discharger." >&2
+    [ "$FINDINGS" = "true" ] && echo "FINDING gate0 verify-deploy DEFERRED: unfiltered battery refused while a batch-gate-pending marker exists (see stderr for the marker's own session/age)"
+    exit 3
+  fi
+fi
+unset _VDBG_LIB
 
 # Phase 9 ("Shared Corpus Enumeration"): build the ONE master tracked-path corpus for this whole
 # invocation, once, here -- before any gate runs -- rather than letting each of the six affected
