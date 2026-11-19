@@ -216,27 +216,32 @@ agent-system/extensions/core/scripts/lib/suite-selection-lib.sh` runs as a narro
 
 ---
 
-### Phase 2: Adapt the two production call sites to the new contract [NOT STARTED]
+### Phase 2: Adapt the two production call sites to the new contract [COMPLETED]
 
 **Goal**: Gate 8's fail-safe fallback and the Tier Justification comparison both behave correctly
 under a mixed sentinel-plus-suites return.
 
 **Tasks**:
-- [ ] `verify-deploy.sh`, Gate 8 `--gate8-touched` narrowing: change the detection from "the array
+- [x] `verify-deploy.sh`, Gate 8 `--gate8-touched` narrowing: change the detection from "the array
       is exactly `[sentinel]`" to "the array CONTAINS the sentinel anywhere", and fall back to the
       full unnarrowed battery whenever it does. Keep the existing zero-suite fallback branch and
       the existing `say` notices, adjusting their wording to match what is now being detected.
-- [ ] `validate-artifact.sh`, Tier Justification check: keep the `sentinel`-claim branch meaning
+      *(completed: direct-logic probe confirmed all four cases -- all-mappable narrows, mixed and
+      all-unmappable both fall back to full, zero-suites falls back to full)*
+- [x] `validate-artifact.sh`, Tier Justification check: keep the `sentinel`-claim branch meaning
       "the selector returned the sentinel and nothing else" (restated as a contains-check plus a
       length test), so a sentinel-only claim over a mixed set is correctly flagged as unmeasured.
-- [ ] `validate-artifact.sh`, suitelist-claim branch: strip the sentinel token from the actual-set
+      *(completed: scratch-plan probe confirmed a sentinel-only claim over a mixed set warns)*
+- [x] `validate-artifact.sh`, suitelist-claim branch: strip the sentinel token from the actual-set
       array before computing missing/extra. The sentinel is not a claimable suite name; leaving it
       in would replace today's false "fabricated claim" warning with an equally false
-      "under-verifies" warning for the same honest mixed-set claim.
-- [ ] Re-read the surrounding comment block in `validate-artifact.sh` that describes the check's
-      own semantics and bring it into line with the stripping behavior.
-- [ ] Confirm no other branch in either file reads the selector's output positionally (by index or
-      by array length) in a way the new contract invalidates.
+      "under-verifies" warning for the same honest mixed-set claim. *(completed: scratch-plan
+      probe confirmed an honest mixed-set suite-list claim now validates with 0 warnings)*
+- [x] Re-read the surrounding comment block in `validate-artifact.sh` that describes the check's
+      own semantics and bring it into line with the stripping behavior. *(completed)*
+- [x] Confirm no other branch in either file reads the selector's output positionally (by index or
+      by array length) in a way the new contract invalidates. *(completed: grep confirmed
+      GATE8_SUITES/\_tj_actual have no other positional reads outside the two edited sites)*
 
 **Timing**: 1 hour
 

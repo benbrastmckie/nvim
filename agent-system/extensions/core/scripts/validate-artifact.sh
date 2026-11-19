@@ -766,7 +766,14 @@ if [ "$artifact_type" = "plan" ]; then
       # claim, in BOTH directions: a claimed suite the selector does not return (fabrication) and
       # a suite the selector returns that the claim omits (under-verification) -- including the
       # __FULL_SWEEP__ sentinel as a measurable claim in its own right, per the defect this check
-      # closes. Bounded to suite_selection_select-grounded claims only: a phase whose Tier
+      # closes. suite_selection_select's output is now compositional: a mixed touched set
+      # returns the sentinel ALONGSIDE real suite basenames, never the sentinel alone, so a
+      # sentinel-only claim is correctly flagged as unmeasured for a mixed set (the sentinel is
+      # present but the actual output is not sentinel-ONLY), and the sentinel token itself is
+      # stripped out of the actual set before the suitelist comparison below -- it is not a
+      # claimable suite name, and comparing it directly would replace an honest mixed-set
+      # suite-list claim's correct 0-warning outcome with a false "under-verifies" warning.
+      # Bounded to suite_selection_select-grounded claims only: a phase whose Tier
       # Justification names neither a suite nor the sentinel (the `full`-tier or `--only-gate`
       # gate-subset shape) is out of this check's scope and is passed over silently. Never runs
       # on the final phase, which carries no justification line by standard.
@@ -819,22 +826,45 @@ if [ "$artifact_type" = "plan" ]; then
 
             if [ "${#_tj_touched[@]}" -gt 0 ]; then
               mapfile -t _tj_actual < <(suite_selection_select "${_tj_touched[@]}")
-              _tj_actual_is_sentinel=false
-              if [ "${#_tj_actual[@]}" -eq 1 ] && [ "${_tj_actual[0]}" = "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" ]; then
-                _tj_actual_is_sentinel=true
+              # suite_selection_select is now compositional (see lib/suite-selection-lib.sh's
+              # PUBLIC API header): a mixed touched set returns the sentinel ALONGSIDE real
+              # suite basenames, not the sentinel alone. "Sentinel claim means nothing covers
+              # this phase" therefore still requires BOTH a contains-check (the sentinel is
+              # present) AND a length test (nothing else is) -- a sentinel-ONLY actual, never a
+              # mixed one, which is why `_tj_actual_contains_sentinel` and
+              # `_tj_actual_is_sentinel_only` are tracked as two separate predicates below.
+              _tj_actual_contains_sentinel=false
+              for _tj_a in "${_tj_actual[@]}"; do
+                if [ "$_tj_a" = "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" ]; then
+                  _tj_actual_contains_sentinel=true
+                  break
+                fi
+              done
+              _tj_actual_is_sentinel_only=false
+              if [ "$_tj_actual_contains_sentinel" = true ] && [ "${#_tj_actual[@]}" -eq 1 ]; then
+                _tj_actual_is_sentinel_only=true
               fi
 
               if [ "$_tj_claim_kind" = "sentinel" ]; then
-                if [ "$_tj_actual_is_sentinel" = false ]; then
+                if [ "$_tj_actual_is_sentinel_only" = false ]; then
                   log_warn "Phase ${phase_num} Tier Justification claims the __FULL_SWEEP__ sentinel (no suite covers this phase) but suite_selection_select returns real suite(s) for its touched paths: ${_tj_actual[*]} -- unmeasured/false sentinel claim"
                 fi
               else
                 # suitelist claim
-                if [ "$_tj_actual_is_sentinel" = true ]; then
+                if [ "$_tj_actual_is_sentinel_only" = true ]; then
                   log_warn "Phase ${phase_num} Tier Justification names suite(s) (${_tj_claimed[*]}) but suite_selection_select returns the __FULL_SWEEP__ sentinel for its touched paths -- no suite actually covers them (fabricated claim)"
                 else
-                  _tj_missing=()
+                  # Strip the sentinel token out of the actual set before comparing against the
+                  # claim: it is not a claimable suite name, and leaving it in would replace an
+                  # honest mixed-set suite-list claim's correct 0-warning outcome with a false
+                  # "under-verifies" warning naming the sentinel itself.
+                  _tj_actual_stripped=()
                   for _tj_a in "${_tj_actual[@]}"; do
+                    [ "$_tj_a" = "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" ] && continue
+                    _tj_actual_stripped+=("$_tj_a")
+                  done
+                  _tj_missing=()
+                  for _tj_a in "${_tj_actual_stripped[@]}"; do
                     _tj_found=false
                     for _tj_c in "${_tj_claimed[@]}"; do
                       if [ "$_tj_a" = "$_tj_c" ]; then
@@ -847,7 +877,7 @@ if [ "$artifact_type" = "plan" ]; then
                   _tj_extra=()
                   for _tj_c in "${_tj_claimed[@]}"; do
                     _tj_found=false
-                    for _tj_a in "${_tj_actual[@]}"; do
+                    for _tj_a in "${_tj_actual_stripped[@]}"; do
                       if [ "$_tj_a" = "$_tj_c" ]; then
                         _tj_found=true
                         break

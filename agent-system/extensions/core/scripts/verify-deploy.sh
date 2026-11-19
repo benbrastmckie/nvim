@@ -1534,15 +1534,29 @@ else
       . "$GATE8_SSL_LIB"
       IFS=',' read -r -a GATE8_TOUCHED_PATHS <<< "$GATE8_TOUCHED"
       mapfile -t GATE8_SUITES < <(suite_selection_select "${GATE8_TOUCHED_PATHS[@]}")
-      if [ "${#GATE8_SUITES[@]}" -eq 1 ] && [ "${GATE8_SUITES[0]}" = "${SUITE_SELECTION_FULL_SWEEP_SENTINEL:-__FULL_SWEEP__}" ]; then
-        say "  Note: --gate8-touched resolved to the full-sweep sentinel (no suite covers the given path(s)); falling back to the full, unnarrowed battery."
+      # suite_selection_select is now compositional (see lib/suite-selection-lib.sh's PUBLIC
+      # API header): a mixed touched set returns the full-sweep sentinel ALONGSIDE real suite
+      # basenames, not the sentinel alone, so detection must be "the output CONTAINS the
+      # sentinel anywhere", never "the output IS exactly [sentinel]" -- the old -eq-1 idiom
+      # would silently narrow to only the mapped paths' suites while an unmapped path's own
+      # coverage goes unresolved, defeating this gate's fail-safe direction.
+      GATE8_HAS_SENTINEL=false
+      for _gate8_s in "${GATE8_SUITES[@]}"; do
+        if [ "$_gate8_s" = "${SUITE_SELECTION_FULL_SWEEP_SENTINEL:-__FULL_SWEEP__}" ]; then
+          GATE8_HAS_SENTINEL=true
+          break
+        fi
+      done
+      unset _gate8_s
+      if [ "$GATE8_HAS_SENTINEL" = "true" ]; then
+        say "  Note: --gate8-touched resolved output contains the full-sweep sentinel (at least one given path has no covering suite); falling back to the full, unnarrowed battery."
         GATE8_SUITES=()
       elif [ "${#GATE8_SUITES[@]}" -eq 0 ]; then
         say "  Note: --gate8-touched resolved to zero suites; falling back to the full, unnarrowed battery."
       else
         GATE8_NARROWED=true
       fi
-      unset GATE8_TOUCHED_PATHS
+      unset GATE8_HAS_SENTINEL GATE8_TOUCHED_PATHS
     fi
     unset GATE8_SSL_LIB
   fi

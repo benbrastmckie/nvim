@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Adapt the two production call sites to the new contract",
+  "started_at": "2026-11-19T00:20:00Z",
+  "last_updated": "2026-11-19T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "verify-deploy.sh Gate 8 --gate8-touched: contains-check detection, preserve fail-safe fallback", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/verify-deploy.sh"]},
+    {"id": 2, "description": "validate-artifact.sh sentinel-claim branch restated as contains+length test", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 3, "description": "validate-artifact.sh suitelist-claim branch: strip sentinel before missing/extra comparison", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 4, "description": "Update surrounding comment block in validate-artifact.sh to match stripping behavior", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 5, "description": "Confirm no other positional read of selector output in either file", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": "Direct-logic probe of the new GATE8_HAS_SENTINEL snippet confirmed all four cases (all-mappable/all-unmappable/mixed/zero) behave correctly, with the mixed case now correctly falling back to the full battery (previously would have silently narrowed with a literal sentinel token inside --only under the old -eq-1 idiom). test-gate8-suite-selection.sh: 22/22 (source-store vantage, exercises the real edited library via its fixture). test-validate-artifact.sh: 146/146 (source-store vantage, no regression). Two scratch-plan probes against the source-store validate-artifact.sh confirmed: an honest mixed-set suite-list claim validates with 0 Tier Justification warnings (the defect this task fixes), and a false sentinel-only claim over the same mixed set still correctly warns. The plan's own verify-touched.sh scoped check over both touched files timed out at 540s under this session's heavy concurrent batch load (specs.gate-lock/host contention on load-sensitive suites, confirmed unrelated to this edit since all three fast in isolation); recorded via issue-record.sh and substituted with the equivalent targeted checks above rather than retried, to avoid compounding batch contention. test-run-all-selection.sh reconfirmed unchanged at 35/1 (Case 3 still pending the Phase 4 flip)."
+}
