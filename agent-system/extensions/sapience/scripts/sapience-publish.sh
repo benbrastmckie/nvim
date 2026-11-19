@@ -512,7 +512,147 @@ case "$SUBCOMMAND" in
     exit $?
     ;;
   ko)
-    echo "sapience-publish.sh: ko: not yet implemented" >&2
-    exit 1
+    # --- Flag parsing: --note is repeatable (each occurrence is one KO's finding text), and
+    # --project overrides runtime key resolution. The existing 3-8-note-per-task bound (owned by
+    # the caller, e.g. a future /sapience picker) is the ONLY size bound -- this subcommand adds
+    # no second, independently-sized cap of its own (Non-Goals). Each --note becomes one KO's
+    # object_value, with subject/predicate/ko_type/confidence defaulted exactly as
+    # sapience-remember.sh defaults them (this subcommand's CLI is deliberately simpler than
+    # sapience-remember.sh's single-note --subject/--value interface, since --note is meant for
+    # the multi-note batch case the plan's Goals describe). ---
+    KO_NOTES=()
+    KO_PROJECT_OVERRIDE=""
+    _i=0
+    while [ "$_i" -lt "${#SUBCOMMAND_ARGS[@]}" ]; do
+      case "${SUBCOMMAND_ARGS[$_i]}" in
+        --note)
+          KO_NOTES+=("${SUBCOMMAND_ARGS[$((_i + 1))]:-}"); _i=$((_i + 2)) ;;
+        --project)
+          KO_PROJECT_OVERRIDE="${SUBCOMMAND_ARGS[$((_i + 1))]:-}"; _i=$((_i + 2)) ;;
+        *)
+          echo "sapience-publish.sh: ko: unknown flag: ${SUBCOMMAND_ARGS[$_i]}" >&2
+          exit 1
+          ;;
+      esac
+    done
+
+    if [ "${#KO_NOTES[@]}" -eq 0 ]; then
+      echo "sapience-publish.sh: ko: at least one --note is required" >&2
+      exit 1
+    fi
+
+    sapience_api_init || exit 1
+
+    # --- Resolve the project KEY at runtime (Decision D5). --project wins; else
+    # .sapience/project.json's .project (cid), resolved via the worktree block above; then
+    # GET /v1/people/projects, unwrapped with the SAME defensive pattern sapience-vault-read.sh
+    # uses for this exact endpoint, matching the binding's cid to recover .key. Refuses loudly
+    # (non-zero exit, NOTHING posted) on no binding, a failed list call, or no matching entry --
+    # never falls back to an untagged write, and never derives the key from the binding's
+    # free-text `name` field. ---
+    if [ -n "$KO_PROJECT_OVERRIDE" ]; then
+      KO_PROJECT_KEY="$KO_PROJECT_OVERRIDE"
+    else
+      KO_REPO_TOPLEVEL="$(resolve_checkout_toplevel "$PROJECT_ROOT" 2>/dev/null)" || {
+        echo "sapience-publish.sh: ko: could not resolve a git toplevel from ${PROJECT_ROOT} -- refusing to write untagged" >&2
+        exit 1
+      }
+      KO_LINK_FILE="${KO_REPO_TOPLEVEL}/.sapience/project.json"
+      KO_BINDING_CID=""
+      if [ -f "$KO_LINK_FILE" ] && jq -e . "$KO_LINK_FILE" >/dev/null 2>&1; then
+        KO_BINDING_CID="$(jq -r '.project // empty' "$KO_LINK_FILE" 2>/dev/null)" || KO_BINDING_CID=""
+      fi
+      if [ -z "$KO_BINDING_CID" ]; then
+        echo "sapience-publish.sh: ko: no project binding resolved (no --project, and no ${KO_LINK_FILE}) -- refusing to write untagged" >&2
+        exit 1
+      fi
+
+      KO_PROJECTS_RESPONSE="$(sapience_get "/v1/people/projects")" || exit 1
+      if [ -z "$KO_PROJECTS_RESPONSE" ] || ! echo "$KO_PROJECTS_RESPONSE" | jq -e . >/dev/null 2>&1; then
+        echo "sapience-publish.sh: ko: non-JSON or empty response from GET /v1/people/projects -- refusing to write untagged" >&2
+        exit 1
+      fi
+      KO_PROJECT_KEY="$(echo "$KO_PROJECTS_RESPONSE" | jq -r --arg cid "$KO_BINDING_CID" '
+        (if has("projects") then .projects elif (type == "array") then . else [] end) // [] |
+        map(select((.cid // .id // "") == $cid)) | .[0].key // empty
+      ' 2>/dev/null)" || KO_PROJECT_KEY=""
+
+      if [ -z "$KO_PROJECT_KEY" ]; then
+        echo "sapience-publish.sh: ko: binding cid ${KO_BINDING_CID} did not match any entry in GET /v1/people/projects (or that entry had no key) -- refusing to write untagged" >&2
+        exit 1
+      fi
+    fi
+
+    # --- Build the KOs array: explicit:true unconditionally on every KO (no flag can turn it
+    # off, matching sapience-remember.sh), project:"<resolved key>" on every KO, and NEVER
+    # project_cid -- the REPO_LINK_FOR path is confirmed dark for this token and _project_stamp
+    # would unconditionally overwrite a client-set ko['project'] the day it is ever
+    # server-verified, so this subcommand sends only the plain project field (Non-Goals). ---
+    KO_NOTES_JSON="$(printf '%s\n' "${KO_NOTES[@]}" | jq -R -s 'split("\n") | map(select(length > 0))')"
+    KO_PAYLOAD="$(jq -n \
+      --argjson notes "$KO_NOTES_JSON" \
+      --arg project "$KO_PROJECT_KEY" \
+      '{
+        kos: ($notes | map({
+          subject: "finding",
+          predicate: "finding is",
+          object_value: .,
+          ko_type: "insight",
+          confidence: 0.8,
+          project: $project,
+          explicit: true
+        })),
+        source: "sapience-publish.sh"
+      }')"
+
+    if [ "$CONFIRM" != "true" ]; then
+      echo "sapience-publish.sh: DRY-RUN -- POST /ingest-kos (project=${KO_PROJECT_KEY}, ${#KO_NOTES[@]} note(s) -- pass --confirm to actually write; no network call made)" >&2
+      SAPIENCE_DRY_RUN=1 sapience_post "/ingest-kos" "$KO_PAYLOAD"
+      exit 0
+    fi
+
+    _sapience_post_capture "/ingest-kos" "$KO_PAYLOAD" || exit 1
+    KO_RESPONSE="$_sapience_captured_response"
+
+    if [ -z "$KO_RESPONSE" ] || ! echo "$KO_RESPONSE" | jq -e . >/dev/null 2>&1; then
+      echo "sapience-publish.sh: ko: non-JSON or empty response from /ingest-kos" >&2
+      exit 1
+    fi
+
+    # --- Loud-failure interpretation, reused VERBATIM in order and semantics from
+    # sapience-remember.sh: set_aside -> gated -> written -> ok, ALL FOUR checked regardless of
+    # order so none can be silently skipped. Written against _ingest_kos's verified field set
+    # (ok, written, threads, gated, rejected, filtered, plus conditional set_aside/staged) --
+    # the dispatch-text paraphrase listing a `spend` field does NOT match this handler; `spend`
+    # is /ingest-kos's OWN top-level reply field per the dispatch's write-surface #4 note, never
+    # read or checked here because none of the four loud-failure conditions depend on it. ---
+    KO_SET_ASIDE_LEN="$(echo "$KO_RESPONSE" | jq '.set_aside // [] | length' 2>/dev/null)" || KO_SET_ASIDE_LEN=0
+    KO_GATED="$(echo "$KO_RESPONSE" | jq -r '.gated // 0' 2>/dev/null)" || KO_GATED=0
+    KO_WRITTEN="$(echo "$KO_RESPONSE" | jq -r '.written // 0' 2>/dev/null)" || KO_WRITTEN=0
+    KO_OK="$(echo "$KO_RESPONSE" | jq -r '.ok // false' 2>/dev/null)" || KO_OK=false
+
+    if [ "$KO_SET_ASIDE_LEN" != "0" ] && [ -n "$KO_SET_ASIDE_LEN" ]; then
+      KO_WHY="$(echo "$KO_RESPONSE" | jq -r '[.set_aside[] | ((.why // "set aside") + " (id " + (.id // "" | tostring) + ")")] | join("; ")' 2>/dev/null)"
+      echo "sapience-publish.sh: ko: FAILED -- server returned a non-empty 'set_aside' array (nothing written yet, recoverable in the web app): ${KO_WHY}" >&2
+      exit 2
+    fi
+
+    if [ "$KO_GATED" != "0" ] && [ "$KO_GATED" != "null" ] && [ -n "$KO_GATED" ]; then
+      echo "sapience-publish.sh: ko: FAILED -- server returned gated=${KO_GATED} (noise filter discarded the note; response ok=${KO_OK} is NOT success here)" >&2
+      exit 2
+    fi
+
+    if [ "$KO_WRITTEN" = "0" ] || [ "$KO_WRITTEN" = "null" ] || [ -z "$KO_WRITTEN" ]; then
+      echo "sapience-publish.sh: ko: FAILED -- server returned written=${KO_WRITTEN:-0} (nothing was durably stored)" >&2
+      exit 2
+    fi
+
+    if [ "$KO_OK" != "true" ]; then
+      echo "sapience-publish.sh: ko: FAILED -- server returned ok=${KO_OK}" >&2
+      exit 2
+    fi
+
+    echo "sapience-publish.sh: ko: written=${KO_WRITTEN} project=${KO_PROJECT_KEY}"
+    exit 0
     ;;
 esac

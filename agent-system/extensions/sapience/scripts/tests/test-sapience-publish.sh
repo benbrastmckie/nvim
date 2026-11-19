@@ -49,6 +49,19 @@
 #        any network call.
 #   (23) At least one doc-version case asserts the bare-docs-GET/POST stub branches (not the
 #        comments branch) were the ones hit.
+#   (24) ko: key resolution from a scratch .sapience/project.json binding matched against a
+#        stubbed GET /v1/people/projects list -- --confirm exits 0.
+#   (25) ko --project override wins over the binding (no GET /v1/people/projects call made).
+#   (26) ko: no binding and no --project -- non-zero exit, no POST.
+#   (27) ko: binding cid present but GET /v1/people/projects has no matching entry -- non-zero
+#        exit, no POST.
+#   (28) ko: each of the four loud-failure shapes (set_aside non-empty, gated:1, written:0,
+#        ok:false) exits non-zero even when the response is otherwise success-shaped.
+#   (29) ko: a genuine written >= 1 exits 0.
+#   (30) ko: the posted body carries explicit:true on every KO and carries no project_cid key
+#        anywhere.
+#   (31) ko --dry-run prints the literal /ingest-kos payload with the resolved project key, no
+#        network write call made.
 #
 # Follows the core shell-test convention: common_test_pass/_fail/_info from lib/common.sh,
 # PASSED/FAILED integer counters, a mktemp -d workdir with a trap EXIT cleanup,
@@ -146,6 +159,17 @@ build_scratch() {
   echo "$scratch"
 }
 
+# write_binding <scratch> <cid> -- writes a minimal .sapience/project.json binding at the
+# scratch repo's toplevel (PROJECT_ROOT resolves to the scratch root itself, two levels up from
+# .claude/scripts/), matching repo_link.py's three-key link_text shape closely enough for this
+# suite's own reader (sapience-publish.sh only reads `.project`).
+write_binding() {
+  local scratch="$1" cid="$2"
+  mkdir -p "$scratch/.sapience"
+  jq -n --arg project "$cid" --arg name "Test Project" --arg repo "$(basename "$scratch")" \
+    '{project: $project, name: $name, repo: $repo}' > "$scratch/.sapience/project.json"
+}
+
 BIN_REL=".claude/scripts/sapience-publish.sh"
 
 # run_publish <scratch> [args...] -- no curl stub installed; a network call reaching the real
@@ -160,15 +184,20 @@ TOKEN_FIXTURE="sapience-publish-test-fixture-token-DO-NOT-LEAK-7c1a"
 
 # build_curl_stub -- installs a curl stub dispatching on URL substring, driven by
 # STUB_DM_BODY/STUB_DM_CODE, STUB_COMMENT_BODY/STUB_COMMENT_CODE, STUB_DOCGET_BODY (the
-# pre-write GET's response, always 200), and STUB_DOCVER_BODY/STUB_DOCVER_CODE (the doc-version
-# POST's response) env vars. ORDER MATTERS: the `*/comments*` pattern is listed BEFORE the bare
-# `*v1/docs/*` pattern (see this file's header note) so a doc-version call cannot be silently
-# matched by the comments branch. The bare `*v1/docs/*` branch further distinguishes GET from
-# POST by the presence of a `--data` argument (sapience_get never sends one; sapience_post
-# always does) -- real curl distinguishes these by HTTP method, which this stub does not model,
-# so this is the deliberate stand-in. Also tracks, via a file under the given tracking dir,
-# which branch was hit, for case 15's and doc-version's own stub-identity assertions. Echoes the
-# stub directory (to prepend to PATH).
+# pre-write GET's response, always 200), STUB_DOCVER_BODY/STUB_DOCVER_CODE (the doc-version
+# POST's response), STUB_PROJECTS_BODY/STUB_PROJECTS_CODE (GET /v1/people/projects, the ko
+# subcommand's key-resolution list), and STUB_KO_BODY/STUB_KO_CODE (POST /ingest-kos) env vars.
+# ORDER MATTERS: `*/comments*` is listed before the bare `*v1/docs/*` pattern (see this file's
+# header note) so a doc-version call cannot be silently matched by the comments branch; the
+# `*v1/people/projects*` and `*ingest-kos*` patterns are listed before the bare `*v1/docs/*`
+# pattern too, since neither substring overlaps it but ordering them first keeps the dispatch
+# readable top-to-bottom by endpoint family. The bare `*v1/docs/*` branch further distinguishes
+# GET from POST by the presence of a `--data` argument (sapience_get never sends one;
+# sapience_post always does) -- real curl distinguishes these by HTTP method, which this stub
+# does not model, so this is the deliberate stand-in. Also tracks, via a file under the given
+# tracking dir, which branch was hit, and captures the most recent POST's request body to
+# `<hit_dir>/last_post_body`, for the stub-identity and request-body assertions throughout this
+# suite. Echoes the stub directory (to prepend to PATH).
 build_curl_stub() {
   local stub_dir="$1" hit_dir="$2"
   mkdir -p "$stub_dir" "$hit_dir"
@@ -193,6 +222,16 @@ case "\$url" in
     echo "comments" >> "$hit_dir/branch_hits"
     printf '%s' "\${STUB_COMMENT_BODY:-{\\}}"
     printf '\\n%s' "\${STUB_COMMENT_CODE:-200}"
+    ;;
+  *v1/people/projects*)
+    echo "projects" >> "$hit_dir/branch_hits"
+    printf '%s' "\${STUB_PROJECTS_BODY:-{\\}}"
+    printf '\\n%s' "\${STUB_PROJECTS_CODE:-200}"
+    ;;
+  *ingest-kos*)
+    echo "ingest-kos" >> "$hit_dir/branch_hits"
+    printf '%s' "\${STUB_KO_BODY:-{\\}}"
+    printf '\\n%s' "\${STUB_KO_CODE:-200}"
     ;;
   *v1/docs/*)
     if [ "\$has_data" = "true" ]; then
@@ -689,6 +728,196 @@ DV_GET_FIXTURE='{"slug":"oliver-ben-decisions","rev":7,"hash":"some-content-hash
     common_test_pass "(23) doc-version hits bare-docs-get then bare-docs-post, never the comments branch"
   else
     common_test_fail "(23) doc-version hits bare-docs-get then bare-docs-post, never the comments branch" "hits=$hits"
+  fi
+}
+
+# Fixture project list used by every ko case below: one project with cid=mEdYrFW_qClSGDfx,
+# key=oliver-ben (the dispatch's live reference values, used here only as realistic test
+# fixtures -- never hardcoded into the script itself).
+KO_PROJECTS_FIXTURE='{"ok":true,"projects":[{"cid":"mEdYrFW_qClSGDfx","key":"oliver-ben","name":"Oliver+Ben"}]}'
+
+# =====================================================================================
+# Case 24: ko key resolution from a scratch .sapience/project.json binding matched against a
+# stubbed GET /v1/people/projects list -- --confirm exits 0.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  write_binding "$scratch" "mEdYrFW_qClSGDfx"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  out="$(STUB_PROJECTS_BODY="$KO_PROJECTS_FIXTURE" STUB_KO_CODE="200" STUB_KO_BODY='{"ok":true,"written":1,"gated":0,"threads":1}' \
+    run_publish_stubbed "$scratch" "$stub_dir" ko --note "a finding" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(24) ko: key resolution from binding + stubbed project list, --confirm exits 0"
+  else
+    common_test_fail "(24) ko: key resolution from binding + stubbed project list, --confirm exits 0" "got rc=$rc out=$out"
+  fi
+  sent_project="$(jq -r '.kos[0].project' "$hit_dir/last_post_body" 2>/dev/null)"
+  if [ "$sent_project" = "oliver-ben" ]; then
+    common_test_pass "(24) ko: posted body's project is the resolved key \"oliver-ben\", not the cid"
+  else
+    common_test_fail "(24) ko: posted body's project is the resolved key \"oliver-ben\", not the cid" "sent_project=$sent_project"
+  fi
+}
+
+# =====================================================================================
+# Case 25: ko --project override wins over the binding (no GET /v1/people/projects call made).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  write_binding "$scratch" "mEdYrFW_qClSGDfx"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  out="$(STUB_KO_CODE="200" STUB_KO_BODY='{"ok":true,"written":1,"gated":0,"threads":1}' \
+    run_publish_stubbed "$scratch" "$stub_dir" ko --note "a finding" --project "override-key" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(25) ko --project override: --confirm exits 0"
+  else
+    common_test_fail "(25) ko --project override: --confirm exits 0" "got rc=$rc out=$out"
+  fi
+  sent_project="$(jq -r '.kos[0].project' "$hit_dir/last_post_body" 2>/dev/null)"
+  if [ "$sent_project" = "override-key" ]; then
+    common_test_pass "(25) ko --project override: posted body's project is the override, not the binding's resolved key"
+  else
+    common_test_fail "(25) ko --project override: posted body's project is the override, not the binding's resolved key" "sent_project=$sent_project"
+  fi
+  if [ ! -f "$hit_dir/branch_hits" ] || ! grep -qF "projects" "$hit_dir/branch_hits" 2>/dev/null; then
+    common_test_pass "(25) ko --project override: GET /v1/people/projects was never called"
+  else
+    common_test_fail "(25) ko --project override: GET /v1/people/projects was never called" "branch_hits=$(cat "$hit_dir/branch_hits" 2>/dev/null)"
+  fi
+}
+
+# =====================================================================================
+# Case 26: ko with no binding and no --project -- non-zero exit, no POST (no stub installed).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  out="$(SAPIENCE_TOKEN="$TOKEN_FIXTURE" run_publish "$scratch" ko --note "a finding" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    common_test_pass "(26) ko: no binding, no --project: refused with a non-zero exit, no POST"
+  else
+    common_test_fail "(26) ko: no binding, no --project: refused with a non-zero exit, no POST" "got rc=$rc out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 27: ko: binding cid present but GET /v1/people/projects has no matching entry -- non-zero
+# exit, no POST.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  write_binding "$scratch" "some-other-cid-not-in-the-list"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  out="$(STUB_PROJECTS_BODY="$KO_PROJECTS_FIXTURE" \
+    run_publish_stubbed "$scratch" "$stub_dir" ko --note "a finding" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    common_test_pass "(27) ko: binding cid with no matching project-list entry: refused with a non-zero exit"
+  else
+    common_test_fail "(27) ko: binding cid with no matching project-list entry: refused with a non-zero exit" "got rc=$rc out=$out"
+  fi
+  if [ ! -f "$hit_dir/branch_hits" ] || ! grep -qF "ingest-kos" "$hit_dir/branch_hits" 2>/dev/null; then
+    common_test_pass "(27) ko: binding cid with no matching project-list entry: no POST to /ingest-kos"
+  else
+    common_test_fail "(27) ko: binding cid with no matching project-list entry: no POST to /ingest-kos" "branch_hits=$(cat "$hit_dir/branch_hits" 2>/dev/null)"
+  fi
+}
+
+# =====================================================================================
+# Case 28: each of the four loud-failure shapes exits non-zero even when the response is
+# otherwise success-shaped.
+# =====================================================================================
+run_ko_loud_failure_case() {
+  local case_num="$1" desc="$2" ko_body="$3"
+  scratch="$(build_scratch)"
+  write_binding "$scratch" "mEdYrFW_qClSGDfx"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  out="$(STUB_PROJECTS_BODY="$KO_PROJECTS_FIXTURE" STUB_KO_CODE="200" STUB_KO_BODY="$ko_body" \
+    run_publish_stubbed "$scratch" "$stub_dir" ko --note "a finding" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    common_test_pass "(28) $desc: refused with a non-zero exit"
+  else
+    common_test_fail "(28) $desc: refused with a non-zero exit" "got rc=$rc out=$out"
+  fi
+}
+
+run_ko_loud_failure_case 28a "set_aside non-empty" '{"ok":true,"written":0,"gated":0,"set_aside":[{"why":"needs review","id":"x1"}]}'
+run_ko_loud_failure_case 28b "gated=1" '{"ok":true,"written":0,"gated":1}'
+run_ko_loud_failure_case 28c "written=0" '{"ok":true,"written":0,"gated":0}'
+run_ko_loud_failure_case 28d "ok=false" '{"ok":false,"written":1,"gated":0}'
+
+# =====================================================================================
+# Case 29: a genuine written >= 1 exits 0.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  write_binding "$scratch" "mEdYrFW_qClSGDfx"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  out="$(STUB_PROJECTS_BODY="$KO_PROJECTS_FIXTURE" STUB_KO_CODE="200" STUB_KO_BODY='{"ok":true,"written":1,"gated":0,"threads":1}' \
+    run_publish_stubbed "$scratch" "$stub_dir" ko --note "a finding" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(29) ko: a genuine written >= 1 exits 0"
+  else
+    common_test_fail "(29) ko: a genuine written >= 1 exits 0" "got rc=$rc out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 30: the posted body carries explicit:true on every KO and carries no project_cid key
+# anywhere.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  write_binding "$scratch" "mEdYrFW_qClSGDfx"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  STUB_PROJECTS_BODY="$KO_PROJECTS_FIXTURE" STUB_KO_CODE="200" STUB_KO_BODY='{"ok":true,"written":2,"gated":0,"threads":2}' \
+    run_publish_stubbed "$scratch" "$stub_dir" ko --note "finding one" --note "finding two" --confirm >/dev/null 2>&1
+  explicit_count="$(jq '[.kos[] | select(.explicit == true)] | length' "$hit_dir/last_post_body" 2>/dev/null)"
+  kos_count="$(jq '.kos | length' "$hit_dir/last_post_body" 2>/dev/null)"
+  if [ "$explicit_count" = "2" ] && [ "$kos_count" = "2" ]; then
+    common_test_pass "(30) ko: explicit:true on every KO (2 of 2)"
+  else
+    common_test_fail "(30) ko: explicit:true on every KO (2 of 2)" "explicit_count=$explicit_count kos_count=$kos_count"
+  fi
+  if ! grep -q "project_cid" "$hit_dir/last_post_body" 2>/dev/null; then
+    common_test_pass "(30) ko: posted body carries no project_cid key anywhere"
+  else
+    common_test_fail "(30) ko: posted body carries no project_cid key anywhere" "$(cat "$hit_dir/last_post_body" 2>/dev/null)"
+  fi
+}
+
+# =====================================================================================
+# Case 31: ko --dry-run prints the literal /ingest-kos payload with the resolved project key, no
+# network write call made.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  write_binding "$scratch" "mEdYrFW_qClSGDfx"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  out="$(STUB_PROJECTS_BODY="$KO_PROJECTS_FIXTURE" \
+    run_publish_stubbed "$scratch" "$stub_dir" ko --note "a finding" 2>/dev/null)"
+  rc=$?
+  project_shown="$(echo "$out" | tail -n +2 | jq -r '.kos[0].project // empty' 2>/dev/null)"
+  if [ "$rc" -eq 0 ] && [ "$project_shown" = "oliver-ben" ]; then
+    common_test_pass "(31) ko --dry-run: prints the literal payload with the resolved project key \"oliver-ben\""
+  else
+    common_test_fail "(31) ko --dry-run: prints the literal payload with the resolved project key \"oliver-ben\"" "rc=$rc project_shown=$project_shown out=$out"
+  fi
+  if [ ! -f "$hit_dir/branch_hits" ] || ! grep -qF "ingest-kos" "$hit_dir/branch_hits" 2>/dev/null; then
+    common_test_pass "(31) ko --dry-run: no network write call made to /ingest-kos"
+  else
+    common_test_fail "(31) ko --dry-run: no network write call made to /ingest-kos" "branch_hits=$(cat "$hit_dir/branch_hits" 2>/dev/null)"
   fi
 }
 

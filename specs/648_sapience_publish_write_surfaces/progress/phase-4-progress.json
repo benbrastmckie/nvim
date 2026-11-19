@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "ko subcommand with runtime project-key resolution",
+  "started_at": "2026-11-19T00:00:00Z",
+  "last_updated": "2026-11-19T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Implement ko --note [...] [--project cid] with runtime key resolution", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-publish.sh"]},
+    {"id": 2, "description": "Reuse sapience-remember.sh's four-check loud-failure order verbatim", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-publish.sh"]},
+    {"id": 3, "description": "Add ko test cases", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-publish.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "ko --note <text> [...] interface: the plan specifies only --note and --project flags, without pinning down the resulting KO's subject/predicate/ko_type/confidence",
+      "type": "altered",
+      "reason": "Filled in the underspecified detail: each --note becomes one KO's object_value, with subject='finding', predicate='finding is', ko_type='insight', confidence=0.8 -- all defaulted exactly as sapience-remember.sh defaults them, since the plan gives ko a deliberately simpler multi-note CLI than sapience-remember.sh's single-note --subject/--value interface. No plan verification criterion checks the subject field's content, so this choice does not affect pass/fail of any named check.",
+      "annotation": "*(deviation: altered -- subject/predicate/ko_type/confidence defaults filled in, not specified by the plan)*"
+    }
+  ],
+  "verification_notes": "test-sapience-publish.sh: 53/53 green (23 prior + 8 new ko cases covering all plan-enumerated behaviors: key resolution, --project override skipping the GET, no-binding refusal, no-match refusal, all four loud-failure shapes, a genuine written>=1 success, explicit:true + no project_cid, and dry-run). grep for 'project_cid': only explanatory comments, no occurrence that sends the field. verify-touched.sh over the phase's 2 files: exit 0, both OWED, full 98-suite fallback battery 98/98 green."
+}

@@ -433,41 +433,44 @@ signature, and touches no manifest or deploy surface.
 
 ---
 
-### Phase 4: `ko` subcommand with runtime project-key resolution [NOT STARTED]
+### Phase 4: `ko` subcommand with runtime project-key resolution [COMPLETED]
 
 **Goal**: Repo-tagged knowledge-object writes carry the correct project key, resolved at runtime,
 with `sapience-remember.sh`'s four-check loud-failure order reused verbatim.
 
 **Tasks**:
-- [ ] Implement `ko --note <text> [--note <text> ...] [--project <cid>]`, accepting the existing
+- [x] Implement `ko --note <text> [--note <text> ...] [--project <cid>]`, accepting the existing
       3-8-note-per-task bound as the only size bound — no second, independently-sized cap.
-- [ ] Resolve the project key per Decision D5: `--project` override wins; else read
+      *(completed; each --note becomes one KO's object_value with subject/predicate/ko_type/
+      confidence defaulted the way sapience-remember.sh defaults them -- see the progress file's
+      `deviations` entry for the one plan-underspecified detail this filled in)*
+- [x] Resolve the project key per Decision D5: `--project` override wins; else read
       `.sapience/project.json`'s `.project` (cid) from `${repo_toplevel}/.sapience/project.json`
       using the worktree block's `resolve_checkout_toplevel`; then
       `sapience_get "/v1/people/projects"`, unwrapped with the same defensive
       `(if has("projects") then .projects elif (type == "array") then . else [] end)` pattern
-      `sapience-vault-read.sh` uses, matching the cid to recover `.key`.
-- [ ] Refuse loudly (non-zero exit, nothing posted) when there is no binding, when the list call
+      `sapience-vault-read.sh` uses, matching the cid to recover `.key`. *(completed)*
+- [x] Refuse loudly (non-zero exit, nothing posted) when there is no binding, when the list call
       fails, or when no entry matches the cid. Never fall back to an untagged write and never
-      derive the key from the binding's free-text `name`.
-- [ ] Build each KO with `project: "<resolved key>"` and `explicit: true` set unconditionally.
-      Never send `project_cid` — Non-Goals explains why.
-- [ ] Reuse `sapience-remember.sh`'s loud-failure check verbatim in order and semantics:
+      derive the key from the binding's free-text `name`. *(completed)*
+- [x] Build each KO with `project: "<resolved key>"` and `explicit: true` set unconditionally.
+      Never send `project_cid` — Non-Goals explains why. *(completed)*
+- [x] Reuse `sapience-remember.sh`'s loud-failure check verbatim in order and semantics:
       `set_aside` non-empty -> exit 2; `gated != 0` -> exit 2; `written` absent or 0 -> exit 2;
       `ok != true` -> exit 2. All four checked regardless of which the server would have hit
       first. Write an inline comment recording that this check is written against `_ingest_kos`'s
       verified field set (`ok`, `written`, `threads`, `gated`, `rejected`, `filtered`, plus
       conditional `set_aside`/`staged`), and that the dispatch-text paraphrase listing a `spend`
-      field does not match this handler.
-- [ ] `--dry-run` prints the literal `/ingest-kos` payload including the resolved `project` key,
-      so the approver sees exactly what tag will be stamped.
-- [ ] Add test cases: key resolution from a scratch `.sapience/project.json` binding matched
+      field does not match this handler. *(completed)*
+- [x] `--dry-run` prints the literal `/ingest-kos` payload including the resolved `project` key,
+      so the approver sees exactly what tag will be stamped. *(completed)*
+- [x] Add test cases: key resolution from a scratch `.sapience/project.json` binding matched
       against a stubbed project list; `--project` override wins over the binding; no binding ->
       non-zero exit, no POST; cid present but no matching entry -> non-zero exit, no POST; each
       of the four loud-failure shapes (`set_aside` non-empty, `gated: 1`, `written: 0`,
       `ok: false`) exits non-zero even when the response is otherwise success-shaped; a genuine
       `written >= 1` exits 0; the posted body carries `explicit: true` and carries **no**
-      `project_cid` key.
+      `project_cid` key. *(completed; 8 new cases, 53/53 total green)*
 
 **Timing**: 1.5 hours
 
