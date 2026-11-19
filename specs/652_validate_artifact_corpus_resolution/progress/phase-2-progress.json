@@ -1,0 +1,26 @@
+{
+  "phase": 2,
+  "phase_name": "Name the Corpus in Every Advisory Warning",
+  "started_at": "2026-11-19T00:40:00Z",
+  "last_updated": "2026-11-19T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive the four log_warn sites and append a consistent corpus descriptor to each", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 2, "description": "Add the one-time run-level warning for declared-but-unresolvable roots", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/validate-artifact.sh"]},
+    {"id": 3, "description": "Confirm no finding suppressed, log_error unchanged, 13 pre-existing TJ assertions still pass; run scoped batch-gate check", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.4",
+      "description": "Confirm the run-level warning does not fire ... when the reader is unavailable with nothing declared.",
+      "type": "altered",
+      "reason": "The risk-mitigation table's row for 'fail-soft source masks a genuinely broken library' additionally claims the run-level warning 'fires whenever a declaration exists but no candidate resolves, which includes the reader-unavailable case'. Implementing that literally would require a second, ad hoc read of .claude-extensions.json's verification_scope key independent of verification-scope-lib.sh (to detect 'something was declared' even when the library itself fails to source), which the plan's own Non-Goals and this task's Hard Constraints forbid ('no second declaration surface ... verification_scope is the declaration point and its existing reader is the only reader'). Implemented the narrower, constraint-compliant version instead: the run-level warning fires exactly when verification_scope_project_suite_roots was actually called and returned at least one root that failed to resolve to an on-disk library. When the reader is unavailable, the whole feature (including this warning) is silently inert -- a conscious, documented scope limit, not an oversight.",
+      "annotation": "*(deviation: altered — confirmed for the undeclared and successfully-resolved cases; the reader-unavailable case stays inert rather than firing, per the hard constraint against a second declaration surface — see phase-2-progress.json deviation 2.4)*"
+    }
+  ],
+  "notes": [
+    "Scoped batch-gate check (bash .claude/scripts/verify-touched.sh, no args, per this dispatch's Batch Gate Deferral directive) surfaced one EXPECTED, non-regression failure: check-extension-docs.sh gate3 'deployed script content drift' for scripts/validate-artifact.sh, run-all-annotated '(1 expected, 0 NEW)'. Routine pre-Phase-5-redeploy state; recorded non-blocking via issue-record.sh."
+  ]
+}

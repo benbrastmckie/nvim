@@ -549,6 +549,29 @@ if [ "$artifact_type" = "plan" ]; then
   # shellcheck disable=SC1090
   . "$_suite_selection_lib"
 
+  # Corpus-attribution text, computed ONCE per run from the resolution above, reused verbatim by
+  # every Tier-Justification `log_warn` call below (deliverable 2: name the corpus a finding was
+  # measured against and where it was resolved from, without re-deriving anything per-phase).
+  if [ "$_suite_selection_corpus_kind" = "declared" ]; then
+    _suite_selection_corpus_descriptor=" [corpus: declared project suite root '${_suite_selection_corpus_declared_root}', library ${_suite_selection_lib}]"
+  else
+    _suite_selection_corpus_descriptor=" [corpus: deployed/sibling fallback, library ${_suite_selection_lib}]"
+  fi
+
+  # One-time, run-level warning (outside the per-phase loop, fired at most once per invocation):
+  # a declared `project_suite_roots` entry existed but did not resolve to an on-disk library, so
+  # every phase's Tier-Justification measurement this run falls back to the deployed/sibling
+  # corpus instead of the declared one. Does not fire for an undeclared repository, a repository
+  # whose declared root resolved successfully (`_suite_selection_unresolved_declared_roots` is
+  # empty in both cases), or when the reader itself is unavailable (the derivation above is
+  # skipped entirely in that case, so this array is also empty) -- a conscious, documented
+  # scope limit: detecting "something was declared but the reader itself is broken" would
+  # require a second, ad hoc read of the same declaration this library already owns, which the
+  # plan's own hard constraints forbid.
+  if [ "${#_suite_selection_unresolved_declared_roots[@]}" -gt 0 ]; then
+    log_warn "Tier Justification corpus resolution: declared project suite root(s) (${_suite_selection_unresolved_declared_roots[*]}) did not resolve to an on-disk suite-selection-lib.sh -- every phase's Tier Justification measurement this run uses the deployed/sibling fallback corpus instead (${_suite_selection_lib})"
+  fi
+
   # --- Plan-level Status-line grammar check (error level: DEFECT 2 -- the validator previously
   # checked only field PRESENCE via the whole-document grep above, so a hand-typed, bracket-losing
   # value like "- **Status**: COMPLETED" validated as [PASS]. Landed at error, not warn, because a
@@ -883,12 +906,12 @@ if [ "$artifact_type" = "plan" ]; then
 
               if [ "$_tj_claim_kind" = "sentinel" ]; then
                 if [ "$_tj_actual_is_sentinel_only" = false ]; then
-                  log_warn "Phase ${phase_num} Tier Justification claims the __FULL_SWEEP__ sentinel (no suite covers this phase) but suite_selection_select returns real suite(s) for its touched paths: ${_tj_actual[*]} -- unmeasured/false sentinel claim"
+                  log_warn "Phase ${phase_num} Tier Justification claims the __FULL_SWEEP__ sentinel (no suite covers this phase) but suite_selection_select returns real suite(s) for its touched paths: ${_tj_actual[*]} -- unmeasured/false sentinel claim${_suite_selection_corpus_descriptor}"
                 fi
               else
                 # suitelist claim
                 if [ "$_tj_actual_is_sentinel_only" = true ]; then
-                  log_warn "Phase ${phase_num} Tier Justification names suite(s) (${_tj_claimed[*]}) but suite_selection_select returns the __FULL_SWEEP__ sentinel for its touched paths -- no suite actually covers them (fabricated claim)"
+                  log_warn "Phase ${phase_num} Tier Justification names suite(s) (${_tj_claimed[*]}) but suite_selection_select returns the __FULL_SWEEP__ sentinel for its touched paths -- no suite actually covers them (fabricated claim)${_suite_selection_corpus_descriptor}"
                 else
                   # Strip the sentinel token out of the actual set before comparing against the
                   # claim: it is not a claimable suite name, and leaving it in would replace an
@@ -922,10 +945,10 @@ if [ "$artifact_type" = "plan" ]; then
                     [ "$_tj_found" = false ] && _tj_extra+=("$_tj_c")
                   done
                   if [ "${#_tj_missing[@]}" -gt 0 ]; then
-                    log_warn "Phase ${phase_num} Tier Justification under-verifies: suite_selection_select additionally returns (${_tj_missing[*]}) for this phase's touched paths, not named in the justification"
+                    log_warn "Phase ${phase_num} Tier Justification under-verifies: suite_selection_select additionally returns (${_tj_missing[*]}) for this phase's touched paths, not named in the justification${_suite_selection_corpus_descriptor}"
                   fi
                   if [ "${#_tj_extra[@]}" -gt 0 ]; then
-                    log_warn "Phase ${phase_num} Tier Justification fabricates coverage: suite(s) (${_tj_extra[*]}) named that suite_selection_select does not return for this phase's touched paths"
+                    log_warn "Phase ${phase_num} Tier Justification fabricates coverage: suite(s) (${_tj_extra[*]}) named that suite_selection_select does not return for this phase's touched paths${_suite_selection_corpus_descriptor}"
                   fi
                 fi
               fi

@@ -234,7 +234,7 @@ the source-store copy before editing, and treat a mismatch as "re-read the block
 
 ---
 
-### Phase 2: Name the Corpus in Every Advisory Warning [NOT STARTED]
+### Phase 2: Name the Corpus in Every Advisory Warning [COMPLETED]
 
 **Goal**: Every Tier-Justification advisory line states which corpus it was measured against and
 where that corpus was resolved from, and a declared-but-unresolvable root draws one named
@@ -242,28 +242,38 @@ run-level warning instead of a silent fallback — with no finding silenced and 
 exit-code contract.
 
 **Tasks**:
-- [ ] Re-derive the four `log_warn` sites inside the Tier-Justification block (live at plan
+- [x] Re-derive the four `log_warn` sites inside the Tier-Justification block (live at plan
       authoring: lines 850, 855, 889, 892 — the false-sentinel, fabricated-suite-list,
-      under-verifies, and fabricates-coverage branches) before editing.
-- [ ] Append a parenthesized corpus descriptor to each of those four messages, built from the two
+      under-verifies, and fabricates-coverage branches) before editing. *(completed: re-found
+      live at lines 886, 891, 925, 928 after Phase 1's insertion; same four branches, same order)*
+- [x] Append a parenthesized corpus descriptor to each of those four messages, built from the two
       values Phase 1 recorded, in one consistent shape: the corpus kind, the declared root it came
-      from when applicable, and the library path actually sourced.
-- [ ] Keep every existing message's leading text, including the substring `Tier Justification`,
+      from when applicable, and the library path actually sourced. *(completed via a single
+      `_suite_selection_corpus_descriptor` variable computed once and appended to all four)*
+- [x] Keep every existing message's leading text, including the substring `Tier Justification`,
       byte-identical so the 13 existing TJ assertions (which match only on that substring via
-      `grep -qF` / `grep -cF`) continue to pass.
-- [ ] Add one run-level `log_warn`, emitted at most once per invocation and outside the per-phase
+      `grep -qF` / `grep -cF`) continue to pass. *(completed: all 13 pass unchanged)*
+- [x] Add one run-level `log_warn`, emitted at most once per invocation and outside the per-phase
       loop, for the case where the reader printed at least one declared root but no derived
       candidate existed on disk: name the declared root(s) that failed to resolve and the fallback
-      corpus now in use for every phase's measurement this run.
-- [ ] Confirm the run-level warning does not fire for an undeclared repository, for a repository
+      corpus now in use for every phase's measurement this run. *(completed)*
+- [x] Confirm the run-level warning does not fire for an undeclared repository, for a repository
       whose declared root resolved successfully, or when the reader is unavailable with nothing
-      declared.
-- [ ] Confirm no finding is suppressed, reworded away, or made conditional on corpus kind: the
+      declared. *(deviation: altered — confirmed for the undeclared and successfully-resolved
+      cases, both of which leave `_suite_selection_unresolved_declared_roots` empty. The
+      "reader-unavailable" case is handled as "the whole feature is silently inert" rather than
+      "warning still fires": detecting a declaration exists when the reader itself cannot be
+      sourced would require a second, ad hoc read of the same `verification_scope` key this
+      library already owns, which this phase's own Hard Constraints forbid. See progress file
+      phase-2-progress.json deviation 2.4)*
+- [x] Confirm no finding is suppressed, reworded away, or made conditional on corpus kind: the
       fabricated-claim and under-verification branches fire on exactly the same conditions as
-      before, with only their message text extended.
-- [ ] Confirm every addition uses `log_warn` and never `log_error`, so default-mode validation
+      before, with only their message text extended. *(completed: branch conditions textually
+      unchanged, only the trailing descriptor appended)*
+- [x] Confirm every addition uses `log_warn` and never `log_error`, so default-mode validation
       still exits 0 on a warning alone and `--strict` promotion continues to flow through the
-      pre-existing `total_issues = errors + warnings` branch untouched.
+      pre-existing `total_issues = errors + warnings` branch untouched. *(completed: `log_error`
+      count unchanged at 12; default-mode exit 0 confirmed on a fabricated-claim fixture)*
 
 **Timing**: 1 hour
 
@@ -285,10 +295,10 @@ only four.
 - `agent-system/extensions/core/scripts/validate-artifact.sh` - append a corpus descriptor to each Tier-Justification `log_warn` message; add the one-time declared-but-unresolvable run-level warning
 
 **Verification**:
-- `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` exits 0 with all pre-existing TJ assertions still passing, confirming the suffix append broke no existing fixture.
-- A deliberately fabricated Tier-Justification fixture validated through the edited source-store copy emits a warning whose text names the corpus and the library path it was resolved from.
-- `bash .claude/scripts/verify-touched.sh agent-system/extensions/core/scripts/validate-artifact.sh` reports a green verdict over the five suites named in the Tier Justification above.
-- `grep -c 'log_error' agent-system/extensions/core/scripts/validate-artifact.sh` is unchanged from its pre-edit value.
+- `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` exits 0 with all pre-existing TJ assertions still passing, confirming the suffix append broke no existing fixture. *(confirmed: PASSED: 148, FAILED: 0, all 13 TJ assertions pass)*
+- A deliberately fabricated Tier-Justification fixture validated through the edited source-store copy emits a warning whose text names the corpus and the library path it was resolved from. *(confirmed live: "... (fabricated claim) [corpus: deployed/sibling fallback, library .../lib/suite-selection-lib.sh]")*
+- `bash .claude/scripts/verify-touched.sh agent-system/extensions/core/scripts/validate-artifact.sh` reports a green verdict over the five suites named in the Tier Justification above. *(per this dispatch's Batch Gate Deferral directive, discharged via the no-argument form `bash .claude/scripts/verify-touched.sh`, which derives touched paths itself: ran and completed. One EXPECTED, pre-existing, non-regression failure surfaced -- check-extension-docs.sh's gate3 "deployed script content drift" for scripts/validate-artifact.sh, annotated by run-all itself as "(1 expected, 0 NEW)". This is the routine state for any source-store edit made before this plan's own Phase 5 redeploy; logged non-blocking via issue-record.sh and expected to clear once Phase 5 runs.*
+- `grep -c 'log_error' agent-system/extensions/core/scripts/validate-artifact.sh` is unchanged from its pre-edit value. *(confirmed: 12, matches `git show HEAD`)*
 
 ---
 
