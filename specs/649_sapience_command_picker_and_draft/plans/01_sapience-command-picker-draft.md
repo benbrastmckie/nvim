@@ -467,28 +467,28 @@ live count rather than from this figure.
 
 ---
 
-### Phase 6: Deploy, Gate Reconciliation, and Closing Verification [NOT STARTED]
+### Phase 6: Deploy, Gate Reconciliation, and Closing Verification [COMPLETED]
 
 **Goal**: Regenerate the deployed tree so the new command and skill are live, reconcile every
 gate the change touches, and close the task.
 
 **Tasks**:
-- [ ] Regenerate the deployed tree from the source store (`deploy-headless.sh`, or the extension
+- [x] Regenerate the deployed tree from the source store (`deploy-headless.sh`, or the extension
       picker's reload/regenerate entry) so `.claude/commands/sapience.md`,
       `.claude/skills/skill-sapience/SKILL.md`, the merged `.claude/CLAUDE.md` section, and the
-      merged `.claude/context/index.json` entries all appear.
-- [ ] Confirm the deployed command and skill resolve: `.claude/commands/sapience.md` exists and
-      the `/sapience` entry is present in the merged CLAUDE.md assembly.
-- [ ] Run `bash .claude/scripts/check-extension-docs.sh` and confirm zero findings for the
-      sapience extension across Rules A, E, R, T, U, and `check_readme_vs_manifest`.
-- [ ] Run `REPO_ROOT=$(pwd) bash .claude/scripts/measure-eager-context.sh --check` and compare
+      merged `.claude/context/index.json` entries all appear. *(completed)*
+- [x] Confirm the deployed command and skill resolve: `.claude/commands/sapience.md` exists and
+      the `/sapience` entry is present in the merged CLAUDE.md assembly. *(completed: byte-identical to source)*
+- [x] Run `bash .claude/scripts/check-extension-docs.sh` and confirm zero findings for the
+      sapience extension across Rules A, E, R, T, U, and `check_readme_vs_manifest`. *(completed: zero findings across these six; the one remaining sapience finding is Rule F, a pre-existing one-byte trailing-newline drift in scripts/sapience-vault-read.sh from the project-binding task's scope, not named by this criterion and not in this task's FILE SCOPE)*
+- [x] Run `REPO_ROOT=$(pwd) bash .claude/scripts/measure-eager-context.sh --check` and compare
       the reported TOTAL against `eager_load.baseline_bytes`. If it exceeds the baseline, trim
       EXTENSION.md/README prose (route a) rather than editing the shared budget config — another
-      in-flight task owns that file. Record the measured figure either way.
-- [ ] Run the scoped touched-path check over every path this task touched:
-      `bash .claude/scripts/verify-touched.sh <all touched paths>`.
-- [ ] Record the issue-log entries for this task's gate collisions (the 60-line EXTENSION.md
-      ceiling, and the `doc_bodies` unread-docs bound that forced D5) and any wins.
+      in-flight task owns that file. Record the measured figure either way. *(completed: TOTAL 70,505 B, baseline 71,600 B -- 1,095 B under, no trim needed)*
+- [x] Run the scoped touched-path check over every path this task touched:
+      `bash .claude/scripts/verify-touched.sh <all touched paths>`. *(completed: mapped SELECT set 63/66 passed -- 2 expected + 1 pre-existing-unrelated NEW (test-mcp-merge-target.sh, independently corroborated by tasks 648/650); OWED fallback set clean 98/98)*
+- [x] Record the issue-log entries for this task's gate collisions (the 60-line EXTENSION.md
+      ceiling, and the `doc_bodies` unread-docs bound that forced D5) and any wins. *(completed)*
 
 **Timing**: 0.75 hours
 
