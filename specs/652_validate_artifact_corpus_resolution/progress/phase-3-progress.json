@@ -1,0 +1,22 @@
+{
+  "phase": 3,
+  "phase_name": "Cover the Declared, Undeclared, and Declared-but-Absent Cases",
+  "started_at": "2026-11-19T01:40:00Z",
+  "last_updated": "2026-11-19T01:47:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add make_tj_scope_fixture scratch-root fixture builder", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 2, "description": "Add TJ-scope(A) declared-resolvable case with planted mirror-shaped corpus and removal regression check", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 3, "description": "Add TJ-scope(B) undeclared regression guard and TJ-scope(C) declared-but-absent case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 4, "description": "Confirm suite-classification.data row unchanged and run scoped batch-gate check", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Used literal basenames (widget.sh) for touched-path fixtures", "result": "failed", "reason": "Stratum (b) grep-based reference lookup found the literal basename inside this test file's own source (self-reference), exactly the hazard TJ_UNMAPPED_PATH's own header comment already documents; switched to PID-suffixed basenames"},
+    {"approach": "Asserted absence of the bare phrase 'declared project suite root' after removing the planted library", "result": "failed", "reason": "The separate one-time run-level warning's own prose also contains that bare phrase, giving a false negative; narrowed the assertion to the bracketed '[corpus: declared project suite root' descriptor shape specifically"}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Scoped batch-gate check (bash .claude/scripts/verify-touched.sh, no args) surfaced the same EXPECTED, non-regression failure as Phase 2 (check-extension-docs.sh gate3 content drift), now also naming scripts/tests/test-validate-artifact.sh since this phase edited it too. '(1 expected, 0 NEW)' per run-all; routine pre-Phase-5-redeploy state, recorded non-blocking via issue-record.sh."
+  ]
+}

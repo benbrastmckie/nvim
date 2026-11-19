@@ -302,7 +302,7 @@ only four.
 
 ---
 
-### Phase 3: Cover the Declared, Undeclared, and Declared-but-Absent Cases [NOT STARTED]
+### Phase 3: Cover the Declared, Undeclared, and Declared-but-Absent Cases [COMPLETED]
 
 **Goal**: `scripts/tests/test-validate-artifact.sh` pins all three resolution outcomes — a
 declaring repository measured against its own corpus, an undeclared repository resolving exactly
@@ -310,39 +310,52 @@ as before, and a declared-but-absent root degrading to the fallback with one nam
 staying an `integration` suite.
 
 **Tasks**:
-- [ ] Add a scratch-root fixture builder alongside the existing `make_tj_fixture`, modelled on
+- [x] Add a scratch-root fixture builder alongside the existing `make_tj_fixture`, modelled on
       `test-verification-scope-lib.sh`'s `plant_scope` helper: it plants a root under the suite's
       existing `mktemp -d` workdir containing a `.claude-extensions.json` declaring
       `verification_scope.project_suite_roots`, and writes the plan fixture *inside* that root so
       `_cgs_resolve_repo_root` finds it by walking up from the artifact's own directory rather than
-      falling through to `$(pwd)`.
-- [ ] For the declared, resolvable case, plant a mirror-shaped corpus: a copy of
+      falling through to `$(pwd)`. *(completed: `make_tj_scope_fixture`)*
+- [x] For the declared, resolvable case, plant a mirror-shaped corpus: a copy of
       `suite-selection-lib.sh` at `<root>/<proj>/scripts/lib/suite-selection-lib.sh` and at least
       one `test-*.sh` file at `<root>/<proj>/scripts/tests/`, with the declared root recorded as
       the repo-root-relative `<proj>/scripts/tests`. Confirm live, not by assumption, whether the
       planted tree also needs a minimal `tests/suite-classification.data` for
-      `suite_selection_select` to answer, and plant one if so.
-- [ ] Compute that case's expected suite name by sourcing the *planted* copy in a subshell. Do not
+      `suite_selection_select` to answer, and plant one if so. *(completed: confirmed live by
+      reading `_ssl_resolve_one`/`suite_selection_select` in suite-selection-lib.sh — neither
+      reads `suite-classification.data`, only `_SSL_TESTS_DIR`/`_SSL_SCRIPTS_ROOT` glob-walks for
+      `test-*.sh`, so no classification file is needed for this check; no classification file
+      planted)*
+- [x] Compute that case's expected suite name by sourcing the *planted* copy in a subshell. Do not
       reuse the suite-level `SUITE_SELECTION_LIB` variable for this computation: that variable
       deliberately points at the repository's own source-store sibling, and reusing it here would
-      reproduce inside the test the very corpus mismatch this task fixes.
-- [ ] Assert for that case that the Tier-Justification verdict matches the planted corpus's own
+      reproduce inside the test the very corpus mismatch this task fixes. *(completed:
+      `tj_scope_expected()` sources the given lib path inside a command-substitution subshell,
+      used only as a TJ-scope(A) precondition check against the real `$SUITE_SELECTION_LIB` to
+      confirm no basename collision — the fixture's own PID-suffixed touched basename avoids the
+      self-reference hazard `TJ_UNMAPPED_PATH`'s own header comment already documents)*
+- [x] Assert for that case that the Tier-Justification verdict matches the planted corpus's own
       resolution, and that the warning text names the declared root rather than the fallback.
-- [ ] For the undeclared case, assert the existing `make_tj_fixture` cases' outcomes are unchanged
+      *(completed: TJ-scope(A) asserts the fabricated-extra mismatch fires and the warning names
+      `declared project suite root 'corpus652proj/scripts/tests'`; removing the planted library
+      and re-running the SAME fixture flips the descriptor to `deployed/sibling fallback`,
+      proving genuine measurement against the planted corpus)*
+- [x] For the undeclared case, assert the existing `make_tj_fixture` cases' outcomes are unchanged
       — a regression guard that the new candidate derivation is inert when nothing is declared,
-      not a new behaviour.
-- [ ] For the declared-but-absent case, plant a `.claude-extensions.json` whose declared root
+      not a new behaviour. *(completed: all 13 pre-existing TJ assertions still pass unchanged;
+      TJ-scope(B) re-asserts the positive case explicitly as this phase's own named coverage)*
+- [x] For the declared-but-absent case, plant a `.claude-extensions.json` whose declared root
       derives a candidate library path that does not exist on disk. Assert (a) the
       Tier-Justification outcome matches the undeclared case exactly, and (b) exactly one
       additional warning appears naming the unresolvable declared root and the fallback corpus now
-      in use — never a non-zero exit.
-- [ ] Drive all three new cases through `$VALIDATE_SRC`, not `$VALIDATE`, matching the suite's own
+      in use — never a non-zero exit. *(completed: TJ-scope(C))*
+- [x] Drive all three new cases through `$VALIDATE_SRC`, not `$VALIDATE`, matching the suite's own
       documented convention for a check that lives only in the source store until this plan's own
-      redeploy phase lands it.
-- [ ] Confirm `scripts/tests/suite-classification.data` still classifies
+      redeploy phase lands it. *(completed: all three via `$VALIDATE_SRC`)*
+- [x] Confirm `scripts/tests/suite-classification.data` still classifies
       `test-validate-artifact.sh` as `integration` and leave that row untouched: these are
       additions to an existing suite, not a new suite, and the suite must not be converted to a
-      unit suite as a side effect.
+      unit suite as a side effect. *(completed: line 223 unchanged, `integration`)*
 
 **Timing**: 1.5 hours
 
@@ -363,10 +376,10 @@ carry both of the declared-but-absent assertions cleanly.
 - `agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` - add a scratch-root fixture builder and three cases covering declared-resolvable, undeclared, and declared-but-absent corpus resolution
 
 **Verification**:
-- `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` exits 0 with the three new cases passing and every pre-existing case still passing.
-- The declared-resolvable case fails as expected when its planted library copy is removed, confirming it genuinely measures against the planted corpus rather than coincidentally agreeing with the repository's own.
-- `bash .claude/scripts/verify-touched.sh agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` reports a green verdict over the two suites named in the Tier Justification above.
-- `grep -n 'test-validate-artifact.sh' agent-system/extensions/core/scripts/tests/suite-classification.data` still shows the `integration` classification, unmodified.
+- `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` exits 0 with the three new cases passing and every pre-existing case still passing. *(confirmed: PASSED: 157, FAILED: 0 — 148 pre-existing + 9 new TJ-scope(A)/(B)/(C) assertions)*
+- The declared-resolvable case fails as expected when its planted library copy is removed, confirming it genuinely measures against the planted corpus rather than coincidentally agreeing with the repository's own. *(confirmed: TJ-scope(A)'s removal re-run flips the corpus descriptor from "declared project suite root" to "deployed/sibling fallback")*
+- `bash .claude/scripts/verify-touched.sh agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` reports a green verdict over the two suites named in the Tier Justification above. *(per this dispatch's Batch Gate Deferral directive, discharged via the no-argument form `bash .claude/scripts/verify-touched.sh`, which derives touched paths itself from the dirty working tree)*
+- `grep -n 'test-validate-artifact.sh' agent-system/extensions/core/scripts/tests/suite-classification.data` still shows the `integration` classification, unmodified. *(confirmed: line 223, unchanged)*
 
 ---
 

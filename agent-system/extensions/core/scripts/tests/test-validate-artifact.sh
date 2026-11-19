@@ -714,6 +714,164 @@ f=$(make_tj_fixture "**Files to modify**:
 out=$("$VALIDATE_SRC" "$f" plan 2>&1)
 if echo "$out" | grep -qF "Tier Justification"; then common_test_fail "TJ(skip-case, prose sentinel): incorrectly drew a Tier Justification finding: $out"; else common_test_pass "TJ(skip-case, prose sentinel): draws no Tier Justification finding"; fi
 
+# ─── Tier Justification corpus resolution (verification_scope.project_suite_roots): covers the
+# declared-resolvable, undeclared, and declared-but-absent outcomes of the ordered candidate
+# list validate-artifact.sh now resolves its suite-selection backend through. Each declared case
+# gets its OWN isolated scratch repo root under $WORKDIR carrying its own .claude-extensions.json
+# AND its own plan fixture written *inside* that root (same isolation precedent as make_cgs_fixture
+# above), so _cgs_resolve_repo_root's upward walk from the plan file's own directory finds the
+# scratch root's declaration and never falls through to this real repository's own (which
+# declares no verification_scope key, confirmed live at plan authoring). ───────────────────────
+
+# make_tj_scope_fixture <declared_root_rel> <plant_lib:true|false> <touched_rel> <tier_justification>
+# -- <declared_root_rel> is the repo-root-relative project-suite TESTS root to declare (e.g.
+# "proj/scripts/tests"); when plant_lib=true, plants a mirror-shaped corpus: a COPY of the real
+# suite-selection-lib.sh at the sibling "<dirname of declared_root_rel>/lib/suite-selection-lib.sh",
+# plus a "test-<basename of touched_rel>" suite file inside the declared tests root, so
+# suite_selection_select's own Stratum (a) strict basename pairing resolves <touched_rel> from
+# INSIDE the planted corpus alone. Prints the plan fixture's path.
+make_tj_scope_fixture() {
+  local declared_root="$1" plant_lib="$2" touched_rel="$3" tier_justification="$4"
+  local dir f lib_dir tests_dir base
+  dir="$(mktemp -d --tmpdir="$WORKDIR" tjscope-XXXXXX)"
+  printf '%s' "{\"verification_scope\": {\"project_suite_roots\": [\"${declared_root}\"]}}" > "$dir/.claude-extensions.json"
+  tests_dir="${dir}/${declared_root}"
+  lib_dir="$(dirname "${tests_dir}")/lib"
+  mkdir -p "${tests_dir}"
+  if [ "${plant_lib}" = "true" ]; then
+    mkdir -p "${lib_dir}"
+    cp "${SUITE_SELECTION_LIB}" "${lib_dir}/suite-selection-lib.sh"
+    base="$(basename "${touched_rel}")"
+    : > "${tests_dir}/test-${base}"
+  fi
+  f="${dir}/plan.md"
+  cat > "$f" <<EOF
+# Plan
+
+- **Task**: 1 - x
+- **Status**: [IMPLEMENTING]
+- **Effort**: 1h
+- **Dependencies**: none
+- **Research Inputs**: none
+- **Artifacts**: none
+- **Standards**: none
+- **Type**: meta
+
+## Overview
+x
+
+## Goals & Non-Goals
+x
+
+## Risks & Mitigations
+x
+
+## Implementation Phases
+
+### Phase 1: X [NOT STARTED]
+
+**Verification Tier**: local
+
+**Tier Justification**: ${tier_justification}
+
+**Files to modify**:
+- \`${touched_rel}\`
+
+### Phase 2: Y [NOT STARTED]
+
+**Verification Tier**: prose
+
+**Files to modify**:
+- \`path/to/anchor.ext\`
+
+## Testing & Validation
+x
+
+## Artifacts & Outputs
+x
+
+## Rollback/Contingency
+x
+EOF
+  echo "$f"
+}
+
+# tj_scope_expected <lib_path> <touched_rel> -- sources <lib_path> in an isolated command
+# substitution subshell (never the suite-level $SUITE_SELECTION_LIB, which is already sourced
+# into THIS process against the real repository's own corpus -- reusing it here would recreate
+# inside the test the exact corpus mismatch this task fixes) and prints suite_selection_select's
+# output for <touched_rel> against THAT corpus alone.
+tj_scope_expected() {
+  local lib_path="$1" touched_rel="$2"
+  ( . "${lib_path}" >/dev/null 2>&1; suite_selection_select "${touched_rel}" )
+}
+
+# ─── (A) Declared, resolvable: a declared project_suite_roots entry whose mirror-shaped corpus
+# actually exists on disk. The touched path's basename has no suite in THIS repository's own
+# corpus (confirmed via tj_scope_expected against the real $SUITE_SELECTION_LIB below), so a
+# verdict that matches the planted corpus rather than the real one proves genuine measurement
+# against the declared root, not a coincidental agreement. ─────────────────────────────────────
+tjscope_declared_root="corpus652proj/scripts/tests"
+tjscope_touched="corpus652proj/scripts/widget-$$.sh"
+tjscope_expected_real="$(tj_scope_expected "${SUITE_SELECTION_LIB}" "${tjscope_touched}")"
+if [ -n "${tjscope_expected_real}" ] && [ "${tjscope_expected_real}" != "${SUITE_SELECTION_FULL_SWEEP_SENTINEL}" ]; then
+  common_test_fail "TJ-scope(A) precondition: touched path unexpectedly maps to a real suite in this repository's own corpus (${tjscope_expected_real}) -- fixture basename collides with a real suite; choose a different basename"
+fi
+tjscope_widget_suite="test-$(basename "${tjscope_touched}")"
+f=$(make_tj_scope_fixture "${tjscope_declared_root}" "true" "${tjscope_touched}" \
+  "\`suite_selection_select ${tjscope_touched}\` returns \`${tjscope_widget_suite}\`, so the covering check is \`bash .claude/scripts/tests/run-all.sh --only ${tjscope_widget_suite},test-totally-fabricated-suite.sh\`.")
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "fabricates coverage"; then common_test_pass "TJ-scope(A): declared-resolvable corpus measures the fabricated-extra mismatch"; else common_test_fail "TJ-scope(A): expected a fabricates-coverage finding against the planted corpus: $out"; fi
+if echo "$out" | grep -qF "declared project suite root '${tjscope_declared_root}'"; then common_test_pass "TJ-scope(A): warning names the declared root, not the fallback"; else common_test_fail "TJ-scope(A): warning did not name the declared root: $out"; fi
+rc=0; "$VALIDATE_SRC" "$f" plan >/dev/null 2>&1 || rc=$?
+if [[ $rc -eq 0 ]]; then common_test_pass "TJ-scope(A): default-mode exit stays 0 (advisory)"; else common_test_fail "TJ-scope(A): unexpected non-zero exit in default mode: rc=$rc"; fi
+# Remove the planted library copy only (leave the test-widget.sh suite file and the declaration
+# in place) and re-run the SAME fixture: the verdict must now measure against the deployed/
+# sibling fallback instead, proving the first run's verdict was not a coincidence. $dir/
+# $tests_dir are make_tj_scope_fixture's own locals and are not visible here, so the planted
+# library's path is recomputed independently from the fixture's own declared-root convention
+# (<scratch root>/<dirname of declared_root>/lib/suite-selection-lib.sh).
+f_dir="$(dirname "$f")"
+rm -f "${f_dir}/$(dirname "${tjscope_declared_root}")/lib/suite-selection-lib.sh"
+out2=$("$VALIDATE_SRC" "$f" plan 2>&1)
+# Distinguish the per-phase corpus-attribution descriptor ("[corpus: ...]") from the separate
+# one-time run-level warning, whose own prose also contains the bare phrase "declared project
+# suite root(s)" -- the bracketed descriptor shape is the thing under test here.
+if echo "$out2" | grep -qF "[corpus: deployed/sibling fallback" && ! echo "$out2" | grep -qF "[corpus: declared project suite root"; then
+  common_test_pass "TJ-scope(A): removing the planted library copy falls back and no longer names the declared root"
+else
+  common_test_fail "TJ-scope(A): removing the planted library copy did not change the measured corpus as expected: $out2"
+fi
+
+# ─── (B) Undeclared: the pre-existing TJ fixtures above already run with no scratch
+# .claude-extensions.json (their plan files live directly under $WORKDIR, and the real
+# repository declares no verification_scope key), so their unchanged pass/fail outcomes already
+# serve as this case's regression guard. Re-assert the positive case here explicitly, as this
+# phase's own named undeclared-case coverage rather than relying implicitly on an earlier
+# phase's assertions. ───────────────────────────────────────────────────────────────────────────
+f=$(make_tj_fixture "**Files to modify**:
+- \`${TJ_REAL_SUITE_PATH}\`" "\`suite_selection_select ${TJ_REAL_SUITE_PATH}\` returns \`${TJ_REAL_SUITE_NAMES[*]}\`, so the covering check is \`bash .claude/scripts/tests/run-all.sh --only ${TJ_REAL_SUITE_NAMES_CSV}\`.")
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "Tier Justification"; then common_test_fail "TJ-scope(B) undeclared: measured claim incorrectly drew a Tier Justification finding: $out"; else common_test_pass "TJ-scope(B) undeclared: resolution is unaffected by the new candidate-list derivation"; fi
+
+# ─── (C) Declared, but absent: a declared project_suite_roots entry whose mirror-shaped corpus
+# does NOT exist on disk (plant_lib=false). The per-phase Tier-Justification outcome must match
+# what the SAME honest claim would draw with nothing declared at all (no finding, since the
+# fallback corpus and the undeclared corpus are the same corpus) -- asserted by the absence of
+# any "Phase N Tier Justification" line -- while exactly one additional, run-level warning names
+# the unresolvable declared root and the fallback corpus now in use, and the exit code stays 0. ──
+tjscope_absent_root="corpus652other/scripts/tests"
+tjscope_absent_touched="corpus652other/scripts/widget2-$$.sh"
+f=$(make_tj_scope_fixture "${tjscope_absent_root}" "false" "${tjscope_absent_touched}" \
+  "\`suite_selection_select ${tjscope_absent_touched}\` returns the \`__FULL_SWEEP__\` sentinel, so the covering check is \`bash <repo_root>/.claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 <repo_root>\`.")
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qE "Phase [0-9]+ Tier Justification"; then common_test_fail "TJ-scope(C): declared-but-absent root incorrectly drew a per-phase Tier Justification finding: $out"; else common_test_pass "TJ-scope(C): declared-but-absent root's per-phase outcome matches the undeclared case (no finding)"; fi
+tjscope_c_runlevel_count=$(echo "$out" | grep -cF "did not resolve to an on-disk suite-selection-lib.sh")
+if [[ "$tjscope_c_runlevel_count" -eq 1 ]]; then common_test_pass "TJ-scope(C): exactly one run-level warning for the unresolvable declared root"; else common_test_fail "TJ-scope(C): expected exactly one run-level warning, got $tjscope_c_runlevel_count: $out"; fi
+if echo "$out" | grep -qF "${tjscope_absent_root}" && echo "$out" | grep -qF "deployed/sibling fallback"; then common_test_pass "TJ-scope(C): run-level warning names the unresolvable root and the fallback corpus"; else common_test_fail "TJ-scope(C): run-level warning did not name the root/fallback as expected: $out"; fi
+rc=0; "$VALIDATE_SRC" "$f" plan >/dev/null 2>&1 || rc=$?
+if [[ $rc -eq 0 ]]; then common_test_pass "TJ-scope(C): default-mode exit stays 0 (advisory, never a hard failure)"; else common_test_fail "TJ-scope(C): unexpected non-zero exit in default mode: rc=$rc"; fi
+
 # ─── Carried-figure source-naming well-formedness (CFD): fixtures covering the recall-failure
 # shapes that sank the rejected general detector -- plain inline, markdown emphasis, a table
 # cell, a line-wrapped designator, and a closing bracket alone on its own line -- each in both a
