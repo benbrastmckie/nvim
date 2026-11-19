@@ -309,8 +309,140 @@ case "$SUBCOMMAND" in
     exit $?
     ;;
   doc-version)
-    echo "sapience-publish.sh: doc-version: not yet implemented" >&2
-    exit 1
+    # --- DOC_SLUG_RE / DOC_BODY_MAX: the server's own pre-validation bounds (verified against
+    # brain_server.py). Pre-validated locally to fail fast; the server's own 400/413 are still
+    # handled below too -- local validation is never a substitute for handling the server's own
+    # response. ---
+    DOC_SLUG_RE='^[a-z0-9][a-z0-9._-]{0,79}$'
+    DOC_BODY_MAX=200000
+
+    if [ "${#SUBCOMMAND_ARGS[@]}" -eq 0 ]; then
+      echo "sapience-publish.sh: doc-version: a <slug> is required" >&2
+      exit 1
+    fi
+    DV_SLUG="${SUBCOMMAND_ARGS[0]}"
+    DV_BODY_FILE=""
+    DV_TITLE=""
+    _dv_args=("${SUBCOMMAND_ARGS[@]:1}")
+    _i=0
+    while [ "$_i" -lt "${#_dv_args[@]}" ]; do
+      case "${_dv_args[$_i]}" in
+        --body-file)
+          DV_BODY_FILE="${_dv_args[$((_i + 1))]:-}"; _i=$((_i + 2)) ;;
+        --title)
+          DV_TITLE="${_dv_args[$((_i + 1))]:-}"; _i=$((_i + 2)) ;;
+        *)
+          echo "sapience-publish.sh: doc-version: unknown flag: ${_dv_args[$_i]}" >&2
+          exit 1
+          ;;
+      esac
+    done
+
+    if [ -z "$DV_BODY_FILE" ]; then
+      echo "sapience-publish.sh: doc-version: --body-file is required" >&2
+      exit 1
+    fi
+    if ! [[ "$DV_SLUG" =~ $DOC_SLUG_RE ]]; then
+      echo "sapience-publish.sh: doc-version: slug \"${DV_SLUG}\" does not match ${DOC_SLUG_RE} -- refusing before any network call" >&2
+      exit 1
+    fi
+    if [ ! -f "$DV_BODY_FILE" ]; then
+      echo "sapience-publish.sh: doc-version: --body-file \"${DV_BODY_FILE}\" does not exist" >&2
+      exit 1
+    fi
+    DV_BODY="$(cat "$DV_BODY_FILE")"
+    if [ "${#DV_BODY}" -gt "$DOC_BODY_MAX" ]; then
+      echo "sapience-publish.sh: doc-version: body is ${#DV_BODY} chars, exceeds DOC_BODY_MAX (${DOC_BODY_MAX}) -- refusing before any network call" >&2
+      exit 1
+    fi
+
+    sapience_api_init || exit 1
+
+    # --- Always fetch the doc's OWN current `rev` immediately before writing, and send THAT as
+    # base_rev -- never a caller-supplied value, which could race stale. This is the single most
+    # consequential correctness property of this subcommand (Decision/Research Integration
+    # finding 2): _docs_save compares base_rev against doc_rev(prev); base_hash is only a
+    # secondary fallback, and omitting base_rev does NOT skip the check. sapience_get is called
+    # directly here (not through _sapience_post_capture, which is POST-only) -- this call's own
+    # HTTP status is not consumed, only the body's .rev, so the ordinary $(...) form is safe
+    # here (no sapience_api_post_http_status side-channel is needed from a GET). ---
+    DV_GET_RESPONSE="$(sapience_get "/v1/docs/${DV_SLUG}")" || exit 1
+    if [ -z "$DV_GET_RESPONSE" ] || ! echo "$DV_GET_RESPONSE" | jq -e . >/dev/null 2>&1; then
+      echo "sapience-publish.sh: doc-version: non-JSON or empty response from GET /v1/docs/${DV_SLUG} -- cannot resolve base_rev, refusing to write" >&2
+      exit 1
+    fi
+    DV_BASE_REV="$(echo "$DV_GET_RESPONSE" | jq -r '.rev // empty' 2>/dev/null)" || DV_BASE_REV=""
+    if [ -z "$DV_BASE_REV" ]; then
+      echo "sapience-publish.sh: doc-version: GET /v1/docs/${DV_SLUG} response carried no rev -- cannot resolve base_rev, refusing to write: ${DV_GET_RESPONSE:0:300}" >&2
+      exit 1
+    fi
+
+    # base_rev's JSON type is never assumed (the server may use a numeric counter or an opaque
+    # string token) -- coerced to a number only when the fetched value parses as one, else kept
+    # as a JSON string, so this never sends base_rev as a quoted number when the server expects
+    # a bare integer, nor crashes `--argjson` on a non-numeric token.
+    DV_BASE_REV_JSON="$(jq -n --arg v "$DV_BASE_REV" '$v | (try tonumber catch $v)' 2>/dev/null)" || DV_BASE_REV_JSON="\"${DV_BASE_REV}\""
+
+    DV_PAYLOAD="$(jq -n \
+      --arg body "$DV_BODY" \
+      --argjson base_rev "$DV_BASE_REV_JSON" \
+      --arg title "$DV_TITLE" \
+      '{body: $body, base_rev: $base_rev} + (if $title != "" then {title: $title} else {} end)')"
+
+    if [ "$CONFIRM" != "true" ]; then
+      echo "sapience-publish.sh: DRY-RUN -- POST /v1/docs/${DV_SLUG} (base_rev=${DV_BASE_REV}, the rev just fetched -- pass --confirm to actually write; no write call made, though the GET above DID run to resolve the real base_rev)" >&2
+      SAPIENCE_DRY_RUN=1 sapience_post "/v1/docs/${DV_SLUG}" "$DV_PAYLOAD"
+      exit 0
+    fi
+
+    _sapience_post_capture "/v1/docs/${DV_SLUG}" "$DV_PAYLOAD" || exit 1
+    DV_RESPONSE="$_sapience_captured_response"
+    DV_STATUS="${sapience_api_post_http_status:-}"
+
+    if [ -z "$DV_STATUS" ]; then
+      echo "sapience-publish.sh: doc-version: no HTTP status captured from POST /v1/docs/${DV_SLUG}" >&2
+      exit 1
+    fi
+
+    # --- Four distinct outcomes, read from sapience_api_post_http_status plus the response
+    # body -- one POST, no secondary HTTP call to discover the status. Never conflated: a
+    # head_moved conflict and a people_propose alternate path are NOT the same shape, and
+    # neither is sapience-remember.sh's written/gated/set_aside shape (that is a different
+    # endpoint entirely). ---
+    case "$DV_STATUS" in
+      409)
+        DV_CODE="$(echo "$DV_RESPONSE" | jq -r '.code // empty' 2>/dev/null)" || DV_CODE=""
+        if [ "$DV_CODE" = "head_moved" ]; then
+          echo "sapience-publish.sh: doc-version: REFUSED -- head_moved (the doc changed since base_rev=${DV_BASE_REV} was fetched; NOTHING WAS WRITTEN; never retried or overwritten automatically). Server's current head:" >&2
+          echo "$DV_RESPONSE" | jq -c '.head // {}' >&2 2>/dev/null || echo "${DV_RESPONSE:0:300}" >&2
+          exit 2
+        fi
+        echo "sapience-publish.sh: doc-version: FAILED -- HTTP 409 with unexpected code \"${DV_CODE}\" (nothing written): ${DV_RESPONSE:0:300}" >&2
+        exit 2
+        ;;
+      202)
+        echo "sapience-publish.sh: doc-version: proposed, awaiting owner (can_edit:false routed this through people_propose rather than a direct save -- this is NOT \"saved\")"
+        exit 0
+        ;;
+      404)
+        DV_CODE="$(echo "$DV_RESPONSE" | jq -r '.code // empty' 2>/dev/null)" || DV_CODE=""
+        if [ "$DV_CODE" = "share_gone" ]; then
+          echo "sapience-publish.sh: doc-version: REFUSED -- share_gone (a shared-* slug with no existing document cannot be created by this route; nothing was written)" >&2
+          exit 2
+        fi
+        echo "sapience-publish.sh: doc-version: FAILED -- HTTP 404 with unexpected code \"${DV_CODE}\" (nothing written): ${DV_RESPONSE:0:300}" >&2
+        exit 2
+        ;;
+      2??)
+        DV_NEW_REV="$(echo "$DV_RESPONSE" | jq -r '.rev // empty' 2>/dev/null)" || DV_NEW_REV=""
+        echo "sapience-publish.sh: doc-version: saved -- slug=${DV_SLUG} new_rev=${DV_NEW_REV:-unknown}"
+        exit 0
+        ;;
+      *)
+        echo "sapience-publish.sh: doc-version: FAILED -- POST /v1/docs/${DV_SLUG} returned HTTP ${DV_STATUS}: ${DV_RESPONSE:0:300}" >&2
+        exit 2
+        ;;
+    esac
     ;;
   dm)
     DM_TO=""

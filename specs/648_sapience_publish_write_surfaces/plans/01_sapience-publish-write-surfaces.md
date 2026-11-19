@@ -360,36 +360,44 @@ manifest or deploy surface.
 
 ---
 
-### Phase 3: `doc-version` subcommand [NOT STARTED]
+### Phase 3: `doc-version` subcommand [COMPLETED]
 
 **Goal**: Doc-version writes use the correct concurrency key and surface the three distinct
 server outcomes as three distinct exit paths.
 
 **Tasks**:
-- [ ] Implement `doc-version <slug> --body-file <path> [--title <text>]`. The publisher fetches
+- [x] Implement `doc-version <slug> --body-file <path> [--title <text>]`. The publisher fetches
       the current doc itself with one `sapience_get "/v1/docs/<slug>"` immediately before the
       write and sends that response's **`rev`** as `base_rev` — never its `hash`, and never a
-      caller-supplied value the caller could race stale.
-- [ ] Pre-validate the slug against `DOC_SLUG_RE` (`^[a-z0-9][a-z0-9._-]{0,79}$`) and the body
+      caller-supplied value the caller could race stale. *(completed)*
+- [x] Pre-validate the slug against `DOC_SLUG_RE` (`^[a-z0-9][a-z0-9._-]{0,79}$`) and the body
       against `DOC_BODY_MAX` (200000) to fail fast, while still handling the server's own
-      400/413 responses.
-- [ ] Exit path (a): `409` with `code:"head_moved"` — print the returned `head` object
+      400/413 responses. *(completed)*
+- [x] Exit path (a): `409` with `code:"head_moved"` — print the returned `head` object
       including its body (the server returns it, so no second GET is needed), exit non-zero,
-      and never retry or overwrite. The message must make clear nothing was written.
-- [ ] Exit path (b): `202` from the `can_edit:false` -> `people_propose` route — exit 0, but with
+      and never retry or overwrite. The message must make clear nothing was written. *(completed;
+      found and fixed a redirection-order bug en route -- `jq ... 2>/dev/null >&2` silently
+      discarded the output entirely because bash applies redirections left-to-right, so the
+      first redirect already pointed fd2 at /dev/null before `>&2` dup'd fd1 from it; fixed to
+      `jq ... >&2 2>/dev/null`)*
+- [x] Exit path (b): `202` from the `can_edit:false` -> `people_propose` route — exit 0, but with
       an outcome string that says "proposed, awaiting owner" rather than "saved", so the future
-      picker can tell the two apart.
-- [ ] Exit path (c): `404` with `code:"share_gone"` — exit non-zero with a message stating that a
-      `shared-*` slug with no existing document cannot be created by this route.
-- [ ] Normal path: a 200/201 save exits 0 with the new revision identifier printed.
-- [ ] All four outcomes are read from `sapience_api_post_http_status` plus the response body —
-      one POST, no secondary HTTP call to discover the status.
-- [ ] `--dry-run` prints the literal `{body, base_rev, title?}` payload, including the
+      picker can tell the two apart. *(completed)*
+- [x] Exit path (c): `404` with `code:"share_gone"` — exit non-zero with a message stating that a
+      `shared-*` slug with no existing document cannot be created by this route. *(completed)*
+- [x] Normal path: a 200/201 save exits 0 with the new revision identifier printed. *(completed)*
+- [x] All four outcomes are read from `sapience_api_post_http_status` plus the response body —
+      one POST, no secondary HTTP call to discover the status. *(completed, via the
+      `_sapience_post_capture` helper introduced in Phase 2)*
+- [x] `--dry-run` prints the literal `{body, base_rev, title?}` payload, including the
       `base_rev` actually fetched, so the user approving it sees the real concurrency key.
-- [ ] Add test cases: each of the four outcomes drives a distinct exit code/message via the curl
+      *(completed; the GET still runs under dry-run to resolve the real base_rev -- only the
+      write POST is skipped)*
+- [x] Add test cases: each of the four outcomes drives a distinct exit code/message via the curl
       stub; `base_rev` sent equals the stub GET's `rev` and **not** its `hash` (assert on the
       captured request body); the dry-run path performs the GET but no POST; an over-length body
-      and a malformed slug are both refused locally before any network call.
+      and a malformed slug are both refused locally before any network call. *(completed; 13 new
+      cases, 36/36 total green)*
 
 **Timing**: 1.25 hours
 

@@ -35,6 +35,20 @@
 #        the comment endpoint were ever hit).
 #   (15) The comments-suffix stub branch is confirmed hit (not the bare-slug branch) by a
 #        doc-comment call.
+#   (16) doc-version --confirm on 409 head_moved: exits non-zero, prints the server's head,
+#        nothing retried.
+#   (17) doc-version --confirm on 202 (people_propose route): exits 0 with an outcome string
+#        distinguishable from "saved".
+#   (18) doc-version --confirm on 404 share_gone: exits non-zero, message names the route
+#        cannot create a shared-* slug.
+#   (19) doc-version --confirm on a normal 200/201 save: exits 0, prints the new revision.
+#   (20) doc-version sends the GET's `rev` as base_rev, NOT its `hash` (asserted on the captured
+#        request body) -- the single most consequential correctness property of this phase.
+#   (21) doc-version --dry-run performs the GET but makes no POST.
+#   (22) doc-version: an over-length body and a malformed slug are both refused locally before
+#        any network call.
+#   (23) At least one doc-version case asserts the bare-docs-GET/POST stub branches (not the
+#        comments branch) were the ones hit.
 #
 # Follows the core shell-test convention: common_test_pass/_fail/_info from lib/common.sh,
 # PASSED/FAILED integer counters, a mktemp -d workdir with a trap EXIT cleanup,
@@ -145,18 +159,31 @@ run_publish() {
 TOKEN_FIXTURE="sapience-publish-test-fixture-token-DO-NOT-LEAK-7c1a"
 
 # build_curl_stub -- installs a curl stub dispatching on URL substring, driven by
-# STUB_DM_BODY/STUB_DM_CODE and STUB_COMMENT_BODY/STUB_COMMENT_CODE env vars (doc-version's GET/POST env vars are
-# added in that phase). ORDER MATTERS: the `*/comments*` pattern is listed BEFORE the bare
-# `*v1/docs/*` pattern (see this file's header note) so a doc-version call in a later phase
-# cannot be silently matched by this comments branch. Also tracks, via a file under the given
-# tracking dir, whether the comments branch or a later-added bare-docs branch was the one hit,
-# for case 15's assertion. Echoes the stub directory (to prepend to PATH).
+# STUB_DM_BODY/STUB_DM_CODE, STUB_COMMENT_BODY/STUB_COMMENT_CODE, STUB_DOCGET_BODY (the
+# pre-write GET's response, always 200), and STUB_DOCVER_BODY/STUB_DOCVER_CODE (the doc-version
+# POST's response) env vars. ORDER MATTERS: the `*/comments*` pattern is listed BEFORE the bare
+# `*v1/docs/*` pattern (see this file's header note) so a doc-version call cannot be silently
+# matched by the comments branch. The bare `*v1/docs/*` branch further distinguishes GET from
+# POST by the presence of a `--data` argument (sapience_get never sends one; sapience_post
+# always does) -- real curl distinguishes these by HTTP method, which this stub does not model,
+# so this is the deliberate stand-in. Also tracks, via a file under the given tracking dir,
+# which branch was hit, for case 15's and doc-version's own stub-identity assertions. Echoes the
+# stub directory (to prepend to PATH).
 build_curl_stub() {
   local stub_dir="$1" hit_dir="$2"
   mkdir -p "$stub_dir" "$hit_dir"
   cat > "$stub_dir/curl" <<STUB
 #!/usr/bin/env bash
 url="\${!#}"
+has_data="false"
+post_body=""
+prev=""
+for a in "\$@"; do
+  [ "\$a" = "--data" ] && has_data="true"
+  [ "\$prev" = "--data" ] && post_body="\$a"
+  prev="\$a"
+done
+[ -n "\$post_body" ] && printf '%s' "\$post_body" > "$hit_dir/last_post_body"
 case "\$url" in
   *v1/people/dm*)
     printf '%s' "\${STUB_DM_BODY:-{\\}}"
@@ -168,9 +195,15 @@ case "\$url" in
     printf '\\n%s' "\${STUB_COMMENT_CODE:-200}"
     ;;
   *v1/docs/*)
-    echo "bare-docs" >> "$hit_dir/branch_hits"
-    printf '%s' "\${STUB_DOCVER_BODY:-{\\}}"
-    printf '\\n%s' "\${STUB_DOCVER_CODE:-200}"
+    if [ "\$has_data" = "true" ]; then
+      echo "bare-docs-post" >> "$hit_dir/branch_hits"
+      printf '%s' "\${STUB_DOCVER_BODY:-{\\}}"
+      printf '\\n%s' "\${STUB_DOCVER_CODE:-200}"
+    else
+      echo "bare-docs-get" >> "$hit_dir/branch_hits"
+      printf '%s' "\${STUB_DOCGET_BODY:-{\\}}"
+      printf '\\n200'
+    fi
     ;;
   *)
     echo "test stub: unrecognized URL: \$url" >&2
@@ -455,6 +488,207 @@ done
     common_test_pass "(6) worktree-checkout-resolution block is byte-identical to sapience-remember.sh's"
   else
     common_test_fail "(6) worktree-checkout-resolution block is byte-identical to sapience-remember.sh's"
+  fi
+}
+
+# Fixture GET response used by every doc-version case below: rev=7, hash=differs-from-rev so a
+# case 20 regression (sending hash instead of rev) is distinguishable from the correct behavior.
+DV_GET_FIXTURE='{"slug":"oliver-ben-decisions","rev":7,"hash":"some-content-hash-not-7","body":"old body"}'
+
+# =====================================================================================
+# Case 16: doc-version --confirm on 409 head_moved -- exits non-zero, prints the server's head,
+# nothing retried (single POST only -- enforced structurally since the stub exits 7 on any
+# unrecognized second call, and none occurs here).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  body_file="$(mktemp -p "$TOP_WORKDIR")"
+  echo "new body" > "$body_file"
+  out="$(STUB_DOCGET_BODY="$DV_GET_FIXTURE" \
+    STUB_DOCVER_CODE="409" STUB_DOCVER_BODY='{"code":"head_moved","head":{"rev":8,"body":"someone else wrote this"}}' \
+    run_publish_stubbed "$scratch" "$stub_dir" doc-version "oliver-ben-decisions" --body-file "$body_file" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    common_test_pass "(16) doc-version --confirm, 409 head_moved: exits non-zero"
+  else
+    common_test_fail "(16) doc-version --confirm, 409 head_moved: exits non-zero" "got rc=$rc out=$out"
+  fi
+  if echo "$out" | grep -qi "head_moved" && echo "$out" | grep -q '"rev":8'; then
+    common_test_pass "(16) doc-version --confirm, 409 head_moved: prints the server's head"
+  else
+    common_test_fail "(16) doc-version --confirm, 409 head_moved: prints the server's head" "out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 17: doc-version --confirm on 202 (people_propose route) -- exits 0 with an outcome
+# distinguishable from "saved".
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  body_file="$(mktemp -p "$TOP_WORKDIR")"
+  echo "proposed body" > "$body_file"
+  out="$(STUB_DOCGET_BODY="$DV_GET_FIXTURE" \
+    STUB_DOCVER_CODE="202" STUB_DOCVER_BODY='{"status":"pending_review"}' \
+    run_publish_stubbed "$scratch" "$stub_dir" doc-version "oliver-ben-decisions" --body-file "$body_file" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(17) doc-version --confirm, 202 people_propose: exits 0"
+  else
+    common_test_fail "(17) doc-version --confirm, 202 people_propose: exits 0" "got rc=$rc out=$out"
+  fi
+  if echo "$out" | grep -qi "proposed" && ! echo "$out" | grep -qi "^sapience-publish.sh: doc-version: saved"; then
+    common_test_pass "(17) doc-version --confirm, 202: outcome is distinguishable from \"saved\""
+  else
+    common_test_fail "(17) doc-version --confirm, 202: outcome is distinguishable from \"saved\"" "out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 18: doc-version --confirm on 404 share_gone -- exits non-zero, message names the route
+# cannot create a shared-* slug.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  body_file="$(mktemp -p "$TOP_WORKDIR")"
+  echo "new shared doc body" > "$body_file"
+  out="$(STUB_DOCGET_BODY="$DV_GET_FIXTURE" \
+    STUB_DOCVER_CODE="404" STUB_DOCVER_BODY='{"code":"share_gone"}' \
+    run_publish_stubbed "$scratch" "$stub_dir" doc-version "shared-deadbeef00000000" --body-file "$body_file" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    common_test_pass "(18) doc-version --confirm, 404 share_gone: exits non-zero"
+  else
+    common_test_fail "(18) doc-version --confirm, 404 share_gone: exits non-zero" "got rc=$rc out=$out"
+  fi
+  if echo "$out" | grep -qi "share_gone" && echo "$out" | grep -qi "cannot be created"; then
+    common_test_pass "(18) doc-version --confirm, 404 share_gone: message names the route cannot create a shared-* slug"
+  else
+    common_test_fail "(18) doc-version --confirm, 404 share_gone: message names the route cannot create a shared-* slug" "out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 19: doc-version --confirm on a normal 200/201 save -- exits 0, prints the new revision.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  body_file="$(mktemp -p "$TOP_WORKDIR")"
+  echo "new saved body" > "$body_file"
+  out="$(STUB_DOCGET_BODY="$DV_GET_FIXTURE" \
+    STUB_DOCVER_CODE="200" STUB_DOCVER_BODY='{"rev":8,"ok":true}' \
+    run_publish_stubbed "$scratch" "$stub_dir" doc-version "oliver-ben-decisions" --body-file "$body_file" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(19) doc-version --confirm, 200 save: exits 0"
+  else
+    common_test_fail "(19) doc-version --confirm, 200 save: exits 0" "got rc=$rc out=$out"
+  fi
+  if echo "$out" | grep -q "new_rev=8"; then
+    common_test_pass "(19) doc-version --confirm, 200 save: prints the new revision"
+  else
+    common_test_fail "(19) doc-version --confirm, 200 save: prints the new revision" "out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 20: doc-version sends the GET's `rev` as base_rev, NOT its `hash` -- asserted on the
+# captured request body. This is the single most consequential correctness property of this
+# phase (Research Integration finding 2).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  body_file="$(mktemp -p "$TOP_WORKDIR")"
+  echo "new body" > "$body_file"
+  STUB_DOCGET_BODY="$DV_GET_FIXTURE" STUB_DOCVER_CODE="200" STUB_DOCVER_BODY='{"rev":8,"ok":true}' \
+    run_publish_stubbed "$scratch" "$stub_dir" doc-version "oliver-ben-decisions" --body-file "$body_file" --confirm >/dev/null 2>&1
+  sent_base_rev="$(jq -r '.base_rev' "$hit_dir/last_post_body" 2>/dev/null)"
+  if [ "$sent_base_rev" = "7" ]; then
+    common_test_pass "(20) doc-version sends base_rev=7 (the GET's rev), not the hash"
+  else
+    common_test_fail "(20) doc-version sends base_rev=7 (the GET's rev), not the hash" "sent_base_rev=$sent_base_rev body=$(cat "$hit_dir/last_post_body" 2>/dev/null)"
+  fi
+}
+
+# =====================================================================================
+# Case 21: doc-version --dry-run performs the GET but makes no POST.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  body_file="$(mktemp -p "$TOP_WORKDIR")"
+  echo "dry run body" > "$body_file"
+  out="$(STUB_DOCGET_BODY="$DV_GET_FIXTURE" \
+    run_publish_stubbed "$scratch" "$stub_dir" doc-version "oliver-ben-decisions" --body-file "$body_file" 2>/dev/null)"
+  rc=$?
+  base_rev_shown="$(echo "$out" | tail -n +2 | jq -r '.base_rev // empty' 2>/dev/null)"
+  if [ "$rc" -eq 0 ] && [ "$base_rev_shown" = "7" ]; then
+    common_test_pass "(21) doc-version --dry-run: performs the GET and shows the real base_rev=7"
+  else
+    common_test_fail "(21) doc-version --dry-run: performs the GET and shows the real base_rev=7" "rc=$rc base_rev_shown=$base_rev_shown out=$out"
+  fi
+  if [ ! -f "$hit_dir/branch_hits" ] || ! grep -qF "bare-docs-post" "$hit_dir/branch_hits" 2>/dev/null; then
+    common_test_pass "(21) doc-version --dry-run: makes no POST"
+  else
+    common_test_fail "(21) doc-version --dry-run: makes no POST" "branch_hits=$(cat "$hit_dir/branch_hits" 2>/dev/null)"
+  fi
+}
+
+# =====================================================================================
+# Case 22: an over-length body and a malformed slug are both refused locally, before any
+# network call (no stub installed for either sub-case).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  long_file="$(mktemp -p "$TOP_WORKDIR")"
+  python3 -c "print('a' * 200001, end='')" > "$long_file" 2>/dev/null || printf 'a%.0s' $(seq 1 200001) > "$long_file"
+  out="$(SAPIENCE_TOKEN="$TOKEN_FIXTURE" run_publish "$scratch" doc-version "oliver-ben-decisions" --body-file "$long_file" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    common_test_pass "(22) doc-version: over-length body refused locally before any network call"
+  else
+    common_test_fail "(22) doc-version: over-length body refused locally before any network call" "got rc=$rc"
+  fi
+
+  short_file="$(mktemp -p "$TOP_WORKDIR")"
+  echo "body" > "$short_file"
+  out2="$(SAPIENCE_TOKEN="$TOKEN_FIXTURE" run_publish "$scratch" doc-version "BAD SLUG!!" --body-file "$short_file" --confirm 2>&1)"
+  rc2=$?
+  if [ "$rc2" -ne 0 ]; then
+    common_test_pass "(22) doc-version: malformed slug refused locally before any network call"
+  else
+    common_test_fail "(22) doc-version: malformed slug refused locally before any network call" "got rc=$rc2 out=$out2"
+  fi
+}
+
+# =====================================================================================
+# Case 23: the bare-docs GET and POST stub branches (not the comments branch) are the ones hit
+# by a doc-version call.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  body_file="$(mktemp -p "$TOP_WORKDIR")"
+  echo "body" > "$body_file"
+  STUB_DOCGET_BODY="$DV_GET_FIXTURE" STUB_DOCVER_CODE="200" STUB_DOCVER_BODY='{"rev":8,"ok":true}' \
+    run_publish_stubbed "$scratch" "$stub_dir" doc-version "oliver-ben-decisions" --body-file "$body_file" --confirm >/dev/null 2>&1
+  hits="$(cat "$hit_dir/branch_hits" 2>/dev/null | sort -u | tr '\n' ',')"
+  if [ "$hits" = "bare-docs-get,bare-docs-post," ]; then
+    common_test_pass "(23) doc-version hits bare-docs-get then bare-docs-post, never the comments branch"
+  else
+    common_test_fail "(23) doc-version hits bare-docs-get then bare-docs-post, never the comments branch" "hits=$hits"
   fi
 }
 

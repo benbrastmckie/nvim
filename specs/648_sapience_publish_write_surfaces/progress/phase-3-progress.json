@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phase_name": "doc-version subcommand",
+  "started_at": "2026-11-19T00:00:00Z",
+  "last_updated": "2026-11-19T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Implement doc-version with pre-write GET and base_rev concurrency", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-publish.sh"]},
+    {"id": 2, "description": "Implement 4 distinct exit paths: 409 head_moved, 202 people_propose, 404 share_gone, 200/201 save", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-publish.sh"]},
+    {"id": 3, "description": "Add doc-version test cases", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-publish.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "'echo ... | jq ... 2>/dev/null >&2' to print jq's stdout to the real stderr while suppressing jq's own stderr", "result": "failed", "reason": "redirection order matters: 2>/dev/null first points fd2 at /dev/null, then >&2 dups fd1 from that already-redirected fd2, silently discarding both streams. Fixed by reversing to '>&2 2>/dev/null'."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "test-sapience-publish.sh: 36/36 green (23 structural/DM/comment cases + 13 new doc-version cases including the base_rev-not-hash assertion on the captured request body). grep for the four MCP write tool names: no occurrence. verify-touched.sh over the phase's 2 files: exit 0, both OWED, full 98-suite fallback battery 98/98 green."
+}
