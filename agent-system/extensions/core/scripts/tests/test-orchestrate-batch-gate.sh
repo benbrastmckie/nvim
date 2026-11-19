@@ -7,8 +7,11 @@
 # Coverage: no-implement no-op (no `batch_gate` key written); a finding attributed to exactly one
 # of two candidate tasks; a finding attributable to neither candidate landing in the unattributed
 # set; an identifier-free finding never cleared; a non-reproducing (flaky) candidate finding
-# dropped by the confirmation re-run; the `batch_gate` record shape; and the usage-error/
-# degenerate paths the sibling suites already pin (no args, missing --state-file).
+# dropped by the confirmation re-run; the `batch_gate` record shape; the usage-error/
+# degenerate paths the sibling suites already pin (no args, missing --state-file); and the
+# Red-Close Per-Task Record: a seeded red close writes exactly one `close-battery-red.jsonl` row
+# per attributed candidate and none for an unattributed-only one; `--dry-run` writes nothing; a
+# clean close writes nothing; a repeat close of the same session does not duplicate an open row.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (the SUT
 # was not found).
@@ -467,6 +470,138 @@ if [ -f "$marker_file_dry" ]; then
   common_test_pass "Case 11: --dry-run leaves an existing marker untouched"
 else
   common_test_fail "Case 11: --dry-run unexpectedly removed the marker"
+fi
+
+# write_fake_verify_always_red <rc> <line>
+# Unlike write_fake_verify_two_call (which models a distinct first/confirm pair and only ever
+# prints its first-call line on the SUT's very first verify-deploy.sh invocation), this stub
+# prints the SAME line on every invocation regardless of call count -- the shape a genuinely
+# persistent red battery across repeated orchestrate-batch-gate.sh runs needs, which the
+# idempotency case below exercises.
+write_fake_verify_always_red() {
+  local rc="$1" line="$2"
+  cat > "$VERIFY_STUB" <<EOF
+#!/usr/bin/env bash
+cat <<'LEOF'
+$line
+LEOF
+exit $rc
+EOF
+  chmod +x "$VERIFY_STUB"
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 12: a seeded red close writes exactly one close-battery-red.jsonl row for the attributed
+# task, and none for an unattributed-only (no-attribution) sibling task.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Case 12: seeded red close writes exactly one row per attributed task"
+setup_sandbox
+mkdir -p "$WORKDIR/sandbox/specs/920_alpha" "$WORKDIR/sandbox/specs/921_beta"
+write_state <<'EOF'
+{
+  "task_numbers": [920, 921],
+  "implement_agents": {"920": "general-implementation-agent"},
+  "invocation_modified_files": {
+    "920": ["agent-system/extensions/core/scripts/foo2.sh"],
+    "921": ["agent-system/extensions/core/scripts/bar2.sh"]
+  }
+}
+EOF
+write_fake_verify_always_red 1 \
+  "FINDING gate8 test-foo2.sh failure referencing agent-system/extensions/core/scripts/foo2.sh"
+run_sut --session sess_test --state-file "$STATE_FILE"
+redfile_920="$WORKDIR/sandbox/specs/920_alpha/records/close-battery-red.jsonl"
+redfile_921="$WORKDIR/sandbox/specs/921_beta/records/close-battery-red.jsonl"
+if [ -f "$redfile_920" ] && [ "$(wc -l < "$redfile_920")" -eq 1 ] && jq -e '.discharged_ts == null and .session_id == "sess_test"' "$redfile_920" >/dev/null 2>&1; then
+  common_test_pass "Case 12: exactly one open close-battery-red.jsonl row written for the attributed task"
+else
+  common_test_fail "Case 12: expected one open red-close row for candidate #920: $(cat "$redfile_920" 2>/dev/null || echo MISSING)"
+fi
+if [ ! -f "$redfile_921" ]; then
+  common_test_pass "Case 12: no red-close row/file written for the unattributed-only sibling task"
+else
+  common_test_fail "Case 12: unexpected red-close file for candidate #921: $(cat "$redfile_921")"
+fi
+if jq -e '.batch_gate.close_red_recorded_count == 1 and (.batch_gate.close_red_roster | length) == 1' "$STATE_FILE" >/dev/null 2>&1; then
+  common_test_pass "Case 12: batch_gate record carries close_red_recorded_count=1 and a matching roster"
+else
+  common_test_fail "Case 12: unexpected close_red fields: $(cat "$STATE_FILE")"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 13: --dry-run writes no close-battery-red.jsonl row even though the same fixture would
+# otherwise produce one.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Case 13: --dry-run red close writes nothing"
+setup_sandbox
+mkdir -p "$WORKDIR/sandbox/specs/922_gamma"
+write_state <<'EOF'
+{
+  "task_numbers": [922],
+  "implement_agents": {"922": "general-implementation-agent"},
+  "invocation_modified_files": {"922": ["agent-system/extensions/core/scripts/gamma2.sh"]}
+}
+EOF
+write_fake_verify_always_red 1 \
+  "FINDING gate8 test-gamma2.sh failure referencing agent-system/extensions/core/scripts/gamma2.sh"
+run_sut --session sess_test --state-file "$STATE_FILE" --dry-run
+redfile_922="$WORKDIR/sandbox/specs/922_gamma/records/close-battery-red.jsonl"
+if [ ! -f "$redfile_922" ]; then
+  common_test_pass "Case 13: --dry-run writes no close-battery-red.jsonl row"
+else
+  common_test_fail "Case 13: --dry-run unexpectedly wrote a red-close row: $(cat "$redfile_922")"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 14: a clean close (gate_exit_code 0) writes no close-battery-red.jsonl row.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Case 14: a clean close writes nothing"
+setup_sandbox
+mkdir -p "$WORKDIR/sandbox/specs/923_delta"
+write_state <<'EOF'
+{
+  "task_numbers": [923],
+  "implement_agents": {"923": "general-implementation-agent"},
+  "invocation_modified_files": {"923": ["agent-system/extensions/core/scripts/delta2.sh"]}
+}
+EOF
+write_fake_verify_two_call 0 "" ""
+run_sut --session sess_test --state-file "$STATE_FILE"
+redfile_923="$WORKDIR/sandbox/specs/923_delta/records/close-battery-red.jsonl"
+if [ ! -f "$redfile_923" ]; then
+  common_test_pass "Case 14: a clean close writes no close-battery-red.jsonl row"
+else
+  common_test_fail "Case 14: a clean close unexpectedly wrote a red-close row: $(cat "$redfile_923")"
+fi
+if jq -e '.batch_gate.close_red_recorded_count == 0' "$STATE_FILE" >/dev/null 2>&1; then
+  common_test_pass "Case 14: batch_gate record carries close_red_recorded_count=0"
+else
+  common_test_fail "Case 14: unexpected close_red_recorded_count: $(cat "$STATE_FILE")"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 15: a repeat close of the SAME session against a persistently red battery does not
+# duplicate an already-open row for the same task.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Case 15: a repeat close does not duplicate an open row"
+setup_sandbox
+mkdir -p "$WORKDIR/sandbox/specs/924_epsilon"
+write_state <<'EOF'
+{
+  "task_numbers": [924],
+  "implement_agents": {"924": "general-implementation-agent"},
+  "invocation_modified_files": {"924": ["agent-system/extensions/core/scripts/epsilon2.sh"]}
+}
+EOF
+write_fake_verify_always_red 1 \
+  "FINDING gate8 test-epsilon2.sh failure referencing agent-system/extensions/core/scripts/epsilon2.sh"
+run_sut --session sess_test --state-file "$STATE_FILE"
+run_sut --session sess_test --state-file "$STATE_FILE"
+redfile_924="$WORKDIR/sandbox/specs/924_epsilon/records/close-battery-red.jsonl"
+if [ -f "$redfile_924" ] && [ "$(wc -l < "$redfile_924")" -eq 1 ]; then
+  common_test_pass "Case 15: a repeat close of the same session leaves exactly one open row (no duplicate)"
+else
+  common_test_fail "Case 15: expected exactly one row after a repeat close: $(cat "$redfile_924" 2>/dev/null || echo MISSING)"
 fi
 
 echo ""

@@ -179,6 +179,64 @@ if [ -n "$unattributed_findings" ]; then
   printf '%s\n' "$unattributed_findings" | sed 's/^/    /' >&2
 fi
 
+# ─── Red-Close Per-Task Record: a nonzero gate_exit_code with at least one task carrying a
+# non-empty attributed finding set (from the Attribute step just above) writes a durable,
+# append-only, attributed row to that task's own records/close-battery-red.jsonl -- a deliberate
+# sibling of full-sweep-owed.jsonl's own shape (recorded_ts / discharged_ts-null-until-paid
+# convention), never a divergent copy. Idempotent PER SESSION: a re-run of the same session's
+# close does not duplicate an open row for the same task, mirroring unmapped-fallback-lib.sh's
+# own open-row-exists no-op (keyed there on path; keyed here on session_id, since this row's
+# identity is "this session's close against this task", not a path). Gated on gate_exit_code -ne
+# 0 AND not --dry-run; a clean close or a dry-run writes nothing here, leaving every open row
+# exactly as it was. Append-only: never deleted; the only mutation ever applied is a later clean
+# close's discharge stamp (see "Owed-Sweep Discharge" below for the sibling mechanism this
+# mirrors, and the open-obligation discharge this stage grows elsewhere). ─────────────────────────
+close_red_recorded_total=0
+close_red_roster_json="[]"
+if [ "$gate_exit_code" -ne 0 ] && [ "$dry_run" != "true" ]; then
+  while IFS= read -r _bg_rt; do
+    [ -z "$_bg_rt" ] && continue
+    _bg_rt_findings="$(echo "$attributed_json" | jq -c --arg t "$_bg_rt" '.[$t] // []' 2>/dev/null)"
+    _bg_rt_count="$(echo "$_bg_rt_findings" | jq 'length' 2>/dev/null)"
+    case "$_bg_rt_count" in ''|*[!0-9]*) _bg_rt_count=0 ;; esac
+    [ "$_bg_rt_count" -eq 0 ] && continue
+
+    _bg_rt_padded="$(printf '%03d' "$_bg_rt" 2>/dev/null)" || continue
+    _bg_rt_task_dir="$(find "${PROJECT_ROOT}/specs" -maxdepth 1 -type d -name "${_bg_rt_padded}_*" 2>/dev/null | head -1)"
+    [ -z "$_bg_rt_task_dir" ] && continue
+    _bg_rt_records_dir="${_bg_rt_task_dir}/records"
+    _bg_rt_records_file="${_bg_rt_records_dir}/close-battery-red.jsonl"
+    mkdir -p "$_bg_rt_records_dir" 2>/dev/null
+
+    _bg_rt_open_count=0
+    if [ -f "$_bg_rt_records_file" ]; then
+      _bg_rt_open_count="$(jq -s --arg sid "$session_id" \
+        '[.[] | select(.discharged_ts == null and .session_id == $sid)] | length' \
+        "$_bg_rt_records_file" 2>/dev/null)"
+      case "$_bg_rt_open_count" in ''|*[!0-9]*) _bg_rt_open_count=0 ;; esac
+    fi
+    if [ "$_bg_rt_open_count" -gt 0 ]; then
+      # An OPEN row for this session already exists for this task -- never duplicate, never delete.
+      continue
+    fi
+
+    _bg_rt_ts="$(common_timestamp_iso 2>/dev/null || date -u +%Y-%m-%dT%H:%M:%SZ)"
+    _bg_rt_row="$(jq -n -c \
+      --arg ts "$_bg_rt_ts" \
+      --arg session_id "$session_id" \
+      --argjson gate_exit_code "$gate_exit_code" \
+      --argjson findings "$_bg_rt_findings" \
+      '{recorded_ts: $ts, discharged_ts: null, session_id: $session_id,
+        gate_exit_code: $gate_exit_code, findings: $findings}')"
+    printf '%s\n' "$_bg_rt_row" >> "$_bg_rt_records_file"
+    close_red_recorded_total=$((close_red_recorded_total + 1))
+    close_red_roster_json="$(jq -c -n --argjson a "$close_red_roster_json" \
+      --arg task "$_bg_rt" --arg path "$_bg_rt_records_file" --argjson fc "$_bg_rt_count" \
+      '$a + [{task: $task, path: $path, finding_count: $fc}]')"
+  done < <(echo "$mt_json" | jq -r '(.task_numbers // [])[]' 2>/dev/null)
+fi
+echo "[orchestrate-batch-gate] red-close: recorded=${close_red_recorded_total}" >&2
+
 confirmed_count="$(printf '%s\n' "$confirmed_findings" | grep -c . || true)"
 [ -z "$confirmed_findings" ] && confirmed_count=0
 unattributed_count="$(printf '%s\n' "$unattributed_findings" | grep -c . || true)"
@@ -233,6 +291,8 @@ batch_gate_record="$(jq -n -c \
   --argjson owed_discharged "$owed_discharged_total" \
   --argjson owed_open "$owed_open_total" \
   --argjson owed_open_roster "$owed_open_roster_json" \
+  --argjson close_red_recorded "$close_red_recorded_total" \
+  --argjson close_red_roster "$close_red_roster_json" \
   --arg ts "$(common_timestamp_iso 2>/dev/null || date -u +%Y-%m-%dT%H:%M:%SZ)" \
   '{
     ran_at: $ts,
@@ -242,7 +302,9 @@ batch_gate_record="$(jq -n -c \
     unattributed: ($unattributed | split("\n") | map(select(length > 0))),
     owed_discharged_count: $owed_discharged,
     owed_open_count: $owed_open,
-    owed_open_roster: $owed_open_roster
+    owed_open_roster: $owed_open_roster,
+    close_red_recorded_count: $close_red_recorded,
+    close_red_roster: $close_red_roster
   }')"
 
 if [ "$dry_run" = "true" ]; then

@@ -172,6 +172,56 @@ in each task's own `records/` directory.
 "this run was clean" verdict exists at all; a separate discharge pass would need to re-derive or
 duplicate that verdict rather than reading it directly off `gate_exit_code`.
 
+## Red-Close Per-Task Record
+
+A red close (nonzero `gate_exit_code`) writes a durable, append-only, attributed record to every
+implicated task's own `records/close-battery-red.jsonl` — a deliberate SIBLING of
+`records/full-sweep-owed.jsonl`'s own shape, not a divergent copy. Sited immediately after the
+Attribute step (see "Evidence Base" above), which already holds each task's attributed finding
+set, so no new attribution logic is added for this.
+
+**Schema** (one JSON object per line):
+```
+{"recorded_ts": "<ISO8601>", "discharged_ts": null, "session_id": "...",
+ "gate_exit_code": N, "findings": ["...", "..."]}
+```
+Same `recorded_ts` / `discharged_ts`-null-until-paid convention as the owed-sweep row; plus
+`session_id` (this invocation's session), `gate_exit_code` (the settled nonzero verdict), and
+`findings` (that task's own attributed subset of `confirmed_findings`).
+
+**Write gate**: for every task number in `.task_numbers` whose own entry in `attributed_json`
+(the Attribute step's output) is non-empty, append one row to that task's
+`records/close-battery-red.jsonl` **if and only if** `gate_exit_code -ne 0` AND this invocation
+is not `--dry-run`. A clean close or a `--dry-run` invocation writes nothing. A task implicated
+only through the batch-level `unattributed` set (never claimed by any task's own
+`modified_files`) gets no row — this record is for the attributed-cause case only.
+
+**Idempotent per session, not per path**: unlike the owed-sweep row (keyed on an open row for
+the same `path`), this row's identity is "this session's close against this task" — a re-run of
+the SAME session's close does not append a second open row for a task that already carries one,
+mirroring `unmapped-fallback-lib.sh`'s own open-row-exists no-op but keyed on `session_id`
+instead of `path`.
+
+**Discharge rule**: append-only; never deleted. The only mutation ever applied to an existing row
+is a later clean close's discharge stamp (`discharged_ts`) — see "Open Close Obligations" for the
+discharge mechanics once that section exists, mirroring the owed-sweep discharge above.
+
+**Carried in the `batch_gate` record**: `close_red_recorded_count` (rows newly written this run)
+and `close_red_roster` (an array of `{task, path, finding_count}` objects for every row written
+this run) — read by `context/patterns/orchestrate-batch-results-template.md`'s Batch Gate Stage
+Result section to render the per-task roster and its operator remedy in the consolidated output.
+
+**Operator remedy**: re-run the named scoped check (`scripts/verify-touched.sh` or
+`scripts/verify-deploy.sh --only-gate N[,M...]`) for that task's own files, fix what it finds,
+then re-run the close so a clean result discharges the row.
+
+**Rejected alternative**: holding every implicated task's completion open pending a green close,
+rejected because it couples one task's completion to unrelated siblings' files under
+concurrency — the attribution hazard the shared-capture design above already argues against.
+This record's own write gate binds nothing to task status by itself; see
+`scripts/orchestrate-close-status-bind.sh`'s own contract for the status-binding mechanism that
+reads this record.
+
 ## Finding Severity: `FINDING ` vs. `WARN-FINDING `
 
 The evidence pipeline's `deploy_findings_snapshot` (`scripts/lib/deploy-baseline-lib.sh`) filters
@@ -233,11 +283,14 @@ that file for the exact bounded-waiter invocation. In outline:
    back, when present, by the consolidated-output renderer
    (`context/patterns/orchestrate-batch-results-template.md`'s batch-gate result section) and by
    the final `.return-meta-multi-${session_id}.json` write (`context/formats/return-metadata-file.md`).
-4. No task's own `state.json` entry, status, or completion verdict is touched by this stage. A
-   `batch_gate` finding — attributed or unattributed — is rendered as a BATCH-level result,
-   informational to the user, never folded into one task's own completion status. Whether and how
-   a future task mechanically enforces against this record is explicitly out of this contract's
-   scope (see `context/formats/plan-format.md`'s Non-Goals on mechanical tier enforcement).
+4. This stage writes a durable, attributed, per-task record under an implicated task's own
+   `records/close-battery-red.jsonl` on a red close (see "Red-Close Per-Task Record" below), but
+   no task's own `state.json` entry, status, or completion verdict is touched BY THIS STAGE
+   ITSELF. A `batch_gate` finding — attributed or unattributed — is rendered as a BATCH-level
+   result, informational to the user. Binding a red close's verdict to an attributed task's own
+   completion status is a separate, sibling mechanism (`scripts/orchestrate-close-status-bind.sh`,
+   invoked immediately after this stage in Move 4) — this stage's own contract stays limited to
+   capture, confirm, attribute, and record; it never mutates `state.json` directly.
 
 ## Coexistence Boundary With the Conclusion Stage
 

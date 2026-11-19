@@ -305,41 +305,42 @@ before editing, and treat an extra hit as an extra edit site rather than adjusti
 
 ---
 
-### Phase 3: Durable Attributed Per-Task Record for a Red Close [NOT STARTED]
+### Phase 3: Durable Attributed Per-Task Record for a Red Close [COMPLETED]
 
 **Goal**: A red close battery writes a durable, append-only, attributed record per implicated task,
 rendered in the consolidated output with an explicit operator remedy.
 
 **Tasks**:
-- [ ] Add a per-task red-close record writer to `scripts/orchestrate-batch-gate.sh`, sited
+- [x] Add a per-task red-close record writer to `scripts/orchestrate-batch-gate.sh`, sited
       immediately after the Attribute step (which already holds each task's attributed finding set,
       so no new attribution logic is added). For every task with a non-empty attributed set when
       `gate_exit_code` is nonzero and this is not `--dry-run`, append one row to that task's
       `records/close-battery-red.jsonl`, resolving the task directory with the same
       `find specs -maxdepth 1 -type d -name "${padded}_*"` glob the owed-sweep step already uses.
-- [ ] Declare the row shape as a deliberate sibling of `records/full-sweep-owed.jsonl`'s, not a
+- [x] Declare the row shape as a deliberate sibling of `records/full-sweep-owed.jsonl`'s, not a
       divergent copy: same `recorded_ts` / `discharged_ts`-null-until-paid convention, plus
       `session_id`, `gate_exit_code`, and the attributed `findings` array. Append-only; never
       deleted; the only mutation ever applied is a later clean close's discharge stamp.
-- [ ] Make the append idempotent per session: a re-run of the same session's close does not
+- [x] Make the append idempotent per session: a re-run of the same session's close does not
       duplicate an open row for the same task, mirroring `unmapped-fallback-lib.sh`'s own
       open-row-exists no-op.
-- [ ] Carry the new counts in the `batch_gate` record: `close_red_recorded_count` and a
+- [x] Carry the new counts in the `batch_gate` record: `close_red_recorded_count` and a
       `close_red_roster` array of `{task, path, finding_count}`.
-- [ ] Add a "Red-Close Per-Task Record" section to `context/contracts/batch-gate-stage.md`
+- [x] Add a "Red-Close Per-Task Record" section to `context/contracts/batch-gate-stage.md`
       documenting the schema, the write gate, and the discharge rule; amend that file's
       "no task's own state is touched" item so it states what this stage now writes (a per-task
       record under the task's own `records/`) and what it still does not touch (that task's
       `state.json` entry — Phase 4 moves that boundary, and this phase's edit must not claim it
       early).
-- [ ] Extend `context/patterns/orchestrate-batch-results-template.md`'s Batch Gate Stage Result
+- [x] Extend `context/patterns/orchestrate-batch-results-template.md`'s Batch Gate Stage Result
       with a red-close sub-result: the per-task roster and the explicit operator remedy (re-run the
       named scoped check for that task's own files, fix, then re-run the close to discharge the
       row).
-- [ ] Extend `scripts/tests/test-orchestrate-batch-gate.sh`: a seeded red close writes exactly one
+- [x] Extend `scripts/tests/test-orchestrate-batch-gate.sh`: a seeded red close writes exactly one
       row per attributed task and none for an unattributed-only finding; a `--dry-run` red close
       writes nothing; a clean close writes nothing; a repeat close does not duplicate an open row.
-- [ ] Reconcile `index-entries.json` line counts.
+      *(completed: Cases 12-15 added, all PASS -- 36 passed, 0 failed.)*
+- [x] Reconcile `index-entries.json` line counts.
 
 **Timing**: 1.5 hours
 

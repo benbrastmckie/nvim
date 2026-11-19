@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Durable Attributed Per-Task Record for a Red Close",
+  "started_at": "2026-11-18T22:15:00Z",
+  "last_updated": "2026-11-18T23:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add per-task red-close record writer to orchestrate-batch-gate.sh", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-gate.sh"]},
+    {"id": 2, "description": "Declare row shape as sibling of full-sweep-owed.jsonl", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Make append idempotent per session", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Carry close_red_recorded_count/close_red_roster in batch_gate record", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Add Red-Close Per-Task Record section to batch-gate-stage.md; amend no-status-touch item", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/contracts/batch-gate-stage.md"]},
+    {"id": 6, "description": "Extend orchestrate-batch-results-template.md with red-close sub-result", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"]},
+    {"id": 7, "description": "Extend test-orchestrate-batch-gate.sh: 4 new cases", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh"]},
+    {"id": 8, "description": "Reconcile index-entries.json line counts", "status": "done",
+     "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

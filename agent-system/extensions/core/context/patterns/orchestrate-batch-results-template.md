@@ -212,6 +212,30 @@ An empty table with `{owed_open_count}` of 0 means every owed record this invoca
 was just discharged (or none existed); it does NOT mean no task anywhere has an open owed record
 — only tasks this invocation's own `.task_numbers` iterated are ever checked.
 
+**Red-close sub-result** (rendered only when `batch_gate.close_red_recorded_count` is nonzero;
+omitted entirely on a clean close or a `--dry-run` invocation, where it is always 0; see
+`context/contracts/batch-gate-stage.md`'s "Red-Close Per-Task Record" section for the full write
+contract this renders):
+
+[RED CLOSE: {close_red_recorded_count} per-task record(s) written — the complete gate set found
+an attributed break this invocation]
+
+A row below names a task this invocation's own close battery found attributable evidence
+against, with its own open `records/close-battery-red.jsonl` row and finding count. **Operator
+remedy**: re-run the named scoped check (`scripts/verify-touched.sh` or `scripts/verify-deploy.sh
+--only-gate N[,M...]`) for that task's own files, fix what it finds, then re-run the close so a
+clean result discharges the row.
+
+| Task | Record Path | Finding Count |
+|------|-------------|----------------|
+| #42 | `specs/042_some_task/records/close-battery-red.jsonl` | 2 |
+
+A task appearing here that was also marked `[COMPLETED]` earlier in this run is the attributed
+cause of a red close and does not stay `[COMPLETED]` on the strength of its own scoped check
+alone — see `scripts/orchestrate-close-status-bind.sh`'s own contract and
+`context/standards/status-markers.md`'s `[COMPLETED]` subsection for the demotion this produces,
+rendered separately from this roster.
+
 ### Conclusion
 
 (Rendered once per invocation, as part of Move 5's own Step 6 — the single site that EMITS this
