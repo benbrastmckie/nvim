@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a six-phase implementation plan for the host-scoped gate mutex. The plan parameterizes acquire_named_mutex/release_named_mutex with a trailing optional base directory (default $PROJECT_ROOT/specs, so no existing caller is edited at all), adds resolve_host_lock_root() with the three-tier chain plus a test-only override, exposes an opt-in gate-acquire-host/gate-release-host verb pair carrying the binds-only-cooperating-callers contract text, and wires all THREE gate-acquire brackets (run-all.sh plus verify-deploy.sh's two batteries) host-outer/repo-inner with a distinct GATE_MUTEX_HOST_HELD flag. Coverage is a new two-fixture-root suite proving cross-directory serialization with a distinct-roots non-vacuousness control, plus two lock-root degradation cases. Every structural claim in the research report was re-derived from source at plan time, and one registration surface the report did not name (manifest.json's per-file provides.scripts[] list, sync-enforced by test-manifest-scripts-sync.sh) was added to the test phase.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/653_host_scoped_gate_mutex/plans/01_host-scoped-gate-mutex.md",
+      "summary": "Six-phase plan: resolver + primitive parameterization, opt-in verb pair + contract text, three-bracket wiring, cross-directory and degradation coverage, canonical-spec section, redeploy and close."
+    }
+  ],
+  "dispatch_seq": 4
+}

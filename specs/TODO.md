@@ -107,7 +107,7 @@ next_project_number: 654
 
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-653 [PLANNING] — Give the gate mutex a host-scoped form, because every lock...
+653 [PLANNED] — Give the gate mutex a host-scoped form, because every lock...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -186,11 +186,12 @@ next_project_number: 654
 ## Tasks
 
 ### 653. Host scoped gate mutex
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 610
 - **Research**: [653_host_scoped_gate_mutex/reports/01_host-scoped-gate-mutex.md]
+- **Plan**: [653_host_scoped_gate_mutex/plans/01_host-scoped-gate-mutex.md]
 
 **Description**: Give the gate mutex a host-scoped form, because every lock this system ships is invisible to a sibling repository running the same battery
 
