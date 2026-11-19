@@ -437,37 +437,52 @@ directly before deciding between the narrowing branch and the no-op branch.
 
 ---
 
-### Phase 4: Batch-Gate-Pending Marker Lifecycle [NOT STARTED]
+### Phase 4: Batch-Gate-Pending Marker Lifecycle [COMPLETED]
 
 **Goal**: Write a durable, staleness-bounded marker whenever this invocation's batch gate stage
 will run, and remove it when that stage discharges — the producer half of the mechanical guard,
 covering a batch of one identically to a multi-task batch.
 
 **Tasks**:
-- [ ] Write `specs/.orchestration/batch-gate-pending-<session_id>.json` from
+- [x] Write `specs/.orchestration/batch-gate-pending-<session_id>.json` from
       `orchestrate-cycle-plan.sh` whenever this cycle dispatches at least one `implement` phase,
       carrying `session_id`, `pid`, `written_at`, the invocation's task numbers, and the per-task
       `dispatch_seq`. Gate it on "at least one implement dispatch occurred", matching
-      `batch-gate-stage.md`'s own trigger — **never** on task count.
-- [ ] Remove the `-gt 1` task-count gate on the `--batch-gate-deferral` directive so a
+      `batch-gate-stage.md`'s own trigger — **never** on task count. *(completed: gated on the
+      FINAL `.implement_agents` map's own length, read once after the whole per-task loop
+      completes — the exact same emptiness test `orchestrate-batch-gate.sh`'s own no-op check
+      already uses)*
+- [x] Remove the `-gt 1` task-count gate on the `--batch-gate-deferral` directive so a
       single-task implement invocation receives the same directive as a batch, closing the
-      single-task invariance gap `batch-gate-stage.md` documents.
-- [ ] Remove the marker from `orchestrate-batch-gate.sh` once its own run has completed and its
+      single-task invariance gap `batch-gate-stage.md` documents. *(completed)*
+- [x] Remove the marker from `orchestrate-batch-gate.sh` once its own run has completed and its
       `batch_gate` record is written — the discharge point, so the marker's lifetime matches the
-      owed obligation exactly.
-- [ ] Make removal idempotent and failure-tolerant: a missing marker at discharge is normal (a
-      research-only invocation never wrote one) and must not fail the stage.
-- [ ] Define the staleness window in one place and document it, so a crashed orchestrator cannot
+      owed obligation exactly. *(completed; never on the --dry-run or no-op paths, matching those
+      paths' own no-mutation contracts)*
+- [x] Make removal idempotent and failure-tolerant: a missing marker at discharge is normal (a
+      research-only invocation never wrote one) and must not fail the stage. *(completed: bare
+      `rm -f ... || true`)*
+- [x] Define the staleness window in one place and document it, so a crashed orchestrator cannot
       wedge verification: a marker older than the window is ignored by consumers with a loud,
-      named warning.
-- [ ] Update `context/contracts/batch-gate-stage.md`: the directive is no longer task-count
+      named warning. *(completed: new `scripts/lib/batch-gate-marker-lib.sh`,
+      `BATCH_GATE_MARKER_STALE_SEC` default 3600s, sourced by both the writer and the
+      discharger; Phase 5's entry guards will be its third consumer)*
+- [x] Update `context/contracts/batch-gate-stage.md`: the directive is no longer task-count
       gated, the marker is the mechanical half, and its single-task invariance section now
-      describes the new behavior.
-- [ ] Add a test suite pinning: marker written on an implement dispatch including a batch of one;
+      describes the new behavior. *(completed; also records the Phase 5 entry-guard contract
+      up front, since both phases land in the same body of work)*
+- [x] Add a test suite pinning: marker written on an implement dispatch including a batch of one;
       not written on a research-only or plan-only invocation; removed at discharge; idempotent
-      removal with no marker present; and the staleness window honored.
-- [ ] Declare the new suite in `manifest.json` `provides.scripts` and
-      `scripts/tests/suite-classification.data`.
+      removal with no marker present; and the staleness window honored. *(completed, split across
+      three homes rather than one dedicated fixture: the write-side cases (batch-of-one write,
+      research-only non-write) were added to `test-orchestrate-cycle-plan.sh`'s own Group 4/5,
+      reusing its already-live, non-dry-run implement-dispatch fixture rather than re-deriving
+      one; the discharge-removal/idempotency/dry-run cases were added as `test-orchestrate-batch-gate.sh`'s
+      own Case 11; and the new `test-batch-gate-pending-marker.sh` owns the library's own pure
+      functions -- path construction, staleness-window honoring (including the exact-boundary
+      and malformed-input fail-open cases), and the warning text)*
+- [x] Declare the new suite in `manifest.json` `provides.scripts` and
+      `scripts/tests/suite-classification.data`. *(completed, plus the new library file itself)*
 
 **Timing**: 2 hours
 

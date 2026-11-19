@@ -51,6 +51,7 @@ test-askuserquestion-rehome.sh	unit	-
 test-assess-repo-health.sh	unit	-
 test-audit-task-proposals.sh	unit	-
 test-backfill-file-scope.sh	integration	invokes:deploy-headless.sh
+test-batch-gate-pending-marker.sh	unit	-
 test-census-count.sh	unit	-
 test-central-log-lib.sh	unit	-
 test-check-record-versioning.sh	unit	-

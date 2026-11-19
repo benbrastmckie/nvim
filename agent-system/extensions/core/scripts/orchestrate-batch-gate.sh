@@ -54,6 +54,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/lib/deploy-baseline-lib.sh"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/batch-gate-marker-lib.sh"
 
 usage() {
   cat <<'USAGE'
@@ -246,4 +248,15 @@ fi
 
 jq --argjson bg "$batch_gate_record" '.batch_gate = $bg' "$state_file" > "${state_file}.tmp" && mv "${state_file}.tmp" "$state_file"
 echo "[orchestrate-batch-gate] batch_gate record written to ${state_file}." >&2
+
+# ── Batch-gate-pending marker removal (the discharge point) ─────────────────────────────────
+# This run just discharged the complete-gate-set obligation the marker represents -- remove it
+# now, idempotently and failure-tolerantly. A missing marker here is NORMAL, not an error: this
+# script's own trigger condition above already guarantees at least one implement dispatch
+# occurred THIS session, but a crash between that dispatch and this discharge, an operator
+# deleting the marker by hand (sanctioned per its own escape-hatch design), or a staleness-aware
+# consumer already having ignored/removed it, are all unexceptional. Never fail this stage over
+# a removal that doesn't happen.
+_bg_marker_file="$(batch_gate_marker_path "$PROJECT_ROOT" "$session_id")"
+rm -f "$_bg_marker_file" 2>/dev/null || true
 exit 0

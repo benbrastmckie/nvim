@@ -67,20 +67,38 @@ Inter-Cycle Redeploy Checkpoint (`context/patterns/batch-orchestration-guardrail
 research-only or plan-only invocation never touches source-store files the gate would have
 anything new to say about.
 
-**Single-task and single-task-implement-dispatch invariance**: this stage's trigger is read from
-the multi-task engine's own state, which a single-task implement-phase dispatch never creates and
-a single-task
-`/orchestrate N` populates with exactly one `implement_agents` entry — but critically, Mechanism A
-(the dispatch-time deferral) is gated on `.task_numbers | length > 1` at `orchestrate-cycle-plan.sh`'s
-`build_args` composition, so a single-task invocation never emits the `## Batch Gate Deferral`
-directive in the first place. That task's own final phase therefore still runs the complete gate
-set inline, exactly as before this design existed — this stage running afterward (or not; the
-`--batch-gate-deferral` flag was never set, so there is nothing deferred to discharge) changes
-nothing observable for that invocation shape. The non-negotiable invariant from
+**Single-task invariance (current behavior — superseded a task-count-gated predecessor).**
+Mechanism A's `## Batch Gate Deferral` directive is **no longer gated on `.task_numbers | length
+> 1`**: `orchestrate-cycle-plan.sh`'s `build_args` composition now appends `--batch-gate-deferral`
+for every `implement`-phase dispatch, unconditionally, closing the gap the task-count gate used
+to leave open — a batch of ONE now defers to this stage exactly like a genuine multi-task batch.
+This is made SAFE to do unconditionally by the mechanical half that accompanies it: a
+**batch-gate-pending marker** (`specs/.orchestration/batch-gate-pending-<session_id>.json`,
+written by `orchestrate-cycle-plan.sh` whenever this session's final `.implement_agents` map is
+non-empty — never gated on task count either — and removed by this script at its own discharge
+point, see "Owed-Sweep Discharge" above for the sibling mechanism this mirrors). The marker's own
+path convention, shape, and staleness window (`BATCH_GATE_MARKER_STALE_SEC`, default 3600s) are
+owned by `scripts/lib/batch-gate-marker-lib.sh`, the single source of truth every producer/
+discharger/consumer sources rather than re-deriving. The entry guards this marker's existence
+feeds (a nested unfiltered `verify-deploy.sh`/`run-all.sh` invocation mechanically refusing
+itself while a non-stale marker is pending) are the consumer half of this same mechanism — see
+their own contract note below. The non-negotiable invariant from
 `context/formats/plan-format.md`'s `## Verification Tiers` section — the complete gate set still
-runs, once, before the batch's tasks are done — is preserved by Mechanism A/B together across a
-genuine multi-task batch, and by the UNCHANGED per-task final phase alone for every other
-invocation shape.
+runs, once, before the batch's tasks are done — is now preserved by Mechanism A/B together across
+EVERY invocation shape, including a batch of one, rather than by the task's own final phase
+running the complete set inline as a fallback for that one shape.
+
+**Entry guards (the consumer half, Phase 5).** `verify-deploy.sh` and `run-all.sh` each carry an
+entry guard at their own top level: when a non-stale batch-gate-pending marker exists for ANY
+session, this invocation is not itself nested (`VERIFY_DEPLOY_WAS_NESTED_AT_ENTRY` /
+`RUN_ALL_WAS_NESTED_AT_ENTRY`) and not a guest (`GATE_MUTEX_HELD`), and the invocation is
+unfiltered (no `--only-gate`/`--gate8-touched` for `verify-deploy.sh`; no `--only`/`--class`/
+`--tag`/`--cost-class` for `run-all.sh`), the guard refuses before any gate/suite runs, printing a
+DEFERRED line naming the marker's session and age, and exits with a RESERVED status (never 0,
+never 1, never 2 — documented in each script's own exit-code header). A scoped invocation is
+never refused by this guard, whether or not a marker exists; a nested/guest invocation is
+byte-identical to before this guard existed. `orchestrate-batch-gate.sh` itself passes the
+guard's documented override flag, since the discharger must never refuse itself.
 
 ## Evidence Base
 

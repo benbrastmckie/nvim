@@ -5,8 +5,18 @@
     "session_id": "sess_1795039913_ab1940",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 0,
     "phases_total": 8
-  }
+  },
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/lib/batch-gate-marker-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
+  ]
 }

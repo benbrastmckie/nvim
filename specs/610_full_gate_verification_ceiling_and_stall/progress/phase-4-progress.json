@@ -1,0 +1,67 @@
+{
+  "phase": 4,
+  "phase_name": "Batch-Gate-Pending Marker Lifecycle",
+  "started_at": "2026-11-19T02:20:00Z",
+  "last_updated": "2026-11-19T03:30:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "New shared library batch-gate-marker-lib.sh (path, staleness window, fail-open helpers)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/batch-gate-marker-lib.sh",
+        "agent-system/extensions/core/manifest.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "orchestrate-cycle-plan.sh writes the marker; drops the -gt 1 directive gate",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "orchestrate-batch-gate.sh removes the marker at discharge, idempotently",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-batch-gate.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Test coverage split across three homes; batch-gate-marker-lib.sh declared",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh",
+        "agent-system/extensions/core/scripts/tests/test-batch-gate-pending-marker.sh",
+        "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Update batch-gate-stage.md contract documentation",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/contracts/batch-gate-stage.md"
+      ]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "A dedicated, from-scratch fixture suite for the marker write/removal behavior",
+      "result": "failed",
+      "reason": "orchestrate-cycle-plan.sh's own existing test fixture is 6600+ lines; standing up an equivalent fixture from scratch for 2 new assertions would be enormously more costly than reusing an existing live (non-dry-run) implement-dispatch case already present in its Group 4/5. Reused instead; the dedicated new suite (test-batch-gate-pending-marker.sh) owns only the library's pure functions."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Adding batch-gate-marker-lib.sh as a new orchestrate-cycle-plan.sh dependency broke every case in test-orchestrate-cycle-plan.sh and test-orchestrate-batch-gate.sh downstream of the first sandbox setup, because their fixture sandboxes copy a curated, hand-maintained list of lib/*.sh files and had no entry for a lib that did not exist yet at suite-authoring time. Fixed by adding the new lib to both suites' copy lists (444 passed/0 failed; 29 passed/0 failed respectively). A third, independently-maintained fixture (test-force-phases.sh) had the exact same gap; fixed identically (36 passed/0 failed). A verify-touched.sh run against the still-undeployed tree continues to report test-force-phases.sh as a NEW failure after this fix -- confirmed as pre-deploy staleness (deployed copy has zero references to the new lib; source-store copy has four), not a regression, resolving at Phase 8's redeploy."
+  ]
+}

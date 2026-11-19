@@ -284,6 +284,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 source "${SCRIPT_DIR}/lib/runtime-file-patterns.sh"
+source "${SCRIPT_DIR}/lib/batch-gate-marker-lib.sh"
 # Degrade-safe guarded source (context/patterns/regeneration-is-manual-only.md's "Redeploy-Remedy
 # Emission Sites" subsection, Decision 1(c)): a missing lib falls back to a no-op fragment rather
 # than a source-time failure.
@@ -2861,16 +2862,18 @@ for t in "${probed_dispatch_post_h1[@]}"; do
   [ "$compare_flag" = "true" ] && [ "$g" = "implement" ] && build_args+=(--compare)
   [ "$gate_flag" = "true" ] && [ "$g" = "implement" ] && build_args+=(--gate)
   # --batch-gate-deferral: narrows an implement-phase dispatch's own full-gate obligation to a
-  # scoped tier when this invocation is a genuine multi-task batch, deferring the complete gate
-  # set to the once-per-invocation shared batch-gate stage (see orchestrate-build-dispatch.sh's
-  # own header comment and context/formats/plan-format.md's "Batch-aware deferral" subsection).
-  # Deliberately reads the INVOCATION-level `.task_numbers` count from mt_state_file, NOT the
-  # per-cycle `probed_dispatch_post_h1` count used for --territory above: a batch whose siblings
-  # are staggered across cycles (not all dispatched in this same cycle) is still a batch, and
-  # must still defer, even on a cycle where this is the only task actually dispatched.
-  _bgd_task_count="$(mt_get_json '.task_numbers | length' 2>/dev/null)"
-  case "$_bgd_task_count" in ''|*[!0-9]*) _bgd_task_count=0 ;; esac
-  if [ "$g" = "implement" ] && [ "$_bgd_task_count" -gt 1 ]; then
+  # scoped tier, deferring the complete gate set to the once-per-invocation shared batch-gate
+  # stage (see orchestrate-build-dispatch.sh's own header comment and
+  # context/formats/plan-format.md's "Batch-aware deferral" subsection). NO LONGER gated on
+  # `.task_numbers | length > 1` (Phase 4 of the gate-ceiling-fit work): a batch of ONE now
+  # receives this directive identically to a genuine multi-task batch, closing the single-task
+  # invariance gap context/contracts/batch-gate-stage.md's own trigger section documented. The
+  # mechanical half that makes this safe to do unconditionally is the batch-gate-pending marker
+  # written above (this cycle's own `specs/.orchestration/batch-gate-pending-<session_id>.json`)
+  # plus the entry guards Phase 5 adds to verify-deploy.sh/run-all.sh: a nested unfiltered
+  # battery now mechanically refuses itself when a marker is pending, rather than merely being
+  # asked not to run one by this advisory directive text alone.
+  if [ "$g" = "implement" ]; then
     build_args+=(--batch-gate-deferral)
   fi
   [ "$hard_mode" = "true" ] && build_args+=(--hard)
@@ -3199,6 +3202,35 @@ done
 
 mt_set --argjson c "$new_cycle_count" '.cycle_count = $c'
 mt_save
+
+# ── Batch-gate-pending marker (Phase 4 of the gate-ceiling-fit work; see
+# context/contracts/batch-gate-stage.md's single-task invariance section) ───────────────────
+# Write a durable, staleness-bounded marker whenever THIS cycle dispatched at least one
+# `implement` phase -- gated on `.implement_agents` being non-empty (the EXACT trigger
+# orchestrate-batch-gate.sh's own no-op check already reads), NEVER on task count. This is what
+# makes a batch of one receive the same mechanical guard a genuine multi-task batch gets: the
+# `--batch-gate-deferral` directive above (see its own comment) is no longer task-count-gated
+# either, and the entry guards Phase 5 adds read THIS marker, not task count, to decide whether
+# an unfiltered battery must defer. `specs/.orchestration/` is already ignored wholesale
+# (`specs/.gitignore`'s `**/.orchestration/` rule), so this marker needs no new ephemeral class.
+# A `--dry-run` invocation writes nothing, mirroring orchestrate-batch-gate.sh's own no-mutation
+# dry-run contract (mt_save itself is already a no-op under --dry-run, see its own definition
+# above; this block adds its own explicit guard rather than relying on that side effect alone).
+if [ "$dry_run" != "true" ]; then
+  _bgp_implement_count="$(mt_get_json '(.implement_agents // {}) | length' 2>/dev/null)"
+  case "$_bgp_implement_count" in ''|*[!0-9]*) _bgp_implement_count=0 ;; esac
+  if [ "$_bgp_implement_count" -gt 0 ]; then
+    mkdir -p "$PROJECT_ROOT/specs/.orchestration" 2>/dev/null || true
+    _bgp_marker_file="$(batch_gate_marker_path "$PROJECT_ROOT" "$session_id")"
+    _bgp_written_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    jq -n -c --arg sid "$session_id" --argjson pid "$$" --arg wa "$_bgp_written_at" \
+      --argjson task_numbers "$(mt_get_json '.task_numbers // []')" \
+      --argjson dispatch_seq "$(mt_get_json '.dispatch_seq // {}')" \
+      '{session_id: $sid, pid: $pid, written_at: $wa, task_numbers: $task_numbers, dispatch_seq: $dispatch_seq}' \
+      > "${_bgp_marker_file}.tmp" 2>/dev/null && mv "${_bgp_marker_file}.tmp" "$_bgp_marker_file" 2>/dev/null \
+      || echo "[orchestrate-cycle-plan] WARNING: could not write batch-gate-pending marker at $_bgp_marker_file (non-fatal; the batch-gate entry guards fail OPEN on a missing marker, same as today)" >&2
+  fi
+fi
 
 emit_and_exit "$new_cycle_count"
 }
