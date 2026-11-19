@@ -842,9 +842,9 @@ run_ko_loud_failure_case() {
     run_publish_stubbed "$scratch" "$stub_dir" ko --note "a finding" --confirm 2>&1)"
   rc=$?
   if [ "$rc" -ne 0 ]; then
-    common_test_pass "(28) $desc: refused with a non-zero exit"
+    common_test_pass "($case_num) $desc: refused with a non-zero exit"
   else
-    common_test_fail "(28) $desc: refused with a non-zero exit" "got rc=$rc out=$out"
+    common_test_fail "($case_num) $desc: refused with a non-zero exit" "got rc=$rc out=$out"
   fi
 }
 
