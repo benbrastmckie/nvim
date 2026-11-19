@@ -13,7 +13,7 @@ next_project_number: 654
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,613,618,629,631,632,633,639,640,645,646,649 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,564,565,567,574,575,577,580,586,590,599,613,618,629,631,632,633,639,640,645,646 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,579,583,592,593,598,605,609,630,652 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,564,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,486,492,509,513,518,561,566,594 | 439,452,472,479,484,491,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,571,581,588,595,641 | 454,472,486,492,509,518,539,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
@@ -166,10 +166,6 @@ next_project_number: 654
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
 570 [NOT STARTED] — Stop the stall signal firing on commits it cannot attribute...
 571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
-
-### Sapience
-
-649 [IMPLEMENTING] — Add the /sapience command: draft assembly and the...
 
 ### Decidability
 
@@ -383,12 +379,13 @@ VERIFY: the entry point run on a one-file edit executes a strict subset and says
 ---
 
 ### 649. Add the /sapience command: draft assembly and the approval-gated surface picker
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: Task 647, Task 648
 - **Research**: [649_sapience_command_picker_and_draft/reports/01_sapience-command-picker-draft.md]
 - **Plan**: [649_sapience_command_picker_and_draft/plans/01_sapience-command-picker-draft.md]
+- **Summary**: [649_sapience_command_picker_and_draft/summaries/01_sapience-command-picker-draft-summary.md]
 
 **Description**: Add the /sapience command: assemble a draft update from local and vault state, then gate every outward write behind ONE approval picker. DEPENDS ON BOTH the project-binding task (for .sapience/project.json, the shared API library, and the read side) AND the publishers task (the picker needs the publishers' exact interfaces and their literal --dry-run payloads).
 

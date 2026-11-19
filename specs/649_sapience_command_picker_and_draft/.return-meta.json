@@ -1,10 +1,114 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/649_sapience_command_picker_and_draft/summaries/01_sapience-command-picker-draft-summary.md",
+      "summary": "Implementation summary for the /sapience command: draft assembly, design record, and the single approval-gated write picker."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added the /sapience command (commands/sapience.md) and skill-sapience (direct-execution, no Agent tool) to the sapience extension: a bound-project draft assembled from local and vault state, with every outward write gated behind one AskUserQuestion approval picker over sapience-publish.sh's four write surfaces. Wired manifest.json, EXTENSION.md, README.md, and the top-level extensions README; regenerated the deployed tree and confirmed byte-identical artifacts, zero new check-extension-docs.sh findings, and eager-context budget headroom intact."
+  },
+  "modified_files": [
+    "agent-system/extensions/README.md",
+    "agent-system/extensions/sapience/commands/sapience.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/command-draft-and-picker.md",
+    "agent-system/extensions/sapience/context/project/sapience/README.md",
+    "agent-system/extensions/sapience/EXTENSION.md",
+    "agent-system/extensions/sapience/index-entries.json",
+    "agent-system/extensions/sapience/manifest.json",
+    "agent-system/extensions/sapience/README.md",
+    "agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "verify-touched.sh's bare no-argument form derives touched paths from the whole shared working tree's git status, not just the calling task's own edits. In a concurrent multi-task /orchestrate batch this pulls in every sibling task's own uncommitted/committed changes (observed: ~21 unrelated paths across 5 sibling tasks). When a plan phase's Verification bullet already names an explicit path list ('<all touched paths>'), use that explicit invocation instead of the bare no-arg form -- it is both more scoped and matches the phase's own literal wording.",
+      "category": "PATTERN",
+      "source_artifact": "specs/649_sapience_command_picker_and_draft/summaries/01_sapience-command-picker-draft-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "verify-touched.sh",
+        "batch-gate-deferral",
+        "scoped-verification",
+        "multi-task-batch",
+        "touched-paths"
+      ]
+    },
+    {
+      "content": "check-extension-docs.sh's Phase-6-style closing verification criterion naming specific rule letters (A, E, R, T, U, check_readme_vs_manifest) is deliberately narrower than 'zero findings for this extension' -- a FAIL from an unnamed rule (e.g. Rule F, deployed-vs-source script content drift) for a file genuinely outside the task's FILE SCOPE does not block closure. Confirm which rule produced a given FAIL line before treating it as this task's own defect.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/649_sapience_command_picker_and_draft/summaries/01_sapience-command-picker-draft-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "check-extension-docs.sh",
+        "rule-letters",
+        "file-scope",
+        "gate-collision",
+        "closing-verification"
+      ]
+    },
+    {
+      "content": "test-mcp-merge-target.sh (an isolated scratch-project MCP-merge fixture testing hand-written-entry survival across a force-reload+unload cycle) has now been independently observed failing by three separate tasks on the same machine under heavy concurrent multi-agent load, with zero connection to any of their own edited files, and reproduces identically in a fully standalone re-run. Treat a NEW failure from this specific suite as an environment/load-induced flake worth a quick cross-check against other tasks' issue logs before investigating further, not as a signal about the current task's own changes.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/649_sapience_command_picker_and_draft/summaries/01_sapience-command-picker-draft-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "test-mcp-merge-target.sh",
+        "flaky-test",
+        "concurrent-load",
+        "pre-existing-unrelated-test-failure"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "GET /v1/people response shape",
+      "value": "Returns {ok, people: [{id, name, ...}], count, me, me_id} -- confirmed live via sapience-project-bind.sh's existing usage pattern, reused for the /sapience command's collaborator resolution (named --message <Name> and the bare --message picker).",
+      "predicate": "finding is",
+      "ko_type": "fact",
+      "confidence": 0.9
+    },
+    {
+      "subject": "sapience_post dry-run output shape",
+      "value": "Under SAPIENCE_DRY_RUN=1, sapience_post prints 'POST <url-with-redacted-token>' then the JSON body (with .token merged to a redacted placeholder if the body is an object) on stdout, makes no network call, and returns 0. This is the exact mechanism the /sapience approval picker's literal-payload preview relies on: the same construction path produces both the dry-run preview and, with --confirm appended, the confirmed write.",
+      "predicate": "finding is",
+      "ko_type": "fact",
+      "confidence": 0.9
+    },
+    {
+      "subject": "sapience-vault-read.sh failure-mode ordering constraint",
+      "value": "sapience_api_init failing inside sapience-vault-read.sh is a hard exit 1 with NO envelope printed at all -- so a caller that wants to check the repo's project binding (repo.binding) cannot rely on the envelope when no token/host resolves. A binding-gate check must read .sapience/project.json directly, independent of whether the vault read would otherwise succeed.",
+      "predicate": "finding is",
+      "ko_type": "constraint",
+      "confidence": 0.85
+    },
+    {
+      "subject": "EXTENSION.md 60-line ceiling",
+      "value": "agent-system/extensions/sapience/EXTENSION.md sat at exactly 60 lines with zero slack before adding its first command surface -- check-extension-docs.sh's Rule U caps this file at 60 lines per extension, and it also feeds the eager .claude/CLAUDE.md assembly gate 20 budgets against. A new command surface in an extension already at this ceiling must be authored as an in-place net-zero-line replacement of existing prose, not an append.",
+      "predicate": "finding is",
+      "ko_type": "constraint",
+      "confidence": 0.85
+    },
+    {
+      "subject": "sapience-publish.sh ko subcommand project-key resolution",
+      "value": "The ko subcommand cannot read the project KEY from .sapience/project.json (which structurally only ever carries {project (cid), name, repo}); it resolves the short key at runtime via GET /v1/people/projects, matching the binding's cid against that list's entries, and refuses loudly (no write) if no match is found -- never falling back to the binding's free-text name field.",
+      "predicate": "finding is",
+      "ko_type": "fact",
+      "confidence": 0.85
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795076371_5115f3",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }

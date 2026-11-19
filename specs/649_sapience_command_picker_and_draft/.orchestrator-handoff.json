@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Created a 6-phase implementation plan for the /sapience command, integrating the research report's nine recommendations. The plan adds no new script: commands/sapience.md and skills/skill-sapience/SKILL.md are pure consumers of the four scripts tasks 647/648 already built, and no Agent-tool dispatch is needed anywhere, which dissolves the AskUserQuestion tool-withholding constraint rather than working around it. Two mechanical gate collisions the research report did not measure were measured live and now shape Phase 5: EXTENSION.md sits at exactly 60 lines, precisely at Rule U's ceiling, and README.md (omitted from the dispatch FILE SCOPE) must literally contain /sapience or check_readme_vs_manifest hard-fails. The plan validates with 0 warnings.",
+  "summary": "Implemented the /sapience command end to end: commands/sapience.md parses argument shapes and delegates to the fully direct-execution skill-sapience, which assembles a draft update from local and read-only vault state and gates every outward write behind exactly one AskUserQuestion approval picker over sapience-publish.sh's four write surfaces. Added a durable design record for the draft-assembly and picker heuristics, wired manifest.json/EXTENSION.md/README.md/the top-level extensions README, and regenerated the deployed tree. All 6 plan phases closed [COMPLETED]; the only remaining check-extension-docs.sh finding (Rule F, a one-byte trailing-newline drift in a different task's script) is pre-existing and outside this task's FILE SCOPE.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/649_sapience_command_picker_and_draft/summaries/01_sapience-command-picker-draft-summary.md",
+      "summary": "Implementation summary for the /sapience command: draft assembly, design record, and the single approval-gated write picker."
+    },
+    {
       "type": "plan",
       "path": "specs/649_sapience_command_picker_and_draft/plans/01_sapience-command-picker-draft.md",
-      "summary": "6-phase plan: design record, skill intake/draft assembly, approval picker and confirmed execution, command file, manifest and doc parity, deploy and closing verification."
+      "summary": "6-phase plan, all phases COMPLETED."
     }
   ],
-  "dispatch_seq": 11
+  "dispatch_seq": 12
 }

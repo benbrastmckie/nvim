@@ -1,7 +1,7 @@
 # Implementation Plan: Task #649
 
 - **Task**: 649 - Add the /sapience command: draft assembly and the approval-gated surface picker
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: 647 (sapience_project_binding_and_vault_read, completed), 648 (sapience_publish_write_surfaces, completed)
 - **Research Inputs**: specs/649_sapience_command_picker_and_draft/reports/01_sapience-command-picker-draft.md
