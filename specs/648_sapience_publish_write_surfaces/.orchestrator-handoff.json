@@ -1,18 +1,23 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 648,
-  "phase": "plan",
-  "session_id": "sess_1795076371_5115f3_648",
-  "dispatch_seq": 8,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1795076371_5115f3",
+  "dispatch_seq": 9,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a 5-phase, 6.5-hour linear implementation plan for sapience-publish.sh's four write-surface publishers, built on the research report's per-endpoint re-derivation against brain_server.py. Plan-time re-derivation found the dispatch's 2-file FILE SCOPE incomplete in a commit-blocking way: gate 3's provides.scripts parity rule FAILs for any tracked extension script absent from manifest.json, so the plan widens scope to 4 files (adding manifest.json and test-sapience-mcp-registration.sh's Case 30 lockstep array, mirroring dependency task 647's own precedent). The single redeploy is deferred to the final phase because gate 3's deployed-vs-source drift rule skips an absent deployed copy but fails a stale one. Plan validates clean at 0 warnings.",
+  "summary": "Implemented all 5 plan phases: sapience-publish.sh now exposes four dry-run-by-default write-surface subcommands (doc-comment, doc-version, dm, ko) routed through the shared sapience-api-lib.sh, each with loud-failure handling written against its own endpoint's verified response shape. Added a 53-case test suite, registered both new files in manifest.json and Case 30's lockstep array, and deployed both files with byte-identical confirmation against the source store. Found and fixed two reusable shell pitfalls along the way (a sapience_post HTTP-status subshell-loss hazard, and a redirection-order bug), both documented inline. verify-touched.sh reproduced the same 2 pre-existing/environmental test failures in both Phase 1 and Phase 5 runs, confirmed unrelated to this task's files.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/648_sapience_publish_write_surfaces/plans/01_sapience-publish-write-surfaces.md",
-      "summary": "5-phase plan: scaffold+registration, doc-comment+dm, doc-version, ko, deploy+close."
+      "type": "summary",
+      "path": "specs/648_sapience_publish_write_surfaces/summaries/01_sapience-publish-write-surfaces-summary.md",
+      "summary": "Full implementation summary covering all 5 phases, decisions, verification results, and follow-ups."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/648_sapience_publish_write_surfaces/handoffs/phase-5-handoff-20261119T122248Z.md",
+      "summary": "Final phase-end handoff: all phases complete, ready for Stage 5/6 closeout."
     }
   ]
 }

@@ -17541,6 +17541,11 @@
           "path": "specs/648_sapience_publish_write_surfaces/plans/01_sapience-publish-write-surfaces.md",
           "type": "plan",
           "summary": "5-phase plan: scaffold+registration, doc-comment+dm, doc-version, ko, deploy+close."
+        },
+        {
+          "path": "specs/648_sapience_publish_write_surfaces/summaries/01_sapience-publish-write-surfaces-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 5 phases, decisions, verification results, and follow-ups."
         }
       ],
       "created": "2026-11-18T19:05:52Z",
@@ -17589,7 +17594,8 @@
         "degradations_count": 43
       },
       "session_id": "sess_1795076371_5115f3",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented sapience-publish.sh's four write-surface publishers (doc-comment, doc-version, dm, ko) with per-endpoint loud-failure discipline, a 53-case test suite, manifest/lockstep registration, and deployed both new files with byte-identical confirmation against the source store."
     },
     {
       "project_number": 649,

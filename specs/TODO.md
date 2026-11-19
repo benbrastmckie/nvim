@@ -441,6 +441,7 @@ All mechanisms above were VERIFIED LIVE against the vault at app.spnc.ai during 
 - **Dependencies**: Task 647
 - **Research**: [648_sapience_publish_write_surfaces/reports/01_sapience-publish-write-surfaces.md]
 - **Plan**: [648_sapience_publish_write_surfaces/plans/01_sapience-publish-write-surfaces.md]
+- **Summary**: [648_sapience_publish_write_surfaces/summaries/01_sapience-publish-write-surfaces-summary.md]
 
 **Description**: Add the four Sapience write-surface publishers behind one script, each with loud-failure discipline, so the /sapience command's approval picker has concrete publisher interfaces to call. DEPENDS ON the project-binding task: this task consumes that task's scripts/lib/sapience-api-lib.sh for host/token/API resolution and its .sapience/project.json binding reader.
 
