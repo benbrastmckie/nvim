@@ -4,19 +4,52 @@
   "started_at": "2026-11-19T02:10:00Z",
   "last_updated": "2026-11-19T04:30:00Z",
   "objectives": [
-    {"id": 1, "description": "Redeploy the source store", "status": "done", "files_touched": []},
-    {"id": 2, "description": "Confirm deployed tree carries every amended surface", "status": "done", "files_touched": []},
-    {"id": 3, "description": "Verify dispatch's own VERIFY clause end to end", "status": "done", "files_touched": []},
-    {"id": 4, "description": "Write task summary", "status": "done",
-     "files_touched": ["specs/651_orchestration_close_owns_full_battery/summaries/01_orchestration-close-owns-battery-summary.md"]}
+    {
+      "id": 1,
+      "description": "Redeploy the source store",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+        "agent-system/extensions/core/context/contracts/batch-gate-stage.md",
+        "agent-system/extensions/core/scripts/lib/verification-scope-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-close-status-bind.sh",
+        "agent-system/extensions/core/scripts/tests/test-suite-resolver-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-unmapped-fallback-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-verification-scope-lib.sh",
+        "agent-system/extensions/core/index-entries.json"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Confirm deployed tree carries every amended surface",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Verify dispatch's own VERIFY clause end to end",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Write task summary",
+      "status": "done",
+      "files_touched": [
+        "specs/651_orchestration_close_owns_full_battery/summaries/01_orchestration-close-owns-battery-summary.md"
+      ]
+    }
   ],
   "current_objective": 4,
   "approaches_tried": [],
   "handoff_count": 0,
   "deviations": [
-    {"task_id": "7.1", "description": "First redeploy attempt reported 3 fast-gate failures",
-     "type": "altered",
-     "reason": "skill-orchestrate/SKILL.md was already at its measure-eager-context.sh byte ceiling (zero headroom); Phase 4's own addition was reverted to byte-identical-to-baseline and relocated into batch-gate-stage.md's Executable Stage Body step 3b. One shellcheck SC2034 finding in the new test suite was fixed with an inline disable. Three test suites (two never touched by this plan) called the legacy common_test_resolve_candidate with no explicit mode -- a pre-existing lint-subject-resolution-declaration.sh violation, fixed forward by migrating to common_test_resolve_subject + common_test_declare_subject.",
-     "annotation": "*(deviation: altered -- fixed three pre-existing defects, none attributable to this plan's own earlier-phase work, that blocked Phase 7's own redeploy verification)*"}
+    {
+      "task_id": "7.1",
+      "description": "First redeploy attempt reported 3 fast-gate failures",
+      "type": "altered",
+      "reason": "skill-orchestrate/SKILL.md was already at its measure-eager-context.sh byte ceiling (zero headroom); Phase 4's own addition was reverted to byte-identical-to-baseline and relocated into batch-gate-stage.md's Executable Stage Body step 3b. One shellcheck SC2034 finding in the new test suite was fixed with an inline disable. Three test suites (two never touched by this plan) called the legacy common_test_resolve_candidate with no explicit mode -- a pre-existing lint-subject-resolution-declaration.sh violation, fixed forward by migrating to common_test_resolve_subject + common_test_declare_subject.",
+      "annotation": "*(deviation: altered -- fixed three pre-existing defects, none attributable to this plan's own earlier-phase work, that blocked Phase 7's own redeploy verification)*"
+    }
   ]
 }

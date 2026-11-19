@@ -1,14 +1,121 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 23,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/651_orchestration_close_owns_full_battery/summaries/01_orchestration-close-owns-battery-summary.md",
+      "summary": "Relocated the complete gate battery's discharge obligation from each task's own final phase to the orchestration's once-per-invocation Move 4 close, across every invocation shape including a batch of one, and closed the five gaps left by the mechanism's earlier narrower shipment: red-close per-task attribution and status binding, interrupted-invocation open obligation, and consumer-repository closing-gate consumption."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Amended the final-phase invariant vocabulary and every authoring surface describing it, added a durable per-task red-close record with status-binding demotion, added an interrupted-orchestration open-obligation report/discharge mechanism, wired a consumer repository's declared closing_gate as Move 4's own gate, and redeployed clean (RESULT=landed_verify_clean, 41/41) after fixing three pre-existing defects the first full-battery close itself surfaced."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/context/contracts/batch-gate-stage.md",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/context/standards/repo-level-declarations.md",
+    "agent-system/extensions/core/context/standards/status-markers.md",
+    "agent-system/extensions/core/docs/guides/user-guide.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lib/batch-gate-marker-lib.sh",
+    "agent-system/extensions/core/scripts/lib/verification-scope-lib.sh",
+    "agent-system/extensions/core/scripts/orchestrate-batch-gate.sh",
+    "agent-system/extensions/core/scripts/orchestrate-close-status-bind.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-batch-gate-pending-marker.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-close-status-bind.sh",
+    "agent-system/extensions/core/scripts/tests/test-suite-resolver-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-unmapped-fallback-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-verification-scope-lib.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/651_orchestration_close_owns_full_battery/summaries/01_orchestration-close-owns-battery-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "verify-touched.sh with no PATH arguments derives touched paths from the whole working-tree diff plus committed diff against base -- under concurrent multi-session load in this repository this can take 15-20+ minutes and exceed the Bash tool's 600s foreground ceiling. Always pass explicit PATH arguments (the dispatch's own touched files) rather than relying on the no-argument default, and detach with nohup + a bounded kill -0 poll loop when the scoped set still resolves to 30+ suites (e.g. any dispatch touching orchestrate-cycle-plan.sh or skill-orchestrate/SKILL.md).",
+      "category": "PATTERN",
+      "source_artifact": "specs/651_orchestration_close_owns_full_battery/summaries/01_orchestration-close-owns-battery-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["verify-touched", "bounded-wait", "contention", "gate-lock", "timeout"]
+    },
+    {
+      "content": "skills/skill-orchestrate/SKILL.md sits at measure-eager-context.sh's own byte ceiling (27500 B) with effectively zero headroom (a prior task trimmed it to exactly fit); any future addition of Move 4/5 prose to this file will likely need to move into the referenced contract file's own executable-outline section instead (e.g. batch-gate-stage.md's 'The Executable Stage Body') rather than growing SKILL.md's own prose, since SKILL.md already points readers to that contract as the full detail.",
+      "category": "CONFIG",
+      "source_artifact": "specs/651_orchestration_close_owns_full_battery/summaries/01_orchestration-close-owns-battery-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["skill-orchestrate", "eager-context-budget", "ceiling", "SKILL.md", "ORCHESTRATOR_BUDGET_GATE_MODE"]
+    },
+    {
+      "content": "A test suite's resolve-candidate call (common_test_resolve_candidate) with no explicit mode is a lint-subject-resolution-declaration.sh violation; migrate to common_test_resolve_subject(\"desc\", \"deploy-tree-first\", deployed_path, source_store_path) followed by common_test_declare_subject(\"$RESULT\"). This migration is behavior-preserving (same deployed-first preference order) but adds a staleness warning when the source-store copy is newer than the deployed one -- the exact signal that would have caught earlier confusion about which copy a direct suite run was actually exercising.",
+      "category": "PATTERN",
+      "source_artifact": "specs/651_orchestration_close_owns_full_battery/summaries/01_orchestration-close-owns-battery-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["common_test_resolve_subject", "lint-subject-resolution-declaration", "deploy-tree-first", "staleness-guard"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "orchestrate-close-status-bind.sh's close_red_roster read",
+      "value": "decision is: the close-status-bind script reads only batch_gate.close_red_roster, not .attributed separately, because orchestrate-batch-gate.sh's own write gate for close_red_roster already encodes exactly the non-empty-attribution condition the four-way demotion gate needs -- reading .attributed too would be redundant duplication of the same information.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/orchestrate-close-status-bind.sh"
+    },
+    {
+      "subject": "skill-orchestrate/SKILL.md's eager-load byte ceiling",
+      "value": "has the measured fact that: its measure-eager-context.sh ceiling is 27500 bytes under ORCHESTRATOR_BUDGET_GATE_MODE=hard, and the file's baseline size immediately before this task's own edits was exactly 27494 bytes -- 6 bytes of headroom, effectively zero. Any future Move 4/5 documentation addition to this file will almost certainly need to live in a referenced contract file instead.",
+      "predicate": "has the measured fact that",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md"
+    },
+    {
+      "subject": "pre-existing lint-subject-resolution-declaration.sh violations surfaced by a first full-battery close",
+      "value": "finding is: two test suites unrelated to this task (test-suite-resolver-lib.sh, test-unmapped-fallback-lib.sh) and this task's own test-verification-scope-lib.sh all called the legacy common_test_resolve_candidate with no explicit mode, a lint violation that had never been caught because no orchestration had closed on the complete gate set since the commit that introduced all three suites together. This is a direct, concrete, unplanned illustration of the exact defect class task 651 fixes: deferred-forever verification lets real defects accumulate undetected.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-verification-scope-lib.sh"
+    },
+    {
+      "subject": "verify-touched.sh under concurrent multi-session load",
+      "value": "has the measured fact that: a scoped verify-touched.sh run resolving to 30-56 suites took 15-20+ minutes wall-clock under 2-3 other concurrently-running /orchestrate sessions each also running their own verification batteries against the same repository, reliably exceeding the Bash tool's 600s foreground ceiling and requiring a detach-plus-bounded-poll idiom.",
+      "predicate": "has the measured fact that",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "specs/651_orchestration_close_owns_full_battery/summaries/01_orchestration-close-owns-battery-summary.md"
+    },
+    {
+      "subject": "orchestrate-batch-gate.sh's closing_gate consumption",
+      "value": "decision is: a declared closing_gate command is invoked through a dedicated thin wrapper (_bg_closing_gate_snapshot) rather than being passed through deploy_findings_snapshot, because the declared command has its own CLI unrelated to verify-deploy.sh's --findings/--quiet/--override-batch-gate-deferral flags; the wrapper's sole job is normalizing the declared command's output into the same ^FINDING-line shape the existing Capture/Confirm/Attribute pipeline already expects.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/orchestrate-batch-gate.sh"
+    },
+    {
+      "subject": "a declared-but-unusable closing_gate command",
+      "value": "decision is: a nonzero exit from a declared closing_gate command with no parseable ^FINDING line is deliberately read as a batch-level unattributed finding naming the declared command, never as a clean (empty) result -- the one intentional exception to this declaration surface's otherwise-absolute fail-open posture, because a silently empty finding set from a repository's own closing gate would read as green when it is actually broken.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/context/standards/repo-level-declarations.md"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795039913_ab1940",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 7,
+    "phases_total": 7
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/docs/guides/user-guide.md"

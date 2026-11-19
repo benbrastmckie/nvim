@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 23,
+  "phases_completed": 7,
   "phases_total": 7,
-  "summary": "Authored a 7-phase, 10-hour plan for making the orchestration close own the full gate battery. Research found Deliverables 1 and 6 already shipped by prior work, so the plan covers only the genuinely open ground: the plan-format final-phase vocabulary amendment, a durable attributed per-task record for a red close plus an attributed-cause-only status demotion, the interrupted-invocation obligation, and the consumer-repository closing-gate reader. Two stale prose surfaces beyond the research report were found at planning time and folded into Phase 1. The plan validates clean with zero warnings.",
+  "summary": "All 7 phases complete. Relocated the complete gate battery's discharge obligation from each task's own final phase to the orchestration's once-per-invocation Move 4 close, for every invocation shape including a batch of one. Added a durable per-task red-close record with attributed-cause status demotion, an interrupted-orchestration open-obligation report/discharge mechanism, and consumer-repository closing_gate consumption. Redeployed clean (RESULT=landed_verify_clean, 41/41 fast-gate checks) after fixing three pre-existing defects the first full-battery close itself surfaced (none attributable to this plan's own earlier-phase work). The complete, unnarrowed gate set (Gate 8's slow suite battery included) was deliberately NOT run by this dispatch, per its own Batch Gate Deferral directive -- it is owed once, at this orchestration's Move 4 close.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/651_orchestration_close_owns_full_battery/summaries/01_orchestration-close-owns-battery-summary.md",
+      "summary": "Full implementation summary across all 7 phases: vocabulary amendment, red-close record and status binding, interrupted-invocation obligation, consumer-repository closing-gate consumption, and the redeploy/close."
+    },
+    {
       "type": "plan",
       "path": "specs/651_orchestration_close_owns_full_battery/plans/01_orchestration-close-owns-battery.md",
-      "summary": "Seven-phase linear plan: current-design prose sweep, final-phase invariant amendment, red-close per-task record, attributed-cause status binding, interrupted-invocation obligation, declared closing-gate consumption, redeploy and orchestration close."
+      "summary": "Seven-phase plan, all phases [COMPLETED]."
     }
-  ],
-  "dispatch_seq": 22
+  ]
 }
