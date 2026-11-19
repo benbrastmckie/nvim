@@ -1,0 +1,18 @@
+{
+  "phase": 5,
+  "phase_name": "Deploy and closing verification",
+  "started_at": "2026-11-19T00:00:00Z",
+  "last_updated": "2026-11-19T03:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm no source edits remain outstanding", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run headless deploy", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm deployed copies byte-identical to source", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run scoped touched-path check over every path touched", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record batch gate deferral in verification notes", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "Deploy (bash .claude/scripts/deploy-headless.sh, bounded 540s wait): landed both deploy attempts. First attempt surfaced a real shellcheck SC2034 finding (unused case_num in test-sapience-publish.sh's run_ko_loud_failure_case) -- fixed by actually using $case_num in the pass/fail messages, matching the house style of the sibling run_loud_failure_case helper; re-deployed clean. Second deploy: verify-deploy.sh (fast gates) reports 1 of 41 FAIL -- the pre-existing, out-of-scope sapience-vault-read.sh deployed-vs-source drift (trailing-newline-only), already logged as an issue in Phase 1 and unrelated to this task. Both new deployed files (.claude/scripts/sapience-publish.sh, .claude/scripts/tests/test-sapience-publish.sh) confirmed `cmp -s` byte-identical to source. `bash .claude/scripts/tests/run-all.sh --only test-sapience-publish.sh,test-sapience-mcp-registration.sh,test-sapience-project-bind.sh` against the deployed tree: 3/3 PASS. verify-touched.sh over the task's 4 touched paths (manifest.json's broader selector mapping again pulled in ~38 suites, this time all four paths resolved to named SELECT suites rather than OWED): 35/38 passed, 1 expected pre-existing failure plus the SAME 2 NEW environmental/load-induced failures already documented and issue-logged in Phase 1 (test-mcp-merge-target.sh; test-verify-deploy-gate-selection.sh's timing-comparison case(q)) -- reproduced identically, confirming they are unrelated to this task. grep for 'project_cid' and the four MCP write tool names: both clean. BATCH GATE DEFERRAL: this phase's own declared Verification Tier is `full`; per the dispatch's Batch Gate Deferral directive, the complete unflagged `verify-deploy.sh` sweep is explicitly deferred to the once-per-invocation orchestration-close batch stage rather than independently run in this dispatch -- the scoped discharge above (verify-touched.sh plus the three named deployed-tree suites plus the targeted gate-3-finding-type grep) is what this dispatch runs instead."
+}

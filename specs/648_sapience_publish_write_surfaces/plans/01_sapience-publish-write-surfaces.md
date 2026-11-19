@@ -511,26 +511,31 @@ file is read, never written, so no other script's inputs change.
 
 ---
 
-### Phase 5: Deploy and closing verification [NOT STARTED]
+### Phase 5: Deploy and closing verification [COMPLETED]
 
 **Goal**: The new script and suite are deployed into `.claude/scripts/`, gate 3's
 deployed-vs-source drift rule is satisfied, and the task's complete verification obligation is
 discharged.
 
 **Tasks**:
-- [ ] Confirm no source edits remain outstanding (Decision D3: the redeploy must come after the
-      last source edit, or drift reopens).
-- [ ] Run the headless deploy so `sapience-publish.sh` and `tests/test-sapience-publish.sh` reach
+- [x] Confirm no source edits remain outstanding (Decision D3: the redeploy must come after the
+      last source edit, or drift reopens). *(completed)*
+- [x] Run the headless deploy so `sapience-publish.sh` and `tests/test-sapience-publish.sh` reach
       `.claude/scripts/`, using the invocation form gate 3 itself requires (never the bare
       `scripts/deploy-headless.sh` form, which resolves from no working directory and exits 127).
-- [ ] Confirm `.claude/scripts/sapience-publish.sh` and
+      *(completed, two attempts; the first surfaced a real shellcheck SC2034 finding in the test
+      file, fixed and re-deployed)*
+- [x] Confirm `.claude/scripts/sapience-publish.sh` and
       `.claude/scripts/tests/test-sapience-publish.sh` exist and `cmp -s` byte-identical to their
-      source-store counterparts.
-- [ ] Run the scoped touched-path check over every path this task touched.
-- [ ] Record, in the phase's verification notes, that the complete gate set is deferred to the
-      orchestration close rather than independently run in this dispatch.
-- [ ] If any defect found here requires a source edit, fix it and **re-run the deploy step**
-      before closing the phase.
+      source-store counterparts. *(completed; both confirmed byte-identical)*
+- [x] Run the scoped touched-path check over every path this task touched. *(completed; see
+      progress file verification_notes for the full result, including two reproduced
+      pre-existing/environmental failures unrelated to this task)*
+- [x] Record, in the phase's verification notes, that the complete gate set is deferred to the
+      orchestration close rather than independently run in this dispatch. *(completed)*
+- [x] If any defect found here requires a source edit, fix it and **re-run the deploy step**
+      before closing the phase. *(completed; the shellcheck fix above was re-deployed before
+      closing)*
 
 **Timing**: 0.75 hours
 
