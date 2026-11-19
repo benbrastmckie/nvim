@@ -208,7 +208,12 @@ actually needed it, rather than leaving the reservation's own eventual resolutio
   pipeline consume it unmodified. See `scripts/lib/verification-scope-lib.sh`'s
   `verification_scope_closing_gate` function and `scripts/orchestrate-batch-gate.sh`'s own
   consumption for the implementation; `context/contracts/batch-gate-stage.md`'s Evidence Base
-  section for the contract note.
+  section for the contract note. The one deliberate loud-failure exception to this surface's
+  fail-open posture: a declared `closing_gate` command that exits nonzero or produces no
+  parseable `FINDING ` line is attributed a synthetic `[CLOSING-GATE-UNUSABLE]` finding by
+  `orchestrate-batch-gate.sh`'s `_bg_closing_gate_snapshot`, rather than read as a clean, empty
+  result — silently treating an unusable command as "nothing found" would be worse than a loud,
+  attributed failure a human can act on.
 - **`project_gates`**: still reserved, unresolved by this record. Owned by the project-sources
   narrowing record named in "Why one key, not three" above; this record's own closing-gate
   resolution does not touch it. A future reader resolving `project_gates` should read this
