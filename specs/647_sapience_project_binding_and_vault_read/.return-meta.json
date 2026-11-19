@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/647_sapience_project_binding_and_vault_read/plans/01_project-binding-vault-read-foundation.md",
-      "summary": "Five-phase plan for the shared sapience-api-lib.sh, the confirm-or-refuse project binder, the read-only vault aggregator, their two test suites, and the manifest/lockstep registration edits."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 5,
   "metadata": {
-    "session_id": "sess_1795076371_5115f3_647",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 8,
-    "dependency_waves": 4
-  },
-  "memory_candidates": [
-    {
-      "content": "An extension's manifest.json provides.scripts array is an explicit, hand-maintained list that deploy and check-extension-docs.sh Rule Q both read; a new script absent from it neither deploys nor lints clean, and nothing surfaces that at authoring time. sync-manifest-scripts.sh --check/--write is the sanctioned regenerator, but it enumerates via `git ls-files`, so a newly created script must be STAGED before --write can see it. Any plan that adds a script to an extension therefore owes both a manifest.json entry in its Files to modify block and a stage-then-regenerate ordering in its task list.",
-      "category": "PATTERN",
-      "source_artifact": "specs/647_sapience_project_binding_and_vault_read/plans/01_project-binding-vault-read-foundation.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["manifest", "provides.scripts", "sync-manifest-scripts", "extension", "deploy", "git-ls-files"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 647 to execute the plan",
-  "dispatch_seq": 3
+    "session_id": "sess_1795076371_5115f3",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

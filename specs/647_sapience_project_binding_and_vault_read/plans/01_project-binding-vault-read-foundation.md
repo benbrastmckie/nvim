@@ -1,7 +1,7 @@
 # Implementation Plan: Task #647
 
 - **Task**: 647 - Bind a repo to a Sapience project and read the vault's shared state
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/647_sapience_project_binding_and_vault_read/reports/01_project-binding-vault-read-foundation.md
@@ -123,38 +123,40 @@ modified by this plan.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Shared API library [NOT STARTED]
+### Phase 1: Shared API library [COMPLETED]
 
 **Goal**: `scripts/lib/sapience-api-lib.sh` exists and owns host/token resolution plus one
 authenticated POST and one authenticated GET helper, with token redaction and a bounded
 cold-start retry, so Phases 2 and 3 never re-derive any of it.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh`. This is the
+- [x] Create `agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh`. This is the
       extension's first `scripts/lib/` directory; add a header paragraph recording that it
       deliberately resolves (not contradicts) `sapience-remember.sh`'s own header note that the
-      duplication there was forced by that task's narrower `file_scope`.
-- [ ] Implement `sapience_api_init`: resolve host as `SAPIENCE_HOST` env -> `~/.sapience/config.json`'s
+      duplication there was forced by that task's narrower `file_scope`. *(completed)*
+- [x] Implement `sapience_api_init`: resolve host as `SAPIENCE_HOST` env -> `~/.sapience/config.json`'s
       `.host` -> the `https://app.spnc.ai` literal, each `rstrip('/')`-equivalent; resolve token as
       `SAPIENCE_TOKEN` env -> that same file's `.token`. Read the token into ONE local variable.
       Suppress `set -x` around the credential read (save and restore the shell's `x` option) so
-      the token can never reach a trace. Never `echo`, `printf`, or log it.
-- [ ] Implement `sapience_post <path> <json-body>`: authenticated POST, returning the raw response
+      the token can never reach a trace. Never `echo`, `printf`, or log it. *(completed)*
+- [x] Implement `sapience_post <path> <json-body>`: authenticated POST, returning the raw response
       body on stdout and a non-zero status on transport failure. Under `SAPIENCE_DRY_RUN=1` print
       the method, URL and body with the token replaced by `***REDACTED***` (mirroring
       `sapience-remember.sh`'s `jq '.token = "***REDACTED***"'` pattern) and make no network call.
-- [ ] Implement `sapience_get <path> [query-string]`: authenticated GET. Where the token is carried
+      *(completed)*
+- [x] Implement `sapience_get <path> [query-string]`: authenticated GET. Where the token is carried
       as a URL query parameter, URL-encode it via the `--arg v "$tok" '$v|@uri'` pattern already
       used in `sapience-retrieve.sh`, and under dry-run redact the token **out of the printed URL**,
-      not only out of a JSON body.
-- [ ] Fold `sapience-retrieve.sh`'s bounded one-retry-on-503-with-`starting:true` cold-start
+      not only out of a JSON body. *(completed)*
+- [x] Fold `sapience-retrieve.sh`'s bounded one-retry-on-503-with-`starting:true` cold-start
       behavior into `sapience_get` once, so Phase 3's seven-plus call sites inherit it rather than
-      each re-adding it.
-- [ ] Add no reference, in any comment or docstring, to `sapience_remember`, `sapience_wrapup`,
+      each re-adding it. *(completed)*
+- [x] Add no reference, in any comment or docstring, to `sapience_remember`, `sapience_wrapup`,
       `sapience_handoff`, or `sapience_adddoc` as a write path (rules/sapience-write-path.md).
-- [ ] `git add` the new file, then run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write`
+      *(completed: grep confirms none)*
+- [x] `git add` the new file, then run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write`
       and confirm via `git diff --stat` that only `agent-system/extensions/sapience/manifest.json`
-      changed.
+      changed. *(completed)*
 
 **Timing**: 1.5 hours
 
