@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Created a 6-phase implementation plan for the /sapience command, integrating the research report's nine recommendations. The plan adds no new script: commands/sapience.md and skills/skill-sapience/SKILL.md are pure consumers of the four scripts tasks 647/648 already built, and no Agent-tool dispatch is needed anywhere, which dissolves the AskUserQuestion tool-withholding constraint rather than working around it. Two mechanical gate collisions the research report did not measure were measured live and now shape Phase 5: EXTENSION.md sits at exactly 60 lines, precisely at Rule U's ceiling, and README.md (omitted from the dispatch FILE SCOPE) must literally contain /sapience or check_readme_vs_manifest hard-fails. The plan validates with 0 warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/649_sapience_command_picker_and_draft/plans/01_sapience-command-picker-draft.md",
+      "summary": "6-phase plan: design record, skill intake/draft assembly, approval picker and confirmed execution, command file, manifest and doc parity, deploy and closing verification."
+    }
+  ],
+  "dispatch_seq": 11
+}
