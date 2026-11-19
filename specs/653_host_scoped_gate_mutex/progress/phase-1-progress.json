@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Host lock-root resolver and named-mutex base-directory parameterization",
+  "started_at": "2026-11-19T00:50:00Z",
+  "last_updated": "2026-11-19T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read task-lock.sh lines 641-833 before editing (sibling-dispatch re-check)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add resolve_host_lock_root() with tier chain and UID-qualified /tmp fallback", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 3, "description": "Add trailing optional mutex_base_dir to acquire_named_mutex/release_named_mutex, preserving default messages byte-for-byte", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/task-lock.sh"]},
+    {"id": 4, "description": "Verify baseline suites + shellcheck + narrowed verify-touched pass", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": "test-task-lock-liveness.sh 15/15, test-task-lock-reap.sh 6/6, test-gate-lock.sh 27/27 (byte-identical message text confirmed for default base) -- all run directly against the edited source-store task-lock.sh via each suite's own copied-fixture technique. lint-shellcheck.sh clean after adding ${mutex_base_dir:?} guard for SC2115. Batch Gate Deferral narrowed verify-touched.sh pass (42/42) ran against the currently-deployed .claude/ tree, which the dispatch's own deploy-freshness block reports STALE for the core extension; that pass therefore exercises the pre-change deployed task-lock.sh, not this phase's source-store edit -- the source-store suites above are what actually validate this phase's code, and Phase 6's redeploy will bring the deployed tree current."
+}

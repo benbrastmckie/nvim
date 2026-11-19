@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/653_host_scoped_gate_mutex/plans/01_host-scoped-gate-mutex.md",
-      "summary": "Six-phase plan adding an opt-in host-scoped gate mutex to task-lock.sh (resolved lock root, base-dir-parameterized named-mutex primitive, gate-acquire-host verb pair, host-outer/repo-inner wiring at all three gate brackets, cross-directory double-start plus degradation coverage, canonical-spec section, redeploy)."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 6,
   "metadata": {
-    "session_id": "sess_1795076371_5115f3_653",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 6,
-    "dependency_waves": [[1], [2], [3, 5], [4], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "Adding a new shell test suite under agent-system/extensions/core/scripts/tests/ requires TWO registration surfaces, both commit-blocking and easy to miss when planning: (1) a row in scripts/tests/suite-classification.data, enforced by lint/lint-unit-integration-boundary.sh which fails loudly on any discovered-but-unclassified suite; and (2) an entry in the extension's manifest.json provides.scripts[] array, which enumerates every test file individually (178 tests/ entries today) and is sync-enforced by test-manifest-scripts-sync.sh. Omitting (2) is the quieter failure: the suite runs fine from the source store but never reaches the deployed .claude/scripts/tests/ directory that Gate 8 actually discovers, so it silently never runs in production. Declare both files in the SAME plan phase that creates the suite, never in a later reconciliation phase.",
-      "category": "PATTERN",
-      "source_artifact": "specs/653_host_scoped_gate_mutex/plans/01_host-scoped-gate-mutex.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["test-suite-registration", "suite-classification", "manifest-scripts-sync", "gate8-discovery", "plan-authoring", "coupled-surface"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 653 to execute the plan",
-  "dispatch_seq": 4
+    "session_id": "sess_1795076371_5115f3",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

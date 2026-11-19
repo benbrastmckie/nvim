@@ -638,15 +638,96 @@ write_session_entry() {
   mv "$tmp_file" "$target"
 }
 
+# --- resolve_host_lock_root: host-scoped lock root resolution ---
+#
+# A repo-scoped mutex (every family below resolves its directory as
+# "$PROJECT_ROOT/specs/<name>") is structurally invisible to a battery started from a DIFFERENT
+# PROJECT_ROOT on the same host: two sibling repositories each resolve their own private
+# specs/.gate-lock, so neither ever observes the other's holder. resolve_host_lock_root() names a
+# directory OUTSIDE any repository tree, shared by every repository on this host that opts in, so
+# a caller that wants cross-repository serialization has somewhere to put its mutex.
+#
+# Strict tier order, first usable tier wins:
+#   1. TASK_LOCK_HOST_ROOT_OVERRIDE -- documented TEST-ONLY. Never set this in production; it
+#      exists solely so a test fixture can relocate the resolved root without touching the real
+#      $XDG_RUNTIME_DIR or /run/user/$UID, which a concurrent real session on the same host may
+#      also be resolving at the same time.
+#   2. $XDG_RUNTIME_DIR, when set, a directory, and writable. XDG Base Directory spec: this is a
+#      per-user, tmpfs-backed directory created at first login and removed at final logout, so an
+#      abandoned host-scoped lock here is reclaimed by the OS independent of any staleness
+#      arithmetic in this file.
+#   3. /run/user/$UID, when it exists and is writable -- the systemd-managed path XDG_RUNTIME_DIR
+#      conventionally points at, tried directly in case XDG_RUNTIME_DIR is unset but the directory
+#      still exists (common on a systemd-logind host even without an interactive login shell).
+#   4. ${TMPDIR:-/tmp}/task-lock-host-$UID -- the documented fallback for a host with neither tier
+#      above (no systemd-logind, a minimal container, etc). /tmp is world-writable with only the
+#      sticky bit protecting against deletion by another user, NOT against pre-creation by one, so
+#      this tier is UID-qualified by name and refuses a pre-existing directory whose owner UID is
+#      not the resolving user, rather than trusting an existing directory at that path. Created
+#      with `mkdir -p` then `chmod 0700` so a later arrival cannot read or write into it either.
+#
+# Fails OPEN: prints nothing and returns non-zero when every tier is unusable. Never `exit`s,
+# never creates anything outside the one resolved root, and never blocks (no retry, no wait) --
+# callers that fail open on an ordinary acquire-budget timeout (see cmd_gate_acquire_host below)
+# get the identical treatment for "no usable lock root" as for "mutex contended past budget",
+# with no separate branch required at any call site.
+resolve_host_lock_root() {
+  # Tier 1: test-only override. Documented here and in context/patterns/task-lock.md -- never set
+  # in production. No existence/writability probe: a test fixture that sets this to a path it
+  # does not intend to be writable is exercising the degradation path on purpose (see
+  # test-gate-lock-host-scope.sh's degradation cases), so probing here would mask that.
+  if [ -n "${TASK_LOCK_HOST_ROOT_OVERRIDE:-}" ]; then
+    echo "$TASK_LOCK_HOST_ROOT_OVERRIDE"
+    return 0
+  fi
+
+  # Tier 2: $XDG_RUNTIME_DIR, set, a directory, writable.
+  if [ -n "${XDG_RUNTIME_DIR:-}" ] && [ -d "$XDG_RUNTIME_DIR" ] && [ -w "$XDG_RUNTIME_DIR" ]; then
+    echo "$XDG_RUNTIME_DIR"
+    return 0
+  fi
+
+  # Tier 3: /run/user/$UID directly, in case XDG_RUNTIME_DIR is unset but the path still exists.
+  local uid_runtime_dir="/run/user/${UID:-$(id -u)}"
+  if [ -d "$uid_runtime_dir" ] && [ -w "$uid_runtime_dir" ]; then
+    echo "$uid_runtime_dir"
+    return 0
+  fi
+
+  # Tier 4: UID-qualified fallback under TMPDIR (default /tmp). Refuse a pre-existing directory
+  # owned by a different UID -- the sticky bit on a world-writable /tmp prevents another user from
+  # DELETING this directory, not from pre-CREATING it before we get here.
+  local fallback_dir="${TMPDIR:-/tmp}/task-lock-host-${UID:-$(id -u)}"
+  if [ -e "$fallback_dir" ]; then
+    local existing_owner_uid
+    existing_owner_uid=$(stat -c %u "$fallback_dir" 2>/dev/null) || true
+    if [ -d "$fallback_dir" ] && [ "$existing_owner_uid" = "${UID:-$(id -u)}" ] && [ -w "$fallback_dir" ]; then
+      echo "$fallback_dir"
+      return 0
+    fi
+    # Exists but is not a directory we own and can write to -- do not use it, and do not attempt
+    # to repair or remove it (it may belong to another user).
+    return 1
+  fi
+
+  if mkdir -p "$fallback_dir" 2>/dev/null && chmod 0700 "$fallback_dir" 2>/dev/null; then
+    echo "$fallback_dir"
+    return 0
+  fi
+
+  # Every tier exhausted.
+  return 1
+}
+
 # --- Named-mutex primitives (generalized from this file's original specs/.scope-lock/-only
 # implementation, so a second, independent mutex directory -- specs/.commit-lock/, added below
 # for scoped-commit serialization -- can reuse the exact same mkdir/staleness/wait-budget logic
 # without a second hand-copied implementation to drift out of sync). ---
 
 # acquire_named_mutex <mutex_dirname> <requested_stale> <default_stale_sec> <wait_budget_ms>
-#                      [progress_label]
+#                      [progress_label] [mutex_base_dir]
 #
-# <mutex_dirname> is a bare directory name resolved under specs/ (e.g. ".scope-lock",
+# <mutex_dirname> is a bare directory name resolved under <mutex_base_dir> (e.g. ".scope-lock",
 # ".commit-lock", ".gate-lock") -- each caller's wrapper below fixes its own directory, default
 # staleness, and wait budget, so this function itself has no knowledge of which mutex it is
 # serving.
@@ -663,6 +744,13 @@ write_session_entry() {
 # -- true for every existing caller (.scope-lock, .commit-lock, .contention-claims) -- the wait
 # loop is byte-equivalent to before this parameter existed: no stderr output beyond the existing
 # stale-reclaim WARN line.
+#
+# <mutex_base_dir> (optional 6th positional, defaulting to "$PROJECT_ROOT/specs") is the directory
+# <mutex_dirname> is resolved under. Every existing caller omits it and gets exactly today's
+# "$PROJECT_ROOT/specs/<mutex_dirname>" resolution and exactly today's "specs/<mutex_dirname>"
+# message text -- this parameter exists solely so a caller (see acquire_gate_host_mutex below) can
+# point the SAME primitive at a host-scoped root outside any repository tree, with no second,
+# hand-copied mkdir/staleness/wait-budget implementation to drift out of sync.
 #
 # Staleness is holder-declared, not waiter-declared: the successful acquirer writes its own
 # tolerated window into $mutex_dir/stale_sec alongside claimed_at, and every waiter (including
@@ -694,7 +782,7 @@ write_session_entry() {
 # SIGKILL (which no trap can intercept) is left to this existing staleness self-heal.
 acquire_named_mutex() {
   local mutex_dirname="$1" requested_stale="${2:-}" default_stale_sec="$3" wait_budget_ms="$4"
-  local progress_label="${5:-}"
+  local progress_label="${5:-}" mutex_base_dir="${6:-$PROJECT_ROOT/specs}"
   local stale_sec
   if [[ "$requested_stale" =~ ^[0-9]+$ ]]; then
     stale_sec="$requested_stale"
@@ -702,7 +790,23 @@ acquire_named_mutex() {
     stale_sec="$default_stale_sec"
   fi
 
-  local mutex_dir="$PROJECT_ROOT/specs/${mutex_dirname}"
+  local mutex_dir="$mutex_base_dir/${mutex_dirname}"
+  # Display label: byte-identical to the pre-existing "specs/${mutex_dirname}" form when the base
+  # is the default (the only case any existing caller exercises), and the absolute path otherwise
+  # -- so a non-default (host-scoped) base is never mistaken for the repo-scoped one in a WARN or
+  # progress line.
+  local mutex_display
+  if [ "$mutex_base_dir" = "$PROJECT_ROOT/specs" ]; then
+    mutex_display="specs/${mutex_dirname}"
+  else
+    mutex_display="${mutex_base_dir}/${mutex_dirname}"
+  fi
+  # A non-default base may not yet have its parent directory (a host lock root has no "specs/"
+  # equivalent created for it in advance); the default base's own parent ($PROJECT_ROOT/specs)
+  # already exists in every repository this runs in, so its behavior is left untouched here.
+  if [ "$mutex_base_dir" != "$PROJECT_ROOT/specs" ]; then
+    mkdir -p "$mutex_base_dir" 2>/dev/null || true
+  fi
   local waited_ms=0 claimed_at now age holder_stale_sec
   local progress_interval_s="${GATE_MUTEX_PROGRESS_INTERVAL_S:-15}"
   local next_progress_ms=$(( progress_interval_s * 1000 ))
@@ -722,7 +826,7 @@ acquire_named_mutex() {
     if [ -n "$claimed_at" ]; then
       age=$(( now - claimed_at ))
       if [ "$age" -gt "$holder_stale_sec" ]; then
-        echo "WARN: reclaiming stale specs/${mutex_dirname} mutex (age ${age}s > holder-declared ${holder_stale_sec}s)." >&2
+        echo "WARN: reclaiming stale ${mutex_display} mutex (age ${age}s > holder-declared ${holder_stale_sec}s)." >&2
         rm -rf "$mutex_dir" 2>/dev/null || true
         continue
       fi
@@ -732,7 +836,7 @@ acquire_named_mutex() {
       local holder_session holder_pid
       holder_session=$(jq -r '.session_id // empty' "$mutex_dir/owner" 2>/dev/null) || true
       holder_pid=$(jq -r '.pid // empty' "$mutex_dir/owner" 2>/dev/null) || true
-      echo "[$progress_label] waiting $(( waited_ms / 1000 ))s for session=${holder_session:-unknown} pid=${holder_pid:-unknown} (mutex=specs/${mutex_dirname})" >&2
+      echo "[$progress_label] waiting $(( waited_ms / 1000 ))s for session=${holder_session:-unknown} pid=${holder_pid:-unknown} (mutex=${mutex_display})" >&2
       next_progress_ms=$(( next_progress_ms + progress_interval_s * 1000 ))
     fi
 
@@ -745,8 +849,8 @@ acquire_named_mutex() {
 }
 
 release_named_mutex() {
-  local mutex_dirname="$1"
-  rm -rf "$PROJECT_ROOT/specs/${mutex_dirname}" 2>/dev/null || true
+  local mutex_dirname="$1" mutex_base_dir="${2:-$PROJECT_ROOT/specs}"
+  rm -rf "${mutex_base_dir:?}/${mutex_dirname}" 2>/dev/null || true
 }
 
 # --- specs/.scope-lock/ global mutex (cross-task file_scope overlap check) ---

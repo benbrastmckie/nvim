@@ -2,7 +2,7 @@
 
 - **Task**: 653 - Give the gate mutex a host-scoped form, because every lock this system ships is
   invisible to a sibling repository running the same battery
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6 hours
 - **Dependencies**: None (the full-gate-verification ceiling-and-stall record is a hard
   prerequisite and is COMPLETED; its posture ruling is inherited, not re-litigated)
@@ -174,37 +174,40 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Host lock-root resolver and named-mutex base-directory parameterization [NOT STARTED]
+### Phase 1: Host lock-root resolver and named-mutex base-directory parameterization [COMPLETED]
 
 **Goal**: Add `resolve_host_lock_root()` and give `acquire_named_mutex`/`release_named_mutex` an
 optional trailing base-directory parameter defaulting to `$PROJECT_ROOT/specs`, so a caller can
 point the existing primitive at a host-scoped root without any existing caller changing.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/task-lock.sh` lines 641-833 immediately before
+- [x] Re-read `agent-system/extensions/core/scripts/task-lock.sh` lines 641-833 immediately before
       editing (a sibling task is dispatched this same cycle on this shared tree) and confirm the
-      primitive's shape is unchanged since plan authoring.
-- [ ] Add `resolve_host_lock_root()` directly above the named-mutex family, resolving in strict
+      primitive's shape is unchanged since plan authoring. *(completed: re-read confirmed shape
+      unchanged; no `.plan-revised.json` sentinel present)*
+- [x] Add `resolve_host_lock_root()` directly above the named-mutex family, resolving in strict
       tier order: `TASK_LOCK_HOST_ROOT_OVERRIDE` (documented test-only, never for production) ->
       `$XDG_RUNTIME_DIR` (set, a directory, writable) -> `/run/user/$UID` (exists, writable) ->
       `${TMPDIR:-/tmp}/task-lock-host-$UID` (UID-qualified name, created with `mkdir -p` then
-      `chmod 0700`).
-- [ ] Make the final tier refuse a pre-existing directory at that path whose owner UID is not the
+      `chmod 0700`). *(completed)*
+- [x] Make the final tier refuse a pre-existing directory at that path whose owner UID is not the
       resolving user (`stat -c %u`), since `/tmp` is world-writable with only the sticky bit — the
-      sticky bit prevents deletion by another user, not pre-creation by one.
-- [ ] Make the resolver print nothing and return non-zero when every tier fails. It must never
-      `exit`, never create anything outside the resolved root, and never block.
-- [ ] Add the 6th optional positional `mutex_base_dir` to `acquire_named_mutex` (after
+      sticky bit prevents deletion by another user, not pre-creation by one. *(completed)*
+- [x] Make the resolver print nothing and return non-zero when every tier fails. It must never
+      `exit`, never create anything outside the resolved root, and never block. *(completed)*
+- [x] Add the 6th optional positional `mutex_base_dir` to `acquire_named_mutex` (after
       `progress_label`) and the 2nd optional positional to `release_named_mutex`, both defaulting
-      to `$PROJECT_ROOT/specs`; resolve `mutex_dir="$mutex_base_dir/$mutex_dirname"`.
-- [ ] Preserve every existing message byte-for-byte for the default base: derive a display label
+      to `$PROJECT_ROOT/specs`; resolve `mutex_dir="$mutex_base_dir/$mutex_dirname"`. *(completed)*
+- [x] Preserve every existing message byte-for-byte for the default base: derive a display label
       that is literally `specs/<dirname>` when the base equals `$PROJECT_ROOT/specs`, and the
       absolute `<base>/<dirname>` otherwise. This covers the stale-reclaim `WARN:` line and the
       `[gate-lock] waiting ...` progress line, both of which embed `specs/${mutex_dirname}` today.
-- [ ] Create the base directory with `mkdir -p` only for a non-default base (a host root may not
-      yet have the mutex's parent); leave the default path's behavior untouched.
-- [ ] Write a block comment above the resolver documenting the tier order, the fail-open return
+      *(completed: confirmed byte-identical via test-gate-lock.sh's 27/27)*
+- [x] Create the base directory with `mkdir -p` only for a non-default base (a host root may not
+      yet have the mutex's parent); leave the default path's behavior untouched. *(completed)*
+- [x] Write a block comment above the resolver documenting the tier order, the fail-open return
       contract, the UID-qualification rationale, and that the override variable is test-only.
+      *(completed)*
 
 **Timing**: 1.25 hours
 
