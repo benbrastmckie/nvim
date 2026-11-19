@@ -1,0 +1,36 @@
+{
+  "phase": 6,
+  "phase_name": "Redeploy and closing verification",
+  "started_at": "2026-11-19T02:38:00Z",
+  "last_updated": "2026-11-19T02:42:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy via deploy-headless.sh with bounded-wait idiom", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Confirm deployed task-lock.sh carries gate-acquire-host and test-gate-lock-host-scope.sh exists in deployed tests dir", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm deploy-freshness warning for core extension cleared", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run scoped verify-touched.sh over this task's own touched paths", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Defer complete gate battery to orchestration close (Batch Gate Deferral)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "Run the combined 94-suite narrowed verify-touched.sh pass over all 7 touched paths in one invocation, with successively longer bounded waits (480s, 480s, 850s)", "result": "failed", "reason": "host contention (load average 13-28, 273-363 concurrent gate-related processes system-wide) prevented completion within any of the three bounded waits; confirmed via live reproduction that test-gate-lock.sh alone could not finish its own sanity case within 120s under this load, versus its normal ~2s"},
+    {"approach": "Closed Phase 6 via Reasoned Exclusions using the equivalent per-phase narrowed verify-touched.sh passes already on record (Phase 1: 42/42, Phase 3: 41 suites with 2 foreign failures already attributed, Phase 4: 7/7 direct suite run, Phase 5: 7/7) as alternative evidence for the same touched-file set", "result": "adopted", "reason": "each phase's own narrowed pass ran under materially lighter host load and collectively exercises the identical union of suites the combined run would have, so the underlying code's correctness is not in question -- only the combined-run format of the check, which is a documented infrastructure constraint, not a code defect"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.1",
+      "description": "deploy-headless.sh exits 0 within its bounded wait",
+      "type": "altered",
+      "reason": "Deploy landed successfully; the wrapped fast-gate verify returned exit 3 (landed_verify_red) due to a foreign extension's (sapience, task 647's territory) content-drift failure, confirmed unrelated to this task's edit target via direct investigation.",
+      "annotation": "*(deviation: altered -- deploy landed but fast-gate verify exit was 3, not 0, due to a foreign unrelated failure; see Reasoned Exclusions)*"
+    },
+    {
+      "task_id": "6.4",
+      "description": "Run the scoped touched-path check over this task's own touched paths",
+      "type": "altered",
+      "reason": "The single combined 94-suite run could not complete under measured host contention; closed instead using the equivalent per-phase narrowed passes already on record.",
+      "annotation": "*(deviation: altered -- discharged via equivalent per-phase narrowed passes rather than one combined run; see Reasoned Exclusions)*"
+    }
+  ],
+  "verification_notes": "Redeploy landed (deploy-headless.sh RESULT=landed_verify_red, exit 3). Confirmed via direct checks: grep -c 'gate-acquire-host' .claude/scripts/task-lock.sh = 8; .claude/scripts/tests/test-gate-lock-host-scope.sh present (mtime matches redeploy time); check-deploy-freshness.sh exits 0 with no output (core extension staleness cleared). check-extension-docs.sh summary: core=PASS, sapience=FAIL (deployed-vs-source single-trailing-newline drift on sapience-vault-read.sh, task 647's committed file, git diff --stat empty -- not a live edit, out of this task's scope, not fixed here). Combined narrowed verify-touched.sh pass over all 7 touched paths could not complete within three bounded waits (480s/480s/850s) due to measured host contention (load average 13-28, 273-363 concurrent gate-related processes observed, including a separate repository's own concurrent batteries); confirmed via a live isolated reproduction that test-gate-lock.sh alone could not finish its sanity case within 120s under this load. Closed via Reasoned Exclusions using the equivalent per-phase narrowed passes already on record, which collectively cover the identical touched-file set. The complete gate set is explicitly deferred to the orchestration close, as required -- no independent full battery was invoked in this phase."
+}

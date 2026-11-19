@@ -500,24 +500,28 @@ read it rather than only in a script comment.
 
 ---
 
-### Phase 6: Redeploy and closing verification [NOT STARTED]
+### Phase 6: Redeploy and closing verification [COMPLETED WITH EXCLUSIONS]
 
 **Goal**: Regenerate the deployed tree so the deployed `task-lock.sh`, `run-all.sh`,
 `verify-deploy.sh` and the new suite are the ones Gate 8 actually runs, then close verification for
 the task.
 
 **Tasks**:
-- [ ] Redeploy with the bounded-wait idiom: `timeout 540 bash .claude/scripts/deploy-headless.sh`,
+- [x] Redeploy with the bounded-wait idiom: `timeout 540 bash .claude/scripts/deploy-headless.sh`,
       with the Bash tool's own `timeout` parameter raised to 600000 (never its 120000 default), per
-      `context/patterns/external-process-wait.md` Rule 1.
-- [ ] Confirm the deployed `.claude/scripts/task-lock.sh` carries `gate-acquire-host` and that
+      `context/patterns/external-process-wait.md` Rule 1. *(completed; deploy landed, see Reasoned
+      Exclusions below for the fast-gate verify result)*
+- [x] Confirm the deployed `.claude/scripts/task-lock.sh` carries `gate-acquire-host` and that
       `.claude/scripts/tests/test-gate-lock-host-scope.sh` exists in the deployed tests directory.
-- [ ] Confirm the deploy-freshness warning for the `core` extension has cleared.
-- [ ] Run the scoped touched-path check over this task's own touched paths
-      (`bash .claude/scripts/verify-touched.sh <this task's modified files>`).
-- [ ] Defer the complete gate battery to the orchestration close rather than invoking an
+      *(completed)*
+- [x] Confirm the deploy-freshness warning for the `core` extension has cleared. *(completed:
+      `check-deploy-freshness.sh` exits 0 with no output)*
+- [x] Run the scoped touched-path check over this task's own touched paths
+      (`bash .claude/scripts/verify-touched.sh <this task's modified files>`). *(completed with
+      exclusions -- see Reasoned Exclusions below)*
+- [x] Defer the complete gate battery to the orchestration close rather than invoking an
       independent full battery here — that is the once-per-invocation obligation, discharged at the
-      close, never forgiven.
+      close, never forgiven. *(completed: no independent full battery was invoked in this phase)*
 
 **Timing**: 0.5 hours
 
@@ -535,6 +539,18 @@ the task.
 - The scoped `verify-touched.sh` pass over this task's touched paths is green
 - The complete gate set is explicitly deferred to the orchestration close (Move 4), stated as a
   deferral in the phase's closure note, not silently skipped
+
+#### Reasoned Exclusions
+
+| Item | Reason | Evidence |
+|------|--------|----------|
+| `deploy-headless.sh exits 0 within its bounded wait` | The deploy itself landed successfully (confirmed: deployed `task-lock.sh` carries `gate-acquire-host`; the new suite is present; the `core` extension's deploy-freshness warning cleared). Its wrapped fast-gate `verify-deploy.sh` pass returned exit 3 (`RESULT=landed_verify_red`), but the ONE failing check (`check-extension-docs.sh` doc-lint) names a file entirely outside this task's edit target: `agent-system/extensions/sapience/scripts/sapience-vault-read.sh`, committed by a concurrent sibling task ("task 647 phase 3: vault reader"). The `core` extension's own doc-lint and every other fast-gate check reported PASS. | Direct investigation: `check-extension-docs.sh`'s summary table shows `core: PASS`, `sapience: FAIL` (deployed-vs-source content drift, a single trailing-newline byte, 19868 vs 19869 bytes); `git diff --stat` on the named sapience file is empty (not live-edited at the time of this check); `grep -c gate-acquire-host .claude/scripts/task-lock.sh` returns 8 and `.claude/scripts/tests/test-gate-lock-host-scope.sh` exists in the deployed tree, confirming this task's own deploy target landed correctly. Recorded via `issue-record.sh` (class `concurrent-sibling-interference`, severity minor). |
+| `The scoped verify-touched.sh pass over this task's touched paths is green` (as ONE combined run across all 7 touched paths) | The combined 94-suite narrowed battery could not complete within three successive bounded waits (480s, 480s, 850s) due to measured, reproducible host contention: load average observed between 13 and 28, with 273-363 concurrent `run-all.sh`/`verify-deploy.sh` processes system-wide (a separate repository's own concurrent batteries, plus multiple sibling `/orchestrate` dispatches in this repository). This is a host-resource condition external to this task's own code, confirmed by a live reproduction: `test-gate-lock.sh` run ALONE (outside the 94-suite battery) still failed to complete its own sanity case within 120s, versus its normal ~2s observed in Phases 1-3 under lighter load. Equivalent coverage of the same touched-file set was already independently confirmed green via each phase's own narrowed pass, run earlier under materially lighter host load, so the underlying code is not in question -- only the combined-run format of this one check. | Phase 1's narrowed `verify-touched.sh` pass: 42/42 (covers `task-lock.sh`). Phase 3's: 41/41 minus 2 NEW failures already attributed to task 651's concurrent uncommitted work, not this task's code (covers `tests/run-all.sh` + `verify-deploy.sh`). Phase 4's direct suite run: 7/7 (covers the new suite itself). Phase 5's narrowed pass: 7/7 (covers `task-lock.md`). `suite-classification.data`/`manifest.json` registration independently confirmed in Phase 4 (`lint-unit-integration-boundary.sh`, `test-manifest-scripts-sync.sh`, both green for this task's own entries). Recorded via `issue-record.sh` (class `infrastructure/transport unavailable`, severity costly). |
+
+Both exclusions satisfy the five-condition admission test for `[COMPLETED WITH EXCLUSIONS]`: the
+excluded checks are named specifically (not a blanket skip), the cause is external to this task's
+own edit target and independently evidenced, and the underlying correctness claim is backed by
+equivalent alternative verification already on record rather than merely asserted.
 
 ---
 
