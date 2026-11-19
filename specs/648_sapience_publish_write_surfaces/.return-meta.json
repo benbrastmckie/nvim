@@ -1,39 +1,37 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1795076371_5115f3_648",
-  "dispatch_seq": 7,
-  "findings_count": 8,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/648_sapience_publish_write_surfaces/reports/01_sapience-publish-write-surfaces.md",
-      "summary": "Re-derives the four write-surface contracts directly against brain_server.py/repo_link.py/extract_local.py rather than trusting the dispatch's paraphrase; confirms dependency task 647's sapience-api-lib.sh and sapience-project-bind.sh as the correct reuse targets; finds that .sapience/project.json structurally cannot carry a project 'key' field (parse_link's secret-key rejection), so the repo-tagged-KO publisher must resolve the key at runtime via GET /v1/people/projects keyed on the binding's cid; flags that test-sapience-mcp-registration.sh's 7-file lockstep array for the worktree-checkout-resolution block is outside this task's file_scope and needs an explicit plan-time decision; gives concrete per-endpoint loud-failure and dry-run design recommendations for all four publishers."
+      "type": "plan",
+      "path": "specs/648_sapience_publish_write_surfaces/plans/01_sapience-publish-write-surfaces.md",
+      "summary": "5-phase, 6.5-hour linear plan adding scripts/sapience-publish.sh with four write-surface subcommands (doc-comment, doc-version, dm, ko) plus a new test suite; widens file_scope by manifest.json (gate-3 provides.scripts parity is commit-blocking) and test-sapience-mcp-registration.sh (Case 30 lockstep array), and defers the single redeploy to the final phase so gate 3's deployed-vs-source drift rule never reopens mid-plan."
     }
   ],
   "memory_candidates": [
     {
-      "content": "Sapience's .sapience/project.json binding file (written by sapience-project-bind.sh) stores exactly {project: <cid>, name, repo} and structurally CANNOT carry a 'key' field: repo_link.py's parse_link() rejects any dict key matching its _SECRET_KEY_RE guard, and 'key' matches that pattern. A project's short workstream key (e.g. 'oliver-ben' for cid mEdYrFW_qClSGDfx) -- the value _ko_matches_channel/channel_push_matching in extract_local.py actually compares a KO's ko['project'] field against -- must therefore be resolved at write time via GET /v1/people/projects, matching the binding's cid against that live list, never read from the local binding file.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/648_sapience_publish_write_surfaces/reports/01_sapience-publish-write-surfaces.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["sapience", "project.json", "parse_link", "project_key", "ingest-kos", "workstream"]
-    },
-    {
-      "content": "In Sapience's brain_server.py, _ingest_kos's /ingest-kos reply shape is {ok, written, threads, gated, rejected, filtered} plus conditional set_aside/staged/switched_off/project_contributed -- there is no 'spend' field on this handler despite some task-description paraphrases listing one. Any loud-failure check against this endpoint should be written against this verified field set (matching sapience-remember.sh's existing set_aside/gated/written/ok check order), not against a paraphrased field list.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/648_sapience_publish_write_surfaces/reports/01_sapience-publish-write-surfaces.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["sapience", "ingest-kos", "brain_server.py", "loud-failure", "response-shape"]
-    },
-    {
-      "content": "Sapience doc-version writes (POST /v1/docs/<slug>) key optimistic concurrency on base_rev (the GET's 'rev': hash+body+provenance digest) compared via doc_rev(), never on base_hash alone -- base_hash is only a secondary fallback when base_rev is empty, and literally omitting base_rev against an existing doc with a stale base_hash still triggers the 409 head_moved check. The can_edit:false branch (non-chat shared docs only) returns 202 via people_propose instead of saving directly; a shared-* slug with no existing doc 404s share_gone and can never be created via this route.",
+      "content": "Adding a new script to a Claude-Code extension's source store couples three gate-3 rules in check-extension-docs.sh that together dictate phase sequencing. (1) Rule at ~line 616 enumerates tracked files under <ext>/scripts/ via `git ls-files` and FAILs 'script file on disk NOT in provides.scripts' for any entry absent from manifest.json provides.scripts -- so the manifest edit must land in the SAME phase that creates the script, and the repair command the gate itself prints is `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write`. (2) check_manifest_entries FAILs the reverse ('manifest script entry missing on disk'), so the manifest entry must never precede the file. (3) check_deployed_script_drift (~line 258) FAILs when a provides.scripts entry's deployed .claude/scripts/ copy differs from source, but explicitly SKIPS (info, never FAIL) when the deployed copy is ABSENT -- so registering pre-deploy is safe, while deploying mid-plan makes every later source edit a drift FAIL. The single redeploy therefore belongs after the last source edit, never earlier.",
       "category": "PATTERN",
-      "source_artifact": "specs/648_sapience_publish_write_surfaces/reports/01_sapience-publish-write-surfaces.md",
+      "source_artifact": "specs/648_sapience_publish_write_surfaces/plans/01_sapience-publish-write-surfaces.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["manifest.json", "provides.scripts", "gate3", "check-extension-docs", "deploy-drift", "extension-script"]
+    },
+    {
+      "content": "suite_selection_select's __FULL_SWEEP__ sentinel is ABSORBING across a multi-path set: selecting over {a mapped path, an unmapped path} returns the bare sentinel, not the union of the mapped path's suites plus a sentinel. A plan phase that creates any new file therefore measures as __FULL_SWEEP__ over its whole Files-to-modify set regardless of how well its other paths map, and validate-artifact.sh's Tier Justification check (which extracts any `test-*.sh` token from the justification block as a suitelist claim, then compares against the selector's actual output) will flag a naming-real-suites justification as a 'fabricated claim'. The honest authoring move for such a phase is the explicit sentinel claim plus naming verify-touched.sh (whose OWED-NOT-PAID fallback covers the unmapped paths) as the covering check -- and mentioning any test filename anywhere in the justification block, even as a command argument, flips the claim kind to suitelist.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/648_sapience_publish_write_surfaces/plans/01_sapience-publish-write-surfaces.md",
       "confidence": 0.85,
-      "suggested_keywords": ["sapience", "doc-version", "base_rev", "head_moved", "people_propose", "concurrency"]
+      "suggested_keywords": ["suite-selection", "FULL_SWEEP", "tier-justification", "validate-artifact", "verify-touched", "plan-authoring"]
     }
   ],
-  "next_steps": "Run /orchestrate 648 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1795076371_5115f3_648",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 6.5,
+    "dependency_waves": 5
+  },
+  "next_steps": "Run /orchestrate 648 to execute the plan",
+  "dispatch_seq": 8
 }

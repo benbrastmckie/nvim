@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 648,
+  "phase": "plan",
+  "session_id": "sess_1795076371_5115f3_648",
+  "dispatch_seq": 8,
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a 5-phase, 6.5-hour linear implementation plan for sapience-publish.sh's four write-surface publishers, built on the research report's per-endpoint re-derivation against brain_server.py. Plan-time re-derivation found the dispatch's 2-file FILE SCOPE incomplete in a commit-blocking way: gate 3's provides.scripts parity rule FAILs for any tracked extension script absent from manifest.json, so the plan widens scope to 4 files (adding manifest.json and test-sapience-mcp-registration.sh's Case 30 lockstep array, mirroring dependency task 647's own precedent). The single redeploy is deferred to the final phase because gate 3's deployed-vs-source drift rule skips an absent deployed copy but fails a stale one. Plan validates clean at 0 warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/648_sapience_publish_write_surfaces/plans/01_sapience-publish-write-surfaces.md",
+      "summary": "5-phase plan: scaffold+registration, doc-comment+dm, doc-version, ko, deploy+close."
+    }
+  ]
+}
