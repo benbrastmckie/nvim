@@ -1,6 +1,138 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 20,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/610_full_gate_verification_ceiling_and_stall/summaries/01_gate-ceiling-fit-and-stall-detection-summary.md",
+      "summary": "8-phase implementation: gate 8 relocated the slow bucket to its own serialized gate 31 (349s measured wall-clock under 600s ceiling), a mechanical batch-gate-pending marker plus entry guards replace the advisory deferral directive, generalized [CONTENTION] load tagging for every gate's timeout kill, and a dispatch watchdog launched beside Move 2's Agent calls. Completed with exclusions: three pre-existing, unrelated full-gate-set findings are Reasoned-Excluded."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented all 8 plan phases: Gate 8's wall-clock now measures 349s (under the 600s ceiling with ~42% headroom) after relocating its 9-suite slow bucket to a new serialized gate 31; a staleness-bounded batch-gate-pending marker plus mechanical entry guards in verify-deploy.sh/run-all.sh replace the advisory deferral directive; contention tagging generalized to every gate's timeout-kill path; and a dispatch watchdog launched beside Move 2 detects a silent dispatch without waiting for every Agent call to return. Found and fixed two significant bugs along the way: a core-extension-scoped --cost-class blind spot that would have silently dropped 8 real suites from Gate 8's coverage, and a production-repo marker-file leak from an early draft of the new test suite's own Case 7."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/config/orchestrator-context-budget.json",
+    "agent-system/extensions/core/context/contracts/batch-gate-stage.md",
+    "agent-system/extensions/core/context/standards/shell-script-testing.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/deploy-headless.sh",
+    "agent-system/extensions/core/scripts/gate-registry.data",
+    "agent-system/extensions/core/scripts/lib/batch-gate-marker-lib.sh",
+    "agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh",
+    "agent-system/extensions/core/scripts/lib/gate-registry-lib.sh",
+    "agent-system/extensions/core/scripts/orchestrate-batch-gate.sh",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/orchestrate-dispatch-watchdog.sh",
+    "agent-system/extensions/core/scripts/tests/run-all.sh",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/tests/test-batch-gate-pending-marker.sh",
+    "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-contention-tagging.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-registry-resolution.sh",
+    "agent-system/extensions/core/scripts/tests/test-gate-slow-bucket-split.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-dispatch-watchdog.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
+    "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh",
+    "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",
+    "specs/610_full_gate_verification_ceiling_and_stall/plans/01_gate-ceiling-fit-and-stall-detection.md",
+    "specs/610_full_gate_verification_ceiling_and_stall/records/baseline-deferred.md",
+    "specs/610_full_gate_verification_ceiling_and_stall/summaries/01_gate-ceiling-fit-and-stall-detection-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "run-all.sh's own --cost-class axis (backed by scripts/lib/suite-selection-lib.sh's suite_selection_by_cost_class) has a core-extension-scoped blind spot in its 'unknown' bucket: it is computed against _ssl_discovered_basenames, which only walks the CORE extension's own scripts/ tree, never the full cross-extension corpus run-all.sh itself discovers when invoked from the source store (measured live: 209 real suites vs. 178 core-only vs. 156 hints-file rows, with 8 suites both outside core AND absent from the hints file). Any new gate/suite-selection narrowing that uses --cost-class instead of an explicit --only list risks silently dropping those 8 suites from coverage. The general lesson: when narrowing a gate's own suite selection by any axis whose 'unknown'/fallback bucket is defined via a library's own discovery function, verify that function's discovery scope matches the REAL discovery the gate's own invoked tool performs -- a narrower scope there creates a silent coverage gap, not a loud error.",
+      "category": "PATTERN",
+      "source_artifact": "specs/610_full_gate_verification_ceiling_and_stall/summaries/01_gate-ceiling-fit-and-stall-detection-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "cost-class",
+        "suite-selection",
+        "coverage-gap",
+        "gate8",
+        "run-all.sh"
+      ]
+    },
+    {
+      "content": "A test suite that invokes verify-deploy.sh/run-all.sh as a real subprocess, specifically to exercise their NESTED/guest-exemption behavior, must explicitly `unset RUN_ALL_NESTED VERIFY_DEPLOY_NESTED GATE_MUTEX_HELD` at its own top. These are plain exported shell variables both scripts set unconditionally; when the suite is itself discovered and run as a child of gate 8's own run-all.sh invocation (the ordinary case once the suite exists in the test corpus), it silently inherits nested=1 from its own parent, exempting its internal verify-deploy.sh/run-all.sh calls from the exact guard behavior the suite exists to test. Measured live: a new suite passed 20/0 standalone but failed deterministically inside gate 8's own real battery, every time, until this fix. Mirrors test-deploy-verify-wiring.sh's own pre-existing 'ANTI-RECURSION INVARIANT' precedent for the identical hazard class -- and the same vulnerability was found, unfixed, in test-gate-lock.sh.",
+      "category": "PATTERN",
+      "source_artifact": "specs/610_full_gate_verification_ceiling_and_stall/summaries/01_gate-ceiling-fit-and-stall-detection-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "nested-invocation",
+        "test-suite-design",
+        "RUN_ALL_NESTED",
+        "env-inheritance",
+        "gate8"
+      ]
+    },
+    {
+      "content": "Never write a session-identified sentinel/marker file into a repo's own SHARED runtime-state directory (e.g. specs/.orchestration/) from inside a test suite, even temporarily and even with a PID-unique filename -- a concurrent sibling session's own full battery can discover and run that same suite at the same time, and a SIGKILL-bypassed EXIT trap (e.g. from the harness's own per-suite timeout) can leave the file behind regardless of uniqueness. Measured live: 21 leftover marker files accumulated in a real repository's specs/.orchestration/ from one test suite's own real-repo-writing Case over roughly 9 minutes of concurrent multi-session load, each capable of spuriously deferring an unrelated session's own verification call within the marker's staleness window. The robust fix is an isolated, path-mirrored fixture copy of the tool under test (built under the suite's own mktemp -d WORKDIR), never the real shared directory, even for a tool (like run-all.sh) with no explicit TARGET override -- mirror its own resolution-root structure under the fixture instead.",
+      "category": "PATTERN",
+      "source_artifact": "specs/610_full_gate_verification_ceiling_and_stall/summaries/01_gate-ceiling-fit-and-stall-detection-summary.md",
+      "confidence": 0.95,
+      "suggested_keywords": [
+        "shared-state-leak",
+        "test-fixture-isolation",
+        "specs/.orchestration",
+        "SIGKILL-trap",
+        "concurrent-sessions"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "Gate 8 (shell test suite runner) wall-clock after slow-bucket relocation",
+      "value": "Measured twice independently at 349s (5m49s-5m50s), nproc=24, host loadavg 4.15 and 7.22 respectively (non-idle, real multi-session load) -- down from a declared 1500s bound, and comfortably under the harness's 600s foreground Bash-tool ceiling with ~42% (251s) headroom.",
+      "predicate": "measured fact is",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "specs/610_full_gate_verification_ceiling_and_stall/progress/phase-8-progress.json"
+    },
+    {
+      "subject": "suite_selection_by_cost_class's unknown-bucket discovery scope",
+      "value": "Is core-extension-scoped (_ssl_discovered_basenames walks only the core extension's own scripts/ tree), a real mismatch against run-all.sh's own cross-extension discovery when invoked from the source store (209 real suites vs. 178 core-only, with 8 suites both outside core and unhinted) -- using --cost-class for a gate's own suite narrowing can silently drop real suites from coverage; an explicit --only list built from the gate's own discovery algorithm closes the gap.",
+      "predicate": "correction to assumption is",
+      "ko_type": "correction",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/verify-deploy.sh"
+    },
+    {
+      "subject": "specs/.gate-lock mutex posture decision",
+      "value": "Kept its existing fail-open posture (GATE_MUTEX_ACQUIRE_BUDGET_MS=600000, GATE_MUTEX_STALE_SEC=1800 unchanged) rather than moving to fail-closed-with-queueing; the leverage point for reducing contention is the mechanical batch-gate-pending marker/entry-guard pair, not the mutex's own acquire/staleness arithmetic. Lock scope (per-repository vs. host-wide) is a separate, orthogonal question this decision does not resolve.",
+      "predicate": "decision and rationale is",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/context/standards/shell-script-testing.md"
+    },
+    {
+      "subject": "Test suites that spawn verify-deploy.sh/run-all.sh as real subprocesses to test nested/guest exemption behavior",
+      "value": "Silently inherit RUN_ALL_NESTED/VERIFY_DEPLOY_NESTED/GATE_MUTEX_HELD (plain exported shell variables) from gate 8's own outer run-all.sh when discovered and run as one of its children, exempting their own internal calls from the exact guard behavior under test. Must explicitly unset these three variables at the suite's own top. The same vulnerability, unfixed, exists in test-gate-lock.sh.",
+      "predicate": "non-obvious constraint is",
+      "ko_type": "insight",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-batch-gate-pending-marker.sh"
+    },
+    {
+      "subject": "Writing a session marker into a repo's shared specs/.orchestration/ directory from a test suite",
+      "value": "Is unsafe even with a PID-unique filename: a SIGKILL-bypassed EXIT trap (e.g. the harness's own per-suite timeout) can leave the file behind under contention, and it was measured live to accumulate 21 leftover files from one suite's own Case in roughly 9 minutes of concurrent multi-session load, each capable of spuriously deferring an unrelated session's own verification call. The robust design is an isolated, path-mirrored fixture copy of the tool under test, never the real shared directory.",
+      "predicate": "non-obvious constraint is",
+      "ko_type": "insight",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-batch-gate-pending-marker.sh"
+    },
+    {
+      "subject": "This nvim-config repository's host during this dispatch",
+      "value": "Carried sustained non-idle load (loadavg 4-12) throughout an entire multi-hour implementation dispatch, due to multiple concurrent sibling /orchestrate sessions (including at least one against a different repository, sf1-engine) -- no idle-host window was available for either Phase 1's or Phase 8's own measurement obligations, both of which deferred to a documented record instead of a contaminated figure.",
+      "predicate": "measured fact is",
+      "ko_type": "finding",
+      "confidence": 0.8,
+      "source_loc": "specs/610_full_gate_verification_ceiling_and_stall/records/baseline-deferred.md"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795039913_ab1940",
     "agent_type": "general-implementation-agent",
@@ -10,13 +142,7 @@
       "implement",
       "general-implementation-agent"
     ],
-    "phases_completed": 0,
+    "phases_completed": 8,
     "phases_total": 8
-  },
-  "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/lib/batch-gate-marker-lib.sh",
-    "agent-system/extensions/core/scripts/tests/test-force-phases.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
-  ]
+  }
 }

@@ -6,9 +6,12 @@
   "objectives": [
     {
       "id": 1,
-      "description": "Redeploy via deploy-headless.sh (multiple passes as residual issues were found)",
+      "description": "Redeploy via deploy-headless.sh (multiple passes); exempt infrastructure-level snapshot callers from the batch-gate entry guard",
       "status": "done",
-      "files_touched": []
+      "files_touched": [
+        "agent-system/extensions/core/scripts/deploy-headless.sh",
+        "agent-system/extensions/core/scripts/lib/deploy-baseline-lib.sh"
+      ]
     },
     {
       "id": 2,
