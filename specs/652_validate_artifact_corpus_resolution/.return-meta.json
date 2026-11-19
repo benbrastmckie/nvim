@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795104475_9fe2d8_652",
+  "dispatch_seq": 4,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/652_validate_artifact_corpus_resolution/reports/01_validate-artifact-corpus-resolution.md",
+      "summary": "Confirms the exact single-candidate resolution site in validate-artifact.sh, the existing verification_scope_project_suite_roots reader, and designs a sibling-lib.sh candidate-list extension plus corpus-naming warning text and three new test cases, with no change to suite-selection-lib.sh itself."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "scripts/lib/suite-selection-lib.sh fixes its own scripts-root/tests-dir (_SSL_SCRIPTS_ROOT/_SSL_TESTS_DIR) once at source time, derived purely from its own ${BASH_SOURCE[0]} location two directories up -- there is no parameter or env override. The only way to re-root the exact same, unmodified selection engine at a different corpus is to source a DIFFERENT on-disk copy of the same file that lives inside that corpus's own tree (a lib/+tests/ mirror). This generalizes beyond validate-artifact.sh: any future caller wanting a non-default corpus from this library must locate and source an alternate copy, never override its internal _SSL_-prefixed variables (explicitly not part of its public contract).",
+      "category": "PATTERN",
+      "source_artifact": "specs/652_validate_artifact_corpus_resolution/reports/01_validate-artifact-corpus-resolution.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["suite-selection-lib", "corpus resolution", "BASH_SOURCE rooting", "verification_scope", "project_suite_roots"]
+    },
+    {
+      "content": "verification_scope.project_suite_roots (scripts/lib/verification-scope-lib.sh) is schema-generic ('a non-shell test corpus, for example') -- it carries NO structural guarantee that a declared root mirrors the agent-system's own lib/+tests/ scripts-tree shape. Any consumer that wants to reuse an existing shell-suite engine (like suite-selection-lib.sh) against a declared project_suite_root must derive a candidate path assuming that mirror shape and gracefully degrade to a fallback + named warning when it's absent -- never treat a non-mirrored declared root as an error.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/652_validate_artifact_corpus_resolution/reports/01_validate-artifact-corpus-resolution.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["verification_scope", "project_suite_roots", "repo-level-declarations", "fail-open", "schema-generic"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 652 to create implementation plan"
+}
