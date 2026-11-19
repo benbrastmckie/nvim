@@ -405,33 +405,33 @@ markdown file; per the source-store sub-case the honest check is
 
 ---
 
-### Phase 5: Manifest Wiring and Documentation Parity [NOT STARTED]
+### Phase 5: Manifest Wiring and Documentation Parity [COMPLETED]
 
 **Goal**: Wire the new command and skill into `manifest.json` and bring every documentation
 surface that currently asserts "no slash command" into parity — without breaking Rule U's
 60-line `EXTENSION.md` ceiling.
 
 **Tasks**:
-- [ ] `manifest.json`: add `"sapience.md"` to `provides.commands` and `"skill-sapience"` to
+- [x] `manifest.json`: add `"sapience.md"` to `provides.commands` and `"skill-sapience"` to
       `provides.skills`. Leave `provides.scripts` untouched (no new script) and leave
-      `routing_exempt: true` in place.
-- [ ] `EXTENSION.md`: replace the existing two-line "**No task type, no routing, no slash
+      `routing_exempt: true` in place. *(completed)*
+- [x] `EXTENSION.md`: replace the existing two-line "**No task type, no routing, no slash
       command**: review/sync/coverage/pending/stats are already covered by the GNOME desktop
       launchers the nix module installs." paragraph IN PLACE with a `/sapience` command line of
       equal or fewer lines — net line delta must be ≤ 0. The replacement states the command's
       shape, that it always ends in one approval picker, and that the desktop launchers still
-      cover review/sync/coverage/pending/stats.
-- [ ] `README.md`: correct the opening paragraph's "This extension provides no task type, no
+      cover review/sync/coverage/pending/stats. *(completed: still exactly 60 lines)*
+- [x] `README.md`: correct the opening paragraph's "This extension provides no task type, no
       routing agents, and no slash command" claim and its matching closing section; add a
       `/sapience` mention (the literal substring `check_readme_vs_manifest()` greps for); add
       File Inventory rows for `commands/sapience.md`, `skills/skill-sapience/SKILL.md`, and the
-      new domain note.
-- [ ] `agent-system/extensions/README.md`: update the sapience row's description cell so the
+      new domain note. *(completed)*
+- [x] `agent-system/extensions/README.md`: update the sapience row's description cell so the
       top-level inventory no longer describes the extension as grants-and-docs only. The row
       itself already exists (the first-column set diff this lint performs is already satisfied);
-      this is a description-accuracy edit, not a membership fix.
-- [ ] Re-run `wc -l agent-system/extensions/sapience/EXTENSION.md` after the edit and confirm it
-      is ≤ 60.
+      this is a description-accuracy edit, not a membership fix. *(completed)*
+- [x] Re-run `wc -l agent-system/extensions/sapience/EXTENSION.md` after the edit and confirm it
+      is ≤ 60. *(completed: 60)*
 
 **Timing**: 1 hour
 

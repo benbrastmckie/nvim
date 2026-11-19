@@ -6,8 +6,8 @@
   "routing_exempt": true,
   "provides": {
     "agents": [],
-    "commands": [],
-    "skills": [],
+    "commands": ["sapience.md"],
+    "skills": ["skill-sapience"],
     "rules": ["sapience-write-path.md"],
     "scripts": [
       "install-sapience-mcp-session-hook.sh",

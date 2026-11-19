@@ -1,11 +1,12 @@
 # Sapience Extension
 
-Permission grants, the per-repo MCP activation surface, and orientation docs for Sapience, the
-hosted knowledge vault at app.spnc.ai configured by this machine's nix modules
-(`modules/home/services/sapience.nix`). This extension provides no task type, no routing
-agents, and no slash command -- it closes the gaps blocking autonomous work in this repository
-from using the vault, makes loading the extension the sole per-repo activation surface, and
-documents the vault's own model.
+Permission grants, the per-repo MCP activation surface, orientation docs, and the `/sapience`
+command for Sapience, the hosted knowledge vault at app.spnc.ai configured by this machine's nix
+modules (`modules/home/services/sapience.nix`). This extension provides no task type and no
+routing agents -- it closes the gaps blocking autonomous work in this repository from using the
+vault, makes loading the extension the sole per-repo activation surface, documents the vault's
+own model, and adds the one command surface (`/sapience`, direct-execution `skill-sapience`)
+that assembles a draft vault update and gates every outward write behind one approval picker.
 
 ## File Inventory
 
@@ -20,7 +21,10 @@ documents the vault's own model.
 | `scripts/verify-sapience-context-scoping.sh` | Read-only probe: replays the `POST /v1/cli/context` two-call `project=` comparison on demand and reports whether the content-scoping residual (Gap 5) still holds, has lifted, or is inconclusive |
 | `EXTENSION.md` | Merges into `.claude/CLAUDE.md` under `extension_sapience`; carries the per-repo activation contract and the gap-2 postflight wrapup instruction |
 | `index-entries.json` | Context index entries for the files under `context/project/sapience/` |
-| `context/project/sapience/` | Domain notes: vault model, review-gate boundary, transcript-filter ceiling, subagent orientation, per-repo scoping (now also the MCP-registration triad), injection-site scoping |
+| `context/project/sapience/` | Domain notes: vault model, review-gate boundary, transcript-filter ceiling, subagent orientation, per-repo scoping (now also the MCP-registration triad), injection-site scoping, the `/sapience` draft-and-picker design record |
+| `commands/sapience.md` | `/sapience` command file: parses argument shapes and delegates to `skill-sapience` |
+| `skills/skill-sapience/SKILL.md` | Direct-execution skill: binding gate, vault-read-backed draft assembly, optional collaborator picker, and the single mandatory approval picker over `sapience-publish.sh`'s four write surfaces |
+| `context/project/sapience/domain/command-draft-and-picker.md` | The `/sapience` draft-assembly heuristics (most-relevant-doc, decision-shaped), pre-check defaults, literal-payload discipline, and the option-construction marker site |
 
 ## The Gaps This Extension Closes
 

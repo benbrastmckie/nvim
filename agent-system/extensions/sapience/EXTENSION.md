@@ -39,8 +39,8 @@ and returns no per-item attribution to filter or label by. No hook is suppressed
 see `domain/injection-site-scoping.md` for the measurement, both owner actions, and
 `scripts/verify-sapience-context-scoping.sh`'s falsifiability probe.
 
-**No task type, no routing, no slash command**: review/sync/coverage/pending/stats are already
-covered by the GNOME desktop launchers the nix module installs.
+**`/sapience`**: assembles a draft vault update from local and vault state, always ending in
+ONE approval picker before any write; review/sync/coverage/pending/stats stay the GNOME launchers.
 
 **Mechanical gap**: an `mcp__sapience__*` tool failure cannot be intercepted mechanically from
 this repository (vendor-owned `~/.sapience/mcp.py`); the only remedy is best-effort agent
