@@ -135,7 +135,10 @@
 #     order) after this function returns.
 #
 #     SCHEDULING, in order:
-#       1. Partition loaded ids into SERIALIZED (registry `serialized=true`, gate8 only today)
+#       1. Partition loaded ids into SERIALIZED (registry `serialized=true`, gates 8 and 31
+#          today -- the slow-cost-class gate the full battery relocated off gate 8's own
+#          critical path, scheduled by this same ascending-id rule, never concurrently with
+#          gate8 or with each other)
 #          and POOL (everything else). Mirrors run-all.sh's LOAD_SENSITIVE_BASENAMES precedent
 #          exactly: an ambient-load precaution (gate8 itself spawns up to run-all.sh's own
 #          JOBS_CAP additional nested processes), not a resource-collision requirement -- a live

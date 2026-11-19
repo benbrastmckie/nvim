@@ -167,3 +167,4 @@
 28	Deliberate-break residue lint (lint-deliberate-break-residue.sh)	gate28_run	-	true	30	free	false	@extensions
 29	Test-suite root-resolution lint (lint-test-root-resolution.sh)	gate29_run	-	true	30	free	false	agent-system/extensions/core/scripts/tests/*.sh,agent-system/extensions/*/scripts/tests/*.sh,agent-system/extensions/*/scripts/test-*.sh
 30	Fixture dependency declaration lint (lint-fixture-dependency-declaration.sh)	gate30_run	-	true	30	free	false	agent-system/extensions/core/scripts/tests/*.sh
+31	Slow cost-class shell suites (tests/run-all.sh --cost-class slow)	gate31_run	-	true	900	slow	true	@extensions

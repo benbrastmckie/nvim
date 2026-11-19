@@ -1,0 +1,81 @@
+{
+  "phase": 2,
+  "phase_name": "Relocate the Slow Bucket onto Its Own Serialized Gate",
+  "started_at": "2026-11-19T00:45:00Z",
+  "last_updated": "2026-11-19T02:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Re-derive bucket split live; discover 209-suite real cross-extension total",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "New registry row (gate 31, slow bucket, serialized, timeout_s=900)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/gate-registry.data"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "gate8_run narrowing (explicit --only list, coverage-safe) and gate31_run implementation",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh",
+        "agent-system/extensions/core/scripts/lib/gate-registry-lib.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "New test suite test-gate-slow-bucket-split.sh, 9 cases",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-gate-slow-bucket-split.sh"
+      ]
+    },
+    {
+      "id": 5,
+      "description": "Declare new script/suite in manifest.json and suite-classification.data",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data"
+      ]
+    }
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "run-all.sh --cost-class free,moderate,unknown for gate8's narrowing",
+      "result": "failed",
+      "reason": "suite_selection_by_cost_class's unknown bucket is core-extension-scoped, silently dropping 8 real cross-extension suites from gate8's run -- a coverage regression. Replaced with an explicit --only list built from a direct hints-file parse plus a discovery-algorithm replica."
+    },
+    {
+      "approach": "run-all.sh --cost-class slow for gate31's selection",
+      "result": "failed",
+      "reason": "when suite-cost-hints.txt is missing/unreadable, --cost-class slow matches zero suites, which trips run-all.sh's own zero-discovered harness-failure exit (2) instead of Decision 2's required documented no-op. Replaced with an explicit slow-set --only list and an up-front empty-set skip branch."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "2.cost-class-narrowing",
+      "description": "Narrow Gate 8's run-all.sh invocation via --cost-class free,moderate,unknown",
+      "type": "altered",
+      "reason": "Measured live: --cost-class's unknown bucket is core-only, dropping 8 real cross-extension unhinted suites entirely -- a coverage regression forbidden by this task's Hard Constraint. Replaced with an explicit, coverage-safe --only list.",
+      "annotation": "*(deviation: altered — see full account in plan task list and verify-deploy.sh's own comment)*"
+    },
+    {
+      "task_id": "2.unknown-drift-advisory",
+      "description": "Emit the unknown-bucket drift advisory",
+      "type": "altered",
+      "reason": "First implementation compared a full suite PATH (from --timings output) against the basename-keyed hints file, which never matched -- fixed to compare basenames, consistent with the explicit-list mechanism.",
+      "annotation": "*(deviation: altered — fixed a basename/path comparison bug before this phase closed)*"
+    }
+  ],
+  "notes": [
+    "The plan's own Verification bullet \"A timed Gate 8 run reports a wall-clock under 600s\" was NOT confirmed under load this dispatch: the host carried loadavg >= 3 and multiple concurrent sibling dispatches throughout this phase (same condition Phase 1's own deferred-baseline record names), and a standalone gate31 (slow-bucket) run alone took between 10-15 minutes under that load. A full, honest gate8-alone timing run was not completed this dispatch given the cost (10+ minutes per attempt under contention) and the risk of contaminating a sibling dispatch's own measurement. The mechanism's CORRECTNESS is proven at the gate/test level (test-gate-slow-bucket-split.sh's case (a): the slow/non-slow split covers exactly the 209 really-discovered suites, mutually exclusive, read-only against the real tree) and gate31 standalone passed cleanly (9 suites, 7 passed, 2 expected failures, 0 NEW). Phase 8's own final full-gate-set run is where the authoritative Gate 8 wall-clock figure, under whatever load exists at that time, gets recorded -- consistent with this task's Phase 1 precedent of never presenting a contaminated figure as a clean control."
+  ]
+}

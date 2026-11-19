@@ -1159,6 +1159,16 @@ fi
 # precedent -- a deploy consumer has no agent-system/extensions directory and the gate correctly
 # skips there.
 #
+# BEFORE/AFTER COVERAGE STATEMENT (slow-bucket relocation): the discovered-suite inventory this
+# gate and gate 31 together cover is UNCHANGED from before this split existed -- every suite
+# `tests/run-all.sh` discovers by default still runs by default, exactly as before. Only the
+# SCHEDULING GATE differs: a suite whose `tests/suite-cost-hints.txt` measurement is >= the
+# moderate threshold now runs under gate 31 (its own serialized gate) instead of here; every
+# other suite (free, moderate, and unhinted/`unknown`) still runs here, under gate 8, exactly as
+# before. `--skip-slow` defers both gates identically, so a `--skip-slow` run's own coverage is
+# byte-for-byte unchanged by this split. See gate31_run()'s own header for the gate-31 side of
+# this same statement.
+#
 # specs/.gate-lock bracket: only Gate 8's own run-all.sh invocation below is bracketed with the
 # repo-scoped specs/.gate-lock mutex -- the other 22 gates are never serialized, and a
 # --skip-slow or Gate-8-excluding --only-gate run touches the mutex not at all (both exit via a
@@ -1413,9 +1423,12 @@ else
 
   # Touched-paths narrowing (--gate8-touched; see this file's header "Gate 8 touched-paths
   # narrowing" section for the full contract). Resolved here, before the run-all.sh invocation
-  # below is built, so GATE8_NARROWED and GATE8_ONLY_ARGS are both settled in time.
+  # below is built, so GATE8_NARROWED and GATE8_SUITES are both settled in time. GATE8_SUITES
+  # (basenames) feeds directly into GATE8_BASE_SUITES further below, which the slow-exclusion
+  # filter then narrows into GATE8_EFFECTIVE_ONLY_ARGS -- there is no separate GATE8_ONLY_ARGS
+  # any more (removed: once the slow-exclusion filter always builds its own --only list, a
+  # second, never-again-read --only-args variable for the touched case alone was dead code).
   GATE8_NARROWED=false
-  GATE8_ONLY_ARGS=()
   GATE8_SUITES=()
   if [ -n "$GATE8_TOUCHED" ]; then
     # Lazy, degrade-safe source of the TARGET copy -- deliberately NOT _VD_SCRIPT_DIR/lib/, which
@@ -1440,7 +1453,6 @@ else
         say "  Note: --gate8-touched resolved to zero suites; falling back to the full, unnarrowed battery."
       else
         GATE8_NARROWED=true
-        GATE8_ONLY_ARGS=(--only "$(IFS=,; echo "${GATE8_SUITES[*]}")")
       fi
       unset GATE8_TOUCHED_PATHS
     fi
@@ -1458,17 +1470,123 @@ else
     GATE_DIRTY_LIST+=("$CURRENT_GATE")
   fi
 
-  # NOTE: deliberately "${GATE8_ONLY_ARGS[@]}", never "${GATE8_ONLY_ARGS[@]:-}" -- confirmed by
-  # direct reproduction that the ":-" default form substitutes ONE empty-string WORD for a
-  # declared-but-zero-element array (argc=1, not 0), which run-all.sh's own argument parser then
-  # rejects as "ERROR: unknown argument: " on every unnarrowed run. The bare "[@]" form (no
-  # default) correctly expands to zero words for an empty array under this file's own
-  # `set -uo pipefail` (verified on bash 5.3.9); GATE_RAN_LIST/GATE_DIRTY_LIST's own "[@]:-"
-  # reads elsewhere in this file are safe DESPITE the same quirk only because they are `for`-loop
-  # iterands, where one spurious empty-string iteration is harmless -- never mirror that idiom
-  # for an argument list passed to an external command.
-  run_all_output=$(cd "$TARGET" && bash "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" --quiet --jobs "$GATE8_JOBS" --fail-on-new "${GATE8_ONLY_ARGS[@]}" 2>&1)
+  # Slow-bucket relocation (Decision 2): Gate 8 excludes exactly the `slow` cost-class suites now
+  # that they have their own serialized gate (gate31_run below); `free`, `moderate`, and
+  # `unknown` all stay here, by construction, never by a cost-class filter.
+  #
+  # WHY `--only <everything minus slow>` HERE, NEVER `--cost-class free,moderate,unknown`:
+  # suite_selection_by_cost_class's `unknown` bucket (scripts/lib/suite-selection-lib.sh) is
+  # computed against THAT LIBRARY's own `_ssl_discovered_basenames`, which is core-extension-
+  # scoped (narrow+flat under core's own scripts/ root) -- documented accurately in that
+  # function's own header, but a real mismatch against what run-all.sh itself actually
+  # discovers when invoked from the source store (walks EVERY extension's scripts/tests/ and
+  # flat scripts/, exactly replicated below). Measured live at implementation time: 209 suites
+  # really discovered, 178 seen by core-only discovery, 156 rows in the hints file, and 8
+  # suites that are BOTH outside core AND absent from the hints file -- a `--cost-class
+  # free,moderate,unknown` invocation would have silently DROPPED those 8 from Gate 8's run
+  # entirely (zero bucket claims them), which is exactly the coverage regression this task's
+  # own Hard Constraint forbids. Building the `--only` list explicitly, from the SAME discovery
+  # algorithm run-all.sh itself uses (replicated here, not re-derived from the narrower
+  # library), closes that gap by construction: nothing can be silently unclassified.
+  GATE8_SLOW_SET_FILE="$(mktemp "${TMPDIR:-/tmp}/gate8-slow-set.XXXXXX" 2>/dev/null || true)"
+  : > "$GATE8_SLOW_SET_FILE" 2>/dev/null || true
+  GATE8_HINTS_FILE="$TARGET/agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"
+  GATE8_MODERATE_MS=30000
+  if [ -f "$TARGET/agent-system/extensions/core/scripts/lib/suite-selection-lib.sh" ]; then
+    _g8_parsed_moderate_ms="$(grep -oE '^SUITE_SELECTION_COST_MODERATE_MS=[0-9]+' "$TARGET/agent-system/extensions/core/scripts/lib/suite-selection-lib.sh" | head -n1 | cut -d= -f2)"
+    [ -n "$_g8_parsed_moderate_ms" ] && GATE8_MODERATE_MS="$_g8_parsed_moderate_ms"
+  fi
+  # Hints file is advisory and optional: missing/unreadable -> GATE8_SLOW_SET_FILE stays empty
+  # -> every discovered suite is treated as non-slow below -> Gate 8 runs everything, exactly
+  # today's pre-split behavior (Decision 2's required degrade).
+  if [ -n "$GATE8_SLOW_SET_FILE" ] && [ -f "$GATE8_HINTS_FILE" ]; then
+    while IFS=, read -r _g8_hint_base _g8_hint_ms; do
+      [ -n "$_g8_hint_base" ] || continue
+      case "$_g8_hint_base" in \#*) continue ;; esac
+      if [ -n "$_g8_hint_ms" ] && [ "$_g8_hint_ms" -ge "$GATE8_MODERATE_MS" ] 2>/dev/null; then
+        echo "$_g8_hint_base" >> "$GATE8_SLOW_SET_FILE"
+      fi
+    done < "$GATE8_HINTS_FILE"
+  fi
+
+  # Base suite list BEFORE the slow-exclusion filter: the --gate8-touched selection
+  # (GATE8_SUITES, basenames) when narrowed, otherwise every discovered suite -- replicating
+  # run-all.sh's own source-store discovery algorithm EXACTLY (its header's "Narrow suites:
+  # scripts/tests/test-*.sh" / "Broad/flat suites: scripts/test-*.sh" two-location walk over
+  # every $EXTENSIONS_ROOT/*/scripts) only when NOT narrowed, since the touched selection is
+  # already resolved via that same discovery underneath suite_selection_select. Kept in sync by
+  # citing that exact file/section rather than by any shared code (run-all.sh's own discovery is
+  # inline, not a library call this gate can source) -- a future change to that algorithm needs
+  # the identical change mirrored here.
+  GATE8_BASE_SUITES=()
+  if [ "$GATE8_NARROWED" = "true" ]; then
+    GATE8_BASE_SUITES=("${GATE8_SUITES[@]}")
+  else
+    GATE8_EXT_ROOT="$TARGET/agent-system/extensions"
+    mapfile -t GATE8_BASE_SUITES < <(
+      for _g8_ext_dir in "$GATE8_EXT_ROOT"/*/; do
+        _g8_ext_scripts="${_g8_ext_dir}scripts"
+        [ -d "$_g8_ext_scripts" ] || continue
+        if [ -d "$_g8_ext_scripts/tests" ]; then
+          for _g8_f in "$_g8_ext_scripts/tests"/test-*.sh; do
+            [ -e "$_g8_f" ] && basename "$_g8_f"
+          done
+        fi
+        for _g8_f in "$_g8_ext_scripts"/test-*.sh; do
+          [ -e "$_g8_f" ] && basename "$_g8_f"
+        done
+      done | sort -u
+    )
+  fi
+
+  # Slow-exclusion filter, applied uniformly whether or not --gate8-touched narrowed the base
+  # list above -- this is the step that makes the exclusion an INTERSECTION with any touched
+  # narrowing, never a replacement of one axis by the other: a touched path that happens to map
+  # to a now-relocated slow suite is excluded here exactly as it would be in the unnarrowed case.
+  GATE8_FINAL_SUITES=()
+  GATE8_UNKNOWN_DRIFT_LINES=()
+  for _g8_base in "${GATE8_BASE_SUITES[@]}"; do
+    if [ -s "$GATE8_SLOW_SET_FILE" ] && grep -qxF "$_g8_base" "$GATE8_SLOW_SET_FILE" 2>/dev/null; then
+      continue
+    fi
+    GATE8_FINAL_SUITES+=("$_g8_base")
+    # Unknown-bucket drift advisory (Decision 2's mitigation): a suite the hints file does not
+    # cover at all stays in Gate 8 by construction (see above); flag it here, by basename, so
+    # the hints file's own drift is visible rather than silent. Informational only -- it never
+    # changes which suites run, only which ones get a named advisory.
+    if [ -f "$GATE8_HINTS_FILE" ] && ! grep -qF "${_g8_base}," "$GATE8_HINTS_FILE" 2>/dev/null; then
+      GATE8_UNKNOWN_DRIFT_LINES+=("  [COST-DRIFT] gate8: unhinted suite '${_g8_base}' has no tests/suite-cost-hints.txt entry -- running in gate8 by default (unknown bucket); consider measuring and adding a row")
+    fi
+  done
+  rm -f "$GATE8_SLOW_SET_FILE" 2>/dev/null || true
+
+  # NOTE: deliberately "${GATE8_EFFECTIVE_ONLY_ARGS[@]}", never "...[@]:-" -- confirmed by direct
+  # reproduction that the ":-" default form substitutes ONE empty-string WORD for a declared-
+  # but-zero-element array (argc=1, not 0), which run-all.sh's own argument parser then rejects
+  # as "ERROR: unknown argument: " on every unnarrowed run. The bare "[@]" form (no default)
+  # correctly expands to zero words for an empty array under this file's own `set -uo pipefail`
+  # (verified on bash 5.3.9); GATE_RAN_LIST/GATE_DIRTY_LIST's own "[@]:-" reads elsewhere in this
+  # file are safe DESPITE the same quirk only because they are `for`-loop iterands, where one
+  # spurious empty-string iteration is harmless -- never mirror that idiom for an argument list
+  # passed to an external command. GATE8_FINAL_SUITES is non-empty whenever any suite exists at
+  # all (the zero-discovered case is run-all.sh's own harness-failure path, unaffected by this
+  # gate), so this is effectively always a real --only list, including the unnarrowed case --
+  # the one behavioral difference from pre-split Gate 8, which passed no --only at all.
+  GATE8_EFFECTIVE_ONLY_ARGS=()
+  if [ "${#GATE8_FINAL_SUITES[@]}" -gt 0 ]; then
+    GATE8_EFFECTIVE_ONLY_ARGS=(--only "$(IFS=,; echo "${GATE8_FINAL_SUITES[*]}")")
+  fi
+  run_all_output=$(cd "$TARGET" && bash "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" --quiet --jobs "$GATE8_JOBS" --fail-on-new "${GATE8_EFFECTIVE_ONLY_ARGS[@]}" 2>&1)
   run_all_status=$?
+
+  if [ "${#GATE8_UNKNOWN_DRIFT_LINES[@]}" -gt 0 ]; then
+    for _g8_drift_line in "${GATE8_UNKNOWN_DRIFT_LINES[@]}"; do
+      echo "$_g8_drift_line" >&2
+      if [ "$FINDINGS" = "true" ]; then
+        FINDINGS_LIST+=("WARN-FINDING gate8 ${_g8_drift_line#  }")
+      fi
+    done
+  fi
 
   # Release on every path out of the bracket (success and failure alike) -- explicit, mirroring
   # the signal path's own release in _gate8_signal_cleanup. Disarm the signal-scoped trap here
@@ -1500,7 +1618,7 @@ else
   # re-running the full battery expecting it to reproduce a narrowed-run verdict.
   run_all_rerun_remedy="re-run for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh"
   if [ "$GATE8_NARROWED" = "true" ]; then
-    run_all_rerun_remedy="re-run the SAME narrowed roster for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh --only $(IFS=,; echo "${GATE8_SUITES[*]}") (narrowed by --gate8-touched; this was not a full-battery run)"
+    run_all_rerun_remedy="re-run the SAME narrowed roster for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh --only $(IFS=,; echo "${GATE8_FINAL_SUITES[*]}") (narrowed by --gate8-touched; this was not a full-battery run)"
   fi
 
   if [ "$run_all_status" -eq 0 ] && [ "$run_all_had_failing_suites" = "false" ]; then
@@ -1510,7 +1628,7 @@ else
       # assert verbatim -- a narrowed pass must never be textually indistinguishable from a
       # full-battery pass. Not evidence of full-battery coverage; see this file's header
       # "Gate 8 touched-paths narrowing" section.
-      pass "run-all.sh: ${#GATE8_SUITES[@]} selected suite(s) passed (narrowed by --gate8-touched -- NOT a full-battery pass)"
+      pass "run-all.sh: ${#GATE8_FINAL_SUITES[@]} selected suite(s) passed (narrowed by --gate8-touched -- NOT a full-battery pass)"
     else
       pass "run-all.sh: all discovered suites passed"
     fi
@@ -1545,6 +1663,164 @@ else
     echo "  [CONTENTION] gate8: ${GATE8_CONTENTION_REASON}" >&2
     if [ "$FINDINGS" = "true" ]; then
       FINDINGS_LIST+=("WARN-FINDING gate8 [CONTENTION] ${GATE8_CONTENTION_REASON}")
+    fi
+  fi
+fi
+
+say ""
+
+fi
+}
+
+# ── 31. Slow cost-class shell suites (run-all.sh --only <slow bucket>) ───────────────────────
+# BEFORE/AFTER COVERAGE STATEMENT (slow-bucket relocation, the gate-31 side of gate8_run()'s own
+# statement above): this gate owns exactly the suites whose tests/suite-cost-hints.txt
+# measurement is >= the moderate threshold -- the same suites that ran under gate 8 before this
+# split existed, now scheduled here instead. Nothing is dropped from the default battery and
+# nothing new is added: the inventory is identical, only the scheduling gate moved. A missing or
+# unreadable hints file degrades this gate to a documented no-op (zero slow suites identified --
+# see the entry guard below) while gate 8 degrades to running everything, exactly reproducing
+# today's pre-split behavior for that fixture-less-host case. `--skip-slow` defers this gate
+# identically to gate 8.
+_gate31_signal_cleanup() {
+  local sig="$1"
+  if [ "$GATE31_MUTEX_OWNED_HERE" = "true" ]; then
+    bash "$GATE31_TASK_LOCK_SH" gate-release "$GATE31_MUTEX_TOKEN" >&2 || true
+    GATE31_MUTEX_OWNED_HERE="false"
+    unset GATE_MUTEX_HELD
+  fi
+  trap - INT TERM HUP
+  kill -s "$sig" "$$"
+}
+
+gate31_run() {
+if gate_selected 31; then
+say "31. Slow cost-class shell suites (tests/run-all.sh --cost-class slow)"
+CURRENT_GATE="gate31"
+# Slow-bucket relocation (Decision 2, Phase 2): the suites Gate 8 used to run in full now run
+# HERE instead -- never dropped, never skipped by default, only rescheduled onto their own
+# serialized gate so Gate 8's own wall-clock fits under the foreground ceiling. `--skip-slow`
+# defers BOTH gates identically (this gate checks the exact same global SKIP_SLOW flag gate8_run
+# checks), so a `--skip-slow` run's coverage is unchanged from before this gate existed.
+if [ "$SKIP_SLOW" = "true" ]; then
+  say "  [SKIP] --skip-slow: shell test suite (slow bucket) deferred (run without --skip-slow for the full gate)"
+elif [ ! -d "$TARGET/agent-system/extensions" ]; then
+  say "  [SKIP] $TARGET is a deploy consumer, not the source store -- run-all.sh does not apply"
+elif [ ! -f "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" ]; then
+  fail "tests/run-all.sh not found in source store"
+else
+  # Same specs/.gate-lock bracket semantics as gate8_run -- see that function's own header
+  # comment for the full contract. This gate runs strictly AFTER gate8 (both `serialized=true`,
+  # scheduled one at a time in ascending id order by gate_registry_exec_concurrent_batch), so
+  # gate8 has already released the mutex by the time this acquire runs; no deadlock risk.
+  GATE31_MUTEX_TOKEN=""
+  GATE31_MUTEX_OWNED_HERE="false"
+  GATE31_TASK_LOCK_SH="$TARGET/.claude/scripts/task-lock.sh"
+  if [ "$VERIFY_DEPLOY_WAS_NESTED_AT_ENTRY" = "1" ]; then
+    say "  Note: this verify-deploy.sh invocation is nested (VERIFY_DEPLOY_NESTED was already 1 at entry); specs/.gate-lock is not touched -- the outer invocation is responsible for holding it."
+  elif [ -n "${GATE_MUTEX_HELD:-}" ]; then
+    say "  Note: an outer holder already owns the specs/.gate-lock mutex (GATE_MUTEX_HELD=1 inherited); running as guest, no nested acquire."
+  elif [ ! -f "$GATE31_TASK_LOCK_SH" ]; then
+    say "  Note: deployed task-lock.sh not found at '$GATE31_TASK_LOCK_SH'; specs/.gate-lock coordination is skipped for this gate (fail-open: coordination is optional, verification is not)."
+  else
+    if gate31_token=$(bash "$GATE31_TASK_LOCK_SH" gate-acquire "verify-deploy-gate31-$$"); then
+      GATE31_MUTEX_TOKEN="$gate31_token"
+      GATE31_MUTEX_OWNED_HERE="true"
+      export GATE_MUTEX_HELD=1
+      trap '_gate31_signal_cleanup INT' INT
+      trap '_gate31_signal_cleanup TERM' TERM
+      trap '_gate31_signal_cleanup HUP' HUP
+    else
+      echo "WARNING: failed to acquire specs/.gate-lock mutex (session=verify-deploy-gate31-$$); proceeding unserialized (non-blocking, fail-open). Mirrors gate8_run's own identical posture -- verification itself is neither skipped nor altered by this mutex." >&2
+    fi
+  fi
+
+  # Slow-set selection, computed EXACTLY like gate8_run's own exclusion list (hints-file-driven,
+  # basename-keyed) rather than via run-all.sh's `--cost-class slow` flag. `--cost-class slow`
+  # was tried and rejected here: when tests/suite-cost-hints.txt is missing or unreadable,
+  # suite_selection_by_cost_class("slow") matches ZERO suites, which makes run-all.sh's own
+  # `--class/--tag/--cost-class` filter drop every suite from SUITES, tripping its "zero test
+  # suites discovered" HARNESS-FAILURE path (exit 2) -- not the documented no-op Decision 2
+  # requires. Computing the slow set directly from the hints file here, and skipping the
+  # run-all.sh invocation entirely when it is empty (below), avoids that trap by construction.
+  GATE31_SLOW_SET_FILE="$(mktemp "${TMPDIR:-/tmp}/gate31-slow-set.XXXXXX" 2>/dev/null || true)"
+  : > "$GATE31_SLOW_SET_FILE" 2>/dev/null || true
+  GATE31_HINTS_FILE="$TARGET/agent-system/extensions/core/scripts/tests/suite-cost-hints.txt"
+  GATE31_MODERATE_MS=30000
+  if [ -f "$TARGET/agent-system/extensions/core/scripts/lib/suite-selection-lib.sh" ]; then
+    _g31_parsed_moderate_ms="$(grep -oE '^SUITE_SELECTION_COST_MODERATE_MS=[0-9]+' "$TARGET/agent-system/extensions/core/scripts/lib/suite-selection-lib.sh" | head -n1 | cut -d= -f2)"
+    [ -n "$_g31_parsed_moderate_ms" ] && GATE31_MODERATE_MS="$_g31_parsed_moderate_ms"
+  fi
+  if [ -n "$GATE31_SLOW_SET_FILE" ] && [ -f "$GATE31_HINTS_FILE" ]; then
+    while IFS=, read -r _g31_hint_base _g31_hint_ms; do
+      [ -n "$_g31_hint_base" ] || continue
+      case "$_g31_hint_base" in \#*) continue ;; esac
+      if [ -n "$_g31_hint_ms" ] && [ "$_g31_hint_ms" -ge "$GATE31_MODERATE_MS" ] 2>/dev/null; then
+        echo "$_g31_hint_base" >> "$GATE31_SLOW_SET_FILE"
+      fi
+    done < "$GATE31_HINTS_FILE"
+  fi
+  mapfile -t GATE31_SLOW_SUITES < "$GATE31_SLOW_SET_FILE"
+  rm -f "$GATE31_SLOW_SET_FILE" 2>/dev/null || true
+
+  if [ "${#GATE31_SLOW_SUITES[@]}" -eq 0 ]; then
+    # Documented no-op (Decision 2's required degrade): no hints-file slow entries found (file
+    # missing, unreadable, or genuinely empty of slow rows) -- never invoke run-all.sh with an
+    # empty --only list, which would trip its own harness-failure exit. Gate 8 is running
+    # everything in this case (see its own header), so nothing is lost.
+    say "  [SKIP] no tests/suite-cost-hints.txt slow-bucket entries found -- documented no-op (hints file absent, unreadable, or empty; gate8 is running everything in this case)"
+    run_all_status=0
+    run_all_had_failing_suites="false"
+    run_all_output=""
+  else
+    GATE31_ONLY_ARGS=(--only "$(IFS=,; echo "${GATE31_SLOW_SUITES[*]}")")
+    run_all_output=$(cd "$TARGET" && bash "$TARGET/agent-system/extensions/core/scripts/tests/run-all.sh" --quiet --jobs "$GATE8_JOBS" --fail-on-new "${GATE31_ONLY_ARGS[@]}" 2>&1)
+    run_all_status=$?
+  fi
+
+  if [ "$GATE31_MUTEX_OWNED_HERE" = "true" ]; then
+    bash "$GATE31_TASK_LOCK_SH" gate-release "$GATE31_MUTEX_TOKEN" >&2 || true
+    GATE31_MUTEX_OWNED_HERE="false"
+    unset GATE_MUTEX_HELD
+    trap - INT TERM HUP
+  fi
+
+  # Same EXPECTED-versus-NEW discriminator as gate8_run -- see that function's own header
+  # comment above gate8_run() for the full degrade-direction rationale. Vacuously "false" for
+  # the no-op branch above (run_all_output is empty).
+  run_all_had_failing_suites="false"
+  case "$run_all_output" in
+    *$'\n''[run-all] Failing suites ('*) run_all_had_failing_suites="true" ;;
+    '[run-all] Failing suites ('*) run_all_had_failing_suites="true" ;;
+  esac
+
+  run_all_rerun_remedy="re-run the SAME slow-bucket selection for detail: bash agent-system/extensions/core/scripts/tests/run-all.sh --only $(IFS=,; echo "${GATE31_SLOW_SUITES[*]:-}") (gate31; this is not a full-battery run)"
+
+  if [ "${#GATE31_SLOW_SUITES[@]}" -eq 0 ]; then
+    # Documented no-op, per Decision 2's required degrade -- pass() (cache-write-eligible is
+    # fine here: an empty slow-set run genuinely verified nothing, but that is itself the
+    # correct, stable state for a missing/empty hints file, not a transient failure to retry).
+    pass "run-all.sh: no slow-bucket suites selected (gate31 -- documented no-op; hints file absent, unreadable, or carries no slow-class rows)"
+  elif [ "$run_all_status" -eq 0 ] && [ "$run_all_had_failing_suites" = "false" ]; then
+    # Deliberately distinct from gate8_run's own pass strings (both the narrowed and unnarrowed
+    # forms) -- a gate31 pass must never be textually indistinguishable from a gate8 pass; each
+    # covers a disjoint suite set and a reader diffing two pass lines must be able to tell which
+    # gate is which.
+    pass "run-all.sh: ${#GATE31_SLOW_SUITES[@]} slow-bucket suite(s) passed (gate31 -- cost-class slow bucket only, NOT the full battery)"
+  elif [ "$run_all_status" -eq 0 ] && [ "$run_all_had_failing_suites" = "true" ]; then
+    run_all_tally_line="$(printf '%s\n' "$run_all_output" | grep -E '^\[run-all\] [0-9]+ passed, ' | tail -n1)"
+    warn_advisory "run-all.sh: all failing slow-bucket suites are declared-expected (no NEW failure)" \
+         "${run_all_tally_line:-see tests/known-failures.txt}; $run_all_rerun_remedy" \
+         "run-all.sh: all failing slow-bucket suites are declared-expected (no NEW failure) -- ${run_all_tally_line:-see tests/known-failures.txt}"
+  else
+    run_all_remedy="$run_all_rerun_remedy"
+    [ "$run_all_status" -eq 2 ] && run_all_remedy="$run_all_remedy (exit 2 may indicate an invalid VERIFY_DEPLOY_GATE8_JOBS value: '$GATE8_JOBS')"
+    fail "run-all.sh reported failing or undiscoverable slow-bucket suites (exit $run_all_status)" \
+         "$run_all_remedy" ""
+    if [ "$FINDINGS" = "true" ]; then
+      while IFS= read -r run_all_line; do
+        FINDINGS_LIST+=("FINDING gate31 $run_all_line")
+      done < <(verify_deploy_extract_verdict_lines '[FAIL]' "$run_all_output")
     fi
   fi
 fi

@@ -282,41 +282,73 @@ table's existing rows and recording both, rather than overwriting the dated figu
 
 ---
 
-### Phase 2: Relocate the Slow Bucket onto Its Own Serialized Gate [NOT STARTED]
+### Phase 2: Relocate the Slow Bucket onto Its Own Serialized Gate [COMPLETED]
 
 **Goal**: Bring Gate 8's own wall-clock under the 600s foreground ceiling with headroom by
 scheduling the slow cost-class bucket as a separate serialized gate, with zero change to which
 suites run by default.
 
 **Tasks**:
-- [ ] Re-derive the bucket split live before editing anything: suite count and aggregate per
+- [x] Re-derive the bucket split live before editing anything: suite count and aggregate per
       bucket, and the longest member of the non-slow remainder. Record the figures in the phase's
-      own commit message or progress notes.
+      own commit message or progress notes. *(completed: re-confirmed UNCHANGED from plan-authoring time -- 9 slow / 1,077,686ms aggregate; 147 hinted non-slow / 328,807ms aggregate, longest `test-literature-convert.sh` 23,724ms. Real cross-extension discovery total measured at 209 suites, not 178 (core-only) or 156 (hints-file row count) -- see the deviation below)*
 - [ ] Narrow Gate 8's `run-all.sh` invocation to the non-slow buckets by passing the existing
       `--cost-class` axis (`free`, `moderate`, `unknown` per Decision 2), leaving `--jobs`,
       `--fail-on-new`, the `--gate8-touched` narrowing and the `.gate-lock` bracket untouched.
-- [ ] Add one new registry row for the relocated slow bucket: the next contiguous gate id (Check
+      *(deviation: altered — `--cost-class free,moderate,unknown` was implemented, measured
+      live against the real repo, and found to silently DROP 8 real suites from Gate 8's run
+      entirely: `suite_selection_by_cost_class`'s own `unknown` bucket is core-extension-scoped
+      (`_ssl_discovered_basenames`), a real mismatch against run-all.sh's own cross-extension
+      discovery (209 real vs. 178 core-only vs. 156 hinted) that this task does not own
+      (territory edge 650). A `--cost-class`-based narrowing would have been a coverage
+      regression, forbidden by this task's own Hard Constraint. Replaced with an explicit
+      `--only <all discovered minus hints-file-slow>` list, built by replicating run-all.sh's
+      own discovery algorithm directly in `gate8_run()` (cited, not duplicated via a shared
+      function, since run-all.sh's discovery is inline) — `--jobs`, `--fail-on-new`, the
+      `--gate8-touched` narrowing (now intersected with the slow-exclusion, not replaced by it),
+      and the `.gate-lock` bracket are all otherwise unchanged. See verify-deploy.sh's own "WHY
+      `--only <everything minus slow>` HERE" comment in `gate8_run()` for the full account.*)*
+- [x] Add one new registry row for the relocated slow bucket: the next contiguous gate id (Check
       E of `lint-gate-registry.sh` requires contiguity from 1), `serialized=true`,
       `cost_class=slow`, `input_corpus` matching Gate 8's, and a `timeout_s` derived from the
-      re-derived slow-bucket aggregate rather than copied from Gate 8's 1500.
-- [ ] Implement that gate's `run` function in `verify-deploy.sh`, mirroring `gate8_run`'s
+      re-derived slow-bucket aggregate rather than copied from Gate 8's 1500. *(completed: gate
+      31, timeout_s=900, derived from the 543,000ms single-suite straggler floor with reasonable
+      headroom — well under Gate 8's old 1500s bound and under the 600s foreground ceiling with
+      headroom in the one standalone measurement taken this dispatch)*
+- [x] Implement that gate's `run` function in `verify-deploy.sh`, mirroring `gate8_run`'s
       structure: the same `.gate-lock` bracket semantics, the same nested/guest guard
       (`VERIFY_DEPLOY_WAS_NESTED_AT_ENTRY`, `GATE_MUTEX_HELD`), the same `[FAIL]` extraction, the
       same `--fail-on-new` EXPECTED/NEW accounting, and the same roster-token prohibition (the
-      roster block must never contain the literal `[FAIL]`).
-- [ ] Carry Gate 8's `--skip-slow` deferral semantics onto the new gate: `--skip-slow` must defer
-      both, so a `--skip-slow` run's coverage is unchanged from today's.
-- [ ] Emit the `unknown`-bucket drift advisory Decision 2 requires: a named advisory line when an
-      `unknown`-bucket suite's own measured time exceeds the moderate threshold.
-- [ ] Add a test suite pinning: set equality of the before/after discovered-suite inventory; the
+      roster block must never contain the literal `[FAIL]`). *(completed: `gate31_run()` plus its
+      own `_gate31_signal_cleanup`, since `_gate8_signal_cleanup` is hardcoded to gate8's own
+      mutex-token variables and cannot be shared)*
+- [x] Carry Gate 8's `--skip-slow` deferral semantics onto the new gate: `--skip-slow` must defer
+      both, so a `--skip-slow` run's coverage is unchanged from today's. *(completed; pinned by
+      test case (c))*
+- [x] Emit the `unknown`-bucket drift advisory Decision 2 requires: a named advisory line when an
+      `unknown`-bucket suite's own measured time exceeds the moderate threshold. *(completed,
+      altered in shape: emits one `[COST-DRIFT]` advisory per suite that is both running in gate8
+      (non-slow) AND entirely absent from the hints file by basename — the earlier draft compared
+      a full suite PATH against the basename-keyed hints file, which never matched and falsely
+      flagged every suite; fixed to compare basenames, consistent with the explicit `--only`-list
+      mechanism above)*
+- [x] Add a test suite pinning: set equality of the before/after discovered-suite inventory; the
       hints-file-absent degradation (Gate 8 runs everything, the new gate is a documented no-op);
       `--skip-slow` deferring both gates; and `--only-gate` selecting each gate independently.
-- [ ] Declare the new suite: a `provides.scripts` entry in `manifest.json` and a row in
+      *(completed: `test-gate-slow-bucket-split.sh`, 9 cases, all passing. Case (a)'s set-equality
+      check targets the actual gate-level mechanism (hints-file parse + discovery replica), not
+      `suite_selection_by_cost_class` directly, for the reason named in the deviation above. Cases
+      (c)/(d) expect exit 2 ("cannot attest") rather than exit 0 for an all-skipped `--only-gate`
+      selection — a pre-existing, correct `verify-deploy.sh` guard, not a regression)*
+- [x] Declare the new suite: a `provides.scripts` entry in `manifest.json` and a row in
       `scripts/tests/suite-classification.data` (an unclassified live suite is itself a violation
       of `lint-unit-integration-boundary.sh`), plus a fixture-dependency declaration if the suite
-      copies helper scripts into a sandbox.
-- [ ] Write the explicit before/after coverage statement into the gate's own header comment: the
-      suite inventory is unchanged; only the scheduling gate differs.
+      copies helper scripts into a sandbox. *(completed: `lint-fixture-dependency-declaration.sh`'s
+      own predicate confirmed this suite does not qualify — its one `cp` destination carries no
+      `.claude/scripts` path segment — so no fixture-dependency declaration was needed)*
+- [x] Write the explicit before/after coverage statement into the gate's own header comment: the
+      suite inventory is unchanged; only the scheduling gate differs. *(completed, both
+      `gate8_run()`'s and `gate31_run()`'s own header comments)*
 
 **Timing**: 2 hours
 

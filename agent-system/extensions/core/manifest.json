@@ -369,6 +369,7 @@
       "tests/test-gate-out-repair-reporting.sh",
       "tests/test-gate-out-self-attribution.sh",
       "tests/test-gate-registry-resolution.sh",
+      "tests/test-gate-slow-bucket-split.sh",
       "tests/test-gate3-parallel-equivalence.sh",
       "tests/test-gate3-strict-equivalence.sh",
       "tests/test-gate8-expected-new-distinction.sh",
