@@ -580,12 +580,24 @@ fi
 # branches below now only ASSIGN SUITE_OUT/OUT_DIR; neither re-installs its own trap.
 GATE_MUTEX_OWNED_HERE=false
 GATE_MUTEX_TOKEN=""
+# Host-scoped OUTER lock state -- a DISTINCT flag/token pair from the repo-scoped GATE_MUTEX_*
+# pair above (see task-lock.sh's "Host-Scoped Mutex" contract: GATE_MUTEX_HOST_HELD is a FOURTH,
+# distinct reentrancy flag, never conflated with GATE_MUTEX_HELD).
+GATE_MUTEX_HOST_OWNED_HERE=false
+GATE_MUTEX_HOST_TOKEN=""
 
 run_all_exit_cleanup() {
+  # Release order is the REVERSE of acquire order: inner (repo-scoped) first, then outer
+  # (host-scoped) -- the same nesting discipline any acquire/release bracket pair follows.
   if [ "$GATE_MUTEX_OWNED_HERE" = "true" ]; then
     "$GATE_TASK_LOCK_SH" gate-release "$GATE_MUTEX_TOKEN" >&2 || true
     GATE_MUTEX_OWNED_HERE=false
     unset GATE_MUTEX_HELD
+  fi
+  if [ "$GATE_MUTEX_HOST_OWNED_HERE" = "true" ]; then
+    "$GATE_TASK_LOCK_SH" gate-release-host "$GATE_MUTEX_HOST_TOKEN" >&2 || true
+    GATE_MUTEX_HOST_OWNED_HERE=false
+    unset GATE_MUTEX_HOST_HELD
   fi
   [ -n "${SUITE_OUT:-}" ] && rm -f "$SUITE_OUT" 2>/dev/null || true
   [ -n "${OUT_DIR:-}" ] && rm -rf "$OUT_DIR" 2>/dev/null || true
@@ -633,6 +645,24 @@ elif [ -n "${GATE_MUTEX_HELD:-}" ]; then
 elif [ -z "$GATE_TASK_LOCK_SH" ] || [ ! -f "$GATE_TASK_LOCK_SH" ]; then
   echo "Note: deployed task-lock.sh not found at '${GATE_TASK_LOCK_SH:-<unresolved>}'; specs/.gate-lock coordination is skipped for this run (fail-open: coordination is optional, verification is not)." >&2
 else
+  # Host-scoped OUTER acquire first -- a full, unfiltered battery is exactly the cross-
+  # repository-contending workload this guard exists for. Guarded by GATE_MUTEX_HOST_HELD
+  # exactly as the inner acquire below is guarded by GATE_MUTEX_HELD (the elif chain above
+  # already skips this whole branch when GATE_MUTEX_HELD is inherited, and the two flags are
+  # always exported together by whichever invocation acquires both, so this inner check is a
+  # defensive mirror, not a second gate). Binds only cooperating callers -- see task-lock.sh's
+  # own "Host-Scoped Mutex" contract text for the full limit.
+  gate_host_token=""
+  if [ -n "${GATE_MUTEX_HOST_HELD:-}" ]; then
+    echo "Note: an outer holder already owns the host-scoped .gate-lock mutex (GATE_MUTEX_HOST_HELD=1 inherited); running as guest, no nested host-scoped acquire." >&2
+  elif gate_host_token=$(bash "$GATE_TASK_LOCK_SH" gate-acquire-host "$GATE_SESSION_STR"); then
+    GATE_MUTEX_HOST_TOKEN="$gate_host_token"
+    GATE_MUTEX_HOST_OWNED_HERE=true
+    export GATE_MUTEX_HOST_HELD=1
+  else
+    echo "WARNING: failed to acquire the host-scoped .gate-lock mutex (session=${GATE_SESSION_STR}); proceeding unserialized ACROSS REPOSITORIES (non-blocking, fail-open). This covers both genuine host-scoped contention and a deployed task-lock.sh too old to understand gate-acquire-host -- either way, this guard binds only cooperating callers (see task-lock.sh's own contract text), and verification itself is neither skipped nor altered by this mutex." >&2
+  fi
+
   gate_token=""
   if gate_token=$(bash "$GATE_TASK_LOCK_SH" gate-acquire "$GATE_SESSION_STR"); then
     GATE_MUTEX_TOKEN="$gate_token"

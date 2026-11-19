@@ -1316,10 +1316,16 @@ fi
 # strength of a subset pass.
 _gate8_signal_cleanup() {
   local sig="$1"
+  # Reverse-order release: inner (repo-scoped) first, then outer (host-scoped).
   if [ "$GATE8_MUTEX_OWNED_HERE" = "true" ]; then
     bash "$GATE8_TASK_LOCK_SH" gate-release "$GATE8_MUTEX_TOKEN" >&2 || true
     GATE8_MUTEX_OWNED_HERE="false"
     unset GATE_MUTEX_HELD
+  fi
+  if [ "$GATE8_MUTEX_HOST_OWNED_HERE" = "true" ]; then
+    bash "$GATE8_TASK_LOCK_SH" gate-release-host "$GATE8_MUTEX_HOST_TOKEN" >&2 || true
+    GATE8_MUTEX_HOST_OWNED_HERE="false"
+    unset GATE_MUTEX_HOST_HELD
   fi
   trap - INT TERM HUP
   kill -s "$sig" "$$"
@@ -1414,6 +1420,11 @@ else
   # specs/.gate-lock acquire (see this function's header comment above for the full contract).
   GATE8_MUTEX_TOKEN=""
   GATE8_MUTEX_OWNED_HERE="false"
+  # Host-scoped OUTER lock state -- a DISTINCT flag/token pair from the repo-scoped GATE8_MUTEX_*
+  # pair above (GATE_MUTEX_HOST_HELD is a FOURTH, distinct reentrancy flag; see task-lock.sh's
+  # "Host-Scoped Mutex" contract).
+  GATE8_MUTEX_HOST_TOKEN=""
+  GATE8_MUTEX_HOST_OWNED_HERE="false"
   GATE8_TASK_LOCK_SH="$TARGET/.claude/scripts/task-lock.sh"
   if [ "$VERIFY_DEPLOY_WAS_NESTED_AT_ENTRY" = "1" ]; then
     say "  Note: this verify-deploy.sh invocation is nested (VERIFY_DEPLOY_NESTED was already 1 at entry); specs/.gate-lock is not touched -- the outer invocation is responsible for holding it."
@@ -1422,6 +1433,27 @@ else
   elif [ ! -f "$GATE8_TASK_LOCK_SH" ]; then
     say "  Note: deployed task-lock.sh not found at '$GATE8_TASK_LOCK_SH'; specs/.gate-lock coordination is skipped for this gate (fail-open: coordination is optional, verification is not)."
   else
+    # Host-scoped OUTER acquire first -- same binds-only-cooperating-callers guard as
+    # run-all.sh's top-level bracket; see task-lock.sh's own contract text for the full limit.
+    gate8_host_token=""
+    if [ -n "${GATE_MUTEX_HOST_HELD:-}" ]; then
+      say "  Note: an outer holder already owns the host-scoped .gate-lock mutex (GATE_MUTEX_HOST_HELD=1 inherited); running as guest, no nested host-scoped acquire."
+    elif gate8_host_token=$(bash "$GATE8_TASK_LOCK_SH" gate-acquire-host "verify-deploy-gate8-$$"); then
+      GATE8_MUTEX_HOST_TOKEN="$gate8_host_token"
+      GATE8_MUTEX_HOST_OWNED_HERE="true"
+      export GATE_MUTEX_HOST_HELD=1
+      # Arm the signal-scoped trap as soon as ANY lock is held, not only once the inner
+      # repo-scoped acquire below also succeeds -- _gate8_signal_cleanup releases whichever of
+      # the two it finds owned, so arming here too (idempotent re-arm below) closes the window
+      # where a signal between this acquire and the inner one would otherwise leak the host
+      # lock until its staleness window elapses.
+      trap '_gate8_signal_cleanup INT' INT
+      trap '_gate8_signal_cleanup TERM' TERM
+      trap '_gate8_signal_cleanup HUP' HUP
+    else
+      echo "WARNING: failed to acquire the host-scoped .gate-lock mutex (session=verify-deploy-gate8-$$); proceeding unserialized ACROSS REPOSITORIES (non-blocking, fail-open). This covers both genuine host-scoped contention and a deployed task-lock.sh too old to understand gate-acquire-host -- either way, this guard binds only cooperating callers, and Gate 8's own verdict, FINDING lines, and summary output are unaffected." >&2
+    fi
+
     gate8_token=""
     _gate8_acquire_start_ms="$(_gate8_now_ms)"
     if gate8_token=$(bash "$GATE8_TASK_LOCK_SH" gate-acquire "verify-deploy-gate8-$$"); then
@@ -1645,12 +1677,21 @@ else
   fi
 
   # Release on every path out of the bracket (success and failure alike) -- explicit, mirroring
-  # the signal path's own release in _gate8_signal_cleanup. Disarm the signal-scoped trap here
-  # too so it is never left armed across any gate that runs after this one.
-  if [ "$GATE8_MUTEX_OWNED_HERE" = "true" ]; then
-    bash "$GATE8_TASK_LOCK_SH" gate-release "$GATE8_MUTEX_TOKEN" >&2 || true
-    GATE8_MUTEX_OWNED_HERE="false"
-    unset GATE_MUTEX_HELD
+  # the signal path's own release in _gate8_signal_cleanup. Reverse-order release: inner
+  # (repo-scoped) first, then outer (host-scoped). Disarm the signal-scoped trap here too so it
+  # is never left armed across any gate that runs after this one -- disarmed whenever EITHER
+  # lock was owned, since the trap may have been armed at the host-only acquire above.
+  if [ "$GATE8_MUTEX_OWNED_HERE" = "true" ] || [ "$GATE8_MUTEX_HOST_OWNED_HERE" = "true" ]; then
+    if [ "$GATE8_MUTEX_OWNED_HERE" = "true" ]; then
+      bash "$GATE8_TASK_LOCK_SH" gate-release "$GATE8_MUTEX_TOKEN" >&2 || true
+      GATE8_MUTEX_OWNED_HERE="false"
+      unset GATE_MUTEX_HELD
+    fi
+    if [ "$GATE8_MUTEX_HOST_OWNED_HERE" = "true" ]; then
+      bash "$GATE8_TASK_LOCK_SH" gate-release-host "$GATE8_MUTEX_HOST_TOKEN" >&2 || true
+      GATE8_MUTEX_HOST_OWNED_HERE="false"
+      unset GATE_MUTEX_HOST_HELD
+    fi
     trap - INT TERM HUP
   fi
 
@@ -1740,10 +1781,16 @@ fi
 # identically to gate 8.
 _gate31_signal_cleanup() {
   local sig="$1"
+  # Reverse-order release: inner (repo-scoped) first, then outer (host-scoped).
   if [ "$GATE31_MUTEX_OWNED_HERE" = "true" ]; then
     bash "$GATE31_TASK_LOCK_SH" gate-release "$GATE31_MUTEX_TOKEN" >&2 || true
     GATE31_MUTEX_OWNED_HERE="false"
     unset GATE_MUTEX_HELD
+  fi
+  if [ "$GATE31_MUTEX_HOST_OWNED_HERE" = "true" ]; then
+    bash "$GATE31_TASK_LOCK_SH" gate-release-host "$GATE31_MUTEX_HOST_TOKEN" >&2 || true
+    GATE31_MUTEX_HOST_OWNED_HERE="false"
+    unset GATE_MUTEX_HOST_HELD
   fi
   trap - INT TERM HUP
   kill -s "$sig" "$$"
@@ -1771,6 +1818,10 @@ else
   # gate8 has already released the mutex by the time this acquire runs; no deadlock risk.
   GATE31_MUTEX_TOKEN=""
   GATE31_MUTEX_OWNED_HERE="false"
+  # Host-scoped OUTER lock state -- a DISTINCT flag/token pair from the repo-scoped GATE31_MUTEX_*
+  # pair above. Mirrors gate8_run's own identical host-scoped wiring.
+  GATE31_MUTEX_HOST_TOKEN=""
+  GATE31_MUTEX_HOST_OWNED_HERE="false"
   GATE31_TASK_LOCK_SH="$TARGET/.claude/scripts/task-lock.sh"
   if [ "$VERIFY_DEPLOY_WAS_NESTED_AT_ENTRY" = "1" ]; then
     say "  Note: this verify-deploy.sh invocation is nested (VERIFY_DEPLOY_NESTED was already 1 at entry); specs/.gate-lock is not touched -- the outer invocation is responsible for holding it."
@@ -1779,6 +1830,21 @@ else
   elif [ ! -f "$GATE31_TASK_LOCK_SH" ]; then
     say "  Note: deployed task-lock.sh not found at '$GATE31_TASK_LOCK_SH'; specs/.gate-lock coordination is skipped for this gate (fail-open: coordination is optional, verification is not)."
   else
+    # Host-scoped OUTER acquire first -- same binds-only-cooperating-callers guard as gate8_run.
+    gate31_host_token=""
+    if [ -n "${GATE_MUTEX_HOST_HELD:-}" ]; then
+      say "  Note: an outer holder already owns the host-scoped .gate-lock mutex (GATE_MUTEX_HOST_HELD=1 inherited); running as guest, no nested host-scoped acquire."
+    elif gate31_host_token=$(bash "$GATE31_TASK_LOCK_SH" gate-acquire-host "verify-deploy-gate31-$$"); then
+      GATE31_MUTEX_HOST_TOKEN="$gate31_host_token"
+      GATE31_MUTEX_HOST_OWNED_HERE="true"
+      export GATE_MUTEX_HOST_HELD=1
+      trap '_gate31_signal_cleanup INT' INT
+      trap '_gate31_signal_cleanup TERM' TERM
+      trap '_gate31_signal_cleanup HUP' HUP
+    else
+      echo "WARNING: failed to acquire the host-scoped .gate-lock mutex (session=verify-deploy-gate31-$$); proceeding unserialized ACROSS REPOSITORIES (non-blocking, fail-open). Mirrors gate8_run's own identical posture -- this guard binds only cooperating callers, and verification itself is neither skipped nor altered by this mutex." >&2
+    fi
+
     if gate31_token=$(bash "$GATE31_TASK_LOCK_SH" gate-acquire "verify-deploy-gate31-$$"); then
       GATE31_MUTEX_TOKEN="$gate31_token"
       GATE31_MUTEX_OWNED_HERE="true"
@@ -1834,10 +1900,17 @@ else
     run_all_status=$?
   fi
 
-  if [ "$GATE31_MUTEX_OWNED_HERE" = "true" ]; then
-    bash "$GATE31_TASK_LOCK_SH" gate-release "$GATE31_MUTEX_TOKEN" >&2 || true
-    GATE31_MUTEX_OWNED_HERE="false"
-    unset GATE_MUTEX_HELD
+  if [ "$GATE31_MUTEX_OWNED_HERE" = "true" ] || [ "$GATE31_MUTEX_HOST_OWNED_HERE" = "true" ]; then
+    if [ "$GATE31_MUTEX_OWNED_HERE" = "true" ]; then
+      bash "$GATE31_TASK_LOCK_SH" gate-release "$GATE31_MUTEX_TOKEN" >&2 || true
+      GATE31_MUTEX_OWNED_HERE="false"
+      unset GATE_MUTEX_HELD
+    fi
+    if [ "$GATE31_MUTEX_HOST_OWNED_HERE" = "true" ]; then
+      bash "$GATE31_TASK_LOCK_SH" gate-release-host "$GATE31_MUTEX_HOST_TOKEN" >&2 || true
+      GATE31_MUTEX_HOST_OWNED_HERE="false"
+      unset GATE_MUTEX_HOST_HELD
+    fi
     trap - INT TERM HUP
   fi
 

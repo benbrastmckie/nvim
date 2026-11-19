@@ -300,36 +300,45 @@ deviation to record, not to absorb.
 
 ---
 
-### Phase 3: Wire the three gate-battery brackets to the host-scoped form [NOT STARTED]
+### Phase 3: Wire the three gate-battery brackets to the host-scoped form [COMPLETED]
 
 **Goal**: Make each of the gate layer's three single-flight brackets acquire the host-scoped lock
 as the OUTER lock while keeping today's repo-scoped acquire as the inner one, releasing in reverse
 order at every release point.
 
 **Tasks**:
-- [ ] Re-read both files immediately before editing (concurrent-sibling discipline).
-- [ ] `tests/run-all.sh`: in the acquire branch (around line 637), acquire host-scoped first —
+- [x] Re-read both files immediately before editing (concurrent-sibling discipline). *(completed;
+      re-ran the Scope Hypothesis grep too -- confirmed exactly 3 acquire blocks, 5 release points,
+      no drift since plan authoring)*
+- [x] `tests/run-all.sh`: in the acquire branch (around line 637), acquire host-scoped first —
       guarded by `GATE_MUTEX_HOST_HELD` exactly as the inner acquire is guarded by
       `GATE_MUTEX_HELD` — export `GATE_MUTEX_HOST_HELD=1` on success, then perform today's existing
       repo-scoped acquire unchanged. On host-acquire failure emit a `WARNING:` line naming host
-      scope and proceed (fail open), then still attempt the inner acquire.
-- [ ] `tests/run-all.sh`: in `run_all_exit_cleanup` (around line 585), release the inner
+      scope and proceed (fail open), then still attempt the inner acquire. *(completed)*
+- [x] `tests/run-all.sh`: in `run_all_exit_cleanup` (around line 585), release the inner
       repo-scoped lock first, then the host-scoped lock, unsetting each flag with the same
-      discipline already used for `GATE_MUTEX_HELD`.
-- [ ] `verify-deploy.sh` `gate8_run()`: the same outer/inner acquire at the acquire block (around
+      discipline already used for `GATE_MUTEX_HELD`. *(completed)*
+- [x] `verify-deploy.sh` `gate8_run()`: the same outer/inner acquire at the acquire block (around
       line 1427), and reverse-order release at BOTH of its release points — the signal-cleanup path
-      (around line 1320) and the ordinary release (around line 1651).
-- [ ] `verify-deploy.sh` slow-battery bracket: the same outer/inner acquire (around line 1782) and
+      (around line 1320) and the ordinary release (around line 1651). *(completed: trap also armed
+      on host-only acquire success, a small defensive addition beyond the literal task text --
+      see progress file `approaches_tried`)*
+- [x] `verify-deploy.sh` slow-battery bracket: the same outer/inner acquire (around line 1782) and
       reverse-order release at both of its release points (around lines 1744 and 1838).
-- [ ] At all three sites, treat a deployed `task-lock.sh` that does not understand
+      *(completed, same defensive trap addition as gate8_run)*
+- [x] At all three sites, treat a deployed `task-lock.sh` that does not understand
       `gate-acquire-host` exactly like an acquire failure — fail open with the named `WARNING:`,
       never abort. An unknown subcommand already exits non-zero, so this needs no new branch; the
-      task is to confirm it, not to add one.
-- [ ] Leave every existing skip branch untouched: narrowed (`--only`/`--class`/`--tag`/
+      task is to confirm it, not to add one. *(completed: confirmed via a stub fixture built from
+      the pre-Phase-2 task-lock.sh, which genuinely lacks gate-acquire-host -- produced a real
+      verdict plus the named WARNING line)*
+- [x] Leave every existing skip branch untouched: narrowed (`--only`/`--class`/`--tag`/
       `--cost-class`), nested, guest (`GATE_MUTEX_HELD` inherited), and missing-`task-lock.sh`. The
       host-scoped acquire is skipped under exactly the same conditions the repo-scoped one is.
-- [ ] Confirm the two `verify-deploy.sh` batteries remain `serialized=true` and scheduled one at a
-      time, so the second never contends with the first's host-scoped holder.
+      *(completed; confirmed via the narrowed --only run touching neither lock root)*
+- [x] Confirm the two `verify-deploy.sh` batteries remain `serialized=true` and scheduled one at a
+      time, so the second never contends with the first's host-scoped holder. *(completed: both
+      gate 8 and gate 31 confirmed serialized=true in gate-registry.data; no edit needed)*
 
 **Timing**: 1.25 hours
 
