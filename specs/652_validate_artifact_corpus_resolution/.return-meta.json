@@ -1,9 +1,101 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/652_validate_artifact_corpus_resolution/summaries/01_corpus-resolution-candidate-list-summary.md",
+      "summary": "Implementation summary: validate-artifact.sh's Tier-Justification scan now resolves its suite-selection corpus through an ordered candidate list led by a declared verification_scope.project_suite_roots entry, names the resolved corpus in every advisory warning, and is covered by declared/undeclared/declared-but-absent test cases; redeployed clean."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Extended validate-artifact.sh's Tier-Justification scan to resolve its suite-selection corpus through an ordered candidate list (a declared verification_scope.project_suite_roots entry first, the deployed/sibling path as fallback), named the resolved corpus in every advisory warning, added 9 new declared/undeclared/declared-but-absent test cases to test-validate-artifact.sh, documented the new consumer in repo-level-declarations.md, and redeployed cleanly (deploy-headless.sh RESULT=landed_verify_clean, 41/41 checks)."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/validate-artifact.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-artifact.sh",
+    "agent-system/extensions/core/context/standards/repo-level-declarations.md",
+    "agent-system/extensions/core/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In validate-artifact.sh (and similar single-file, top-to-bottom-executed shell scripts under set -euo pipefail), a plan instruction to 'hoist assignment X above block Y, leaving function definitions unchanged' can be bash-impossible if the functions X calls are defined textually AFTER block Y -- hoisting the assignment alone would call an undefined function. The correct fix is to relocate the CONSUMING block (Y) to after the unmoved assignment/functions, achieving the same net ordering without touching the function bodies. Verify this kind of ordering constraint live (grep -n for the relevant assignment/function-definition lines) before accepting a plan's literal hoist wording.",
+      "category": "PATTERN",
+      "source_artifact": "specs/652_validate_artifact_corpus_resolution/summaries/01_corpus-resolution-candidate-list-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["bash", "function-ordering", "set -euo pipefail", "hoist", "validate-artifact.sh"]
+    },
+    {
+      "content": "scripts/lib/verification-scope-lib.sh's verification_scope_project_suite_roots (and its sibling readers) use the ${1:?msg} parameter-expansion guard for their repo_root argument. Under set -u/set -e in the CALLER, this guard aborts the calling shell outright if repo_root is an EMPTY STRING, not only if it is unset -- ':' treats empty and unset identically. Any caller must guard with '[ -n \"$repo_root\" ]' before calling, never rely on the library's own fail-open posture to absorb an empty argument.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/652_validate_artifact_corpus_resolution/summaries/01_corpus-resolution-candidate-list-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verification-scope-lib", "bash parameter expansion", "set -u", "fail-open", "guard"]
+    },
+    {
+      "content": "When deploy-headless.sh's full local regeneration of a shared generated-index file (index-entries.json) also reflects OTHER concurrently-live dispatches' own uncommitted drift (because the regenerator scans the whole working tree, not just this task's files), committing the whole regenerated file would prematurely land those other dispatches' in-flight changes under this task's own commit. The safe remedy: take the file's HEAD (committed) version, apply ONLY this task's own single-field correction via a targeted jq transform, and commit just that scoped diff -- leaving every other entry's drift exactly as HEAD had it, for its own owning dispatch to reconcile later.",
+      "category": "PATTERN",
+      "source_artifact": "specs/652_validate_artifact_corpus_resolution/summaries/01_corpus-resolution-candidate-list-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["index-entries.json", "scoped commit", "multi-agent working tree", "jq", "deploy-headless.sh"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "validate-artifact.sh Tier-Justification corpus-resolution hoist constraint",
+      "predicate": "finding is",
+      "value": "A plan instruction to hoist a repo-root assignment above a candidate-list block while leaving the two functions it calls (_cgs_find_repo_root/_cgs_resolve_repo_root) textually in place was bash-impossible: those functions are defined AFTER that block in the pre-edit file, so the literal hoist would call an undefined function under set -euo pipefail. Resolved by relocating the consuming candidate-array block after the unmoved assignment instead -- same net ordering, same single-assignment invariant.",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/validate-artifact.sh"
+    },
+    {
+      "subject": "verification_scope_project_suite_roots argument guard",
+      "predicate": "finding is",
+      "value": "scripts/lib/verification-scope-lib.sh's verification_scope_project_suite_roots uses ${1:?msg}, which aborts the calling shell on an EMPTY string argument (not only unset) under set -u. Any caller must guard non-empty repo_root before calling, rather than relying on the library's own fail-open posture.",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/lib/verification-scope-lib.sh"
+    },
+    {
+      "subject": "suite_selection_select's stratum (b) self-reference hazard in test fixtures",
+      "predicate": "finding is",
+      "value": "suite_selection_select's grep-based reference lookup (stratum b) can self-match a new test fixture's own literal touched-path basename if that literal string appears elsewhere in the test file's own source -- discovered live when a 'widget.sh' fixture basename resolved to the test file itself rather than UNMAPPABLE. The established remedy (already used by TJ_UNMAPPED_PATH) is a PID-suffixed basename for any new touched-path fixture string.",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"
+    },
+    {
+      "subject": "verify-touched.sh's OWED fallback noise under a shared multi-agent working tree",
+      "predicate": "finding is",
+      "value": "verify-touched.sh's OWED fallback set sweeps in every OTHER uncommitted file in the working tree regardless of the paths named on its own command line. Two invocations minutes apart during the same task surfaced two entirely different, unrelated NEW suite failures (test-lint-state-writer-boundary.sh, then test-stall-reprompt-wiring.sh), both attributable to other concurrently-live dispatches' in-flight uncommitted edits, neither to the task running the check.",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": ".claude/scripts/verify-touched.sh"
+    },
+    {
+      "subject": "suite_selection_select never reads suite-classification.data",
+      "predicate": "finding is",
+      "value": "Confirmed live by reading _ssl_resolve_one/suite_selection_select in suite-selection-lib.sh: neither function reads tests/suite-classification.data at all. Suite resolution (strata 0/(a)/(b)) only glob-walks for test-*.sh basenames and greps their contents; a planted mirror-shaped test corpus needs only lib/suite-selection-lib.sh plus test-*.sh files, no classification file.",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"
+    },
+    {
+      "subject": "Scoped reconciliation of a shared regenerated index file under concurrency",
+      "predicate": "finding is",
+      "value": "deploy-headless.sh's full local regeneration of index-entries.json reflected OTHER concurrently-live dispatches' own uncommitted line_count drift (unrelated files, not touched by this task). Committing the whole regenerated file would have prematurely landed those other dispatches' in-flight work under this task's own commit. Remedy applied: took HEAD's committed version, applied only this task's own single-field correction via a targeted jq transform, and committed just that one-line scoped diff.",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/index-entries.json"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795104475_9fe2d8",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  },
-  "dispatch_seq": 6
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 5,
+    "phases_total": 5
+  }
 }

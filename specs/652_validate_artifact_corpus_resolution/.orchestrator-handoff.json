@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "dispatch_seq": 5,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Authored a five-phase plan resolving validate-artifact.sh's advisory Tier-Justification corpus through an extension of its existing ordered candidate list: declared project suite root(s) first (via the already-shipped verification_scope_project_suite_roots reader and the already-computed _cgs_repo_root), today's script-relative path as fallback. Phases cover the candidate-list resolution, per-warning corpus attribution plus a one-time declared-but-unresolvable warning, three new fixture cases in test-validate-artifact.sh, a repo-level-declarations.md consumer-list sync with its coupled index-entries.json declaration, and a final redeploy phase declaring __WHOLE_TREE__. All four non-final phases carry live-measured Tier Justifications; the deployed validator passes the plan with 0 warnings.",
+  "summary": "Implemented all 5 phases: validate-artifact.sh's Tier-Justification scan now resolves its suite-selection corpus through an ordered candidate list (a declared verification_scope.project_suite_roots entry first, the deployed/sibling path as fallback), every advisory warning names the measured corpus and where it was resolved from, and a declared-but-unresolvable root draws one named run-level warning. Added 9 new declared/undeclared/declared-but-absent cases to test-validate-artifact.sh (157/157 passing) and documented the new consumer in repo-level-declarations.md. Redeployed cleanly after fixing forward a shellcheck SC1090 finding (deploy-headless.sh RESULT=landed_verify_clean, 41/41 checks). A non-declaring repository (this one) is byte-for-byte unaffected throughout.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/652_validate_artifact_corpus_resolution/plans/01_corpus-resolution-candidate-list.md",
-      "summary": "Five-phase implementation plan for corpus-aware Tier-Justification resolution in validate-artifact.sh, with named-corpus warnings and three-case test coverage."
+      "type": "summary",
+      "path": "specs/652_validate_artifact_corpus_resolution/summaries/01_corpus-resolution-candidate-list-summary.md",
+      "summary": "Implementation summary covering all 5 phases, decisions, deviations, and verification evidence."
     }
   ]
 }
