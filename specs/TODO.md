@@ -169,7 +169,7 @@ next_project_number: 654
 
 ### Sapience
 
-649 [NOT STARTED] — Add the /sapience command: draft assembly and the...
+649 [RESEARCHED] — Add the /sapience command: draft assembly and the...
 
 ### Decidability
 
@@ -383,10 +383,11 @@ VERIFY: the entry point run on a one-file edit executes a strict subset and says
 ---
 
 ### 649. Add the /sapience command: draft assembly and the approval-gated surface picker
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: Task 647, Task 648
+- **Research**: [649_sapience_command_picker_and_draft/reports/01_sapience-command-picker-draft.md]
 
 **Description**: Add the /sapience command: assemble a draft update from local and vault state, then gate every outward write behind ONE approval picker. DEPENDS ON BOTH the project-binding task (for .sapience/project.json, the shared API library, and the read side) AND the publishers task (the picker needs the publishers' exact interfaces and their literal --dry-run payloads).
 

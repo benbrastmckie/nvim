@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795076371_5115f3_649",
+  "dispatch_seq": 10,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/649_sapience_command_picker_and_draft/reports/01_sapience-command-picker-draft.md",
+      "summary": "Maps the /sapience command onto the already-built sapience-vault-read.sh/sapience-publish.sh/sapience-api-lib.sh interfaces, recommends a fully direct-execution skill (no Agent dispatch, matching skill-literature rather than skill-roadmap/skill-meta), confirms the 4 candidate write surfaces fit under AskUserQuestion's 4-option ceiling, grounds a 'most relevant doc' heuristic in brain_server.py's docs_activity() field, and flags that README.md (not just EXTENSION.md) must be updated to pass check-extension-docs.sh's README/manifest parity gate."
+    }
+  ],
+  "next_steps": "Run /orchestrate 649 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "check-extension-docs.sh's check_readme_vs_manifest() requires every command name in an extension's manifest.json provides.commands array to appear textually as /<name> in that extension's own README.md -- a separate check from the EXTENSION.md/CLAUDE.md merge target. A dispatch or plan that lists EXTENSION.md as the doc to update for a new command but omits README.md will pass review but fail this deploy gate if README.md still asserts the extension has no command surface.",
+      "category": "PATTERN",
+      "source_artifact": "specs/649_sapience_command_picker_and_draft/reports/01_sapience-command-picker-draft.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["check-extension-docs.sh", "README.md", "manifest.json", "provides.commands", "deploy-gate"]
+    },
+    {
+      "content": "AskUserQuestion is measured categorically withheld from every Agent-tool dispatch of a named subagent_type, independent of frontmatter (agent-frontmatter-standard.md). skill-roadmap and skill-meta work around this by collecting every user choice in the skill's own execution before dispatching a subagent. A stronger resolution, when the delegated work is not itself judgment-heavy, is to skip the Agent dispatch entirely and do the whole command as a fully direct-execution skill (skill-literature's shape: Bash/Read/Write/Edit/AskUserQuestion, no Agent in allowed-tools) -- this sidesteps the withholding hazard rather than working around it.",
+      "category": "PATTERN",
+      "source_artifact": "specs/649_sapience_command_picker_and_draft/reports/01_sapience-command-picker-draft.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["AskUserQuestion", "tool-withholding", "direct-execution-skill", "Agent-dispatch", "skill-literature"]
+    },
+    {
+      "content": "Sapience's GET /v1/docs response carries a per-doc activity field ({kind, by, at, text, n?}, confirmed in brain_server.py's docs_activity()) naming the newest head-save/comment/answer/read-mark on that doc plus who did it. This gives a mechanical, code-grounded way to find 'the doc the collaborator most recently touched' (max activity.at where activity.by != me) instead of a vaguer content-similarity heuristic, for any future draft-assembly or reply-targeting feature against this vault.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/649_sapience_command_picker_and_draft/reports/01_sapience-command-picker-draft.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["sapience", "brain_server.py", "docs_activity", "GET /v1/docs", "reply-targeting"]
+    }
+  ]
+}
