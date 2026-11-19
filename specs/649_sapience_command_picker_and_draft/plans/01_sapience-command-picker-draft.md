@@ -242,41 +242,41 @@ Rule R output, which names every entry whose `line_count` is wrong.
 
 ---
 
-### Phase 2: skill-sapience — Intake, Binding Gate, and Draft Assembly [NOT STARTED]
+### Phase 2: skill-sapience — Intake, Binding Gate, and Draft Assembly [COMPLETED]
 
 **Goal**: Create `skills/skill-sapience/SKILL.md` through the point where a complete draft and a
 resolved collaborator (when asked for) exist in hand — everything before the picker.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/sapience/skills/skill-sapience/SKILL.md` with frontmatter
+- [x] Create `agent-system/extensions/sapience/skills/skill-sapience/SKILL.md` with frontmatter
       `name: skill-sapience`, a one-line `description`, and
       `allowed-tools: Bash, Read, Write, AskUserQuestion` — no `Agent`, per D1; `Write` is
-      required only for the scratchpad `--body-file` the `doc-version` surface needs.
-- [ ] State the skill's own mode contract: the four argument shapes the command passes through
-      (no args; free text; `--message <Name> [text]`; `--message [text]`), and what each changes.
-- [ ] Stage: binding gate. Resolve the repo toplevel and require `.sapience/project.json`
+      required only for the scratchpad `--body-file` the `doc-version` surface needs. *(completed)*
+- [x] State the skill's own mode contract: the four argument shapes the command passes through
+      (no args; free text; `--message <Name> [text]`; `--message [text]`), and what each changes. *(completed)*
+- [x] Stage: binding gate. Resolve the repo toplevel and require `.sapience/project.json`
       (already surfaced as the envelope's `repo.binding`). On a missing binding, STOP with the
       exact `sapience-project-bind.sh --name "<name>" --confirm` invocation for the USER to run
-      — never run it from the skill, in any mode (HARD CONSTRAINT 5).
-- [ ] Stage: read. Invoke `bash .claude/scripts/sapience-vault-read.sh` and parse the pinned
+      — never run it from the skill, in any mode (HARD CONSTRAINT 5). *(completed)*
+- [x] Stage: read. Invoke `bash .claude/scripts/sapience-vault-read.sh` and parse the pinned
       `sapience-vault-read/1` envelope with `jq`. Handle the per-source failure isolation the
       script already implements: a `null` top-level key plus its `errors[]` entry degrades the
       surfaces that depend on it and is reported, never silently ignored; exit 2 (all five vault
-      sources failed) is a hard stop.
-- [ ] Stage: draft assembly. Compose the candidate update text from `local.{git,state,events,
+      sources failed) is a hard stop. *(completed)*
+- [x] Stage: draft assembly. Compose the candidate update text from `local.{git,state,events,
       errors,sessions}` and `vault.{docs,doc_bodies,doc_comments,project_notes,suggestions,
       notifications}`, explicitly RESPONDING to the collaborator's most recent comment/answer
       rather than talking past it, and state the `MAX_DOC_FETCH=10`-unread-docs bound on how much
-      comment/body content the envelope carries.
-- [ ] Stage: target resolution. Implement D3's "most relevant doc" rule and D4's
+      comment/body content the envelope carries. *(completed)*
+- [x] Stage: target resolution. Implement D3's "most relevant doc" rule and D4's
       "decision-shaped" rule as written in the Phase 1 design record, citing that record rather
-      than restating the rationale.
-- [ ] Stage: collaborator resolution (only when `--message` was passed). A named collaborator
+      than restating the rationale. *(completed)*
+- [x] Stage: collaborator resolution (only when `--message` was passed). A named collaborator
       resolves against the `GET /v1/people` roster; a bare `--message` presents a single-select
       `AskUserQuestion` over that roster (D8) BEFORE the approval picker. An unresolvable name is
-      a loud stop, never a silent fallback to the only connection.
-- [ ] State the write-path contract positively: every outward write in this skill goes through
-      `sapience-publish.sh`; name no MCP write tool anywhere (D9).
+      a loud stop, never a silent fallback to the only connection. *(completed)*
+- [x] State the write-path contract positively: every outward write in this skill goes through
+      `sapience-publish.sh`; name no MCP write tool anywhere (D9). *(completed)*
 
 **Timing**: 1.5 hours
 

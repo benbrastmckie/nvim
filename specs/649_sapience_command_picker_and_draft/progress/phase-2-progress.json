@@ -1,0 +1,20 @@
+{
+  "phase": 2,
+  "phase_name": "skill-sapience — Intake, Binding Gate, and Draft Assembly",
+  "started_at": "2026-11-19T13:08:00Z",
+  "last_updated": "2026-11-19T13:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create SKILL.md with D1 frontmatter (allowed-tools, no Agent)", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"]},
+    {"id": 2, "description": "State the mode contract (4 argument shapes)", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"]},
+    {"id": 3, "description": "Stage: binding gate", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"]},
+    {"id": 4, "description": "Stage: read envelope with per-source failure isolation", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"]},
+    {"id": 5, "description": "Stage: draft assembly responding to collaborator's latest", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"]},
+    {"id": 6, "description": "Stage: target resolution (D3/D4)", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"]},
+    {"id": 7, "description": "Stage: collaborator resolution (D8)", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"]},
+    {"id": 8, "description": "State write-path contract positively (D9)", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
