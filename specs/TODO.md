@@ -1,5 +1,5 @@
 ---
-next_project_number: 658
+next_project_number: 663
 ---
 
 # TODO
@@ -13,9 +13,9 @@ next_project_number: 658
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,633,639,640,645,646,654 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,583,592,593,598,605,609,630,656 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,577,586,599,629,654 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,473,480,486,492,509,513,518,561,566,594,657 | 439,452,472,479,484,491,552,593,656 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,633,639,640,645,646,654,658,661 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,583,592,593,598,605,609,630,656,659,660 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,577,586,599,629,654,658 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,473,480,486,492,509,513,518,561,566,594,657,662 | 439,452,472,479,484,491,552,593,656,659,660,661 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,571,581,588,595,641,655 | 454,472,486,492,509,518,539,561,580,594,657 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 524,596,642 | 501,595,641 | core-agent-system, agent-system |
 
@@ -51,6 +51,13 @@ next_project_number: 658
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — GOAL. Determine what leaves files behind in this repository's...
 646 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/...
+658 [NOT STARTED] — Ignored specs predicate and commit path
+  └─ 659 [NOT STARTED] — Never demote on ignored specs skip
+    └─ 662 [NOT STARTED] — Reframe docs for ignored specs default
+  └─ 660 [NOT STARTED] — Init specs ignores specs by default
+    └─ 662 [NOT STARTED] — Reframe docs for ignored specs default (see above)
+661 [NOT STARTED] — Unbacked specs durability options
+  └─ 662 [NOT STARTED] — Reframe docs for ignored specs default (see above)
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
@@ -179,6 +186,124 @@ next_project_number: 658
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 662. Reframe docs for ignored specs default
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 658, Task 659, Task 660, Task 661
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit the mirrored path. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
+
+GOAL. Revise every surface that asserts the specs tree is committed, so an ignored one reads as the supported default rather than a broken state, and place the durability statement beside it.
+
+WHY LAST. This task records what the mechanism tasks actually built, not what they were asked to build. Its content is not decided until the predicate, the postflight narrowing, the scaffolding change and the durability recommendation have all landed, which is why it carries no gate of its own and why it is safe to leave until the end.
+
+THE SURFACES. rules/state-management.md, whose completion workflow and canonical-source sections describe committing state.json and TODO.md; rules/git-workflow.md, whose commit-timing table names a commit after task creation, research completion, plan creation, each phase and archival; rules/artifact-formats.md; the three context/processes/*-workflow.md files; and docs/architecture/orchestrate-state-machine.md. Sweep for others rather than treating that list as complete -- it was assembled by grep, not by reading.
+
+ONE THING THAT STAYS CORRECT AND MUST NOT BE "FIXED". The task-reference and record-version exemption standards cite specs/** as their primary exempt zone. Those exemptions are correct and stay exactly as they are: they are about which files may carry task numbers and version language, not about which files git tracks. If their framing happens to assume tracked files, adjust the framing and never the exemption.
+
+WHAT THE REFRAME MUST NOT DO. It must not describe the tracked posture as deprecated, legacy or superseded, because a tracked specs tree stays fully supported and the global root uses it. Both postures are first-class; the documents state which is the default for a new repository and what differs under each.
+
+DONE WHEN. No surface asserts that the specs tree is committed as an invariant; each document states the behaviour under both postures; the durability statement from the research task is placed; and the two exemption standards are unchanged in substance.
+
+---
+
+### 661. Unbacked specs durability options
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). No task-number references and no record-versioning language under agent-system/**; both are permitted in this description.
+
+GOAL. Recommend one way to keep an ignored specs tree recoverable. Research and a recommendation only: nothing is built, nothing is scheduled, and no mechanism is adopted by this task's completion.
+
+WHY. Once a repository's specs tree is gitignored, task state, reports, plans and summaries live on one disk with no git history behind them. The consumer that prompted this group holds 604 such files. Today the agent system says nothing about that exposure, and a reader who ignores specs/ for good reasons is given no account of what is lost if the working copy goes.
+
+WHAT TO WEIGH. At least: a sibling repository holding only specs trees; a periodic archive commit onto an orphan branch in the same repository; an external file-sync or snapshot mechanism the host already runs; and doing nothing beyond documenting the exposure. For each, state what it costs to set up, what it costs per task, what it recovers, what it silently fails to recover, and whether it reintroduces the cross-branch churn that ignoring specs/ was meant to remove. The last of those is the criterion that disqualifies the obvious answers, so apply it early.
+
+CONSTRAINT ON THE RECOMMENDATION. Recommend one option and say plainly why the others lose. Do not design an implementation, do not write a script, and do not add a hook. If the recommendation is to document the exposure and build nothing, that is a legitimate and complete outcome -- say so without hedging.
+
+DONE WHEN. A report states the options, the per-option verdict against the criteria above, and one recommendation; a short durability statement suitable for a reader of the rules is drafted for the docs task to place.
+
+---
+
+### 660. Init specs ignores specs by default
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 658
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit the mirrored path. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**; both are permitted in this description.
+
+GOAL. Make a newly initialized repository get its specs tree ignored from the start, so task state stays local to the working copy, is shared by every branch checked out in it, and never appears in a pull request. Settle in the same task what happens to the repositories already tracking theirs.
+
+WHAT EXISTS TODAY. scripts/init-specs.sh scaffolds a specs/.gitignore holding only the ephemeral runtime-file class, rendered from scripts/lib/runtime-file-patterns.sh's runtime_specs_ignore_block(). Task state itself -- state.json, TODO.md, reports, plans, summaries -- is left tracked. context/standards/orchestrator-runtime-files.md defines the two-class split (ephemeral and gitignored versus durable provenance and tracked) that this scaffolding renders.
+
+THE CHANGE, AND ITS LIMIT. A fresh repository should land with its whole specs tree ignored. The two-class split does not disappear: it still describes which files are runtime state, and the research must say whether an ignored whole tree makes the inner ephemeral block redundant or still meaningful (a consumer may later track specs/ again, and the inner block would then matter once more).
+
+MIGRATION IS THE HARD HALF, AND IS NON-NEGOTIABLE IN ONE RESPECT. A repository that already tracks its specs tree must keep tracking it. No deploy, no redeploy, and no loader run may untrack anyone's task history as a side effect; a change that could silently make 11,572 tracked files vanish from a reader's index is a worse defect than the one this group set out to fix. The global root is exactly such a repository and is the reference case. Research settles whether the new default applies only where no specs tree yet exists, whether an existing consumer is offered an opt-in and how, and what the scaffolding does when it finds a specs tree already present and tracked.
+
+VERIFICATION. A fresh init in an empty repository yields an ignored specs tree and a working lifecycle on top of it; a re-init over an existing tracked tree leaves that tree tracked, asserted against the index rather than inferred from the script's exit code. Both halves are required, and the second is the negative control.
+
+SHARED TERRITORY, DECLARED NOT BLOCKING. Task 338 (sweep_task_support_file_tracked_or_ignored) edits both init-specs.sh and runtime-file-patterns.sh, and re-sweeps the very enumeration this task's scaffolding renders. No dependency edge is set by the user's ruling, but these two must never be co-admitted into one batch, and whichever lands second must re-read the other's result rather than assume the enumeration it was written against.
+
+DONE WHEN. A new repository is initialized with an ignored specs tree, an existing tracked tree is demonstrably untouched by any deploy path, and orchestrator-runtime-files.md states the posture for both.
+
+---
+
+### 659. Never demote on ignored specs skip
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: Task 658
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit the mirrored path. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**; both are permitted in this description.
+
+GOAL. Stop a completed task being recorded as partial because a bookkeeping commit had nothing it was allowed to stage, and give every consumer that reads the specs tree's git history a defined answer for the case where there is no such history. This is the behaviour change that matters most in this group: work that finished must never be reported as unfinished.
+
+THE DEMOTION SITE, MEASURED 2026-11-19. scripts/orchestrate-cycle-postflight.sh carries a commit-landing status correction, documented in place as a sanctioned terminal-state exception, which on a nonzero exit from git-commit-scoped.sh rewrites the task's status from completed to partial, amends the handoff file with a commit-failure blocker, and prints a STATUS DEMOTED notice. With a gitignored specs tree that per-cycle commit can never succeed, so the demotion fires on every completing dispatch. The symptom is already recorded from a second consumer repository (sapience-app): the per-cycle specs commit always fails and demotes a finished task, while deliverable commits outside specs/ land normally.
+
+WHAT THE EXCEPTION IS FOR, AND WHY IT MUST SURVIVE. The correction exists because a completed status that nobody committed is a claim unsupported by the tree -- a real hazard worth a demotion when the commit genuinely failed. An ignored specs tree is a different case: nothing was supposed to land, so nothing is missing. The research must preserve the exception for genuine failures while excluding the ignored case, and must say how it tells them apart -- which is what task 1's predicate and exit-code split exist to supply. Do not weaken the exception to close this; narrow its trigger.
+
+THE HISTORY READERS, EACH NEEDING AN ANSWER. reconcile-task-status.sh; validate-state.sh's --deep mode and its git-history round trip; git-commit-scoped.sh's honest-index-rows comparison as consumed by its callers; task-lock.sh; and scripts/lib/territory-contention-lib.sh's claims. dispatch-metrics.sh additionally sums git log --numstat split by a specs/ pathspec, which yields zero rather than an error and so needs a stated verdict rather than a fix. For each: state what it means when the specs tree has no git history at all, and make it report that rather than infer a failure from the absence.
+
+HOW A SKIP IS REPORTED. Visible, never silent, never fatal, and never status-bearing. The skip is recorded as evidence through the existing channels -- issue-record.sh where a task context exists, events-append.sh where none does -- and the task's own status is untouched. A skip that leaves no trace is as wrong as one that demotes; research settles which channel and what severity, and whether a repeated skip should be recorded once per invocation rather than once per dispatch.
+
+VERIFICATION. A live completing dispatch in an ignored-specs fixture repository finishes with status completed and no STATUS DEMOTED notice; the same fixture with a genuinely failing commit still demotes, proving the exception was narrowed and not removed. That pair is the negative control and both halves are required.
+
+SHARED TERRITORY, DECLARED NOT BLOCKING. Task 501 (cycle_postflight_containment_parity) edits orchestrate-cycle-postflight.sh as well. No dependency edge is set by the user's ruling, but the two must never be co-admitted into one batch.
+
+DONE WHEN. An ignored-specs repository drives a task to completed with the skip recorded and the status intact; a genuine commit failure still demotes; every history reader named above has a stated and implemented answer for an absent specs history; and a tracked-specs repository's postflight behaviour is unchanged.
+
+---
+
+### 658. Ignored specs predicate and commit path
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
+
+GOAL. Add one shared predicate that answers whether a given repository's specs tree is gitignored, and make the commit path report an all-ignored pathspec as its own distinct, non-failure outcome rather than as a staging failure indistinguishable from a real one. The deliverable is one mechanism consulted from one place, never a per-call-site workaround repeated across the 95 files that reference git-commit-scoped.sh.
+
+WHY NOW, MEASURED 2026-11-19. A consumer repository (sf1-engine) added specs/ to its root .gitignore and untracked 389 files while leaving 604 on disk. Every lifecycle commit site still names specs/TODO.md and specs/state.json. No ignore-awareness exists anywhere in the commit path today: git check-ignore appears only in the lint and corpus-enumeration scripts (check-task-references.sh, check-record-versioning.sh, verify-touched.sh) and in no commit helper or caller. So an ignored specs tree currently presents as the same nonzero exit a genuine staging failure does, and callers cannot tell the two apart.
+
+THE EXISTING SEAM TO BUILD ON. scripts/lib/engine-written-state-paths-lib.sh is already the single definition of the engine-written state-path set (specs/TODO.md, specs/state.json), with a documented fail-open posture, an explicit admission bar, and a recorded list of rejected candidates. Model the new predicate's library on that file's style -- a contract statement, the fail-open posture, an enumeration of its consumers -- and do not duplicate its path list.
+
+RESEARCH SETTLES, NOT THIS DESCRIPTION. (a) Whether the predicate belongs inside git-commit-scoped.sh as a new drop reason and exit code distinct from today's exit 2, or in a shared library each caller consults before building its pathspec, or both; the criterion is that no caller has to reimplement the question. (b) Which of the script's documented drop and refusal paths an ignored path currently takes -- its header names a file_scope excursion filter, V7's unreliable git add exit code for a tracked-but-gitignore-matching path, and V8's parent-directory resolution -- established by live repro, not by reading alone. (c) Whether the predicate answers per repository once or per pathspec, given that a repo may ignore specs/ wholly or partly. (d) What the right answer is for a path that is BOTH tracked and gitignore-matching, which git stages happily and which is a different case from an untracked ignored path.
+
+BACKWARD COMPATIBILITY IS MANDATORY. A repository whose specs tree IS tracked must behave exactly as it does today, byte for byte in its commit behaviour. The global root itself tracks 11,572 specs files and is the reference case. The predicate decides per repository at runtime; there is no global switch and no configuration key to set.
+
+VERIFICATION. One negative control per rule, each biting exactly the case it targets and nowhere else, and the tracked/ignored split tested on BOTH sides: a fixture repo with specs tracked and one with specs ignored, each asserting the full exit-code contract. A control that cannot distinguish the new outcome from today's exit 2 has not been written.
+
+SHARED TERRITORY, DECLARED NOT BLOCKING. Task 618 (working_tree_residue_disposition_policy) edits git-commit-scoped.sh as well, and its Class 1 asks a question overlapping (b) above: whether that script drops a tracked-but-gitignore-matching path and reports it non-fatally where nobody reads it. No dependency edge is set in either direction by the user's ruling, but the two must never be co-admitted into one batch, and 618's own starting evidence should be re-measured after this task lands rather than assumed still accurate.
+
+DONE WHEN. The predicate exists in one place with its own tests; git-commit-scoped.sh distinguishes an all-ignored pathspec from a staging failure in its exit-code contract and its header documents the new outcome beside the existing V-codes; context/standards/git-staging-scope.md states the per-operation contract for both postures; and a tracked-specs repository's commit behaviour is demonstrably unchanged.
+
+---
 
 ### 657. Branch topology ruling and milestone automation
 - **Status**: [NOT STARTED]
