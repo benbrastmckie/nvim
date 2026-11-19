@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1795104475_9fe2d8_652",
-  "dispatch_seq": 4,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/652_validate_artifact_corpus_resolution/reports/01_validate-artifact-corpus-resolution.md",
-      "summary": "Confirms the exact single-candidate resolution site in validate-artifact.sh, the existing verification_scope_project_suite_roots reader, and designs a sibling-lib.sh candidate-list extension plus corpus-naming warning text and three new test cases, with no change to suite-selection-lib.sh itself."
+      "type": "plan",
+      "path": "specs/652_validate_artifact_corpus_resolution/plans/01_corpus-resolution-candidate-list.md",
+      "summary": "Five-phase plan extending validate-artifact.sh's existing suite-selection-lib candidate list with the repository-under-validation's declared project suite root(s), naming the resolved corpus in every advisory Tier-Justification warning, adding declared/undeclared/declared-but-absent coverage, a consumer-list doc sync, and a redeploy close."
     }
   ],
   "memory_candidates": [
     {
-      "content": "scripts/lib/suite-selection-lib.sh fixes its own scripts-root/tests-dir (_SSL_SCRIPTS_ROOT/_SSL_TESTS_DIR) once at source time, derived purely from its own ${BASH_SOURCE[0]} location two directories up -- there is no parameter or env override. The only way to re-root the exact same, unmodified selection engine at a different corpus is to source a DIFFERENT on-disk copy of the same file that lives inside that corpus's own tree (a lib/+tests/ mirror). This generalizes beyond validate-artifact.sh: any future caller wanting a non-default corpus from this library must locate and source an alternate copy, never override its internal _SSL_-prefixed variables (explicitly not part of its public contract).",
+      "content": "validate-artifact.sh resolves 'the repository under validation' via _cgs_resolve_repo_root: walk up from the ARTIFACT path's own directory looking for .claude-extensions.json, then fall back to _cgs_find_repo_root \"$(pwd)\". A test fixture written into a bare `mktemp -d` therefore does NOT get a neutral repo root -- the upward walk finds nothing and the pwd fallback silently hands it the real repository's own .claude-extensions.json and every declaration in it. Any plan phase adding declaration-sensitive fixtures for this script must plant the plan file INSIDE its own scratch root (alongside a scratch .claude-extensions.json), not merely plant the scratch root somewhere and validate from outside it; otherwise the fixture tests the host repository's declarations while appearing to test its own.",
       "category": "PATTERN",
-      "source_artifact": "specs/652_validate_artifact_corpus_resolution/reports/01_validate-artifact-corpus-resolution.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["suite-selection-lib", "corpus resolution", "BASH_SOURCE rooting", "verification_scope", "project_suite_roots"]
-    },
-    {
-      "content": "verification_scope.project_suite_roots (scripts/lib/verification-scope-lib.sh) is schema-generic ('a non-shell test corpus, for example') -- it carries NO structural guarantee that a declared root mirrors the agent-system's own lib/+tests/ scripts-tree shape. Any consumer that wants to reuse an existing shell-suite engine (like suite-selection-lib.sh) against a declared project_suite_root must derive a candidate path assuming that mirror shape and gracefully degrade to a fallback + named warning when it's absent -- never treat a non-mirrored declared root as an error.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/652_validate_artifact_corpus_resolution/reports/01_validate-artifact-corpus-resolution.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["verification_scope", "project_suite_roots", "repo-level-declarations", "fail-open", "schema-generic"]
+      "source_artifact": "specs/652_validate_artifact_corpus_resolution/plans/01_corpus-resolution-candidate-list.md",
+      "confidence": 0.78,
+      "suggested_keywords": ["validate-artifact", "repo-root resolution", "test fixture isolation", "claude-extensions.json", "pwd fallback"]
     }
   ],
-  "next_steps": "Run /orchestrate 652 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1795104475_9fe2d8_652",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 5.5,
+    "dependency_waves": [[1], [2], [3, 4], [5]]
+  },
+  "next_steps": "Run /orchestrate 652 to execute the plan",
+  "dispatch_seq": 5
 }

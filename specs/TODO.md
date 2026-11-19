@@ -106,7 +106,7 @@ next_project_number: 656
 
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-652 [PLANNING] — Resolve validate-artifact.sh's Tier-Justification corpus...
+652 [PLANNED] — Resolve validate-artifact.sh's Tier-Justification corpus...
 654 [NOT STARTED] — Reconcile the open commit-layer cluster and write its...
   └─ 655 [NOT STARTED] — Make orchestration branch-aware with a per-invocation branch...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
@@ -327,11 +327,12 @@ TERRITORY EDGES.
 ---
 
 ### 652. Validate artifact corpus resolution
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 650, Task 564
 - **Research**: [652_validate_artifact_corpus_resolution/reports/01_validate-artifact-corpus-resolution.md]
+- **Plan**: [652_validate_artifact_corpus_resolution/plans/01_corpus-resolution-candidate-list.md]
 
 **Description**: Resolve validate-artifact.sh's Tier-Justification corpus against the repository under validation, not the deployed agent-system tree
 

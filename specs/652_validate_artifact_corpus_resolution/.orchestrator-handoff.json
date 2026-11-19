@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 5,
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Authored a five-phase plan resolving validate-artifact.sh's advisory Tier-Justification corpus through an extension of its existing ordered candidate list: declared project suite root(s) first (via the already-shipped verification_scope_project_suite_roots reader and the already-computed _cgs_repo_root), today's script-relative path as fallback. Phases cover the candidate-list resolution, per-warning corpus attribution plus a one-time declared-but-unresolvable warning, three new fixture cases in test-validate-artifact.sh, a repo-level-declarations.md consumer-list sync with its coupled index-entries.json declaration, and a final redeploy phase declaring __WHOLE_TREE__. All four non-final phases carry live-measured Tier Justifications; the deployed validator passes the plan with 0 warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/652_validate_artifact_corpus_resolution/plans/01_corpus-resolution-candidate-list.md",
+      "summary": "Five-phase implementation plan for corpus-aware Tier-Justification resolution in validate-artifact.sh, with named-corpus warnings and three-case test coverage."
+    }
+  ]
+}
