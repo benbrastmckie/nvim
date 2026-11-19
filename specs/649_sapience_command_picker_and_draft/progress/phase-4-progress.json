@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "commands/sapience.md",
+  "started_at": "2026-11-19T14:12:00Z",
+  "last_updated": "2026-11-19T14:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create sapience.md with frontmatter", "status": "done", "files_touched": ["agent-system/extensions/sapience/commands/sapience.md"]},
+    {"id": 2, "description": "Body: Purpose/Layer/Delegates To/Input", "status": "done", "files_touched": ["agent-system/extensions/sapience/commands/sapience.md"]},
+    {"id": 3, "description": "Argument parsing: three shapes, loud refusal on unknown flag", "status": "done", "files_touched": ["agent-system/extensions/sapience/commands/sapience.md"]},
+    {"id": 4, "description": "State the single approval-picker guarantee", "status": "done", "files_touched": ["agent-system/extensions/sapience/commands/sapience.md"]},
+    {"id": 5, "description": "No MCP write tool, no undeclared script", "status": "done", "files_touched": ["agent-system/extensions/sapience/commands/sapience.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

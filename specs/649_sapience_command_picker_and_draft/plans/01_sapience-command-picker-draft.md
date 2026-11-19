@@ -360,25 +360,25 @@ resolves and runs that path's own mapped suite set itself, exactly as in Phase 2
 
 ---
 
-### Phase 4: commands/sapience.md [NOT STARTED]
+### Phase 4: commands/sapience.md [COMPLETED]
 
 **Goal**: Add the thin command layer that parses `/sapience`'s arguments and delegates to
 `skill-sapience`.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/sapience/commands/sapience.md` with frontmatter
+- [x] Create `agent-system/extensions/sapience/commands/sapience.md` with frontmatter
       `description`, `allowed-tools: Skill`, and `argument-hint: [message text] | --message
-      [Name] [text]`, matching `commands/literature.md`'s confirmed convention.
-- [ ] Body: `**Purpose**`, `**Layer**: 2 (Command File - Argument Parsing Agent)`,
-      `**Delegates To**: skill-sapience (direct execution)`, and `**Input**: $ARGUMENTS`.
-- [ ] Argument parsing: first-match-wins mode detection for the three shapes — `--message <Name>
+      [Name] [text]`, matching `commands/literature.md`'s confirmed convention. *(completed)*
+- [x] Body: `**Purpose**`, `**Layer**: 2 (Command File - Argument Parsing Agent)`,
+      `**Delegates To**: skill-sapience (direct execution)`, and `**Input**: $ARGUMENTS`. *(completed)*
+- [x] Argument parsing: first-match-wins mode detection for the three shapes — `--message <Name>
       [text]` (name present), `--message [text]` (bare, triggers the collaborator picker), and
       the default no-flag form with optional free text. An unknown flag is a loud refusal, not a
-      silent pass-through.
-- [ ] State the single guarantee the command surface itself must carry: the run ALWAYS ends in
+      silent pass-through. *(completed)*
+- [x] State the single guarantee the command surface itself must carry: the run ALWAYS ends in
       one approval picker and nothing leaves the machine unapproved — with the detail living in
-      `skill-sapience` and the design record rather than duplicated here.
-- [ ] Name no MCP write tool (D9) and name no script not already in `provides.scripts`.
+      `skill-sapience` and the design record rather than duplicated here. *(completed)*
+- [x] Name no MCP write tool (D9) and name no script not already in `provides.scripts`. *(completed)*
 
 **Timing**: 0.75 hours
 
