@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 647,
+  "phase": "plan",
+  "session_id": "sess_1795076371_5115f3_647",
+  "dispatch_seq": 3,
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Authored a five-phase implementation plan for the sapience project-binding and vault-read foundation: the shared scripts/lib/sapience-api-lib.sh (host/token precedence, authenticated POST/GET, token redaction, bounded cold-start retry), then sapience-project-bind.sh and sapience-vault-read.sh in parallel, then their two new test suites, then the lockstep/manifest registration and full verification. Re-validated every carried figure from the dispatch against live sources and ran suite_selection_select over all five planned paths so each Tier Justification names a measured result. Surfaced two mechanically required files the dispatch FILE SCOPE omitted: the extension manifest's provides.scripts array and test-sapience-mcp-registration.sh's hardcoded LOCKSTEP_FILES list.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/647_sapience_project_binding_and_vault_read/plans/01_project-binding-vault-read-foundation.md",
+      "summary": "Five-phase plan, 8 estimated hours, 4 dependency waves, validated clean by validate-artifact.sh."
+    }
+  ]
+}

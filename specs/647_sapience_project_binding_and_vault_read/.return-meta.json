@@ -1,43 +1,30 @@
 {
-  "status": "researched",
-  "summary": "Researched the foundation for the /sapience command: verified all dispatch-cited mechanisms (project-share route, ownership/cross-door semantics, repo_link.py's exact file format, credential precedence, the write-path rule, and the dead REPO_LINK_FOR path) directly against primary sources, and surfaced an implementation-facing tension between this task's new scripts/lib/sapience-api-lib.sh and the extension's prior per-script-duplication convention, plus the need to extend test-sapience-mcp-registration.sh's lockstep-guard file list.",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/647_sapience_project_binding_and_vault_read/reports/01_project-binding-vault-read-foundation.md",
-      "summary": "Confirms the dispatch's technical claims against brain_server.py, repo_link.py, and ~/.sapience/mcp.py; documents the extension's existing scripts/lib absence, the lockstep worktree-resolution test's hardcoded five-file list, and recommends the shared lib's exact helper surface and output-envelope contract for the vault-read script."
+      "type": "plan",
+      "path": "specs/647_sapience_project_binding_and_vault_read/plans/01_project-binding-vault-read-foundation.md",
+      "summary": "Five-phase plan for the shared sapience-api-lib.sh, the confirm-or-refuse project binder, the read-only vault aggregator, their two test suites, and the manifest/lockstep registration edits."
     }
   ],
   "metadata": {
     "session_id": "sess_1795076371_5115f3_647",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 9
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 8,
+    "dependency_waves": 4
   },
-  "dispatch_seq": 1,
   "memory_candidates": [
     {
-      "content": "Deploy flattens every extension's scripts/ tree into one shared .claude/scripts/ directory, and every extension's own scripts/lib/ entries land in one shared .claude/scripts/lib/ -- not a per-extension subdirectory. Confirmed via .claude-extensions.json's installed_files for the sapience extension (every script lands at .claude/scripts/<name>.sh) and via core's deploy-headless.sh/verify-deploy.sh comments, which all target one .claude/scripts/lib/ regardless of source extension. A new lib filename from any extension only needs to avoid collision with every OTHER extension's lib filenames, not just its own.",
+      "content": "An extension's manifest.json provides.scripts array is an explicit, hand-maintained list that deploy and check-extension-docs.sh Rule Q both read; a new script absent from it neither deploys nor lints clean, and nothing surfaces that at authoring time. sync-manifest-scripts.sh --check/--write is the sanctioned regenerator, but it enumerates via `git ls-files`, so a newly created script must be STAGED before --write can see it. Any plan that adds a script to an extension therefore owes both a manifest.json entry in its Files to modify block and a stage-then-regenerate ordering in its task list.",
       "category": "PATTERN",
-      "source_artifact": "specs/647_sapience_project_binding_and_vault_read/reports/01_project-binding-vault-read-foundation.md",
+      "source_artifact": "specs/647_sapience_project_binding_and_vault_read/plans/01_project-binding-vault-read-foundation.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy", "extension", "scripts/lib", "flattening", "merge"]
-    },
-    {
-      "content": "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh Case 30 asserts a marker-delimited worktree-checkout-resolution block is byte-identical across a HARDCODED LOCKSTEP_FILES array of exactly five file paths (the SessionStart hook, verify-sapience-mcp.sh, sapience-retrieve.sh, sapience-remember.sh, verify-sapience-context-scoping.sh). Adding the same marker block to a new script does NOT get covered by this test unless the new path is explicitly appended to that array -- the comparison is not self-discovering across the filesystem.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/647_sapience_project_binding_and_vault_read/reports/01_project-binding-vault-read-foundation.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["lockstep-test", "sapience", "worktree-resolution", "test-coverage-gap"]
-    },
-    {
-      "content": "repo_link.py's parse_link rejects a dict carrying ANY key matching /(token|key|secret|password)/i (re.IGNORECASE), not just the three named project/name/repo keys -- so a committed link file intended for server consumption must carry exactly those three keys and nothing else. Its own canonical serializer link_text() uses json.dumps(..., indent=2, sort_keys=False) plus a trailing newline in the fixed order project, name, repo; a hand-rolled writer that accepts the same object shape but serializes differently (key order, indentation) will still parse correctly today but diverges byte-for-byte from what the server's own writer would produce once the gating flag is enabled.",
-      "category": "PATTERN",
-      "source_artifact": "specs/647_sapience_project_binding_and_vault_read/reports/01_project-binding-vault-read-foundation.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["repo_link.py", "sapience", "json-serialization", "secret-key-detection"]
+      "suggested_keywords": ["manifest", "provides.scripts", "sync-manifest-scripts", "extension", "deploy", "git-ls-files"]
     }
   ],
-  "next_steps": "Run /orchestrate 647 to create an implementation plan from this research."
+  "next_steps": "Run /orchestrate 647 to execute the plan",
+  "dispatch_seq": 3
 }
