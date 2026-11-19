@@ -1,0 +1,29 @@
+{
+  "phase": 4,
+  "phase_name": "Pin the new semantics with fixtures",
+  "started_at": "2026-11-19T01:35:00Z",
+  "last_updated": "2026-11-19T02:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Flip test-run-all-selection.sh Case 3", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 2, "description": "Add fixture (a): mixed bookkeeping+real-target set", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 3, "description": "Add fixture (b): all-sentinel set still returns sentinel alone", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 4, "description": "Add all-mappable invariant fixture", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 5, "description": "Add fixture (c): synthetic two-phase plan subprocess probe via validate-artifact.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-run-all-selection.sh"]},
+    {"id": 6, "description": "Add Gate 8 fail-safe regression (Case G)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh"]},
+    {"id": 7, "description": "Add test-validate-artifact.sh mixed-touched-set Tier Justification cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 8, "description": "Guard every new case for a clean deployed-vantage skip", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.6",
+      "description": "Add a Gate 8 fail-safe regression: a --gate8-touched set mixing a mapped and an unmapped path still falls back to the full unnarrowed battery. Place it in whichever of test-run-all-selection.sh or test-verify-deploy-gate-selection.sh the surrounding conventions make it belong to.",
+      "type": "altered",
+      "reason": "Neither named candidate is the right structural home. test-gate8-suite-selection.sh is the suite already dedicated to the exact --gate8-touched/GATE8_TOUCHED mechanism (stubbed-run-all.sh cases A-F already pin the absent-flag, single-mappable, multi-path-union, unmappable, cache-ineligibility, and argument-validation shapes for this same function); test-verify-deploy-gate-selection.sh tests a disjoint mechanism (--only-gate, which GATES run, not what Gate 8 itself narrows to internally). Added as Case G to test-gate8-suite-selection.sh instead, widened this phase's touched set and Tier Justification to include it, and re-measured.",
+      "annotation": "*(deviation: placed in a THIRD file, tests/test-gate8-suite-selection.sh -- neither option this task names ...)*"
+    }
+  ],
+  "notes": "test-run-all-selection.sh: 40 passed, 0 failed (36 baseline + 4 new: fixture (a), fixture (b), the all-mappable invariant, fixture (c)). test-gate8-suite-selection.sh: 26 passed, 0 failed (22 baseline + 4 new Case G assertions; Case G uses a bystander suite in its fixture to distinguish 'correctly fell back to full discovery' from 'incorrectly narrowed to the mapped path's suite alone', since Gate 8's own slow-bucket-relocation filter always builds an explicit --only list once any suite exists in the fixture, unlike Case D's genuinely suite-less fixture). test-validate-artifact.sh: 148 passed, 0 failed (146 baseline + 2 new mixed-set Tier Justification cases). Re-measured suite_selection_select over the three actual touched paths (widened to include test-gate8-suite-selection.sh): returns the plan's original 6 suites plus test-gate8-suite-selection.sh itself (stratum-0 self-identity). verify-touched.sh's scoped check over the three touched paths again hit the same deployed-vantage batch-contention timeout recorded for Phase 2 (stuck on test-lint-shellcheck-parallel.sh this time, confirmed fast in isolation); not retried, recorded via issue-record.sh, and superseded in practice by Phase 5's own post-redeploy re-run of these exact suites from the deployed vantage. One syntax bug (a missing closing double-quote in fixture (c)'s multi-line function-call assignment) was caught by bash -n before running the suite and fixed immediately -- a reminder that bash -n is worth running after every multi-line heredoc/escaped-backtick edit in this file family, not only at the end."
+}

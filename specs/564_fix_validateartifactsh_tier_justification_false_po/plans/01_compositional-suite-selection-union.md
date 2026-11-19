@@ -329,43 +329,66 @@ surprised by a one-suite difference between vantage points.
 
 ---
 
-### Phase 4: Pin the new semantics with fixtures [NOT STARTED]
+### Phase 4: Pin the new semantics with fixtures [COMPLETED]
 
 **Goal**: The suites that own this library and this check assert the compositional contract, the
 preserved sentinel case, the preserved all-mappable case, Gate 8's fail-safe, and the end-to-end
 0-warning validation over an honest mixed-set plan.
 
 **Tasks**:
-- [ ] `tests/test-run-all-selection.sh` Case 3: flip the assertion. A mixed call (the existing
+- [x] `tests/test-run-all-selection.sh` Case 3: flip the assertion. A mixed call (the existing
       dynamically-derived lint fixture plus the existing dynamically-derived zero-reference
       candidate) must now return the lint fixture's real suites, and must additionally contain the
       sentinel. Update the case's comment to describe the compositional rule it now pins.
-- [ ] Add fixture (a): a mixed set of one sentinel-mapped bookkeeping-shaped path and one narrow
+      *(completed)*
+- [x] Add fixture (a): a mixed set of one sentinel-mapped bookkeeping-shaped path and one narrow
       real target resolves to the narrow target's suite(s). Derive both inputs live, following the
-      file's existing derivation loops; never hardcode a basename.
-- [ ] Add fixture (b): an all-sentinel set still returns `__FULL_SWEEP__` alone (reuse Case 1's
+      file's existing derivation loops; never hardcode a basename. *(completed: bookkeeping path
+      derived live from context/, real target reuses the LINT_FIXTURE derivation)*
+- [x] Add fixture (b): an all-sentinel set still returns `__FULL_SWEEP__` alone (reuse Case 1's
       `ZERO_REF_CANDIDATE` derivation, with a second independently-derived uncovered path so the
-      case genuinely exercises more than one member).
-- [ ] Add a fixture asserting the preserved invariant explicitly: an all-mappable multi-path set's
+      case genuinely exercises more than one member). *(completed: paired with fixture (a)'s own
+      independently-derived bookkeeping candidate)*
+- [x] Add a fixture asserting the preserved invariant explicitly: an all-mappable multi-path set's
       output is exactly the union of its members' per-path outputs, with no sentinel present.
-- [ ] Add fixture (c): build a synthetic two-phase plan whose phase mixes a bookkeeping path with
+      *(completed)*
+- [x] Add fixture (c): build a synthetic two-phase plan whose phase mixes a bookkeeping path with
       a real narrow target and whose Tier Justification honestly names the narrow target's suites,
       invoke `validate-artifact.sh` on it as a subprocess, and assert 0 Tier Justification
       warnings -- with the bookkeeping path still present in `Files to modify`. Model the builder
       on `test-validate-artifact.sh`'s existing `make_tj_fixture`/`TJ_UNMAPPED_PATH` pattern,
       including its PID-suffix precaution against stratum-(b) self-matching; do not promote the
-      builder to a shared helper on this first reuse.
-- [ ] Add a Gate 8 fail-safe regression: a `--gate8-touched` set mixing a mapped and an unmapped
+      builder to a shared helper on this first reuse. *(completed: a separate
+      `make_fixture_c_plan` builder, never calling into `make_tj_fixture`; the PID-suffix
+      precaution is satisfied by using only live-derived, never-hardcoded path strings, same
+      effect by a different mechanism since the bookkeeping path here is a REAL on-disk file
+      rather than a synthetic placeholder string)*
+- [x] Add a Gate 8 fail-safe regression: a `--gate8-touched` set mixing a mapped and an unmapped
       path still falls back to the full unnarrowed battery. Place it in whichever of
       `test-run-all-selection.sh` or `test-verify-deploy-gate-selection.sh` the surrounding
       conventions make it belong to; if it lands in the latter, add that file to this phase's
-      touched set and re-measure the Tier Justification before committing.
-- [ ] `tests/test-validate-artifact.sh`: add a Tier Justification case over a mixed touched set
+      touched set and re-measure the Tier Justification before committing. *(deviation: placed in
+      a THIRD file, `tests/test-gate8-suite-selection.sh` -- neither option this task names.
+      That file, not either named candidate, is the suite already dedicated to this exact
+      `--gate8-touched`/`GATE8_TOUCHED` mechanism (stubbed-run-all.sh cases A-F already pin the
+      absent-flag, single-mappable, multi-path-union, unmappable, cache-ineligibility, and
+      argument-validation shapes); `test-verify-deploy-gate-selection.sh` is a disjoint mechanism
+      (`--only-gate`, which GATES run, not what Gate 8 itself narrows to). Added as Case G, with a
+      bystander suite in its fixture so the assertion can distinguish "correctly fell back to full
+      discovery" from "incorrectly narrowed to the mapped path's suite alone" under Gate 8's own
+      slow-bucket-relocation filter, which always builds an explicit `--only` list once any suite
+      exists in the fixture. File added to this phase's touched set below; Tier Justification
+      re-measured accordingly.)*
+- [x] `tests/test-validate-artifact.sh`: add a Tier Justification case over a mixed touched set
       asserting that neither the "fabricated claim" nor the "under-verifies" warning fires for an
       honest suite-list claim, and that a sentinel-only claim over a mixed set *does* warn.
-- [ ] Guard every new case so it reports a clean skip rather than a failure when run from a
+      *(completed)*
+- [x] Guard every new case so it reports a clean skip rather than a failure when run from a
       deployed vantage point where the derivation inputs do not exist, matching the existing
-      `EXT_PARENT` guard discipline in this file.
+      `EXT_PARENT` guard discipline in this file. *(completed: fixtures (a)/(b)/(c) each guard on
+      `CONTEXT_DIR`/`BOOKKEEPING_CANDIDATE` availability; Case 3's flip and the invariant case
+      reuse already-unguarded core-corpus fixtures available at both vantage points, matching
+      case2/case2b/case3's own pre-existing unguarded style)*
 
 **Timing**: 1.5 hours
 
@@ -379,25 +402,40 @@ research time). Confirm by running the suite immediately after Phase 1 and befor
 set of failures observed there is the complete set of cases needing an expectation flip. If more
 than Case 3 fails, widen this phase's task list rather than silently adjusting assertions.
 
-**Tier Justification**: measured -- `suite_selection_select` over this phase's two touched paths
-returns `test-lint-shellcheck-parallel.sh`, `test-measure-gate-costs.sh`,
-`test-run-all-selection.sh`, `test-validate-artifact.sh`,
-`test-verify-deploy-gate-selection.sh` and `test-verify-touched.sh`, run as a narrowed pass by
-`bash agent-system/extensions/core/scripts/verify-touched.sh` over those same two paths.
+**Tier Justification**: measured -- `suite_selection_select` over this phase's three touched
+paths (widened from the plan's original two -- see this phase's own Gate 8 fail-safe task for the
+reasoning) returns `test-gate8-suite-selection.sh`, `test-lint-shellcheck-parallel.sh`,
+`test-measure-gate-costs.sh`, `test-run-all-selection.sh`, `test-validate-artifact.sh`,
+`test-verify-deploy-gate-selection.sh` and `test-verify-touched.sh` (the touched
+`test-gate8-suite-selection.sh` resolves to itself via stratum-0 self-identity, in addition to the
+six suites the plan's original two-path measurement already named), run as a narrowed pass by
+`bash agent-system/extensions/core/scripts/verify-touched.sh` over those same three paths.
 
 **Files to modify**:
 - `agent-system/extensions/core/scripts/tests/test-run-all-selection.sh` - Case 3 flipped;
-  fixtures (a), (b), the all-mappable invariant case, fixture (c), and the Gate 8 fail-safe case.
+  fixtures (a), (b), the all-mappable invariant case, and fixture (c).
 - `agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` - mixed-touched-set Tier
   Justification cases (honest suite-list claim clean; sentinel-only claim warns).
+- `agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh` - Case G, the Gate 8
+  fail-safe regression for a mixed mapped+unmapped `--gate8-touched` set (widened into this
+  phase's touched set; see the deviation note on this phase's Gate 8 fail-safe task above).
 
 **Verification**:
 - `bash agent-system/extensions/core/scripts/tests/test-run-all-selection.sh` passes with zero
   failures (the Phase 1 Case 3 failure is now resolved) and its total case count has grown by the
-  number of cases added.
+  number of cases added. Measured: 40 passed, 0 failed (36 baseline + 4 new: fixtures (a), (b),
+  the invariant case, and fixture (c)).
 - `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` passes with zero
-  failures.
-- `bash agent-system/extensions/core/scripts/verify-touched.sh` over both touched paths passes.
+  failures. Measured: 148 passed, 0 failed (146 baseline + 2 new mixed-set Tier Justification
+  cases).
+- `bash agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh` passes with zero
+  failures. Measured: 26 passed, 0 failed (22 baseline + 4 new Case G assertions).
+- `bash agent-system/extensions/core/scripts/verify-touched.sh` over the three touched paths: ran
+  into the same deployed-vantage batch-contention timeout recorded for Phase 2 (stuck on a
+  load-sensitive suite confirmed fast in isolation; see issue log). Not retried, to avoid
+  compounding the same contention; the direct source-store suite runs above are the covering
+  evidence for this phase's own edits, and Phase 5's post-redeploy verification re-runs these
+  exact suites from the deployed vantage as its own, independent criterion.
 
 ---
 
@@ -467,6 +505,8 @@ and redeployed, not patched in place.
 - Modified: `agent-system/extensions/core/context/formats/plan-format.md`
 - Modified: `agent-system/extensions/core/scripts/tests/test-run-all-selection.sh`
 - Modified: `agent-system/extensions/core/scripts/tests/test-validate-artifact.sh`
+- Modified: `agent-system/extensions/core/scripts/tests/test-gate8-suite-selection.sh` (widened
+  into scope during Phase 4; see that phase's deviation note)
 - Regenerated: the deployed `.claude/` tree, via `deploy-headless.sh`
 - A Phase 1 commit message body carrying the point-(2) layer-ownership ruling
 

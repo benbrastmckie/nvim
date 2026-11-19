@@ -143,16 +143,188 @@ else
   common_test_fail "case2c: $bad_class_count selected suite(s) carried an invalid/missing classification" "$annotated_out"
 fi
 
-# Case 3: multi-path union, except a single unmappable path escalates the whole call.
+# Case 3: multi-path union is now COMPOSITIONAL -- a single unmappable path contributes the
+# full-sweep sentinel as a MEMBER of the running union rather than short-circuiting and
+# discarding every other path's real coverage. This flips the pre-fix assertion this case used to
+# pin (the old short-circuit escalated the whole call to the sentinel ALONE, losing the lint
+# fixture's own real suite).
 if [ -z "$ZERO_REF_CANDIDATE" ]; then
   common_test_fail "case3: skipped -- case1's candidate derivation failed"
 else
   union_out="$(suite_selection_select "$CORE_DIR/lint/$LINT_FIXTURE" "$CORE_DIR/$ZERO_REF_CANDIDATE")"
-  if [ "$union_out" = "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" ]; then
-    common_test_pass "case3: one unmappable path among several escalates the whole multi-path call"
+  # $lint_out (case2's own per-path resolution of the SAME lint fixture, computed above) is
+  # reused rather than re-asserting a single-suite assumption: stratum (b)'s grep also matches
+  # this basename against several OTHER suites (e.g. this suite's own source text, which textually
+  # references the fixture's basename), so the lint fixture alone already resolves to a set, not
+  # one suite -- case2 only asserts membership, never exclusivity.
+  expected_union_out="$(printf '%s\n%s\n' "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" "$lint_out" | sort -u)"
+  if [ "$union_out" = "$expected_union_out" ]; then
+    common_test_pass "case3: a mixed multi-path call returns the union of its real suites PLUS the sentinel (never the sentinel alone)"
   else
-    common_test_fail "case3: multi-path call with one unmappable path did not escalate" "$union_out"
+    common_test_fail "case3: mixed multi-path call did not return the compositional union" "$union_out"
   fi
+fi
+unset expected_union_out
+
+# Case-fixture-a setup: derive a zero-reference BOOKKEEPING-SHAPED markdown candidate (never
+# hardcode a basename -- same "never hardcode" discipline as ZERO_REF_CANDIDATE above). This
+# mirrors the real-world defect this task fixes: a plan's own bookkeeping path (a markdown file
+# with no executable surface, hence sentinel-mapped) sitting alongside a real, suite-covered
+# target in the same touched set. CONTEXT_DIR resolves identically at both vantage points --
+# context/ is always a sibling of the scripts root, both in the source store
+# (agent-system/extensions/core/{scripts,context}) and in a deploy (.claude/{scripts,context}) --
+# so no vantage-specific branching is needed here, unlike the EXT_PARENT cases below.
+CONTEXT_DIR="$(cd "$CORE_DIR/.." 2>/dev/null && pwd)/context"
+BOOKKEEPING_CANDIDATE=""
+if [ -d "$CONTEXT_DIR" ]; then
+  while IFS= read -r _md_cand; do
+    [ -n "$_md_cand" ] || continue
+    _md_base="$(basename "$_md_cand")"
+    _md_matches="$(grep -l -F -- "$_md_base" "$CORE_DIR"/tests/test-*.sh "$CORE_DIR"/test-*.sh 2>/dev/null)"
+    if [ -z "$_md_matches" ]; then
+      BOOKKEEPING_CANDIDATE="$_md_cand"
+      break
+    fi
+  done < <(find "$CONTEXT_DIR" -name '*.md' 2>/dev/null | sort)
+fi
+unset _md_cand _md_base _md_matches
+
+# Case-fixture-a: a mixed set of one sentinel-mapped bookkeeping-shaped path and one narrow real
+# target resolves to the narrow target's suite PLUS the sentinel -- never the sentinel alone, and
+# never losing the real suite to satisfy a checker (the exact incentive this task's fix removes).
+if [ -z "$CONTEXT_DIR" ] || [ ! -d "$CONTEXT_DIR" ]; then
+  common_test_info "case-fixture-a: skip -- no context/ tree at this vantage point to derive a bookkeeping-shaped candidate from"
+elif [ -z "$BOOKKEEPING_CANDIDATE" ]; then
+  common_test_fail "case-fixture-a: setup error -- no zero-reference bookkeeping-shaped markdown candidate could be derived from $CONTEXT_DIR"
+else
+  mixed_bk_out="$(suite_selection_select "$BOOKKEEPING_CANDIDATE" "$CORE_DIR/lint/$LINT_FIXTURE")"
+  expected_mixed_bk="$(printf '%s\n%s\n' "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" "$lint_out" | sort -u)"
+  if [ "$mixed_bk_out" = "$expected_mixed_bk" ]; then
+    common_test_pass "case-fixture-a: a mixed set of one sentinel-mapped bookkeeping-shaped path ($(basename "$BOOKKEEPING_CANDIDATE")) and one narrow real target resolves to the narrow target's suite plus the sentinel"
+  else
+    common_test_fail "case-fixture-a: mixed bookkeeping+real-target set did not resolve as expected" "$mixed_bk_out"
+  fi
+fi
+
+# Case-fixture-b: an all-sentinel set still returns the full-sweep sentinel ALONE -- reuses
+# case1's ZERO_REF_CANDIDATE derivation (a script) together with the independently-derived
+# BOOKKEEPING_CANDIDATE above (a markdown file), two genuinely distinct derivations rather than
+# one candidate counted twice.
+if [ -z "$ZERO_REF_CANDIDATE" ] || [ -z "$BOOKKEEPING_CANDIDATE" ]; then
+  common_test_info "case-fixture-b: skip -- a required unmappable-candidate derivation is unavailable at this vantage point"
+else
+  allsentinel_out="$(suite_selection_select "$CORE_DIR/$ZERO_REF_CANDIDATE" "$BOOKKEEPING_CANDIDATE")"
+  if [ "$allsentinel_out" = "$SUITE_SELECTION_FULL_SWEEP_SENTINEL" ]; then
+    common_test_pass "case-fixture-b: an all-sentinel multi-path set (two independently-derived unmappable paths) still returns the full-sweep sentinel alone"
+  else
+    common_test_fail "case-fixture-b: an all-unmappable multi-path set did not collapse to the sentinel alone" "$allsentinel_out"
+  fi
+fi
+
+# Case-invariant: an all-mappable multi-path set's output is EXACTLY the union of its members'
+# own per-path outputs, with no sentinel present -- the preserved invariant this task's fix must
+# never break (an all-mappable set that resolves to a suite today must resolve to the same suite
+# after the change).
+invariant_lint_out="$(suite_selection_select "$CORE_DIR/lint/$LINT_FIXTURE")"
+invariant_lib_out="$(suite_selection_select "$CORE_DIR/lib/$LIB_FIXTURE")"
+invariant_expected="$(printf '%s\n%s\n' "$invariant_lint_out" "$invariant_lib_out" | sort -u)"
+invariant_actual="$(suite_selection_select "$CORE_DIR/lint/$LINT_FIXTURE" "$CORE_DIR/lib/$LIB_FIXTURE")"
+if [ "$invariant_actual" = "$invariant_expected" ] \
+   && ! printf '%s\n' "$invariant_actual" | grep -qx "$SUITE_SELECTION_FULL_SWEEP_SENTINEL"; then
+  common_test_pass "case-invariant: an all-mappable multi-path set's output is exactly the union of its members' per-path outputs, with no sentinel present"
+else
+  common_test_fail "case-invariant: all-mappable multi-path union did not match the per-path union, or unexpectedly contained the sentinel" "$invariant_actual"
+fi
+unset invariant_lint_out invariant_lib_out invariant_expected invariant_actual
+
+# Case-fixture-c: a synthetic two-phase plan, built by a builder MODELED ON (never calling into
+# -- this is a deliberate first, separate reuse, not promoted to a shared helper per this task)
+# test-validate-artifact.sh's own make_tj_fixture/TJ_UNMAPPED_PATH pattern. Phase 1 mixes a
+# sentinel-mapped bookkeeping path with a real narrow target in Files to modify and its Tier
+# Justification honestly names only the real target's suite(s), never the sentinel token; Phase 2
+# is the final phase and carries no Tier Justification by convention. validate-artifact.sh is
+# invoked as a REAL subprocess (the source-store copy, so it measures against the library this
+# phase just edited) and the end-to-end result must carry zero Tier Justification warnings, with
+# the bookkeeping path still declared in Phase 1's own Files to modify -- proving an author need
+# not drop a real touched path to satisfy the checker, the exact incentive this task's fix
+# removes. The bookkeeping path (BOOKKEEPING_CANDIDATE, a REAL on-disk zero-reference file
+# derived live above) and the real target (LINT_FIXTURE's own resolution, also derived live) are
+# both already never-hardcoded by construction, which is this builder's own version of
+# TJ_UNMAPPED_PATH's PID-suffix precaution against stratum-(b) self-matching -- a literal,
+# hand-typed placeholder string would risk the same self-match TJ_UNMAPPED_PATH's PID suffix
+# guards against, so none is ever written here.
+VALIDATE_ARTIFACT_SRC="$CORE_DIR/validate-artifact.sh"
+
+make_fixture_c_plan() {
+  local bookkeeping_path="$1" real_path="$2" tier_justification="$3"
+  local f
+  f="$(mktemp --tmpdir="$WORKDIR" plan-fixture-c-XXXXXX.md)"
+  cat > "$f" <<EOF
+# Plan
+
+- **Task**: 1 - x
+- **Status**: [IMPLEMENTING]
+- **Effort**: 1h
+- **Dependencies**: none
+- **Research Inputs**: none
+- **Artifacts**: none
+- **Standards**: none
+- **Type**: meta
+
+## Overview
+x
+
+## Goals & Non-Goals
+x
+
+## Risks & Mitigations
+x
+
+## Implementation Phases
+
+### Phase 1: X [NOT STARTED]
+
+**Verification Tier**: local
+
+**Tier Justification**: ${tier_justification}
+
+**Files to modify**:
+- \`${bookkeeping_path}\`
+- \`${real_path}\`
+
+### Phase 2: Y [NOT STARTED]
+
+**Verification Tier**: prose
+
+**Files to modify**:
+- \`path/to/anchor.ext\`
+
+## Testing & Validation
+x
+
+## Artifacts & Outputs
+x
+
+## Rollback/Contingency
+x
+EOF
+  echo "$f"
+}
+
+if [ -z "$BOOKKEEPING_CANDIDATE" ] || [ ! -f "$VALIDATE_ARTIFACT_SRC" ]; then
+  common_test_info "case-fixture-c: skip -- no bookkeeping-shaped candidate or validate-artifact.sh available at this vantage point"
+else
+  mapfile -t fixturec_lint_suites <<< "$lint_out"
+  fixturec_lint_csv="$(IFS=,; echo "${fixturec_lint_suites[*]}")"
+  fixturec_plan="$(make_fixture_c_plan "$BOOKKEEPING_CANDIDATE" "$CORE_DIR/lint/$LINT_FIXTURE" \
+    "\`suite_selection_select ${BOOKKEEPING_CANDIDATE} ${CORE_DIR}/lint/${LINT_FIXTURE}\` returns \`${fixturec_lint_csv}\` (plus the full-sweep sentinel for the unmapped bookkeeping path, not itself a claimable suite name), so the covering check is \`bash .claude/scripts/tests/run-all.sh --only ${fixturec_lint_csv}\`.")"
+  fixturec_out="$(bash "$VALIDATE_ARTIFACT_SRC" "$fixturec_plan" plan 2>&1)"
+  if printf '%s\n' "$fixturec_out" | grep -qF "Tier Justification"; then
+    common_test_fail "case-fixture-c: honest mixed-set plan incorrectly drew a Tier Justification finding" "$fixturec_out"
+  else
+    common_test_pass "case-fixture-c: a synthetic two-phase plan mixing a bookkeeping path with a real narrow target, honestly justified, validates with 0 Tier Justification warnings (bookkeeping path retained in Files to modify)"
+  fi
+  unset fixturec_lint_suites fixturec_lint_csv fixturec_plan fixturec_out
 fi
 
 # Cases 3b-3e pin the four non-core-extension-paths behaviours added to suite-selection-lib.sh:

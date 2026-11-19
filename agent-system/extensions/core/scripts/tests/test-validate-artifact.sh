@@ -673,6 +673,30 @@ f=$(make_tj_fixture "**Files to modify**:
 out=$("$VALIDATE_SRC" "$f" plan 2>&1)
 if echo "$out" | grep -qF "Tier Justification"; then common_test_fail "TJ-sentinel(ii): measured sentinel claim incorrectly drew a finding: $out"; else common_test_pass "TJ-sentinel(ii): measured sentinel claim draws no finding"; fi
 
+# ─── Tier Justification mixed-set (honest suitelist): Files to modify mixes a genuinely
+# unmapped path with a real suite-covered path -- suite_selection_select's output for the
+# combined set now contains the sentinel ALONGSIDE the real suite(s) (compositional union, not
+# the pre-fix short-circuit that collapsed the whole call to the sentinel alone). An honest
+# suite-list claim naming only the real suite(s) -- never the sentinel token, which is not a
+# claimable suite name -- must draw NO Tier Justification finding, even though the unmapped
+# bookkeeping path stays declared in Files to modify. This is the exact false "fabricated claim"
+# this task's fix removes ───────────────────────────────────────────────────────────────────
+f=$(make_tj_fixture "**Files to modify**:
+- \`${TJ_UNMAPPED_PATH}\`
+- \`${TJ_REAL_SUITE_PATH}\`" "\`suite_selection_select ${TJ_UNMAPPED_PATH} ${TJ_REAL_SUITE_PATH}\` returns \`${TJ_REAL_SUITE_NAMES[*]}\` (plus the full-sweep sentinel for the unmapped path, not itself a claimable suite name), so the covering check is \`bash .claude/scripts/tests/run-all.sh --only ${TJ_REAL_SUITE_NAMES_CSV}\`.")
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "Tier Justification"; then common_test_fail "TJ-mixed(honest suitelist): honest mixed-set claim incorrectly drew a Tier Justification finding: $out"; else common_test_pass "TJ-mixed(honest suitelist): honest mixed-set claim (bookkeeping path retained, real suites named) draws no Tier Justification finding"; fi
+
+# ─── Tier Justification mixed-set (false sentinel-only claim): the SAME mixed touched set as
+# above, but the claim names ONLY the sentinel -- suite_selection_select's output is NOT
+# sentinel-ONLY for this set (the real suite(s) are also present), so this must WARN exactly as
+# a sentinel claim over any other suite-covered path would ────────────────────────────────────
+f=$(make_tj_fixture "**Files to modify**:
+- \`${TJ_UNMAPPED_PATH}\`
+- \`${TJ_REAL_SUITE_PATH}\`" "\`suite_selection_select ${TJ_UNMAPPED_PATH} ${TJ_REAL_SUITE_PATH}\` returns the \`__FULL_SWEEP__\` sentinel, so the covering check is \`bash <repo_root>/.claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 <repo_root>\`.")
+out=$("$VALIDATE_SRC" "$f" plan 2>&1)
+if echo "$out" | grep -qF "unmeasured/false sentinel claim"; then common_test_pass "TJ-mixed(false sentinel): a sentinel-only claim over a mixed touched set WARNS"; else common_test_fail "TJ-mixed(false sentinel) missing expected warning: $out"; fi
+
 # ─── Tier Justification skip-case: Files to modify holds only the reserved __WHOLE_TREE__
 # sentinel -- the remaining touched-path set is empty after filtering, so the check must skip
 # silently even though the Tier Justification claim itself would otherwise mismatch ─────────
