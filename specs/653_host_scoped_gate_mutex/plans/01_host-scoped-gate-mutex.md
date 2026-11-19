@@ -455,26 +455,29 @@ and add any further surface that grep reveals rather than assuming this list is 
 
 ---
 
-### Phase 5: Host-scoped mutex section in the canonical spec [NOT STARTED]
+### Phase 5: Host-scoped mutex section in the canonical spec [COMPLETED]
 
 **Goal**: Extend `context/patterns/task-lock.md` — the canonical spec `task-lock.sh`'s own header
 points to — with a Host-Scoped Mutex section, so the contract lives where consumers are told to
 read it rather than only in a script comment.
 
 **Tasks**:
-- [ ] Add a "Host-Scoped Mutex" section covering: the three-tier root resolution chain and the
+- [x] Add a "Host-Scoped Mutex" section covering: the three-tier root resolution chain and the
       test-only override variable; the opt-in verb pair and the guarantee that repo scope stays the
       default; `GATE_MUTEX_HOST_HELD` as a fourth, distinct reentrancy flag; time-elapsed-only
       reclaim and why PID-liveness remains rejected for this family; and the fail-open-on-lock-root-
-      trouble posture, inherited from the repo-scoped family rather than decided here.
-- [ ] State the binds-only-cooperating-callers limit as prominently here as in the script: a mutex
+      trouble posture, inherited from the repo-scoped family rather than decided here. *(completed;
+      inserted between the existing Commit-Mutex CLI and Session-Registry CLI sections)*
+- [x] State the binds-only-cooperating-callers limit as prominently here as in the script: a mutex
       binds only callers that acquire it, so the honest claim is that co-operating callers
-      serialize, never that contamination is impossible.
-- [ ] Describe the host-outer / repo-inner nesting at the three gate brackets and why per-repo
-      serialization is retained rather than replaced.
-- [ ] Give the section the same depth the repo-scoped family's existing sections have (staleness,
-      same-session re-entry, fail-open rationale).
-- [ ] No task-number references and no record-versioning language anywhere in the file.
+      serialize, never that contamination is impossible. *(completed)*
+- [x] Describe the host-outer / repo-inner nesting at the three gate brackets and why per-repo
+      serialization is retained rather than replaced. *(completed)*
+- [x] Give the section the same depth the repo-scoped family's existing sections have (staleness,
+      same-session re-entry, fail-open rationale). *(completed)*
+- [x] No task-number references and no record-versioning language anywhere in the file.
+      *(completed: check-task-references.sh 0 occurrences; check-record-versioning.sh 0 BLOCKING,
+      14 pre-existing ADVISORY findings all outside the new section)*
 
 **Timing**: 0.5 hours
 

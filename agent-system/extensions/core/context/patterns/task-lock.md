@@ -986,6 +986,109 @@ enough to reclaim a genuinely stuck holder.
   `git add` + optional honest-index-rows scan + `git commit` sequence, releases via an `EXIT`
   trap so no code path leaks the mutex.
 
+## Host-Scoped Mutex: `gate-acquire-host` / `gate-release-host`
+
+Every mutex documented above — `.scope-lock`, `.commit-lock`, and the `.gate-lock` family
+`gate-acquire`/`gate-release` expose (see `context/patterns/batch-orchestration-guardrails.md`
+for that family's own full contract) — resolves its directory as
+`"$PROJECT_ROOT/specs/<name>"`. That makes every one of them **repo-scoped by construction**: a
+full gate-set battery started from a *different* repository on the same host resolves its own,
+separate `specs/.gate-lock`, and so is not merely unserialized against a concurrent battery in
+this repository — it is **structurally invisible** to it. `gate-acquire-host`/`gate-release-host`
+are an explicitly named, **opt-in** sibling of `gate-acquire`/`gate-release` that resolves the
+same `.gate-lock` directory name under a **host-scoped** root instead, outside any single
+repository's tree, so two independent repositories on the same host can serialize against each
+other for the first time. The repo-scoped pair is **unchanged** and remains the default every
+existing caller observes; host scope is never silently substituted for it.
+
+### `resolve_host_lock_root()`: the Tier Chain
+
+A strict tier order, first usable tier wins, each probed in turn:
+
+1. `TASK_LOCK_HOST_ROOT_OVERRIDE` — documented **test-only**. Never set this in production; it
+   lets a test fixture relocate the resolved root without touching the real `$XDG_RUNTIME_DIR` or
+   `/run/user/$UID`, which a concurrent real session on the same host may also be resolving.
+2. `$XDG_RUNTIME_DIR`, when set, a directory, and writable — the XDG Base Directory spec's
+   per-user, tmpfs-backed runtime directory, created at first login and removed at final logout.
+   An abandoned host-scoped lock here is therefore reclaimed by the OS independent of any
+   staleness arithmetic in `task-lock.sh`.
+3. `/run/user/$UID`, when it exists and is writable — the path `$XDG_RUNTIME_DIR` conventionally
+   points at, tried directly in case the variable is unset but the directory still exists (common
+   on a systemd-logind host even without an interactive login shell).
+4. `${TMPDIR:-/tmp}/task-lock-host-$UID` — the fallback for a host with neither tier above (no
+   systemd-logind, a minimal container). `/tmp` is world-writable with only the sticky bit
+   protecting against *deletion* by another user, never against *pre-creation* by one, so this
+   tier is UID-qualified by name, created `mkdir -p` then `chmod 0700`, and **refuses a
+   pre-existing directory at that path whose owner UID is not the resolving user** rather than
+   trusting it.
+
+The resolver **fails open**: it prints nothing and returns non-zero when every tier is unusable.
+It never `exit`s, never creates anything outside the one resolved root, and never blocks (no
+retry, no wait).
+
+### Fail-Open on Lock-Root Trouble Is Structural, Not Three Copies of a Decision
+
+`cmd_gate_acquire_host` returns the SAME non-zero that the budget-exhaustion branch of
+`acquire_named_mutex` returns when the resolver itself fails, with its own named `ERROR:` line.
+This means every call site's **pre-existing** fail-open branch for a timed-out acquire already
+covers "no usable host lock root" too — no new branch was added at any of the three wired call
+sites (`tests/run-all.sh`'s top level, `verify-deploy.sh`'s `gate8_run()`, and its slow-battery
+bracket) to handle lock-root trouble as a distinct case. This matches `cmd_gate_acquire`'s
+existing posture exactly: a guard that cannot acquire must never block the work it guards.
+
+### THE REAL LIMIT, STATED WITHOUT HEDGING
+
+**A mutex binds only callers that acquire it.** `gate-acquire-host` does not, and cannot, stop a
+battery started by a process that never calls it — a hand-run command, an editor task, another
+tool, or a different, unmodified copy of `task-lock.sh` that predates this feature. The honest
+claim this guard makes is that **co-operating callers serialize**; it is never the claim that
+cross-repository contamination is made *impossible*. Read any description of this guard that
+implies otherwise as a misreading of this contract, not as a second, looser guarantee to rely on.
+
+### `GATE_MUTEX_HOST_HELD`: a Fourth, Distinct Reentrancy Flag
+
+Exported on a successful `gate-acquire-host`, checked before attempting one — never conflated
+with `GATE_MUTEX_HELD` (the repo-scoped `.gate-lock` flag), `SCOPE_MUTEX_HELD`, or
+`COMMIT_MUTEX_HELD`. Four independent critical sections need four independent held-flags, for
+exactly the reentrancy-collision reason "Why a Distinct Mutex Directory, Not a Reuse of
+`.scope-lock`" above gives for `COMMIT_MUTEX_HELD`: reusing a flag across unrelated mutexes would
+either silently defeat serialization (an outer holder's flag wrongly treated as covering an
+unrelated mutex) or attempt a nested acquire on a documented non-reentrant primitive.
+
+### Host-Outer, Repo-Inner: the Nesting at All Three Gate Brackets
+
+Each of the three gate-battery brackets acquires the host-scoped lock FIRST, as the OUTER lock,
+then performs today's existing repo-scoped acquire UNCHANGED, as the INNER lock — and releases in
+the REVERSE order (inner first, then outer) at every release point. Per-repository serialization
+is therefore **retained, not replaced**: a battery that only ever contends with siblings in its
+own repository still serializes against them via the unchanged inner lock, while a battery that
+now also contends with a sibling repository's battery additionally serializes against that via
+the new outer lock. Dropping the inner lock in favor of the outer one would have left two
+same-repository invocations racing on nothing while they waited on an uncontended host-scoped
+lock between them — a regression this nesting avoids by construction.
+
+### Reclaim Is Time-Elapsed Only, for the Same Reason the Repo-Scoped Family Gives
+
+No new reclaim mechanism, and deliberately no PID-liveness fast path: the recorded `pid` in
+`$mutex_dir/owner` is always the short-lived `gate-acquire-host` CLI subprocess itself, never the
+long-lived holder, so a `kill -0` check against it is unsound here for the identical reason
+`acquire_named_mutex`'s own header comment gives for the repo-scoped family (see "Rejected
+alternative" in that primitive's doc comment). The host-scoped form inherits the same
+holder-declared, time-elapsed-only staleness reclaim as every other member of this mutex family.
+
+### No New Constants — Posture Is Inherited, Not Chosen Here
+
+`GATE_MUTEX_STALE_SEC`, `GATE_MUTEX_ACQUIRE_BUDGET_MS`, and `GATE_MUTEX_PROGRESS_INTERVAL_S` are
+reused UNCHANGED for the host-scoped form (with a distinct progress label, `gate-lock-host`, so a
+waiting host-scoped run is distinguishable in logs from a waiting repo-scoped one). This keeps
+the documented `ACQUIRE_BUDGET_MS <= STALE_SEC*1000` invariant satisfied by construction, and
+keeps the `.gate-lock` family's fail-open-vs-fail-closed posture question exactly where it
+belongs: with whichever document owns that mutex's *posture* (acquire budget sizing, staleness
+window, queueing). This document and this feature decide the mutex's *scope* — repo-wide vs.
+host-wide — which is orthogonal to posture: a fail-closed repo-scoped lock would still be blind to
+a sibling repository, and a fail-open host-scoped lock is still fail-open for exactly the same
+reason the repo-scoped one is.
+
 ## Session-Registry CLI: `session-register` / `session-heartbeat` / `session-release` / `session-reap`
 
 A THIRD standalone CLI family, alongside the Scope-Mutex CLI and Commit-Mutex CLI above, but

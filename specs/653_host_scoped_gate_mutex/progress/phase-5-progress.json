@@ -1,0 +1,16 @@
+{
+  "phase": 5,
+  "phase_name": "Host-scoped mutex section in the canonical spec",
+  "started_at": "2026-11-19T02:28:00Z",
+  "last_updated": "2026-11-19T02:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Host-Scoped Mutex section to context/patterns/task-lock.md covering tier chain, override var, verb pair, GATE_MUTEX_HOST_HELD, reclaim, fail-open posture", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 2, "description": "State binds-only-cooperating-callers limit prominently", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 3, "description": "Describe host-outer/repo-inner nesting at the three gate brackets", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/task-lock.md"]},
+    {"id": 4, "description": "No task-number references, no record-versioning language; narrowed verify-touched.sh pass green", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "verification_notes": "Inserted as a new '## Host-Scoped Mutex' section between the existing Commit-Mutex CLI section and the Session-Registry CLI section (the natural peer location: it documents a generalization of the same acquire_named_mutex primitive the Scope-Mutex and Commit-Mutex CLI sections already cover). Noted that the repo-scoped .gate-lock family itself (gate-acquire/gate-release) is NOT documented in this file at all -- it lives in context/patterns/batch-orchestration-guardrails.md -- and cross-referenced that file rather than duplicating its contract. check-task-references.sh (deployed copy, since the source-store copy refuses to run directly): 0 occurrences, PASS. check-record-versioning.sh: 0 BLOCKING, 14 ADVISORY -- confirmed by direct line-range inspection that none of the 14 advisory findings fall within the newly-added section (all are pre-existing elsewhere in the file, outside this phase's edit). Narrowed verify-touched.sh pass: 7/7 passed, matching the Tier Justification's named covering set exactly (test-audit-task-proposals.sh, test-four-tier-conflict.sh, test-phase-heartbeat.sh, test-session-registry.sh, test-task-lock-liveness.sh, test-task-lock-queue.sh, test-task-lock-reap.sh)."
+}
