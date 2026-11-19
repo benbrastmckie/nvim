@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Lockstep coverage and full verification",
+  "started_at": "2026-11-19T04:00:00Z",
+  "last_updated": "2026-11-19T05:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test-sapience-mcp-registration.sh immediately before editing; confirm pending change is known/foreign-safe", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Append both new script paths to LOCKSTEP_FILES (5 -> 7 entries); update Case 30 comment file count", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"]},
+    {"id": 3, "description": "Run sync-manifest-scripts.sh --check (16 declared); stage only this task's own hunks", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Run run-all.sh --only test-sapience-mcp-registration.sh; record batch-gate-deferral scoped discharge for the declared full tier", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Pass the whole shared file as a git-commit-scoped.sh/git-commit-phase.sh pathspec to commit only this task's LOCKSTEP_FILES hunks", "result": "failed", "reason": "both wrappers call `git add` on the given pathspec, which would re-stage the foreign Case 9 hunk already present in the working tree, sweeping it into this task's commit; fixed by hand-building a git apply --cached sub-patch of only this task's 3 hunks, temporarily swapping the working tree to match the staged content so the wrapper's own git add became a no-op, then restoring the foreign hunk into the working tree immediately after the commit (verified byte-identical via diff)"}
+  ],
+  "handoff_count": 0
+}

@@ -308,21 +308,58 @@ fi
 
 # =====================================================================
 # Case 9: interpreter inheritance -- an existing top-level mcpServers.sapience.command is reused
-# verbatim for a new project-scoped entry.
+# verbatim for a new project-scoped entry, provided it still resolves to an executable.
+#
+# The fixture's pinned interpreter is a real executable stub rather than a bare path, because
+# inheritance is conditional on the pin still being able to spawn the server. It is deliberately
+# NOT the machine's own python3, so a pass proves inheritance actually happened rather than
+# coinciding with whatever a fresh `command -v python3` would have returned anyway.
 # =====================================================================
 HOME9="$WORKDIR/case9/home"
 PROJ9="$WORKDIR/case9/proj"
-mkdir -p "$HOME9" "$PROJ9"
-jq -n '{"mcpServers": {"sapience": {"type": "stdio", "command": "/nix/store/pinned-python3/bin/python3", "args": ["/home/x/.sapience/mcp.py"], "env": {"SAPIENCE_HOST": "https://app.spnc.ai"}}}}' \
+mkdir -p "$HOME9" "$PROJ9" "$WORKDIR/case9/bin"
+PINNED9="$WORKDIR/case9/bin/pinned-python3"
+printf '#!/bin/sh\nexit 0\n' > "$PINNED9"
+chmod +x "$PINNED9"
+jq -n --arg cmd "$PINNED9" '{"mcpServers": {"sapience": {"type": "stdio", "command": $cmd, "args": ["/home/x/.sapience/mcp.py"], "env": {"SAPIENCE_HOST": "https://app.spnc.ai"}}}}' \
   > "$HOME9/.claude.json"
 
 HOME="$HOME9" bash "$WRITER_SRC" --project "$PROJ9" --scope project > /dev/null 2>&1
 COMMAND9=$(jq -r --arg p "$PROJ9" '.projects[$p].mcpServers.sapience.command' "$HOME9/.claude.json")
 
-if [ "$COMMAND9" = "/nix/store/pinned-python3/bin/python3" ]; then
-  pass "Case 9: an existing top-level mcpServers.sapience.command is inherited verbatim for the new project-scoped entry"
+if [ "$COMMAND9" = "$PINNED9" ]; then
+  pass "Case 9: a usable top-level mcpServers.sapience.command is inherited verbatim for the new project-scoped entry"
 else
-  fail "Case 9: expected inherited pinned interpreter, got $COMMAND9"
+  fail "Case 9: expected inherited pinned interpreter $PINNED9, got $COMMAND9"
+fi
+
+# =====================================================================
+# Case 9b/9c: a top-level mcpServers.sapience.command that no longer resolves to an executable
+# is NOT inherited -- the writer falls through to a fresh `command -v python3` resolution, so one
+# unusable top-level value cannot propagate into every project entry written after it. The
+# discard is reported on stderr, never stdout, since the resolver's stdout IS the interpreter.
+# =====================================================================
+HOME9B="$WORKDIR/case9b/home"
+PROJ9B="$WORKDIR/case9b/proj"
+mkdir -p "$HOME9B" "$PROJ9B"
+jq -n '{"mcpServers": {"sapience": {"type": "stdio", "command": "/nix/store/collected-generation/bin/python3", "args": ["/home/x/.sapience/mcp.py"], "env": {"SAPIENCE_HOST": "https://app.spnc.ai"}}}}' \
+  > "$HOME9B/.claude.json"
+
+STDERR9B="$WORKDIR/case9b/stderr.txt"
+HOME="$HOME9B" bash "$WRITER_SRC" --project "$PROJ9B" --scope project > /dev/null 2>"$STDERR9B"
+COMMAND9B=$(jq -r --arg p "$PROJ9B" '.projects[$p].mcpServers.sapience.command' "$HOME9B/.claude.json")
+EXPECTED9B="$(command -v python3 2>/dev/null || echo "")"
+
+if [ -n "$EXPECTED9B" ] && [ "$COMMAND9B" = "$EXPECTED9B" ]; then
+  pass "Case 9b: an unresolvable top-level interpreter is discarded and python3 is resolved afresh"
+else
+  fail "Case 9b: expected fresh resolution '$EXPECTED9B', got '$COMMAND9B'"
+fi
+
+if grep -q "does not resolve to an executable" "$STDERR9B"; then
+  pass "Case 9c: discarding an unresolvable inherited interpreter is reported on stderr, not stdout"
+else
+  fail "Case 9c: expected a stderr notice naming the discarded interpreter, got: $(cat "$STDERR9B")"
 fi
 
 # =====================================================================

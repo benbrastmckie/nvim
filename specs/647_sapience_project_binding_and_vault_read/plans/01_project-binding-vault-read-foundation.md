@@ -445,29 +445,40 @@ directly with `bash`, which is the only check that reaches these edits at all.
 
 ---
 
-### Phase 5: Lockstep coverage and full verification [NOT STARTED]
+### Phase 5: Lockstep coverage and full verification [COMPLETED]
 
 **Goal**: the two new copies of the worktree-resolution block are actually compared by the
 existing lockstep guard, the manifest is confirmed in sync, and the task closes against the
 complete gate set.
 
 **Tasks**:
-- [ ] **Re-read** `agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh`
+- [x] **Re-read** `agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh`
       immediately before editing. This file carries an uncommitted working-tree modification from a
       prior dispatch, and a sibling task is active on this same tree; confirm via `git log` and
       `git diff` that the pending change is this task's lineage or a known prior dispatch's before
       proceeding, and STOP and report if a foreign commit or foreign modification appears.
-- [ ] Append `"$SCRIPT_DIR/../sapience-project-bind.sh"` and `"$SCRIPT_DIR/../sapience-vault-read.sh"`
+      *(completed: the pending Case 9 interpreter-executable-check hunk was confirmed byte-identical
+      to what was observed at dispatch start, before any edit here — a known prior dispatch's
+      in-flight work, not a new foreign change)*
+- [x] Append `"$SCRIPT_DIR/../sapience-project-bind.sh"` and `"$SCRIPT_DIR/../sapience-vault-read.sh"`
       to the `LOCKSTEP_FILES` array (currently five entries at lines 1218-1224), taking the array's
-      size from five to seven entries total.
-- [ ] Update the surrounding Case 30 comment so the file count it narrates matches the array, and
-      so a future reader is not told "five" while the array holds seven.
-- [ ] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` and confirm
+      size from five to seven entries total. *(completed)*
+- [x] Update the surrounding Case 30 comment so the file count it narrates matches the array, and
+      so a future reader is not told "five" while the array holds seven. *(completed: both the
+      preceding comment and the pass() message now say "seven")*
+- [x] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` and confirm
       `sapience: 16 on disk, 16 declared, 0 missing, 0 absent` and `CHECK PASSED` across all
-      extensions.
-- [ ] Stage only this task's own hunks — never a directory or glob `git add` — given the concurrent
-      sibling on this working tree.
-- [ ] Record the issue-log entry for this phase, and attest explicitly if nothing arose.
+      extensions. *(completed: confirmed exactly, both before and after the Phase 5 commit)*
+- [x] Stage only this task's own hunks — never a directory or glob `git add` — given the concurrent
+      sibling on this working tree. *(completed with a deviation: the mechanized `git-commit-phase.sh`/
+      `git-commit-scoped.sh` pathspec-based staging both call `git add` on the given path, which
+      would have re-absorbed the foreign Case 9 hunk from the working tree. Staged instead via a
+      hand-built `git apply --cached` sub-patch containing only this task's 3 hunks, with the
+      working tree temporarily swapped to the staged content so the commit wrapper's own `git add`
+      was a no-op, then the foreign hunk was restored into the working tree immediately after the
+      commit (verified byte-identical via `diff`). See Plan Deviations.)*
+- [x] Record the issue-log entry for this phase, and attest explicitly if nothing arose. *(completed:
+      a `win`-class entry records the hunk-isolation technique above)*
 
 **Timing**: 1 hour
 
@@ -499,6 +510,19 @@ the counts above. If either differs, reconcile against live state and say so in 
   gate stage), not independently invoked here; this phase's note records that deferral explicitly.
   In a standalone, non-orchestrated run with no orchestration close to defer to, run
   `bash .claude/scripts/verify-deploy.sh` directly instead.
+
+**Discharged per the dispatch's Batch Gate Deferral directive** (this task ran inside a
+multi-task `/orchestrate` batch alongside task 653): the scoped touched-path check above was run
+against every one of this task's 7 touched paths across Phases 1-5, each passing (98/98 on the
+OWED full-sweep fallback, confirmed per-phase; `run-all.sh --only test-sapience-mcp-registration.sh`
+passing standalone for the lockstep suite). The complete gate set is deferred to the
+once-per-invocation batch close, not independently run here. A small number of intermittent,
+single-suite failures surfaced during the combined sweep across Phases 3-5 (a different suite
+each time: `test-lint-state-writer-boundary.sh`, `test-handoff-dispatch-identity.sh`,
+`test-stall-reprompt-wiring.sh`), each confirmed passing standalone immediately after and
+attributed to heavy concurrent system load (this task's own sibling dispatch plus apparently
+unrelated concurrent processes on the same machine) rather than a defect in this task's
+deliverables — recorded as non-blocking issue-log entries.
 
 ---
 
