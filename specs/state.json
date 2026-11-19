@@ -18039,7 +18039,8 @@
       "created": "2026-11-19T17:53:11Z",
       "last_updated": "2026-11-19T17:53:11Z",
       "dependencies": [
-        654
+        654,
+        657
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
@@ -18588,6 +18589,7 @@
       "created": "2026-11-19T18:35:21Z",
       "last_updated": "2026-11-19T18:35:21Z",
       "dependencies": [
+        654,
         656
       ],
       "file_scope": [

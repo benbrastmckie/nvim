@@ -14,8 +14,8 @@ next_project_number: 658
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,633,639,640,645,646,652,654,656 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,583,592,593,598,605,609,630,655,657 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,577,586,599,629,654,656 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,473,480,486,492,509,513,518,561,566,594 | 439,452,472,479,484,491,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,583,592,593,598,605,609,630,657 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,577,586,599,629,654,656 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,473,480,486,492,509,513,518,561,566,594,655 | 439,452,472,479,484,491,552,593,657 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,571,581,588,595,641 | 454,472,486,492,509,518,539,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 524,596,642 | 501,595,641 | core-agent-system, agent-system |
 
@@ -108,9 +108,10 @@ next_project_number: 658
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 652 [IMPLEMENTING] — Resolve validate-artifact.sh's Tier-Justification corpus...
 654 [NOT STARTED] — Reconcile the open commit-layer cluster and write its...
-  └─ 655 [NOT STARTED] — Make orchestration branch-aware with a per-invocation branch...
-656 [NOT STARTED] — Milestone schema in state.json and a wholly generated...
   └─ 657 [NOT STARTED] — Branch-topology ruling, then milestone automation and review...
+    └─ 655 [NOT STARTED] — Make orchestration branch-aware with a per-invocation branch...
+656 [NOT STARTED] — Milestone schema in state.json and a wholly generated...
+  └─ 657 [NOT STARTED] — Branch-topology ruling, then milestone automation and review... (see above)
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -185,7 +186,7 @@ next_project_number: 658
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 656
+- **Dependencies**: Task 654, Task 656
 
 **Description**: Branch-topology ruling, then milestone automation and review gates
 
@@ -295,7 +296,7 @@ Final acceptance check: regenerate the ROADMAP.md of /home/benjamin/Projects/Sap
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 654
+- **Dependencies**: Task 654, Task 657
 
 **Description**: Make orchestration branch-aware with a per-invocation branch and squash landing
 

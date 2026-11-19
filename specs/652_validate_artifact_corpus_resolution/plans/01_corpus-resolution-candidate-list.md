@@ -383,7 +383,7 @@ carry both of the declared-but-absent assertions cleanly.
 
 ---
 
-### Phase 4: Record validate-artifact.sh as a project_suite_roots Consumer [NOT STARTED]
+### Phase 4: Record validate-artifact.sh as a project_suite_roots Consumer [COMPLETED]
 
 **Goal**: `context/standards/repo-level-declarations.md` names `validate-artifact.sh` among
 `project_suite_roots`' consumers and records the `lib/` + `tests/` mirror-shape expectation that
@@ -391,24 +391,29 @@ this consumer alone depends on, so a future declarer is not left to infer it fro
 that deliberately promises no particular directory shape.
 
 **Tasks**:
-- [ ] Confirm the correction target exists before editing: `context/standards/repo-level-declarations.md`
+- [x] Confirm the correction target exists before editing: `context/standards/repo-level-declarations.md`
       is live at 303 lines with the "One object, one key" consumer list naming
       `scripts/verify-touched.sh`, `scripts/lib/suite-resolver-lib.sh`, and
       `scripts/report-suite-coverage.sh` (lines 137-141 at plan authoring). If that list has moved
       or already names `validate-artifact.sh`, re-read the section and amend only what is actually
-      missing rather than appending a duplicate.
-- [ ] Add `scripts/validate-artifact.sh` to that consumer list.
-- [ ] Extend the `project_suite_roots` bullet with the mirror-shape note: this one consumer derives
+      missing rather than appending a duplicate. *(completed: confirmed live at exactly 303 lines,
+      consumer list at lines 137-141, did not already name validate-artifact.sh)*
+- [x] Add `scripts/validate-artifact.sh` to that consumer list. *(completed, also updated the
+      duplicate consumer-list mention in the "See Also" section)*
+- [x] Extend the `project_suite_roots` bullet with the mirror-shape note: this one consumer derives
       a sibling `lib/suite-selection-lib.sh` from the declared root's parent directory, so a
       declared root that is not shaped that way degrades to the deployed-tree fallback with a named
       warning — stated as the consumer's own requirement, never as a new constraint on the field's
-      schema, which remains deliberately shape-agnostic for its other consumers.
-- [ ] Keep the edit free of task-number references and of record-versioning language, per the
-      repository rules that apply to everything landing under `agent-system/**`.
-- [ ] Note that this edit moves this file's `line_count` in `index-entries.json`, whose Rule R
+      schema, which remains deliberately shape-agnostic for its other consumers. *(completed)*
+- [x] Keep the edit free of task-number references and of record-versioning language, per the
+      repository rules that apply to everything landing under `agent-system/**`. *(completed:
+      confirmed via `git diff` grep for task-ref/record-version patterns on the added hunks —
+      none found)*
+- [x] Note that this edit moves this file's `line_count` in `index-entries.json`, whose Rule R
       check is advisory in this repository and is auto-repaired by `deploy-headless.sh`; the
       reconciliation is scheduled in Phase 5 rather than here, and the declaration below records
-      the coupling.
+      the coupling. *(completed: confirmed live drift — file now 311 lines, index-entries.json
+      still declares 303; left unreconciled for Phase 5 as planned)*
 
 **Timing**: 0.5 hours
 
@@ -429,10 +434,10 @@ surprise.
 - `agent-system/extensions/core/index-entries.json` - declared as the coupled generated surface whose `line_count` for this file moves with the edit above; reconciled by Phase 5's regeneration
 
 **Verification**:
-- The consumer list in `context/standards/repo-level-declarations.md` names `validate-artifact.sh`, and the `project_suite_roots` bullet states the mirror-shape expectation and the degrade-to-fallback outcome.
-- The diff read-through confirms every changed hunk lies in prose, with no executable or schema-example surface altered.
-- `bash .claude/scripts/verify-touched.sh agent-system/extensions/core/context/standards/repo-level-declarations.md agent-system/extensions/core/index-entries.json` reports a green verdict over the six suites named in the Tier Justification above.
-- No task-number reference and no record-versioning phrasing appears in the edited hunks.
+- The consumer list in `context/standards/repo-level-declarations.md` names `validate-artifact.sh`, and the `project_suite_roots` bullet states the mirror-shape expectation and the degrade-to-fallback outcome. *(confirmed: both the "One object, one key" list and the "See Also" list now name it; the bullet states the mirror-shape/degrade-to-fallback outcome as the consumer's own requirement)*
+- The diff read-through confirms every changed hunk lies in prose, with no executable or schema-example surface altered. *(confirmed: the only changed file was the standards markdown doc itself; index-entries.json was deliberately left untouched for Phase 5)*
+- `bash .claude/scripts/verify-touched.sh agent-system/extensions/core/context/standards/repo-level-declarations.md agent-system/extensions/core/index-entries.json` reports a green verdict over the six suites named in the Tier Justification above. *(per this dispatch's Batch Gate Deferral directive, discharged via the no-argument form; surfaced the same EXPECTED gate3 content-drift class, now also naming index-entries.json's own line_count mismatch for this file (declared 303, actual 311) -- exactly the drift this phase's own task list scheduled for Phase 5; "(1 expected, 0 NEW)" per run-all, logged non-blocking)*
+- No task-number reference and no record-versioning phrasing appears in the edited hunks. *(confirmed via `git diff` grep for both pattern families — none found)*
 
 ---
 

@@ -1,0 +1,18 @@
+{
+  "phase": 4,
+  "phase_name": "Record validate-artifact.sh as a project_suite_roots Consumer",
+  "started_at": "2026-11-19T01:48:00Z",
+  "last_updated": "2026-11-19T01:54:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm correction target and add validate-artifact.sh to the consumer list (both occurrences)", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/repo-level-declarations.md"]},
+    {"id": 2, "description": "Extend project_suite_roots bullet with the mirror-shape note", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/repo-level-declarations.md"]},
+    {"id": 3, "description": "Confirm no task-ref/record-versioning language and confirm index-entries.json drift is deferred to Phase 5", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Scoped batch-gate check surfaced the same EXPECTED gate3 content-drift class as Phases 2/3, now also naming index-entries.json's own line_count mismatch for standards/repo-level-declarations.md (declared 303, actual 311) -- exactly the drift this phase's own task list scheduled for Phase 5's deploy-headless.sh regeneration. (1 expected, 0 NEW) per run-all; logged non-blocking via issue-record.sh."
+  ]
+}

@@ -137,8 +137,8 @@ recorded trigger to promote it to `scripts/lib/`.
 One object, one key, read by `scripts/lib/verification-scope-lib.sh`
 (`verification_scope_tree_roots` / `verification_scope_project_suite_roots` /
 `verification_scope_resolver_command` / `verification_scope_resolver_compose`) and consumed by
-`scripts/verify-touched.sh`, `scripts/lib/suite-resolver-lib.sh`, and
-`scripts/report-suite-coverage.sh`.
+`scripts/verify-touched.sh`, `scripts/lib/suite-resolver-lib.sh`, `scripts/validate-artifact.sh`,
+and `scripts/report-suite-coverage.sh`.
 
 - `tree_roots` (array of strings, optional) — the repository tree(s) a touched-path scoped run
   covers (a consumer repository running a copied `.claude/` tree under several deploy roots, or
@@ -146,7 +146,15 @@ One object, one key, read by `scripts/lib/verification-scope-lib.sh`
   root, the repository root itself — today's one-tree behaviour.
 - `project_suite_roots` (array of strings, optional) — directories holding a consumer
   repository's OWN suites outside the deploy tree (a non-shell test corpus, for example). Default
-  when absent: empty — no project-owned suites declared.
+  when absent: empty — no project-owned suites declared. This field's own schema stays
+  deliberately shape-agnostic — it names a directory, not a required layout — but one consumer,
+  `validate-artifact.sh`'s advisory Tier-Justification corpus resolution, derives a sibling
+  `lib/suite-selection-lib.sh` from each declared root's PARENT directory (i.e. it expects the
+  declared root itself to be a `tests/` directory inside a `lib/` + `tests/` mirror, the same
+  shape `scripts/lib/` and `scripts/tests/` already have in this repository). A declared root not
+  laid out that way simply does not resolve for that one consumer and degrades to its own
+  deployed/sibling fallback corpus with a named warning — never a hard failure, and never a
+  constraint on this field's schema for its other consumers.
 - `resolver.command` (string, optional) — a single shell command invoked by
   `suite-resolver-lib.sh` as the DECLARED backend (see that library's own header for the full
   invocation and output-shape contract). Default when absent: no declared backend; the default
@@ -292,8 +300,8 @@ general advisory-to-blocking migration.
 
 - `scripts/lib/derived-artifact-probe-lib.sh` — the reader and probe-runner this document backs.
 - `scripts/lib/verification-scope-lib.sh` — the reader for `verification_scope`, consumed by
-  `scripts/verify-touched.sh`, `scripts/lib/suite-resolver-lib.sh`, and
-  `scripts/report-suite-coverage.sh`.
+  `scripts/verify-touched.sh`, `scripts/lib/suite-resolver-lib.sh`, `scripts/validate-artifact.sh`,
+  and `scripts/report-suite-coverage.sh`.
 - `scripts/validate-artifact.sh` — the sole current reader of `coupled_generated_surfaces`, and
   the enforcing consumer `context/formats/plan-format.md`'s "Coupled-generated-surface
   declaration obligation" cross-references.
