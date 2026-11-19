@@ -107,7 +107,7 @@ next_project_number: 654
 
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-653 [NOT STARTED] — Give the gate mutex a host-scoped form, because every lock...
+653 [RESEARCHING] — Give the gate mutex a host-scoped form, because every lock...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -170,7 +170,7 @@ next_project_number: 654
 
 ### Sapience
 
-647 [NOT STARTED] — Bind a repo to a Sapience project and read the vault's shared...
+647 [RESEARCHED] — Bind a repo to a Sapience project and read the vault's shared...
   └─ 648 [NOT STARTED] — Add the four Sapience write-surface publishers with...
     └─ 649 [NOT STARTED] — Add the /sapience command: draft assembly and the...
 
@@ -186,7 +186,7 @@ next_project_number: 654
 ## Tasks
 
 ### 653. Host scoped gate mutex
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 610
@@ -476,10 +476,11 @@ SOURCE REFERENCES for the implementer: /home/benjamin/Projects/Sapience/sapience
 ---
 
 ### 647. Bind a repo to a Sapience project and read the vault's shared state
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
+- **Research**: [647_sapience_project_binding_and_vault_read/reports/01_project-binding-vault-read-foundation.md]
 
 **Description**: Create the foundation for a /sapience command: bind a repo to a dedicated Sapience project, and read the vault's shared state so a draft can respond to a collaborator's latest rather than talk past it. This task owns the shared host/token/API-resolution library the other two tasks in this group depend on.
 
