@@ -11,8 +11,7 @@
 # (never the comments branch) was the one actually hit, so a reversed-order regression fails for
 # the right reason rather than passing by accident.
 #
-# Cases (this phase -- structural + lockstep only; per-subcommand behavioral cases are added in
-# their own governing plan phase):
+# Cases:
 #   (1) --help exits 0 and names all four subcommands.
 #   (2) An unknown subcommand exits non-zero.
 #   (3) No subcommand at all exits non-zero.
@@ -22,6 +21,20 @@
 #   (6) The marker-delimited worktree-checkout-resolution block is byte-identical to
 #       sapience-remember.sh's own copy (local lockstep guard, a second line of defense
 #       independent of test-sapience-mcp-registration.sh's Case 30).
+#   (7) doc-comment dry-run (no --confirm): prints the literal payload, makes no curl call.
+#   (8) doc-comment --confirm on a 201 {slug,n,hash,author,at}: exits 0.
+#   (9) doc-comment --confirm on a 413 over-length server response: exits non-zero.
+#   (10) doc-comment --confirm on a 2xx body missing hash: exits non-zero.
+#   (11) doc-comment: a body over DOC_COMMENT_MAX is refused locally, before any network call.
+#   (12) dm --confirm on a 201 (new conversation) then a 201 comment: exits 0, outcome names
+#        "new conversation created".
+#   (13) dm --confirm on a 200 (existing conversation reused) then a 201 comment: exits 0,
+#        outcome names "existing conversation reused" -- distinguishable from case 12's message.
+#   (14) dm --confirm with a non-2xx from POST /v1/people/dm: exits non-zero and the comment
+#        POST is never reached (asserted via a stub that would exit 7 on an unrecognized URL if
+#        the comment endpoint were ever hit).
+#   (15) The comments-suffix stub branch is confirmed hit (not the bare-slug branch) by a
+#        doc-comment call.
 #
 # Follows the core shell-test convention: common_test_pass/_fail/_info from lib/common.sh,
 # PASSED/FAILED integer counters, a mktemp -d workdir with a trap EXIT cleanup,
@@ -130,6 +143,229 @@ run_publish() {
 }
 
 TOKEN_FIXTURE="sapience-publish-test-fixture-token-DO-NOT-LEAK-7c1a"
+
+# build_curl_stub -- installs a curl stub dispatching on URL substring, driven by
+# STUB_DM_BODY/STUB_DM_CODE and STUB_COMMENT_BODY/STUB_COMMENT_CODE env vars (doc-version's GET/POST env vars are
+# added in that phase). ORDER MATTERS: the `*/comments*` pattern is listed BEFORE the bare
+# `*v1/docs/*` pattern (see this file's header note) so a doc-version call in a later phase
+# cannot be silently matched by this comments branch. Also tracks, via a file under the given
+# tracking dir, whether the comments branch or a later-added bare-docs branch was the one hit,
+# for case 15's assertion. Echoes the stub directory (to prepend to PATH).
+build_curl_stub() {
+  local stub_dir="$1" hit_dir="$2"
+  mkdir -p "$stub_dir" "$hit_dir"
+  cat > "$stub_dir/curl" <<STUB
+#!/usr/bin/env bash
+url="\${!#}"
+case "\$url" in
+  *v1/people/dm*)
+    printf '%s' "\${STUB_DM_BODY:-{\\}}"
+    printf '\\n%s' "\${STUB_DM_CODE:-200}"
+    ;;
+  */comments*)
+    echo "comments" >> "$hit_dir/branch_hits"
+    printf '%s' "\${STUB_COMMENT_BODY:-{\\}}"
+    printf '\\n%s' "\${STUB_COMMENT_CODE:-200}"
+    ;;
+  *v1/docs/*)
+    echo "bare-docs" >> "$hit_dir/branch_hits"
+    printf '%s' "\${STUB_DOCVER_BODY:-{\\}}"
+    printf '\\n%s' "\${STUB_DOCVER_CODE:-200}"
+    ;;
+  *)
+    echo "test stub: unrecognized URL: \$url" >&2
+    exit 7
+    ;;
+esac
+exit 0
+STUB
+  chmod +x "$stub_dir/curl"
+  echo "$stub_dir"
+}
+
+# run_publish_stubbed <scratch> <stub_dir> [args...] -- invokes with curl PATH-shadowed and a
+# fixed SAPIENCE_TOKEN so token resolution always succeeds without touching any real config.json.
+run_publish_stubbed() {
+  local scratch="$1" stub_dir="$2"; shift 2
+  env PATH="$stub_dir:$PATH" SAPIENCE_TOKEN="test-token-fixture" HOME="$TOP_WORKDIR" \
+    bash "$scratch/$BIN_REL" "$@"
+}
+
+# =====================================================================================
+# Case 7: doc-comment dry-run (no --confirm) -- prints the literal payload, no curl call (no
+# stub installed for this case).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  out="$(SAPIENCE_TOKEN="$TOKEN_FIXTURE" run_publish "$scratch" doc-comment "oliver-ben-decisions" --body "hello" 2>/dev/null)"
+  rc=$?
+  payload="$(echo "$out" | tail -n +2)"
+  body_val="$(echo "$payload" | jq -r '.body // empty' 2>/dev/null)"
+  if [ "$rc" -eq 0 ] && [ "$body_val" = "hello" ]; then
+    common_test_pass "(7) doc-comment dry-run: exits 0 and prints the literal payload with no curl stub installed"
+  else
+    common_test_fail "(7) doc-comment dry-run: exits 0 and prints the literal payload with no curl stub installed" "rc=$rc out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 8: doc-comment --confirm on a 201 {slug,n,hash,author,at} -- exits 0.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  out="$(STUB_COMMENT_CODE="201" STUB_COMMENT_BODY='{"slug":"oliver-ben-decisions","n":1,"hash":"h1","author":"me","at":"2026-11-19T00:00:00Z"}' \
+    run_publish_stubbed "$scratch" "$stub_dir" doc-comment "oliver-ben-decisions" --body "hello" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(8) doc-comment --confirm, 201 success: exits 0"
+  else
+    common_test_fail "(8) doc-comment --confirm, 201 success: exits 0" "got rc=$rc out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 9: doc-comment --confirm on a 413 over-length server response -- exits non-zero.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  out="$(STUB_COMMENT_CODE="413" STUB_COMMENT_BODY='{"error":"comment over 4000 chars"}' \
+    run_publish_stubbed "$scratch" "$stub_dir" doc-comment "oliver-ben-decisions" --body "hello" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    common_test_pass "(9) doc-comment --confirm, 413 over-length: exits non-zero"
+  else
+    common_test_fail "(9) doc-comment --confirm, 413 over-length: exits non-zero" "got rc=$rc out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 10: doc-comment --confirm on a 2xx body missing hash -- exits non-zero.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  out="$(STUB_COMMENT_CODE="200" STUB_COMMENT_BODY='{"slug":"oliver-ben-decisions","n":1}' \
+    run_publish_stubbed "$scratch" "$stub_dir" doc-comment "oliver-ben-decisions" --body "hello" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    common_test_pass "(10) doc-comment --confirm, 2xx missing hash: exits non-zero"
+  else
+    common_test_fail "(10) doc-comment --confirm, 2xx missing hash: exits non-zero" "got rc=$rc out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 11: a body over DOC_COMMENT_MAX is refused locally, before any network call (no stub
+# installed).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  long_body="$(printf 'a%.0s' $(seq 1 4001))"
+  out="$(SAPIENCE_TOKEN="$TOKEN_FIXTURE" run_publish "$scratch" doc-comment "oliver-ben-decisions" --body "$long_body" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    common_test_pass "(11) over-length body: refused locally before any network call"
+  else
+    common_test_fail "(11) over-length body: refused locally before any network call" "got rc=$rc out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 12: dm --confirm on a 201 (new conversation) then a 201 comment -- exits 0, outcome names
+# "new conversation created".
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  out="$(STUB_DM_CODE="201" STUB_DM_BODY='{"slug":"chat-abc123","share":{}}' \
+    STUB_COMMENT_CODE="201" STUB_COMMENT_BODY='{"slug":"chat-abc123","n":1,"hash":"h1","author":"me","at":"2026-11-19T00:00:00Z"}' \
+    run_publish_stubbed "$scratch" "$stub_dir" dm --to "0f0191b3b0d2" --body "hi there" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(12) dm --confirm, 201 new conversation: exits 0"
+  else
+    common_test_fail "(12) dm --confirm, 201 new conversation: exits 0" "got rc=$rc out=$out"
+  fi
+  if echo "$out" | grep -qi "new conversation created"; then
+    common_test_pass "(12) dm --confirm, 201: outcome names \"new conversation created\""
+  else
+    common_test_fail "(12) dm --confirm, 201: outcome names \"new conversation created\"" "out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 13: dm --confirm on a 200 (existing conversation reused) then a 201 comment -- exits 0,
+# outcome names "existing conversation reused" -- distinguishable from case 12's message.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  out="$(STUB_DM_CODE="200" STUB_DM_BODY='{"slug":"chat-abc123","share":{}}' \
+    STUB_COMMENT_CODE="201" STUB_COMMENT_BODY='{"slug":"chat-abc123","n":2,"hash":"h2","author":"me","at":"2026-11-19T00:00:00Z"}' \
+    run_publish_stubbed "$scratch" "$stub_dir" dm --to "0f0191b3b0d2" --body "hi again" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(13) dm --confirm, 200 reused conversation: exits 0"
+  else
+    common_test_fail "(13) dm --confirm, 200 reused conversation: exits 0" "got rc=$rc out=$out"
+  fi
+  if echo "$out" | grep -qi "existing conversation reused"; then
+    common_test_pass "(13) dm --confirm, 200: outcome names \"existing conversation reused\""
+  else
+    common_test_fail "(13) dm --confirm, 200: outcome names \"existing conversation reused\"" "out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 14: dm --confirm with a non-2xx from POST /v1/people/dm -- exits non-zero, and the
+# comment POST is never reached (the stub would exit 7 on an unrecognized URL only if the
+# comments endpoint were somehow reached without STUB_COMMENT_CODE/STUB_COMMENT_BODY set -- it IS set
+# here deliberately to a failure shape too, so reaching it would ALSO fail, making this
+# assertion robust to either failure mode).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  out="$(STUB_DM_CODE="500" STUB_DM_BODY='{"error":"server error"}' \
+    run_publish_stubbed "$scratch" "$stub_dir" dm --to "0f0191b3b0d2" --body "hi" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    common_test_pass "(14) dm --confirm, non-2xx from /v1/people/dm: exits non-zero"
+  else
+    common_test_fail "(14) dm --confirm, non-2xx from /v1/people/dm: exits non-zero" "got rc=$rc out=$out"
+  fi
+  if [ ! -f "$hit_dir/branch_hits" ] || ! grep -qF "comments" "$hit_dir/branch_hits" 2>/dev/null; then
+    common_test_pass "(14) dm --confirm, non-2xx from /v1/people/dm: the comment POST was never reached"
+  else
+    common_test_fail "(14) dm --confirm, non-2xx from /v1/people/dm: the comment POST was never reached" "branch_hits=$(cat "$hit_dir/branch_hits" 2>/dev/null)"
+  fi
+}
+
+# =====================================================================================
+# Case 15: the comments-suffix stub branch is confirmed hit (not the bare-slug branch) by a
+# doc-comment call.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  STUB_COMMENT_CODE="201" STUB_COMMENT_BODY='{"slug":"oliver-ben-decisions","n":1,"hash":"h1","author":"me","at":"2026-11-19T00:00:00Z"}' \
+    run_publish_stubbed "$scratch" "$stub_dir" doc-comment "oliver-ben-decisions" --body "hello" --confirm >/dev/null 2>&1
+  hits="$(cat "$hit_dir/branch_hits" 2>/dev/null)"
+  if [ "$hits" = "comments" ]; then
+    common_test_pass "(15) doc-comment hits the comments-suffix stub branch, not the bare-slug branch"
+  else
+    common_test_fail "(15) doc-comment hits the comments-suffix stub branch, not the bare-slug branch" "hits=$hits"
+  fi
+}
 
 # =====================================================================================
 # Case 1: --help exits 0 and names all four subcommands.

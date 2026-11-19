@@ -142,6 +142,33 @@ resolve_checkout_toplevel() {
 }
 # === END sapience-worktree-checkout-resolution ===
 
+# _sapience_post_capture <path> <body> -- calls sapience_post WITHOUT wrapping it in a command
+# substitution. This matters mechanically: `x="$(sapience_post ...)"` forks a subshell for the
+# substitution, so sapience_post's `sapience_api_post_http_status` side-channel assignment (set
+# "into the caller's shell" per that library's own contract -- true only because the LIBRARY
+# FILE is sourced, not subshelled; it says nothing about how the caller invokes the function)
+# is lost the instant that subshell exits. Confirmed empirically: a plain bash function setting
+# a global inside `$(...)` does not propagate that global to the parent shell. The fix is to
+# redirect sapience_post's stdout to a temp file instead -- a redirection on a function call does
+# NOT fork a subshell -- then read the file separately. Every call site in this script that needs
+# sapience_api_post_http_status afterward MUST go through this helper, never a raw
+# `x="$(sapience_post ...)"`. Sets _sapience_captured_response (global, consumed by the caller
+# immediately after return) and leaves sapience_api_post_http_status set exactly as
+# sapience_post itself would. Returns sapience_post's own return status.
+_sapience_post_capture() {
+  local _scp_path="$1" _scp_body="$2" _scp_tmp _scp_rc
+  _scp_tmp="$(mktemp 2>/dev/null)" || {
+    echo "sapience-publish.sh: could not create a temp file for the POST response" >&2
+    return 1
+  }
+  sapience_post "$_scp_path" "$_scp_body" > "$_scp_tmp"
+  _scp_rc=$?
+  _sapience_captured_response="$(cat "$_scp_tmp" 2>/dev/null)"
+  rm -f "$_scp_tmp"
+  unset _scp_path _scp_body _scp_tmp
+  return $_scp_rc
+}
+
 # --- Shared flag parsing. Each subcommand below re-walks "$@" for its own flags; the generic
 # --confirm/--dry-run/--help trio is intercepted here first so every subcommand gets identical
 # mutual-exclusion behavior for free. Unrecognized flags are left in SUBCOMMAND_ARGS for the
@@ -165,18 +192,192 @@ if [ "$CONFIRM" = "true" ] && [ "$DRY_RUN_FLAG" = "true" ]; then
   exit 1
 fi
 
+# --- DOC_COMMENT_MAX: the server's own comment-length bound (verified against brain_server.py).
+# Pre-validated locally to fail fast; the server's own 413 is still handled below as well -- a
+# local check is never a substitute for handling the server's own response. ---
+DOC_COMMENT_MAX=4000
+
+# _post_comment <slug> <body> [quote] [reply_to] [resolve] -- builds the
+# POST /v1/docs/<slug>/comments body as a JSON object via jq, omitting absent optional fields
+# rather than sending nulls, and dispatches through sapience_post (or, under dry-run,
+# SAPIENCE_DRY_RUN=1 sapience_post) from that ONE payload -- the dry-run print and the confirmed
+# write share this single construction site, never a second, divergent preview string.
+#
+# Loud-failure handling is written against THIS endpoint's own verified 201 shape
+# {slug, n, hash, author, at} -- NOT sapience-remember.sh's written/gated/set_aside fields, which
+# this response has none of and must never be conflated with. A non-2xx
+# sapience_api_post_http_status, or a 2xx body missing hash/n, is a non-zero exit with the
+# server's message on stderr.
+#
+# On dry-run (the caller's DRY_RUN_FLAG != "true" / CONFIRM != "true" distinguishes which), this
+# prints the literal payload and returns 0 without a network call. On a confirmed write, prints
+# the outcome and returns 0 on success, 1 on a local/transport failure, 2 on a server-reported
+# failure shape.
+_post_comment() {
+  local _slug="$1" _body="$2" _quote="${3:-}" _reply_to="${4:-}" _resolve="${5:-false}"
+  local _payload _response _status _hash _n
+
+  if [ "${#_body}" -gt "$DOC_COMMENT_MAX" ]; then
+    echo "sapience-publish.sh: comment body is ${#_body} chars, exceeds DOC_COMMENT_MAX (${DOC_COMMENT_MAX}) -- refusing before any write" >&2
+    return 1
+  fi
+
+  _payload="$(jq -n \
+    --arg body "$_body" \
+    --arg quote "$_quote" \
+    --arg reply_to "$_reply_to" \
+    --argjson resolve "$_resolve" \
+    '{body: $body}
+     + (if $quote != "" then {quote: $quote} else {} end)
+     + (if $reply_to != "" then {reply_to: $reply_to} else {} end)
+     + (if $resolve then {resolve: true} else {} end)')"
+
+  if [ "$CONFIRM" != "true" ]; then
+    echo "sapience-publish.sh: DRY-RUN -- POST /v1/docs/${_slug}/comments (pass --confirm to actually write; no network call made)" >&2
+    SAPIENCE_DRY_RUN=1 sapience_post "/v1/docs/${_slug}/comments" "$_payload"
+    return 0
+  fi
+
+  _sapience_post_capture "/v1/docs/${_slug}/comments" "$_payload" || return 1
+  _response="$_sapience_captured_response"
+  _status="${sapience_api_post_http_status:-}"
+
+  case "$_status" in
+    2??) : ;;
+    "")
+      echo "sapience-publish.sh: doc-comment: no HTTP status captured from POST /v1/docs/${_slug}/comments" >&2
+      return 1
+      ;;
+    *)
+      echo "sapience-publish.sh: doc-comment: FAILED -- POST /v1/docs/${_slug}/comments returned HTTP ${_status}: ${_response:0:300}" >&2
+      return 2
+      ;;
+  esac
+
+  if [ -z "$_response" ] || ! echo "$_response" | jq -e . >/dev/null 2>&1; then
+    echo "sapience-publish.sh: doc-comment: FAILED -- non-JSON or empty response from POST /v1/docs/${_slug}/comments" >&2
+    return 2
+  fi
+
+  _hash="$(echo "$_response" | jq -r '.hash // empty' 2>/dev/null)" || _hash=""
+  _n="$(echo "$_response" | jq -r '.n // empty' 2>/dev/null)" || _n=""
+
+  if [ -z "$_hash" ] || [ -z "$_n" ]; then
+    echo "sapience-publish.sh: doc-comment: FAILED -- a 2xx response missing hash/n is not success-shaped for this endpoint: ${_response:0:300}" >&2
+    return 2
+  fi
+
+  echo "sapience-publish.sh: doc-comment: written -- slug=${_slug} n=${_n} hash=${_hash}"
+  return 0
+}
+
 case "$SUBCOMMAND" in
   doc-comment)
-    echo "sapience-publish.sh: doc-comment: not yet implemented" >&2
-    exit 1
+    if [ "${#SUBCOMMAND_ARGS[@]}" -eq 0 ]; then
+      echo "sapience-publish.sh: doc-comment: a <slug> is required" >&2
+      exit 1
+    fi
+    DC_SLUG="${SUBCOMMAND_ARGS[0]}"
+    DC_BODY=""
+    DC_QUOTE=""
+    DC_REPLY_TO=""
+    DC_RESOLVE="false"
+    _dc_args=("${SUBCOMMAND_ARGS[@]:1}")
+    _i=0
+    while [ "$_i" -lt "${#_dc_args[@]}" ]; do
+      case "${_dc_args[$_i]}" in
+        --body)
+          DC_BODY="${_dc_args[$((_i + 1))]:-}"; _i=$((_i + 2)) ;;
+        --quote)
+          DC_QUOTE="${_dc_args[$((_i + 1))]:-}"; _i=$((_i + 2)) ;;
+        --reply-to)
+          DC_REPLY_TO="${_dc_args[$((_i + 1))]:-}"; _i=$((_i + 2)) ;;
+        --resolve)
+          DC_RESOLVE="true"; _i=$((_i + 1)) ;;
+        *)
+          echo "sapience-publish.sh: doc-comment: unknown flag: ${_dc_args[$_i]}" >&2
+          exit 1
+          ;;
+      esac
+    done
+    if [ -z "$DC_BODY" ]; then
+      echo "sapience-publish.sh: doc-comment: --body is required" >&2
+      exit 1
+    fi
+    sapience_api_init || exit 1
+    _post_comment "$DC_SLUG" "$DC_BODY" "$DC_QUOTE" "$DC_REPLY_TO" "$DC_RESOLVE"
+    exit $?
     ;;
   doc-version)
     echo "sapience-publish.sh: doc-version: not yet implemented" >&2
     exit 1
     ;;
   dm)
-    echo "sapience-publish.sh: dm: not yet implemented" >&2
-    exit 1
+    DM_TO=""
+    DM_BODY=""
+    _i=0
+    while [ "$_i" -lt "${#SUBCOMMAND_ARGS[@]}" ]; do
+      case "${SUBCOMMAND_ARGS[$_i]}" in
+        --to)
+          DM_TO="${SUBCOMMAND_ARGS[$((_i + 1))]:-}"; _i=$((_i + 2)) ;;
+        --body)
+          DM_BODY="${SUBCOMMAND_ARGS[$((_i + 1))]:-}"; _i=$((_i + 2)) ;;
+        *)
+          echo "sapience-publish.sh: dm: unknown flag: ${SUBCOMMAND_ARGS[$_i]}" >&2
+          exit 1
+          ;;
+      esac
+    done
+    if [ -z "$DM_TO" ] || [ -z "$DM_BODY" ]; then
+      echo "sapience-publish.sh: dm: --to and --body are both required" >&2
+      exit 1
+    fi
+
+    sapience_api_init || exit 1
+
+    DM_DM_PAYLOAD="$(jq -n --arg to "$DM_TO" '{to: $to}')"
+
+    if [ "$CONFIRM" != "true" ]; then
+      echo "sapience-publish.sh: DRY-RUN -- dm is two writes; printing both literal payloads in sequence (pass --confirm to actually write; no network call made)" >&2
+      echo "sapience-publish.sh: DRY-RUN -- POST /v1/people/dm" >&2
+      SAPIENCE_DRY_RUN=1 sapience_post "/v1/people/dm" "$DM_DM_PAYLOAD"
+      echo "sapience-publish.sh: DRY-RUN -- POST /v1/docs/<slug>/comments (slug unknown until the DM call above resolves; shown with a placeholder slug; same _post_comment payload-construction path the confirmed write uses -- never a second, divergent preview string)" >&2
+      _post_comment "<slug>" "$DM_BODY"
+      exit 0
+    fi
+
+    _sapience_post_capture "/v1/people/dm" "$DM_DM_PAYLOAD" || exit 1
+    DM_RESPONSE="$_sapience_captured_response"
+    DM_STATUS="${sapience_api_post_http_status:-}"
+
+    case "$DM_STATUS" in
+      201) DM_OUTCOME="new conversation created" ;;
+      200) DM_OUTCOME="existing conversation reused" ;;
+      2??) DM_OUTCOME="2xx (unexpected status ${DM_STATUS}, treated as success)" ;;
+      "")
+        echo "sapience-publish.sh: dm: no HTTP status captured from POST /v1/people/dm" >&2
+        exit 1
+        ;;
+      *)
+        echo "sapience-publish.sh: dm: FAILED -- POST /v1/people/dm returned HTTP ${DM_STATUS}: ${DM_RESPONSE:0:300} (never reaching the comment POST)" >&2
+        exit 2
+        ;;
+    esac
+
+    if [ -z "$DM_RESPONSE" ] || ! echo "$DM_RESPONSE" | jq -e . >/dev/null 2>&1; then
+      echo "sapience-publish.sh: dm: FAILED -- non-JSON or empty response from POST /v1/people/dm (never reaching the comment POST)" >&2
+      exit 2
+    fi
+
+    DM_SLUG="$(echo "$DM_RESPONSE" | jq -r '.slug // empty' 2>/dev/null)" || DM_SLUG=""
+    if [ -z "$DM_SLUG" ]; then
+      echo "sapience-publish.sh: dm: FAILED -- POST /v1/people/dm response carried no slug (never reaching the comment POST): ${DM_RESPONSE:0:300}" >&2
+      exit 2
+    fi
+
+    echo "sapience-publish.sh: dm: ${DM_OUTCOME} (slug=${DM_SLUG})" >&2
+    _post_comment "$DM_SLUG" "$DM_BODY"
+    exit $?
     ;;
   ko)
     echo "sapience-publish.sh: ko: not yet implemented" >&2

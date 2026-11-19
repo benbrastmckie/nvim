@@ -1,0 +1,19 @@
+{
+  "phase": 2,
+  "phase_name": "doc-comment and dm subcommands",
+  "started_at": "2026-11-19T00:00:00Z",
+  "last_updated": "2026-11-19T01:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Implement _post_comment internal helper", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-publish.sh"]},
+    {"id": 2, "description": "Implement doc-comment subcommand", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-publish.sh"]},
+    {"id": 3, "description": "Implement dm subcommand", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-publish.sh"]},
+    {"id": 4, "description": "Add curl stub harness and comment/DM test cases", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-publish.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "x=\"$(sapience_post ...)\" then read sapience_api_post_http_status", "result": "failed", "reason": "command substitution forks a subshell; the global status variable set inside sapience_post is lost. Fixed via a _sapience_post_capture helper that redirects to a temp file instead (no subshell)."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "test-sapience-publish.sh: 22/22 green (10 structural/lockstep + 12 new comment/DM cases). grep for the four MCP write tool names: no occurrence. Manual read-through: dm's dry-run path now reuses _post_comment's one payload-construction site for the comment preview (refactored after initial draft used a second inline jq construction) -- no second, divergent preview string anywhere in the file. verify-touched.sh over the phase's 2 files: exit 0, both OWED, full 98-suite fallback battery 98/98 green."
+}

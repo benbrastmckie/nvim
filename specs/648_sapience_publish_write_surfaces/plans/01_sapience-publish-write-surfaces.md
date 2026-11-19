@@ -275,39 +275,50 @@ manifest.
 
 ---
 
-### Phase 2: `doc-comment` and `dm` subcommands [NOT STARTED]
+### Phase 2: `doc-comment` and `dm` subcommands [COMPLETED]
 
 **Goal**: Both comment-shaped surfaces work, sharing one internal comment-POST helper, with the
 `dm` subcommand's extra conversation-resolution step layered on top.
 
 **Tasks**:
-- [ ] Implement an internal helper (e.g. `_post_comment <slug> <body> [quote] [reply_to]
+- [x] Implement an internal helper (e.g. `_post_comment <slug> <body> [quote] [reply_to]
       [resolve]`) that builds the `POST /v1/docs/<slug>/comments` body as a JSON object via `jq`,
       omitting absent optional fields rather than sending nulls, and dispatches through
-      `SAPIENCE_DRY_RUN=1 sapience_post` or `sapience_post` from the one payload.
-- [ ] Pre-validate body length against `DOC_COMMENT_MAX` (4000) locally to fail fast, while still
+      `SAPIENCE_DRY_RUN=1 sapience_post` or `sapience_post` from the one payload. *(completed)*
+- [x] Pre-validate body length against `DOC_COMMENT_MAX` (4000) locally to fail fast, while still
       handling the server's own `413 {"error": "comment over 4000 chars"}` — local validation is
-      never a substitute for handling the server response.
-- [ ] Loud-failure handling for the comment POST written against **this** endpoint's verified
+      never a substitute for handling the server response. *(completed)*
+- [x] Loud-failure handling for the comment POST written against **this** endpoint's verified
       201 shape `{slug, n, hash, author, at}`: a non-2xx `sapience_api_post_http_status`, or a
       2xx body missing `hash`/`n`, is a non-zero exit with the server's message on stderr.
       Include an inline comment contrasting this field set with `sapience-remember.sh`'s
-      `written`/`gated`/`set_aside` fields, so the two are never conflated.
-- [ ] Implement `doc-comment <slug> --body <text> [--quote <text>] [--reply-to <id>]
-      [--resolve]`, calling the helper directly.
-- [ ] Implement `dm --to <person-id> --body <text>`: first `POST /v1/people/dm {to: "<id>"}`,
+      `written`/`gated`/`set_aside` fields, so the two are never conflated. *(completed; discovered
+      and fixed a real bug en route -- `sapience_api_post_http_status` is lost when `sapience_post`
+      is called via `x="$(sapience_post ...)"`, since command substitution always forks a subshell
+      regardless of the library file being merely sourced; fixed locally with a
+      `_sapience_post_capture` helper that redirects to a temp file instead, documented inline)*
+- [x] Implement `doc-comment <slug> --body <text> [--quote <text>] [--reply-to <id>]
+      [--resolve]`, calling the helper directly. *(completed)*
+- [x] Implement `dm --to <person-id> --body <text>`: first `POST /v1/people/dm {to: "<id>"}`,
       accepting both 201 (new conversation) and 200 (existing conversation reused) and
       distinguishing them in the printed outcome; extract `.slug` from the reply; then call the
       same `_post_comment` helper. The recipient is never taken from the comment body — the
-      server resolves it.
-- [ ] `dm --dry-run` prints **both** literal payloads in sequence (the `/v1/people/dm` body and
+      server resolves it. *(completed)*
+- [x] `dm --dry-run` prints **both** literal payloads in sequence (the `/v1/people/dm` body and
       the follow-on comment body), since the picker shows the user the literal payload before
-      approval and a DM is two writes.
-- [ ] Add test cases: dry-run prints the literal payload and makes no curl call; confirmed
+      approval and a DM is two writes. *(completed; the second preview now calls `_post_comment`
+      itself with a placeholder slug, so it shares the one payload-construction site rather than
+      a second inline `jq` call)*
+- [x] Add test cases: dry-run prints the literal payload and makes no curl call; confirmed
       doc-comment on a 201 exits 0; a 413 over-length response exits non-zero; a 2xx body missing
       `hash` exits non-zero; `dm` on a 201 and on a 200 both exit 0 with distinguishable output;
       `dm` with a non-2xx from `/v1/people/dm` exits non-zero without ever reaching the comment
       POST; the comments-suffix stub branch is confirmed hit rather than the bare-slug branch.
+      *(completed; 12 new cases, 22/22 total green. Also discovered and fixed a stub-fixture
+      naming collision: the test's own `DM_BODY`/`COMMENT_BODY` env vars collided with the
+      script's identically-named internal flag variables, which overwrote the exported fixture
+      value before the curl stub ever saw it -- renamed to `STUB_DM_BODY`/`STUB_COMMENT_BODY`
+      etc. throughout the test file)*
 
 **Timing**: 1.5 hours
 
