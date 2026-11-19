@@ -1,5 +1,5 @@
 ---
-next_project_number: 656
+next_project_number: 658
 ---
 
 # TODO
@@ -13,8 +13,8 @@ next_project_number: 656
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,633,639,640,645,646,652,654 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,583,592,593,598,605,609,630,655 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,577,586,599,629,654 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,633,639,640,645,646,652,654,656 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,583,592,593,598,605,609,630,655,657 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,577,586,599,629,654,656 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,486,492,509,513,518,561,566,594 | 439,452,472,479,484,491,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,571,581,588,595,641 | 454,472,486,492,509,518,539,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 524,596,642 | 501,595,641 | core-agent-system, agent-system |
@@ -109,6 +109,8 @@ next_project_number: 656
 652 [IMPLEMENTING] — Resolve validate-artifact.sh's Tier-Justification corpus...
 654 [NOT STARTED] — Reconcile the open commit-layer cluster and write its...
   └─ 655 [NOT STARTED] — Make orchestration branch-aware with a per-invocation branch...
+656 [NOT STARTED] — Milestone schema in state.json and a wholly generated...
+  └─ 657 [NOT STARTED] — Branch-topology ruling, then milestone automation and review...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -178,6 +180,116 @@ next_project_number: 656
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 657. Branch topology ruling and milestone automation
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 656
+
+**Description**: Branch-topology ruling, then milestone automation and review gates
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in /home/benjamin/.config/nvim, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.
+
+SHAPE: this task rules FIRST and implements SECOND, on the pattern of the open task `reconcile_commit_layer_cluster_and_ordering`, whose deliverables are rulings, dependency edges and a decision record rather than code. Element 1 below implements no script.
+
+=== ELEMENT 1 -- BRANCH TOPOLOGY AND LANDING STRATEGY; FULLY OPEN BY EXPLICIT USER DECISION ===
+
+The user has re-opened this whole question, including the worktree-isolation verdict, with the stated aim of "the highest quality and most seamless workflow with minimal churn". So this element MAY examine branch granularity (per invocation, per milestone, per task), merge strategy (squash, merge, rebase), landing mechanics, AND worktree isolation itself. The open task `branch_aware_orchestration_and_squash_landing` calls branch-per-invocation "settled" and forbids reopening worktree isolation; THIS element supersedes that restriction and may revise that task's description.
+
+BINDING EVIDENCE REQUIREMENT -- the one constraint that survives the reopening. specs/decisions/worktree-isolation-removal-verdict.md and specs/decisions/worktree-isolation-removal-reaffirmation.md record that per-dispatch worktree isolation was BUILT, caused SILENT DATA LOSS, was REMOVED rather than narrowed, was then formally re-opened under new evidence and CONFIRMED. Any proposal to reinstate it MUST read both records, identify the specific measured data-loss mechanism they name, and show why the proposed design cannot reproduce it. A proposal that merely asserts a better design, or that does not engage the recorded mechanism, is out of order. Re-reaching the same verdict is a perfectly acceptable outcome; reaching any verdict without reading the evidence is not.
+
+THE QUESTION TO ANSWER: the best git workflow for working off a long-lived feature branch using side branches and squash merging as appropriate, to produce the highest-quality history, with milestones as the natural points at which work is submitted for review.
+
+START FROM MEASURED FACT, NOT PROSE. Orchestration today has ZERO branch awareness: across the core extension's scripts/ and hooks/, `grep -rn "git checkout -b\|git switch -c"` returns exactly one hit, inside git-snapshot.sh's --branch rollback path, which is a recovery feature rather than a workflow. Nothing in orchestrate-cycle-plan.sh, orchestrate-cycle-postflight.sh, git-commit-scoped.sh or git-commit-phase.sh reads, asserts or creates a branch, so every phase commit lands on whatever branch the operator left checked out. Separately, context/standards/git-workflow-narrative.md's "Branch Strategy" section is aspirational: it says to work on main or feature branches and offers optional task-{N}-{slug} branches, with no mechanical backing anywhere in the system.
+
+ELEMENT 1 OUTPUTS: a decision record on branch topology and landing strategy; dependency edges written with update-task-status.sh --depends-on-add; and, where the ruling differs from the branch-aware-orchestration task's settled design or its binding constraint, a written REVISION to that task's description -- and to the commit-layer-cluster task's, if the ruling reaches that cluster.
+
+=== ELEMENT 2 ONWARD -- THE AUTOMATION AND REVIEW GATES ===
+
+Built on Element 1's ruling and on the milestone schema from this task's dependency:
+
+- An orchestration completing updates its milestone's progress in specs/state.json and regenerates ROADMAP.md.
+- A batch's orchestrations all completing initiates systematic testing.
+- A milestone completing initiates the git push and review stage.
+- context/standards/git-workflow-narrative.md's Branch Strategy prose is reconciled with whatever mechanical model Element 1 settles, so the written standard and the enforced behaviour agree.
+
+THE PUSH GATE MUST USE THE MECHANISM THAT ALREADY EXISTS, AND MUST NOT VIOLATE THE PROHIBITION. rules/pr-prohibition.md bars agents from pushing and from creating PRs/MRs. The archived task `consent_gated_git_push` already built the sanctioned exception end to end: hooks/guard-git-push.sh (PreToolUse push guard plus tamper guard), hooks/please-grant.sh (a UserPromptSubmit hook minting single-use HMAC-signed grants ONLY from a literal human prompt), scripts/git-push-granted.sh (the sanctioned wrapper), and the user-invoked /please command. A milestone-completion review stage must therefore PREPARE the push and the review request and hand them to the user through that existing grant path -- never mint its own grant, never infer permission from a milestone being complete, and never push or open a PR autonomously. Design it as preparation plus a handoff, and say so explicitly in the deliverable.
+
+=== DONE WHEN ===
+
+Element 1's decision record exists and its edges and task revisions are written; a milestone's progress updates and the roadmap regenerates when an orchestration completes; batch completion initiates systematic testing; milestone completion prepares a push/review handoff through the existing consent-gated path without any autonomous push or PR creation; and the Branch Strategy standard matches the implemented mechanism.
+
+---
+
+### 656. Milestone schema and generated roadmap
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Milestone schema in state.json and a wholly generated ROADMAP.md
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in /home/benjamin/.config/nvim, never a deployed .claude/** tree (a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md).
+
+=== GOAL ===
+
+Give ROADMAP.md a milestone layer and make the WHOLE file generated from specs/state.json, so the next milestones are easy for a collaborator to review and everything updates mechanically.
+
+=== BUILD ON WHAT ALREADY EXISTS -- DO NOT REBUILD IT ===
+
+The archived task `roadmap_command_generated_from_state` already established the generated-from-state architecture: the `roadmap_batches` and `roadmap_notes` entries in specs/state.json, entry writes via state-write.sh, rendering via roadmap-integration.sh --regenerate, and the /roadmap command + skill-roadmap + roadmap-agent trio that maintains the entries. Its own recorded limit is the starting point for this task: only `## Next` and `## Open work` render from state, while every other section of the live file is still hand-authored. That hand-authored remainder is the material the user reports never reading.
+
+=== WHAT TO ADD to context/schemas/state-schema.json AND scripts/validate-state.sh TOGETHER (schema and validator move as one) ===
+
+- primary_goals -- drives the generated intro.
+- milestones[] -- ORDERED. Each milestone carries: a description of what it aims to achieve, progress, and git review/approval state.
+- batches nested UNDER a milestone, each with a statement of what that batch aims to achieve. Today roadmap_batches is flat and milestone-less; this is the structural change.
+- repo overview plus rules/conventions fields, sited so they do not crowd the milestones.
+
+=== GENERATED OUTPUT ===
+
+Extend generation from the two current sections to the entire file. No hand-authored sections remain. Section order, exactly:
+
+1. A brief intro carrying the primary goals, plus links to each milestone section and to the rules/conventions section.
+2. One section per milestone, in order, each listing its batches with what each batch aims to achieve.
+3. Rules, conventions and repo context LAST, for broader reader context.
+
+Each milestone section is a COLLABORATION DASHBOARD: brief progress plus git review/approval status, so a reviewer sees the state of the next milestones without reading the whole file.
+
+=== PRUNING IS A NAMED DELIVERABLE, not a side effect ===
+
+Decide, per section the generator currently emits, whether anyone reads it, and DROP what nobody does. The live ROADMAP.md of /home/benjamin/Projects/Sapience/sf1-engine is the worked example of the failure mode: multi-paragraph "Why this order" prose per batch, several screens long.
+
+=== RULE ON THE ADVISORY BATCH LINT ===
+
+scripts/lint/lint-roadmap-batch-proposals.sh validates HAND-AUTHORED /orchestrate batch proposals written into ROADMAP.md phase blocks, and is wired into the conclusion stage's roadmap step. Making the file wholly generated removes its input. Record exactly one disposition: retarget it at the state.json milestone/batch entries, or retire it, naming the call site either way. Leaving a lint pointed at text that can no longer exist is not an acceptable outcome.
+
+=== PRESERVE THE JUDGMENT/RENDERING SPLIT ===
+
+roadmap-agent and skill-roadmap decide batch membership, order, descriptions and missing dependency edges, and never render the file; roadmap-integration.sh renders and exercises no judgment. The schema change must not collapse that boundary.
+
+=== MIGRATION ===
+
+Stores holding flat roadmap_batches/roadmap_notes with no milestones need a one-time migration to the milestone-nested shape, with a losslessness accounting gate. scripts/migrate-roadmap-next-to-state.sh is the in-store precedent for that shape of migration.
+
+=== TESTS THAT PIN CURRENT BEHAVIOUR -- update them, never bypass them ===
+
+scripts/tests/test-roadmap-generation.sh
+scripts/tests/test-validate-state.sh
+scripts/tests/test-generate-task-order.sh
+scripts/tests/test-orchestrate-suggest-next-batch.sh
+scripts/tests/test-migrate-roadmap-next-to-state.sh
+
+Reconcile with the 49 existing "milestone" occurrences across the core extension rather than introducing a parallel vocabulary.
+
+=== ACCEPTANCE / DONE WHEN ===
+
+specs/ROADMAP.md renders entirely from specs/state.json with no hand-authored section remaining; the generated file follows the three-section order above; each milestone section shows progress and git review/approval state; the pruning decisions and the advisory-lint disposition are both recorded; the migration runs with its losslessness gate passing; and all five test files above pass.
+
+Final acceptance check: regenerate the ROADMAP.md of /home/benjamin/Projects/Sapience/sf1-engine from the new schema -- its milestones M0 through M4 are defined in integration/design.md section 7 with per-milestone gate text, its batches live in state.json roadmap_batches, and M0 has just been recorded closed -- then judge whether the output actually serves a reviewer.
+
+---
 
 ### 655. Branch aware orchestration and squash landing
 - **Status**: [NOT STARTED]
