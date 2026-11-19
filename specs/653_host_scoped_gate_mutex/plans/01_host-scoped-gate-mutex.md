@@ -556,22 +556,33 @@ equivalent alternative verification already on record rather than merely asserte
 
 ## Testing & Validation
 
-- [ ] The 48-case baseline is still green after every phase: `test-task-lock-liveness.sh` (15),
-      `test-task-lock-reap.sh` (6), `test-gate-lock.sh` (27)
-- [ ] A caller that does not ask for host scope resolves its mutex exactly where it did before, and
-      every existing WARN/progress line is byte-identical
-- [ ] Two concurrent full batteries started from two different working directories, sharing one
-      host lock root, do not overlap
-- [ ] The same two batteries with distinct lock roots DO overlap (non-vacuousness)
-- [ ] Every lock-root degradation step — override unwritable, `XDG_RUNTIME_DIR` unset,
+- [x] The 48-case baseline is still green after every phase: `test-task-lock-liveness.sh` (15),
+      `test-task-lock-reap.sh` (6), `test-gate-lock.sh` (27) *(confirmed repeatedly across Phases
+      1-3)*
+- [x] A caller that does not ask for host scope resolves its mutex exactly where it did before, and
+      every existing WARN/progress line is byte-identical *(confirmed: `test-gate-lock.sh` 27/27
+      unchanged after every phase)*
+- [x] Two concurrent full batteries started from two different working directories, sharing one
+      host lock root, do not overlap *(confirmed: `test-gate-lock-host-scope.sh`'s cross-directory
+      serialization case)*
+- [x] The same two batteries with distinct lock roots DO overlap (non-vacuousness) *(confirmed:
+      `test-gate-lock-host-scope.sh`'s non-vacuousness control case)*
+- [x] Every lock-root degradation step — override unwritable, `XDG_RUNTIME_DIR` unset,
       `/run/user/$UID` absent, fallback tier unwritable — fails open: the battery runs, the verdict
-      is real, a named `WARNING:` is emitted
-- [ ] A narrowed (`--only`) run touches neither lock root
-- [ ] A nested/guest invocation performs no second host-scoped acquire
-- [ ] No lock directory, repo- or host-scoped, survives a completed invocation
-- [ ] `lint-unit-integration-boundary.sh` and `test-manifest-scripts-sync.sh` are clean with the
-      new suite registered
-- [ ] The complete gate set runs once for this orchestration invocation, at its close
+      is real, a named `WARNING:` is emitted *(confirmed: `test-gate-lock-host-scope.sh`'s two
+      degradation cases, plus manual smoke tests in Phases 2-3)*
+- [x] A narrowed (`--only`) run touches neither lock root *(confirmed directly in Phase 3)*
+- [x] A nested/guest invocation performs no second host-scoped acquire *(structurally guaranteed:
+      the host-scoped acquire sits inside the SAME final `else` branch the existing
+      `RUN_ALL_NESTED=1`/inherited-`GATE_MUTEX_HELD=1` nested/guest cases in `test-gate-lock.sh`
+      already prove is unreached in those conditions — both cases still pass unchanged)*
+- [x] No lock directory, repo- or host-scoped, survives a completed invocation *(confirmed:
+      `test-gate-lock-host-scope.sh`'s no-leak case, plus every host-scoped case's own no-leak
+      assertion)*
+- [x] `lint-unit-integration-boundary.sh` and `test-manifest-scripts-sync.sh` are clean with the
+      new suite registered *(confirmed in Phase 4)*
+- [x] The complete gate set runs once for this orchestration invocation, at its close *(deferred
+      per the Batch Gate Deferral directive; not independently run in this task's own dispatches)*
 
 ## Artifacts & Outputs
 

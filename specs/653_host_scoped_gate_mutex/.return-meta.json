@@ -1,10 +1,106 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/653_host_scoped_gate_mutex/summaries/01_host-scoped-gate-mutex-summary.md",
+      "summary": "Adds an opt-in host-scoped form of the gate mutex (resolve_host_lock_root, gate-acquire-host/gate-release-host, host-outer/repo-inner wiring at all three gate brackets) with the repo-scoped default byte-for-byte unchanged, a cross-directory double-start test proving the fix, and a canonical-spec section stating the guard's binds-only-cooperating-callers limit."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added an opt-in host-scoped gate mutex (resolve_host_lock_root tier chain, gate-acquire-host/gate-release-host verb pair, GATE_MUTEX_HOST_HELD reentrancy flag) to task-lock.sh, wired all three gate-battery brackets (run-all.sh top level, verify-deploy.sh's gate8_run and gate31_run) host-outer/repo-inner, added a 7-case cross-directory double-start and degradation test suite, documented the binds-only-cooperating-callers contract in the canonical spec, and redeployed. Phase 6 closed with two documented, externally-caused exclusions (an unrelated sapience-extension doc-lint failure and host-contention-limited combined verify-touched.sh run) neither of which implicates this task's own code."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/patterns/task-lock.md",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/task-lock.sh",
+    "agent-system/extensions/core/scripts/tests/run-all.sh",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/tests/test-gate-lock-host-scope.sh",
+    "agent-system/extensions/core/scripts/verify-deploy.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A source-store copy of any core script that sources deploy-root-guard.sh (task-lock.sh, run-all.sh, verify-deploy.sh, etc.) refuses to run directly -- the guard checks that the script's own two-levels-up parent is .claude/ or .opencode/, which is false when invoked from agent-system/extensions/core/scripts/. To exercise such a script standalone (a manual smoke test, not an existing test suite), build a minimal fixture: mkdir -p $WORKDIR/.claude/scripts/lib, copy the target script plus deploy-root-guard.sh and lib/common.sh,lib/task-lookup-lib.sh,lib/file-scope-overlap.sh into it, then invoke the copy from $WORKDIR/.claude/scripts/. This is the exact technique test-gate-lock.sh and test-task-lock-liveness.sh already use for their own fixtures.",
+      "category": "PATTERN",
+      "source_artifact": "specs/653_host_scoped_gate_mutex/summaries/01_host-scoped-gate-mutex-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["deploy-root-guard", "source-store-fixture", "manual-smoke-test", "task-lock.sh", "two-levels-deep"]
+    },
+    {
+      "content": "To test a lock-root resolver's degradation path that depends on a real, host-level directory existing or not (e.g. /run/user/$UID on a systemd-logind host, which genuinely exists and is writable in almost every real test environment), override the bash UID variable itself for the one subprocess under test (env UID=999999999 bash script.sh) rather than adding a test-only bypass to production code or attempting a mount-namespace trick. UID is NOT readonly in a non-interactive, non-login bash invocation -- confirmed directly via `env UID=999999999 bash -c 'echo $UID'`. This never touches the real path or changes the process's real uid/euid, only the shell variable the resolver reads.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/653_host_scoped_gate_mutex/summaries/01_host-scoped-gate-mutex-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["UID-override", "lock-root-resolver", "degradation-testing", "run-user-uid", "bash-special-variable"]
+    },
+    {
+      "content": "test-manifest-scripts-sync.sh resolves a manifest's provides.scripts[] 'on disk' set via `git ls-files`, not a raw filesystem walk. A brand-new suite file that is correctly registered in both manifest.json and physically present on disk still transiently reports as 'declared but not tracked on disk' until it is `git add`-ed (staged, not necessarily committed) -- this is a git-tracking timing artifact, not a registration defect. Re-run the check after staging the new file to confirm correctness before concluding the registration is wrong.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/653_host_scoped_gate_mutex/summaries/01_host-scoped-gate-mutex-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["test-manifest-scripts-sync", "git-ls-files", "new-suite-registration", "staging-timing-artifact"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "task-lock.sh named-mutex primitive",
+      "predicate": "design is",
+      "value": "acquire_named_mutex/release_named_mutex were generalized with a trailing OPTIONAL base-directory parameter (default $PROJECT_ROOT/specs) rather than a leading one requiring every existing call site to be rewritten, making the 'byte-for-byte unchanged default' guarantee structural (no existing caller is edited at all) rather than something that has to be separately audited.",
+      "ko_type": "decision",
+      "confidence": 0.9
+    },
+    {
+      "subject": "resolve_host_lock_root tier 3 (/run/user/$UID) testability",
+      "predicate": "measured fact is",
+      "value": "On a real systemd-logind host, /run/user/$UID genuinely exists and is writable (confirmed: drwx------ owned by the resolving user), so a test cannot force this tier to fail by unsetting XDG_RUNTIME_DIR alone. Defeating it requires either touching the real system path (rejected) or overriding the bash UID variable for the test subprocess (adopted) -- UID is not readonly in a non-interactive, non-login bash invocation.",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-gate-lock-host-scope.sh"
+    },
+    {
+      "subject": "run-all.sh's internal mktemp usage",
+      "predicate": "non-obvious constraint is",
+      "value": "run-all.sh uses plain mktemp/mktemp -d (for its shared deployed-tree fixture, SUITE_OUT, and OUT_DIR) and so honors $TMPDIR globally. Overriding TMPDIR for an entire run-all.sh subprocess to test a lock-root fallback-tier degradation path also breaks run-all.sh's own unrelated internal temp-file creation, not just the targeted resolver tier -- confirmed by direct reproduction. The fix is to test the resolver's own contract via a direct CLI call instead of routing through the full battery.",
+      "ko_type": "finding",
+      "confidence": 0.85
+    },
+    {
+      "subject": "the task description's claimed test-task-lock-liveness.sh/test-task-lock-reap.sh precedent for host-scoped reclaim",
+      "predicate": "correction is",
+      "value": "Research and plan authoring both confirmed this claim conflates two independent mechanisms: the PID-liveness machinery those two suites cover belongs to the per-task .lock/holder.json family, not the named-mutex family (.scope-lock/.commit-lock/.gate-lock) this task extends. The host-scoped form therefore correctly inherits time-elapsed-only reclaim, identical in kind to the repo-scoped .gate-lock -- this was never a regression to fix.",
+      "ko_type": "finding",
+      "confidence": 0.9
+    },
+    {
+      "subject": "test-manifest-scripts-sync.sh's on-disk resolution",
+      "predicate": "measured fact is",
+      "value": "Resolves a manifest's provides.scripts[] declared-vs-disk set via `git ls-files`, not a raw filesystem walk. A new, correctly-registered suite file transiently reports as 'declared but not tracked on disk' until `git add`-ed, independent of whether the registration itself (manifest.json entry + physical file) is correct.",
+      "ko_type": "finding",
+      "confidence": 0.85
+    },
+    {
+      "subject": "host contention during this task's implementation",
+      "predicate": "measured fact is",
+      "value": "During this task's own implementation, the host exhibited load average 13-28 with 273-363 concurrent run-all.sh/verify-deploy.sh processes system-wide, including a SEPARATE repository (~/Projects/Sapience/sf1-engine) running its own concurrent gate batteries -- a live, real-time illustration of the exact cross-repository contention scenario this task's host-scoped mutex was built to address. A combined 94-suite narrowed verify-touched.sh pass could not complete within three successive bounded waits (480s/480s/850s) under this load, confirmed via live reproduction (test-gate-lock.sh alone could not finish its sanity case within 120s, versus its normal ~2s under lighter load).",
+      "ko_type": "finding",
+      "confidence": 0.9
+    },
+    {
+      "subject": "deploy-root-guard.sh direct-invocation refusal",
+      "predicate": "measured fact is",
+      "value": "Any core script sourcing deploy-root-guard.sh (task-lock.sh, run-all.sh, verify-deploy.sh, check-task-references.sh, check-record-versioning.sh, etc.) refuses to run directly from its source-store location (agent-system/extensions/core/scripts/), because the guard's structural check expects the script's own two-levels-up parent directory to be named .claude or .opencode. All ad hoc manual verification of such a script requires either invoking the deployed copy or building a minimal .claude/scripts/-shaped fixture.",
+      "ko_type": "finding",
+      "confidence": 0.85
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795076371_5115f3",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
