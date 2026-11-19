@@ -3920,7 +3920,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Repo-level hand-authored sibling keys in .claude-extensions.json: the derived_artifact_probes declaration, its fail-open guarantee, bounded execution, and why this is the first blocking staleness gate",
-      "line_count": 298,
+      "line_count": 311,
       "keywords": [
         "derived-artifact-probes",
         "staleness",
