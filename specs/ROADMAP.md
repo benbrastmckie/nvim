@@ -114,7 +114,7 @@ Re-derived 2026-11-18 over the 122 open records. **The backlog is broad and shal
 /orchestrate 645, 560, 629, 630, 631, 632, 633   # Make verify-deploy's verdict mean something again: the red suites, the roster, three single reds
 /orchestrate 475, 613, 514, 574   # Hard stops: task creation dies on a big verdict, a lock never reaps, a run never converges
 /orchestrate 556, 472, 646, 551, 519, 570, 577, 609   # What one dispatch hands the next: settle the handoff/return-meta shapes, fix failure accounting
-/orchestrate 607, 586, 605, 610   # Make a full verification affordable: eager-load ceiling, per-gate timeouts, suite cost verdicts
+/orchestrate 586, 605   # Make a full verification affordable: eager-load ceiling, per-gate timeouts, suite cost verdicts
 /orchestrate 639, 477, 484, 486, 501, 508, 524   # Evidence integrity: stop losing issue entries, normalize classes, collapse scope-excursion rows
 /orchestrate 548, 567, 553, 598, 536, 535, 541   # Commit containment: stop phase commits dropping legitimate files and carrying foreign ones
 /orchestrate 545, 564, 579, 575   # Four false-failure signals in the artifact and ceiling validators, each costing a dispatch
@@ -637,7 +637,7 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 **Scopes worth narrowing first.** Re-measured 2026-11-18: **two** open records carry no `file_scope` at all -- `613` and `618` -- down from seven, and that is the entire class, since no open record declares an empty array. Both sit in batches whose other members are narrowly scoped (`613` in batch two with `475`/`514`/`574`, `618` in batch fourteen with `338`), so an admission probe over either batch returns a result that is clean for the wrong reason. **Fix those two declarations before probing.** Two narrower declaration defects remain live: `590` declares its lint one directory above where the file actually sits, so it cannot collide with `512` even though the two edit the same lint -- which is why batch twelve pairs them without an edge; and `557` carries topic `decidability`, undeclared in `active_topics`, so it renders after the curated topics. Of the directory-form declarations that remain, every one is scoped to a single extension subtree -- `342` (three `books/` directories), `384`, `453`, `530` and `544`. None is a whole-corpus discovery scope, and none is a defect.
 **Coverage appendix (uncovered tasks)**:
 ```
-/orchestrate 647
+/orchestrate 647,653
 ```
 
 ## Open work
@@ -733,13 +733,13 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 472 blocked:556     Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop...
 513 blocked:479     Mechanically detect a plan phase that closed without its own commit
 518 blocked:472     State the blockers[] admission contract and continuation-on-partial requireme...
-610 blocked:607     full_gate_verification_ceiling_and_stall
-651 blocked:610     orchestration_close_owns_full_battery
+652 blocked:564     validate_artifact_corpus_resolution
 477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
 514 ready           Convergence guard blind to zero-dispatch cycles
+653 ready           host_scoped_gate_mutex
 ```
 
-**Agent system (52)**
+**Agent system (51)**
 ```
 481 blocked:390     Rule on and migrate the 32-record mis-sited agent-system task delta accumulat...
 533 blocked:410     lake-build-guard replays stale result for env lean FILE
@@ -785,7 +785,6 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 560 ready           Clear the three standing verify-deploy findings blocking a clean nvim deploy
 577 ready           Make a blocker-triggered aux plan-revision consumable by triage, and stop the...
 599 ready           Give the batch-gate-deferral directive a narrowing form that covers a phase t...
-607 ready           Resolve the gate 20 orchestrator context-budget overage and the per-gate time...
 629 ready           Fix the two-engine defect: scan_all_artifacts' sync_scan allow-list post-filt...
 631 ready           Replace test-typescript-verify.sh's fixed-depth REPO_ROOT walk with a boundar...
 632 ready           Stop orchestrator-context-budget.json's derivation log from re-breaking the t...
