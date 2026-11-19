@@ -1,7 +1,7 @@
 # Implementation Plan: Task #650
 
 - **Task**: 650 - Touched path verify entry and unmapped fallback
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 13 hours
 - **Dependencies**: None (territory edges to 610, 599, 586, 579, 651; no blocking edge in either direction)
 - **Research Inputs**: specs/650_touched_path_verify_entry_and_unmapped_fallback/reports/01_touched-path-entry-and-fallback.md

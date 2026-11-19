@@ -1,7 +1,7 @@
 # Implementation Plan: Task #648
 
 - **Task**: 648 - Add the four Sapience write-surface publishers with loud-failure discipline
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: 647 (sapience-project-binding-and-vault-read) — COMPLETE; this task consumes its `scripts/lib/sapience-api-lib.sh` and its `.sapience/project.json` binding writer
 - **Research Inputs**: specs/648_sapience_publish_write_surfaces/reports/01_sapience-publish-write-surfaces.md

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #651
 
 - **Task**: 651 - Make the orchestration, not the task, the unit that closes on the full gate battery, for every invocation shape including a batch of one
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10 hours
 - **Dependencies**: 610 (COMPLETED), 650 (COMPLETED); 599 (NOT STARTED — Phase 6 territory edge, see Risks); 564 (adjacent tier-check edit, see Risks)
 - **Research Inputs**: specs/651_orchestration_close_owns_full_battery/reports/01_orchestration-close-owns-battery.md

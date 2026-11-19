@@ -135,7 +135,5 @@
       "confidence": 0.85,
       "source_loc": "agent-system/extensions/core/scripts/tests/test-gate-out-repair-reporting.sh"
     }
-  ],
-  "deploy_pending": true,
-  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
+  ]
 }

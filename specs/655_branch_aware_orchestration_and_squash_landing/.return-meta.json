@@ -1,0 +1,44 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 2 meta tasks in the global agent-system store: a commit-layer cluster reconciliation producing rulings plus dependency edges, and the branch-aware orchestration feature that depends on it.",
+  "artifacts": [
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/654_reconcile_commit_layer_cluster_and_ordering/",
+      "summary": "Task directory for the commit-layer cluster reconciliation and dependency ordering ruling"
+    },
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/655_branch_aware_orchestration_and_squash_landing/",
+      "summary": "Task directory for per-invocation branch creation and per-task squash landing"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Two active_projects entries written via state-write.sh with audit_verdict evidence recorded"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Regenerated from state.json by generate-todo.sh; both tasks and the 654->655 edge rendered"
+    }
+  ],
+  "modified_files": [
+    "/home/benjamin/.config/nvim/specs/state.json",
+    "/home/benjamin/.config/nvim/specs/TODO.md"
+  ],
+  "metadata": {
+    "session_id": "sess_1795104353_c9a564",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 2,
+    "task_numbers": [654, 655],
+    "topic": "orchestrator",
+    "commit": "7ad8bb7233e66643acb0dcb88dcfb84d9cdd0abe"
+  },
+  "next_steps": "Run /orchestrate 654 to begin the foundational reconciliation task; 655 unblocks once 654 completes."
+}

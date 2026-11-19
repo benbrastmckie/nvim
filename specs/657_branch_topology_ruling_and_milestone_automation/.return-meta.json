@@ -1,0 +1,51 @@
+{
+  "status": "tasks_created",
+  "summary": "Created 2 meta tasks in the global agent-system store: a milestone schema plus wholly generated ROADMAP.md, and a branch-topology ruling with milestone automation and review gates that depends on it.",
+  "artifacts": [
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/656_milestone_schema_and_generated_roadmap/",
+      "summary": "Task directory for the state.json milestone schema and the wholly generated ROADMAP.md"
+    },
+    {
+      "type": "task",
+      "path": "/home/benjamin/.config/nvim/specs/657_branch_topology_ruling_and_milestone_automation/",
+      "summary": "Task directory for the branch-topology/landing ruling, then milestone automation and consent-gated review handoff"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/state.json",
+      "summary": "Two active_projects entries written via state-write.sh --allocate-into; audit_override recorded on both (verdict document not forwarded in delegation context)"
+    },
+    {
+      "type": "task_entry",
+      "path": "/home/benjamin/.config/nvim/specs/TODO.md",
+      "summary": "Regenerated from state.json by generate-todo.sh; both tasks and the 656->657 edge rendered"
+    }
+  ],
+  "next_steps": "Run /orchestrate 656 to begin work on the foundational task",
+  "metadata": {
+    "session_id": "sess_1795113136_84ab7a",
+    "agent_type": "meta-builder-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "meta", "skill-meta", "meta-builder-agent"],
+    "mode": "prompt",
+    "mode_target": "global",
+    "target_root": "/home/benjamin/.config/nvim",
+    "tasks_created": 2,
+    "task_numbers": [656, 657],
+    "topic": "orchestrator",
+    "task_type": "meta",
+    "committed": false,
+    "commit_owner": "skill-meta postflight"
+  },
+  "errors": [],
+  "warnings": [
+    {
+      "type": "audit_evidence",
+      "message": "The delegation context carried collected_answers {confirmed: true} only, with no backlog_audit_result field, so no proposal.id-matching verdict document was available at the write site. state-write.sh's audit-evidence gate refused both writes with exit 5 until --audit-override was supplied. Both entries therefore carry an audit_override reason string rather than an audit_verdict object, unlike the immediately preceding sibling entries.",
+      "recoverable": true,
+      "recommendation": "Forward the Step 4.5 audit verdict NDJSON as backlog_audit_result in the delegation context so meta-builder-agent can pass --audit-verdict and record machine evidence on the entry."
+    }
+  ]
+}

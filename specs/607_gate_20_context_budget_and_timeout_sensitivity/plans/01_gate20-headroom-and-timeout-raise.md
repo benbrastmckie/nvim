@@ -1,7 +1,7 @@
 # Implementation Plan: Task #607
 
 - **Task**: 607 - Resolve the gate 20 orchestrator context-budget overage and the per-gate timeout sensitivity under concurrent load
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/607_gate_20_context_budget_and_timeout_sensitivity/reports/01_gate20-budget-and-timeout-sensitivity.md

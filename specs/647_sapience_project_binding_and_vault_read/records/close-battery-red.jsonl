@@ -1,0 +1,1 @@
+{"recorded_ts":"2026-11-19T14:38:54Z","discharged_ts":null,"session_id":"sess_1795076371_5115f3","gate_exit_code":1,"findings":["FINDING gate3 [sapience] FAIL: deployed script content drift (deployed != extension source): scripts/sapience-vault-read.sh"]}

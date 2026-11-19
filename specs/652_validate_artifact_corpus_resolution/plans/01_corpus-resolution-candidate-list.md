@@ -1,7 +1,7 @@
 # Implementation Plan: Task #652
 
 - **Task**: 652 - Resolve validate-artifact.sh's Tier-Justification corpus against the repository under validation, not the deployed agent-system tree
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: Tasks 650 and 564 (both `[COMPLETED]`, re-confirmed live in `specs/state.json` at plan authoring)
 - **Research Inputs**: specs/652_validate_artifact_corpus_resolution/reports/01_validate-artifact-corpus-resolution.md
