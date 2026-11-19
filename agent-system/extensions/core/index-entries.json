@@ -2629,7 +2629,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Batch gate stage (Move 4): the once-per-invocation shared verify-deploy.sh gate run, with confirmation and per-task finding attribution, for a multi-task /orchestrate batch; single-task/bare-implement invariance; coexistence boundary with the conclusion stage",
-      "line_count": 423,
+      "line_count": 434,
       "keywords": [
         "batch-gate-stage",
         "move-4",
@@ -3920,7 +3920,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Repo-level hand-authored sibling keys in .claude-extensions.json: the derived_artifact_probes declaration, its fail-open guarantee, bounded execution, and why this is the first blocking staleness gate",
-      "line_count": 266,
+      "line_count": 298,
       "keywords": [
         "derived-artifact-probes",
         "staleness",

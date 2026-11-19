@@ -114,10 +114,21 @@ guard's documented override flag, since the discharger must never refuse itself.
 
 The stage's evidence is `scripts/orchestrate-batch-gate.sh`'s own two-capture pipeline, built
 entirely from `scripts/lib/deploy-baseline-lib.sh`'s existing functions (no new attribution logic
-was added):
+was added). **What the stage actually runs is the repository's own declared closing gate,
+defaulting to `verify-deploy.sh`**: when the resolved project root declares
+`verification_scope.closing_gate` (`scripts/lib/verification-scope-lib.sh`'s
+`verification_scope_closing_gate`), both the Capture and the Confirm snapshots below invoke that
+command instead, through `_bg_closing_gate_snapshot` — a thin wrapper that filters the declared
+command's own `^FINDING `-prefixed output into the exact shape `deploy_findings_snapshot` already
+produces, so the Confirm/Attribute pipeline downstream needs no change at all. Absent a
+declaration, behavior is byte-for-byte today's `verify-deploy.sh`-only path. See
+`context/standards/repo-level-declarations.md`'s "Decisions Settled" section for the field's own
+resolution, including the one deliberate exception to that declaration surface's fail-open
+posture: a declared-but-unusable command (nonzero exit, no parseable `FINDING ` line) becomes a
+loud, attributed-nowhere batch-level finding, never a silent clean pass.
 
 1. **Capture**: `deploy_findings_snapshot` at full depth (no `--skip-slow`) against the resolved
-   project root, exactly once.
+   project root — or the declared `closing_gate` command, when one exists — exactly once.
 2. **Confirm**: a second fresh snapshot, intersected with the first via
    `deploy_baseline_confirm_new_findings` — a candidate finding that does not reproduce on this
    re-run is dropped as flaky (ambient-load-sensitive), never treated as a real regression. This

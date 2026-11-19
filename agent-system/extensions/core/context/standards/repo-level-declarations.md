@@ -154,10 +154,19 @@ One object, one key, read by `scripts/lib/verification-scope-lib.sh`
 - `resolver.compose` (string, optional, one of `"union"` or `"replace"`) — whether the declared
   backend's selection is unioned with the default backend's or fully replaces it. Default when
   absent or malformed: `"union"`.
-- `project_gates`, `closing_gate` — RESERVED field names on this same object, for the
-  project-sources narrowing record and the orchestration-close record respectively (see
-  "Decisions Settled" below). `verification-scope-lib.sh` does not read or validate either one;
-  they are named here so those two records add fields to this one object rather than declaring a
+- `closing_gate` (string, optional) — a single shell command Move 4's batch gate stage
+  (`context/contracts/batch-gate-stage.md`) runs in place of `verify-deploy.sh --findings` for
+  BOTH its Capture and Confirm snapshots. Default when absent, empty, or not a string: no
+  declared closing gate; `verify-deploy.sh` applies, byte-for-byte today's behavior. The
+  declared command MUST emit `^FINDING `-prefixed lines in the same shape
+  `verify-deploy.sh --findings` does — that emission contract is what lets the existing
+  Capture/Confirm/Attribute pipeline consume either source unmodified. See "Decisions Settled"
+  below for the field's own resolution, including the one deliberate loud-failure exception to
+  this surface's fail-open posture (a declared-but-unusable command never reads as a clean,
+  empty result).
+- `project_gates` — a RESERVED field name on this same object, for the project-sources narrowing
+  record (see "Decisions Settled" below). `verification-scope-lib.sh` does not read or validate
+  it; it is named here so that record adds a field to this one object rather than declaring a
   second, competing top-level key.
 
 **Why one key, not three.** `.claude-extensions.json`'s hand-authored-sibling-key surface already
@@ -178,10 +187,33 @@ across records, not only within one.
 | Key present, malformed (wrong type) | same as above, field-by-field |
 | `resolver.command` absent | no declared backend; default backend only |
 | `resolver.compose` absent or not `union`/`replace` | `"union"` |
+| `closing_gate` absent, empty, or not a string | no declared closing gate; the caller's own default (`verify-deploy.sh`) applies |
 
 A repository that declares nothing — this repository included — is byte-for-byte unaffected: the
 reader returns exactly today's one-tree, no-project-roots, default-backend-only behaviour, with
 no warning and no behaviour change.
+
+## Decisions Settled
+
+Records what each of `verification_scope`'s two reserved fields decided once a consuming record
+actually needed it, rather than leaving the reservation's own eventual resolution undocumented.
+
+- **`closing_gate`**: resolved. The orchestration-close policy record (Move 4's batch gate
+  stage, `context/contracts/batch-gate-stage.md`) is this field's consumer. A declared
+  `closing_gate` command is what Move 4's shared gate run invokes for BOTH the Capture and the
+  Confirm snapshots, in place of `verify-deploy.sh --findings`, when the resolved project root
+  declares one; absent, behavior is byte-for-byte identical to today's `verify-deploy.sh`-only
+  path. The command's own output must emit `^FINDING `-prefixed lines in the same shape
+  `verify-deploy.sh --findings` does — that is what lets the existing Capture/Confirm/Attribute
+  pipeline consume it unmodified. See `scripts/lib/verification-scope-lib.sh`'s
+  `verification_scope_closing_gate` function and `scripts/orchestrate-batch-gate.sh`'s own
+  consumption for the implementation; `context/contracts/batch-gate-stage.md`'s Evidence Base
+  section for the contract note.
+- **`project_gates`**: still reserved, unresolved by this record. Owned by the project-sources
+  narrowing record named in "Why one key, not three" above; this record's own closing-gate
+  resolution does not touch it. A future reader resolving `project_gates` should read this
+  document's existing `project_gates`/`closing_gate` bullet in the Entry Schema above before
+  adding a second, competing declaration surface.
 
 ## Fail-Open-on-Absence Guarantee
 

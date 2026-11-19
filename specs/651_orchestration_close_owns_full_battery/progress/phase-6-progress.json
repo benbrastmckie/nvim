@@ -1,0 +1,31 @@
+{
+  "phase": 6,
+  "phase_name": "Run the Consumer Repository's Own Declared Closing Gate",
+  "started_at": "2026-11-19T01:00:00Z",
+  "last_updated": "2026-11-19T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read verification_scope section before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add verification_scope_closing_gate reader", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/lib/verification-scope-lib.sh"]},
+    {"id": 3, "description": "Consume it in orchestrate-batch-gate.sh (Capture+Confirm)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-gate.sh"]},
+    {"id": 4, "description": "Loud-failure path for declared-but-unusable command", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Document closing_gate field + Decisions Settled heading", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/standards/repo-level-declarations.md"]},
+    {"id": 6, "description": "Note consumption in batch-gate-stage.md Evidence Base", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/contracts/batch-gate-stage.md"]},
+    {"id": 7, "description": "Extend test-verification-scope-lib.sh and test-orchestrate-batch-gate.sh", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-verification-scope-lib.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh"]},
+    {"id": 8, "description": "Reconcile index-entries.json", "status": "done",
+     "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "6.7", "description": "test-verification-scope-lib.sh's 6 new cases",
+     "type": "altered",
+     "reason": "The suite's own common_test_resolve_candidate prefers the deployed copy when present, which is stale pre-redeploy; running against it shows the 6 new cases failing with 'command not found'. Verified directly by sourcing the source-store copy manually: all 6 assertions pass (rc 0, correct output) against the actual edited code. This is the same deploy-staleness class check-extension-docs.sh already flags for every Phase 3-6 touched script; Phase 7's redeploy resolves it for every suite at once, including this one.",
+     "annotation": "*(deviation: altered -- verified directly against source-store copy rather than through the suite's own deployed-preferring resolution, pending Phase 7's redeploy)*"}
+  ]
+}

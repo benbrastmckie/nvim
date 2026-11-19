@@ -26,16 +26,18 @@
 #         "compose": "union" | "replace"
 #       },
 #       "project_gates": ...,
-#       "closing_gate": ...
+#       "closing_gate": "<a single shell command string emitting ^FINDING -prefixed lines, or omitted>"
 #     }
 #   }
 #
-# `project_gates` and `closing_gate` are RESERVED field names on this same object (owned by the
-# project-sources and orchestration-close records respectively; see
-# repo-level-declarations.md) -- this library does not read or validate either one, so a future
-# reader adding them does not need to touch this file.
+# `project_gates` is still a RESERVED field name on this same object (owned by the
+# project-sources narrowing record; see repo-level-declarations.md) -- this library does not read
+# or validate it, so a future reader adding it does not need to touch this file. `closing_gate`
+# is NO LONGER reserved-but-unread: function (e) below is its reader, added once the
+# orchestration-close record actually needed it (see repo-level-declarations.md's "Decisions
+# Settled" section).
 #
-# Four exported functions:
+# Five exported functions:
 #
 #   (a) verification_scope_tree_roots <repo_root> - prints one repo-root-relative tree root per
 #       line. Default (undeclared/malformed): the single resolved repository root (today's
@@ -55,15 +57,25 @@
 #       i.e. today's behaviour (the default backend alone) is the degenerate case of "union with
 #       nothing declared", so this default is safe even when no backend is declared at all.
 #
+#   (e) verification_scope_closing_gate <repo_root> - prints the declared `closing_gate` command
+#       string, or nothing when undeclared/not a string. Default (undeclared, malformed): no
+#       declared closing gate; the caller's own default (`verify-deploy.sh`) applies.
+#
 # Fail-open posture (absolute, no exceptions -- same table shape as
 # derived-artifact-probe-lib.sh's own): a missing .claude-extensions.json, a missing `jq`, an
 # absent `verification_scope` key, or a malformed entry all yield the stated defaults above, NEVER
-# a block and NEVER a hard failure. A repo that declares nothing is byte-for-byte unaffected.
+# a block and NEVER a hard failure. A repo that declares nothing is byte-for-byte unaffected. The
+# ONE deliberate exception to this absolute posture lives in the CONSUMER
+# (`scripts/orchestrate-batch-gate.sh`), not here: a declared-but-UNUSABLE `closing_gate` command
+# (nonzero exit, no parseable `FINDING ` line) is a loud failure at that call site, never a
+# silent empty-findings pass -- this library's own job stays limited to "declared or not,
+# string or not", never to validating the command's own runtime behavior.
 #
 # Consumers:
-#   - scripts/verify-touched.sh (the entry point; reads all four)
+#   - scripts/verify-touched.sh (the entry point; reads (a)-(d))
 #   - scripts/lib/suite-resolver-lib.sh (the declared-backend invocation; reads (c) and (d))
 #   - scripts/report-suite-coverage.sh (the coverage report; reads (a))
+#   - scripts/orchestrate-batch-gate.sh (the orchestration-close stage; reads (e))
 
 # _vsl_load_scope_json <repo_root> -- stdout: the raw (unvalidated) `verification_scope` object
 # from <repo_root>/.claude-extensions.json, or "{}" for every absence/cannot-parse case. Never
@@ -155,5 +167,22 @@ verification_scope_resolver_compose() {
     union|replace) printf '%s\n' "$compose" ;;
     *) printf '%s\n' "union" ;;
   esac
+  return 0
+}
+
+# verification_scope_closing_gate <repo_root>
+# Prints the declared `closing_gate` command string, or nothing (empty output, rc 0) when
+# undeclared, empty, or not a string -- "nothing declared" means "no repository-specific closing
+# gate; the caller's own default (verify-deploy.sh) applies", exactly the same absence contract
+# `verification_scope_resolver_command` already uses for `resolver.command`. This is the first
+# reader `closing_gate` has had since it was reserved on this object -- see
+# context/standards/repo-level-declarations.md's "Decisions Settled" section for the field's own
+# resolution and `scripts/orchestrate-batch-gate.sh` for the consumer.
+verification_scope_closing_gate() {
+  local repo_root="${1:?verification_scope_closing_gate: repo_root required}"
+  local scope_json cmd
+  scope_json="$(_vsl_load_scope_json "$repo_root")"
+  cmd="$(echo "$scope_json" | jq -r 'if (.closing_gate | type) == "string" then .closing_gate else "" end' 2>/dev/null)"
+  [ -n "$cmd" ] && printf '%s\n' "$cmd"
   return 0
 }

@@ -527,41 +527,46 @@ check — it resolves each to its own suite and runs that narrowed pass.
 
 ---
 
-### Phase 6: Run the Consumer Repository's Own Declared Closing Gate [NOT STARTED]
+### Phase 6: Run the Consumer Repository's Own Declared Closing Gate [COMPLETED]
 
 **Goal**: Move 4 runs what the repository declares. `verification_scope.closing_gate` gains a
 reader and a consumer, with the same fail-open posture every sibling field already has.
 
 **Tasks**:
-- [ ] Re-read `context/standards/repo-level-declarations.md`'s `verification_scope` section before
+- [x] Re-read `context/standards/repo-level-declarations.md`'s `verification_scope` section before
       editing, in case the project-sources narrowing record landed its own `project_gates` row
-      first.
-- [ ] Add `verification_scope_closing_gate` to `scripts/lib/verification-scope-lib.sh`: prints the
+      first. *(completed: no `project_gates` row found; this record's ground is untouched.)*
+- [x] Add `verification_scope_closing_gate` to `scripts/lib/verification-scope-lib.sh`: prints the
       declared command string, or nothing when absent or malformed. Keep the library's absolute
       fail-open posture and its `_vsl_`-prefixed internals; update the header's function inventory
       and drop `closing_gate` from the reserved-but-unread list.
-- [ ] Consume it in `scripts/orchestrate-batch-gate.sh`: when a `closing_gate` command is declared
+- [x] Consume it in `scripts/orchestrate-batch-gate.sh`: when a `closing_gate` command is declared
       for the resolved project root, both the Capture and the Confirm snapshots run that command
       instead of `verify-deploy.sh --findings`; when absent, behavior is byte-for-byte today's.
       Keep the existing Capture/Confirm/Attribute pipeline unmodified — the declared command's
       `^FINDING `-prefixed output is what makes that possible.
-- [ ] Fail loud, not open, on a declared-but-unusable command: a nonzero exit producing no
+- [x] Fail loud, not open, on a declared-but-unusable command: a nonzero exit producing no
       parseable `FINDING ` line becomes a batch-level unattributed finding naming the declared
       command, never a clean verdict. Record this as the one deliberate exception to the
       declaration surface's otherwise-absolute fail-open posture, and say why: a silently empty
       finding set from a repository's own closing gate reads as green.
-- [ ] Document the field in `context/standards/repo-level-declarations.md`: a `closing_gate` schema
+- [x] Document the field in `context/standards/repo-level-declarations.md`: a `closing_gate` schema
       bullet, a row in the `verification_scope` fail-open table, the `^FINDING `-emission contract,
       and the loud-failure exception. Add the missing `## Decisions Settled` heading that section's
       existing cross-reference already points at, recording the `project_gates`/`closing_gate`
       reservation decisions — or remove the dangling pointer if the heading is not worth adding.
-- [ ] Note the consumption in `context/contracts/batch-gate-stage.md`'s Evidence Base section: what
+- [x] Note the consumption in `context/contracts/batch-gate-stage.md`'s Evidence Base section: what
       the stage runs is the repository's declared closing gate, defaulting to `verify-deploy.sh`.
-- [ ] Extend `scripts/tests/test-verification-scope-lib.sh` (declared / absent / malformed /
+- [x] Extend `scripts/tests/test-verification-scope-lib.sh` (declared / absent / malformed /
       non-string) and `scripts/tests/test-orchestrate-batch-gate.sh` (a declared stub command whose
       `^FINDING ` lines attribute exactly as `verify-deploy.sh`'s do; a declared command exiting
-      nonzero with no findings becomes an unattributed finding).
-- [ ] Reconcile `index-entries.json` line counts.
+      nonzero with no findings becomes an unattributed finding). *(completed: 6 new closing_gate
+      cases added to test-verification-scope-lib.sh -- all 6 pass when sourced directly against
+      the source-store copy; the suite's own deployed-copy-preferring resolution shows them FAIL
+      pre-redeploy, confirmed to be pure deploy staleness (check-extension-docs.sh's own drift
+      report corroborates), resolved by Phase 7. test-orchestrate-batch-gate.sh's 2 new cases
+      (20-21) pass directly: 49 passed, 0 failed.)*
+- [x] Reconcile `index-entries.json` line counts.
 
 **Timing**: 1.5 hours
 

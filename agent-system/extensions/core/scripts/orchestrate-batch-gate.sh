@@ -56,6 +56,39 @@ source "${SCRIPT_DIR}/lib/common.sh"
 source "${SCRIPT_DIR}/lib/deploy-baseline-lib.sh"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/lib/batch-gate-marker-lib.sh"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/verification-scope-lib.sh"
+
+# _bg_closing_gate_snapshot <command> <project_root> -- stdout: sorted, de-duplicated
+# `^FINDING ` lines from running a repository-declared `closing_gate` command, in the same shape
+# deploy_findings_snapshot produces for verify-deploy.sh -- what lets the existing
+# Capture/Confirm/Attribute pipeline below consume either source unmodified. Unlike
+# deploy_findings_snapshot, this never passes `--findings`/`--quiet`/`--override-batch-gate-
+# deferral`: a declared closing_gate command has its own CLI, unrelated to verify-deploy.sh's.
+#
+# THE ONE DELIBERATE EXCEPTION to this declaration surface's otherwise-absolute fail-open
+# posture (context/standards/repo-level-declarations.md's "Decisions Settled" section): a
+# declared-but-UNUSABLE command -- nonzero exit, and no parseable `^FINDING ` line in its output
+# -- becomes a batch-level UNATTRIBUTED finding naming the declared command itself, never a
+# clean (empty) result. A silently empty finding set from a repository's own closing gate reads
+# as green, which is worse than a loud, attributed failure a human can act on. A nonzero exit
+# that DOES carry at least one `^FINDING ` line is read normally (the command's own genuine
+# findings), exactly like a `verify-deploy.sh` run that failed gates and reported them.
+_bg_closing_gate_snapshot() {
+  local _bgcg_cmd="$1"
+  local _bgcg_root="$2"
+  local _bgcg_rc=0
+  local _bgcg_out
+  _bgcg_out="$(cd "$_bgcg_root" 2>/dev/null && eval "$_bgcg_cmd" 2>/dev/null)" || _bgcg_rc=$?
+  local _bgcg_findings
+  _bgcg_findings="$(printf '%s\n' "$_bgcg_out" | grep '^FINDING ' | sort -u || true)"
+  if [ "$_bgcg_rc" -ne 0 ] && [ -z "$_bgcg_findings" ]; then
+    echo "FINDING gate0 [CLOSING-GATE-UNUSABLE] declared closing_gate command exited ${_bgcg_rc} with no parseable FINDING line: ${_bgcg_cmd}"
+    return 0
+  fi
+  printf '%s\n' "$_bgcg_findings"
+  return 0
+}
 
 usage() {
   cat <<'USAGE'
@@ -108,15 +141,30 @@ if [ "$implement_count" -eq 0 ]; then
   exit 0
 fi
 
-echo "[orchestrate-batch-gate] running the complete verify-deploy.sh gate set once for this invocation's batch..." >&2
+# ─── Resolve the closing gate: a repository-declared `closing_gate` command if one exists for
+# the resolved project root, else verify-deploy.sh (today's behavior, byte-for-byte, when
+# nothing is declared). See context/standards/repo-level-declarations.md's "Decisions Settled"
+# section and scripts/lib/verification-scope-lib.sh's verification_scope_closing_gate header.
+closing_gate_cmd="$(verification_scope_closing_gate "$PROJECT_ROOT" 2>/dev/null)"
+if [ -n "$closing_gate_cmd" ]; then
+  echo "[orchestrate-batch-gate] running this repository's own declared closing gate once for this invocation's batch: ${closing_gate_cmd}" >&2
+else
+  echo "[orchestrate-batch-gate] running the complete verify-deploy.sh gate set once for this invocation's batch..." >&2
+fi
 
 # ─── Capture: full depth (no --skip-slow), explicit TARGET, exactly once ──────────────────────
 # NOTE (gate-ceiling-fit Phase 5/8): deploy_findings_snapshot itself now unconditionally passes
 # --override-batch-gate-deferral to every verify-deploy.sh call it makes (see that function's
 # own header comment in lib/deploy-baseline-lib.sh for the full rationale) -- this script's own
 # two calls below need no explicit flag of their own any more, though passing it here too would
-# have been harmless (a boolean, idempotent either way).
-first_findings="$(deploy_findings_snapshot "$VERIFY_DEPLOY_PATH" "$PROJECT_ROOT")"
+# have been harmless (a boolean, idempotent either way). This NOTE applies only to the
+# verify-deploy.sh branch; a declared closing_gate command has its own CLI and is invoked
+# through _bg_closing_gate_snapshot instead (see that function's own header above).
+if [ -n "$closing_gate_cmd" ]; then
+  first_findings="$(_bg_closing_gate_snapshot "$closing_gate_cmd" "$PROJECT_ROOT")"
+else
+  first_findings="$(deploy_findings_snapshot "$VERIFY_DEPLOY_PATH" "$PROJECT_ROOT")"
+fi
 first_exit=0
 printf '%s\n' "$first_findings" | grep -q '\[SENTINEL\]' && first_exit=2
 [ -n "$first_findings" ] && [ "$first_exit" -ne 2 ] && first_exit=1
@@ -128,7 +176,11 @@ if [ -z "$first_findings" ]; then
 else
   # ─── Confirm: a second fresh snapshot; drop candidates that did not reproduce (flaky under
   # the ambient load this very capture just added). ────────────────────────────────────────────
-  confirm_snapshot="$(deploy_findings_snapshot "$VERIFY_DEPLOY_PATH" "$PROJECT_ROOT")"
+  if [ -n "$closing_gate_cmd" ]; then
+    confirm_snapshot="$(_bg_closing_gate_snapshot "$closing_gate_cmd" "$PROJECT_ROOT")"
+  else
+    confirm_snapshot="$(deploy_findings_snapshot "$VERIFY_DEPLOY_PATH" "$PROJECT_ROOT")"
+  fi
   confirmed_findings="$(deploy_baseline_confirm_new_findings "$first_findings" "$confirm_snapshot")"
   flaky_findings="$(comm -23 <(printf '%s\n' "$first_findings" | sort -u) <(printf '%s\n' "$confirmed_findings" | sort -u) 2>/dev/null || true)"
   if [ -n "$flaky_findings" ]; then

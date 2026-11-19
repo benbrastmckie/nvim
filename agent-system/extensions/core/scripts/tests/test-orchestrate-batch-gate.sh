@@ -54,6 +54,7 @@ setup_sandbox() {
   cp "$CORE_DIR/lib/common.sh" "$WORKDIR/sandbox/.claude/scripts/lib/common.sh"
   cp "$CORE_DIR/lib/deploy-baseline-lib.sh" "$WORKDIR/sandbox/.claude/scripts/lib/deploy-baseline-lib.sh"
   cp "$CORE_DIR/lib/batch-gate-marker-lib.sh" "$WORKDIR/sandbox/.claude/scripts/lib/batch-gate-marker-lib.sh"
+  cp "$CORE_DIR/lib/verification-scope-lib.sh" "$WORKDIR/sandbox/.claude/scripts/lib/verification-scope-lib.sh"
   chmod +x "$WORKDIR/sandbox/.claude/scripts/orchestrate-batch-gate.sh"
   SUT="$WORKDIR/sandbox/.claude/scripts/orchestrate-batch-gate.sh"
   VERIFY_STUB="$WORKDIR/sandbox/.claude/scripts/verify-deploy.sh"
@@ -727,6 +728,91 @@ if jq -e '.batch_gate.close_obligations_found_count == 0' "$STATE_FILE" >/dev/nu
   common_test_pass "Case 19: a non-stale marker is not counted in close_obligations_found_count"
 else
   common_test_fail "Case 19: unexpected close_obligations_found_count: $(cat "$STATE_FILE")"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 20: a declared `closing_gate` stub command's `^FINDING ` lines attribute exactly as
+# verify-deploy.sh's own would -- the declared command is a drop-in replacement for the
+# Capture/Confirm/Attribute pipeline, nothing downstream changes.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Case 20: a declared closing_gate stub's findings attribute normally"
+setup_sandbox
+closing_gate_stub="$WORKDIR/sandbox/closing-gate-stub.sh"
+cat > "$closing_gate_stub" <<'EOF'
+#!/usr/bin/env bash
+echo "FINDING gate8 test-cg.sh failure referencing agent-system/extensions/core/scripts/cg.sh"
+exit 1
+EOF
+chmod +x "$closing_gate_stub"
+jq -n -c --arg cmd "$closing_gate_stub" \
+  '{verification_scope: {closing_gate: $cmd}}' \
+  > "$WORKDIR/sandbox/.claude-extensions.json"
+write_state <<'EOF'
+{
+  "task_numbers": [950, 951],
+  "implement_agents": {"950": "general-implementation-agent"},
+  "invocation_modified_files": {
+    "950": ["agent-system/extensions/core/scripts/cg.sh"],
+    "951": ["agent-system/extensions/core/scripts/other.sh"]
+  }
+}
+EOF
+run_sut --session sess_test --state-file "$STATE_FILE"
+if jq -e '.batch_gate.attributed["950"] | length == 1' "$STATE_FILE" >/dev/null 2>&1; then
+  common_test_pass "Case 20: the declared closing_gate's finding is attributed to candidate #950 (names cg.sh)"
+else
+  common_test_fail "Case 20: expected the declared closing_gate's finding attributed to candidate #950: $(cat "$STATE_FILE")"
+fi
+if jq -e '(.batch_gate.attributed["951"] // []) | length == 0' "$STATE_FILE" >/dev/null 2>&1; then
+  common_test_pass "Case 20: the finding is NOT also attributed to candidate #951"
+else
+  common_test_fail "Case 20: expected no finding attributed to candidate #951: $(cat "$STATE_FILE")"
+fi
+if echo "$LAST_STDERR" | grep -q "closing-gate-stub.sh"; then
+  common_test_pass "Case 20: the declared closing_gate command is named in this run's own output"
+else
+  common_test_fail "Case 20: expected the declared closing_gate command named on stderr, got: $LAST_STDERR"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 21: a declared `closing_gate` command exiting nonzero with NO parseable `^FINDING ` line
+# becomes a batch-level UNATTRIBUTED finding naming the declared command -- never a clean
+# (empty) result, per the one deliberate exception to this surface's fail-open posture.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Case 21: a declared-but-unusable closing_gate command becomes an unattributed finding"
+setup_sandbox
+unusable_stub="$WORKDIR/sandbox/closing-gate-unusable.sh"
+cat > "$unusable_stub" <<'EOF'
+#!/usr/bin/env bash
+echo "some unrelated crash output, no FINDING prefix at all" >&2
+exit 127
+EOF
+chmod +x "$unusable_stub"
+jq -n -c --arg cmd "$unusable_stub" \
+  '{verification_scope: {closing_gate: $cmd}}' \
+  > "$WORKDIR/sandbox/.claude-extensions.json"
+write_state <<'EOF'
+{
+  "task_numbers": [952],
+  "implement_agents": {"952": "general-implementation-agent"},
+  "invocation_modified_files": {"952": ["agent-system/extensions/core/scripts/unusable.sh"]}
+}
+EOF
+run_sut --session sess_test --state-file "$STATE_FILE"
+if jq -e '.batch_gate.unattributed | length == 1' "$STATE_FILE" >/dev/null 2>&1; then
+  common_test_pass "Case 21: the declared-but-unusable command's output becomes exactly one unattributed finding"
+else
+  common_test_fail "Case 21: expected exactly one unattributed finding for the unusable closing_gate: $(cat "$STATE_FILE")"
+fi
+if jq -e '.batch_gate.unattributed[0] | contains("closing-gate-unusable.sh")' "$STATE_FILE" >/dev/null 2>&1; then
+  common_test_pass "Case 21: the unattributed finding names the declared, unusable command"
+else
+  common_test_fail "Case 21: expected the unattributed finding to name the declared command: $(cat "$STATE_FILE")"
+fi
+if jq -e '.batch_gate.gate_exit_code != 0' "$STATE_FILE" >/dev/null 2>&1; then
+  common_test_pass "Case 21: the declared-but-unusable command never reads as a clean (gate_exit_code 0) result"
+else
+  common_test_fail "Case 21: a declared-but-unusable closing_gate was wrongly read as clean: $(cat "$STATE_FILE")"
 fi
 
 echo ""

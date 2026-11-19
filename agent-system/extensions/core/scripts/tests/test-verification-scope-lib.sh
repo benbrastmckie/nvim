@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # test-verification-scope-lib.sh - Narrow, fixture-driven suite for
-# scripts/lib/verification-scope-lib.sh's four public readers.
+# scripts/lib/verification-scope-lib.sh's five public readers.
 #
 # The library's load-bearing property is its ABSOLUTE fail-open posture: a missing
 # .claude-extensions.json, an unparseable one, an absent `verification_scope` key, or a malformed
@@ -163,6 +163,33 @@ assert_lines "resolver_compose: declared 'union' is honoured" "union" "$out" "$r
 root="$(plant_scope compose-garbage '{"verification_scope": {"resolver": {"compose": "sideways"}}}')"
 out="$(verification_scope_resolver_compose "$root")"; rc=$?
 assert_lines "resolver_compose: out-of-enum value falls back to 'union'" "union" "$out" "$rc"
+
+# --- closing_gate ------------------------------------------------------------------------------
+
+root="$(plant_scope cg-no-file "")"
+out="$(verification_scope_closing_gate "$root")"; rc=$?
+assert_lines "closing_gate: absent file prints nothing (= no declared closing gate)" "" "$out" "$rc"
+
+root="$(plant_scope cg-undeclared '{"verification_scope": {"tree_roots": ["."]}}')"
+out="$(verification_scope_closing_gate "$root")"; rc=$?
+assert_lines "closing_gate: key absent on an otherwise-populated object prints nothing" "" "$out" "$rc"
+
+root="$(plant_scope cg-declared '{"verification_scope": {"closing_gate": "bash tools/close.sh --all"}}')"
+out="$(verification_scope_closing_gate "$root")"; rc=$?
+assert_lines "closing_gate: declared command is returned verbatim, spaces intact" \
+  "bash tools/close.sh --all" "$out" "$rc"
+
+root="$(plant_scope cg-empty '{"verification_scope": {"closing_gate": ""}}')"
+out="$(verification_scope_closing_gate "$root")"; rc=$?
+assert_lines "closing_gate: empty-string command prints nothing" "" "$out" "$rc"
+
+root="$(plant_scope cg-non-string '{"verification_scope": {"closing_gate": 42}}')"
+out="$(verification_scope_closing_gate "$root")"; rc=$?
+assert_lines "closing_gate: a non-string (number) value is malformed and prints nothing" "" "$out" "$rc"
+
+root="$(plant_scope cg-non-string-obj '{"verification_scope": {"closing_gate": {"nested": true}}}')"
+out="$(verification_scope_closing_gate "$root")"; rc=$?
+assert_lines "closing_gate: a non-string (object) value is malformed and prints nothing" "" "$out" "$rc"
 
 # --- sourcing posture -------------------------------------------------------------------------
 # The header commits to setting NO shell options in the caller. A regression here silently
