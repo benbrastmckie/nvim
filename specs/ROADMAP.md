@@ -800,9 +800,9 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 579 ready           Record the selector's full-path-set aggregation rule in the Tier Justificatio...
 580 ready           Correct the interactive-selection threshold model to AskUserQuestion's real f...
 590 ready           Resolve the /ide dead-command-recommendation findings
-613 ready           session_liveness_same_process_orphan_lock
-618 ready           working_tree_residue_disposition_policy   <- re-measure its git-commit-scoped.sh evidence after the ignored-specs predicate lands; no edge
-646 ready           return_meta_terminal_status_vocabulary
+613 ready           Make session liveness distinguish a dead same-process session so an orphaned ...
+618 ready           Determine what leaves files in the working tree and give every residue class ...   <- re-measure its git-commit-scoped.sh evidence after the ignored-specs predicate lands; no edge
+646 ready           Decide and implement how .return-meta.json's status vocabulary admits non-pha...
 658 ready           Ignored specs predicate and commit path
 661 ready           Unbacked specs durability options
 ```
@@ -827,7 +827,7 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 **Neovim (2)**
 ```
 583 blocked:563     Add a settings-defaults surface to the agent system loader picker
-663 ready           loader_project_dir_root_resolution
+663 ready           Resolve the extension loader's project_dir to the git toplevel and refuse a l...
 ```
 
 **File scope lifecycle (7)**
@@ -857,12 +857,12 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 472 blocked:556     Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop...
 513 blocked:479     Mechanically detect a plan phase that closed without its own commit
 518 blocked:472     State the blockers[] admission contract and continuation-on-partial requireme...
-655 blocked:654,657 branch_aware_orchestration_and_squash_landing
-656 blocked:654     milestone_schema_and_generated_roadmap   <- specs/ becomes ignored by default above -- rule where the generated review surface then lives
-657 blocked:654,656 branch_topology_ruling_and_milestone_automation
+655 blocked:654,657 Make orchestration branch-aware with a per-invocation branch and squash landing
+656 blocked:654     Milestone schema in state.json and a wholly generated ROADMAP.md   <- specs/ becomes ignored by default above -- rule where the generated review surface then lives
+657 blocked:654,656 Branch-topology ruling, then milestone automation and review gates
 477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
 514 ready           Convergence guard blind to zero-dispatch cycles
-654 ready           reconcile_commit_layer_cluster_and_ordering   <- also rule on the ignored-specs predicate as a fourteenth cluster member, and re-measure after it
+654 ready           Reconcile the open commit-layer cluster and write its dependency ordering   <- also rule on the ignored-specs predicate as a fourteenth cluster member, and re-measure after it
 ```
 
 **Agent system (50)**
@@ -916,7 +916,7 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 632 ready           Stop orchestrator-context-budget.json's derivation log from re-breaking the t...   <- gate 4 is green; what remains is the exemption-vs-house-style ruling, not a live violation
 639 ready           Make issue-record.sh failures visible instead of silently losing the evidence...
 640 ready           Add a derived-percentage bug class to the census methodology standard
-645 ready           repair_seven_failing_gate8_suites   <- the unit/integration boundary suite is red again from a later cause its provenance list predates
+645 ready           Fix the .mcp.json merge defect that drops a hand-authored server entry across...   <- the unit/integration boundary suite is red again from a later cause its provenance list predates
 ```
 
 **Decidability (1)**

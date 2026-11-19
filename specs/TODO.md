@@ -49,8 +49,8 @@ next_project_number: 664
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
-618 [NOT STARTED] — GOAL. Determine what leaves files behind in this repository's...
-646 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/...
+618 [NOT STARTED] — Determine what leaves files in the working tree and give...
+646 [NOT STARTED] — Decide and implement how .return-meta.json's status...
 658 [NOT STARTED] — Ignored specs predicate and commit path
   └─ 659 [NOT STARTED] — Never demote on ignored specs skip
     └─ 662 [NOT STARTED] — Reframe docs for ignored specs default
@@ -115,7 +115,7 @@ next_project_number: 664
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 654 [NOT STARTED] — Reconcile the open commit-layer cluster and write its...
-  └─ 656 [NOT STARTED] — Milestone schema in state.json and a wholly generated...
+  └─ 656 [NOT STARTED] — Milestone schema in state.json and a wholly generated ROADMAP.md
     └─ 657 [NOT STARTED] — Branch-topology ruling, then milestone automation and review...
       └─ 655 [NOT STARTED] — Make orchestration branch-aware with a per-invocation branch...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
@@ -169,7 +169,7 @@ next_project_number: 664
 632 [NOT STARTED] — Stop orchestrator-context-budget.json's derivation log from...
 639 [NOT STARTED] — Make issue-record.sh failures visible instead of silently...
 640 [NOT STARTED] — Add a derived-percentage bug class to the census methodology...
-645 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+645 [NOT STARTED] — Fix the .mcp.json merge defect that drops a hand-authored...
 533 [NOT STARTED] — lake-build-guard replays stale result for env lean FILE
 546 [NOT STARTED] — Diagnose the zero-result literature retrieval and settle the...
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
@@ -187,7 +187,7 @@ next_project_number: 664
 
 ## Tasks
 
-### 663. Loader project dir root resolution
+### 663. Resolve the extension loader's project_dir to the git toplevel and refuse a load rooted in a source store
 - **Status**: [NOT STARTED]
 - **Task Type**: neovim
 - **Topic**: neovim
@@ -335,7 +335,7 @@ MEASURED SCOPE CORRECTION (2026-11-19, after this record was written). The sente
 
 ---
 
-### 657. Branch topology ruling and milestone automation
+### 657. Branch-topology ruling, then milestone automation and review gates
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
@@ -376,7 +376,7 @@ Element 1's decision record exists and its edges and task revisions are written;
 
 ---
 
-### 656. Milestone schema and generated roadmap
+### 656. Milestone schema in state.json and a wholly generated ROADMAP.md
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
@@ -445,7 +445,7 @@ Final acceptance check: regenerate the ROADMAP.md of /home/benjamin/Projects/Sap
 
 ---
 
-### 655. Branch aware orchestration and squash landing
+### 655. Make orchestration branch-aware with a per-invocation branch and squash landing
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
@@ -504,7 +504,7 @@ This task now depends on `branch_topology_ruling_and_milestone_automation`, whos
 
 ---
 
-### 654. Reconcile commit layer cluster and ordering
+### 654. Reconcile the open commit-layer cluster and write its dependency ordering
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
@@ -902,7 +902,7 @@ All mechanisms above were VERIFIED LIVE against the vault at app.spnc.ai during 
 
 ---
 
-### 646. Return meta terminal status vocabulary
+### 646. Decide and implement how .return-meta.json's status vocabulary admits non-phase terminal statuses
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
@@ -948,7 +948,7 @@ ACCEPTANCE CRITERIA:
 
 ---
 
-### 645. Repair seven failing gate8 suites
+### 645. Fix the .mcp.json merge defect that drops a hand-authored server entry across load and unload
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
@@ -1364,7 +1364,7 @@ PROVENANCE: surfaced as a Reasoned Exclusion in the /todo consolidation record's
 
 ---
 
-### 618. Working tree residue disposition policy
+### 618. Determine what leaves files in the working tree and give every residue class a disposition policy
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
@@ -1529,7 +1529,7 @@ ACCEPTANCE.
 
 ---
 
-### 613. Session liveness same process orphan lock
+### 613. Make session liveness distinguish a dead same-process session so an orphaned lock is reapable
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
