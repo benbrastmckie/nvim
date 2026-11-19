@@ -353,6 +353,11 @@ declare -F gate_registry_exec_bounded >/dev/null 2>&1 || gate_registry_exec_boun
 # per-gate sequential loop (gate_registry_exec_bounded, degrade-safe on its own per the line
 # above) still runs every gate either way.
 declare -F gate_registry_exec_concurrent_batch >/dev/null 2>&1 || gate_registry_exec_concurrent_batch() { :; }
+# _greg_load_1min (gate-ceiling-fit Phase 6): a missing lib degrades generalized contention
+# tagging to a silent no-op (empty reads below), never a hard script failure -- a kill is still
+# reported as a real FAIL/FINDING either way; only the additional [CONTENTION] annotation is
+# unavailable without the real lib.
+declare -F _greg_load_1min >/dev/null 2>&1 || _greg_load_1min() { :; }
 # gate_registry_exclude_ids: removes the given comma-separated ids from the loaded _GREG_IDS set
 # BEFORE dispatch, so neither gate_registry_exec_concurrent_batch nor the sequential loop below
 # ever invokes them -- the primitive --skip-unchanged needs to make a cache hit actually SKIP a
@@ -2819,17 +2824,28 @@ fi
 for _gate_id in $(gate_registry_ids); do
   _vd_gate_fn="$(gate_registry_field "$_gate_id" invoke)"
   _vd_gate_timeout="$(gate_registry_field "$_gate_id" timeout_s)"
+  _vd_gate_entryload=""
+  _vd_gate_killload=""
   if [ "$JOBS" -gt 1 ]; then
     _vd_gate_out="$GATES_OUTDIR/out.$_gate_id"
     _vd_gate_err="$GATES_OUTDIR/err.$_gate_id"
     _vd_gate_state="$GATES_OUTDIR/state.$_gate_id"
     _vd_gate_rc="$(cat "$GATES_OUTDIR/rc.$_gate_id" 2>/dev/null || echo 1)"
+    # Entry/kill-load samples (gate-ceiling-fit Phase 6): written by _greg_pool_job itself (see
+    # that function's own comment) -- read here, never re-sampled, since the moment that
+    # matters has already passed by the time this emission loop runs.
+    [ -f "$GATES_OUTDIR/entryload.$_gate_id" ] && _vd_gate_entryload="$(cat "$GATES_OUTDIR/entryload.$_gate_id" 2>/dev/null)"
+    [ -f "$GATES_OUTDIR/killload.$_gate_id" ] && _vd_gate_killload="$(cat "$GATES_OUTDIR/killload.$_gate_id" 2>/dev/null)"
   else
     _vd_gate_out="$(mktemp)"
     _vd_gate_err="$(mktemp)"
     _vd_gate_state="$(mktemp)"
+    # Entry-load sample, sequential path: taken directly, same process, immediately before the
+    # bounded call -- the direct analog of _greg_pool_job's own entry sample under concurrency.
+    _vd_gate_entryload="$(_greg_load_1min)"
     gate_registry_exec_bounded "$_vd_gate_fn" "$_vd_gate_timeout" "$_vd_gate_out" "$_vd_gate_err" "$_vd_gate_state" CHECKS FAILURES FINDINGS_LIST CURRENT_GATE GATE_RAN_LIST GATE_DIRTY_LIST
     _vd_gate_rc=$?
+    [ "$_vd_gate_rc" -eq 124 ] && _vd_gate_killload="$(_greg_load_1min)"
   fi
   cat "$_vd_gate_out"
   cat "$_vd_gate_err" >&2
@@ -2839,6 +2855,31 @@ for _gate_id in $(gate_registry_ids); do
     CURRENT_GATE="gate${_gate_id}"
     echo "  [FAIL] gate${_gate_id} (${_vd_gate_fn}) exceeded its ${_vd_gate_timeout}s timeout and was killed" >&2
     FINDINGS_LIST+=("FINDING gate${_gate_id} TIMEOUT: gate${_gate_id} (${_vd_gate_fn}) exceeded its ${_vd_gate_timeout}s timeout and was killed")
+    # ── Generalized contention tagging (gate-ceiling-fit Phase 6) ──────────────────────────
+    # Reuses Gate 8's own GATE8_CONTENTION_LOAD_THRESHOLD verbatim (same name, same 2.0
+    # default) -- see _greg_load_1min's own header comment for why this never invents a
+    # second name for the identical concept. ANNOTATION ONLY: never extends _vd_gate_timeout,
+    # never reclassifies this kill as a pass, never touches CHECKS/FAILURES a second time --
+    # the FAIL/FINDING immediately above already recorded the real verdict; a Reasoned
+    # Exclusion is still required per failure, exactly as before this mechanism existed.
+    _vd_contention_threshold="${GATE8_CONTENTION_LOAD_THRESHOLD:-2.0}"
+    _vd_contention_hit=false
+    _vd_contention_which=""
+    if [ -n "$_vd_gate_entryload" ] && [ "$(awk -v l="$_vd_gate_entryload" -v t="$_vd_contention_threshold" 'BEGIN { print (l >= t) ? 1 : 0 }')" = "1" ]; then
+      _vd_contention_hit=true
+      _vd_contention_which="entry load ${_vd_gate_entryload}"
+    fi
+    if [ -n "$_vd_gate_killload" ] && [ "$(awk -v l="$_vd_gate_killload" -v t="$_vd_contention_threshold" 'BEGIN { print (l >= t) ? 1 : 0 }')" = "1" ]; then
+      _vd_contention_hit=true
+      _vd_contention_which="${_vd_contention_which:+$_vd_contention_which, }kill-time load ${_vd_gate_killload}"
+    fi
+    if [ "$_vd_contention_hit" = "true" ]; then
+      echo "  [CONTENTION] gate${_gate_id}: ${_vd_contention_which} (>= ${_vd_contention_threshold}) at timeout-kill -- possibly load-correlated, never auto-passed" >&2
+      if [ "$FINDINGS" = "true" ]; then
+        FINDINGS_LIST+=("WARN-FINDING gate${_gate_id} [CONTENTION] ${_vd_contention_which} (>= ${_vd_contention_threshold}) at timeout-kill for gate${_gate_id} (${_vd_gate_fn})")
+      fi
+    fi
+    unset _vd_contention_threshold _vd_contention_hit _vd_contention_which
   elif [ "$JOBS" -le 1 ] && [ -s "$_vd_gate_state" ]; then
     # At JOBS>1, gate_registry_exec_concurrent_batch already reconciled this id's state
     # internally (see its own header) -- sourcing state.$_gate_id here too would double-apply

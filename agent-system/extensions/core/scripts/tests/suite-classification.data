@@ -82,6 +82,7 @@ test-gate3-parallel-equivalence.sh	integration	invokes:run-all.sh
 test-gate3-strict-equivalence.sh	integration	invokes:verify-deploy.sh
 test-gate-cache-equivalence.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh,run-all.sh
 test-gate-cache-lib.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh
+test-gate-contention-tagging.sh	integration	invokes:verify-deploy.sh
 test-gate-lock.sh	integration	invokes:verify-deploy.sh,run-all.sh
 test-gate-out-derived-staleness.sh	unit	-
 test-gate-out-repair-reporting.sh	unit	-

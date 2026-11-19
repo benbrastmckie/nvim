@@ -2658,6 +2658,7 @@
         "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-dispatch-watchdog.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
         "agent-system/extensions/core/scripts/tests/test-verify-deploy-context-budget.sh",
         "agent-system/extensions/core/scripts/verify-deploy.sh",
         "agent-system/extensions/core/skills/skill-orchestrate/SKILL.md",

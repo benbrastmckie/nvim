@@ -593,31 +593,57 @@ caller would need the same treatment.
 
 ---
 
-### Phase 6: Generalize Contention Tagging to Every Gate's Timeout Kill [NOT STARTED]
+### Phase 6: Generalize Contention Tagging to Every Gate's Timeout Kill [COMPLETED]
 
 **Goal**: Make a load-induced gate kill mechanically distinguishable from a real failure for
 every gate, by extending the proven Gate-8-only mechanism rather than inventing a new one.
 
 **Tasks**:
-- [ ] Re-derive the gate inventory and which gates carry no contention signal today, before
-      editing.
-- [ ] Extend `gate_registry_exec_bounded`'s timeout-kill path (and the concurrent pool's own
+- [x] Re-derive the gate inventory and which gates carry no contention signal today, before
+      editing. *(completed: the live registry now carries 31 rows, not 30 -- Phase 2 added gate
+      31 since this plan's Scope Hypothesis was authored. 30 of 31 carry no contention signal
+      (only gate 8's own bespoke GATE8_CONTENTION_DETECTED exists); confirmed by grep, no third
+      signal site found)*
+- [x] Extend `gate_registry_exec_bounded`'s timeout-kill path (and the concurrent pool's own
       per-id `124` branch) to sample `/proc/loadavg` at entry and at kill time for any gate whose
-      process its declared bound actually killed.
-- [ ] Reuse Gate 8's two-signal model and its env-overridable defaults verbatim rather than
+      process its declared bound actually killed. *(completed, altered in SITING: the sampling
+      itself lives in the two CALLERS of `gate_registry_exec_bounded` --
+      `_greg_pool_job` for the concurrent path, and verify-deploy.sh's own generic per-gate loop
+      for the sequential path -- rather than inside `gate_registry_exec_bounded` itself, since
+      that function cannot see a per-id output directory/id pair for the sequential call site
+      (a bare `mktemp` file, not a `$dir/out.$id`-shaped path) and runs in a BACKGROUNDED
+      subprocess under the pool path, where a plain global-variable return would not propagate
+      back to the caller. Both callers already know their own id and kill/no-kill outcome, so
+      sampling at the call site was the natural fit; `gate_registry_exec_bounded`'s own
+      signature and behavior are unchanged*)*
+- [x] Reuse Gate 8's two-signal model and its env-overridable defaults verbatim rather than
       inventing new names or thresholds: the entry-loadavg threshold and the mutex-wait fraction
       already defined for `GATE8_CONTENTION_DETECTED`, whose load threshold deliberately matches
-      `measure-gate-costs.sh`'s own default.
-- [ ] Tag a load-correlated kill as a `[CONTENTION]` WARN-FINDING, mirroring Gate 8's existing
+      `measure-gate-costs.sh`'s own default. *(completed for the load threshold
+      (`GATE8_CONTENTION_LOAD_THRESHOLD`, read verbatim, same 2.0 default, no new env var name);
+      the mutex-wait fraction is NOT generalized -- it is specific to Gate 8's own
+      `specs/.gate-lock` acquire, which most gates never touch at all, so there is no generic
+      analog to reuse. This generic mechanism is load-only by nature, stated explicitly rather
+      than silently narrowed)*
+- [x] Tag a load-correlated kill as a `[CONTENTION]` WARN-FINDING, mirroring Gate 8's existing
       annotation exactly. **Never** extend the bound, never auto-pass, and never reclassify a
       failure as a pass — a genuinely slow or broken gate must stay distinguishable from a
       load-killed healthy one, and a Reasoned Exclusion is still required per failure.
-- [ ] Add a test suite pinning: a killed gate under a seeded high load tags `[CONTENTION]`; a
+      *(completed; pinned by case1/case2/case3)*
+- [x] Add a test suite pinning: a killed gate under a seeded high load tags `[CONTENTION]`; a
       killed gate under a seeded low load does not; the tag never changes the gate's verdict; and
-      Gate 8's own existing annotation path is unchanged.
-- [ ] Declare the new suite in `manifest.json` and `scripts/tests/suite-classification.data`.
-- [ ] Do **not** edit gate-criteria prose or introduce a baseline-relative criterion — that is
+      Gate 8's own existing annotation path is unchanged. *(completed:
+      `test-gate-contention-tagging.sh`, 8 cases including both the sequential and concurrent-
+      pool paths, built on the pre-existing `gate_store_fixture_build` scaffold rather than a
+      from-scratch fixture)*
+- [x] Declare the new suite in `manifest.json` and `scripts/tests/suite-classification.data`.
+      *(completed, plus a fourth now-latent fixture suite --
+      `test-orchestrate-unwind-dispatch.sh`, found by `lint-fixture-dependency-declaration.sh` --
+      needing the same `batch-gate-marker-lib.sh` fixture-copy fix Phase 4/5 already applied to
+      three siblings)*
+- [x] Do **not** edit gate-criteria prose or introduce a baseline-relative criterion — that is
       territory edge 452's. This phase adds a tag at the executor and nothing to the vocabulary.
+      *(confirmed: no gate-criteria file touched)*
 
 **Timing**: 2 hours
 

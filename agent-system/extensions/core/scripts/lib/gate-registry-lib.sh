@@ -186,6 +186,41 @@ declare -gA _GREG_INPUT_CORPUS=()
 _GREG_IDS=()
 _GREG_LOADED=false
 
+# ── Generalized contention tagging (gate-ceiling-fit Phase 6) ────────────────────────────────
+# _greg_load_1min(): a minimal, self-contained 1-minute-loadavg reader, deliberately NOT a call
+# out to verify-deploy.sh's own `_gate8_load_1min()` -- this library is sourced by several
+# consumers beyond verify-deploy.sh (measure-gate-costs.sh, test-verify-deploy-gate-selection.sh,
+# test-verify-deploy-gate-selection-crash-net.sh), none of which can be relied on to have that
+# function defined. Echoes empty string (never a non-zero exit) on any read failure, matching
+# this library's own fail-safe-on-malformed-input convention elsewhere (never let an annotation
+# mechanism's own failure become a reason to treat a gate run differently).
+_greg_load_1min() {
+  # Test-only override hook: GREG_LOADAVG_OVERRIDE, returned verbatim -- mirrors
+  # verify-deploy.sh's own GATE8_LOADAVG_OVERRIDE hook (gate8_run's `_gate8_load_1min`) by name
+  # and shape, under this library's own prefix since the two functions are intentionally
+  # separate (see this function's own header comment). Never set in production use.
+  if [ -n "${GREG_LOADAVG_OVERRIDE:-}" ]; then
+    echo "$GREG_LOADAVG_OVERRIDE"
+    return 0
+  fi
+  local _l
+  if [ -r /proc/loadavg ]; then
+    _l="$(awk '{print $1}' /proc/loadavg 2>/dev/null)"
+  fi
+  if [ -z "$_l" ] && command -v uptime >/dev/null 2>&1; then
+    _l="$(uptime 2>/dev/null | grep -oE 'load average[s]?: [0-9]+\.[0-9]+' | grep -oE '[0-9]+\.[0-9]+' | head -n1)"
+  fi
+  echo "$_l"
+  return 0
+}
+
+# GATE8_CONTENTION_LOAD_THRESHOLD is reused verbatim here (same name, same default 2.0) rather
+# than a new generic knob -- an operator who already tuned Gate 8's own threshold gets
+# consistent behavior across every gate's kill path, and this mechanism never invents a second
+# name for the identical concept (per this task's own constraint). Read lazily, at the point of
+# use, below -- never cached at source time, so a caller that exports it AFTER sourcing this
+# library (as every existing caller already does for its own purposes) still sees it.
+
 gate_registry_load() {
   local _greg_file="${1:-}"
   local _greg_self_dir _greg_line
@@ -597,7 +632,7 @@ gate_registry_exec_concurrent_batch() {
 
   _greg_pool_job() {
     local id="$1"
-    local fn timeout_s
+    local fn timeout_s _greg_pj_rc
     fn="${_GREG_INVOKE[$id]:-}"
     timeout_s="${_GREG_TIMEOUT[$id]:-}"
     # See this function's header comment, final paragraph: under concurrency every id MUST run
@@ -605,10 +640,23 @@ gate_registry_exec_concurrent_batch() {
     # empty one (dead code against the real registry; see test-gate-registry-resolution.sh
     # case14) falls back to a generous 600s bound HERE ONLY, never on the sequential path.
     [ -z "$timeout_s" ] && timeout_s=600
+    # Entry-load sample (gate-ceiling-fit Phase 6): taken HERE, inside this id's own forked job,
+    # not at the wave's own dispatch loop -- ids in the same wave start microseconds apart under
+    # the worker cap, and the signal this mechanism needs is THIS id's own load at THIS id's own
+    # start, not the wave's. Written unconditionally (every id, not only ones that end up
+    # killed) because the caller (verify-deploy.sh's generic per-gate loop) only reads it when
+    # rc.$id turns out to be 124 -- writing it unconditionally is cheaper than threading a
+    # "did this id get killed" signal backward into this job to decide whether to write at all.
+    _greg_load_1min > "$_greg_outdir/entryload.$id" 2>/dev/null || true
     gate_registry_exec_bounded "$fn" "$timeout_s" \
       "$_greg_outdir/out.$id" "$_greg_outdir/err.$id" "$_greg_outdir/state.$id" \
       "${_greg_vars[@]}"
-    echo "$?" > "$_greg_outdir/rc.$id"
+    _greg_pj_rc=$?
+    # Kill-time load sample: only when this id's own bound actually fired. A real pass/fail
+    # never writes this file at all, so its mere presence is itself part of the signal the
+    # caller reads (never fabricated from an absent file).
+    [ "$_greg_pj_rc" = "124" ] && { _greg_load_1min > "$_greg_outdir/killload.$id" 2>/dev/null || true; }
+    echo "$_greg_pj_rc" > "$_greg_outdir/rc.$id"
   }
 
   local _greg_wave_num

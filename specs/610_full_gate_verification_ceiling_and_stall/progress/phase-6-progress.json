@@ -1,0 +1,64 @@
+{
+  "phase": 6,
+  "phase_name": "Generalize Contention Tagging to Every Gate's Timeout Kill",
+  "started_at": "2026-11-19T06:00:00Z",
+  "last_updated": "2026-11-19T07:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "_greg_load_1min helper and _greg_pool_job entry/kill load sampling (concurrent path)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/gate-registry-lib.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "verify-deploy.sh generic per-gate loop: sequential-path sampling, [CONTENTION] WARN-FINDING emission",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/verify-deploy.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "New test suite test-gate-contention-tagging.sh, 8 cases (sequential + pool paths)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-gate-contention-tagging.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Declare new suite; fix a fourth latent fixture gap (test-orchestrate-unwind-dispatch.sh)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh"
+      ]
+    }
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {
+      "approach": "Sample entry/kill loadavg inside gate_registry_exec_bounded itself",
+      "result": "failed",
+      "reason": "That function cannot see a per-id output path for the sequential call site (a bare mktemp file, not a $dir/out.$id-shaped one) and runs inside a backgrounded subprocess under the concurrent-pool call site, where a plain global-variable write would never propagate back to the caller. Moved the sampling to both call sites instead (_greg_pool_job, and verify-deploy.sh's own generic per-gate loop), which already know their own id/outcome."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "6.mutex-wait-fraction",
+      "description": "Reuse Gate 8's mutex-wait fraction signal generically, alongside the load threshold",
+      "type": "altered",
+      "reason": "The mutex-wait signal is intrinsically specific to Gate 8's own specs/.gate-lock acquire; most of the other 30 gates never touch that mutex at all, so there is no generic analog to generalize. Only the load-threshold signal was generalized; stated explicitly rather than silently narrowed.",
+      "annotation": "*(deviation: altered — load-only generalization, mutex-wait fraction left gate-8-specific)*"
+    }
+  ],
+  "notes": [
+    "lint-fixture-dependency-declaration.sh caught a FOURTH fixture suite (test-orchestrate-unwind-dispatch.sh) needing the same batch-gate-marker-lib.sh fixture-copy fix already applied in Phases 4/5 to test-orchestrate-cycle-plan.sh, test-orchestrate-batch-gate.sh, and test-force-phases.sh. The lint's own full-corpus scan after each phase's edits has been the reliable way to find every such gap -- recommended as a standing habit after any new orchestrate-cycle-plan.sh dependency.",
+    "The new suite deliberately builds on gate_store_fixture_build (already proven by test-gate-registry-resolution.sh's case35-39) rather than a from-scratch fixture, post-editing the generated row's timeout_s and function body (sed-replacing the generated 'pass ... (fixture)' line with a deliberate stall) -- cheap (8 cases run in well under a minute) and exercises the real verify-deploy.sh dispatch loop rather than a synthetic registry bypass."
+  ]
+}
