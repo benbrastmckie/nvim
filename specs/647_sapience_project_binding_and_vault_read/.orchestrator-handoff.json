@@ -1,18 +1,23 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 647,
-  "phase": "plan",
-  "session_id": "sess_1795076371_5115f3_647",
-  "dispatch_seq": 3,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1795076371_5115f3",
+  "dispatch_seq": 5,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Authored a five-phase implementation plan for the sapience project-binding and vault-read foundation: the shared scripts/lib/sapience-api-lib.sh (host/token precedence, authenticated POST/GET, token redaction, bounded cold-start retry), then sapience-project-bind.sh and sapience-vault-read.sh in parallel, then their two new test suites, then the lockstep/manifest registration and full verification. Re-validated every carried figure from the dispatch against live sources and ran suite_selection_select over all five planned paths so each Tier Justification names a measured result. Surfaced two mechanically required files the dispatch FILE SCOPE omitted: the extension manifest's provides.scripts array and test-sapience-mcp-registration.sh's hardcoded LOCKSTEP_FILES list.",
+  "summary": "Implemented all five plan phases: the shared sapience-api-lib.sh (host/token resolution, authenticated POST/GET, token redaction, bounded cold-start retry), sapience-project-bind.sh (confirm-or-refuse fresh-project creation and .sapience/project.json writer, byte-identical to repo_link.py's link_text), and sapience-vault-read.sh (pinned read-only local+vault JSON envelope with per-source failure isolation). Both new scripts have passing test suites (27 and 19 assertions respectively), the extension manifest is regenerated (sapience: 16/16), and the lockstep worktree-resolution guard now compares all seven copies. One commit in this task's history carries a foreign, unrelated prior dispatch's hunk alongside this task's own change -- disclosed in detail in the summary and issue log.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/647_sapience_project_binding_and_vault_read/summaries/01_project-binding-vault-read-foundation-summary.md",
+      "summary": "All five plan phases completed: the shared sapience-api-lib.sh, the confirm-or-refuse project binder, the read-only vault aggregator, their two test suites, and the manifest/lockstep registration edits."
+    },
+    {
       "type": "plan",
       "path": "specs/647_sapience_project_binding_and_vault_read/plans/01_project-binding-vault-read-foundation.md",
-      "summary": "Five-phase plan, 8 estimated hours, 4 dependency waves, validated clean by validate-artifact.sh."
+      "summary": "Five-phase plan, all phases marked [COMPLETED]."
     }
   ]
 }
