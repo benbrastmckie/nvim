@@ -22,6 +22,8 @@
       "tests/test-sapience-capture.sh",
       "tests/test-sapience-context-scoping.sh",
       "tests/test-sapience-mcp-registration.sh",
+      "tests/test-sapience-project-bind.sh",
+      "tests/test-sapience-vault-read.sh",
       "verify-sapience-context-scoping.sh",
       "verify-sapience-mcp.sh"
     ],

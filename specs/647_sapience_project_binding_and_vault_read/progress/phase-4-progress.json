@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Test suites for both scripts",
+  "started_at": "2026-11-19T03:00:00Z",
+  "last_updated": "2026-11-19T04:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-sapience-project-bind.sh", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-project-bind.sh"]},
+    {"id": 2, "description": "Create test-sapience-vault-read.sh", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-vault-read.sh"]},
+    {"id": 3, "description": "Stage both, regenerate manifest, run both suites + run-all --only, re-run suite_selection_select", "status": "done", "files_touched": ["agent-system/extensions/sapience/manifest.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "Used `env VAR=val my_shell_function` to pass dynamic fixture env vars into a shell-function call site", "result": "failed", "reason": "env execs an external binary named by its first argument -- it cannot invoke a shell function at all, so every such call site silently fell through to the wrong URL-dispatch branch or failed outright; fixed by using bash's own prefix-assignment (VAR=val func, or `export \"${ARR[@]}\"; func` inside the same command-substitution subshell for array-sourced env vars) instead of `env`"},
+    {"approach": "test-sapience-vault-read.sh Case 1 invoked the script under test with no HOME/SAPIENCE_TOKEN override to test the no-token path", "result": "failed", "reason": "inherited this machine's real ~/.sapience/config.json token and made one real GET call against the live vault, returning real private data instead of exiting 1 as asserted; fixed by isolating HOME to an empty scratch directory and explicitly unsetting SAPIENCE_TOKEN/SAPIENCE_HOST for that case, and adding the same HOME isolation to every other test-suite call-site helper for defense in depth -- recorded as a costly issue-log entry"}
+  ],
+  "handoff_count": 0
+}

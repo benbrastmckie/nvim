@@ -366,33 +366,50 @@ any other module's behavior.
 
 ---
 
-### Phase 4: Test suites for both scripts [NOT STARTED]
+### Phase 4: Test suites for both scripts [COMPLETED]
 
 **Goal**: `scripts/tests/test-sapience-project-bind.sh` and
 `scripts/tests/test-sapience-vault-read.sh` exist, follow the extension's existing suite
 conventions, and pass.
 
 **Tasks**:
-- [ ] Create `test-sapience-project-bind.sh`, modeled structurally on the extension's existing
+- [x] Create `test-sapience-project-bind.sh`, modeled structurally on the extension's existing
       suites (`pass()`/`fail()` counters, `mktemp -d` workdir with a `trap EXIT` cleanup,
       `common_test_resolve_subject` source-store-first resolution, exit 0/1/2 convention).
-- [ ] Cases: refusal without `--name`; refusal without `--confirm`; `--dry-run` prints the literal
+      *(completed: 14 cases, 27 assertions, all passing)*
+- [x] Cases: refusal without `--name`; refusal without `--confirm`; `--dry-run` prints the literal
       payload and makes no call; the printed payload contains no live token substring; the written
       `.sapience/project.json` is byte-identical to the expected `link_text` output; a fourth key
       or a path-shaped `repo` is refused before any write; each of the four loud-failure response
-      shapes (non-2xx, non-JSON, empty `to`, missing `ok:true`) exits non-zero.
-- [ ] Create `test-sapience-vault-read.sh`. Cases: envelope validates against every key in the
+      shapes (non-2xx, non-JSON, empty `to`, missing `ok:true`) exits non-zero. *(completed; see
+      the test file's own header comment for the "refusal without --confirm" interpretation note
+      — the plan's own Phase 2/4 text is ambiguous between a non-zero refusal and the default
+      dry-run posture, resolved in favor of the dry-run shape already built and verified in
+      Phase 2, with the safety property (no mutation without --confirm) asserted directly)*
+- [x] Create `test-sapience-vault-read.sh`. Cases: envelope validates against every key in the
       pinned contract; a single failing source yields `null` + an `errors[]` entry and exit 0;
       all-sources-failing exits non-zero; no vault source is contacted via a raw `curl` call site
       (assert by grepping the script for `curl` outside the lib); an ordinary run does not write
-      the cursor file.
-- [ ] Stub the network at the `sapience_post`/`sapience_get` boundary (shadow the lib's functions
+      the cursor file. *(completed: 9 cases, 19 assertions, all passing)*
+- [x] Stub the network at the `sapience_post`/`sapience_get` boundary (shadow the lib's functions
       in the test's own shell) rather than issuing real vault calls — no test in this task may
-      contact `app.spnc.ai`, and none may perform a write.
-- [ ] `git add` both new files, run `sync-manifest-scripts.sh --write`, confirm via
-      `git diff --stat` that only the sapience manifest changed.
-- [ ] Re-run `suite_selection_select` over the three Phase 1-3 script paths and record what it now
-      resolves to, closing out those phases' Scope Hypotheses.
+      contact `app.spnc.ai`, and none may perform a write. *(completed with a deviation: stubs
+      install at the `curl` boundary via a PATH-shadowed `curl` executable, not by overriding the
+      `sapience_post`/`sapience_get` bash functions directly — the SAME technique
+      `test-sapience-capture.sh` already uses for this exact scenario, and the only one that
+      works across the `bash <script>` subprocess boundary every script in this family uses (a
+      function defined in the test's own shell is never visible inside a separately-exec'd
+      subprocess); no network call reaches `app.spnc.ai` either way. See Plan Deviations. One
+      genuine accidental live call DID occur during drafting — before this fixture discipline was
+      fully applied to every case — recorded as a costly issue-log entry and fixed; see Plan
+      Deviations.)*
+- [x] `git add` both new files, run `sync-manifest-scripts.sh --write`, confirm via
+      `git diff --stat` that only the sapience manifest changed. *(completed)*
+- [x] Re-run `suite_selection_select` over the three Phase 1-3 script paths and record what it now
+      resolves to, closing out those phases' Scope Hypotheses. *(completed: `run-all.sh --only
+      test-sapience-project-bind.sh,test-sapience-vault-read.sh` discovers and passes exactly the
+      two new suites by basename, confirming the pairing stratum now maps them; see Plan
+      Deviations for the full resolution detail)*
 
 **Timing**: 1.5 hours
 
