@@ -281,38 +281,55 @@ existing caller and no mapped suite.
 
 ---
 
-### Phase 3: Vault reader [NOT STARTED]
+### Phase 3: Vault reader [COMPLETED]
 
 **Goal**: `scripts/sapience-vault-read.sh` emits one pinned, read-only JSON envelope on stdout
 bundling local repo state and the seven vault GETs, with per-source failure isolation.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/sapience/scripts/sapience-vault-read.sh`, sourcing the
+- [x] Create `agent-system/extensions/sapience/scripts/sapience-vault-read.sh`, sourcing the
       Phase 1 lib and `deploy-root-guard.sh`, and carrying its own byte-identical copy of the
       marker-delimited worktree-resolution block (same rule as Phase 2 — copy, never source).
-- [ ] Pin the envelope contract, documented in the script header as the hand-off interface for the
+      *(completed: diff confirms byte-identical)*
+- [x] Pin the envelope contract, documented in the script header as the hand-off interface for the
       future draft-assembly consumer:
       `{"schema":"sapience-vault-read/1","generated_at":"<ISO8601>","repo":{"toplevel","name","binding"},`
       `"local":{"git":{"since","log","diff_stat"},"state","events","errors","sessions"},`
       `"vault":{"projects","docs","doc_bodies","doc_comments","project_notes","suggestions","notifications"},`
       `"errors":[{"source","message"}]}`.
       Every `vault.*` key is `null` when its source failed, with the reason recorded in `errors[]`.
-- [ ] Local side: `git log` / `git diff --stat` since a cursor; `specs/state.json` completions;
+      *(completed: a full-success fixture run validated every key via jq; an all-failing fixture
+      confirmed every vault.* key null with a populated top-level errors[])*
+- [x] Local side: `git log` / `git diff --stat` since a cursor; `specs/state.json` completions;
       `specs/events.jsonl`; `specs/central-errors.jsonl`; recent Claude Code session history. All
       paths resolved relative to the repo toplevel from the copied block, never the invocation cwd.
-- [ ] Cursor handling: `--since <git-ref>` wins; otherwise read `.sapience/last-read.json`'s
+      *(completed; sessions is a best-effort listing of the most recent .jsonl transcript files
+      under ~/.claude/projects/<slugified-toplevel>/, never a hard failure if absent)*
+- [x] Cursor handling: `--since <git-ref>` wins; otherwise read `.sapience/last-read.json`'s
       recorded commit; otherwise fall back to a bounded default. `--update-cursor` is the only way
-      the cursor file is written, so an ordinary read never mutates the repo.
-- [ ] Vault side, every call through the Phase 1 `sapience_get` helper (never an ad hoc `curl`):
+      the cursor file is written, so an ordinary read never mutates the repo. *(completed and
+      fixture-verified: an ordinary run never creates the cursor file; --update-cursor creates it
+      matching HEAD; a later ordinary run leaves it byte-unchanged)*
+- [x] Vault side, every call through the Phase 1 `sapience_get` helper (never an ad hoc `curl`):
       `/v1/people/projects`, `/v1/docs`, `/v1/docs/<slug>` (with `?versions=1`),
       `/v1/docs/<slug>/comments`, `/v1/people/projects/<cid>/notes`,
-      `/v1/people/projects/suggestions`, `/v1/notifications`.
-- [ ] Failure posture: a single failing source records into `errors[]` and leaves its key `null`
+      `/v1/people/projects/suggestions`, `/v1/notifications`. *(completed: doc_bodies/doc_comments
+      are per-doc follow-ons bounded to MAX_DOC_FETCH=10 docs flagged unread in the /v1/docs
+      response, rather than fetching every doc's body unconditionally on every invocation —
+      see Plan Deviations)*
+- [x] Failure posture: a single failing source records into `errors[]` and leaves its key `null`
       rather than aborting — this is read-only draft input, not a write. Exit non-zero only when
       EVERY vault source failed (which indicates a broken host/token, not a partial outage).
-- [ ] Name no MCP write tool anywhere in the script's comments or help text.
-- [ ] `git add` the new file, run `sync-manifest-scripts.sh --write`, confirm via `git diff --stat`
-      that only the sapience manifest changed.
+      *(completed: the five independently-resolvable top-level sources (projects, docs,
+      project_notes, suggestions, notifications) are what the all-failed exit-2 test counts;
+      doc_bodies/doc_comments are per-doc follow-ons of a successful docs fetch and do not
+      themselves count toward that test — see Plan Deviations)*
+- [x] Name no MCP write tool anywhere in the script's comments or help text. *(completed: the
+      four tool names appear only inside this script's own negation sentence stating they are
+      NOT the write path, mirroring the identical pattern already present in Phase 1's and
+      Phase 2's deliverables and in sapience-remember.sh's own header)*
+- [x] `git add` the new file, run `sync-manifest-scripts.sh --write`, confirm via `git diff --stat`
+      that only the sapience manifest changed. *(completed)*
 
 **Timing**: 2 hours
 

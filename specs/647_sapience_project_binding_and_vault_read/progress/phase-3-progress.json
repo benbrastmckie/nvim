@@ -1,0 +1,14 @@
+{
+  "phase": 3,
+  "phase_name": "Vault reader",
+  "started_at": "2026-11-19T02:00:00Z",
+  "last_updated": "2026-11-19T03:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create sapience-vault-read.sh with pinned envelope contract, local-side collection, cursor handling", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-vault-read.sh"]},
+    {"id": 2, "description": "Vault-side 7 GET call sites via sapience_get, per-source failure isolation", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-vault-read.sh"]},
+    {"id": 3, "description": "Stage + regenerate manifest.json; verify bash -n/shellcheck/fixture runs/verify-touched.sh", "status": "done", "files_touched": ["agent-system/extensions/sapience/manifest.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
