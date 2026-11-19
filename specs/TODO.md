@@ -169,7 +169,7 @@ next_project_number: 654
 
 ### Sapience
 
-648 [NOT STARTED] — Add the four Sapience write-surface publishers with...
+648 [RESEARCHED] — Add the four Sapience write-surface publishers with...
   └─ 649 [NOT STARTED] — Add the /sapience command: draft assembly and the...
 
 ### Decidability
@@ -435,10 +435,11 @@ All mechanisms above were VERIFIED LIVE against the vault at app.spnc.ai during 
 ---
 
 ### 648. Add the four Sapience write-surface publishers with loud-failure discipline
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: Task 647
+- **Research**: [648_sapience_publish_write_surfaces/reports/01_sapience-publish-write-surfaces.md]
 
 **Description**: Add the four Sapience write-surface publishers behind one script, each with loud-failure discipline, so the /sapience command's approval picker has concrete publisher interfaces to call. DEPENDS ON the project-binding task: this task consumes that task's scripts/lib/sapience-api-lib.sh for host/token/API resolution and its .sapience/project.json binding reader.
 
