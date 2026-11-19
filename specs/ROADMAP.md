@@ -111,10 +111,10 @@ Re-derived 2026-11-19 over the 128 open records, and re-verified against `genera
 **The renderer is sound and all three of its callers are wired.** `## Next` and `## Open work` are rendered wholly from `state.json`'s `roadmap_batches` / `roadmap_notes` entries by `roadmap-integration.sh`, which makes no judgment calls. A batch naming only terminal members drops out of the rendering entirely -- its `/orchestrate` line and its `Why this order:` bullet alike -- so retiring one by hand is tidiness, not correctness. What rendering cannot keep current on its own is the authored prose: a batch that loses a member to completion keeps a `description` and a `Why this order:` bullet written against the larger membership, and that is the one thing a maintenance pass must fix by hand. Batch eight was in exactly that state and was rewritten against its three surviving members, the landed one having been its only consumer-repository member and its only sentinel claimant. `/todo` and `/review` reach `--regenerate` behind the shared preflight classifier, and `/orchestrate`'s conclusion stage has its own script, `orchestrate-conclusion-roadmap.sh`, which `skill-orchestrate` names and a dedicated suite covers. **The scope of that renderer is itself the subject of a head-batch record**: the milestone-schema work in batch two extends generation from these two sections to the entire file, nests batches under ordered milestones, and is required to preserve exactly the judgment/rendering split described here rather than collapse it. That record now also carries a siting question it did not have before -- batch one makes `specs/` ignored by default in a fresh repository, and a wholly-generated reviewer-facing dashboard inside an ignored tree is invisible to the reviewer it exists for.
 
 ```
-/orchestrate 658, 659, 660, 661, 662 --hard   # Make a gitignored specs tree a supported posture: one predicate, no false demotion, then the docs
+/orchestrate 661, 658, 659, 660, 662 --hard   # Support a gitignored specs tree: price the durability exposure, then the predicate and demotion fix
 /orchestrate 654, 656, 657 --hard   # Decide before building: the commit-layer order, the milestone schema, then the topology ruling
 /orchestrate 655 --hard   # Build branch-aware orchestration and squash landing once the topology ruling settles its design
-/orchestrate 645, 560, 629, 630, 631, 632, 633   # Make verify-deploy's verdict mean something again: the live reds, the roster, two latent gates
+/orchestrate 645, 560, 629, 630, 631, 632   # Make verify-deploy's verdict mean something again: the live reds, one roster row, two gate rulings
 /orchestrate 475, 613, 514, 574   # Hard stops: task creation dies on a big verdict, a lock never reaps, a run never converges
 /orchestrate 556, 472, 646, 551, 519, 570, 577, 609   # What one dispatch hands the next: settle the handoff/return-meta shapes, fix failure accounting
 /orchestrate 586, 605   # Make a full battery's numbers trustworthy: the standing cost verdicts, then one stale roster row
@@ -130,7 +130,7 @@ Re-derived 2026-11-19 over the 128 open records, and re-verified against `genera
 /orchestrate 618, 338   # Rule on what the system leaves behind: a per-class residue policy and the tracked/ignored split
 /orchestrate 438, 479, 491, 492, 559, 580, 581   # Task creation and the backlog/selection surfaces: landing targets, corroboration, one renderer
 /orchestrate 480, 513   # Two detectors over the landing-target contract: stranded research, a commit-less plan phase
-/orchestrate 563, 583   # Make the cross-repo extension registry usable for deploy enumeration, then surface defaults
+/orchestrate 663, 563, 583   # Three init.lua claimants: make a load trust its project root, then the registry and defaults
 /orchestrate 451, 462, 452, 566, 509, 588   # Snapshot the Lean Challenge at plan time, then the baseline-relative and redeploy gate rules
 /orchestrate 504, 516, 398, 399, 463, 550, 537   # The Lean compliance checker and its context strand: harvest contract, trust surfaces, probes
 /orchestrate 549, 576   # The narrow unusedArguments remedy, then the gate-naming and replay-window record over it
@@ -146,9 +146,9 @@ Re-derived 2026-11-19 over the 128 open records, and re-verified against `genera
 Why this order:
 - - **This leads the list, and unlike the strand below it the placement is derivable rather than instructed.** An operator asked for this group and the branch-and-milestone strand to be raised together; which of the two leads was left open, and the ranking rule stated above decides it. `659`'s defect reproduces on EVERY completing dispatch in a repository whose specs tree is ignored: the per-cycle bookkeeping commit can never stage anything, `orchestrate-cycle-postflight.sh`'s commit-landing correction reads the nonzero exit as a failed commit, rewrites a `completed` task to `partial`, amends a commit-failure blocker into the handoff and prints STATUS DEMOTED. That is both of the ranking rule's top classes at once -- the system stops recording progress it has already made, and the next dispatch is handed a status that is false -- and it is measured in two consumer repositories (sf1-engine, sapience-app), not inferred. The strand below is decision-and-data-model work that unblocks a feature nothing is currently stuck behind, and its own bullet concedes it sits where it does by instruction alone.
 
-  - **The five members are one mechanism, not five adjacent fixes, which is why they are one batch.** `658` is the gate: one shared predicate answering whether a given repository's specs tree is gitignored, plus a distinct non-failure exit code for an all-ignored pathspec, modelled on `lib/engine-written-state-paths-lib.sh`'s contract-plus-fail-open-posture style. Everything else consumes that split rather than reimplementing the question -- which matters, because 95 files reference `git-commit-scoped.sh` and a per-call-site workaround would land in all of them. `659` narrows the demotion trigger with it, and narrows rather than removes: a `completed` status nobody committed stays a real hazard when the commit genuinely failed, so the required negative control is the pair -- an ignored tree completes clean, a genuinely failed commit still demotes. `660` makes a fresh repository land with its specs tree ignored and carries the migration guarantee that an already-tracked tree keeps tracking; the global root's own 11,572 tracked specs files are the reference case, and silently untracking them would be a worse defect than the one this group exists to fix. `661` is research-and-recommendation only and dependency-free, so a cycle can pull it forward at any point. `662` records what the four actually built.
+  - **The five members are one mechanism, not five adjacent fixes, which is why they are one batch.** `658` is the gate: one shared predicate answering whether a given repository's specs tree is gitignored, plus a distinct non-failure exit code for an all-ignored pathspec, modelled on `lib/engine-written-state-paths-lib.sh`'s contract-plus-fail-open-posture style. Everything else consumes that split rather than reimplementing the question. **That predicate's blast radius is three call sites, not ninety-five**, per a measured scope correction pinned onto `658` itself: the 95-file figure is a REFERENCE count for `git-commit-scoped.sh` and never an edit surface, because the engine-written state-path question already funnels through `scripts/lib/engine-written-state-paths-lib.sh` -- the seam the record already names -- and that lib has exactly three production consumers, `orchestrate-cycle-postflight.sh`, `git-commit-phase.sh` and `git-commit-scoped.sh` itself, with the rest of its grep footprint being its own suites, `suite-classification.data` and `context/standards/git-staging-scope.md`. A plan that fans a per-call-site change across 95 files has mis-scoped the work; the no-caller-reimplements criterion is satisfied at three. `659` narrows the demotion trigger with that split, and narrows rather than removes: a `completed` status nobody committed stays a real hazard when the commit genuinely failed, so the required negative control is the pair -- an ignored tree completes clean, a genuinely failed commit still demotes. **Its history-reader surface is likewise three items rather than the six its own description names**, by a second pinned correction: `reconcile-task-status.sh` and `task-lock.sh` issue no git read at all, and `territory-contention-lib.sh`'s `git log` mentions are prose inside an agent-facing advisory rather than code, so three of the six need nothing beyond recording that measurement. What genuinely remains is `validate-state.sh --deep`'s prior-committed-state fetch via `git show <sha>:<path>`, the one real casualty of an absent specs history, plus two stated verdicts -- `dispatch-metrics.sh`'s churn split, which yields zero rather than an error, and `init-specs.sh`'s `git ls-files -- specs/` probe, which belongs to `660` and not to `659`. `660` makes a fresh repository land with its specs tree ignored and carries the migration guarantee that an already-tracked tree keeps tracking; the global root's own 11,572 tracked specs files are the reference case, and silently untracking them would be a worse defect than the one this group exists to fix. `662` records what the four actually built.
 
-  - **The internal order is fully edged, so the batch serialises itself rather than relying on array position.** Re-measured against `generate-task-order.sh --print`: `658` and `661` are wave 1 with no open predecessor; `659` and `660` are wave 2 behind `658`; `662` is wave 3 behind all four. `658` enters the backlog as one of its widest gates at 3 direct open dependents, tied with `654`. Position inside `task_ids` records priority only where the graph leaves a choice: `659` sits ahead of `660` because its own text names itself the group's most consequential behaviour change, and `661` sits behind both because it builds nothing.
+  - **`661` leads the batch by owner ruling, and the ruling's grounds replace the ones this list previously gave.** `661` is dependency-free and builds nothing by its own contract -- which is why it used to sit last, and is exactly why it now goes first. Its recommendation may legitimately be "document the exposure, build nothing", an outcome its own description licenses without hedging; if it is, `660`'s migration half largely collapses, because there is no opt-in mechanism left to design and only a default for new repositories remains. Running the cheap, gate-free research first costs nothing and can shrink `660` before anyone plans it; running it last buys a recommendation nobody can still act on. **Behind the head the graph takes over, so the batch still serialises itself rather than relying on array position.** Re-measured against `generate-task-order.sh --print`: `658` and `661` are wave 1 with no open predecessor; `659` and `660` are wave 2 behind `658`; `662` is wave 3 behind all four. `658` enters the backlog as one of its widest gates at 3 direct open dependents, tied with `654`, and takes second position for that reason. Position records priority only where the graph leaves a choice: `659` sits ahead of `660` because its own text names itself the group's most consequential behaviour change, and `662` sits last.
 
   - **`662` is last by design and must not be promoted.** It carries no gate of its own deliberately -- its content is undecided until the predicate, the postflight narrowing, the scaffolding change and the durability recommendation have all landed. Its four edges already hold it in wave 3. Nothing here adds a gate to it and nothing should; its one standing instruction is that the task-reference and record-version exemption standards citing `specs/**` are correct as they stand and are not part of the reframe.
 
@@ -158,7 +158,7 @@ Why this order:
 
   - **The milestone-and-roadmap record one batch below inherits a design constraint from this batch, and it is a constraint rather than an edge.** `656` makes the whole of `ROADMAP.md` generated and gives each milestone section a collaboration dashboard carrying progress and git review/approval state -- a reviewer-facing surface that lives at `specs/ROADMAP.md`. `660` makes `specs/` ignored by default in a fresh repository, and `656`'s own final acceptance check regenerates the roadmap of exactly the consumer that already ignores its specs tree. A review dashboard sited inside an ignored tree is invisible to the collaborator it exists for. No edge: `656`'s generator works identically under either posture, and chaining it behind this whole mechanism layer would cost the branch strand its schema for a question `656` can simply answer. The duty is recorded as an annotation on `656` instead -- say where the review surface lives under an ignored specs tree. `662` and `656` touch no file in common and are not edged either; `662`'s surfaces are the rules files, the three process workflows and the state-machine doc, none of which `656` claims.
 
-  - **One declaration defect inside the batch, flagged rather than worked around.** `661` declares the whole `context/standards/` directory, which collides by directory form with `658`'s `git-staging-scope.md` and `660`'s `orchestrator-runtime-files.md`. By its own contract `661` writes nothing under `agent-system/**` -- its outputs are a report and a durability statement drafted for `662` to place -- so that is an over-broad read scope, not real territory. Measured: the group's 16 file-form declarations touch 27 open records, while adding its three directory-form declarations (`scripts/lib/`, `context/standards/`, `context/processes/`) inflates that to 42. Narrow all three before probing this batch; the cost of not doing so is a deferred implement cycle, not a wrong result.
+  - **The declaration defect this bullet used to report inside the batch has been actioned, and its resolved state must not be undone.** `661`'s `file_scope` is now the empty array, narrowed from the whole `context/standards/` directory, which had overlapped 23 distinct non-terminal records for no real territory and tripped `validate-state.sh`'s coarse-declaration check. The empty declaration is the honest one rather than an omission awaiting repair: by its own contract `661` writes no file under `agent-system/**` -- its outputs are a report under its own artifact directory and a durability paragraph drafted for `662` to place -- and reading a standards file is not declaring it. `validate-state.sh` now emits a deliberate `empty_array` notice against it; **that notice is expected and is not a defect, and the declaration must not be re-broadened**, nor substituted with `context/standards/orchestrator-runtime-files.md`, which carries four other claimants including `660` itself and this group's never-co-admit counterpart. What the coarse-declaration check still reports inside this batch is one entry: `658`'s `agent-system/extensions/core/scripts/lib/`, at 11 distinct non-terminal overlaps (`338`, `508`, `517`, `525`, `535`, `541`, `565`, `632`, `646`, `659`, `660`). Narrow that one before probing the batch; the cost of not doing so is a deferred implement cycle, not a wrong result.
 - - **This leads the list by operator instruction, and the instruction is the only thing that puts it here.** Nothing in the dependency graph and nothing in any of these records' own text makes them urgent relative to the verification-substrate batch that previously held the head; what makes them first is that an operator asked for exactly this strand to be prioritized, with prerequisites identified rather than assumed. Recorded so a future pass can argue with the placement instead of inheriting it as if it had been derived.
 
   - **The three members are the decision-and-data-model layer, not the implementation.** `654` writes no script at all: its deliverables are a ruling per member of a thirteen-record commit-layer cluster (SUBSUMED, NEEDS REVISION, NEEDS EDGE or UNAFFECTED, each with a falsifiable basis), the dependency edges those rulings imply, and a decision record. `656` changes the state schema and the roadmap generator so an ordered milestone layer exists to automate against at all. `657` rules first and implements second, on `654`'s own pattern and naming it as the precedent: its Element 1 is a branch-topology and landing-strategy ruling that writes no script, and only Element 2 builds the milestone automation and review gates on top of `656`'s schema. The one record in this strand that is pure implementation is deliberately held out of this batch -- it is the batch immediately below.
@@ -186,9 +186,10 @@ Why this order:
 
   - **Re-measured 2026-11-19 by running the gates and suites directly, the red surface has moved
     under this batch, and the members no longer describe it exactly.** Two members' premises no
-    longer reproduce, one member's does, and one red here is owned by no record's subject. Each is
-    named below rather than left to a future dispatch to rediscover. The batch keeps its head
-    position regardless: what changed is which reds are live, not whether the verdict matters.
+    longer reproduce, the rest still bite, and one red here is owned by no record's subject. Each
+    is named below rather than left to a future dispatch to rediscover. **The batch is six members
+    rather than seven**: the duplicate-ledger disposition has landed. The batch keeps its position
+    regardless -- what changed is which reds are live, not whether the verdict matters.
 
   - **Still red, and the measurement is unchanged.** `645`'s `.mcp.json` merge defect runs 5
     passed / 2 failed: assertion C reports a hand-written server entry as `MISSING` after a
@@ -198,9 +199,21 @@ Why this order:
     from reaching `RESULT=landed_verify_clean`. `629` still fixes the two-engine allow-list drop
     that makes `test-deploy-propagation.sh` expected-red BY DESIGN, and `630`, already edged behind
     it, still writes the roster rows for that suite and `test-gate-registry-resolution.sh` so
-    `run-all.sh` stops calling an expected failure NEW. `633` still deletes a 68KB duplicate deploy
-    ledger inside the core source store whose contents disagree with the root ledger a resolver
-    reads.
+    `run-all.sh` stops calling an expected failure NEW.
+
+  - **The duplicate-ledger member has landed and is out of `task_ids`, and this prose is corrected
+    rather than merely shortened.** The 68KB phantom inside the core source store -- whose contents
+    disagreed with the root ledger a resolver reads -- was deleted and its cause established, the
+    disposition recorded at
+    `specs/633_stray_duplicate_deploy_ledger_in_core_source_store/summaries/01_stray-ledger-disposition-summary.md`.
+    Rendering already hid the terminal member; what rendering cannot fix is an authored bullet that
+    still claimed it as a live red, which is the one thing a maintenance pass owes by hand.
+    **The disposition is closed but the WRITER is not**, and that half is a separate record seated
+    in the loader batch far below: the extension loader resolves its load target as
+    `opts.project_dir or vim.fn.getcwd()` with no git-root resolution, so nothing yet stops the
+    next mis-rooted load recreating the phantom. No member of this batch owns that writer and no
+    edge joins the two -- the disposition is complete, so there is nothing left here for the writer
+    fix to wait on, and nothing here waiting on it.
 
   - **One red here is owned by no open record's SUBJECT, and a dispatch must not treat it as out of
     scope.** `test-lint-unit-integration-boundary.sh` is red at 14 passed / 1 failed, reporting one
@@ -213,7 +226,7 @@ Why this order:
     `645` already claims the failing suite and already carries "verify-deploy.sh completes its full
     gate set with exit 0" as acceptance criterion 1, which cannot be met while the row is missing.
     No edge is filed to the only other open claimant of `suite-classification.data` (`646`, batch
-    three): its subject is the return-meta terminal status vocabulary, it touches that file only
+    six): its subject is the return-meta terminal status vocabulary, it touches that file only
     for its own new suite, and the two batches never dispatch concurrently, so array position
     already resolves the overlap.
 
@@ -236,8 +249,8 @@ Why this order:
 
   - **Two suites the most recent close battery named as red were re-run this pass and are green.**
     `test-gate-lock.sh` passes 27 / 0, confirming `645`'s own triage of it as lock contention
-    rather than a defect -- and, separately, confirming that `653` in batch four extends a green
-    suite, which is why the no-edge ruling between those two records stands.
+    rather than a defect -- and, separately, confirming the premise of the gate-acquire bracketing
+    record that has since completed, which is why the no-edge ruling between those two stood.
     `test-lint-state-writer-boundary.sh` also passes, matching the load-induced-flake triage filed
     against it during that same battery. Neither needs a record.
 
@@ -525,16 +538,69 @@ Why this order:
 
   - They share `context/contracts/phase-closure.md` with `518` (batch eight), which runs earlier;
     that cross-batch overlap is left to array position.
-- - `563` rules between refusing test-fixture registration and pruning on read: the registry at
+- - **`663` is seated here, and in a batch rather than alone, because it shares its primary file
+    with both of the others.** All three claim
+    `lua/neotex/plugins/ai/shared/extensions/init.lua`: `663` for the four call sites that resolve
+    the load target as `opts.project_dir or vim.fn.getcwd()`, `563` for the
+    `pcall(repo_registry.upsert, project_dir, extension_name)` registration call that file makes on
+    every successful load, `583` for the loader-and-picker defaults surface. That is one file's
+    three open claimants, so splitting them across batches would leave a real
+    `file_scope_collision` resolved only by distance. They are also all `neovim`-typed and all
+    operate on the same loader surface, which makes this the shared-territory-is-a-reason-to-batch
+    case rather than a bucket of adjacent work. A batch of its own was considered and rejected on
+    exactly that ground.
+
+  - **The three are closer to one question than to three: what counts as a legitimate project root
+    at load time.** `663` answers it from the write side -- no load, unload, reload or resync may
+    write `.claude-extensions.json` to a directory that is not the root of the tree being deployed
+    into, and there is no git-root resolution and no root guard today. One such load on 2026-11-12
+    wrote a 68KB phantom ledger into a source-store directory, recording 691 installed files at
+    paths relative to itself with `installed_dirs` empty and no `.claude/` tree ever created there;
+    it sat untracked for a week. `563`'s own unsettled sub-question is substantially the same
+    predicate from the read side -- what a fixture-registration refusal keys on, given that a bare
+    `/tmp` prefix test both rejects a legitimate project kept under `/tmp` and misses a fixture
+    rooted elsewhere -- and 311 of the registry's 313 entries are precisely rows written by loads
+    into throwaway project directories. A root-validity guard landed at the load path answers part
+    of that for free, which is why `663` goes first inside the batch. `583` keeps its last position
+    and its existing edge behind `563`.
+
+  - **`663` is NOT raised toward the head, and the grounds are measurable rather than impressionistic.**
+    Both consequence surfaces the record names were measured fail-open and are currently dormant:
+    `validate-artifact.sh`'s `_cgs_find_repo_root` walks upward from an artifact's own directory to
+    the first `.claude-extensions.json` and would stop at a nested copy, but no ledger carries a
+    `coupled_generated_surfaces` key today; `skill-base.sh`'s `skill_get_extension_dir` reads a
+    bare cwd-relative ledger, which already means every non-core extension's lifecycle hooks skip
+    without a trace, but only for an invocation whose cwd sits inside a source store. The phantom
+    that made both of those live has been deleted and its disposition is closed, so nothing is
+    currently returning a wrong answer; what remains is preventing recurrence. By the ranking rule
+    above that is prevention rather than a live progress or verdict failure, and it ranks where
+    this batch sits. **The condition that would justify promoting it is stated so it can be
+    checked**: the day `coupled_generated_surfaces` is added to the root ledger, the upward walk
+    stops being a silence and becomes a wrong answer, and this record moves.
+
+  - **No edge was written for `663`, in either direction, and the refusal is on stated grounds.**
+    Co-membership in this batch is this list's own ordering judgment, never graph evidence, and
+    neither `563` nor `583` names `663` as a predecessor -- `663` postdates both and names neither.
+    The shared `init.lua` claim is the ordinary in-batch collision the claim gate serializes by
+    array position, exactly as the postflight claimants elsewhere in this list are left to it. The
+    residue is a reading duty, carried as an annotation on `563` rather than invented as an edge:
+    re-read the loader's root-resolution result before settling the fixture-refusal predicate,
+    because the two answer one question from opposite ends. `583`'s own edge behind `563` is
+    untouched, and the graph agrees with the written order -- `663` and `563` are wave 1, `583` is
+    wave 2.
+
+  - `563` rules between refusing test-fixture registration and pruning on read: the registry at
     `~/.local/share/nvim/neotex-ai/extension-repo-registry.json` held 313 entries of which 311 were
     `/tmp` paths and 2 were real repositories, which makes it unusable as a deploy-enumeration
     source. `583` (already edged behind it) then adds the settings-defaults surface to the loader
     picker.
 
-  - **Both are `neovim`-typed and both edit `lua/neotex/plugins/ai/`**, a subtree no other open
-    record in this list claims, so the pair runs without contending against the agent-system work
-    above. That independence is why it can sit here rather than competing for a slot near the head:
-    it is loader/picker functionality, not orchestration correctness.
+  - **All three are `neovim`-typed and all three edit `lua/neotex/plugins/ai/`.** That subtree has
+    exactly one other open claimant -- `629` in the gate batch at the head, whose
+    `picker/operations/sync.lua` sits in a different directory and collides with nothing here -- so
+    this batch runs without contending against the agent-system work above. That independence is
+    why it can sit here rather than competing for a slot near the head: it is loader and picker
+    functionality plus one latent write-path defect, not orchestration correctness.
 - - **One chain, and every edge in it is already carried.** `451` takes the Lean Challenge snapshot
     in the plan phase, where it is still meaningful, instead of leaving it to an implement phase the
     status gate correctly refuses. `462` gives `lean-challenge-snapshot.sh --check` a scope limit so
@@ -671,7 +737,7 @@ Why this order:
 
 **The claimant roster is four: `431`, `506`, `512` and `586`** (re-measured 2026-11-19). The wrong-corpus record that had briefly made it five -- its in-flight implement dispatch having added the sentinel to its own `file_scope` -- has completed, so batch eight carries no claimant again. `586` leads batch seven rather than sitting second, because the narrowly-scoped mutex record deliberately placed ahead of it has landed; its one remaining batch-mate is edged behind it anyway, so nothing queues behind the claimant that was not already waiting on it. The other three lead their own batches (`506` batch twelve, `431` batch fourteen, `512` batch fifteen) for the usual reason -- a claimant placed first lets the rest of its batch queue behind it instead of colliding with it mid-run. **The head is clear**: no member of batches one through six declares the sentinel, so those six runs contend only with each other and with whatever a cross-session claimant holds.
 
-**What changed this pass.** The pass was scoped by instruction to the five records filed since the last one -- the ignored-specs mechanism group: a shared gitignore predicate with a non-failure exit code for an all-ignored pathspec, the postflight demotion narrowing, an init default that ignores the specs tree, a durability recommendation, and the documentation reframe that records what the other four built -- with the instruction to seat them alongside the four-record branch-and-milestone strand already at the head. Five things changed. **(1) One batch was added at the head**, holding all five ignored-specs records, and it was placed ABOVE the branch strand rather than beside it; the relative order was this list's judgment, not the instruction's, and the grounds are in the preamble and in that batch's own first bullet. **(2) No dependency edge was written anywhere this pass, and that is a measured finding rather than an omission.** Every candidate was judged and refused on stated grounds: three co-territorial pairs carry an explicit owner ruling of no-edge-in-either-direction (`658`/`618`, `659`/`501`, `660`/`338`), the commit-layer overlap between `658` and the cluster-reconciliation record was refused in both directions, and the roadmap-generation record's inherited siting constraint is a design input rather than an ordering. **(3) Four reading duties were recorded as `roadmap_annotation` entries instead of as edges** -- on `654` (rule on the ignored-specs predicate as a fourteenth cluster member and re-measure the script's refusal paths afterwards), on `656` (say where the review surface lives once `specs/` is ignored by default), and on `618` and `338` (re-read the ignored-specs result rather than assume the evidence and enumeration they were written against). An annotation renders on the record's own `## Open work` line, which is where a dispatched agent will actually meet it. **(4) One batch was cleared of cruft rendering had already hidden**: the validator batch's landed member was removed from its `task_ids`, and its `description` and `Why this order:` text were rewritten against the three survivors, since the authored prose still claimed four members, a wrong-corpus verdict that has shipped, and a sentinel claimant that is gone. **(5) Nothing else moved.** No other batch's membership, order, description or rationale was touched, because the instruction's focus did not reach them and a full sweep found no second batch whose prose had gone stale. **127 of 128 open records are batched**; the single exception is the held email substrate (`498`), which is an owner decision, not available work.
+**What changed this pass.** The pass was scoped by instruction to the five records filed since the last one -- the ignored-specs mechanism group: a shared gitignore predicate with a non-failure exit code for an all-ignored pathspec, the postflight demotion narrowing, an init default that ignores the specs tree, a durability recommendation, and the documentation reframe that records what the other four built -- with the instruction to seat them alongside the four-record branch-and-milestone strand already at the head. Five things changed. **(1) One batch was added at the head**, holding all five ignored-specs records, and it was placed ABOVE the branch strand rather than beside it; the relative order was this list's judgment, not the instruction's, and the grounds are in the preamble and in that batch's own first bullet. **(2) No dependency edge was written anywhere this pass, and that is a measured finding rather than an omission.** Every candidate was judged and refused on stated grounds: three co-territorial pairs carry an explicit owner ruling of no-edge-in-either-direction (`658`/`618`, `659`/`501`, `660`/`338`), the commit-layer overlap between `658` and the cluster-reconciliation record was refused in both directions, and the roadmap-generation record's inherited siting constraint is a design input rather than an ordering. **(3) Four reading duties were recorded as `roadmap_annotation` entries instead of as edges** -- on `654` (rule on the ignored-specs predicate as a fourteenth cluster member and re-measure the script's refusal paths afterwards), on `656` (say where the review surface lives once `specs/` is ignored by default), and on `618` and `338` (re-read the ignored-specs result rather than assume the evidence and enumeration they were written against). An annotation renders on the record's own `## Open work` line, which is where a dispatched agent will actually meet it. **(4) One batch was cleared of cruft rendering had already hidden**: the validator batch's landed member was removed from its `task_ids`, and its `description` and `Why this order:` text were rewritten against the three survivors, since the authored prose still claimed four members, a wrong-corpus verdict that has shipped, and a sentinel claimant that is gone. **(5) Nothing else moved.** No other batch's membership, order, description or rationale was touched, because the instruction's focus did not reach them and a full sweep found no second batch whose prose had gone stale. **127 of 128 open records are batched**; the single exception is the held email substrate (`498`), which is an owner decision, not available work. **Reconciled afterwards, in a scoped follow-up pass over four committed facts and nothing else.** The head batch was reordered to put the durability research first, by owner ruling, because it builds nothing and may collapse the migration half of the scaffolding record before anyone plans it -- its `description` and its ordering bullet both stated the opposite reason and were rewritten. Two measured scope corrections pinned onto the predicate and the demotion records were carried into that batch's prose: the predicate's blast radius is three production call sites rather than the 95 files that merely reference the commit helper, and the demotion record's history-reader surface is three items rather than six, three of the named six issuing no git read at all. The durability record's over-broad declaration was narrowed to an empty array and the bullet reporting it as a defect now records the resolved state, including that the resulting `empty_array` notice is expected. The verify-deploy batch lost its stray-ledger member to completion and had its `description` and bullets rewritten against six survivors, with the writer half of that same defect -- a loader resolving its load target to the working directory with no root guard -- seated at the head of the loader batch alongside the two other open claimants of the file it edits. No edge was written for it either; the reading duty is an annotation on the registry record. Nothing else moved.
 
 The gate exempts research and plan dispatches (neither regenerates the tree) and defers only implement, so a claimant still researches and plans freely while the lane is occupied.
 
@@ -691,7 +757,7 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 
 **The two held records are not waiting on engineering.** The books-corpus refactor (`342`) waits on an external version stamp reaching `0.1.0` (the consuming repository's own book-convention record still reads a pre-release stamp) and is kept inside batch twenty-eight so its territory overlap with `383`/`384` stays visible. The email preference-harvest substrate (`498`) waits on an operator decision about integrating email into the hosted store and is the one open record in no batch. Neither lift is engineering work, and `/orchestrate` admits a held record only under an explicit forcing flag. Nothing depends on either.
 
-**Scopes and declarations worth narrowing first.** Re-measured 2026-11-19. **Two open records carry no `file_scope` at all -- `613` and `618` -- and that is the entire class**, since no open record declares an empty array. Both sit in batches whose other members are narrowly scoped (`613` in batch five with `475`/`514`/`574`, `618` in batch seventeen with `338`), so an admission probe over either batch returns a result that is clean for the wrong reason; `618`'s case is now worse than cosmetic, because the head batch asserts a `git-commit-scoped.sh` overlap with it that no scan can see. **Fix those two declarations before probing.** A new over-broad declaration arrived with the head batch: the durability-research record declares the whole `context/standards/` directory while writing nothing under `agent-system/**` by its own contract, so it collides by directory form with two of its own batch-mates for no real territory -- narrow it, along with the predicate record's `scripts/lib/` and the reframe record's `context/processes/`. **A separate one-field defect class is now the largest**: eight open records carry a null `title`, so `## Open work` renders their `project_name` slug instead of a sentence -- `613`, `618`, `645`, `646`, `654`, `655`, `656` and `657`, four of them in the head strands where a reader is most likely to look. Filling those eight titles is the cheapest legibility win available in this file. Two narrower declaration defects remain live: `590` declares its lint one directory above where the file actually sits, so it cannot collide with `512` even though the two edit the same lint -- which is why batch fifteen pairs them without an edge; and `557` carries topic `decidability`, undeclared in `active_topics`, so it renders after the curated topics. Of the directory-form declarations that remain elsewhere, every one is scoped to a single extension subtree -- `342` (three `books/` directories), `384`, `453`, `530` and `544` -- none is a whole-corpus discovery scope and none is a defect. And `586` still carries no `topic` at all, so it renders under Uncategorized and `generate-task-order.sh` emits a non-fatal warning about it on every run.
+**Scopes and declarations worth narrowing first.** Re-measured 2026-11-19. **Two open records carry no `file_scope` at all -- `613` and `618` -- and exactly one declares an empty array, `661`, deliberately.** The two missing declarations are the defect: both sit in batches whose other members are narrowly scoped (`613` in batch five with `475`/`514`/`574`, `618` in batch seventeen with `338`), so an admission probe over either batch returns a result that is clean for the wrong reason; `618`'s case is worse than cosmetic, because the head batch asserts a `git-commit-scoped.sh` overlap with it that no scan can see. **Fix those two declarations before probing.** **`661`'s empty array is not one of them and must not be repaired.** It replaced a whole-`context/standards/`-directory declaration that overlapped 23 distinct non-terminal records for no real territory, and the record writes no file under `agent-system/**` by its own contract -- its outputs are a report under its own artifact directory and a drafted durability paragraph -- so `validate-state.sh`'s `empty_array` notice against it is the expected consequence of a correct declaration, not a finding. Reading a standards file is not declaring it, and substituting `context/standards/orchestrator-runtime-files.md` would be no better, since that file already has four other claimants. **One over-broad declaration is left in the head batch**: the predicate record's `agent-system/extensions/core/scripts/lib/`, which the coarse-declaration check reports at 11 distinct non-terminal overlaps (`338`, `508`, `517`, `525`, `535`, `541`, `565`, `632`, `646`, `659`, `660`) -- narrow that one before probing batch one. **A separate one-field defect class is now the largest**: nine open records carry a null `title`, so `## Open work` renders their `project_name` slug instead of a sentence -- `613`, `618`, `645`, `646`, `654`, `655`, `656`, `657` and the newly filed loader root-resolution record, four of them in the head strands where a reader is most likely to look. Filling those nine titles is the cheapest legibility win available in this file. Two narrower declaration defects remain live: `590` declares its lint one directory above where the file actually sits, so it cannot collide with `512` even though the two edit the same lint -- which is why batch fifteen pairs them without an edge; and `557` carries topic `decidability`, undeclared in `active_topics`, so it renders after the curated topics. Of the directory-form declarations that remain elsewhere, every one is scoped to a single extension subtree -- `342` (three `books/` directories), `384`, `453`, `530` and `544` -- none is a whole-corpus discovery scope and none is a defect. And `586` still carries no `topic` at all, so it renders under Uncategorized and `generate-task-order.sh` emits a non-fatal warning about it on every run.
 
 ## Open work
 
@@ -749,7 +815,7 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 457 blocked:455     Repo-specific content has leaked into the shared agent-system source store
 383 ready           Add a /reconcile command to the books extension: aggregate docs-stage.sh and ...
 522 ready           Fix report/summary heading-skeleton conformance across agents
-563 ready           Make the extension repo registry usable for deploy enumeration: rule between ...
+563 ready           Make the extension repo registry usable for deploy enumeration: rule between ...   <- re-read the loader root-resolution result seated ahead of this record before settling the fixture-refusal predicate; no edge
 ```
 
 **Literature (2)**
@@ -758,9 +824,10 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 453 ready           Carry the degraded-retrieval signal into the zero-result case, where the brie...
 ```
 
-**Neovim (1)**
+**Neovim (2)**
 ```
 583 blocked:563     Add a settings-defaults surface to the agent system loader picker
+663 ready           loader_project_dir_root_resolution
 ```
 
 **File scope lifecycle (7)**
@@ -798,7 +865,7 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 654 ready           reconcile_commit_layer_cluster_and_ordering   <- also rule on the ignored-specs predicate as a fourteenth cluster member, and re-measure after it
 ```
 
-**Agent system (51)**
+**Agent system (50)**
 ```
 481 blocked:390     Rule on and migrate the 32-record mis-sited agent-system task delta accumulat...
 533 blocked:410     lake-build-guard replays stale result for env lean FILE
@@ -847,7 +914,6 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 629 ready           Fix the two-engine defect: scan_all_artifacts' sync_scan allow-list post-filt...
 631 ready           Replace test-typescript-verify.sh's fixed-depth REPO_ROOT walk with a boundar...   <- gate 29 reports 0 violations and the fixed-depth walk is already replaced -- confirm before dispatch
 632 ready           Stop orchestrator-context-budget.json's derivation log from re-breaking the t...   <- gate 4 is green; what remains is the exemption-vs-house-style ruling, not a live violation
-633 ready           Resolve the stray duplicate .claude-extensions.json sitting inside the core e...
 639 ready           Make issue-record.sh failures visible instead of silently losing the evidence...
 640 ready           Add a derived-percentage bug class to the census methodology standard
 645 ready           repair_seven_failing_gate8_suites   <- the unit/integration boundary suite is red again from a later cause its provenance list predates
