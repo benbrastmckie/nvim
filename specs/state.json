@@ -1,7 +1,243 @@
 {
   "version": "1.1.0",
-  "next_project_number": 663,
+  "next_project_number": 664,
   "active_projects": [
+    {
+      "project_number": 663,
+      "project_name": "loader_project_dir_root_resolution",
+      "status": "not_started",
+      "task_type": "neovim",
+      "topic": "neovim",
+      "description": "Resolve the extension loader's project_dir to the git toplevel instead of vim.fn.getcwd(), and refuse a load whose cwd resolves under an agent-system source store.\n\nEDIT TARGET: lua/neotex/plugins/ai/shared/extensions/ (Neovim Lua, NOT .claude/** and NOT a source store -- the source-store/deploy boundary rule does not apply to this task).\n\nTHE DEFECT, MEASURED 2026-11-19. lua/neotex/plugins/ai/shared/extensions/init.lua resolves the load target as `project_dir = opts.project_dir or vim.fn.getcwd()` at four separate call sites (the load, unload, reload and resync-all entry points). lua/.../state.lua then appends config.root_state_file to it, so the load ledger is written to whatever directory Neovim happened to be sitting in. There is no git-root resolution and no guard that the cwd is a project root rather than a directory inside a source store.\n\nTHE OBSERVED CONSEQUENCE. A load run on 2026-11-12 at 01:03 local, one minute after a commit to the core manifest, wrote a 68KB ledger to agent-system/extensions/core/.claude-extensions.json -- a phantom recording 691 installed files at .claude/... paths relative to itself, with installed_dirs empty and no .claude/ tree ever created there. It sat untracked for a week. Its disposition is owned elsewhere and the file has since been deleted; what this task owns is the writer, so the next mis-rooted load does not recreate it.\n\nWHY IT IS NOT MERELY UNTIDY. Two consumers resolve a ledger by a route that a nested copy can win. scripts/validate-artifact.sh's _cgs_find_repo_root walks UPWARD from the artifact's own directory to the first .claude-extensions.json, so for any path under agent-system/extensions/core/** it stops at the nested copy rather than the root. scripts/skill-base.sh's skill_get_extension_dir reads a bare cwd-relative \".claude-extensions.json\", so anything invoked with cwd inside a source store sees only the extensions that copy lists. Both are fail-open and both were silent in this instance -- the upward walk because neither ledger carries a coupled_generated_surfaces key today, and the cwd-relative read because extension hooks are non-blocking by contract. Neither silence is a property to rely on: the first becomes a wrong answer the day that key is added to the root ledger, and the second already means every non-core extension's lifecycle hooks skip without a trace.\n\nWHAT TO SETTLE IN RESEARCH, NOT HERE. (a) Whether project_dir should resolve via `git rev-parse --show-toplevel` from the cwd, or whether a refusal is the better behaviour when cwd is not already a project root -- the criterion is that a load must never write a ledger to a directory that is not the root of the tree being deployed into. (b) Whether a load into a legitimately non-git directory is a case that must keep working, which decides whether a git-toplevel resolution can be unconditional. (c) Whether the guard belongs in the four init.lua call sites or once inside state.lua's path construction, where every writer necessarily passes. (d) Whether unload and resync-all need the same treatment as load, given that an unload resolving to the wrong root would remove files from a tree it never deployed into.\n\nVERIFICATION. A load invoked with cwd set to a directory inside agent-system/extensions/ either writes its ledger to the repository root or refuses outright, asserted against the filesystem rather than inferred from a return value; and a load invoked normally from the project root behaves exactly as it does today, with its ledger landing at the root and the same extension set recorded. The second half is the negative control and is required.\n\nDONE WHEN. No load, unload, reload or resync path can write .claude-extensions.json to a directory that is not the root of the tree being deployed into; a mis-rooted invocation is visibly refused or correctly redirected rather than silently honoured; and a normal root-cwd load is demonstrably unchanged.",
+      "created": "2026-11-19T21:15:31Z",
+      "last_updated": "2026-11-19T21:15:31Z",
+      "dependencies": [],
+      "file_scope": [
+        "lua/neotex/plugins/ai/shared/extensions/init.lua",
+        "lua/neotex/plugins/ai/shared/extensions/state.lua"
+      ],
+      "next_artifact_number": 1,
+      "artifacts": [],
+      "audit_verdict": {
+        "proposal": {
+          "id": "loader_project_dir_root_resolution",
+          "project_number": null,
+          "title": "Resolve the extension loader's project_dir to the git toplevel instead of vim.fn.getcwd(), and refuse a load whose cwd resolves under an agent-system source store"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 167,
+          "duplicate-of-open": 71,
+          "scope-blind": 42
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 642,
+            "project_name": "repropagate_bounded_wait_agent_bullets",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 641,
+            "project_name": "reground_foreground_wait_cap_and_idiom",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5555555555555556
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 640,
+            "project_name": "guard_derived_percentage_claims",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 639,
+            "project_name": "make_issue_record_failures_visible",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 633,
+            "project_name": "stray_duplicate_deploy_ledger_in_core_source_store",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.6666666666666666
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.6111111111111112
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 342,
+            "project_name": "refactor_books_context_corpus_role_scoped",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.6111111111111112
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 398,
+            "project_name": "lean_plan_scope_rw_site_unfolding",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5555555555555556
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5555555555555556
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.7777777777777778
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 457,
+            "project_name": "repo_specific_content_in_shared_source_store",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 462,
+            "project_name": "lean_challenge_check_scope_limit",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 463,
+            "project_name": "lean_goal_empty_goals_trust_surface",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5555555555555556
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 473,
+            "project_name": "strip_record_versioning_from_architecture_docs",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 474,
+            "project_name": "repair_agent_frontmatter_standard_links",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 479,
+            "project_name": "task_landing_target_requirement",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5555555555555556
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 484,
+            "project_name": "collapse_perpath_scope_excursion_issue_rows_into_o",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5555555555555556
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 498,
+            "project_name": "replace_email_preference_tally_substrate",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5555555555555556
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 502,
+            "project_name": "research_phase_doc_sync_companion_surface",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5555555555555556
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 42
+      }
+    },
     {
       "project_number": 651,
       "project_name": "orchestration_close_owns_full_battery",

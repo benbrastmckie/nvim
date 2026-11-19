@@ -1,5 +1,5 @@
 ---
-next_project_number: 663
+next_project_number: 664
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 663
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,633,639,640,645,646,654,658,661 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,633,639,640,645,646,654,658,661,663 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,583,592,593,598,605,609,630,656,659,660 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,577,586,599,629,654,658 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,486,492,509,513,518,561,566,594,657,662 | 439,452,472,479,484,491,552,593,656,659,660,661 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,571,581,588,595,641,655 | 454,472,486,492,509,518,539,561,580,594,657 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
@@ -87,6 +87,7 @@ next_project_number: 663
 
 ### Neovim
 
+663 [NOT STARTED] — Resolve the extension loader's project\_dir to the git...
 583 [NOT STARTED] — Add a settings-defaults surface to the agent system loader picker
 
 ### File Scope Lifecycle
@@ -186,6 +187,30 @@ next_project_number: 663
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 663. Loader project dir root resolution
+- **Status**: [NOT STARTED]
+- **Task Type**: neovim
+- **Topic**: neovim
+- **Dependencies**: None
+
+**Description**: Resolve the extension loader's project_dir to the git toplevel instead of vim.fn.getcwd(), and refuse a load whose cwd resolves under an agent-system source store.
+
+EDIT TARGET: lua/neotex/plugins/ai/shared/extensions/ (Neovim Lua, NOT .claude/** and NOT a source store -- the source-store/deploy boundary rule does not apply to this task).
+
+THE DEFECT, MEASURED 2026-11-19. lua/neotex/plugins/ai/shared/extensions/init.lua resolves the load target as `project_dir = opts.project_dir or vim.fn.getcwd()` at four separate call sites (the load, unload, reload and resync-all entry points). lua/.../state.lua then appends config.root_state_file to it, so the load ledger is written to whatever directory Neovim happened to be sitting in. There is no git-root resolution and no guard that the cwd is a project root rather than a directory inside a source store.
+
+THE OBSERVED CONSEQUENCE. A load run on 2026-11-12 at 01:03 local, one minute after a commit to the core manifest, wrote a 68KB ledger to agent-system/extensions/core/.claude-extensions.json -- a phantom recording 691 installed files at .claude/... paths relative to itself, with installed_dirs empty and no .claude/ tree ever created there. It sat untracked for a week. Its disposition is owned elsewhere and the file has since been deleted; what this task owns is the writer, so the next mis-rooted load does not recreate it.
+
+WHY IT IS NOT MERELY UNTIDY. Two consumers resolve a ledger by a route that a nested copy can win. scripts/validate-artifact.sh's _cgs_find_repo_root walks UPWARD from the artifact's own directory to the first .claude-extensions.json, so for any path under agent-system/extensions/core/** it stops at the nested copy rather than the root. scripts/skill-base.sh's skill_get_extension_dir reads a bare cwd-relative ".claude-extensions.json", so anything invoked with cwd inside a source store sees only the extensions that copy lists. Both are fail-open and both were silent in this instance -- the upward walk because neither ledger carries a coupled_generated_surfaces key today, and the cwd-relative read because extension hooks are non-blocking by contract. Neither silence is a property to rely on: the first becomes a wrong answer the day that key is added to the root ledger, and the second already means every non-core extension's lifecycle hooks skip without a trace.
+
+WHAT TO SETTLE IN RESEARCH, NOT HERE. (a) Whether project_dir should resolve via `git rev-parse --show-toplevel` from the cwd, or whether a refusal is the better behaviour when cwd is not already a project root -- the criterion is that a load must never write a ledger to a directory that is not the root of the tree being deployed into. (b) Whether a load into a legitimately non-git directory is a case that must keep working, which decides whether a git-toplevel resolution can be unconditional. (c) Whether the guard belongs in the four init.lua call sites or once inside state.lua's path construction, where every writer necessarily passes. (d) Whether unload and resync-all need the same treatment as load, given that an unload resolving to the wrong root would remove files from a tree it never deployed into.
+
+VERIFICATION. A load invoked with cwd set to a directory inside agent-system/extensions/ either writes its ledger to the repository root or refuses outright, asserted against the filesystem rather than inferred from a return value; and a load invoked normally from the project root behaves exactly as it does today, with its ledger landing at the root and the same extension set recorded. The second half is the negative control and is required.
+
+DONE WHEN. No load, unload, reload or resync path can write .claude-extensions.json to a directory that is not the root of the tree being deployed into; a mis-rooted invocation is visibly refused or correctly redirected rather than silently honoured; and a normal root-cwd load is demonstrably unchanged.
+
+---
 
 ### 662. Reframe docs for ignored specs default
 - **Status**: [NOT STARTED]
