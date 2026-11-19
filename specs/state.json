@@ -18348,7 +18348,235 @@
       "next_artifact_number": 1,
       "session_id": "sess_1795113136_84ab7a",
       "artifacts": [],
-      "audit_override": "Backlog audit ran upstream in skill-meta prompt-mode Step 4.5 and the user confirmed the breakdown; the verdict document was not forwarded in meta-builder-agent's delegation context (collected_answers carried only confirmed:true), so no proposal.id-matching evidence was available at the write site. Override recorded rather than re-running an unreviewed audit or fabricating a verdict object."
+      "audit_verdict": {
+        "proposal": {
+          "id": "milestone_schema_and_generated_roadmap",
+          "project_number": null,
+          "title": "Milestone schema in state.json and a wholly generated ROADMAP.md"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 101,
+          "duplicate-of-open": 31,
+          "overlaps-open": 3,
+          "scope-blind": 42,
+          "superset-of-open": 2
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 631,
+            "project_name": "gate29_typescript_test_fixed_depth_walk",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41346153846153844
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 632,
+            "project_name": "context_budget_derivation_task_reference_recurrence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4014084507042254
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.40293040293040294
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": [
+              "specs/TODO.md",
+              "specs/state.json"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.5384615384615384
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45787545787545786
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41025641025641024
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4908424908424908
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4835164835164835
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4358974358974359
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4358974358974359
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45787545787545786
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 480,
+            "project_name": "stranded_research_task_detector",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/validate-state.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.31868131868131866
+          },
+          {
+            "verdict": "superset-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": [
+              "specs/TODO.md",
+              "specs/state.json"
+            ],
+            "mechanical_class": "superset",
+            "semantic_score": 0.47619047619047616
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4432234432234432
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4065934065934066
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 509,
+            "project_name": "redeploy_phase_declaration_and_gate_criterion",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4139194139194139
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42124542124542125
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 517,
+            "project_name": "stage_regenerated_derived_files_in_phase_commits",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42857142857142855
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45054945054945056
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 523,
+            "project_name": "gate27_missing_declaration_call_site_counting",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4139194139194139
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 533,
+            "project_name": "lake_build_guard_stale_replay_env_lean_file",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41025641025641024
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5421245421245421
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.47985347985347987
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4945054945054945
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 541,
+            "project_name": "snapshot_artifacts_contaminate_phase_commits",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4175824175824176
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 42
+      }
     },
     {
       "project_number": 657,
@@ -18378,7 +18606,269 @@
       "next_artifact_number": 1,
       "session_id": "sess_1795113136_84ab7a",
       "artifacts": [],
-      "audit_override": "Backlog audit ran upstream in skill-meta prompt-mode Step 4.5 and the user confirmed the breakdown; the verdict document was not forwarded in meta-builder-agent's delegation context (collected_answers carried only confirmed:true), so no proposal.id-matching evidence was available at the write site. Override recorded rather than re-running an unreviewed audit or fabricating a verdict object."
+      "audit_verdict": {
+        "proposal": {
+          "id": "branch_topology_ruling_and_milestone_automation",
+          "project_number": null,
+          "title": "Branch-topology ruling, then milestone automation and review gates"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 142,
+          "duplicate-of-open": 11,
+          "overlaps-open": 17,
+          "scope-blind": 43,
+          "superset-of-open": 2
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "overlaps-open",
+            "project_number": 639,
+            "project_name": "make_issue_record_failures_visible",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+              "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.23684210526315788
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": [
+              "specs/TODO.md",
+              "specs/state.json"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.4440789473684211
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40131578947368424
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.4309210526315789
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41776315789473684
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.39144736842105265
+          },
+          {
+            "verdict": "superset-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": [
+              "specs/TODO.md",
+              "specs/state.json"
+            ],
+            "mechanical_class": "superset",
+            "semantic_score": 0.3980263157894737
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 484,
+            "project_name": "collapse_perpath_scope_excursion_issue_rows_into_o",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.24013157894736842
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+              "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.4375
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 514,
+            "project_name": "convergence_guard_blind_to_zero_dispatch_cycles",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.28618421052631576
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 519,
+            "project_name": "infra_exempt_transport_error_dispatch_deaths",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.23825503355704697
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.3684210526315789
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4901315789473684
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 536,
+            "project_name": "source_store_commit_and_registration_review",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.25213675213675213
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41118421052631576
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4605263157894737
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 548,
+            "project_name": "plan_contingency_file_scope_and_containment_drop",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.3618421052631579
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 551,
+            "project_name": "orchestrate_stale_handoff_recurrence_and_missing_defect_record",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.2894736842105263
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 553,
+            "project_name": "git_commit_scoped_gate_refusal_diagnostic",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.34868421052631576
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 561,
+            "project_name": "bounded_waiter_load_sizing_and_output_capture",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4243421052631579
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 567,
+            "project_name": "port_containment_strip_to_git_commit_scoped",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.275
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 570,
+            "project_name": "stall_signal_counts_unattributed_commits",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.2532894736842105
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 577,
+            "project_name": "aux_revision_cannot_clear_handoff_blocker",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.27960526315789475
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 586,
+            "project_name": "suite_gate_cost_standing_consumer",
+            "shared_paths": [
+              "specs/decisions/suite-cost-delete-keep-verdict.md"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.24352331606217617
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 598,
+            "project_name": "v10_containment_remedy_for_coupled_pair_paths",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/git-commit-scoped.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.26973684210526316
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 43
+      }
     }
   ],
   "completed_projects": [],
