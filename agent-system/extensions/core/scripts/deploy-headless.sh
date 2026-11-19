@@ -447,7 +447,15 @@ main() {
     # script's single final exit. Each branch below still exits with EXACTLY the same code it
     # always did -- 0 or 3 -- this restructuring changes nothing about deploy-headless.sh's
     # documented exit-code contract (see the header's `# Exit codes:` block).
-    local -a VERIFY_ARGS=(--skip-slow)
+    # --override-batch-gate-deferral (gate-ceiling-fit Phase 5/8): this inline check is a
+    # routine, fast (--skip-slow) per-deploy sanity pass, not a task's own duplicative full
+    # battery -- without this flag, verify-deploy.sh's own entry guard would refuse this call
+    # (exit 3, DEFERRED) whenever a batch-gate-pending marker happens to be pending, which this
+    # deploy-headless.sh invocation would then collapse into "fails verification" below,
+    # misreporting a deferral as a real drift finding. See
+    # lib/deploy-baseline-lib.sh's deploy_findings_snapshot for the identical fix applied to
+    # every OTHER infrastructure-level snapshot caller in this codebase.
+    local -a VERIFY_ARGS=(--skip-slow --override-batch-gate-deferral)
     if [ -n "$MINIMAL_INIT_DIR" ]; then
       VERIFY_ARGS+=(--minimal-init "$MINIMAL_INIT_DIR")
     fi

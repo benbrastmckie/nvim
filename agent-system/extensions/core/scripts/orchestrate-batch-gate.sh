@@ -111,13 +111,12 @@ fi
 echo "[orchestrate-batch-gate] running the complete verify-deploy.sh gate set once for this invocation's batch..." >&2
 
 # ─── Capture: full depth (no --skip-slow), explicit TARGET, exactly once ──────────────────────
-# --override-batch-gate-deferral (gate-ceiling-fit Phase 5): this script IS the one sanctioned
-# discharger of the batch-gate-pending marker's own obligation -- its own unfiltered
-# verify-deploy.sh calls below must never trip verify-deploy.sh's entry guard and refuse
-# themselves over a marker THIS session's own cycle-plan step wrote earlier. Every other caller
-# of deploy_findings_snapshot in this codebase is deliberately left unoverridden: deferring an
-# unfiltered snapshot while a marker is pending is this guard's whole point for them.
-first_findings="$(deploy_findings_snapshot "$VERIFY_DEPLOY_PATH" --override-batch-gate-deferral "$PROJECT_ROOT")"
+# NOTE (gate-ceiling-fit Phase 5/8): deploy_findings_snapshot itself now unconditionally passes
+# --override-batch-gate-deferral to every verify-deploy.sh call it makes (see that function's
+# own header comment in lib/deploy-baseline-lib.sh for the full rationale) -- this script's own
+# two calls below need no explicit flag of their own any more, though passing it here too would
+# have been harmless (a boolean, idempotent either way).
+first_findings="$(deploy_findings_snapshot "$VERIFY_DEPLOY_PATH" "$PROJECT_ROOT")"
 first_exit=0
 printf '%s\n' "$first_findings" | grep -q '\[SENTINEL\]' && first_exit=2
 [ -n "$first_findings" ] && [ "$first_exit" -ne 2 ] && first_exit=1
@@ -129,7 +128,7 @@ if [ -z "$first_findings" ]; then
 else
   # ─── Confirm: a second fresh snapshot; drop candidates that did not reproduce (flaky under
   # the ambient load this very capture just added). ────────────────────────────────────────────
-  confirm_snapshot="$(deploy_findings_snapshot "$VERIFY_DEPLOY_PATH" --override-batch-gate-deferral "$PROJECT_ROOT")"
+  confirm_snapshot="$(deploy_findings_snapshot "$VERIFY_DEPLOY_PATH" "$PROJECT_ROOT")"
   confirmed_findings="$(deploy_baseline_confirm_new_findings "$first_findings" "$confirm_snapshot")"
   flaky_findings="$(comm -23 <(printf '%s\n' "$first_findings" | sort -u) <(printf '%s\n' "$confirmed_findings" | sort -u) 2>/dev/null || true)"
   if [ -n "$flaky_findings" ]; then
