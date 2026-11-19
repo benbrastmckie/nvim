@@ -117,7 +117,7 @@ Re-derived 2026-11-19 over the 124 open records, and re-verified against `genera
 /orchestrate 475, 613, 514, 574   # Hard stops: task creation dies on a big verdict, a lock never reaps, a run never converges
 /orchestrate 556, 472, 646, 551, 519, 570, 577, 609   # What one dispatch hands the next: settle the handoff/return-meta shapes, fix failure accounting
 /orchestrate 586, 605   # Make a full battery's numbers trustworthy: the standing cost verdicts, then one stale roster row
-/orchestrate 545, 652, 579, 575   # Four false failures left in the artifact and ceiling validators, one with a wrong-corpus verdict
+/orchestrate 545, 579, 575   # Four false failures left in the artifact and ceiling validators, one with a wrong-corpus verdict
 /orchestrate 639, 477, 484, 486, 501, 508, 524   # Evidence integrity: stop losing issue entries, normalize classes, collapse scope-excursion rows
 /orchestrate 548, 567, 553, 598, 536, 535, 541   # Commit containment: stop phase commits dropping legitimate files and carrying foreign ones
 /orchestrate 599, 592, 520, 565, 518, 571   # Dispatch composition: gate narrowing, starting position, deploy order, prior art, stale seq
@@ -766,9 +766,8 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 504 ready           Reconcile the Lean Goals-block harvester with its documented contract
 ```
 
-**Orchestrator (10)**
+**Orchestrator (9)**
 ```
-652 IN FLIGHT       validate_artifact_corpus_resolution   <- the verification_scope project-suite-roots reader it consumes has landed; defect site unchanged
 472 blocked:556     Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop...
 513 blocked:479     Mechanically detect a plan phase that closed without its own commit
 518 blocked:472     State the blockers[] admission contract and continuation-on-partial requireme...
