@@ -1166,6 +1166,7 @@ ACCEPTANCE.
 - **Dependencies**: Task 476, Task 607
 - **Research**: [610_full_gate_verification_ceiling_and_stall/reports/01_gate-verification-ceiling-and-stall.md]
 - **Plan**: [610_full_gate_verification_ceiling_and_stall/plans/01_gate-ceiling-fit-and-stall-detection.md]
+- **Summary**: [610_full_gate_verification_ceiling_and_stall/summaries/01_gate-ceiling-fit-and-stall-detection-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

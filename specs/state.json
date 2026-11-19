@@ -2692,9 +2692,15 @@
           "path": "specs/610_full_gate_verification_ceiling_and_stall/plans/01_gate-ceiling-fit-and-stall-detection.md",
           "type": "plan",
           "summary": "8-phase plan covering the gate-8 ceiling fit, the mechanical batch-gate guard, generalized contention tagging, and orchestrator-side stall detection."
+        },
+        {
+          "path": "specs/610_full_gate_verification_ceiling_and_stall/summaries/01_gate-ceiling-fit-and-stall-detection-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary with the measured Gate 8 headroom, the coverage statement, and the Reasoned Exclusions."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented all 8 plan phases: Gate 8's wall-clock now measures 349s (under the 600s ceiling with ~42% headroom) after relocating its 9-suite slow bucket to a new serialized gate 31; a staleness-bounded batch-gate-pending marker plus mechanical entry guards in verify-deploy.sh/run-all.sh replace the advisory deferral directive; contention tagging generalized to every gate's timeout-kill path; and a dispatch watchdog launched beside Move 2 detects a silent dispatch without waiting for every Agent call to return. Found and fixed two significant bugs along the way: a core-extension-scoped --cost-class blind spot that would have silently dropped 8 real suites from Gate 8's coverage, and a production-repo marker-file leak from an early draft of the new test suite's own Case 7."
     },
     {
       "project_number": 456,
