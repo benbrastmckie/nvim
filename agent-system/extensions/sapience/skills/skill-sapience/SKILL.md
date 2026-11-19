@@ -166,3 +166,150 @@ The chosen person's `id` becomes the DM target, exactly as in Stage 5. If the ro
 report that plainly and proceed without a DM candidate surface at all (not as an UNAVAILABLE
 option — there is no collaborator to address).
 
+## Stage 7: Preview Every Candidate Surface
+
+For each candidate surface that resolved a target in Stages 4-6, build its exact
+`sapience-publish.sh` argument vector and run it WITHOUT `--confirm`, capturing stdout: that is
+the literal payload (D6) — the SAME construction path the confirmed write in Stage 10 reuses, so
+this is never a second, hand-written preview string.
+
+- **Doc comment** (when a target doc resolved in Stage 4):
+  ```bash
+  doc_comment_preview="$(bash .claude/scripts/sapience-publish.sh doc-comment "$target_slug" --body "$draft_comment_body")"
+  ```
+- **Decision-log row** (only attempted when Stage 4's decision-log doc resolved; D5's fallback
+  applies here): if the decision-log doc's current body is not already present in
+  `vault.doc_bodies`, obtain it by sourcing `.claude/scripts/lib/sapience-api-lib.sh`, calling
+  `sapience_api_init`, then `sapience_get "/v1/docs/${decision_log_slug}"` directly — reusing the
+  shared credential/host precedence, never re-deriving it, and never printing the token. On
+  failure, mark this surface UNAVAILABLE with the failure reason and skip the rest of this
+  bullet entirely (never fabricate or send an empty body). On success, append one row to the
+  decision-log table (date, what was decided, who decided, a link to the discussion) and write
+  the FULL proposed body — the current body plus the appended row — to a scratch file via
+  `mktemp`:
+  ```bash
+  proposed_body_file="$(mktemp)"
+  printf '%s' "$proposed_decision_log_body" > "$proposed_body_file"
+  decision_row_preview="$(bash .claude/scripts/sapience-publish.sh doc-version "$decision_log_slug" --body-file "$proposed_body_file")"
+  ```
+  This preview call itself performs a real `GET` to resolve `base_rev` even under dry-run (a
+  known, pre-existing cost of this subcommand, not something to avoid or work around).
+- **Repo-tagged KOs** (always attempted; this is the only surface requiring no prior target
+  resolution beyond the binding gate): build the inherited-bound set of 3-8 candidate notes from
+  the draft's own findings, then preview the single batched call:
+  ```bash
+  ko_preview="$(bash .claude/scripts/sapience-publish.sh ko --note "$note_1" --note "$note_2" ...)"
+  ```
+- **DM** (only when a collaborator id resolved in Stage 5 or 6):
+  ```bash
+  dm_preview="$(bash .claude/scripts/sapience-publish.sh dm --to "$collaborator_id" --body "$draft_dm_body")"
+  ```
+  This subcommand's own dry-run prints BOTH of its sequential writes' payloads in one call
+  (the DM itself, then the resulting conversation's first comment) — capture the whole thing as
+  one preview, never split it.
+
+Print every captured preview to the transcript now, in full, before Stage 9's picker — option
+descriptions below can only carry an excerpt, never the full text, so the full text must already
+be visible above the picker.
+
+## Stage 8: Option Construction (One Site, Marker-Bracketed)
+
+<!-- askuserquestion-option-construction: sapience-approval-picker -->
+
+Build the option list for Stage 9 here, and nowhere else in this file. At most four options
+exist (one per candidate surface); this never needs batching, tiering, or a "Select all" option,
+because the measured ceiling is four. Pre-check defaults, exactly as
+`domain/command-draft-and-picker.md` states them:
+
+| Option | Included when | Pre-checked when |
+|--------|----------------|-------------------|
+| Doc comment | A target doc resolved in Stage 4 | Always (when included) |
+| Decision-log row | The decision-log doc resolved AND its body was obtainable (Stage 7) | Stage 4's decision-shaped test is true |
+| Repo-tagged KOs | Always | Always |
+| DM | A collaborator id resolved (Stage 5 or 6), i.e. `--message` was passed | Always (when included) |
+
+A surface that was attempted but hit a D5-class failure (body unobtainable, target
+unresolvable) is still listed, labeled UNAVAILABLE with the failure reason in its description,
+and is not selectable — `AskUserQuestion` cannot express "disabled," so phrase its label to make
+inclusion-without-selectability obvious (e.g. `"Decision-log row — UNAVAILABLE"`) and its
+description to state why, never silently dropping the row.
+
+<!-- /askuserquestion-option-construction -->
+
+## Stage 9: The Single Approval Picker
+
+Exactly one `AskUserQuestion` call, covering every surface built in Stage 8 in one shot:
+
+```json
+{
+  "question": "Which of these should actually be sent to the vault? Full payloads are printed above.",
+  "header": "Sapience Approval",
+  "multiSelect": true,
+  "options": [
+    {
+      "label": "Doc comment on {target_slug}",
+      "description": "{first ~80 chars of doc_comment_preview's body} — full payload printed above"
+    },
+    {
+      "label": "Decision-log row on {decision_log_slug}",
+      "description": "{short excerpt of the appended row} — full payload printed above"
+    },
+    {
+      "label": "Repo-tagged KOs ({n} note(s))",
+      "description": "{first note's text, truncated} + {n-1} more — full payload printed above"
+    },
+    {
+      "label": "DM to {collaborator_name}",
+      "description": "{first ~80 chars of draft_dm_body} — full payload printed above"
+    }
+  ]
+}
+```
+
+There is no delete API and no post-write review gate on any of these four surfaces — a confirmed
+write here is permanent, which is the entire reason this picker is single, mandatory, and
+payload-literal rather than summary-based (see `domain/command-draft-and-picker.md`'s "Why the
+Picker Is Mandatory and Single").
+
+## Stage 10: Confirmed Execution
+
+For each option the user checked in Stage 9, re-invoke the IDENTICAL argument vector built in
+Stage 7 with `--confirm` appended — never a re-derived or re-typed vector:
+
+```bash
+bash .claude/scripts/sapience-publish.sh doc-comment "$target_slug" --body "$draft_comment_body" --confirm
+bash .claude/scripts/sapience-publish.sh doc-version "$decision_log_slug" --body-file "$proposed_body_file" --confirm
+bash .claude/scripts/sapience-publish.sh ko --note "$note_1" --note "$note_2" ... --confirm
+bash .claude/scripts/sapience-publish.sh dm --to "$collaborator_id" --body "$draft_dm_body" --confirm
+```
+
+The KO surface issues exactly ONE `ko` invocation carrying every confirmed note via repeated
+`--note` (D7) — never one call per note. The note count is bounded to the inherited
+postflight-wrapup 3-8-note-per-task range (HARD CONSTRAINT 2); this skill adds no second,
+independently-sized cap of its own.
+
+## Stage 11: Outcome Reporting
+
+Report each confirmed surface's result distinctly — never a single pooled "done" line, because
+the four surfaces have four different success shapes:
+
+- **Doc comment**: written, with the returned `hash`/`n`, or a named failure.
+- **Decision-log row** (`doc-version`): one of its four verified outcomes, named explicitly —
+  `409 head_moved` (refused, nothing written, the doc changed since `base_rev` was fetched),
+  `202` (proposed, awaiting the doc owner — this is NOT the same as saved), `404 share_gone`
+  (refused, a shared slug with no existing document), or `2xx` (saved, with the new `rev`).
+- **Repo-tagged KOs**: the `written` count and the resolved project key, or a named failure
+  (`set_aside`, `gated`, or a non-`ok` response — never treated as success).
+- **DM**: its two sequential writes reported in order (the DM itself, then the resulting
+  comment), naming whether a new conversation was created or an existing one was reused.
+
+A confirmed write is never retried, in any of the four cases above, including a failure: there
+is no delete API, so a retry on an ambiguous or failed response risks duplicating a record that
+cannot be removed. Report the failure and stop; do not re-issue the same `--confirm` call.
+
+## Stage 12: Empty Selection
+
+Zero checked options in Stage 9 is a legitimate, clean outcome: write nothing, issue no
+`sapience-publish.sh --confirm` calls at all, and report plainly that nothing was sent. Never
+re-prompt the picker — an empty selection is a decision, not an error.
+

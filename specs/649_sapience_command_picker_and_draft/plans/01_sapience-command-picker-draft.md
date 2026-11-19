@@ -302,37 +302,37 @@ own mapped suite set itself — the one command "narrow" means, never a hand-ass
 
 ---
 
-### Phase 3: skill-sapience — The Single Approval Picker and Confirmed Execution [NOT STARTED]
+### Phase 3: skill-sapience — The Single Approval Picker and Confirmed Execution [COMPLETED]
 
 **Goal**: Complete `SKILL.md` with the one option-construction site, the single approval picker,
 and the confirmed-write execution and reporting path.
 
 **Tasks**:
-- [ ] Add the preview stage: for each candidate surface, build its exact `sapience-publish.sh`
+- [x] Add the preview stage: for each candidate surface, build its exact `sapience-publish.sh`
       argument vector and invoke it WITHOUT `--confirm`, capturing the literal payload the
       script prints (D6). For `doc-version`, write the proposed new body (the current body plus
-      the appended decision row) to a scratchpad file first, obtaining that current body per D5.
-- [ ] Add the single option-construction block, bracketed by D2's marker comments, building 3-4
+      the appended decision row) to a scratchpad file first, obtaining that current body per D5. *(completed)*
+- [x] Add the single option-construction block, bracketed by D2's marker comments, building 3-4
       option objects: doc comment (pre-checked when a target doc resolves), decision-log row
       (pre-checked only when D4 is true), repo-tagged KOs (pre-checked), DM (present and
       pre-checked only when `--message` was passed). Explicitly note the measured 4-option
       ceiling and that this picker never needs batching or tiering because the surfaces are at
-      most four.
-- [ ] Add the approval stage: print every full literal payload to the transcript, then ONE
+      most four. *(completed)*
+- [x] Add the approval stage: print every full literal payload to the transcript, then ONE
       `AskUserQuestion` with `multiSelect: true` whose option descriptions carry a short excerpt
       plus a pointer to the full payload above. An UNAVAILABLE surface (D5 failure, or an
-      unresolvable target) is shown with its reason and cannot be checked.
-- [ ] Add the execution stage: for each checked option, re-invoke the IDENTICAL argument vector
+      unresolvable target) is shown with its reason and cannot be checked. *(completed)*
+- [x] Add the execution stage: for each checked option, re-invoke the IDENTICAL argument vector
       with `--confirm` appended. The KO surface issues exactly one `ko` invocation carrying every
       confirmed note via repeated `--note`, bounded to the inherited 3-8 range (D7, HARD
-      CONSTRAINT 2) — state that this skill adds no second, independently-sized bound.
-- [ ] Add the outcome-reporting stage: report each surface's result distinctly, naming
+      CONSTRAINT 2) — state that this skill adds no second, independently-sized bound. *(completed)*
+- [x] Add the outcome-reporting stage: report each surface's result distinctly, naming
       `doc-version`'s four verified outcomes (`409 head_moved` refused, `202` proposed awaiting
       owner, `404 share_gone` refused, `2xx` saved) and `dm`'s two sequential writes. State that
       a confirmed write is never retried, because there is no delete API and a retry can only
-      duplicate a permanent record.
-- [ ] Add the empty-selection behavior: zero checked options is a legitimate outcome that writes
-      nothing and exits cleanly, never a re-prompt loop.
+      duplicate a permanent record. *(completed)*
+- [x] Add the empty-selection behavior: zero checked options is a legitimate outcome that writes
+      nothing and exits cleanly, never a re-prompt loop. *(completed)*
 
 **Timing**: 1.5 hours
 
