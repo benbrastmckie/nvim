@@ -1,0 +1,29 @@
+{
+  "phase": 2,
+  "phase_name": "Amend the Final-Phase Invariant Vocabulary",
+  "started_at": "2026-11-18T21:35:00Z",
+  "last_updated": "2026-11-18T22:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Amend plan-format.md tier row, Tier-Justification subsection, invariant paragraph", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 2, "description": "Amend the verify-deploy.sh naming paragraph", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/formats/plan-format.md"]},
+    {"id": 3, "description": "Confirm plan-format-enforcement.md pointer text (no edit needed)", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Edit planner-agent.md two stale sites", "status": "done",
+     "files_touched": ["agent-system/extensions/core/agents/planner-agent.md"]},
+    {"id": 5, "description": "Edit general-implementation-agent.md deferral subsection + MUST-NOT bullet", "status": "done",
+     "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 6, "description": "Confirm reviser-agent.md has no duplicate (confirmed, no edit)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Audit validate-artifact.sh comments (confirmed, no edit)", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Reconcile index-entries.json; run lint-agent-contracts.sh and test-validate-artifact.sh", "status": "done",
+     "files_touched": ["agent-system/extensions/core/index-entries.json", "agent-system/extensions/core/docs/guides/user-guide.md"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "2.x", "description": "Scope Hypothesis named 5 surfaces", "type": "altered",
+     "reason": "grep found a 6th hit (docs/guides/user-guide.md:439) carrying the same stale framing; widened the edit set per the hypothesis's own instruction rather than adjusting the claim.",
+     "annotation": "*(deviation: altered — widened edit set to include docs/guides/user-guide.md)*"}
+  ]
+}

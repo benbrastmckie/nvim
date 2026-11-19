@@ -236,8 +236,12 @@ Apply task-breakdown.md guidelines:
      `**Scope Hypothesis**:` line stating the hypothesis and how the implementer should confirm
      it.
    - **MUST NOT**: do not weaken the final gate. Tiering governs in-phase granularity only —
-     the full gate set still runs before a phase closes and before the task completes,
-     unchanged.
+     the complete gate set is still owed once per orchestration invocation, discharged at the
+     orchestration close, never forgiven. The final phase still declares `full`; under
+     `/orchestrate` its own in-dispatch obligation is the scoped touched-path check plus an
+     explicit deferral to the orchestration close, never an independent full-battery invocation
+     as the phase's own criterion. A standalone, non-orchestrated final phase (no Move 4 to defer
+     to) runs the complete set directly.
    - **MUST NOT**: do not satisfy `**Tier Justification**:` with a generic throwaway phrase
      ("to be safe", "cheaper", "faster"). Name the covering check or the blast radius, in the
      one-line shape `context/workflows/task-breakdown.md`'s worked examples demonstrate.
@@ -483,10 +487,13 @@ Also verify dependency consistency:
 - Identify the plan's **final phase** (its highest-numbered phase, a terminal node of the
   dependency graph, transitively depended-on by all others). Every OTHER phase carries a
   `**Tier Justification**:` line — a plan missing it on a non-final phase is detectable right
-  here. The final phase itself declares `**Verification Tier**: full`, names the complete gate
-  set in its own verification criteria per plan-format.md's `## Verification Tiers` section, and
-  carries no `**Tier Justification**:` line (the field is conditional, omitted on the final
-  phase, not merely optional there)
+  here. The final phase itself declares `**Verification Tier**: full`; its own verification
+  criteria name the scoped touched-path check plus the explicit deferral to the orchestration
+  close under `/orchestrate` (or the complete gate set directly, for a standalone,
+  non-orchestrated run), never an independent full-battery invocation as the phase's own
+  criterion, per plan-format.md's `## Verification Tiers` section — and carries no
+  `**Tier Justification**:` line (the field is conditional, omitted on the final phase, not
+  merely optional there)
 
 **If any required field is missing**:
 1. Edit the plan file to add the missing field

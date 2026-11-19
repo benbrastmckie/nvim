@@ -218,14 +218,14 @@ before editing, and widen the edit set rather than the claim if a third surface 
 
 ---
 
-### Phase 2: Amend the Final-Phase Invariant Vocabulary [NOT STARTED]
+### Phase 2: Amend the Final-Phase Invariant Vocabulary [COMPLETED]
 
 **Goal**: No authoring surface tells a planner or an implementation agent to run the complete gate
 set inside a task. `full` remains the top tier token; its stated meaning under `/orchestrate` is
 discharge at the orchestration close.
 
 **Tasks**:
-- [ ] Amend `context/formats/plan-format.md`'s `## Verification Tiers` section: the `full` row's
+- [x] Amend `context/formats/plan-format.md`'s `## Verification Tiers` section: the `full` row's
       "Nothing is deferred past this tier" cell, the "`**Tier Justification**:`" subsection's "The
       final phase's `full` is mandated by the invariant below" sentence, and the non-negotiable
       invariant paragraph. The invariant that survives: the complete gate set runs once before the
@@ -233,29 +233,34 @@ discharge at the orchestration close.
       under `/orchestrate`, a final phase declares `full` and its own in-dispatch obligation is the
       scoped touched-path check plus an explicit statement of deferral to the orchestration close.
       Keep the existing "not a fifth tier" and "`--skip-slow` is never a tier" rulings intact.
-- [ ] Amend the paragraph that says "A phase declaring `full` names `bash .claude/scripts/verify-deploy.sh`
+- [x] Amend the paragraph that says "A phase declaring `full` names `bash .claude/scripts/verify-deploy.sh`
       ... in its own verification criteria" so the deferred form is the documented shape for an
       orchestrated dispatch, and the direct form is what a standalone, non-orchestrated run meets.
-- [ ] Update `rules/plan-format-enforcement.md`'s per-phase-fields checklist so its pointer text
+- [x] Update `rules/plan-format-enforcement.md`'s per-phase-fields checklist so its pointer text
       matches the amended wording, keeping its honest advisory-enforcement-level statements.
-- [ ] Edit `agents/planner-agent.md` at both stale sites: the Stage 4 MUST-NOT bullet that reads
+      *(completed: confirmed, read-only -- this file carries no restatement of the final-phase/
+      battery invariant, only a pointer to plan-format.md's section; no edit required.)*
+- [x] Edit `agents/planner-agent.md` at both stale sites: the Stage 4 MUST-NOT bullet that reads
       "the full gate set still runs before a phase closes and before the task completes", and
       Stage 6a's instruction that "the final phase itself declares `**Verification Tier**: full`,
       names the complete gate set in its own verification criteria". Replace with the
       deferral-aware obligation: the final phase still declares `full`, and its own verification
       criteria name the scoped check plus the explicit deferral to the orchestration close, never
       an independent full-battery invocation as the phase's own criterion.
-- [ ] Edit `agents/general-implementation-agent.md`'s "Batch Gate Deferral" subsection and its
+- [x] Edit `agents/general-implementation-agent.md`'s "Batch Gate Deferral" subsection and its
       matching MUST-NOT bullet: drop the "(final phase only)" scoping, which is false whenever an
       intermediate phase also declares `full` — the directive names every qualifying phase.
-- [ ] Confirm `agents/reviser-agent.md` carries no duplicate copy of the final-phase contract and
+- [x] Confirm `agents/reviser-agent.md` carries no duplicate copy of the final-phase contract and
       still defers correctly by reference; edit only if a stale restatement is found.
-- [ ] Audit comments around `scripts/validate-artifact.sh`'s tier check and its
+- [x] Audit comments around `scripts/validate-artifact.sh`'s tier check and its
       Tier-Justification-measurement check for any inline comment restating the pre-amendment
       meaning of `full`. Comment-only; make no functional change to the accepted-value enum.
-- [ ] Reconcile `index-entries.json` line counts.
-- [ ] Run `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` and
-      `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh`.
+- [x] Reconcile `index-entries.json` line counts.
+- [x] Run `bash agent-system/extensions/core/scripts/lint/lint-agent-contracts.sh` and
+      `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh`. *(completed: lint 0
+      failed/12 pre-existing warnings; test-validate-artifact.sh 146 passed, 0 failed; an extra hit
+      discovered beyond the Scope Hypothesis -- docs/guides/user-guide.md:439 -- was also amended,
+      per the hypothesis's own widen-the-edit-set instruction.)*
 
 **Timing**: 1.5 hours
 

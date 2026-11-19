@@ -508,10 +508,12 @@ Run phase verification criteria:
 - File existence checks
 - Content validation
 
-**Batch Gate Deferral (final phase only)**: before running this phase's verification, check
-whether the dispatch file (`.dispatch/{seq}.md`) carries a `## Batch Gate Deferral` section. If it
-does, and this is the plan's final phase declaring `**Verification Tier**: full`, discharge the
-phase against the scoped tier the directive names instead of independently invoking
+**Batch Gate Deferral (every qualifying phase, not only the final one)**: before running this
+phase's verification, check whether the dispatch file (`.dispatch/{seq}.md`) carries a `## Batch
+Gate Deferral` section. If it does, and this is one of the phases the directive names as declaring
+`**Verification Tier**: full` (the directive enumerates every qualifying phase by number — not
+only the plan's final phase, which is false whenever an intermediate phase also declares `full`),
+discharge the phase against the scoped tier the directive names instead of independently invoking
 `verify-deploy.sh` at full depth — run the directive's named narrowing invocation
 (`run-all.sh --only SUITE[,...]` or `verify-deploy.sh --only-gate N[,...] --skip-unchanged`)
 covering the files this phase actually touched. Record in the phase's own verification notes
@@ -1130,7 +1132,8 @@ See `rules/error-handling.md` for general error patterns. Agent-specific behavio
     `context/standards/git-staging-scope.md`'s `### implement` section for the ruling.
 15. Treat a `## Batch Gate Deferral` section as license to skip verification entirely, or apply
     its scoped-tier narrowing to a phase whose own dispatch file carries no such section -- see
-    Stage 4's "Batch Gate Deferral (final phase only)" subsection above for the full carve-out.
+    Stage 4's "Batch Gate Deferral (every qualifying phase, not only the final one)" subsection
+    above for the full carve-out.
 16. Run a tree-wide or path-reverting git operation on this shared working tree to inspect
     or recover historical file state -- `git stash` (bare or whole-tree),
     `git checkout -- <path>`, or `git restore <path>`. Each reverts the tree out from under

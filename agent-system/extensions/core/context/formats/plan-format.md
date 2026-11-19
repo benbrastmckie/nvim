@@ -417,7 +417,7 @@ final gate remains responsible for catching.
 | `prose` | Edits confined to comments, docstrings, markdown/prose, and other non-code text with zero compile or elaboration surface | Diff read-through confirming every changed hunk lies inside a comment/string/prose region | An edit that crosses out of the comment or string boundary; a doc-comment that is actually load-bearing (doctest, attribute, annotation, pragma) and does compile; broken cross-references or links |
 | `local` | Edits confined to one module/file with no change to any externally visible signature | Build or lint of that single module only | Dynamic, untyped, or reflective call sites; behavior changes visible to other modules through unchanged signatures; downstream test failures; anything requiring the full test suite |
 | `interface` | Changes a symbol's name, type, arity, or argument order where call sites span multiple files | Build of the changed module plus its enumerated direct dependents | Transitive breakage beyond the enumerated one-hop dependent set; semantic (non-type-level) downstream behavior change; the full test suite; import-graph and init-level checks |
-| `full` | Edits that can change runtime, proof, or elaboration behavior anywhere: shared tactics, core types, global config | The complete gate set for the repository: `bash .claude/scripts/verify-deploy.sh` (source-store path: `agent-system/extensions/core/scripts/verify-deploy.sh`) | Nothing is deferred past this tier. This is the ceiling |
+| `full` | Edits that can change runtime, proof, or elaboration behavior anywhere: shared tactics, core types, global config | The complete gate set for the repository: `bash .claude/scripts/verify-deploy.sh` (source-store path: `agent-system/extensions/core/scripts/verify-deploy.sh`) — under `/orchestrate`, this phase's own in-dispatch obligation is the scoped touched-path check plus an explicit deferral to the orchestration close, never an independent full-battery invocation; see "Batch-aware deferral" below | Nothing is deferred past the *invocation*. This is the ceiling; what moves is who discharges it, never whether it runs |
 
 **The final phase, defined once because the rules below are conditioned on it**: a plan's final
 phase is its highest-numbered phase, which MUST be a terminal node of the dependency graph (no
@@ -449,8 +449,11 @@ default for every phase, not only the final one.
 
 **`**Tier Justification**:` — required on every non-final phase, omitted on the final phase.**
 The final phase's `full` is mandated by the invariant below, not chosen, so it carries no
-justification line. Every non-final phase carries exactly one `**Tier Justification**:` line,
-one sentence, never an essay:
+justification line; under `/orchestrate`, the scoped touched-path check that discharges this
+phase's own in-dispatch obligation (see "Batch-aware deferral" below) is what fills that role in
+practice, but the field itself stays omitted — the deferral directive supplies the narrowing
+invocation, not a plan-authored justification. Every non-final phase carries exactly one
+`**Tier Justification**:` line, one sentence, never an essay:
 
 - A non-final phase declaring a tier **below** `full` names the specific check that covers the
   edit — the command, not a description of one. **`scripts/verify-touched.sh` is the one command
@@ -535,15 +538,27 @@ itself a fifth tier — both are *how* a non-final phase's declared tier gets di
 substitute for declaring one.
 
 **Non-negotiable invariant**: tiering governs GRANULARITY ONLY — how often and how broadly
-verification runs *during* a phase. The full gate set still runs before a phase closes and before
-a task completes, unchanged. `full` is textually identical in strictness to today's existing
-requirement; tiers `prose`, `local`, and `interface` are added *below* it and redefine nothing
-about it. A tiering scheme that weakens the final gate is wrong, not a trade-off.
+verification runs *during* a phase. The complete gate set is owed once per invocation, discharged
+before that invocation's tasks are done, deferred and never forgiven. `full` is textually
+identical in strictness to today's existing requirement as a CEILING; tiers `prose`, `local`, and
+`interface` are added *below* it and redefine nothing about it. A tiering scheme that weakens the
+final gate is wrong, not a trade-off. What has changed is *who discharges* the invariant, not
+whether it holds: under `/orchestrate`, the orchestration — not the task — is the unit that
+closes on the complete set, at the once-per-invocation batch gate stage
+(`context/contracts/batch-gate-stage.md`), for every invocation shape including a batch of one; a
+task's final phase declares `full` and defers to that close rather than running the set itself.
+Under a standalone, non-orchestrated run with no Move 4 to defer to, the final phase runs the
+complete set directly, exactly as before this invariant was amended.
 
-A phase declaring `full` names `bash .claude/scripts/verify-deploy.sh` — or the complete set of
-gates it aggregates — in its own verification criteria. A `full` declaration whose task list
-reaches only a hand-picked subset of validators does not satisfy the tier, however plausible the
-subset looks in isolation.
+A phase declaring `full` under `/orchestrate` names, as its own in-dispatch obligation, the
+scoped touched-path check (`bash .claude/scripts/verify-touched.sh` or
+`bash .claude/scripts/verify-deploy.sh --only-gate N[,M...] --skip-unchanged`) plus an explicit
+statement that the complete set is deferred to the orchestration close — see "Batch-aware
+deferral" below for the directive that composes this. A standalone, non-orchestrated final phase
+instead names `bash .claude/scripts/verify-deploy.sh` — or the complete set of gates it
+aggregates — directly in its own verification criteria. Either way, a `full` declaration whose
+task list reaches only a hand-picked subset of validators, with no deferral statement and no
+Move 4 to defer to, does not satisfy the tier, however plausible the subset looks in isolation.
 
 ### Batch-aware deferral
 
