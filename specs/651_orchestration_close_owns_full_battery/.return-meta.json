@@ -42,21 +42,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/651_orchestration_close_owns_full_battery/summaries/01_orchestration-close-owns-battery-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["verify-touched", "bounded-wait", "contention", "gate-lock", "timeout"]
+      "suggested_keywords": [
+        "verify-touched",
+        "bounded-wait",
+        "contention",
+        "gate-lock",
+        "timeout"
+      ]
     },
     {
       "content": "skills/skill-orchestrate/SKILL.md sits at measure-eager-context.sh's own byte ceiling (27500 B) with effectively zero headroom (a prior task trimmed it to exactly fit); any future addition of Move 4/5 prose to this file will likely need to move into the referenced contract file's own executable-outline section instead (e.g. batch-gate-stage.md's 'The Executable Stage Body') rather than growing SKILL.md's own prose, since SKILL.md already points readers to that contract as the full detail.",
       "category": "CONFIG",
       "source_artifact": "specs/651_orchestration_close_owns_full_battery/summaries/01_orchestration-close-owns-battery-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["skill-orchestrate", "eager-context-budget", "ceiling", "SKILL.md", "ORCHESTRATOR_BUDGET_GATE_MODE"]
+      "suggested_keywords": [
+        "skill-orchestrate",
+        "eager-context-budget",
+        "ceiling",
+        "SKILL.md",
+        "ORCHESTRATOR_BUDGET_GATE_MODE"
+      ]
     },
     {
       "content": "A test suite's resolve-candidate call (common_test_resolve_candidate) with no explicit mode is a lint-subject-resolution-declaration.sh violation; migrate to common_test_resolve_subject(\"desc\", \"deploy-tree-first\", deployed_path, source_store_path) followed by common_test_declare_subject(\"$RESULT\"). This migration is behavior-preserving (same deployed-first preference order) but adds a staleness warning when the source-store copy is newer than the deployed one -- the exact signal that would have caught earlier confusion about which copy a direct suite run was actually exercising.",
       "category": "PATTERN",
       "source_artifact": "specs/651_orchestration_close_owns_full_battery/summaries/01_orchestration-close-owns-battery-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["common_test_resolve_subject", "lint-subject-resolution-declaration", "deploy-tree-first", "staleness-guard"]
+      "suggested_keywords": [
+        "common_test_resolve_subject",
+        "lint-subject-resolution-declaration",
+        "deploy-tree-first",
+        "staleness-guard"
+      ]
     }
   ],
   "sapience_notes": [
@@ -113,11 +130,17 @@
     "session_id": "sess_1795039913_ab1940",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/docs/guides/user-guide.md"
-  ]
+  ],
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

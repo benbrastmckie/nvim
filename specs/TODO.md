@@ -278,6 +278,7 @@ TERRITORY EDGES.
 - **Dependencies**: Task 650, Task 610
 - **Research**: [651_orchestration_close_owns_full_battery/reports/01_orchestration-close-owns-battery.md]
 - **Plan**: [651_orchestration_close_owns_full_battery/plans/01_orchestration-close-owns-battery.md]
+- **Summary**: [651_orchestration_close_owns_full_battery/summaries/01_orchestration-close-owns-battery-summary.md]
 
 **Description**: Make the orchestration, not the task, the unit that closes on the full gate battery, for every invocation shape including a batch of one
 

@@ -271,9 +271,15 @@
           "path": "specs/651_orchestration_close_owns_full_battery/plans/01_orchestration-close-owns-battery.md",
           "type": "plan",
           "summary": "Seven-phase linear plan: current-design prose sweep, final-phase invariant amendment, red-close per-task record, attributed-cause status binding, interrupted-invocation obligation, declared closing-gate consumption, redeploy and orchestration close."
+        },
+        {
+          "path": "specs/651_orchestration_close_owns_full_battery/summaries/01_orchestration-close-owns-battery-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary across all 7 phases: vocabulary amendment, red-close record and status binding, interrupted-invocation obligation, consumer-repository closing-gate consumption, and the redeploy/close."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Amended the final-phase invariant vocabulary and every authoring surface describing it, added a durable per-task red-close record with status-binding demotion, added an interrupted-orchestration open-obligation report/discharge mechanism, wired a consumer repository's declared closing_gate as Move 4's own gate, and redeployed clean (RESULT=landed_verify_clean, 41/41) after fixing three pre-existing defects the first full-battery close itself surfaced."
     },
     {
       "project_number": 650,
