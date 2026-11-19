@@ -441,32 +441,44 @@ surprise.
 
 ---
 
-### Phase 5: Redeploy and Close [NOT STARTED]
+### Phase 5: Redeploy and Close [COMPLETED]
 
 **Goal**: The edited source-store content is regenerated into the deployed tree, the coupled
 `index-entries.json` line count is reconciled, and the full behaviour is confirmed from the
 deployed vantage point.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` to regenerate the deployed
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` to regenerate the deployed
       tree from the source store, which also auto-repairs the `index-entries.json` `line_count`
-      drift Phase 4 introduced.
-- [ ] Confirm the deployed `.claude/scripts/validate-artifact.sh` now carries the candidate-list
+      drift Phase 4 introduced. *(completed: first run landed but `verify-deploy` reported a
+      pre-existing shellcheck SC1090 finding in Phase 3's new `tj_scope_expected()` helper — fixed
+      forward with the missing `# shellcheck disable=SC1090` directive, re-confirmed 0 shellcheck
+      findings and 157/157 test-validate-artifact.sh assertions, then re-ran deploy-headless.sh:
+      `[deploy-headless] RESULT=landed_verify_clean`, 41/41 checks)*
+- [x] Confirm the deployed `.claude/scripts/validate-artifact.sh` now carries the candidate-list
       and warning-text changes, and that the deployed
       `.claude/scripts/lib/verification-scope-lib.sh` sibling the script fail-soft sources is
-      present.
-- [ ] Re-run `bash .claude/scripts/tests/run-all.sh --only test-validate-artifact.sh` against the
+      present. *(completed: `diff .claude/scripts/validate-artifact.sh
+      agent-system/extensions/core/scripts/validate-artifact.sh` reports IDENTICAL; same for
+      `lib/verification-scope-lib.sh`, which was already present pre-task and untouched by this
+      task)*
+- [x] Re-run `bash .claude/scripts/tests/run-all.sh --only test-validate-artifact.sh` against the
       deployed tree so the suite exercises `$VALIDATE` (deploy-tree-first) as well as
-      `$VALIDATE_SRC`, confirming the redeploy actually landed.
-- [ ] Validate this plan artifact itself through the deployed script
+      `$VALIDATE_SRC`, confirming the redeploy actually landed. *(completed: 1 passed, 0 failed)*
+- [x] Validate this plan artifact itself through the deployed script
       (`bash .claude/scripts/validate-artifact.sh specs/652_validate_artifact_corpus_resolution/plans/01_corpus-resolution-candidate-list.md plan`)
       and confirm the Tier-Justification advisory lines, if any fire, name the corpus they were
-      measured against.
-- [ ] Confirm `index-entries.json` reports no residual `line_count` drift for
-      `standards/repo-level-declarations.md`.
-- [ ] Run the scoped touched-path check over this task's own touched files and record, in this
+      measured against. *(completed: `[PASS] plan artifact is valid (0 warning(s))` — no
+      Tier-Justification advisory fired, since this repository declares no `verification_scope`
+      key, the undeclared/byte-identical path)*
+- [x] Confirm `index-entries.json` reports no residual `line_count` drift for
+      `standards/repo-level-declarations.md`. *(completed: `line_count: 311` matches `wc -l`
+      exactly)*
+- [x] Run the scoped touched-path check over this task's own touched files and record, in this
       phase's verification notes, that the complete gate set is deferred to the orchestration close
-      rather than independently run here.
+      rather than independently run here. *(completed — see Verification below; two foreign,
+      non-blocking failures observed in unrelated suites and recorded per the Observation Duty,
+      never attributed to this task's own work)*
 
 **Timing**: 0.75 hours
 
@@ -479,22 +491,22 @@ deployed vantage point.
 - `agent-system/extensions/core/index-entries.json` - `line_count` reconciliation for the Phase 4 edit, performed as a side effect of regeneration
 
 **Verification**:
-- `bash agent-system/extensions/core/scripts/deploy-headless.sh` completes successfully and the deployed `.claude/scripts/validate-artifact.sh` differs from its pre-deploy state in exactly the regions Phases 1 and 2 edited.
-- `bash .claude/scripts/tests/run-all.sh --only test-validate-artifact.sh` passes against the deployed tree.
-- `bash .claude/scripts/verify-touched.sh agent-system/extensions/core/scripts/validate-artifact.sh agent-system/extensions/core/scripts/tests/test-validate-artifact.sh agent-system/extensions/core/context/standards/repo-level-declarations.md agent-system/extensions/core/index-entries.json` reports a green verdict — this is this phase's own in-dispatch scoped obligation.
-- The complete gate set is explicitly deferred to the once-per-invocation orchestration close (`context/contracts/batch-gate-stage.md`), not run independently in this dispatch; this deferral is recorded in the phase's verification notes. Under a standalone, non-orchestrated run with no orchestration close to defer to, run `bash .claude/scripts/verify-deploy.sh` directly instead.
+- `bash agent-system/extensions/core/scripts/deploy-headless.sh` completes successfully and the deployed `.claude/scripts/validate-artifact.sh` differs from its pre-deploy state in exactly the regions Phases 1 and 2 edited. *(confirmed: `[deploy-headless] RESULT=landed_verify_clean`, deployed copy now byte-identical to the edited source-store copy)*
+- `bash .claude/scripts/tests/run-all.sh --only test-validate-artifact.sh` passes against the deployed tree. *(confirmed: 1 passed, 0 failed)*
+- `bash .claude/scripts/verify-touched.sh agent-system/extensions/core/scripts/validate-artifact.sh agent-system/extensions/core/scripts/tests/test-validate-artifact.sh agent-system/extensions/core/context/standards/repo-level-declarations.md agent-system/extensions/core/index-entries.json` reports a green verdict — this is this phase's own in-dispatch scoped obligation. *(this task's own named Tier-Justification suites all passed; the run's own OWED fallback set -- which sweeps in every OTHER uncommitted file in this shared multi-agent working tree, independent of the paths named on the command line -- surfaced two unrelated, foreign, NEW failures across two separate invocations: `test-lint-state-writer-boundary.sh` and `test-stall-reprompt-wiring.sh`, neither of which is named in any phase's own Tier Justification and neither of which this task touched. Recorded per the Observation Duty via issue-record.sh as concurrent-write-observed, non-blocking, and not attributed to this task's own work -- see specs/652.../issues.jsonl)*
+- The complete gate set is explicitly deferred to the once-per-invocation orchestration close (`context/contracts/batch-gate-stage.md`), not run independently in this dispatch; this deferral is recorded in the phase's verification notes. Under a standalone, non-orchestrated run with no orchestration close to defer to, run `bash .claude/scripts/verify-deploy.sh` directly instead. *(recorded: this dispatch is one of several implement-phase dispatches inside a multi-task /orchestrate batch per the dispatch file's own Batch Gate Deferral section; the complete gate set runs once, for the whole batch, at the end of this invocation)*
 
 ---
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` exits 0 with the three new cases passing and all 13 pre-existing Tier-Justification assertions still passing.
-- [ ] A declaring scratch repository's plan is measured against its own planted corpus, and the warning text names that declared root.
-- [ ] An undeclared repository's output is unchanged from the pre-edit baseline captured in Phase 1.
-- [ ] A declared-but-absent root draws exactly one additional named warning and no non-zero exit.
-- [ ] `bash .claude/scripts/validate-artifact.sh <plan> plan` exits 0 in default mode on a warning-only run, confirming the advisory posture is intact.
-- [ ] `bash .claude/scripts/tests/run-all.sh --only test-validate-artifact.sh` passes against the deployed tree after redeploy.
-- [ ] `scripts/tests/suite-classification.data` still classifies `test-validate-artifact.sh` as `integration`.
+- [x] `bash agent-system/extensions/core/scripts/tests/test-validate-artifact.sh` exits 0 with the three new cases passing and all 13 pre-existing Tier-Justification assertions still passing. *(confirmed: 157 passed, 0 failed)*
+- [x] A declaring scratch repository's plan is measured against its own planted corpus, and the warning text names that declared root. *(confirmed: TJ-scope(A))*
+- [x] An undeclared repository's output is unchanged from the pre-edit baseline captured in Phase 1. *(confirmed: this repository's own plan-fixture output stayed `[PASS] plan artifact is valid (0 warning(s))` across every phase, matching Phase 1's captured baseline byte-for-byte)*
+- [x] A declared-but-absent root draws exactly one additional named warning and no non-zero exit. *(confirmed: TJ-scope(C))*
+- [x] `bash .claude/scripts/validate-artifact.sh <plan> plan` exits 0 in default mode on a warning-only run, confirming the advisory posture is intact. *(confirmed throughout; also confirmed against the deployed script in Phase 5 with 0 warnings since this repository declares nothing)*
+- [x] `bash .claude/scripts/tests/run-all.sh --only test-validate-artifact.sh` passes against the deployed tree after redeploy. *(confirmed: 1 passed, 0 failed)*
+- [x] `scripts/tests/suite-classification.data` still classifies `test-validate-artifact.sh` as `integration`. *(confirmed: line 223, unchanged)*
 
 ## Artifacts & Outputs
 

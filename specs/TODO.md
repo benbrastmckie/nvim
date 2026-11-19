@@ -345,6 +345,9 @@ G. DOCUMENTATION PARITY: replace context/standards/git-workflow-narrative.md's "
 - Size realistically. This spans two orchestration scripts, two commit scripts, one rule file and two standards documents, and it changes a contract every phase commit in every repository flows through. Expect systematic refactoring; do not plan it as a one-file change.
 
 VERIFICATION. A multi-task invocation produces one branch, phase commits from every task on it, and one squashed commit per completed task on the integration branch with its phase list in the body. A task failing mid-batch leaves its commits on the branch while its sibling still lands. An invocation started from the wrong branch is caught at admission. The declared generated paths render collapsed in review. The rules and the narrative state the same contract the scripts enforce.
+=== THE BINDING CONSTRAINT BLOCK ABOVE IS SUBJECT TO A LATER RULING -- READ THAT RULING FIRST ===
+
+This task now depends on `branch_topology_ruling_and_milestone_automation`, whose Element 1 is an explicitly re-opened ruling on branch granularity (per invocation, per milestone, per task), merge strategy, landing mechanics AND worktree isolation itself, carrying written authority to revise this description. Read that task's decision record BEFORE planning and treat it as binding: wherever it differs from the branch-per-invocation design or from the "BINDING CONSTRAINT, NOT RE-OPENABLE" block stated above, the ruling wins and this description is stale at that point. Do not re-derive the topology question here, and do not proceed on the settled-design premise above without first checking what the ruling actually settled.
 
 ---
 

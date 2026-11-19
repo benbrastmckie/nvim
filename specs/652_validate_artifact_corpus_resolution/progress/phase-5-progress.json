@@ -1,0 +1,30 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy and Close",
+  "started_at": "2026-11-19T01:55:00Z",
+  "last_updated": "2026-11-19T02:15:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh to regenerate deployed tree", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-validate-artifact.sh"]},
+    {"id": 2, "description": "Confirm deployed validate-artifact.sh and verification-scope-lib.sh carry the changes", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-run run-all.sh against deployed tree; validate this plan through deployed script", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm no residual line_count drift; run scoped touched-path check and record deferral", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "First deploy-headless.sh run with Phase 3's tj_scope_expected() helper as originally landed", "result": "failed", "reason": "verify-deploy's shellcheck lint gate caught an SC1090 finding (missing disable directive on a dynamic source); fixed forward and re-ran successfully"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Run deploy-headless.sh to regenerate the deployed tree.",
+      "type": "altered",
+      "reason": "The first deploy-headless.sh run landed but verify-deploy's fast gates failed on a shellcheck SC1090 finding in Phase 3's new tj_scope_expected() helper (test-validate-artifact.sh:806) -- a dynamic source missing the '# shellcheck disable=SC1090' directive every other dynamic-source site in this codebase carries. This was a genuine defect introduced in Phase 3, only surfaced by Phase 5's full gate run (Phase 3's own scoped verify-touched.sh invocation did not happen to select the shellcheck lint). Fixed forward in Phase 5 by adding the directive, re-confirmed 0 shellcheck findings and 157/157 test-validate-artifact.sh assertions unchanged, then re-ran deploy-headless.sh to a clean landing.",
+      "annotation": null
+    }
+  ],
+  "notes": [
+    "Two foreign, NEW (not expected) failures were observed across two verify-touched.sh invocations during this phase: test-lint-state-writer-boundary.sh and test-stall-reprompt-wiring.sh. Neither is named in any of this task's 5 phases' own Tier Justifications, and neither file this task touched. Both are attributable to the shared multi-agent working tree's OWED fallback set sweeping in other concurrently-live dispatches' uncommitted files (e.g. agent-system/extensions/core/scripts/lib/continuation-pointer-lib.sh, modified before this dispatch began, per the session's initial git-status snapshot). Recorded per the Observation Duty via issue-record.sh as concurrent-write-observed/minor, non-blocking, and explicitly not attributed to this task's own work.",
+    "The complete gate set is deferred to the once-per-invocation orchestration close per this dispatch's Batch Gate Deferral directive; this phase's own scoped obligation (verify-touched.sh over this task's 4 touched files, plus deploy-headless.sh's own fast-gate verify-deploy pass) is what was actually run and is green modulo the two foreign observations above."
+  ]
+}

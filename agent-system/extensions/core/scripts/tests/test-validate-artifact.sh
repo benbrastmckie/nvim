@@ -803,6 +803,7 @@ EOF
 # output for <touched_rel> against THAT corpus alone.
 tj_scope_expected() {
   local lib_path="$1" touched_rel="$2"
+  # shellcheck disable=SC1090
   ( . "${lib_path}" >/dev/null 2>&1; suite_selection_select "${touched_rel}" )
 }
 
