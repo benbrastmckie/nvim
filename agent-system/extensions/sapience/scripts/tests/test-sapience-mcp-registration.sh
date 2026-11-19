@@ -1213,7 +1213,7 @@ else
   fi
 
   # Case 30: lockstep guard -- the marker-delimited worktree-checkout-resolution block is
-  # byte-identical across every copy (the hook, the verifier, and the five slug-derivation
+  # byte-identical across every copy (the hook, the verifier, and the six slug-derivation
   # scripts). Replaces the prose-only "keep in lockstep" comment with a mechanical check.
   LOCKSTEP_FILES=(
     "$HOOK_SRC"
@@ -1223,6 +1223,7 @@ else
     "$SCRIPT_DIR/../verify-sapience-context-scoping.sh"
     "$SCRIPT_DIR/../sapience-project-bind.sh"
     "$SCRIPT_DIR/../sapience-vault-read.sh"
+    "$SCRIPT_DIR/../sapience-publish.sh"
   )
   LOCKSTEP_REFERENCE=""
   LOCKSTEP_OK=true
@@ -1244,7 +1245,7 @@ else
   done
 
   if $LOCKSTEP_OK; then
-    pass "Case 30: the marker-delimited worktree-checkout-resolution block is byte-identical across all seven copies"
+    pass "Case 30: the marker-delimited worktree-checkout-resolution block is byte-identical across all eight copies"
   else
     fail "Case 30: the worktree-checkout-resolution block diverges in $LOCKSTEP_DIVERGENT"
   fi

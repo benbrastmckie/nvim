@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Scaffold, registration, and test harness",
+  "started_at": "2026-11-19T00:00:00Z",
+  "last_updated": "2026-11-19T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create sapience-publish.sh header + sourcing + worktree block + subcommand dispatch stubs + flag parsing", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-publish.sh"]},
+    {"id": 2, "description": "Register both new files in manifest.json provides.scripts and widen Case 30 LOCKSTEP_FILES", "status": "done", "files_touched": ["agent-system/extensions/sapience/manifest.json", "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"]},
+    {"id": 3, "description": "Create test-sapience-publish.sh harness + structural + lockstep cases", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-publish.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "test-sapience-publish.sh: 10/10 structural+lockstep cases green. test-sapience-mcp-registration.sh: 55/55 green including widened Case 30 (eight copies). verify-deploy.sh --skip-slow --only-gate 3: no 'NOT in provides.scripts' / 'missing on disk' finding (confirmed via targeted grep); deployed-vs-source drift FAILs present are expected per Decision D3 (deferred to Phase 5) plus one pre-existing unrelated drift (sapience-vault-read.sh, trailing-newline-only). verify-touched.sh over the 4 touched paths: OWED fallback (full 98-suite battery) 98/98 green; mapped SELECT set 34/37 green with 2 NEW failures (test-mcp-merge-target.sh, test-verify-deploy-gate-selection.sh) both isolated-fixture/timing-sensitive, reproduced independent of this task's files, logged as pre-existing/environmental via issue-record.sh. bash -n clean on both new files."
+}

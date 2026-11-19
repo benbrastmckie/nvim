@@ -1,37 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/648_sapience_publish_write_surfaces/plans/01_sapience-publish-write-surfaces.md",
-      "summary": "5-phase, 6.5-hour linear plan adding scripts/sapience-publish.sh with four write-surface subcommands (doc-comment, doc-version, dm, ko) plus a new test suite; widens file_scope by manifest.json (gate-3 provides.scripts parity is commit-blocking) and test-sapience-mcp-registration.sh (Case 30 lockstep array), and defers the single redeploy to the final phase so gate 3's deployed-vs-source drift rule never reopens mid-plan."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "Adding a new script to a Claude-Code extension's source store couples three gate-3 rules in check-extension-docs.sh that together dictate phase sequencing. (1) Rule at ~line 616 enumerates tracked files under <ext>/scripts/ via `git ls-files` and FAILs 'script file on disk NOT in provides.scripts' for any entry absent from manifest.json provides.scripts -- so the manifest edit must land in the SAME phase that creates the script, and the repair command the gate itself prints is `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write`. (2) check_manifest_entries FAILs the reverse ('manifest script entry missing on disk'), so the manifest entry must never precede the file. (3) check_deployed_script_drift (~line 258) FAILs when a provides.scripts entry's deployed .claude/scripts/ copy differs from source, but explicitly SKIPS (info, never FAIL) when the deployed copy is ABSENT -- so registering pre-deploy is safe, while deploying mid-plan makes every later source edit a drift FAIL. The single redeploy therefore belongs after the last source edit, never earlier.",
-      "category": "PATTERN",
-      "source_artifact": "specs/648_sapience_publish_write_surfaces/plans/01_sapience-publish-write-surfaces.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["manifest.json", "provides.scripts", "gate3", "check-extension-docs", "deploy-drift", "extension-script"]
-    },
-    {
-      "content": "suite_selection_select's __FULL_SWEEP__ sentinel is ABSORBING across a multi-path set: selecting over {a mapped path, an unmapped path} returns the bare sentinel, not the union of the mapped path's suites plus a sentinel. A plan phase that creates any new file therefore measures as __FULL_SWEEP__ over its whole Files-to-modify set regardless of how well its other paths map, and validate-artifact.sh's Tier Justification check (which extracts any `test-*.sh` token from the justification block as a suitelist claim, then compares against the selector's actual output) will flag a naming-real-suites justification as a 'fabricated claim'. The honest authoring move for such a phase is the explicit sentinel claim plus naming verify-touched.sh (whose OWED-NOT-PAID fallback covers the unmapped paths) as the covering check -- and mentioning any test filename anywhere in the justification block, even as a command argument, flips the claim kind to suitelist.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/648_sapience_publish_write_surfaces/plans/01_sapience-publish-write-surfaces.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["suite-selection", "FULL_SWEEP", "tier-justification", "validate-artifact", "verify-touched", "plan-authoring"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795076371_5115f3_648",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 6.5,
-    "dependency_waves": 5
-  },
-  "next_steps": "Run /orchestrate 648 to execute the plan",
-  "dispatch_seq": 8
+    "session_id": "sess_1795076371_5115f3",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

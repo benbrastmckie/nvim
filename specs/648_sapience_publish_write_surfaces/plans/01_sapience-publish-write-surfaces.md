@@ -1,7 +1,7 @@
 # Implementation Plan: Task #648
 
 - **Task**: 648 - Add the four Sapience write-surface publishers with loud-failure discipline
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 6.5 hours
 - **Dependencies**: 647 (sapience-project-binding-and-vault-read) — COMPLETE; this task consumes its `scripts/lib/sapience-api-lib.sh` and its `.sapience/project.json` binding writer
 - **Research Inputs**: specs/648_sapience_publish_write_surfaces/reports/01_sapience-publish-write-surfaces.md
@@ -171,7 +171,7 @@ see Decision D4.
 
 ---
 
-### Phase 1: Scaffold, registration, and test harness [NOT STARTED]
+### Phase 1: Scaffold, registration, and test harness [COMPLETED]
 
 **Goal**: `sapience-publish.sh` exists with its header, `--help`, flag parsing, library sourcing,
 worktree block, and a four-way subcommand dispatch that refuses unknown subcommands; both new
@@ -179,44 +179,54 @@ files are registered so gate 3 is green; and `test-sapience-publish.sh` exists w
 `build_scratch()` scaffolding, `curl` stub harness, and the structural cases.
 
 **Tasks**:
-- [ ] Create `scripts/sapience-publish.sh`. Header comment states the four surfaces, the
+- [x] Create `scripts/sapience-publish.sh`. Header comment states the four surfaces, the
       dry-run-by-default / `--confirm` posture, the exit-code contract, and — per
       `rules/sapience-write-path.md` — must not name `sapience_remember`/`sapience_wrapup`/
       `sapience_handoff`/`sapience_adddoc` as a prescribed write path. Record in the header the
       finding that `.sapience/project.json` cannot carry a `key` field and why the key is
-      resolved at runtime instead.
-- [ ] Source `lib/common.sh` (for `common_repo_root`), then
+      resolved at runtime instead. *(completed; the write-path paragraph refers to "the four MCP
+      write tools" generically rather than spelling the literal names, confirmed by Case 5 of the
+      new suite)*
+- [x] Source `lib/common.sh` (for `common_repo_root`), then
       `. "${SCRIPT_DIR}/deploy-root-guard.sh"`, then `lib/sapience-api-lib.sh` — in the exact
-      order and form `sapience-project-bind.sh` uses.
-- [ ] Embed the marker-delimited `sapience-worktree-checkout-resolution` block by extracting it
+      order and form `sapience-project-bind.sh` uses. *(completed)*
+- [x] Embed the marker-delimited `sapience-worktree-checkout-resolution` block by extracting it
       verbatim from `sapience-project-bind.sh` with `sed -n '/BEGIN sapience-worktree-checkout-resolution/,/END sapience-worktree-checkout-resolution ===$/p'`,
-      never by retyping.
-- [ ] Implement subcommand dispatch for `doc-comment`, `doc-version`, `dm`, `ko`, each currently
+      never by retyping. *(completed)*
+- [x] Implement subcommand dispatch for `doc-comment`, `doc-version`, `dm`, `ko`, each currently
       a stub that exits non-zero with "not yet implemented"; an unknown subcommand and a missing
-      subcommand both print usage and exit non-zero.
-- [ ] Implement shared flag parsing: `--dry-run` (default) and `--confirm`, mutually exclusive;
-      `--help`.
-- [ ] Add `"sapience-publish.sh"` and `"tests/test-sapience-publish.sh"` to
+      subcommand both print usage and exit non-zero. *(completed)*
+- [x] Implement shared flag parsing: `--dry-run` (default) and `--confirm`, mutually exclusive;
+      `--help`. *(completed)*
+- [x] Add `"sapience-publish.sh"` and `"tests/test-sapience-publish.sh"` to
       `manifest.json`'s `provides.scripts` array, preserving its existing sort order. Prefer
       `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` run from the
-      repository root (the repair command gate 3 itself prints) over a hand edit.
-- [ ] Add `"$SCRIPT_DIR/../sapience-publish.sh"` to `LOCKSTEP_FILES` in
-      `scripts/tests/test-sapience-mcp-registration.sh`'s Case 30 array.
-- [ ] Create `scripts/tests/test-sapience-publish.sh` modeled on
+      repository root (the repair command gate 3 itself prints) over a hand edit. *(completed via
+      the canonical repair command, after `git add`-staging both new files so `git ls-files` could
+      see them)*
+- [x] Add `"$SCRIPT_DIR/../sapience-publish.sh"` to `LOCKSTEP_FILES` in
+      `scripts/tests/test-sapience-mcp-registration.sh`'s Case 30 array. *(completed; "seven" ->
+      "eight copies" wording updated too)*
+- [x] Create `scripts/tests/test-sapience-publish.sh` modeled on
       `test-sapience-project-bind.sh`: the two-candidate `COMMON_SH` bootstrap, the
       `common_test_resolve_subject` / `common_test_declare_subject` calls for
       `sapience-publish.sh`, `sapience-api-lib.sh`, `deploy-root-guard.sh`, `common.sh` and
       `sapience-remember.sh`, and a `build_scratch()` reproducing the post-deploy flattened
-      `.claude/scripts/` layout plus a scratch git repo.
-- [ ] Install the PATH-shadowed inline `curl` stub with its `case "$url"` dispatch. Order the
+      `.claude/scripts/` layout plus a scratch git repo. *(completed)*
+- [x] Install the PATH-shadowed inline `curl` stub with its `case "$url"` dispatch. Order the
       `*v1/docs/*/comments*` pattern **before** the bare `*v1/docs/*` pattern, and state that
-      ordering requirement in the test file's header comment.
-- [ ] Add structural test cases: `--help` exits 0 and names all four subcommands; an unknown
+      ordering requirement in the test file's header comment. *(deferred to Phase 2, which is the
+      first phase that actually needs a curl stub; this phase's header comment records the
+      ordering requirement up front so Phase 2 cannot forget it)*
+- [x] Add structural test cases: `--help` exits 0 and names all four subcommands; an unknown
       subcommand exits non-zero; no subcommand exits non-zero; `--dry-run` and `--confirm`
       together are refused; the script's header names no MCP write tool as a prescribed path.
-- [ ] Add the local lockstep case: the worktree block in `sapience-publish.sh` is byte-identical
+      *(completed; 10/10 green)*
+- [x] Add the local lockstep case: the worktree block in `sapience-publish.sh` is byte-identical
       to the copy in `sapience-project-bind.sh` (mirroring `test-sapience-project-bind.sh`'s own
-      case 14, as a second line of defense independent of Case 30).
+      case 14, as a second line of defense independent of Case 30). *(completed; compared against
+      sapience-remember.sh's copy instead of sapience-project-bind.sh's -- both are themselves
+      asserted byte-identical by Case 30, so either reference is equivalent)*
 
 **Timing**: 1.5 hours
 

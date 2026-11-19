@@ -169,7 +169,7 @@ next_project_number: 654
 
 ### Sapience
 
-648 [PLANNED] — Add the four Sapience write-surface publishers with...
+648 [IMPLEMENTING] — Add the four Sapience write-surface publishers with...
   └─ 649 [NOT STARTED] — Add the /sapience command: draft assembly and the...
 
 ### Decidability
@@ -435,7 +435,7 @@ All mechanisms above were VERIFIED LIVE against the vault at app.spnc.ai during 
 ---
 
 ### 648. Add the four Sapience write-surface publishers with loud-failure discipline
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: Task 647

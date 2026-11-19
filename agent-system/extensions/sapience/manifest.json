@@ -14,6 +14,7 @@
       "lib/sapience-api-lib.sh",
       "postflight-sapience-notes.sh",
       "sapience-project-bind.sh",
+      "sapience-publish.sh",
       "sapience-remember.sh",
       "sapience-retrieve.sh",
       "sapience-vault-read.sh",
@@ -23,6 +24,7 @@
       "tests/test-sapience-context-scoping.sh",
       "tests/test-sapience-mcp-registration.sh",
       "tests/test-sapience-project-bind.sh",
+      "tests/test-sapience-publish.sh",
       "tests/test-sapience-vault-read.sh",
       "verify-sapience-context-scoping.sh",
       "verify-sapience-mcp.sh"
