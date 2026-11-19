@@ -1,7 +1,7 @@
 # Implementation Plan: Task #651
 
 - **Task**: 651 - Make the orchestration, not the task, the unit that closes on the full gate battery, for every invocation shape including a batch of one
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10 hours
 - **Dependencies**: 610 (COMPLETED), 650 (COMPLETED); 599 (NOT STARTED — Phase 6 territory edge, see Risks); 564 (adjacent tier-check edit, see Risks)
 - **Research Inputs**: specs/651_orchestration_close_owns_full_battery/reports/01_orchestration-close-owns-battery.md
@@ -137,41 +137,50 @@ be a two-writer collision on the same files, so no wave carries more than one ph
 
 ---
 
-### Phase 1: State the Shipped Deferral's Current Design [NOT STARTED]
+### Phase 1: State the Shipped Deferral's Current Design [COMPLETED]
 
 **Goal**: Every prose surface describing the batch-gate deferral states the design as it is, with
 no version-relative narration; the settled answer for the non-orchestrated path is recorded; the
 owed-sweep discharge fields are confirmed present.
 
 **Tasks**:
-- [ ] Re-run the two scope greps before writing anything: every implementation-agent name
+- [x] Re-run the two scope greps before writing anything: every implementation-agent name
       (`general-implementation-agent`, `email-implementation-agent`, `lean-implementation-agent`,
       `nix-implementation-agent`, `neovim-implementation-agent`) across
       `agent-system/extensions/*/skills/*/SKILL.md` and `agent-system/extensions/*/commands/*.md`,
       and `command-route-agent.sh`'s own call sites. Record the counts in the phase's verification
       notes. If any hit appears outside `skill-orchestrate`, STOP and re-open the non-orchestrated
-      path question rather than recording the settled finding below.
-- [ ] Rewrite `context/contracts/batch-gate-stage.md`'s "Single-task invariance" paragraph to state
+      path question rather than recording the settled finding below. *(completed: implementation-agent
+      name hits confined to skills/skill-orchestrate/SKILL.md and one documentation pointer in
+      skills/skill-git-workflow/SKILL.md referencing general-implementation-agent.md by filename,
+      not a dispatch call site; command-route-agent.sh's only call site is
+      orchestrate-cycle-plan.sh:2347. Zero hits outside skill-orchestrate's own Move loop; settled
+      finding confirmed, not re-opened.)*
+- [x] Rewrite `context/contracts/batch-gate-stage.md`'s "Single-task invariance" paragraph to state
       the current design only: `orchestrate-cycle-plan.sh`'s `build_args` composition appends
       `--batch-gate-deferral` for every `implement`-phase dispatch; a batch of one defers to this
       stage exactly like a multi-task batch; the batch-gate-pending marker plus the two entry
       guards are what make that safe. Remove every version-relative construction ("no longer",
       "superseded a ... predecessor", "used to leave open", "as a fallback for that one shape").
-- [ ] Add a short subsection to the same file recording the settled scope answer: every
+      *(completed)*
+- [x] Add a short subsection to the same file recording the settled scope answer: every
       implement-phase dispatch for every task type routes through `skill-orchestrate`'s Move loop,
       so there is no separate non-orchestrated implementation path owing its own inline battery;
       the residual case is an orchestration that never reaches Move 4, owned by the obligation
       mechanism (Phase 5). State the re-verification trigger explicitly: a new skill or command
-      that dispatches an implementation agent re-opens this question.
-- [ ] Correct `context/patterns/orchestrate-batch-results-template.md`'s rendering note so it no
+      that dispatches an implementation agent re-opens this question. *(completed)*
+- [x] Correct `context/patterns/orchestrate-batch-results-template.md`'s rendering note so it no
       longer claims the batch-gate result is absent on a single-task batch; the result renders
-      whenever an implement dispatch occurred.
-- [ ] Confirm, read-only, that `scripts/orchestrate-batch-gate.sh` carries
+      whenever an implement dispatch occurred. *(completed)*
+- [x] Confirm, read-only, that `scripts/orchestrate-batch-gate.sh` carries
       `owed_discharged_count`, `owed_open_count`, and `owed_open_roster` in its `batch_gate`
       record and that the results template renders the owed-sweep sub-result. Record the
-      confirmation; make no edit if both hold.
-- [ ] Reconcile `index-entries.json` line counts for every edited context file:
+      confirmation; make no edit if both hold. *(completed: both confirmed present at
+      scripts/orchestrate-batch-gate.sh:243-245 and
+      context/patterns/orchestrate-batch-results-template.md:195-211; no edit made.)*
+- [x] Reconcile `index-entries.json` line counts for every edited context file:
       `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`.
+      *(completed: 2 line_count values reconciled.)*
 
 **Timing**: 1 hour
 

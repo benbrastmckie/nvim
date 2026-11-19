@@ -2629,7 +2629,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Batch gate stage (Move 4): the once-per-invocation shared verify-deploy.sh gate run, with confirmation and per-task finding attribution, for a multi-task /orchestrate batch; single-task/bare-implement invariance; coexistence boundary with the conclusion stage",
-      "line_count": 302,
+      "line_count": 312,
       "keywords": [
         "batch-gate-stage",
         "move-4",
@@ -3462,7 +3462,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Consolidated-output template for /orchestrate batch (multi-task) results, with per-section rendering gates",
-      "line_count": 305,
+      "line_count": 306,
       "keywords": [
         "patterns",
         "orchestrate",

@@ -163,8 +163,9 @@ of these rows** — unlike every Deferred section above, this one costs the batc
 ### Batch Gate Stage Result
 
 (Rendered only when `batch_gate` is present on `mt_state_file` — i.e. the Batch Gate Stage's
-trigger condition fired this invocation; absent entirely on a research-only/plan-only invocation
-or a single-task batch that never deferred. Populated from
+trigger condition fired this invocation: at least one `implement`-phase dispatch occurred,
+whether the batch held one task or many. Absent entirely on a research-only/plan-only invocation,
+which never dispatches an implementation agent. Populated from
 `mt_state_file.batch_gate` / `specs/.orchestration/.return-meta-multi-{session_id}.json`'s
 `metadata.batch_gate`. Placed immediately after `### System Defects Detected`, before
 `### Conclusion` — it fires inside Move 4 (before this template's own render completes), so it is

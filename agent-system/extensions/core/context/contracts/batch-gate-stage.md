@@ -67,26 +67,36 @@ Inter-Cycle Redeploy Checkpoint (`context/patterns/batch-orchestration-guardrail
 research-only or plan-only invocation never touches source-store files the gate would have
 anything new to say about.
 
-**Single-task invariance (current behavior — superseded a task-count-gated predecessor).**
-Mechanism A's `## Batch Gate Deferral` directive is **no longer gated on `.task_numbers | length
-> 1`**: `orchestrate-cycle-plan.sh`'s `build_args` composition now appends `--batch-gate-deferral`
-for every `implement`-phase dispatch, unconditionally, closing the gap the task-count gate used
-to leave open — a batch of ONE now defers to this stage exactly like a genuine multi-task batch.
-This is made SAFE to do unconditionally by the mechanical half that accompanies it: a
-**batch-gate-pending marker** (`specs/.orchestration/batch-gate-pending-<session_id>.json`,
-written by `orchestrate-cycle-plan.sh` whenever this session's final `.implement_agents` map is
-non-empty — never gated on task count either — and removed by this script at its own discharge
-point, see "Owed-Sweep Discharge" above for the sibling mechanism this mirrors). The marker's own
-path convention, shape, and staleness window (`BATCH_GATE_MARKER_STALE_SEC`, default 3600s) are
-owned by `scripts/lib/batch-gate-marker-lib.sh`, the single source of truth every producer/
-discharger/consumer sources rather than re-deriving. The entry guards this marker's existence
-feeds (a nested unfiltered `verify-deploy.sh`/`run-all.sh` invocation mechanically refusing
-itself while a non-stale marker is pending) are the consumer half of this same mechanism — see
-their own contract note below. The non-negotiable invariant from
-`context/formats/plan-format.md`'s `## Verification Tiers` section — the complete gate set still
-runs, once, before the batch's tasks are done — is now preserved by Mechanism A/B together across
-EVERY invocation shape, including a batch of one, rather than by the task's own final phase
-running the complete set inline as a fallback for that one shape.
+**Single-task invariance.** Mechanism A's `## Batch Gate Deferral` directive carries no
+task-count gate: `orchestrate-cycle-plan.sh`'s `build_args` composition appends
+`--batch-gate-deferral` for every `implement`-phase dispatch, unconditionally — a batch of ONE
+defers to this stage exactly like a genuine multi-task batch. This is made SAFE by the mechanical
+half that accompanies it: a **batch-gate-pending marker**
+(`specs/.orchestration/batch-gate-pending-<session_id>.json`, written by
+`orchestrate-cycle-plan.sh` whenever this session's final `.implement_agents` map is non-empty —
+never gated on task count either — and removed by this script at its own discharge point, see
+"Owed-Sweep Discharge" above for the sibling mechanism this mirrors). The marker's own path
+convention, shape, and staleness window (`BATCH_GATE_MARKER_STALE_SEC`, default 3600s) are owned
+by `scripts/lib/batch-gate-marker-lib.sh`, the single source of truth every producer/discharger/
+consumer sources rather than re-deriving. The entry guards this marker's existence feeds (a
+nested unfiltered `verify-deploy.sh`/`run-all.sh` invocation mechanically refusing itself while a
+non-stale marker is pending) are the consumer half of this same mechanism — see their own
+contract note below. The non-negotiable invariant from `context/formats/plan-format.md`'s `##
+Verification Tiers` section — the complete gate set runs, once, before the batch's tasks are
+done — is preserved by Mechanism A/B together across every invocation shape, including a batch of
+one. A task's own final phase never runs the complete set inline; that obligation belongs to this
+stage alone, for every invocation shape.
+
+**Settled scope: no separate non-orchestrated implementation path.** Every `implement`-phase
+dispatch for every task type routes through `skill-orchestrate`'s Move loop (confirmed by a
+repository-wide scan for an implementation-agent name outside `skill-orchestrate`'s own dispatch
+and `command-route-agent.sh`'s call sites: the only other hit is a documentation pointer in
+`skills/skill-git-workflow/SKILL.md`, not a dispatch site). There is therefore no separate
+non-orchestrated implementation path that owes its own inline battery. The one residual case is
+an orchestration that never reaches Move 4 at all (a stop verdict, a crash, an operator
+interrupt) — that case is owned by the open-obligation mechanism documented under "Open Close
+Obligations" below, not by this invariance paragraph. Re-verification trigger: a new skill or
+command that dispatches an implementation agent outside this Move loop re-opens this question.
 
 **Entry guards (the consumer half, Phase 5).** `verify-deploy.sh` and `run-all.sh` each carry an
 entry guard at their own top level: when a non-stale batch-gate-pending marker exists for ANY

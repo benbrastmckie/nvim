@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "State the Shipped Deferral's Current Design",
+  "started_at": "2026-11-18T21:00:00Z",
+  "last_updated": "2026-11-18T21:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run scope greps for implementation-agent names and command-route-agent.sh call sites", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Rewrite batch-gate-stage.md invariance paragraph to current design", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/batch-gate-stage.md"]},
+    {"id": 3, "description": "Add settled-scope subsection for non-orchestrated path", "status": "done", "files_touched": ["agent-system/extensions/core/context/contracts/batch-gate-stage.md"]},
+    {"id": 4, "description": "Correct orchestrate-batch-results-template.md single-task-absence claim", "status": "done", "files_touched": ["agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"]},
+    {"id": 5, "description": "Confirm owed-sweep discharge fields present (read-only)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Reconcile index-entries.json line counts", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

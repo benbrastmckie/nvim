@@ -1,30 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/651_orchestration_close_owns_full_battery/plans/01_orchestration-close-owns-battery.md",
-      "summary": "Seven-phase, 10-hour plan relocating the full gate battery's ownership to the orchestration close: vocabulary amendment, red-close per-task record and status binding, interrupted-invocation obligation, and consumer-repository closing-gate consumption."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795039913_ab1940_651",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 10,
-    "dependency_waves": 7
-  },
-  "memory_candidates": [
-    {
-      "content": "A plan that edits any context/**, rules/**, or agents/** markdown file in the agent-system source store moves a line_count that agent-system/extensions/core/index-entries.json declares, and check-extension-docs.sh Rule R fails on that drift with a hard (not advisory) default gate mode. Every such phase therefore owes index-entries.json as an entry in its own Files to modify block plus an in-phase `generate-context-line-counts.sh --write` reconciliation step -- this is the coupled-generated-surface obligation's most frequently triggered instance in this repository, and it applies to documentation-only phases that look like they have no generated surface at all.",
-      "category": "PATTERN",
-      "source_artifact": "specs/651_orchestration_close_owns_full_battery/plans/01_orchestration-close-owns-battery.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["index-entries", "line_count", "coupled-generated-surface", "check-extension-docs", "plan-authoring", "source-store"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 651 to execute the plan",
-  "dispatch_seq": 22
+    "session_id": "sess_1795039913_ab1940",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
