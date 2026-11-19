@@ -2,7 +2,7 @@
 
 - **Task**: 653 - Give the gate mutex a host-scoped form, because every lock this system ships is
   invisible to a sibling repository running the same battery
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6 hours
 - **Dependencies**: None (the full-gate-verification ceiling-and-stall record is a hard
   prerequisite and is COMPLETED; its posture ruling is inherited, not re-litigated)

@@ -26,21 +26,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/653_host_scoped_gate_mutex/summaries/01_host-scoped-gate-mutex-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["deploy-root-guard", "source-store-fixture", "manual-smoke-test", "task-lock.sh", "two-levels-deep"]
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "source-store-fixture",
+        "manual-smoke-test",
+        "task-lock.sh",
+        "two-levels-deep"
+      ]
     },
     {
       "content": "To test a lock-root resolver's degradation path that depends on a real, host-level directory existing or not (e.g. /run/user/$UID on a systemd-logind host, which genuinely exists and is writable in almost every real test environment), override the bash UID variable itself for the one subprocess under test (env UID=999999999 bash script.sh) rather than adding a test-only bypass to production code or attempting a mount-namespace trick. UID is NOT readonly in a non-interactive, non-login bash invocation -- confirmed directly via `env UID=999999999 bash -c 'echo $UID'`. This never touches the real path or changes the process's real uid/euid, only the shell variable the resolver reads.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/653_host_scoped_gate_mutex/summaries/01_host-scoped-gate-mutex-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["UID-override", "lock-root-resolver", "degradation-testing", "run-user-uid", "bash-special-variable"]
+      "suggested_keywords": [
+        "UID-override",
+        "lock-root-resolver",
+        "degradation-testing",
+        "run-user-uid",
+        "bash-special-variable"
+      ]
     },
     {
       "content": "test-manifest-scripts-sync.sh resolves a manifest's provides.scripts[] 'on disk' set via `git ls-files`, not a raw filesystem walk. A brand-new suite file that is correctly registered in both manifest.json and physically present on disk still transiently reports as 'declared but not tracked on disk' until it is `git add`-ed (staged, not necessarily committed) -- this is a git-tracking timing artifact, not a registration defect. Re-run the check after staging the new file to confirm correctness before concluding the registration is wrong.",
       "category": "INSIGHT",
       "source_artifact": "specs/653_host_scoped_gate_mutex/summaries/01_host-scoped-gate-mutex-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["test-manifest-scripts-sync", "git-ls-files", "new-suite-registration", "staging-timing-artifact"]
+      "suggested_keywords": [
+        "test-manifest-scripts-sync",
+        "git-ls-files",
+        "new-suite-registration",
+        "staging-timing-artifact"
+      ]
     }
   ],
   "sapience_notes": [
@@ -99,7 +116,11 @@
     "session_id": "sess_1795076371_5115f3",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   }
