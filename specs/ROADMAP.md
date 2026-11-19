@@ -104,14 +104,14 @@ before it is cited (standing rule 5).
 
 **The ranking rule, stated so it can be argued with.** A batch ranks higher when its members decide whether work happens (a write path that refuses, a lock that never reaps, a guard that never converges), or whether a verdict can be trusted (a gate reporting a red nobody can attribute, a validator refusing conforming input, a detection charged to the wrong task). It ranks lower when its members improve what a future plan or document says without unblocking anything currently stuck. Cost sits immediately below verdict-truth rather than at the head: an optimisation measured against a red gate set is measured against noise, so batch four waits on batch one by construction.
 
-Re-derived 2026-11-19 over the 125 open records. **The backlog is broad and shallow**: depth is 5 waves, the waves run 69 / 34 / 12 / 7 / 3, and **69 of 125 records have no open predecessor**. The widest gates are `599` at 5 direct open dependents and `479` at 4, then `451`, `472`, `484`, `539` and `593` at 3, then eleven records at 2 (`431`, `438`, `452`, `455`, `486`, `548`, `564`, `594`, `647` among them). **Fan-out does not discriminate between candidates at this shape, so it cannot choose the order** -- with more than half the backlog immediately ready, the binding question is which ready work matters, which is a judgment and not a measurement.
+Re-derived 2026-11-19 over the 125 open records, and re-verified against `generate-task-order.sh --print` the same day. **The backlog is broad and shallow**: depth is 5 waves, the waves run 69 / 34 / 12 / 7 / 3, and **69 of 125 records have no open predecessor**. The widest gates are `599` at 5 direct open dependents and `479` at 4, then `451`, `472`, `484`, `539` and `593` at 3, then exactly nine records at 2 -- `431`, `438`, `452`, `455`, `486`, `548`, `564`, `594` and `647`, which is the complete set at that count, not a sample of it. Every other record with an open dependent has exactly one. **Fan-out does not discriminate between candidates at this shape, so it cannot choose the order** -- with more than half the backlog immediately ready, the binding question is which ready work matters, which is a judgment and not a measurement.
 
-**The verification substrate is the head of the list for the first time.** Batch one is the whole of the currently-known red surface: the one substantive defect left of seven Gate 8 findings a full battery filed, the three standing findings blocking `RESULT=landed_verify_clean`, the two-engine defect that makes one suite red by design plus the roster rows for it, and the single repo-wide violation each of gates 4 and 29 report. Until that lands, every batch below it dispatches against a gate verdict an operator has a rational incentive to ignore. **Batch four then owns whether the battery's own numbers are measurable at all**: its head gives the gate mutex a host-scoped form, because every lock this system ships resolves under `$PROJECT_ROOT` and is therefore structurally blind to a sibling repository running the same battery on the same host -- a single-flight guard built on today's `gate-acquire` reports single-flight while a second battery runs. Only after that does the standing suite/gate cost consumer resume. The two records that previously led batch four, the orchestrator eager-load ceiling and the full-battery timeout-and-stall work, have landed.
+**The verification substrate is the head of the list for the first time.** Batch one holds most of the currently-known red surface, and its own `Why this order:` bullet now names, record by record, which of its members still reproduce a red and which do not -- re-measured 2026-11-19 by running the gates and suites directly rather than inferring from the records. The live reds there are the `.mcp.json` merge defect (5 passed / 2 failed), the three standing findings blocking `RESULT=landed_verify_clean`, the two-engine defect that makes one suite red by design plus the roster rows for it, and one violation that no record's subject owns: a suite added by the orchestration-close work with no row in `suite-classification.data`. Gates 4 and 29 both report clean today, so the two single-violation members are no longer part of that surface. Until the rest lands, every batch below it dispatches against a gate verdict an operator has a rational incentive to ignore. **Batch four then owns whether the battery's own numbers are measurable at all**: its head gives the gate mutex a host-scoped form, because every lock this system ships resolves under `$PROJECT_ROOT` and is therefore structurally blind to a sibling repository running the same battery on the same host -- a single-flight guard built on today's `gate-acquire` reports single-flight while a second battery runs; the resolution site was re-read this pass and is unchanged. Only after that does the standing suite/gate cost consumer resume. The two records that previously led batch four, the orchestrator eager-load ceiling and the full-battery timeout-and-stall work, have landed.
 
 **The renderer is sound and all three of its callers are wired.** `## Next` and `## Open work` are rendered wholly from `state.json`'s `roadmap_batches` / `roadmap_notes` entries by `roadmap-integration.sh`, which makes no judgment calls. A batch naming only terminal members drops out of the rendering entirely -- its `/orchestrate` line and its `Why this order:` bullet alike -- so retiring one by hand is tidiness, not correctness. The mechanism is visible again in batch four, two of whose four members have landed and now render as nothing at all; its `description` and `Why this order:` text were rewritten by hand against the three survivors, because that authored prose is the one part rendering cannot keep current on its own. `/todo` and `/review` reach `--regenerate` behind the shared preflight classifier, and `/orchestrate`'s conclusion stage has its own script, `orchestrate-conclusion-roadmap.sh`, which `skill-orchestrate` names and a dedicated suite covers.
 
 ```
-/orchestrate 645, 560, 629, 630, 631, 632, 633   # Make verify-deploy's verdict mean something again: the red suites, the roster, three single reds
+/orchestrate 645, 560, 629, 630, 631, 632, 633   # Make verify-deploy's verdict mean something again: the live reds, the roster, two latent gates
 /orchestrate 475, 613, 514, 574   # Hard stops: task creation dies on a big verdict, a lock never reaps, a run never converges
 /orchestrate 556, 472, 646, 551, 519, 570, 577, 609   # What one dispatch hands the next: settle the handoff/return-meta shapes, fix failure accounting
 /orchestrate 653, 586, 605   # Make a full battery's numbers trustworthy: host-scope the gate mutex, then the cost verdicts
@@ -147,22 +147,62 @@ Why this order:
     blocks work that did nothing wrong, or the operator learns to ignore the gate. Both destroy the
     signal the rest of this list is ordered around, so restoring the verdict precedes everything.
 
-  - **The members are the whole of the currently-known red surface, measured.** `645` holds the one
-    substantive defect left of seven Gate 8 findings one full battery filed (six are recorded closed
-    in its own provenance section -- read that before spending a dispatch). `560` clears the three
-    standing findings that keep `deploy-headless.sh` from reaching `RESULT=landed_verify_clean` at
-    all. `629` fixes the two-engine allow-list drop that makes `test-deploy-propagation.sh`
-    expected-red BY DESIGN, and `630` writes the roster rows for that suite and
-    `test-gate-registry-resolution.sh` so `run-all.sh` stops calling an expected failure NEW --
-    that pair is already edged, `630` behind `629`. `631` and `632` each close the single
-    unexempted violation gate 29 and gate 4 report repo-wide. `633` deletes a 68KB duplicate deploy
-    ledger sitting inside the core source store whose contents disagree with the root ledger a
-    resolver is supposed to read.
+  - **Re-measured 2026-11-19 by running the gates and suites directly, the red surface has moved
+    under this batch, and the members no longer describe it exactly.** Two members' premises no
+    longer reproduce, one member's does, and one red here is owned by no record's subject. Each is
+    named below rather than left to a future dispatch to rediscover. The batch keeps its head
+    position regardless: what changed is which reds are live, not whether the verdict matters.
 
-  - **`632` before `607` is deliberate and preserved from the prior ordering.** `632` makes
-    `orchestrator-context-budget.json`'s append-only derivation log stop re-breaking the
-    task-reference gate every time the ceiling moves; `607` (one batch below) moves that ceiling
-    again. Fixing the recurrence first means the move does not immediately re-open the gate.
+  - **Still red, and the measurement is unchanged.** `645`'s `.mcp.json` merge defect runs 5
+    passed / 2 failed: assertion C reports a hand-written server entry as `MISSING` after a
+    load/regenerate cycle, and assertion E reports the same entry disturbed by a subsequent unload.
+    That is a data-loss shape against a user's own file and it is exactly the remaining scope
+    `645` declares. `560` still clears the three standing findings that keep `deploy-headless.sh`
+    from reaching `RESULT=landed_verify_clean`. `629` still fixes the two-engine allow-list drop
+    that makes `test-deploy-propagation.sh` expected-red BY DESIGN, and `630`, already edged behind
+    it, still writes the roster rows for that suite and `test-gate-registry-resolution.sh` so
+    `run-all.sh` stops calling an expected failure NEW. `633` still deletes a 68KB duplicate deploy
+    ledger inside the core source store whose contents disagree with the root ledger a resolver
+    reads.
+
+  - **One red here is owned by no open record's SUBJECT, and a dispatch must not treat it as out of
+    scope.** `test-lint-unit-integration-boundary.sh` is red at 14 passed / 1 failed, reporting one
+    violation: `test-orchestrate-close-status-bind.sh` is discovered under `scripts/tests/` with no
+    row in `scripts/tests/suite-classification.data`. That suite was added by the
+    orchestration-close battery work, which landed after `645`'s description was written -- so
+    `645` records this suite as resolved at 15/0 and instructs an implementer not to re-diagnose
+    it. The earlier fix is intact and is not regressed; this is a second, later cause with the same
+    symptom. The remedy is a one-line data edit (`basename<TAB>unit|integration<TAB>reason`), and
+    `645` already claims the failing suite and already carries "verify-deploy.sh completes its full
+    gate set with exit 0" as acceptance criterion 1, which cannot be met while the row is missing.
+    No edge is filed to the only other open claimant of `suite-classification.data` (`646`, batch
+    three): its subject is the return-meta terminal status vocabulary, it touches that file only
+    for its own new suite, and the two batches never dispatch concurrently, so array position
+    already resolves the overlap.
+
+  - **`631`'s acceptance criterion is already satisfied in the live tree, which makes it a closure
+    candidate rather than a dispatch.** It asks that `lint-test-root-resolution.sh` report 0
+    violations; gate 29's lint reports `0 violation(s) across 219 file(s)`, and
+    `test-typescript-verify.sh` now resolves its root via `git rev-parse --show-toplevel` rather
+    than the fixed-depth walk the record was filed against. Nothing here re-opens it -- that is a
+    status question for a backlog pass, not a roadmap ordering judgment -- but it must not be
+    carried as a live red.
+
+  - **`632` is no longer a red and is now purely preventive, so its ordering argument has
+    dissolved.** Gate 4 reports `PASS: 0 unexempted task-reference occurrences`, and
+    `orchestrator-context-budget.json`'s derivation entries now cite dates and the file's own
+    rounding convention rather than a task number inline. The ceiling move that used to be the
+    recurrence trigger has already happened and did not re-break the gate, so the previous
+    "`632` before the ceiling move" ordering no longer applies. What stays open is `632`'s actual
+    deliverable: the unmade ruling between exempting the derivation field and changing the house
+    style for its entries, so the next move cannot re-break the gate by accident.
+
+  - **Two suites the most recent close battery named as red were re-run this pass and are green.**
+    `test-gate-lock.sh` passes 27 / 0, confirming `645`'s own triage of it as lock contention
+    rather than a defect -- and, separately, confirming that `653` in batch four extends a green
+    suite, which is why the no-edge ruling between those two records stands.
+    `test-lint-state-writer-boundary.sh` also passes, matching the load-induced-flake triage filed
+    against it during that same battery. Neither needs a record.
 
   - **The lane is free.** No member declares `__WHOLE_TREE__`, and the only cross-batch overlap is
     `560`'s `lean-plan-compliance-check.sh` against the Lean compliance strand far below, resolved
@@ -607,7 +647,7 @@ Why this order:
 
 **The claimant roster is four: `431`, `506`, `512` and `586`** (re-measured 2026-11-19; `476`, `585` and `607` have landed). `586` now sits SECOND in batch four rather than first, which is a deliberate departure from the rule below: the host-scoped mutex record ahead of it is narrowly scoped and can land before the sentinel defer takes over, whereas putting the claimant first would queue both of its batch-mates behind it for the whole run. The other three lead their own batches (`506` batch ten, `431` batch twelve, `512` batch thirteen) for the usual reason -- a claimant placed first lets the rest of its batch queue behind it instead of colliding with it mid-run. **The head is clear**: no member of batches one, two, three or five declares the sentinel, so those four runs contend only with each other and with whatever a cross-session claimant holds.
 
-**What changed this pass.** The pass was scoped by instruction to five records created after the previous one: three that stand up a `/sapience` command, and two filed from measurements taken in a consumer repository rather than here. Four things moved. **Batch four was rebuilt** around the host-scoped gate mutex record, which now leads it, after its two previous leaders landed; both were checked against the live source first, and neither the mutex's repo-scoped resolution nor the wrong-corpus resolution site was touched by what landed, so neither new record is overtaken. **A new batch five** holds the three-record `/sapience` chain, and it is the one batch in this list whose position is owner-instructed rather than derived from the ranking rule above -- said so in its own `Why this order:` text so the rule stays arguable. **The validator-false-failure batch was promoted from seventh to sixth**, above the evidence-integrity and commit-containment batches, because "a validator refusing conforming input" is verbatim the verdict-truth class the ranking rule puts above work that only improves what a later plan says; the wrong-corpus record joined it as a fifth member, behind the one record that gates it. **124 of 125 open records are now batched**; the single exception is the held email substrate (`498`), which is an owner decision, not available work.
+**What changed this pass.** The pass was scoped by instruction to five records: the three that stand up a `/sapience` command, and two filed from measurements taken in a consumer repository rather than here. Those five placements were re-derived independently against live state rather than carried forward, and **all five are confirmed and left exactly where they are**. The confirmations, each checkable: the host-scoped-mutex record's defect site still reads `"$PROJECT_ROOT/specs/.gate-lock"` with no host scope, and the record is ready now that its posture prerequisite has landed, so it keeps the head of batch four ahead of the `__WHOLE_TREE__` claimant; the wrong-corpus record's defect site still sources the shared suite-selection library from its own script directory, and its one remaining open prerequisite is the selector record sitting two positions ahead of it in batch six, so its position follows from its own edge; the `/sapience` chain's three edges are all present in the graph and no other open record claims a single path under its extension subtree. **What did change is batch one's account of itself.** Its members were re-measured by running the gates and suites directly: the merge defect is still red at 5 passed / 2 failed, two members' premises no longer reproduce (gates 4 and 29 both report clean, and one of those records' acceptance criterion is already satisfied in the live tree), two suites the most recent close battery reported red are green on a direct re-run, and one red there is owned by no record's subject -- a suite added by the orchestration-close work with no row in `suite-classification.data`. The batch's `Why this order:` text now states each of those by name instead of claiming the members are the whole red surface. **124 of 125 open records are batched**; the single exception is the held email substrate (`498`), which is an owner decision, not available work.
 
 The gate exempts research and plan dispatches (neither regenerates the tree) and defers only implement, so a claimant still researches and plans freely while the lane is occupied.
 
@@ -619,7 +659,7 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 
 - **The exemption is direct-edge only, never transitive, and it is scoped to the batch being dispatched.** A heavily shared path is NOT grounds for edging every record that touches it. Re-measured 2026-11-18, `context/formats/plan-format.md` has fourteen open claimants, `agents/planner-agent.md` nine, `git-commit-scoped.sh` eight, and `orchestrate-cycle-postflight.sh`, `test-git-commit-scoped.sh` and `agent-system/extensions/core/skills/skill-orchestrate/SKILL.md` seven each; the edges worth declaring are the ones inside the batch actually being dispatched, and every other overlap is advisory, resolved by array position. The worked example this pass is batch three: five members claim `orchestrate-cycle-postflight.sh` with only two of the ten pairs ordered, and the eight remaining pairs were left to the collision deferral rather than chained, because they are independent defects on one file and co-membership is this list's own judgment, not graph evidence.
 
-- **A transitive order made direct, or an order a record states itself, is the edge class this list writes; a bare sibling overlap is not.** **No edge was written this pass, and that is a finding rather than an omission**: each of the five records the pass was scoped to already carries every edge its own text states. The `/sapience` chain is fully edged (`648` behind `647`, `649` behind both, with `647` owning the shared host/token/API library the other two consume), and no other open record claims any path under its extension subtree at all -- there is no overlap to judge, which makes it the only batch here with zero file-territory contention against the rest of the backlog. The wrong-corpus record carries both prerequisites it names, one of which has since landed. The host-scoped-mutex record carries the posture record it must not pre-empt, and its own text rules AGAINST an edge to the Gate 8 suite-repair record they share `test-gate-lock.sh` with; that ruling is kept, because array position already puts the suite's repair ahead of its extension, so the extension lands on a green suite either way. The sibling overlaps left unedged include `560`/`504`/`516` on `lean-plan-compliance-check.sh`, `630`/`586`/`605` on `agent-system/extensions/core/scripts/tests/known-failures.txt`, and seven open claimants of `validate-artifact.sh` of which four now sit together in batch six -- each split across batches that never dispatch concurrently. Two older proposals are still held for an owner ruling rather than written: `452` behind `451` and `473` behind `472`.
+- **A transitive order made direct, or an order a record states itself, is the edge class this list writes; a bare sibling overlap is not.** **No edge was written this pass, the conclusion was re-derived rather than carried forward, and it is a finding rather than an omission**: each of the five records the pass was scoped to already carries every edge its own text states, verified against the live graph. The `/sapience` chain is fully edged (`648` behind `647`, `649` behind both, with `647` owning the shared host/token/API library the other two consume), and a mechanical sweep confirms no other open record claims any path under its extension subtree at all -- there is no overlap to judge, which makes it the only batch here with zero file-territory contention against the rest of the backlog. The wrong-corpus record carries both prerequisites it names; one has landed, and the other sits two positions ahead of it in the same batch. The host-scoped-mutex record carries the posture record it must not pre-empt, and its own text rules AGAINST an edge to the Gate 8 suite-repair record they share `test-gate-lock.sh` with. **That ruling is kept, and it now rests on a direct measurement rather than on ordering alone**: `test-gate-lock.sh` was re-run this pass at 27 passed / 0 failed, so the suite is green independently of its repair record, and the mutex work extends a green suite whichever order the two land in. The sibling overlaps left unedged include `560`/`504`/`516` on `lean-plan-compliance-check.sh`, `630`/`586`/`605` on `agent-system/extensions/core/scripts/tests/known-failures.txt`, `645`/`646` on `suite-classification.data`, and seven open claimants of `validate-artifact.sh` (`452`, `509`, `545`, `564`, `575`, `588`, `652`) of which four now sit together in batch six -- each split across batches that never dispatch concurrently. Two older proposals are still held for an owner ruling rather than written: `452` behind `451` and `473` behind `472`.
 
 **Every batch was scanned mechanically this pass for a member listed ahead of an open predecessor, and the list is clean**: across all 28 batches, no member appears in an earlier batch than, or at an earlier position than, any still-open record it depends on. The scan constrained one placement outright -- the wrong-corpus record cannot rise above batch six, because the record deciding whether the selector layer or its consumer owns the fix sits there and must land first; that position follows from its own edge and is not a judgment about what it is worth. The scan returns silence rather than a clean result in exactly two places -- `613` and `618` declare no territory at all, so no collision scan over them means anything.
 
@@ -773,12 +813,12 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 577 ready           Make a blocker-triggered aux plan-revision consumable by triage, and stop the...
 599 ready           Give the batch-gate-deferral directive a narrowing form that covers a phase t...
 629 ready           Fix the two-engine defect: scan_all_artifacts' sync_scan allow-list post-filt...
-631 ready           Replace test-typescript-verify.sh's fixed-depth REPO_ROOT walk with a boundar...
-632 ready           Stop orchestrator-context-budget.json's derivation log from re-breaking the t...
+631 ready           Replace test-typescript-verify.sh's fixed-depth REPO_ROOT walk with a boundar...   <- gate 29 reports 0 violations and the fixed-depth walk is already replaced -- confirm before dispatch
+632 ready           Stop orchestrator-context-budget.json's derivation log from re-breaking the t...   <- gate 4 is green; what remains is the exemption-vs-house-style ruling, not a live violation
 633 ready           Resolve the stray duplicate .claude-extensions.json sitting inside the core e...
 639 ready           Make issue-record.sh failures visible instead of silently losing the evidence...
 640 ready           Add a derived-percentage bug class to the census methodology standard
-645 ready           repair_seven_failing_gate8_suites
+645 ready           repair_seven_failing_gate8_suites   <- the unit/integration boundary suite is red again from a later cause its provenance list predates
 ```
 
 **Sapience (3)**
