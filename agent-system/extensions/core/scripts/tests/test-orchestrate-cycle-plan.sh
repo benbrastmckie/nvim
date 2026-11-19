@@ -56,7 +56,7 @@ for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh task-lock.sh 
          lib/manifest-routing-lib.sh lib/phase-heading-patterns.sh lib/deploy-baseline-lib.sh \
          lib/task-lookup-lib.sh lib/deploy-ledger-lib.sh lib/return-meta-status-vocabulary.sh \
          lib/territory-contention-lib.sh lib/task-classification-lib.sh \
-         lib/redeploy-checkpoint-lib.sh; do
+         lib/redeploy-checkpoint-lib.sh lib/batch-gate-marker-lib.sh; do
   require_file "$CORE_DIR/$f"
 done
 require_file "$CORE_DIR/../context/reference/orchestrator-critical-paths.json"
@@ -78,7 +78,7 @@ done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
          phase-heading-patterns.sh deploy-baseline-lib.sh task-lookup-lib.sh deploy-ledger-lib.sh \
          runtime-file-patterns.sh return-meta-status-vocabulary.sh territory-contention-lib.sh \
-         task-classification-lib.sh redeploy-checkpoint-lib.sh; do
+         task-classification-lib.sh redeploy-checkpoint-lib.sh batch-gate-marker-lib.sh; do
   cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
 done
 cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
@@ -362,6 +362,26 @@ else
   common_test_fail "session-id invariant: mt_state_file not written for live dispatch"
 fi
 
+# Batch-gate-pending marker (gate-ceiling-fit Phase 4): this cycle dispatched candidate #402's
+# implement phase (confirmed above), so the marker must exist, carry this session's own id and
+# pid, and list candidate #402's own dispatch_seq -- exercised here rather than in a dedicated
+# fixture because this group already stands up the one precondition that matters (a real,
+# non-dry-run implement-phase dispatch) and re-deriving it from scratch would duplicate this
+# exact setup.
+marker_file_live="$WORKDIR/specs/.orchestration/batch-gate-pending-g45_sess.json"
+if [ -f "$marker_file_live" ]; then
+  common_test_pass "batch-gate-pending marker: written after a cycle with a real implement dispatch"
+  marker_sid=$(jq -r '.session_id' "$marker_file_live" 2>/dev/null)
+  marker_has_candidate=$(jq -r '.dispatch_seq | has("402")' "$marker_file_live" 2>/dev/null)
+  if [ "$marker_sid" = "g45_sess" ] && [ "$marker_has_candidate" = "true" ]; then
+    common_test_pass "batch-gate-pending marker: carries this session's own id and candidate #402's dispatch_seq"
+  else
+    common_test_fail "batch-gate-pending marker: wrong shape (session_id='$marker_sid', has candidate='$marker_has_candidate')" "$(cat "$marker_file_live")"
+  fi
+else
+  common_test_fail "batch-gate-pending marker: not written after a cycle with a real implement dispatch"
+fi
+
 common_test_info "Group 4/5 (continued): per-candidate forced-phase stop-after-last-named (LIVE)"
 write_state <<'EOF'
 {
@@ -389,6 +409,18 @@ if [ "$(jqf '.dispatch | map(select(.task == 501)) | .[0].force')" = "true" ]; t
 else
   common_test_fail "stop-after-last-named: expected .dispatch[].force=true on cycle 1 (live path), got: $LAST_STDOUT"
 fi
+
+# Batch-gate-pending marker (gate-ceiling-fit Phase 4): cycle 1 above dispatched a RESEARCH
+# phase only (no implement dispatch this cycle) -- the marker must NOT be written, mirroring
+# orchestrate-batch-gate.sh's own no-op trigger condition (both read the exact same
+# `.implement_agents` emptiness).
+marker_file_research_only="$WORKDIR/specs/.orchestration/batch-gate-pending-g5_fallthrough_sess.json"
+if [ ! -f "$marker_file_research_only" ]; then
+  common_test_pass "batch-gate-pending marker: NOT written after a research-only cycle"
+else
+  common_test_fail "batch-gate-pending marker: unexpectedly written after a research-only cycle" "$(cat "$marker_file_research_only")"
+fi
+
 # Cycle 2, same session (mt_state_file persists live state across separate invocations, mirroring
 # how the thin lead's loop calls this script once per cycle): the one-item queue popped in cycle 1
 # is now empty AND this run itself seeded it (forced_round_seeded[501]=true) -- Phase 3's fix

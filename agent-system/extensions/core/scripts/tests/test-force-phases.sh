@@ -385,6 +385,14 @@ REDEPLOY_CHECKPOINT_LIB="$(common_test_resolve_subject "lib/redeploy-checkpoint-
   "$DEPLOY_SCRIPTS_SRC/lib/redeploy-checkpoint-lib.sh" "$SOURCE_STORE_SCRIPTS/lib/redeploy-checkpoint-lib.sh")" || exit 2
 common_test_declare_subject "$REDEPLOY_CHECKPOINT_LIB"
 cp "$REDEPLOY_CHECKPOINT_LIB" "$WORKDIR/.claude/scripts/lib/redeploy-checkpoint-lib.sh"
+# batch-gate-marker-lib.sh: orchestrate-cycle-plan.sh now also sources this one (the gate-
+# ceiling-fit work's Phase 4), needing the same source-store-first inversion as the three libs
+# immediately above, for the same reason -- its own existence postdates this fixture's original
+# deploy-tree lib/*.sh copy.
+BATCH_GATE_MARKER_LIB="$(common_test_resolve_subject "lib/batch-gate-marker-lib.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/lib/batch-gate-marker-lib.sh" "$SOURCE_STORE_SCRIPTS/lib/batch-gate-marker-lib.sh")" || exit 2
+common_test_declare_subject "$BATCH_GATE_MARKER_LIB"
+cp "$BATCH_GATE_MARKER_LIB" "$WORKDIR/.claude/scripts/lib/batch-gate-marker-lib.sh"
 # Non-task-edited batch-engine collaborators: existing deploy-tree provenance, unchanged.
 for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh orchestrate-build-dispatch.sh \
          orchestrate-loop-guard-init.sh orchestrate-build-aux-dispatch.sh command-route-agent.sh; do

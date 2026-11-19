@@ -47,6 +47,7 @@ setup_sandbox() {
   cp "$CORE_DIR/deploy-root-guard.sh" "$WORKDIR/sandbox/.claude/scripts/deploy-root-guard.sh"
   cp "$CORE_DIR/lib/common.sh" "$WORKDIR/sandbox/.claude/scripts/lib/common.sh"
   cp "$CORE_DIR/lib/deploy-baseline-lib.sh" "$WORKDIR/sandbox/.claude/scripts/lib/deploy-baseline-lib.sh"
+  cp "$CORE_DIR/lib/batch-gate-marker-lib.sh" "$WORKDIR/sandbox/.claude/scripts/lib/batch-gate-marker-lib.sh"
   chmod +x "$WORKDIR/sandbox/.claude/scripts/orchestrate-batch-gate.sh"
   SUT="$WORKDIR/sandbox/.claude/scripts/orchestrate-batch-gate.sh"
   VERIFY_STUB="$WORKDIR/sandbox/.claude/scripts/verify-deploy.sh"
@@ -407,6 +408,65 @@ if [ "$gvel_out_d" = "lint-lifecycle-status-var: 3 violation(s) across 10 file(s
   common_test_pass "Case 10d: an SGR-prefixed [FAIL] row is selected after stripping"
 else
   common_test_fail "Case 10d: SGR-prefixed [FAIL] row mismatch (got: '$gvel_out_d')"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 11: batch-gate-pending marker removal at the discharge point (gate-ceiling-fit Phase 4).
+# A real (non-dry-run) run that actually writes a `batch_gate` record must remove this session's
+# own pending marker; a second run with no marker present must remove nothing and still exit 0
+# (idempotent, failure-tolerant); --dry-run must leave an existing marker untouched (no mutation
+# at all, mirroring its own --state-file contract).
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Case 11: batch-gate-pending marker removal at discharge"
+setup_sandbox
+write_state <<'EOF'
+{
+  "task_numbers": [911],
+  "implement_agents": {"911": "general-implementation-agent"},
+  "invocation_modified_files": {"911": ["agent-system/extensions/core/scripts/theta.sh"]}
+}
+EOF
+write_fake_verify_two_call 0 "" ""
+marker_file="$WORKDIR/sandbox/specs/.orchestration/batch-gate-pending-sess_test.json"
+jq -n -c --arg sid "sess_test" --argjson pid 12345 --arg wa "2026-01-01T00:00:00Z" \
+  --argjson tn '[911]' --argjson ds '{"911": 1}' \
+  '{session_id: $sid, pid: $pid, written_at: $wa, task_numbers: $tn, dispatch_seq: $ds}' \
+  > "$marker_file"
+run_sut --session sess_test --state-file "$STATE_FILE"
+if [ ! -f "$marker_file" ]; then
+  common_test_pass "Case 11: a real run removes this session's own pending marker at discharge"
+else
+  common_test_fail "Case 11: marker still present after a real discharge run" "$(cat "$marker_file")"
+fi
+
+# Idempotent: re-running with no marker present must not fail, and must still write the record.
+run_sut --session sess_test --state-file "$STATE_FILE"
+if [ "$LAST_EXIT" -eq 0 ] && [ ! -f "$marker_file" ]; then
+  common_test_pass "Case 11: a second run with no marker present is idempotent (exit 0, still absent)"
+else
+  common_test_fail "Case 11: idempotent re-run failed (exit=$LAST_EXIT, marker present=$([ -f "$marker_file" ] && echo yes || echo no))"
+fi
+
+# --dry-run must leave an existing marker untouched (no mutation at all).
+setup_sandbox
+write_state <<'EOF'
+{
+  "task_numbers": [912],
+  "implement_agents": {"912": "general-implementation-agent"},
+  "invocation_modified_files": {"912": ["agent-system/extensions/core/scripts/iota.sh"]}
+}
+EOF
+write_fake_verify_two_call 0 "" ""
+marker_file_dry="$WORKDIR/sandbox/specs/.orchestration/batch-gate-pending-sess_test.json"
+jq -n -c --arg sid "sess_test" --argjson pid 54321 --arg wa "2026-01-01T00:00:00Z" \
+  --argjson tn '[912]' --argjson ds '{"912": 1}' \
+  '{session_id: $sid, pid: $pid, written_at: $wa, task_numbers: $tn, dispatch_seq: $ds}' \
+  > "$marker_file_dry"
+run_sut --session sess_test --state-file "$STATE_FILE" --dry-run
+if [ -f "$marker_file_dry" ]; then
+  common_test_pass "Case 11: --dry-run leaves an existing marker untouched"
+else
+  common_test_fail "Case 11: --dry-run unexpectedly removed the marker"
 fi
 
 echo ""
