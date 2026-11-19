@@ -199,7 +199,7 @@ if [ "$CONFIRM" != "true" ]; then
     --arg to "$dry_to" \
     --arg key "$project_key" \
     '{to: [$to], project: {kind: "project", key: $key}, follow: true}')"
-  echo "sapience-project-bind.sh: DRY-RUN -- pass --confirm to actually share this (no network call made)"
+  echo "sapience-project-bind.sh: DRY-RUN -- pass --confirm to actually share this (no network call made)" >&2
   SAPIENCE_DRY_RUN=1 sapience_post "/v1/people/projects/share" "$dry_payload"
   exit 0
 fi
