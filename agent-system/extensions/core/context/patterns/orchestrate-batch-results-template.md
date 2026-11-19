@@ -236,6 +236,28 @@ alone — see `scripts/orchestrate-close-status-bind.sh`'s own contract and
 `context/standards/status-markers.md`'s `[COMPLETED]` subsection for the demotion this produces,
 rendered separately from this roster.
 
+**Open close obligations sub-result** (rendered only when `batch_gate.close_obligations_found_count`
+is nonzero; omitted entirely when this invocation found no stale foreign
+batch-gate-pending marker, which is the ordinary case; see
+`context/contracts/batch-gate-stage.md`'s "Open Close Obligations" section for the full
+report/discharge contract this renders):
+
+[OPEN CLOSE OBLIGATIONS: {close_obligations_found_count} stale marker(s) found this invocation —
+{close_obligations_markers_discharged_count} discharged this run,
+{close_obligations_red_rows_discharged_count} close-battery-red.jsonl row(s) paid alongside them]
+
+A stale marker names a prior orchestration that dispatched an implement phase and never reached
+this stage to discharge it (a stop verdict, a crash, an operator interrupt) — the complete gate
+set it owed was still owed until this line. `close_obligations_markers_discharged_count` is 0 on
+a red or `--dry-run` close: a failing or skipped run proves nothing about the obligation and
+discharges nothing, so a nonzero `close_obligations_found_count` alongside a 0 discharged count
+means the obligation is STILL open and will be reported again by the next invocation's own
+startup scan (`orchestrate-cycle-plan.sh`), not silently dropped.
+
+| Stale Marker Session | Age (sec) | Declared Task(s) |
+|-----------------------|-----------|-------------------|
+| sess_1700000000_abc123 | 9000 | 42, 43 |
+
 ### Conclusion
 
 (Rendered once per invocation, as part of Move 5's own Step 6 — the single site that EMITS this

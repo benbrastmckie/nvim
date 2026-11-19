@@ -3232,6 +3232,26 @@ if [ "$dry_run" != "true" ]; then
   fi
 fi
 
+# ── Open close-battery obligations (Phase 5 of the gate-ceiling-fit work; see
+# context/contracts/batch-gate-stage.md's "Open Close Obligations" section) ──────────────────
+# Surface every STALE batch-gate-pending marker found under the repository -- any session, not
+# only this one -- as an open obligation THIS invocation's own consolidated output can render.
+# A stale marker means a prior orchestration dispatched an implement phase and never reached
+# Move 4's batch gate stage to discharge it (a stop verdict, a crash, an operator interrupt):
+# the complete gate set it owed is still owed, nobody has reported it until now. This session's
+# OWN marker (just written above, when applicable) is never stale at this instant, so it is
+# never included here by construction -- no special-case exclusion needed. Read-only: recording
+# never removes or mutates a marker; discharge (removal) stays orchestrate-batch-gate.sh's own
+# job on a clean close (see that script's "Open Close Obligations" discharge logic). Runs
+# unconditionally (even under --dry-run): this is a read of ambient repository state, not a
+# mutation of this cycle's own work.
+# jq -s (slurp) collects zero, one, or many JSONL lines into a single array uniformly.
+_bgo_roster_json="$(batch_gate_marker_roster "$PROJECT_ROOT" 2>/dev/null | jq -s -c '.' 2>/dev/null)"
+[ -z "$_bgo_roster_json" ] && _bgo_roster_json='[]'
+_bgo_stale_json="$(echo "$_bgo_roster_json" | jq -c '[.[] | select(.stale == true)]' 2>/dev/null)"
+[ -z "$_bgo_stale_json" ] && _bgo_stale_json='[]'
+mt_set --argjson obl "$_bgo_stale_json" '.close_battery_obligations = $obl'
+
 emit_and_exit "$new_cycle_count"
 }
 orchestrate_cycle_plan_main

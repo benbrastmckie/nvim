@@ -283,6 +283,60 @@ owed_open_total="$(echo "$owed_open_roster_json" | jq 'length' 2>/dev/null)"
 case "$owed_open_total" in ''|*[!0-9]*) owed_open_total=0 ;; esac
 echo "[orchestrate-batch-gate] owed sweep: discharged=${owed_discharged_total} still_open=${owed_open_total}" >&2
 
+# ─── Open Close Obligations: discharge, on a clean close only ──────────────────────────────────
+# This invocation's just-completed run above is a COMPLETE, unnarrowed battery against the whole
+# tree -- when it is clean (gate_exit_code -eq 0) and not --dry-run, that run itself covers
+# whatever ANY stale foreign batch-gate-pending marker was still owed, and whatever open
+# close-battery-red.jsonl row any implicated task (this invocation's own, or one named by a
+# stale marker from a crashed prior session) still carries. Never discharges on a red or dry-run
+# close: a failing or skipped run proves nothing about the obligation, and --dry-run mutates
+# nothing by contract. Never removes a NON-stale marker: a live sibling session still owns it
+# (batch_gate_marker_roster's own `stale` field is the single source of truth for this, computed
+# identically to batch_gate_marker_is_pending's own comparison).
+close_obl_discharge_ts="$(common_timestamp_iso 2>/dev/null || date -u +%Y-%m-%dT%H:%M:%SZ)"
+close_obl_markers_removed=0
+close_obl_red_discharged=0
+close_obl_roster_json="$(batch_gate_marker_roster "$PROJECT_ROOT" 2>/dev/null | jq -s -c '.' 2>/dev/null)"
+[ -z "$close_obl_roster_json" ] && close_obl_roster_json='[]'
+close_obl_stale_json="$(echo "$close_obl_roster_json" | jq -c '[.[] | select(.stale == true)]' 2>/dev/null)"
+[ -z "$close_obl_stale_json" ] && close_obl_stale_json='[]'
+close_obl_stale_count="$(echo "$close_obl_stale_json" | jq 'length' 2>/dev/null)"
+case "$close_obl_stale_count" in ''|*[!0-9]*) close_obl_stale_count=0 ;; esac
+
+if [ "$gate_exit_code" -eq 0 ] && [ "$dry_run" != "true" ]; then
+  # Union of task numbers to discharge close-battery-red.jsonl rows for: this invocation's own
+  # .task_numbers, plus every stale marker's own declared task_numbers (a crashed session's
+  # implicated tasks, now covered by this invocation's clean, unnarrowed run).
+  _bg_obl_task_union_json="$(jq -n -c --argjson a "$(echo "$mt_json" | jq -c '.task_numbers // []')" \
+    --argjson b "$(echo "$close_obl_stale_json" | jq -c '[.[].task_numbers[]?] // []')" \
+    '($a + $b) | unique')"
+
+  while IFS= read -r _bg_obl_t; do
+    [ -z "$_bg_obl_t" ] && continue
+    _bg_obl_padded="$(printf '%03d' "$_bg_obl_t" 2>/dev/null)" || continue
+    _bg_obl_task_dir="$(find "${PROJECT_ROOT}/specs" -maxdepth 1 -type d -name "${_bg_obl_padded}_*" 2>/dev/null | head -1)"
+    [ -z "$_bg_obl_task_dir" ] && continue
+    _bg_obl_red_file="${_bg_obl_task_dir}/records/close-battery-red.jsonl"
+    [ -f "$_bg_obl_red_file" ] || continue
+    _bg_obl_red_open_before="$(jq -s '[.[] | select(.discharged_ts == null)] | length' "$_bg_obl_red_file" 2>/dev/null)"
+    case "$_bg_obl_red_open_before" in ''|*[!0-9]*) _bg_obl_red_open_before=0 ;; esac
+    [ "$_bg_obl_red_open_before" -eq 0 ] && continue
+    jq -c --arg ts "$close_obl_discharge_ts" \
+      'if .discharged_ts == null then .discharged_ts = $ts else . end' \
+      "$_bg_obl_red_file" > "${_bg_obl_red_file}.tmp" && mv "${_bg_obl_red_file}.tmp" "$_bg_obl_red_file"
+    close_obl_red_discharged=$((close_obl_red_discharged + _bg_obl_red_open_before))
+  done < <(echo "$_bg_obl_task_union_json" | jq -r '.[]' 2>/dev/null)
+
+  # Remove every STALE marker found (any session) -- this clean, unnarrowed run just paid
+  # whatever that marker still owed.
+  while IFS= read -r _bg_obl_marker_path; do
+    [ -z "$_bg_obl_marker_path" ] && continue
+    rm -f "$_bg_obl_marker_path" 2>/dev/null && close_obl_markers_removed=$((close_obl_markers_removed + 1))
+  done < <(echo "$close_obl_stale_json" | jq -r '.[].path' 2>/dev/null)
+fi
+
+echo "[orchestrate-batch-gate] open close obligations: stale_markers_found=${close_obl_stale_count} markers_discharged=${close_obl_markers_removed} close_red_rows_discharged=${close_obl_red_discharged}" >&2
+
 batch_gate_record="$(jq -n -c \
   --argjson exit_code "$gate_exit_code" \
   --arg findings "$confirmed_findings" \
@@ -293,6 +347,9 @@ batch_gate_record="$(jq -n -c \
   --argjson owed_open_roster "$owed_open_roster_json" \
   --argjson close_red_recorded "$close_red_recorded_total" \
   --argjson close_red_roster "$close_red_roster_json" \
+  --argjson close_obl_stale_count "$close_obl_stale_count" \
+  --argjson close_obl_markers_discharged "$close_obl_markers_removed" \
+  --argjson close_obl_red_discharged "$close_obl_red_discharged" \
   --arg ts "$(common_timestamp_iso 2>/dev/null || date -u +%Y-%m-%dT%H:%M:%SZ)" \
   '{
     ran_at: $ts,
@@ -304,7 +361,10 @@ batch_gate_record="$(jq -n -c \
     owed_open_count: $owed_open,
     owed_open_roster: $owed_open_roster,
     close_red_recorded_count: $close_red_recorded,
-    close_red_roster: $close_red_roster
+    close_red_roster: $close_red_roster,
+    close_obligations_found_count: $close_obl_stale_count,
+    close_obligations_markers_discharged_count: $close_obl_markers_discharged,
+    close_obligations_red_rows_discharged_count: $close_obl_red_discharged
   }')"
 
 if [ "$dry_run" = "true" ]; then

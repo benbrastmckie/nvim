@@ -98,6 +98,48 @@ batch_gate_marker_is_pending() {
   return 1
 }
 
+# batch_gate_marker_roster REPO_ROOT -- stdout: one JSON object per line, one per marker found
+# under REPO_ROOT (any session, every marker -- never filtered to "this session's own"), split by
+# the SAME staleness window every other function in this library already uses:
+#   {session_id, path, age_sec, stale, task_numbers}
+# `session_id` is read from the marker's own JSON (never re-derived from the filename, so a
+# malformed filename never desyncs from the marker's own declared identity). `age_sec` is empty
+# (not 0) on an unreadable/malformed marker, mirroring batch_gate_marker_age_sec's own emptiness-
+# is-the-failure-signal contract; `stale` is then forced `true` for that row (fail-open: an
+# unreadable marker is treated as abandoned, never as a live, non-stale obligation -- the same
+# ruling batch_gate_marker_is_pending already applies). `task_numbers` defaults to `[]` on a
+# missing/malformed field rather than failing the whole row. Never touches the filesystem beyond
+# the read. This is the roster a caller renders or iterates; it is NOT itself a pending/stale
+# decision for any one marker in isolation -- batch_gate_marker_is_pending stays the single
+# source of truth for that boolean, and this function's own `stale` field is computed with the
+# exact same comparison so the two can never disagree.
+batch_gate_marker_roster() {
+  local _bgm_root="$1"
+  local _bgm_f _bgm_age _bgm_stale _bgm_sid _bgm_tn
+  while IFS= read -r _bgm_f; do
+    [ -z "$_bgm_f" ] && continue
+    _bgm_age="$(batch_gate_marker_age_sec "$_bgm_f")"
+    _bgm_sid="$(jq -r '.session_id // ""' "$_bgm_f" 2>/dev/null)"
+    _bgm_tn="$(jq -c '.task_numbers // []' "$_bgm_f" 2>/dev/null)" || _bgm_tn='[]'
+    if [ -z "$_bgm_age" ]; then
+      _bgm_stale="true"
+    elif [ "$_bgm_age" -ge "$BATCH_GATE_MARKER_STALE_SEC" ] 2>/dev/null; then
+      _bgm_stale="true"
+    else
+      _bgm_stale="false"
+    fi
+    jq -n -c \
+      --arg sid "$_bgm_sid" \
+      --arg path "$_bgm_f" \
+      --arg age "$_bgm_age" \
+      --argjson stale "$_bgm_stale" \
+      --argjson tn "$_bgm_tn" \
+      '{session_id: $sid, path: $path, age_sec: ($age | if . == "" then null else tonumber end), stale: $stale, task_numbers: $tn}' \
+      2>/dev/null
+  done < <(batch_gate_marker_glob "$_bgm_root")
+  return 0
+}
+
 # batch_gate_marker_pending_warning REPO_ROOT -- stdout: one loud, named warning line per stale
 # marker found (age, path, and the staleness window), so an operator can see what was ignored
 # and why. Prints nothing when no markers exist at all. Never touches the filesystem beyond the

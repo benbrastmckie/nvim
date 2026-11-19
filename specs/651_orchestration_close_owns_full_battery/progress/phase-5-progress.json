@@ -1,0 +1,27 @@
+{
+  "phase": 5,
+  "phase_name": "Report and Discharge an Interrupted Orchestration's Obligation",
+  "started_at": "2026-11-19T00:00:00Z",
+  "last_updated": "2026-11-19T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add batch_gate_marker_roster to batch-gate-marker-lib.sh", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/lib/batch-gate-marker-lib.sh"]},
+    {"id": 2, "description": "Record close_battery_obligations in orchestrate-cycle-plan.sh", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Discharge stale foreign markers on clean close in orchestrate-batch-gate.sh", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-batch-gate.sh"]},
+    {"id": 4, "description": "Discharge open close-battery-red.jsonl rows on the same clean-close condition", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Add Open Close Obligations section to batch-gate-stage.md", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/contracts/batch-gate-stage.md"]},
+    {"id": 6, "description": "Extend results-template.md with obligation roster rendering", "status": "done",
+     "files_touched": ["agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"]},
+    {"id": 7, "description": "Extend test-batch-gate-pending-marker.sh (roster cases) and test-orchestrate-batch-gate.sh (discharge cases)", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-batch-gate-pending-marker.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-gate.sh"]},
+    {"id": 8, "description": "Reconcile index-entries.json line counts", "status": "done",
+     "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

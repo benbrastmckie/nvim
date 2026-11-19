@@ -296,6 +296,54 @@ else
 fi
 clear_target_markers
 
+# ─── Case 14: batch_gate_marker_roster -- a fresh marker and a stale marker, split correctly. ──
+rm -f "$TMPROOT/specs/.orchestration"/batch-gate-pending-*.json
+write_marker "sess_roster_fresh" "$(iso_minutes_ago 1)"
+write_marker "sess_roster_stale" "$(iso_minutes_ago $(( (BATCH_GATE_MARKER_STALE_SEC / 60) + 10 )))"
+roster_json="$(batch_gate_marker_roster "$TMPROOT" 2>/dev/null | jq -s -c '.')"
+roster_count="$(echo "$roster_json" | jq 'length')"
+if [ "$roster_count" -eq 2 ]; then
+  common_test_pass "Case 14: batch_gate_marker_roster returns one row per marker found (2)"
+else
+  common_test_fail "Case 14: expected 2 roster rows, got $roster_count: $roster_json"
+fi
+fresh_stale="$(echo "$roster_json" | jq -r '.[] | select(.session_id == "sess_roster_fresh") | .stale')"
+stale_stale="$(echo "$roster_json" | jq -r '.[] | select(.session_id == "sess_roster_stale") | .stale')"
+if [ "$fresh_stale" = "false" ] && [ "$stale_stale" = "true" ]; then
+  common_test_pass "Case 14: the fresh marker is stale=false and the stale marker is stale=true"
+else
+  common_test_fail "Case 14: expected fresh=false/stale=true, got fresh=$fresh_stale stale=$stale_stale"
+fi
+fresh_tn="$(echo "$roster_json" | jq -c '.[] | select(.session_id == "sess_roster_fresh") | .task_numbers')"
+if [ "$fresh_tn" = "[1]" ]; then
+  common_test_pass "Case 14: the roster row carries the marker's own declared task_numbers"
+else
+  common_test_fail "Case 14: expected task_numbers [1], got $fresh_tn"
+fi
+rm -f "$TMPROOT/specs/.orchestration"/batch-gate-pending-*.json
+
+# ─── Case 15: batch_gate_marker_roster -- a malformed marker (unparseable written_at) is
+# reported with stale=true and a null age_sec, never a false "fresh" classification. ───────────
+echo '{"session_id": "sess_roster_malformed", "pid": 1, "written_at": "not-a-timestamp", "task_numbers": [7]}' \
+  > "$(batch_gate_marker_path "$TMPROOT" "sess_roster_malformed")"
+roster_json2="$(batch_gate_marker_roster "$TMPROOT" 2>/dev/null | jq -s -c '.')"
+malformed_row="$(echo "$roster_json2" | jq -c '.[] | select(.session_id == "sess_roster_malformed")')"
+if echo "$malformed_row" | jq -e '.stale == true and .age_sec == null' >/dev/null 2>&1; then
+  common_test_pass "Case 15: a malformed marker's roster row is stale=true with a null age_sec"
+else
+  common_test_fail "Case 15: expected stale=true/age_sec=null for the malformed marker, got: $malformed_row"
+fi
+rm -f "$TMPROOT/specs/.orchestration"/batch-gate-pending-*.json
+
+# ─── Case 16: batch_gate_marker_roster -- no markers at all returns an empty roster. ───────────
+rm -f "$TMPROOT/specs/.orchestration"/batch-gate-pending-*.json
+roster_json3="$(batch_gate_marker_roster "$TMPROOT" 2>/dev/null | jq -s -c '.')"
+if [ "$roster_json3" = "[]" ]; then
+  common_test_pass "Case 16: no markers at all yields an empty roster"
+else
+  common_test_fail "Case 16: expected an empty roster, got: $roster_json3"
+fi
+
 echo ""
 echo "$PASSED passed, $FAILED failed"
 [ "$FAILED" -eq 0 ] && exit 0 || exit 1

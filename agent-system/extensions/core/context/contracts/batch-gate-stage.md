@@ -222,6 +222,64 @@ This record's own write gate binds nothing to task status by itself; see
 `scripts/orchestrate-close-status-bind.sh`'s own contract for the status-binding mechanism that
 reads this record.
 
+## Open Close Obligations
+
+An orchestration that dispatches at least one `implement` phase and then ends WITHOUT this stage
+ever running (a stop verdict, a crash, an operator interrupt) leaves the complete-gate-set
+obligation its own batch-gate-pending marker represents undischarged. This section covers what
+that invocation leaves behind, who reports it, who discharges it, and why removal is the
+discharger's job alone.
+
+**What is left behind**: the marker `orchestrate-cycle-plan.sh` writes at
+`specs/.orchestration/batch-gate-pending-<session_id>.json` (see "Single-task invariance" above)
+stays on disk, undischarged, past that session's death. Once it crosses
+`BATCH_GATE_MARKER_STALE_SEC` (default 3600s), every consumer's own staleness check
+(`batch_gate_marker_is_pending`, `scripts/lib/batch-gate-marker-lib.sh`) treats it as abandoned
+rather than live — it still blocks nothing by itself (a stale marker's own entry guards already
+ignore it, per "Entry guards" above), but it is also not yet DISCHARGED: no clean battery has
+run to pay what it owed, and (if that session's own implicated tasks reached a red close before
+dying) their own `records/close-battery-red.jsonl` rows stay open too.
+
+**Who reports it**: `orchestrate-cycle-plan.sh`, at the SAME siting it already sources
+`batch-gate-marker-lib.sh` and writes this session's own marker (the invocation's own start,
+before this session's own Move loop runs). `scripts/lib/batch-gate-marker-lib.sh`'s
+`batch_gate_marker_roster` function returns every marker found under the repository (any
+session), each row carrying its own computed `stale` boolean on the exact same comparison
+`batch_gate_marker_is_pending` uses — the two can never disagree. `orchestrate-cycle-plan.sh`
+filters that roster to `stale == true` and records it into the multi-task state file under a
+`close_battery_obligations` key, so the consolidated-output renderer
+(`context/patterns/orchestrate-batch-results-template.md`) can show an operator what is
+outstanding even before this invocation's own Move 4 runs. This recording is read-only: it never
+removes or mutates a marker, and it runs even under `--dry-run` (a read of ambient repository
+state, not a mutation of this cycle's own work).
+
+**Who discharges it, and why removal is the discharger's job alone**:
+`scripts/orchestrate-batch-gate.sh`, at its own Move 4 siting, on EXACTLY the same clean-close
+condition the Owed-Sweep Discharge above already uses (`gate_exit_code -eq 0` AND not
+`--dry-run`). The reasoning is identical: this invocation's own just-completed run is a
+COMPLETE, unnarrowed battery against the whole tree, so when it is clean it covers whatever ANY
+stale foreign marker was still owed, and whatever open `close-battery-red.jsonl` row any
+implicated task (this invocation's own, or one named by a stale marker's own declared
+`task_numbers`) still carries. Both are stamped/removed together, reported in one line alongside
+the owed-sweep line above. A red or `--dry-run` close discharges NOTHING here — a failing or
+skipped run proves nothing about the obligation.
+
+Removal of a marker is deliberately confined to this ONE discharge point, never to a reader: a
+reader (`orchestrate-cycle-plan.sh`'s own reporting pass above, or any future consumer) that also
+deleted a stale marker it merely observed would race a legitimate concurrent writer still
+finishing its own cycle. Only the script that just ran the complete battery the marker represents
+is entitled to say it was paid. A NON-stale marker is NEVER removed here either — a live sibling
+session still owns it, and this stage's own clean run says nothing about whether that OTHER
+session's implicated work is itself clean.
+
+**Carried in the `batch_gate` record**: `close_obligations_found_count` (stale markers found
+this run, before discharge), `close_obligations_markers_discharged_count` (stale markers actually
+removed this run — 0 on a red or `--dry-run` close), and
+`close_obligations_red_rows_discharged_count` (open `close-battery-red.jsonl` rows stamped this
+run, across this invocation's own tasks and every stale marker's own declared task numbers
+together) — read by `context/patterns/orchestrate-batch-results-template.md`'s Batch Gate Stage
+Result section to render the obligation roster and its discharge in the consolidated output.
+
 ## Finding Severity: `FINDING ` vs. `WARN-FINDING `
 
 The evidence pipeline's `deploy_findings_snapshot` (`scripts/lib/deploy-baseline-lib.sh`) filters

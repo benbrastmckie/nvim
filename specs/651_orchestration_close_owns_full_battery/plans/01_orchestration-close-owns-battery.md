@@ -459,38 +459,39 @@ count.
 
 ---
 
-### Phase 5: Report and Discharge an Interrupted Orchestration's Obligation [NOT STARTED]
+### Phase 5: Report and Discharge an Interrupted Orchestration's Obligation [COMPLETED]
 
 **Goal**: An orchestration that ends without running its close battery leaves an open, reported
 obligation; a later clean close discharges it and says so.
 
 **Tasks**:
-- [ ] Add a roster reader to `scripts/lib/batch-gate-marker-lib.sh` — one function returning every
+- [x] Add a roster reader to `scripts/lib/batch-gate-marker-lib.sh` — one function returning every
       marker under the repository with its session, age, and declared `task_numbers`, split by the
       staleness window. Keep the library's fail-safe contract: no `exit`, no shell options, every
       malformed read treated as stale.
-- [ ] Surface a stale, undischarged marker as an open obligation at the invocation's own start,
+- [x] Surface a stale, undischarged marker as an open obligation at the invocation's own start,
       where `orchestrate-cycle-plan.sh` already sources the marker library and writes this
       session's marker: record the roster into the multi-task state file (a
       `close_battery_obligations` key) rather than only logging it, so the consolidated output can
       render it.
-- [ ] Discharge at Move 4: in `scripts/orchestrate-batch-gate.sh`, when `gate_exit_code` is 0 and
+- [x] Discharge at Move 4: in `scripts/orchestrate-batch-gate.sh`, when `gate_exit_code` is 0 and
       this is not `--dry-run`, the complete unnarrowed run just performed covers the whole tree, so
       remove every STALE foreign marker as paid and report what was owed and that it was paid —
       alongside the owed-sweep line this stage already prints. Never remove a non-stale marker: a
       live sibling session still owns it.
-- [ ] Discharge Phase 3's open `close-battery-red.jsonl` rows on the same clean-close condition,
+- [x] Discharge Phase 3's open `close-battery-red.jsonl` rows on the same clean-close condition,
       stamping `discharged_ts` exactly as the owed-sweep step does, and report them in the same
       consolidated line.
-- [ ] Extend `context/contracts/batch-gate-stage.md` with an "Open Close Obligations" section: what
+- [x] Extend `context/contracts/batch-gate-stage.md` with an "Open Close Obligations" section: what
       an interrupted invocation leaves behind, who reports it, who discharges it, and why removal
       is the discharger's job alone.
-- [ ] Extend `context/patterns/orchestrate-batch-results-template.md` to render the obligation
+- [x] Extend `context/patterns/orchestrate-batch-results-template.md` to render the obligation
       roster and its discharge.
-- [ ] Extend `scripts/tests/test-batch-gate-pending-marker.sh` (roster reader, staleness split) and
+- [x] Extend `scripts/tests/test-batch-gate-pending-marker.sh` (roster reader, staleness split) and
       `scripts/tests/test-orchestrate-batch-gate.sh` (stale foreign marker removed on a clean
-      close; left in place on a red close, a `--dry-run`, and when non-stale).
-- [ ] Reconcile `index-entries.json` line counts.
+      close; left in place on a red close, a `--dry-run`, and when non-stale). *(completed: 25
+      passed/0 failed and 43 passed/0 failed respectively.)*
+- [x] Reconcile `index-entries.json` line counts.
 
 **Timing**: 1.5 hours
 

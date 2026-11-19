@@ -11,7 +11,10 @@
 # degenerate paths the sibling suites already pin (no args, missing --state-file); and the
 # Red-Close Per-Task Record: a seeded red close writes exactly one `close-battery-red.jsonl` row
 # per attributed candidate and none for an unattributed-only one; `--dry-run` writes nothing; a
-# clean close writes nothing; a repeat close of the same session does not duplicate an open row.
+# clean close writes nothing; a repeat close of the same session does not duplicate an open row;
+# and Open Close Obligations: a stale foreign batch-gate-pending marker (and its task's own open
+# close-battery-red.jsonl row) is discharged on a clean close, left in place on a red close or
+# `--dry-run`, and a non-stale foreign marker is never removed even on a clean close.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (the SUT
 # was not found).
@@ -602,6 +605,128 @@ if [ -f "$redfile_924" ] && [ "$(wc -l < "$redfile_924")" -eq 1 ]; then
   common_test_pass "Case 15: a repeat close of the same session leaves exactly one open row (no duplicate)"
 else
   common_test_fail "Case 15: expected exactly one row after a repeat close: $(cat "$redfile_924" 2>/dev/null || echo MISSING)"
+fi
+
+# write_foreign_marker <session_id> <minutes_ago> <task_numbers_json_array>
+# Writes a batch-gate-pending marker for a FOREIGN session (never this suite's own "sess_test")
+# directly into the sandbox's specs/.orchestration/ directory, at the exact path convention
+# batch_gate_marker_path builds -- bypassing the library function itself so this suite has no
+# hidden dependency on it being sourced.
+write_foreign_marker() {
+  local sid="$1" minutes_ago="$2" task_numbers_json="$3"
+  local written_at
+  written_at="$(date -u -d "@$(( $(date -u +%s) - (minutes_ago * 60) ))" +%Y-%m-%dT%H:%M:%SZ)"
+  jq -n -c --arg sid "$sid" --argjson pid 54321 --arg wa "$written_at" --argjson tn "$task_numbers_json" \
+    '{session_id: $sid, pid: $pid, written_at: $wa, task_numbers: $tn, dispatch_seq: {}}' \
+    > "$WORKDIR/sandbox/specs/.orchestration/batch-gate-pending-${sid}.json"
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 16: a stale foreign marker (and its task's own open close-battery-red.jsonl row) is
+# discharged on a CLEAN close.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Case 16: a stale foreign marker is discharged on a clean close"
+setup_sandbox
+mkdir -p "$WORKDIR/sandbox/specs/940_zeta2/records"
+printf '%s\n' '{"recorded_ts": "2026-01-01T00:00:00Z", "discharged_ts": null, "session_id": "sess_crashed", "gate_exit_code": 1, "findings": ["FINDING gate8 stale finding"]}' \
+  > "$WORKDIR/sandbox/specs/940_zeta2/records/close-battery-red.jsonl"
+write_foreign_marker "sess_crashed" 120 '[940]'
+write_state <<'EOF'
+{
+  "task_numbers": [941],
+  "implement_agents": {"941": "general-implementation-agent"},
+  "invocation_modified_files": {"941": ["agent-system/extensions/core/scripts/zeta3.sh"]}
+}
+EOF
+write_fake_verify_two_call 0 "" ""
+run_sut --session sess_test --state-file "$STATE_FILE"
+foreign_marker_file="$WORKDIR/sandbox/specs/.orchestration/batch-gate-pending-sess_crashed.json"
+if [ ! -f "$foreign_marker_file" ]; then
+  common_test_pass "Case 16: the stale foreign marker is removed on a clean close"
+else
+  common_test_fail "Case 16: expected the stale foreign marker removed, still present: $(cat "$foreign_marker_file")"
+fi
+if jq -e '.discharged_ts != null' "$WORKDIR/sandbox/specs/940_zeta2/records/close-battery-red.jsonl" >/dev/null 2>&1; then
+  common_test_pass "Case 16: the stale marker's own task's open close-battery-red.jsonl row is discharged alongside it"
+else
+  common_test_fail "Case 16: expected the row discharged: $(cat "$WORKDIR/sandbox/specs/940_zeta2/records/close-battery-red.jsonl")"
+fi
+if jq -e '.batch_gate.close_obligations_found_count == 1 and .batch_gate.close_obligations_markers_discharged_count == 1 and .batch_gate.close_obligations_red_rows_discharged_count == 1' "$STATE_FILE" >/dev/null 2>&1; then
+  common_test_pass "Case 16: batch_gate record carries the expected close_obligations_* counts"
+else
+  common_test_fail "Case 16: unexpected close_obligations_* fields: $(cat "$STATE_FILE")"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 17: a stale foreign marker is left in place on a RED close.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Case 17: a stale foreign marker is left in place on a red close"
+setup_sandbox
+write_foreign_marker "sess_crashed2" 120 '[942]'
+write_state <<'EOF'
+{
+  "task_numbers": [943],
+  "implement_agents": {"943": "general-implementation-agent"},
+  "invocation_modified_files": {"943": ["agent-system/extensions/core/scripts/eta3.sh"]}
+}
+EOF
+write_fake_verify_always_red 1 \
+  "FINDING gate8 test-eta3.sh failure referencing agent-system/extensions/core/scripts/eta3.sh"
+run_sut --session sess_test --state-file "$STATE_FILE"
+foreign_marker_file2="$WORKDIR/sandbox/specs/.orchestration/batch-gate-pending-sess_crashed2.json"
+if [ -f "$foreign_marker_file2" ]; then
+  common_test_pass "Case 17: a red close leaves the stale foreign marker in place"
+else
+  common_test_fail "Case 17: the stale foreign marker was wrongly removed on a red close"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 18: a stale foreign marker is left in place under --dry-run.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Case 18: a stale foreign marker is left in place under --dry-run"
+setup_sandbox
+write_foreign_marker "sess_crashed3" 120 '[944]'
+write_state <<'EOF'
+{
+  "task_numbers": [945],
+  "implement_agents": {"945": "general-implementation-agent"},
+  "invocation_modified_files": {"945": ["agent-system/extensions/core/scripts/theta3.sh"]}
+}
+EOF
+write_fake_verify_two_call 0 "" ""
+run_sut --session sess_test --state-file "$STATE_FILE" --dry-run
+foreign_marker_file3="$WORKDIR/sandbox/specs/.orchestration/batch-gate-pending-sess_crashed3.json"
+if [ -f "$foreign_marker_file3" ]; then
+  common_test_pass "Case 18: --dry-run leaves the stale foreign marker in place even on a clean verdict"
+else
+  common_test_fail "Case 18: the stale foreign marker was wrongly removed under --dry-run"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Case 19: a NON-stale (fresh) foreign marker is left in place even on a clean close.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Case 19: a non-stale foreign marker is left in place on a clean close"
+setup_sandbox
+write_foreign_marker "sess_live" 1 '[946]'
+write_state <<'EOF'
+{
+  "task_numbers": [947],
+  "implement_agents": {"947": "general-implementation-agent"},
+  "invocation_modified_files": {"947": ["agent-system/extensions/core/scripts/iota3.sh"]}
+}
+EOF
+write_fake_verify_two_call 0 "" ""
+run_sut --session sess_test --state-file "$STATE_FILE"
+fresh_marker_file="$WORKDIR/sandbox/specs/.orchestration/batch-gate-pending-sess_live.json"
+if [ -f "$fresh_marker_file" ]; then
+  common_test_pass "Case 19: a non-stale foreign marker is never removed, even on a clean close"
+else
+  common_test_fail "Case 19: a non-stale (live sibling session's) marker was wrongly removed"
+fi
+if jq -e '.batch_gate.close_obligations_found_count == 0' "$STATE_FILE" >/dev/null 2>&1; then
+  common_test_pass "Case 19: a non-stale marker is not counted in close_obligations_found_count"
+else
+  common_test_fail "Case 19: unexpected close_obligations_found_count: $(cat "$STATE_FILE")"
 fi
 
 echo ""
