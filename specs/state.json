@@ -19147,9 +19147,15 @@
         "agent-system/extensions/core/scripts/git-commit-scoped.sh",
         "agent-system/extensions/core/context/standards/git-staging-scope.md"
       ],
-      "next_artifact_number": 1,
+      "next_artifact_number": 2,
       "session_id": "sess_1795130570_6d4a1f_658",
-      "artifacts": [],
+      "artifacts": [
+        {
+          "path": "specs/658_ignored_specs_predicate_and_commit_path/reports/01_ignored-specs-predicate-research.md",
+          "type": "report",
+          "summary": "Live-reproduced the ignored-specs commit defect (V7 refusal path, exit 2, can abort a legitimate sibling commit), confirmed the tracked-and-ignore-matching case needs no change, settled the per-repo-vs-per-pathspec predicate question (both), and designed a new V13 gate plus two new non-failure exit codes (8, 9) with the two other consumer sites needing case-arm updates."
+        }
+      ],
       "project_number": 658,
       "audit_verdict": {
         "proposal": {
