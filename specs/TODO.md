@@ -13,7 +13,7 @@ next_project_number: 677
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,676 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,492,509,513,518,541,561,566,594,669 | 439,452,472,479,491,517,535,552,593,668 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 486,571,581,588,595,641,671 | 454,484,492,509,518,539,541,561,580,594,669 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
@@ -188,10 +188,6 @@ next_project_number: 677
 570 [NOT STARTED] — Stop the stall signal firing on commits it cannot attribute...
 571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
 
-### Sapience
-
-676 [IMPLEMENTING] — Tag transcript-captured KOs with the repo tag: Sapience...
-
 ### Decidability
 
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
@@ -204,7 +200,7 @@ next_project_number: 677
 ## Tasks
 
 ### 676. Tag transcript captured kos with repo tag
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
