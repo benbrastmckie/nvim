@@ -1,5 +1,5 @@
 ---
-next_project_number: 667
+next_project_number: 668
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 667
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,667 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,492,509,513,518,541,561,566,594 | 439,452,472,479,491,535,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 486,571,581,588,595,641 | 454,484,492,509,518,539,541,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
@@ -114,6 +114,7 @@ next_project_number: 667
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 665 [NOT STARTED] — Record the last dispatching orchestration batch in a...
 666 [NOT STARTED] — Re-site the branch-aware orchestration batch in the authored...
+667 [NOT STARTED] — Amend branch-topology rulings R1-R3 and R5: per-batch...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -184,6 +185,93 @@ next_project_number: 667
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 667. Amend branch topology per batch worktree squash
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Amend branch-topology rulings R1-R3 and R5: per-batch worktree side branches with per-task squash landing onto the long-lived feature branch
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in /home/benjamin/.config/nvim, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.
+
+SHAPE: rule FIRST, implement SECOND, on the pattern of branch_topology_ruling_and_milestone_automation. Element 1 is a dated cross-document amendment to specs/decisions/branch-topology-and-landing-strategy.md; the later elements build what it rules. If research finds the amendment unsound, the correct deliverable is a written refusal with evidence, not a forced implementation.
+
+=== AUTHORITY: EXPLICIT USER DECISION, 2026-11-20 ===
+
+The user has decided the target workflow in their own words: long-lived feature branches, with short-lived batch side branches that merge one squashed commit per task, where the side branches are cleaned up after. The user asked directly why worktrees are not used and, shown the analysis below, directed that R5 and R1-R3 be amended. This re-opens R5's 'not reinstated, in any form, at any granularity' by the same authority that issued it. R4 (integration_branch key), R6 as amended below, R7 and R8 (prepare, never push) are NOT re-opened.
+
+=== BINDING EVIDENCE REQUIREMENT (unchanged from the prior re-opening) ===
+
+Read specs/decisions/worktree-isolation-removal-verdict.md and specs/decisions/worktree-isolation-removal-reaffirmation.md IN FULL, plus specs/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md. For each recorded defect, the amendment must name the mechanism and show why this design cannot reproduce it. The starting claim to VERIFY, not assume: what was removed was a worktree PER DISPATCH with gitignored mutable state hardlink-cloned into it by cp -al; the defects are properties of that layer, not of git worktree. Starting defect table, each row to be confirmed or refuted against the records:
+
+- lake-build-guard false green: cp -al shared inodes for build-guard state files truncated in place. Claimed closed because this design clones NOTHING. Verify no other clone or shared-inode path is introduced.
+- git-commit-scoped.sh worktree-blind PROJECT_ROOT silently dropping every pathspec to a WARN-and-drop false success. NOT closed by design; it is closed only by the two-root audit in Element 3. Treat as the primary risk.
+- Destructive release on a nothing_to_land verdict that nearly destroyed 456 verified Lean lines. Closed only if cleanup is conditional on proven landing and never forced (Element 5).
+- Postflight marking tasks completed while 18 and 10 commits sat stranded on unmerged branches. Closed only if landing is verified strictly before the completion status is written (Element 4).
+- Also engage the reaffirmation record's repo-scanning-pollution hazard: a worktree directory inside or beside the repository is seen by repo-wide greps, lints and gates. State where the worktree lives and why scans do not see it.
+
+=== DEFECTS IN THE CURRENTLY BUILT MECHANISM (read from the script, NOT yet reproduced -- reproduce before relying on them) ===
+
+D1. milestone-ref-land.sh --verify asserts git merge-base --is-ancestor HEAD refs/heads/milestone/<id>, but the landed commit is built by git commit-tree with a single parent (the old milestone tip, or the integration-branch tip on first landing). HEAD is therefore an ancestor only on a first landing under the undeclared-integration-branch fallback, where the parent IS HEAD. Every later landing, and any landing with a declared integration branch distinct from the work branch, should fail verify. Live state consistent with this: master is not an ancestor of refs/heads/milestone/M1 and sits 10 commits past it.
+D2. Under the fallback the first landing parents on HEAD itself, so refs/heads/milestone/M1 is master's full per-phase history plus one empty-diff commit; nothing is squashed.
+D3. integration_branch is undeclared in this repository's .claude-extensions.json and the admission-time check is unbuilt, so nothing verifies the starting branch.
+D4. The milestone ref is a parallel history: the work branch keeps every phase commit, so merging the ref back duplicates content.
+Rule whether milestone-ref-land.sh is retired, retargeted, or kept as a review view, and fix or remove the D1 verify accordingly.
+
+=== ELEMENT 1 -- THE AMENDMENT ===
+
+Add a dated '**Amended by** <doc>, <date>:' note to branch-topology-and-landing-strategy.md and write the amending decision record. Proposed rulings to confirm, modify or refuse with evidence:
+- R1 amended: the PRIMARY working tree stays on the declared integration (feature) branch and is never switched during orchestration; admission refuses when it is on another branch or is not clean. Work happens on a side branch in a separate worktree.
+- R2 amended: one side branch and one worktree per orchestrate INVOCATION (batch), cut from the integration branch tip, named from the session identity, reused on resume. Not per dispatch.
+- R3 amended: one squash commit per completed task lands DIRECTLY on the integration branch, subject 'task {N}: {title}', body carrying session identity and the phase list.
+- R5 amended: worktree isolation is reinstated at batch granularity ONLY, with no cloning of ignored state of any kind. Per-dispatch worktrees and hardlink-cloning stay removed.
+- R6 consequence: phase_commit_boundary_mechanical_check's expected ref becomes the batch branch in the batch worktree. commit-layer-cluster-ordering.md's Judgment 1 names 'reinstates any form of tree isolation' as the condition that changes its ruling that source-store commit scoping and the third containment site are not hard prerequisites -- that condition now FIRES. Re-read that evidence and rule on the resulting edges.
+
+=== ELEMENT 2 -- ADMISSION AND BATCH SETUP ===
+
+Admission in orchestrate-cycle-plan.sh's preflight: resolve integration_branch from .claude-extensions.json (R4), assert the primary tree is on it and clean. Then git worktree add <dir> -b <batch-branch> <integration-branch>, idempotent on resume. Must compose with the task-lock, session-registry, orchestration-queue and MAX_TASKS machinery and preserve the batching-by-default doctrine. This absorbs Element A of branch_aware_orchestration_and_squash_landing; rule how that task's description is revised and write the revision.
+
+=== ELEMENT 3 -- TWO-ROOT AUDIT (the bulk of the work) ===
+
+Every script, hook and agent instruction that resolves a project root must distinguish the CODE root (the batch worktree, git rev-parse --show-toplevel there) from the STATE root (the primary tree, holding specs/ and .claude/). Enumerate every PROJECT_ROOT / CLAUDE_PROJECT_DIR / show-toplevel consumer in the core extension and each loaded extension and classify it. specs/ and .claude/ are gitignored and so are ABSENT from a fresh worktree. Candidate: symlink them to the primary tree's single copy (a symlink is one copy, not a clone, so the shared-inode hazard does not arise) -- UNTESTED; measure it against the Claude Code harness (settings, hooks, path-glob rules, subagent cwd), git-commit-scoped.sh pathspec containment, and commit-source-store-path.sh before adopting it. A consumer that silently degrades to WARN-and-drop under the wrong root is the recorded defect; make wrong-root a loud refusal.
+
+=== ELEMENT 4 -- PER-TASK SQUASH LANDING ===
+
+At a task's [IMPLEMENTING] -> [COMPLETED] transition, under the existing specs/.commit-lock mutex, in the PRIMARY tree: git merge --squash the task's end commit from the batch branch and commit. Then merge the integration branch back into the batch branch so the next task's squash has the correct merge base. Verify by TREE EQUALITY (not ancestry -- a squash is never an ancestor) strictly BEFORE the completion status is written; a failed landing or verify leaves the task un-completed and the branch intact. Design for: tasks dispatched in parallel within one batch share the batch branch, so a per-task squash is exact only when completions are sequential -- rule between snapshot semantics with co-landed tasks named in the body, and attribution from the 'task {N}:' commit-message convention; two concurrent batches landing on one integration branch, where the second squash is a real three-way merge that can conflict -- define the refusal and resume path, keeping file_scope admission as the mechanism that makes this rare; source-store commits made by commit-source-store-path.sh in a second repository; git rebase -i is unavailable in this environment; guard-destructive-git.sh must be respected.
+
+=== ELEMENT 5 -- CLEANUP AND RETENTION ===
+
+When every task in the batch has landed and verified: git worktree remove WITHOUT --force, then delete the batch branch. git branch -d will refuse a squash-landed branch as unmerged, so deletion needs its own recorded landing proof before a -D; never delete on an inferred or nothing_to_land verdict. A [PARTIAL], [BLOCKED], failed or abandoned task leaves worktree and branch in place for resume; define the disposition of a batch holding both landed and retained tasks, and how /refresh reports orphaned batch worktrees without removing them.
+
+=== ELEMENT 6 -- COSTS TO MEASURE AND STATE ===
+
+Cold build in the worktree for Lean repositories (no .lake/ clone: cache fetch versus rebuild, measured, with lake-build-guard.sh behaviour under a second tree); deploy-headless.sh and the source-store boundary when .claude/ is reached through a worktree; the lean-lsp and sapience per-project registrations keyed on project path.
+
+=== ELEMENT 7 -- DOCUMENTATION PARITY ===
+
+Rewrite context/standards/git-workflow-narrative.md's Branch Strategy section and context/patterns/ref-plumbing-landing.md to state the implemented contract, add the branch-target rule to rules/git-workflow.md, and add the integration_branch schema row to context/standards/repo-level-declarations.md. Current design only; no draft history.
+
+=== CONSTRAINTS ===
+
+- Repo-agnostic: no literal branch name and no consumer-repo path in any deliverable.
+- git push and PR/MR creation stay prohibited for agents; the /please and /merge handoff (R8) is unchanged, now pointing at the integration branch.
+- Write dependency edges with update-task-status.sh --depends-on-add. Expected, to be confirmed: branch_aware_orchestration_and_squash_landing and re_site_branch_aware_batch_after_prerequisites are reshaped or superseded by this task; rule on each and write the revision rather than leaving stale descriptions.
+- Size realistically and expect to expand: the ruling, the two-root audit and the landing mechanics are separable and the audit alone spans most of the script tree.
+
+=== VERIFICATION ===
+
+Both worktree records are engaged defect by defect in the amending record. An invocation started off the integration branch or on a dirty primary tree is refused at admission. A multi-task batch produces one worktree and one batch branch, and one squash commit per completed task on the integration branch with its phase list in the body, the primary tree never having changed branch. A task failing mid-batch leaves its commits, branch and worktree intact while its sibling lands. No script commits from the wrong root, and a wrong-root invocation refuses loudly. After a fully landed batch the worktree and branch are gone; after a partial one they remain. The rules, the narrative and the scripts state the same contract.
+
+=== LEAN REPOSITORIES -- USER GUIDANCE, 2026-11-20 (governs Element 6 and the scope of R5 as amended) ===
+
+The user stated both of the following are acceptable, in their words: avoiding worktrees in Lean repositories if that is reasonable; or using worktrees there if there is an elegant way that does not duplicate the lake builds. Rule between them with measurement, and do not ship a design that pays a full cold lake build per batch:
+- OPTION L1, per-repo opt-out: worktree isolation is a per-repository declaration (candidate home: .claude-extensions.json, beside integration_branch), off for Lean repositories. Then state what such a repository gets instead -- the admission-time branch check still applies; rule whether per-task squash landing is still delivered there by a mechanism that needs no second tree, and say plainly what is lost if it is not.
+- OPTION L2, shared build without duplication: only if it can be shown not to reproduce the recorded hazard. The verdict records name the binding rule -- never share or clone a WRITABLE build directory between concurrent builders. Any candidate (a read-only shared artifact store, Lake's own cache facilities, a fetched Mathlib cache with only project-local oleans rebuilt) must be checked against the pinned toolchain's actual Lake behaviour and against lake-build-guard.sh's state files, not assumed from memory.
+The design must therefore not assume worktrees are universal: every element above has to hold for a repository with isolation declared off.
+
+---
 
 ### 666. Re site branch aware batch after prerequisites
 - **Status**: [NOT STARTED]
