@@ -1,0 +1,23 @@
+{
+  "phase": 2,
+  "phase_name": "V13 Gate, ignored_dropped Ledger, Exits 8/9, and the U5 Amendment",
+  "started_at": "2026-11-20T01:00:00Z",
+  "last_updated": "2026-11-20T01:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read git-commit-scoped.sh before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add ignored_dropped ledger + comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 3, "description": "Guarded source of specs-ignore-lib.sh before V2 loop", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 4, "description": "Insert V13 gate after V11 block, before case 1", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 5, "description": "Add exit-8 gate before V3 post-filter gate", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 6, "description": "Add exit-9 gate after V10's exit 7", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 7, "description": "Extend header: exit-codes list (8,9) and gate-label list (V13)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 8, "description": "Amend U5 in test-git-commit-scoped.sh (rc 2->8, ERROR->NOTE), preserving invariant", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 9, "description": "Confirm X5 passes unchanged", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [
+    {"approach": "Scope Hypothesis grep for 'genuinely unstaged' and ignore-related fixture builders before editing", "result": "confirmed", "reason": "only test-git-commit-scoped.sh matched; U4/W4/T18's occurrences are permission-denied or out-of-repo shapes, unrelated to gitignore, so U5 is the only case this gate invalidates"},
+    {"approach": "REQUIRED_SCRIPTS array in test-git-commit-scoped.sh needed lib/specs-ignore-lib.sh added (plus 5 chmod-exclusion guard sites) for the scratch-repo harness to actually source the new library", "result": "worked", "reason": "without it, git-commit-scoped.sh's guarded source would silently fail inside every scratch repo and V13 would never fire, leaving U5 at its old rc"}
+  ],
+  "handoff_count": 0
+}

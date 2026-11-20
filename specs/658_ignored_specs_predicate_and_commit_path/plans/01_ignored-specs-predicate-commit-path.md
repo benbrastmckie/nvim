@@ -261,7 +261,7 @@ behaviour, so no cross-cutting surface is reachable from it.
 
 ---
 
-### Phase 2: `V13` Gate, `ignored_dropped` Ledger, Exits `8`/`9`, and the U5 Amendment [NOT STARTED]
+### Phase 2: `V13` Gate, `ignored_dropped` Ledger, Exits `8`/`9`, and the U5 Amendment [COMPLETED]
 
 **Goal**: `git-commit-scoped.sh` classifies an untracked, gitignored positive pathspec as its own
 drop reason before `git add` can see it, reports the all-ignored and partial-ignore shapes under
@@ -269,42 +269,52 @@ two new non-failure exit codes, documents both beside the existing V-codes, and 
 existing test case that asserts the superseded behaviour correct again in the same commit.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/git-commit-scoped.sh` immediately before
-  editing (shared territory: task 618, sibling task 661).
-- [ ] Add an `ignored_dropped=()` ledger declaration beside `out_of_repo_dropped` and
+- [x] Re-read `agent-system/extensions/core/scripts/git-commit-scoped.sh` immediately before
+  editing (shared territory: task 618, sibling task 661). *(completed: re-read confirmed no
+  foreign edits present)*
+- [x] Add an `ignored_dropped=()` ledger declaration beside `out_of_repo_dropped` and
   `containment_dropped` (around line 685-691), with a comment stating D1 explicitly: this ledger
-  is **not** mirrored into `dropped_pathspecs`, and why.
-- [ ] Source `lib/specs-ignore-lib.sh` with the same guarded pattern the script already uses for
+  is **not** mirrored into `dropped_pathspecs`, and why. *(completed)*
+- [x] Source `lib/specs-ignore-lib.sh` with the same guarded pattern the script already uses for
   `engine-written-state-paths-lib.sh` (`if source ... 2>/dev/null`), resolving once before the V2
   loop rather than per pathspec, and record whether the predicate is available in a flag the loop
-  reads.
-- [ ] Insert the `V13` gate in the V2 classification loop immediately after the V11
+  reads. *(completed: `specs_ignore_lib_available` flag)*
+- [x] Insert the `V13` gate in the V2 classification loop immediately after the V11
   `is_cached_untracking_shape` block and immediately before `if [ -e "$p" ] || git ls-files ...`
   (D5). When the predicate is available and `path_is_gitignored "$PROJECT_ROOT" "$p"` returns rc
   0: emit a `NOTE:` (never an `ERROR:`) naming the pathspec and the reason, append to
   `ignored_dropped`, add to **neither** `add_pathspecs` **nor** `filtered_pathspecs`, and
   `continue`. When the predicate is unavailable, fall straight through to case 1 unchanged —
-  today's behaviour exactly (D6/D7).
-- [ ] Add the exit-`8` gate immediately before the V3 post-filter gate (D2): when
+  today's behaviour exactly (D6/D7). *(completed, using `$root_resolved` rather than
+  `$PROJECT_ROOT` -- the already-canonicalized variable V9/V10 themselves consult)*
+- [x] Add the exit-`8` gate immediately before the V3 post-filter gate (D2): when
   `ignored_dropped` is non-empty, `dropped_pathspecs` is empty, and `filtered_pathspecs` carries
   no positive entry, print a `NOTE:` naming every ignored path and exit `8` — before any
-  `git add` or `git commit` is attempted.
-- [ ] Add the exit-`9` gate after V10's exit `7` (D3): when `ignored_dropped` is non-empty and
-  `commit_exit` is `0`, print a `NOTE:` naming every ignored path and exit `9`.
-- [ ] Extend the script's own header: the `# Exit codes:` list gains `8` and `9` entries in the
+  `git add` or `git commit` is attempted. *(completed)*
+- [x] Add the exit-`9` gate after V10's exit `7` (D3): when `ignored_dropped` is non-empty and
+  `commit_exit` is `0`, print a `NOTE:` naming every ignored path and exit `9`. *(completed)*
+- [x] Extend the script's own header: the `# Exit codes:` list gains `8` and `9` entries in the
   same voice and at the same empirical level of detail as the existing ones (including the
   precedence statement relative to `6` and `7`), and the gate-label list gains a `V13` entry
   after `V12` naming the live-reproduced defect it closes, the placement rule, and the reason
   `git check-ignore -q`'s index-awareness makes a separate tracked/untracked test unnecessary.
-- [ ] Amend test case U5 in `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`
+  *(completed)*
+- [x] Amend test case U5 in `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`
   (around lines 924-943): keep the fixture and the `after == before` / `tracked == ""` assertions
   **verbatim** — they are U5's real invariant ("no `-f` behaviour crept in") — and change only the
   expected rc from `2` to `8` and the expected stderr from `ERROR:.*genuinely unstaged` to the new
   `NOTE:` wording. Update U5's own comment to state what changed and why the invariant is
-  unweakened.
-- [ ] Confirm test case X5 (the ignore-matched file swept up **implicitly** inside a non-ignored
+  unweakened. *(completed: 76/76 cases pass including amended U5)*
+- [x] Confirm test case X5 (the ignore-matched file swept up **implicitly** inside a non-ignored
   directory pathspec) still passes **unchanged**: the directory pathspec itself is not ignored, so
-  `V13` must not fire, and the inner file must stay silently skipped with exit `0`.
+  `V13` must not fire, and the inner file must stay silently skipped with exit `0`. *(completed:
+  X5 passes unchanged)*
+- [x] *(deviation: added, not in original task list)* `test-git-commit-scoped.sh`'s
+  `REQUIRED_SCRIPTS` array and its five `chmod +x` exclusion guards needed
+  `lib/specs-ignore-lib.sh` added so every scratch-repo fixture actually copies and sources the
+  new library; without it the guarded `source` in `git-commit-scoped.sh` would silently fail
+  inside every fixture and `V13` would never fire in-suite, leaving U5 at its pre-change rc
+  regardless of the production edit. *(completed: added to the array plus all 5 guard sites)*
 
 **Timing**: 2 hours
 

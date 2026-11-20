@@ -86,6 +86,22 @@
 #       invocation (6 keeps precedence by placement). The all-dropped shape stays exit 2 (V3,
 #       above) and the survivors-but-no-commit shape stays exit 4 (V6, above) — reaching 7
 #       requires commit_exit to already be 0.
+#   8 - the V13 all-ignored decision below: every surviving positive pathspec was dropped as
+#       gitignored (a repository whose specs/ tree is wholly or partly gitignored, consulted via
+#       scripts/lib/specs-ignore-lib.sh), AND no OTHER drop reason contributed, AND no positive
+#       entry survives in filtered_pathspecs. Observability, not a staging failure — this is the
+#       repository's OWN configuration, not a defect — and deliberately distinct from both V3's
+#       exit 2 (a genuine degenerate-pathspec refusal) and V6's exit 4 (a drop whose cause is
+#       ambiguous): a V13 drop's cause is definitively known and definitively benign. Evaluated
+#       BEFORE the V3 post-filter gate above, since the all-ignored shape would otherwise reach
+#       V3 first and be misreported as that same failure-flavoured refusal. No git add or git
+#       commit is attempted.
+#   9 - the V13 partial-ignore decision below: a commit WAS created (commit_exit was 0) and one
+#       or more positive pathspecs were dropped as gitignored. Observability, not a refusal — the
+#       valid paths already committed successfully. Placed AFTER the V10 decision above, giving
+#       the precedence chain 6 (V9) > 7 (V10) > 9 (V13) by the same precedence-by-placement
+#       convention V9 and V10 already use relative to each other. Requires commit_exit to already
+#       be 0; the all-ignored shape (nothing survives to commit) stays exit 8 above instead.
 #
 # Safety gates (empirically discovered; see specs/908_.../reports/02_commit-site-inventory.md):
 #   V2 - an unmatched path in the commit pathspec aborts the WHOLE commit in bare git. This
@@ -289,6 +305,36 @@
 #        once the untracking commit lands correctly. A distinct stderr NOTE, textually
 #        disjoint from the fully-staged-deletion NOTE above, names the count and the paths and
 #        states explicitly that this is NOT the source half of a directory move.
+#
+#   V13 - a positive pathspec names an UNTRACKED path that is also gitignored (consulted via
+#        scripts/lib/specs-ignore-lib.sh's `path_is_gitignored`, never a re-implemented
+#        `git check-ignore` call) -- live-reproduced defect: today, case 1's bare `[ -e "$p" ]`
+#        test admits such a path with no ignore-awareness, `git add` silently skips it, and the
+#        V7 post-add verification loop further below then refuses the WHOLE invocation with exit
+#        2's "genuinely unstaged" ERROR — indistinguishable from a real staging failure, and in a
+#        mixed pathspec, withholding every OTHER trackable sibling path's legitimate commit along
+#        with it. This script now classifies such a pathspec as its own drop reason BEFORE case 1
+#        can claim it, exactly as V9/V10/V11 already do for their own cases. Evaluated AFTER
+#        V9, V10, and V11 (so a path that is also out-of-repository, out-of-file_scope, or part of
+#        a cached-untracking shape keeps its existing, already-tested classification) and BEFORE
+#        case 1's existence test (so a doomed path never reaches the single all-or-nothing `git
+#        add` call). `path_is_gitignored` is INDEX-AWARE: a path that is already TRACKED reports
+#        "not ignored" (rc 1) even when it also matches a `.gitignore` rule, under both a
+#        parent-directory rule and a direct file-level rule — this is exactly the property that
+#        makes a separate tracked/untracked test unnecessary here, and it is why V13 structurally
+#        cannot misclassify the pre-existing tracked-but-ignore-matching advisory shape V7 already
+#        tolerates (see context/standards/git-staging-scope.md's "Positive-Pathspec
+#        Ignore-Advisory Hazard" section — that section's existing prohibition on `git check-ignore
+#        -q` scopes to a DIFFERENT question, the tracked-but-ignore-matching advisory shape, not
+#        this one). A V13-classified path is dropped with a `NOTE:` (deliberately never an
+#        `ERROR:` — this is not a failure) textually distinct from case 3's, V9's, and V10's own
+#        messages, added to NEITHER `add_pathspecs` NOR `filtered_pathspecs`, and recorded in a
+#        dedicated `ignored_dropped` ledger that is deliberately NEVER mirrored into
+#        `dropped_pathspecs` — a V13 drop's cause is definitively known and definitively benign,
+#        unlike the ambiguous-cause shapes `dropped_pathspecs` exists to flag for V6's exit 4. When
+#        the predicate is unavailable (a failed `source` of the library), V13 is a no-op and every
+#        pathspec falls straight through to case 1 unchanged — today's behavior exactly. See exit
+#        codes 8 and 9 above for the resulting observable outcomes.
 #
 # Git semantics discovered empirically while diagnosing V8 (undocumented elsewhere in this
 # script, and load-bearing for why V8 exists at all): `git commit -- <pathspec>` RE-READS the
@@ -696,6 +742,24 @@ containment_dropped=()
 # `git add`, which would silently RE-TRACK the content and revert the untracking. Consulted by
 # the guarded commit path and the V8 intent-snapshot correction further below.
 cached_untracking_pathspecs=()
+# ignored_dropped (V13): every pathspec dropped because it is an untracked, gitignored path.
+# Recorded in its OWN ledger ONLY -- deliberately NEVER mirrored into dropped_pathspecs, unlike
+# out_of_repo_dropped and containment_dropped above. V9 and V10 mirror into dropped_pathspecs
+# because V6's exit 4 exists for drops whose CAUSE is ambiguous ("indistinguishable from the
+# ordinary, benign no-op"); a V13 drop's cause is definitively known and definitively benign, so
+# admitting it to that ledger would re-impose exactly the failure-flavoured framing V13 exists to
+# remove. See exit codes 8 and 9 above for the dedicated non-failure outcomes this ledger feeds.
+ignored_dropped=()
+# Guarded source of the shared predicate library (same guarded pattern as
+# engine-written-state-paths-lib.sh's own call site above): resolved ONCE here, before the V2
+# loop, rather than per pathspec. specs_ignore_lib_available records whether the predicate is
+# usable; a failed source leaves it empty, and the V13 gate below falls straight through to case
+# 1 unchanged whenever it is empty -- today's behavior exactly (fail-open, D6/D7).
+specs_ignore_lib_available=""
+# shellcheck disable=SC1091
+if source "${SCRIPT_DIR}/lib/specs-ignore-lib.sh" 2>/dev/null; then
+  specs_ignore_lib_available="1"
+fi
 for p in "${pathspecs[@]}"; do
   case "$p" in
     :\(exclude\)*)
@@ -792,6 +856,23 @@ for p in "${pathspecs[@]}"; do
         continue
       fi
 
+      # V13 — gitignored-path guard, evaluated AFTER V9/V10/V11 and BEFORE case 1's existence
+      # test (D5), so an untracked, gitignored path never reaches the single all-or-nothing
+      # `git add` call below. Consults the shared predicate library (never a re-implemented
+      # `git check-ignore` call) resolved once above this loop; a no-op whenever the library
+      # failed to source (specs_ignore_lib_available empty), falling straight through to case 1
+      # unchanged -- today's behavior exactly (D6/D7). path_is_gitignored is index-aware, so a
+      # TRACKED-but-ignore-matching path reports "not ignored" here and is never misclassified
+      # (the pre-existing V7 tolerated-advisory shape is untouched).
+      if [ -n "$specs_ignore_lib_available" ] && path_is_gitignored "$root_resolved" "$p"; then
+        # Dropped as gitignored: NOTE, never ERROR -- this is not a failure. Added to NEITHER
+        # add_pathspecs NOR filtered_pathspecs, and recorded ONLY in ignored_dropped (never
+        # dropped_pathspecs -- see that ledger's own declaration comment for why).
+        echo "NOTE: git-commit-scoped.sh dropping gitignored pathspec '${p}' (untracked and matched by this repository's own .gitignore, Verified Finding V13); this path will NOT be part of the commit, and this is the repository's own configuration, not a staging failure." >&2
+        ignored_dropped+=("$p")
+        continue
+      fi
+
       if [ -e "$p" ] || git ls-files --error-unmatch -- "$p" >/dev/null 2>&1; then
         # Case 1 — matched: present on disk, or already tracked. Unchanged behavior: goes to
         # both the add set and the commit set.
@@ -821,6 +902,18 @@ for p in "${pathspecs[@]}"; do
       ;;
   esac
 done
+
+# --- V13 exit-code decision (all-ignored shape): every surviving positive pathspec was dropped
+# as gitignored, AND no OTHER drop reason contributed, AND filtered_pathspecs carries no positive
+# entry. Evaluated BEFORE the V3 post-filter gate immediately below (D2): in this shape,
+# filtered_pathspecs ends with zero positive entries exactly as a V3 refusal would see it, so V13
+# must decide FIRST or the all-ignored shape would be misreported under V3's own
+# failure-flavoured wording before this check ever runs. No git add or git commit is attempted. ---
+if [ "${#ignored_dropped[@]}" -gt 0 ] && [ "${#dropped_pathspecs[@]}" -eq 0 ] \
+   && ! has_positive_pathspec "${filtered_pathspecs[@]}"; then
+  echo "NOTE: git-commit-scoped.sh is not committing -- every positive pathspec was gitignored (Verified Finding V13); this repository's own specs tree is wholly or partly gitignored, which is this repository's own configuration, not a staging failure. Path(s): ${ignored_dropped[*]}" >&2
+  exit 8
+fi
 
 # --- V3 safety gate (post-filter): filtering itself can produce a degenerate list ---
 # Evaluated against filtered_pathspecs (the commit set), not add_pathspecs: a deletion-only
@@ -1252,6 +1345,18 @@ fi
 # path already received above is additive observability for that path, not a code change. ---
 if [ "${#containment_dropped[@]}" -gt 0 ] && [ "$commit_exit" -eq 0 ]; then
   exit 7
+fi
+
+# --- V13 exit-code decision (partial-ignore shape): a commit that WAS created (commit_exit 0)
+# and still dropped one or more pathspecs as gitignored gets the new dedicated code 9 --
+# observability, not a refusal, since the valid trackable sibling paths already committed
+# successfully. Placed AFTER the V10 branch above (D3), giving the precedence chain 6 (V9) > 7
+# (V10) > 9 (V13) by the same precedence-by-placement convention V9 and V10 already use relative
+# to each other. The all-ignored shape (nothing survives to commit) never reaches this far: the
+# V13 exit-8 gate above the V2 loop's own call site already fires first for that shape. ---
+if [ "${#ignored_dropped[@]}" -gt 0 ] && [ "$commit_exit" -eq 0 ]; then
+  echo "NOTE: git-commit-scoped.sh committed, but one or more pathspecs were dropped as gitignored (Verified Finding V13); this repository's own specs tree is partly gitignored, which is this repository's own configuration, not a staging failure. Path(s): ${ignored_dropped[*]}" >&2
+  exit 9
 fi
 
 exit "$commit_exit"

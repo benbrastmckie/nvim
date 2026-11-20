@@ -39,7 +39,7 @@ FAILED=0
 # shellcheck disable=SC2329
 
 # --- Loud-skip discipline: verify all three required scripts exist before running anything. ---
-REQUIRED_SCRIPTS=(git-commit-scoped.sh deploy-root-guard.sh task-lock.sh lib/common.sh lib/task-lookup-lib.sh lib/derived-artifact-probe-lib.sh lib/engine-written-state-paths-lib.sh)
+REQUIRED_SCRIPTS=(git-commit-scoped.sh deploy-root-guard.sh task-lock.sh lib/common.sh lib/task-lookup-lib.sh lib/derived-artifact-probe-lib.sh lib/engine-written-state-paths-lib.sh lib/specs-ignore-lib.sh)
 missing=()
 for f in "${REQUIRED_SCRIPTS[@]}"; do
   [ -f "$SRC_SCRIPTS_DIR/$f" ] || missing+=("$f")
@@ -78,7 +78,7 @@ build_repo() {
     # lib/common.sh, lib/task-lookup-lib.sh, lib/derived-artifact-probe-lib.sh, and
     # lib/engine-written-state-paths-lib.sh are sourced, never executed -- matches the other
     # scripts/lib/*.sh files.
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   if [ "$mode" = "covered" ]; then
@@ -121,7 +121,7 @@ build_repo_tracked_ignored() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   mkdir -p "$repo/specs/999_probe/archive"
@@ -196,7 +196,7 @@ build_repo_movable() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   mkdir -p "$repo/specs/999_probe/reports"
@@ -922,7 +922,16 @@ else
 fi
 
 # --- U5: a brand-new UNTRACKED, ignore-matched file named as an explicit positive pathspec is
-# still NOT committed -- proves no `-f` behavior crept in; the genuine-drop case stays refused. ---
+# still NOT committed -- proves no `-f` behavior crept in; the genuine-drop case stays dropped.
+#
+# CHANGED: this case previously asserted rc=2 and an "ERROR:.*genuinely unstaged" message --
+# exactly the pre-V13 shape where this drop was indistinguishable from a real staging failure.
+# V13 now classifies this exact shape as its own dedicated, non-failure drop reason (the
+# all-ignored posture, since this is the only pathspec in the call), so the invariant this case
+# actually protects ("no `-f` behavior crept in": the file is never tracked, no commit is
+# created) is preserved VERBATIM below -- only the expected rc (2 -> 8) and the expected
+# message class (ERROR -> NOTE) move, because the underlying outcome this case probes is now
+# reported honestly instead of as a failure. ---
 
 repo_u5="$(build_repo covered)"
 mkdir -p "$repo_u5/specs/999_probe/ignoredsub"
@@ -936,11 +945,11 @@ rc_u5=$?
 after_u5=$(git -C "$repo_u5" rev-list --count HEAD 2>/dev/null || echo "$before_u5")
 tracked_u5="$(git -C "$repo_u5" ls-files -- specs/999_probe/ignoredsub/new.txt)"
 
-if [ "$rc_u5" -eq 2 ] && [ "$after_u5" -eq "$before_u5" ] && [ -z "$tracked_u5" ] \
-  && echo "$out_u5" | grep -q "ERROR:.*genuinely unstaged"; then
-  common_test_pass "U5: a brand-new untracked, ignore-matched path named explicitly is still refused -- no -f behavior introduced"
+if [ "$rc_u5" -eq 8 ] && [ "$after_u5" -eq "$before_u5" ] && [ -z "$tracked_u5" ] \
+  && echo "$out_u5" | grep -q "NOTE:.*[Vv]13\|NOTE:.*gitignored"; then
+  common_test_pass "U5: a brand-new untracked, ignore-matched path named explicitly is still dropped -- no -f behavior introduced (now reported as V13's non-failure exit 8, never ERROR)"
 else
-  common_test_fail "U5: expected rc=2, no new commit, new.txt never tracked; got rc=$rc_u5 before=$before_u5 after=$after_u5 tracked='$tracked_u5' output=$out_u5"
+  common_test_fail "U5: expected rc=8, no new commit, new.txt never tracked, NOTE naming V13/gitignored; got rc=$rc_u5 before=$before_u5 after=$after_u5 tracked='$tracked_u5' output=$out_u5"
 fi
 
 # --- U6: a directory pathspec in a fully-covered repo with ephemeral paths present still commits
@@ -1949,7 +1958,7 @@ build_repo_cached_untracked() {
   local f
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   if [ "$mode" = "gitignored" ]; then
@@ -2102,7 +2111,7 @@ git -C "$repo_y6" config user.name "Test Suite"
 mkdir -p "$repo_y6/.claude/scripts/lib"
 for f in "${REQUIRED_SCRIPTS[@]}"; do
   cp "$SRC_SCRIPTS_DIR/$f" "$repo_y6/.claude/scripts/$f"
-  [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || chmod +x "$repo_y6/.claude/scripts/$f"
+  [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo_y6/.claude/scripts/$f"
 done
 mkdir -p "$repo_y6/sub"
 echo "a" > "$repo_y6/sub/a.txt"
