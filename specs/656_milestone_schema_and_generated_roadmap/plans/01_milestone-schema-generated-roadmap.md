@@ -440,33 +440,33 @@ suite's scratch directory and record how many items land in state and how many a
 
 ---
 
-### Phase 6: Remove the Hand-Authored Render Paths [NOT STARTED]
+### Phase 6: Remove the Hand-Authored Render Paths [COMPLETED]
 
 **Goal**: No hand-authored section survives a regenerate: the classic and stage round-trips are
 deleted and every non-generated file is refused with the migration named.
 
 **Tasks**:
-- [ ] In `roadmap-integration.sh` delete `load_existing_sections`, `extract_section`,
+- [x] In `roadmap-integration.sh` delete `load_existing_sections`, `extract_section`,
   `extract_preamble`, `assemble_roadmap`, `split_sections`, `assemble_stage_roadmap`,
   `mode_regenerate_stage`, `render_next`'s preamble, rationale and postamble arms,
   `open_work_trailer_from_notes`, the coverage appendix and the `generate-task-order.sh --print`
-  call. Keep the deprecated `--prune` alias.
-- [ ] `--regenerate` overwrites only a `generated` file, or writes onto `absent` when
+  call. Keep the deprecated `--prune` alias. *(completed)*
+- [x] `--regenerate` overwrites only a `generated` file, or writes onto `absent` when
   `roadmap_milestones` is non-empty. On `classic`, `stage` or `unknown` it refuses and names
   `migrate-roadmap-to-milestones.sh`. The Destructive-Overwrite Refusal stays; its predicate is
-  the sentinel.
-- [ ] In `roadmap-preflight-lib.sh` make `roadmap_preflight_scaffold` write a sentinel-only
+  the sentinel. *(completed)*
+- [x] In `roadmap-preflight-lib.sh` make `roadmap_preflight_scaffold` write a sentinel-only
   generated file and remove the "authored by hand" stub text. Keep `CLASSIC_HEADERS` only as far
-  as classifying an unmigrated file needs it.
-- [ ] In `orchestrate-conclusion-roadmap.sh` change both `classic|stage` arms to `generated`,
-  commit the accessor-resolved output path, and reword the degrade summary to name the migration.
-- [ ] Rewrite `test-roadmap-generation.sh`: token derivation keeps its cases with new framing; the
+  as classifying an unmigrated file needs it. *(completed)*
+- [x] In `orchestrate-conclusion-roadmap.sh` change both `classic|stage` arms to `generated`,
+  commit the accessor-resolved output path, and reword the degrade summary to name the migration. *(completed)*
+- [x] Rewrite `test-roadmap-generation.sh`: token derivation keeps its cases with new framing; the
   retention, layout-refusal, both stage-layout and scaffold groups are rewritten against the
-  sentinel model; the batch-render group folds into the Phase 4 milestone group.
-- [ ] Rewrite `test-orchestrate-conclusion-roadmap.sh` fixtures from the classic stale file to a
-  generated stale file plus one refused-classic degrade case.
-- [ ] Run `test-generate-task-order.sh` and `test-migrate-roadmap-next-to-state.sh`; neither
-  should need an edit. If the second fails because the scaffold changed, adjust its expectations.
+  sentinel model; the batch-render group folds into the Phase 4 milestone group. *(completed)*
+- [x] Rewrite `test-orchestrate-conclusion-roadmap.sh` fixtures from the classic stale file to a
+  generated stale file plus one refused-classic degrade case. *(completed)*
+- [x] Run `test-generate-task-order.sh` and `test-migrate-roadmap-next-to-state.sh`; neither
+  should need an edit. If the second fails because the scaffold changed, adjust its expectations. *(completed)*
 
 **Timing**: 2 hours
 

@@ -1,46 +1,47 @@
 #!/usr/bin/env bash
-# roadmap-integration.sh - Generate the mechanically-derivable sections of specs/ROADMAP.md
+# roadmap-integration.sh - Render specs/ROADMAP.md, the whole file, from specs/state.json
 #
 # Format spec: context/formats/roadmap-format.md (the generation contract this script
 # implements). Caller contract: context/patterns/roadmap-update.md.
 #
 # Usage:
-#   roadmap-integration.sh [--print]                 Emit generated sections to stdout (default)
-#   roadmap-integration.sh --regenerate [--dry-run]   Render ## Next and ## Open work wholly
-#                                                      from state.json in place
+#   roadmap-integration.sh [--print]                 Emit the whole rendered file to stdout
+#                                                      (default)
+#   roadmap-integration.sh --regenerate [--dry-run]   Write the rendered file in place
 #   roadmap-integration.sh --prune [--dry-run]        DEPRECATED alias for --regenerate: a file
 #                                                      rendered from live state accumulates no
 #                                                      terminal cruft, so there is nothing left
 #                                                      for a separate prune pass to remove
 #
 # Options:
-#   --roadmap PATH     Path to ROADMAP.md (default: specs/ROADMAP.md under the repo root)
+#   --roadmap PATH     Path to ROADMAP.md (default: the store's roadmap_context.output_path
+#                       under the repo root, else specs/ROADMAP.md)
 #   --state PATH       Path to state.json (default: specs/state.json under the repo root)
-#   --max-tasks N      Coverage-appendix chunk size per wave (default: 8, matches
-#                       commands/orchestrate.md's MAX_TASKS)
 #   --dry-run          With --regenerate/--prune: print a diff, write nothing
 #   --help             Show this usage and exit 0
 #
-# ## Next and ## Open work are both rendered wholly from state.json (roadmap_batches/
-# roadmap_notes for ## Next; active_projects/roadmap_annotation/roadmap_ext_blocked/
-# roadmap_notes.open_work_trailer for ## Open work) in every mode that emits them, including
-# --print -- there is no retention parser anywhere in this script: nothing here reads authored
-# content back out of the file it is about to overwrite.
+# The file is generated in full: an intro (primary_goals, a milestone status table), one section
+# per roadmap_milestones entry in array order, then rules, conventions and repo context from
+# roadmap_context plus the open tasks that sit in no batch. Nothing is read back out of the file
+# being written, and this script exercises no judgment: which milestones exist, what belongs in
+# which batch and in what order are all decided upstream and stored in state.
 #
 # Every invocation that reaches mode dispatch -- i.e. passes argument validation -- prints one
 # always-present machine-readable stderr marker, on success AND on failure:
 #   <!-- roadmap-generation mode=M tasks=N topics=T runs=R pruned=P retained=A -->
-# This never affects the exit code -- it is a diagnostic, not a failure signal. --help and a
-# usage/argument-validation error happen before mode dispatch and print only their own message
-# instead. A failure after that point additionally emits one named stderr line
+# runs= is the number of batches under milestones that are not closed; pruned= and retained= are
+# always 0. This never affects the exit code -- it is a diagnostic, not a failure signal. --help
+# and a usage/argument-validation error happen before mode dispatch and print only their own
+# message instead. A failure after that point additionally emits one named stderr line
 # ("ERROR: roadmap-integration.sh failed (mode=M) at line L: exit status N") before the marker.
 #
-# Destructive-overwrite refusal (PERMANENT property, not a transitional guard): --regenerate and
-# --prune both classify the existing ROADMAP.md's section vocabulary (detect_layout: "classic",
-# "stage", or "unknown") before touching the file, and refuse loudly -- a named reason on
-# stderr, non-zero exit, no write -- on any vocabulary this script cannot round-trip. This never
-# becomes "proceed and hope": an unrecognised layout is never guessed at or overwritten with a
-# fixed template.
+# Destructive-overwrite refusal (PERMANENT property): --regenerate and --prune overwrite a file
+# only when its first line is the generated sentinel (lib/roadmap-preflight-lib.sh), and create
+# one only when the target is absent and the store holds at least one milestone. Any other file
+# is hand-authored content this script cannot reproduce: the write is refused loudly -- a named
+# reason on stderr, non-zero exit, no write -- and the refusal names
+# migrate-roadmap-to-milestones.sh, which moves that content into state and a retained-prose
+# file first.
 
 set -euo pipefail
 
@@ -63,10 +64,9 @@ STATE_PATH="${PROJECT_ROOT}/specs/state.json"
 MODE="print"
 MODE_FLAG_COUNT=0
 DRY_RUN=0
-MAX_TASKS=8
 
 usage() {
-  sed -n '2,22p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,21p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 while [[ $# -gt 0 ]]; do
@@ -81,8 +81,6 @@ while [[ $# -gt 0 ]]; do
       ROADMAP_PATH="$2"; ROADMAP_PATH_EXPLICIT=1; shift 2 ;;
     --state)
       STATE_PATH="$2"; shift 2 ;;
-    --max-tasks)
-      MAX_TASKS="$2"; shift 2 ;;
     --dry-run)
       DRY_RUN=1; shift ;;
     --help|-h)
@@ -100,29 +98,22 @@ if [[ "$MODE_FLAG_COUNT" -gt 1 ]]; then
   exit 1
 fi
 
-if ! [[ "$MAX_TASKS" =~ ^[0-9]+$ ]] || [[ "$MAX_TASKS" -lt 1 ]]; then
-  echo "ERROR: --max-tasks must be a positive integer, got '$MAX_TASKS'" >&2
-  exit 1
-fi
-
 if [[ ! -f "$STATE_PATH" ]]; then
   echo "ERROR: --state path does not exist: $STATE_PATH" >&2
   exit 1
 fi
-
 # ─── Always-present marker + named failure diagnostics, installed immediately after argument
 # validation so every invocation that reaches this point -- success or failure -- is covered.
 # --help and the argument-validation errors above already print their own message and exit
-# before this point, so they are deliberately out of scope (Decision 3). ─────────────────────
+# before this point, so they are deliberately out of scope. ──────────────────────────────────
 MARKER_EMITTED=0
-# RUNS_COUNT -- for --regenerate (classic layout), the count of roadmap_batches entries in
-# $STATE_PATH (not a parse of rendered Run lines; ## Next is rendered wholly from state, see
-# render_next()). Other modes/layouts set it per their own documented meaning below.
+# RUNS_COUNT -- the number of batches under milestones that are not closed, read through
+# lib/roadmap-entries-lib.sh.
 RUNS_COUNT=0
 PRUNED_COUNT=0
 RETAINED_COUNT=0
-# ROADMAP_LAYOUT -- set by mode_regenerate/mode_prune immediately after detect_layout, so
-# write_or_diff can name the layout in its OUTCOME: line without re-running detect_layout.
+# ROADMAP_LAYOUT -- set by mode_regenerate before any write, so write_or_diff can name the
+# layout in its OUTCOME: line.
 ROADMAP_LAYOUT=""
 
 # emit_marker -- prints the six-field stderr marker exactly once, reading every counter with a
@@ -136,26 +127,22 @@ emit_marker() {
 trap emit_marker EXIT
 
 # ERR fires before the shell exits under set -e, so this line always precedes the EXIT trap's
-# marker on a failure -- the diagnosability fix for sub-fault 1 (a silent, undiagnosable abort).
+# marker on a failure, so an abort is never silent.
 trap 'echo "ERROR: roadmap-integration.sh failed (mode=$MODE) at line $LINENO: exit status $?" >&2' ERR
 
-# ─── Store shape ────────────────────────────────────────────────────────────────────────────
-# A store that carries the roadmap_milestones key (an empty array included) renders the whole
-# file from state. Its output path comes from the store (roadmap_context.output_path, default
-# specs/ROADMAP.md) unless --roadmap named one.
-MILESTONE_SHAPE=0
-if jq -e 'has("roadmap_milestones")' "$STATE_PATH" >/dev/null 2>&1; then
-  MILESTONE_SHAPE=1
-  if [[ "$ROADMAP_PATH_EXPLICIT" -eq 0 ]]; then
-    __rel_out="$(roadmap_entries_output_path "$STATE_PATH")"
-    if [[ "$__rel_out" == /* || "$__rel_out" == ".." || "$__rel_out" == ../* \
-          || "$__rel_out" == */../* || "$__rel_out" == */.. ]]; then
-      echo "ERROR: roadmap_context.output_path must be a repository-relative path, got '${__rel_out}'" >&2
-      exit 1
-    fi
-    ROADMAP_PATH="${PROJECT_ROOT}/${__rel_out}"
+# ─── Output path and batch count, both through the accessor ─────────────────────────────────
+# The output path comes from the store (roadmap_context.output_path, default specs/ROADMAP.md)
+# unless --roadmap named one.
+if [[ "$ROADMAP_PATH_EXPLICIT" -eq 0 ]]; then
+  __rel_out="$(roadmap_entries_output_path "$STATE_PATH")"
+  if [[ "$__rel_out" == /* || "$__rel_out" == ".." || "$__rel_out" == ../* \
+        || "$__rel_out" == */../* || "$__rel_out" == */.. ]]; then
+    echo "ERROR: roadmap_context.output_path must be a repository-relative path, got '${__rel_out}'" >&2
+    exit 1
   fi
-  # runs= in the stderr marker: batches under milestones that are not closed.
+  ROADMAP_PATH="${PROJECT_ROOT}/${__rel_out}"
+fi
+if jq -e 'has("roadmap_milestones")' "$STATE_PATH" >/dev/null 2>&1; then
   RUNS_COUNT="$(roadmap_entries_batches "$STATE_PATH" | wc -l | tr -d ' ')"
 fi
 
@@ -170,54 +157,10 @@ active_tasks_json="$(jq -c --argjson terminal "$TERMINAL_JQ" \
 
 active_ids_json="$(jq -c '[.[].project_number]' <<<"$active_tasks_json")"
 
-active_topics_json="$(jq -c '.active_topics // []' "$STATE_PATH")"
-
-# task_count/topic_count are computed here (rather than at the bottom of the file, where the
-# marker used to be emitted) so a failure anywhere in mode dispatch still has real values for
-# the EXIT trap's marker, instead of relying on the ${:-0} default for every invocation.
+# task_count/topic_count are computed here, before mode dispatch, so a failure anywhere in mode
+# dispatch still has real values for the EXIT trap's marker.
 task_count="$(jq -r 'length' <<<"$active_tasks_json")"
 topic_count="$(jq -r '.[] | .topic' <<<"$active_tasks_json" 2>/dev/null | sort -u | sed '/^null$/d' | wc -l | tr -d ' ')"
-
-# ─── Wave membership: parse generate-task-order.sh --print's Dependency Waves table ─────────────
-# Consumed as a read-only subprocess only -- that script runs build_graph/compute_waves
-# unconditionally at file scope (cannot be sourced). No wave/DAG algorithm is reimplemented here.
-# The milestone render never consults it, so the subprocess is skipped for that store shape.
-declare -A WAVE_OF
-wave_header_found=0
-in_table=0
-wave_output=""
-if [[ "$MILESTONE_SHAPE" -eq 0 ]]; then
-  wave_output="$("${SCRIPT_DIR}/generate-task-order.sh" --print)"
-fi
-while IFS= read -r line; do
-  if [[ "$in_table" -eq 0 ]]; then
-    if [[ "$line" == '**Dependency Waves**:' ]]; then
-      wave_header_found=1
-      in_table=1
-    fi
-    continue
-  fi
-  case "$line" in
-    '| Wave |'*|'|-'*)
-      continue ;;
-    '|'*)
-      if [[ "$line" =~ ^\|\ ([0-9]+)\ \|\ ([0-9,]+)\  ]]; then
-        wave_num="${BASH_REMATCH[1]}"
-        IFS=',' read -ra __tids <<<"${BASH_REMATCH[2]}"
-        for __t in "${__tids[@]}"; do
-          WAVE_OF["$__t"]="$wave_num"
-        done
-      fi
-      ;;
-    *)
-      break ;;
-  esac
-done <<<"$wave_output"
-
-if [[ "$MILESTONE_SHAPE" -eq 0 && "$wave_header_found" -eq 0 ]]; then
-  echo "ERROR: generate-task-order.sh --print did not emit a **Dependency Waves**: table" >&2
-  exit 1
-fi
 
 # ─── status_token <project_number> ──────────────────────────────────────────────────────────
 # Precedence: HOLD > IN FLIGHT > BLOCKED > PARTIAL > EXT-BLOCKED > blocked:N[,M...] > ready
@@ -263,161 +206,13 @@ token_rank() {
   esac
 }
 
-# ─── topic_title <slug> ─────────────────────────────────────────────────────────────────────
-# Sentence case: hyphens to spaces, only the first character capitalized. Matches the live
-# file's convention (NOT task-order-format.md's per-word title case).
-topic_title() {
-  local slug="${1//-/ }"
-  echo "${slug^}"
-}
-
-# ─── render_open_work ────────────────────────────────────────────────────────────────────────
-# Emits the ## Open work body (topic blocks only, no section header) to stdout.
-render_open_work() {
-  local -a ordered_topics=()
-  local -A seen_topic=()
-  local t
-  while IFS= read -r t; do
-    [[ -n "$t" ]] || continue
-    ordered_topics+=("$t")
-    seen_topic["$t"]=1
-  done < <(jq -r '.[]' <<<"$active_topics_json")
-
-  # Append-extras: topics present on a task but absent from active_topics, first-encountered order
-  local extra
-  while IFS= read -r extra; do
-    [[ -n "$extra" ]] || continue
-    if [[ -z "${seen_topic[$extra]+set}" ]]; then
-      ordered_topics+=("$extra")
-      seen_topic["$extra"]=1
-      echo "WARNING: topic '${extra}' has tasks but is absent from state.json active_topics; appending as its own block" >&2
-    fi
-  done < <(jq -r '[.[].topic | select(. != null)] | unique | .[]' <<<"$active_tasks_json")
-
-  local has_uncategorized
-  has_uncategorized="$(jq -r '[.[] | select(.topic == null)] | length' <<<"$active_tasks_json")"
-  if [[ "$has_uncategorized" -gt 0 ]]; then
-    ordered_topics+=("__uncategorized__")
-  fi
-
-  local topic first_block=1
-  for topic in "${ordered_topics[@]}"; do
-    local tasks_in_topic
-    if [[ "$topic" == "__uncategorized__" ]]; then
-      tasks_in_topic="$(jq -c '[.[] | select(.topic == null)]' <<<"$active_tasks_json")"
-    else
-      tasks_in_topic="$(jq -c --arg topic "$topic" '[.[] | select(.topic == $topic)]' <<<"$active_tasks_json")"
-    fi
-    local count
-    count="$(jq -r 'length' <<<"$tasks_in_topic")"
-    [[ "$count" -gt 0 ]] || continue
-
-    [[ "$first_block" -eq 1 ]] || echo
-    first_block=0
-
-    local title="Uncategorized"
-    [[ "$topic" == "__uncategorized__" ]] || title="$(topic_title "$topic")"
-
-    echo "**${title} (${count})**"
-    echo '```'
-
-    # Compute (rank, task_number, token, description, annotation) rows, sort, then render each
-    # line. description is always title-derived (the title is the sole source -- there is no
-    # per-task description override); annotation is the task entry's roadmap_annotation field,
-    # empty when absent.
-    local tn task_json tok rank desc annot
-    while IFS= read -r tn; do
-      task_json="$(jq -c --argjson n "$tn" '.[] | select(.project_number == $n)' <<<"$active_tasks_json")"
-      tok="$(status_token "$task_json")"
-      rank="$(token_rank "$tok")"
-      desc="$(jq -r '.title // .project_name' <<<"$task_json")"
-      annot="$(jq -r '.roadmap_annotation // ""' <<<"$task_json")"
-      printf '%s|%s|%s|%s|%s\n' "$rank" "$tn" "$tok" "$desc" "$annot"
-    done < <(jq -r '.[].project_number' <<<"$tasks_in_topic") | sort -t'|' -k1,1n -k2,2n | \
-    while IFS='|' read -r _rank num tok desc annot; do
-      # Truncate the title-derived description so "{num} {tok}  {desc}" stays <= 100 chars
-      # before any annotation suffix.
-      local prefix width avail trimmed
-      prefix="$(printf '%s %s' "$num" "$tok")"
-      width=${#prefix}
-      if [[ "$width" -lt 20 ]]; then
-        printf -v prefix '%-20s' "$prefix"
-      else
-        prefix="${prefix}  "
-      fi
-      avail=$((100 - ${#prefix}))
-      trimmed="$desc"
-      if [[ "${#trimmed}" -gt "$avail" && "$avail" -gt 3 ]]; then
-        trimmed="${trimmed:0:$((avail - 3))}..."
-      fi
-      if [[ -n "$annot" ]]; then
-        printf '%s%s   <- %s\n' "$prefix" "$trimmed" "$annot"
-      else
-        printf '%s%s\n' "$prefix" "$trimmed"
-      fi
-    done
-
-    echo '```'
-  done
-}
-
-# ─── render_coverage_appendix ───────────────────────────────────────────────────────────────
-# Dispatchable tasks (token == "ready") not named by any caller-supplied Run line, chunked per
-# wave at --max-tasks. covered_ids_json is a JSON array of task numbers already in a Run block;
-# in --print mode (no existing file read) this is always empty, so the appendix lists every
-# ready task.
-render_coverage_appendix() {
-  local covered_ids_json="$1"
-  # Build the ready set directly: status_token == "ready" and not already covered.
-  local -a ready_ids=()
-  local tn task_json
-  while IFS= read -r tn; do
-    task_json="$(jq -c --argjson n "$tn" '.[] | select(.project_number == $n)' <<<"$active_tasks_json")"
-    if [[ "$(status_token "$task_json")" == "ready" ]]; then
-      if ! jq -e --argjson n "$tn" '. as $c | $c | index($n) != null' <<<"$covered_ids_json" >/dev/null 2>&1; then
-        ready_ids+=("$tn")
-      fi
-    fi
-  done < <(jq -r '.[].project_number' <<<"$active_tasks_json")
-
-  [[ "${#ready_ids[@]}" -gt 0 ]] || return 0
-
-  # Group by wave (unassigned tasks get wave "0", sorted last isn't required -- numeric sort is fine).
-  local -A by_wave=()
-  local id w
-  for id in "${ready_ids[@]}"; do
-    w="${WAVE_OF[$id]:-0}"
-    by_wave["$w"]="${by_wave[$w]:-} $id"
-  done
-
-  echo
-  echo "**Coverage appendix (uncovered tasks)**:"
-  echo '```'
-  local wave_keys
-  wave_keys="$(printf '%s\n' "${!by_wave[@]}" | sort -n)"
-  while IFS= read -r w; do
-    [[ -n "$w" ]] || continue
-    # shellcheck disable=SC2206 # word-splitting on space-joined ids is intentional here
-    local -a ids=(${by_wave[$w]})
-    local i=0
-    while [[ "$i" -lt "${#ids[@]}" ]]; do
-      local chunk=("${ids[@]:$i:$MAX_TASKS}")
-      local joined
-      joined="$(IFS=', '; echo "${chunk[*]}")"
-      echo "/orchestrate ${joined}"
-      i=$((i + MAX_TASKS))
-    done
-  done <<<"$wave_keys"
-  echo '```'
-}
-
-# ─── Whole-file milestone render (selected when $STATE_PATH carries roadmap_milestones) ───────
+# ─── Whole-file render ──────────────────────────────────────────────────────────────────────
 #
 # The file is rendered in three parts, in this order: an intro (primary goals, a milestone status
 # table whose first column links to each milestone section, a link to the last section); one
 # dashboard section per milestone in array order; then rules, conventions and repo context.
 # Nothing is read back from the file being written, the batch `rationale` field is never
-# rendered, and generate-task-order.sh is never consulted on this path.
+# rendered, and generate-task-order.sh is never consulted.
 #
 # MS_RENDER_JQ computes the whole structure in one jq pass and emits a line protocol, fields
 # separated by the unit separator (U+001F):
@@ -625,183 +420,32 @@ render_milestone_file() {
   done <<<"$plan" | cat -s
 }
 
-# mode_regenerate_milestones -- writes the whole generated file. Reached only when the target
-# classifies as `generated` or is absent; every other verdict stays with the caller.
-mode_regenerate_milestones() {
-  PRUNED_COUNT=0
-  RETAINED_COUNT=0
-  ROADMAP_LAYOUT="generated"
-  local new_content
-  new_content="$(render_milestone_file)"
-  [[ -n "$new_content" ]] || { echo "ERROR: milestone render produced no output" >&2; return 1; }
-  mkdir -p "$(dirname "$ROADMAP_PATH")"
-  write_or_diff "$new_content"
-}
-
 mode_print() {
-  if [[ "$MILESTONE_SHAPE" -eq 1 ]]; then
-    render_milestone_file
-    return 0
-  fi
-  render_open_work
-  render_coverage_appendix '[]'
+  render_milestone_file
 }
 
-# ─── Section-boundary helpers (used only by --regenerate/--prune, which read the existing file) ─
-#
-# CLASSIC_HEADERS, body_has_orchestrate_fence, roadmap_has_orchestrate_fence, and detect_layout
-# now live in lib/roadmap-preflight-lib.sh (sourced above) -- this script keeps zero copies of
-# its own. See that library's header comment for the full rationale.
-
-# refuse_unrecognised_layout MODE LAYOUT -> prints a named, loud refusal to stderr (listing the
-# file's actual ## headers and the two recognised vocabularies) and returns 1. Called by both
-# write modes before load_existing_sections / any write attempt. PERMANENT property, not a
-# transitional guard -- see roadmap-format.md's destructive-overwrite-refusal subsection.
-refuse_unrecognised_layout() {
-  local mode="$1" layout="$2" reason=""
-  case "$layout" in
-    unknown)
-      reason="its section headers match neither the classic eight-header vocabulary nor the stage-based structural predicate (a '## Stage N' header plus a fenced /orchestrate block)"
-      ;;
-    stage)
-      reason="the stage-based layout is not yet round-tripped by --${mode}"
-      ;;
+# refuse_non_generated VERDICT -> prints a named, loud refusal to stderr (the reason, the
+# file's actual ## headers, and the migration that resolves it) and returns 1. PERMANENT
+# property -- see roadmap-format.md's destructive-overwrite-refusal subsection.
+refuse_non_generated() {
+  local verdict="$1" reason=""
+  case "$verdict" in
+    classic) reason="it is a hand-authored file in the classic eight-header layout" ;;
+    stage) reason="it is a hand-authored file in the stage layout" ;;
+    *) reason="its first line is not the generated sentinel and its layout is not recognised" ;;
   esac
   {
-    echo "ERROR: --${mode} refuses to write ${ROADMAP_PATH}: ${reason}."
-    echo "       Recognised vocabularies: classic (the eight literal headers in roadmap-format.md's"
-    echo "       Section Order table) or stage (a '## Stage N' header plus a fenced /orchestrate block)."
+    echo "ERROR: --${MODE} refuses to write ${ROADMAP_PATH}: ${reason} (verdict: ${verdict})."
+    echo "       This script overwrites only a file it generated, whose first line is:"
+    echo "         ${ROADMAP_GENERATED_SENTINEL}"
+    echo "       Run migrate-roadmap-to-milestones.sh (--dry-run first) to move this file's content"
+    echo "       into state and a retained-prose file; it then writes the generated file itself."
     echo "       Actual headers in this file:"
-    # A totally degenerate "unknown" file (zero "## " headers at all) makes grep's own no-match
-    # the normal case here too, not a failure -- guarded the same way as covered_ids_from, found
-    # by this phase's audit rather than assumed absent.
+    # A file with no "## " header at all makes grep's own no-match the normal case here, not a
+    # failure.
     grep -n '^## ' "$ROADMAP_PATH" | sed 's/^/         /' || true
   } >&2
   return 1
-}
-
-# extract_section FILE HEADER_LITERAL -> body between HEADER_LITERAL and the next `^## ` header
-# (or EOF), EXCLUDING the header line itself but INCLUDING the blank line that immediately
-# follows it. Trailing blank lines are stripped automatically by command-substitution capture
-# at the call site -- callers reassemble with exactly one blank line between sections.
-extract_section() {
-  local file="$1" header="$2"
-  awk -v hdr="$header" '
-    BEGIN { printing = 0 }
-    $0 == hdr { printing = 1; next }
-    printing && /^## / { printing = 0 }
-    printing { print }
-  ' "$file"
-}
-
-# extract_preamble FILE -> lines between the `# Roadmap` title and the first `## ` header.
-extract_preamble() {
-  local file="$1"
-  awk 'NR == 1 { next } /^## / { exit } { print }' "$file"
-}
-
-# NOTE: strip_coverage_appendix() and covered_ids_from() (both read a ## Next body for its
-# existing authored Run lines) were removed here -- ## Next is now rendered wholly from state
-# (render_next(), covered_ids_from_batches()), so there is no "existing ## Next body" to read
-# at all. The historical pipeline-exit-status hazard they guarded against (grep's exit 1 on
-# no-match propagating under set -euo pipefail) no longer applies: covered_ids_from_batches()
-# is a single jq invocation over $STATE_PATH with no grep pipeline to crash.
-
-# render_next -> emits the ## Next body (no section header) to stdout, wholly from
-# roadmap_batches/roadmap_notes in $STATE_PATH. No authored content is read back from the
-# existing file -- this is a rendering contract, not a parsing one (see roadmap-format.md's Next
-# Grammar). A batch all of whose task_ids members are now terminal is omitted entirely; a batch
-# with a mix of terminal and non-terminal members renders its still-live members only. Callers
-# append render_coverage_appendix's own output afterward.
-render_next() {
-  local batches_json notes_json
-  batches_json="$(jq -c '.roadmap_batches // []' "$STATE_PATH")"
-  notes_json="$(jq -c '.roadmap_notes // {}' "$STATE_PATH")"
-
-  local first_block=1
-
-  local preamble_count i p
-  preamble_count="$(jq -r '(.next_preamble // []) | length' <<<"$notes_json")"
-  for ((i = 0; i < preamble_count; i++)); do
-    p="$(jq -r --argjson i "$i" '.next_preamble[$i]' <<<"$notes_json")"
-    [[ "$first_block" -eq 1 ]] || echo
-    first_block=0
-    printf '%s\n' "$p"
-  done
-
-  local batch_count
-  batch_count="$(jq -r 'length' <<<"$batches_json")"
-  if [[ "$batch_count" -gt 0 ]]; then
-    [[ "$first_block" -eq 1 ]] || echo
-    first_block=0
-    echo '```'
-    for ((i = 0; i < batch_count; i++)); do
-      local entry live_ids_csv flags desc line
-      entry="$(jq -c --argjson i "$i" '.[$i]' <<<"$batches_json")"
-      live_ids_csv="$(jq -r --argjson active "$active_ids_json" \
-        '[(.task_ids // [])[] | select(. as $t | $active | index($t) != null)] | join(", ")' <<<"$entry")"
-      [[ -n "$live_ids_csv" ]] || continue
-      flags="$(jq -r '.flags // ""' <<<"$entry")"
-      desc="$(jq -r '.description // ""' <<<"$entry")"
-      line="/orchestrate ${live_ids_csv}"
-      [[ -n "$flags" ]] && line="${line} ${flags}"
-      [[ -n "$desc" ]] && line="${line}   # ${desc}"
-      printf '%s\n' "$line"
-    done
-    echo '```'
-  fi
-
-  local -a rationale_bullets=()
-  for ((i = 0; i < batch_count; i++)); do
-    local entry rationale
-    entry="$(jq -c --argjson i "$i" '.[$i]' <<<"$batches_json")"
-    rationale="$(jq -r '.rationale // ""' <<<"$entry")"
-    [[ -n "$rationale" ]] && rationale_bullets+=("$rationale")
-  done
-  if [[ "${#rationale_bullets[@]}" -gt 0 ]]; then
-    [[ "$first_block" -eq 1 ]] || echo
-    first_block=0
-    echo "Why this order:"
-    local r rline rfirst
-    for r in "${rationale_bullets[@]}"; do
-      rfirst=1
-      while IFS= read -r rline; do
-        if [[ "$rfirst" -eq 1 ]]; then
-          printf -- '- %s\n' "$rline"
-          rfirst=0
-        elif [[ -z "$rline" ]]; then
-          echo
-        else
-          printf '  %s\n' "$rline"
-        fi
-      done <<<"$r"
-    done
-  fi
-
-  local postamble_count
-  postamble_count="$(jq -r '(.next_postamble // []) | length' <<<"$notes_json")"
-  for ((i = 0; i < postamble_count; i++)); do
-    p="$(jq -r --argjson i "$i" '.next_postamble[$i]' <<<"$notes_json")"
-    [[ "$first_block" -eq 1 ]] || echo
-    first_block=0
-    printf '%s\n' "$p"
-  done
-}
-
-# covered_ids_from_batches -> JSON array of every task_ids member across every roadmap_batches
-# entry in $STATE_PATH, used by mode_regenerate_classic/stage to compute the coverage appendix's
-# "already covered" set directly from state rather than by re-parsing render_next()'s own output.
-covered_ids_from_batches() {
-  jq -c '[(.roadmap_batches // [])[].task_ids[]?] | unique' "$STATE_PATH"
-}
-
-# assemble_roadmap PREAMBLE GOAL GATE NEXT OPENWORK CHECKS DECISIONS RULES OBS -> the full file.
-assemble_roadmap() {
-  cat <<'_RM_ASSEMBLE_EOF_'
-# Roadmap
-_RM_ASSEMBLE_EOF_
-  printf '%s\n\n## Goal\n%s\n\n## Gate state\n%s\n\n## Next\n%s\n\n## Open work\n%s\n\n## Checks before and after every call\n%s\n\n## Settled decisions (do not re-litigate)\n%s\n\n## Standing rules\n%s\n\n## Unfiled observations (none worth a task yet)\n%s\n' \
-    "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
 }
 
 # write_or_diff NEW_CONTENT -> --dry-run prints a unified diff and writes nothing; otherwise
@@ -846,208 +490,41 @@ write_or_diff() {
   fi
 }
 
-# open_work_trailer_from_notes -> the ## Open work trailer, rendered from
-# roadmap_notes.open_work_trailer (one paragraph per array entry, blank-line separated). There
-# is no retention parser any more -- this reads $STATE_PATH directly, never the existing file.
-open_work_trailer_from_notes() {
-  local notes_json count i p first=1
-  notes_json="$(jq -c '.roadmap_notes // {}' "$STATE_PATH")"
-  count="$(jq -r '(.open_work_trailer // []) | length' <<<"$notes_json")"
-  for ((i = 0; i < count; i++)); do
-    p="$(jq -r --argjson i "$i" '.open_work_trailer[$i]' <<<"$notes_json")"
-    [[ "$first" -eq 1 ]] || echo
-    first=0
-    printf '%s\n' "$p"
-  done
-}
-
-# load_existing_sections -> extracts every section of $ROADMAP_PATH into the globals
-# RM_PREAMBLE/RM_GOAL/RM_GATE/RM_CHECKS/RM_DECISIONS/RM_RULES/RM_OBS. ## Next and ## Open work
-# are deliberately NOT extracted here -- both are rendered wholly from state (render_next(),
-# render_open_work()), and reading them back out of the existing file would reintroduce exactly
-# the retention-parser path this phase removes.
-load_existing_sections() {
-  RM_PREAMBLE="$(extract_preamble "$ROADMAP_PATH")"
-  RM_GOAL="$(extract_section "$ROADMAP_PATH" "## Goal")"
-  RM_GATE="$(extract_section "$ROADMAP_PATH" "## Gate state")"
-  RM_CHECKS="$(extract_section "$ROADMAP_PATH" "## Checks before and after every call")"
-  RM_DECISIONS="$(extract_section "$ROADMAP_PATH" "## Settled decisions (do not re-litigate)")"
-  RM_RULES="$(extract_section "$ROADMAP_PATH" "## Standing rules")"
-  RM_OBS="$(extract_section "$ROADMAP_PATH" "## Unfiled observations (none worth a task yet)")"
-}
-
-# ─── Vocabulary-agnostic section splitter/reassembler (stage layout only; classic keeps its own
-# fixed-template load_existing_sections/assemble_roadmap pair above, untouched) ────────────────
-
-# split_sections FILE -> populates RM_TITLE (the literal first line), RM_PREAMBLE_SPLIT (same
-# contract as extract_preamble, reused directly), and the parallel arrays
-# RM_SECTION_HEADERS[]/RM_SECTION_BODIES[], one entry per "^## " section in file order. A
-# section's body excludes its header line but includes the blank line immediately following it
-# (same contract as extract_section). Sections are located BY POSITION (line-number ranges from
-# a single `grep -n '^## '` pass), never by re-matching header text -- unlike extract_section,
-# this is safe even if two sections happen to share identical header text, which the classic
-# layout's eight-literal-header vocabulary never does but a hand-authored stage layout could.
-split_sections() {
-  local file="$1"
-  RM_TITLE="$(sed -n '1p' "$file")"
-  RM_PREAMBLE_SPLIT="$(extract_preamble "$file")"
-  RM_SECTION_HEADERS=()
-  RM_SECTION_BODIES=()
-
-  local -a header_lines=()
-  local lineno rest
-  while IFS=: read -r lineno rest; do
-    [[ -n "$lineno" ]] || continue
-    header_lines+=("$lineno")
-  done < <(grep -n '^## ' "$file")
-
-  [[ "${#header_lines[@]}" -gt 0 ]] || return 0
-
-  local total_lines
-  total_lines="$(wc -l < "$file")"
-
-  local i start end body_start
-  for ((i = 0; i < ${#header_lines[@]}; i++)); do
-    start="${header_lines[$i]}"
-    RM_SECTION_HEADERS+=("$(sed -n "${start}p" "$file")")
-    if [[ $((i + 1)) -lt "${#header_lines[@]}" ]]; then
-      end=$(( header_lines[i+1] - 1 ))
-    else
-      end="$total_lines"
-    fi
-    body_start=$((start + 1))
-    if [[ "$body_start" -le "$end" ]]; then
-      RM_SECTION_BODIES+=("$(sed -n "${body_start},${end}p" "$file")")
-    else
-      RM_SECTION_BODIES+=("")
-    fi
-  done
-}
-
-# assemble_stage_roadmap -> emits RM_TITLE, RM_PREAMBLE_SPLIT, then each
-# RM_SECTION_HEADERS[i]/RM_SECTION_BODIES[i] pair in order -- the stage analogue of
-# assemble_roadmap, with no fixed template: every retained section is emitted verbatim, none
-# invented, none dropped. Caller splices a freshly rendered coverage appendix into the run-order
-# section's body (in RM_SECTION_BODIES, in place) before calling this.
-assemble_stage_roadmap() {
-  printf '%s\n' "$RM_TITLE"
-  printf '%s\n\n' "$RM_PREAMBLE_SPLIT"
-  local i
-  for ((i = 0; i < ${#RM_SECTION_HEADERS[@]}; i++)); do
-    printf '%s\n%s\n\n' "${RM_SECTION_HEADERS[$i]}" "${RM_SECTION_BODIES[$i]}"
-  done
-}
-
 mode_regenerate() {
-  # A milestone-shaped store owns the whole file: write when the target is already a generated
-  # file, or is absent while the store has at least one milestone to render.
-  if [[ "$MILESTONE_SHAPE" -eq 1 ]]; then
-    local verdict
-    verdict="$(roadmap_preflight_classify "$ROADMAP_PATH")"
-    if [[ "$verdict" == "generated" ]] \
-       || { [[ "$verdict" == "absent" ]] \
-            && jq -e '(.roadmap_milestones // []) | length > 0' "$STATE_PATH" >/dev/null 2>&1; }; then
-      mode_regenerate_milestones
-      return $?
-    fi
-  fi
+  local verdict new_content
+  verdict="$(roadmap_preflight_classify "$ROADMAP_PATH")"
+  ROADMAP_LAYOUT="$verdict"
+  PRUNED_COUNT=0
+  RETAINED_COUNT=0
 
-  if [[ ! -f "$ROADMAP_PATH" ]]; then
-    echo "NOTE: no roadmap tracked at ${ROADMAP_PATH}; --regenerate is a supported no-op." >&2
-    RUNS_COUNT=0; PRUNED_COUNT=0; RETAINED_COUNT=0
-    return 0
-  fi
-
-  local layout
-  layout="$(detect_layout "$ROADMAP_PATH")"
-  ROADMAP_LAYOUT="$layout"
-  case "$layout" in
-    classic) mode_regenerate_classic ;;
-    stage) mode_regenerate_stage ;;
+  case "$verdict" in
+    generated) ;;
+    absent)
+      if ! jq -e '(.roadmap_milestones // []) | length > 0' "$STATE_PATH" >/dev/null 2>&1; then
+        echo "NOTE: no roadmap at ${ROADMAP_PATH} and no milestone in state; --regenerate is a supported no-op." >&2
+        return 0
+      fi
+      ROADMAP_LAYOUT="generated"
+      ;;
     *)
-      refuse_unrecognised_layout regenerate unknown
+      refuse_non_generated "$verdict"
       return 1
       ;;
   esac
-}
 
-# mode_regenerate_stage -- round-trips a stage-based roadmap: every "## " section is retained
-# byte-for-byte except the run-order section (the first section whose body holds a fenced
-# /orchestrate block, Decision 1's predicate), whose body gets its previously-generated coverage
-# appendix stripped and a freshly rendered one appended. No other section is touched.
-mode_regenerate_stage() {
-  split_sections "$ROADMAP_PATH"
-  RETAINED_COUNT="${#RM_SECTION_HEADERS[@]}"
-
-  local run_order_idx=-1 i
-  for ((i = 0; i < ${#RM_SECTION_HEADERS[@]}; i++)); do
-    if body_has_orchestrate_fence "${RM_SECTION_BODIES[$i]}"; then
-      run_order_idx="$i"
-      break
-    fi
-  done
-
-  if [[ "$run_order_idx" -ge 0 ]]; then
-    local covered_ids_json new_coverage rendered_run
-    covered_ids_json="$(covered_ids_from_batches)"
-    RUNS_COUNT="$(jq -r '(.roadmap_batches // []) | length' "$STATE_PATH")"
-    new_coverage="$(render_coverage_appendix "$covered_ids_json")"
-    rendered_run=$'\n'"$(render_next)"
-    RM_SECTION_BODIES[$run_order_idx]="${rendered_run}${new_coverage}"
-  else
-    RUNS_COUNT=0
-  fi
-
-  PRUNED_COUNT=0
-
-  local new_content
-  new_content="$(assemble_stage_roadmap)"
-  new_content="$(cat -s <<<"$new_content")"
-
-  write_or_diff "$new_content"
-}
-
-mode_regenerate_classic() {
-  load_existing_sections
-
-  # RETAINED_COUNT -- the six authored-verbatim sections classic --regenerate never touches
-  # (Goal, Gate state, Checks, Settled decisions, Standing rules, Unfiled observations). There
-  # is no retention parser any more; ## Next and ## Open work are both rendered wholly from
-  # state (see render_next()/render_open_work()), so nothing is "retained" in the old sense.
-  RETAINED_COUNT=6
-
-  local covered_ids_json new_coverage new_open_work new_next new_content
-  covered_ids_json="$(covered_ids_from_batches)"
-  RUNS_COUNT="$(jq -r '(.roadmap_batches // []) | length' "$STATE_PATH")"
-
-  local open_work_trailer
-  open_work_trailer="$(open_work_trailer_from_notes)"
-  new_open_work=$'\n'"$(render_open_work)"
-  if [[ -n "$open_work_trailer" ]]; then
-    new_open_work="${new_open_work}"$'\n'"${open_work_trailer}"
-  fi
-  new_coverage="$(render_coverage_appendix "$covered_ids_json")"
-  new_next=$'\n'"$(render_next)""${new_coverage}"
-
-  PRUNED_COUNT=0
-
-  new_content="$(assemble_roadmap "$RM_PREAMBLE" "$RM_GOAL" "$RM_GATE" "$new_next" \
-    "$new_open_work" "$RM_CHECKS" "$RM_DECISIONS" "$RM_RULES" "$RM_OBS")"
-  new_content="$(cat -s <<<"$new_content")"
-
+  new_content="$(render_milestone_file)"
+  [[ -n "$new_content" ]] || { echo "ERROR: render produced no output" >&2; return 1; }
+  mkdir -p "$(dirname "$ROADMAP_PATH")"
   write_or_diff "$new_content"
 }
 
 # mode_prune -- DEPRECATED ALIAS for --regenerate. A file rendered wholly from live state
-# cannot accumulate terminal cruft (a batch or Open work entry naming only terminal members is
-# simply never rendered by render_next()/render_open_work() in the first place -- see
-# roadmap-format.md's Generation section), so there is nothing left for a separate prune pass to
+# cannot accumulate terminal cruft, so there is nothing left for a separate prune pass to
 # remove. Prints one named stderr deprecation note, then reassigns $MODE to "regenerate" and
 # dispatches to mode_regenerate -- every downstream message (the stderr marker's mode= field,
 # the OUTCOME: line, a refusal's named reason) is therefore indistinguishable from a direct
-# --regenerate invocation, which is the literal meaning of "dispatches to --regenerate". The
-# flag itself stays accepted and the stderr marker's pruned= field stays present (always 0), so
-# every existing caller keeps working unchanged.
+# --regenerate invocation. The flag itself stays accepted and the stderr marker's pruned= field
+# stays present (always 0), so every existing caller keeps working unchanged.
 mode_prune() {
   echo "NOTE: --prune is deprecated: a file rendered from live state accumulates no terminal cruft; running --regenerate instead." >&2
   MODE="regenerate"

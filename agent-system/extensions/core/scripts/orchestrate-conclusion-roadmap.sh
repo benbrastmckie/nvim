@@ -22,14 +22,17 @@
 #
 # Preflight classify, before --regenerate is ever called: this stage has no interactive surface
 # (orchestrate runs autonomously, no confirmation gate between phases), so it cannot obtain the
-# approval a write-mode call onto an `absent` or `unknown` ROADMAP.md would need.
-#   - classic/stage: --regenerate, then the scoped commit.
-#   - absent/unknown: --regenerate and the commit are skipped entirely; specs/ROADMAP.md is left
-#     untouched. This call site NEVER scaffolds and NEVER auto-writes. Degrades loudly at three
-#     surfaces instead: a named structured warning in this step's own output; a durable
-#     `roadmap_regenerate_blocked` event plus its own scoped commit of specs/events.jsonl; then a
-#     best-effort per-task-directory issue-record.sh loop (additive, never a substitute for the
-#     events write).
+# approval that creating the file, or migrating a hand-authored one, would need. The roadmap path
+# is the store's own (roadmap_context.output_path, default specs/ROADMAP.md), resolved through
+# lib/roadmap-entries-lib.sh.
+#   - generated: --regenerate, then the scoped commit of that path.
+#   - absent/classic/stage/unknown: --regenerate and the commit are skipped entirely; the file is
+#     left untouched. This call site NEVER scaffolds, NEVER migrates and NEVER auto-writes. A
+#     hand-authored file (classic, stage, unknown) needs migrate-roadmap-to-milestones.sh, and
+#     the degrade summary says so. Degrades loudly at three surfaces: a named structured warning
+#     in this step's own output; a durable `roadmap_regenerate_blocked` event plus its own scoped
+#     commit of specs/events.jsonl; then a best-effort per-task-directory issue-record.sh loop
+#     (additive, never a substitute for the events write).
 #
 # Usage:
 #   orchestrate-conclusion-roadmap.sh --session SID --state-file PATH [--dry-run]
@@ -42,7 +45,7 @@
 # task-lookup helper (scripts/lib/task-lookup-lib.sh), never an ad hoc glob.
 #
 # --dry-run: computes and prints the same outcome block, but performs no write and no commit --
-# `--regenerate --dry-run` under classic/stage, and no events-append.sh/issue-record.sh/
+# `--regenerate --dry-run` under generated, and no events-append.sh/issue-record.sh/
 # git-commit-scoped.sh call at all under either branch. The pending marker (below) is not
 # written under --dry-run either.
 #
@@ -57,7 +60,7 @@
 #
 # OUTCOME BLOCK: emitted to STDOUT (everything else in this script is stderr diagnostics) as one
 # named, parseable block so Move 4 can fold it into the report Move 5 Step 6 emits: the verdict,
-# the roadmap-integration.sh `OUTCOME:` line verbatim (classic/stage only -- the degrade branch
+# the roadmap-integration.sh `OUTCOME:` line verbatim (generated only -- the degrade branch
 # never invokes --regenerate, so no `OUTCOME:` line is ever printed on that branch), the commit
 # sha or "none", and the advisory lint's findings (every verdict -- the lint reads the authored
 # roadmap entries in specs/state.json, never the rendered file, so the degrade branch runs it
@@ -73,7 +76,7 @@
 # idempotent regenerate is a sub-second operation.
 #
 # Exit codes:
-#   0 - ran to completion (including the absent/unknown degrade branch)
+#   0 - ran to completion (including the degrade branch)
 #   2 - usage error (missing/invalid arguments, --state-file not found or not valid JSON)
 #
 # Sets no shell options a caller inherits (this script runs as its own process, invoked by
@@ -91,6 +94,8 @@ source "${SCRIPT_DIR}/lib/common.sh"
 source "${SCRIPT_DIR}/lib/task-lookup-lib.sh"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/lib/runtime-file-patterns.sh"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/roadmap-entries-lib.sh"
 
 usage() {
   cat <<'USAGE'
@@ -129,8 +134,11 @@ fi
 
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 SPECS_DIR="${PROJECT_ROOT}/specs"
-ROADMAP_PATH="${SPECS_DIR}/ROADMAP.md"
 STATE_JSON_PATH="${SPECS_DIR}/state.json"
+# The roadmap renders to the store's own output path; the same path is classified, regenerated
+# and committed below.
+ROADMAP_REL="$(roadmap_entries_output_path "$STATE_JSON_PATH")"
+ROADMAP_PATH="${PROJECT_ROOT}/${ROADMAP_REL}"
 ROADMAP_SCRIPT="${SCRIPT_DIR}/roadmap-integration.sh"
 LINT_SCRIPT="${SCRIPT_DIR}/lint/lint-roadmap-batch-proposals.sh"
 EVENTS_SCRIPT="${SCRIPT_DIR}/events-append.sh"
@@ -167,7 +175,7 @@ lint_output=""
 degrade_summary=""
 
 case "$verdict" in
-  classic|stage)
+  generated)
     regen_args=(--regenerate)
     [ "$dry_run" = "true" ] && regen_args+=(--dry-run)
     echo "[orchestrate-conclusion-roadmap] running: roadmap-integration.sh ${regen_args[*]}" >&2
@@ -189,27 +197,32 @@ case "$verdict" in
           commit_sha="$(git -C "$PROJECT_ROOT" rev-parse HEAD 2>/dev/null || echo none)"
           ;;
         1)
-          # Documented, routine "nothing to commit" outcome (ROADMAP.md content unchanged) --
+          # Documented, routine "nothing to commit" outcome (roadmap content unchanged) --
           # not an error.
           commit_sha="none"
           ;;
         *)
-          echo "WARNING: orchestrate-conclusion-roadmap.sh: git-commit-scoped.sh exited ${commit_rc} for specs/ROADMAP.md; treating as no commit" >&2
+          echo "WARNING: orchestrate-conclusion-roadmap.sh: git-commit-scoped.sh exited ${commit_rc} for ${ROADMAP_REL}; treating as no commit" >&2
           commit_sha="none"
           ;;
       esac
     fi
 
     ;;
-  absent|unknown)
-    degrade_summary="roadmap regenerate blocked: specs/ROADMAP.md classifies '${verdict}', no approval surface at conclusion -- the next interactive /roadmap run's own Stage 1 preflight gate resolves it."
+  absent|classic|stage|unknown)
+    if [ "$verdict" = "absent" ]; then
+      degrade_remedy="the next interactive /roadmap run creates it"
+    else
+      degrade_remedy="it is a hand-authored file; run migrate-roadmap-to-milestones.sh (--dry-run first), or the next interactive /roadmap run offers that migration"
+    fi
+    degrade_summary="roadmap regenerate blocked: ${ROADMAP_REL} classifies '${verdict}', no approval surface at conclusion -- ${degrade_remedy}."
     echo "WARNING: [orchestrate-conclusion-roadmap] ${degrade_summary}" >&2
 
     if [ "$dry_run" != "true" ]; then
       bash "$EVENTS_SCRIPT" \
         --event-type roadmap_regenerate_blocked --category blocker --session "$session_id" \
-        --message "roadmap regenerate blocked: specs/ROADMAP.md classifies '${verdict}', no approval surface at conclusion" \
-        --detail-json "$(jq -c -n --arg verdict "$verdict" --arg path "specs/ROADMAP.md" \
+        --message "roadmap regenerate blocked: ${ROADMAP_REL} classifies '${verdict}', no approval surface at conclusion" \
+        --detail-json "$(jq -c -n --arg verdict "$verdict" --arg path "$ROADMAP_REL" \
           '{verdict: $verdict, path: $path}')" >/dev/null
 
       bash "$COMMIT_SCRIPT" --session "$session_id" \
@@ -219,7 +232,7 @@ case "$verdict" in
         bash "$ISSUE_SCRIPT" --task-dir "$_ocr_task_dir" \
           --kind issue --class "roadmap regenerate blocked, no approval surface" --severity costly \
           --phase conclusion --resolution open \
-          --what-happened "specs/ROADMAP.md classifies '${verdict}' at /orchestrate's conclusion stage; --regenerate was skipped (no interactive approval surface here). The next interactive /roadmap run's own preflight gate resolves it." \
+          --what-happened "${ROADMAP_REL} classifies '${verdict}' at /orchestrate's conclusion stage; --regenerate was skipped (no interactive approval surface here): ${degrade_remedy}." \
           >/dev/null 2>&1 || true
       done
       unset _ocr_task_dir
@@ -257,11 +270,11 @@ fi
 echo "=== orchestrate-conclusion-roadmap: outcome ==="
 echo "verdict: ${verdict}"
 case "$verdict" in
-  classic|stage)
+  generated)
     echo "${outcome_line}"
     echo "commit: ${commit_sha}"
     ;;
-  absent|unknown)
+  absent|classic|stage|unknown)
     echo "regenerate: skipped (${degrade_summary})"
     echo "commit: none"
     if [ "$dry_run" = "true" ]; then

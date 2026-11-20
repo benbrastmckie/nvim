@@ -1,0 +1,76 @@
+{
+  "phase": 6,
+  "phase_name": "Remove the Hand-Authored Render Paths",
+  "started_at": "2026-11-20T10:58:20Z",
+  "last_updated": "2026-11-20T10:58:20Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "In `roadmap-integration.sh` delete `load_existing_sections`, `extract_section`, `extract_preamble`, `assemble_roadmap`, `split_sections`, `assemble_stage_roadma",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/roadmap-integration.sh",
+        "agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh",
+        "agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh",
+        "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "`--regenerate` overwrites only a `generated` file, or writes onto `absent` when `roadmap_milestones` is non-empty. On `classic`, `stage` or `unknown` it refuses",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "In `roadmap-preflight-lib.sh` make `roadmap_preflight_scaffold` write a sentinel-only generated file and remove the \"authored by hand\" stub text. Keep `CLASSIC_",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "In `orchestrate-conclusion-roadmap.sh` change both `classic|stage` arms to `generated`, commit the accessor-resolved output path, and reword the degrade summary",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Rewrite `test-roadmap-generation.sh`: token derivation keeps its cases with new framing; the retention, layout-refusal, both stage-layout and scaffold groups ar",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Rewrite `test-orchestrate-conclusion-roadmap.sh` fixtures from the classic stale file to a generated stale file plus one refused-classic degrade case.",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Run `test-generate-task-order.sh` and `test-migrate-roadmap-next-to-state.sh`; neither should need an edit. If the second fails because the scaffold changed, ad",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "6.1",
+      "description": "Renderer deletions beyond the listed functions",
+      "type": "altered",
+      "reason": "render_open_work, topic_title and the --max-tasks flag were removed too: with the coverage appendix and the Open work section gone nothing called them, and no script or command passed --max-tasks (two context documents mention it and are corrected in Phase 8). A store with no roadmap_milestones key renders the same whole file (empty table note plus the open-task list) instead of a second code path.",
+      "annotation": "*(deviation: altered \u2014 render_open_work, topic_title and --max-tasks removed as dead; one render path for every store shape)*"
+    },
+    {
+      "task_id": "6.3",
+      "description": "Scaffold scope",
+      "type": "altered",
+      "reason": "roadmap_preflight_scaffold now writes only onto an absent path and refuses an unrecognised file as it refuses classic and stage ones, naming the migration; the migration retains an unrecognised file whole, so the scaffold's salvage-into-a-section repair has no remaining job.",
+      "annotation": "*(deviation: altered \u2014 scaffold is absent-only; an unrecognised file is refused and routed to the migration)*"
+    }
+  ],
+  "handoff_count": 0,
+  "verification_notes": "- Verified from the source store (CORE_TEST_SUBJECT_MODE=source-store run-all.sh --only): the resolver's seven suites for this phase's five paths plus test-generate-task-order.sh (unedited), test-roadmap-entries-lib.sh and test-lint-roadmap-batch-proposals.sh: 10 passed, 0 failed. test-roadmap-generation.sh is rewritten against the sentinel model (79 cases); test-orchestrate-conclusion-roadmap.sh has 26 cases including a refused-classic degrade (Case F) and the resolved output path (Case G). test-migrate-roadmap-next-to-state.sh needed no edit.\n- Scope hypothesis confirmed with both searches: the renderer, the preflight lib, the conclusion script and the two suites are the complete set pinning the old paths; the two migration scripts and their suites read a classic file only as input.\n- grep -c 'extract_section|assemble_stage_roadmap|load_existing_sections' on the renderer prints 0. The renderer is 542 lines (was 1064).\n- The conclusion script's degrade arm now covers absent, classic, stage and unknown; only generated regenerates and commits. It commits the accessor-resolved output path.\n- For Phase 7/8: --max-tasks is gone from the renderer (docs still mention it in roadmap-update.md and roadmap-format.md); OUTCOME lines carry only layout=generated; the scaffold is absent-only and writes the sentinel line alone."
+}
