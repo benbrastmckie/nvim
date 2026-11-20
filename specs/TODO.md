@@ -260,6 +260,7 @@ SCOPE DECLARATION (2026-11-19). This record's file_scope is deliberately EMPTY, 
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 658
+- **Research**: [660_init_specs_ignores_specs_by_default/reports/01_init-specs-ignores-by-default.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit the mirrored path. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**; both are permitted in this description.
 
