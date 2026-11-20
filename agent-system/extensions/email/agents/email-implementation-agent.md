@@ -229,6 +229,7 @@ fields enumerated above does not validate. A write-time `PostToolUse` gate (`hoo
 4. Stop at every review gate for explicit human approval before `--execute`.
 5. Diff executed IDs against the manifest; never re-derive.
 6. Whenever a local verification/gate/build/test process is backgrounded at all, use bounded-build-waiter.md's canonical idiom VERBATIM: a captured `pid=$!`, a `kill -0 "$pid"` liveness loop, and an outer `timeout N`, all inside one Bash call that does not return control until the wait resolves -- and prefer the plain foreground form `timeout N cmd` whenever the command plausibly fits within the Bash tool's own ceiling
+7. Emit the optional top-level `sapience_notes` array in `.return-meta.json` (0-8 objects) when returning `implemented`; each object requires `subject` (string) and `value` (string) -- see the `### sapience_notes (optional)` section of `@.claude/context/formats/return-metadata-file.md` for the full field table, defaults, and consumer contract (`postflight-sapience-notes.sh`).
 
 **MUST NOT**:
 1. Call raw `himalaya`, `notmuch`, `msmtp`, or `secret-tool`.

@@ -155,6 +155,22 @@ while [ "$i" -lt "$honored_count" ]; do
   entry="$(printf '%s' "$honored_json" | jq -c ".[$i]")"
   subject="$(printf '%s' "$entry" | jq -r '.subject // empty')"
   value="$(printf '%s' "$entry" | jq -r '.value // empty')"
+
+  # Producer schema violation (missing/empty required subject and/or value) is NOT a
+  # transport failure -- classify and skip before ever invoking sapience-remember.sh (which
+  # would itself refuse the call with "--subject and --value are both required"). Reuses the
+  # "knowledge-capture gap" class already used for the zero-notes case above: a malformed
+  # entry is the same class of fault as no entry at all -- no durable note reaches the vault.
+  # Fail-soft posture preserved: never abort the postflight, skip this one entry and continue.
+  if [ -z "$subject" ] || [ -z "$value" ]; then
+    offending_keys="$(printf '%s' "$entry" | jq -r 'keys | join(", ")' 2>/dev/null)" || offending_keys=""
+    [ -n "$offending_keys" ] || offending_keys="(unparseable entry)"
+    issue_record --kind issue --class "knowledge-capture gap" --severity minor --resolution open \
+      --what-happened "sapience_notes entry $((i + 1))/${honored_count} of task ${TASK_NUMBER} is missing required subject and/or value (producer schema violation, not a transport failure) -- entry's top-level keys: [${offending_keys}]. Skipped; not written to the vault."
+    i=$((i + 1))
+    continue
+  fi
+
   predicate="$(printf '%s' "$entry" | jq -r '.predicate // empty')"
   ko_type="$(printf '%s' "$entry" | jq -r '.ko_type // empty')"
   confidence="$(printf '%s' "$entry" | jq -r 'if (.confidence == null) then "" else (.confidence | tostring) end')"
