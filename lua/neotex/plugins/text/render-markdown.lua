@@ -4,11 +4,10 @@ return {
   ft = { "markdown" },
   opts = {
     file_types = { "markdown" },
-    render = {
-      max_file_size = 10.0,
-      debounce = 100,
-      render_modes = { 'n', 'c' },
-    },
+    -- Top-level options. The `render` table accepts only `diff`.
+    max_file_size = 10.0,
+    debounce = 100,
+    render_modes = { 'n', 'c' },
     anti_conceal = {
       enabled = true,
       above = 0,
@@ -45,8 +44,11 @@ return {
     code = {
       enabled = true,
       sign = true,
-      style = 'normal',
+      -- `style` is a preset: 'normal' expands to `language = false`, cancelling the
+      -- language row. 'full' expands to nothing, leaving the keys below authoritative.
+      style = 'full',
       position = 'left',
+      language = true,
       language_pad = 0,
       language_name = true,
       disable_background = { 'diff' },
@@ -76,7 +78,12 @@ return {
     },
     checkbox = {
       enabled = true,
-      position = 'inline',
+      -- `bullet = false` conceals the list marker so the icon stands in for it.
+      -- `right_pad = 0` aligns checkbox text with plain bullet text, since the icons
+      -- below already carry a trailing space.
+      bullet = false,
+      left_pad = 0,
+      right_pad = 0,
       unchecked = {
         icon = '󰄱 ',
         highlight = 'RenderMarkdownUnchecked',
@@ -100,7 +107,9 @@ return {
     pipe_table = {
       enabled = true,
       preset = 'none',
-      style = 'normal',
+      -- `style` is a preset: 'normal' expands to `border_enabled = false`, leaving the
+      -- corner glyphs unused. 'full' expands to nothing, so the keys below govern.
+      style = 'full',
       cell = 'padded',
       padding = 1,
       min_width = 0,
@@ -110,10 +119,11 @@ return {
         '└', '┴', '┘',
         '│', '─',
       },
+      border_enabled = true,
+      border_virtual = false,
       alignment_indicator = '━',
       head = 'RenderMarkdownTableHead',
       row = 'RenderMarkdownTableRow',
-      filler = 'RenderMarkdownTableFill',
     },
     callout = {
       note = { raw = '[!NOTE]', rendered = '󰋽 Note', highlight = 'RenderMarkdownInfo' },
@@ -166,6 +176,17 @@ return {
     },
     latex = {
       enabled = false,
+    },
+    document = {
+      enabled = true,
+      conceal = {
+        -- Generated markdown (specs/ROADMAP.md and friends) carries explicit HTML
+        -- anchor targets so in-page links survive heading renames. They are link
+        -- plumbing, not content, so hide the whole line rather than leaving a blank
+        -- one behind. anti_conceal reveals the line again when the cursor is on it.
+        char_patterns = {},
+        line_patterns = { '<a id="[^"]*"></a>' },
+      },
     },
     html = {
       enabled = true,
