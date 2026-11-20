@@ -1,0 +1,35 @@
+# Milestone overlay for the sf1-engine acceptance copy. Titles and gate text come from
+# integration/design.md section 7; batch assignment is a judgment of the kind roadmap-agent makes.
+(.roadmap_milestones[0].batches) as $b
+| .roadmap_milestones = [
+  { id: "M0", title: "Ground truth and decisions",
+    aim: "Probe the pinned runtime and write down the design choices and limits M1 is built on.",
+    gate: "Every probe has a result; the choices and limits are written down.",
+    progress: { status: "closed", closed: "2026-11-15" },
+    review: { state: "none" },
+    batches: [] },
+  { id: "M1", title: "The task workflow on OpenCode",
+    aim: "The smallest port that runs a task end to end inside SF-1.",
+    gate: "A task completes end to end on OpenCode with the same `specs/` state, artifact paths and commit messages as under Claude Code; a task started under one harness finishes under the other; the flag off is byte-identical; the core is inside every budget.",
+    progress: { status: "active", note: "Local prerequisites open; the host plugin half is held" },
+    review: { state: "none" },
+    batches: [$b[0], $b[1], $b[2], $b[3]] },
+  { id: "M2", title: "The extension system",
+    aim: "A loader that loads, unloads and syncs extensions into both deploy trees from one ledger.",
+    gate: "Load, unload and sync round-trip both trees with no orphan files; a failed load leaves both trees unchanged; with no extensions loaded, behaviour equals M1.",
+    progress: { status: "planned" },
+    review: { state: "none" },
+    batches: [$b[4]] },
+  { id: "M3", title: "The extensions in use",
+    aim: "Port the six extensions in use; each passes the budgets and runs one task of its type on both harnesses.",
+    gate: "The six extensions load together within budget on both trees with no command or keyword collision; one task of each type completes on OpenCode.",
+    progress: { status: "planned" },
+    review: { state: "none" },
+    batches: [$b[5], $b[6]] },
+  { id: "M4", title: "Fit with SF-1's memory",
+    aim: "Small joins that stop the task layer and SF-1's memory contradicting each other; needs only M1.",
+    gate: "An autonomous task run creates no knowledge objects on its own; `STATE.md` and `state.json` never disagree about a task; no keypress gate stalls an unattended run.",
+    progress: { status: "planned" },
+    review: { state: "none" },
+    batches: [] }
+]

@@ -635,35 +635,35 @@ and add any hit that describes the old layout to this phase's edits, recording t
 
 ---
 
-### Phase 9: Redeploy, Migrate This Repository, and Acceptance Render [NOT STARTED]
+### Phase 9: Redeploy, Migrate This Repository, and Acceptance Render [COMPLETED]
 
 **Goal**: The deployed tree carries the change, this repository's roadmap renders entirely from
 state, and the sf1-engine acceptance render exists with a recorded judgment.
 
 **Tasks**:
-- [ ] Redeploy: `timeout 540 bash .claude/scripts/deploy-headless.sh` with the Bash tool timeout
-  raised to 600000 ms. Confirm `index-entries.json` is reconciled afterwards.
-- [ ] Run `bash .claude/scripts/migrate-roadmap-to-milestones.sh --dry-run --retained specs/archive/roadmap-retained-prose.md`
+- [x] Redeploy: `timeout 540 bash .claude/scripts/deploy-headless.sh` with the Bash tool timeout
+  raised to 600000 ms. Confirm `index-entries.json` is reconciled afterwards. *(completed)*
+- [x] Run `bash .claude/scripts/migrate-roadmap-to-milestones.sh --dry-run --retained specs/archive/roadmap-retained-prose.md`
   and read the accounting: batch count before and after, items placed in state, items retained,
   every WARN. If the retained-prose target already exists, stop and choose a new name rather than
-  overwrite.
-- [ ] Re-run the dry run immediately before the real run, then run it for real with the same
+  overwrite. *(completed)*
+- [x] Re-run the dry run immediately before the real run, then run it for real with the same
   `--retained` path and this session id. The losslessness gate must pass; a failure is a blocker,
-  not something to force.
-- [ ] Confirm `specs/ROADMAP.md` begins with the sentinel, a second `--regenerate --dry-run`
+  not something to force. *(completed)*
+- [x] Confirm `specs/ROADMAP.md` begins with the sentinel, a second `--regenerate --dry-run`
   reports no content change, and `bash .claude/scripts/validate-state.sh specs/state.json` shows
-  no flat-key WARN.
-- [ ] Acceptance render on a copy (Decision 9): under this task's `records/` directory build a
+  no flat-key WARN. *(completed)*
+- [x] Acceptance render on a copy (Decision 9): under this task's `records/` directory build a
   migrated copy of sf1-engine's store named `sf1-acceptance-store.json`, with milestones M0 to M4
   whose titles and gate text come from `integration/design.md` section 7, M0 closed, and that
   store's existing batches assigned beneath them. Render it with `--state` and `--roadmap`
-  pointing into `records/`. Read sf1-engine only; write nothing there.
-- [ ] Record the judgment in `records/sf1-acceptance-judgment.md`: size against the live file,
+  pointing into `records/`. Read sf1-engine only; write nothing there. *(completed)*
+- [x] Record the judgment in `records/sf1-acceptance-judgment.md`: size against the live file,
   whether status, progress and review state for every milestone are visible in the first screen,
   whether any milestone reads empty while holding real work, and what a reviewer still cannot
-  see. A negative judgment is a valid result and is reported as such.
-- [ ] Run the five named suites plus the two reached ones from the deployed tree and record the
-  result per suite.
+  see. A negative judgment is a valid result and is reported as such. *(completed)*
+- [x] Run the five named suites plus the two reached ones from the deployed tree and record the
+  result per suite. *(completed)*
 
 **Timing**: 2 hours
 
@@ -701,18 +701,18 @@ judgment the implementer may revise with a stated reason.
 
 ## Testing & Validation
 
-- [ ] The five named suites pass: `test-roadmap-generation.sh`, `test-validate-state.sh`,
+- [x] The five named suites pass: `test-roadmap-generation.sh`, `test-validate-state.sh`,
   `test-generate-task-order.sh`, `test-orchestrate-suggest-next-batch.sh`,
-  `test-migrate-roadmap-next-to-state.sh`.
-- [ ] The two reached suites pass: `test-lint-roadmap-batch-proposals.sh`,
-  `test-orchestrate-conclusion-roadmap.sh`.
-- [ ] The two new suites pass: `test-roadmap-entries-lib.sh`,
-  `test-migrate-roadmap-to-milestones.sh`.
-- [ ] The schema/validator drift test passes in both directions.
-- [ ] The migration's losslessness gate passes on this repository's real store.
-- [ ] A second regenerate is byte-identical.
-- [ ] Doc lint and task-reference lint pass over the source store.
-- [ ] The complete gate set passes at the orchestration close.
+  `test-migrate-roadmap-next-to-state.sh`. *(completed)*
+- [x] The two reached suites pass: `test-lint-roadmap-batch-proposals.sh`,
+  `test-orchestrate-conclusion-roadmap.sh`. *(completed)*
+- [x] The two new suites pass: `test-roadmap-entries-lib.sh`,
+  `test-migrate-roadmap-to-milestones.sh`. *(completed)*
+- [x] The schema/validator drift test passes in both directions. *(completed)*
+- [x] The migration's losslessness gate passes on this repository's real store. *(completed)*
+- [x] A second regenerate is byte-identical. *(completed)*
+- [x] Doc lint and task-reference lint pass over the source store. *(completed)*
+- [x] The complete gate set passes at the orchestration close. *(completed)*
 
 ## Artifacts & Outputs
 

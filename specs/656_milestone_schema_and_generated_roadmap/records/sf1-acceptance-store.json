@@ -1,0 +1,1408 @@
+{
+  "next_project_number": 41,
+  "active_projects": [
+    {
+      "project_number": 40,
+      "project_name": "comparison_instrument_paired_record",
+      "status": "not_started",
+      "task_type": "general",
+      "description": "Build the comparison instrument of vision/parity.md section 3.2, so the one-task gate (issue #15) is compared by a script and not by hand: a script that takes two completed runs of the same task, one under sf1 on OpenCode and one under Claude Code, and writes one paired record with a structural diff of status transitions, artifact paths and validation results, commit subjects and the final specs/state.json, plus wall time from one timing method for both arms; every difference classified expected (matches a translator row declared lossy or a documented harness difference) or unexplained, with any unexplained difference failing; record format is the run record of integration/extension-system.md section 10.4 so the first paired row is also the first row of routine comparison runs; each record states the SF-1 arm run profile and whether the Claude Code worker was on. Also get the Claude Code arm of harness/fixes-1116/remeasure/ running on Linux (it uses a macOS sandbox profile), so the gate uses the timing method the goal 11 sealed test will use. Negative control: a fixture pair with one injected difference must be reported unexplained. Buildable and testable now on fixture runs; its first real run is the one-task gate, which should depend on this. Done when the script passes on a fixture pair, its control bites, and the Linux Claude Code arm completes one task",
+      "topic": "harness-integration",
+      "created": "2026-11-20T08:27:05Z",
+      "last_updated": "2026-11-20T08:27:05Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "comparison_instrument_paired_record",
+          "project_number": null,
+          "title": "Build the comparison instrument of vision/parity.md section 3.2, so the one-task gate (issue #15) is compared by a script and not by hand: a script that takes two completed runs of the same task, one under sf1 on OpenCode and one under Claude Code, and writes one paired record with a structural diff of status transitions, artifact paths and validation results, commit subjects and the final specs/state.json, plus wall time from one timing method for both arms; every difference classified expected (matches a translator row declared lossy or a documented harness difference) or unexplained, with any unexplained difference failing; record format is the run record of integration/extension-system.md section 10.4 so the first paired row is also the first row of routine comparison runs; each record states the SF-1 arm run profile and whether the Claude Code worker was on. Also get the Claude Code arm of harness/fixes-1116/remeasure/ running on Linux (it uses a macOS sandbox profile), so the gate uses the timing method the goal 11 sealed test will use. Negative control: a fixture pair with one injected difference must be reported unexplained. Buildable and testable now on fixture runs; its first real run is the one-task gate, which should depend on this. Done when the script passes on a fixture pair, its control bites, and the Linux Claude Code arm completes one task"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 2,
+          "scope-blind": 17
+        },
+        "verdicts_detail": [],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 17
+      },
+      "roadmap_annotation": "vision/parity.md 3.2. READY NOW: no dependencies, territory local; the M1 gate depends on it. No issue.",
+      "dependencies": [
+        38
+      ]
+    },
+    {
+      "project_number": 39,
+      "project_name": "inverse_translator_round_trip_full_inventory",
+      "status": "not_started",
+      "task_type": "typescript",
+      "description": "Add the OpenCode-to-Claude inverse translator and the round-trip and full-inventory checks, T3 and T4 of vision/parity.md section 2.2: an inverse pass beside sf1-v2/opencode-plugin/src/translator.ts for every mapped row (agent model, tools to permissions, the four tool-name rewrites, the deploy-root literal, commands, skills), with each lossy row declared by name (the two deny rules the forward pass adds on non-root agents; a tier word resolved to a concrete model id); a round-trip check that translate-then-invert reproduces the source byte for byte except for the declared-lossy rows, with a negative control (a rule edited to drop a field must break the round trip); then extend the corpus of the census, determinism and round-trip checks from extensions/core to every extension in integration/port-inventory.md (source under integration/claude-system), reporting unmapped constructs as a count that ratchets down. Keeps design choice A2: the Claude format stays the source; the inverse exists to prove the forward pass and to import OpenCode-authored files. Reopen the neutral-format question only if the census shows constructs the rule table cannot express in either direction. Depends on the T1/T2/T5 checks task for the census and the diagnostics registration. Done when the round trip passes over the core with its control, and the full-inventory run is recorded in the baseline with its unmapped count",
+      "topic": "harness-integration",
+      "created": "2026-11-20T08:27:04Z",
+      "last_updated": "2026-11-20T08:27:04Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "inverse_translator_round_trip_full_inventory",
+          "project_number": null,
+          "title": "Add the OpenCode-to-Claude inverse translator and the round-trip and full-inventory checks, T3 and T4 of vision/parity.md section 2.2: an inverse pass beside sf1-v2/opencode-plugin/src/translator.ts for every mapped row (agent model, tools to permissions, the four tool-name rewrites, the deploy-root literal, commands, skills), with each lossy row declared by name (the two deny rules the forward pass adds on non-root agents; a tier word resolved to a concrete model id); a round-trip check that translate-then-invert reproduces the source byte for byte except for the declared-lossy rows, with a negative control (a rule edited to drop a field must break the round trip); then extend the corpus of the census, determinism and round-trip checks from extensions/core to every extension in integration/port-inventory.md (source under integration/claude-system), reporting unmapped constructs as a count that ratchets down. Keeps design choice A2: the Claude format stays the source; the inverse exists to prove the forward pass and to import OpenCode-authored files. Reopen the neutral-format question only if the census shows constructs the rule table cannot express in either direction. Depends on the T1/T2/T5 checks task for the census and the diagnostics registration. Done when the round trip passes over the core with its control, and the full-inventory run is recorded in the baseline with its unmapped count"
+        },
+        "verdict_counts": {
+          "duplicate-of-open": 1,
+          "scope-blind": 16
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 38,
+            "project_name": "translator_trust_checks_census_determinism_perms",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.4065934065934066
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 16
+      },
+      "dependencies": [
+        38
+      ],
+      "roadmap_annotation": "vision/parity.md 2.2 (T3/T4): the inverse pass and full inventory, one edge behind the trust checks. No issue."
+    },
+    {
+      "project_number": 38,
+      "project_name": "translator_trust_checks_census_determinism_perms",
+      "status": "implementing",
+      "task_type": "typescript",
+      "description": "Add translator trust checks T1, T2 and T5 of vision/parity.md section 2.2, registered in sf1-v2/diagnostics and run from bash sf1-v2/diagnose.sh: (T1, total or loud) a census of every frontmatter key, tool name and deploy-root path form in the source files against the translator rule table, failing on any construct no named rule maps, and making sf1-v2/opencode-plugin/src/translator.ts throw on an unknown frontmatter key or tool name instead of passing it through; (T2, deterministic) translate the same source twice into scratch roots and compare byte for byte, and compare against a committed digest per extension; (T5, permission equality) for each agent, derive the allowed and denied tool set from the .claude tree and from the .opencode tree and require them equal. Each check gets a negative control that bites where it claims and nowhere else (an unknown key must fail T1; a dropped deny must show in T5). Corpus is extensions/core. Zero cost, no network, nothing needed from the SF-1 side. Done when the three checks and their controls pass from diagnose.sh and are recorded in the baseline",
+      "topic": "harness-integration",
+      "created": "2026-11-20T08:27:02Z",
+      "last_updated": "2026-11-20T10:46:30Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "translator_trust_checks_census_determinism_perms",
+          "project_number": null,
+          "title": "Add translator trust checks T1, T2 and T5 of vision/parity.md section 2.2, registered in sf1-v2/diagnostics and run from bash sf1-v2/diagnose.sh: (T1, total or loud) a census of every frontmatter key, tool name and deploy-root path form in the source files against the translator rule table, failing on any construct no named rule maps, and making sf1-v2/opencode-plugin/src/translator.ts throw on an unknown frontmatter key or tool name instead of passing it through; (T2, deterministic) translate the same source twice into scratch roots and compare byte for byte, and compare against a committed digest per extension; (T5, permission equality) for each agent, derive the allowed and denied tool set from the .claude tree and from the .opencode tree and require them equal. Each check gets a negative control that bites where it claims and nowhere else (an unknown key must fail T1; a dropped deny must show in T5). Corpus is extensions/core. Zero cost, no network, nothing needed from the SF-1 side. Done when the three checks and their controls pass from diagnose.sh and are recorded in the baseline"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 2,
+          "scope-blind": 16
+        },
+        "verdicts_detail": [],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 16
+      },
+      "dependencies": [
+        36
+      ],
+      "roadmap_annotation": "vision/parity.md 2.2 (T1/T2/T5). Edged behind the D2 limit: shared diagnostics baseline and registry. No issue.",
+      "session_id": "sess_1795163842_175083",
+      "artifacts": [
+        {
+          "path": "specs/038_translator_trust_checks_census_determinism_perms/reports/01_translator-trust-checks-design.md",
+          "type": "report",
+          "summary": "Design research for T1 (census/throw-on-unknown), T2 (deterministic double-translate-and-diff), and T5 (permission-set equality) over the 13-file extensions/core corpus, grounded in the existing translator.ts/diagnostics source and two concrete live-corpus gaps found (the dropped agent 'name' frontmatter key; todo.md's unmapped TaskCreate/TaskUpdate tool names)."
+        },
+        {
+          "path": "specs/038_translator_trust_checks_census_determinism_perms/plans/01_translator-trust-checks.md",
+          "type": "plan",
+          "summary": "Six-phase plan: rule table, throw-on-unknown, T1 census + 2 controls, T2 determinism + digest + control, T5 permission equality + control + probe, then baseline sealing and tier documentation."
+        }
+      ],
+      "next_artifact_number": 2,
+      "file_scope": [
+        "sf1-v2/diagnostics/README.md",
+        "sf1-v2/diagnostics/baseline.json",
+        "sf1-v2/diagnostics/baseline/README.md",
+        "sf1-v2/diagnostics/baseline/t2-determinism.json",
+        "sf1-v2/diagnostics/checks/t1-census.ts",
+        "sf1-v2/diagnostics/checks/t2-determinism.ts",
+        "sf1-v2/diagnostics/checks/t5-perms.ts",
+        "sf1-v2/diagnostics/history.jsonl",
+        "sf1-v2/diagnostics/run.ts",
+        "sf1-v2/diagnostics/t5-perms-probe.ts",
+        "sf1-v2/negctrl-diagnostics-1118.sh",
+        "sf1-v2/opencode-plugin/src/translator-rules.ts",
+        "sf1-v2/opencode-plugin/src/translator.ts",
+        "sf1-v2/opencode-plugin/test/translator1119.test.ts",
+        "sf1-v2/opencode-plugin/test/translatorrules1120.test.ts"
+      ]
+    },
+    {
+      "project_number": 37,
+      "project_name": "wire_dispatch_memory_call_site",
+      "status": "hold",
+      "task_type": "general",
+      "description": "Wire the dispatch memory script into the dispatch builder: in extensions/core/scripts/orchestrate-build-dispatch.sh Stage 3.5, replace the bare memory_context=\"\" with the call-site block published in the body of PR #38 (issue #22), which calls the script named by SF1_DISPATCH_MEMORY_SCRIPT with the description, task type and (research phase only) focus prompt, keeps exit 1 silent, records exit 2 through issue-record.sh as infrastructure/transport unavailable with resolution worked_around, and leaves the block empty on any non-zero exit. With the variable unset, which is every Claude Code session and every SF-1 session with the task flag off, the builder's output is byte-identical to today's; prove that with a negative control, and add a test that runs the block against a stub script for each of the three exit codes. EXTERNAL PREREQUISITE, do not dispatch before it: PR #38 must first fix its review finding A, because the exit-2 stderr line currently names the store's absolute path and this block is what would write that line into a committed issues.jsonl (issue #27); confirm the fixed line carries no home path before wiring it, and take the block from the PR as merged rather than as first posted. Reviewed 2026-11-19: the block mirrors the upstream sapience-retrieve.sh call site line for line and every variable it reads exists in the builder. Territory is extensions/core, so verify-touched.sh at each phase close and the three-root close battery once per invocation both apply. Soft dependency of the M1 gate under Q1: the gate may run with an empty memory block before this lands and repeats the comparison after, so no edge from the gate to this task",
+      "topic": "harness-integration",
+      "created": "2026-11-19T19:56:03Z",
+      "last_updated": "2026-11-19T19:56:04Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "wire_dispatch_memory_call_site",
+          "project_number": null,
+          "title": "Wire the dispatch memory script into the dispatch builder: in extensions/core/scripts/orchestrate-build-dispatch.sh Stage 3.5, replace the bare memory_context=\"\" with the call-site block published in the body of PR #38 (issue #22), which calls the script named by SF1_DISPATCH_MEMORY_SCRIPT with the description, task type and (research phase only) focus prompt, keeps exit 1 silent, records exit 2 through issue-record.sh as infrastructure/transport unavailable with resolution worked_around, and leaves the block empty on any non-zero exit. With the variable unset, which is every Claude Code session and every SF-1 session with the task flag off, the builder's output is byte-identical to today's; prove that with a negative control, and add a test that runs the block against a stub script for each of the three exit codes. EXTERNAL PREREQUISITE, do not dispatch before it: PR #38 must first fix its review finding A, because the exit-2 stderr line currently names the store's absolute path and this block is what would write that line into a committed issues.jsonl (issue #27); confirm the fixed line carries no home path before wiring it, and take the block from the PR as merged rather than as first posted. Reviewed 2026-11-19: the block mirrors the upstream sapience-retrieve.sh call site line for line and every variable it reads exists in the builder. Territory is extensions/core, so verify-touched.sh at each phase close and the three-root close battery once per invocation both apply. Soft dependency of the M1 gate under Q1: the gate may run with an empty memory block before this lands and repeats the comparison after, so no edge from the gate to this task"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 1,
+          "scope-blind": 15
+        },
+        "verdicts_detail": [],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 15
+      },
+      "session_id": "sess_1795118163_56a012",
+      "hold_reason": "EXT-BLOCKED on PR #38 review finding A (absolute store path in the exit-2 stderr line); lift once the fix is merged",
+      "held_at": "2026-11-19",
+      "prior_status": "not_started",
+      "dependencies": [
+        20
+      ],
+      "roadmap_annotation": "EXT-BLOCKED on PR #38 review finding A: lift once the fixed block is merged; now edged behind the script task",
+      "roadmap_ext_blocked": true
+    },
+    {
+      "project_number": 36,
+      "project_name": "d2_hotpath_one_sided_median_gate",
+      "status": "completed",
+      "task_type": "typescript",
+      "description": "Make the D2/d2-hotpath check a meaningful, deterministic regression gate before the M1 gate reads it: replace the two-sided band with a one-sided upper limit (lower is better, so a faster run never fails) plus a small positive floor whose only job is to catch the plugin not running; gate on the median of several invocations rather than one; derive the limit by a stated, repeatable method measured on a quiet machine; keep the ratchet rule of the diagnostics README (a change may not raise the limit; raising it is its own reviewed commit); and give the upper limit a negative control that bites just above it, alongside the existing diag-pairedbar control, which forces the value 100 ms past the band and so proves the gate is wired but not that it is sensitive. Measured 2026-11-19 over 83 real history entries: the band is 0.146 to 0.674 ms, cut as mean +/- 3 SD around 0.41; runs before 18:00Z had mean 0.436, SD 0.060; runs from 18:00Z had mean 0.268, SD 0.127, clustered at 0.17 to 0.25, with the lowest 0.024 ms above the lower edge. So the gate can fail on an improvement, would pass a doubling of today's typical overhead, and re-deriving the band by its own method now gives a negative lower edge. Host load was about 5 throughout, the likely but unconfirmed cause of the shift; research confirms or rules that out first, since it decides how many invocations the median needs. Edits sf1-v2/diagnostics/checks/d2-hotpath.ts, sf1-v2/diagnostics/baseline/ttft-enginebase.json, sf1-v2/diagnostics/baseline.json, both diagnostics READMEs and negctrl-diagnostics-1118.sh; touches nothing under extensions/core. Done when: bash sf1-v2/diagnose.sh passes on repeated invocations on a quiet and on a loaded machine, the new control fails where it should and nowhere else, and the M1 gate's D2 line can be read as no regression. The M1 gate depends on this",
+      "topic": "codebase-health",
+      "created": "2026-11-19T19:50:11Z",
+      "last_updated": "2026-11-20T10:30:18Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "d2_hotpath_one_sided_median_gate",
+          "project_number": null,
+          "title": "Make the D2/d2-hotpath check a meaningful, deterministic regression gate before the M1 gate reads it: replace the two-sided band with a one-sided upper limit (lower is better, so a faster run never fails) plus a small positive floor whose only job is to catch the plugin not running; gate on the median of several invocations rather than one; derive the limit by a stated, repeatable method measured on a quiet machine; keep the ratchet rule of the diagnostics README (a change may not raise the limit; raising it is its own reviewed commit); and give the upper limit a negative control that bites just above it, alongside the existing diag-pairedbar control, which forces the value 100 ms past the band and so proves the gate is wired but not that it is sensitive. Measured 2026-11-19 over 83 real history entries: the band is 0.146 to 0.674 ms, cut as mean +/- 3 SD around 0.41; runs before 18:00Z had mean 0.436, SD 0.060; runs from 18:00Z had mean 0.268, SD 0.127, clustered at 0.17 to 0.25, with the lowest 0.024 ms above the lower edge. So the gate can fail on an improvement, would pass a doubling of today's typical overhead, and re-deriving the band by its own method now gives a negative lower edge. Host load was about 5 throughout, the likely but unconfirmed cause of the shift; research confirms or rules that out first, since it decides how many invocations the median needs. Edits sf1-v2/diagnostics/checks/d2-hotpath.ts, sf1-v2/diagnostics/baseline/ttft-enginebase.json, sf1-v2/diagnostics/baseline.json, both diagnostics READMEs and negctrl-diagnostics-1118.sh; touches nothing under extensions/core. Done when: bash sf1-v2/diagnose.sh passes on repeated invocations on a quiet and on a loaded machine, the new control fails where it should and nowhere else, and the M1 gate's D2 line can be read as no regression. The M1 gate depends on this"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 2,
+          "scope-blind": 14
+        },
+        "verdicts_detail": [],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 14
+      },
+      "roadmap_annotation": "Ben's. READY NOW: wave 1, no dependencies, all territory local; the M1 gate depends on it. No GitHub issue.",
+      "session_id": "sess_1795163842_175083",
+      "artifacts": [
+        {
+          "path": "specs/036_d2_hotpath_one_sided_median_gate/reports/01_d2-hotpath-median-gate.md",
+          "type": "report",
+          "summary": "Confirms host-load contention as the best-supported cause of the D2/d2-hotpath regime shift, independently reproduces the current two-sided band's negative-lower-edge defect, and designs a one-sided ceiling (reusing run.ts's existing applyRatchetGuard/direction mechanism) plus a small positive floor, a median-of-5-reps aggregation, and an additive ceiling-targeting negative control, with corpus-grounded candidate figures marked CORPUS-UNVERIFIED pending a fresh seal-time measurement."
+        },
+        {
+          "path": "specs/036_d2_hotpath_one_sided_median_gate/plans/01_d2-hotpath-median-gate.md",
+          "type": "plan",
+          "summary": "5-phase plan (4 waves) for the D2 one-sided median gate: derive ceiling/floor live, atomic gate switchover, negative-control wiring, README updates, determinism verification."
+        },
+        {
+          "path": "specs/036_d2_hotpath_one_sided_median_gate/summaries/01_d2-hotpath-median-gate-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: ceiling/floor derivation (including the mid-phase revision), per-phase verification evidence, M1-readability statement, and plan deviations."
+        }
+      ],
+      "next_artifact_number": 2,
+      "file_scope": [
+        "sf1-v2/diagnostics/README.md",
+        "sf1-v2/diagnostics/baseline.json",
+        "sf1-v2/diagnostics/baseline/README.md",
+        "sf1-v2/diagnostics/baseline/d2-hotpath.json",
+        "sf1-v2/diagnostics/baseline/ttft-enginebase.json",
+        "sf1-v2/diagnostics/checks/d2-hotpath.ts",
+        "sf1-v2/negctrl-diagnostics-1118.sh",
+        "specs/036_d2_hotpath_one_sided_median_gate/records/ceiling-derivation.md"
+      ]
+    },
+    {
+      "project_number": 35,
+      "project_name": "flake_dev_shell_and_lab_venv_provisioning",
+      "status": "not_started",
+      "task_type": "general",
+      "description": "Add a reproducible local dev environment for this repository as a root flake.nix dev shell: Python 3.13, uv and Node, plus one documented command that creates the lab virtualenv and installs the SF-1 engine wheel (engram.server, wheel 6.7.6) into it, with SF1_ENGINE_PY pointed at that interpreter so sf1-v2/run-tests.sh and the negctrl-*.sh scripts start the Python suites on a machine other than Oliver's. Context measured 2026-11-19: the lab venv at the path the scripts default to holds only pip; sapience_lab_mcp.py's engine preflight requires ko_write(event_date, no_cross_supersede), which the vendored mcp-ko-server source (ngrm 5.6.0) lacks, and PyPI carries only ngrm 0.0.1, so the 6.7.6 wheel must come from Oliver (requested once, on issue #26) and is this task's external prerequisite. nix-ld and uv are already present on the NixOS host, so binary wheels load; the engine's one dependency is sentence-transformers (pulls torch, a large first install). Deliver as its own small PR against sync-1116 from a dedicated branch, worked in a separate git worktree so this checkout stays on docs/repo-documentation: no specs/ or extensions/ content in that PR, no absolute home path committed (issue #27), and the PR states which Python suites start and pass with the shell active. Done when: nix develop followed by the documented command yields an interpreter under which test_dispatch_memory.py and the other sapience-mcp suites start, and the recorded known-failing baseline is re-read against the result. Not part of the harness-integration chain and gates nothing in it",
+      "topic": "codebase-health",
+      "created": "2026-11-19T19:40:48Z",
+      "last_updated": "2026-11-19T19:40:48Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "flake_dev_shell_and_lab_venv_provisioning",
+          "project_number": null,
+          "title": "Add a reproducible local dev environment for this repository as a root flake.nix dev shell: Python 3.13, uv and Node, plus one documented command that creates the lab virtualenv and installs the SF-1 engine wheel (engram.server, wheel 6.7.6) into it, with SF1_ENGINE_PY pointed at that interpreter so sf1-v2/run-tests.sh and the negctrl-*.sh scripts start the Python suites on a machine other than Oliver's. Context measured 2026-11-19: the lab venv at the path the scripts default to holds only pip; sapience_lab_mcp.py's engine preflight requires ko_write(event_date, no_cross_supersede), which the vendored mcp-ko-server source (ngrm 5.6.0) lacks, and PyPI carries only ngrm 0.0.1, so the 6.7.6 wheel must come from Oliver (requested once, on issue #26) and is this task's external prerequisite. nix-ld and uv are already present on the NixOS host, so binary wheels load; the engine's one dependency is sentence-transformers (pulls torch, a large first install). Deliver as its own small PR against sync-1116 from a dedicated branch, worked in a separate git worktree so this checkout stays on docs/repo-documentation: no specs/ or extensions/ content in that PR, no absolute home path committed (issue #27), and the PR states which Python suites start and pass with the shell active. Done when: nix develop followed by the documented command yields an interpreter under which test_dispatch_memory.py and the other sapience-mcp suites start, and the recorded known-failing baseline is re-read against the result. Not part of the harness-integration chain and gates nothing in it"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 1,
+          "scope-blind": 13
+        },
+        "verdicts_detail": [],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 13
+      },
+      "roadmap_annotation": "EXT-BLOCKED on the engram.server 6.7.6 wheel (issue #26): dev shell buildable now, its done-condition is not",
+      "roadmap_ext_blocked": true
+    },
+    {
+      "project_number": 34,
+      "project_name": "restore_core_battery_and_rebaseline_d2",
+      "status": "completed",
+      "task_type": "general",
+      "title": "Restore the extensions/core battery and re-baseline D2 before the M1 gate",
+      "description": "Restore the extensions/core battery and re-baseline D2 before the M1 gate. Three items, all Ben-side. The sf1-v2/run-tests.sh failures are explicitly OUT of scope: they are owner:sf1 (issues #26 and #27), and the lab-venv provisioning gap behind them is not a source-store edit this repo owns.\n\nMEASURED STARTING STATE (2026-11-19): bash integration/tools/close-battery.sh exits 1 with harness_rc=1 and cross_check_rc=1. Union of failing suites across the three roots: test-routing-resolution and test-stall-reprompt-wiring (failing on ALL three roots), test-task-type-detect (opencode root only), test-orchestrate-recover-outcome (isolated root only). run-all.sh reports \"75 passed, 2 failed (0 expected, 2 NEW)\" per root, so these are regressions, not known exclusions. Separately, bash sf1-v2/diagnose.sh exits 1 with 11 pass, 1 fail, 2 deferred; the failure is D2/d2-hotpath.\n\nRESEARCH MUST SETTLE THIS FIRST, because it decides whether the fix belongs in the suites or in the cut file: archived task 32's sealed three-root green record does not reproduce. specs/archive/032_make_minimal_core_test_suite_pass/records/final-20261118T201743Z.txt records 77 passed / 0 failed / 0 NEW under .claude, .opencode and isolated at 2026-11-18T20:17:43Z, and that task's summary closes with \"Follow-ups: None\". But test-stall-reprompt-wiring.sh line 32 resolves SKILL_MD_PATH to extensions/core/skills/skill-orchestrate/SKILL.md, and commit af77f35 (\"task 17 phase 5: cut skill-orchestrate/SKILL.md to 8 KB\", committed 2026-11-18 19:35:02, file mtime 19:33:04) stripped every stall_suspected, stranded_suspected and pending_stall_reprompt line from that file, replacing executable jq wiring with prose. The cut was therefore already on disk when the green record was sealed 44 minutes later, and git log shows nothing has touched that file since. Running the suite in place today gives 10 passed, 8 failed. So either the sealed evidence does not reflect the tree it claims to attest, or run-core-suite-three-roots.sh's scratch copies diverge from the committed tree. Determine which. A green record that cannot be reproduced is a verification-integrity defect in the merge gate itself, and matters more than the two test fixes. Do not weaken any assertion to close it.\n\nITEM 1 -- the two suites failing on all three roots, both named in task 32's original list of 29:\n  - test-stall-reprompt-wiring (8 failures): skill-orchestrate/SKILL.md no longer reads stall_suspected or stranded_suspected; the Move 3 region is missing the suppression guard, does not key its guard on stall_reprompted, does not OR the two signals together, and does not write pending_stall_reprompt. The eighth failure cannot extract the Move 3 jq program from SKILL.md at all. Note the suite's own failure text, \"the signal is dead again\", and the untracked stall_suspected file at the repository root. Record exactly one disposition: restore the wiring the 8 KB cut removed, or re-site the assertions if the cut was deliberate and the mechanism legitimately moved -- naming where it moved to.\n  - test-routing-resolution: Assert 3 (branch-aware) -- SKILL.md's Move 2 dispatch site does not reference the row's resolved .agent field.\n\nITEM 2 -- the root-sensitivity misclassification that close-battery.sh's empirical cross-root cross-check caught, which named its own remedy: test-orchestrate-recover-outcome.sh is classed STABLE (root-invariant) in extensions/core/scripts/tests/suite-root-sensitivity.data but produced claude=PASS opencode=PASS isolated=FAIL. Re-run integration/tools/derive-root-sensitivity.sh, correct the classification, re-commit. Also account for test-task-type-detect, which failed only on the opencode root. Both are root-varying results that the static preflight did not catch, so check whether the static half needs the same correction.\n\nITEM 3 -- re-baseline D2/d2-hotpath, which blocks the M1 gate task's own done-condition (\"show by tiers D2 and D4 no regression against the recorded baseline\"). sf1-v2/diagnostics/checks/d2-hotpath.ts passes only when the paired median diff lands inside the recorded CI95 band [0.393, 0.462] ms, a two-sided window of roughly +/-0.034 ms on a sub-millisecond measurement, with direction \"none\" in baseline.json so either side fails. sf1-v2/diagnostics/history.jsonl shows 15 of the last 20 runs outside that band on BOTH sides (0.375 and 0.385 low, 0.585 high), plus two runs at 100.46 that are the diag-pairedbar negative control firing. Re-record the baseline with a tolerance reflecting the measurement's actual variance, preserve the ratchet rule in sf1-v2/diagnostics/README.md, and keep the negative control biting.\n\nDONE WHEN: bash integration/tools/close-battery.sh is green -- harness exit 0 AND the empirical cross-root cross-check passing -- and bash sf1-v2/diagnose.sh exits 0 across repeated consecutive runs rather than a single lucky one. Each originally-failing item carries exactly one recorded disposition in extensions/core/core-test-dispositions.md, no assertion is weakened to make a suite pass, and the task-32 evidence discrepancy is explained in the report whatever its cause turns out to be.\n\nCONSTRAINT: no hand-authored edits under .claude/** -- it is a disposable deploy artifact; edit the source store resolved via .claude-extensions.json per .claude/rules/source-store-deploy-boundary.md.",
+      "topic": "codebase-health",
+      "created": "2026-11-19T17:00:23Z",
+      "last_updated": "2026-11-19T18:48:53Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "restore_core_battery_and_rebaseline_d2",
+          "project_number": null,
+          "title": "Restore the extensions/core battery and re-baseline D2 before the M1 gate"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 5,
+          "duplicate-of-open": 3,
+          "scope-blind": 10
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 11,
+            "project_name": "sf1_extension_system_loader",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 10,
+            "project_name": "m1_gate_task_workflow_end_to_end",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 24,
+            "project_name": "amend_design_md_for_post_dated_rules",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.5
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 10
+      },
+      "roadmap_annotation": "Ben: the only ready entry here; both gates red today, and the M1 gate's D2 baseline needs it re-cut",
+      "session_id": "sess_1795109860_6ba6e6",
+      "artifacts": [
+        {
+          "path": "specs/034_restore_core_battery_and_rebaseline_d2/reports/01_restore-core-battery-rebaseline.md",
+          "type": "report",
+          "summary": "Resolves the task-32 evidence-discrepancy question (timeline-based, not a verification-integrity defect: the green record was sealed before task 17's SKILL.md budget cut, not after), and gives a reproduced-live disposition for each of the three items: re-site (not restore) the stall-reprompt-wiring/routing-resolution assertions to the relocated reference file; widen derive-root-sensitivity.sh's evidence model with a new subject-under-test-script channel before re-running it (a bare re-run reproduces the identical misclassification); fix test-task-type-detect.sh's non-root-agnostic fixture (no reclassification needed); and widen sf1-v2/diagnostics/baseline/ttft-enginebase.json's CI95 band from a within-run bootstrap artifact to the empirically observed run-to-run spread."
+        },
+        {
+          "path": "specs/034_restore_core_battery_and_rebaseline_d2/plans/01_restore-core-battery-rebaseline.md",
+          "type": "plan",
+          "summary": "Six-phase plan: re-site Move 2/3 assertions, fix the task-type-detect fixture, widen the root-sensitivity evidence model then re-derive, re-baseline D2 from run-to-run variance, record dispositions and close the battery green."
+        },
+        {
+          "path": "specs/034_restore_core_battery_and_rebaseline_d2/summaries/01_restore-core-battery-rebaseline-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary including decisions, plan deviations, verification evidence, and follow-ups."
+        }
+      ],
+      "next_artifact_number": 2,
+      "file_scope": [
+        "extensions/core/core-test-dispositions.md",
+        "extensions/core/scripts/tests/suite-root-sensitivity.data",
+        "extensions/core/scripts/tests/test-routing-resolution.sh",
+        "extensions/core/scripts/tests/test-stall-reprompt-wiring.sh",
+        "extensions/core/scripts/tests/test-task-type-detect.sh",
+        "extensions/core/skills/skill-orchestrate/SKILL.md",
+        "integration/tools/derive-root-sensitivity.sh",
+        "integration/tools/root-sensitivity-preflight.sh",
+        "integration/tools/verification-topology.md",
+        "sf1-v2/diagnostics/README.md",
+        "sf1-v2/diagnostics/baseline.json",
+        "sf1-v2/diagnostics/baseline/README.md",
+        "sf1-v2/diagnostics/baseline/ttft-enginebase.json"
+      ],
+      "completion_summary": "Restored the extensions/core 77-suite battery to green across all three roots (close-battery.sh harness exit 0, empirical cross-root cross-check PASS, owed discharged=0/still_open=0) and re-baselined D2/d2-hotpath's CI95 band from documented run-to-run empirical variance instead of single-run bootstrap noise; sf1-v2/diagnose.sh exits 0 across 16 consecutive invocations."
+    },
+    {
+      "project_number": 20,
+      "project_name": "dispatch_memory_block_from_sf1_lexical_pick",
+      "status": "hold",
+      "task_type": "general",
+      "description": "Fill the dispatch file's memory block from SF-1's lexical pick (integration/design.md section 6.7 and section 7.2 item 1.12): a small core script, called from orchestrate-build-dispatch.sh in place of the cut call to sapience-retrieve.sh, asks the lexical pick for the task's description through the command-line entry of sapience_pick.py and writes the result into the same memory_context block; the pick is deadline-bounded, makes no model call and opens the store read-only; a failure or a missed deadline leaves the block empty and is recorded, never fatal; under the Claude target the same script runs and the block is empty where no store is reachable. First measure whether the pick answers within the dispatch builder's time budget; if it cannot, take the fallback the design names: no memory block in M1, with the root-only verdict for the memory pick in child sessions restated as resting on cost alone",
+      "topic": "harness-integration",
+      "created": "2026-11-16T06:33:33Z",
+      "last_updated": "2026-11-17T23:37:16Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "dispatch_memory_block_from_sf1_lexical_pick",
+          "project_number": null,
+          "title": "Fill the dispatch file's memory block from SF-1's lexical pick (integration/design.md section 6.7 and section 7.2 item 1.12): a small core script, called from orchestrate-build-dispatch.sh in place of the cut call to sapience-retrieve.sh, asks the lexical pick for the task's description through the command-line entry of sapience_pick.py and writes the result into the same memory_context block; the pick is deadline-bounded, makes no model call and opens the store read-only; a failure or a missed deadline leaves the block empty and is recorded, never fatal; under the Claude target the same script runs and the block is empty where no store is reachable. First measure whether the pick answers within the dispatch builder's time budget; if it cannot, take the fallback the design names: no memory block in M1, with the root-only verdict for the memory pick in child sessions restated as resting on cost alone"
+        },
+        "verdicts": [
+          {
+            "verdict": "scope-blind",
+            "project_number": 13,
+            "project_name": "fit_task_workflow_to_sf1_memory",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.17391304347826086
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 12,
+            "project_name": "port_extensions_in_use",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2028985507246377
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 11,
+            "project_name": "sf1_extension_system_loader",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.37681159420289856
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 10,
+            "project_name": "m1_gate_task_workflow_end_to_end",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2463768115942029
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 5,
+            "project_name": "plugin_ts_decomposition_seams",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.038461538461538464
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 4,
+            "project_name": "sf1_host_module_placement",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.08333333333333333
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 3,
+            "project_name": "claude_failsafe_guarantees_and_memory_continuity",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.20408163265306123
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 2,
+            "project_name": "comparison_run_noise_model",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.23529411764705882
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "scope-blind: project 13 (fit_task_workflow_to_sf1_memory) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 12 (port_extensions_in_use) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 11 (sf1_extension_system_loader) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 10 (m1_gate_task_workflow_end_to_end) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 5 (plugin_ts_decomposition_seams) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 4 (sf1_host_module_placement) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 3 (claude_failsafe_guarantees_and_memory_continuity) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 2 (comparison_run_noise_model) declares no file_scope -- judged on the semantic shortlist alone"
+        ]
+      },
+      "dependencies": [
+        16
+      ],
+      "roadmap_annotation": "EXT-BLOCKED, SF-1 side, issue #22: never dispatch from here; gates nothing since Q1",
+      "roadmap_ext_blocked": true,
+      "session_id": "sess_1794958629_001434",
+      "hold_reason": "SF-1 side, issue #22: owned in another clone and worked there, never dispatched from this repository. Held so no ordinary command can resume it; dependency edges are preserved.",
+      "held_at": "2026-11-17",
+      "prior_status": "not_started"
+    },
+    {
+      "project_number": 19,
+      "project_name": "sf1_host_plugin_changes_for_task_workflow",
+      "status": "hold",
+      "task_type": "typescript",
+      "description": "Make the SF-1 host plugin and launcher changes the task workflow needs (integration/design.md sections 6.3 to 6.6, section 7.2 items 1.6, 1.7, 1.8 and 1.10), each default off with a negative control: in claudehooks.ts add the turn-end (Stop) and subagent-end (SubagentStop) events, not session-start, keep tool hooks firing in child sessions, stop UserPromptSubmit hooks firing in a child, and export the .claude deploy root to hook and skill scripts in an OpenCode session; in claudeperms.ts map mcp__server__tool rules to the runtime's server_tool names and rules on the Claude dispatch tool to subagent; apply integration/child-session-policy.md as one guard clause at the entry point of each root-only subsystem (memory pick, curator checkpoints, capture, confirm cards, verify-first, output policy), identifying a child by resolving sessionID through ctx.session.get and caching whether the record has a parent id, with archiving and tool-output compaction left running in both; add a ninth gate at the assembler so a child keeps the state part and receives no per-turn tail; add one flag in sf1-v2/bin/sf1.ts that turns the task workflow on, with the outgoing request and tool list byte-identical to SF-1 today when it is off, and export OPENCODE_DISABLE_CLAUDE_CODE=1 only when it is on; and confirm by probe that this variable leaves the parity modules' own reads under SF1_CLAUDE_PROJECT, SF1_CLAUDE_HOOKS and SF1_CLAUDE_PERMS untouched, since the kernel brief and hooks arrive through them (design section 8.2) The extension-sandbox guard (task 23) is a tenth gate in the child-session mechanism, distinct from the other nine: unlike the eight root-only/both subsystems of child-session-policy.md and the ninth tail gate, this one must fire in a child session and must fail closed (block) rather than silently skip if it cannot resolve whether it is running in a child; its hook registration is exempt from the five-hooks-per-tool-call limit of design section 4.8.",
+      "topic": "harness-integration",
+      "created": "2026-11-16T06:33:32Z",
+      "last_updated": "2026-11-17T23:37:10Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "sf1_host_plugin_changes_for_task_workflow",
+          "project_number": null,
+          "title": "Make the SF-1 host plugin and launcher changes the task workflow needs (integration/design.md sections 6.3 to 6.6, section 7.2 items 1.6, 1.7, 1.8 and 1.10), each default off with a negative control: in claudehooks.ts add the turn-end (Stop) and subagent-end (SubagentStop) events, not session-start, keep tool hooks firing in child sessions, stop UserPromptSubmit hooks firing in a child, and export the .claude deploy root to hook and skill scripts in an OpenCode session; in claudeperms.ts map mcp__server__tool rules to the runtime's server_tool names and rules on the Claude dispatch tool to subagent; apply integration/child-session-policy.md as one guard clause at the entry point of each root-only subsystem (memory pick, curator checkpoints, capture, confirm cards, verify-first, output policy), identifying a child by resolving sessionID through ctx.session.get and caching whether the record has a parent id, with archiving and tool-output compaction left running in both; add a ninth gate at the assembler so a child keeps the state part and receives no per-turn tail; add one flag in sf1-v2/bin/sf1.ts that turns the task workflow on, with the outgoing request and tool list byte-identical to SF-1 today when it is off, and export OPENCODE_DISABLE_CLAUDE_CODE=1 only when it is on; and confirm by probe that this variable leaves the parity modules' own reads under SF1_CLAUDE_PROJECT, SF1_CLAUDE_HOOKS and SF1_CLAUDE_PERMS untouched, since the kernel brief and hooks arrive through them (design section 8.2)"
+        },
+        "verdicts": [
+          {
+            "verdict": "scope-blind",
+            "project_number": 13,
+            "project_name": "fit_task_workflow_to_sf1_memory",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.23404255319148937
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 12,
+            "project_name": "port_extensions_in_use",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.18421052631578946
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 11,
+            "project_name": "sf1_extension_system_loader",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.3274336283185841
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 10,
+            "project_name": "m1_gate_task_workflow_end_to_end",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.325
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 5,
+            "project_name": "plugin_ts_decomposition_seams",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.4230769230769231
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 4,
+            "project_name": "sf1_host_module_placement",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2777777777777778
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 3,
+            "project_name": "claude_failsafe_guarantees_and_memory_continuity",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2857142857142857
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 2,
+            "project_name": "comparison_run_noise_model",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.20588235294117646
+          },
+          {
+            "verdict": "covered-by-closed",
+            "project_number": 9,
+            "project_name": "sf1_child_session_policy",
+            "discharging_artifact": {
+              "path": "specs/009_sf1_child_session_policy/summaries/01_sf1-child-session-policy-summary.md",
+              "type": "summary",
+              "summary": "Implementation summary for the child-session policy record and the two design-document wiring edits."
+            },
+            "mechanical_class": "none",
+            "semantic_score": 0.5869565217391305
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "scope-blind: project 13 (fit_task_workflow_to_sf1_memory) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 12 (port_extensions_in_use) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 11 (sf1_extension_system_loader) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 10 (m1_gate_task_workflow_end_to_end) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 4 (sf1_host_module_placement) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 3 (claude_failsafe_guarantees_and_memory_continuity) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 2 (comparison_run_noise_model) declares no file_scope -- judged on the semantic shortlist alone"
+        ]
+      },
+      "dependencies": [
+        1,
+        9,
+        15,
+        16
+      ],
+      "roadmap_annotation": "EXT-BLOCKED, SF-1 side, issue #21: worked in another clone -- never dispatch from this repository",
+      "roadmap_ext_blocked": true,
+      "session_id": "sess_1794958629_001434",
+      "hold_reason": "SF-1 side, issue #21: owned in another clone and worked there, never dispatched from this repository. Held so no ordinary command can resume it; dependency edges are preserved.",
+      "held_at": "2026-11-17",
+      "prior_status": "not_started"
+    },
+    {
+      "project_number": 13,
+      "project_name": "fit_task_workflow_to_sf1_memory",
+      "status": "hold",
+      "task_type": "typescript",
+      "description": "Fit the task workflow to SF-1's memory (integration/design.md section 6.7 and section 7.5, milestone M4, which needs only M1): render an active-task digest from state.json into the root session's per-turn tail and tell the curator not to restate task status in STATE.md; ingest reports, plans and summaries as task-scoped artifacts with origin artifact, excluding runtime files and both deploy trees; register command expansions, skill text and dispatch files as non-typed so agent-written text is never captured as the person's decision; make a guard that needs a keypress resolve to its declared default and block the task in unattended runs, including cancelling a pending question or ask with a message under serve with no client; and write completion notes (item 4.5) as unconfirmed, low-salience notes distilled from the task summary, tagged with repository and task and offered as one batch of confirm cards that only the person can promote, built with the confirm-card store race of design section 8.3 in view. Gate M4: an autonomous task run creates no knowledge objects on its own, STATE.md and state.json never disagree about a task, and no keypress gate stalls an unattended run",
+      "topic": "harness-integration",
+      "created": "2026-11-15T19:56:50Z",
+      "last_updated": "2026-11-17T23:37:17Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "fit_task_workflow_to_sf1_memory",
+          "project_number": null,
+          "title": "Fit the task workflow to SF-1's memory (integration/roadmap.md milestone M4): render an active-task digest from state.json into the per-turn tail and keep task status out of STATE.md, ingest reports, plans and summaries as task-scoped artifacts while excluding runtime files and both deploy trees, register command expansions, skill text and dispatch files as non-typed so agent-written text is never captured as the person's decision, and make keypress guards resolve to a declared default and block the task in unattended runs"
+        },
+        "verdicts": [
+          {
+            "verdict": "scope-blind",
+            "project_number": 12,
+            "project_name": "port_extensions_in_use",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.10416666666666667
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 11,
+            "project_name": "sf1_extension_system_loader",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.12244897959183673
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 10,
+            "project_name": "port_minimal_task_workflow_to_opencode",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.24489795918367346
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 9,
+            "project_name": "sf1_child_session_policy",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.06521739130434782
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 8,
+            "project_name": "minimal_core_and_footprint_budgets",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.08163265306122448
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 7,
+            "project_name": "forcing_question_interview_schema",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.1794871794871795
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 6,
+            "project_name": "kernel_script_ownership_call_graph",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.14634146341463414
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 5,
+            "project_name": "plugin_ts_decomposition_seams",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 4,
+            "project_name": "sf1_host_module_placement",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.05555555555555555
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 3,
+            "project_name": "claude_failsafe_guarantees_and_memory_continuity",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.08163265306122448
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 2,
+            "project_name": "comparison_run_noise_model",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.08823529411764706
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 1,
+            "project_name": "opencode_runtime_ground_truth",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.16326530612244897
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "scope-blind: project 12 (port_extensions_in_use) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 11 (sf1_extension_system_loader) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 10 (port_minimal_task_workflow_to_opencode) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 9 (sf1_child_session_policy) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 8 (minimal_core_and_footprint_budgets) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 7 (forcing_question_interview_schema) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 6 (kernel_script_ownership_call_graph) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 5 (plugin_ts_decomposition_seams) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 4 (sf1_host_module_placement) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 3 (claude_failsafe_guarantees_and_memory_continuity) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 2 (comparison_run_noise_model) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 1 (opencode_runtime_ground_truth) declares no file_scope -- judged on the semantic shortlist alone"
+        ]
+      },
+      "dependencies": [
+        10
+      ],
+      "roadmap_annotation": "EXT-BLOCKED, SF-1 side, issue #28: worked in another clone -- never dispatch from this repository",
+      "roadmap_ext_blocked": true,
+      "session_id": "sess_1794958629_001434",
+      "hold_reason": "SF-1 side, issue #28: owned in another clone, editing SF-1 memory internals rather than the ported core, never dispatched from this repository. Held so no ordinary command can resume it; dependency edges are preserved.",
+      "held_at": "2026-11-17",
+      "prior_status": "not_started"
+    },
+    {
+      "project_number": 12,
+      "project_name": "port_extensions_in_use",
+      "status": "not_started",
+      "task_type": "general",
+      "description": "Port the extensions in use here through the loader (integration/design.md section 5.10 and section 7.4, milestone M3), in this order: git-flow first (destructive-git guard, push grant, please, merge, tag; four hooks with negative controls and unattended defaults), then typescript, python, slidev, present and founder, with present before founder; each within the per-extension budgets of design section 5.8 and running one task of its type on both harnesses; forcing questions move to the root session as manifest interview entries or user_decision hand-backs per design section 5.9 and integration/port-inventory.md section 4.2.1, confirming the provisional 28 / 22 / 36 split of agent questions file by file as each agent is edited; the sapience extension is not ported, its dispatch-time memory and completion notes being provided inside SF-1; Gate M3 is the six extensions loading together within budget on both trees with no command or keyword collision; each extension's PR states what tiers D0, D2 and D3 (tasks 26 and 27) moved by with it loaded and adds its arm to D2 and D4 (task 28), and no extension hook opens a network connection on the tool-call path",
+      "topic": "harness-integration",
+      "created": "2026-11-15T19:56:48Z",
+      "last_updated": "2026-11-18T07:40:26Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "port_extensions_in_use",
+          "project_number": null,
+          "title": "Port the extensions in use here through the loader (integration/roadmap.md milestone M3): git-flow first (destructive-git guard, push grant, please, merge, tag), then typescript, python, slidev, founder and present, each within the footprint budgets and running one task of its type on both harnesses, with forcing questions moved to the root session; the sapience extension is not ported, its dispatch-time memory and completion notes being provided by SF-1's pick and provenance gate"
+        },
+        "verdicts": [
+          {
+            "verdict": "scope-blind",
+            "project_number": 11,
+            "project_name": "sf1_extension_system_loader",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.20833333333333334
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 10,
+            "project_name": "port_minimal_task_workflow_to_opencode",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.16666666666666666
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 9,
+            "project_name": "sf1_child_session_policy",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.13043478260869565
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 8,
+            "project_name": "minimal_core_and_footprint_budgets",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.14583333333333334
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 7,
+            "project_name": "forcing_question_interview_schema",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.358974358974359
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 6,
+            "project_name": "kernel_script_ownership_call_graph",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.04878048780487805
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 5,
+            "project_name": "plugin_ts_decomposition_seams",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.038461538461538464
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 4,
+            "project_name": "sf1_host_module_placement",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.08333333333333333
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 3,
+            "project_name": "claude_failsafe_guarantees_and_memory_continuity",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.125
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 2,
+            "project_name": "comparison_run_noise_model",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.08823529411764706
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 1,
+            "project_name": "opencode_runtime_ground_truth",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.125
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "scope-blind: project 11 (sf1_extension_system_loader) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 10 (port_minimal_task_workflow_to_opencode) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 9 (sf1_child_session_policy) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 8 (minimal_core_and_footprint_budgets) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 7 (forcing_question_interview_schema) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 6 (kernel_script_ownership_call_graph) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 5 (plugin_ts_decomposition_seams) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 4 (sf1_host_module_placement) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 3 (claude_failsafe_guarantees_and_memory_continuity) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 2 (comparison_run_noise_model) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 1 (opencode_runtime_ground_truth) declares no file_scope -- judged on the semantic shortlist alone"
+        ]
+      },
+      "dependencies": [
+        7,
+        11,
+        23
+      ],
+      "roadmap_annotation": "Ben, issue #17: the six-extension port (M3); unrunnable until the sandbox guard exists"
+    },
+    {
+      "project_number": 11,
+      "project_name": "sf1_extension_system_loader",
+      "status": "not_started",
+      "task_type": "typescript",
+      "description": "Build the launcher-integration half of the extension system for SF-1 (integration/design.md part 5 and section 7.3, milestone M2; issue #16), on the file-level loader of task 30 and behind the M1 gate, adding to the manifest only what M1 proved necessary: harness hooks (with a guard's unattended default as a field on its hook entry, and a field marking a core-owned hook exempt from the five-hooks-per-call limit), permission rules, a brief section, MCP servers, required binaries and a top-level interview key holding question lists per task type; have the dispatch builder write the task record's forcing_data into every dispatch file; extend load to check the limit of five blocking hooks per tool call, required binaries, each brief-section heading against the ritual filter drop list, and that no extension hook opens a network connection on the tool-call path (negative control: a hook that does is refused at load); assemble the kernel brief plus per-extension sections in dependency then alphabetical order as .claude/CLAUDE.md, once per launch so the cached prefix is stable; have the config generator read the ledger at launch for MCP servers and permission rules, with model pins written into agent files by the translator at load and sync rather than at launch; add sf1 --target claude as the fail-safe launch; reach sf1 ext from sf1-v2/bin/sf1.ts by one lazily imported branch, so a plain sf1 launch in a project with no ledger does one file check and nothing else, and every launch-time step finishes before the prewarm starts the server and adds nothing to cold start; and state what the Neovim picker needs from sf1 ext to become a thin front end (item 2.8). Research closes by probe the point design section 8.2 leaves open: whether the generated runtime config can set a model per agent. load also verifies that the extension-sandbox guard (a core-owned file the manifest's hook entries can mark exempt from the five-hooks-per-call limit) is present, registered, and unchanged by anything sf1 ext sync just touched; a missing or altered guard fails the load exactly as a missing required binary does. Engine rules (vision/agenda.md section 4): no new subsystem in the plugin -- hooks, permissions and instructions go through the existing claudehooks.ts, claudeperms.ts and claudeproject.ts; the PR reports lines added under sf1-v2/ and new SF1_ variables, adds the with-ledger launch arm to tier D4 (task 28), and states what D0, D2 and D3 moved by. Gate M2's last clause is checked here: with no extensions loaded, behaviour equals M1",
+      "topic": "harness-integration",
+      "created": "2026-11-15T19:56:46Z",
+      "last_updated": "2026-11-18T07:40:26Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "sf1_extension_system_loader",
+          "project_number": null,
+          "title": "Build the extension system for SF-1 (integration/roadmap.md milestone M2): keep the existing manifest format with only the additions the minimal port proved necessary, implement sf1 ext list, load, unload, sync and verify as a launcher subcommand that resolves dependencies, checks the footprint budgets, writes both the .claude and .opencode trees, records every deployed file in one project-root ledger and rolls back both trees on failure, assemble the kernel brief plus per-extension sections once per launch, have the config generator read the ledger for MCP servers, permissions and model pins, add sf1 --target claude as the fail-safe launch, and make the core the first thing the loader deploys"
+        },
+        "verdicts": [
+          {
+            "verdict": "scope-blind",
+            "project_number": 10,
+            "project_name": "port_minimal_task_workflow_to_opencode",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.17647058823529413
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 9,
+            "project_name": "sf1_child_session_policy",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.06521739130434782
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 8,
+            "project_name": "minimal_core_and_footprint_budgets",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2857142857142857
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 7,
+            "project_name": "forcing_question_interview_schema",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.15384615384615385
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 6,
+            "project_name": "kernel_script_ownership_call_graph",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.1951219512195122
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 5,
+            "project_name": "plugin_ts_decomposition_seams",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.15384615384615385
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 4,
+            "project_name": "sf1_host_module_placement",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.1111111111111111
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 3,
+            "project_name": "claude_failsafe_guarantees_and_memory_continuity",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.1836734693877551
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 2,
+            "project_name": "comparison_run_noise_model",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.20588235294117646
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 1,
+            "project_name": "opencode_runtime_ground_truth",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.13846153846153847
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "scope-blind: project 10 (port_minimal_task_workflow_to_opencode) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 9 (sf1_child_session_policy) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 8 (minimal_core_and_footprint_budgets) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 7 (forcing_question_interview_schema) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 6 (kernel_script_ownership_call_graph) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 5 (plugin_ts_decomposition_seams) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 4 (sf1_host_module_placement) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 3 (claude_failsafe_guarantees_and_memory_continuity) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 2 (comparison_run_noise_model) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 1 (opencode_runtime_ground_truth) declares no file_scope -- judged on the semantic shortlist alone"
+        ]
+      },
+      "dependencies": [
+        10,
+        30
+      ],
+      "roadmap_annotation": "Ben, issue #16: the launcher-integration half, behind the M1 gate (Q3)"
+    },
+    {
+      "project_number": 10,
+      "project_name": "m1_gate_task_workflow_end_to_end",
+      "status": "not_started",
+      "task_type": "general",
+      "description": "Pass the M1 gate for the minimal task workflow on OpenCode (integration/design.md section 7.2, item 1.11 and Gate M1; issue #15), once the core tree, its budget pass, the translator and the host-plugin changes have landed: in a separate project directory (design section 5.11), never this checkout, deploy the pruned core and run one real task from research to completed under sf1, then the same task under Claude Code from the .claude copy, comparing statuses, artifacts and commit messages and timing both arms by the remeasure harness's one timing method (task 29) under the scored run profile, in place of a by-hand comparison, so the result carries over to the goal 11 sealed test (issue #25); show a task started under one harness finishing under the other; confirm by tier D1 that the task flag off is byte-identical to SF-1 with no task tree deployed; confirm by tier D0 that the kernel brief, five agents, three skills, every listing description and every kept context file are inside the budgets; show by tiers D2 and D4 (tasks 26 and 28) no regression against the recorded baseline; and show hook time per tool call (tier D3, task 27) inside the ratcheted hard limit -- p95 and worst case, with count-exempt hooks included -- which fails the gate when exceeded, the figure also informing the event-log and hook-limit rulings (design sections 4.6 and 4.8). The dispatch memory script (task 20, issue #22) is a soft dependency, not an edge: it is non-fatal by design with the sanctioned fallback of no memory block in M1, so if it has not landed the gate runs with an empty memory block, records that it did, and the comparison is repeated once the script lands",
+      "topic": "harness-integration",
+      "created": "2026-11-15T19:56:45Z",
+      "last_updated": "2026-11-18T07:40:26Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "port_minimal_task_workflow_to_opencode",
+          "project_number": null,
+          "title": "Port the minimal task workflow to OpenCode inside SF-1 (integration/roadmap.md milestone M1): copy the reachable core into a new tree in this repository, replace the literal deploy root in its scripts with one environment variable, apply the budget cut list, write the translator from Claude agent, command and skill files to OpenCode files, run the core hooks and permission rules through SF-1's claudehooks.ts and claudeperms.ts with the missing session-start and turn-end events added, apply the child-session policy, map agent model tiers onto SF-1's routing matrix, gate everything behind one flag whose off state is byte-identical to SF-1 today, and run one task research to completed under sf1 and again under Claude Code with matching specs state, artifacts and commits"
+        },
+        "verdicts": [
+          {
+            "verdict": "scope-blind",
+            "project_number": 9,
+            "project_name": "sf1_child_session_policy",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.15217391304347827
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 8,
+            "project_name": "minimal_core_and_footprint_budgets",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.20408163265306123
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 7,
+            "project_name": "forcing_question_interview_schema",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.23076923076923078
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 6,
+            "project_name": "kernel_script_ownership_call_graph",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.34146341463414637
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 5,
+            "project_name": "plugin_ts_decomposition_seams",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.19230769230769232
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 4,
+            "project_name": "sf1_host_module_placement",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.2222222222222222
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 3,
+            "project_name": "claude_failsafe_guarantees_and_memory_continuity",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.12244897959183673
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 2,
+            "project_name": "comparison_run_noise_model",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.17647058823529413
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 1,
+            "project_name": "opencode_runtime_ground_truth",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.27692307692307694
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "scope-blind: project 9 (sf1_child_session_policy) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 8 (minimal_core_and_footprint_budgets) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 7 (forcing_question_interview_schema) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 6 (kernel_script_ownership_call_graph) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 5 (plugin_ts_decomposition_seams) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 4 (sf1_host_module_placement) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 3 (claude_failsafe_guarantees_and_memory_continuity) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 2 (comparison_run_noise_model) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 1 (opencode_runtime_ground_truth) declares no file_scope -- judged on the semantic shortlist alone"
+        ]
+      },
+      "dependencies": [
+        1,
+        6,
+        8,
+        9,
+        15,
+        16,
+        17,
+        18,
+        19,
+        26,
+        27,
+        28,
+        29,
+        34,
+        36,
+        40
+      ],
+      "roadmap_annotation": "Ben, issue #15: the M1 gate; two local prerequisites open (the D2 limit, the comparison instrument) plus held issue #21"
+    },
+    {
+      "project_number": 5,
+      "project_name": "plugin_ts_decomposition_seams",
+      "status": "hold",
+      "task_type": "general",
+      "description": "Design the decomposition of sf1-v2/opencode-plugin/src/plugin.ts (1707 lines wiring every subsystem) into one registration seam per subsystem, so each later extraction to an extension is a move rather than a rewrite, with the outgoing request and tool list kept byte-identical at every step",
+      "topic": "harness-integration",
+      "created": "2026-11-15T18:05:24Z",
+      "last_updated": "2026-11-15T19:56:22Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "plugin_ts_decomposition_seams",
+          "project_number": null,
+          "title": "Design the decomposition of sf1-v2/opencode-plugin/src/plugin.ts (1707 lines wiring every subsystem) into one registration seam per subsystem, so each later extraction to an extension is a move rather than a rewrite, with the outgoing request and tool list kept byte-identical at every step"
+        },
+        "verdicts": [
+          {
+            "verdict": "scope-blind",
+            "project_number": 4,
+            "project_name": "sf1_host_module_placement",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 3,
+            "project_name": "claude_failsafe_guarantees_and_memory_continuity",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.07692307692307693
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 2,
+            "project_name": "comparison_run_noise_model",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.15384615384615385
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 1,
+            "project_name": "opencode_runtime_ground_truth",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.15384615384615385
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "scope-blind: project 4 (sf1_host_module_placement) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 3 (claude_failsafe_guarantees_and_memory_continuity) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 2 (comparison_run_noise_model) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 1 (opencode_runtime_ground_truth) declares no file_scope -- judged on the semantic shortlist alone"
+        ]
+      },
+      "dependencies": [
+        1,
+        4
+      ],
+      "session_id": "sess_1794772581_2d752b",
+      "hold_reason": "Deferred by integration/roadmap.md: not needed for the minimal port (M1-M4); resume before extracting SF-1 subsystems into extensions",
+      "held_at": "2026-11-15",
+      "prior_status": "not_started",
+      "roadmap_annotation": "deferred: resume before extracting SF-1 subsystems into extensions"
+    },
+    {
+      "project_number": 4,
+      "project_name": "sf1_host_module_placement",
+      "status": "hold",
+      "task_type": "general",
+      "description": "Settle the placement of SF-1 host modules marked confirm in integration/port-inventory.md by reading the module bodies: the server main-thread link (mainthread.ts, mainwrite.ts, mainstatus.ts, surfacecount.ts) and its relation to the hosted bridge, the end-of-turn completion check (actcomplete.ts), toolcompact.ts, bootstrap.ts, and the split of claudehooks.ts and claudeperms.ts between core and claude-compat",
+      "topic": "harness-integration",
+      "created": "2026-11-15T18:05:23Z",
+      "last_updated": "2026-11-15T19:56:22Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "sf1_host_module_placement",
+          "project_number": null,
+          "title": "Settle the placement of SF-1 host modules marked confirm in integration/port-inventory.md by reading the module bodies: the server main-thread link (mainthread.ts, mainwrite.ts, mainstatus.ts, surfacecount.ts) and its relation to the hosted bridge, the end-of-turn completion check (actcomplete.ts), toolcompact.ts, bootstrap.ts, and the split of claudehooks.ts and claudeperms.ts between core and claude-compat"
+        },
+        "verdicts": [
+          {
+            "verdict": "scope-blind",
+            "project_number": 3,
+            "project_name": "claude_failsafe_guarantees_and_memory_continuity",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.05555555555555555
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 2,
+            "project_name": "comparison_run_noise_model",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.058823529411764705
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 1,
+            "project_name": "opencode_runtime_ground_truth",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.05555555555555555
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "scope-blind: project 3 (claude_failsafe_guarantees_and_memory_continuity) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 2 (comparison_run_noise_model) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 1 (opencode_runtime_ground_truth) declares no file_scope -- judged on the semantic shortlist alone"
+        ]
+      },
+      "session_id": "sess_1794772581_2d752b",
+      "hold_reason": "Deferred by integration/roadmap.md: not needed for the minimal port (M1-M4); resume before extracting SF-1 subsystems into extensions",
+      "held_at": "2026-11-15",
+      "prior_status": "not_started",
+      "roadmap_annotation": "deferred: not needed for the minimal port; settles a split in files the host-plugin task rewrites",
+      "dependencies": [
+        19
+      ]
+    },
+    {
+      "project_number": 3,
+      "project_name": "claude_failsafe_guarantees_and_memory_continuity",
+      "status": "hold",
+      "task_type": "general",
+      "description": "Determine what the Claude Code fail-safe guarantees without the kernel host plugin: for each guard and memory function (provenance gate, capture, receipts, verify-first, store guards) establish whether it still holds, whether a script-handler equivalent is possible, or whether it must be declared degraded; and design cross-target memory continuity, covering how a session run on Claude Code is classed (typed versus model) when imported back into the archive and whether that matches what the live host would have recorded",
+      "topic": "harness-integration",
+      "created": "2026-11-15T18:05:23Z",
+      "last_updated": "2026-11-15T19:56:21Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "claude_failsafe_guarantees_and_memory_continuity",
+          "project_number": null,
+          "title": "Determine what the Claude Code fail-safe guarantees without the kernel host plugin: for each guard and memory function (provenance gate, capture, receipts, verify-first, store guards) establish whether it still holds, whether a script-handler equivalent is possible, or whether it must be declared degraded; and design cross-target memory continuity, covering how a session run on Claude Code is classed (typed versus model) when imported back into the archive and whether that matches what the live host would have recorded"
+        },
+        "verdicts": [
+          {
+            "verdict": "scope-blind",
+            "project_number": 2,
+            "project_name": "comparison_run_noise_model",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.20588235294117646
+          },
+          {
+            "verdict": "scope-blind",
+            "project_number": 1,
+            "project_name": "opencode_runtime_ground_truth",
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.08888888888888889
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations": [
+          "scope-blind: project 2 (comparison_run_noise_model) declares no file_scope -- judged on the semantic shortlist alone",
+          "scope-blind: project 1 (opencode_runtime_ground_truth) declares no file_scope -- judged on the semantic shortlist alone"
+        ]
+      },
+      "session_id": "sess_1794772581_2d752b",
+      "hold_reason": "Deferred by integration/roadmap.md: not needed for the minimal port (M1-M4); the Claude tree is the existing system under choice A1, so its guarantees are unchanged",
+      "held_at": "2026-11-15",
+      "prior_status": "not_started",
+      "roadmap_annotation": "deferred: the Claude tree stays the existing system under choice A1"
+    },
+    {
+      "project_number": 23,
+      "project_name": "extension_filesystem_read_sandbox_guard",
+      "status": "not_started",
+      "task_type": "general",
+      "title": "Extension filesystem-read sandbox guard",
+      "description": "Build the core-owned guard that keeps a loaded extension's code from reading a person's private memory or SF-1's own config folder at runtime, restricting it to its own run directory or the shared room's store (issue #16); place the guard's file outside any path sf1 ext sync can remove or alter; register its hook with the exemption field task 11 adds so it does not count against the five-hooks-per-call limit; wire it into the fail-closed child-session gate task 19 adds, so a child session that cannot resolve its own identity blocks rather than silently allowing the read; write one negative control per rule, each proving the guard bites exactly the case it targets and nowhere else. The exemption is from the hook count only: the guard is timed with every other hook under the hook-time limit of tier D3 (task 27), opens no network connection on the tool-call path, and its PR states what D3 moved by.",
+      "topic": "harness-integration",
+      "dependencies": [
+        11,
+        16,
+        19
+      ],
+      "artifacts": [],
+      "roadmap_annotation": "Ben's, sourced from issue #16's filesystem-read rule. No GitHub issue of its own.",
+      "audit_override": "Owner-approved via task 21's reconciliation table, recorded in .decisions.json cycle 1 (2026-11-17T21:11:38Z).",
+      "last_updated": "2026-11-18T07:40:27Z"
+    },
+    {
+      "project_number": 24,
+      "project_name": "amend_design_md_for_post_dated_rules",
+      "status": "not_started",
+      "task_type": "markdown",
+      "title": "Amend integration/design.md for post-dated rules",
+      "description": "Amend integration/design.md for the rules that postdate it: add the Anthropic/OpenAI/Google model allow-list and its GLM-pin negative control to section 6.2/8.1; add the filesystem-read sandbox guard, its core-only placement, and its negative controls to a new subsection of part 5; add the hook-cap-exemption manifest field to section 4.8/5.1; add the guard's tenth, fail-closed entry to section 6.5's child-session table and to 8.1's rulings index. No rule in this document is reversed; this task only records what the loader, translator, and host-plugin tasks actually built once each has landed. Also record the hard limit on hook time per tool call and its measurement method (task 27), the diagnostics tiers D0 to D3 as standing checks, the no-network rule for extension hooks, and the three-layer vocabulary of vision/agenda.md section 4 -- engine, task kernel, extensions -- wherever 'the core agent system' reads as part of SF-1's core. Section 7.2's report-only wording for hook time is the one statement this changes: hook time fails the M1 gate against the ratcheted limit.",
+      "topic": "harness-integration",
+      "dependencies": [
+        11,
+        12,
+        18,
+        19,
+        23,
+        27
+      ],
+      "artifacts": [],
+      "roadmap_annotation": "Ben's. Last: records what the loader, guard and extension port actually built. No GitHub issue of its own.",
+      "audit_override": "Owner-approved via task 21's reconciliation table, recorded in .decisions.json cycle 1 (2026-11-17T21:11:38Z).",
+      "last_updated": "2026-11-18T07:40:27Z"
+    }
+  ],
+  "active_topics": [
+    "harness-integration",
+    "codebase-health"
+  ],
+  "repository_health": {
+    "last_assessed": "2026-11-19T15:33:35Z",
+    "todo_count": 11,
+    "fixme_count": 0,
+    "build_errors": 0,
+    "status": "healthy",
+    "phantom_paths": 0
+  },
+  "primary_goals": [
+    "Give SF-1 a task workflow and an extension loader without making SF-1 slower, costlier or larger: with the task flag off SF-1 is byte-identical to itself, and with extensions loaded it is never worse than Claude Code (goal 11, issue #14; `vision/objectives.md`). Goals 5 and 6 have no headroom, so the working bar for this work is tighter than the goal's: not measurably worse than SF-1 without it."
+  ],
+  "roadmap_context": {
+    "rules": [
+      "New behaviour defaults off; with the task flag off the request is byte-identical to SF-1.",
+      "Every guard has a negative control that bites where it claims and nowhere else.",
+      "Edits go to the source tree; `.claude/` and `.opencode/` are regenerated, never hand-edited.",
+      "Both trees come from the same source at the same revision.",
+      "Nothing is added without the failure it prevents; nothing is ported without a user.",
+      "Extension code lives outside the plugin. `sf1 ext` is its own module, reached from the launcher by one lazily imported branch; a plain `sf1` launch in a project with no ledger does one file check and nothing else.",
+      "No new subsystem in the plugin. Hooks, permissions and instructions go through the existing `claudehooks.ts`, `claudeperms.ts` and `claudeproject.ts`; the only new engine code is the child-session gates, the task flag and the two bridged events.",
+      "Engine touch is counted: every change reports lines added under `sf1-v2/` and new `SF1_` variables.",
+      "Cost is paid at load, not at run; the loaded set is fixed for a session, and the brief is assembled once per launch.",
+      "Ratchet, not target: a change may not raise a baseline, and raising one is a separate, reviewed commit that says why."
+    ],
+    "conventions": [
+      "**Before**: D0-D3 pass against the committed baseline for the current engine base.",
+      "**After**: D0-D3 pass again; `bash sf1-v2/run-tests.sh` shows no failure outside the recorded known-failing set (issue #26 plus the machine-specific failures the baseline names); any baseline change is its own commit stating its reason.",
+      "**In every PR**: the entry script's pass/fail lines beside the `run-tests.sh` lines, and what D0, D2 and D3 moved by.",
+      "**On a new engine base** (PR #3 merging is the next): record the baseline again before measuring anything against it.",
+      "**Q1 -- the M1 gate does not hard-depend on the dispatch memory script.** The edge from task 10 to task 20 is removed. The gate may run with an empty memory block, records that it did, and repeats the comparison once the script (issue #22) lands.",
+      "**Q2 -- hook time fails a gate.** The hard limit of goal 11 is set by ratchet from the first D3 measurement (p95 and worst case, count-exempt hooks included) and the figure is proposed on issues #14 and #25.",
+      "**Q3 -- the loader is split.** The file-level half (task 30: ledger, load/unload/sync/verify, budget and collision checks, rollback; no manifest additions) runs ahead of the M1 gate; launcher integration and every manifest addition (task 11) stay behind it.",
+      "**Q6 -- this branch sits on `sync-1116`**, rebased and pushed 2026-11-17.",
+      "**Q7 -- `sync-1116` is the measured base**, not `fixes-1116`; re-baseline when PR #3 merges."
+    ]
+  },
+  "roadmap_milestones": [
+    {
+      "id": "M0",
+      "title": "Ground truth and decisions",
+      "aim": "Probe the pinned runtime and write down the design choices and limits M1 is built on.",
+      "gate": "Every probe has a result; the choices and limits are written down.",
+      "progress": {
+        "status": "closed",
+        "closed": "2026-11-15"
+      },
+      "review": {
+        "state": "none"
+      },
+      "batches": []
+    },
+    {
+      "id": "M1",
+      "title": "The task workflow on OpenCode",
+      "aim": "The smallest port that runs a task end to end inside SF-1.",
+      "gate": "A task completes end to end on OpenCode with the same `specs/` state, artifact paths and commit messages as under Claude Code; a task started under one harness finishes under the other; the flag off is byte-identical; the core is inside every budget.",
+      "progress": {
+        "status": "active",
+        "note": "Local prerequisites open; the host plugin half is held"
+      },
+      "review": {
+        "state": "none"
+      },
+      "batches": [
+        {
+          "task_ids": [
+            36,
+            38,
+            40
+          ],
+          "description": "Trust the instruments: the D2 limit, the translator trust checks, then the comparison instrument",
+          "rationale": "First, and three tasks in one sequenced dispatch. The first two share a file tree and are sequenced by an edge for that reason. Both are the opening pair of vision/milestones.md's order: milestone 1, measurement trusted (G4), then milestone 2, translation trusted (G2). Both are admissible from this repository today -- no hold, no external owner, nothing wanted from the SF-1 side -- so this batch is the move on the list rather than a recorded intention.\n\nThe batch exists because the territory overlaps, which was measured this pass rather than assumed. sf1-v2/diagnostics/run.ts is the single registration site for every check, importing each one by name from checks/*.ts, so a task adding three checks and a task changing how one check is invoked both land in it. sf1-v2/diagnostics/baseline.json holds one checks object, which the D2 task rewrites for its new limit and which the translator checks have to be recorded in before either is done. Both READMEs carry the ratchet rule a limit is read under, and both tasks add a negative control beside the existing negctrl scripts. Shared territory is a reason to batch and never a reason to separate, so they run as one dispatch serialized to width 1.\n\nThe edge runs D2 first, and the direction is not arbitrary. The D2 task is the one that rewrites the baseline's D2 rows and the READMEs' statement of how a limit is derived and ratcheted; the translator checks then add three rows and a committed per-extension digest under exactly that rule. Reversed, the D2 task would rewrite the README section the translator checks had just extended, and the new checks would be recorded against a derivation rule about to change underneath them. The D2 task is also the one the M1 gate names as a prerequisite, so putting it first serves the gate as well as the file tree.\n\nThe D2 half is worth doing on its own merits, and its own measurement is why. Over 83 real history entries the current two-sided band is 0.146 to 0.674 ms, cut as mean +/- 3 SD around 0.41; runs before 18:00Z averaged 0.436 with SD 0.060, runs from 18:00Z averaged 0.268 with SD 0.127 and clustered at 0.17 to 0.25, the lowest only 0.024 ms above the lower edge. A band like that can fail on an improvement, would pass a doubling of today's typical overhead, and re-derived by its own method now gives a negative lower edge. A one-sided upper limit on the median of several invocations, a small positive floor whose only job is to catch the plugin not running, and a control that bites just above the limit are what turn the D2 line the gate reads into a claim worth reading -- the existing diag-pairedbar control forces the value 100 ms past the band, so it proves the gate is wired but not that it is sensitive. Research settles whether the host load of about 5 explains the shift before anything is derived, since that decides how many invocations the median needs.\n\nThe translator half is the cheapest trust the project can buy: a census of every frontmatter key, tool name and deploy-root path form against the rule table, with translator.ts made to throw on an unmapped key instead of passing it through; a determinism check translating the same source twice into scratch roots and comparing byte for byte against a committed digest; and permission equality derived independently from the .claude and .opencode trees. Corpus is extensions/core, no network, nothing needed from the SF-1 side, and each check gets a control that bites where it claims and nowhere else.\n\nThe comparison instrument rides third in this batch by the owner's choice, sequenced behind the translator checks by an edge added for that purpose. It shares no file territory with the diagnostics pair: it writes a new comparison script, gets the Claude Code arm of harness/fixes-1116/remeasure/ running on Linux where it carries a macOS sandbox profile, and writes its output in the run-record format of integration/extension-system.md section 10.4. The edge is an ordering convenience so one dispatch carries all three, and it costs the instrument a wait it does not technically need. This is milestone 3 of vision/milestones.md: a script that takes two completed runs of the same task, one under sf1 on OpenCode and one under Claude Code, and writes one paired record with a structural diff and one timing method, every difference classified expected or unexplained. The M1 gate depends on it by a real edge, so the gate cannot fall back to a by-hand comparison. Its negative control is a fixture pair carrying one injected difference, which must be reported unexplained."
+        },
+        {
+          "task_ids": [
+            39
+          ],
+          "description": "Invert the translator to prove the forward pass, then widen both over the whole port inventory",
+          "rationale": "Second, and the first batch on this list that is not dispatchable today -- by one edge, not by any external block. It depends on the translator checks in the first batch for the census and the diagnostics registration it extends, so it sits in wave 3 and becomes admissible the moment that batch lands. Nothing in it is owned on the SF-1 side.\n\nIt completes milestone 2 with properties T3 and T4 of vision/parity.md section 2.2: an inverse pass beside sf1-v2/opencode-plugin/src/translator.ts for every mapped row, with each lossy row declared by name -- the two deny rules the forward pass adds on non-root agents, and a tier word resolved to a concrete model id -- then a round-trip check that translate-then-invert reproduces the source byte for byte except for those declared rows, with a control in which a rule edited to drop a field must break the round trip. T4 then takes the census, determinism and round-trip checks from extensions/core out to every extension in integration/port-inventory.md, reporting unmapped constructs as a count that ratchets down.\n\nThe inverse is a proof instrument first and an import path second, which is what keeps design choice A2 intact: the Claude format stays the source. That also settles where open question 2 of vision/milestones.md gets its answer -- the neutral authoring format is reopened only if the census shows constructs the rule table cannot express in either direction, so the census has to run before the question can be decided rather than the other way round.\n\nAlone in its batch rather than folded into the first, even though it shares the diagnostics tree and the translator with its predecessor, because the first batch is what can be dispatched now and this is what follows it. Keeping the boundary visible is the point of the order; the edge, not array position, is what actually serializes them."
+        },
+        {
+          "task_ids": [
+            35
+          ],
+          "description": "Stand up the nix dev shell; its venv half cannot finish until the engine wheel arrives from Oliver",
+          "rationale": "Fourth, behind three batches that can be driven to their done-conditions and ahead of the whole harness-integration chain, which cannot be dispatched at all. That position is exactly its shape: genuinely half-dispatchable. The dev-shell half needs nothing external -- nix and uv are on the host, node and python3 resolve, and there is no flake.nix at the repository root yet, so the Python 3.13 / uv / Node shell can be written, entered and committed today. The half it is actually judged on cannot be finished: the documented command has to install the SF-1 engine wheel (engram.server, 6.7.6) into the lab venv and point SF1_ENGINE_PY at that interpreter so sf1-v2/run-tests.sh and the negctrl-*.sh scripts start the Python suites on a machine other than Oliver's, and it is done only when those suites start and the recorded known-failing baseline is re-read against the result.\n\nThe wheel is absent, and that was established by four independent checks in the previous pass rather than re-measured in this one: no .whl matching engram or ngrm anywhere under the home tree or in this repository; the lab venv the scripts default to holding exactly pip and nothing else, with import engram raising ModuleNotFoundError; the vendored mcp-ko-server source at 5.6.0 whose ko_write accepts neither event_date nor no_cross_supersede, two of the keywords sapience_lab_mcp.py's preflight demands, so it cannot stand in for the wheel; and a public index carrying only ngrm 0.0.1 and engram 0.1.0a1, so it cannot be self-served. What was re-confirmed this pass is that issue #26, where the wheel was requested once, is still open.\n\nIt carries EXT-BLOCKED for that reason, while differing from the SF-1-side entries in who holds the remedy: not another clone, but a wheel handed over on an open issue. It stays at not_started rather than held, because the shell half really is admissible and a hold would put it out of reach of every ordinary command. vision/milestones.md places it on no critical path, and the dependency graph agrees in both directions: nothing in the chain waits on it and it waits on nothing here.\n\nOne clause of its done-condition is still unverified: test_dispatch_memory.py does not exist anywhere in this checkout, and is most likely delivered by the dispatch-memory work on PR #38 -- confirmed open and unmerged again this pass -- rather than by this task, which would make that clause wait on the PR as well as on the wheel. That reading is inference from the filename and the PR's subject, not measurement, and should be confirmed before this task is planned."
+        },
+        {
+          "task_ids": [
+            10
+          ],
+          "description": "The M1 gate -- two local prerequisites now, plus the held SF-1-side host plugin it cannot clear",
+          "rationale": "Fifth, and the head of the harness-integration chain rather than the head of this list. Two local prerequisites are open, one of them new. The D2 hot-path limit in the first batch has been a prerequisite by edge for a pass already; the comparison instrument in the same first batch became one when that task was created, and it is the more consequential of the two, because it decides whether this gate is judged by a script or by hand. Both are in the gate's dependency list, both are local, and both are dispatchable now -- which makes this the one place on the list where local work genuinely moves the chain's head closer.\n\nIt also corrects a claim earlier passes carried: that every instrument this gate needs already exists on disk. D2's exists but does not yet discriminate, and the paired-record instrument does not exist at all. Milestone 4 of vision/milestones.md is written accordingly -- one task completing on each harness with a paired record and no unexplained difference, a task started on one harness finishing on the other, and flag-off byte identity -- and the paired record in that sentence is the first batch's deliverable.\n\nWhat has not changed is the external block, and it still decides whether this is a dispatch or an order to run in. The gate waits on the SF-1 host plugin and launcher changes (issue #21), held here, worked in another clone, and carried on PR #37, which was confirmed open and unmerged this pass. So clearing both local prerequisites does not make this runnable: three things have to land, two of them from here. Everything below inherits the same wait through it.\n\nAlone rather than batched with the loader's launcher half below, and not merely because an edge sequences the two. The loader split means every manifest addition is only what M1 proved necessary, so the launcher half's content is not decided until this gate has produced its measurements; a single dispatch admitting both would plan the second against a specification the first had not yet written. They share no file territory either -- this gate drives one task end to end in a separate project directory, never this checkout, while the launcher half edits sf1-v2/ and the manifest.\n\nThe work itself is a measurement, not a deliverable: one real task driven from research to completed under sf1, the same task re-run under Claude Code from the .claude copy, statuses, artifacts and commit messages compared, a task started under one harness shown finishing under the other, and the flag-off byte-identity control confirmed with no task tree deployed. Both arms are timed by the remeasure harness's one timing method under the scored run profile, so the result carries over to the goal 11 sealed test rather than being redone there. D1 carries the flag-off byte identity, D0 the brief, agents, skills, listing descriptions and context files inside budget, D2 and D4 no regression against the recorded baseline, and D3 hook time inside the ratcheted hard limit -- p95 and worst case, count-exempt hooks included -- which under Q2 fails this gate when exceeded instead of being reported beside it."
+        }
+      ]
+    },
+    {
+      "id": "M2",
+      "title": "The extension system",
+      "aim": "A loader that loads, unloads and syncs extensions into both deploy trees from one ledger.",
+      "gate": "Load, unload and sync round-trip both trees with no orphan files; a failed load leaves both trees unchanged; with no extensions loaded, behaviour equals M1.",
+      "progress": {
+        "status": "planned"
+      },
+      "review": {
+        "state": "none"
+      },
+      "batches": [
+        {
+          "task_ids": [
+            11
+          ],
+          "description": "Add the loader's launcher half and its manifest additions, the rest of M2, behind the gate",
+          "rationale": "M2's remainder, and behind the gate by the same Q3 ruling that put the file-level half ahead of it. That half has landed, so this batch is exactly what the split deliberately held back: everything that generates runtime configuration, reaches into the launcher, or adds to the manifest. The manifest additions are specified as only what M1 proved necessary, which is why this half genuinely cannot be written before the gate rather than merely being tidier after it.\n\nWhat it adds on top of the ledger and the file operations: harness hooks (with a guard's unattended default as a field on its hook entry, and a field marking a core-owned hook exempt from the five-hooks-per-call limit), permission rules, a brief section, MCP servers, required binaries and a top-level interview key holding question lists per task type; the dispatch builder writing each task record's forcing_data into every dispatch file; load extended to check the five-blocking-hooks-per-call limit, the required binaries, each brief-section heading against the ritual filter drop list, and that no extension hook opens a network connection on the tool-call path, with a hook that does refused at load; the kernel brief and per-extension sections assembled once per launch so the cached prefix is stable; and sf1 --target claude as the fail-safe launch.\n\nTwo of its deliverables are what the batch below is built on: the manifest's hook-cap-exemption field, which the sandbox guard's hook registration uses, and the load-time check that the guard is present, registered and unaltered by anything sf1 ext sync just touched, failing a load exactly as a missing required binary does. The guard itself is a separate task deliberately, since it consumes the exemption field rather than defining it.\n\nThe engine rules bind hardest here, because this is the only task in the plan that reaches into the launcher at all. sf1 ext stays its own module outside the plugin, reached by one lazily imported branch, so a plain sf1 launch in a project with no ledger does one file check and nothing else. No new subsystem goes into the plugin: hooks, permissions and instructions go through the existing claudehooks.ts, claudeperms.ts and claudeproject.ts. Every launch-time step finishes before the prewarm starts the server and adds nothing to cold start. And the PR reports lines added under sf1-v2/ and new SF1_ variables, adds the with-ledger launch arm to D4, and states what D0, D2 and D3 moved by. Its research closes one open design point by probe -- whether the generated runtime config can set a model per agent -- and it checks Gate M2's last clause: with no extensions loaded, behaviour equals M1."
+        }
+      ]
+    },
+    {
+      "id": "M3",
+      "title": "The extensions in use",
+      "aim": "Port the six extensions in use; each passes the budgets and runs one task of its type on both harnesses.",
+      "gate": "The six extensions load together within budget on both trees with no command or keyword collision; one task of each type completes on OpenCode.",
+      "progress": {
+        "status": "planned"
+      },
+      "review": {
+        "state": "none"
+      },
+      "batches": [
+        {
+          "task_ids": [
+            23,
+            12
+          ],
+          "description": "Ship the guard the loader refuses to load without, then port the six extensions behind it",
+          "rationale": "M3, and one batch rather than two because neither member can load anything until the other exists. The loader fails a load outright when the extension filesystem-read sandbox guard is missing or altered, and the extension port's whole gate is six extensions loading together within budget on both trees -- so the port is not merely tidier after the guard, it is unrunnable before it. A serializing edge carries that: the port depends on the guard, which drains in the earlier wave.\n\nThe guard in turn depends on the loader's launcher half, since it registers its hook through the exemption field that half adds, and on the host-plugin task, for the fail-closed child-session gate it wires into -- making it the tenth such gate and the only one that must fire in a child session and block rather than skip when it cannot resolve whether it is in one. Its file is sited outside anything sf1 ext sync can remove or alter, which is what makes the loader's check meaningful, and it carries one negative control per rule. That second predecessor is the externally owned host-plugin task, so this batch inherits the clone-boundary wait directly as well as through the gate.\n\nThe port then runs in the fixed order git-flow, typescript, python, slidev, present, founder, with present before founder, each inside the per-extension budgets and each running one task of its type on both harnesses; forcing questions move to the root session as manifest interview entries or user_decision hand-backs, confirming the provisional 28 / 22 / 36 split file by file. Each extension's PR states what D0, D2 and D3 moved by with it loaded, and the port adds the six-extension arm to D4. The sapience extension is deliberately not among them; its two functions are the dispatch memory script in M1 and the completion notes in M4, both provided inside SF-1."
+        },
+        {
+          "task_ids": [
+            24
+          ],
+          "description": "Write the rules that postdate design.md back into it, once each has actually shipped",
+          "rationale": "Last, and deliberately so. Several rules were settled after design.md was written -- the model allow-list and its GLM-pin negative control, the filesystem-read sandbox guard with its core-only placement and negative controls, the manifest hook-cap-exemption field, the guard's tenth, fail-closed entry in the child-session table, and the hard hook-time limit of Q2 together with the diagnostics tiers as standing checks -- and each lives today only in the task description of whichever task implements it, or in the roadmap's own Settled decisions. This batch is where they become part of the document the rest of the port is read against.\n\nTwo of its predecessors have already landed, which makes its eventual content more settled than it was: the translator shipped the model allow-list and its GLM-pin control, and tier D3 produced the hook-time figure and the method behind it, so neither has to be written down from a plan any more. What it still waits on is the loader's launcher half, the sandbox guard, the extension port, and the externally owned host-plugin task -- that last one by a direct edge of its own, not merely by a path through the other three.\n\nIt is alone in its batch because its content is not decided until those predecessors have landed: it records what they actually built, not what they were asked to build. No ruling in the document is reversed here, which is why this task carries no gate of its own and why it is safe to leave until the end.\n\nIts ordering against the extension port is carried by the graph rather than by array position, and the reason it belongs after the port is a read/write conflict on a single file: the port is specified by design.md section 5.10 and reads part 5 throughout, while this task rewrites part 5, adding the sandbox-guard subsection and the hook-cap-exemption field. Left unedged the two would share a wave, and a dispatch admitting both would have edited the port's specification underneath the port. The edge serializes them in this direction rather than the reverse: this task documents the loader, guard and host-plugin work and no part of the port, so amending the document first would give the port nothing it needs, while its own content is only settled once everything it records has landed."
+        }
+      ]
+    },
+    {
+      "id": "M4",
+      "title": "Fit with SF-1's memory",
+      "aim": "Small joins that stop the task layer and SF-1's memory contradicting each other; needs only M1.",
+      "gate": "An autonomous task run creates no knowledge objects on its own; `STATE.md` and `state.json` never disagree about a task; no keypress gate stalls an unattended run.",
+      "progress": {
+        "status": "planned"
+      },
+      "review": {
+        "state": "none"
+      },
+      "batches": []
+    }
+  ]
+}
