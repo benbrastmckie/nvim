@@ -1,7 +1,7 @@
 # Implementation Plan: Task #667
 
 - **Task**: 667 - Amend branch-topology rulings R1-R3 and R5: per-batch worktree side branches with per-task squash landing onto the long-lived feature branch
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8.5 hours
 - **Dependencies**: None declared. Successor tasks created by Phase 3 depend on this task and on 513, 517, 553 as ruled in Phase 4.
 - **Research Inputs**: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md

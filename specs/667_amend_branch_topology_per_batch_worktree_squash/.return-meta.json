@@ -2,8 +2,11 @@
   "status": "implemented",
   "dispatch_seq": 3,
   "artifacts": [
-    {"type": "summary", "path": "specs/667_amend_branch_topology_per_batch_worktree_squash/summaries/01_batch-worktree-squash-amendment-summary.md",
-     "summary": "Amending decision record written, landing verification repaired (defect D1), eight successor tasks 668-675 created with edges, 655 and 666 revised, redeployed."}
+    {
+      "type": "summary",
+      "path": "specs/667_amend_branch_topology_per_batch_worktree_squash/summaries/01_batch-worktree-squash-amendment-summary.md",
+      "summary": "Amending decision record written, landing verification repaired (defect D1), eight successor tasks 668-675 created with edges, 655 and 666 revised, redeployed."
+    }
   ],
   "completion_data": {
     "completion_summary": "Wrote specs/decisions/batch-worktree-isolation-and-task-squash-landing.md amending rulings R1-R3 and R5, repaired milestone-ref-land.sh --verify to tree equality so finished tasks are no longer stranded at implementing, and created successor tasks 668-675 to build admission, the two-root contract, attribution landing, cleanup and documentation. The batch-worktree workflow itself is not built by this task."
@@ -22,38 +25,92 @@
     "specs/667_amend_branch_topology_per_batch_worktree_squash/summaries/01_batch-worktree-squash-amendment-summary.md"
   ],
   "memory_candidates": [
-    {"content": "To prove a verification check is falsifiable without leaving a break in the tree: copy the script under test, its libraries and its suite into a scratch directory, mutate the copy (force the comparison true, or restore the pre-fix version with git show HEAD:path), and run the suite there. A suite that resolves the script relative to its own directory needs no other change. Record which cases fail under each mutation.",
-     "category": "TECHNIQUE", "source_artifact": "specs/667_amend_branch_topology_per_batch_worktree_squash/summaries/01_batch-worktree-squash-amendment-summary.md", "confidence": 0.8,
-     "suggested_keywords": ["mutation check", "negative fixture", "falsifiable", "scratch copy", "test suite"]},
-    {"content": "verify-touched.sh given source-store paths selects and runs the DEPLOYED .claude/scripts/tests copies. Its green verdict does not exercise source-store edits until deploy-headless.sh has run; run the directly relevant suites from the source store first, and re-take the narrowed verdict after the redeploy.",
-     "category": "WORKFLOW", "source_artifact": "specs/667_amend_branch_topology_per_batch_worktree_squash/summaries/01_batch-worktree-squash-amendment-summary.md", "confidence": 0.85,
-     "suggested_keywords": ["verify-touched", "deployed copies", "source store", "redeploy", "narrowed verification"]}
+    {
+      "content": "To prove a verification check is falsifiable without leaving a break in the tree: copy the script under test, its libraries and its suite into a scratch directory, mutate the copy (force the comparison true, or restore the pre-fix version with git show HEAD:path), and run the suite there. A suite that resolves the script relative to its own directory needs no other change. Record which cases fail under each mutation.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/667_amend_branch_topology_per_batch_worktree_squash/summaries/01_batch-worktree-squash-amendment-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "mutation check",
+        "negative fixture",
+        "falsifiable",
+        "scratch copy",
+        "test suite"
+      ]
+    },
+    {
+      "content": "verify-touched.sh given source-store paths selects and runs the DEPLOYED .claude/scripts/tests copies. Its green verdict does not exercise source-store edits until deploy-headless.sh has run; run the directly relevant suites from the source store first, and re-take the narrowed verdict after the redeploy.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/667_amend_branch_topology_per_batch_worktree_squash/summaries/01_batch-worktree-squash-amendment-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "verify-touched",
+        "deployed copies",
+        "source store",
+        "redeploy",
+        "narrowed verification"
+      ]
+    }
   ],
   "sapience_notes": [
-    {"subject": "branch topology for orchestrated work", "predicate": "decision is",
-     "value": "Worktree isolation is reinstated at one granularity only: one side branch and one worktree per orchestrate invocation, with nothing cloned, hardlinked or symlinked in. Per-dispatch worktrees stay removed. It is a per-repository key worktree_isolation (batch or off, undeclared means off). Decided 2026-11-20 on the user's direction; the mechanics are not built yet.",
-     "ko_type": "decision", "confidence": 0.9, "source_loc": "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"},
-    {"subject": "per-task squash landing", "predicate": "decision is",
-     "value": "A task's squash commit is built by attribution: cherry-pick -n of that task's own commits selected by the task-number subject convention, then one commit. git merge --squash of a task's end commit was rejected because, when two tasks commit in interleaved order on one batch branch, it co-lands the other task's unfinished commits. Verification is blob equality over the task's own paths, not full-tree equality.",
-     "ko_type": "decision", "confidence": 0.9, "source_loc": "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"},
-    {"subject": "milestone-ref-land.sh --verify", "predicate": "correction is",
-     "value": "An ancestry check (HEAD is an ancestor of the milestone ref) is wrong for a ref whose commits are parented on the ref's own chain: only the first landing passes and every later correct landing fails permanently. The predicate is now tree equality between the ref tip and HEAD, which still fails for any commit made after the last landing.",
-     "ko_type": "correction", "confidence": 0.95, "source_loc": "agent-system/extensions/core/scripts/milestone-ref-land.sh"},
-    {"subject": "git-commit-scoped.sh under a second working tree", "predicate": "finding is",
-     "value": "The wrong-root defect is not closed by the batch-worktree design. Invoked by its primary-tree path against a file modified only in a worktree, the script prints nothing-to-commit and exits 1, which every caller treats as benign. It needs an explicit code root and a refusal before staging while a batch record is live.",
-     "ko_type": "insight", "confidence": 0.85, "source_loc": "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"},
-    {"subject": "Lean repositories and batch worktrees", "predicate": "decision is",
-     "value": "Lean repositories keep isolation off: they get the admission branch check and no per-task squash. A fresh worktree would re-fetch about 9.6 GiB of dependencies and rebuild 6.4 GiB of project output. Sharing through Lake's artifact cache is unmeasured across differing tree paths and is deferred as a spike, not adopted.",
-     "ko_type": "decision", "confidence": 0.85, "source_loc": "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"},
-    {"subject": "bookkeeping commits under a tracked specs tree", "predicate": "open question is",
-     "value": "The user has not ruled whether task bookkeeping commits keep landing directly on the integration branch between per-task squash commits or are folded into each squash. Work proceeds on the first as an assumption; the commit-script two-root task must be re-planned if the answer is the second.",
-     "ko_type": "question", "confidence": 0.9, "source_loc": "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"}
+    {
+      "subject": "branch topology for orchestrated work",
+      "predicate": "decision is",
+      "value": "Worktree isolation is reinstated at one granularity only: one side branch and one worktree per orchestrate invocation, with nothing cloned, hardlinked or symlinked in. Per-dispatch worktrees stay removed. It is a per-repository key worktree_isolation (batch or off, undeclared means off). Decided 2026-11-20 on the user's direction; the mechanics are not built yet.",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"
+    },
+    {
+      "subject": "per-task squash landing",
+      "predicate": "decision is",
+      "value": "A task's squash commit is built by attribution: cherry-pick -n of that task's own commits selected by the task-number subject convention, then one commit. git merge --squash of a task's end commit was rejected because, when two tasks commit in interleaved order on one batch branch, it co-lands the other task's unfinished commits. Verification is blob equality over the task's own paths, not full-tree equality.",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"
+    },
+    {
+      "subject": "milestone-ref-land.sh --verify",
+      "predicate": "correction is",
+      "value": "An ancestry check (HEAD is an ancestor of the milestone ref) is wrong for a ref whose commits are parented on the ref's own chain: only the first landing passes and every later correct landing fails permanently. The predicate is now tree equality between the ref tip and HEAD, which still fails for any commit made after the last landing.",
+      "ko_type": "correction",
+      "confidence": 0.95,
+      "source_loc": "agent-system/extensions/core/scripts/milestone-ref-land.sh"
+    },
+    {
+      "subject": "git-commit-scoped.sh under a second working tree",
+      "predicate": "finding is",
+      "value": "The wrong-root defect is not closed by the batch-worktree design. Invoked by its primary-tree path against a file modified only in a worktree, the script prints nothing-to-commit and exits 1, which every caller treats as benign. It needs an explicit code root and a refusal before staging while a batch record is live.",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"
+    },
+    {
+      "subject": "Lean repositories and batch worktrees",
+      "predicate": "decision is",
+      "value": "Lean repositories keep isolation off: they get the admission branch check and no per-task squash. A fresh worktree would re-fetch about 9.6 GiB of dependencies and rebuild 6.4 GiB of project output. Sharing through Lake's artifact cache is unmeasured across differing tree paths and is deferred as a spike, not adopted.",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"
+    },
+    {
+      "subject": "bookkeeping commits under a tracked specs tree",
+      "predicate": "open question is",
+      "value": "The user has not ruled whether task bookkeeping commits keep landing directly on the integration branch between per-task squash commits or are folded into each squash. Work proceeds on the first as an assumption; the commit-script two-root task must be re-planned if the answer is the second.",
+      "ko_type": "question",
+      "confidence": 0.9,
+      "source_loc": "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"
+    }
   ],
   "metadata": {
     "session_id": "sess_1795203458_188c22",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 5
   }
