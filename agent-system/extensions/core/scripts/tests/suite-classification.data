@@ -190,6 +190,7 @@ test-redeploy-remedy-lib.sh	integration	invokes:deploy-headless.sh
 test-resume-scan-nonconformance.sh	unit	-
 test-return-meta-status-vocabulary.sh	unit	-
 test-roadmap-command-registration.sh	unit	-
+test-roadmap-entries-lib.sh	unit	-
 test-roadmap-generation.sh	unit	-
 test-routing-resolution.sh	unit	-
 test-run-all-failure-reporting.sh	integration	invokes:run-all.sh

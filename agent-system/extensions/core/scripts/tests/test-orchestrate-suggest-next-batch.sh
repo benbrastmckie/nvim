@@ -12,7 +12,7 @@
 # and the alternatives search's probe-invocation cap is honored and rendered explicitly, never
 # silently truncated (g). Mode A's roadmap-aware candidate source is covered by: a clean
 # authored batch renders with its description, suppressing the mechanical options (k); the
-# absent-roadmap_batches-key and empty-array paths both fall through to the mechanical render
+# no-roadmap-key and empty-batch-array paths both fall through to the mechanical render
 # with zero roadmap-walk output, asserted independently (l, m); every authored batch unready
 # produces an explicit fallback line naming the batches checked before the mechanical options
 # render (n); a first empty-filtered batch's skip is visible even when a later batch succeeds
@@ -174,15 +174,36 @@ add_queue_entry() {
     }' > "$scratch/specs/.orchestration/queue/${id}.json"
 }
 
-# set_roadmap_batches <scratch> <json> -- writes .roadmap_batches onto the scratch state.json
-# via jq (same tmp-file-then-mv convention as add_task()/add_task_topic()/add_queue_entry()).
-# <json> is a JSON array of {task_ids: [...], description: "..."} objects, matching the real
-# roadmap_batches schema (specs/state.json's own authored shape).
+# set_roadmap_batches <scratch> <json> -- writes <json> as the batches of ONE active milestone
+# ("M1") onto the scratch state.json's .roadmap_milestones, via jq (same tmp-file-then-mv
+# convention as add_task()/add_task_topic()/add_queue_entry()). <json> is a JSON array of
+# {task_ids: [...], description: "..."} objects, matching definitions.roadmapBatchEntry.
 set_roadmap_batches() {
   local scratch="$1" json="$2"
   local tmp
   tmp="$(mktemp)"
+  jq --argjson rb "$json" '.roadmap_milestones = [{id: "M1", title: "Fixture milestone",
+      aim: "Fixture aim", progress: {status: "active"}, batches: $rb}]' \
+    "$scratch/specs/state.json" > "$tmp"
+  mv "$tmp" "$scratch/specs/state.json"
+}
+
+# set_flat_roadmap_batches <scratch> <json> -- writes <json> as the flat .roadmap_batches array,
+# the shape of a store that carries no .roadmap_milestones key (the accessor's fallback case).
+set_flat_roadmap_batches() {
+  local scratch="$1" json="$2"
+  local tmp
+  tmp="$(mktemp)"
   jq --argjson rb "$json" '.roadmap_batches = $rb' "$scratch/specs/state.json" > "$tmp"
+  mv "$tmp" "$scratch/specs/state.json"
+}
+
+# set_roadmap_milestones <scratch> <json> -- writes <json> verbatim as .roadmap_milestones.
+set_roadmap_milestones() {
+  local scratch="$1" json="$2"
+  local tmp
+  tmp="$(mktemp)"
+  jq --argjson ms "$json" '.roadmap_milestones = $ms' "$scratch/specs/state.json" > "$tmp"
   mv "$tmp" "$scratch/specs/state.json"
 }
 
@@ -512,6 +533,7 @@ SID="sess_test_$$_suggest"
   if [ "$rc" -eq 0 ] \
     && echo "$out" | grep -q 'Authored roadmap batch 1' \
     && echo "$out" | grep -q 'Case k roadmap batch' \
+    && echo "$out" | grep -q '(milestone M1, batch 1)' \
     && echo "$out" | grep -q 'task 100: admit' \
     && echo "$out" | grep -q 'task 101: admit' \
     && ! echo "$out" | grep -q 'Option 1 -- shared territory'; then
@@ -522,9 +544,9 @@ SID="sess_test_$$_suggest"
 }
 
 # =====================================================================================
-# Case (l): roadmap_batches key absent -- mechanical render fires exactly as today, zero
+# Case (l): no roadmap key in either shape -- mechanical render fires exactly as today, zero
 # roadmap-walk output at all (regression guard for the pre-existing cases' fixture shape,
-# which never sets roadmap_batches).
+# which never sets a roadmap key).
 # =====================================================================================
 {
   scratch="$(build_scratch)"
@@ -546,7 +568,7 @@ SID="sess_test_$$_suggest"
 }
 
 # =====================================================================================
-# Case (m): roadmap_batches: [] -- the identical zero-probe, zero-output fallback as the
+# Case (m): an open milestone with batches: [] -- the identical zero-probe, zero-output fallback as the
 # absent-key case, asserted independently per the acceptance criterion's own split.
 # =====================================================================================
 {
@@ -697,6 +719,53 @@ SID="sess_test_$$_suggest"
     common_test_pass "(s) set -e footgun regression: the highest-numbered ready-pool-scan task having an unmet dependency (all_ok=false) on the last line read does not silently abort the script"
   else
     common_test_fail "(s) set -e footgun regression: rc=$rc -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (t): flat-shape fallback -- a store with no roadmap_milestones key keeps suggesting
+# from its flat roadmap_batches array, with no milestone label on the rendered batch.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  add_task "$scratch" 300 not_started '["agent-system/extensions/core/t300"]' '[]'
+  set_flat_roadmap_batches "$scratch" '[{"task_ids":[300],"description":"Case t flat batch"}]'
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
+  rc=$?
+  if [ "$rc" -eq 0 ] \
+    && echo "$out" | grep -q 'Authored roadmap batch 1 -- Case t flat batch' \
+    && echo "$out" | grep -q 'task 300: admit' \
+    && ! echo "$out" | grep -q '(milestone '; then
+    common_test_pass "(t) flat-shape fallback: a store without roadmap_milestones suggests from roadmap_batches, no milestone label"
+  else
+    common_test_fail "(t) flat-shape fallback: rc=$rc -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (u): a closed milestone is skipped -- its batch is never walked or probed even though
+# its member is ready; the next open milestone's batch renders as authored batch 1.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  add_task "$scratch" 310 not_started '["agent-system/extensions/core/u310"]' '[]'
+  add_task "$scratch" 311 not_started '["agent-system/extensions/core/u311"]' '[]'
+  set_roadmap_milestones "$scratch" '[
+    {"id":"M1","title":"Done","aim":"a","progress":{"status":"closed","closed":"2026-01-01"},
+     "batches":[{"task_ids":[310],"description":"Case u closed-milestone batch"}]},
+    {"id":"M2","title":"Open","aim":"a","progress":{"status":"active"},
+     "batches":[{"task_ids":[311],"description":"Case u open-milestone batch"}]}]'
+  out="$(run_suggest "$scratch" --next-batch --session-id "$SID")"
+  rc=$?
+  if [ "$rc" -eq 0 ] \
+    && echo "$out" | grep -q 'Authored roadmap batch 1 -- Case u open-milestone batch' \
+    && echo "$out" | grep -q '(milestone M2, batch 1)' \
+    && echo "$out" | grep -q 'task 311: admit' \
+    && ! echo "$out" | grep -q 'Case u closed-milestone batch' \
+    && ! echo "$out" | grep -q 'task 310'; then
+    common_test_pass "(u) closed milestone skipped: its ready member is never walked; the open milestone's batch renders"
+  else
+    common_test_fail "(u) closed milestone skipped: rc=$rc -- $out"
   fi
 }
 

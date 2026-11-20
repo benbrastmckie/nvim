@@ -57,8 +57,9 @@
 # (non-`--write-edges`) form.
 #
 # ── (f) Roadmap-aware candidate source (Mode A primary) ─────────────────────────────────────────
-# Mode A (`--next-batch`) now walks `specs/state.json`'s authored `roadmap_batches` array, in
-# authored order, BEFORE trying the three mechanical selection-doctrine criteria (shared
+# Mode A (`--next-batch`) walks `specs/state.json`'s authored batches (read through
+# `lib/roadmap-entries-lib.sh`: the batches of every non-closed milestone, or the flat
+# `roadmap_batches` array of a store with no `roadmap_milestones` key), in authored order, BEFORE trying the three mechanical selection-doctrine criteria (shared
 # territory, topic cohesion, graph width). Each authored batch's `task_ids` are readiness-filtered
 # locally (the same shared predicate the mechanical path uses — see `build_ready_set()` /
 # `task_is_ready()` below); an empty-filtered batch is skipped at zero probe cost. The first
@@ -70,7 +71,7 @@
 # position and `description`, and the three mechanical criteria are NOT also rendered for that
 # invocation. A batch whose filtered set is a proper subset of its authored `task_ids` says so
 # explicitly, naming the omitted members, rather than presenting the subset as the whole batch.
-# When `roadmap_batches` is absent, empty, or every authored batch's filtered set is either empty
+# When no batch is authored in either shape, or every authored batch's filtered set is either empty
 # or probed-but-deferred, ONE explicit line states how many batches were checked and why none was
 # usable, then execution falls through to today's three mechanical options unchanged — the
 # roadmap walk is a primary source with an explicit stated fallback, never a silent, always-on
@@ -228,6 +229,11 @@ TRIAGE_SCRIPT="${SCRIPT_DIR}/orchestrate-triage-classify.sh"
 # check this script needs, sourced rather than re-transcribed).
 if ! . "${SCRIPT_DIR}/lib/task-classification-lib.sh" 2>/dev/null; then
   echo "ERROR: orchestrate-suggest-next-batch.sh: could not source ${SCRIPT_DIR}/lib/task-classification-lib.sh." >&2
+  exit 3
+fi
+# The one accessor for the ordered authored-batch list (milestone shape, flat fallback).
+if ! . "${SCRIPT_DIR}/lib/roadmap-entries-lib.sh" 2>/dev/null; then
+  echo "ERROR: orchestrate-suggest-next-batch.sh: could not source ${SCRIPT_DIR}/lib/roadmap-entries-lib.sh." >&2
   exit 3
 fi
 
@@ -393,18 +399,20 @@ build_ready_pool() {
   printf '%s\n' "${!READY_SET[@]}" | sort -n
 }
 
-# ── read_roadmap_batches(): reads specs/state.json's authored `roadmap_batches` array, in
-#    authored array order, emitting one TSV line per batch ("task_ids_csv<TAB>description").
-#    An absent `roadmap_batches` key and an explicit `roadmap_batches: []` are tolerated
-#    IDENTICALLY — both yield zero lines (`// []` normalizes the absent case to the empty-array
-#    case before `.[]` ever runs), so both are a zero-probe skip straight to the mechanical
+# ── read_roadmap_batches(): reads specs/state.json's authored batches through
+#    lib/roadmap-entries-lib.sh -- the batches of every non-closed milestone in
+#    milestone-then-batch order, or the flat `roadmap_batches` array of a store that carries no
+#    `roadmap_milestones` key -- emitting one TSV line per batch
+#    ("task_ids_csv<TAB>milestone_id<TAB>ordinal<TAB>description"; milestone_id is "-" for the
+#    flat shape, and description is last because it is the one field that may be empty). No authored batch in either shape yields zero lines, so an absent key and an
+#    empty array are tolerated IDENTICALLY: both are a zero-probe skip straight to the mechanical
 #    render, never a usage error. ─────────────────────────────────────────────────────────────
 read_roadmap_batches() {
-  jq -r '
-    (.roadmap_batches // [])[]
-    | [((.task_ids // []) | map(tostring) | join(",")), (.description // "")]
+  roadmap_entries_batches "$STATE_FILE" | jq -r '
+    [((.task_ids // []) | map(tostring) | join(",")), (.milestone // "-"),
+     (.ordinal | tostring), (.description // "")]
     | @tsv
-  ' "$STATE_FILE"
+  '
 }
 
 # ── suggest_from_roadmap_batches(): Mode A's primary candidate source (see header section (f)).
@@ -424,10 +432,10 @@ read_roadmap_batches() {
 #    second one). ─────────────────────────────────────────────────────────────────────────────
 suggest_from_roadmap_batches() {
   local batches_total=0 batches_skipped_empty=0 batches_deferred=0
-  local task_ids_csv description tid
+  local task_ids_csv description milestone_id ordinal tid
   local -a task_ids=() filtered=() omitted=()
 
-  while IFS=$'\t' read -r task_ids_csv description; do
+  while IFS=$'\t' read -r task_ids_csv milestone_id ordinal description; do
     [ -z "$task_ids_csv" ] && continue
     batches_total=$((batches_total + 1))
 
@@ -452,6 +460,9 @@ suggest_from_roadmap_batches() {
 
     echo ""
     echo "Authored roadmap batch ${batches_total} -- ${description}:"
+    if [ -n "${milestone_id:-}" ] && [ "$milestone_id" != "-" ]; then
+      echo "  (milestone ${milestone_id}, batch ${ordinal})"
+    fi
     if [ "${#omitted[@]}" -gt 0 ]; then
       local IFS=', '
       echo "  (omitting not-ready member(s): ${omitted[*]} -- rendering only the ready subset)"

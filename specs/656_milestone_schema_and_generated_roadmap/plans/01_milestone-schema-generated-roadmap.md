@@ -215,25 +215,25 @@ store and confirm zero entries exceed 140.
 
 ---
 
-### Phase 2: Roadmap Entries Accessor and Next-Batch Reader [NOT STARTED]
+### Phase 2: Roadmap Entries Accessor and Next-Batch Reader [COMPLETED]
 
 **Goal**: One sourced accessor answers "the ordered batch list" and "the output path" for every
 consumer, and `--next-batch` reads through it.
 
 **Tasks**:
-- [ ] Create `scripts/lib/roadmap-entries-lib.sh` (sourced, sets no shell options, never exits):
+- [x] Create `scripts/lib/roadmap-entries-lib.sh` (sourced, sets no shell options, never exits):
   a function emitting batches of non-closed milestones in milestone-then-batch order, each tagged
   with its milestone `id` and batch ordinal, falling back to `.roadmap_batches // []` when
   `roadmap_milestones` is absent; a function emitting the resolved output path
-  (`roadmap_context.output_path`, else `specs/ROADMAP.md`).
-- [ ] Create `scripts/tests/test-roadmap-entries-lib.sh`: nested order, closed milestone skipped,
-  flat fallback, both shapes present (nested wins), empty store, output-path default and override.
-- [ ] Change `orchestrate-suggest-next-batch.sh`'s `read_roadmap_batches()` to read through the
-  accessor; behaviour on a flat store is unchanged.
-- [ ] In `test-orchestrate-suggest-next-batch.sh` keep one flat-shape fixture as the fallback case,
-  convert the rest to the nested shape, and add a closed-milestone-is-skipped case.
-- [ ] Register the new lib and suite in `manifest.json` and `suite-classification.data` (class
-  `unit`).
+  (`roadmap_context.output_path`, else `specs/ROADMAP.md`). *(completed)*
+- [x] Create `scripts/tests/test-roadmap-entries-lib.sh`: nested order, closed milestone skipped,
+  flat fallback, both shapes present (nested wins), empty store, output-path default and override. *(completed)*
+- [x] Change `orchestrate-suggest-next-batch.sh`'s `read_roadmap_batches()` to read through the
+  accessor; behaviour on a flat store is unchanged. *(completed)*
+- [x] In `test-orchestrate-suggest-next-batch.sh` keep one flat-shape fixture as the fallback case,
+  convert the rest to the nested shape, and add a closed-milestone-is-skipped case. *(completed)*
+- [x] Register the new lib and suite in `manifest.json` and `suite-classification.data` (class
+  `unit`). *(completed)*
 
 **Timing**: 1.5 hours
 

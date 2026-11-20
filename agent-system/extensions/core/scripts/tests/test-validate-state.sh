@@ -643,10 +643,10 @@ JSON
 
   # ---- milestone shape ----
   # c13_nested NAME MILESTONES_JSON : writes $WORKDIR/c13n-NAME/state.json (four tasks: 1 open,
-  # 2 completed, 3 abandoned, 4 expanded) with a sibling archive holding task 9 (completed), runs
+  # 2 completed, 3 abandoned, 4 expanded) with a sibling archive holding entry 9 (completed), runs
   # the validator, and leaves its output in $out and exit code in $rc.
   c13_nested() {
-    local name="$1" milestones="$2" d="$WORKDIR/c13n-$1"
+    local milestones="$2" d="$WORKDIR/c13n-$1"
     mkdir -p "$d/archive"
     cat > "$d/archive/state.json" <<'JSON'
 {"archived_projects": [{"project_number": 9, "project_name": "old", "status": "completed"}], "completed_projects": []}

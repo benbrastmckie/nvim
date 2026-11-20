@@ -1,0 +1,59 @@
+{
+  "phase": 2,
+  "phase_name": "Roadmap Entries Accessor and Next-Batch Reader",
+  "started_at": "2026-11-20T10:17:46Z",
+  "last_updated": "2026-11-20T10:17:46Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create `scripts/lib/roadmap-entries-lib.sh` (sourced, sets no shell options, never exits): a function emitting batches of non-closed milestones in milestone-the",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/roadmap-entries-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-roadmap-entries-lib.sh",
+        "agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data",
+        "agent-system/extensions/core/scripts/tests/test-validate-state.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Create `scripts/tests/test-roadmap-entries-lib.sh`: nested order, closed milestone skipped, flat fallback, both shapes present (nested wins), empty store, outpu",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Change `orchestrate-suggest-next-batch.sh`'s `read_roadmap_batches()` to read through the accessor; behaviour on a flat store is unchanged.",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "In `test-orchestrate-suggest-next-batch.sh` keep one flat-shape fixture as the fallback case, convert the rest to the nested shape, and add a closed-milestone-i",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Register the new lib and suite in `manifest.json` and `suite-classification.data` (class `unit`).",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "2.x",
+      "description": "Phase 1 file test-validate-state.sh re-touched in Phase 2",
+      "type": "altered",
+      "reason": "Two lint defects from Phase 1 (a task-reference-shaped comment and an unused local) surfaced only in Phase 2's wider suite selection and were fixed in this phase's commit.",
+      "annotation": "*(deviation: altered \u2014 fixed two Phase 1 lint defects in test-validate-state.sh)*"
+    }
+  ],
+  "handoff_count": 0,
+  "verification_notes": "- Verification Tier full discharged against the SCOPED tier per the dispatch's Batch Gate Deferral; the full gate set is deferred to the batch stage, not run here. verify-touched.sh resolved 38 suites; because it executes the stale deployed copies, the same 38 were run from the source store (run-all.sh --only, CORE_TEST_SUBJECT_MODE=source-store): 34 passed, 4 failed and each was resolved and re-run green except the known-failures entry: test-common-lib (artifact of the env override; green without it), test-manifest-scripts-sync (new files untracked; green once tracked), test-deploy-propagation (a task-reference wording defect in Phase 1's test-validate-state.sh comment; fixed here, green), test-gate-cache-equivalence (known-failures.txt entry; its two named sub-causes were the same task-reference defect plus an SC2034 in the Phase 1 fixture helper, both fixed and confirmed by check-task-references.sh = 0 and shellcheck -S warning clean).\n- Suites that resolve subjects deploy-tree-first only exercise source edits under CORE_TEST_SUBJECT_MODE=source-store.\n- The accessor emits description LAST in the reader's TSV because tab is IFS whitespace and an empty middle field would shift columns."
+}
