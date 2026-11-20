@@ -744,6 +744,68 @@ if [ "$NEEDS_SHARED_FIXTURE" = "true" ]; then
   unset _SFC_DEPLOY_SCRIPT _SFC_BUILD
 fi
 
+# ── Source-store-required suites: centrally-decided SKIP, not a self-declared one ───────────
+# A handful of suites can only be meaningfully exercised from a repository that owns its own
+# local `agent-system/extensions/` checkout -- either because they test THIS repo's own
+# manifest/script-inventory self-consistency (test-manifest-scripts-sync.sh,
+# test-lint-hook-registration-paths.sh), resolve a script under test via `common_test_resolve_subject`
+# in its narrow "source-store" mode with no deployed/external fallback by design
+# (test-gate-out-derived-staleness.sh, test-gate-out-self-attribution.sh,
+# test-generate-task-order.sh, test-reconcile-demote-stranded.sh,
+# test-reconcile-handoff-status.sh, test-resume-scan-nonconformance.sh,
+# test-sweep-invalidated-claims.sh), or assert against hardcoded
+# `$REPO_ROOT/agent-system/extensions/...` paths within the suite body itself
+# (test-orchestrate-conclusion-aggregate.sh's cases (j)/(k)). In a repository whose `core`
+# extension resolves externally via `.claude-extensions.json` (no local `agent-system/`
+# directory at all -- see context/standards/source-store-deploy-boundary-narrative.md), every one
+# of these fails unconditionally, on every run, regardless of what the task under test actually
+# touched: the red is always false there, not a signal of anything this run broke.
+#
+# This is NOT a suite self-declaring a skip (the practice context/standards/shell-script-testing.md's
+# "No suite may self-declare a skip" section forbids, because run-all.sh's own verdict is binary
+# on a suite's exit code and would silently count an exit-0 self-skip as a PASS). The precondition
+# is decided HERE, centrally, by run-all.sh itself, exactly mirroring the pre-existing
+# exec-bit-missing SKIP case immediately below/above (same SKIP_COUNT accounting, same
+# `[run-all] [SKIP] ... : suite_name` visible-output shape, same TIMINGS_FILE "SKIP" row) rather
+# than adding a parallel mechanism. A suite NOT in this roster is unaffected either way, and a
+# repository that DOES own a local `agent-system/extensions/` (including the source-store
+# repository running its own suites) always finds this precondition true and these suites run
+# and are asserted exactly as before -- no assertion meaningful under a local source store is
+# weakened.
+#
+# test-deploy-baseline-lib.sh was initially suspected of belonging to this roster too but
+# measured (three repeated runs, no agent-system/extensions reference anywhere in its output) to
+# fail for an unrelated, pre-existing reason instead -- a verify-deploy.sh gate-cache
+# warm-cache control case -- so it is deliberately left OUT of the roster below rather than
+# silently included on an unverified assumption.
+SOURCE_STORE_REQUIRED_BASENAMES=(
+  "test-gate-out-derived-staleness.sh"
+  "test-gate-out-self-attribution.sh"
+  "test-generate-task-order.sh"
+  "test-lint-hook-registration-paths.sh"
+  "test-manifest-scripts-sync.sh"
+  "test-orchestrate-conclusion-aggregate.sh"
+  "test-reconcile-demote-stranded.sh"
+  "test-reconcile-handoff-status.sh"
+  "test-resume-scan-nonconformance.sh"
+  "test-sweep-invalidated-claims.sh"
+)
+is_source_store_required_suite() {
+  local base
+  base="$(basename "$1")"
+  local n
+  for n in "${SOURCE_STORE_REQUIRED_BASENAMES[@]}"; do
+    [ "$base" = "$n" ] && return 0
+  done
+  return 1
+}
+# True when this repository owns a local agent-system/extensions/ checkout. Always true when
+# MODE=source-store (we ARE that checkout), so this precondition can never fire there -- it only
+# ever narrows a `deployed`-mode run against a repo whose core source_dir resolves externally.
+source_store_is_local() {
+  [ -n "${RUN_ALL_REPO_ROOT:-}" ] && [ -d "${RUN_ALL_REPO_ROOT}/agent-system/extensions" ]
+}
+
 SUITE_RUN_START_MS="$(date +%s%3N)"
 
 if [ "$JOBS" -le 1 ]; then
@@ -758,6 +820,14 @@ if [ "$JOBS" -le 1 ]; then
     suite_name="$suite"
     if [ ! -x "$suite" ]; then
       echo "[run-all] [SKIP] not executable (exec-bit regression?): $suite_name" >&2
+      SKIP_COUNT=$((SKIP_COUNT + 1))
+      if [ -n "$TIMINGS_FILE" ]; then
+        echo "${suite_name},0,SKIP" >> "$TIMINGS_FILE"
+      fi
+      continue
+    fi
+    if is_source_store_required_suite "$suite" && ! source_store_is_local; then
+      echo "[run-all] [SKIP] requires a local agent-system/extensions/ source store -- this repo resolves core's source_dir externally via .claude-extensions.json: $suite_name" >&2
       SKIP_COUNT=$((SKIP_COUNT + 1))
       if [ -n "$TIMINGS_FILE" ]; then
         echo "${suite_name},0,SKIP" >> "$TIMINGS_FILE"
@@ -865,11 +935,16 @@ else
 
   SKIP_INDICES=()
   EXEC_INDICES=()
+  declare -A SKIP_REASON=()
   for i in "${!SUITES[@]}"; do
-    if [ -x "${SUITES[i]}" ]; then
-      EXEC_INDICES+=("$i")
-    else
+    if [ ! -x "${SUITES[i]}" ]; then
       SKIP_INDICES+=("$i")
+      SKIP_REASON[$i]="not executable (exec-bit regression?)"
+    elif is_source_store_required_suite "${SUITES[i]}" && ! source_store_is_local; then
+      SKIP_INDICES+=("$i")
+      SKIP_REASON[$i]="requires a local agent-system/extensions/ source store -- this repo resolves core's source_dir externally via .claude-extensions.json"
+    else
+      EXEC_INDICES+=("$i")
     fi
   done
 
@@ -1002,7 +1077,7 @@ else
     suite="${SUITES[i]}"
     case "${SUITE_RESULT[i]}" in
       SKIP)
-        echo "[run-all] [SKIP] not executable (exec-bit regression?): $suite" >&2
+        echo "[run-all] [SKIP] ${SKIP_REASON[$i]:-not executable (exec-bit regression?)}: $suite" >&2
         SKIP_COUNT=$((SKIP_COUNT + 1))
         ;;
       PASS)
