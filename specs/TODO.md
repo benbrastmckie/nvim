@@ -53,7 +53,7 @@ next_project_number: 664
 646 [NOT STARTED] — Decide and implement how .return-meta.json's status...
 659 [PLANNED] — Never demote on ignored specs skip
   └─ 662 [NOT STARTED] — Reframe docs for ignored specs default
-660 [PLANNING] — Init specs ignores specs by default
+660 [PLANNED] — Init specs ignores specs by default
   └─ 662 [NOT STARTED] — Reframe docs for ignored specs default (see above)
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
@@ -256,11 +256,12 @@ SCOPE DECLARATION (2026-11-19). This record's file_scope is deliberately EMPTY, 
 ---
 
 ### 660. Init specs ignores specs by default
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 658
 - **Research**: [660_init_specs_ignores_specs_by_default/reports/01_init-specs-ignores-by-default.md]
+- **Plan**: [660_init_specs_ignores_specs_by_default/plans/01_init-specs-ignores-by-default.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit the mirrored path. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**; both are permitted in this description.
 
