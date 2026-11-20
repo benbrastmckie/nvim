@@ -49,25 +49,33 @@ ran the write-time cycle refusal; none was refused.
 | 3 | `cycle_postflight_containment_parity` (501) | `stall_signal_counts_unattributed_commits` (570) | territory | `orchestrate-cycle-postflight.sh` |
 | 4 | `source_store_commit_and_registration_review` (536) | `scoped_commit_staged_vs_worktree_divergence` (524) | semantic and territory | `git-commit-scoped.sh`; 536's staging recipe depends on 524's ruling |
 | 5 | `git_commit_scoped_gate_refusal_diagnostic` (553) | `source_store_commit_and_registration_review` (536) | territory | `git-commit-scoped.sh` |
-| 6 | `branch_topology_ruling_and_milestone_automation` (657) | `git_commit_scoped_gate_refusal_diagnostic` (553) | territory | `git-commit-scoped.sh`, `orchestrate-cycle-postflight.sh` |
+| 6 | `branch_aware_orchestration_and_squash_landing` (655) | `git_commit_scoped_gate_refusal_diagnostic` (553) | territory | `git-commit-scoped.sh`, `orchestrate-cycle-postflight.sh` |
 | 7 | `branch_aware_orchestration_and_squash_landing` (655) | `phase_commit_boundary_mechanical_check` (513) | semantic | 655 passes the work branch to 513's expected-ref parameter |
 
 Together with the edges that already existed (541 after 535, 501 after 486, 524 after 501, 655
 after 657), the order on the commit scripts is:
 
 ```
-567 -> 535 -> 541 -> 486 -> 501 -> 524 -> 536 -> 553 -> 657 -> 655
-                      570 --^                                   ^-- 513
+567 -> 535 -> 541 -> 486 -> 501 -> 524 -> 536 -> 553 -> 655
+                      570 --^                           657 --^
+                                                          513 --^
 ```
 
 To check an edge: `jq '.active_projects[]|select(.project_number==N)|.dependencies' specs/state.json`.
 
-**Why edge 6 sits on 657 and not on 655.** 657 declares `git-commit-scoped.sh` and the postflight
-script and runs before 655. An edge on 655 alone would leave six pairs of 657 against a cluster
-member unordered. The cost is that 657's first element, a ruling that edits no script, waits for
-the whole chain. That cost is smaller than it looks: 655 is 657's only dependent and waits for
-the chain under either placement. If the ruling is wanted early, remove 553 from 657's
-dependencies and add it to 655's.
+**Why edge 6 sits on 655 and not on 657.** Both placements order 657 and 655 against the cluster
+on `git-commit-scoped.sh` and the postflight script, because 655 is 657's only dependent and
+waits for the chain either way. Placing the edge on 657 would additionally park 657's first
+element -- a branch-topology ruling that edits no script -- behind the full ten-task chain, for
+no gain on the landing commit that the cluster actually threatens. The edge therefore sits on
+655, where the squash landing is, and 657's ruling runs as soon as its own predecessors (654,
+656) are closed.
+
+**Amended by this record, 2026-11-20:** edge 6's target was moved from 657 to 655 under the
+remedy this record itself names, so that the branch-topology ruling could be orchestrated
+without waiting on the commit-layer chain. The six 657-against-cluster-member pairs this leaves
+unordered are acceptable: 657's declared scope on the two shared scripts is read-and-rule, and
+655 -- which does edit them -- remains fully ordered behind 553.
 
 **Reversing an edge.** `update-task-status.sh` has no removal flag. Use `state-write.sh` with
 `(.active_projects[] | select(.project_number == $num)).dependencies -= [$pred]`, then regenerate
