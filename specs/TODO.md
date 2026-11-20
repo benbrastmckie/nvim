@@ -6,7 +6,7 @@ next_project_number: 664
 
 ## Task Order
 
-*Updated 2026-11-19. Generated from state.json dependency graph.*
+*Updated 2026-11-20. Generated from state.json dependency graph.*
 
 **Goal**: Make specs/ROADMAP.md generated (306, 307, 308, 313) so planning stops drifting, then push consent and admission posture.
 
@@ -292,7 +292,7 @@ GOAL. Stop a completed task being recorded as partial because a bookkeeping comm
 
 THE DEMOTION SITE, MEASURED 2026-11-19. scripts/orchestrate-cycle-postflight.sh carries a commit-landing status correction, documented in place as a sanctioned terminal-state exception, which on a nonzero exit from git-commit-scoped.sh rewrites the task's status from completed to partial, amends the handoff file with a commit-failure blocker, and prints a STATUS DEMOTED notice. With a gitignored specs tree that per-cycle commit can never succeed, so the demotion fires on every completing dispatch. The symptom is already recorded from a second consumer repository (sapience-app): the per-cycle specs commit always fails and demotes a finished task, while deliverable commits outside specs/ land normally.
 
-WHAT THE EXCEPTION IS FOR, AND WHY IT MUST SURVIVE. The correction exists because a completed status that nobody committed is a claim unsupported by the tree -- a real hazard worth a demotion when the commit genuinely failed. An ignored specs tree is a different case: nothing was supposed to land, so nothing is missing. The research must preserve the exception for genuine failures while excluding the ignored case, and must say how it tells them apart -- which is what task 1's predicate and exit-code split exist to supply. Do not weaken the exception to close this; narrow its trigger.
+WHAT THE EXCEPTION IS FOR, AND WHY IT MUST SURVIVE. The correction exists because a completed status that nobody committed is a claim unsupported by the tree -- a real hazard worth a demotion when the commit genuinely failed. An ignored specs tree is a different case: nothing was supposed to land, so nothing is missing. The research must preserve the exception for genuine failures while excluding the ignored case, and must say how it tells them apart -- which is what task 658's predicate and exit-code split exist to supply. Do not weaken the exception to close this; narrow its trigger.
 
 THE HISTORY READERS, EACH NEEDING AN ANSWER. reconcile-task-status.sh; validate-state.sh's --deep mode and its git-history round trip; git-commit-scoped.sh's honest-index-rows comparison as consumed by its callers; task-lock.sh; and scripts/lib/territory-contention-lib.sh's claims. dispatch-metrics.sh additionally sums git log --numstat split by a specs/ pathspec, which yields zero rather than an error and so needs a stated verdict rather than a fix. For each: state what it means when the specs tree has no git history at all, and make it report that rather than infer a failure from the absence.
 
