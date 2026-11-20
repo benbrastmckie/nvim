@@ -51,7 +51,7 @@ next_project_number: 664
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — Determine what leaves files in the working tree and give...
 646 [NOT STARTED] — Decide and implement how .return-meta.json's status...
-659 [PLANNED] — Never demote on ignored specs skip
+659 [IMPLEMENTING] — Never demote on ignored specs skip
   └─ 662 [NOT STARTED] — Reframe docs for ignored specs default
 660 [PLANNED] — Init specs ignores specs by default
   └─ 662 [NOT STARTED] — Reframe docs for ignored specs default (see above)
@@ -282,7 +282,7 @@ DONE WHEN. A new repository is initialized with an ignored specs tree, an existi
 ---
 
 ### 659. Never demote on ignored specs skip
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 658

@@ -1,30 +1,12 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/659_never_demote_on_ignored_specs_skip/plans/01_never-demote-ignored-specs-skip.md",
-      "summary": "7-phase plan adding the two V13 skip-recording channels, an adjacent commit-failure wording fix, the required negative-control test pair, and a durable per-reader stated-answer register for an absent specs git history."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 11,
   "metadata": {
-    "session_id": "sess_1795130570_6d4a1f_659",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 7,
-    "estimated_hours": 5.5,
-    "dependency_waves": 4
-  },
-  "memory_candidates": [
-    {
-      "content": "When authoring a plan in this repo, each phase's **Tier Justification** is machine-checked by scripts/validate-artifact.sh against scripts/lib/suite-selection-lib.sh's suite_selection_select for that phase's declared Files to modify: it warns both on UNDER-verification (a suite the selection returns that the justification does not name) and on FABRICATED coverage (a suite named that the selection does not return). The cheap authoring loop is to source the lib and run suite_selection_select on each phase's touched paths, then name exactly that set. A pure context-markdown addition resolves to the __FULL_SWEEP__ sentinel plus the index/deploy suites, which is the honest justification for a non-final `full` tier rather than a defect.",
-      "category": "PATTERN",
-      "source_artifact": "specs/659_never_demote_on_ignored_specs_skip/plans/01_never-demote-ignored-specs-skip.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["plan-authoring", "verification-tier", "suite-selection", "validate-artifact", "full-sweep-sentinel", "tier-justification"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 659 to execute the plan",
-  "dispatch_seq": 9
+    "session_id": "sess_1795130570_6d4a1f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 0,
+    "phases_total": 7
+  }
 }

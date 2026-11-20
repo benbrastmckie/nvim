@@ -2145,12 +2145,46 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
       # (never ERROR) and deliberately leaves commit_attribution_note empty — the emitted verdict
       # JSON must carry no failure attribution for either code. For 9, the commit itself already
       # landed (see context/standards/git-staging-scope.md's exit-code table); for 8, nothing
-      # survived to commit, but that absence is equally benign. No issue-record.sh call either:
-      # these are not issues.
+      # survived to commit, but that absence is equally benign. The skip is still recorded as
+      # evidence (never a failure, never status-bearing) via a deduped issue-record.sh call
+      # below — see context/standards/absent-specs-git-history.md for the recording contract.
       if [ "$commit_rc" -eq 8 ]; then
         echo "${notice_prefix} NOTE: git-commit-scoped.sh exited 8 for task ${task_number}'s per-cycle commit — this repository's own specs tree is wholly gitignored (Verified Finding V13), so nothing was committed this cycle. Not an orchestration defect." >&2
       else
         echo "${notice_prefix} NOTE: git-commit-scoped.sh exited 9 for task ${task_number}'s per-cycle commit — this repository's own specs tree is partly gitignored (Verified Finding V13); the trackable paths already committed successfully. Not an orchestration defect." >&2
+      fi
+      # Durable record of the skip, deduped per /orchestrate invocation (per session_id), not
+      # per cycle -- a wholly-ignored-specs repository hits this arm on every completing cycle,
+      # and an unconditional write would flood issues.jsonl. The identity is keyed on
+      # session_id + the V13 marker + the exact exit code so codes 8 and 9 never collide and a
+      # later invocation (a new session_id) always gets its own entry. Deliberately NOT filtered
+      # on `.resolution == "open"` below (unlike the blocker-identity precedent above): this
+      # entry is written with --resolution fixed_inline, so an open-only lookup would never match
+      # its own prior write and the dedup would silently never fire.
+      v13_skip_identity_raw="${session_id}|v13-skip|${commit_rc}"
+      v13_skip_identity=$(printf '%s' "$v13_skip_identity_raw" | sha256sum | awk '{print substr($1,1,16)}')
+      v13_skip_matched_entry_id=""
+      if [ -f "$TASK_DIR/issues.jsonl" ]; then
+        v13_skip_matched_entry_id=$(jq -r --arg id "$v13_skip_identity" \
+          'select((.tags.v13_skip_identity // "") == $id) | .entry_id' \
+          "$TASK_DIR/issues.jsonl" 2>/dev/null | tail -n 1)
+      fi
+      if [ -n "$v13_skip_matched_entry_id" ]; then
+        echo "${notice_prefix} V13 skip: skipping a duplicate issues.jsonl write -- an already-recorded entry (${v13_skip_matched_entry_id}) carries this same v13_skip_identity for this invocation." >&2
+      else
+        # --severity minor (not none): issue-log.md's severity scale reserves the `none` rung
+        # for kind: "win" entries, and this is a kind: "issue" entry (a routine
+        # repository-configuration fact, not an achievement) -- minor is the closest fit on a
+        # closed scale rather than widening it.
+        v13_skip_what_happened="git-commit-scoped.sh exited ${commit_rc} for task ${task_number}'s per-cycle commit — this repository's own specs tree is $( [ "$commit_rc" -eq 8 ] && echo "wholly" || echo "partly" ) gitignored (Verified Finding V13); not an orchestration defect."
+        bash "${SCRIPT_DIR}/issue-record.sh" --task-dir "$TASK_DIR" \
+          --kind issue --class "repository configuration" --severity minor \
+          --phase "$phase" --resolution fixed_inline \
+          --what-happened "$v13_skip_what_happened" \
+          --tags-json "$(jq -c -n --arg id "$v13_skip_identity" '{v13_skip_identity: $id}')" \
+          ${dispatch_seq_flag:+--dispatch-seq "$dispatch_seq_flag"} \
+          --session "$session_id" \
+          >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
       fi
       ;;
     *)

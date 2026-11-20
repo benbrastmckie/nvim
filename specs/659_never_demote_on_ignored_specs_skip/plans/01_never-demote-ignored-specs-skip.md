@@ -1,7 +1,7 @@
 # Implementation Plan: Task #659
 
 - **Task**: 659 - Never demote on an ignored-specs skip
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: Task 658 (completed) supplies `scripts/lib/specs-ignore-lib.sh`'s predicate and `git-commit-scoped.sh`'s V13 exit-code split (8/9); this plan builds on both and must not re-implement either
 - **Research Inputs**: specs/659_never_demote_on_ignored_specs_skip/reports/01_never-demote-ignored-specs-skip.md
@@ -128,7 +128,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Record the skip at the postflight V13 arm [NOT STARTED]
+### Phase 1: Record the skip at the postflight V13 arm [COMPLETED]
 
 **Goal**: A V13 skip on a dispatch that has a task context writes exactly one durable
 `issues.jsonl` entry per `/orchestrate` invocation, with the task's status and the verdict JSON
@@ -136,38 +136,38 @@ left exactly as they are today.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/orchestrate-cycle-postflight.sh` lines 2141-2160 (the `8|9)` arm) and lines
-      1540-1600 (the dedup precedent) immediately before editing.
-- [ ] Inside the existing `8|9)` arm, after its two `echo ... NOTE:` lines and before the arm's
+- [x] Re-read `scripts/orchestrate-cycle-postflight.sh` lines 2141-2160 (the `8|9)` arm) and lines
+      1540-1600 (the dedup precedent) immediately before editing. *(completed)*
+- [x] Inside the existing `8|9)` arm, after its two `echo ... NOTE:` lines and before the arm's
       `;;`, add the recording block. Keep both `NOTE:` lines byte-identical — the stderr surface
-      is additive, never replaced.
-- [ ] Compute a dedup identity that is stable across every cycle of one invocation and distinct
+      is additive, never replaced. *(completed)*
+- [x] Compute a dedup identity that is stable across every cycle of one invocation and distinct
       per repository-configuration shape: `sha256sum` of `"${session_id}|v13-skip|${commit_rc}"`,
       truncated to 16 hex characters exactly as line 1547 does, stored under a dedicated
-      `tags` key (`tags.v13_skip_identity`) via `--tags-json`.
-- [ ] Look the identity up in `"$TASK_DIR/issues.jsonl"` before writing, with
+      `tags` key (`tags.v13_skip_identity`) via `--tags-json`. *(completed)*
+- [x] Look the identity up in `"$TASK_DIR/issues.jsonl"` before writing, with
       `jq -r 'select((.tags.v13_skip_identity // "") == $id) | .entry_id' ... | tail -n 1`.
       **Do not filter on `.resolution == "open"`** — this entry is written with
       `--resolution fixed_inline`, so an `open`-filtered lookup would never match its own prior
-      write and the dedup would silently never fire.
-- [ ] On a match, print one diagnostic line naming the matched `entry_id` and skip the write
+      write and the dedup would silently never fire. *(completed)*
+- [x] On a match, print one diagnostic line naming the matched `entry_id` and skip the write
       (mirroring line 1562's wording shape). On no match, invoke `issue-record.sh` with:
       `--task-dir "$TASK_DIR"`, `--kind issue`, `--class "repository configuration"`,
       `--severity minor`, `--phase "$phase"`, `--resolution fixed_inline`, `--session "$session_id"`,
       the `--dispatch-seq` flag when `dispatch_seq_flag` is non-empty, the `--tags-json` identity,
-      and **no** `--suggested-channel`.
-- [ ] Write `--what-happened` text that names the exit code, the task, and that this is the
+      and **no** `--suggested-channel`. *(completed)*
+- [x] Write `--what-happened` text that names the exit code, the task, and that this is the
       target repository's own `.gitignore` configuration rather than a defect — reusing the
-      existing `NOTE:` prose so the two surfaces cannot drift into disagreement.
-- [ ] Record, as a comment immediately above the call, why `--severity minor` is used although
+      existing `NOTE:` prose so the two surfaces cannot drift into disagreement. *(completed)*
+- [x] Record, as a comment immediately above the call, why `--severity minor` is used although
       the skip costs nothing: `issue-log.md`'s `none` rung is reserved for `kind: "win"` entries,
       and recording a routine repository-configuration fact as a win would be a worse fit than
-      rounding the severity down to the lowest issue rung.
-- [ ] Use the documented non-fatal invocation form (`>/dev/null 2>&1 || echo "Note: issue
-      recording failed (non-fatal)" >&2`) so a recording failure can never fail the dispatch.
-- [ ] Confirm by reading the diff that nothing outside the `8|9)` arm changed — in particular that
+      rounding the severity down to the lowest issue rung. *(completed)*
+- [x] Use the documented non-fatal invocation form (`>/dev/null 2>&1 || echo "Note: issue
+      recording failed (non-fatal)" >&2`) so a recording failure can never fail the dispatch. *(completed)*
+- [x] Confirm by reading the diff that nothing outside the `8|9)` arm changed — in particular that
       the `case "$commit_rc" in 2|3|4|5)` demotion gate and `commit_attribution_note` are
-      untouched.
+      untouched. *(completed: confirmed via git diff --stat / hunk count = 1)*
 
 **Timing**: 1 hour
 
@@ -198,13 +198,13 @@ touches exactly one hunk.
 
 **Verification**:
 
-- [ ] `bash -n` and `shellcheck` on the edited script report no new finding.
-- [ ] `bash scripts/tests/run-all.sh --only <the selected set named in the Tier Justification>`
+- [x] `bash -n` and `shellcheck` on the edited script report no new finding. *(completed)*
+- [x] `bash scripts/tests/run-all.sh --only <the selected set named in the Tier Justification>`
       exits 0, with the existing cases 980/981/985/986 still green (the postflight suite's
       source-store byte-identity checksum assertion must also still pass). Derive the `--only`
       list from `suite_selection_select` for this phase's touched path rather than hand-picking
-      it, and check the command's exit status.
-- [ ] `git diff` on the file shows exactly one added hunk, inside the `8|9)` arm.
+      it, and check the command's exit status. *(completed: 17 passed, 0 failed)*
+- [x] `git diff` on the file shows exactly one added hunk, inside the `8|9)` arm. *(completed: confirmed, 1 hunk)*
 
 ---
 
