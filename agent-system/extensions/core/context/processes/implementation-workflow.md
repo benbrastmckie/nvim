@@ -279,7 +279,10 @@ status-sync-manager ensures TODO.md, state.json, and plan file (if exists) are u
    - Stage all files in scope
    - Create commit with message
    - Verify commit created
-3. If commit fails:
+3. If commit reports a posture skip (`git-commit-scoped.sh` exit `8`/`9`, all staged members
+   under a gitignored `specs/` tree): this is a non-failure, expected outcome, not an error — see
+   `context/standards/git-staging-scope.md`'s Per-Operation Contract section — and needs no remedy.
+4. If commit fails for a genuine reason (not a posture skip):
    - Log error via issue-record.sh (non-critical)
    - Continue (implementation already complete)
    - Return success with warning
@@ -292,7 +295,7 @@ status-sync-manager ensures TODO.md, state.json, and plan file (if exists) are u
 - Direct: `task {number}: {description}`
 - Phased: `task {number} phase {N}: {phase_name}` (per phase)
 
-**Checkpoint**: Git commit created
+**Checkpoint**: Commit attempted; outcome recorded per the repository's tracked/ignored posture
 
 ### Step 6: Prepare Return
 
@@ -489,6 +492,10 @@ Recommendation: Fix implementer subagent implementation
 ```
 
 ### Git Commit Failure (non-critical)
+
+A posture skip (`git-commit-scoped.sh` exit `8`/`9` under a gitignored `specs/` tree) is NOT this
+error case and must not be reported through it — see `context/standards/git-staging-scope.md`'s
+Per-Operation Contract section.
 
 ```
 Warning: Git commit failed

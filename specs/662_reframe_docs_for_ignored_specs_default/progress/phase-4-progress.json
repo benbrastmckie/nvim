@@ -1,0 +1,25 @@
+{
+  "phase": 4,
+  "phase_name": "Reframe the Three Process-Workflow Commit Steps",
+  "started_at": "2026-11-20T05:12:00Z",
+  "last_updated": "2026-11-20T05:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "research-workflow.md: third outcome branch, softened checkpoint, error-template exclusion", "status": "done", "files_touched": ["agent-system/extensions/core/context/processes/research-workflow.md"]},
+    {"id": 2, "description": "planning-workflow.md: same edits (Scope Hypothesis corrected -- template exists as 'Failure')", "status": "done", "files_touched": ["agent-system/extensions/core/context/processes/planning-workflow.md"]},
+    {"id": 3, "description": "implementation-workflow.md: same edits, SUPERSEDED header untouched", "status": "done", "files_touched": ["agent-system/extensions/core/context/processes/implementation-workflow.md"]},
+    {"id": 4, "description": "Regenerate index-entries.json line_count for three rows", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 5, "description": "Commit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.4",
+      "description": "Scope Hypothesis: planning-workflow.md has no 'Git Commit Failed' error template",
+      "type": "altered",
+      "reason": "Live grep found all three files carry an error template, just worded 'Git Commit Failure' not 'Git Commit Failed'; applied the third edit to all three instead of two",
+      "annotation": "*(deviation: altered -- live check found planning-workflow.md DOES carry an error template, worded \"Git Commit Failure\" rather than \"Git Commit Failed\"; the Scope Hypothesis's premise was wrong, so the third edit was applied there too, for consistency. Recorded via issue-record.sh.)*"
+    }
+  ]
+}

@@ -1298,7 +1298,7 @@
       "domain": "core",
       "subdomain": "processes",
       "summary": "Implementation phase workflow details",
-      "line_count": 588,
+      "line_count": 595,
       "keywords": [
         "process",
         "implementation",
@@ -1319,7 +1319,7 @@
       "domain": "core",
       "subdomain": "processes",
       "summary": "Planning phase workflow details",
-      "line_count": 538,
+      "line_count": 545,
       "keywords": [
         "process",
         "planning",
@@ -1340,7 +1340,7 @@
       "domain": "core",
       "subdomain": "processes",
       "summary": "Research phase workflow details",
-      "line_count": 563,
+      "line_count": 570,
       "keywords": [
         "process",
         "research",

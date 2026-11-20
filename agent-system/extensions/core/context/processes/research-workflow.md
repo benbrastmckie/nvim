@@ -238,14 +238,17 @@ overrides it; see `context/contracts/deliverable-file-mandate.md`.
    - Stage report file, TODO.md, state.json
    - Create commit
    - Verify commit created
-3. If commit fails:
+3. If commit reports a posture skip (`git-commit-scoped.sh` exit `8`/`9`, all staged members
+   under a gitignored `specs/` tree): this is a non-failure, expected outcome, not an error — see
+   `context/standards/git-staging-scope.md`'s Per-Operation Contract section — and needs no remedy.
+4. If commit fails for a genuine reason (not a posture skip):
    - Log error (non-critical)
    - Continue (research already complete)
    - Return success with warning
 
 **Commit Message Format**: `task {number}: research completed`
 
-**Checkpoint**: Git commit created
+**Checkpoint**: Commit attempted; outcome recorded per the repository's tracked/ignored posture
 
 ### Step 7: Prepare Return
 
@@ -451,6 +454,10 @@ Or retry: /orchestrate {task_number} --research
 ```
 
 ### Git Commit Failed (non-critical)
+
+A posture skip (`git-commit-scoped.sh` exit `8`/`9` under a gitignored `specs/` tree) is NOT this
+error case and must not be reported through it — see `context/standards/git-staging-scope.md`'s
+Per-Operation Contract section.
 
 ```
 Warning: Git commit failed

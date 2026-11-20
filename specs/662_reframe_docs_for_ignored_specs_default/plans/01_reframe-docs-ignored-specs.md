@@ -279,34 +279,40 @@ the commit-gated `stall_suspected` detector's degradation under that posture is 
 
 ---
 
-### Phase 4: Reframe the Three Process-Workflow Commit Steps [NOT STARTED]
+### Phase 4: Reframe the Three Process-Workflow Commit Steps [COMPLETED]
 
 **Goal**: Each of the three `context/processes/*-workflow.md` commit steps covers the V13 skip as
 a third, non-failure outcome, and no longer frames "Git commit created" as the only success.
 
 **Tasks**:
-- [ ] In `context/processes/research-workflow.md` "### Step 6: Create Git Commit" (line 221), add
+- [x] In `context/processes/research-workflow.md` "### Step 6: Create Git Commit" (line 221), add
       a third outcome branch alongside commit-succeeds and commit-fails: the commit reports a
       posture skip (`git-commit-scoped.sh` exit `8`/`9`), which is a non-failure and needs no
       remedy. Point at `context/standards/git-staging-scope.md`'s Per-Operation Contract.
-- [ ] Soften that file's `**Checkpoint**: Git commit created` (line 248) to wording true under
+      *(completed)*
+- [x] Soften that file's `**Checkpoint**: Git commit created` (line 248) to wording true under
       both postures — e.g. commit attempted, outcome recorded per posture. Mirror
       `absent-specs-git-history.md`'s existing "the repository's own configuration, not a defect"
-      phrasing rather than inventing a new pattern.
-- [ ] In the same file's "### Git Commit Failed (non-critical)" error template (line 453), state
-      that a posture skip is NOT this error case and must not be reported through it.
-- [ ] Apply the same two edits to `context/processes/planning-workflow.md` ("### Step 6: Create
+      phrasing rather than inventing a new pattern. *(completed)*
+- [x] In the same file's "### Git Commit Failed (non-critical)" error template (line 453), state
+      that a posture skip is NOT this error case and must not be reported through it. *(completed)*
+- [x] Apply the same two edits to `context/processes/planning-workflow.md` ("### Step 6: Create
       Git Commit", line 218; checkpoint at line 245). If that file has no "Git Commit Failed"
-      template, skip the third edit there rather than adding one.
-- [ ] Apply the same edits to `context/processes/implementation-workflow.md` ("### Step 5: Create
+      template, skip the third edit there rather than adding one. *(deviation: altered — live
+      check found planning-workflow.md DOES carry an error template, worded "Git Commit Failure"
+      rather than "Git Commit Failed"; the Scope Hypothesis's premise was wrong, so the third edit
+      was applied there too, for consistency. Recorded via issue-record.sh.)*
+- [x] Apply the same edits to `context/processes/implementation-workflow.md` ("### Step 5: Create
       Git Commit", line 261; checkpoint at line 295), for consistency across all three files the
       dispatch names. Make no other change to that file — in particular do NOT touch its
       pre-existing `**SUPERSEDED**` header, which is an unrelated pre-existing condition and
-      explicitly out of scope.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` and
+      explicitly out of scope. *(completed: same "Git Commit Failure" heading found and edited;
+      SUPERSEDED header confirmed untouched via git diff)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` and
       confirm the three `processes/*-workflow.md` rows are corrected (declared were 563 / 538 /
-      588, each matching pre-edit actual).
-- [ ] Commit.
+      588, each matching pre-edit actual). *(completed: 563->570, 538->545, 588->595; re-run
+      reports 0 changed)*
+- [x] Commit. *(completed)*
 
 **Timing**: 1.25 hours
 
