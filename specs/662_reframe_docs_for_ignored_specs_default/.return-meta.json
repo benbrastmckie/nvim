@@ -1,42 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 13,
+  "status": "planned",
+  "dispatch_seq": 14,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/662_reframe_docs_for_ignored_specs_default/reports/01_reframe-docs-ignored-specs.md",
-      "summary": "Verifies the dispatch's grep-assembled surface list by direct reading (two named files need no edit), identifies docs/architecture/orchestrate-state-machine.md's commit-gated stall_suspected detector as the highest-priority gap, finds two sweep-only surfaces (docs/templates/README.md's 8-Stage template, commands/todo.md), confirms the two exemption standards already correctly self-exclude gitignored paths and need no change, and recommends placing the task-661 durability statement at the end of orchestrator-runtime-files.md's Fresh-Repo Default section."
+      "type": "plan",
+      "path": "specs/662_reframe_docs_for_ignored_specs_default/plans/01_reframe-docs-ignored-specs.md",
+      "summary": "Six-phase, four-wave plan reframing nine core source-store surfaces for the ignored-specs posture, placing task 661's durability statement verbatim, with eager-context-budget and index-entries.json line_count gate collisions planned for explicitly."
     }
   ],
-  "findings_count": 9,
-  "next_steps": "Run /orchestrate 662 to create an implementation plan from this report's per-surface recommendations.",
+  "phase_count": 6,
+  "estimated_hours": 5.5,
+  "dependency_waves": 4,
+  "next_steps": "Run /orchestrate 662 to execute the plan",
   "metadata": {
     "session_id": "sess_1795130570_6d4a1f_662",
-    "agent_type": "general-research-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
   "memory_candidates": [
     {
-      "content": "A dispatch description's own surface list for a doc-reframe task, when it says it 'was assembled by grep, not by reading,' should be treated as a lead list, not a work list: direct reading of rules/state-management.md and rules/artifact-formats.md in this corpus found zero commit-invariant assertions in either, despite both appearing in a grep-matched named-surfaces list for exactly that invariant. Verify each named surface by reading before scoping edit work to it.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/662_reframe_docs_for_ignored_specs_default/reports/01_reframe-docs-ignored-specs.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["grep-assembled-list", "verify-by-reading", "doc-sweep", "surface-list"]
-    },
-    {
-      "content": "In this codebase's orchestrate-state-machine.md, the stall_suspected detector is deliberately commit-gated (git log commit count over the task directory) to distinguish abandoned-wrap-up from genuine failure, while a sibling detector stranded_suspected is deliberately NOT commit-gated (heartbeat/quiescence-based) to cover the case where zero commits occurred at all. Any future change to the repository's commit posture (e.g. a class of dispatch that legitimately produces zero commits even on full success) should be checked against which of these two detectors still covers it, rather than assuming commit-gated signals are universal.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/662_reframe_docs_for_ignored_specs_default/reports/01_reframe-docs-ignored-specs.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["stall_suspected", "stranded_suspected", "commit-gated-detector", "orchestrate-state-machine"]
-    },
-    {
-      "content": "This codebase's task-reference and record-version exemption standards (task-reference-exemptions.md, record-version-exemptions.md) enforce scope via `git ls-files` enumeration, which self-excludes gitignored paths by construction -- their framing already correctly degrades under a gitignored specs/ tree without ever assuming specs/ is tracked. A rule scoped to 'every git-tracked file' rather than 'every file under specs/**' is already posture-agnostic by construction and needs no reframing when a new gitignore posture is introduced elsewhere.",
+      "content": "In this codebase, any phase editing a file under a core extension's context/** tree must declare that extension's index-entries.json in the same phase's Files to modify and run generate-context-line-counts.sh --write there: check-extension-docs.sh Rule R fails on line_count drift, and verify-deploy.sh Gate 3 aggregates that doc-lint, so the drift is commit-blocking. Paths under rules/**, docs/**, and commands/** carry no indexed row and so have no such coupling -- index-entries.json paths are stored relative to context/, which is why a naive grep for the full source-store-relative path finds zero rows and can mislead a planner into thinking no coupling exists.",
       "category": "PATTERN",
-      "source_artifact": "specs/662_reframe_docs_for_ignored_specs_default/reports/01_reframe-docs-ignored-specs.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["git-ls-files-scoping", "posture-agnostic", "exemption-standards", "gitignore-construction"]
+      "source_artifact": "specs/662_reframe_docs_for_ignored_specs_default/plans/01_reframe-docs-ignored-specs.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["index-entries.json", "line_count", "Rule R", "coupled-generated-surface", "context-relative-paths"]
     }
   ]
 }
