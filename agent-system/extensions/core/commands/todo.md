@@ -761,6 +761,11 @@ bash .claude/scripts/git-commit-scoped.sh \
   -- "${stage_paths[@]}"
 ```
 
+Under a wholly-ignored `specs/` tree, this step's commit reports a non-failure skip (exit `8`) for
+every archival run, since its entire `stage_paths` array is specs-scoped — benign and expected,
+same as any other specs-scoped commit. See `context/standards/git-staging-scope.md`'s
+Per-Operation Contract section.
+
 Include orphan and misplaced counts in message as applicable (same `stage_paths`
 accumulated above; only the `--message` text varies across these variants):
 ```bash

@@ -109,7 +109,7 @@ All agents must implement the complete 8-stage workflow:
 4. **Stage 4: Output Generation** - Generate outputs in required formats
 5. **Stage 5: Artifact Creation** - Create artifacts in task directory
 6. **Stage 6: Return Formatting** - Format return following subagent-return.md
-7. **Stage 7: Artifact Validation and Status Updates** - Validate artifacts, update TODO.md, state.json, create git commit
+7. **Stage 7: Artifact Validation and Status Updates** - Validate artifacts, update TODO.md, state.json, attempt a git commit (outcome recorded per the repository's tracked/ignored posture — see `context/standards/git-staging-scope.md`'s Per-Operation Contract section)
 8. **Stage 8: Cleanup** - Perform cleanup
 
 **Critical**: Stage 7 must be fully implemented. Stage 7 failures cause system-wide reliability issues.
@@ -312,13 +312,15 @@ Analyzes code for potential issues and suggests improvements.
 2. **Load Context On-Demand**: Use lazy-loading pattern
 3. **Follow Return Format**: Match subagent-return.md exactly
 4. **Handle Errors Gracefully**: Provide clear error messages and recovery steps
-5. **Validate Stage 7**: Ensure artifacts validated, TODO.md updated, git commit created
+5. **Validate Stage 7**: Ensure artifacts validated, TODO.md updated, git commit attempted (outcome
+   recorded per the repository's tracked/ignored posture)
 
 ### Testing
 
 1. **Test Valid Inputs**: Verify command works with correct inputs
 2. **Test Invalid Inputs**: Verify error handling works
-3. **Test Stage 7**: Verify TODO.md, state.json, git commit created
+3. **Test Stage 7**: Verify TODO.md, state.json, git commit attempted (outcome recorded per
+   posture)
 4. **Test Artifacts**: Verify artifacts created and validated
 5. **Test Return Format**: Verify return matches subagent-return.md
 

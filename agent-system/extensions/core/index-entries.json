@@ -708,7 +708,7 @@
       "domain": "core",
       "subdomain": "orchestration",
       "summary": "Postflight execution pattern for commands",
-      "line_count": 336,
+      "line_count": 339,
       "keywords": [
         "orchestration",
         "postflight"
@@ -1807,7 +1807,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Git integration standards",
-      "line_count": 212,
+      "line_count": 220,
       "keywords": [
         "standards",
         "git",
@@ -2220,7 +2220,7 @@
       "domain": "core",
       "subdomain": "workflows",
       "summary": "Complete command lifecycle documentation",
-      "line_count": 443,
+      "line_count": 446,
       "keywords": [
         "workflows",
         "command",
@@ -2241,7 +2241,7 @@
       "domain": "core",
       "subdomain": "workflows",
       "summary": "Preflight and postflight workflow details",
-      "line_count": 593,
+      "line_count": 595,
       "keywords": [
         "workflows",
         "preflight",

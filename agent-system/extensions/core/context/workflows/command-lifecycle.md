@@ -237,7 +237,9 @@ Commands implement a postflight stage after the subagent completes:
       INVOKE git-workflow-manager with timeout (120s)
       VALIDATE return and extract commit_hash
   </process>
-  <output>Status updated to [COMMAND-ED], git commit created</output>
+  <output>Status updated to [COMMAND-ED], git commit attempted (outcome recorded per the
+  repository's tracked/ignored posture — see `context/standards/git-staging-scope.md`'s
+  Per-Operation Contract section)</output>
 </step_7>
 ```
 
@@ -408,7 +410,8 @@ When creating new checkpoint-based commands:
 - Verify preflight status update occurred
 - Verify artifacts created successfully
 - Verify postflight status update occurred
-- Verify git commit created (or logged if failed)
+- Verify git commit created, a non-failure posture skip under a gitignored `specs/` tree, or
+  logged if genuinely failed
 
 ## Testing Recommendations
 

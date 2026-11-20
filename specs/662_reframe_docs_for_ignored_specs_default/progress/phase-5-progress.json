@@ -1,0 +1,38 @@
+{
+  "phase": 5,
+  "phase_name": "Sweep the Remaining Surfaces",
+  "started_at": "2026-11-20T05:37:00Z",
+  "last_updated": "2026-11-20T06:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-run confirmatory sweep grep", "status": "done", "files_touched": []},
+    {"id": 2, "description": "docs/templates/README.md soften Stage 7 criteria", "status": "done", "files_touched": ["agent-system/extensions/core/docs/templates/README.md"]},
+    {"id": 3, "description": "commands/todo.md one sentence", "status": "done", "files_touched": ["agent-system/extensions/core/commands/todo.md"]},
+    {"id": 4, "description": "command-lifecycle.md qualify output and criterion", "status": "done", "files_touched": ["agent-system/extensions/core/context/workflows/command-lifecycle.md"]},
+    {"id": 5, "description": "postflight-pattern.md qualify checkpoint", "status": "done", "files_touched": ["agent-system/extensions/core/context/orchestration/postflight-pattern.md"]},
+    {"id": 6, "description": "error-handling.md conditional inspect (no change)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Sweep-found additions: preflight-postflight.md and git-integration.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/workflows/preflight-postflight.md", "agent-system/extensions/core/context/standards/git-integration.md"]},
+    {"id": 8, "description": "Negative control: no deprecated/legacy/superseded", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Regenerate index-entries.json line_count for touched indexed rows", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 10, "description": "Re-run sweep grep confirm closed", "status": "done", "files_touched": []},
+    {"id": 11, "description": "Commit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 11,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.1",
+      "description": "Plan's Scope Hypothesis named 6 files; sweep grep found 2 more surfaces",
+      "type": "altered",
+      "reason": "context/workflows/preflight-postflight.md and context/standards/git-integration.md both matched the confirmatory sweep's regex and were not in the plan's declared Files to modify list. Per the phase's own instruction to treat the sweep output as authoritative, both were reframed in the same pattern as the other surfaces.",
+      "annotation": "*(completed: 13 hits, 2 beyond the plan's declared list -- context/workflows/preflight-postflight.md and context/standards/git-integration.md -- both reframed too; see deviation note)*"
+    },
+    {
+      "task_id": "5 (Tier Justification verification)",
+      "description": "2 of 23 named verify-touched.sh suites failed",
+      "type": "altered",
+      "reason": "test-gate-cache-equivalence.sh TIMEOUT (600s bound) is a documented pre-existing known-failures.txt entry (load-sensitive, unrelated to any doc edit). test-lint-agent-contracts.sh's single failed assertion re-ran clean in isolation, confirming a transient multi-task-batch concurrency flake rather than a reproducing defect from this phase's edits.",
+      "annotation": "Recorded via issue-record.sh (class flaky-verification, severity minor); both treated as pre-existing/environmental, not caused by this phase."
+    }
+  ]
+}

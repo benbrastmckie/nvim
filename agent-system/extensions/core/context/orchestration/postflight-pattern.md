@@ -272,7 +272,8 @@ Before proceeding to Stage 4 (RelayResult), verify:
 - [ ] status-sync-manager returned "completed" status (or warning logged)
 - [ ] state.json status field verified as expected value (or warning logged)
 - [ ] Artifact links verified in TODO.md (or warning logged)
-- [ ] Git commit created (or warning logged)
+- [ ] Git commit created, a non-failure posture skip under a gitignored `specs/` tree (see
+  `context/standards/git-staging-scope.md`'s Per-Operation Contract section), or a warning logged
 - [ ] NO manual fixes needed (no phantom-artifact issue)
 
 ## Error Handling
@@ -324,7 +325,9 @@ Command files MUST execute this postflight in Stage 3.5 after Stage 3 (ValidateR
     7. Validate git-workflow-manager return
     8. Log postflight success
   </process>
-  <checkpoint>Status updated to [RESEARCHED], artifacts linked and verified, git commit created</checkpoint>
+  <checkpoint>Status updated to [RESEARCHED], artifacts linked and verified, git commit attempted
+  (outcome recorded per the repository's tracked/ignored posture — see
+  `context/standards/git-staging-scope.md`'s Per-Operation Contract section)</checkpoint>
 </stage>
 ```
 

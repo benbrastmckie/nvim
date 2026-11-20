@@ -347,43 +347,55 @@ files before editing, and skip rather than add where the heading is absent.
 
 ---
 
-### Phase 5: Sweep the Remaining Surfaces [NOT STARTED]
+### Phase 5: Sweep the Remaining Surfaces [COMPLETED]
 
 **Goal**: Every remaining surface asserting a commit as an unconditional outcome is reframed, and
 the sweep is re-run to confirm the set is closed.
 
 **Tasks**:
-- [ ] Re-run the confirmatory sweep over `agent-system/extensions/core/**/*.md` for
+- [x] Re-run the confirmatory sweep over `agent-system/extensions/core/**/*.md` for
       `git commit created|commit is created|always commits|specs tree is committed|committed to git|specs/ is tracked`,
       with a bounded `timeout`, redirecting to a file and grepping it. Treat the result as the
-      authoritative work list for this phase.
-- [ ] `docs/templates/README.md`: soften the three unqualified "git commit created" / "create git
+      authoritative work list for this phase. *(completed: 13 hits, 2 beyond the plan's declared
+      list -- `context/workflows/preflight-postflight.md` and `context/standards/git-integration.md`
+      -- both reframed too; see deviation note)*
+- [x] `docs/templates/README.md`: soften the three unqualified "git commit created" / "create git
       commit" occurrences in the 8-Stage Workflow Pattern (lines 112, 315, 321; line 60's
       "git commits" parenthetical needs no change unless the sweep shows otherwise) to
       posture-neutral language — commit attempted, outcome recorded per the repository's
       tracked/ignored posture — so a future command or skill author does not read commit creation
-      as a hard Stage 7 success criterion.
-- [ ] `commands/todo.md`: add one sentence to "### 6. Git Commit" (line 744) noting that under a
+      as a hard Stage 7 success criterion. *(completed; line 60 left unchanged, sweep did not flag it)*
+- [x] `commands/todo.md`: add one sentence to "### 6. Git Commit" (line 744) noting that under a
       wholly-ignored `specs/` tree this step's commit reports a non-failure skip (exit `8`) for
       every archival run, since its entire `stage_paths` array is specs-scoped — benign and
-      expected, same as any other specs-scoped commit.
-- [ ] `context/workflows/command-lifecycle.md`: qualify the "git commit created" output
+      expected, same as any other specs-scoped commit. *(completed)*
+- [x] `context/workflows/command-lifecycle.md`: qualify the "git commit created" output
       (line 240) and the "Verify git commit created (or logged if failed)" criterion (line 411)
-      the same way.
-- [ ] `context/orchestration/postflight-pattern.md`: qualify the checkpoint at line 327 the same
-      way.
-- [ ] `context/standards/error-handling.md`: inspect the commit-failure example around line 91.
+      the same way. *(completed)*
+- [x] `context/orchestration/postflight-pattern.md`: qualify the checkpoint at line 327 the same
+      way. *(completed; also qualified the line-275 validation-checklist item for consistency,
+      left the line-239 success-path echo unchanged, same pattern as phases 2-4)*
+- [x] `context/standards/error-handling.md`: inspect the commit-failure example around line 91.
       Edit it ONLY if it frames a created commit as the sole success outcome; if it describes a
       genuine `git` failure (the posture skip being a distinct non-failure channel), leave it
-      unchanged and record that decision in the phase notes.
-- [ ] Every edit points at `git-staging-scope.md`'s Per-Operation Contract rather than restating
+      unchanged and record that decision in the phase notes. *(completed: describes a genuine
+      `fatal: not a git repository` failure, not an invariant claim -- left unchanged as instructed)*
+- [x] Every edit points at `git-staging-scope.md`'s Per-Operation Contract rather than restating
       the mechanism, and none describes the tracked posture as deprecated, legacy or superseded.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` for
+      *(completed; grep confirms no added hunk contains deprecated/legacy/superseded)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` for
       the indexed `context/**` files touched here (declared pre-edit: `workflows/command-lifecycle.md`
       443, `orchestration/postflight-pattern.md` 336, `standards/error-handling.md` 1054).
-- [ ] Re-run the sweep grep and confirm every remaining hit is either reframed or a deliberate
-      documented exclusion.
-- [ ] Commit.
+      *(completed: error-handling.md untouched so its row is unchanged; command-lifecycle.md
+      443->446, postflight-pattern.md 336->339, plus two sweep-found additions
+      git-integration.md 212->220 and preflight-postflight.md 593->595; re-run reports 0 changed)*
+- [x] Re-run the sweep grep and confirm every remaining hit is either reframed or a deliberate
+      documented exclusion. *(completed: remaining hits are either newly-qualified text or one of
+      four documented exclusions -- orchestrator-runtime-files.md:630 and git-staging-scope.md:134
+      (out of scope per Non-Goals), error-handling.md:91 (genuine failure example), and the two
+      success-path log lines in git-integration.md/postflight-pattern.md left unchanged for
+      consistency with phases 2-4's pattern)*
+- [x] Commit. *(completed)*
 
 **Timing**: 1.25 hours
 
@@ -416,10 +428,28 @@ drop out.
 
 **Verification**:
 - The re-run sweep grep returns no unqualified commit-invariant assertion, or every residual hit
-  is a documented deliberate exclusion recorded in the phase notes
-- No touched file contains `deprecated|legacy|superseded` applied to the tracked posture
-- Re-running `generate-context-line-counts.sh --write` reports 0 changed
-- The narrow check named in Tier Justification passes
+  is a documented deliberate exclusion recorded in the phase notes — satisfied, see task notes
+  above
+- No touched file contains `deprecated|legacy|superseded` applied to the tracked posture —
+  confirmed via `git diff` grep over every touched file
+- Re-running `generate-context-line-counts.sh --write` reports 0 changed — confirmed
+- The narrow check named in Tier Justification passes — 21 of 23 named suites passed cleanly;
+  the 2 residual failures are both pre-existing/environmental, not caused by this phase's edits:
+  `test-gate-cache-equivalence.sh` TIMEOUT at the 600s per-suite bound is a documented
+  `known-failures.txt` entry (load-sensitive, "simply slow" at 543s hinted cost, unrelated to any
+  doc content touched here), and `test-lint-agent-contracts.sh`'s single failed assertion (about
+  an unrelated agent-frontmatter fixture) re-ran clean in isolation immediately after, confirming
+  a transient concurrency flake under this multi-task batch rather than a reproducing defect. The
+  98-suite OWED fallback (triggered by the unmapped `index-entries.json` path) passed in full.
+  Logged via `issue-record.sh` (class `flaky-verification`, severity minor). Per this task's Batch
+  Gate Deferral directive, the complete gate set is not independently re-run here; this is the
+  phase's own scoped-tier discharge.
+
+**Verification Notes (Batch Gate Deferral)**: This phase's narrowing invocation
+(`verify-touched.sh` over the phase's declared file set) is the scoped discharge named by the
+dispatch's Batch Gate Deferral directive for the one `full`-tier phase (Phase 6) that references
+it; Phase 5 itself declares `**Verification Tier**: local` and was never in scope for that
+directive. No additional full sweep was run.
 
 ---
 
