@@ -1,10 +1,72 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 5,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/661_unbacked_specs_durability_options/summaries/01_unbacked-specs-durability-options-summary.md",
+      "summary": "Verifies both DONE WHEN clauses against the research report, records the Option D recommendation (document the exposure, build nothing) and why A/B/C lose, and carries the drafted durability statement verbatim for the sibling documentation record to place."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Confirmed the research report already satisfied both DONE WHEN clauses (all four options scored against all five criteria; a drafted durability statement under Recommendation for Placement), then wrote the completion summary carrying that statement byte-for-byte verbatim (diff-confirmed) plus the unhedged Option D recommendation. No file under agent-system/** was touched, matching this task's deliberately empty-of-source-store declared scope."
+  },
+  "modified_files": [
+    "specs/661_unbacked_specs_durability_options/plans/01_unbacked-specs-durability-options.md",
+    "specs/661_unbacked_specs_durability_options/summaries/01_unbacked-specs-durability-options-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "To verify a downstream artifact carries a drafted quote byte-for-byte rather than a paraphrase, extract the same delimiter-bounded block from both files with `sed -n '/start-pattern/,/end-pattern/p'` and diff the two extractions directly, rather than eyeballing the text -- a mechanical check catches a single dropped em-dash or reflowed line that a read-through would miss.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/661_unbacked_specs_durability_options/summaries/01_unbacked-specs-durability-options-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verbatim-quote", "sed-range-diff", "artifact-verification", "byte-for-byte"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "Durability of a gitignored specs/ (task-state) tree",
+      "value": "Recommend documenting the exposure rather than building a recovery mechanism: every real recovery option (a sibling repository, or a periodic orphan-branch archive commit in the same repository) recovers bytes only by giving the tree a second place to live, and that second place is itself a branch/remote/repo that every branch- or repo-enumerating surface (git fetch --all, git branch -a, CI sweeps) must learn to skip -- reintroducing the exact cross-branch/cross-repo churn an ignored posture exists to remove.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.85
+    },
+    {
+      "subject": "Existing backup-adjacent patterns in this codebase",
+      "value": "No mechanism anywhere in this codebase backs up a gitignored specs/-style task-state tree today. The two nearest analogues -- a pre-wipe local snapshot copy of settings files before a full config regeneration, and a global curated-reference sibling repository used for literature management -- both fail to transfer: neither matches a write pattern of many small mutations per task-dispatch, sustained for the life of the repository.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8
+    },
+    {
+      "subject": "External host-level file-sync/snapshot as a durability option",
+      "value": "An external, host-level sync or snapshot tool is the one durability option that doesn't touch git and so avoids cross-branch churn, but it fails on a different ground: whether it is actually configured and covering the relevant path is unverifiable from inside the repository, and adopting one is not a decision the repository's own tooling can make. It collapses into 'document the exposure, tell the reader to check their own host' -- i.e. the same outcome as building nothing.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8
+    },
+    {
+      "subject": "Orphan-branch archive commits as a durability mechanism",
+      "value": "A periodic archive commit onto an orphan branch in the same repository still participates in every branch-enumerating git surface (git branch -a, git fetch/push --all, CI branch-protection sweeps, stale-branch cleanup tools), so it reintroduces the same class of cross-branch churn a tracked/visible specs/ posture was criticized for -- just relocated to a branch that never appears in a pull request instead of removed.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8
+    },
+    {
+      "subject": "Drafting a statement for a downstream record to place verbatim",
+      "value": "When a research or planning artifact drafts text for a different, later record to insert unmodified (e.g. a durability-exposure statement for a documentation task to place), writing it in the negative framing ('no mechanism preserves X' rather than a descriptive feature list) measurably reduces the risk that a future reader skims it as evidence a protection already exists.",
+      "predicate": "technique is",
+      "ko_type": "technique",
+      "confidence": 0.7
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795130570_6d4a1f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 1,
+    "phases_total": 1
   }
 }
