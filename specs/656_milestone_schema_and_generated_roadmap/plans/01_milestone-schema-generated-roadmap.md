@@ -503,31 +503,31 @@ so the confirmation does not reuse the first search's own pattern.
 
 ---
 
-### Phase 7: Agent, Skill and Command Text [NOT STARTED]
+### Phase 7: Agent, Skill and Command Text [COMPLETED]
 
 **Goal**: The judgment side and the four regenerate callers describe the milestone model and the
 generated-only file, with the judgment/rendering split intact.
 
 **Tasks**:
-- [ ] `agents/roadmap-agent.md`: add milestone decisions to "Deciding Batches" (which milestones
+- [x] `agents/roadmap-agent.md`: add milestone decisions to "Deciding Batches" (which milestones
   exist, order, `aim`, `gate`, which batches sit under which, `progress.status` transitions and
   closure); completed members stay while a milestone is open and are dropped when it closes; held
   tasks are admissible batch members; `rationale` is a working note and is not rendered; `review`
   is written only on explicit instruction, never inferred; remove the `roadmap_notes` paragraph;
   state the field bounds. The Write Contract is unchanged: entries through `state-write.sh`, edges
-  through `update-task-status.sh`, never the file.
-- [ ] `skills/skill-roadmap/SKILL.md`: Stage 1 verdicts become `generated` (proceed), `absent`
+  through `update-task-status.sh`, never the file. *(completed)*
+- [x] `skills/skill-roadmap/SKILL.md`: Stage 1 verdicts become `generated` (proceed), `absent`
   (proceed when milestones exist), `classic|stage|unknown` (offer the migration with its dry-run
   accounting behind the existing single `AskUserQuestion`); Stage 4 commits the accessor-resolved
-  output path.
-- [ ] `commands/roadmap.md`: describe the three-part generated file.
-- [ ] `commands/todo.md` Stage 6.6 and `commands/review.md` Section 6.8: replace the
+  output path. *(completed)*
+- [x] `commands/roadmap.md`: describe the three-part generated file. *(completed)*
+- [x] `commands/todo.md` Stage 6.6 and `commands/review.md` Section 6.8: replace the
   six-hand-filled-sections prose and the "hand-curated prose" statement with the generated model
-  and the migration offer.
-- [ ] `agents/planner-agent.md` roadmap-flag stage: the closing roadmap phase regenerates through
+  and the migration offer. *(completed)*
+- [x] `agents/planner-agent.md` roadmap-flag stage: the closing roadmap phase regenerates through
   `roadmap-integration.sh --regenerate` after state changes; remove the instruction to mark items
-  with `- [x]` in the file.
-- [ ] Sweep the six files for task numbers and draft-history phrasing before committing.
+  with `- [x]` in the file. *(completed)*
+- [x] Sweep the six files for task numbers and draft-history phrasing before committing. *(completed)*
 
 **Timing**: 1.5 hours
 

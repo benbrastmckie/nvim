@@ -134,7 +134,7 @@ If no prior plan exists:
 If `roadmap_path` is provided in the delegation context and the file exists:
 
 1. Use `Read` to load the roadmap file (typically `specs/ROADMAP.md`)
-2. Identify which roadmap items this task advances
+2. Identify which milestone and batch this task sits under, and what that milestone's gate asks for
 3. Note the current phase priorities and where this task fits
 4. Store relevant items for use in phase decomposition and plan metadata
 
@@ -149,7 +149,7 @@ If `roadmap_flag` is `true` in the delegation context:
 1. **ROADMAP.md must exist** - If it was not loaded in Stage 2.5 (file missing), log a warning and proceed without roadmap phases. The flag has no effect without an existing ROADMAP.md.
 2. When ROADMAP.md exists, the plan MUST include two additional phases:
    - **First phase**: "Review and Snapshot ROADMAP.md" - Read current ROADMAP.md state, identify which items this task will advance, record the before-state for comparison
-   - **Last phase**: "Update ROADMAP.md" - Mark completed items with `- [x]` and completion annotation `*(Completed: Task {N}, {DATE})*`, add any new items discovered during implementation, update phase progress
+   - **Last phase**: "Regenerate ROADMAP.md" - The file is generated in full from `specs/state.json` and is never edited by hand. Once this task's state changes have landed, run `bash .claude/scripts/roadmap-integration.sh --regenerate` and compare the result against the first phase's snapshot. Work discovered during implementation that belongs on the roadmap is recorded as a follow-up for `/roadmap`, which owns the entries the file renders from; this phase writes no roadmap entry itself.
 3. These roadmap phases wrap the core implementation phases. The dependency chain is: roadmap-review (Phase 1) -> core phases -> roadmap-update (final phase, depends on all core phases)
 4. All other plan construction proceeds as usual (Stages 3-5)
 

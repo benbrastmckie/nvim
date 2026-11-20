@@ -1,0 +1,64 @@
+{
+  "phase": 7,
+  "phase_name": "Agent, Skill and Command Text",
+  "started_at": "2026-11-20T11:06:26Z",
+  "last_updated": "2026-11-20T11:06:26Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "`agents/roadmap-agent.md`: add milestone decisions to \"Deciding Batches\" (which milestones exist, order, `aim`, `gate`, which batches sit under which, `progress",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/agents/roadmap-agent.md",
+        "agent-system/extensions/core/skills/skill-roadmap/SKILL.md",
+        "agent-system/extensions/core/commands/roadmap.md",
+        "agent-system/extensions/core/commands/todo.md",
+        "agent-system/extensions/core/commands/review.md",
+        "agent-system/extensions/core/agents/planner-agent.md"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "`skills/skill-roadmap/SKILL.md`: Stage 1 verdicts become `generated` (proceed), `absent` (proceed when milestones exist), `classic|stage|unknown` (offer the mig",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "`commands/roadmap.md`: describe the three-part generated file.",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "`commands/todo.md` Stage 6.6 and `commands/review.md` Section 6.8: replace the six-hand-filled-sections prose and the \"hand-curated prose\" statement with the ge",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "`agents/planner-agent.md` roadmap-flag stage: the closing roadmap phase regenerates through `roadmap-integration.sh --regenerate` after state changes; remove th",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Sweep the six files for task numbers and draft-history phrasing before committing.",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "7.2",
+      "description": "Stage 1 verdict handling for an absent file",
+      "type": "altered",
+      "reason": "An absent roadmap proceeds to the agent without a question in every case, not only when milestones already exist: the generator creates the file only once the store holds a milestone and is a no-op otherwise, so there is no unapproved write to gate. The same rule is used in commands/todo.md and commands/review.md.",
+      "annotation": "*(deviation: altered \u2014 absent always proceeds; the generator itself is a no-op without milestones)*"
+    }
+  ],
+  "handoff_count": 0,
+  "verification_notes": "- Verification Tier full discharged against the SCOPED tier per the dispatch's Batch Gate Deferral; the full gate set is deferred to the batch stage, not run here. The source-store resolver selected 30 suites for this phase's six paths; run from the source store: 29 passed, 1 failed (test-verify-deploy-context-budget.sh, EXPECTED known-failures entry, whose findings here are deployed-tree drift that the Phase 9 redeploy removes), 0 NEW. commands/review.md was UNRESOLVED by the resolver (no mapped suite); it is owed to the batch-level full gate.\n- verify-deploy.sh --only-gate 4 (task-reference lint): PASS. Gate 3 (doc lint) cannot pass before the Phase 9 redeploy: it reports deployed-script drift and the state-schema.json line_count mismatch from Phase 1, both expected until then. It must be re-run in Phase 9 after the redeploy.\n- grep -c roadmap_notes agents/roadmap-agent.md prints 0.\n- The skill and both commands resolve the roadmap path through roadmap-entries-lib.sh, pass an explicit --retained path to the migration so they can stage the retained-prose file, and commit state.json plus that file only when a migration ran.\n- The planner's roadmap-flag closing phase regenerates through roadmap-integration.sh --regenerate and writes no roadmap entry."
+}

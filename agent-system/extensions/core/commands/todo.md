@@ -858,31 +858,44 @@ Step 6.5's metrics sync, for the same reason Step 6.5's own header gives: render
 would measure a worktree this run is about to change again, and the archival/metrics commits
 must already exist for the render to reflect the state this run actually produced.
 
-**Step 6.6.1: Classify** (never writes):
+**Step 6.6.1: Classify** (never writes). The roadmap's path is the store's own
+(`roadmap_context.output_path`, default `specs/ROADMAP.md`):
 ```bash
-verdict="$(bash .claude/scripts/lib/roadmap-preflight-lib.sh classify specs/ROADMAP.md)"
+source .claude/scripts/lib/roadmap-entries-lib.sh
+roadmap_path="$(roadmap_entries_output_path specs/state.json)"
+verdict="$(bash .claude/scripts/lib/roadmap-preflight-lib.sh classify "$roadmap_path")"
+migrated=false
 ```
-- **`classic`/`stage`**: proceed straight to Step 6.6.3 — no question asked, nothing written.
-- **`absent`/`unknown`**: continue to Step 6.6.2 before any write.
+- **`generated`**: proceed straight to Step 6.6.3 — no question asked, nothing written.
+- **`absent`**: proceed straight to Step 6.6.3 as well. The generator creates the file itself
+  once the store holds at least one milestone, and writes nothing while it holds none.
+- **`classic`/`stage`/`unknown`**: continue to Step 6.6.2 before any write.
 
-**Step 6.6.2: Approve and scaffold on `absent`/`unknown`**:
+**Step 6.6.2: Offer the migration on a hand-authored file**:
 
-Ask a single `AskUserQuestion` for approval to create (`absent`) or repair (`unknown`) the file,
-before any write. The question names:
-- the verdict (`absent`: no roadmap tracked yet; `unknown`: the file exists but its section
-  headers match neither the classic nor the stage vocabulary, so `--regenerate` refuses loudly
-  rather than guess),
-- what the mechanical skeleton write does (the eight classic headers get short honest stubs for
-  the owner to fill in by hand; `## Next`/`## Open work` are rendered by `--regenerate`
-  immediately afterward), and
-- for `unknown` specifically: that the existing file's full content is preserved verbatim under
-  `## Unfiled observations (none worth a task yet)`, never discarded, reordered, or
-  reinterpreted.
-
-**On approval**, run the scaffold and continue to Step 6.6.3:
+The roadmap is generated in full from `state.json` — an intro carrying the primary goals, one
+section per milestone, then rules, conventions and repo context — and the generator refuses to
+overwrite a hand-authored file. Run the migration's dry run, then ask a single
+`AskUserQuestion` for approval, before any write:
 ```bash
-bash .claude/scripts/lib/roadmap-preflight-lib.sh scaffold specs/ROADMAP.md
+retained_path="specs/archive/roadmap-retained-prose-$(date +%Y%m%d).md"
+bash .claude/scripts/migrate-roadmap-to-milestones.sh --dry-run --retained "$retained_path"
 ```
+Exit `3` means an earlier migration is a prerequisite (the script names it): relay that and treat
+it as a decline. Otherwise the question names:
+- the verdict, and that every section of the file stops being hand-edited,
+- the dry run's own accounting, verbatim: batches before and after, items placed in state, lines
+  retained, every `WARN` (an item over its field's bound is retained whole, never truncated), and
+  the accounting gate's result, and
+- where the retained prose goes, and that nothing is written unless the gate passes.
+
+**On approval**, run the migration and continue to Step 6.6.3:
+```bash
+bash .claude/scripts/migrate-roadmap-to-milestones.sh --session-id "${session_id}" \
+  --retained "$retained_path" && migrated=true
+```
+A non-zero exit is a stop for this stage, never something to force: relay the script's message,
+skip Step 6.6.3 and Step 6.6.4, and record `roadmap_regenerated: false`.
 
 **On decline**, skip Step 6.6.3 and Step 6.6.4 entirely, write nothing, and record the skip for
 Step 7's output (`roadmap_regenerated: skipped-pending-approval`).
@@ -893,14 +906,19 @@ treatment of generator calls):
 bash .claude/scripts/roadmap-integration.sh --regenerate || echo "Note: roadmap regeneration failed (non-fatal)" >&2
 ```
 
-**Step 6.6.4: Commit only if the render changed the file**, in its own `specs/ROADMAP.md`-only
-commit, separate from Step 6's archival commit and Step 6.5.3's metrics commit:
+**Step 6.6.4: Commit only if something changed**, in its own roadmap-only commit, separate from
+Step 6's archival commit and Step 6.5.3's metrics commit:
 ```bash
-if [ -n "$(git diff --name-only -- specs/ROADMAP.md)" ]; then
+paths=("$roadmap_path")
+if [ "$migrated" = "true" ]; then
+  paths+=(specs/state.json)
+  [ -f "$retained_path" ] && paths+=("$retained_path")
+fi
+if [ -n "$(git status --porcelain -- "${paths[@]}")" ]; then
   bash .claude/scripts/git-commit-scoped.sh \
     --message "todo: regenerate roadmap" \
     --session "${session_id}" \
-    -- specs/ROADMAP.md
+    -- "${paths[@]}"
 fi
 ```
 `--honest-index-rows` and `--task` are both inapplicable here, for the same reason they are
