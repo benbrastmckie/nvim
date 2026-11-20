@@ -1,0 +1,93 @@
+{
+  "phase": 5,
+  "phase_name": "Migration to the Milestone Shape with a Losslessness Gate",
+  "started_at": "2026-11-20T10:51:41Z",
+  "last_updated": "2026-11-20T10:51:41Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Create `scripts/migrate-roadmap-to-milestones.sh` with the precedent script's flag set (`--dry-run`, `--force`, `--roadmap`, `--state`, `--session-id`) plus `--",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/migrate-roadmap-to-milestones.sh",
+        "agent-system/extensions/core/scripts/tests/test-migrate-roadmap-to-milestones.sh",
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "State moves: every flat batch, in order and unchanged, into one milestone (`id` `M1`, `title` `Current work`, `progress.status` `active`, `review.state` `none`,",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "An item over its bound is never truncated: it goes whole to the retained-prose file and one WARN names it.",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Retained-prose file: everything with no state field (`## Gate state`, `## Unfiled observations`, the preamble, all three `roadmap_notes` arrays, over-bound item",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Losslessness gate, hard and before any write: every non-blank line of the existing file outside generated regions, and every `roadmap_notes` string, is found tr",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "After a passing gate: write state, delete `roadmap_batches` and `roadmap_notes`, write the retained-prose file, then write the generated file through the Phase ",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "A hand-authored `## Next` with empty `roadmap_batches` is detected and the script stops, naming `migrate-roadmap-next-to-state.sh` as the prerequisite.",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "Create `scripts/tests/test-migrate-roadmap-to-milestones.sh`: classic happy path, over-bound item retained, gate failure on an injected unaccounted line (nothin",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 9,
+      "description": "Register script and suite in `manifest.json` and `suite-classification.data`.",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 10,
+      "description": "Run `test-migrate-roadmap-next-to-state.sh` unmodified; edit it only if it fails, and then only its expectations, never its coverage.",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "5.6",
+      "description": "Write order after a passing gate",
+      "type": "altered",
+      "reason": "The retained-prose file is written before state (not after), so no prose exists only in memory once state has changed; the generated file is still written last, by moving a --print render into place.",
+      "annotation": "*(deviation: altered \u2014 retained file is written first, then state, then the generated file)*"
+    },
+    {
+      "task_id": "5.8",
+      "description": "Gate-failure injection",
+      "type": "altered",
+      "reason": "The suite injects the unaccounted line through a roadmap_notes string holding a header-shaped line (a real input the retained file cannot carry under its own key) rather than through a test-only fault hook in the script.",
+      "annotation": "*(deviation: altered \u2014 injected through a header-shaped roadmap_notes line, no test hook in the script)*"
+    }
+  ],
+  "handoff_count": 0,
+  "verification_notes": "- Verification Tier full discharged against the SCOPED tier per the dispatch's Batch Gate Deferral; the full gate set is deferred to the batch stage, not run here. The source-store resolver selected 38 suites for this phase's four paths; run from the source store (CORE_TEST_SUBJECT_MODE=source-store run-all.sh --only, plus test-migrate-roadmap-next-to-state.sh unmodified): 37 passed, 1 failed (test-gate-cache-equivalence.sh, EXPECTED known-failures entry), 0 NEW. test-common-lib.sh run without the override: green. New suite: 20 cases.\n- Scope hypothesis confirmed by a dry run on a scratch copy of this repository's roadmap and state: classic layout, 30 flat batches -> 30 nested, primary_goals +2, rules +9, conventions +19, 11 over-bound items retained whole (3 checks, 7 settled decisions, 1 standing rule), 217 file lines and 18 roadmap_notes lines retained, gate PASSED (257 source lines = 217 retained + 40 in state).\n- Exit codes: 0 ok, 1 usage or gate failure, 2 refusal (already migrated / retained target exists), 3 prerequisite. An existing retained target is never overwritten, even with --force.\n- An unrecognised-layout file is retained whole; a generated or absent file contributes no authored line.\n- The gate caught a real defect during development (a section index bound in the wrong scope left a stage file's run-order lines unaccounted), which is evidence it is not vacuous."
+}

@@ -375,42 +375,42 @@ must be fixed rather than the case edited.
 
 ---
 
-### Phase 5: Migration to the Milestone Shape with a Losslessness Gate [NOT STARTED]
+### Phase 5: Migration to the Milestone Shape with a Losslessness Gate [COMPLETED]
 
 **Goal**: A one-time, mechanical migration from the flat shape that proves, before any write, that
 nothing was lost.
 
 **Tasks**:
-- [ ] Create `scripts/migrate-roadmap-to-milestones.sh` with the precedent script's flag set
+- [x] Create `scripts/migrate-roadmap-to-milestones.sh` with the precedent script's flag set
   (`--dry-run`, `--force`, `--roadmap`, `--state`, `--session-id`) plus `--retained PATH`
   (default a dated file under `specs/archive/`). It writes state only through `state-write.sh` and
-  refuses when `roadmap_milestones` is already non-empty unless `--force`.
-- [ ] State moves: every flat batch, in order and unchanged, into one milestone (`id` `M1`,
+  refuses when `roadmap_milestones` is already non-empty unless `--force`. *(completed)*
+- [x] State moves: every flat batch, in order and unchanged, into one milestone (`id` `M1`,
   `title` `Current work`, `progress.status` `active`, `review.state` `none`, a fixed neutral
   `aim`); `## Goal` paragraphs to `primary_goals`; `## Standing rules` items to
   `roadmap_context.rules`; `## Checks` and `## Settled decisions` items to
-  `roadmap_context.conventions`. It invents no milestone boundary.
-- [ ] An item over its bound is never truncated: it goes whole to the retained-prose file and one
-  WARN names it.
-- [ ] Retained-prose file: everything with no state field (`## Gate state`,
+  `roadmap_context.conventions`. It invents no milestone boundary. *(completed)*
+- [x] An item over its bound is never truncated: it goes whole to the retained-prose file and one
+  WARN names it. *(completed)*
+- [x] Retained-prose file: everything with no state field (`## Gate state`,
   `## Unfiled observations`, the preamble, all three `roadmap_notes` arrays, over-bound items,
   and for a stage-layout file every section but the run-order one) verbatim under its original
-  header.
-- [ ] Losslessness gate, hard and before any write: every non-blank line of the existing file
+  header. *(completed)*
+- [x] Losslessness gate, hard and before any write: every non-blank line of the existing file
   outside generated regions, and every `roadmap_notes` string, is found trimmed in exactly one
   destination; batch accounting is structural (`jq -S` equality of the flat array against the
   flattened nested one for count, `task_ids`, `description`, `rationale`, `flags`). Any
-  unaccounted line is named and the script exits non-zero with nothing written.
-- [ ] After a passing gate: write state, delete `roadmap_batches` and `roadmap_notes`, write the
-  retained-prose file, then write the generated file through the Phase 4 render path.
-- [ ] A hand-authored `## Next` with empty `roadmap_batches` is detected and the script stops,
-  naming `migrate-roadmap-next-to-state.sh` as the prerequisite.
-- [ ] Create `scripts/tests/test-migrate-roadmap-to-milestones.sh`: classic happy path, over-bound
+  unaccounted line is named and the script exits non-zero with nothing written. *(completed)*
+- [x] After a passing gate: write state, delete `roadmap_batches` and `roadmap_notes`, write the
+  retained-prose file, then write the generated file through the Phase 4 render path. *(completed)*
+- [x] A hand-authored `## Next` with empty `roadmap_batches` is detected and the script stops,
+  naming `migrate-roadmap-next-to-state.sh` as the prerequisite. *(completed)*
+- [x] Create `scripts/tests/test-migrate-roadmap-to-milestones.sh`: classic happy path, over-bound
   item retained, gate failure on an injected unaccounted line (nothing written), idempotent
-  refusal, `--force`, `--dry-run` writes nothing, stage layout, prerequisite detection.
-- [ ] Register script and suite in `manifest.json` and `suite-classification.data`.
-- [ ] Run `test-migrate-roadmap-next-to-state.sh` unmodified; edit it only if it fails, and then
-  only its expectations, never its coverage.
+  refusal, `--force`, `--dry-run` writes nothing, stage layout, prerequisite detection. *(completed)*
+- [x] Register script and suite in `manifest.json` and `suite-classification.data`. *(completed)*
+- [x] Run `test-migrate-roadmap-next-to-state.sh` unmodified; edit it only if it fails, and then
+  only its expectations, never its coverage. *(completed)*
 
 **Timing**: 2 hours
 
