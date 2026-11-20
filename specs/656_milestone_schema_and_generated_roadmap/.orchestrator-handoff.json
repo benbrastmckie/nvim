@@ -1,24 +1,23 @@
 {
-  "status": "partial",
-  "dispatch_seq": 8,
-  "summary": "Phases 1-7 of 9 are complete and committed; this dispatch did 4-7: the whole-file milestone renderer, the migration with its losslessness gate, removal of the hand-authored render paths, and the agent, skill and command text. It stopped under context pressure at a clean boundary before any Phase 8 edit; the format and contract documents, the redeploy, this repository's own migration and the sf1-engine acceptance render remain, so no acceptance criterion is met yet. Suites were run from the source store only; the full gate set for Phases 5 and 7 is deferred to the batch stage.",
+  "status": "implemented",
+  "dispatch_seq": 9,
+  "summary": "All 9 phases complete; this dispatch did 8 (format, contract and reference documents with the recorded pruning ledger and lint disposition) and 9 (redeploy, this repository's migration, sf1-engine acceptance render). specs/ROADMAP.md is now generated in full from state: 30 batches under one milestone, losslessness gate passed, 9 of 9 roadmap suites pass from the deployed tree. Scoped tiers show 0 new failures; the complete gate set is deferred to the batch stage. The sf1-engine acceptance judgment is mixed: first-screen milestone status works, but held work cannot be shown under its milestone and nothing populates review state.",
   "artifacts": [
-    {
-      "type": "handoff",
-      "path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-8-handoff-20261120T110738Z.md",
-      "summary": "Context-pressure handoff at the Phase 7/8 boundary: the implemented design to document in Phase 8, searches already run, measured migration figures for this repository, and the verification procedure."
-    },
     {
       "type": "summary",
       "path": "specs/656_milestone_schema_and_generated_roadmap/summaries/01_milestone-schema-generated-roadmap-summary.md",
-      "summary": "Partial implementation summary covering phases 1-7 of 9."
+      "summary": "Implementation summary for all nine phases, with verification figures, deviations and follow-ups."
+    },
+    {
+      "type": "summary",
+      "path": "specs/656_milestone_schema_and_generated_roadmap/records/sf1-acceptance-judgment.md",
+      "summary": "Recorded judgment of the sf1-engine acceptance render: size, first-screen visibility, the empty-looking M4, and what a reviewer still cannot see."
     }
   ],
-  "phases_completed": 7,
+  "phases_completed": 9,
   "phases_total": 9,
   "blockers": [],
-  "continuation_path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-8-handoff-20261120T110738Z.md",
   "phase": "implement",
-  "git_checkpoint": "80d1bf525",
-  "next_action_hint": "Re-run /orchestrate 656 --implement to resume at Phase 8 from the handoff."
+  "git_checkpoint": "ca2eb25c2",
+  "next_action_hint": "Run postflight for task 656. The batch-level full gate is still owed for phases 2, 5, 7, 8 and 9. Uncommitted: the final summary, .return-meta.json, this handoff, one plan checklist line and one issues.jsonl row."
 }

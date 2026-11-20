@@ -1,36 +1,49 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 9,
   "artifacts": [
     {
-      "type": "handoff",
-      "path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-8-handoff-20261120T110738Z.md",
-      "summary": "Context-pressure handoff at the Phase 7/8 boundary: the implemented design to document in Phase 8, searches already run, measured migration figures for this repository, and the verification procedure."
-    },
-    {
       "type": "summary",
       "path": "specs/656_milestone_schema_and_generated_roadmap/summaries/01_milestone-schema-generated-roadmap-summary.md",
-      "summary": "Partial implementation summary covering phases 1-7 of 9."
+      "summary": "Implementation summary for all nine phases: schema, renderer, migration, documents, this repository's migration and the sf1-engine acceptance judgment."
     }
   ],
   "completion_data": {
-    "completion_summary": "Partial: the roadmap renders in full from state in the three-part milestone layout, hand-authored files are refused and routed to a new migration with a hard losslessness gate, and the agent, skill and command text describe the generated-only file. The format and contract documents, the redeploy, this repository's own migration and the sf1-engine acceptance render are not done, so no acceptance criterion is met yet."
+    "completion_summary": "specs/ROADMAP.md now renders entirely from specs/state.json in a three-part milestone layout (goals and a milestone status table, one dashboard section per milestone, rules and context last); the schema, validator, renderer, a losslessness-gated migration, the retargeted advisory lint and the documents recording the pruning ledger and lint disposition are in the core source store and redeployed. This repository's store was migrated (30 batches under one milestone) and the sf1-engine acceptance render was produced on a copy, with a mixed judgment recorded."
   },
   "modified_files": [
+    "agent-system/extensions/core/README.md",
     "agent-system/extensions/core/agents/planner-agent.md",
     "agent-system/extensions/core/agents/roadmap-agent.md",
     "agent-system/extensions/core/commands/review.md",
     "agent-system/extensions/core/commands/roadmap.md",
     "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+    "agent-system/extensions/core/context/formats/plan-format.md",
+    "agent-system/extensions/core/context/formats/roadmap-entry-template.md",
+    "agent-system/extensions/core/context/formats/roadmap-format.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/context/patterns/roadmap-update.md",
+    "agent-system/extensions/core/context/reference/state-management-schema.md",
     "agent-system/extensions/core/context/schemas/state-schema.json",
+    "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/index-entries.json",
     "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/scripts/deprecated/README.md",
+    "agent-system/extensions/core/scripts/lib/engine-written-state-paths-lib.sh",
     "agent-system/extensions/core/scripts/lib/roadmap-entries-lib.sh",
     "agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh",
+    "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh",
     "agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh",
     "agent-system/extensions/core/scripts/migrate-roadmap-to-milestones.sh",
     "agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh",
     "agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh",
     "agent-system/extensions/core/scripts/roadmap-integration.sh",
+    "agent-system/extensions/core/scripts/tests/run-all.sh",
     "agent-system/extensions/core/scripts/tests/suite-classification.data",
     "agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh",
     "agent-system/extensions/core/scripts/tests/test-migrate-roadmap-to-milestones.sh",
@@ -40,7 +53,16 @@
     "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh",
     "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
     "agent-system/extensions/core/scripts/validate-state.sh",
-    "agent-system/extensions/core/skills/skill-roadmap/SKILL.md"
+    "agent-system/extensions/core/skills/skill-roadmap/SKILL.md",
+    "specs/656_milestone_schema_and_generated_roadmap/records/archive/state.json",
+    "specs/656_milestone_schema_and_generated_roadmap/records/sf1-acceptance-ROADMAP.md",
+    "specs/656_milestone_schema_and_generated_roadmap/records/sf1-acceptance-judgment.md",
+    "specs/656_milestone_schema_and_generated_roadmap/records/sf1-acceptance-retained-prose.md",
+    "specs/656_milestone_schema_and_generated_roadmap/records/sf1-acceptance-store.json",
+    "specs/656_milestone_schema_and_generated_roadmap/records/sf1-milestone-overlay.jq",
+    "specs/ROADMAP.md",
+    "specs/archive/roadmap-retained-prose.md",
+    "specs/state.json"
   ],
   "memory_candidates": [
     {
@@ -94,24 +116,22 @@
         "accounting gate",
         "roadmap"
       ]
+    },
+    {
+      "content": "git-commit-phase.sh drops files_touched paths outside the task's declared file_scope and deposits them in .return-meta.json proposed_file_scope. The follow-up git-commit-scoped.sh call for those paths must OMIT --task: with --task its own containment guard (V10) drops the same paths again and, when nothing else is in the pathspec, exits 2 with 'zero positive pathspec entries remain'. Check first that no other live task declares the paths, since omitting --task also skips the contended-path refusal.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/656_milestone_schema_and_generated_roadmap/summaries/01_milestone-schema-generated-roadmap-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "git-commit-scoped",
+        "git-commit-phase",
+        "proposed_file_scope",
+        "scope excursion",
+        "follow-up commit"
+      ]
     }
   ],
   "sapience_notes": [
-    {
-      "subject": "Claude Code Bash tool foreground limit",
-      "predicate": "has the measured behavior that",
-      "value": "A foreground Bash call is moved to the background after about 180 seconds even when its timeout parameter is 600000 ms, so a single-call bounded waiter cannot exceed roughly 3 minutes; long local runs need nohup with a captured pid and repeated sub-180-second kill -0 polls.",
-      "ko_type": "insight",
-      "confidence": 0.8
-    },
-    {
-      "subject": "agent-system verify-touched.sh",
-      "predicate": "corrects the assumption that",
-      "value": "Passing it source-store paths does not make it test source-store edits: with the default root it executes the deployed .claude/scripts/tests copies, and --tree-root pointed at agent-system/extensions/core is refused because a root must contain either a .claude mirror or an agent-system tree.",
-      "ko_type": "correction",
-      "confidence": 0.85,
-      "source_loc": "agent-system/extensions/core/scripts/verify-touched.sh"
-    },
     {
       "subject": "state.json roadmap schema",
       "predicate": "decision is",
@@ -137,13 +157,6 @@
       "source_loc": "agent-system/extensions/core/scripts/migrate-roadmap-to-milestones.sh"
     },
     {
-      "subject": "agent-system state-write PreToolUse hook",
-      "predicate": "has the measured behavior that",
-      "value": "It scans Bash command text and blocks any command that both writes to a path shaped like state.json and mentions active_projects, including a throwaway fixture under the session scratchpad; the whole compound command is refused, so unrelated steps chained in it do not run either. Fixtures written with the Write tool, or under another filename, are not affected.",
-      "ko_type": "insight",
-      "confidence": 0.8
-    },
-    {
       "subject": "agent-system roadmap rollout order",
       "predicate": "constraint is",
       "value": "After the core extension is redeployed, any repository whose roadmap file is still hand-authored stops regenerating it: /orchestrate's conclusion step has no approval surface, so it degrades loudly on every run until migrate-roadmap-to-milestones.sh has been run (offered behind one question by /roadmap, /todo and /review). Redeploy and migration therefore have to be done back to back per repository.",
@@ -152,11 +165,34 @@
       "source_loc": "agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh"
     },
     {
-      "subject": "jq regex escapes inside bash single quotes",
-      "predicate": "corrects the assumption that",
-      "value": "Doubling the backslash for a unicode escape in a jq regex string is harmless. A pattern written \"[\\\\t\\\\n\\\\u001f]+\" is handed to the regex engine with a literal backslash-u sequence, and the class matched the plain characters u, 0, 1 and f, silently deleting those letters and digits from rendered text. Regex metacharacter escapes such as \\\\s need the doubled backslash; character escapes such as \\t and \\u001f must be single so jq substitutes the real character.",
-      "ko_type": "correction",
-      "confidence": 0.85
+      "subject": "agent-system generated roadmap, milestone membership",
+      "predicate": "has the non-obvious constraint that",
+      "value": "A task belongs to a milestone only by sitting in one of its batches, and a batch is a dispatch proposal. Held or externally owned work therefore cannot be shown under its milestone: in the sf1-engine acceptance render (M0-M4 from integration/design.md section 7) M4 read 'no batches yet' while its one task existed on hold, and M1's done-count omitted the held task blocking its gate. Those tasks appear only in the trailing 'Open tasks in no batch' list.",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "specs/656_milestone_schema_and_generated_roadmap/records/sf1-acceptance-judgment.md"
+    },
+    {
+      "subject": "agent-system roadmap review state",
+      "predicate": "finding is",
+      "value": "roadmap_milestones[].review is a stored field rendered in the dashboard table, but no workflow step writes it; only a /roadmap judgment pass on explicit instruction or a hand edit through state-write.sh does. Until then every review cell reads 'none', so the collaboration-dashboard column carries no information.",
+      "ko_type": "insight",
+      "confidence": 0.8
+    },
+    {
+      "subject": "agent-system advisory batch lint (lint-roadmap-batch-proposals.sh)",
+      "predicate": "decision is",
+      "value": "Retargeted, not retired: it reads the authored batches under roadmap_milestones[].batches[] in state.json through roadmap-entries-lib.sh, never the rendered ROADMAP.md, and is called from orchestrate-conclusion-roadmap.sh's LINT_SCRIPT invocation on every preflight verdict. Rationale: the admission gate catches an under-inclusive batch only at dispatch; the lint is the only authoring-time report. Disposition recorded in context/patterns/roadmap-update.md.",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/context/patterns/roadmap-update.md"
+    },
+    {
+      "subject": "nvim config repository roadmap migration",
+      "predicate": "measured result is",
+      "value": "Migrating the hand-authored specs/ROADMAP.md on 2026-11-20 shrank it from 131,554 to 22,548 bytes; 30 batches went under one neutral milestone M1; 11 items exceeded their 300-character bound and were retained whole in specs/archive/roadmap-retained-prose.md (3 checks, 7 settled decisions, 1 standing rule); the multiset losslessness gate passed at 257 source lines. The same migration on a copy of sf1-engine's store passed at 30 source lines and rendered 41,618 bytes down to 9,133.",
+      "ko_type": "insight",
+      "confidence": 0.9
     }
   ],
   "metadata": {
@@ -167,9 +203,10 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
+    ],
+    "phases_completed": 9,
+    "phases_total": 9
   },
-  "started_at": "2026-11-20T11:10:54Z",
   "proposed_file_scope": [
     "agent-system/extensions/core/README.md",
     "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",

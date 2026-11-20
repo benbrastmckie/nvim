@@ -1,7 +1,7 @@
 # Implementation Plan: Task #656
 
 - **Task**: 656 - Milestone schema in state.json and a wholly generated ROADMAP.md
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 16 hours
 - **Dependencies**: 654 (completed). Downstream: 657 builds on this schema; 655 follows 657.
 - **Research Inputs**: specs/656_milestone_schema_and_generated_roadmap/reports/01_milestone-schema-generated-roadmap.md
@@ -712,7 +712,7 @@ judgment the implementer may revise with a stated reason.
 - [x] The migration's losslessness gate passes on this repository's real store. *(completed)*
 - [x] A second regenerate is byte-identical. *(completed)*
 - [x] Doc lint and task-reference lint pass over the source store. *(completed)*
-- [x] The complete gate set passes at the orchestration close. *(completed)*
+- [ ] The complete gate set passes at the orchestration close. *(deviation: deferred to the batch-level gate stage of this /orchestrate invocation)*
 
 ## Artifacts & Outputs
 
