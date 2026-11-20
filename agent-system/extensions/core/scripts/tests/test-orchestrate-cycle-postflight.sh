@@ -53,7 +53,7 @@ done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
          phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh \
          derived-artifact-probe-lib.sh engine-written-state-paths-lib.sh \
-         return-meta-status-vocabulary.sh return-meta-artifacts-lib.sh; do
+         return-meta-status-vocabulary.sh return-meta-artifacts-lib.sh specs-ignore-lib.sh; do
   require_file "$CORE_DIR/lib/$f"
 done
 
@@ -95,11 +95,17 @@ setup_sandbox() {
   # project-number-inuse.sh is a HARD dependency of state-write.sh (a plain `source` under
   # `set -e`): omitting it makes every state write exit non-zero, so a status transition silently
   # fails to persist while the dispatch verdict still reads ok.
+  # specs-ignore-lib.sh is git-commit-scoped.sh's own V13 predicate library, guard-sourced
+  # (`source ... 2>/dev/null`): omitting it does not fail loudly either -- it silently leaves
+  # specs_ignore_lib_available empty, so an authentic gitignored-specs fixture (cases 987/987b)
+  # never reaches the V13 gate at all and instead falls through to a plain `git add`, which git
+  # silently skips, tripping the UNRELATED V7 staged-but-unindexed check (exit 2) instead of the
+  # V13 NOTE/exit-8 path this task's own cases exist to exercise.
   for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
            phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh \
            derived-artifact-probe-lib.sh engine-written-state-paths-lib.sh \
            return-meta-status-vocabulary.sh runtime-file-patterns.sh return-meta-artifacts-lib.sh \
-           project-number-inuse.sh; do
+           project-number-inuse.sh specs-ignore-lib.sh; do
     cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
   done
   cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
@@ -4313,6 +4319,169 @@ if jq -e '(.blockers // []) | length == 0' "$WORKDIR/specs/986_candidate/.orches
   common_test_pass "case 986: handoff blockers[] stays empty for a non-implement dispatch"
 else
   common_test_fail "case 986: expected handoff blockers[] to stay empty for a planned dispatch"
+fi
+# task-ref-ok:end
+
+# task-ref-ok:begin category 6-adjacent: the "987"/"987b"/"988"/"989" fixture numbers below, and
+# the literal "task 987"/"task 988"/"task 989" substrings asserted against stderr, are synthetic
+# fixture data (candidate numbers) exercising the V13 non-demotion exception's required
+# negative-control pair (an authentic ignored-specs skip never demotes; a genuinely failing
+# commit still demotes even in an ignored-specs repository) and the new per-invocation-deduped
+# issues.jsonl recording this task adds alongside it. Never a citation of this repo's own
+# ephemeral task tracker.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# make_specs_ignored: writes $WORKDIR/.gitignore (specs/) and commits it ALONE. The existing
+# commit_fixture helper (invoked internally by write_case98x_fixture) stages `specs/ .claude/`
+# together via `&&`; once specs/ is ignored, that `git add` exits 1 on the ignored positive
+# pathspec and the `&&` short-circuits the commit -- harmless here (the candidate's own specs/
+# files are SUPPOSED to stay untracked+ignored, which is exactly the V13 shape under test), but
+# .gitignore itself must be committed on its own, before any specs/ content exists, or git would
+# refuse to track it for the same reason.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+make_specs_ignored() {
+  echo "specs/" > "$WORKDIR/.gitignore"
+  ( cd "$WORKDIR" && git add -- .gitignore >/dev/null 2>&1 && git commit -q -m "ignore specs" >/dev/null 2>&1 )
+}
+
+common_test_info "Case 987: an authentic all-ignored specs/ tree hits the REAL git-commit-scoped.sh (no stub), exits 8, stays completed, and records exactly one deduped issues.jsonl entry"
+
+setup_sandbox
+make_specs_ignored
+write_case98x_fixture 987
+window_987=$(( $(now_ts) - 5 ))
+run_sut specs/987_candidate --session sess_987 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/987_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_987" 987
+note_987="$(jqf '.note')"
+issues_987="$WORKDIR/specs/987_candidate/issues.jsonl"
+
+if [ "$(jqf '.persisted_status')" = "completed" ]; then
+  common_test_pass "case 987: persisted_status stays completed for an authentic V13 all-ignored skip"
+else
+  common_test_fail "case 987: expected persisted_status=completed, got: $(jqf '.persisted_status')"
+fi
+if grep -q "STATUS DEMOTED" <<< "$LAST_STDERR"; then
+  common_test_fail "case 987: unexpected STATUS DEMOTED line for an authentic V13 skip: $LAST_STDERR"
+else
+  common_test_pass "case 987: no STATUS DEMOTED line for an authentic V13 skip"
+fi
+if jq -e '(.blockers // []) | length == 0' "$WORKDIR/specs/987_candidate/.orchestrator-handoff.json" >/dev/null 2>&1; then
+  common_test_pass "case 987: handoff blockers[] stays empty"
+else
+  common_test_fail "case 987: expected handoff blockers[] to stay empty; got: $(cat "$WORKDIR/specs/987_candidate/.orchestrator-handoff.json" 2>/dev/null)"
+fi
+if [ -z "$note_987" ] || [ "$note_987" = "null" ]; then
+  common_test_pass "case 987: the emitted verdict JSON's .note field stays empty"
+else
+  common_test_fail "case 987: expected .note empty, got '$note_987'"
+fi
+if grep -q "NOTE: git-commit-scoped.sh exited 8 for task 987" <<< "$LAST_STDERR"; then
+  common_test_pass "case 987: a NOTE line naming exit 8 for task 987 appears on stderr"
+else
+  common_test_fail "case 987: expected a NOTE line naming exit 8 for task 987 on stderr; got: $LAST_STDERR"
+fi
+if [ -f "$issues_987" ] && [ "$(jq -s 'map(select((.tags.v13_skip_identity // "") != "")) | length' "$issues_987" 2>/dev/null)" = "1" ]; then
+  common_test_pass "case 987: issues.jsonl carries exactly one entry with tags.v13_skip_identity set"
+else
+  common_test_fail "case 987: expected exactly one issues.jsonl entry with tags.v13_skip_identity set; got: $(cat "$issues_987" 2>/dev/null)"
+fi
+
+common_test_info "Case 987b: re-running the SUT on the same fixture with the same session_id does not duplicate the issues.jsonl entry"
+
+run_sut specs/987_candidate --session sess_987 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/987_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_987" 987
+
+if [ "$(jq -s 'map(select((.tags.v13_skip_identity // "") != "")) | length' "$issues_987" 2>/dev/null)" = "1" ]; then
+  common_test_pass "case 987b: issues.jsonl still carries exactly one v13_skip_identity entry after a second invocation with the same session_id"
+else
+  common_test_fail "case 987b: expected exactly one entry after dedup; got: $(cat "$issues_987" 2>/dev/null)"
+fi
+if grep -q "V13 skip: skipping a duplicate issues.jsonl write" <<< "$LAST_STDERR"; then
+  common_test_pass "case 987b: the duplicate-skip diagnostic line appears on stderr"
+else
+  common_test_fail "case 987b: expected the duplicate-skip diagnostic line on stderr; got: $LAST_STDERR"
+fi
+
+common_test_info "Case 988: a stubbed exit 9 (V13 partial-ignore) stays non-demoting and records exactly one deduped issues.jsonl entry"
+
+setup_sandbox
+write_case98x_fixture 988
+stub_git_commit_scoped 9
+window_988=$(( $(now_ts) - 5 ))
+run_sut specs/988_candidate --session sess_988 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/988_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_988" 988
+note_988="$(jqf '.note')"
+issues_988="$WORKDIR/specs/988_candidate/issues.jsonl"
+
+if [ "$(jqf '.persisted_status')" = "completed" ]; then
+  common_test_pass "case 988: persisted_status stays completed for a stubbed V13 partial-ignore skip"
+else
+  common_test_fail "case 988: expected persisted_status=completed, got: $(jqf '.persisted_status')"
+fi
+if grep -q "STATUS DEMOTED" <<< "$LAST_STDERR"; then
+  common_test_fail "case 988: unexpected STATUS DEMOTED line for a V13 partial-ignore skip: $LAST_STDERR"
+else
+  common_test_pass "case 988: no STATUS DEMOTED line"
+fi
+if jq -e '(.blockers // []) | length == 0' "$WORKDIR/specs/988_candidate/.orchestrator-handoff.json" >/dev/null 2>&1; then
+  common_test_pass "case 988: handoff blockers[] stays empty"
+else
+  common_test_fail "case 988: expected handoff blockers[] to stay empty"
+fi
+if [ -z "$note_988" ] || [ "$note_988" = "null" ]; then
+  common_test_pass "case 988: .note stays empty"
+else
+  common_test_fail "case 988: expected .note empty, got '$note_988'"
+fi
+if grep -q "NOTE: git-commit-scoped.sh exited 9 for task 988" <<< "$LAST_STDERR"; then
+  common_test_pass "case 988: a NOTE line naming exit 9 for task 988 appears on stderr"
+else
+  common_test_fail "case 988: expected a NOTE line naming exit 9 for task 988; got: $LAST_STDERR"
+fi
+if [ -f "$issues_988" ] && [ "$(jq -s 'map(select((.tags.v13_skip_identity // "") != "")) | length' "$issues_988" 2>/dev/null)" = "1" ]; then
+  common_test_pass "case 988: issues.jsonl carries exactly one entry with tags.v13_skip_identity set"
+else
+  common_test_fail "case 988: expected exactly one tagged entry; got: $(cat "$issues_988" 2>/dev/null)"
+fi
+
+common_test_info "Case 989: the SAME authentic ignored-specs fixture, with a stubbed genuine commit failure (exit 3), still demotes -- the negative control's other half, proving the exception was narrowed and not removed"
+
+setup_sandbox
+make_specs_ignored
+write_case98x_fixture 989
+stub_git_commit_scoped 3
+window_989=$(( $(now_ts) - 5 ))
+run_sut specs/989_candidate --session sess_989 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/989_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$window_989" 989
+handoff_989="$WORKDIR/specs/989_candidate/.orchestrator-handoff.json"
+
+if [ "$(jqf '.persisted_status')" = "partial" ]; then
+  common_test_pass "case 989: an authentic ignored-specs repository with a genuinely failing commit still demotes to partial"
+else
+  common_test_fail "case 989: expected persisted_status=partial, got: $(jqf '.persisted_status')"
+fi
+if [ "$(jqf '.verdict')" = "defer" ]; then
+  common_test_pass "case 989: verdict flips to defer"
+else
+  common_test_fail "case 989: expected verdict=defer, got: $(jqf '.verdict')"
+fi
+if grep -q "STATUS DEMOTED: task 989 completed -> partial" <<< "$LAST_STDERR"; then
+  common_test_pass "case 989: a named STATUS DEMOTED line naming candidate 989 appears on stderr"
+else
+  common_test_fail "case 989: expected a STATUS DEMOTED line naming task 989; got: $LAST_STDERR"
+fi
+if jq -e '(.blockers // []) | length > 0' "$handoff_989" >/dev/null 2>&1; then
+  common_test_pass "case 989: the handoff gained a blocker"
+else
+  common_test_fail "case 989: expected a non-empty handoff blockers[]; got: $(cat "$handoff_989" 2>/dev/null)"
+fi
+if [ "$(jq -r '.continuation_path // "null"' "$handoff_989" 2>/dev/null)" = "null" ]; then
+  common_test_pass "case 989: continuation_path is null after the demotion"
+else
+  common_test_fail "case 989: expected continuation_path=null; got: $(jq -r '.continuation_path' "$handoff_989" 2>/dev/null)"
 fi
 # task-ref-ok:end
 

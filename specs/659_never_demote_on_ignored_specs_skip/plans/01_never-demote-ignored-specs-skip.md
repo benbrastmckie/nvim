@@ -329,7 +329,7 @@ re-reading those lines before editing and by diffing the non-8/9 warning text.
 
 ---
 
-### Phase 4: Negative-control test pair for the postflight arm [NOT STARTED]
+### Phase 4: Negative-control test pair for the postflight arm [COMPLETED]
 
 **Goal**: The dispatch's required pair is automated in the postflight suite: an authentic
 ignored-specs fixture completes with `completed`, no `STATUS DEMOTED`, and a recorded skip; the
@@ -337,38 +337,42 @@ same fixture with a genuinely failing commit still demotes.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/tests/test-orchestrate-cycle-postflight.sh` lines 66-145 (`setup_sandbox`,
+- [x] Re-read `scripts/tests/test-orchestrate-cycle-postflight.sh` lines 66-145 (`setup_sandbox`,
       `commit_fixture`) and 4047-4075 (`write_case98x_fixture`, `stub_git_commit_scoped`) before
-      editing.
-- [ ] Add a fixture helper that makes the sandbox's specs tree genuinely gitignored: write
+      editing. *(completed)*
+- [x] Add a fixture helper that makes the sandbox's specs tree genuinely gitignored: write
       `$WORKDIR/.gitignore` containing `specs/`, commit the `.gitignore` itself (the existing
       `commit_fixture` stages `specs/`, which an ignored tree refuses — the new helper must commit
       `.gitignore` on its own rather than depending on that helper's chain), then build the
-      ordinary `write_case98x_fixture` state for the candidate.
-- [ ] Case 987 (authentic, no stub): the real `git-commit-scoped.sh` copied into the sandbox hits
+      ordinary `write_case98x_fixture` state for the candidate. *(completed: `make_specs_ignored`;
+      additionally had to add `specs-ignore-lib.sh` to `setup_sandbox`'s own copy list, which this
+      task's fixture is the first to need for an un-stubbed run — without it `specs_ignore_lib_available`
+      stays empty and the real script falls through to V7 instead of V13; not called out explicitly
+      by this task list but required for the authentic case to work at all)*
+- [x] Case 987 (authentic, no stub): the real `git-commit-scoped.sh` copied into the sandbox hits
       V13 and exits 8. Assert: `persisted_status` is `completed`; no `STATUS DEMOTED` line on
       stderr; the handoff's `blockers[]` stays empty; the verdict JSON's `note` is empty; a `NOTE:`
       line naming exit 8 is present; and `issues.jsonl` carries exactly one entry whose
-      `tags.v13_skip_identity` is set.
-- [ ] Case 987b (dedup): re-run the SUT on the same fixture within the same session id and assert
+      `tags.v13_skip_identity` is set. *(completed)*
+- [x] Case 987b (dedup): re-run the SUT on the same fixture within the same session id and assert
       `issues.jsonl` still carries exactly one such entry, and that the duplicate-skip diagnostic
-      line appears on stderr.
-- [ ] Case 988 (partial-ignore shape, stubbed exit 9 via the existing `stub_git_commit_scoped`
+      line appears on stderr. *(completed)*
+- [x] Case 988 (partial-ignore shape, stubbed exit 9 via the existing `stub_git_commit_scoped`
       helper): assert the same non-demotion set as 987 plus one recorded entry. Use the stub here
       because the authentic partial-ignore shape needs a negation-bearing `.gitignore` the
-      postflight's own `stage_paths` derivation does not control.
-- [ ] Case 989 (the negative control's other half): the SAME authentic ignored-specs fixture, with
+      postflight's own `stage_paths` derivation does not control. *(completed)*
+- [x] Case 989 (the negative control's other half): the SAME authentic ignored-specs fixture, with
       `stub_git_commit_scoped 3`, must still demote — assert `persisted_status` is `partial`,
       `verdict` is `defer`, a `STATUS DEMOTED` line naming the candidate appears, and the handoff
       gained a blocker with `continuation_path` null. This is what proves the exception was
-      narrowed and not removed.
-- [ ] Insert the new block after the existing case-986 `# task-ref-ok:end` marker (line 4316) and
+      narrowed and not removed. *(completed)*
+- [x] Insert the new block after the existing case-986 `# task-ref-ok:end` marker (line 4316) and
       before the 990/991/992 derived-staleness block, and wrap it in its own
       `# task-ref-ok:begin ... # task-ref-ok:end` markers with the same category-6-adjacent
       justification the neighbouring blocks carry (the fixture numbers appear in asserted stderr
-      text).
-- [ ] Keep every assertion's failure message naming the observed value, matching the suite's
-      established `common_test_pass`/`common_test_fail` style.
+      text). *(completed)*
+- [x] Keep every assertion's failure message naming the observed value, matching the suite's
+      established `common_test_pass`/`common_test_fail` style. *(completed)*
 
 **Timing**: 1 hour 15 minutes
 
@@ -394,11 +398,15 @@ pre-existing pass count is unchanged and only the new cases add to the total.
 
 **Verification**:
 
-- [ ] `bash scripts/tests/run-all.sh --only <the selected set named in the Tier Justification>`
-      exits 0, with the new cases reported and every pre-existing case still green.
-- [ ] Discriminating check: temporarily revert Phase 1's recording block and confirm cases 987/988
+- [x] `bash scripts/tests/run-all.sh --only <the selected set named in the Tier Justification>`
+      exits 0, with the new cases reported and every pre-existing case still green. *(completed:
+      run directly first — 340 passed, 0 failed, including 987/987b/988/989 — full `--only` suite
+      set run below)*
+- [x] Discriminating check: temporarily revert Phase 1's recording block and confirm cases 987/988
       FAIL on the missing `issues.jsonl` entry while 989 still passes — then restore it. This
-      proves the new assertions are not vacuous.
+      proves the new assertions are not vacuous. *(completed: 987, 987b, and 988 FAILED on the
+      missing entry; 989 still PASSED; block restored, `git diff` confirms byte-identical to the
+      committed Phase 1 state)*
 
 ---
 

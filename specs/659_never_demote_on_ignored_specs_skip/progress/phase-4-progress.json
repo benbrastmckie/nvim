@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Negative-control test pair for the postflight arm",
+  "started_at": "2026-11-20T03:16:00Z",
+  "last_updated": "2026-11-20T03:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read setup_sandbox/commit_fixture and write_case98x_fixture/stub_git_commit_scoped before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add make_specs_ignored fixture helper and cases 987/987b/988/989", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Verify: Tier Justification suite green, discriminating check (revert/restore Phase 1 block)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "run cases 987/987b against setup_sandbox's existing lib copy list unchanged", "result": "failed", "reason": "specs-ignore-lib.sh was never copied into the sandbox, so specs_ignore_lib_available stayed empty and the real git-commit-scoped.sh fell through V13 to the unrelated V7 staged-but-unindexed check (exit 2) instead of exit 8"}
+  ],
+  "handoff_count": 0
+}
