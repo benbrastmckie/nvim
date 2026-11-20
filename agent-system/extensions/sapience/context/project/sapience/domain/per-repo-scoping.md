@@ -268,7 +268,7 @@ how much gets written per task: few, high-value, well-formed notes at a task bou
 write per decision.
 
 **Writes through this path bypass the `auto_approve: false` review gate entirely.** That gate (see
-`review-gate-boundary.md`) governs only the transcript-extraction path (`~/.sapience/upload.py`).
+`review-gate-boundary.md`) governs only the transcript-extraction path (`~/.sapience/extract_local.py`).
 A direct `POST /ingest-kos` write has no staging and no review step — every write landed by
 `sapience-remember.sh` is therefore both permanent *and* unreviewed, which is why the bound above
 (per completed task, not per decision) is load-bearing rather than a style preference.
@@ -285,20 +285,33 @@ A direct `POST /ingest-kos` write has no staging and no review step — every wr
    `## Write-Tool Disposition` section for the per-tool disposition. This population stays
    untagged going forward only if a stray proactive call bypasses the rule; it is not expected
    to grow under normal use.
-3. **Untagged and vendor-owned.** Transcript extraction via `~/.sapience/upload.py`. Its
-   `_chunk()` sends `'project': m['project']` per chunk, so the repo identity does reach the
-   server, but the server-authored provenance drops it before the KO is stored -- this is the
-   largest population on this vault and cannot be fixed from this repository. A repository never
-   reaches this population at all unless its path is ALSO opted into capture: extraction is
-   gated by `~/.sapience/config.json`'s `capture.projects[].enabled`, a SEPARATE opt-in list
-   keyed by `path_prefix` (longest-prefix-wins, mirroring `~/.sapience/sapience_capture.py`'s
-   `for_cwd()`) that is UNCONNECTED to this extension's own activation state -- a repository with
-   no matching entry, or a matching entry with `enabled: false`, never reaches `upload.py`'s
-   per-chunk `project` field at all, because the opt-in gate short-circuits before extraction
-   runs. `scripts/verify-sapience-mcp.sh`'s check (i) reports this coupling for the current
-   project, scoped to the single path it resolves; see that check's own inline comment and the
-   "Capture/Activation Reconciliation" subsection below for the ruling on who, if anyone, should
-   write `enabled` on this list.
+3. **Untagged by default, but taggable before review.** Transcript extraction runs through
+   `~/.sapience/extract_local.py`, selected by `~/.sapience/config.json`'s `"backend":
+   "anthropic"` key, which stages newly-extracted knowledge objects into
+   `~/.sapience/pending_kos.jsonl` carrying no `provenance` field at all. `sapience review`'s
+   posting path -- `review_queue()` passing each record through `_strip_meta()` (which removes
+   only the underscore-prefixed `_hash`/`_staged_at` bookkeeping fields, with no re-redaction and
+   no field re-derivation) and into `post_kos()` -- sends `provenance` to `POST /ingest-kos`
+   exactly as it stands in the ledger, the same mechanism `sapience-remember.sh`'s tagged writes
+   already rely on, reached here from the review path instead of a direct script call.
+   `scripts/sapience-tag-pending.sh` occupies the one window where a repo tag can still be added
+   to this population: after `sapience sync` stages a record into `pending_kos.jsonl` and before
+   `sapience review` posts it, this script rewrites `provenance` to carry the literal
+   `[repo:<slug>]` substring, resolving the slug the identical way
+   `capture.projects[].name` -> `path_prefix` -> `resolve_checkout_toplevel()` -> `basename`.
+   A record that passes through this window untouched -- captured, synced, and reviewed with no
+   intervening tagging pass -- lands in the vault exactly as it always has: untagged, and, since
+   there is no update or delete API (see "There is no delete API" above), permanently so. A
+   repository never reaches this population at all unless its path is ALSO opted into capture:
+   extraction is gated by `~/.sapience/config.json`'s `capture.projects[].enabled`, a SEPARATE
+   opt-in list keyed by `path_prefix` (longest-prefix-wins, mirroring
+   `~/.sapience/sapience_capture.py`'s `for_cwd()`) that is UNCONNECTED to this extension's own
+   activation state -- a repository with no matching entry, or a matching entry with `enabled:
+   false`, never reaches `extract_local.py`'s per-record `project` field at all, because the
+   opt-in gate short-circuits before extraction runs. `scripts/verify-sapience-mcp.sh`'s check
+   (i) reports this coupling for the current project, scoped to the single path it resolves; see
+   that check's own inline comment and the "Capture/Activation Reconciliation" subsection below
+   for the ruling on who, if anyone, should write `enabled` on this list.
 4. **Belongs to no repository.** Documents shared by other people (provenance of the form
    `people <name> | shared by <name> <timestamp> | doc {...}`). Out of scope by construction:
    there is no repo to tag them with.
@@ -306,6 +319,26 @@ A direct `POST /ingest-kos` write has no staging and no review step — every wr
 Populations 3 and 4 are a documented asymmetry, not a defect this design attempts to fix: no
 mechanism available to this repository can tag either one. Population 2 is the one this
 extension's own surfaces can and do control.
+
+### Operational Sequencing for Pending-Ledger Tagging
+
+`scripts/sapience-tag-pending.sh` has exactly one correct place in the three-step capture flow:
+`sapience sync` (stages newly-captured records into `~/.sapience/pending_kos.jsonl`), then this
+script with `--write` (rewrites `provenance` to carry `[repo:<slug>]` for every still-pending,
+resolvable record -- its default, flag-free invocation is a dry-run that only prints a
+per-project summary), then `sapience review`/`sapience review --all` (posts the now-tagged
+records to `POST /ingest-kos`). The tag has to land in that middle step: once `sapience review`
+posts a record, its `provenance` -- tagged or not -- is permanent, because the vault's KO
+surface offers create (`/ingest-kos`) and read (`/v1/search`, `/v1/ko/subjects`) only, with no
+update and no delete endpoint (see "There is no delete API" above). A record already posted
+without the tag therefore stays untagged permanently; the only remedy is manual removal in the
+web app at app.spnc.ai, which deletes the record rather than retagging it.
+
+The one empirical confirmation that a tag survives the full `sapience review` round trip -- tag
+a record, post it, then confirm it is retrievable via `scripts/sapience-retrieve.sh`'s
+`source=[repo:<slug>]` filter -- is an OPERATOR step, never an agent one: `sapience review` is a
+user-driven launcher surface and every post through it is permanent, so no agent in this
+repository performs this confirmation on the operator's behalf.
 
 ### Capture/Activation Reconciliation
 

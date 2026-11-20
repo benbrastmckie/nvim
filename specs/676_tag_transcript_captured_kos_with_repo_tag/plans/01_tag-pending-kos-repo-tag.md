@@ -308,42 +308,48 @@ once-per-invocation batch-level close.
 
 ---
 
-### Phase 3: Correct the population census and document the sequencing [NOT STARTED]
+### Phase 3: Correct the population census and document the sequencing [COMPLETED]
 
 **Goal**: The extension's own domain docs describe the live capture pipeline, the pre-review
 injection point, the new script, the operational sequencing it requires, and the permanence of
 the already-uploaded untagged population.
 
 **Tasks**:
-- [ ] Rewrite population 3 of the four-population census in
+- [x] Rewrite population 3 of the four-population census in
       `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md` to
       describe the pipeline that is actually live (`extract_local.py`, selected by
       `~/.sapience/config.json`'s `"backend": "anthropic"`, staging into `pending_kos.jsonl`),
       the fact that a client-supplied `provenance` reaches `POST /ingest-kos` unchanged through
       `review_queue()` → `_strip_meta()` → `post_kos()`, and the pre-review injection point the
       new script occupies. Keep the existing `capture.projects[].enabled` opt-in coupling
-      paragraph, which is unaffected.
-- [ ] Add a short "Operational sequencing" passage to the same file: `sapience sync` stages,
+      paragraph, which is unaffected. *(completed: also corrected one other stale `upload.py`
+      attribution found in the same file's "review gate" Hazards bullet while rewriting, for
+      internal consistency)*
+- [x] Add a short "Operational sequencing" passage to the same file: `sapience sync` stages,
       `scripts/sapience-tag-pending.sh` (default dry-run, `--write` to mutate) tags, then
       `sapience review`/`review --all` posts; the tag must land between the second and third
-      step, and a record already posted can never be retagged.
-- [ ] State plainly in the same file that the already-uploaded untagged population is permanent:
+      step, and a record already posted can never be retagged. *(completed: new "### Operational
+      Sequencing for Pending-Ledger Tagging" subsection)*
+- [x] State plainly in the same file that the already-uploaded untagged population is permanent:
       the vault's KO surface is create (`/ingest-kos`) and read (`/v1/search`,
       `/v1/ko/subjects`) only, with no update and no delete, so manual removal in the web app is
-      the only remedy and it deletes rather than retags.
-- [ ] Name the one-record empirical confirmation as an operator step: tag, post a single record
+      the only remedy and it deletes rather than retags. *(completed, in the same new subsection)*
+- [x] Name the one-record empirical confirmation as an operator step: tag, post a single record
       through `sapience review`, then confirm retrievability with
       `scripts/sapience-retrieve.sh`. State that no agent performs this step, because `sapience
-      review` is a user-driven launcher surface and every post is permanent.
-- [ ] Update `agent-system/extensions/sapience/EXTENSION.md`'s "What this extension adds"
+      review` is a user-driven launcher surface and every post is permanent. *(completed)*
+- [x] Update `agent-system/extensions/sapience/EXTENSION.md`'s "What this extension adds"
       sentence so its script count and enumeration include the new script and its role
       (pre-review ledger tagging), and update
-      `agent-system/extensions/sapience/README.md`'s script inventory the same way.
-- [ ] Write every passage in the current-design voice required by
+      `agent-system/extensions/sapience/README.md`'s script inventory the same way. *(completed:
+      EXTENSION.md now says "four scripts"; README.md's File Inventory table gained a new row)*
+- [x] Write every passage in the current-design voice required by
       `.claude/rules/no-record-versioning-in-deliverables.md`: no "previously", "no longer",
       "this used to say", and no supersession note about what the census asserted before. Cite
       durable anchors (filenames, function names, config keys), and reference no task number
-      anywhere, per `.claude/rules/no-task-references-in-deliverables.md`.
+      anywhere, per `.claude/rules/no-task-references-in-deliverables.md`. *(completed: verified
+      via `check-task-references.sh agent-system/extensions/sapience` — 0 occurrences — and a
+      manual read-through of the new/edited passages)*
 
 **Timing**: 1 hour
 

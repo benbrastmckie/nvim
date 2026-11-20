@@ -12,12 +12,15 @@ companion-owned `~/.dotfiles/config/claude/settings.json` entry is the durable w
 this extension's own installer converging on the identical command as a second writer -- six
 hook surfaces total, five extension-merged. See `domain/per-repo-scoping.md`.
 
-**What this extension adds**: besides the grants and hooks above, three scripts deployed to
+**What this extension adds**: besides the grants and hooks above, four scripts deployed to
 `.claude/scripts/`: `scripts/sapience-retrieve.sh` (core's `orchestrate-build-dispatch.sh`
-Stage 3.5 `memory_context` block), and `scripts/sapience-remember.sh` plus
-`scripts/postflight-sapience-notes.sh` (both invoked by the postflight wrapup below). See
-`domain/per-repo-scoping.md` for all three scripts' contracts/hazards and the per-project
-MCP-registration triad (`setup-sapience-mcp.sh`, the registration hook, installer, verifier).
+Stage 3.5 `memory_context` block), `scripts/sapience-remember.sh` plus
+`scripts/postflight-sapience-notes.sh` (both invoked by the postflight wrapup below), and
+`scripts/sapience-tag-pending.sh` (a pre-review ledger tagger: injects the same `[repo:<slug>]`
+provenance tag into `~/.sapience/pending_kos.jsonl`'s still-pending transcript-capture records,
+in the window between `sapience sync` and `sapience review`). See `domain/per-repo-scoping.md`
+for all four scripts' contracts/hazards and the per-project MCP-registration triad
+(`setup-sapience-mcp.sh`, the registration hook, installer, verifier).
 
 **Postflight wrapup**: mechanically anchored, not instruction-dependent. The completing
 implementation agent emits 3-8 notes as the top-level `sapience_notes` array in
