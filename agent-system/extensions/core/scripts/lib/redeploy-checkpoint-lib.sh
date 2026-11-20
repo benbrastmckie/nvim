@@ -282,12 +282,32 @@ if [ "$dry_run" != "true" ] && [ "$_pdr_candidates_json" != "[]" ]; then
       # CHECKPOINT WARNING idiom and every other commit-failure path in this codebase: the
       # `completed` status is already on disk (reconcile-task-status.sh's write above already
       # landed it), simply left uncommitted for a later cycle's own commit to pick up.
+      # Exit code captured explicitly (replaces the bare `|| echo` idiom) so a V13 skip (8 or 9
+      # -- this repository's own specs tree is wholly or partly gitignored, per
+      # scripts/lib/specs-ignore-lib.sh) is described as what it is rather than printed as a
+      # "commit failed" warning: nothing failed, the 'completed' status on disk is exactly
+      # correct, and there is no uncommitted work for a later cycle to pick up. Every other
+      # nonzero code keeps today's WARNING wording verbatim -- this edit changes wording only,
+      # never this block's return value to its caller.
+      _pdr_commit_rc=0
       bash "$SCRIPT_DIR/git-commit-scoped.sh" \
         --message "task ${_pdr_t}: complete implementation (post-deploy reconcile)" \
         --session "$session_id" \
         --task "$_pdr_t" \
         -- "$STATE_FILE" "$(dirname "$STATE_FILE")/TODO.md" \
-        || echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: commit failed for task #${_pdr_t}'s post-deploy reconcile promotion (non-blocking) -- the 'completed' status is on disk but left uncommitted for a later commit to pick up." >&2
+        || _pdr_commit_rc=$?
+      case "$_pdr_commit_rc" in
+        0) : ;;
+        8)
+          echo "[orchestrate] NOTE: git-commit-scoped.sh exited 8 for task #${_pdr_t}'s post-deploy reconcile promotion -- this repository's own specs tree is wholly gitignored (Verified Finding V13), so nothing was committed. The 'completed' status is already correctly on disk; this is the repository's own configuration, not a commit failure." >&2
+          ;;
+        9)
+          echo "[orchestrate] NOTE: git-commit-scoped.sh exited 9 for task #${_pdr_t}'s post-deploy reconcile promotion -- this repository's own specs tree is partly gitignored (Verified Finding V13); the trackable paths already committed successfully. The 'completed' status is already correctly on disk; this is the repository's own configuration, not a commit failure." >&2
+          ;;
+        *)
+          echo "[orchestrate] REDEPLOY CHECKPOINT WARNING: commit failed for task #${_pdr_t}'s post-deploy reconcile promotion (non-blocking) -- the 'completed' status is on disk but left uncommitted for a later commit to pick up." >&2
+          ;;
+      esac
     fi
   done
   mt_save

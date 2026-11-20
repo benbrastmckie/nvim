@@ -279,7 +279,7 @@ code's path. Confirm by re-reading those lines and checking the diff hunk count.
 
 ---
 
-### Phase 3: Stop the post-deploy reconcile commit reporting a V13 skip as a commit failure [NOT STARTED]
+### Phase 3: Stop the post-deploy reconcile commit reporting a V13 skip as a commit failure [COMPLETED]
 
 **Goal**: The redeploy-checkpoint promotion commit — a `specs/state.json` + `TODO.md` bookkeeping
 commit that runs on this repository's own completion path — describes a V13 skip as what it is
@@ -287,18 +287,18 @@ instead of printing "commit failed".
 
 **Tasks**:
 
-- [ ] Re-read `scripts/lib/redeploy-checkpoint-lib.sh` lines 275-295 immediately before editing.
-- [ ] Capture the invocation's exit code explicitly instead of relying on the `|| echo` idiom's
+- [x] Re-read `scripts/lib/redeploy-checkpoint-lib.sh` lines 275-295 immediately before editing. *(completed)*
+- [x] Capture the invocation's exit code explicitly instead of relying on the `|| echo` idiom's
       collapse, and branch: exit 0 unchanged; exit 8 or 9 print a `NOTE:`-level line naming the
       code and stating that the repository's own specs tree is wholly or partly gitignored, that
       the `completed` status is already on disk, and that this is the repository's configuration
       rather than a commit failure; every other nonzero code keeps today's warning wording
-      verbatim.
-- [ ] Add no recording call here. This call site passes `--task`, so Phase 2's event channel is
+      verbatim. *(completed)*
+- [x] Add no recording call here. This call site passes `--task`, so Phase 2's event channel is
       deliberately gated off, and adding a second dedup implementation for one adjacent surface is
-      out of proportion. Phase 6 records this as a named residual.
-- [ ] Confirm the lib still returns the same value to its caller on every path — this edit changes
-      wording and nothing else.
+      out of proportion. Phase 6 records this as a named residual. *(completed: no recording call added)*
+- [x] Confirm the lib still returns the same value to its caller on every path — this edit changes
+      wording and nothing else. *(completed)*
 
 **Timing**: 20 minutes
 
@@ -322,10 +322,10 @@ re-reading those lines before editing and by diffing the non-8/9 warning text.
 
 **Verification**:
 
-- [ ] `bash -n` and `shellcheck` report no new finding.
-- [ ] `bash scripts/tests/run-all.sh --only <the selected set named in the Tier Justification>`
-      exits 0.
-- [ ] `git diff` shows the non-8/9 warning text unchanged, character for character.
+- [x] `bash -n` and `shellcheck` report no new finding. *(completed)*
+- [x] `bash scripts/tests/run-all.sh --only <the selected set named in the Tier Justification>`
+      exits 0. *(completed: 4 passed, 0 failed)*
+- [x] `git diff` shows the non-8/9 warning text unchanged, character for character. *(completed: confirmed byte-identical)*
 
 ---
 
