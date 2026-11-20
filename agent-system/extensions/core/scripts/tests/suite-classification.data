@@ -152,6 +152,7 @@ test-measure-gate-costs.sh	integration	invokes:verify-deploy.sh,run-all.sh
 test-migrate-roadmap-next-to-state.sh	unit	-
 test-migrate-roadmap-to-milestones.sh	unit	-
 test-milestone-ref-land.sh	unit	-
+test-milestone-review-handoff.sh	unit	-
 test-mint-dispatch-seq.sh	unit	-
 test-notification-matcher-parity.sh	unit	-
 test-orchestrate-batch-admit.sh	unit	-

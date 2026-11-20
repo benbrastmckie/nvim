@@ -482,42 +482,42 @@ orchestration script.
 
 ---
 
-### Phase 5: Prepare the milestone push/review handoff [NOT STARTED]
+### Phase 5: Prepare the milestone push/review handoff [COMPLETED]
 
 **Goal**: When a milestone's derived batch-done count reaches its batch count, the system prepares
 the push and review request, records `review.state: "prepared"` with the ref, and hands the user
 the literal commands — without pushing anything.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/core/scripts/milestone-review-handoff.sh`: for each
+- [x] Write `agent-system/extensions/core/scripts/milestone-review-handoff.sh`: for each *(completed)*
       milestone, derive `b_done`/`b` the same way `roadmap-integration.sh` does (every
       `task_ids` member terminal in `active_projects` or absent from it) and act only on the
       milestone whose completion became true during this invocation.
-- [ ] Confirm `refs/heads/milestone/<id>` exists and its commit count matches the milestone's
+- [x] Confirm `refs/heads/milestone/<id>` exists and its commit count matches the milestone's *(completed)*
       derived done-task count; on a mismatch, emit a named warning and prepare nothing.
-- [ ] Compute the commit range against the integration branch's current tip and draft a
+- [x] Compute the commit range against the integration branch's current tip and draft a *(completed)*
       review-request summary, one bullet per landed task's squash-commit subject, written to
       `specs/milestones/<id>-review-handoff.md`.
-- [ ] Write `review.state: "prepared"`, `review.ref: "refs/heads/milestone/<id>"` and
+- [x] Write `review.state: "prepared"`, `review.ref: "refs/heads/milestone/<id>"` and *(completed)*
       `review.updated: <YYYY-MM-DD>` via `state-write.sh`, only on the `none -> prepared`
       transition. Leave `review.request` empty (it is a PR identifier or URL, and no PR exists
       yet), and leave `progress.status` untouched.
-- [ ] Print the exact literal commands for the user to type — the `/please` push request for the
+- [x] Print the exact literal commands for the user to type — the `/please` push request for the *(completed)*
       milestone ref, then `/merge` — as the handoff's final output, and state in the output that
       the system will not run them.
-- [ ] Assert, in the script's header and in its suite, that it calls no `git push`, no
+- [x] Assert, in the script's header and in its suite, that it calls no `git push`, no *(completed)*
       `git-push-granted.sh`, no `gh`/`glab`, and no `/merge`, and never writes the grant store or
       key path.
-- [ ] Invoke the handoff from `agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh`
+- [x] Invoke the handoff from `agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh` *(completed)*
       after a successful regenerate, non-fatally: a handoff failure must never fail the roadmap
       stage.
-- [ ] Write `agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh`:
+- [x] Write `agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh`: *(completed)*
       assert the fires-once-on-transition behaviour, the ref-mismatch warning path, the
       `review` field writes and their enum conformance, the untouched `progress.status`, the
       literal-command output, and the absence of every push-shaped call.
-- [ ] Extend `agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh`
+- [x] Extend `agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh` *(completed)*
       with the wiring and non-fatal-failure cases.
-- [ ] Add the new suite's row to `scripts/tests/suite-classification.data` and register the new
+- [x] Add the new suite's row to `scripts/tests/suite-classification.data` and register the new *(completed)*
       script with `sync-manifest-scripts.sh --write`, then `--check`.
 
 **Timing**: 2 hours

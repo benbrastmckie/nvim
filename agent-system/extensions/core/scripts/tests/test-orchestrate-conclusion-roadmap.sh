@@ -21,7 +21,7 @@
 # byte-identical to how this suite found them.
 #
 # task-ref-ok:begin inline, category 3: command-usage examples -- fixture project numbers
-# (901-909) are synthetic specs/state.json rows, unrelated to this repository's own
+# (901-910) are synthetic specs/state.json rows, unrelated to this repository's own
 # task-management numbering.
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (the
@@ -71,6 +71,14 @@ ISSUE_SRC="$(resolve "issue-record.sh" "issue-record.sh")" || exit 2
 common_test_declare_subject "$ISSUE_SRC"
 COMMIT_SRC="$(resolve "git-commit-scoped.sh" "git-commit-scoped.sh")" || exit 2
 common_test_declare_subject "$COMMIT_SRC"
+HANDOFF_SRC="$(resolve "milestone-review-handoff.sh" "milestone-review-handoff.sh")" || exit 2
+common_test_declare_subject "$HANDOFF_SRC"
+STATEWRITE_SRC="$(resolve "state-write.sh" "state-write.sh")" || exit 2
+common_test_declare_subject "$STATEWRITE_SRC"
+PNUMINUSE_SRC="$(resolve "lib/project-number-inuse.sh" "lib/project-number-inuse.sh")" || exit 2
+common_test_declare_subject "$PNUMINUSE_SRC"
+TASKLOCK_SRC="$(resolve "task-lock.sh" "task-lock.sh")" || exit 2
+common_test_declare_subject "$TASKLOCK_SRC"
 
 PASSED=0
 FAILED=0
@@ -112,6 +120,10 @@ build_sandbox() {
   cp "$EVENTS_SRC" "$scratch/.claude/scripts/events-append.sh"
   cp "$ISSUE_SRC" "$scratch/.claude/scripts/issue-record.sh"
   cp "$COMMIT_SRC" "$scratch/.claude/scripts/git-commit-scoped.sh"
+  cp "$HANDOFF_SRC" "$scratch/.claude/scripts/milestone-review-handoff.sh"
+  cp "$STATEWRITE_SRC" "$scratch/.claude/scripts/state-write.sh"
+  cp "$PNUMINUSE_SRC" "$scratch/.claude/scripts/lib/project-number-inuse.sh"
+  cp "$TASKLOCK_SRC" "$scratch/.claude/scripts/task-lock.sh"
   chmod +x "$scratch"/.claude/scripts/*.sh "$scratch"/.claude/scripts/lint/*.sh
   git -C "$scratch" init -q
   git -C "$scratch" config user.email "test@example.com"
@@ -463,6 +475,92 @@ if [ "$LAST_EXIT" -eq 0 ] && echo "$LAST_STDOUT" | grep -q "^OUTCOME: --regenera
   common_test_pass "Case G: the resolved output path is regenerated and is the only path committed"
 else
   common_test_fail "Case G: expected docs/ROADMAP.md regenerated and committed alone, got exit=$LAST_EXIT files=$caseG_commit_files stdout=$LAST_STDOUT"
+fi
+
+# =====================================================================================
+# Case H: milestone handoff wiring -- a fully-done milestone with a matching milestone ref
+# produces review.state="prepared", a specs/milestones/<id>-review-handoff.md file, and the
+# literal /please + /merge commands on stderr -- fired from THIS SUT's own non-fatal call site,
+# not a direct call to milestone-review-handoff.sh.
+# =====================================================================================
+common_test_info "Case H: milestone handoff fires from orchestrate-conclusion-roadmap.sh after a successful regenerate"
+SCRATCH_H="$(build_sandbox)"
+write_state "$SCRATCH_H" 909
+jq '.active_projects[0].status = "completed" | .roadmap_milestones = [{"id": "M1", "title": "Fixture milestone", "progress": {"status": "active"}, "review": {"state": "none"}, "batches": [{"task_ids": [909], "description": "fixture batch"}]}]' \
+  "$SCRATCH_H/specs/state.json" > "$SCRATCH_H/specs/state.json.new" \
+  && mv "$SCRATCH_H/specs/state.json.new" "$SCRATCH_H/specs/state.json"
+write_generated_roadmap_stale "$SCRATCH_H"
+git -C "$SCRATCH_H" add specs/ROADMAP.md specs/state.json
+git -C "$SCRATCH_H" commit -q -m "seed"
+caseH_seed_tree="$(git -C "$SCRATCH_H" rev-parse HEAD^'{tree}')"
+caseH_seed_sha="$(git -C "$SCRATCH_H" rev-parse HEAD)"
+caseH_land_sha="$(git -C "$SCRATCH_H" commit-tree "$caseH_seed_tree" -p "$caseH_seed_sha" -m "task 909: fixture task")"
+git -C "$SCRATCH_H" update-ref refs/heads/milestone/M1 "$caseH_land_sha" ""
+mt_state_write "$MT_STATE" '[909]'
+run_sut "$SCRATCH_H" --session sess_caseH --state-file "$MT_STATE"
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  common_test_pass "Case H: SUT still exits 0 with the handoff wired in"
+else
+  common_test_fail "Case H: expected exit 0, got exit=$LAST_EXIT stderr=$LAST_STDERR"
+fi
+if grep -q "MILESTONE REVIEW READY: milestone M1" <<< "$LAST_STDERR"; then
+  common_test_pass "Case H: a named MILESTONE REVIEW READY notice names milestone M1"
+else
+  common_test_fail "Case H: expected a MILESTONE REVIEW READY notice. stderr=$LAST_STDERR"
+fi
+if grep -q "/please push refs/heads/milestone/M1" <<< "$LAST_STDERR" && grep -q "^  /merge" <<< "$LAST_STDERR"; then
+  common_test_pass "Case H: the literal /please + /merge commands are printed"
+else
+  common_test_fail "Case H: expected literal /please and /merge lines. stderr=$LAST_STDERR"
+fi
+if [ -f "$SCRATCH_H/specs/milestones/M1-review-handoff.md" ] && grep -q "task 909: fixture task" "$SCRATCH_H/specs/milestones/M1-review-handoff.md"; then
+  common_test_pass "Case H: specs/milestones/M1-review-handoff.md is written and names the landed commit's subject"
+else
+  common_test_fail "Case H: expected specs/milestones/M1-review-handoff.md naming the landed commit"
+fi
+if jq -e '.roadmap_milestones[0].review.state == "prepared" and .roadmap_milestones[0].review.ref == "refs/heads/milestone/M1"' "$SCRATCH_H/specs/state.json" >/dev/null 2>&1; then
+  common_test_pass "Case H: state.json's review.state is 'prepared' with review.ref set"
+else
+  common_test_fail "Case H: expected review.state=prepared and review.ref set in state.json: $(cat "$SCRATCH_H/specs/state.json")"
+fi
+if grep -nE 'git[[:space:]]+push|git-push-granted\.sh|\bgh[[:space:]]+pr\b|\bglab[[:space:]]+mr\b' "$HANDOFF_SRC" | grep -v '^[0-9]*:#' | grep -v "NEVER CALLS" >/dev/null 2>&1; then
+  common_test_fail "Case H: milestone-review-handoff.sh contains a forbidden push/PR invocation"
+else
+  common_test_pass "Case H: milestone-review-handoff.sh contains no git push/git-push-granted.sh/gh pr/glab mr invocation"
+fi
+
+# =====================================================================================
+# Case I: a handoff failure is non-fatal -- the roadmap regenerate and its commit still
+# succeed, and the SUT still exits 0, even when milestone-review-handoff.sh itself crashes.
+# =====================================================================================
+common_test_info "Case I: milestone-review-handoff.sh failure does not fail the roadmap conclusion stage"
+SCRATCH_I="$(build_sandbox)"
+write_state "$SCRATCH_I" 910
+write_generated_roadmap_stale "$SCRATCH_I"
+git -C "$SCRATCH_I" add specs/ROADMAP.md
+git -C "$SCRATCH_I" commit -q -m "seed"
+# Simulate a crashing handoff script -- any failure mode must leave the roadmap stage unaffected.
+printf '%s\n' '#!/usr/bin/env bash' 'exit 1' > "$SCRATCH_I/.claude/scripts/milestone-review-handoff.sh"
+chmod +x "$SCRATCH_I/.claude/scripts/milestone-review-handoff.sh"
+mt_state_write "$MT_STATE" '[910]'
+run_sut "$SCRATCH_I" --session sess_caseI --state-file "$MT_STATE"
+
+if [ "$LAST_EXIT" -eq 0 ]; then
+  common_test_pass "Case I: SUT still exits 0 when the handoff script crashes"
+else
+  common_test_fail "Case I: expected exit 0 despite the crashing handoff, got exit=$LAST_EXIT stderr=$LAST_STDERR"
+fi
+if echo "$LAST_STDOUT" | grep -q "^OUTCOME: --regenerate rewrote"; then
+  common_test_pass "Case I: the roadmap regenerate still ran and rewrote the file"
+else
+  common_test_fail "Case I: expected the regenerate to still succeed, got stdout=$LAST_STDOUT"
+fi
+caseI_commit_files="$(git -C "$SCRATCH_I" show --name-only --format= HEAD 2>/dev/null)"
+if [ "$caseI_commit_files" = "specs/ROADMAP.md" ]; then
+  common_test_pass "Case I: the roadmap regenerate commit still landed, unaffected by the handoff crash"
+else
+  common_test_fail "Case I: expected the roadmap commit to still land, got: $caseI_commit_files"
 fi
 
 # ─── Live-tree isolation guard ───────────────────────────────────────────────────────────────

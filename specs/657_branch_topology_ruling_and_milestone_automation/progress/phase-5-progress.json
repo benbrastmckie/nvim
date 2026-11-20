@@ -1,0 +1,23 @@
+{
+  "phase": 5,
+  "phase_name": "Prepare the milestone push/review handoff",
+  "started_at": "2026-11-20T02:00:00Z",
+  "last_updated": "2026-11-20T03:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write milestone-review-handoff.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/milestone-review-handoff.sh"]},
+    {"id": 2, "description": "Invoke non-fatally from orchestrate-conclusion-roadmap.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh"]},
+    {"id": 3, "description": "Write test-milestone-review-handoff.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh"]},
+    {"id": 4, "description": "Extend test-orchestrate-conclusion-roadmap.sh with wiring + non-fatal-failure cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"]},
+    {"id": 5, "description": "Register suite-classification.data and manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/suite-classification.data", "agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "Running test-orchestrate-conclusion-roadmap.sh's new Case H against the SUT resolved via common_test_resolve_subject's deploy-tree-first mode",
+      "result": "failed",
+      "reason": "deploy-tree-first resolution picked up the STALE deployed .claude/scripts/orchestrate-conclusion-roadmap.sh (predating this phase's edits) instead of the source-store copy, so the new handoff call site never ran during the test. Root cause was test methodology, not the implementation; fixed by redeploying (bash deploy-headless.sh) before re-running this specific suite, and the suite then passed 35/35."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

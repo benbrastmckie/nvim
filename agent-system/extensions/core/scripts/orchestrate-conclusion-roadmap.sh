@@ -244,6 +244,19 @@ case "$verdict" in
     ;;
 esac
 
+# ─── Milestone push/review handoff: non-fatal, "generated" verdict only ────────────────────────
+# Fires only after a successful roadmap regenerate (the "generated" verdict's own branch above),
+# never on the degrade arm (there is no fresh milestone state to act on there) and never under
+# --dry-run. A handoff failure of any kind must never fail this conclusion-stage step -- the
+# roadmap regenerate it follows already succeeded, and this step only PREPARES a push/review
+# request through the existing consent-gated path; see milestone-review-handoff.sh's own header
+# and specs/decisions/branch-topology-and-landing-strategy.md, ruling R8.
+HANDOFF_SCRIPT="${SCRIPT_DIR}/milestone-review-handoff.sh"
+if [ "$verdict" = "generated" ] && [ "$dry_run" != "true" ] && [ -f "$HANDOFF_SCRIPT" ]; then
+  handoff_output="$(bash "$HANDOFF_SCRIPT" --session "$session_id" 2>&1)" || true
+  printf '%s\n' "$handoff_output" >&2
+fi
+
 # ─── Advisory batch lint: every verdict ────────────────────────────────────────────────────────
 # The lint reads the authored roadmap entries in specs/state.json and never the rendered file,
 # so it runs on the degrade arm exactly as on the regenerate arm. Its exit code is never acted
