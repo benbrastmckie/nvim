@@ -351,53 +351,60 @@ those two reader files are updated under Phase 4 rather than here.
 
 ---
 
-### Phase 3: The Fixture Pair and One Negative Control Per Rule [NOT STARTED]
+### Phase 3: The Fixture Pair and One Negative Control Per Rule [COMPLETED]
 
 **Goal**: Both postures are tested on both sides, each new control bites exactly the case it
 targets and nowhere else, and no control can confuse the new outcome with today's exit `2` or
 exit `4`.
 
 **Tasks**:
-- [ ] Add a `build_repo_specs_ignored` fixture builder to
+- [x] Add a `build_repo_specs_ignored` fixture builder to
   `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`, in the house style of
   the existing `build_repo` / `build_repo_tracked_ignored` / `build_repo_with_scope` builders: a
   scratch repo whose `specs/` tree is tracked at first, then added to the root `.gitignore` and
-  untracked via `git rm -r --cached`, leaving content on disk.
-- [ ] Add a `build_repo_specs_partially_ignored` builder: `specs/` tracked, with exactly one task
+  untracked via `git rm -r --cached`, leaving content on disk. *(completed)*
+- [x] Add a `build_repo_specs_partially_ignored` builder: `specs/` tracked, with exactly one task
   subdirectory ignored by a specific rule while `specs/TODO.md` and `specs/state.json` stay
-  tracked and freshly modified.
-- [ ] **Control Y1 (tracked-specs negative control, the backward-compatibility bar)**: no new
-  assertion — confirm the existing baseline cases built on `build_repo covered` still pass
-  byte-for-byte. State explicitly in the case comment that this control's whole purpose is that it
-  required **no** change.
-- [ ] **Control Y2 (all-ignored -> exit `8`)**: against `build_repo_specs_ignored`, a realistic
+  tracked and freshly modified. *(completed; a missing `mkdir -p "$repo/specs"` initially broke
+  this builder's own `git commit` -- fixed, see progress file)*
+- [x] *(deviation: renamed Y1-Y6 -> AA1-AA7)* **Control Y1 (tracked-specs negative control, the
+  backward-compatibility bar)**: no new assertion — confirm the existing baseline cases built on
+  `build_repo covered` still pass byte-for-byte. State explicitly in the case comment that this
+  control's whole purpose is that it required **no** change. *(completed as AA1 -- this suite
+  already has pre-existing Y1-Y6 (V11 cached-untracking) and Z1-Z18 (V10 containment) case
+  series, so every new control in this phase is named AA1-AA7 instead, to avoid colliding with
+  and shadowing those existing case names)*
+- [x] **Control Y2 (all-ignored -> exit `8`)**: against `build_repo_specs_ignored`, a realistic
   multi-path pathspec (`specs/TODO.md specs/state.json specs/{NNN}_x/`) asserts rc `8`, no new
   commit, no path tracked afterwards, a `NOTE:` naming every ignored path, and — the
   discriminating half — that the output carries **neither** `ERROR:.*genuinely unstaged` (today's
   exit `2`) **nor** `Verified Finding V3` **nor** `Verified Finding V6`, and that rc is neither
-  `2` nor `4`.
-- [ ] **Control Y3 (partial-ignore -> exit `9`, with the sibling actually landing)**: against
+  `2` nor `4`. *(completed as AA2)*
+- [x] **Control Y3 (partial-ignore -> exit `9`, with the sibling actually landing)**: against
   `build_repo_specs_partially_ignored`, a mixed pathspec asserts rc `9` **and** that the
   trackable sibling is present in `HEAD` via `git show --name-only --format="" HEAD` (this
   suite's house style — never exit code alone), **and** that the ignored entry is absent from that
-  same output. This is the control for the defect's most harmful shape.
-- [ ] **Control Y4 (tracked-and-ignore-matching: `V13` must NOT fire)**: reuse
+  same output. This is the control for the defect's most harmful shape. *(completed as AA3)*
+- [x] **Control Y4 (tracked-and-ignore-matching: `V13` must NOT fire)**: reuse
   `build_repo_tracked_ignored` and assert the invocation still exits `0`, the file still lands,
   the existing V7 tolerated-advisory `NOTE` still appears, and no `V13` `NOTE` appears. This is
-  the negative control for Decision D7's index-awareness premise.
-- [ ] **Control Y5 (negation rule)**: a repo with `specs/` ignored and one task directory
+  the negative control for Decision D7's index-awareness premise. *(completed as AA4)*
+- [x] **Control Y5 (negation rule)**: a repo with `specs/` ignored and one task directory
   re-included via `!specs/{NNN}_x/`, asserting that the re-included directory commits normally
   (rc `0` or `9` depending on whether a sibling was also dropped) and is present in `HEAD` —
-  Risk R4.
-- [ ] **Probe Y6 (rename into an ignore-matched destination, Risk R5)**: `git mv` a tracked file
+  Risk R4. *(completed as AA5, measured outcome: rc 9, batched with a brand-new,
+  genuinely-still-ignored top-level sibling to isolate the negation question)*
+- [x] **Probe Y6 (rename into an ignore-matched destination, Risk R5)**: `git mv` a tracked file
   to an ignored destination, commit both halves as a pathspec pair, and record the measured
   outcome in the case comment. Assert whichever behaviour is measured, stating in the comment
   that this dimension was previously unexercised and that either outcome is acceptable so long as
-  no tracked content is silently lost.
-- [ ] **Control-of-the-controls probe**: in the house style of this suite's existing
+  no tracked content is silently lost. *(completed as AA6, measured outcome: rc 0, `V13` does not
+  fire because `git mv` already stages the destination as tracked, index-awareness)*
+- [x] **Control-of-the-controls probe**: in the house style of this suite's existing
   "negative-control probe (not a suite case)" blocks, deliberately neutralise the `V13` gate
   (a locally-patched copy) and confirm Y2 and Y3 both FAIL — a control that cannot distinguish
-  the new outcome from today's exit `2` has not been written.
+  the new outcome from today's exit `2` has not been written. *(completed as AA7: with the gate
+  neutralised, AA2/AA3's identical scenarios no longer produce exit 8/9)*
 
 **Timing**: 2 hours
 

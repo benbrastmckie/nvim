@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "The Fixture Pair and One Negative Control Per Rule",
+  "started_at": "2026-11-20T02:00:00Z",
+  "last_updated": "2026-11-20T02:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add build_repo_specs_ignored fixture builder", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 2, "description": "Add build_repo_specs_partially_ignored builder", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]},
+    {"id": 3, "description": "Controls AA1-AA7 (renamed from plan's Y1-Y6 due to pre-existing collision)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "Plan specified Y1-Y6 for new controls", "result": "renamed to AA1-AA7", "reason": "the suite already has pre-existing Y1-Y6 (V11 cached-untracking) and Z1-Z18 (V10 containment) case series; reusing Y1-Y6 would silently shadow/collide with existing case names"},
+    {"approach": "build_repo_specs_partially_ignored initially omitted mkdir -p \"$repo/specs\" before writing specs/TODO.md", "result": "fixed", "reason": "caused git commit to fail silently (nothing staged) and its stdout status message to pollute the captured $repo path variable, cascading into AA3's failure; found via direct run and fixed"}
+  ],
+  "handoff_count": 0
+}

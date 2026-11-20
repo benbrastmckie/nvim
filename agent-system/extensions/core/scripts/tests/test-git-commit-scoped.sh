@@ -2136,6 +2136,287 @@ else
 fi
 
 # =====================================================================
+# AA1-AA7: V13 (the gitignored-path guard) -- the fixture pair and one negative control per rule.
+#
+# NAMING NOTE: the task record that specified this phase's controls as "Y1-Y6" did not account
+# for this suite's own pre-existing Y1-Y6 (cached-untracking, V11/V12) and Z1-Z18 (file_scope
+# Containment, V10) case series, both already landed above. Renamed to AA1-AA7 here (the next
+# unused letter-run after Z) to avoid colliding with and shadowing those existing case names;
+# recorded as a deviation in the plan's own checklist rather than silently overwritten.
+#
+# Both postures are tested on both sides, each control bites exactly the case it targets and
+# nowhere else, and no control can be confused with today's exit 2 (V3) or exit 4 (V6).
+# =====================================================================
+
+# --- build_repo_specs_ignored -- a scratch repo whose specs/ tree is TRACKED at first, then
+# added to the root .gitignore and untracked via `git rm -r --cached`, leaving content on disk.
+# Prints the repo path on stdout. ---
+build_repo_specs_ignored() {
+  local repo
+  repo="$(mktemp -d -p "$TOP_WORKDIR")"
+
+  git -C "$repo" init -q
+  git -C "$repo" config user.email "test@example.com"
+  git -C "$repo" config user.name "Test Suite"
+
+  mkdir -p "$repo/.claude/scripts/lib"
+  local f
+  for f in "${REQUIRED_SCRIPTS[@]}"; do
+    cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+  done
+
+  mkdir -p "$repo/specs/999_probe"
+  echo "todo" > "$repo/specs/TODO.md"
+  echo '{}' > "$repo/specs/state.json"
+  echo "plan" > "$repo/specs/999_probe/plan.md"
+  git -C "$repo" add specs/TODO.md specs/state.json specs/999_probe/plan.md
+  git -C "$repo" commit -q -m "initial (specs/ tracked)"
+
+  echo "specs/" > "$repo/.gitignore"
+  git -C "$repo" add .gitignore
+  git -C "$repo" rm -r --cached -q specs
+  git -C "$repo" commit -q -m "untrack specs/ wholesale (gitignored from here on)"
+
+  echo "$repo"
+}
+
+# --- build_repo_specs_partially_ignored -- specs/TODO.md and specs/state.json are TRACKED (and
+# left with an uncommitted modification for the caller to commit); exactly one task subdirectory
+# (specs/042_ignored_task/) is ignored by its own specific rule and was NEVER tracked. Prints the
+# repo path on stdout. ---
+build_repo_specs_partially_ignored() {
+  local repo
+  repo="$(mktemp -d -p "$TOP_WORKDIR")"
+
+  git -C "$repo" init -q
+  git -C "$repo" config user.email "test@example.com"
+  git -C "$repo" config user.name "Test Suite"
+
+  mkdir -p "$repo/.claude/scripts/lib"
+  local f
+  for f in "${REQUIRED_SCRIPTS[@]}"; do
+    cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+  done
+
+  mkdir -p "$repo/specs"
+  echo "specs/042_ignored_task/" > "$repo/.gitignore"
+  echo "todo-v1" > "$repo/specs/TODO.md"
+  echo '{"v":1}' > "$repo/specs/state.json"
+  git -C "$repo" add .gitignore specs/TODO.md specs/state.json
+  git -C "$repo" commit -q -m "initial (one task subdirectory ignored, TODO.md/state.json tracked)"
+
+  echo "todo-v2" >> "$repo/specs/TODO.md"
+  echo '{"v":2}' > "$repo/specs/state.json"
+  mkdir -p "$repo/specs/042_ignored_task"
+  echo "plan content" > "$repo/specs/042_ignored_task/plan.md"
+
+  echo "$repo"
+}
+
+# --- AA1 (Control Y1 of the task record: tracked-specs negative control, the backward-
+# compatibility bar). No new assertion is the POINT of this control: every baseline case above
+# (U1-U6, W1-W4, X1-X8, Y1-Y6, Z1-Z18), all built on an ordinary tracked-specs repo, already ran
+# and passed in this same suite invocation -- that is this control's evidence. This case adds one
+# fresh, minimal confirmation on top, so the control still has its own PASS/FAIL line rather than
+# resting entirely on cases defined earlier in the file. ---
+
+repo_aa1="$(build_repo covered)"
+echo "line2" >> "$repo_aa1/specs/999_probe/file.txt"
+before_aa1=$(git -C "$repo_aa1" rev-list --count HEAD)
+out_aa1="$(run_commit "$repo_aa1" --message "AA1 tracked-specs baseline" --session "sess_aa1" -- "specs/999_probe/file.txt" 2>&1)"
+rc_aa1=$?
+after_aa1=$(git -C "$repo_aa1" rev-list --count HEAD 2>/dev/null || echo "$before_aa1")
+
+if [ "$rc_aa1" -eq 0 ] && [ "$after_aa1" -eq $((before_aa1 + 1)) ]; then
+  common_test_pass "AA1: a tracked-specs repository's ordinary commit is unchanged -- exit 0, HEAD+1, required no production-code change (backward-compatibility bar)"
+else
+  common_test_fail "AA1: expected rc=0, HEAD+1 on an ordinary tracked-specs repo; got rc=$rc_aa1 before=$before_aa1 after=$after_aa1 output=$out_aa1"
+fi
+
+# --- AA2 (Control Y2 of the task record: all-ignored -> exit 8). A realistic multi-path
+# pathspec against a repo whose specs/ tree is wholly gitignored: no commit, nothing tracked
+# afterwards, a NOTE naming every ignored path, and -- the discriminating half -- the output
+# carries NEITHER today's "ERROR:.*genuinely unstaged" (exit 2) NOR "Verified Finding V3" NOR
+# "Verified Finding V6", and rc is neither 2 nor 4. ---
+
+repo_aa2="$(build_repo_specs_ignored)"
+before_aa2=$(git -C "$repo_aa2" rev-list --count HEAD)
+out_aa2="$(run_commit "$repo_aa2" --message "AA2 all-ignored probe" --session "sess_aa2" \
+  -- "specs/TODO.md" "specs/state.json" "specs/999_probe/" 2>&1)"
+rc_aa2=$?
+after_aa2=$(git -C "$repo_aa2" rev-list --count HEAD 2>/dev/null || echo "$before_aa2")
+tracked_aa2="$(git -C "$repo_aa2" ls-files -- specs)"
+
+if [ "$rc_aa2" -eq 8 ] && [ "$after_aa2" -eq "$before_aa2" ] && [ -z "$tracked_aa2" ] \
+  && echo "$out_aa2" | grep -qi "NOTE:" \
+  && echo "$out_aa2" | grep -qF "specs/TODO.md" \
+  && ! echo "$out_aa2" | grep -q "ERROR:.*genuinely unstaged" \
+  && ! echo "$out_aa2" | grep -qF "Verified Finding V3" \
+  && ! echo "$out_aa2" | grep -qF "Verified Finding V6"; then
+  common_test_pass "AA2: an all-ignored multi-path pathspec yields the dedicated non-failure exit 8 -- no commit, nothing tracked, a NOTE naming the dropped paths, and the output is textually disjoint from both the exit-2 and exit-4 wordings (rc neither 2 nor 4)"
+else
+  common_test_fail "AA2: expected rc=8, HEAD unchanged, nothing tracked, a NOTE naming specs/TODO.md, no V3/V6/genuinely-unstaged text; got rc=$rc_aa2 before=$before_aa2 after=$after_aa2 tracked='$tracked_aa2' output=$out_aa2"
+fi
+
+# --- AA3 (Control Y3 of the task record: partial-ignore -> exit 9, with the sibling actually
+# landing). A mixed pathspec against a repo where exactly one task subdirectory is ignored:
+# asserts rc 9 AND that the trackable siblings are present in HEAD via `git show --name-only`
+# (never exit code alone), AND that the ignored entry is absent from that same output. This is
+# the control for the defect's most harmful shape (a mixed pathspec withholding a legitimate
+# commit under the pre-V13 all-or-nothing refusal). ---
+
+repo_aa3="$(build_repo_specs_partially_ignored)"
+before_aa3=$(git -C "$repo_aa3" rev-list --count HEAD)
+out_aa3="$(run_commit "$repo_aa3" --message "AA3 partial-ignore probe" --session "sess_aa3" \
+  -- "specs/TODO.md" "specs/state.json" "specs/042_ignored_task/" 2>&1)"
+rc_aa3=$?
+after_aa3=$(git -C "$repo_aa3" rev-list --count HEAD 2>/dev/null || echo "$before_aa3")
+show_aa3="$(git -C "$repo_aa3" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_aa3" -eq 9 ] && [ "$after_aa3" -eq $((before_aa3 + 1)) ] \
+  && echo "$show_aa3" | grep -qF "specs/TODO.md" \
+  && echo "$show_aa3" | grep -qF "specs/state.json" \
+  && ! echo "$show_aa3" | grep -qF "specs/042_ignored_task"; then
+  common_test_pass "AA3: a partial-ignore mixed pathspec yields exit 9 -- the trackable siblings (TODO.md, state.json) actually land in HEAD (verified via git show, not exit code alone), and the ignored task subdirectory is absent from that same commit"
+else
+  common_test_fail "AA3: expected rc=9, HEAD+1, TODO.md and state.json in HEAD, 042_ignored_task absent; got rc=$rc_aa3 before=$before_aa3 after=$after_aa3 show='$show_aa3' output=$out_aa3"
+fi
+
+# --- AA4 (Control Y4 of the task record: tracked-and-ignore-matching -- V13 must NOT fire).
+# Reuses build_repo_tracked_ignored (the pre-existing V7 tolerated-advisory fixture): the
+# invocation still exits 0, the file still lands, the existing V7 tolerated-advisory NOTE still
+# appears, and no V13 NOTE appears. The negative control for Decision D7's index-awareness
+# premise. ---
+
+repo_aa4="$(build_repo_tracked_ignored)"
+echo "line2" >> "$repo_aa4/specs/999_probe/archive/state.json"
+before_aa4=$(git -C "$repo_aa4" rev-list --count HEAD)
+out_aa4="$(run_commit "$repo_aa4" --message "AA4 tracked-and-ignore-matching probe" --session "sess_aa4" -- "specs/999_probe/archive/state.json" 2>&1)"
+rc_aa4=$?
+after_aa4=$(git -C "$repo_aa4" rev-list --count HEAD 2>/dev/null || echo "$before_aa4")
+show_aa4="$(git -C "$repo_aa4" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_aa4" -eq 0 ] && [ "$after_aa4" -eq $((before_aa4 + 1)) ] \
+  && echo "$show_aa4" | grep -qF "specs/999_probe/archive/state.json" \
+  && echo "$out_aa4" | grep -qi "NOTE:.*tolerated git add" \
+  && ! echo "$out_aa4" | grep -qi "V13\|gitignored pathspec"; then
+  common_test_pass "AA4: a tracked-but-ignore-matching path still lands via the pre-existing V7 tolerated-advisory NOTE -- exit 0, in HEAD, and V13 does not fire (index-awareness, Decision D7)"
+else
+  common_test_fail "AA4: expected rc=0, HEAD+1, state.json in HEAD, V7 tolerated-advisory NOTE present, no V13 NOTE; got rc=$rc_aa4 before=$before_aa4 after=$after_aa4 show='$show_aa4' output=$out_aa4"
+fi
+
+# --- AA5 (Control Y5 of the task record: a .gitignore negation rule, Risk R4). specs/* is
+# ignored except specs/999_probe/ (re-included via "!specs/999_probe/" -- the one-level-glob
+# recipe negation requires, since a trailing-slash directory exclude on specs/ itself cannot be
+# un-excluded for its contents). Batches a brand-new, NEVER-tracked file under the re-included
+# directory (must land) with a brand-new, never-tracked, genuinely-still-ignored sibling at
+# specs/'s own top level (must be dropped) -- both halves untracked, so this isolates the
+# negation question cleanly from the index-awareness property AA4/AA6 already cover. Asserts
+# that the re-included file commits normally and is present in HEAD while the still-ignored
+# sibling is absent from it, proving the negation is honoured by construction (git check-ignore
+# resolves it natively) rather than by a V13 special case. ---
+
+repo_aa5="$(mktemp -d -p "$TOP_WORKDIR")"
+git -C "$repo_aa5" init -q
+git -C "$repo_aa5" config user.email "test@example.com"
+git -C "$repo_aa5" config user.name "Test Suite"
+mkdir -p "$repo_aa5/.claude/scripts/lib"
+for f in "${REQUIRED_SCRIPTS[@]}"; do
+  cp "$SRC_SCRIPTS_DIR/$f" "$repo_aa5/.claude/scripts/$f"
+  [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo_aa5/.claude/scripts/$f"
+done
+mkdir -p "$repo_aa5/specs/999_probe"
+printf 'specs/*\n!specs/999_probe/\n' > "$repo_aa5/.gitignore"
+git -C "$repo_aa5" add .gitignore
+git -C "$repo_aa5" commit -q -m "initial (specs/* ignored except specs/999_probe/, negation rule)"
+echo "plan" > "$repo_aa5/specs/999_probe/plan.md"
+echo "still-ignored" > "$repo_aa5/specs/other_file.txt"
+before_aa5=$(git -C "$repo_aa5" rev-list --count HEAD)
+out_aa5="$(run_commit "$repo_aa5" --message "AA5 negation-rule probe" --session "sess_aa5" \
+  -- "specs/999_probe/plan.md" "specs/other_file.txt" 2>&1)"
+rc_aa5=$?
+after_aa5=$(git -C "$repo_aa5" rev-list --count HEAD 2>/dev/null || echo "$before_aa5")
+show_aa5="$(git -C "$repo_aa5" show --name-only --format="" HEAD 2>/dev/null)"
+
+if [ "$rc_aa5" -eq 9 ] && [ "$after_aa5" -eq $((before_aa5 + 1)) ] \
+  && echo "$show_aa5" | grep -qF "specs/999_probe/plan.md" \
+  && ! echo "$show_aa5" | grep -qF "specs/other_file.txt"; then
+  common_test_pass "AA5: a .gitignore negation re-including one subdirectory commits that subdirectory's brand-new file normally (present in HEAD, exit 9) while a brand-new, genuinely-still-ignored top-level sibling is dropped and absent from that same commit -- V13 defers entirely to git check-ignore's own negation handling"
+else
+  common_test_fail "AA5: expected rc=9, HEAD+1, specs/999_probe/plan.md present and specs/other_file.txt absent; got rc=$rc_aa5 before=$before_aa5 after=$after_aa5 show='$show_aa5' output=$out_aa5"
+fi
+
+# --- AA6 (Probe Y6 of the task record: a rename into an ignore-matched destination, Risk R5).
+# `git mv` a tracked file to an ignored destination, commit both halves as a pathspec pair, and
+# record the measured outcome: empirically (verified separately at plan-authoring time and
+# reconfirmed here), `git check-ignore -q` is index-aware, so the DESTINATION half -- already
+# staged as a tracked rename by `git mv` itself, before this script ever runs -- reports "not
+# ignored" and V13 does not fire. Today's behaviour is therefore unchanged: the rename commits
+# normally. Either outcome was declared acceptable at plan-authoring time so long as no tracked
+# content is silently lost; this is the outcome actually measured. ---
+
+repo_aa6="$(build_repo covered)"
+mkdir -p "$repo_aa6/specs/999_probe/ignoredsub"
+echo "specs/999_probe/ignoredsub/" >> "$repo_aa6/.gitignore"
+git -C "$repo_aa6" add .gitignore
+git -C "$repo_aa6" commit -q -m "add ignoredsub rule"
+git -C "$repo_aa6" mv specs/999_probe/file.txt specs/999_probe/ignoredsub/file.txt
+before_aa6=$(git -C "$repo_aa6" rev-list --count HEAD)
+out_aa6="$(run_commit "$repo_aa6" --message "AA6 rename-into-ignored-destination probe" --session "sess_aa6" \
+  -- "specs/999_probe/file.txt" "specs/999_probe/ignoredsub/file.txt" 2>&1)"
+rc_aa6=$?
+after_aa6=$(git -C "$repo_aa6" rev-list --count HEAD 2>/dev/null || echo "$before_aa6")
+tracked_old_aa6="$(git -C "$repo_aa6" ls-files -- specs/999_probe/file.txt)"
+tracked_new_aa6="$(git -C "$repo_aa6" ls-files -- specs/999_probe/ignoredsub/file.txt)"
+
+if [ "$rc_aa6" -eq 0 ] && [ "$after_aa6" -eq $((before_aa6 + 1)) ] \
+  && [ -z "$tracked_old_aa6" ] && [ -n "$tracked_new_aa6" ] \
+  && ! echo "$out_aa6" | grep -qi "V13\|gitignored pathspec"; then
+  common_test_pass "AA6 (measured, Risk R5): renaming a tracked file into an ignore-matched destination still commits normally -- exit 0, HEAD+1, the destination is tracked and the source is not, V13 does not fire because git mv already staged the destination as tracked before this script ran (index-awareness); no tracked content was lost"
+else
+  common_test_fail "AA6 (measured, Risk R5): expected rc=0, HEAD+1, destination tracked and source not, no V13 NOTE; got rc=$rc_aa6 before=$before_aa6 after=$after_aa6 tracked_old='$tracked_old_aa6' tracked_new='$tracked_new_aa6' output=$out_aa6"
+fi
+
+# --- AA7 (Control-of-the-controls probe, not a suite case): deliberately neutralises the V13
+# gate in a locally-patched scratch COPY of the script (never the suite's own copies) and
+# confirms AA2 and AA3 both FAIL against it -- a control that cannot distinguish the new outcome
+# from today's exit 2 has not been written. Mirrors the X1 negative-control probe's house style
+# exactly: revert immediately, never left in place. ---
+aa7_probe_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+cp "$SRC_SCRIPTS_DIR/git-commit-scoped.sh" "$aa7_probe_dir/git-commit-scoped.sh.neutralised"
+# shellcheck disable=SC2016  # single quotes deliberate: must match the SOURCE FILE's literal,
+# unexpanded `$specs_ignore_lib_available` text, never this shell's own expansion of it.
+sed -i 's/if \[ -n "\$specs_ignore_lib_available" \] \&\& path_is_gitignored "\$root_resolved" "\$p"; then/if false; then/' \
+  "$aa7_probe_dir/git-commit-scoped.sh.neutralised"
+if grep -q 'if false; then' "$aa7_probe_dir/git-commit-scoped.sh.neutralised" \
+  && ! diff -q "$SRC_SCRIPTS_DIR/git-commit-scoped.sh" "$aa7_probe_dir/git-commit-scoped.sh.neutralised" >/dev/null 2>&1; then
+
+  repo_aa7a="$(build_repo_specs_ignored)"
+  cp "$aa7_probe_dir/git-commit-scoped.sh.neutralised" "$repo_aa7a/.claude/scripts/git-commit-scoped.sh"
+  chmod +x "$repo_aa7a/.claude/scripts/git-commit-scoped.sh"
+  out_aa7a="$(run_commit "$repo_aa7a" --message "AA7a neutralised-gate probe (all-ignored)" --session "sess_aa7a" \
+    -- "specs/TODO.md" "specs/state.json" "specs/999_probe/" 2>&1)"
+  rc_aa7a=$?
+
+  repo_aa7b="$(build_repo_specs_partially_ignored)"
+  cp "$aa7_probe_dir/git-commit-scoped.sh.neutralised" "$repo_aa7b/.claude/scripts/git-commit-scoped.sh"
+  chmod +x "$repo_aa7b/.claude/scripts/git-commit-scoped.sh"
+  out_aa7b="$(run_commit "$repo_aa7b" --message "AA7b neutralised-gate probe (partial-ignore)" --session "sess_aa7b" \
+    -- "specs/TODO.md" "specs/state.json" "specs/042_ignored_task/" 2>&1)"
+  rc_aa7b=$?
+
+  if [ "$rc_aa7a" -ne 8 ] && [ "$rc_aa7b" -ne 9 ]; then
+    common_test_pass "AA7 (control-of-the-controls, non-default): with the V13 gate neutralised, AA2's and AA3's identical scenarios no longer produce exit 8/9 (got rc=$rc_aa7a and rc=$rc_aa7b) -- confirms AA2/AA3 are a genuine guard against the real V13 predicate, not a tautology"
+  else
+    common_test_fail "AA7 (control-of-the-controls, non-default): expected the neutralised gate to prevent exit 8/9; still got rc=$rc_aa7a (all-ignored) and rc=$rc_aa7b (partial-ignore)" "aa7a output=$out_aa7a / aa7b output=$out_aa7b"
+  fi
+else
+  common_test_fail "AA7 (control-of-the-controls, non-default): could not construct the neutralised scratch copy -- sed substitution did not apply as expected, control-of-the-controls probe skipped"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""
