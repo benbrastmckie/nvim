@@ -1,18 +1,23 @@
 {
   "task_number": 660,
-  "phase": "plan",
-  "status": "planned",
-  "session_id": "sess_1795130570_6d4a1f_660",
-  "dispatch_seq": 10,
-  "phases_completed": 0,
+  "phase": "implement",
+  "status": "implemented",
+  "session_id": "sess_1795130570_6d4a1f",
+  "dispatch_seq": 12,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a 6-phase linear implementation plan for making a freshly initialized repository land with its whole specs tree gitignored. The design adopts the research report's root-level managed-block approach gated on git ls-files -- specs/ being empty, and expands scope beyond the three originally declared files to fold in check-runtime-file-tracking.sh's Check C and both affected test suites, because plan authoring found test-init-specs.sh Case 6 is a live break under the new default rather than the optional follow-on the report had described. The final phase's negative control asserts the reference repository's tracked specs tree is untouched against the git index, not against any script's exit code.",
+  "summary": "Implemented all 6 plan phases: a new specs_tree_ignore_block() renderer, init-specs.sh's fresh-repo Step 5b that writes a repo-root specs-tree-ignore managed block only when git ls-files -- specs/ is empty, posture-aware Check C in check-runtime-file-tracking.sh, both-posture test coverage across two suites (with Case 6 reconciled rather than dropped), and a documented posture split with manual opt-in runbook in orchestrator-runtime-files.md. Redeployed via deploy-headless.sh; the blocking negative control's all four assertions pass against this repository's own tracked specs/ tree, and the positive control's full lifecycle passes in a throwaway scratch repo using the deployed scripts. One pre-existing, unrelated defect (gate 27 on scripts/tests/run-all.sh) was observed during redeploy verification and logged, not fixed, since it predates this task and the file is outside its file_scope.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/660_init_specs_ignores_specs_by_default/summaries/01_init-specs-ignores-by-default-summary.md",
+      "summary": "A fresh-repo whole-specs/-tree-ignored default added to init-specs.sh, check-runtime-file-tracking.sh made posture-aware, both postures pinned by tests, orchestrator-runtime-files.md documents the split and opt-in runbook, redeployed with all four negative-control assertions and the positive-control lifecycle passing."
+    },
+    {
       "type": "plan",
       "path": "specs/660_init_specs_ignores_specs_by_default/plans/01_init-specs-ignores-by-default.md",
-      "summary": "6-phase plan: lib renderer, init-specs.sh fresh-repo detection and root-level /specs/ managed block, posture-aware Check C, both-posture tests, standards posture split plus manual opt-in runbook, redeploy with an index-asserted negative control."
+      "summary": "6-phase plan, all phases COMPLETED with inline *(completed)* annotations on every checklist item."
     }
   ]
 }

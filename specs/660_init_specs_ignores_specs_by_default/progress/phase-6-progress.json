@@ -1,0 +1,20 @@
+{
+  "phase": 6,
+  "phase_name": "Redeploy, negative control against the index, and close",
+  "started_at": "2026-11-20T06:00:00Z",
+  "last_updated": "2026-11-20T06:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture three before-baselines in this repository", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-read task 338's state before redeploy", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run deploy-headless.sh", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md", "agent-system/extensions/core/index-entries.json"]},
+    {"id": 4, "description": "Negative control: all four assertions against this repo's index", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Positive control: scratch repo, deployed scripts, full lifecycle", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Scoped touched-path verify-touched.sh check, batch deferral note", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "First redeploy attempt after Phase 5's runbook prose", "result": "failed", "reason": "post-deploy fast-gate battery caught two self-inflicted lint collisions (bare git-commit-m text, bare specs/ directory pathspec to git-commit-scoped.sh) from the new manual-opt-in-runbook example; fixed by rewording the example and re-syncing index-entries.json's line_count each time"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

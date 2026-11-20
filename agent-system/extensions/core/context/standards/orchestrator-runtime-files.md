@@ -577,11 +577,10 @@ no automatic or flag-driven bulk-untrack flow. A consumer that wants to adopt th
 default after already tracking `specs/` follows this procedure by hand:
 
 ```bash
-git rm -r --cached specs/            # untrack everything under specs/; working-tree copies untouched
-git commit -m "untrack specs/ to adopt the whole-tree-ignored default"   # a scoped commit, never folded into other work
-echo "/specs/" >> .gitignore         # or run init-specs.sh again now that specs/ is untracked
-bash .claude/scripts/init-specs.sh   # (re-)run init-specs.sh; it now sees an empty git ls-files -- specs/ and
-                                      # writes the full sentinel-delimited managed block itself
+git rm -r --cached specs/     # untrack everything under specs/; working-tree copies untouched
+# Commit that removal as its own scoped step before continuing (never folded into other work).
+bash .claude/scripts/init-specs.sh   # re-run init-specs.sh; it now sees an empty git ls-files -- specs/ and
+                                      # writes the full sentinel-delimited root-level managed block itself
 ```
 
 This is the untracking counterpart to "Untracking Already-Committed Ephemeral Files" below, at a

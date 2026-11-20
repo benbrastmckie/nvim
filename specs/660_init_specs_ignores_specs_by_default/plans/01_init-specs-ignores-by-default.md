@@ -431,37 +431,53 @@ Case 3's verdict is unchanged alongside the new case's pass.
 
 ---
 
-### Phase 6: Redeploy, negative control against the index, and close [NOT STARTED]
+### Phase 6: Redeploy, negative control against the index, and close [COMPLETED]
 
 **Goal**: The change is live in the deployed tree, the fresh-repo default demonstrably works end
 to end, and the reference repository's tracked task history is demonstrably untouched — asserted
 against the git index, not inferred from any script's exit code.
 
 **Tasks**:
-- [ ] Before anything else in this phase, capture three baselines in this repository:
+- [x] Before anything else in this phase, capture three baselines in this repository:
       `git ls-files -- specs/ | wc -l`, the rc of `git check-ignore -q -- specs`, and
-      `sha256sum .gitignore`.
-- [ ] Re-read task 338's current state in `specs/state.json`. If it has landed edits to
+      `sha256sum .gitignore`. *(completed: 11643 files, rc=1, sha256=da06cbb...)*
+- [x] Re-read task 338's current state in `specs/state.json`. If it has landed edits to
       `init-specs.sh` or `runtime-file-patterns.sh` since this plan was written, re-read both
       files in full and reconcile against its result rather than assuming this plan's
-      enumeration.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed `.claude/` tree
-      from the source store.
-- [ ] Negative control (blocking, all four assertions): re-run `bash .claude/scripts/init-specs.sh`
+      enumeration. *(completed: still `not_started`, last_updated 2026-10-04 -- unchanged since
+      plan authoring; no reconciliation needed)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed `.claude/` tree
+      from the source store. *(completed: two self-inflicted lint collisions surfaced by the
+      post-deploy fast-gate battery from Phase 5's new runbook prose -- lint 17 bare
+      `git commit -m` text and lint 23 a bare `specs/` directory pathspec to
+      `git-commit-scoped.sh` -- both fixed by rewording the manual opt-in runbook to avoid the
+      flagged literal shapes, re-synced index-entries.json's line_count each time, then
+      redeployed again clean of both)*
+- [x] Negative control (blocking, all four assertions): re-run `bash .claude/scripts/init-specs.sh`
       from this repository's root, then assert (a) `git ls-files -- specs/ | wc -l` equals the
       captured before-count; (b) `git check-ignore -q -- specs` still exits 1; (c) `.gitignore`'s
       sha256 is unchanged and the file contains no `specs-tree-ignore` sentinel; (d)
       `git diff --cached --name-only -- specs/` shows no staged deletions. Any failure here is
       blocking — it is the defect this task's description names as worse than the one being
-      fixed, not a note.
-- [ ] Positive control: in a throwaway scratch repository outside this tree, stand up the
+      fixed, not a note. *(completed: all four PASS -- count 11643/11643, rc 1/1, sha identical,
+      no staged diff under specs/)*
+- [x] Positive control: in a throwaway scratch repository outside this tree, stand up the
       deployed scripts, run `init-specs.sh`, and assert the whole `specs/` tree is ignored
       (`git check-ignore -q -- specs` exits 0); then exercise a working lifecycle on top of it —
       a `specs/state.json` write, `generate-todo.sh`, and `check-runtime-file-tracking.sh`
-      exiting 0 with Check C SKIPped.
-- [ ] Run the scoped touched-path check over this task's own touched paths and record, in the
+      exiting 0 with Check C SKIPped. *(completed: all PASS, using the real DEPLOYED scripts)*
+- [x] Run the scoped touched-path check over this task's own touched paths and record, in the
       phase's verification notes, that the complete gate set is deferred to the orchestration
-      close rather than independently run in this dispatch.
+      close rather than independently run in this dispatch. *(completed: the plan's own named
+      invocation -- `verify-touched.sh` with the six explicit touched paths -- resolves to a
+      15-suite battery, 14 passed, 1 EXPECTED/0-NEW failure in `test-verify-deploy-context-budget.sh`
+      caused entirely by a pre-existing, unrelated defect in `scripts/tests/run-all.sh` (gate 27,
+      subject-resolution declaration lint) that predates this dispatch -- confirmed present
+      already in Phase 1's very first verify-touched.sh run, before any of this task's phases
+      landed, and confirmed by run-all.sh's own EXPECTED/0-NEW classification. Logged via
+      issue-record.sh rather than fixed, since the file is outside this task's file_scope and
+      the fix belongs to a separate task. The complete gate set is otherwise deferred to the
+      once-per-invocation batch-gate stage, not independently run here)*
 
 **Timing**: 1 hour
 

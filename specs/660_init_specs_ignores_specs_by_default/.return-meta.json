@@ -1,10 +1,91 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 12,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/660_init_specs_ignores_specs_by_default/summaries/01_init-specs-ignores-by-default-summary.md",
+      "summary": "A fresh-repo whole-specs/-tree-ignored default added to init-specs.sh, check-runtime-file-tracking.sh made posture-aware, both postures pinned by tests, orchestrator-runtime-files.md documents the split and opt-in runbook, redeployed with all four negative-control assertions and the positive-control lifecycle passing."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented a fresh-repo whole-specs/-tree-ignored default in init-specs.sh (new Step 5b, gated on git ls-files -- specs/), made check-runtime-file-tracking.sh's Check C posture-aware, pinned both postures with new/reconciled tests across two suites, documented the posture split and manual opt-in runbook in orchestrator-runtime-files.md, and redeployed with all four blocking negative-control assertions and the positive-control full lifecycle passing against this repository's own tracked specs/ tree and a throwaway scratch repo respectively."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/check-runtime-file-tracking.sh",
+    "agent-system/extensions/core/scripts/init-specs.sh",
+    "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
+    "agent-system/extensions/core/scripts/tests/test-init-specs.sh",
+    "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A markdown doc-sync test that extracts a fenced block via an awk pattern anchored only to the fence's opening/closing lines (e.g. `/^```gitignore$/{flag=1;next} /^```$/{...}`) is NOT scoped to 'the first such fence' -- it is unanchored across the whole file, so a second fenced block using the SAME language tag re-triggers the rule and gets silently concatenated into the same extracted string, breaking the existing pin for a reason unrelated to its own content. When adding a second managed block to a doc that already has one pinned this way, give the new fence a distinct tag (e.g. `gitignore-specs-tree-ignore` vs. plain `gitignore`) and mirror the extraction idiom with that tag, rather than reusing the original tag.",
+      "category": "PATTERN",
+      "source_artifact": "specs/660_init_specs_ignores_specs_by_default/summaries/01_init-specs-ignores-by-default-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["doc-sync-pin", "fenced-block-extraction", "awk-unanchored-match", "test-collision", "markdown-fixture"]
+    },
+    {
+      "content": "git check-ignore -q -- <path> (and any predicate built on it, such as specs_tree_is_gitignored()) answers 'not ignored' (rc 1) for a path that does not exist on disk, regardless of a .gitignore pattern that would otherwise match it -- confirmed by direct experiment (mkdir the path first and the same check flips to rc 0). A test fixture for such a predicate must create the directory/file on disk before invoking the check under test; a fixture with only a committed .gitignore and no matching real path will always exercise the false branch.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/660_init_specs_ignores_specs_by_default/summaries/01_init-specs-ignores-by-default-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-check-ignore", "test-fixture-construction", "gitignore-predicate", "false-negative"]
+    },
+    {
+      "content": "A context/doc-index line-count regenerator (generate-context-line-counts.sh) that has its own deploy-root-guard refuses a bare source-store-relative invocation with a 'bogus repo root' error. Its own header documents the bypass: REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write, run from the repo root. Use this bypass rather than deploying first just to regenerate a doc-sync index entry mid-implementation.",
+      "category": "CONFIG",
+      "source_artifact": "specs/660_init_specs_ignores_specs_by_default/summaries/01_init-specs-ignores-by-default-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["deploy-root-guard", "REPO_ROOT-bypass", "source-store-invocation", "line-count-regen"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "specs_tree_is_gitignored() / git check-ignore -q -- specs",
+      "value": "Answers 'not ignored' (rc 1) for a path that does not exist on disk at all, regardless of a matching .gitignore pattern -- the directory must actually exist for the predicate to report true. Verified by direct experiment in a scratch repo.",
+      "confidence": 0.9
+    },
+    {
+      "subject": "Markdown doc-sync fenced-block extraction tests",
+      "value": "An awk extraction anchored only to a fence's open/close lines (not to 'the first occurrence') silently concatenates a second same-tagged fenced block elsewhere in the same file into the same extracted string. A second managed block in a doc that already has one pinned this way needs its own distinct fence tag.",
+      "confidence": 0.85
+    },
+    {
+      "subject": "init-specs.sh fresh-repo detection predicate",
+      "value": "Decision: git ls-files -- specs/ being empty is the correct detection for 'has this repository ever tracked anything under specs/', distinct from specs_tree_is_gitignored() which answers 'does an ignore rule already exist' -- the two questions are not interchangeable and conflating them would make a repo adopt the fresh-repo default even after specs/ had been deliberately untracked and re-ignored by other means.",
+      "confidence": 0.85
+    },
+    {
+      "subject": "check-runtime-file-tracking.sh Check C",
+      "value": "Made posture-aware (SKIPPED, named not silent, exit status unaffected) under a whole-specs/-tree-ignored posture, while the tracked posture's assertion (durable provenance must never be ignored) runs completely unchanged -- confirmed via a regression fixture that specifically over-ignores .orchestrator-handoff.json without ignoring the whole tree, which still FAILs exactly as before.",
+      "confidence": 0.85
+    },
+    {
+      "subject": "run-all.sh gate-27 subject-resolution-declaration lint",
+      "value": "agent-system/extensions/core/scripts/tests/run-all.sh fails lint-subject-resolution-declaration.sh ('calls common_test_resolve_subject without a paired common_test_declare_subject') as a pre-existing defect unrelated to and predating task 660's own edits -- confirmed present in the very first verify-touched.sh run of that task's Phase 1, before any of its phases landed. Needs its own follow-up task; not fixed as part of this work since the file is outside this task's declared scope.",
+      "confidence": 0.8
+    },
+    {
+      "subject": "lint-scoped-commit-boundary.sh and lint-directory-pathspec-boundary.sh on illustrative doc prose",
+      "value": "Both lints scan markdown documentation text, not only executable scripts, for their flagged literal shapes (a bare 'git commit -m' string; a bare shared-directory pathspec passed to git-commit-scoped.sh). An illustrative code block in a standards doc describing a one-time manual operator procedure can trip either lint even though no agent ever executes it. Rewording the example to avoid the literal flagged shape (e.g. describing the commit step in prose rather than showing the exact command) resolved both without needing a new allowlist entry in either lint script.",
+      "confidence": 0.8
+    },
+    {
+      "subject": "deploy-headless.sh post-deploy verification during a source-store-edit dispatch",
+      "value": "deploy-headless.sh's own internal fast-gate verification can surface NEW findings (a doc-lint Rule R line_count drift, a scoped-commit-boundary violation from freshly-added documentation prose) that did not exist before that dispatch's own edits, distinct from the EXPECTED deployed-vs-source content-drift findings every source-store edit produces until the redeploy actually lands. Both classes can appear in the same verify-deploy.sh run; only the latter is expected and non-blocking before a redeploy.",
+      "confidence": 0.8
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795130570_6d4a1f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   }
 }
