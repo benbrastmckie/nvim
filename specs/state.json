@@ -19422,24 +19422,32 @@
     },
     {
       "project_name": "never_demote_on_ignored_specs_skip",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Never demote on ignored specs skip",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit the mirrored path. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**; both are permitted in this description.\n\nGOAL. Stop a completed task being recorded as partial because a bookkeeping commit had nothing it was allowed to stage, and give every consumer that reads the specs tree's git history a defined answer for the case where there is no such history. This is the behaviour change that matters most in this group: work that finished must never be reported as unfinished.\n\nTHE DEMOTION SITE, MEASURED 2026-11-19. scripts/orchestrate-cycle-postflight.sh carries a commit-landing status correction, documented in place as a sanctioned terminal-state exception, which on a nonzero exit from git-commit-scoped.sh rewrites the task's status from completed to partial, amends the handoff file with a commit-failure blocker, and prints a STATUS DEMOTED notice. With a gitignored specs tree that per-cycle commit can never succeed, so the demotion fires on every completing dispatch. The symptom is already recorded from a second consumer repository (sapience-app): the per-cycle specs commit always fails and demotes a finished task, while deliverable commits outside specs/ land normally.\n\nWHAT THE EXCEPTION IS FOR, AND WHY IT MUST SURVIVE. The correction exists because a completed status that nobody committed is a claim unsupported by the tree -- a real hazard worth a demotion when the commit genuinely failed. An ignored specs tree is a different case: nothing was supposed to land, so nothing is missing. The research must preserve the exception for genuine failures while excluding the ignored case, and must say how it tells them apart -- which is what task 658's predicate and exit-code split exist to supply. Do not weaken the exception to close this; narrow its trigger.\n\nTHE HISTORY READERS, EACH NEEDING AN ANSWER. reconcile-task-status.sh; validate-state.sh's --deep mode and its git-history round trip; git-commit-scoped.sh's honest-index-rows comparison as consumed by its callers; task-lock.sh; and scripts/lib/territory-contention-lib.sh's claims. dispatch-metrics.sh additionally sums git log --numstat split by a specs/ pathspec, which yields zero rather than an error and so needs a stated verdict rather than a fix. For each: state what it means when the specs tree has no git history at all, and make it report that rather than infer a failure from the absence.\n\nHOW A SKIP IS REPORTED. Visible, never silent, never fatal, and never status-bearing. The skip is recorded as evidence through the existing channels -- issue-record.sh where a task context exists, events-append.sh where none does -- and the task's own status is untouched. A skip that leaves no trace is as wrong as one that demotes; research settles which channel and what severity, and whether a repeated skip should be recorded once per invocation rather than once per dispatch.\n\nVERIFICATION. A live completing dispatch in an ignored-specs fixture repository finishes with status completed and no STATUS DEMOTED notice; the same fixture with a genuinely failing commit still demotes, proving the exception was narrowed and not removed. That pair is the negative control and both halves are required.\n\nSHARED TERRITORY, DECLARED NOT BLOCKING. Task 501 (cycle_postflight_containment_parity) edits orchestrate-cycle-postflight.sh as well. No dependency edge is set by the user's ruling, but the two must never be co-admitted into one batch.\n\nDONE WHEN. An ignored-specs repository drives a task to completed with the skip recorded and the status intact; a genuine commit failure still demotes; every history reader named above has a stated and implemented answer for an absent specs history; and a tracked-specs repository's postflight behaviour is unchanged.\n\nMEASURED SCOPE CORRECTION (2026-11-19, after this record was written). THE HISTORY READERS list above is overstated: three of its six named members issue no git read whatsoever. scripts/reconcile-task-status.sh and scripts/task-lock.sh contain no git log, git show, git ls-files, git rev-list or git diff invocation at all; scripts/lib/territory-contention-lib.sh's git log mentions are prose inside an agent-facing advisory note, not code. Those three need no change and no verdict beyond recording that measurement. What genuinely remains is three items, not six: (1) scripts/validate-state.sh's --deep artifact-loss check, which fetches the prior committed state.json via git show <sha>:<path> -- this is the one real casualty of an absent specs history and needs a defined answer rather than a silent zero; (2) scripts/dispatch-metrics.sh's churn split, which yields zero rather than an error and needs only the stated verdict this description already calls for; (3) scripts/init-specs.sh's git ls-files -- specs/ probe, which is the scaffolding record's own subject and not this one's. Re-measure before planning rather than trusting either list.",
       "created": "2026-11-19T20:15:53Z",
-      "last_updated": "2026-11-20T02:05:59Z",
+      "last_updated": "2026-11-20T02:20:17Z",
       "dependencies": [
         658
       ],
       "file_scope": [
+        "__WHOLE_TREE__",
+        "agent-system/extensions/core/context/standards/absent-specs-git-history.md",
+        "agent-system/extensions/core/context/standards/git-staging-scope.md",
+        "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/core/scripts/command-gate-out.sh",
+        "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+        "agent-system/extensions/core/scripts/lib/redeploy-checkpoint-lib.sh",
+        "agent-system/extensions/core/scripts/lib/territory-contention-lib.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
         "agent-system/extensions/core/scripts/reconcile-task-status.sh",
-        "agent-system/extensions/core/scripts/command-gate-out.sh",
-        "agent-system/extensions/core/scripts/validate-state.sh",
         "agent-system/extensions/core/scripts/task-lock.sh",
-        "agent-system/extensions/core/scripts/lib/territory-contention-lib.sh"
+        "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/validate-state.sh"
       ],
       "next_artifact_number": 2,
       "session_id": "sess_1795130570_6d4a1f",
@@ -19448,6 +19456,11 @@
           "path": "specs/659_never_demote_on_ignored_specs_skip/reports/01_never-demote-ignored-specs-skip.md",
           "type": "report",
           "summary": "Confirms task 658 already fixed the orchestrate-cycle-postflight.sh completed->partial demotion on exit 8/9 (gitignored specs); identifies the real remaining gap as durable skip-recording (issue-record.sh/events-append.sh, with session-keyed dedup to avoid per-cycle flooding) and two missing negative-control test cases; verifies five of the six named history readers already need no code change, with exact line references."
+        },
+        {
+          "path": "specs/659_never_demote_on_ignored_specs_skip/plans/01_never-demote-ignored-specs-skip.md",
+          "type": "plan",
+          "summary": "7-phase plan: two V13 skip-recording channels, a wording fix on the completion path, the negative-control test pair, and the absent-specs-history stated-answer register."
         }
       ],
       "project_number": 659,
@@ -19686,13 +19699,13 @@
     },
     {
       "project_name": "init_specs_ignores_specs_by_default",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Init specs ignores specs by default",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit the mirrored path. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**; both are permitted in this description.\n\nGOAL. Make a newly initialized repository get its specs tree ignored from the start, so task state stays local to the working copy, is shared by every branch checked out in it, and never appears in a pull request. Settle in the same task what happens to the repositories already tracking theirs.\n\nWHAT EXISTS TODAY. scripts/init-specs.sh scaffolds a specs/.gitignore holding only the ephemeral runtime-file class, rendered from scripts/lib/runtime-file-patterns.sh's runtime_specs_ignore_block(). Task state itself -- state.json, TODO.md, reports, plans, summaries -- is left tracked. context/standards/orchestrator-runtime-files.md defines the two-class split (ephemeral and gitignored versus durable provenance and tracked) that this scaffolding renders.\n\nTHE CHANGE, AND ITS LIMIT. A fresh repository should land with its whole specs tree ignored. The two-class split does not disappear: it still describes which files are runtime state, and the research must say whether an ignored whole tree makes the inner ephemeral block redundant or still meaningful (a consumer may later track specs/ again, and the inner block would then matter once more).\n\nMIGRATION IS THE HARD HALF, AND IS NON-NEGOTIABLE IN ONE RESPECT. A repository that already tracks its specs tree must keep tracking it. No deploy, no redeploy, and no loader run may untrack anyone's task history as a side effect; a change that could silently make 11,572 tracked files vanish from a reader's index is a worse defect than the one this group set out to fix. The global root is exactly such a repository and is the reference case. Research settles whether the new default applies only where no specs tree yet exists, whether an existing consumer is offered an opt-in and how, and what the scaffolding does when it finds a specs tree already present and tracked.\n\nVERIFICATION. A fresh init in an empty repository yields an ignored specs tree and a working lifecycle on top of it; a re-init over an existing tracked tree leaves that tree tracked, asserted against the index rather than inferred from the script's exit code. Both halves are required, and the second is the negative control.\n\nSHARED TERRITORY, DECLARED NOT BLOCKING. Task 338 (sweep_task_support_file_tracked_or_ignored) edits both init-specs.sh and runtime-file-patterns.sh, and re-sweeps the very enumeration this task's scaffolding renders. No dependency edge is set by the user's ruling, but these two must never be co-admitted into one batch, and whichever lands second must re-read the other's result rather than assume the enumeration it was written against.\n\nDONE WHEN. A new repository is initialized with an ignored specs tree, an existing tracked tree is demonstrably untouched by any deploy path, and orchestrator-runtime-files.md states the posture for both.",
       "created": "2026-11-19T20:15:54Z",
-      "last_updated": "2026-11-20T02:04:30Z",
+      "last_updated": "2026-11-20T02:07:43Z",
       "dependencies": [
         658
       ],
