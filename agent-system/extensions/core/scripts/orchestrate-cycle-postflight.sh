@@ -1212,7 +1212,7 @@ fi
 offschema_dispatch_status=false
 implemented_gate_passed="null"
 inferred_phase=""
-# Three now-adjacent, independent questions, each with its own flag:
+# Four now-adjacent, independent questions, each with its own flag:
 #   implemented_gate_passed  -- phase accounting: "is the plan actually done".
 #   deploy_pending_refusal   -- "did the status WRITE itself get refused by the completion-deploy
 #                                gate (update-task-status.sh's exit 6)".
@@ -1222,11 +1222,18 @@ inferred_phase=""
 #                                context/standards/repo-level-declarations.md for the declaration
 #                                point and context/standards/postflight-tool-restrictions.md for
 #                                why this Bash invocation is a sanctioned exception.
-# A phase-accounting pass with either refusal flag true must not read as verdict=ok / "complete
+#   milestone_landing_refusal -- "did milestone-ref-land.sh's landing or its --verify check fail
+#                                for this implement-phase dispatch's completion transition". Set
+#                                only inside the `implemented)` case below (the one place a
+#                                completion status write is attempted); initialized false here so
+#                                every downstream read sees a bound value regardless of which
+#                                dispatch_status branch actually ran.
+# A phase-accounting pass with any refusal flag true must not read as verdict=ok / "complete
 # implementation": the task is still, in fact, sitting at its current in-flight status in
 # state.json. See the postflight_rc capture and the pre-case probe call below.
 deploy_pending_refusal="false"
 derived_staleness_refusal="false"
+milestone_landing_refusal="false"
 
 if [ "$force_invoked" = "true" ]; then
   clamp_mode="monotonic-max"
@@ -1353,12 +1360,45 @@ if [ "$have_outcome" = "true" ]; then
         fi
 
         if is_live; then
+          # ─── Milestone-ref landing + verification ──────────────────────────────────────────────
+          # Closes the non-landing-under-"completed" defect
+          # specs/decisions/worktree-isolation-removal-reaffirmation.md records (postflight
+          # writing a "completed" status while the work never actually landed): lands this task's
+          # commits onto its milestone's review ref via ref plumbing (milestone-ref-land.sh,
+          # ruling R2 of specs/decisions/branch-topology-and-landing-strategy.md), then verifies
+          # the landing with the same script's --verify mode, strictly BEFORE the completion
+          # status write below. On either failure, the completion write is refused (not skipped
+          # silently) and the task is left at its current in-flight status, following the same
+          # refuse-and-defer shape the derived-artifact-staleness and exit-6 deploy-pending
+          # refusals already use at this site. A task with no milestone membership is a clean
+          # pass-through — the completion write proceeds exactly as it did before this check
+          # existed — because milestone-ref-land.sh itself exits 0 as a no-op for a task in no
+          # batch.
+          milestone_landing_refusal="false"
+          if ! bash "${SCRIPT_DIR}/milestone-ref-land.sh" "$task_number" "$session_id" >&2; then
+            milestone_landing_refusal=true
+          elif ! bash "${SCRIPT_DIR}/milestone-ref-land.sh" "$task_number" "$session_id" --verify >&2; then
+            milestone_landing_refusal=true
+          fi
+          if [ "$milestone_landing_refusal" = "true" ]; then
+            echo "${notice_prefix} MILESTONE-LANDING: task ${task_number}'s work did not land onto its milestone ref (see milestone-ref-land.sh failure line(s) above) — the completion status write is refused this cycle and the task is left at its current in-flight status. Re-run to retry the landing." >&2
+            issue_args=(--task-dir "$TASK_DIR" --kind issue --class "milestone ref landing" \
+              --severity costly --phase implement \
+              --what-happened "Task ${task_number}'s milestone-ref landing or its --verify check failed at implement postflight; the completion status write was refused and the task was left at its current in-flight status." \
+              --resolution worked_around --suggested-channel fix_now --session "$session_id")
+            [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
+            bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
+              >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+          fi
+
           # ─── Derived-artifact staleness gate (GOAL (1) half) ──────────────────────────────────
           # A refusal computed above, before this case statement, overrides this otherwise-
           # passing phase-accounting gate exactly the way deploy_pending_refusal overrides it
           # below (postflight_rc==6): skip the status write entirely, leaving state.json at its
           # current in-flight status, rather than claiming completion the repo's own declared
-          # probe says is not yet earned.
+          # probe says is not yet earned. The milestone-landing refusal computed immediately
+          # above joins this same gating condition, so either refusal alone is sufficient to
+          # skip the write.
           if [ "$derived_staleness_refusal" = "true" ]; then
             echo "${notice_prefix} DERIVED-STALENESS: skipping task ${task_number}'s completion status write — the task remains at its current in-flight status (see DERIVED-STALENESS failure line(s) above). Fix the declared probe's underlying cause and re-run." >&2
             issue_args=(--task-dir "$TASK_DIR" --kind issue --class "derived artifact staleness" \
@@ -1368,6 +1408,8 @@ if [ "$have_outcome" = "true" ]; then
             [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
             bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
               >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+          elif [ "$milestone_landing_refusal" = "true" ]; then
+            : # Already reported and recorded above; nothing further to do here but skip the write.
           else
           # No per-call-site >&2 on either call below: the entry-point exec 3>&1 1>&2 redirect
           # above already routes their stdout to the diagnostic stream structurally.
@@ -1838,7 +1880,7 @@ elif [ "$have_outcome" = "true" ]; then
       # exactly the "in-flight, retry the same phase next cycle" case "defer" already means
       # everywhere else in this script -- reusing that vocabulary rather than inventing a new
       # verdict value.
-      if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ]; then
+      if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ] && [ "$milestone_landing_refusal" != "true" ]; then
         verdict="ok"
       else
         verdict="defer"
@@ -2074,7 +2116,7 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
       # Mirrors the verdict computation above: a deploy-pending refusal OR a derived-staleness
       # refusal must not produce a "complete implementation" commit message for a task that is
       # still, in fact, implementing.
-      if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ]; then
+      if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ] && [ "$milestone_landing_refusal" != "true" ]; then
         commit_message="task ${task_number}: complete implementation"
       else
         commit_message="task ${task_number}: orchestration paused (cycle ${cycle_count})"
@@ -2210,7 +2252,7 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
   case "$commit_rc" in
     2|3|4|5)
       if [ "$dispatch_status" = "implemented" ] && [ "$implemented_gate_passed" = "true" ] \
-         && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ]; then
+         && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ] && [ "$milestone_landing_refusal" != "true" ]; then
         # This same dispatch window's per-cycle commit for a just-completed implement dispatch
         # demonstrably did not land — the honest outcome is `partial` with a named blocker, never
         # `completed`. Call shape mirrors the `partial)` status-write arm above verbatim; empty
@@ -2572,12 +2614,13 @@ if [ "$user_decision_json" != "null" ]; then
     --argjson stranded_suspected "$stranded_suspected" \
     --arg note "$commit_attribution_note" \
     --argjson derived_staleness "$derived_staleness_refusal" \
+    --argjson milestone_landing "$milestone_landing_refusal" \
     '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
       phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
       user_decision: $user_decision, halt: $halt, infra_exempt_cycle: $infra_exempt_cycle,
       aux_signal: $aux_signal, report_missing: $report_missing,
       stall_suspected: $stall_suspected, stranded_suspected: $stranded_suspected, note: $note,
-      derived_staleness: $derived_staleness}' >&3
+      derived_staleness: $derived_staleness, milestone_landing: $milestone_landing}' >&3
 else
   jq -n -c \
     --argjson task "$task_number" \
@@ -2595,12 +2638,13 @@ else
     --argjson stranded_suspected "$stranded_suspected" \
     --arg note "$commit_attribution_note" \
     --argjson derived_staleness "$derived_staleness_refusal" \
+    --argjson milestone_landing "$milestone_landing_refusal" \
     '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
       phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
       halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal,
       report_missing: $report_missing, stall_suspected: $stall_suspected,
       stranded_suspected: $stranded_suspected, note: $note,
-      derived_staleness: $derived_staleness}' >&3
+      derived_staleness: $derived_staleness, milestone_landing: $milestone_landing}' >&3
 fi
 
 exit 0

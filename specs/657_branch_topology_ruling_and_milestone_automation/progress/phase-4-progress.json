@@ -1,0 +1,24 @@
+{
+  "phase": 4,
+  "phase_name": "Verify the landing before the completion status write",
+  "started_at": "2026-11-20T01:10:00Z",
+  "last_updated": "2026-11-20T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Invoke milestone-ref-land.sh + --verify before skill_postflight_update in orchestrate-cycle-postflight.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 2, "description": "Refuse-and-defer on failure, pass-through on no-milestone", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"]},
+    {"id": 3, "description": "Extend test-orchestrate-cycle-postflight.sh with refusal/success/pass-through/ordering cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]},
+    {"id": 4, "description": "Amend R4 decision-record text naming the integration_branch key", "status": "done", "files_touched": ["specs/decisions/branch-topology-and-landing-strategy.md"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4",
+      "description": "Phase 4's call-site edit and test extension were written together with Phase 3's script, before Phase 3's own formal closure, for continuity (the landing script and its postflight call site are one coherent unit of work).",
+      "type": "altered",
+      "reason": "Avoided re-deriving the landing script's calling contract from scratch in a separate phase; no functional deviation from the plan's Phase 4 description.",
+      "annotation": "*(deviation: altered -- written alongside Phase 3 for continuity)*"
+    }
+  ]
+}

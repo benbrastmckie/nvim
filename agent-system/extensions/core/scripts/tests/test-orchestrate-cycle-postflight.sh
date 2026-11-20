@@ -45,7 +45,7 @@ for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-loc
          orchestrate-churn.sh orchestrate-loop-guard-init.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
          state-write.sh generate-todo.sh generate-task-order.sh update-task-status.sh \
-         git-commit-scoped.sh issue-record.sh \
+         git-commit-scoped.sh issue-record.sh milestone-ref-land.sh \
          events-append.sh validate-return-meta.sh run-task-observers.sh \
          validate-handoff.sh; do
   require_file "$CORE_DIR/$f"
@@ -76,7 +76,7 @@ setup_sandbox() {
            orchestrate-churn.sh orchestrate-loop-guard-init.sh \
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
            state-write.sh generate-todo.sh generate-task-order.sh update-task-status.sh \
-           git-commit-scoped.sh issue-record.sh \
+           git-commit-scoped.sh issue-record.sh milestone-ref-land.sh \
            events-append.sh validate-return-meta.sh run-task-observers.sh \
            validate-handoff.sh; do
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
@@ -4805,6 +4805,124 @@ if jq -e --arg t "$imf4_num" '.invocation_modified_files[$t] == ["/tmp/absolute/
   common_test_pass "invocation_modified_files (4): the absolute-path entry is recorded under its task's key unmodified"
 else
   common_test_fail "invocation_modified_files (4): expected the absolute-path entry recorded verbatim: $(cat "$imf4_mt_file" 2>/dev/null)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Milestone-ref landing + verification (ruling R2/Phase 4): the completion status write is
+# refused when landing or its --verify check fails, proceeds when it succeeds, and a task in no
+# roadmap_milestones batch is a clean pass-through -- modelled on case 990's derived-staleness
+# fixture technique (write_state / write_derived_extensions_decl-shaped .claude-extensions.json /
+# write_derived_return_meta), reusing jqf's .derived_staleness-sibling .milestone_landing field.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+
+write_milestone_fixture_base() {
+  # write_milestone_fixture_base <num>: candidate task dir, summary, loop guard, handoff,
+  # return-meta -- the non-milestone-specific half of every case below.
+  local num="$1"
+  mkdir -p "$WORKDIR/specs/${num}_candidate/summaries"
+  echo x > "$WORKDIR/specs/${num}_candidate/summaries/01_x-summary.md"
+  echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+  cat > "$WORKDIR/specs/${num}_candidate/.orchestrator-loop-guard" <<EOF
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+  cat > "$WORKDIR/specs/${num}_candidate/.orchestrator-handoff.json" <<EOF
+{"status": "implemented", "dispatch_seq": 1, "artifacts": [{"type": "summary", "path": "specs/${num}_candidate/summaries/01_x-summary.md", "summary": "y"}], "phases_completed": 1, "phases_total": 1, "blockers": []}
+EOF
+  cat > "$WORKDIR/specs/${num}_candidate/.return-meta.json" <<EOF
+{"status":"implemented","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/${num}_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1}}
+EOF
+}
+
+common_test_info "Milestone landing (A): a landing failure (integration_branch declares a branch that does not exist) refuses the completion write and leaves the task at its in-flight status -- proves ordering: the gate's own phase accounting passed, yet the status write never fires"
+
+setup_sandbox
+write_milestone_fixture_base 920
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 920, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #920", "dependencies": [], "file_scope": []}], "roadmap_milestones": [{"id": "M1", "title": "Fixture milestone", "progress": {"status": "active"}, "review": {"state": "none"}, "batches": [{"task_ids": [920], "description": "fixture batch"}]}]}
+EOF
+cat > "$WORKDIR/.claude-extensions.json" <<'EOF'
+{"version":"1.0.0","extensions":{},"integration_branch":"no-such-branch"}
+EOF
+( cd "$WORKDIR" && git add specs/ .claude/ .claude-extensions.json >/dev/null 2>&1 && git commit -q -m "fixture" >/dev/null 2>&1 )
+run_sut specs/920_candidate --session sess_920 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/920_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 920
+
+if [ "$(jqf '.verdict')" = "defer" ]; then
+  common_test_pass "milestone landing (A): verdict is 'defer' when the landing step fails"
+else
+  common_test_fail "milestone landing (A): expected verdict='defer', got: $LAST_STDOUT"
+fi
+if [ "$(jqf '.milestone_landing')" = "true" ]; then
+  common_test_pass "milestone landing (A): milestone_landing is true"
+else
+  common_test_fail "milestone landing (A): expected milestone_landing=true, got: $LAST_STDOUT"
+fi
+if [ "$(jqf '.persisted_status')" = "implementing" ]; then
+  common_test_pass "milestone landing (A): persisted_status stays 'implementing' -- the completion write never fired despite implemented_gate_passed being true (ordering proof)"
+else
+  common_test_fail "milestone landing (A): expected persisted_status='implementing', got: $LAST_STDOUT"
+fi
+if grep -q "MILESTONE-LANDING:" <<< "$LAST_STDERR"; then
+  common_test_pass "milestone landing (A): a named MILESTONE-LANDING notice is emitted"
+else
+  common_test_fail "milestone landing (A): expected a MILESTONE-LANDING notice. stderr: $LAST_STDERR"
+fi
+
+common_test_info "Milestone landing (B): landing succeeds (no integration_branch declared -- advisory fallback to the checked-out branch) -- the completion write proceeds and the milestone ref advances by one commit"
+
+setup_sandbox
+write_milestone_fixture_base 921
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 921, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #921", "dependencies": [], "file_scope": []}], "roadmap_milestones": [{"id": "M1", "title": "Fixture milestone", "progress": {"status": "active"}, "review": {"state": "none"}, "batches": [{"task_ids": [921], "description": "fixture batch"}]}]}
+EOF
+commit_fixture
+run_sut specs/921_candidate --session sess_921 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/921_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 921
+
+if [ "$(jqf '.verdict')" = "ok" ]; then
+  common_test_pass "milestone landing (B): verdict is 'ok' when landing succeeds"
+else
+  common_test_fail "milestone landing (B): expected verdict='ok', got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+if [ "$(jqf '.milestone_landing')" = "false" ]; then
+  common_test_pass "milestone landing (B): milestone_landing is false"
+else
+  common_test_fail "milestone landing (B): expected milestone_landing=false, got: $LAST_STDOUT"
+fi
+if [ "$(jqf '.persisted_status')" = "completed" ]; then
+  common_test_pass "milestone landing (B): persisted_status advances to 'completed'"
+else
+  common_test_fail "milestone landing (B): expected persisted_status='completed', got: $LAST_STDOUT"
+fi
+if git -C "$WORKDIR" rev-parse --verify --quiet refs/heads/milestone/M1 >/dev/null 2>&1; then
+  common_test_pass "milestone landing (B): refs/heads/milestone/M1 was created"
+else
+  common_test_fail "milestone landing (B): expected refs/heads/milestone/M1 to exist after a successful landing"
+fi
+
+common_test_info "Milestone landing (C): a task absent from every roadmap_milestones batch is a clean pass-through -- the completion write proceeds exactly as before this check existed, and no milestone ref is created"
+
+setup_sandbox
+write_milestone_fixture_base 922
+write_state <<'EOF'
+{"next_project_number": 2, "active_projects": [{"project_number": 922, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #922", "dependencies": [], "file_scope": []}]}
+EOF
+commit_fixture
+run_sut specs/922_candidate --session sess_922 --phase implement --task-type general \
+  --agent general-implementation-agent --loop-guard-file specs/922_candidate/.orchestrator-loop-guard \
+  --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 922
+
+if [ "$(jqf '.verdict')" = "ok" ] && [ "$(jqf '.milestone_landing')" = "false" ] && [ "$(jqf '.persisted_status')" = "completed" ]; then
+  common_test_pass "milestone landing (C): no-milestone pass-through -- verdict ok, milestone_landing false, persisted_status completed"
+else
+  common_test_fail "milestone landing (C): expected verdict=ok/milestone_landing=false/persisted_status=completed, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+if git -C "$WORKDIR" for-each-ref "refs/heads/milestone/" | grep -q .; then
+  common_test_fail "milestone landing (C): no refs/heads/milestone/* ref should exist for a task in no batch"
+else
+  common_test_pass "milestone landing (C): no refs/heads/milestone/* ref was created"
 fi
 
 # ─── Source-store invariants: unconditional, never skipped -- the whole point of each check is

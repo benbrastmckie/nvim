@@ -431,24 +431,24 @@ yet.
 
 ---
 
-### Phase 4: Verify the landing before the completion status write [NOT STARTED]
+### Phase 4: Verify the landing before the completion status write [COMPLETED]
 
 **Goal**: A task's `[IMPLEMENTING] -> [COMPLETED]` transition cannot succeed unless its work has
 actually landed on its milestone ref.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`, immediately
+- [x] In `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh`, immediately *(completed)*
       before the `skill_postflight_update "$task_number" "implement" ...` call that writes the
       completion status, invoke `milestone-ref-land.sh` for the task, then its `--verify` mode.
-- [ ] On a landing or verification failure, do NOT call `skill_postflight_update`: leave the task
+- [x] On a landing or verification failure, do NOT call `skill_postflight_update`: leave the task *(completed)*
       at its in-flight status and emit a named notice stating the remedy, following the shape the
       existing exit-6 deploy-pending refusal already uses at that site rather than inventing a new
       control path.
-- [ ] Keep the no-milestone case a clean pass-through: a task in no batch lands nothing and its
+- [x] Keep the no-milestone case a clean pass-through: a task in no batch lands nothing and its *(completed)*
       completion write proceeds exactly as today.
-- [ ] Record the non-landing defect this closes in the script's own comment, citing the
+- [x] Record the non-landing defect this closes in the script's own comment, citing the *(completed)*
       reaffirmation record by filename — no task-number reference, per the deliverable lint.
-- [ ] Extend `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`:
+- [x] Extend `agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh`: *(completed)*
       assert the completion write is refused when landing fails; assert it proceeds when landing
       succeeds; assert the no-milestone pass-through; assert ordering (verify strictly before the
       status write).
