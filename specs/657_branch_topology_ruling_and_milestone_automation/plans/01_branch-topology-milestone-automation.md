@@ -1,7 +1,7 @@
 # Implementation Plan: Task #657
 
 - **Task**: 657 - Branch-topology ruling, then milestone automation and review gates
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 10.5 hours
 - **Dependencies**: 654 (completed), 656 (completed)
 - **Research Inputs**: specs/657_branch_topology_ruling_and_milestone_automation/reports/01_branch-topology-milestone-automation.md
