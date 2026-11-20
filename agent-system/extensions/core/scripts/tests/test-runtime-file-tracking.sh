@@ -237,6 +237,28 @@ else
 fi
 
 # =====================================================================
+# Case 7 (doc-sync pin for the fresh-repo whole-tree default): the markdown's
+# "Fresh-Repo Default: Whole specs/ Tree Ignored" fenced block (tagged `gitignore-specs-tree-ignore`,
+# a distinct tag from Case 3's plain `gitignore` fence so the two extractions never collide) is
+# byte-identical to specs_tree_ignore_block()'s output. Mirrors Case 3's extraction idiom exactly,
+# for the second managed block this task introduces.
+# =====================================================================
+common_test_info "Case 7: extracting the fenced gitignore-specs-tree-ignore block from $STANDARDS_FILE"
+extracted_specs_tree_block="$(awk '/^```gitignore-specs-tree-ignore$/{flag=1; next} /^```$/{if(flag){flag=0}} flag' "$STANDARDS_FILE")"
+specs_tree_lib_block="$(specs_tree_ignore_block)"
+if [[ "$extracted_specs_tree_block" == "$specs_tree_lib_block" ]]; then
+  common_test_pass "Case 7: the standards file's fresh-repo default block is byte-identical to specs_tree_ignore_block()"
+else
+  common_test_fail "Case 7: the standards file's fresh-repo default block DIFFERS from specs_tree_ignore_block() -- doc-sync pin broken"
+  diff <(echo "$extracted_specs_tree_block") <(echo "$specs_tree_lib_block") | sed 's/^/    /' || true
+fi
+if [[ "$extracted_block" == "$lib_block" ]]; then
+  common_test_pass "Case 7: Case 3's extraction is unaffected (the plain gitignore fence still extracts only its own block)"
+else
+  common_test_fail "Case 7: Case 3's extraction regressed -- the two fenced blocks are no longer independently delimited"
+fi
+
+# =====================================================================
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [[ "$FAILED" -eq 0 ]]; then

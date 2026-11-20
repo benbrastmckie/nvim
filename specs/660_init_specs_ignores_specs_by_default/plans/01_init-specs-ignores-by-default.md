@@ -365,35 +365,39 @@ case would show up as a baseline-to-after verdict change on a case this plan doe
 
 ---
 
-### Phase 5: Document the posture split and the opt-in runbook [NOT STARTED]
+### Phase 5: Document the posture split and the opt-in runbook [COMPLETED]
 
 **Goal**: `orchestrator-runtime-files.md` states the posture for a fresh repository and for an
 already-tracked one, the inner-block disposition, the manual opt-in procedure, and what
 verification means in each posture.
 
 **Tasks**:
-- [ ] Add a subsection beside "Consumer Repo Setup" stating the new default: a repository with
+- [x] Add a subsection beside "Consumer Repo Setup" stating the new default: a repository with
       nothing tracked under `specs/` gets its whole `specs/` tree ignored via a managed block in
       its own repo-root `.gitignore`, and why the repo root is the only placement that can
-      achieve it.
-- [ ] State the hard guarantee for the other posture: a repository that already tracks `specs/`
+      achieve it. *(completed: new "## Fresh-Repo Default: Whole specs/ Tree Ignored" section)*
+- [x] State the hard guarantee for the other posture: a repository that already tracks `specs/`
       is never written to at the root and never untracked, by any init, deploy, redeploy, or
-      loader run.
-- [ ] State the inner-block disposition: `specs/.gitignore`'s ephemeral-class managed block is
+      loader run. *(completed)*
+- [x] State the inner-block disposition: `specs/.gitignore`'s ephemeral-class managed block is
       still written unconditionally; it is functionally inert while the root-level `/specs/` line
       stands, and regains effect the moment a consumer removes that line to track `specs/` again.
-- [ ] Add the manual opt-in runbook for an already-tracked consumer that wants to switch posture
+      *(completed)*
+- [x] Add the manual opt-in runbook for an already-tracked consumer that wants to switch posture
       — `git rm -r --cached specs/`, a scoped commit, add the root-level `/specs/` line, re-run
       `init-specs.sh` — stated explicitly as a manual procedure with no automated equivalent, and
-      cross-referenced from "Untracking Already-Committed Ephemeral Files".
-- [ ] Add a fenced block showing the new root-level managed block, and pin it to
+      cross-referenced from "Untracking Already-Committed Ephemeral Files". *(completed)*
+- [x] Add a fenced block showing the new root-level managed block, and pin it to
       `specs_tree_ignore_block()` with a new case in
-      `tests/test-runtime-file-tracking.sh`, mirroring Case 3's extraction idiom.
-- [ ] Extend the "Verification" section: Check C is posture-aware (state what it means in each
+      `tests/test-runtime-file-tracking.sh`, mirroring Case 3's extraction idiom. *(completed:
+      fenced as `gitignore-specs-tree-ignore`, a distinct tag from Case 3's plain `gitignore`
+      fence so the two extractions never collide; new Case 7 pins it)*
+- [x] Extend the "Verification" section: Check C is posture-aware (state what it means in each
       posture), and cross-reference `context/standards/git-staging-scope.md`'s "Per-Operation
-      Contract: Tracked vs. Gitignored `specs`".
-- [ ] Leave the existing Case-3-pinned fenced block byte-identical — it is generated from
-      `runtime_ignore_block()` and is not this task's subject.
+      Contract: Tracked vs. Gitignored `specs`". *(completed)*
+- [x] Leave the existing Case-3-pinned fenced block byte-identical — it is generated from
+      `runtime_ignore_block()` and is not this task's subject. *(completed: confirmed via Case 7's
+      own regression check that Case 3's extraction/verdict is unaffected)*
 
 **Timing**: 1 hour
 

@@ -1,0 +1,22 @@
+{
+  "phase": 5,
+  "phase_name": "Document the posture split and the opt-in runbook",
+  "started_at": "2026-11-20T05:25:00Z",
+  "last_updated": "2026-11-20T05:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "New posture-split subsection beside Consumer Repo Setup", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]},
+    {"id": 2, "description": "State tracked-posture hard guarantee", "status": "done", "files_touched": []},
+    {"id": 3, "description": "State inner-block disposition", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Manual opt-in runbook, cross-referenced", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Fenced block pinned to specs_tree_ignore_block() via new test case", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"]},
+    {"id": 6, "description": "Extend Verification section, cross-reference git-staging-scope.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"]},
+    {"id": 7, "description": "Leave Case-3-pinned fenced block byte-identical", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "First draft fenced the new block with the plain 'gitignore' tag", "result": "failed", "reason": "Case 3's extraction awk pattern matches /^```gitignore$/ unanchored to a specific block, so a second same-tagged fence would be concatenated into Case 3's own extracted_block and break it; fixed by tagging the new fence gitignore-specs-tree-ignore"},
+    {"approach": "generate-context-line-counts.sh --write run directly from the source-store path", "result": "failed", "reason": "the script's own deploy-root-guard refuses a source-store CWD; fixed with the documented REPO_ROOT=$(pwd) bypass"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
