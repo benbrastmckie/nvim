@@ -1,7 +1,7 @@
 # Implementation Plan: Task #654
 
 - **Task**: 654 - Reconcile the open commit-layer cluster and write its dependency ordering
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/654_reconcile_commit_layer_cluster_and_ordering/reports/01_commit-layer-cluster-rulings.md
@@ -84,16 +84,16 @@ No prior plan.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Baseline and Premise Re-Check [NOT STARTED]
+### Phase 1: Baseline and Premise Re-Check [COMPLETED]
 
 **Goal**: Capture the before-state of every task this plan writes to, and confirm the report's premises still hold at write time.
 
 **Tasks**:
-- [ ] Save the current `status`, `dependencies` and description length of tasks 486, 501, 508, 513, 517, 524, 535, 536, 541, 553, 567, 570, 592, 655 and 657 to `specs/654_reconcile_commit_layer_cluster_and_ordering/baseline.json` (one jq query over `specs/state.json`).
-- [ ] Save the full pre-change `description` of 513, 535, 536, 570, 592, 655 and 657 into the same file, so a revision can be reverted exactly.
-- [ ] Confirm each of the seven edge targets (535, 486, 501, 536, 553, 657, 655) is still `not_started`. For a target that has moved, use the status-replay pair for its current status instead of `edge_only`, as the `--depends-on-add` header in `update-task-status.sh` describes. For a target or predecessor that has gone terminal, drop that edge and note it for Phase 4.
-- [ ] Re-check the two stale-premise anchors against the source store: `grep -n 'file_scope_arr+=("${task_dir}/")' agent-system/extensions/core/scripts/git-commit-phase.sh` (535) and `ls agent-system/extensions/core/scripts/commit-source-store-path.sh` (536). If either is absent, do not apply that member's RE-MEASURED block in Phase 3; record the member as "premise could not be re-confirmed" in Phase 4 instead.
-- [ ] Run `bash .claude/scripts/validate-state.sh --deep` and record its exit status as the pre-change baseline.
+- [x] Save the current `status`, `dependencies` and description length of tasks 486, 501, 508, 513, 517, 524, 535, 536, 541, 553, 567, 570, 592, 655 and 657 to `specs/654_reconcile_commit_layer_cluster_and_ordering/baseline.json` (one jq query over `specs/state.json`). *(completed)*
+- [x] Save the full pre-change `description` of 513, 535, 536, 570, 592, 655 and 657 into the same file, so a revision can be reverted exactly. *(completed)*
+- [x] Confirm each of the seven edge targets (535, 486, 501, 536, 553, 657, 655) is still `not_started`. For a target that has moved, use the status-replay pair for its current status instead of `edge_only`, as the `--depends-on-add` header in `update-task-status.sh` describes. For a target or predecessor that has gone terminal, drop that edge and note it for Phase 4. *(completed)*
+- [x] Re-check the two stale-premise anchors against the source store: `grep -n 'file_scope_arr+=("${task_dir}/")' agent-system/extensions/core/scripts/git-commit-phase.sh` (535) and `ls agent-system/extensions/core/scripts/commit-source-store-path.sh` (536). If either is absent, do not apply that member's RE-MEASURED block in Phase 3; record the member as "premise could not be re-confirmed" in Phase 4 instead. *(completed)*
+- [x] Run `bash .claude/scripts/validate-state.sh --deep` and record its exit status as the pre-change baseline. *(completed)*
 
 **Timing**: 0.5 hours
 

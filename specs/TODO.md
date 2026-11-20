@@ -107,7 +107,7 @@ next_project_number: 664
 
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-654 [PLANNED] — Reconcile the open commit-layer cluster and write its...
+654 [IMPLEMENTING] — Reconcile the open commit-layer cluster and write its...
   └─ 656 [NOT STARTED] — Milestone schema in state.json and a wholly generated ROADMAP.md
     └─ 657 [NOT STARTED] — Branch-topology ruling, then milestone automation and review...
       └─ 655 [NOT STARTED] — Make orchestration branch-aware with a per-invocation branch...
@@ -513,7 +513,7 @@ This task now depends on `branch_topology_ruling_and_milestone_automation`, whos
 ---
 
 ### 654. Reconcile the open commit-layer cluster and write its dependency ordering
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None

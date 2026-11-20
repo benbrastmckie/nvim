@@ -1,23 +1,12 @@
 {
-  "status": "planned",
-  "summary": "Five sequential phases turn the research rulings into state: a baseline snapshot, seven dependency edges via preflight:edge_only, seven description appends (four NEEDS REVISION members plus addenda on 570, 655, 657), a decision record under specs/decisions/, and a ruling-to-state-change audit. No file outside specs/ is touched.",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/654_reconcile_commit_layer_cluster_and_ordering/plans/01_commit-layer-cluster-rulings.md",
-      "summary": "Five-phase plan (3.5 hours) writing seven dependency edges, seven description appends and one decision record, all under specs/."
-    }
-  ],
-  "memory_candidates": [],
+  "status": "in_progress",
+  "dispatch_seq": 3,
+  "started_at": "2026-11-20T00:50:00Z",
+  "artifacts": [],
   "metadata": {
-    "session_id": "sess_1795163529_143ff8_654",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 3.5,
-    "dependency_waves": [[1], [2], [3], [4], [5]]
-  },
-  "next_steps": "Run /orchestrate 654 to execute the plan",
-  "dispatch_seq": 2
+    "session_id": "sess_1795163529_143ff8",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
