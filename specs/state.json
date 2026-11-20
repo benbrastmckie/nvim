@@ -19168,6 +19168,11 @@
           "path": "specs/658_ignored_specs_predicate_and_commit_path/plans/01_ignored-specs-predicate-commit-path.md",
           "type": "plan",
           "summary": "Six phases in four waves ([1], [2], [3,4,5], [6]); 9 hours; validate-artifact.sh passes with zero warnings."
+        },
+        {
+          "path": "specs/658_ignored_specs_predicate_and_commit_path/summaries/01_ignored-specs-predicate-commit-path-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all six phases, decisions, plan deviations, and verification results."
         }
       ],
       "project_number": 658,
@@ -19412,7 +19417,8 @@
           "semantic": true
         },
         "degradations_count": 42
-      }
+      },
+      "completion_summary": "Added scripts/lib/specs-ignore-lib.sh (a shared gitignored-path predicate) and a V13 classification gate in git-commit-scoped.sh that distinguishes an all-ignored or partially-ignored specs tree (exit codes 8/9) from a genuine staging failure, with matching consumer handling in orchestrate-cycle-postflight.sh and git-commit-phase.sh and a per-operation contract added to git-staging-scope.md. 12+83+84+321 test cases pass; the tree was redeployed and all seven edited/created files verified byte-identical against the deployed copy."
     },
     {
       "project_name": "never_demote_on_ignored_specs_skip",

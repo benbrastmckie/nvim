@@ -29,21 +29,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/658_ignored_specs_predicate_and_commit_path/summaries/01_ignored-specs-predicate-commit-path-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["sync-manifest-scripts", "generate-context-line-counts", "git-ls-files", "deploy-headless", "source-store-invocation"]
+      "suggested_keywords": [
+        "sync-manifest-scripts",
+        "generate-context-line-counts",
+        "git-ls-files",
+        "deploy-headless",
+        "source-store-invocation"
+      ]
     },
     {
       "content": "Before authoring new letter-prefixed test-case names (e.g. 'Y1-Y6', 'Z1-Z5') for a large, long-lived test suite, grep that suite for the proposed letter prefix first -- a plan authored without this check named new controls 'Y1-Y6' that silently collided with and would have shadowed a pre-existing Y1-Y6 (and separately Z1-Z18) case series already landed in the same file by earlier work. The suite's own letter-prefix history can span many unrelated features (V7/V8/V9/V10/V11 fixes each claimed their own letter run), so a reader cannot assume the next letter after the plan's own prior phase is free.",
       "category": "PATTERN",
       "source_artifact": "specs/658_ignored_specs_predicate_and_commit_path/summaries/01_ignored-specs-predicate-commit-path-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["test-naming-collision", "letter-prefixed-cases", "scope-hypothesis", "shell-test-suite"]
+      "suggested_keywords": [
+        "test-naming-collision",
+        "letter-prefixed-cases",
+        "scope-hypothesis",
+        "shell-test-suite"
+      ]
     },
     {
       "content": "`git check-ignore -q` is index-aware: for a path that is already TRACKED, it reports 'not ignored' (exit 1) even when the path also matches a .gitignore rule, under both a parent-directory pattern and a direct file-level pattern. This makes it safe to use as the sole primitive for an 'is this untracked path ignored' classification gate without a separate tracked/untracked branch at the call site -- the index-awareness itself structurally prevents misclassifying an already-tracked, ignore-matching path. The same property means a caller that pre-stages a rename via `git mv` (rather than a plain `mv` plus a paired add) sidesteps any such gate entirely, since the destination is already an index entry by the time the gate runs.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/658_ignored_specs_predicate_and_commit_path/summaries/01_ignored-specs-predicate-commit-path-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["git-check-ignore", "index-awareness", "gitignore-classification", "git-mv-vs-plain-mv"]
+      "suggested_keywords": [
+        "git-check-ignore",
+        "index-awareness",
+        "gitignore-classification",
+        "git-mv-vs-plain-mv"
+      ]
     }
   ],
   "sapience_notes": [
@@ -100,8 +116,14 @@
     "session_id": "sess_1795130570_6d4a1f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
