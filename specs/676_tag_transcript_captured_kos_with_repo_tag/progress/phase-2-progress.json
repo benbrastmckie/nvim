@@ -1,0 +1,15 @@
+{
+  "phase": 2,
+  "phase_name": "Fixture-driven test suite and lockstep registration",
+  "started_at": "2026-11-20T21:40:00Z",
+  "last_updated": "2026-11-20T22:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create test-sapience-tag-pending.sh with cases a-j, fixture HOME only", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-tag-pending.sh"]},
+    {"id": 2, "description": "Extend Case 30 LOCKSTEP_FILES to a ninth entry, update counts", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"]},
+    {"id": 3, "description": "Register the new test suite in manifest.json", "status": "done", "files_touched": ["agent-system/extensions/sapience/manifest.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

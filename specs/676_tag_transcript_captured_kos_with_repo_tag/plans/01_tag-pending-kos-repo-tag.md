@@ -225,19 +225,20 @@ once-per-invocation batch-level close, per the dispatch's own stated contract.
 
 ---
 
-### Phase 2: Fixture-driven test suite and lockstep registration [NOT STARTED]
+### Phase 2: Fixture-driven test suite and lockstep registration [COMPLETED]
 
 **Goal**: The new script's behavior is pinned by a test suite that never touches the real ledger,
 and its copy of the shared resolution block is covered by the existing byte-identity guard.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/sapience/scripts/tests/test-sapience-tag-pending.sh`
+- [x] Create `agent-system/extensions/sapience/scripts/tests/test-sapience-tag-pending.sh`
       following the structure of `tests/test-sapience-project-bind.sh` (same `pass`/`fail`
-      helpers, same temp-dir teardown, same exit convention).
-- [ ] Every case runs against a synthetic fixture `HOME` containing its own
+      helpers, same temp-dir teardown, same exit convention). *(completed)*
+- [x] Every case runs against a synthetic fixture `HOME` containing its own
       `.sapience/config.json` and `.sapience/pending_kos.jsonl` plus throwaway `git init`
-      repositories — no case may read or write the operator's real `~/.sapience/`.
-- [ ] Cases to cover: (a) a record whose `project` maps to a resolvable path gets
+      repositories — no case may read or write the operator's real `~/.sapience/`. *(completed:
+      confirmed via `sha256sum` of the real ledger unchanged across the whole suite run)*
+- [x] Cases to cover: (a) a record whose `project` maps to a resolvable path gets
       `[repo:<basename-of-toplevel>]`; (b) an entry whose `name` deliberately differs from
       `basename(path_prefix)` resolves to the **basename**, not the name, proving the lookup goes
       through `path_prefix`; (c) a record originating from a linked worktree resolves to the
@@ -248,13 +249,17 @@ and its copy of the shared resolution block is covered by the existing byte-iden
       (g) `_hash` and `project` are unchanged on every record and the line count is preserved;
       (h) the default (no-flag) run leaves the fixture ledger byte-identical; (i) no
       `pending_kos.jsonl.tmp.*` file survives a successful `--write`; (j) the written file's mode
-      is `0600`.
-- [ ] Add `"$SCRIPT_DIR/../sapience-tag-pending.sh"` to the `LOCKSTEP_FILES` array of Case 30 in
+      is `0600`. *(completed: 14/14 cases pass)*
+- [x] Add `"$SCRIPT_DIR/../sapience-tag-pending.sh"` to the `LOCKSTEP_FILES` array of Case 30 in
       `agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh`, and
       update that case's pass-message copy count and its preceding comment's script count to
-      match the new array length.
-- [ ] Add `tests/test-sapience-tag-pending.sh` to `provides.scripts` in
+      match the new array length. *(completed: array now holds nine entries, pass message reads
+      "across all nine copies", preceding comment reads "the seven slug-derivation scripts";
+      re-read live at edit time, confirming the array still held eight entries beforehand, per
+      the Scope Hypothesis)*
+- [x] Add `tests/test-sapience-tag-pending.sh` to `provides.scripts` in
       `agent-system/extensions/sapience/manifest.json`, keeping the array's existing ordering.
+      *(completed)*
 
 **Timing**: 2 hours
 
@@ -289,6 +294,17 @@ comment must match the array's actual post-edit length.
 - `sha256sum ~/.sapience/pending_kos.jsonl` is identical before and after the whole suite run
   (proof that no case escaped the fixture `HOME`).
 - `jq -e '.provides.scripts | index("tests/test-sapience-tag-pending.sh")' agent-system/extensions/sapience/manifest.json` succeeds.
+
+**Batch Gate Deferral — scoped discharge record**: as in Phase 1, the generic
+`--gate8-touched` narrowing would again hit the full-sweep sentinel (the new test suite file is
+itself one of the touched paths and, being brand new, has no suite of its own covering it).
+Discharged against the two named checks this phase's own Tier Justification identifies, run
+directly and standalone: `test-manifest-scripts-sync.sh` (21 passed, 0 failed, after
+`git add`ing the new suite file so `git ls-files` could see it) and `test-script-inventory.sh`
+(32 passed, 0 failed). The new suite itself and `test-sapience-mcp-registration.sh`'s extended
+Case 30 were run directly per this phase's own listed Verification criteria above (14/14 and
+55/0 respectively). The complete, unscoped gate battery remains deferred to the
+once-per-invocation batch-level close.
 
 ---
 
