@@ -181,6 +181,19 @@ description is stale at that point"). 655 already depends on 657 in `state.json`
 description is already wired; only the ruling's content, and the write of the revision itself, is
 outstanding.
 
+**A rendering/data discrepancy, flagged but not resolved.** `specs/ROADMAP.md`'s live Batch 2
+preview (under M1) currently prints `657 blocked:553`, naming a dependency 657 does not yet have:
+`jq '.active_projects[]|select(.project_number==657)|.dependencies'` against `specs/state.json`
+returns `[654, 656]` only, both in the live working tree and at `HEAD` — no entry for 553.
+`roadmap-integration.sh`'s own `status_token()` function (read directly) derives a `blocked:N`
+token purely from the live `.dependencies[]` array intersected with the active-task set, so this
+printed text cannot be a current render of that function against today's data; it is either a
+stale snapshot from an earlier render this research did not trace to its commit, or produced by a
+different code path. Recorded here rather than chased further — it does not change the
+recommendation below (add the edge) and its cause is orthogonal to this task's own ruling — but
+the plan/implement phase should re-check `specs/ROADMAP.md` after writing the 553 edge to confirm
+it then renders consistently with `state.json`.
+
 **File-scope overlap with 553, confirmed, not merely asserted.** `specs/state.json`'s
 `active_projects[657].file_scope` already lists `git-commit-scoped.sh`,
 `orchestrate-cycle-postflight.sh`, and `git-push-granted.sh`; `active_projects[553].file_scope` is
@@ -193,10 +206,25 @@ chain — "657's declared scope on the two shared scripts is read-and-rule" — 
 
 ### External Resources
 
-This is an internal-system design task; no external documentation research was needed or
-performed. The one piece of general git knowledge load-bearing for the recommendation below —
-that a commit can be created on, and a ref updated to point at, a branch that is **not currently
-checked out**, via `git commit-tree <tree> -p <parent> -m <msg>` followed by
+This is primarily an internal-system design task, but the dispatch poses the squash-granularity
+question directly ("the best git workflow ... using side branches and squash merging as
+appropriate, to produce the highest-quality history"), which was checked against current external
+guidance rather than decided from internal reasoning alone. Industry convention converges on:
+squash merges suit short-lived branches, collapsing one topic's work into a single trunk commit;
+a long-lived branch should instead keep its merge commits, or be hand-tidied before merging,
+because squashing it away loses exactly the commit-level granularity later debugging and
+reverting need (GitLab's own squash-and-merge docs advise against squashing a long-lived branch
+for this reason; a GitHub engineering post on commit squashing makes the same short-lived-branch
+qualification). This corroborates, rather than drives, the recommendation below: the per-task
+squash onto the milestone ref (Recommendation item 2) is the short-lived-unit squash this
+convention endorses, while whether the milestone ref itself is squashed again when it finally
+merges to the integration branch is left as the human reviewer's call at PR time (Recommendation
+item 6) — consistent with `pr-prohibition.md`'s human-controlled-merge principle, and now also
+with this external convention rather than against it.
+
+The one piece of general git knowledge load-bearing for the recommendation below — that a commit
+can be created on, and a ref updated to point at, a branch that is **not currently checked out**,
+via `git commit-tree <tree> -p <parent> -m <msg>` followed by
 `git update-ref refs/heads/<name> <new-sha>`, entirely without touching the working tree or the
 index — is standard git plumbing (the same technique used by, e.g., headless `gh-pages` deploy
 scripts) rather than anything specific to a library or tutorial, so no citation beyond "git
@@ -402,3 +430,9 @@ plumbing commands" applies.
   `specs/decisions/commit-layer-cluster-ordering.md`,
   `agent-system/extensions/core/context/standards/git-workflow-narrative.md`,
   `agent-system/extensions/core/context/standards/repo-level-declarations.md`.
+- External search queries and sources (squash-granularity corroboration, External Resources
+  above): "trunk-based development feature branch squash merge milestone review gate CI best
+  practices", "long-lived feature branch side branches squash merge strategy clean history" —
+  [GitLab: Squash and merge](https://archives.docs.gitlab.com/17.2/ee/user/project/merge_requests/squash_and_merge.html),
+  [GitHub: Squash your commits](https://github.blog/open-source/git/squash-your-commits/),
+  [Graphite: What is Git Merge Squash?](https://graphite.dev/guides/git-merge-squash).
