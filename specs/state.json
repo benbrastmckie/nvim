@@ -20209,13 +20209,13 @@
     },
     {
       "project_name": "reframe_docs_for_ignored_specs_default",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Reframe docs for ignored specs default",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit the mirrored path. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.\n\nGOAL. Revise every surface that asserts the specs tree is committed, so an ignored one reads as the supported default rather than a broken state, and place the durability statement beside it.\n\nWHY LAST. This task records what the mechanism tasks actually built, not what they were asked to build. Its content is not decided until the predicate, the postflight narrowing, the scaffolding change and the durability recommendation have all landed, which is why it carries no gate of its own and why it is safe to leave until the end.\n\nTHE SURFACES. rules/state-management.md, whose completion workflow and canonical-source sections describe committing state.json and TODO.md; rules/git-workflow.md, whose commit-timing table names a commit after task creation, research completion, plan creation, each phase and archival; rules/artifact-formats.md; the three context/processes/*-workflow.md files; and docs/architecture/orchestrate-state-machine.md. Sweep for others rather than treating that list as complete -- it was assembled by grep, not by reading.\n\nONE THING THAT STAYS CORRECT AND MUST NOT BE \"FIXED\". The task-reference and record-version exemption standards cite specs/** as their primary exempt zone. Those exemptions are correct and stay exactly as they are: they are about which files may carry task numbers and version language, not about which files git tracks. If their framing happens to assume tracked files, adjust the framing and never the exemption.\n\nWHAT THE REFRAME MUST NOT DO. It must not describe the tracked posture as deprecated, legacy or superseded, because a tracked specs tree stays fully supported and the global root uses it. Both postures are first-class; the documents state which is the default for a new repository and what differs under each.\n\nDONE WHEN. No surface asserts that the specs tree is committed as an invariant; each document states the behaviour under both postures; the durability statement from the research task is placed; and the two exemption standards are unchanged in substance.",
       "created": "2026-11-19T20:15:55Z",
-      "last_updated": "2026-11-19T20:15:55Z",
+      "last_updated": "2026-11-20T04:30:21Z",
       "dependencies": [
         658,
         659,
@@ -20229,9 +20229,15 @@
         "agent-system/extensions/core/context/processes/",
         "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"
       ],
-      "next_artifact_number": 1,
-      "session_id": "sess_1795116600_meta01",
-      "artifacts": [],
+      "next_artifact_number": 2,
+      "session_id": "sess_1795130570_6d4a1f",
+      "artifacts": [
+        {
+          "path": "specs/662_reframe_docs_for_ignored_specs_default/reports/01_reframe-docs-ignored-specs.md",
+          "type": "report",
+          "summary": "Verifies the dispatch's grep-assembled surface list by direct reading (two named files need no edit), identifies docs/architecture/orchestrate-state-machine.md's commit-gated stall_suspected detector as the highest-priority gap, finds two sweep-only surfaces (docs/templates/README.md's 8-Stage template, commands/todo.md), confirms the two exemption standards already correctly self-exclude gitignored paths and need no change, and recommends placing the task-661 durability statement at the end of orchestrator-runtime-files.md's Fresh-Repo Default section."
+        }
+      ],
       "project_number": 662,
       "audit_verdict": {
         "proposal": {

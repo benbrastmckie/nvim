@@ -51,7 +51,7 @@ next_project_number: 664
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — Determine what leaves files in the working tree and give...
 646 [NOT STARTED] — Decide and implement how .return-meta.json's status...
-662 [NOT STARTED] — Reframe docs for ignored specs default
+662 [RESEARCHED] — Reframe docs for ignored specs default
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
@@ -206,10 +206,11 @@ DONE WHEN. No load, unload, reload or resync path can write .claude-extensions.j
 ---
 
 ### 662. Reframe docs for ignored specs default
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 658, Task 659, Task 660, Task 661
+- **Research**: [662_reframe_docs_for_ignored_specs_default/reports/01_reframe-docs-ignored-specs.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit the mirrored path. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
 
