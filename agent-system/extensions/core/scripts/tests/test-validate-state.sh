@@ -87,7 +87,7 @@ resolve_content_gated ARCHIVE_VALIDATOR "validate-state.sh (--archive mode, Chec
 # --- Check 12 (archive-aware next_project_number staleness, base mode) validator resolution ---
 resolve_content_gated C12_VALIDATOR "validate-state.sh (Check 12)" "Check 12"
 
-# --- Check 13 (roadmap_batches entry integrity, base mode) validator resolution ---
+# --- Check 13 (roadmap entry integrity, base mode) validator resolution ---
 resolve_content_gated C13_VALIDATOR "validate-state.sh (Check 13)" "Check 13"
 
 PASSED=0
@@ -504,7 +504,7 @@ JSON
 fi
 
 # =====================================================================
-# Check 13 (roadmap_batches entry integrity, base mode) fixtures
+# Check 13 (roadmap entry integrity, base mode) fixtures: flat shape first, milestone shape after
 # =====================================================================
 if [[ -z "$C13_VALIDATOR" ]]; then
   common_test_info "SKIPPING Check 13 fixtures: no candidate validator (source-store or deployed)"
@@ -531,7 +531,7 @@ else
 JSON
   out=$(bash "$C13_VALIDATOR" "$WORKDIR/c13-clean.json" 2>&1)
   rc=$?
-  if [[ "$rc" -eq 0 ]] && grep -q "Check 13: roadmap_batches entries are well-formed" <<< "$out"; then
+  if [[ "$rc" -eq 0 ]] && grep -q "Check 13: roadmap entries are well-formed" <<< "$out"; then
     common_test_pass "Check 13 clean-pass fixture: a well-formed batch produces the Check 13 PASS line, exit 0"
   else
     common_test_fail "Check 13 clean-pass fixture: expected exit 0 with the Check 13 PASS line (rc=$rc)"
@@ -550,7 +550,7 @@ JSON
 JSON
   out=$(bash "$C13_VALIDATOR" "$WORKDIR/c13-absent.json" 2>&1)
   rc=$?
-  if [[ "$rc" -eq 0 ]] && grep -q "Check 13: roadmap_batches entries are well-formed" <<< "$out"; then
+  if [[ "$rc" -eq 0 ]] && grep -q "Check 13: roadmap entries are well-formed" <<< "$out"; then
     common_test_pass "Check 13 absent-key fixture: no roadmap_batches key -> clean pass, not a warning"
   else
     common_test_fail "Check 13 absent-key fixture: expected exit 0 with the Check 13 PASS line (rc=$rc)"
@@ -626,8 +626,118 @@ JSON
     common_test_info "$out"
   fi
 
-  # --- schema-to-validator drift case for the four new field names (roadmap_batches,
-  # roadmap_notes, roadmap_annotation, roadmap_ext_blocked) -- a minimal fixture using all four
+  # --- flat key present: the named migration WARN fires alongside the entry PASS line ---
+  out=$(bash "$C13_VALIDATOR" "$WORKDIR/c13-clean.json" 2>&1)
+  if grep -q "Check 13: flat roadmap key(s) present (roadmap_batches).*migrate-roadmap-to-milestones.sh" <<< "$out"; then
+    common_test_pass "Check 13 flat-key fixture: a flat roadmap_batches key fires the WARN naming the migration script"
+  else
+    common_test_fail "Check 13 flat-key fixture: expected the named flat-key WARN"
+    common_test_info "$out"
+  fi
+  out=$(bash "$C13_VALIDATOR" "$WORKDIR/c13-absent.json" 2>&1)
+  if ! grep -q "Check 13: flat roadmap key" <<< "$out"; then
+    common_test_pass "Check 13 flat-key fixture: no flat key -> no migration WARN"
+  else
+    common_test_fail "Check 13 flat-key fixture: migration WARN fired with no flat key present"
+  fi
+
+  # ---- milestone shape ----
+  # c13_nested NAME MILESTONES_JSON : writes $WORKDIR/c13n-NAME/state.json (four tasks: 1 open,
+  # 2 completed, 3 abandoned, 4 expanded) with a sibling archive holding task 9 (completed), runs
+  # the validator, and leaves its output in $out and exit code in $rc.
+  c13_nested() {
+    local name="$1" milestones="$2" d="$WORKDIR/c13n-$1"
+    mkdir -p "$d/archive"
+    cat > "$d/archive/state.json" <<'JSON'
+{"archived_projects": [{"project_number": 9, "project_name": "old", "status": "completed"}], "completed_projects": []}
+JSON
+    cat > "$d/state.json" <<JSON
+{
+  "next_project_number": 20,
+  "active_projects": [
+    {"project_number": 1, "project_name": "a", "status": "not_started", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"},
+    {"project_number": 2, "project_name": "b", "status": "completed", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"},
+    {"project_number": 3, "project_name": "c", "status": "abandoned", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"},
+    {"project_number": 4, "project_name": "d", "status": "expanded", "task_type": "general",
+     "created": "2026-01-01T00:00:00Z", "last_updated": "2026-01-01T00:00:00Z"}
+  ],
+  "roadmap_milestones": $milestones
+}
+JSON
+    out=$(bash "$C13_VALIDATOR" "$d/state.json" 2>&1)
+    rc=$?
+  }
+  # c13_expect LABEL fire|clean PATTERN : asserts the Check 13 WARN matching PATTERN is present
+  # (fire) or that no Check 13 WARN at all was emitted (clean); exit code must be 0 either way.
+  c13_expect() {
+    local label="$1" mode="$2" pat="${3:-}"
+    if [[ "$mode" == "fire" ]]; then
+      if [[ "$rc" -eq 0 ]] && grep -qE "WARN.*Check 13: $pat" <<< "$out"; then
+        common_test_pass "Check 13 nested $label: named WARN fires, exit 0"
+      else
+        common_test_fail "Check 13 nested $label: expected WARN matching '$pat' (rc=$rc)"
+        common_test_info "$out"
+      fi
+    else
+      if [[ "$rc" -eq 0 ]] && grep -q "Check 13: roadmap entries are well-formed" <<< "$out" \
+          && ! grep -q "WARN.*Check 13" <<< "$out"; then
+        common_test_pass "Check 13 nested $label: clean, PASS line and no Check 13 WARN"
+      else
+        common_test_fail "Check 13 nested $label: expected a clean Check 13 pass (rc=$rc)"
+        common_test_info "$out"
+      fi
+    fi
+  }
+  _ms_open='"progress": {"status": "active"}'
+  _ms_closed='"progress": {"status": "closed", "closed": "2026-02-01"}'
+
+  # completed member (active and archived) of an OPEN milestone: clean
+  c13_nested open-completed '[{"id": "M1", "title": "T", "aim": "A", '"$_ms_open"', "batches": [{"task_ids": [1, 2, 9], "description": "open and done members together"}]}]'
+  c13_expect "completed member of an open milestone" clean
+  # terminal member of a CLOSED milestone: fires
+  c13_nested closed-terminal '[{"id": "M1", "title": "T", "aim": "A", '"$_ms_closed"', "batches": [{"task_ids": [2], "description": "done member left in a closed milestone"}]}]'
+  c13_expect "terminal member of a closed milestone" fire 'roadmap_milestones\[0\]\.batches\[0\] names task_ids member 2, a terminal member of a closed milestone'
+  # closed milestone with no batches left: clean
+  c13_nested closed-empty '[{"id": "M1", "title": "T", "aim": "A", '"$_ms_closed"', "batches": []}]'
+  c13_expect "closed milestone with its done members dropped" clean
+  # abandoned / expanded member: fires even in an open milestone
+  c13_nested abandoned '[{"id": "M1", "title": "T", "aim": "A", '"$_ms_open"', "batches": [{"task_ids": [3], "description": "x"}, {"task_ids": [4], "description": "y"}]}]'
+  c13_expect "abandoned member" fire 'roadmap_milestones\[0\]\.batches\[0\] names task_ids member 3, which is abandoned'
+  c13_expect "expanded member" fire 'roadmap_milestones\[0\]\.batches\[1\] names task_ids member 4, which is expanded'
+  # unresolvable member: fires
+  c13_nested unresolvable '[{"id": "M1", "title": "T", "aim": "A", '"$_ms_open"', "batches": [{"task_ids": [77], "description": "x"}]}]'
+  c13_expect "unresolvable member" fire 'roadmap_milestones\[0\]\.batches\[0\] names task_ids member 77, which is in neither active_projects nor the archive'
+  # task id in two batches across two milestones: fires; disjoint: clean
+  c13_nested dup-member '[{"id": "M1", "title": "T", "aim": "A", '"$_ms_open"', "batches": [{"task_ids": [1], "description": "x"}]}, {"id": "M2", "title": "T", "aim": "A", '"$_ms_open"', "batches": [{"task_ids": [1], "description": "y"}]}]'
+  c13_expect "task id in two batches across milestones" fire 'task id 1 appears in more than one roadmap_milestones batch'
+  c13_nested disjoint '[{"id": "M1", "title": "T", "aim": "A", '"$_ms_open"', "batches": [{"task_ids": [1], "description": "x"}]}, {"id": "M2", "title": "T", "aim": "A", "progress": {"status": "planned"}, "batches": [{"task_ids": [2], "description": "y"}]}]'
+  c13_expect "disjoint batches, unique ids" clean
+  # duplicate milestone id: fires
+  c13_nested dup-id '[{"id": "M1", "title": "T", "aim": "A", '"$_ms_open"', "batches": []}, {"id": "M1", "title": "T", "aim": "A", '"$_ms_open"', "batches": []}]'
+  c13_expect "duplicate milestone id" fire 'milestone id "M1" appears in more than one roadmap_milestones entry'
+  # title / aim empty and over bound: fire
+  _long=$(printf 'x%.0s' $(seq 1 301))
+  c13_nested bad-title-aim '[{"id": "M1", "title": "", "aim": "'"$_long"'", '"$_ms_open"', "batches": []}, {"id": "M2", "title": "'"$_long"'", "aim": "", '"$_ms_open"', "batches": []}]'
+  c13_expect "empty title" fire 'roadmap_milestones\[0\]\.title is missing or empty'
+  c13_expect "over-bound aim" fire 'roadmap_milestones\[0\]\.aim is 301 characters, over the 300-character bound'
+  c13_expect "over-bound title" fire 'roadmap_milestones\[1\]\.title is 301 characters, over the 80-character bound'
+  c13_expect "empty aim" fire 'roadmap_milestones\[1\]\.aim is missing or empty'
+  # closed iff closure date: both directions fire
+  c13_nested closed-no-date '[{"id": "M1", "title": "T", "aim": "A", "progress": {"status": "closed"}, "batches": []}]'
+  c13_expect "closed without a closure date" fire 'roadmap_milestones\[0\]\.progress\.status is closed but progress\.closed'
+  c13_nested date-not-closed '[{"id": "M1", "title": "T", "aim": "A", "progress": {"status": "active", "closed": "2026-02-01"}, "batches": []}]'
+  c13_expect "closure date on an open milestone" fire 'roadmap_milestones\[0\]\.progress\.closed is present but progress\.status is not closed'
+  # nested batch description bound and empty task_ids: fire
+  c13_nested bad-batch '[{"id": "M1", "title": "T", "aim": "A", '"$_ms_open"', "batches": [{"task_ids": [], "description": "'"$_long"'"}]}]'
+  c13_expect "empty task_ids" fire 'roadmap_milestones\[0\]\.batches\[0\] has an empty or missing task_ids array'
+  c13_expect "over-long batch description" fire 'roadmap_milestones\[0\]\.batches\[0\]\.description is 301 characters, over the 100-character bound'
+
+  # --- schema-to-validator drift case for the roadmap field names (roadmap_batches,
+  # roadmap_notes, roadmap_annotation, roadmap_ext_blocked, primary_goals, roadmap_milestones,
+  # roadmap_context) -- a minimal fixture using all of them
   # must not itself produce an "Unknown ... field" WARN (Check 3/4), independent of the general
   # drift test further below ---
   cat > "$WORKDIR/c13-drift-fields.json" <<'JSON'
@@ -641,15 +751,18 @@ JSON
   "roadmap_batches": [
     {"task_ids": [1], "description": "exercises all four new field names at once"}
   ],
-  "roadmap_notes": {"next_preamble": ["p1"], "next_postamble": ["p2"], "open_work_trailer": []}
+  "roadmap_notes": {"next_preamble": ["p1"], "next_postamble": ["p2"], "open_work_trailer": []},
+  "primary_goals": ["one goal"],
+  "roadmap_milestones": [],
+  "roadmap_context": {"overview": ["o"], "rules": ["r"], "conventions": ["c"], "output_path": "docs/ROADMAP.md"}
 }
 JSON
   out=$(bash "$C13_VALIDATOR" "$WORKDIR/c13-drift-fields.json" 2>&1)
   rc=$?
   if [[ "$rc" -eq 0 ]] && ! grep -q "Unknown top-level field\|Unknown entry field" <<< "$out"; then
-    common_test_pass "Check 13 field-drift fixture: all four new field names recognized, no Unknown-field WARN"
+    common_test_pass "Check 13 field-drift fixture: every roadmap field name recognized, no Unknown-field WARN"
   else
-    common_test_fail "Check 13 field-drift fixture: expected no Unknown-field WARN for the four new names (rc=$rc)"
+    common_test_fail "Check 13 field-drift fixture: expected no Unknown-field WARN for the roadmap field names (rc=$rc)"
     common_test_info "$out"
   fi
 fi

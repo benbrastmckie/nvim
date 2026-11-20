@@ -1,31 +1,18 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/656_milestone_schema_and_generated_roadmap/plans/01_milestone-schema-generated-roadmap.md",
-      "summary": "Nine-phase plan: schema and validator milestone layer, entries accessor, lint retarget, additive milestone render path, migration with losslessness gate, removal of hand-authored render paths, agent/command text, format documents with the pruning ledger and lint disposition, then redeploy, migrate this repository and the sf1-engine acceptance render."
-    }
-  ],
-  "next_steps": "Run /orchestrate 656 to execute the plan",
-  "user_decision": {
-    "question": "For the final acceptance check, should the implementer migrate and regenerate the live sf1-engine store in place, or render from a migrated copy kept under this task's records/ directory and leave sf1-engine's own store to a /roadmap run in that repository?",
-    "options": [
-      "Render from a migrated copy under this task's records/ directory; write nothing in sf1-engine",
-      "Migrate and regenerate sf1-engine's live specs/state.json and ROADMAP.md in place"
-    ],
-    "recommended": "Render from a migrated copy under this task's records/ directory; write nothing in sf1-engine",
-    "blocking": false
+  "status": "in_progress",
+  "dispatch_seq": 6,
+  "started_at": "2026-11-20T01:45:00Z",
+  "artifacts": [],
+  "partial_progress": {
+    "stage": "initializing",
+    "details": "Implementation agent started; parsing plan.",
+    "phases_completed": 0,
+    "phases_total": 9
   },
-  "memory_candidates": [],
   "metadata": {
-    "session_id": "sess_1795163529_143ff8_656",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 9,
-    "estimated_hours": 16,
-    "dependency_waves": [[1], [2], [3, 4], [5], [6], [7, 8], [9]]
-  },
-  "dispatch_seq": 5
+    "session_id": "sess_1795163529_143ff8",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -856,6 +856,7 @@ KNOWN_TOP_LEVEL_FIELDS=(
   next_project_number default_task_type active_projects active_topics completed_projects
   repository_health memory_health version vault_count vault_history
   deployment_versions active_goal roadmap_batches roadmap_notes
+  primary_goals roadmap_milestones roadmap_context
 )
 unknown_top=$(jq -r 'keys[]' "$STATE_FILE" 2>/dev/null | while IFS= read -r k; do
   known=0
@@ -1216,22 +1217,59 @@ else
   log_pass "Check 12: next_project_number ($_c12_counter) names a free number"
 fi
 
-# ─── Check 13: roadmap_batches entry integrity (WARN-only, base mode) ──────────────────────────
+# ─── Check 13: roadmap entry integrity (WARN-only, base mode) ──────────────────────────────────
 # PROMOTION CRITERION: identical shape to Checks 8-11's (see above) -- promote to FAIL once
-# roadmap-agent/skill-roadmap has been the sole writer of roadmap_batches across two consecutive
-# /roadmap runs with zero WARN-level findings from this check. --strict promotes it to
-# exit-blocking today for an opt-in caller, same as Checks 8-11.
-# Three sub-conditions, each independently reportable:
-#   (a) task_ids non-empty and every member an existing, non-terminal project_number
-#   (b) no task id appears in more than one batch
-#   (c) description present, non-empty, and <= 100 characters
+# roadmap-agent/skill-roadmap has been the sole writer of the roadmap entries across two
+# consecutive /roadmap runs with zero WARN-level findings from this check. --strict promotes it
+# to exit-blocking today for an opt-in caller, same as Checks 8-11.
+#
+# Two shapes are checked, each under its own path prefix:
+#
+# Milestone shape -- roadmap_milestones[i].batches[j]:
+#   (a) task_ids non-empty; every member resolvable in active_projects or the sibling
+#       archive/state.json. A member that is abandoned or expanded WARNs; any terminal member of
+#       a CLOSED milestone WARNs; a completed member of an open milestone does NOT (it stays in
+#       its batch so the milestone's derived progress counts it).
+#   (b) no task id appears in more than one batch across all milestones
+#   (c) batch description present, non-empty, and <= 100 characters
+#   (d) milestone id unique; title and aim non-empty and within their bounds (80 / 300)
+#   (e) progress.status == "closed" if and only if progress.closed is present
+#
+# Flat shape -- roadmap_batches[i], the shape of a store that has not run
+# scripts/migrate-roadmap-to-milestones.sh:
+#   (f) task_ids non-empty and every member an existing, non-terminal project_number
+#   (g) no task id appears in more than one batch
+#   (h) description present, non-empty, and <= 100 characters
+#   (i) a named WARN whenever a flat key (roadmap_batches / roadmap_notes) is present, naming
+#       the migration script -- reported separately from the entry findings above.
+_c13_state_dir="$(cd "$(dirname "$STATE_FILE")" && pwd)"
+_c13_archive="$_c13_state_dir/archive/state.json"
+if [[ -f "$_c13_archive" ]]; then
+  _c13_archive_args=(--slurpfile __c13_archive_raw "$_c13_archive")
+else
+  _c13_archive_args=(--argjson __c13_archive_raw '[]')
+fi
 _check13_prog='
 def is_terminal: . == "completed" or . == "abandoned" or . == "expanded";
+def is_dropped: . == "abandoned" or . == "expanded";
+def desc_findings($p; $b):
+  (if (($b.description // "") | length) == 0 then ["\($p).description is missing or empty"]
+   elif (($b.description // "") | length) > 100 then ["\($p).description is \((($b.description // "") | length)) characters, over the 100-character bound"]
+   else [] end);
 (.active_projects) as $all |
 ([$all[] | .project_number]) as $all_ids |
 ([$all[] | select((.status // "") | is_terminal) | .project_number]) as $terminal_ids |
+(($__c13_archive_raw[0] // {}) as $ad |
+  [ (($ad.archived_projects // []), ($ad.completed_projects // []), ($ad.abandoned_projects // []))
+    | if type == "array" then .[] else empty end
+    | select(type == "object" and (.project_number | type) == "number")
+    | {key: (.project_number | tostring), value: (.status // "completed")} ]
+  | from_entries) as $arch |
+([$all[] | {key: (.project_number | tostring), value: (.status // "")}] | from_entries) as $act |
+def member_status($id): ($act[$id | tostring] // $arch[$id | tostring] // null);
+# ---- flat shape ----
 (.roadmap_batches // []) as $batches |
-[
+([
   range(0; $batches | length) as $i |
   ($batches[$i]) as $b |
   (($b.task_ids // [])) as $ids |
@@ -1242,24 +1280,70 @@ def is_terminal: . == "completed" or . == "abandoned" or . == "expanded";
     +
     [ $ids[] | select(. as $id | $terminal_ids | index($id) != null) | "roadmap_batches[\($i)] names task_ids member \(.), which is already terminal (completed/abandoned/expanded)" ]
     +
-    (if (($b.description // "") | length) == 0 then ["roadmap_batches[\($i)].description is missing or empty"]
-     elif (($b.description // "") | length) > 100 then ["roadmap_batches[\($i)].description is \((($b.description // "") | length)) characters, over the 100-character bound"]
-     else [] end)
+    desc_findings("roadmap_batches[\($i)]"; $b)
   )
-] | add // []
-as $direct |
+] | add // []) as $flat_direct |
+([$batches[] | (.task_ids // [])[]] | group_by(.) | map(select(length > 1) | .[0])) as $flat_dup |
+# ---- milestone shape ----
+(.roadmap_milestones // []) as $ms |
+([
+  range(0; $ms | length) as $i |
+  ($ms[$i]) as $m |
+  "roadmap_milestones[\($i)]" as $mp |
+  (($m.progress.status // "") == "closed") as $closed |
+  (
+    (if (($m.title // "") | length) == 0 then ["\($mp).title is missing or empty"]
+     elif (($m.title // "") | length) > 80 then ["\($mp).title is \(($m.title | length)) characters, over the 80-character bound"]
+     else [] end)
+    +
+    (if (($m.aim // "") | length) == 0 then ["\($mp).aim is missing or empty"]
+     elif (($m.aim // "") | length) > 300 then ["\($mp).aim is \(($m.aim | length)) characters, over the 300-character bound"]
+     else [] end)
+    +
+    (if $closed and (($m.progress.closed // "") | length) == 0 then ["\($mp).progress.status is closed but progress.closed (the closure date) is absent"]
+     elif ($closed | not) and (($m.progress // {}) | has("closed")) then ["\($mp).progress.closed is present but progress.status is not closed"]
+     else [] end)
+    +
+    ([
+      range(0; ($m.batches // []) | length) as $j |
+      ($m.batches[$j]) as $b |
+      "\($mp).batches[\($j)]" as $bp |
+      (($b.task_ids // [])) as $ids |
+      (
+        (if ($ids | length) == 0 then ["\($bp) has an empty or missing task_ids array"] else [] end)
+        +
+        [ $ids[] | . as $id | member_status($id) as $st |
+          if $st == null then "\($bp) names task_ids member \($id), which is in neither active_projects nor the archive"
+          elif ($st | is_dropped) then "\($bp) names task_ids member \($id), which is \($st)"
+          elif $closed and ($st | is_terminal) then "\($bp) names task_ids member \($id), a terminal member of a closed milestone (drop done members when closing a milestone)"
+          else empty end ]
+        +
+        desc_findings($bp; $b)
+      )
+    ] | add // [])
+  )
+] | add // []) as $nested_direct |
+([$ms[] | (.batches // [])[] | (.task_ids // [])[]] | group_by(.) | map(select(length > 1) | .[0])) as $nested_dup |
+([$ms[] | (.id // "")] | group_by(.) | map(select(length > 1) | .[0])) as $dup_mids |
 (
-  [$batches[] | (.task_ids // [])[]] | group_by(.) | map(select(length > 1) | .[0])
-) as $dup_ids |
-($direct + ($dup_ids | map("task id \(.) appears in more than one roadmap_batches entry")))[]'
-check13_findings=$(jq -r "$_check13_prog" "$STATE_FILE" 2>/dev/null)
+  $flat_direct
+  + ($flat_dup | map("task id \(.) appears in more than one roadmap_batches entry"))
+  + $nested_direct
+  + ($nested_dup | map("task id \(.) appears in more than one roadmap_milestones batch"))
+  + ($dup_mids | map("milestone id \"\(.)\" appears in more than one roadmap_milestones entry"))
+)[]'
+check13_findings=$(jq -r "${_c13_archive_args[@]}" "$_check13_prog" "$STATE_FILE" 2>/dev/null)
 if [[ -z "$check13_findings" ]]; then
-  log_pass "Check 13: roadmap_batches entries are well-formed (or absent/empty)"
+  log_pass "Check 13: roadmap entries are well-formed (or absent/empty)"
 else
   while IFS= read -r _c13_msg; do
     [[ -z "$_c13_msg" ]] && continue
     log_warn "Check 13: $_c13_msg"
   done <<< "$check13_findings"
+fi
+_c13_flat_keys=$(jq -r '[("roadmap_batches", "roadmap_notes") as $k | select(has($k)) | $k] | join(" and ")' "$STATE_FILE" 2>/dev/null)
+if [[ -n "$_c13_flat_keys" ]]; then
+  log_warn "Check 13: flat roadmap key(s) present ($_c13_flat_keys) -- this store has not adopted the milestone layer; run scripts/migrate-roadmap-to-milestones.sh to nest its batches under roadmap_milestones"
 fi
 
 # ─── project_number uniqueness (promoted from --deep-only Check D1 to base mode) ───────────────

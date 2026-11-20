@@ -1,7 +1,7 @@
 # Implementation Plan: Task #656
 
 - **Task**: 656 - Milestone schema in state.json and a wholly generated ROADMAP.md
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 16 hours
 - **Dependencies**: 654 (completed). Downstream: 657 builds on this schema; 655 follows 657.
 - **Research Inputs**: specs/656_milestone_schema_and_generated_roadmap/reports/01_milestone-schema-generated-roadmap.md
@@ -156,25 +156,25 @@ state annotation ("rule where the generated review surface then lives") is answe
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Schema and Validator Milestone Layer [NOT STARTED]
+### Phase 1: Schema and Validator Milestone Layer [COMPLETED]
 
 **Goal**: The schema defines the milestone layer and `validate-state.sh` checks it, moved together
 in one commit.
 
 **Tasks**:
-- [ ] In `state-schema.json` add top-level `primary_goals` (array of strings, `maxLength` 500),
+- [x] In `state-schema.json` add top-level `primary_goals` (array of strings, `maxLength` 500),
   `roadmap_milestones` (array of `#/definitions/roadmapMilestoneEntry`) and `roadmap_context`
   (object, `additionalProperties: false`: `overview`, `rules`, `conventions` as arrays of strings
-  with `maxLength` 300, plus optional string `output_path`).
-- [ ] Add `definitions.roadmapMilestoneEntry` per the report's Recommendation 1: required `id`
+  with `maxLength` 300, plus optional string `output_path`). *(completed)*
+- [x] Add `definitions.roadmapMilestoneEntry` per the report's Recommendation 1: required `id`
   (pattern `^[A-Za-z0-9][A-Za-z0-9._-]{0,15}$`), `title` (80), `aim` (300), `progress`, `batches`;
   optional `gate` (400) and `review`. `progress` = `{status: planned|active|closed, closed?,
   note? (140)}`; `review` = `{state: none|prepared|in_review|changes_requested|approved|merged,
-  ref?, request?, updated?}`; `batches` items `$ref` the existing `roadmapBatchEntry` unchanged.
-- [ ] Add `maxLength: 140` to the per-task `roadmap_annotation`.
-- [ ] Keep `roadmap_batches` and `roadmap_notes` defined; reword their descriptions to say they are
-  the shape of a store that has not run the milestone migration (state the current design only).
-- [ ] In `validate-state.sh` add the three keys to `KNOWN_TOP_LEVEL_FIELDS` and extend Check 13 in
+  ref?, request?, updated?}`; `batches` items `$ref` the existing `roadmapBatchEntry` unchanged. *(completed)*
+- [x] Add `maxLength: 140` to the per-task `roadmap_annotation`. *(completed)*
+- [x] Keep `roadmap_batches` and `roadmap_notes` defined; reword their descriptions to say they are
+  the shape of a store that has not run the milestone migration (state the current design only). *(completed)*
+- [x] In `validate-state.sh` add the three keys to `KNOWN_TOP_LEVEL_FIELDS` and extend Check 13 in
   place: iterate `roadmap_milestones[].batches[]` with a `roadmap_milestones[i].batches[j]` path
   prefix; no task id in two batches across all milestones; milestone `id` unique; `title` and `aim`
   non-empty and within bounds; `progress.status == "closed"` if and only if `progress.closed` is
@@ -182,10 +182,10 @@ in one commit.
   WARNs; a member resolvable in neither `active_projects` nor `specs/archive/state.json` WARNs; a
   completed member of an open milestone does not; a named WARN when a flat key is present, naming
   `scripts/migrate-roadmap-to-milestones.sh`. Keep the existing flat-array checks for a store that
-  still carries the flat shape.
-- [ ] In `test-validate-state.sh` keep the existing flat-shape Check 13 fixtures, add nested-shape
+  still carries the flat shape. *(completed)*
+- [x] In `test-validate-state.sh` keep the existing flat-shape Check 13 fixtures, add nested-shape
   fixtures for each new sub-condition (one firing and one clean case each), extend the field-drift
-  fixture, and confirm the existing schema/validator drift test passes in both directions.
+  fixture, and confirm the existing schema/validator drift test passes in both directions. *(completed)*
 
 **Timing**: 2 hours
 

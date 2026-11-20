@@ -165,34 +165,84 @@
       "type": "string",
       "description": "Documented-optional. A free-prose statement of the repository's current overall aim, used for human orientation. It is authored by a repo owner or by a task that owns the repository's framing, written via /review's goal-update flow (commands/review.md Section 6.7.3), and read by generate-task-order.sh's Goal-line resolution (resolve_goal_text()), which gives a non-empty active_goal precedence over an existing TODO.md Goal line. Modelled rather than retired so that a repo carrying a real goal string does not fail validation for holding it; a repo is equally free to omit it."
     },
+    "primary_goals": {
+      "type": "array",
+      "description": "Documented-optional. The repository's primary goals, one bounded statement per entry, rendered as the intro bullets of specs/ROADMAP.md by roadmap-integration.sh. When absent or empty the renderer falls back to active_goal. Maintained by the /roadmap command.",
+      "items": {
+        "type": "string",
+        "maxLength": 500
+      }
+    },
+    "roadmap_milestones": {
+      "type": "array",
+      "description": "Documented-optional. Ordered milestones, each carrying its own nested batches; the whole of specs/ROADMAP.md renders from this array plus primary_goals and roadmap_context. Array position IS milestone order -- there is no separate priority field. Maintained by the /roadmap command (roadmap-agent decides, roadmap-integration.sh renders); absent means the store has not adopted the milestone layer.",
+      "items": {
+        "$ref": "#/definitions/roadmapMilestoneEntry"
+      }
+    },
+    "roadmap_context": {
+      "type": "object",
+      "description": "Documented-optional. Repository overview, standing rules and conventions rendered as the LAST section of specs/ROADMAP.md, sited apart from roadmap_milestones so reader context never crowds the milestone dashboard. Every item is one bounded line; a ruling that needs more belongs in its own decision record with a one-line pointer here.",
+      "properties": {
+        "overview": {
+          "type": "array",
+          "description": "Bounded statements describing the repository for a reader new to it.",
+          "items": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "rules": {
+          "type": "array",
+          "description": "Bounded standing rules.",
+          "items": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "conventions": {
+          "type": "array",
+          "description": "Bounded conventions, checks and settled decisions.",
+          "items": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "output_path": {
+          "type": "string",
+          "description": "Optional repository-relative path the roadmap is rendered to when roadmap-integration.sh is not given --roadmap. Absent means specs/ROADMAP.md."
+        }
+      },
+      "additionalProperties": false
+    },
     "roadmap_batches": {
       "type": "array",
-      "description": "Documented-optional. Ordered batches rendered into specs/ROADMAP.md's '## Next' section by roadmap-integration.sh's render_next(). Array position IS the batch's priority -- there is no separate priority field here, and the per-task priority enum (definitions.projectEntry.properties.priority) is never read for batch ordering. Maintained by the /roadmap command (roadmap-agent decides, roadmap-integration.sh renders); absent or empty means no batches, a clean pass, not a warning.",
+      "description": "Documented-optional. The flat, milestone-less batch list of a store that has not run scripts/migrate-roadmap-to-milestones.sh. Read only as a fallback by scripts/lib/roadmap-entries-lib.sh when roadmap_milestones is absent; validate-state.sh Check 13 names the migration whenever this key is present. A migrated store carries its batches under roadmap_milestones[].batches and does not carry this key.",
       "items": {
         "$ref": "#/definitions/roadmapBatchEntry"
       }
     },
     "roadmap_notes": {
       "type": "object",
-      "description": "Documented-optional. Non-batch authored prose for specs/ROADMAP.md's '## Next' and '## Open work' sections, so nothing authored has to live inside the file roadmap-integration.sh regenerates. Absent or empty means no such prose, a clean pass.",
+      "description": "Documented-optional. Free prose held by a store that has not run scripts/migrate-roadmap-to-milestones.sh. It is not rendered into specs/ROADMAP.md; the migration moves every paragraph to the retained-prose file and removes this key.",
       "properties": {
         "next_preamble": {
           "type": "array",
-          "description": "Paragraphs rendered before the '## Next' orchestrate-fence block, one entry per rendered paragraph.",
+          "description": "One entry per paragraph; moved whole to the retained-prose file by the migration.",
           "items": {
             "type": "string"
           }
         },
         "next_postamble": {
           "type": "array",
-          "description": "Paragraphs rendered after the 'Why this order:' bullet list, one entry per rendered paragraph.",
+          "description": "One entry per paragraph; moved whole to the retained-prose file by the migration.",
           "items": {
             "type": "string"
           }
         },
         "open_work_trailer": {
           "type": "array",
-          "description": "Free-standing paragraphs rendered after the last '## Open work' fence, one entry per rendered paragraph.",
+          "description": "One entry per paragraph; moved whole to the retained-prose file by the migration.",
           "items": {
             "type": "string"
           }
@@ -413,11 +463,12 @@
         },
         "roadmap_annotation": {
           "type": "string",
-          "description": "Documented-optional. The schema-backed successor to '## Open work's authored '<- ' suffix annotation (previously a retention-parser override with no schema home). Rendered by render_open_work() as a '<- {text}' suffix on this task's Open work line."
+          "maxLength": 140,
+          "description": "Documented-optional. One bounded line rendered by roadmap-integration.sh as a '<- {text}' suffix on this task's line in specs/ROADMAP.md."
         },
         "roadmap_ext_blocked": {
           "type": "boolean",
-          "description": "Documented-optional. The schema-backed successor to '## Open work's authored EXT-BLOCKED token (previously a retention-parser override with no schema home). When true, render_open_work() renders the EXT-BLOCKED token at its existing position-5 precedence, ahead of the dependency-derived token."
+          "description": "Documented-optional. When true, roadmap-integration.sh renders the EXT-BLOCKED status token for this task, ahead of the dependency-derived token."
         },
         "memory_candidates": {
           "type": "array",
@@ -522,11 +573,111 @@
         },
         "rationale": {
           "type": "string",
-          "description": "Optional, unbounded. The lossless home for the batch's full 'Why this order:' prose -- rendered as one bullet (with indented continuation lines for a multi-paragraph rationale)."
+          "description": "Optional, unbounded. The batch's ordering rationale, kept in state for roadmap-agent's next pass. It is not rendered into specs/ROADMAP.md."
         },
         "flags": {
           "type": "string",
           "description": "Optional authored CLI flag segment (e.g. '--hard') appended to this batch's rendered /orchestrate line."
+        }
+      },
+      "additionalProperties": false
+    },
+    "roadmapMilestoneEntry": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "aim",
+        "progress",
+        "batches"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,15}$",
+          "description": "Short stable identifier (e.g. 'M1'), unique across roadmap_milestones. The rendered section anchor derives from this id, never from the title, so a retitle does not break links."
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "Short milestone title."
+        },
+        "aim": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "What the milestone aims to achieve, in one bounded statement."
+        },
+        "gate": {
+          "type": "string",
+          "maxLength": 400,
+          "description": "Optional. The criterion that closes the milestone -- the criterion itself, never a dated measurement against it."
+        },
+        "progress": {
+          "type": "object",
+          "required": [
+            "status"
+          ],
+          "description": "Stored progress decisions. Batch and task done-counts are derived at render time and are never stored here.",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": [
+                "planned",
+                "active",
+                "closed"
+              ]
+            },
+            "closed": {
+              "type": "string",
+              "description": "Closure date (YYYY-MM-DD). Present if and only if status is closed."
+            },
+            "note": {
+              "type": "string",
+              "maxLength": 140,
+              "description": "Optional one-line progress note."
+            }
+          },
+          "additionalProperties": false
+        },
+        "review": {
+          "type": "object",
+          "required": [
+            "state"
+          ],
+          "description": "Optional. Stored git review/approval state for the milestone. It is a stored field, never fetched at render time, so rendering stays offline and deterministic.",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "none",
+                "prepared",
+                "in_review",
+                "changes_requested",
+                "approved",
+                "merged"
+              ]
+            },
+            "ref": {
+              "type": "string",
+              "description": "Branch or ref carrying the milestone's work."
+            },
+            "request": {
+              "type": "string",
+              "description": "Pull/merge request identifier or URL."
+            },
+            "updated": {
+              "type": "string",
+              "description": "Date (YYYY-MM-DD) the review state was last recorded; rendered beside the state so a stale value is visible."
+            }
+          },
+          "additionalProperties": false
+        },
+        "batches": {
+          "type": "array",
+          "description": "Ordered batches of this milestone. Array position IS batch order.",
+          "items": {
+            "$ref": "#/definitions/roadmapBatchEntry"
+          }
         }
       },
       "additionalProperties": false

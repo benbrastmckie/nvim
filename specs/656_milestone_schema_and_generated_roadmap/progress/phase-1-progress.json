@@ -1,0 +1,53 @@
+{
+  "phase": 1,
+  "phase_name": "Schema and Validator Milestone Layer",
+  "started_at": "2026-11-20T09:48:08Z",
+  "last_updated": "2026-11-20T09:48:08Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "In `state-schema.json` add top-level `primary_goals` (array of strings, `maxLength` 500), `roadmap_milestones` (array of `#/definitions/roadmapMilestoneEntry`) ",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/schemas/state-schema.json",
+        "agent-system/extensions/core/scripts/validate-state.sh",
+        "agent-system/extensions/core/scripts/tests/test-validate-state.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add `definitions.roadmapMilestoneEntry` per the report's Recommendation 1: required `id` (pattern `^[A-Za-z0-9][A-Za-z0-9._-]{0,15}$`), `title` (80), `aim` (300",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Add `maxLength: 140` to the per-task `roadmap_annotation`.",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "Keep `roadmap_batches` and `roadmap_notes` defined; reword their descriptions to say they are the shape of a store that has not run the milestone migration (sta",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "In `validate-state.sh` add the three keys to `KNOWN_TOP_LEVEL_FIELDS` and extend Check 13 in place: iterate `roadmap_milestones[].batches[]` with a `roadmap_mil",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "In `test-validate-state.sh` keep the existing flat-shape Check 13 fixtures, add nested-shape fixtures for each new sub-condition (one firing and one clean case ",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "verification_notes": "- Check 13 PASS line reads 'roadmap entries are well-formed'; the flat-key migration WARN is a separate line so a flat store's entry PASS still fires. Verification: verify-touched.sh named the nine suites and exited 0, but it runs the DEPLOYED (stale) suite copies; the same nine suites were re-run from the source store via scripts/tests/run-all.sh --only (9 passed). Interface tier; nothing deferred."
+}
