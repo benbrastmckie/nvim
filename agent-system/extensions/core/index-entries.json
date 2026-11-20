@@ -3200,7 +3200,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 1091,
+      "line_count": 1184,
       "keywords": [
         "git-staging",
         "commit-scope",

@@ -573,37 +573,53 @@ repository (D8).
 
 ---
 
-### Phase 6: Redeploy, Reconcile Derived Surfaces, and Close [NOT STARTED]
+### Phase 6: Redeploy, Reconcile Derived Surfaces, and Close [COMPLETED]
 
 **Goal**: The source-store change is deployed, every derived surface this plan moved is
 reconciled, and the complete gate set is discharged at the orchestration close.
 
 **Tasks**:
-- [ ] Confirm every prior phase's work is committed and the working tree holds no partial edit of
-  this task's own files.
-- [ ] Reconcile `index-entries.json`'s `line_count` for the edited standards file, either via
+- [x] Confirm every prior phase's work is committed and the working tree holds no partial edit of
+  this task's own files. *(completed; only this task's own files plus pre-existing,
+  unrelated-to-this-task dirty files (.claude-extensions.json, specs/central-errors.jsonl,
+  specs/events.jsonl, .pid, a sibling task's .plan-revised.json) were present)*
+- [x] Reconcile `index-entries.json`'s `line_count` for the edited standards file, either via
   `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` if that
   script is present, or as a side effect of the redeploy below; confirm afterwards that
-  `bash .claude/scripts/check-extension-docs.sh` Rule R reports no drift.
-- [ ] Redeploy the whole tree: `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool
+  `bash .claude/scripts/check-extension-docs.sh` Rule R reports no drift. *(completed as a side
+  effect of the redeploy below -- the script itself refuses to run from the source-store scripts/
+  directory, so it must be invoked from the deployed tree, which the redeploy already produced
+  with line_count 1184 correct; the deployed copy's own --write confirmed 0 changed, and
+  check-extension-docs.sh now reports "core PASS" / "all extensions OK" with zero FAIL lines)*
+- [x] Redeploy the whole tree: `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool
   `timeout` parameter raised to 600000, per `context/patterns/external-process-wait.md` Rule 1).
   This also clears the pre-existing per-extension staleness the dispatch reported for core, email,
-  lean, nix, nvim, and sapience.
-- [ ] Confirm the deployed copies exist and match: `.claude/scripts/lib/specs-ignore-lib.sh`,
+  lean, nix, nvim, and sapience. *(completed: RESULT=landed_verify_red -- the deploy itself
+  landed; post-deploy verify-deploy.sh found exactly 1 pre-existing, unrelated violation (Gate 27,
+  scripts/tests/run-all.sh's own long-standing subject-resolution-declaration gap, confirmed via
+  git log/git status to predate this dispatch and untouched by it); logged non-blocking)*
+- [x] Confirm the deployed copies exist and match: `.claude/scripts/lib/specs-ignore-lib.sh`,
   `.claude/scripts/tests/test-specs-ignore-lib.sh`, and the updated
-  `.claude/context/standards/git-staging-scope.md`.
-- [ ] Run the scoped touched-path check over every file this task touched:
+  `.claude/context/standards/git-staging-scope.md`. *(completed: all 7 of this task's edited/new
+  files diff byte-identical between source store and deployed tree)*
+- [x] Run the scoped touched-path check over every file this task touched:
   `bash .claude/scripts/verify-touched.sh` with no arguments (it derives the touched set itself
-  from the working tree plus the committed diff against its own determined base).
-- [ ] Re-run `bash .claude/scripts/tests/test-git-commit-scoped.sh`,
+  from the working tree plus the committed diff against its own determined base). *(completed:
+  51 passed, 1 failed (1 EXPECTED, 0 NEW) -- the one expected failure is
+  test-verify-deploy-context-budget.sh, whose sole remaining finding is the same pre-existing
+  Gate 27 run-all.sh violation named above; the gate3/gate5 drift findings present before this
+  phase's redeploy are gone)*
+- [x] Re-run `bash .claude/scripts/tests/test-git-commit-scoped.sh`,
   `bash .claude/scripts/tests/test-git-commit-phase.sh`,
   `bash .claude/scripts/tests/test-orchestrate-cycle-postflight.sh`, and
   `bash .claude/scripts/tests/test-specs-ignore-lib.sh` against the **deployed** tree, where
-  gate 8 actually discovers suites.
-- [ ] Defer the complete gate set to the orchestration close
+  gate 8 actually discovers suites. *(completed: 83/83, 84/84, 321/321, 12/12 -- all green)*
+- [x] Defer the complete gate set to the orchestration close
   (`context/contracts/batch-gate-stage.md`'s once-per-invocation batch gate stage) rather than
-  invoking the full battery independently in this dispatch.
-- [ ] Record the final state of each DONE WHEN criterion in the implementation summary.
+  invoking the full battery independently in this dispatch. *(completed -- no independent full
+  battery invoked in this dispatch)*
+- [x] Record the final state of each DONE WHEN criterion in the implementation summary.
+  *(completed -- see summary)*
 
 **Timing**: 1 hour
 
