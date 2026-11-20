@@ -2,9 +2,11 @@
 # test-milestone-ref-land.sh - Fixture-driven regression suite for milestone-ref-land.sh:
 # asserts the ref's commit count, its parent chain, and tree equality against the live branch;
 # asserts HEAD, the index, and the working tree are byte-identical before and after; asserts the
-# compare-and-swap refusal/retry path; asserts the no-milestone no-op; asserts the
-# undeclared-key advisory fallback; asserts the script never calls git checkout/switch/merge/
-# push/reset.
+# no-milestone no-op; asserts the undeclared-key advisory fallback; asserts --verify's
+# tree-equality predicate across a sequence of landings, on a ref whose chain is not descended
+# from the work branch, and -- the case that proves the check can fail -- on a commit made after
+# the last landing; asserts that landing an unchanged tree creates no commit; asserts the
+# source-commit trailer; asserts the script never calls git checkout/switch/merge/push/reset.
 #
 # Follows the core shell-test convention in context/standards/shell-script-testing.md: SCRIPT_DIR
 # -relative resolution of the script under test, common_test_pass/fail/info helpers, PASSED/FAILED
@@ -178,8 +180,17 @@ else
   common_test_fail "core landing: got exit=$core_code ref_count=$ref_count ref_tree=$ref_tree head_tree=$head_tree ref_parent=$ref_parent main_tip=$main_tip head_unchanged=$([ "$before_head" = "$after_head" ] && echo yes || echo no) branch_unchanged=$([ "$before_branch" = "$after_branch" ] && echo yes || echo no) status_unchanged=$([ "$before_status" = "$after_status" ] && echo yes || echo no)"
 fi
 
+# advance_work_branch <repo> <label> -- one new commit on the checked-out branch that changes
+# HEAD's tree (a distinct file per label, so successive calls never produce an equal tree).
+advance_work_branch() {
+  local repo="$1" label="$2"
+  echo "$label" > "$repo/work-${label}.txt"
+  git -C "$repo" add -- "work-${label}.txt" >/dev/null 2>&1
+  git -C "$repo" commit -q -m "work ${label}" >/dev/null 2>&1
+}
+
 # =====================================================================
-# Case 4: --verify mode, success path -- after landing, --verify confirms ancestry.
+# Case 4: --verify mode, success path -- after landing, --verify confirms tree equality.
 # =====================================================================
 verify_repo="$(make_fixture_repo "yes")"
 run_land "$verify_repo" "$FIXTURE_NUM" "$SESSION_ID"
@@ -187,7 +198,7 @@ run_land "$verify_repo" "$FIXTURE_NUM" "$SESSION_ID" "--verify"
 verify_code="$LAST_CODE"
 rm -rf "$verify_repo"
 if [ "$verify_code" -eq 0 ]; then
-  common_test_pass "--verify success: HEAD is confirmed an ancestor of the milestone ref after landing"
+  common_test_pass "--verify success: the milestone ref's tip tree equals HEAD's tree after landing"
 else
   common_test_fail "--verify success: expected exit 0 after a successful landing, got exit=$verify_code"
 fi
@@ -232,7 +243,115 @@ else
 fi
 
 # =====================================================================
-# Case 7: the script never invokes checkout, switch, merge, push, or reset.
+# Case 7: three landings in sequence each pass --verify. From the second landing on, the work
+# branch's HEAD is NOT an ancestor of the milestone ref (each landed commit is parented on the
+# ref's own chain), so this is the sequence an ancestry predicate reports as never landed.
+# =====================================================================
+seq_repo="$(make_fixture_repo "yes")"
+seq_codes=""
+seq_nonancestor=0
+for seq_i in 1 2 3; do
+  [ "$seq_i" -gt 1 ] && advance_work_branch "$seq_repo" "seq${seq_i}"
+  run_land "$seq_repo" "$FIXTURE_NUM" "$SESSION_ID"
+  seq_codes="${seq_codes}${LAST_CODE}"
+  run_land "$seq_repo" "$FIXTURE_NUM" "$SESSION_ID" "--verify"
+  seq_codes="${seq_codes}${LAST_CODE} "
+  if ! git -C "$seq_repo" merge-base --is-ancestor HEAD refs/heads/milestone/M1; then
+    seq_nonancestor=$((seq_nonancestor + 1))
+  fi
+done
+seq_count="$(git -C "$seq_repo" rev-list --count refs/heads/milestone/M1 2>/dev/null || echo 0)"
+if [ "$seq_codes" = "00 00 00 " ] && [ "$seq_nonancestor" -eq 2 ] && [ "$seq_count" -eq 4 ]; then
+  common_test_pass "sequence: three landings each pass --verify, including the two whose HEAD is not an ancestor of the ref"
+else
+  common_test_fail "sequence: expected land/verify exits '00 00 00 ', 2 non-ancestor landings, 4 commits on the ref -- got codes='$seq_codes' nonancestor=$seq_nonancestor count=$seq_count"
+fi
+
+# =====================================================================
+# Case 8 (NEGATIVE FIXTURE): a commit made on the work branch AFTER the last landing has not
+# landed, and --verify must say so. This is the case that proves the tree-equality predicate
+# can fail; a check that passes here would be a check that cannot fail at all. Continues from
+# Case 7's repository, whose last --verify passed.
+# =====================================================================
+advance_work_branch "$seq_repo" "unlanded"
+run_land "$seq_repo" "$FIXTURE_NUM" "$SESSION_ID" "--verify"
+neg_code="$LAST_CODE"
+neg_names_trees="$(printf '%s' "$LAST_OUTPUT" | grep -c "differs from HEAD's tree" || true)"
+neg_names_advance="$(printf '%s' "$LAST_OUTPUT" | grep -c "HEAD has advanced 1 commit(s) since the last landing" || true)"
+neg_count="$(git -C "$seq_repo" rev-list --count refs/heads/milestone/M1 2>/dev/null || echo 0)"
+if [ "$neg_code" -eq 1 ] && [ "$neg_names_trees" -ge 1 ] && [ "$neg_names_advance" -ge 1 ] && [ "$neg_count" -eq 4 ]; then
+  common_test_pass "negative fixture: --verify exits 1 for a commit made after the last landing, names both trees and the 1-commit advance, and moves no ref"
+else
+  common_test_fail "negative fixture: expected exit 1, a both-trees line, a 1-commit-advance line, ref still at 4 commits -- got exit=$neg_code trees_line=$neg_names_trees advance_line=$neg_names_advance count=$neg_count output: $LAST_OUTPUT"
+fi
+
+# ...and one landing of the current tree repairs it (the recovery route the failure names).
+run_land "$seq_repo" "$FIXTURE_NUM" "$SESSION_ID"
+run_land "$seq_repo" "$FIXTURE_NUM" "$SESSION_ID" "--verify"
+repair_code="$LAST_CODE"
+if [ "$repair_code" -eq 0 ]; then
+  common_test_pass "negative fixture recovery: one landing of the current tree makes --verify pass again"
+else
+  common_test_fail "negative fixture recovery: expected --verify exit 0 after re-landing, got exit=$repair_code"
+fi
+
+# =====================================================================
+# Case 9: landing an unchanged tree creates no commit. Continues from Case 8's repository,
+# whose ref tip now carries HEAD's tree.
+# =====================================================================
+noop_before_tip="$(git -C "$seq_repo" rev-parse refs/heads/milestone/M1)"
+run_land "$seq_repo" "$FIXTURE_NUM" "$SESSION_ID"
+relanding_code="$LAST_CODE"
+relanding_note="$(printf '%s' "$LAST_OUTPUT" | grep -c "nothing to land for task ${FIXTURE_NUM} -- no commit created" || true)"
+noop_after_tip="$(git -C "$seq_repo" rev-parse refs/heads/milestone/M1)"
+if [ "$relanding_code" -eq 0 ] && [ "$relanding_note" -ge 1 ] && [ "$noop_before_tip" = "$noop_after_tip" ]; then
+  common_test_pass "unchanged tree: a re-landing exits 0 with a NOTE, creates no commit and leaves the ref's tip where it was"
+else
+  common_test_fail "unchanged tree: expected exit 0, a no-commit NOTE, an unmoved tip -- got exit=$relanding_code note=$relanding_note before=$noop_before_tip after=$noop_after_tip"
+fi
+
+# =====================================================================
+# Case 10: each landed commit records the work-branch commit it landed from.
+# =====================================================================
+trailer_src="$(git -C "$seq_repo" log -1 --format=%B refs/heads/milestone/M1 | sed -n 's/^Landed-From: //p')"
+trailer_head="$(git -C "$seq_repo" rev-parse HEAD)"
+rm -rf "$seq_repo"
+if [ -n "$trailer_src" ] && [ "$trailer_src" = "$trailer_head" ]; then
+  common_test_pass "trailer: the landed commit's Landed-From trailer names the work-branch commit it landed"
+else
+  common_test_fail "trailer: expected Landed-From to equal HEAD ($trailer_head), got '$trailer_src'"
+fi
+
+# =====================================================================
+# Case 11: a ref whose chain is NOT descended from the work branch and whose tip commit carries
+# no Landed-From trailer (the shape a ref built without the trailer has). --verify passes when
+# its tip tree matches HEAD's tree; when it does not, --verify fails, says the source commit is
+# unknown, and one landing repairs it by appending to the existing chain.
+# =====================================================================
+div_repo="$(make_fixture_repo "yes")"
+div_root="$(git -C "$div_repo" commit-tree "$(git -C "$div_repo" rev-parse 'HEAD^{tree}')" -m "unrelated root, no trailer")"
+git -C "$div_repo" update-ref refs/heads/milestone/M1 "$div_root" ""
+run_land "$div_repo" "$FIXTURE_NUM" "$SESSION_ID" "--verify"
+div_match_code="$LAST_CODE"
+advance_work_branch "$div_repo" "div"
+run_land "$div_repo" "$FIXTURE_NUM" "$SESSION_ID" "--verify"
+div_stale_code="$LAST_CODE"
+div_unknown="$(printf '%s' "$LAST_OUTPUT" | grep -c "recorded no source commit" || true)"
+run_land "$div_repo" "$FIXTURE_NUM" "$SESSION_ID"
+div_land_code="$LAST_CODE"
+div_parent="$(git -C "$div_repo" rev-parse refs/heads/milestone/M1^1 2>/dev/null || echo "")"
+run_land "$div_repo" "$FIXTURE_NUM" "$SESSION_ID" "--verify"
+div_repaired_code="$LAST_CODE"
+rm -rf "$div_repo"
+if [ "$div_match_code" -eq 0 ] && [ "$div_stale_code" -eq 1 ] && [ "$div_unknown" -ge 1 ] \
+   && [ "$div_land_code" -eq 0 ] && [ "$div_parent" = "$div_root" ] && [ "$div_repaired_code" -eq 0 ]; then
+  common_test_pass "diverged chain: passes on a matching tip tree, fails on a stale one with an unknown-source explanation, and one landing onto the existing chain repairs it"
+else
+  common_test_fail "diverged chain: got match=$div_match_code stale=$div_stale_code unknown_line=$div_unknown land=$div_land_code parent=$div_parent root=$div_root repaired=$div_repaired_code"
+fi
+
+# =====================================================================
+# Case 12: the script never invokes checkout, switch, merge, push, or reset.
 # =====================================================================
 forbidden_hits="$(grep -nE '\bgit[[:space:]]+(checkout|switch|push|reset)\b|\bgit[[:space:]]+merge([[:space:]]|$)' "$LAND" | grep -v '^[0-9]*:#' || true)"
 if [ -z "$forbidden_hits" ]; then

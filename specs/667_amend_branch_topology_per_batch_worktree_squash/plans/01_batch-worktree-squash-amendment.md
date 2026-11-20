@@ -256,49 +256,49 @@ both amended records point at it.
 
 ---
 
-### Phase 2: Repair the landing verification and its retry message [NOT STARTED]
+### Phase 2: Repair the landing verification and its retry message [COMPLETED]
 
 **Goal**: `milestone-ref-land.sh --verify` reports a landing as landed when its tree is correct,
 still fails when work did not land, and the postflight refusal no longer advises an unreachable
 retry.
 
 **Tasks**:
-- [ ] In `milestone-ref-land.sh`, replace the ancestry assertion in `--verify` mode with tree
+- [x] In `milestone-ref-land.sh`, replace the ancestry assertion in `--verify` mode with tree
       equality: pass exactly when the milestone ref exists and
       `git rev-parse "<ref>^{tree}"` equals `git rev-parse "HEAD^{tree}"`. Keep the existing
-      exit codes (0 landed or no milestone membership, 1 not landed).
-- [ ] In landing mode, make a landing of an unchanged tree a no-op: when the ref exists and its
+      exit codes (0 landed or no milestone membership, 1 not landed). *(completed)*
+- [x] In landing mode, make a landing of an unchanged tree a no-op: when the ref exists and its
       tip tree already equals the tree being landed, create no commit and exit 0 with a NOTE
-      line. This is what makes a re-run converge instead of extending the chain.
-- [ ] Record the source commit in each landed commit's message as a trailer line, so a verify
+      line. This is what makes a re-run converge instead of extending the chain. *(completed)*
+- [x] Record the source commit in each landed commit's message as a trailer line, so a verify
       failure can name which commit the ref last landed from. Use it only in the failure
-      message; the pass or fail decision is the tree comparison above.
-- [ ] Make the `--verify` failure message state the two trees compared and whether the work
-      branch has advanced since the last landing.
-- [ ] Update the script's header comment (usage, `--verify` description, exit codes) to describe
-      the predicate as it now is. State the current behaviour only.
-- [ ] In `orchestrate-cycle-postflight.sh`, replace the "Re-run to retry the landing" text at
+      message; the pass or fail decision is the tree comparison above. *(completed: trailer is `Landed-From: <sha>`)*
+- [x] Make the `--verify` failure message state the two trees compared and whether the work
+      branch has advanced since the last landing. *(completed)*
+- [x] Update the script's header comment (usage, `--verify` description, exit codes) to describe
+      the predicate as it now is. State the current behaviour only. *(completed)*
+- [x] In `orchestrate-cycle-postflight.sh`, replace the "Re-run to retry the landing" text at
       the `MILESTONE-LANDING` notice. The new text says that a re-run lands the current tree,
       and that a second identical refusal with an unchanged `HEAD` means stop and report, not
       retry again. Change no control flow: the refusal of the completion status write on a
-      genuine verify failure stays.
-- [ ] In `tests/test-milestone-ref-land.sh`, add or rewrite cases: (a) three landings in
+      genuine verify failure stays. *(completed)*
+- [x] In `tests/test-milestone-ref-land.sh`, add or rewrite cases: (a) three landings in
       sequence each pass `--verify`; (b) the negative fixture, a commit made after the last
       landing, makes `--verify` exit 1; (c) landing an unchanged tree creates no commit;
       (d) a ref whose chain already diverged from the work branch by the old parenting passes
       `--verify` when its tip tree matches, and otherwise is repaired by one landing;
       (e) a missing ref still exits 1. Remove or rewrite any case that asserts the ancestry
-      behaviour.
-- [ ] Observe case (b) fail the check before it is accepted: temporarily confirm the assertion
+      behaviour. *(completed: 13 cases pass; existing Case 5 covers the missing ref)*
+- [x] Observe case (b) fail the check before it is accepted: temporarily confirm the assertion
       fires (for example by running the case's verify call by hand in the fixture and reading
       exit 1), and record that observation in the phase's progress notes. Leave no deliberate
-      break in the tree.
-- [ ] In `tests/test-orchestrate-cycle-postflight.sh`, update any case that matches the old
-      notice text, and keep the cases asserting that a verify failure refuses the status write.
-- [ ] Re-run the Premise Re-Validation grep: confirm no file under
+      break in the tree. *(completed: observed twice -- the case exits 1 under the repaired script, and a scratch copy with the comparison forced true fails the negative-fixture and diverged-chain cases; no break left in the tree)*
+- [x] In `tests/test-orchestrate-cycle-postflight.sh`, update any case that matches the old
+      notice text, and keep the cases asserting that a verify failure refuses the status write. *(deviation: altered — no case matched the old notice text, so none needed updating; one assertion was added that the notice names the re-run effect and bounds the retry)*
+- [x] Re-run the Premise Re-Validation grep: confirm no file under
       `agent-system/extensions/core/context/` describes the verify predicate as ancestry. If one
       does, do not edit it in this phase; record it for the documentation-parity successor in
-      the summary.
+      the summary. *(completed: no context file states the predicate as ancestry)*
 
 **Timing**: 2 hours
 

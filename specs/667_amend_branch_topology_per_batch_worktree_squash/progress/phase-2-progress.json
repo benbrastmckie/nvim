@@ -1,0 +1,23 @@
+{
+  "phase": 2,
+  "phase_name": "Repair the landing verification and its retry message",
+  "started_at": "2026-11-20T20:30:00Z",
+  "last_updated": "2026-11-20T21:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Tree-equality --verify, no-op re-landing, Landed-From trailer, failure message, header comment", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/milestone-ref-land.sh"]},
+    {"id": 2, "description": "Sequence, negative, no-op, trailer, diverged-chain suite cases; negative case observed failing", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/tests/test-milestone-ref-land.sh"]},
+    {"id": 3, "description": "Replace the MILESTONE-LANDING retry text; assert it in the postflight suite", "status": "done",
+     "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "2.9", "description": "In tests/test-orchestrate-cycle-postflight.sh, update any case that matches the old notice text", "type": "altered",
+     "reason": "No case matched the old text; an assertion on the new text was added instead and the refusal cases were kept unchanged.",
+     "annotation": "*(deviation: altered — no case matched the old notice text, so none needed updating; one assertion was added that the notice names the re-run effect and bounds the retry)*"}
+  ],
+  "verification_notes": "Source-store suites run directly: test-milestone-ref-land.sh 13/13, test-orchestrate-cycle-postflight.sh 351/351. Mutation check in scratch copies: a verify forced true fails the negative-fixture and diverged-chain cases; the pre-repair script fails the sequence case with land/verify exits '00 01 01' (D1 reproduced). verify-touched.sh over the four paths: 19 suites selected, 19 passed, 0 owed -- but it executes the DEPLOYED .claude/scripts/tests copies, which do not carry this phase's edits until Phase 5 redeploys, so that verdict is re-taken after redeploy. grep is-ancestor in milestone-ref-land.sh: none. grep 'Re-run to retry the landing' under core: none. Task-reference lint: rc 0. Record-versioning lint: no finding located in any of the four files (its repo-wide rc 1 is from other files).",
+  "handoff_count": 0
+}

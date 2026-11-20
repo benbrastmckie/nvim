@@ -29,11 +29,28 @@
 # `git update-ref`, retrying under the existing specs/.commit-lock mutex (task-lock.sh
 # commit-acquire/commit-release) on a lost race -- never a new lock, never a forced update.
 #
-# --verify mode: asserts `git merge-base --is-ancestor HEAD refs/heads/milestone/<id>`. Exits 0
-# if HEAD's work has landed on the milestone ref (or the task has no milestone -- nothing to
-# verify), exits 1 otherwise. This is the check orchestrate-cycle-postflight.sh runs immediately
-# before writing a task's completion status (Phase 4), closing the non-landing-under-"completed"
-# defect worktree-isolation-removal-reaffirmation.md records.
+# Landing a tree the ref's tip already carries creates NO commit and exits 0 with a NOTE. A
+# re-run after a successful landing therefore converges on the same tip instead of extending
+# the chain with empty commits.
+#
+# Each landed commit carries a `Landed-From: <sha>` trailer naming the work-branch commit whose
+# tree it landed. The trailer is diagnostic only: --verify reads it to explain a failure, never
+# to decide one.
+#
+# --verify mode: asserts TREE EQUALITY -- the milestone ref exists and
+# `git rev-parse <ref>^{tree}` equals `git rev-parse HEAD^{tree}`. Exits 0 if it holds (or the
+# task has no milestone -- nothing to verify), exits 1 otherwise. This is the check
+# orchestrate-cycle-postflight.sh runs immediately before writing a task's completion status,
+# closing the non-landing-under-"completed" defect
+# worktree-isolation-removal-reaffirmation.md records.
+#
+# Why tree equality and not ancestry: a landed commit is parented on the milestone ref's own
+# chain, not on the work branch, so the work branch's HEAD is an ancestor of the ref only for
+# the milestone's first landing. Ancestry would report every later, correct landing as missing.
+# Tree equality asks the question that matters -- does the ref carry the work branch's current
+# content -- and it still fails when it should: any commit made on the work branch after the
+# last landing changes HEAD's tree and the check exits 1 until that tree is landed. A --verify
+# failure is therefore always repaired by one landing of the current tree.
 #
 # INTEGRATION-BRANCH RESOLUTION
 # ------------------------------
@@ -44,8 +61,9 @@
 #
 # EXIT CODES
 # ----------
-#   0  landed (or no-op: no milestone membership, or --verify confirms ancestry/no milestone)
-#   1  --verify: HEAD's work has not landed on the milestone ref
+#   0  landed (or no-op: no milestone membership, the ref's tip already carries HEAD's tree,
+#      or --verify confirms tree equality/no milestone)
+#   1  --verify: the milestone ref is missing, or its tip tree differs from HEAD's tree
 #   2  usage error
 #   3  CAS retries exhausted (persistent contention; caller should re-run)
 
@@ -94,13 +112,34 @@ if [ "$verify_mode" = "true" ]; then
     echo "ERROR: [milestone-ref-land] --verify: ${milestone_ref} does not exist; task ${task_number}'s work has not landed." >&2
     exit 1
   fi
-  if git merge-base --is-ancestor HEAD "$milestone_ref"; then
-    echo "NOTE: [milestone-ref-land] --verify: HEAD is an ancestor of ${milestone_ref}; task ${task_number}'s work has landed." >&2
+  verify_ref_tree="$(git rev-parse "${milestone_ref}^{tree}")"
+  verify_head_tree="$(git rev-parse 'HEAD^{tree}')"
+  if [ "$verify_ref_tree" = "$verify_head_tree" ]; then
+    echo "NOTE: [milestone-ref-land] --verify: ${milestone_ref}'s tip tree equals HEAD's tree (${verify_head_tree}); task ${task_number}'s work has landed." >&2
     exit 0
-  else
-    echo "ERROR: [milestone-ref-land] --verify: HEAD is NOT an ancestor of ${milestone_ref}; task ${task_number}'s work has not landed." >&2
-    exit 1
   fi
+  # Diagnostic only from here on: the decision above is the tree comparison and nothing else.
+  # Explain the mismatch by reading the last landing's recorded source commit.
+  verify_head_sha="$(git rev-parse HEAD)"
+  verify_last_src="$(git log -1 --format=%B "$milestone_ref" 2>/dev/null \
+    | sed -n 's/^Landed-From: \([0-9a-f]\{7,\}\)$/\1/p' | tail -1 || true)"
+  if [ -z "$verify_last_src" ]; then
+    verify_advance="the last landing recorded no source commit, so whether HEAD has advanced since is unknown"
+  elif ! git cat-file -e "${verify_last_src}^{commit}" 2>/dev/null; then
+    verify_advance="the last landing's recorded source commit ${verify_last_src} is not in this repository"
+  elif [ "$verify_last_src" = "$verify_head_sha" ]; then
+    verify_advance="HEAD has NOT advanced since the last landing (same commit ${verify_last_src}), so the ref's tip was not built from it"
+  else
+    verify_ahead="$(git rev-list --count "${verify_last_src}..HEAD" 2>/dev/null || echo "?")"
+    verify_behind="$(git rev-list --count "HEAD..${verify_last_src}" 2>/dev/null || echo "?")"
+    if [ "$verify_behind" = "0" ]; then
+      verify_advance="HEAD has advanced ${verify_ahead} commit(s) since the last landing (from ${verify_last_src})"
+    else
+      verify_advance="the last landing's source commit ${verify_last_src} is not in HEAD's history (HEAD is ${verify_ahead} ahead, ${verify_behind} behind it)"
+    fi
+  fi
+  echo "ERROR: [milestone-ref-land] --verify: ${milestone_ref}'s tip tree (${verify_ref_tree}) differs from HEAD's tree (${verify_head_tree}); task ${task_number}'s work has not landed. ${verify_advance}. Landing the current tree repairs this." >&2
+  exit 1
 fi
 
 # --- Resolve the integration branch, with a loud advisory fallback ---------------------------
@@ -124,14 +163,17 @@ if [ -n "$plan_path" ] && [ -f "$plan_path" ]; then
   phase_body="$(grep -E '^### Phase [0-9]+: .*\[COMPLETED' "$plan_path" 2>/dev/null | sed -E 's/^### //; s/ \[[A-Z ]+\]$//' || true)"
 fi
 
+# The work-branch commit whose tree is being landed, and that tree. Both are resolved once, here,
+# so the tree landed and the source commit recorded in the trailer always describe one commit.
+source_commit="$(git rev-parse HEAD)"
+tree="$(git rev-parse "${source_commit}^{tree}")"
+
 commit_subject="task ${task_number}: ${task_title}"
 if [ -n "$phase_body" ]; then
-  commit_message="$(printf '%s\n\n%s\n' "$commit_subject" "$phase_body")"
+  commit_message="$(printf '%s\n\n%s\n\nLanded-From: %s\n' "$commit_subject" "$phase_body" "$source_commit")"
 else
-  commit_message="$commit_subject"
+  commit_message="$(printf '%s\n\nLanded-From: %s\n' "$commit_subject" "$source_commit")"
 fi
-
-tree="$(git rev-parse HEAD^'{tree}')"
 
 # --- Serialize the compare-and-swap retry under the existing commit mutex, never a new lock ---
 commit_token=""
@@ -158,6 +200,12 @@ while [ "$attempt" -lt "$MAX_CAS_RETRIES" ]; do
   if git rev-parse --verify --quiet "$milestone_ref" >/dev/null; then
     old_tip="$(git rev-parse "$milestone_ref")"
     parent="$old_tip"
+    # Unchanged tree: the ref's tip already carries exactly what would be landed. Create no
+    # commit, so a re-run converges on this tip instead of extending the chain.
+    if [ "$(git rev-parse "${old_tip}^{tree}")" = "$tree" ]; then
+      echo "NOTE: [milestone-ref-land] ${milestone_ref}'s tip $(git rev-parse --short "$old_tip") already carries HEAD's tree (${tree}); nothing to land for task ${task_number} -- no commit created." >&2
+      exit 0
+    fi
   else
     old_tip=""
     parent="$(git rev-parse "$integration_branch")"

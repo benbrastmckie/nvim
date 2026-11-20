@@ -4868,6 +4868,14 @@ if grep -q "MILESTONE-LANDING:" <<< "$LAST_STDERR"; then
 else
   common_test_fail "milestone landing (A): expected a MILESTONE-LANDING notice. stderr: $LAST_STDERR"
 fi
+# The notice must bound the retry it advises: a re-run lands the current tree, and a repeated
+# refusal with an unmoved HEAD is a stop-and-report, never an open-ended "retry".
+if grep "MILESTONE-LANDING:" <<< "$LAST_STDERR" | grep -q "A re-run lands the current tree" \
+   && grep "MILESTONE-LANDING:" <<< "$LAST_STDERR" | grep -q "do not retry further"; then
+  common_test_pass "milestone landing (A): the notice says what a re-run does and bounds the retry"
+else
+  common_test_fail "milestone landing (A): expected the notice to name the re-run's effect and bound the retry. stderr: $LAST_STDERR"
+fi
 
 common_test_info "Milestone landing (B): landing succeeds (no integration_branch declared -- advisory fallback to the checked-out branch) -- the completion write proceeds and the milestone ref advances by one commit"
 

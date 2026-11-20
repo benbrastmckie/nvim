@@ -1381,7 +1381,7 @@ if [ "$have_outcome" = "true" ]; then
             milestone_landing_refusal=true
           fi
           if [ "$milestone_landing_refusal" = "true" ]; then
-            echo "${notice_prefix} MILESTONE-LANDING: task ${task_number}'s work did not land onto its milestone ref (see milestone-ref-land.sh failure line(s) above) — the completion status write is refused this cycle and the task is left at its current in-flight status. Re-run to retry the landing." >&2
+            echo "${notice_prefix} MILESTONE-LANDING: task ${task_number}'s work did not land onto its milestone ref (see milestone-ref-land.sh failure line(s) above) — the completion status write is refused this cycle and the task is left at its current in-flight status. A re-run lands the current tree, which is what repairs a --verify mismatch. If a re-run reports this same refusal again while HEAD has not moved, stop and report it; do not retry further." >&2
             issue_args=(--task-dir "$TASK_DIR" --kind issue --class "milestone ref landing" \
               --severity costly --phase implement \
               --what-happened "Task ${task_number}'s milestone-ref landing or its --verify check failed at implement postflight; the completion status write was refused and the task was left at its current in-flight status." \
