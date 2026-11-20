@@ -474,7 +474,7 @@ their current assertions. Confirm by checking AA1-AA7's pass lines are unchanged
 
 ---
 
-### Phase 6: The durable stated-answer register and the V13 recording contract [NOT STARTED]
+### Phase 6: The durable stated-answer register and the V13 recording contract [COMPLETED]
 
 **Goal**: Every history reader the dispatch names has a written, discoverable answer for an absent
 specs history, and the one documented sentence that contradicts the new recording behaviour states
@@ -482,7 +482,7 @@ the implemented contract instead.
 
 **Tasks**:
 
-- [ ] Create `context/standards/absent-specs-git-history.md` holding, for each reader, the stated
+- [x] Create `context/standards/absent-specs-git-history.md` holding, for each reader, the stated
       answer with a file-and-line citation: `validate-state.sh`'s `--deep` artifact-loss check
       (two `log_warn` skips, lines 1529-1530 — a defined WARN-level skip, no change);
       `dispatch-metrics.sh`'s churn split (pre-initialized zeros, lines 315-327 — zero is the
@@ -491,31 +491,33 @@ the implemented contract instead.
       (an unreadable `HEAD:specs/state.json` suppresses the addendum rather than erroring);
       `reconcile-task-status.sh`, `task-lock.sh` and `lib/territory-contention-lib.sh` (measured:
       no git-history read exists in any of the three — the only `git log` text in the third is
-      prose inside an agent-facing advisory note).
-- [ ] In the same file, state the recording contract the implementation now carries: the two
+      prose inside an agent-facing advisory note). *(completed)*
+- [x] In the same file, state the recording contract the implementation now carries: the two
       channels and their gate (`issue-record.sh` where a task context exists;
       `events-append.sh`, `--category deviation`, where `--task` is absent), the chosen `class`
       literal, why `--severity minor` is used, the per-invocation dedup key, and the hard
-      properties (never fatal, never status-bearing, never auto-routed to a follow-up).
-- [ ] In the same file, name the residuals honestly: `git-commit-phase.sh` and
+      properties (never fatal, never status-bearing, never auto-routed to a follow-up). *(completed)*
+- [x] In the same file, name the residuals honestly: `git-commit-phase.sh` and
       `lib/redeploy-checkpoint-lib.sh` both pass `--task` and own no task-local record, so a V13
       skip at either site is visible on stderr (Phase 3 makes the second one's wording accurate)
       but durable only through the conclusion stage's reading of the dispatch that wrapped it; and
       `events-append.sh` resolves its store from `SCRIPT_DIR`, so a cross-repository commit's event
-      lands in the invoking repository's log.
-- [ ] Correct `context/standards/git-staging-scope.md`'s V13 treatment paragraph in place: replace
+      lands in the invoking repository's log. *(completed)*
+- [x] Correct `context/standards/git-staging-scope.md`'s V13 treatment paragraph in place: replace
       the sentence "No `issue-record.sh` entry is fired for this arm — these are not issues."
       (line 1022; locate it by grepping for `these are not issues` if the line number has moved)
       with the narrower implemented claim — the arm records the skip as evidence through the
       channel its call site's context allows, deduped per invocation, never as a failure and never
       status-bearing — and add a pointer to the new standard. **If that sentence is genuinely
       absent**, do not invent a supersession: state the current V13 recording contract in that
-      paragraph and note the absence in the phase's own verification output.
-- [ ] State the current design only. No "previously", "no longer", "supersedes", or draft-history
+      paragraph and note the absence in the phase's own verification output. *(completed: the
+      sentence was found, still exactly at line 1022, and replaced in place)*
+- [x] State the current design only. No "previously", "no longer", "supersedes", or draft-history
       framing anywhere under `agent-system/**`, and no task-number references in either file.
-- [ ] Add the new file's entry to `index-entries.json` (`entries[]`, with `path`, `domain: core`,
+      *(completed: both lints below ran clean)*
+- [x] Add the new file's entry to `index-entries.json` (`entries[]`, with `path`, `domain: core`,
       `subdomain: standards`, `summary`, `keywords`, `topics`, and a `load_when` block), modelled
-      on the existing `standards/git-staging-scope.md` entry's shape.
+      on the existing `standards/git-staging-scope.md` entry's shape. *(completed)*
 
 **Timing**: 1 hour
 
@@ -551,17 +553,29 @@ the correction changes its line total.
 
 **Verification**:
 
-- [ ] `bash scripts/lint/check-record-versioning.sh` (or the repo-wide equivalent) reports no
-      finding on either file.
-- [ ] `bash scripts/check-task-references.sh` reports no finding on either file.
-- [ ] `jq -e '.entries | map(select(.path == "standards/absent-specs-git-history.md")) | length == 1'
-      index-entries.json` succeeds.
-- [ ] `grep -n "these are not issues" context/standards/git-staging-scope.md` returns nothing, and
-      the paragraph's new text names both channels.
-- [ ] `bash scripts/tests/run-all.sh --only <the selected set named in the Tier Justification>`
+- [x] `bash scripts/lint/check-record-versioning.sh` (or the repo-wide equivalent) reports no
+      finding on either file. *(completed: `check-record-versioning.sh agent-system/extensions/core/context/standards`
+      exits 0; the 52 ADVISORY findings reported are all in pre-existing sibling files, none in
+      either of this phase's two touched files)*
+- [x] `bash scripts/check-task-references.sh` reports no finding on either file. *(completed: 0
+      occurrences in both)*
+- [x] `jq -e '.entries | map(select(.path == "standards/absent-specs-git-history.md")) | length == 1'
+      index-entries.json` succeeds. *(completed)*
+- [x] `grep -n "these are not issues" context/standards/git-staging-scope.md` returns nothing, and
+      the paragraph's new text names both channels. *(completed: grep exits 1 (no match); new text
+      names `issue-record.sh` and `events-append.sh` explicitly)*
+- [x] `bash scripts/tests/run-all.sh --only <the selected set named in the Tier Justification>`
       exits 0, and `bash .claude/scripts/check-extension-docs.sh` exits 0 against the deployed
       tree (run after Phase 7's deploy if the index `line_count` reconciliation has not yet
       happened; a pre-reconciliation drift here is expected and is not a Phase 6 failure).
+      *(completed per the Batch Gate Deferral directive: ran `verify-touched.sh` instead of the
+      hand-assembled full-sweep `--only` list. 98/98 run-all suites passed; `verify-deploy.sh`'s
+      own bundled gate3/gate5 content-drift findings against exactly this phase's five edited
+      source-store files are EXPECTED pre-deploy drift, resolved by Phase 7's `deploy-headless.sh`
+      run — the same carve-out this task list already documents for `check-extension-docs.sh`.
+      One unrelated finding (`gate27`, a subject-resolution-declaration lint against
+      `scripts/tests/run-all.sh`) is confirmed PRE-EXISTING and outside this task's declared
+      `file_scope` — `run-all.sh` is not a file any phase of this plan touches.)*
 
 ---
 

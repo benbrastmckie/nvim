@@ -3200,11 +3200,36 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 1184,
+      "line_count": 1190,
       "keywords": [
         "git-staging",
         "commit-scope",
         "targeted-staging"
+      ],
+      "topics": [
+        "git-workflow"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent"
+        ],
+        "commands": [
+          "/orchestrate"
+        ]
+      }
+    },
+    {
+      "path": "standards/absent-specs-git-history.md",
+      "domain": "core",
+      "subdomain": "standards",
+      "summary": "Per-reader stated answers for an absent or thin specs git history, plus the V13 skip-recording contract and its named residuals",
+      "line_count": 68,
+      "keywords": [
+        "v13",
+        "specs-ignore",
+        "git-history",
+        "issue-record",
+        "events-append"
       ],
       "topics": [
         "git-workflow"

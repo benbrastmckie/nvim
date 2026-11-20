@@ -1019,8 +1019,14 @@ printing a `NOTE:`-level message (never `ERROR:`) and leaving the verdict JSON's
 note empty — deliberately never promoted into the explicit ERROR-level list, because unlike
 exits `2`-`6` (and unlike `7`'s still-unresolved gap), an `8`/`9` outcome is never an
 orchestration defect at all: it is the target repository's own configuration (a wholly or
-partly gitignored `specs` tree). No `issue-record.sh` entry is fired for this arm — these are
-not issues. Neither path changes `halt` or `infra_exempt_cycle`. `verdict` and the task's own STATUS (not
+partly gitignored `specs` tree). The arm records the skip as evidence through the channel its
+call site's context allows — a deduped `issue-record.sh` entry (`--class "repository
+configuration"`, `--severity minor`, `--resolution fixed_inline`) when a task context exists,
+or an `events-append.sh` `--category deviation` line when none does — deduped once per
+`/orchestrate` invocation, never as a failure and never status-bearing. See
+`context/standards/absent-specs-git-history.md` for the full recording contract and the
+per-reader stated answers for a repository with no specs git history at all. Neither path
+changes `halt` or `infra_exempt_cycle`. `verdict` and the task's own STATUS (not
 merely its issue log) ARE narrowly reassignable, but only inside one additional, separately-gated
 block sited immediately after this exit-code `case` statement: when the exit code is `2`, `3`,
 `4`, or `5` for an `implemented` dispatch whose completion-claim gate just passed (the exact

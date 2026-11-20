@@ -1,0 +1,15 @@
+{
+  "phase": 6,
+  "phase_name": "The durable stated-answer register and the V13 recording contract",
+  "started_at": "2026-11-20T04:11:00Z",
+  "last_updated": "2026-11-20T04:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write context/standards/absent-specs-git-history.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/absent-specs-git-history.md"]},
+    {"id": 2, "description": "Correct git-staging-scope.md's V13 sentence in place", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 3, "description": "Register new file in index-entries.json", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 4, "description": "Verify: lints, jq entry check, grep absence check, scoped verify-touched.sh", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
