@@ -1,0 +1,23 @@
+{
+  "phase": 3,
+  "phase_name": "Apply Description Revisions and Addenda",
+  "started_at": "2026-11-20T09:10:00Z",
+  "last_updated": "2026-11-20T09:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Append each block with one state-write.sh call per task, jq-side append", "status": "done", "note": "Seven calls, all exit 0; --regen-todo on the last (657) only.", "files_touched": ["specs/state.json", "specs/TODO.md"]},
+    {"id": 2, "description": "Each block opens with the RE-MEASURED AND RULED heading line", "status": "done", "files_touched": []},
+    {"id": 3, "description": "535 revision", "status": "done", "files_touched": ["specs/state.json"]},
+    {"id": 4, "description": "536 revision", "status": "done", "files_touched": ["specs/state.json"]},
+    {"id": 5, "description": "513 revision", "status": "done", "note": "The claim that the description's own repro uses git log --grep was checked against the baseline text before writing.", "files_touched": ["specs/state.json"]},
+    {"id": 6, "description": "592 addendum", "status": "done", "files_touched": ["specs/state.json"]},
+    {"id": 7, "description": "570 addendum", "status": "done", "files_touched": ["specs/state.json"]},
+    {"id": 8, "description": "655 pointer", "status": "done", "files_touched": ["specs/state.json"]},
+    {"id": 9, "description": "657 pointer", "status": "done", "files_touched": ["specs/state.json"]},
+    {"id": 10, "description": "Leave the other eight descriptions untouched", "status": "done", "note": "Exact equality with baseline.json confirmed for 486, 501, 508, 517, 524, 541, 553, 567.", "files_touched": []}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [],
+  "deviations": [],
+  "verification": "Heading-line jq query lists exactly 513 535 536 570 592 655 657. Each of the seven starts with its baseline text byte-for-byte and grew by 917 to 1449 characters. validate-state.sh --deep exit 0 (21 pass, 10 warn, 0 fail).",
+  "handoff_count": 0
+}

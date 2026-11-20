@@ -389,6 +389,8 @@ THE PUSH GATE MUST USE THE MECHANISM THAT ALREADY EXISTS, AND MUST NOT VIOLATE T
 
 Element 1's decision record exists and its edges and task revisions are written; a milestone's progress updates and the roadmap regenerates when an orchestration completes; batch completion initiates systematic testing; milestone completion prepares a push/review handoff through the existing consent-gated path without any autonomous push or PR creation; and the Branch Strategy standard matches the implemented mechanism.
 
+RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-layer-cluster-ordering.md): This task is not a cluster member; this block is a pointer. Read the decision record before planning. ORDERING: this task now depends on git_commit_scoped_gate_refusal_diagnostic (553), the last member of the commit-layer chain, by shared territory in git-commit-scoped.sh and orchestrate-cycle-postflight.sh. The edge sits here and not on branch_aware_orchestration_and_squash_landing (655) because this task declares both files and runs first; the cost is that this task's own ruling waits for the chain. If the ruling is wanted early, remove 553 from this task's dependencies and add it to 655's. CONDITION ON A RULING: the finding that source-store commit scoping and the third containment site are not prerequisites for branch targeting rests on there being one HEAD per repository. If this task reinstates any form of tree isolation, re-read that evidence, and note that phase_commit_boundary_mechanical_check's (513) expected ref becomes per-tree.
+
 ---
 
 ### 656. Milestone schema in state.json and a wholly generated ROADMAP.md
@@ -516,6 +518,8 @@ VERIFICATION. A multi-task invocation produces one branch, phase commits from ev
 === THE BINDING CONSTRAINT BLOCK ABOVE IS SUBJECT TO A LATER RULING -- READ THAT RULING FIRST ===
 
 This task now depends on `branch_topology_ruling_and_milestone_automation`, whose Element 1 is an explicitly re-opened ruling on branch granularity (per invocation, per milestone, per task), merge strategy, landing mechanics AND worktree isolation itself, carrying written authority to revise this description. Read that task's decision record BEFORE planning and treat it as binding: wherever it differs from the branch-per-invocation design or from the "BINDING CONSTRAINT, NOT RE-OPENABLE" block stated above, the ruling wins and this description is stale at that point. Do not re-derive the topology question here, and do not proceed on the settled-design premise above without first checking what the ruling actually settled.
+
+RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-layer-cluster-ordering.md): This task is not a cluster member; this block is a pointer. Read the decision record before planning. ORDERING: this task now depends on phase_commit_boundary_mechanical_check (513), which carries an expected-ref parameter defaulting to HEAD; pass the resolved work branch to it and do not build a second branch-target detector. Through branch_topology_ruling_and_milestone_automation (657) this task also follows the whole commit-layer chain. RULED: neither source-store commit scoping nor the third containment site is a hard prerequisite for branch targeting. That ruling changes if the landing commit is routed through git-commit-scoped.sh --task in a second repository. INPUTS THIS TASK MUST DESIGN FOR: (a) a source-store path committed by commit-source-store-path.sh lands on whatever branch the second repository has checked out, so "phase commits land on the work branch" is not true for those commits unless designed for, and that script is not in this task's file_scope; (b) switching the single shared working tree to land a squash carries concurrent siblings' uncommitted edits across the switch; (c) specs/state.json and specs/TODO.md ride in every task's commits, so per-task ranges on a shared branch are not separable by path for those two files; (d) git-snapshot.sh --branch moves HEAD off the work branch during a snapshot.
 
 ---
 
@@ -2539,6 +2543,9 @@ carried an edge on coupled_generated_surfaces_in_plan_authoring, and none was in
 Match on the slug; the number now in this record's dependencies array belongs to this
 repository's own space.
 
+
+RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-layer-cluster-ordering.md): Ruling: NEEDS REVISION (addendum only; scope unchanged). An admission-time branch check does not satisfy this task. The two are separate defects: this task's object is the description's hand-authored claims about tree content, while the branch feature's admission check concerns the ref an invocation starts from. In the incident this description cites, the dispatch ran on the correct branch and the description was stale against that same branch, so a branch check passes and the defect remains. The fix site stays the dispatch composer (orchestrate-build-dispatch.sh), under its emits-not-adjudicates ruling. ADDED CONSTRAINT: if the age carrier is ever a commit SHA, it must not be one reachable only from a work branch, because a squash landing orphans it. Prefer the timestamp or the existing description_fingerprint. No dependency edge is added: this task and branch_aware_orchestration_and_squash_landing (655) share no file.
+
 ---
 
 ### 590. Resolve the /ide dead-command-recommendation findings
@@ -3341,6 +3348,10 @@ Decide the attribution mechanism and implement it. Candidates, not a mandate: ke
 ## Overlapping open file territory
 
 This repo's #519 (infra_exempt_transport_error_dispatch_deaths) is the sibling half of the same measured misdiagnosis -- it owns the `transport_error` + `status=in_progress` cycle-charge question and may restructure the branch whose message this field's corroboration feeds. #543 owns the stall/strand re-prompt REMEDY TEXT in the same script and the same test file. Both are declared as dependencies so batch admission orders rather than parallelizes them. #551, #501 and #472 also declare this script; no edge is asserted for those, the overlap is recorded so admission can order it.
+
+
+
+RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-layer-cluster-ordering.md): Ruling: NEEDS EDGE (scope unchanged; this block records one re-measured fact and one request). RE-MEASURED: both stall probes in orchestrate-cycle-postflight.sh are git log --since=... -- "$TASK_DIR". In a repository whose specs/ is gitignored no commit ever touches TASK_DIR, so the count is structurally zero and stall_suspected cannot fire there. This is read from the code, not reproduced in a fixture. REQUEST: key the chosen attribution on the commit message's task/phase marker, not on TASK_DIR paths. That closes the blind spot, and it lets the branch feature's per-task commit attribution (branch_aware_orchestration_and_squash_landing, 655) reuse the same mechanism. ORDERING: cycle_postflight_containment_parity (501) now depends on this task, by shared territory in orchestrate-cycle-postflight.sh.
 
 ---
 
@@ -5842,6 +5853,9 @@ repository before being written.
 PARENT: source-repository parent #775 did not migrate; recorded as provenance rather than
 as a number resolving to an unrelated record here.
 
+
+RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-layer-cluster-ordering.md): Ruling: NEEDS REVISION. Part (1) of this description predates scripts/commit-source-store-path.sh, which already commits a source-store path in its own repository and is called from git-commit-phase.sh at phase closure. A --repo-root option on git-commit-scoped.sh is therefore not the default candidate. OPEN REMAINDER OF PART (1): the foreign-hunk case (the helper stages a whole file, so a co-located foreign edit rides along) and any commit made outside phase closure. Decide both only after scoped_commit_staged_vs_worktree_divergence (524) has ruled on sub-file staging; this task now depends on it. Part (2), the registration-description review, is unchanged. RULING ON THE BRANCH FEATURE: source-store commit scoping is not a prerequisite for branch-aware orchestration. The branch a commit lands on is fixed by HEAD in the repository where git commit runs, and this task changes neither. git_commit_scoped_gate_refusal_diagnostic (553) now depends on this task.
+
 ---
 
 ### 535. Carve a task's own specs/ artifacts out of git-commit-phase.sh's containment filter
@@ -6027,6 +6041,8 @@ is adopted. Adopt (a) and add the edge.
 FILE SCOPE EXTENDED by this transplant with `context/standards/orchestrator-runtime-files.md` and
 `scripts/lib/runtime-file-patterns.sh`, admitted as permissible territory for the class-membership
 question above -- not as a mandate to edit either.
+
+RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-layer-cluster-ordering.md): Ruling: NEEDS REVISION. The code defect this description opens with is closed in the source store. scripts/git-commit-phase.sh's Containment Self-Check admits the committing task's own task directory (the file_scope_arr+=("${task_dir}/") line), and scripts/tests/test-git-commit-phase.sh Cases 15 and 16 pin the admission and the paired genuine-excursion drop. Route (a) is therefore done and must not be re-implemented. REMAINING WORK: (i) correct the sentence in context/standards/git-staging-scope.md's Staging-Layer Containment Filter subsection that says the carve-out paths are "structurally outside its reach", which is false as written; (ii) add fixtures for dotfiles at the task-directory root (.return-meta.json, .orchestrator-handoff.json) and an assertion that the completeness check runs in the single-plan-file case, if Cases 15 and 16 do not already cover them. Transplanted criterion (c), a single source of truth for runtime-class membership, is moot: the landed carve-out is path-shaped, not class-shaped. ORDERING: this task now depends on port_containment_strip_to_git_commit_scoped (567), by shared territory in test-git-commit-phase.sh.
 
 ---
 
@@ -7051,6 +7067,8 @@ Raised by /orchestrate's conclusion stage, channel (b) agent-system changes, use
 orchestrate-lead level for session `sess_1793989212_34b9e4` while orchestrating the originating
 task in the consumer repository. Originating entry cited verbatim above; it records
 `suggested_channel: null`, so the channel classification is the conclusion stage's own.
+
+RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-layer-cluster-ordering.md): Ruling: NEEDS REVISION. The check covers commit BRANCH TARGET in the same pass as commit existence; there is one detector, not two. (1) It takes an expected-ref parameter, default HEAD, and reports "commit exists but is not on the expected ref" as a finding class distinct from "no commit". A commit visible under --all but not reachable from the expected ref is the wrong-branch finding. (2) It runs before any squash landing, or reads the pre-squash ref: after a squash, per-phase commits are absent from the integration branch by design. (3) Matching is on the commit subject only. This description's own repro uses git log --grep, which also searches bodies, and a squash commit that lists phases in its body would match falsely. (4) A phase whose only changes were gitignored specs/ paths has no commit by design (git-commit-scoped.sh exit 8) and must not be counted as a missing commit. Item (4) is read from the code and rules/git-workflow.md, not reproduced in a fixture. ORDERING: branch_aware_orchestration_and_squash_landing (655) now depends on this task and passes the resolved work branch as the expected ref.
 
 ---
 
