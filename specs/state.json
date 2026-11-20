@@ -1,7 +1,132 @@
 {
   "version": "1.1.0",
-  "next_project_number": 666,
+  "next_project_number": 667,
   "active_projects": [
+    {
+      "project_number": 666,
+      "project_name": "re_site_branch_aware_batch_after_prerequisites",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Re-site the branch-aware orchestration batch in the authored roadmap so it no longer precedes its own prerequisites\n\nThe authored milestone batch that proposes the branch-aware orchestration and squash-landing work is sited at a position that runs BEFORE every batch holding its prerequisites. Its rendered dispatch command is therefore undispatchable from its authored position, and an operator who runs it as printed gets an admission refusal rather than work.\n\nTHE EDIT TARGET IS THE AUTHORED BATCH ENTRY in specs/state.json's roadmap_milestones[].batches[] -- not the roadmap generator, and not the rendered specs/ROADMAP.md, which is a generated artifact that correctly renders whatever the entry says. The generator is working as designed; the authored data is stale. Do not change generator code to paper over an authoring defect.\n\n=== MEASURED EVIDENCE -- RE-DERIVABLE, DO NOT RE-DERIVE FROM SCRATCH ===\n\nM1. THE ORDERING INVERSION. Under the active milestone, the branch-aware orchestration batch sits at batch position 3 with a single member and the --hard flag. That member declares five dependencies. Two are already terminal and need no ordering. The remaining three are each an authored member of a LATER batch under the same milestone:\n\n  - the commit-containment batch, at position 10, holds one of them\n  - the generated-surfaces-and-store-leak batch, at position 16, holds another\n  - the landing-target-contract detectors batch, at position 19, holds the third\n\nSo the batch is authored 7, 13 and 16 positions ahead of its own three prerequisites. The earliest position from which its command could dispatch is after the latest of those three.\n\nM2. WHAT THE RENDERED FILE SHOWS. The generated roadmap renders the batch's command line from the entry's task_ids and flags, then renders one row per member carrying that member's live blocker list. The result is a printed command naming one task, immediately followed by a row stating that same task is blocked on three others. The two lines contradict each other as operator instructions: the command says \"run this\", the row says \"this cannot run\". Contrast the batch at position 4 under the same milestone, which lists all six of its members including a blocked one, so running its printed command advances the batch even though one member defers.\n\nM3. THE ENTRY'S OWN RATIONALE ALREADY PREDICTED THIS, AND NAMED THE RESOLUTION. The authored rationale states that the member's \"true prerequisite set is not knowable yet\", that a pending ruling was being asked whether certain work constitutes hard prerequisites, and that if it ruled yes the member \"acquires predecessors that currently sit in the commit-containment and dispatch-composition batches further down, and it cannot land in the run its position here implies.\" It then states the resolution principle verbatim: \"That is an ordering constraint for the ruling to discover, never grounds for moving this record out of the strand -- an unmet predecessor orders work, it does not disqualify it from a batch.\" The ruling has since landed and did add the dependency edges. The predicted ordering constraint was never applied to the entry.\n\nM4. WHY THE OBVIOUS FIX IS WRONG. Widening the batch's task_ids to absorb its three prerequisites would place each of those three in two batches at once, under the same milestone. Milestone membership comes only from sitting in a batch and a batch is a dispatch proposal, so double membership would double-propose the same work and corrupt the per-milestone batch-done and task-done fractions the milestone summary table renders. Each prerequisite also sits in its current batch for a stated topical reason. Absorption is therefore not the fix.\n\n=== WHAT TO DECIDE AND APPLY ===\n\nThis is a roadmap-authoring judgment call over batch position and membership, which is roadmap-agent's declared remit. Rule between at least these, and state the reasoning in the entry's rationale:\n\nA. RE-SITE THE BATCH LATER: move it to a position after the last batch holding one of its prerequisites. Cheapest change, preserves every existing batch's membership and the standalone-dispatch intent the rationale argues for at length. Costs: the batch moves a long way down the authored order, and the milestone's narrative ordering may no longer read as intended.\n\nB. PULL THE PREREQUISITES FORWARD: lift the three prerequisite tasks out of their current batches into a new batch sited immediately before the branch-aware batch. Preserves the branch-aware work's early position. Costs: breaks up three topically-authored batches, and each prerequisite may itself carry predecessors that would need the same treatment -- check before choosing this.\n\nC. SPLIT THE DIFFERENCE: re-site the branch-aware batch only as late as strictly necessary, after establishing which of the three prerequisites genuinely gates which element of the member's own scope. The member's description distinguishes elements that survive the landed topology ruling from elements that ruling superseded, so the real gating set may be smaller than the declared dependency array.\n\nWhichever is chosen, the outcome must satisfy: the batch's rendered command is dispatchable from its authored position at the time an operator reaches it, no task is a member of two batches under one milestone, and no existing batch loses a member without that member being re-homed.\n\n=== CONSTRAINTS ===\n\n- Edit the authored entry only, through the sanctioned state writer. Never hand-edit specs/ROADMAP.md, which is regenerated from this data and whose first line declares it generated.\n- Do not add a dependency edge to express the ordering. The dependency edges already exist and are correct; this record is about the authored batch POSITION disagreeing with them, not about a missing edge.\n- Do not weaken or re-open the standalone-dispatch intent the entry's rationale argues for, unless option B is chosen on its own merits and the rationale is updated to say so.\n- Preserve the entry's --hard flag and its description text unless the chosen option requires changing them.\n- The same inversion may exist for other batches under the same milestone. Sweep for it rather than fixing only this one instance, and report what the sweep found.\n\n=== VERIFICATION ===\n\nThe authored batch's rendered command, read from its position in the generated roadmap, names a set an operator can actually dispatch. No task appears in two batches under one milestone. Every batch that lost a member has that member re-homed. The milestone summary table's batch-done and task-done fractions still reconcile against the authored membership. A regenerate produces the corrected file and a second regenerate is byte-identical.",
+      "topic": "orchestrator",
+      "created": "2026-11-20T18:57:33Z",
+      "last_updated": "2026-11-20T18:57:33Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "re_site_branch_aware_batch_after_prerequisites",
+          "project_number": null,
+          "title": "Re-site the branch-aware orchestration batch in the authored roadmap so it no longer precedes its own prerequisites"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 14,
+          "duplicate-of-open": 12,
+          "scope-blind": 43
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49834983498349833
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40924092409240925
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43234323432343236
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40594059405940597
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45874587458745875
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40924092409240925
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.504950495049505
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4158415841584158
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44554455445544555
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 561,
+            "project_name": "bounded_waiter_load_sizing_and_output_capture",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40264026402640263
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 655,
+            "project_name": "branch_aware_orchestration_and_squash_landing",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4158415841584158
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 665,
+            "project_name": "previous_work_section_in_generated_roadmap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43564356435643564
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 43
+      }
+    },
     {
       "project_number": 663,
       "project_name": "loader_project_dir_root_resolution",

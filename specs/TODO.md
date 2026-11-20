@@ -1,5 +1,5 @@
 ---
-next_project_number: 666
+next_project_number: 667
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 666
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,492,509,513,518,541,561,566,594 | 439,452,472,479,491,535,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 486,571,581,588,595,641 | 454,484,492,509,518,539,541,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
@@ -113,6 +113,7 @@ next_project_number: 666
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 665 [NOT STARTED] — Record the last dispatching orchestration batch in a...
+666 [NOT STARTED] — Re-site the branch-aware orchestration batch in the authored...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -183,6 +184,60 @@ next_project_number: 666
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 666. Re site branch aware batch after prerequisites
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Re-site the branch-aware orchestration batch in the authored roadmap so it no longer precedes its own prerequisites
+
+The authored milestone batch that proposes the branch-aware orchestration and squash-landing work is sited at a position that runs BEFORE every batch holding its prerequisites. Its rendered dispatch command is therefore undispatchable from its authored position, and an operator who runs it as printed gets an admission refusal rather than work.
+
+THE EDIT TARGET IS THE AUTHORED BATCH ENTRY in specs/state.json's roadmap_milestones[].batches[] -- not the roadmap generator, and not the rendered specs/ROADMAP.md, which is a generated artifact that correctly renders whatever the entry says. The generator is working as designed; the authored data is stale. Do not change generator code to paper over an authoring defect.
+
+=== MEASURED EVIDENCE -- RE-DERIVABLE, DO NOT RE-DERIVE FROM SCRATCH ===
+
+M1. THE ORDERING INVERSION. Under the active milestone, the branch-aware orchestration batch sits at batch position 3 with a single member and the --hard flag. That member declares five dependencies. Two are already terminal and need no ordering. The remaining three are each an authored member of a LATER batch under the same milestone:
+
+  - the commit-containment batch, at position 10, holds one of them
+  - the generated-surfaces-and-store-leak batch, at position 16, holds another
+  - the landing-target-contract detectors batch, at position 19, holds the third
+
+So the batch is authored 7, 13 and 16 positions ahead of its own three prerequisites. The earliest position from which its command could dispatch is after the latest of those three.
+
+M2. WHAT THE RENDERED FILE SHOWS. The generated roadmap renders the batch's command line from the entry's task_ids and flags, then renders one row per member carrying that member's live blocker list. The result is a printed command naming one task, immediately followed by a row stating that same task is blocked on three others. The two lines contradict each other as operator instructions: the command says "run this", the row says "this cannot run". Contrast the batch at position 4 under the same milestone, which lists all six of its members including a blocked one, so running its printed command advances the batch even though one member defers.
+
+M3. THE ENTRY'S OWN RATIONALE ALREADY PREDICTED THIS, AND NAMED THE RESOLUTION. The authored rationale states that the member's "true prerequisite set is not knowable yet", that a pending ruling was being asked whether certain work constitutes hard prerequisites, and that if it ruled yes the member "acquires predecessors that currently sit in the commit-containment and dispatch-composition batches further down, and it cannot land in the run its position here implies." It then states the resolution principle verbatim: "That is an ordering constraint for the ruling to discover, never grounds for moving this record out of the strand -- an unmet predecessor orders work, it does not disqualify it from a batch." The ruling has since landed and did add the dependency edges. The predicted ordering constraint was never applied to the entry.
+
+M4. WHY THE OBVIOUS FIX IS WRONG. Widening the batch's task_ids to absorb its three prerequisites would place each of those three in two batches at once, under the same milestone. Milestone membership comes only from sitting in a batch and a batch is a dispatch proposal, so double membership would double-propose the same work and corrupt the per-milestone batch-done and task-done fractions the milestone summary table renders. Each prerequisite also sits in its current batch for a stated topical reason. Absorption is therefore not the fix.
+
+=== WHAT TO DECIDE AND APPLY ===
+
+This is a roadmap-authoring judgment call over batch position and membership, which is roadmap-agent's declared remit. Rule between at least these, and state the reasoning in the entry's rationale:
+
+A. RE-SITE THE BATCH LATER: move it to a position after the last batch holding one of its prerequisites. Cheapest change, preserves every existing batch's membership and the standalone-dispatch intent the rationale argues for at length. Costs: the batch moves a long way down the authored order, and the milestone's narrative ordering may no longer read as intended.
+
+B. PULL THE PREREQUISITES FORWARD: lift the three prerequisite tasks out of their current batches into a new batch sited immediately before the branch-aware batch. Preserves the branch-aware work's early position. Costs: breaks up three topically-authored batches, and each prerequisite may itself carry predecessors that would need the same treatment -- check before choosing this.
+
+C. SPLIT THE DIFFERENCE: re-site the branch-aware batch only as late as strictly necessary, after establishing which of the three prerequisites genuinely gates which element of the member's own scope. The member's description distinguishes elements that survive the landed topology ruling from elements that ruling superseded, so the real gating set may be smaller than the declared dependency array.
+
+Whichever is chosen, the outcome must satisfy: the batch's rendered command is dispatchable from its authored position at the time an operator reaches it, no task is a member of two batches under one milestone, and no existing batch loses a member without that member being re-homed.
+
+=== CONSTRAINTS ===
+
+- Edit the authored entry only, through the sanctioned state writer. Never hand-edit specs/ROADMAP.md, which is regenerated from this data and whose first line declares it generated.
+- Do not add a dependency edge to express the ordering. The dependency edges already exist and are correct; this record is about the authored batch POSITION disagreeing with them, not about a missing edge.
+- Do not weaken or re-open the standalone-dispatch intent the entry's rationale argues for, unless option B is chosen on its own merits and the rationale is updated to say so.
+- Preserve the entry's --hard flag and its description text unless the chosen option requires changing them.
+- The same inversion may exist for other batches under the same milestone. Sweep for it rather than fixing only this one instance, and report what the sweep found.
+
+=== VERIFICATION ===
+
+The authored batch's rendered command, read from its position in the generated roadmap, names a set an operator can actually dispatch. No task appears in two batches under one milestone. Every batch that lost a member has that member re-homed. The milestone summary table's batch-done and task-done fractions still reconcile against the authored membership. A regenerate produces the corrected file and a second regenerate is byte-identical.
+
+---
 
 ### 665. Record the last dispatching orchestration batch in a displaced Previous work section of the generated roadmap
 - **Status**: [NOT STARTED]
