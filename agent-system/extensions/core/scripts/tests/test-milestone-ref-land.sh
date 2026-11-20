@@ -164,8 +164,8 @@ after_head="$(git -C "$core_repo" rev-parse HEAD)"
 after_branch="$(git -C "$core_repo" rev-parse --abbrev-ref HEAD)"
 after_status="$(git -C "$core_repo" status --porcelain)"
 ref_count="$(git -C "$core_repo" rev-list --count refs/heads/milestone/M1 2>/dev/null || echo 0)"
-ref_tree="$(git -C "$core_repo" rev-parse refs/heads/milestone/M1^{tree})"
-head_tree="$(git -C "$core_repo" rev-parse HEAD^{tree})"
+ref_tree="$(git -C "$core_repo" rev-parse refs/heads/milestone/M1^'{tree}')"
+head_tree="$(git -C "$core_repo" rev-parse HEAD^'{tree}')"
 ref_parent="$(git -C "$core_repo" rev-parse refs/heads/milestone/M1^1)"
 main_tip="$(git -C "$core_repo" rev-parse main)"
 rm -rf "$core_repo"
@@ -216,8 +216,8 @@ first_tip="$(git -C "$chain_repo" rev-parse refs/heads/milestone/M1)"
 # sharing the milestone, then advancing HEAD on main with a new commit before landing again.
 jq --argjson n "$((FIXTURE_NUM + 1))" \
   '.active_projects += [{"project_number": $n, "project_name": "fixture2", "title": "Second fixture task", "status": "implementing", "task_type": "meta", "file_scope": []}] | .roadmap_milestones[0].batches[0].task_ids += [$n]' \
-  "$chain_repo/specs/state.json" > "$chain_repo/specs/state.json.tmp"
-mv "$chain_repo/specs/state.json.tmp" "$chain_repo/specs/state.json"
+  "$chain_repo/specs/state.json" > "$chain_repo/specs/state.json.new"
+mv "$chain_repo/specs/state.json.new" "$chain_repo/specs/state.json"
 git -C "$chain_repo" add -A >/dev/null 2>&1
 git -C "$chain_repo" commit -q -m "second task phase" >/dev/null 2>&1
 run_land "$chain_repo" "$((FIXTURE_NUM + 1))" "$SESSION_ID"

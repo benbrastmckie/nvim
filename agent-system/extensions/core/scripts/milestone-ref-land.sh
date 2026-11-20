@@ -131,7 +131,7 @@ else
   commit_message="$commit_subject"
 fi
 
-tree="$(git rev-parse HEAD^{tree})"
+tree="$(git rev-parse HEAD^'{tree}')"
 
 # --- Serialize the compare-and-swap retry under the existing commit mutex, never a new lock ---
 commit_token=""
