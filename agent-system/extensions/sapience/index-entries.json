@@ -40,7 +40,7 @@
       "topics": ["sapience", "per-repo-scoping", "provenance", "ingest-kos", "mcp-registration"],
       "keywords": ["provenance", "source=", "repo tag", "sapience-retrieve.sh", "sapience-remember.sh", "explicit", "gated", "set_aside", "setup-sapience-mcp.sh", "SessionStart", "primary-session hook"],
       "summary": "The provenance repo-tag scoping mechanism, the per-project MCP-registration triad (writer, bidirectional hook, installer, verifier) and its stable-user-level-path invariant, and the no-delete-API / unreviewed-write / four-population / registration-durability / primary-session-hook-has-no-scoping hazards",
-      "line_count": 377,
+      "line_count": 410,
       "load_when": {},
       "on_demand": true
     },
