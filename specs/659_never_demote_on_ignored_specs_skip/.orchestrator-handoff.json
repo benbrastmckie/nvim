@@ -1,15 +1,20 @@
 {
-  "status": "planned",
-  "dispatch_seq": 9,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 11,
+  "phases_completed": 7,
   "phases_total": 7,
-  "summary": "Wrote a 7-phase implementation plan for task 659. Re-measurement at plan time found the dispatch's headline demotion premise already closed by task 658 (the 8|9 NOTE arm and the 2|3|4|5-only demotion gate both exist live), so the plan is scoped onto the genuinely open work: the two skip-recording channels (deduped issue-record.sh at the postflight arm, events-append.sh from git-commit-scoped.sh when --task is absent), an adjacent misleading commit-failure wording on the redeploy-checkpoint completion path, the dispatch's required negative-control test pair in two existing suites, and a durable per-reader stated-answer register plus the in-place correction of git-staging-scope.md's contradicting sentence. Three of the six originally-named history readers were re-confirmed to issue no git read at all, and two of the remaining three already degrade correctly, so their answers are stated rather than coded.",
+  "summary": "Implemented both V13 skip-recording channels (deduped issue-record.sh where a task context exists, events-append.sh --category deviation where none does), corrected the redeploy-checkpoint promotion commit's misleading commit-failure wording for exit 8/9, added the dispatch's required negative-control test pair (cases 987/987b/988/989 and AA8/AA9/AA10) against authentic ignored-specs fixtures, and wrote context/standards/absent-specs-git-history.md giving every named git-history reader a stated answer. Deployed via deploy-headless.sh. Phase 7 closed COMPLETED WITH EXCLUSIONS over one confirmed pre-existing, out-of-scope lint finding (gate27 against scripts/tests/run-all.sh) unrelated to this task's file_scope.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/659_never_demote_on_ignored_specs_skip/summaries/01_never-demote-ignored-specs-skip-summary.md",
+      "summary": "Full implementation summary: what changed, decisions, deviations, verification results, and follow-ups."
+    },
+    {
       "type": "plan",
       "path": "specs/659_never_demote_on_ignored_specs_skip/plans/01_never-demote-ignored-specs-skip.md",
-      "summary": "7-phase plan: two V13 skip-recording channels, a wording fix on the completion path, the negative-control test pair, and the absent-specs-history stated-answer register."
+      "summary": "7-phase plan, all phases closed (6 COMPLETED, 1 COMPLETED WITH EXCLUSIONS)."
     }
   ]
 }
