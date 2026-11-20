@@ -441,44 +441,44 @@ Confirm with `jq '.next_project_number' specs/state.json` before and after.
 
 ---
 
-### Phase 4: Revise the superseded records and write the dependency edges [NOT STARTED]
+### Phase 4: Revise the superseded records and write the dependency edges [COMPLETED]
 
 **Goal**: 655 and 666 state their real remaining scope, and the dependency graph orders the
 successors.
 
 **Tasks**:
-- [ ] Re-read 655's description from `specs/state.json` and identify its Element F
+- [x] Re-read 655's description from `specs/state.json` and identify its Element F
       (generated-file declaration). Rewrite the description with `state-write.sh` (jq filter,
       `--arg`, `--regen-todo`) so Element F is its whole remaining scope, with one paragraph
       stating that its topology elements are superseded by the amending record and naming the
       successor that owns each. Remove the stacked override blocks; do not append a fourth.
       If Element F cannot be identified in the description, do not guess: leave the description
-      as it is, add the supersession paragraph only, and report this in the summary.
+      as it is, add the supersession paragraph only, and report this in the summary. *(completed: the generated-file element was identifiable; title changed to match)*
 - [ ] Narrow 655's `file_scope` to the files Element F touches, only if the description makes
-      them identifiable. Otherwise leave it and record why.
-- [ ] Leave 655's existing dependency edges in place. Record in the amending record's Edges
-      section that they are retained and which of them the narrowed scope no longer needs.
-- [ ] Settle 666: compare the authored batch positions in `specs/state.json`'s
+      them identifiable. Otherwise leave it and record why. *(deviation: skipped — the generated-file element does not fix which files it touches, so file_scope was left as it was and the description directs re-declaring it at plan time)*
+- [x] Leave 655's existing dependency edges in place. Record in the amending record's Edges
+      section that they are retained and which of them the narrowed scope no longer needs. *(completed)*
+- [x] Settle 666: compare the authored batch positions in `specs/state.json`'s
       `roadmap_milestones[].batches[]` against the outcome its description requires (the batch
       holding 655 sits after the last batch holding one of 655's prerequisites; no task in two
       batches; no batch lost a member). Write the finding into 666's description with
       `state-write.sh`: either "already applied by commit `7231ccbe2`, recommended for
       abandonment" with the evidence, or the precise remainder. Do not abandon it; abandonment
-      is the user's `/task --abandon`, named in the summary as a follow-up.
-- [ ] Before writing any edge, re-check the carried claim that 536 and 567 precede the commit
+      is the user's `/task --abandon`, named in the summary as a follow-up. *(completed: named instance applied by 7231ccbe2; the sweep finds one remaining inversion, 486 before 541; not abandoned)*
+- [x] Before writing any edge, re-check the carried claim that 536 and 567 precede the commit
       scripts' work through 553: read the `dependencies` arrays of 553, 536 and 567. At plan
       time 553 lists `[536, 548]` and 567 lists none, so 567 is NOT shown to be transitive
-      through 553. If that still holds, add 567 as a direct predecessor of successor 3.
-- [ ] Write the edges with
+      through 553. If that still holds, add 567 as a direct predecessor of successor 3. *(deviation: altered — the carried claim was re-checked by computing the transitive closure of 553 and is CONFIRMED for both 536 and 567; the plan-time reading of the empty array on 567 was the wrong direction, so the conditional direct edge to 567 was not added)*
+- [x] Write the edges with
       `bash .claude/scripts/update-task-status.sh preflight <N> edge_only "$session_id" --depends-on-add='[...]'`
       and let its cycle refusal run. Planned edges, by successor number from Phase 3's list:
       1 on 667; 2 on 667, 517 and 1; 3 on 2, 513 and 553 (and 567 per the check above); 4 on 2
       and 1; 5 on 3; 6 on 3 and 4; 7 on 6; 8 on 5, 6 and 7. If a write is refused, record the
-      refusal and its reason in the Edges section instead of forcing it.
-- [ ] Fill the amending record's Edges section with the `dependencies` arrays as written,
-      quoted from `specs/state.json`, and the edges deliberately not written with reasons.
-- [ ] Regenerate `specs/TODO.md` if any write omitted `--regen-todo`, and regenerate
-      `specs/ROADMAP.md` if its rendering changed.
+      refusal and its reason in the Edges section instead of forcing it. *(completed: all eight writes accepted, none refused; 567 omitted per the check above)*
+- [x] Fill the amending record's Edges section with the `dependencies` arrays as written,
+      quoted from `specs/state.json`, and the edges deliberately not written with reasons. *(completed)*
+- [x] Regenerate `specs/TODO.md` if any write omitted `--regen-todo`, and regenerate
+      `specs/ROADMAP.md` if its rendering changed. *(completed)*
 
 **Timing**: 1.5 hours
 

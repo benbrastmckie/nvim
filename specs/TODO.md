@@ -13,15 +13,18 @@ next_project_number: 677
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,667,668,669,670,671,672,673,674,675,676 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,473,480,492,509,513,518,541,561,566,594 | 439,452,472,479,491,535,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
-| 4 | 486,571,581,588,595,641 | 454,484,492,509,518,539,541,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,667,676 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630,668 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629,667 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,473,480,492,509,513,518,541,561,566,594,669 | 439,452,472,479,491,517,535,552,593,668 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 4 | 486,571,581,588,595,641,671 | 454,484,492,509,518,539,541,561,580,594,669 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 501,508,596,642 | 472,486,570,595,641 | file-scope-lifecycle, agent-system |
 | 6 | 524 | 501 | core-agent-system |
 | 7 | 536 | 524 | agent-system |
 | 8 | 553 | 536,548 | agent-system |
-| 9 | 655 | 513,517,553 | orchestrator |
+| 9 | 655,670 | 513,517,553,669 | orchestrator |
+| 10 | 672,673 | 670,671 | orchestrator |
+| 11 | 674 | 673 | orchestrator |
+| 12 | 675 | 672,674 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -115,18 +118,21 @@ next_project_number: 677
 665 [NOT STARTED] — Record the last dispatching orchestration batch in a...
 666 [NOT STARTED] — Re-site the branch-aware orchestration batch in the authored...
 667 [IMPLEMENTING] — Amend branch-topology rulings R1-R3 and R5: per-batch...
-668 [NOT STARTED] — Measure Claude Code harness behaviour for a worktree outside...
-669 [NOT STARTED] — Add integration-branch admission, the isolation declaration,...
-670 [NOT STARTED] — Build the two-root contract in the dispatch composer and the...
-671 [NOT STARTED] — Make the write-time and git-guard hooks two-root aware
-672 [NOT STARTED] — Classify every remaining project-root consumer as code-root,...
-673 [NOT STARTED] — Land one attribution-built squash commit per completed task...
-674 [NOT STARTED] — Build batch worktree cleanup, retention on partial batches,...
-675 [NOT STARTED] — Rewrite the branch-strategy documentation to state the...
+  └─ 668 [NOT STARTED] — Measure Claude Code harness behaviour for a worktree outside...
+    └─ 669 [NOT STARTED] — Add integration-branch admission, the isolation declaration,...
+      └─ 670 [NOT STARTED] — Build the two-root contract in the dispatch composer and the...
+        └─ 672 [NOT STARTED] — Classify every remaining project-root consumer as code-root,...
+          └─ 675 [NOT STARTED] — Rewrite the branch-strategy documentation to state the...
+        └─ 673 [NOT STARTED] — Land one attribution-built squash commit per completed task...
+          └─ 674 [NOT STARTED] — Build batch worktree cleanup, retention on partial batches,...
+            └─ 675 [NOT STARTED] — Rewrite the branch-strategy documentation to state the... (see above)
+      └─ 671 [NOT STARTED] — Make the write-time and git-guard hooks two-root aware
+        └─ 673 [NOT STARTED] — Land one attribution-built squash commit per completed task... (see above)
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
-  └─ 655 [NOT STARTED] — Make orchestration branch-aware with a per-invocation branch...
+  └─ 655 [NOT STARTED] — Declare generated paths so they collapse in review
+  └─ 670 [NOT STARTED] — Build the two-root contract in the dispatch composer and the... (see above)
 
 ### Agent System
 
@@ -212,7 +218,7 @@ next_project_number: 677
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 672, Task 673, Task 674
 
 **Description**: Rewrite the branch-strategy documentation to state the implemented batch-worktree contract
 
@@ -243,7 +249,7 @@ VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION b
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 673
 
 **Description**: Build batch worktree cleanup, retention on partial batches, and orphan reporting in /refresh
 
@@ -273,7 +279,7 @@ VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION b
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 670, Task 671
 
 **Description**: Land one attribution-built squash commit per completed task and verify it before the status write
 
@@ -304,7 +310,7 @@ VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION b
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 670
 
 **Description**: Classify every remaining project-root consumer as code-root, state-root or both
 
@@ -334,7 +340,7 @@ VERIFICATION CRITERIA THIS TASK OWNS: none of the originating task's running-beh
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 668, Task 669
 
 **Description**: Make the write-time and git-guard hooks two-root aware
 
@@ -361,7 +367,7 @@ VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION b
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 513, Task 553, Task 669
 
 **Description**: Build the two-root contract in the dispatch composer and the commit scripts
 
@@ -391,7 +397,7 @@ VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION b
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 517, Task 667, Task 668
 
 **Description**: Add integration-branch admission, the isolation declaration, and idempotent batch worktree setup
 
@@ -421,7 +427,7 @@ VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION b
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 667
 
 **Description**: Measure Claude Code harness behaviour for a worktree outside the project directory
 

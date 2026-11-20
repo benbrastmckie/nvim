@@ -137,7 +137,11 @@
       "created": "2026-11-20T20:30:54Z",
       "last_updated": "2026-11-20T20:30:54Z",
       "session_id": "sess_1795203458_188c22",
-      "dependencies": [],
+      "dependencies": [
+        672,
+        673,
+        674
+      ],
       "file_scope": [
         "agent-system/extensions/core/context/standards/git-workflow-narrative.md",
         "agent-system/extensions/core/context/patterns/ref-plumbing-landing.md",
@@ -382,7 +386,9 @@
       "created": "2026-11-20T20:28:52Z",
       "last_updated": "2026-11-20T20:28:52Z",
       "session_id": "sess_1795203458_188c22",
-      "dependencies": [],
+      "dependencies": [
+        673
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/batch-worktree.sh",
         "agent-system/extensions/core/scripts/tests/test-batch-worktree.sh",
@@ -627,7 +633,10 @@
       "created": "2026-11-20T20:26:53Z",
       "last_updated": "2026-11-20T20:26:53Z",
       "session_id": "sess_1795203458_188c22",
-      "dependencies": [],
+      "dependencies": [
+        670,
+        671
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
@@ -891,7 +900,9 @@
       "created": "2026-11-20T20:24:49Z",
       "last_updated": "2026-11-20T20:24:49Z",
       "session_id": "sess_1795203458_188c22",
-      "dependencies": [],
+      "dependencies": [
+        670
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/lib/common.sh",
         "agent-system/extensions/core/scripts/deploy-root-guard.sh",
@@ -1136,7 +1147,10 @@
       "created": "2026-11-20T20:22:53Z",
       "last_updated": "2026-11-20T20:22:53Z",
       "session_id": "sess_1795203458_188c22",
-      "dependencies": [],
+      "dependencies": [
+        668,
+        669
+      ],
       "file_scope": [
         "agent-system/extensions/core/hooks/guard-destructive-git.sh",
         "agent-system/extensions/core/hooks/validate-no-task-references.sh",
@@ -1379,7 +1393,11 @@
       "created": "2026-11-20T20:21:01Z",
       "last_updated": "2026-11-20T20:21:01Z",
       "session_id": "sess_1795203458_188c22",
-      "dependencies": [],
+      "dependencies": [
+        513,
+        553,
+        669
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
         "agent-system/extensions/core/scripts/git-commit-scoped.sh",
@@ -1658,7 +1676,11 @@
       "created": "2026-11-20T20:19:06Z",
       "last_updated": "2026-11-20T20:19:06Z",
       "session_id": "sess_1795203458_188c22",
-      "dependencies": [],
+      "dependencies": [
+        517,
+        667,
+        668
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",

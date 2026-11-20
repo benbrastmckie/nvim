@@ -544,7 +544,68 @@ successor's description traces back to a row above.
 
 ## Edges
 
-Phase 4 of the implementing plan fills this section.
+Written with `update-task-status.sh preflight <N> edge_only <session> --depends-on-add='[...]'`,
+which ran the write-time cycle refusal. None was refused. The arrays below are quoted from
+`specs/state.json` after the writes.
+
+| Task | `dependencies` as written | Why |
+|---|---|---|
+| 668 `measure_harness_behaviour_for_external_worktree` | `[667]` | Measures the siting this record rules |
+| 669 `integration_branch_admission_and_batch_worktree` | `[517, 667, 668]` | 517 (`stage_regenerated_derived_files_in_phase_commits`) shares `repo-level-declarations.md`, the edge the topology record's R4 put on 655 for the same schema row; 668 because the worktree is not created until its siting is measured |
+| 670 `two_root_contract_dispatch_and_commit_scripts` | `[513, 553, 669]` | 513 semantic: it supplies the expected-ref parameter this task makes per tree. 553 is the tail of the commit-layer chain on `git-commit-scoped.sh`. 669 supplies the batch record the refusal is keyed on |
+| 671 `two_root_contract_in_hooks` | `[668, 669]` | Needs the measured hook working directory and payload path, and the batch record |
+| 672 `two_root_classification_of_remaining_consumers` | `[670]` | Classifies against the contract 670 fixes |
+| 673 `per_task_attribution_squash_landing` | `[670, 671]` | Lands only once no script and no hook can commit or destroy from the wrong root |
+| 674 `batch_worktree_cleanup_retention_orphan_report` | `[673]` | Cleanup is conditional on the landing proofs 673 records |
+| 675 `branch_topology_documentation_parity` | `[672, 673, 674]` | Documents what was built, after it is built |
+
+To check an edge: `jq '.active_projects[]|select(.project_number==N)|.dependencies' specs/state.json`.
+
+**536 and 567: semantic predecessors, reached through 553, with no direct edge.** The R6
+consequence makes source-store commit scoping (536) and the third containment site (567)
+semantic predecessors of 670. Both are already in 553's transitive closure, re-computed from
+the live `dependencies` arrays before any edge was written: 553 lists `[536, 548]`, and 567 is
+reached through `536 -> 524 -> 501 -> 486 -> 541 -> 535 -> 567`. So 670's edge on 553 orders it
+behind both. The implementing plan read 567's own empty `dependencies` array as showing 567 was
+not transitive through 553; that was the wrong array to read (it lists what 567 waits on, not
+what waits on 567), and the research report's claim that both precede the commit-script work
+through 553 is confirmed. No direct edge was written, because the sanctioned writer cannot
+remove one. **This ordering now carries a semantic dependency through a chain written for file
+territory.** Anyone who reverses a link in that chain, by the `state-write.sh` recipe
+`commit-layer-cluster-ordering.md` documents, must first add 536 and 567 to 670 directly.
+
+**Deliberately not written.**
+
+- 674 against `refresh_tmp_sweep_pass` (664). They share the three `/refresh` files and neither
+  needs the other's result. That is territory for admission to order, stated in 674's
+  description.
+- 670 directly on 668. Reached through 669.
+- Any edge onto 655. Its remaining scope is unrelated to topology.
+
+**655, `branch_aware_orchestration_and_squash_landing`, revised.** Its description is rewritten
+to its generated-file declaration, its one element unrelated to topology, with a paragraph
+naming the task that now owns each superseded element. The three stacked override blocks are
+removed. Its title is changed to match; its slug cannot change. Its `dependencies` stay
+`[513, 517, 553, 654, 657]`, left in place because the sanctioned writer cannot remove an edge.
+Of these, 654 and 657 are completed; 513 and 553 served the commit-script and expected-ref work
+that has moved to 670, and the narrowed scope no longer needs them; 517 may still matter if the
+declaration is documented in `repo-level-declarations.md`. Its `file_scope` still lists the
+seven files of the superseded scope, because the generated-file element does not fix which
+files it touches; the description says so and directs that it be re-declared at plan time.
+Until then 655 over-claims territory on the commit scripts.
+
+**666, `re_site_branch_aware_batch_after_prerequisites`, settled by evidence and not
+abandoned.** Commit `7231ccbe2` moved 655's batch from position 3 to position 19, after its
+three non-terminal prerequisites at 9, 15 and 18; no task sits in two batches; the full member
+list is identical before and after (127 entries). The named instance is applied. Its sweep
+requirement is not: one inversion remains, `manifest_registration_dropped_from_phase_commit`
+(486) in the batch at position 8 depending on `snapshot_artifacts_contaminate_phase_commits`
+(541) in the batch at position 9. The finding is written at the top of 666's description with a
+recommended disposition. Abandonment is the user's.
+
+**Roadmap.** None of 668 to 675 is sited in a batch, and 655's batch keeps a `--hard` flag and a
+rationale authored for its superseded scope. Both are for a `/roadmap` pass; this record writes
+no roadmap entry.
 
 ## Verification criteria of the task description
 

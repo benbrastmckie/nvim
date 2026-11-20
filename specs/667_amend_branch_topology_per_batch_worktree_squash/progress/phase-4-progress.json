@@ -1,0 +1,26 @@
+{
+  "phase": 4,
+  "phase_name": "Revise the superseded records and write the dependency edges",
+  "started_at": "2026-11-20T21:50:00Z",
+  "last_updated": "2026-11-20T22:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite 655 to its generated-file element; write the 666 finding", "status": "done",
+     "files_touched": ["specs/state.json", "specs/TODO.md"]},
+    {"id": 2, "description": "Re-check the 553/536/567 closure and write the eight successors' dependency edges", "status": "done",
+     "files_touched": ["specs/state.json", "specs/TODO.md", "specs/ROADMAP.md"]},
+    {"id": 3, "description": "Fill the amending record's Edges section from the live arrays", "status": "done",
+     "files_touched": ["specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "4.2", "description": "Narrow 655's file_scope to the files Element F touches", "type": "skipped",
+     "reason": "Element F leaves the declaration site as its design question, so no file set is identifiable; file_scope left unchanged and the description directs re-declaring it at plan time.",
+     "annotation": "*(deviation: skipped — the generated-file element does not fix which files it touches, so file_scope was left as it was and the description directs re-declaring it at plan time)*"},
+    {"task_id": "4.5", "description": "Add 567 as a direct predecessor of successor 3 if 567 is not transitive through 553", "type": "altered",
+     "reason": "The transitive closure of 553 contains both 536 and 567 (via 536 -> 524 -> 501 -> 486 -> 541 -> 535 -> 567), so the condition is false and no direct edge was written; the plan had read the empty dependencies array of 567 in the wrong direction.",
+     "annotation": "*(deviation: altered — the carried claim was re-checked by computing the transitive closure of 553 and is CONFIRMED for both 536 and 567; the plan-time reading of the empty array on 567 was the wrong direction, so the conditional direct edge to 567 was not added)*"}
+  ],
+  "verification_notes": "local tier: validate-state.sh passed with warnings, 0 failed. 655 description has no BINDING CONSTRAINT block and names the amending record. 666 description states its disposition with evidence and 666 is still not_started in active_projects. Each successor's dependencies array matches the record's Edges table (668 [667]; 669 [517,667,668]; 670 [513,553,669]; 671 [668,669]; 672 [670]; 673 [670,671]; 674 [673]; 675 [672,673,674]). No edge write was refused. TODO.md and ROADMAP.md regenerated; the roadmap now renders 668-675 as blocked. A sibling dispatch created task 676 during this phase; it appears in the regenerated views and was not touched.",
+  "handoff_count": 0
+}
