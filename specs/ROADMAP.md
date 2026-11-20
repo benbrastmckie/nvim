@@ -111,7 +111,6 @@ Re-derived 2026-11-19 over the 128 open records, and re-verified against `genera
 **The renderer is sound and all three of its callers are wired.** `## Next` and `## Open work` are rendered wholly from `state.json`'s `roadmap_batches` / `roadmap_notes` entries by `roadmap-integration.sh`, which makes no judgment calls. A batch naming only terminal members drops out of the rendering entirely -- its `/orchestrate` line and its `Why this order:` bullet alike -- so retiring one by hand is tidiness, not correctness. What rendering cannot keep current on its own is the authored prose: a batch that loses a member to completion keeps a `description` and a `Why this order:` bullet written against the larger membership, and that is the one thing a maintenance pass must fix by hand. Batch eight was in exactly that state and was rewritten against its three surviving members, the landed one having been its only consumer-repository member and its only sentinel claimant. `/todo` and `/review` reach `--regenerate` behind the shared preflight classifier, and `/orchestrate`'s conclusion stage has its own script, `orchestrate-conclusion-roadmap.sh`, which `skill-orchestrate` names and a dedicated suite covers. **The scope of that renderer is itself the subject of a head-batch record**: the milestone-schema work in batch two extends generation from these two sections to the entire file, nests batches under ordered milestones, and is required to preserve exactly the judgment/rendering split described here rather than collapse it. That record now also carries a siting question it did not have before -- batch one makes `specs/` ignored by default in a fresh repository, and a wholly-generated reviewer-facing dashboard inside an ignored tree is invisible to the reviewer it exists for.
 
 ```
-/orchestrate 661, 658, 659, 660, 662 --hard   # Support a gitignored specs tree: price the durability exposure, then the predicate and demotion fix
 /orchestrate 654, 656, 657 --hard   # Decide before building: the commit-layer order, the milestone schema, then the topology ruling
 /orchestrate 655 --hard   # Build branch-aware orchestration and squash landing once the topology ruling settles its design
 /orchestrate 645, 560, 629, 630, 631, 632   # Make verify-deploy's verdict mean something again: the live reds, one roster row, two gate rulings
@@ -761,7 +760,7 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 
 ## Open work
 
-**Core agent system (42)**
+**Core agent system (37)**
 ```
 439 blocked:431     Rule on the propagation model for the bounded-wait agent contract
 452 blocked:451     Require a verification criterion over a repo-wide gate with standing pre-exis...
@@ -778,9 +777,6 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 581 blocked:438,479,492,580  Extract one shared AskUserQuestion option renderer and adopt it acro...
 588 blocked:509     Bar a pre-redeploy plan step from naming a deploy-tree-resolved subject unles...
 605 blocked:586     Flag an advisory known-failures roster row whose named suite now passes
-659 blocked:658     Never demote on ignored specs skip
-660 blocked:658     Init specs ignores specs by default
-662 blocked:658,659,660,661  Reframe docs for ignored specs default
 338 ready           Classify every task-support file as tracked or ignored   <- re-read the ignored-specs scaffolding result before re-sweeping this enumeration; no edge
 410 ready           Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on ...
 421 ready           Close three gaps in the telemetry --meta evidence consumer
@@ -803,8 +799,6 @@ The gate exempts research and plan dispatches (neither regenerates the tree) and
 613 ready           Make session liveness distinguish a dead same-process session so an orphaned ...
 618 ready           Determine what leaves files in the working tree and give every residue class ...   <- re-measure its git-commit-scoped.sh evidence after the ignored-specs predicate lands; no edge
 646 ready           Decide and implement how .return-meta.json's status vocabulary admits non-pha...
-658 ready           Ignored specs predicate and commit path
-661 ready           Unbacked specs durability options
 ```
 
 **Extensions (7)**
