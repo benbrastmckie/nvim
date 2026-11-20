@@ -1,12 +1,118 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
-  "started_at": "2026-11-20T00:50:00Z",
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/654_reconcile_commit_layer_cluster_and_ordering/summaries/01_commit-layer-cluster-rulings-summary.md",
+      "summary": "Seven edges and seven description appends written to state.json, decision record created, audit clean."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Ruled on all thirteen commit-layer cluster members and wrote the rulings as state: seven dependency edges, seven appended description blocks, and the decision record specs/decisions/commit-layer-cluster-ordering.md. No file outside specs/ was edited."
+  },
+  "modified_files": [
+    "specs/state.json",
+    "specs/TODO.md",
+    "specs/decisions/commit-layer-cluster-ordering.md",
+    "specs/654_reconcile_commit_layer_cluster_and_ordering/baseline.json",
+    "specs/654_reconcile_commit_layer_cluster_and_ordering/records/full-sweep-owed.jsonl"
+  ],
+  "memory_candidates": [
+    {
+      "content": "For a batch of state.json description appends or dependency writes, first snapshot every affected task (dependencies plus full description) into a task-local baseline JSON. Verification then reduces to exact jq comparisons (startswith for appended descriptions, equality for untouched ones, array difference for dependencies), and any append is exactly revertible. Append inside the jq expression (.description += $add), never read-then-replace from a shell variable.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/654_reconcile_commit_layer_cluster_and_ordering/summaries/01_commit-layer-cluster-rulings-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "state.json",
+        "baseline",
+        "description append",
+        "state-write.sh",
+        "audit"
+      ]
+    },
+    {
+      "content": "Each update-task-status.sh edge_only --depends-on-add call regenerates specs/TODO.md and takes roughly 15 to 20 seconds; seven in one Bash call exceed the 120s default and get auto-backgrounded. Raise the Bash timeout or split the calls.",
+      "category": "CONFIG",
+      "source_artifact": "specs/654_reconcile_commit_layer_cluster_and_ordering/summaries/01_commit-layer-cluster-rulings-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "depends-on-add",
+        "edge_only",
+        "timeout",
+        "generate-todo"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "Commit-layer cluster ordering (nvim agent-system)",
+      "predicate": "decision is",
+      "value": "The thirteen open commit-layer tasks run in the order port_containment_strip_to_git_commit_scoped -> phase_commit_drops_own_plan_artifact -> snapshot_artifacts_contaminate_phase_commits -> manifest_registration_dropped_from_phase_commit -> cycle_postflight_containment_parity -> scoped_commit_staged_vs_worktree_divergence -> source_store_commit_and_registration_review -> git_commit_scoped_gate_refusal_diagnostic -> branch_topology_ruling_and_milestone_automation -> branch_aware_orchestration_and_squash_landing, with stall_signal_counts_unattributed_commits entering before the parity task and phase_commit_boundary_mechanical_check before the branch task. Seven edges were written to state.json; basis is shared file territory plus two semantic dependencies.",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "specs/decisions/commit-layer-cluster-ordering.md"
+    },
+    {
+      "subject": "Branch-aware orchestration prerequisites",
+      "predicate": "decision is",
+      "value": "Source-store commit scoping and the third containment site in git-commit-scoped.sh are not hard prerequisites for branch targeting. The branch a commit lands on is fixed by HEAD in the repository where git commit runs; containment only filters the pathspec. The ruling flips if the landing commit is routed through git-commit-scoped.sh in a second repository or if tree isolation is reinstated.",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "specs/decisions/commit-layer-cluster-ordering.md"
+    },
+    {
+      "subject": "Phase-commit boundary check and branch target",
+      "predicate": "decision is",
+      "value": "One detector, not two: the per-phase commit-existence check takes an expected-ref parameter (default HEAD) and reports wrong-branch as its own finding class. It must match on commit subject only, run before any squash landing, and not count a phase whose only changes were gitignored specs/ paths.",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "specs/decisions/commit-layer-cluster-ordering.md"
+    },
+    {
+      "subject": "Dispatch starting-position staleness vs admission-time branch check",
+      "predicate": "finding is",
+      "value": "They are separate defects. In the motivating incident the dispatch ran on the correct branch with a description stale against that same branch, so a branch check passes and the defect remains. The fix site stays the dispatch composer.",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "specs/decisions/commit-layer-cluster-ordering.md"
+    },
+    {
+      "subject": "Orchestrate stall probe in ignored-specs repositories",
+      "predicate": "finding is",
+      "value": "The stall probes in orchestrate-cycle-postflight.sh count commits with git log --since scoped to the task directory. Where specs/ is gitignored no commit touches that directory, so the count is always zero and the stall signal cannot fire. Read from code, not reproduced in a fixture.",
+      "ko_type": "insight",
+      "confidence": 0.7,
+      "source_loc": "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh:1049"
+    },
+    {
+      "subject": "verify-touched.sh touched-set derivation under per-phase commits",
+      "predicate": "finding is",
+      "value": "Run with no base argument after a dispatch has committed each phase, verify-touched.sh derived its touched set from the uncommitted working tree only. In a shared tree that set was almost entirely sibling and runtime residue, so it ran 58 suites for other dispatches files and none for the calling task committed changes.",
+      "ko_type": "insight",
+      "confidence": 0.75,
+      "source_loc": "specs/654_reconcile_commit_layer_cluster_and_ordering/baseline.json"
+    },
+    {
+      "subject": "update-task-status.sh dependency edges",
+      "predicate": "finding is",
+      "value": "There is a --depends-on-add flag but no removal flag. Removing an edge is a state-write.sh jq expression subtracting the predecessor from the dependencies array, followed by a TODO.md regeneration.",
+      "ko_type": "insight",
+      "confidence": 0.9,
+      "source_loc": "specs/654_reconcile_commit_layer_cluster_and_ordering/plans/01_commit-layer-cluster-rulings.md"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795163529_143ff8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
   }
 }

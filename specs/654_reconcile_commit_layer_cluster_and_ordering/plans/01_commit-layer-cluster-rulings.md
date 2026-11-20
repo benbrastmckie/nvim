@@ -1,7 +1,7 @@
 # Implementation Plan: Task #654
 
 - **Task**: 654 - Reconcile the open commit-layer cluster and write its dependency ordering
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/654_reconcile_commit_layer_cluster_and_ordering/reports/01_commit-layer-cluster-rulings.md

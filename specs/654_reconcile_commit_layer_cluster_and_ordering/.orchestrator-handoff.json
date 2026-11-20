@@ -1,16 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "summary": "Wrote a five-phase sequential plan that applies the research rulings as state: seven dependency edges, seven description appends, a decision record under specs/decisions/, and a closing audit. Confirmed edge 6 on 657 rather than 655. One report claim was wrong (no --depends-on-remove flag exists); the plan's rollback uses a state-write.sh removal instead.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 3,
+  "summary": "All five phases completed. Seven dependency edges and seven description appends are in specs/state.json, and the decision record is at specs/decisions/commit-layer-cluster-ordering.md; the closing audit found every ruling matched by a state change. validate-state.sh --deep and verify-touched.sh both exited 0; the full gate set is deferred to the batch stage. Uncommitted sibling and runtime files (.claude-extensions.json, .pid, 658 and 660 plan and return-meta files) were present in the working tree throughout and were not touched.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/654_reconcile_commit_layer_cluster_and_ordering/plans/01_commit-layer-cluster-rulings.md",
-      "summary": "Five-phase plan (3.5 hours), all edits under specs/."
+      "type": "summary",
+      "path": "specs/654_reconcile_commit_layer_cluster_and_ordering/summaries/01_commit-layer-cluster-rulings-summary.md",
+      "summary": "Implementation summary for the cluster rulings."
+    },
+    {
+      "type": "decision",
+      "path": "specs/decisions/commit-layer-cluster-ordering.md",
+      "summary": "Decision record: rulings, edges, three judgment calls."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
-  "blockers": [],
-  "dispatch_seq": 2
+  "blockers": []
 }

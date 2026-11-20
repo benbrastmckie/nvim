@@ -13,8 +13,8 @@ next_project_number: 664
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,654,663 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630,656 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629,654 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,656,663 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,492,509,513,518,541,561,566,594 | 439,452,472,479,491,535,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 486,571,581,588,595,641 | 454,484,492,509,518,539,541,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
 | 5 | 501,508,596,642 | 472,486,570,595,641 | file-scope-lifecycle, agent-system |
@@ -112,10 +112,9 @@ next_project_number: 664
 
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-654 [IMPLEMENTING] — Reconcile the open commit-layer cluster and write its...
-  └─ 656 [NOT STARTED] — Milestone schema in state.json and a wholly generated ROADMAP.md
-    └─ 657 [NOT STARTED] — Branch-topology ruling, then milestone automation and review...
-      └─ 655 [NOT STARTED] — Make orchestration branch-aware with a per-invocation branch...
+656 [NOT STARTED] — Milestone schema in state.json and a wholly generated ROADMAP.md
+  └─ 657 [NOT STARTED] — Branch-topology ruling, then milestone automation and review...
+    └─ 655 [NOT STARTED] — Make orchestration branch-aware with a per-invocation branch...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -524,12 +523,13 @@ RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-lay
 ---
 
 ### 654. Reconcile the open commit-layer cluster and write its dependency ordering
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [654_reconcile_commit_layer_cluster_and_ordering/reports/01_commit-layer-cluster-rulings.md]
 - **Plan**: [654_reconcile_commit_layer_cluster_and_ordering/plans/01_commit-layer-cluster-rulings.md]
+- **Summary**: [654_reconcile_commit_layer_cluster_and_ordering/summaries/01_commit-layer-cluster-rulings-summary.md]
 
 **Description**: Reconcile the open commit-layer cluster and write its dependency ordering
 
