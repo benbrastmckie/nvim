@@ -399,6 +399,7 @@ RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-lay
 - **Dependencies**: Task 654
 - **Research**: [656_milestone_schema_and_generated_roadmap/reports/01_milestone-schema-generated-roadmap.md]
 - **Plan**: [656_milestone_schema_and_generated_roadmap/plans/01_milestone-schema-generated-roadmap.md]
+- **Handoff**: [656_milestone_schema_and_generated_roadmap/handoffs/phase-4-handoff-20261120T102300Z.md]
 
 **Description**: Milestone schema in state.json and a wholly generated ROADMAP.md
 

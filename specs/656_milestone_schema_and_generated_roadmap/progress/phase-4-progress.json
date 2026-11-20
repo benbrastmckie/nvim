@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Generated Sentinel and Milestone Render Path",
+  "started_at": "2026-11-20T10:22:00Z",
+  "last_updated": "2026-11-20T10:23:00Z",
+  "objectives": [
+    {"id": 1, "description": "Sentinel constant and generated verdict in roadmap-preflight-lib.sh", "status": "not_started", "files_touched": []},
+    {"id": 2, "description": "Whole-file milestone render path in roadmap-integration.sh", "status": "not_started", "files_touched": []},
+    {"id": 3, "description": "Milestone section, done-member handling, closed-milestone collapse, last section", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Output path through the accessor; marker, OUTCOME line, no-content-change wording kept", "status": "not_started", "files_touched": []},
+    {"id": 5, "description": "Milestone group in test-roadmap-generation.sh", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 1
+}

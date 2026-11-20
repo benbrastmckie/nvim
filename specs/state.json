@@ -18676,6 +18676,11 @@
           "path": "specs/656_milestone_schema_and_generated_roadmap/plans/01_milestone-schema-generated-roadmap.md",
           "type": "plan",
           "summary": "Nine-phase implementation plan across seven dependency waves."
+        },
+        {
+          "path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-4-handoff-20261120T102300Z.md",
+          "type": "handoff",
+          "summary": "Context-pressure handoff at the Phase 3/4 boundary: state of phases 1-3, renderer outline, and verification procedure for the successor."
         }
       ],
       "audit_verdict": {

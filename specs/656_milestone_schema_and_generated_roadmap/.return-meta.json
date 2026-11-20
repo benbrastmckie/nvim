@@ -1,18 +1,120 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "dispatch_seq": 6,
-  "started_at": "2026-11-20T01:45:00Z",
-  "artifacts": [],
   "partial_progress": {
-    "stage": "initializing",
-    "details": "Implementation agent started; parsing plan.",
-    "phases_completed": 0,
+    "stage": "context_exhaustion_handoff",
+    "details": "Phases 1-3 of 9 completed and committed (schema and validator, entries accessor, lint retarget). Phases 4-9 not started. Handoff written before any Phase 4 edit; tree clean at 61796b913.",
+    "handoff_path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-4-handoff-20261120T102300Z.md",
+    "phases_completed": 3,
     "phases_total": 9
   },
+  "artifacts": [
+    {
+      "type": "handoff",
+      "path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-4-handoff-20261120T102300Z.md",
+      "summary": "Context-pressure handoff at the Phase 3/4 boundary: state of phases 1-3, renderer outline, and verification procedure for the successor."
+    },
+    {
+      "type": "summary",
+      "path": "specs/656_milestone_schema_and_generated_roadmap/summaries/01_milestone-schema-generated-roadmap-summary.md",
+      "summary": "Partial implementation summary covering phases 1-3 of 9."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Partial: the milestone layer is in the state schema and validator, a shared accessor reads batches from both store shapes, and the advisory lint reads state. The whole-file renderer, migration, documentation, redeploy and acceptance render are not done."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/schemas/state-schema.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/lib/roadmap-entries-lib.sh",
+    "agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh",
+    "agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh",
+    "agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh",
+    "agent-system/extensions/core/scripts/tests/test-roadmap-entries-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
+    "agent-system/extensions/core/scripts/validate-state.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "Core-extension test suites resolve their subject script 'deploy-tree-first', so running a suite from the source store still tests the stale deployed copy unless CORE_TEST_SUBJECT_MODE=source-store is exported. verify-touched.sh with root '.' runs ./.claude/scripts/tests/run-all.sh, so use it for suite selection and re-run the selection via agent-system/extensions/core/scripts/tests/run-all.sh --only with the override. Unset the override for test-common-lib.sh.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/656_milestone_schema_and_generated_roadmap/summaries/01_milestone-schema-generated-roadmap-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "CORE_TEST_SUBJECT_MODE",
+        "verify-touched",
+        "source-store",
+        "deploy-tree-first",
+        "run-all"
+      ]
+    },
+    {
+      "content": "Before committing a phase that adds shell or fixture text, run shellcheck -S warning on the touched files and the deployed check-task-references.sh; neither is covered by a phase's selected suites, and a fixture comment such as 'task 9' or an unused local only surfaces later inside test-deploy-propagation.sh and test-gate-cache-equivalence.sh.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/656_milestone_schema_and_generated_roadmap/summaries/01_milestone-schema-generated-roadmap-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "shellcheck",
+        "check-task-references",
+        "phase commit",
+        "lint",
+        "fixture"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "Claude Code Bash tool foreground limit",
+      "predicate": "has the measured behavior that",
+      "value": "A foreground Bash call is moved to the background after about 180 seconds even when its timeout parameter is 600000 ms, so a single-call bounded waiter cannot exceed roughly 3 minutes; long local runs need nohup with a captured pid and repeated sub-180-second kill -0 polls.",
+      "ko_type": "insight",
+      "confidence": 0.8
+    },
+    {
+      "subject": "agent-system core run-all.sh --jobs auto",
+      "predicate": "has the measured behavior that",
+      "value": "Its per-suite PASS/FAIL lines are buffered until the whole run ends, so a run killed by an outer timeout leaves a log with no result at all; a 38-suite selection took about 12 minutes, 8 of them in test-gate-cache-equivalence.sh.",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/tests/run-all.sh"
+    },
+    {
+      "subject": "agent-system verify-touched.sh",
+      "predicate": "corrects the assumption that",
+      "value": "Passing it source-store paths does not make it test source-store edits: with the default root it executes the deployed .claude/scripts/tests copies, and --tree-root pointed at agent-system/extensions/core is refused because a root must contain either a .claude mirror or an agent-system tree.",
+      "ko_type": "correction",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/verify-touched.sh"
+    },
+    {
+      "subject": "state.json roadmap schema",
+      "predicate": "decision is",
+      "value": "The milestone layer was added as roadmap_milestones[] with nested batches while the flat roadmap_batches/roadmap_notes keys stay defined as the unmigrated-store shape; validate-state.sh Check 13 warns and names migrate-roadmap-to-milestones.sh whenever a flat key is present, and a shared accessor (roadmap-entries-lib.sh) falls back to the flat array only when the roadmap_milestones key is absent, so next-batch suggestion keeps working before a store migrates.",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/lib/roadmap-entries-lib.sh"
+    },
+    {
+      "subject": "test-orchestrate-conclusion-roadmap.sh sandbox",
+      "predicate": "finding is",
+      "value": "Its scratch tree never copied lib/file-scope-overlap.sh, so the advisory roadmap lint had been exiting 2 inside the suite on every run without any assertion noticing, because the conclusion step never acts on the lint's exit code. A never-acted-on exit code needs an explicit output assertion to be tested at all.",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795163529_143ff8",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
   }
 }
