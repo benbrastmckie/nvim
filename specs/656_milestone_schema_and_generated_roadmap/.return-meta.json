@@ -1,24 +1,53 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "dispatch_seq": 8,
-  "artifacts": [],
+  "partial_progress": {
+    "stage": "context_exhaustion_handoff",
+    "details": "Phases 1-7 of 9 completed and committed (this dispatch: 4 renderer, 5 migration, 6 removal of the hand-authored render paths, 7 agent/skill/command text). Phases 8 (documents, recorded pruning ledger and lint disposition) and 9 (redeploy, this repository's migration, sf1-engine acceptance render) not started. Handoff written before any Phase 8 edit; tree clean at 80d1bf525.",
+    "handoff_path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-8-handoff-20261120T110738Z.md",
+    "phases_completed": 7,
+    "phases_total": 9
+  },
+  "artifacts": [
+    {
+      "type": "handoff",
+      "path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-8-handoff-20261120T110738Z.md",
+      "summary": "Context-pressure handoff at the Phase 7/8 boundary: the implemented design to document in Phase 8, searches already run, measured migration figures for this repository, and the verification procedure."
+    },
+    {
+      "type": "summary",
+      "path": "specs/656_milestone_schema_and_generated_roadmap/summaries/01_milestone-schema-generated-roadmap-summary.md",
+      "summary": "Partial implementation summary covering phases 1-7 of 9."
+    }
+  ],
   "completion_data": {
-    "completion_summary": "Partial: the milestone layer is in the state schema and validator, a shared accessor reads batches from both store shapes, and the advisory lint reads state. The whole-file renderer, migration, documentation, redeploy and acceptance render are not done."
+    "completion_summary": "Partial: the roadmap renders in full from state in the three-part milestone layout, hand-authored files are refused and routed to a new migration with a hard losslessness gate, and the agent, skill and command text describe the generated-only file. The format and contract documents, the redeploy, this repository's own migration and the sf1-engine acceptance render are not done, so no acceptance criterion is met yet."
   },
   "modified_files": [
+    "agent-system/extensions/core/agents/planner-agent.md",
+    "agent-system/extensions/core/agents/roadmap-agent.md",
+    "agent-system/extensions/core/commands/review.md",
+    "agent-system/extensions/core/commands/roadmap.md",
+    "agent-system/extensions/core/commands/todo.md",
     "agent-system/extensions/core/context/schemas/state-schema.json",
     "agent-system/extensions/core/manifest.json",
     "agent-system/extensions/core/scripts/lib/roadmap-entries-lib.sh",
+    "agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh",
     "agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh",
+    "agent-system/extensions/core/scripts/migrate-roadmap-to-milestones.sh",
     "agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh",
     "agent-system/extensions/core/scripts/orchestrate-suggest-next-batch.sh",
+    "agent-system/extensions/core/scripts/roadmap-integration.sh",
     "agent-system/extensions/core/scripts/tests/suite-classification.data",
     "agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh",
+    "agent-system/extensions/core/scripts/tests/test-migrate-roadmap-to-milestones.sh",
     "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh",
     "agent-system/extensions/core/scripts/tests/test-orchestrate-suggest-next-batch.sh",
     "agent-system/extensions/core/scripts/tests/test-roadmap-entries-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh",
     "agent-system/extensions/core/scripts/tests/test-validate-state.sh",
-    "agent-system/extensions/core/scripts/validate-state.sh"
+    "agent-system/extensions/core/scripts/validate-state.sh",
+    "agent-system/extensions/core/skills/skill-roadmap/SKILL.md"
   ],
   "memory_candidates": [
     {
@@ -46,6 +75,32 @@
         "lint",
         "fixture"
       ]
+    },
+    {
+      "content": "Two jq traps that pass syntax checks and silently corrupt output. (1) Inside a bash single-quoted jq program, a regex written as \"[\\\\t\\\\u001f]\" reaches the regex engine as a literal backslash-u sequence, and the character class then matches the letters u, 0, 1 and f, deleting them from text; write control characters with single jq string escapes (\"[\\t\\u001f]\") so jq puts the real characters in the pattern. (2) Arguments to a jq function are evaluated against the function's INPUT: `.value | f(.key)` reads .key from .value (null). Bind first: `.key as $k | .value | f($k)`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/656_milestone_schema_and_generated_roadmap/summaries/01_milestone-schema-generated-roadmap-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "jq",
+        "regex",
+        "unicode escape",
+        "function arguments",
+        "bash single quotes"
+      ]
+    },
+    {
+      "content": "A losslessness gate for a prose migration is cheap to make non-vacuous: record, per migrated item, the source lines it was built from; then require (a) multiset equality between all source lines and (destination-file lines read back from the staged file + recorded item lines), and (b) each item equals its recorded lines joined. A dropped line and a duplicated line both fail, and the gate reads the staged output rather than trusting the parser's own bookkeeping. In this task it caught a real scoping defect on its first stage-layout run.",
+      "category": "PATTERN",
+      "source_artifact": "specs/656_milestone_schema_and_generated_roadmap/summaries/01_milestone-schema-generated-roadmap-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "migration",
+        "losslessness",
+        "multiset",
+        "accounting gate",
+        "roadmap"
+      ]
     }
   ],
   "sapience_notes": [
@@ -55,14 +110,6 @@
       "value": "A foreground Bash call is moved to the background after about 180 seconds even when its timeout parameter is 600000 ms, so a single-call bounded waiter cannot exceed roughly 3 minutes; long local runs need nohup with a captured pid and repeated sub-180-second kill -0 polls.",
       "ko_type": "insight",
       "confidence": 0.8
-    },
-    {
-      "subject": "agent-system core run-all.sh --jobs auto",
-      "predicate": "has the measured behavior that",
-      "value": "Its per-suite PASS/FAIL lines are buffered until the whole run ends, so a run killed by an outer timeout leaves a log with no result at all; a 38-suite selection took about 12 minutes, 8 of them in test-gate-cache-equivalence.sh.",
-      "ko_type": "insight",
-      "confidence": 0.8,
-      "source_loc": "agent-system/extensions/core/scripts/tests/run-all.sh"
     },
     {
       "subject": "agent-system verify-touched.sh",
@@ -81,12 +128,42 @@
       "source_loc": "agent-system/extensions/core/scripts/lib/roadmap-entries-lib.sh"
     },
     {
-      "subject": "test-orchestrate-conclusion-roadmap.sh sandbox",
-      "predicate": "finding is",
-      "value": "Its scratch tree never copied lib/file-scope-overlap.sh, so the advisory roadmap lint had been exiting 2 inside the suite on every run without any assertion noticing, because the conclusion step never acts on the lint's exit code. A never-acted-on exit code needs an explicit output assertion to be tested at all.",
-      "ko_type": "insight",
+      "subject": "agent-system roadmap generator",
+      "predicate": "decision is",
+      "value": "specs/ROADMAP.md is rendered in full from state.json (intro with primary_goals and a milestone status table, one dashboard section per roadmap_milestones entry, rules/conventions/repo context last). A file is classified by one fixed sentinel comment on line 1: the generator overwrites only a file carrying it, creates one only when the store holds a milestone, and refuses every other file as hand-authored, naming migrate-roadmap-to-milestones.sh. This replaced classifying files by their section headers, which could not tell generated text from authored text.",
+      "ko_type": "decision",
       "confidence": 0.85,
-      "source_loc": "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"
+      "source_loc": "agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh"
+    },
+    {
+      "subject": "agent-system migrate-roadmap-to-milestones.sh",
+      "predicate": "decision is",
+      "value": "The migration from flat roadmap_batches to roadmap_milestones is mechanical only: every flat batch goes unchanged under one neutral milestone M1, and dividing the work into real milestones is left to roadmap-agent, so the judgment/rendering split survives. Its gate is a multiset equality over lines run before any write; an item over its field bound is never truncated but retained whole in a retained-prose file that is never overwritten. On the nvim config repository a dry run measured 30 batches, 30 items placed in state and 11 over-bound items retained.",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/migrate-roadmap-to-milestones.sh"
+    },
+    {
+      "subject": "agent-system state-write PreToolUse hook",
+      "predicate": "has the measured behavior that",
+      "value": "It scans Bash command text and blocks any command that both writes to a path shaped like state.json and mentions active_projects, including a throwaway fixture under the session scratchpad; the whole compound command is refused, so unrelated steps chained in it do not run either. Fixtures written with the Write tool, or under another filename, are not affected.",
+      "ko_type": "insight",
+      "confidence": 0.8
+    },
+    {
+      "subject": "agent-system roadmap rollout order",
+      "predicate": "constraint is",
+      "value": "After the core extension is redeployed, any repository whose roadmap file is still hand-authored stops regenerating it: /orchestrate's conclusion step has no approval surface, so it degrades loudly on every run until migrate-roadmap-to-milestones.sh has been run (offered behind one question by /roadmap, /todo and /review). Redeploy and migration therefore have to be done back to back per repository.",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh"
+    },
+    {
+      "subject": "jq regex escapes inside bash single quotes",
+      "predicate": "corrects the assumption that",
+      "value": "Doubling the backslash for a unicode escape in a jq regex string is harmless. A pattern written \"[\\\\t\\\\n\\\\u001f]+\" is handed to the regex engine with a literal backslash-u sequence, and the class matched the plain characters u, 0, 1 and f, silently deleting those letters and digits from rendered text. Regex metacharacter escapes such as \\\\s need the doubled backslash; character escapes such as \\t and \\u001f must be single so jq substitutes the real character.",
+      "ko_type": "correction",
+      "confidence": 0.85
     }
   ],
   "metadata": {
@@ -98,6 +175,5 @@
       "implement",
       "general-implementation-agent"
     ]
-  },
-  "started_at": "2026-11-20T10:25:05Z"
+  }
 }

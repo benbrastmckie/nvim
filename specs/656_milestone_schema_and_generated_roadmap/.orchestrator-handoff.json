@@ -1,24 +1,24 @@
 {
   "status": "partial",
-  "dispatch_seq": 6,
-  "summary": "Phases 1-3 of 9 are complete and committed: the milestone layer in the state schema and validator, a shared batch accessor with a flat-shape fallback, and the advisory lint retargeted at state entries. The dispatch stopped under context pressure at a clean phase boundary before any Phase 4 edit; the renderer, migration, documentation, redeploy and sf1-engine acceptance render remain. Phase 2's full gate was discharged against the scoped tier and deferred to the batch stage; one known-failures suite was not re-run.",
+  "dispatch_seq": 8,
+  "summary": "Phases 1-7 of 9 are complete and committed; this dispatch did 4-7: the whole-file milestone renderer, the migration with its losslessness gate, removal of the hand-authored render paths, and the agent, skill and command text. It stopped under context pressure at a clean boundary before any Phase 8 edit; the format and contract documents, the redeploy, this repository's own migration and the sf1-engine acceptance render remain, so no acceptance criterion is met yet. Suites were run from the source store only; the full gate set for Phases 5 and 7 is deferred to the batch stage.",
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-4-handoff-20261120T102300Z.md",
-      "summary": "Context-pressure handoff at the Phase 3/4 boundary: state of phases 1-3, renderer outline, and verification procedure for the successor."
+      "path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-8-handoff-20261120T110738Z.md",
+      "summary": "Context-pressure handoff at the Phase 7/8 boundary: the implemented design to document in Phase 8, searches already run, measured migration figures for this repository, and the verification procedure."
     },
     {
       "type": "summary",
       "path": "specs/656_milestone_schema_and_generated_roadmap/summaries/01_milestone-schema-generated-roadmap-summary.md",
-      "summary": "Partial implementation summary covering phases 1-3 of 9."
+      "summary": "Partial implementation summary covering phases 1-7 of 9."
     }
   ],
-  "phases_completed": 3,
+  "phases_completed": 7,
   "phases_total": 9,
   "blockers": [],
-  "continuation_path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-4-handoff-20261120T102300Z.md",
+  "continuation_path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-8-handoff-20261120T110738Z.md",
   "phase": "implement",
-  "git_checkpoint": "61796b913",
-  "next_action_hint": "Re-run /orchestrate 656 --implement to resume at Phase 4 from the handoff."
+  "git_checkpoint": "80d1bf525",
+  "next_action_hint": "Re-run /orchestrate 656 --implement to resume at Phase 8 from the handoff."
 }

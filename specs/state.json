@@ -18678,9 +18678,9 @@
           "summary": "Nine-phase implementation plan across seven dependency waves."
         },
         {
-          "path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-4-handoff-20261120T102300Z.md",
+          "path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-8-handoff-20261120T110738Z.md",
           "type": "handoff",
-          "summary": "Context-pressure handoff at the Phase 3/4 boundary: state of phases 1-3, renderer outline, and verification procedure for the successor."
+          "summary": "Context-pressure handoff at the Phase 7/8 boundary: the implemented design to document in Phase 8, searches already run, measured migration figures for this repository, and the verification procedure."
         }
       ],
       "audit_verdict": {

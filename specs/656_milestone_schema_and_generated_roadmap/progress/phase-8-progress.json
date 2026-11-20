@@ -1,0 +1,17 @@
+{
+  "phase": 8,
+  "phase_name": "Format, Contract and Reference Documents; Recorded Dispositions",
+  "started_at": "2026-11-20T11:07:38Z",
+  "last_updated": "2026-11-20T11:07:38Z",
+  "objectives": [
+    {"id": 1, "description": "roadmap-format.md: generated design, pruning ledger table", "status": "not_started", "files_touched": []},
+    {"id": 2, "description": "roadmap-update.md: lint disposition, live callers, refusal predicate", "status": "not_started", "files_touched": []},
+    {"id": 3, "description": "conclusion-stage.md Step 5; roadmap-entry-template.md; state-management-schema.md", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "postflight-tool-restrictions.md, file-footprint-overlap.md, re-anchored settled-decision citations, engine-written-state-paths comment", "status": "not_started", "files_touched": []},
+    {"id": 5, "description": "index-entries.json line counts; sweep for task numbers and draft-history phrasing", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 1
+}
