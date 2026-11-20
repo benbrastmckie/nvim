@@ -51,12 +51,12 @@ next_project_number: 664
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — Determine what leaves files in the working tree and give...
 646 [NOT STARTED] — Decide and implement how .return-meta.json's status...
-658 [PLANNED] — Ignored specs predicate and commit path
+658 [IMPLEMENTING] — Ignored specs predicate and commit path
   └─ 659 [NOT STARTED] — Never demote on ignored specs skip
     └─ 662 [NOT STARTED] — Reframe docs for ignored specs default
   └─ 660 [NOT STARTED] — Init specs ignores specs by default
     └─ 662 [NOT STARTED] — Reframe docs for ignored specs default (see above)
-661 [PLANNED] — Unbacked specs durability options
+661 [IMPLEMENTING] — Unbacked specs durability options
   └─ 662 [NOT STARTED] — Reframe docs for ignored specs default (see above)
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
@@ -234,7 +234,7 @@ DONE WHEN. No surface asserts that the specs tree is committed as an invariant; 
 ---
 
 ### 661. Unbacked specs durability options
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
@@ -310,7 +310,7 @@ MEASURED SCOPE CORRECTION (2026-11-19, after this record was written). THE HISTO
 ---
 
 ### 658. Ignored specs predicate and commit path
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None

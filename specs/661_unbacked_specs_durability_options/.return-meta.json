@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "dispatch_seq": 3,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/661_unbacked_specs_durability_options/plans/01_unbacked-specs-durability-options.md",
-      "summary": "Single-phase plan: verify the research report against both DONE WHEN clauses, then write the completion summary carrying the drafted durability statement verbatim for the documentation record to place."
-    }
-  ],
-  "next_steps": "Run /orchestrate 661 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 5,
   "metadata": {
-    "session_id": "sess_1795130570_6d4a1f_661",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 1,
-    "estimated_hours": 0.75,
-    "dependency_waves": 1
-  },
-  "memory_candidates": [
-    {
-      "content": "For a research-only record whose report already discharges every DONE WHEN clause, the honest plan is one verify-and-summarize phase, not a manufactured multi-phase decomposition. The remaining work is attestation plus a completion summary that carries the drafted deliverable verbatim; a verification verdict and the summary recording it cannot usefully be committed apart, because a failed verification changes what the summary says rather than adding a second deliverable. Split only when a phase boundary separates two independently committable artifacts.",
-      "category": "PATTERN",
-      "source_artifact": "specs/661_unbacked_specs_durability_options/plans/01_unbacked-specs-durability-options.md",
-      "confidence": 0.6,
-      "suggested_keywords": ["research-only task", "single-phase plan", "phase decomposition", "done-when attestation", "completion summary"]
-    }
-  ]
+    "session_id": "sess_1795130570_6d4a1f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

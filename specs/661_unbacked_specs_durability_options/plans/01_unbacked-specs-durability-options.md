@@ -1,7 +1,7 @@
 # Implementation Plan: Task #661
 
 - **Task**: 661 - Unbacked specs durability options
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 0.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/661_unbacked_specs_durability_options/reports/01_unbacked_specs_durability.md
@@ -121,7 +121,7 @@ Zero hits is the expected result for this task type.
 
 This plan has one phase, which is therefore its final phase.
 
-### Phase 1: Verify the report against DONE WHEN and write the completion summary [NOT STARTED]
+### Phase 1: Verify the report against DONE WHEN and write the completion summary [IN PROGRESS]
 
 **Goal**: Attest that the research report satisfies both `DONE WHEN` clauses, then write the
 completion summary that records the verdict and hands the drafted durability statement to the
