@@ -51,7 +51,7 @@ next_project_number: 664
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — Determine what leaves files in the working tree and give...
 646 [NOT STARTED] — Decide and implement how .return-meta.json's status...
-658 [PLANNING] — Ignored specs predicate and commit path
+658 [PLANNED] — Ignored specs predicate and commit path
   └─ 659 [NOT STARTED] — Never demote on ignored specs skip
     └─ 662 [NOT STARTED] — Reframe docs for ignored specs default
   └─ 660 [NOT STARTED] — Init specs ignores specs by default
@@ -310,11 +310,12 @@ MEASURED SCOPE CORRECTION (2026-11-19, after this record was written). THE HISTO
 ---
 
 ### 658. Ignored specs predicate and commit path
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [658_ignored_specs_predicate_and_commit_path/reports/01_ignored-specs-predicate-research.md]
+- **Plan**: [658_ignored_specs_predicate_and_commit_path/plans/01_ignored-specs-predicate-commit-path.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
 
