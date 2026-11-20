@@ -6,7 +6,7 @@
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
-| [M1: Current work](#milestone-m1) | active | 7/127 | none |
+| [M1: Current work](#milestone-m1) | active | 8/127 | none |
 
 See also: [Rules, conventions and repo context](#roadmap-context)
 
@@ -15,25 +15,18 @@ See also: [Rules, conventions and repo context](#roadmap-context)
 
 Work already scheduled when this store adopted milestones. Divide it into real milestones on a later /roadmap run.
 
-- **Progress**: active -- 1/30 batches, 7/127 tasks done
+- **Progress**: active -- 2/30 batches, 8/127 tasks done
 - **Review**: none
 
 **Batch 1** (done) -- Support a gitignored specs tree: price the durability exposure, then the predicate and demotion fix
 
-**Batch 2** -- Decide before building: the commit-layer order, the milestone schema, then the topology ruling (2/3 done)
-
-```
-/orchestrate 657 --hard
-657 IN FLIGHT       Branch-topology ruling, then milestone automation and review gates
-654 done            Reconcile the open commit-layer cluster and write its dependency ordering
-656 done            Milestone schema in state.json and a wholly generated ROADMAP.md
-```
+**Batch 2** (done) -- Decide before building: the commit-layer order, the milestone schema, then the topology ruling
 
 **Batch 3** -- Build branch-aware orchestration and squash landing once the topology ruling settles its design
 
 ```
 /orchestrate 655 --hard
-655 blocked:513,517,553,657  Make orchestration branch-aware with a per-invocation branch and squ...
+655 blocked:513,517,553  Make orchestration branch-aware with a per-invocation branch and squash ...
 ```
 
 **Batch 4** -- Make verify-deploy's verdict mean something again: the live reds, one roster row, two gate rulings
