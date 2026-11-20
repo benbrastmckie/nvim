@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "summary": "Wrote a five-phase sequential plan that applies the research rulings as state: seven dependency edges, seven description appends, a decision record under specs/decisions/, and a closing audit. Confirmed edge 6 on 657 rather than 655. One report claim was wrong (no --depends-on-remove flag exists); the plan's rollback uses a state-write.sh removal instead.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/654_reconcile_commit_layer_cluster_and_ordering/plans/01_commit-layer-cluster-rulings.md",
+      "summary": "Five-phase plan (3.5 hours), all edits under specs/."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": [],
+  "dispatch_seq": 2
+}

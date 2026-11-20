@@ -1,38 +1,23 @@
 {
-  "status": "researched",
-  "dispatch_seq": 1,
-  "started_at": "2026-11-20T08:33:00Z",
-  "completed_at": "2026-11-20T08:45:00Z",
-  "summary": "Ruled on all 13 cluster members plus the completed ignored-specs member: 7 NEEDS EDGE, 4 NEEDS REVISION, 2 UNAFFECTED, none SUBSUMED. Proposed 7 dependency edges (simulated acyclic; unordered narrow overlaps in cluster + branch tasks go from 33 to 0), settled the three judgment calls, and found two member descriptions stale against the source store. No state.json task entries were changed in this phase.",
+  "status": "planned",
+  "summary": "Five sequential phases turn the research rulings into state: a baseline snapshot, seven dependency edges via preflight:edge_only, seven description appends (four NEEDS REVISION members plus addenda on 570, 655, 657), a decision record under specs/decisions/, and a ruling-to-state-change audit. No file outside specs/ is touched.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/654_reconcile_commit_layer_cluster_and_ordering/reports/01_commit-layer-cluster-rulings.md",
-      "summary": "Per-member rulings, seven proposed dependency edges with simulation result, description revisions for four members, and the three judgment calls with deciding evidence."
+      "type": "plan",
+      "path": "specs/654_reconcile_commit_layer_cluster_and_ordering/plans/01_commit-layer-cluster-rulings.md",
+      "summary": "Five-phase plan (3.5 hours) writing seven dependency edges, seven description appends and one decision record, all under specs/."
     }
   ],
-  "memory_candidates": [
-    {
-      "content": "Before ruling on or planning a backlog task from its description, drop terminal dependencies and re-measure its named defect against the source store: in one 13-task commit-layer cluster, 12 of the dependency numbers carried were already completed/archived, and two descriptions named defects a different completed task had already closed (git log -S on the fix's distinctive line finds the closing commit quickly).",
-      "category": "WORKFLOW",
-      "source_artifact": "specs/654_reconcile_commit_layer_cluster_and_ordering/reports/01_commit-layer-cluster-rulings.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["stale premise", "backlog", "dependencies", "re-measure", "task description"]
-    },
-    {
-      "content": "Any check keyed on `git log -- <task dir under specs/>` (for example the stall_suspected commit probe in orchestrate-cycle-postflight.sh) is structurally zero in a repository whose specs/ tree is gitignored; and a phase whose only changes are ignored specs paths legitimately produces no commit (git-commit-scoped.sh exit 8). Commit-existence detectors must key on commit-message task/phase markers and exempt the exit-8 skip.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/654_reconcile_commit_layer_cluster_and_ordering/reports/01_commit-layer-cluster-rulings.md",
-      "confidence": 0.6,
-      "suggested_keywords": ["ignored specs", "git log", "stall_suspected", "commit attribution", "exit 8"]
-    }
-  ],
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1795163529_143ff8_654",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 9
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 3.5,
+    "dependency_waves": [[1], [2], [3], [4], [5]]
   },
-  "next_steps": "Run /orchestrate 654 to create implementation plan"
+  "next_steps": "Run /orchestrate 654 to execute the plan",
+  "dispatch_seq": 2
 }
