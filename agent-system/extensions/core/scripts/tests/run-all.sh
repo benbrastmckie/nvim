@@ -123,9 +123,9 @@
 #          for free with zero duplicated logic. Absent this flag, no filtering runs at all and
 #          output is byte-identical to a pre-`--only` run. A selected-subset pass is NOT evidence
 #          that doc-sync pins hold -- the same accepted trade-off already recorded for
-#          --skip-slow in specs/ROADMAP.md's Settled decision 15 -- and selection is a strictly
-#          separate axis from known-failures.txt (Settled decision 13: that manifest is advisory
-#          and never changes which suites run). To resolve WHICH suites a set of touched
+#          --skip-slow in context/standards/shell-script-testing.md's "Suite runtime" section
+#          -- and selection is a strictly separate axis from known-failures.txt (same section:
+#          that manifest is advisory and never changes which suites run). To resolve WHICH suites a set of touched
 #          source files maps to, see scripts/lib/suite-selection-lib.sh (a separate, independently
 #          sourced piece that composes with this flag rather than being called from inside it --
 #          a caller resolves suite names there first, then passes the resolved list here).

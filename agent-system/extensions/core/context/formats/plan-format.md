@@ -548,9 +548,9 @@ invocation, not a plan-authored justification. Every non-final phase carries exa
   `context/workflows/task-breakdown.md`'s `full` phase is the documented model for this shape.
 
 **A cheaper non-final tier never discharges the doc-sync-pin evidence, and `--skip-slow` is never
-a tier.** Per ROADMAP Settled decision 15 (see `context/standards/shell-script-testing.md:232-237`),
-Gate 8's deployed-tree coverage is knowingly reduced under `--skip-slow`, so a `--skip-slow` pass
-is not evidence that doc-sync pins hold. The same honesty constraint applies to a selected-subset
+a tier.** Per `context/standards/shell-script-testing.md`'s "Suite runtime" section (its
+`--skip-slow` bullet), Gate 8's deployed-tree coverage is knowingly reduced under `--skip-slow`,
+so a `--skip-slow` pass is not evidence that doc-sync pins hold. The same honesty constraint applies to a selected-subset
 pass under `--only`/`--only-gate`: narrowing which checks run for cost reasons is never read as
 equivalent to the full run it replaces for *that phase's own purpose*, and neither mechanism is
 itself a fifth tier — both are *how* a non-final phase's declared tier gets discharged, never a

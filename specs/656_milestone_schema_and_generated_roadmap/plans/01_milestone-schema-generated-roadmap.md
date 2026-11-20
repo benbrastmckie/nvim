@@ -558,41 +558,41 @@ locate each by `grep -n 'hand-curated\|\[x\]\|Update ROADMAP' ` rather than by l
 
 ---
 
-### Phase 8: Format, Contract and Reference Documents; Recorded Dispositions [NOT STARTED]
+### Phase 8: Format, Contract and Reference Documents; Recorded Dispositions [COMPLETED]
 
 **Goal**: The pruning ledger and the lint disposition are recorded in the source store, and no
 document or code comment describes a layout that can no longer exist.
 
 **Tasks**:
-- [ ] `context/formats/roadmap-format.md`: rewrite Section Order, Authored vs. Generated and the
+- [x] `context/formats/roadmap-format.md`: rewrite Section Order, Authored vs. Generated and the
   Per-Section Ruling as the current design (everything generated; three parts in order). Record
   the pruning ledger here as a table: each section a classic file carries, who reads it, and its
   disposition (kept as a bounded field, or not rendered), per the report's Recommendation 5.
-  State rejected alternatives on their merits, with no attribution to an earlier draft.
-- [ ] `context/patterns/roadmap-update.md`: record the lint's single disposition (reads
+  State rejected alternatives on their merits, with no attribution to an earlier draft. *(completed)*
+- [x] `context/patterns/roadmap-update.md`: record the lint's single disposition (reads
   `roadmap_milestones[].batches[]`; call site `scripts/orchestrate-conclusion-roadmap.sh`, the
   `LINT_SCRIPT` invocation) in place of the undecided paragraph; update "Live Callers" and the
-  refusal predicate.
-- [ ] `context/contracts/conclusion-stage.md` Step 5: `generated` arm, lint on both arms, resolved
-  output path.
-- [ ] `context/formats/roadmap-entry-template.md`: milestone entry template with bounds.
-- [ ] `context/reference/state-management-schema.md`: the three keys, the nested batch shape, the
+  refusal predicate. *(completed)*
+- [x] `context/contracts/conclusion-stage.md` Step 5: `generated` arm, lint on both arms, resolved
+  output path. *(completed)*
+- [x] `context/formats/roadmap-entry-template.md`: milestone entry template with bounds. *(completed)*
+- [x] `context/reference/state-management-schema.md`: the three keys, the nested batch shape, the
   flat keys as the unmigrated-store shape, and the vault-renumbering residual for completed
-  members.
-- [ ] `context/standards/postflight-tool-restrictions.md` and
+  members. *(completed)*
+- [x] `context/standards/postflight-tool-restrictions.md` and
   `context/patterns/file-footprint-overlap.md`: correct their references to the preflight
-  verdicts and to the lint's input.
-- [ ] Re-anchor the numbered settled-decision citations in `scripts/lib/suite-selection-lib.sh`,
+  verdicts and to the lint's input. *(completed)*
+- [x] Re-anchor the numbered settled-decision citations in `scripts/lib/suite-selection-lib.sh`,
   `scripts/tests/run-all.sh` and `context/formats/plan-format.md` to the section of
   `context/standards/shell-script-testing.md` that states the `--skip-slow` coverage trade-off;
   confirm that file also states that `known-failures.txt` is advisory and never changes which
-  suites run, and add one sentence there if it does not.
-- [ ] `scripts/lib/engine-written-state-paths-lib.sh`: correct the comment describing the roadmap
-  file as user-maintained.
-- [ ] `index-entries.json`: every edited `context/**` file moves its `line_count`. The drift check
+  suites run, and add one sentence there if it does not. *(completed)*
+- [x] `scripts/lib/engine-written-state-paths-lib.sh`: correct the comment describing the roadmap
+  file as user-maintained. *(completed)*
+- [x] `index-entries.json`: every edited `context/**` file moves its `line_count`. The drift check
   is not commit-blocking here, so reconcile by hand in this phase where cheap and otherwise leave
-  it to the Phase 9 redeploy, which auto-repairs it.
-- [ ] Sweep every edited file for task numbers and draft-history phrasing.
+  it to the Phase 9 redeploy, which auto-repairs it. *(completed)*
+- [x] Sweep every edited file for task numbers and draft-history phrasing. *(completed)*
 
 **Timing**: 2 hours
 

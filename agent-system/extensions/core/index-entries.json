@@ -379,8 +379,8 @@
       "path": "formats/roadmap-entry-template.md",
       "domain": "core",
       "subdomain": "formats",
-      "summary": "The roadmap_batches entry/rendered-shape template for /roadmap: field reference, the 100-character description bound, and a worked compliant/non-compliant example pair",
-      "line_count": 94,
+      "summary": "The roadmap milestone and nested-batch entry/rendered-shape templates for /roadmap: field references with bounds, the 100-character batch description bound, and a worked compliant/non-compliant example pair",
+      "line_count": 138,
       "keywords": [
         "anti-fluff",
         "batch",
@@ -405,8 +405,8 @@
       "path": "formats/roadmap-format.md",
       "domain": "core",
       "subdomain": "formats",
-      "summary": "Generation contract for specs/ROADMAP.md: section order, the authored-vs-generated split, Open work and Next grammar rendered wholly from state, the per-section ruling, and the parsing-pattern summary roadmap-integration.sh implements",
-      "line_count": 302,
+      "summary": "Generation contract for specs/ROADMAP.md, rendered in full from state: the three-part section order (intro, milestone sections, rules/conventions/repo context), field bounds, status tokens, the pruning ledger, the sentinel-based overwrite refusal, the milestone migration and its losslessness gate, and the parsing-pattern summary",
+      "line_count": 351,
       "keywords": [
         "authored-vs-generated",
         "format",
@@ -1227,8 +1227,8 @@
       "path": "patterns/roadmap-update.md",
       "domain": "core",
       "subdomain": "patterns",
-      "summary": "Caller contract for roadmap-integration.sh: the --print/--regenerate mode contracts, --prune as a deprecated --regenerate alias, the batch-proposal lint's disposition, and the stderr marker",
-      "line_count": 199,
+      "summary": "Caller contract for roadmap-integration.sh: the --print/--regenerate mode contracts, --prune as a deprecated --regenerate alias, the five-verdict refusal predicate and preflight obligation, the four live callers, the batch-proposal lint's disposition (reads state; call site), and the stderr marker",
+      "line_count": 196,
       "keywords": [
         "caller-contract",
         "patterns",
@@ -1470,7 +1470,7 @@
       "domain": "core",
       "subdomain": "reference",
       "summary": "Schema for state.json and TODO.md",
-      "line_count": 796,
+      "line_count": 814,
       "keywords": [
         "reference",
         "state",
@@ -1601,7 +1601,7 @@
       "domain": "core",
       "subdomain": "schemas",
       "summary": "Draft-07 JSON Schema for specs/state.json, and the single machine-readable anchor for the closed 13-value task-status enum",
-      "line_count": 567,
+      "line_count": 718,
       "keywords": [
         "state",
         "schema",
@@ -1895,7 +1895,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Tool restrictions in postflight phase",
-      "line_count": 333,
+      "line_count": 334,
       "keywords": [
         "standards",
         "postflight",
@@ -2601,7 +2601,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Orchestration conclusion stage (Move 5): derives three gated channels (direct fixes, agent-system changes, follow-up tasks) from aggregated per-task issues.jsonl logs, each firing only on its own explicit approval; the coexistence boundary with the skeleton-plan follow-up mechanism; the executable stage body",
-      "line_count": 526,
+      "line_count": 525,
       "keywords": [
         "conclusion-stage",
         "move-5",
@@ -2845,7 +2845,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Directory-prefix overlap algorithm shared by file_scope collision admission and creation-time serializing edges",
-      "line_count": 342,
+      "line_count": 343,
       "keywords": [
         "patterns",
         "file-scope",
@@ -3487,7 +3487,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "Consolidated-output template for /orchestrate batch (multi-task) results, with per-section rendering gates",
-      "line_count": 352,
+      "line_count": 353,
       "keywords": [
         "patterns",
         "orchestrate",

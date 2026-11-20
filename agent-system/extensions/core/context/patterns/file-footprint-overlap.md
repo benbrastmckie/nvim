@@ -218,16 +218,17 @@ both source or splice the same file.
   alternative, and `docs/architecture/batch-admit-schema.md` for the `whole_tree_claim` verdict
   shape this application produces.
 - **Roadmap-lint-level**: `.claude/scripts/lint/lint-roadmap-batch-proposals.sh` — the
-  authoring-time analogue of the batch-admission-level caller above — checks each hand-authored
-  `/orchestrate` Run line in a repository's `specs/ROADMAP.md` against every OTHER non-terminal
-  task in `specs/state.json`, reporting a task absent from the batch whose declared `file_scope`
-  overlaps an in-batch task (its finding (a)). Its subject is a hand-authored batch PROPOSAL
-  (prose a human typed, never dispatched) rather than a dispatch candidate, and it is purely
+  authoring-time analogue of the batch-admission-level caller above — checks each authored
+  batch entry in `specs/state.json` (`roadmap_milestones[].batches[]`, read through
+  `scripts/lib/roadmap-entries-lib.sh`) against every OTHER non-terminal task in that store,
+  reporting a task absent from the batch whose declared `file_scope` overlaps an in-batch task
+  (its finding (a)). Its subject is an authored batch PROPOSAL (a state entry, never dispatched
+  by being written down) rather than a dispatch candidate, and it is purely
   ADVISORY: unlike every other caller here, its exit code is never affected by what it finds.
   Splices `$FILE_SCOPE_OVERLAP_JQ_DEFS` into a single `jq -n` program over the whole
   cross-product, the same shape `orchestrate-batch-admit.sh` uses — not a fifth transcription of
-  the predicate. Invoked from `context/contracts/conclusion-stage.md`'s Step 5, after
-  `specs/ROADMAP.md`'s own regenerate pass.
+  the predicate. Invoked from `context/contracts/conclusion-stage.md`'s Step 5 on every
+  preflight verdict; it never reads the rendered `specs/ROADMAP.md`.
 
 All five callers reference this document by path; none restates the normalization or overlap
 rule inline. Three of the five (lock-acquisition-level, batch-admission-level,

@@ -1,13 +1,6 @@
 {
-  "status": "partial",
-  "dispatch_seq": 8,
-  "partial_progress": {
-    "stage": "context_exhaustion_handoff",
-    "details": "Phases 1-7 of 9 completed and committed (this dispatch: 4 renderer, 5 migration, 6 removal of the hand-authored render paths, 7 agent/skill/command text). Phases 8 (documents, recorded pruning ledger and lint disposition) and 9 (redeploy, this repository's migration, sf1-engine acceptance render) not started. Handoff written before any Phase 8 edit; tree clean at 80d1bf525.",
-    "handoff_path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-8-handoff-20261120T110738Z.md",
-    "phases_completed": 7,
-    "phases_total": 9
-  },
+  "status": "in_progress",
+  "dispatch_seq": 9,
   "artifacts": [
     {
       "type": "handoff",
@@ -175,5 +168,14 @@
       "implement",
       "general-implementation-agent"
     ]
-  }
+  },
+  "started_at": "2026-11-20T11:10:54Z",
+  "proposed_file_scope": [
+    "agent-system/extensions/core/README.md",
+    "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+    "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+    "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+    "agent-system/extensions/core/merge-sources/claudemd.md",
+    "agent-system/extensions/core/scripts/deprecated/README.md"
+  ]
 }

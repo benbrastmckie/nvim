@@ -174,9 +174,10 @@ the stage's full derivation contract and executable body.
   (`context/patterns/roadmap-update.md`) — both are invoked, never edited.
 - No `--prune` on the roadmap generator — only `--regenerate` is in scope (see
   `context/contracts/conclusion-stage.md`'s D3).
-- No `lib/roadmap-preflight-lib.sh scaffold` at this stage (classify-only) — the scaffold is an
-  approved-write-only action and this stage has no approver for it; on `absent`/`unknown`, Step 5
-  skips `--regenerate` and degrades loudly instead (see `context/contracts/conclusion-stage.md`'s
+- No `lib/roadmap-preflight-lib.sh scaffold` and no `migrate-roadmap-to-milestones.sh` at this
+  stage (classify-only) — both are approved-write-only actions and this stage has no approver;
+  on any verdict other than `generated` (`absent`, `classic`, `stage`, `unknown`), Step 5 skips
+  `--regenerate` and degrades loudly instead (see `context/contracts/conclusion-stage.md`'s
   Step 5).
 - No editing another task's archived artifacts.
 - No dispatch and no `specs/state.json` write from channels (b) or (c) — both record evidence to
@@ -192,7 +193,7 @@ and NEVER swept into one undifferentiated commit:
 | Channel (a) fixes | The approved fix list's own paths (whatever the dispatched implementation agent actually touched) | Describes the fix(es) applied |
 | Channel (b) proposals recorded | `specs/events.jsonl` only | Records the classified proposals as evidence |
 | Channel (c) proposals recorded | `specs/events.jsonl` only | Records the classified proposals as evidence |
-| Roadmap update | `specs/ROADMAP.md` only | Records the regeneration |
+| Roadmap update | The generated roadmap only (`specs/ROADMAP.md`, or the store's `roadmap_context.output_path`) | Records the regeneration |
 
 A contended-path refusal (exit 3) from any of these invocations means defer and re-sequence that
 one commit — never widen its pathspec, never force it.

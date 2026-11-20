@@ -1,17 +1,107 @@
 {
   "phase": 8,
   "phase_name": "Format, Contract and Reference Documents; Recorded Dispositions",
-  "started_at": "2026-11-20T11:07:38Z",
-  "last_updated": "2026-11-20T11:07:38Z",
+  "started_at": "2026-11-20T11:46:20Z",
+  "last_updated": "2026-11-20T11:46:20Z",
   "objectives": [
-    {"id": 1, "description": "roadmap-format.md: generated design, pruning ledger table", "status": "not_started", "files_touched": []},
-    {"id": 2, "description": "roadmap-update.md: lint disposition, live callers, refusal predicate", "status": "not_started", "files_touched": []},
-    {"id": 3, "description": "conclusion-stage.md Step 5; roadmap-entry-template.md; state-management-schema.md", "status": "not_started", "files_touched": []},
-    {"id": 4, "description": "postflight-tool-restrictions.md, file-footprint-overlap.md, re-anchored settled-decision citations, engine-written-state-paths comment", "status": "not_started", "files_touched": []},
-    {"id": 5, "description": "index-entries.json line counts; sweep for task numbers and draft-history phrasing", "status": "not_started", "files_touched": []}
+    {
+      "id": 1,
+      "description": "`context/formats/roadmap-format.md`: rewrite Section Order, Authored vs. Generated and the Per-Section Ruling as the current design (everything generated; three",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/README.md",
+        "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+        "agent-system/extensions/core/context/formats/plan-format.md",
+        "agent-system/extensions/core/context/formats/roadmap-entry-template.md",
+        "agent-system/extensions/core/context/formats/roadmap-format.md",
+        "agent-system/extensions/core/context/patterns/batch-orchestration-guardrails.md",
+        "agent-system/extensions/core/context/patterns/file-footprint-overlap.md",
+        "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md",
+        "agent-system/extensions/core/context/patterns/roadmap-update.md",
+        "agent-system/extensions/core/context/reference/state-management-schema.md",
+        "agent-system/extensions/core/context/standards/postflight-tool-restrictions.md",
+        "agent-system/extensions/core/docs/reference/utility-scripts-inventory.md",
+        "agent-system/extensions/core/index-entries.json",
+        "agent-system/extensions/core/merge-sources/claudemd.md",
+        "agent-system/extensions/core/scripts/deprecated/README.md",
+        "agent-system/extensions/core/scripts/lib/engine-written-state-paths-lib.sh",
+        "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh",
+        "agent-system/extensions/core/scripts/tests/run-all.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "`context/patterns/roadmap-update.md`: record the lint's single disposition (reads `roadmap_milestones[].batches[]`; call site `scripts/orchestrate-conclusion-ro",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "`context/contracts/conclusion-stage.md` Step 5: `generated` arm, lint on both arms, resolved output path.",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "`context/formats/roadmap-entry-template.md`: milestone entry template with bounds.",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "`context/reference/state-management-schema.md`: the three keys, the nested batch shape, the flat keys as the unmigrated-store shape, and the vault-renumbering r",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "`context/standards/postflight-tool-restrictions.md` and `context/patterns/file-footprint-overlap.md`: correct their references to the preflight verdicts and to ",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Re-anchor the numbered settled-decision citations in `scripts/lib/suite-selection-lib.sh`, `scripts/tests/run-all.sh` and `context/formats/plan-format.md` to th",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "`scripts/lib/engine-written-state-paths-lib.sh`: correct the comment describing the roadmap file as user-maintained.",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 9,
+      "description": "`index-entries.json`: every edited `context/**` file moves its `line_count`. The drift check is not commit-blocking here, so reconcile by hand in this phase whe",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 10,
+      "description": "Sweep every edited file for task numbers and draft-history phrasing.",
+      "status": "done",
+      "files_touched": []
+    }
   ],
-  "current_objective": 1,
+  "current_objective": null,
   "approaches_tried": [],
-  "deviations": [],
-  "handoff_count": 1
+  "deviations": [
+    {
+      "task_id": "8.scope",
+      "description": "Six files outside the plan's list were edited",
+      "type": "altered",
+      "reason": "The plan's completeness and stale-term searches found old-layout descriptions in README.md, merge-sources/claudemd.md, docs/reference/utility-scripts-inventory.md (plus a new row for migrate-roadmap-to-milestones.sh), scripts/deprecated/README.md, context/patterns/orchestrate-batch-results-template.md and context/patterns/batch-orchestration-guardrails.md.",
+      "annotation": "*(deviation: altered \u2014 six further files with old-layout text added per the Scope Hypothesis search)*"
+    },
+    {
+      "task_id": "8.verify",
+      "description": "verify-touched.sh not used; gate 3 not green before the redeploy",
+      "type": "altered",
+      "reason": "verify-touched.sh executes the stale deployed suites, so the resolver's 58-suite selection was run from the source store instead (55 pass, 2 known-failures EXPECTED, 0 NEW; test-common-lib 71/71). Gate 3 fails only on deployed-script drift, which the Phase 9 redeploy clears; gate 4 passes.",
+      "annotation": "*(deviation: altered \u2014 selection run from the source store; gate 3 re-run after the Phase 9 redeploy)*"
+    }
+  ],
+  "handoff_count": 0,
+  "verification_notes": "Scoped tier under the dispatch's Batch Gate Deferral: the complete gate set is deferred to the batch stage and was not run here. Resolver selection for the 18 touched source paths = 58 suites, run from the source store with CORE_TEST_SUBJECT_MODE=source-store (--jobs 3): 55 passed, 2 failed, both known-failures.txt EXPECTED (test-gate-cache-equivalence.sh, test-verify-deploy-context-budget.sh), 0 NEW; test-common-lib.sh 71/71 without the override. Five touched documents are UNRESOLVED by the resolver (file-footprint-overlap.md, orchestrate-batch-results-template.md, roadmap-update.md, postflight-tool-restrictions.md, utility-scripts-inventory.md) and are owed to the batch-level full gate. verify-deploy --only-gate 3,4: gate 4 PASS; gate 3 FAIL on deployed-script drift only (cleared by the Phase 9 redeploy; the one non-drift finding, state-schema.json line_count 567 vs 718, was reconciled by hand). check-task-references PASS; check-record-versioning reports no finding on any line this phase wrote (its 3 BLOCKING are pre-existing lua/neotex himalaya docs). shell-script-testing.md already states both the --skip-slow trade-off and that known-failures.txt is advisory (Suite runtime section), so no sentence was added there. A first run with --jobs auto was lost to a disk-full event on the root volume."
 }

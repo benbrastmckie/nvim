@@ -23,9 +23,11 @@
 # Rejected candidates and why each fails the bar:
 #   - specs/CHANGE_LOG.md   - no live path writes it; fails the "every/many tasks" half outright,
 #                             not merely a narrower writer population.
-#   - specs/ROADMAP.md      - user-maintained and read-only for agents; no agent ever writes it,
-#                             engine or otherwise, so admitting it here would be a no-op scope
-#                             widening with no corresponding writer to protect.
+#   - specs/ROADMAP.md      - generated in full by roadmap-integration.sh, and written only by
+#                             its named callers (the conclusion-stage script, /roadmap, /todo,
+#                             /review), each committing it alone in its own scoped commit; no
+#                             dispatched task writes it inside a phase commit, so admitting it
+#                             here would widen scope with no task-side writer to protect.
 #   - specs/README.md       - static; not written by the engine on behalf of any task.
 #   - any task-owned specs/{NNN}_*/ path - this is exactly the territory file_scope already
 #                             exists to describe; a task's own directory belongs in that task's

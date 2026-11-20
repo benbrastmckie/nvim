@@ -376,34 +376,33 @@ against.
 
 **Preflight classify, before `--regenerate` is ever called**: this stage has no interactive
 surface (it runs autonomously, with no confirmation gate between phases), so it cannot obtain
-the approval a write-mode call onto an `absent` or `unknown` `specs/ROADMAP.md` would need. The
-script classifies first via `lib/roadmap-preflight-lib.sh classify`.
+the approval that migrating a hand-authored roadmap needs. The script resolves the output path
+(`roadmap_context.output_path` in `specs/state.json`, else `specs/ROADMAP.md`) and classifies it
+via `lib/roadmap-preflight-lib.sh classify`.
 
-- **`classic`/`stage`**: `roadmap-integration.sh --regenerate`, then a scoped commit of
-  `specs/ROADMAP.md` alone via `git-commit-scoped.sh`, then the advisory
-  `lint/lint-roadmap-batch-proposals.sh` run over the freshly regenerated file. Its output is
-  ADVISORY: the exit code is never acted on, and its findings are surfaced verbatim with Step
-  5's own output. This is explicitly NOT a fourth channel — it derives from `specs/ROADMAP.md`,
-  carries no `AskUserQuestion` gate, and the Exactly-One-Channel and Hint-Versus-Decision rules
-  above do not apply to it, the same posture Step 7's suggester already carries. `--prune` is
-  deliberately never called — not because it is a stronger unattended action than an idempotent
-  regenerate, but because `--regenerate` already renders `## Next` and `## Open work` wholly from
-  `specs/state.json`: a terminal task is never written into the file in the first place, so
-  there is nothing left for a prune pass to remove. `--prune` is therefore a DEPRECATED ALIAS for
-  `--regenerate` — see `roadmap-integration.sh`'s own `mode_prune()` header comment and its
-  `--prune`/`--regenerate` usage lines for the source of truth.
-- **`absent`/`unknown`**: `--regenerate` and the commit are skipped entirely; `specs/ROADMAP.md`
-  is left untouched. This call site NEVER scaffolds and NEVER auto-writes — the scaffold
-  (`roadmap-preflight-lib.sh scaffold`) is an approved-write-only action and this stage has no
-  approver for it. The script degrades loudly instead of silently skipping, at three surfaces: a
-  named structured warning in its own surfaced output (naming the verdict, the path, and that
-  the next interactive `/roadmap` resolves it — its own Stage 1 preflight gate asks for
-  approval); a durable `roadmap_regenerate_blocked` event recorded via `events-append.sh` FIRST,
+- **`generated`** (the file's first line is the generated sentinel):
+  `roadmap-integration.sh --regenerate`, then a scoped commit of the resolved output path alone
+  via `git-commit-scoped.sh`. `--prune` is never called: it is a deprecated alias for
+  `--regenerate`, since a file rendered from live state holds no terminal entry to remove.
+- **`absent`/`classic`/`stage`/`unknown`**: `--regenerate` and its commit are skipped entirely
+  and the path is left untouched. This call site NEVER scaffolds, migrates or auto-writes — it
+  has no approver. The script degrades loudly instead of silently skipping, at three surfaces: a
+  named structured warning in its own surfaced output (naming the verdict, the path and the
+  remedy — for `absent`, that the next interactive `/roadmap` run creates the file; for a
+  hand-authored file, `migrate-roadmap-to-milestones.sh`, which `/roadmap` offers behind one
+  question); a durable `roadmap_regenerate_blocked` event recorded via `events-append.sh` FIRST,
   plus its own scoped commit of `specs/events.jsonl`; and a best-effort loop over
   `issue-record.sh`, once per task directory in this invocation's own already-resolved task
   list — additive, never a substitute for the events write, so an empty or unresolved task list
-  degrades the evidence rather than losing it. The `--regenerate` invocation and its commit, and
-  the batch-proposal lint, are both skipped entirely on this branch.
+  degrades the evidence rather than losing it.
+
+**Advisory lint, on both arms**: after the arm above, the script runs
+`lint/lint-roadmap-batch-proposals.sh`. The lint reads the authored batch entries in
+`specs/state.json` (`roadmap_milestones[].batches[]`), not the rendered file, so it runs on every
+verdict. Its output is ADVISORY: the exit code is never acted on, and its findings are surfaced
+verbatim with Step 5's own output. This is explicitly NOT a fourth channel — it carries no
+`AskUserQuestion` gate, and the Exactly-One-Channel and Hint-Versus-Decision rules above do not
+apply to it, the same posture Step 7's suggester carries.
 
 The script's own stdout outcome block (the verdict, the `OUTCOME:` line verbatim when the
 regenerate branch ran, the commit sha or `none`, and the advisory lint's findings) folds into

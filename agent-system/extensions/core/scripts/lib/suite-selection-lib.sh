@@ -18,12 +18,12 @@
 # ─── HONESTY CONSTRAINT (read before treating a selected run as proof of anything) ─────────────
 # A selected-subset pass is NOT evidence that doc-sync pins hold. This is the same accepted
 # trade-off verify-deploy.sh's --skip-slow already carries for Gate 8's own reduced coverage
-# (recorded in specs/ROADMAP.md's Settled decision 15) -- selection narrows WHICH suites run for
-# cost reasons, which is exactly the kind of coverage reduction that decision already rules a
-# selected/skipped pass must never be presented as equivalent to a full run. Selection is also a
-# STRICTLY SEPARATE axis from tests/known-failures.txt (Settled decision 13: that manifest is
-# advisory and never changes which suites run, only how a failure is annotated) -- do not conflate
-# the two mechanisms.
+# (recorded in context/standards/shell-script-testing.md's "Suite runtime: `--jobs`, `--timings`,
+# and gate selection" section) -- selection narrows WHICH suites run for cost reasons, which is
+# exactly the kind of coverage reduction that section rules a selected/skipped pass must never be
+# presented as equivalent to a full run. Selection is also a STRICTLY SEPARATE axis from
+# tests/known-failures.txt (same section: that manifest is advisory and never changes which
+# suites run, only how a failure is annotated) -- do not conflate the two mechanisms.
 #
 # ─── WHY `script-inventory.sh`'s `has_test` IS NOT REUSED HERE ─────────────────────────────────
 # script-inventory.sh's has_test() resolves test candidates against each CANDIDATE's OWN
