@@ -1,10 +1,42 @@
 {
-  "status": "in_progress",
+  "status": "researched",
   "agent_type": "general-research-agent",
   "delegation_path": ["orchestrator", "research", "general-research-agent"],
   "metadata": {
     "session_id": "sess_1795130570_6d4a1f_658",
-    "task_number": 658
+    "task_number": 658,
+    "findings_count": 4
   },
-  "dispatch_seq": 2
+  "dispatch_seq": 2,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/658_ignored_specs_predicate_and_commit_path/reports/01_ignored-specs-predicate-research.md",
+      "summary": "Live-reproduced the ignored-specs commit defect (V7 refusal path, exit 2, can abort a legitimate sibling commit), confirmed the tracked-and-ignore-matching case needs no change, settled the per-repo-vs-per-pathspec predicate question (both), and designed a new V13 gate plus two new non-failure exit codes (8, 9) with the two other consumer sites needing case-arm updates."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "git check-ignore -q is index-aware in a way that makes it safe as a drop-classifier primitive for an untracked-but-ignored path WITHOUT a separate tracked/untracked test: it reliably reports 'not ignored' (rc=1) for any already-tracked path that merely matches a .gitignore rule, whether via a parent-directory pattern or a direct file-level rule, confirmed by live reproduction in both shapes.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/658_ignored_specs_predicate_and_commit_path/reports/01_ignored-specs-predicate-research.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["git", "check-ignore", "gitignore", "index-aware", "staging"]
+    },
+    {
+      "content": "Plain `git status --porcelain` (no --ignored flag) returns EMPTY output for an ignored, untracked path regardless of path argument -- a completeness/cleanliness check built on bare `git status --porcelain -- \"$f\"` is therefore already safe against a legitimately-ignored-and-never-committed path; no special-casing is needed at that layer.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/658_ignored_specs_predicate_and_commit_path/reports/01_ignored-specs-predicate-research.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git", "status", "porcelain", "gitignore", "completeness-check"]
+    },
+    {
+      "content": "In git-commit-scoped.sh's single all-or-nothing `git add <pathspecs...>` call, an ignored-and-untracked path does NOT poison the whole call the way an out-of-repository path does (V9): git add silently skips just the ignored entry and still stages the other, valid entries in the same call (confirmed: a mixed call with one ignored and one ordinary path staged the ordinary one, exit 1 overall). The fatal-whole-call poisoning is specific to the out-of-repository shape, not a general property of a 'git add partially fails' call.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/658_ignored_specs_predicate_and_commit_path/reports/01_ignored-specs-predicate-research.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git", "add", "pathspec", "gitignore", "out-of-repository"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 658 to create implementation plan"
 }
