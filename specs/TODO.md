@@ -51,7 +51,7 @@ next_project_number: 664
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — Determine what leaves files in the working tree and give...
 646 [NOT STARTED] — Decide and implement how .return-meta.json's status...
-659 [RESEARCHING] — Never demote on ignored specs skip
+659 [RESEARCHED] — Never demote on ignored specs skip
   └─ 662 [NOT STARTED] — Reframe docs for ignored specs default
 660 [RESEARCHED] — Init specs ignores specs by default
   └─ 662 [NOT STARTED] — Reframe docs for ignored specs default (see above)
@@ -280,10 +280,11 @@ DONE WHEN. A new repository is initialized with an ignored specs tree, an existi
 ---
 
 ### 659. Never demote on ignored specs skip
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 658
+- **Research**: [659_never_demote_on_ignored_specs_skip/reports/01_never-demote-ignored-specs-skip.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit the mirrored path. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**; both are permitted in this description.
 

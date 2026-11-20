@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795130570_6d4a1f_659",
+  "dispatch_seq": 7,
+  "findings_count": 9,
+  "next_steps": "Run /orchestrate 659 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/659_never_demote_on_ignored_specs_skip/reports/01_never-demote-ignored-specs-skip.md",
+      "summary": "Confirms task 658 already fixed the orchestrate-cycle-postflight.sh completed->partial demotion on exit 8/9 (gitignored specs); identifies the real remaining gap as durable skip-recording (issue-record.sh/events-append.sh, with session-keyed dedup to avoid per-cycle flooding) and two missing negative-control test cases; verifies five of the six named history readers already need no code change, with exact line references."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this codebase, context/formats/issue-log.md's severity scale reserves `severity: none` ('No cost was incurred at all') exclusively for `kind: win` entries -- a `kind: issue` entry recording a genuinely zero-cost, routine, repository-configuration fact (e.g. a benign commit skip) cannot legally use `none` and must use `minor` as its floor. Also: `events-append.sh`'s `--category blocker` is promoted to the cross-repo central log by central-log-lib.sh -- never use `blocker` for a benign/non-actionable event; `deviation` is the fitting category for a routine skip from expected flow.",
+      "category": "PATTERN",
+      "source_artifact": "specs/659_never_demote_on_ignored_specs_skip/reports/01_never-demote-ignored-specs-skip.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["issue-record.sh", "severity-scale", "events-append.sh", "category-blocker-promotion", "issue-log-format"]
+    },
+    {
+      "content": "orchestrate-cycle-postflight.sh already contains a reusable dedup idiom for avoiding per-cycle duplicate issues.jsonl entries: hash a stable identity (here, partial_blocker_identity via sha256sum over a sorted join) and check issues.jsonl for an already-open entry carrying that identity (partial_matched_entry_id, lines ~1545-1562) before writing a new one. Any future per-cycle recording call that could otherwise fire on every single completing cycle of a long-lived task (e.g. a repository-configuration fact that never changes) should reuse this session_id-or-identity-keyed dedup pattern rather than writing unconditionally.",
+      "category": "PATTERN",
+      "source_artifact": "specs/659_never_demote_on_ignored_specs_skip/reports/01_never-demote-ignored-specs-skip.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["dedup", "issues.jsonl", "orchestrate-cycle-postflight", "per-cycle-flooding", "identity-hash"]
+    },
+    {
+      "content": "Before trusting a task description's own problem framing as still-current, re-measure directly: task 659's dispatch description (written before a 'MEASURED SCOPE CORRECTION' addendum was appended) claimed scripts/validate-state.sh's --deep artifact-loss check 'yields a silent zero' for an absent specs git history. Direct inspection showed it already emits two explicit log_warn lines and skips the check gracefully -- already correct, not a silent zero. A task record can be stale relative to work a sibling/prior task already completed; always re-verify current behavior against the live source rather than the task's own narrative.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/659_never_demote_on_ignored_specs_skip/reports/01_never-demote-ignored-specs-skip.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["task-description-staleness", "re-measure-before-planning", "validate-state.sh", "verification-discipline"]
+    }
+  ]
+}
