@@ -1,0 +1,24 @@
+{
+  "phase": 7,
+  "phase_name": "Redeploy, reconcile derived surfaces, and close",
+  "started_at": "2026-11-20T04:00:00Z",
+  "last_updated": "2026-11-20T04:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "generate-context-line-counts.sh --write", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 2, "description": "sync-manifest-scripts.sh --check", "status": "done", "files_touched": []},
+    {"id": 3, "description": "deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm deployed scripts exist/executable; run-all.sh discovers both new suites", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Scoped touched-path check (verify-touched.sh); defer complete gate set", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm ROADMAP.md renders consistently with state.json (655's blocked token includes 517)", "status": "done", "files_touched": ["specs/ROADMAP.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {
+      "approach": "First verify-touched.sh run while concurrently running 'roadmap-integration.sh --regenerate' in the foreground",
+      "result": "failed",
+      "reason": "test-skill-base-lifecycle.sh's own real-specs/-tree-unchanged self-check tripped on the concurrent foreground mutation (false failure, concurrency artifact). Second run with no concurrent mutation passed cleanly (98/98, including that suite)."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

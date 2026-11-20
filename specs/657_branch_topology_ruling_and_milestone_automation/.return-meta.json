@@ -9,5 +9,8 @@
       "implement",
       "general-implementation-agent"
     ]
-  }
+  },
+  "proposed_file_scope": [
+    "specs/ROADMAP.md"
+  ]
 }

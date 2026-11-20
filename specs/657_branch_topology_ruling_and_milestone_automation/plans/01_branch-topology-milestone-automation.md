@@ -615,22 +615,22 @@ registration.
 
 ---
 
-### Phase 7: Redeploy, reconcile derived surfaces, and close [NOT STARTED]
+### Phase 7: Redeploy, reconcile derived surfaces, and close [COMPLETED]
 
 **Goal**: The source-store changes are present in the deployed tree, every derived surface is
 reconciled, and the complete gate set is accounted for.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/generate-context-line-counts.sh --write` to reconcile
+- [x] Run `bash .claude/scripts/generate-context-line-counts.sh --write` to reconcile *(completed)*
       `index-entries.json` line counts moved by Phase 6.
-- [ ] Run `bash .claude/scripts/sync-manifest-scripts.sh --check` and resolve any remaining gap.
-- [ ] Redeploy with `bash agent-system/extensions/core/scripts/deploy-headless.sh` so the new
+- [x] Run `bash .claude/scripts/sync-manifest-scripts.sh --check` and resolve any remaining gap. *(completed)*
+- [x] Redeploy with `bash agent-system/extensions/core/scripts/deploy-headless.sh` so the new *(completed)*
       scripts, context files and contract text reach `.claude/**`.
-- [ ] Confirm the deployed copies of the two new scripts exist and are executable, and that
+- [x] Confirm the deployed copies of the two new scripts exist and are executable, and that *(completed)*
       `run-all.sh` discovers both new suites in the merged deployed tests directory.
-- [ ] Run the scoped touched-path check over everything this task touched, and record that the
+- [x] Run the scoped touched-path check over everything this task touched, and record that the *(completed)*
       complete gate set is deferred to the orchestration close rather than run independently here.
-- [ ] Confirm `specs/ROADMAP.md` renders consistently with `specs/state.json` after Phase 2's
+- [x] Confirm `specs/ROADMAP.md` renders consistently with `specs/state.json` after Phase 2's *(completed)*
       edge write — specifically that 655's blocked token now includes 517.
 
 **Timing**: 1 hour
