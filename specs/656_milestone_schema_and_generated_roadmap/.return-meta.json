@@ -1,25 +1,7 @@
 {
-  "status": "partial",
-  "dispatch_seq": 6,
-  "partial_progress": {
-    "stage": "context_exhaustion_handoff",
-    "details": "Phases 1-3 of 9 completed and committed (schema and validator, entries accessor, lint retarget). Phases 4-9 not started. Handoff written before any Phase 4 edit; tree clean at 61796b913.",
-    "handoff_path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-4-handoff-20261120T102300Z.md",
-    "phases_completed": 3,
-    "phases_total": 9
-  },
-  "artifacts": [
-    {
-      "type": "handoff",
-      "path": "specs/656_milestone_schema_and_generated_roadmap/handoffs/phase-4-handoff-20261120T102300Z.md",
-      "summary": "Context-pressure handoff at the Phase 3/4 boundary: state of phases 1-3, renderer outline, and verification procedure for the successor."
-    },
-    {
-      "type": "summary",
-      "path": "specs/656_milestone_schema_and_generated_roadmap/summaries/01_milestone-schema-generated-roadmap-summary.md",
-      "summary": "Partial implementation summary covering phases 1-3 of 9."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 8,
+  "artifacts": [],
   "completion_data": {
     "completion_summary": "Partial: the milestone layer is in the state schema and validator, a shared accessor reads batches from both store shapes, and the advisory lint reads state. The whole-file renderer, migration, documentation, redeploy and acceptance render are not done."
   },
@@ -116,5 +98,6 @@
       "implement",
       "general-implementation-agent"
     ]
-  }
+  },
+  "started_at": "2026-11-20T10:25:05Z"
 }

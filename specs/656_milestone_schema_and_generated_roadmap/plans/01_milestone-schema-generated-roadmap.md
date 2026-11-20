@@ -312,39 +312,39 @@ re-run that grep before removing `--roadmap` and stop if a second caller has app
 
 ---
 
-### Phase 4: Generated Sentinel and Milestone Render Path [NOT STARTED]
+### Phase 4: Generated Sentinel and Milestone Render Path [COMPLETED]
 
 **Goal**: A store that carries `roadmap_milestones` renders the whole file in the three-part
 layout, while a classic or stage store keeps its current behaviour until Phase 6.
 
 **Tasks**:
-- [ ] In `roadmap-preflight-lib.sh` define the sentinel constant (a fixed HTML comment naming the
+- [x] In `roadmap-preflight-lib.sh` define the sentinel constant (a fixed HTML comment naming the
   generator and "do not edit") and add a `generated` verdict to `detect_layout`, tested first, when
-  the file's first line is the sentinel. Existing verdicts are unchanged.
-- [ ] In `roadmap-integration.sh` add the whole-file render, selected when `roadmap_milestones` is
+  the file's first line is the sentinel. Existing verdicts are unchanged. *(completed)*
+- [x] In `roadmap-integration.sh` add the whole-file render, selected when `roadmap_milestones` is
   present, in this order: sentinel; `# Roadmap`; `primary_goals` bullets (falling back to
   `active_goal`); a status table (Milestone, Status, Tasks done, Review) whose first column links
   to each milestone section; a link to the last section; one section per milestone in array order;
-  the rules, conventions and repo-context section last.
-- [ ] Milestone section: heading `## {id}: {title}` with an explicit anchor derived from the stored
+  the rules, conventions and repo-context section last. *(completed)*
+- [x] Milestone section: heading `## {id}: {title}` with an explicit anchor derived from the stored
   `id`; `aim`; a Progress line (`status`, derived batch and task done-counts, `note`); a Review
   line (`state`, `ref`, `request`, `updated`); a Gate line; then per batch a description line, an
   `/orchestrate` line listing open members only, and one line per member reusing `status_token()`
-  and `token_rank()` unchanged with the member's `roadmap_annotation`.
-- [ ] A member that is terminal in `active_projects` or present in the archive's completed list
+  and `token_rank()` unchanged with the member's `roadmap_annotation`. *(completed)*
+- [x] A member that is terminal in `active_projects` or present in the archive's completed list
   counts as done and is left off the `/orchestrate` line; a batch with no open member renders as
-  done with no `/orchestrate` line; a closed milestone collapses to its heading plus one line.
-- [ ] Last section: `overview`, `rules`, `conventions`, then the list of open tasks in no batch.
-- [ ] Do not render `rationale`. Do not call `generate-task-order.sh --print` on this path.
-- [ ] Resolve the output path through the accessor when `--roadmap` is not given. `--regenerate`
+  done with no `/orchestrate` line; a closed milestone collapses to its heading plus one line. *(completed)*
+- [x] Last section: `overview`, `rules`, `conventions`, then the list of open tasks in no batch. *(completed)*
+- [x] Do not render `rationale`. Do not call `generate-task-order.sh --print` on this path. *(completed)*
+- [x] Resolve the output path through the accessor when `--roadmap` is not given. `--regenerate`
   on this path writes when the target classifies `generated` or `absent`; any other verdict is
-  left to the existing code.
-- [ ] Keep `--print`, `--dry-run`, the six-field stderr marker (`runs=` = open-milestone batch
-  count, `retained=` = 0), the `OUTCOME:` line and the `no content change` wording.
-- [ ] Add a milestone group to `test-roadmap-generation.sh`: section order, anchors from `id`,
+  left to the existing code. *(completed)*
+- [x] Keep `--print`, `--dry-run`, the six-field stderr marker (`runs=` = open-milestone batch
+  count, `retained=` = 0), the `OUTCOME:` line and the `no content change` wording. *(completed)*
+- [x] Add a milestone group to `test-roadmap-generation.sh`: section order, anchors from `id`,
   derived counts with a completed member, a done batch, a collapsed closed milestone, the
   unscheduled list, `output_path` honoured, byte-identical second regenerate, the `generated`
-  verdict. Keep the suite's live-tree isolation guard.
+  verdict. Keep the suite's live-tree isolation guard. *(completed)*
 
 **Timing**: 2 hours
 

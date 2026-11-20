@@ -1,17 +1,86 @@
 {
   "phase": 4,
   "phase_name": "Generated Sentinel and Milestone Render Path",
-  "started_at": "2026-11-20T10:22:00Z",
-  "last_updated": "2026-11-20T10:23:00Z",
+  "started_at": "2026-11-20T10:33:50Z",
+  "last_updated": "2026-11-20T10:33:50Z",
   "objectives": [
-    {"id": 1, "description": "Sentinel constant and generated verdict in roadmap-preflight-lib.sh", "status": "not_started", "files_touched": []},
-    {"id": 2, "description": "Whole-file milestone render path in roadmap-integration.sh", "status": "not_started", "files_touched": []},
-    {"id": 3, "description": "Milestone section, done-member handling, closed-milestone collapse, last section", "status": "not_started", "files_touched": []},
-    {"id": 4, "description": "Output path through the accessor; marker, OUTCOME line, no-content-change wording kept", "status": "not_started", "files_touched": []},
-    {"id": 5, "description": "Milestone group in test-roadmap-generation.sh", "status": "not_started", "files_touched": []}
+    {
+      "id": 1,
+      "description": "In `roadmap-preflight-lib.sh` define the sentinel constant (a fixed HTML comment naming the generator and \"do not edit\") and add a `generated` verdict to `detec",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/roadmap-preflight-lib.sh",
+        "agent-system/extensions/core/scripts/roadmap-integration.sh",
+        "agent-system/extensions/core/scripts/tests/test-roadmap-generation.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "In `roadmap-integration.sh` add the whole-file render, selected when `roadmap_milestones` is present, in this order: sentinel; `# Roadmap`; `primary_goals` bull",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Milestone section: heading `## {id}: {title}` with an explicit anchor derived from the stored `id`; `aim`; a Progress line (`status`, derived batch and task don",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "A member that is terminal in `active_projects` or present in the archive's completed list counts as done and is left off the `/orchestrate` line; a batch with n",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Last section: `overview`, `rules`, `conventions`, then the list of open tasks in no batch.",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Do not render `rationale`. Do not call `generate-task-order.sh --print` on this path.",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 7,
+      "description": "Resolve the output path through the accessor when `--roadmap` is not given. `--regenerate` on this path writes when the target classifies `generated` or `absent",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 8,
+      "description": "Keep `--print`, `--dry-run`, the six-field stderr marker (`runs=` = open-milestone batch count, `retained=` = 0), the `OUTCOME:` line and the `no content change",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 9,
+      "description": "Add a milestone group to `test-roadmap-generation.sh`: section order, anchors from `id`, derived counts with a completed member, a done batch, a collapsed close",
+      "status": "done",
+      "files_touched": []
+    }
   ],
-  "current_objective": 1,
+  "current_objective": null,
   "approaches_tried": [],
-  "deviations": [],
-  "handoff_count": 1
+  "deviations": [
+    {
+      "task_id": "4.4",
+      "description": "Done-member detection",
+      "type": "altered",
+      "reason": "A member absent from active_projects counts as done when it appears in any archive list (archived_projects, completed_projects, abandoned_projects), not only completed_projects; an active entry always wins over an archive entry with the same number.",
+      "annotation": "*(deviation: altered \u2014 any archive list counts, active entry wins)*"
+    },
+    {
+      "task_id": "4.3",
+      "description": "Empty open milestone and done batch wording",
+      "type": "altered",
+      "reason": "An open milestone with no batches renders `no batches yet` instead of 0/0 counts, and a done batch renders as one line with no member lines.",
+      "annotation": "*(deviation: altered \u2014 empty milestone says no batches yet; done batch is one line)*"
+    }
+  ],
+  "handoff_count": 0,
+  "verification_notes": "- Verified from the source store (CORE_TEST_SUBJECT_MODE=source-store run-all.sh --only): test-roadmap-generation.sh (132 cases, the 106 prior cases unedited), test-migrate-roadmap-next-to-state.sh, test-orchestrate-conclusion-roadmap.sh, test-skill-base-lifecycle.sh, test-sweep-invalidated-claims.sh, test-roadmap-entries-lib.sh, test-lint-roadmap-batch-proposals.sh: 7 passed, 0 failed. shellcheck -S warning and check-task-references.sh clean.\n- The renderer hard-sources lib/roadmap-entries-lib.sh; any sandbox that runs it must copy that lib.\n- RUNS_COUNT for the milestone shape is computed at file scope (a value set inside the --print command substitution never reaches the marker).\n- A milestone store whose target is classic/stage/unknown still falls through to the old code until Phase 6; Phase 5's migration must therefore write the generated file itself (remove the old file, then --regenerate onto absent, or move a --print render into place).\n- Anchors: milestone-{id lowercased}; last section anchor roadmap-context."
 }

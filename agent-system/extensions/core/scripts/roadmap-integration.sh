@@ -53,8 +53,12 @@ source "${SCRIPT_DIR}/lib/status-vocabulary.sh"
 # (CLASSIC_HEADERS, the fence helpers, detect_layout) -- see that file's header for why it was
 # extracted rather than left inline. Never re-inline a copy here.
 source "${SCRIPT_DIR}/lib/roadmap-preflight-lib.sh"
+# roadmap-entries-lib.sh answers "which batches are open" and "where does the roadmap render to"
+# for both store shapes; this script keeps no jq of its own for either question.
+source "${SCRIPT_DIR}/lib/roadmap-entries-lib.sh"
 
 ROADMAP_PATH="${PROJECT_ROOT}/specs/ROADMAP.md"
+ROADMAP_PATH_EXPLICIT=0
 STATE_PATH="${PROJECT_ROOT}/specs/state.json"
 MODE="print"
 MODE_FLAG_COUNT=0
@@ -74,7 +78,7 @@ while [[ $# -gt 0 ]]; do
     --prune)
       MODE="prune"; MODE_FLAG_COUNT=$((MODE_FLAG_COUNT + 1)); shift ;;
     --roadmap)
-      ROADMAP_PATH="$2"; shift 2 ;;
+      ROADMAP_PATH="$2"; ROADMAP_PATH_EXPLICIT=1; shift 2 ;;
     --state)
       STATE_PATH="$2"; shift 2 ;;
     --max-tasks)
@@ -135,6 +139,26 @@ trap emit_marker EXIT
 # marker on a failure -- the diagnosability fix for sub-fault 1 (a silent, undiagnosable abort).
 trap 'echo "ERROR: roadmap-integration.sh failed (mode=$MODE) at line $LINENO: exit status $?" >&2' ERR
 
+# ─── Store shape ────────────────────────────────────────────────────────────────────────────
+# A store that carries the roadmap_milestones key (an empty array included) renders the whole
+# file from state. Its output path comes from the store (roadmap_context.output_path, default
+# specs/ROADMAP.md) unless --roadmap named one.
+MILESTONE_SHAPE=0
+if jq -e 'has("roadmap_milestones")' "$STATE_PATH" >/dev/null 2>&1; then
+  MILESTONE_SHAPE=1
+  if [[ "$ROADMAP_PATH_EXPLICIT" -eq 0 ]]; then
+    __rel_out="$(roadmap_entries_output_path "$STATE_PATH")"
+    if [[ "$__rel_out" == /* || "$__rel_out" == ".." || "$__rel_out" == ../* \
+          || "$__rel_out" == */../* || "$__rel_out" == */.. ]]; then
+      echo "ERROR: roadmap_context.output_path must be a repository-relative path, got '${__rel_out}'" >&2
+      exit 1
+    fi
+    ROADMAP_PATH="${PROJECT_ROOT}/${__rel_out}"
+  fi
+  # runs= in the stderr marker: batches under milestones that are not closed.
+  RUNS_COUNT="$(roadmap_entries_batches "$STATE_PATH" | wc -l | tr -d ' ')"
+fi
+
 # ─── Terminal-set filter (status-vocabulary.sh anchors the enum; the terminal subset below is
 # the same three values generate-task-order.sh's get_active_tasks() excludes) ──────────────────
 TERMINAL_JQ='["completed","abandoned","expanded"]'
@@ -157,10 +181,14 @@ topic_count="$(jq -r '.[] | .topic' <<<"$active_tasks_json" 2>/dev/null | sort -
 # ─── Wave membership: parse generate-task-order.sh --print's Dependency Waves table ─────────────
 # Consumed as a read-only subprocess only -- that script runs build_graph/compute_waves
 # unconditionally at file scope (cannot be sourced). No wave/DAG algorithm is reimplemented here.
+# The milestone render never consults it, so the subprocess is skipped for that store shape.
 declare -A WAVE_OF
 wave_header_found=0
 in_table=0
-wave_output="$("${SCRIPT_DIR}/generate-task-order.sh" --print)"
+wave_output=""
+if [[ "$MILESTONE_SHAPE" -eq 0 ]]; then
+  wave_output="$("${SCRIPT_DIR}/generate-task-order.sh" --print)"
+fi
 while IFS= read -r line; do
   if [[ "$in_table" -eq 0 ]]; then
     if [[ "$line" == '**Dependency Waves**:' ]]; then
@@ -186,7 +214,7 @@ while IFS= read -r line; do
   esac
 done <<<"$wave_output"
 
-if [[ "$wave_header_found" -eq 0 ]]; then
+if [[ "$MILESTONE_SHAPE" -eq 0 && "$wave_header_found" -eq 0 ]]; then
   echo "ERROR: generate-task-order.sh --print did not emit a **Dependency Waves**: table" >&2
   exit 1
 fi
@@ -383,7 +411,238 @@ render_coverage_appendix() {
   echo '```'
 }
 
+# ─── Whole-file milestone render (selected when $STATE_PATH carries roadmap_milestones) ───────
+#
+# The file is rendered in three parts, in this order: an intro (primary goals, a milestone status
+# table whose first column links to each milestone section, a link to the last section); one
+# dashboard section per milestone in array order; then rules, conventions and repo context.
+# Nothing is read back from the file being written, the batch `rationale` field is never
+# rendered, and generate-task-order.sh is never consulted on this path.
+#
+# MS_RENDER_JQ computes the whole structure in one jq pass and emits a line protocol, fields
+# separated by the unit separator (U+001F):
+#   L<US>text              a literal output line
+#   BS / BE                start / end of a block of task rows (sorted by token rank, then number)
+#   O<US>num               an open task row: its token comes from status_token()
+#   X<US>num<US>tok<US>d   a task row whose token is already decided (`done`, `missing`)
+# A member counts as done when it is terminal in active_projects, or absent from active_projects
+# and present in the sibling archive/state.json. Counts are derived here on every render and are
+# never stored.
+# shellcheck disable=SC2016  # $-prefixed names below are jq variables, not shell expansions
+MS_RENDER_JQ='
+def clean: tostring | gsub("[\t\n\r\u001f]+"; " ");
+def cell: clean | gsub("\\|"; "\\|");
+def anchor: "milestone-" + (ascii_downcase | gsub("[^a-z0-9_-]"; "-"));
+def L(s): "L\u001f" + s;
+def frac(a; b): (a | tostring) + "/" + (b | tostring);
+def review_text:
+  (.review // {}) as $r
+  | ($r.state // "none")
+    + (if ($r.ref // "") == "" then "" else " on `" + ($r.ref | clean) + "`" end)
+    + (if ($r.request // "") == "" then "" else ", " + ($r.request | clean) end)
+    + (if ($r.updated // "") == "" then "" else " (updated " + ($r.updated | clean) + ")" end);
+def listsec(h; items):
+  if (items | length) > 0
+  then L("### " + h), L(""), (items[] | L("- " + clean)), L("")
+  else empty end;
+def bsection($titles):
+  if (.open | length) == 0 then
+    L("**Batch " + (.n | tostring) + "** (done) -- " + (.description | clean)), L("")
+  else
+    L("**Batch " + (.n | tostring) + "** -- " + (.description | clean)
+      + (if (.done | length) > 0
+         then " (" + frac(.done | length; .ids | length) + " done)" else "" end)),
+    L(""), L("```"),
+    L("/orchestrate " + (.open | map(tostring) | join(", "))
+      + (if .flags == "" then "" else " " + (.flags | clean) end)),
+    "BS",
+    ( . as $b | .ids[]
+      | if IN($b.open[]) then "O\u001f" + tostring
+        elif IN($b.done[]) then "X\u001f" + tostring + "\u001fdone\u001f" + ($titles[tostring] // "" | clean)
+        else "X\u001f" + tostring + "\u001fmissing\u001f" end ),
+    "BE", L("```"), L("")
+  end;
+def msection($titles):
+  L("<a id=\"" + (.id | anchor) + "\"></a>"),
+  L("## " + .id + ": " + (.title | clean)), L(""),
+  ( if .status == "closed" then
+      L("Closed" + (if .closed == "" then "" else " " + .closed end)
+        + (if .t == 0 then "" else " -- " + frac(.t_done; .t) + " tasks done" end)
+        + " -- review: " + .review
+        + (if .note == "" then "" else " -- " + (.note | clean) end)),
+      L("")
+    else
+      (if .aim == "" then empty else L(.aim | clean), L("") end),
+      L("- **Progress**: " + .status + " -- "
+        + (if .b == 0 then "no batches yet"
+           else frac(.b_done; .b) + " batches, " + frac(.t_done; .t) + " tasks done" end)
+        + (if .note == "" then "" else " -- " + (.note | clean) end)),
+      L("- **Review**: " + .review),
+      (if .gate == "" then empty else L("- **Gate**: " + (.gate | clean)) end),
+      L(""),
+      (.batches[] | bsection($titles))
+    end );
+
+($arch[0] // {}) as $a
+| (.active_projects // []) as $ap
+| [ ($a.archived_projects // [])[], ($a.completed_projects // [])[], ($a.abandoned_projects // [])[] ] as $archived
+| [$ap[].project_number] as $apnums
+| ( [$ap[] | select(.status | IN($terminal[])) | .project_number]
+    + [$archived[].project_number | select(IN($apnums[]) | not)] | unique ) as $done
+| [$ap[] | select(.status | IN($terminal[]) | not) | .project_number] as $open
+| ( reduce ($ap[], $archived[]) as $t ({};
+      ($t.project_number | tostring) as $k
+      | if has($k) then . else .[$k] = ($t.title // $t.project_name // "") end) ) as $titles
+| [ (.roadmap_milestones // [])[]
+    | . as $m
+    | [ ($m.batches // []) | to_entries[]
+        | (.value.task_ids // []) as $ids
+        | { n: (.key + 1),
+            description: (.value.description // ""),
+            flags: (.value.flags // ""),
+            ids: $ids,
+            open: [$ids[] | select(IN($open[]))],
+            done: [$ids[] | select(IN($done[]))] } ] as $bs
+    | { id: ($m.id | tostring),
+        title: ($m.title // ""),
+        aim: ($m.aim // ""),
+        gate: ($m.gate // ""),
+        status: ($m.progress.status // "planned"),
+        closed: ($m.progress.closed // ""),
+        note: ($m.progress.note // ""),
+        review: ($m | review_text),
+        review_state: ($m.review.state // "none"),
+        review_request: ($m.review.request // ""),
+        batches: $bs,
+        b: ($bs | length),
+        b_done: ([$bs[] | select((.open | length) == 0)] | length),
+        t: ([$bs[].ids[]] | unique | length),
+        t_done: ([$bs[].done[]] | unique | length) } ] as $ms
+| ( (.primary_goals // []) | if type == "array" then map(select(type == "string" and length > 0)) else [] end ) as $pg
+| ( if ($pg | length) > 0 then $pg
+    else [(.active_goal // "") | select(type == "string" and length > 0)] end ) as $goals
+| (.roadmap_context // {}) as $c
+| ( $open - [$ms[] | select(.status == "closed" | not) | .batches[].ids[]] | sort ) as $unscheduled
+| ( L($sentinel), L("# Roadmap"), L(""),
+    ($goals[] | L("- " + clean)),
+    (if ($goals | length) > 0 then L("") else empty end),
+    ( if ($ms | length) > 0 then
+        L("| Milestone | Status | Tasks done | Review |"),
+        L("|---|---|---|---|"),
+        ( $ms[]
+          | L("| [" + ((.id + ": " + .title) | cell) + "](#" + (.id | anchor) + ") | "
+              + (if .status == "closed"
+                 then "closed" + (if .closed == "" then "" else " " + .closed end)
+                 else .status end)
+              + " | " + (if .t == 0 then "-" else frac(.t_done; .t) end)
+              + " | " + (.review_state
+                         + (if .review_request == "" then "" else " (" + (.review_request | cell) + ")" end))
+              + " |") ),
+        L("")
+      else L("_No milestones recorded._"), L("") end ),
+    L("See also: [Rules, conventions and repo context](#roadmap-context)"), L(""),
+    ($ms[] | msection($titles)),
+    L("<a id=\"roadmap-context\"></a>"),
+    L("## Rules, conventions and repo context"), L(""),
+    listsec("Repository"; ($c.overview // [])),
+    listsec("Rules"; ($c.rules // [])),
+    listsec("Conventions"; ($c.conventions // [])),
+    ( if ($unscheduled | length) > 0 then
+        L("### Open tasks in no batch"), L(""), L("```"),
+        "BS", ($unscheduled[] | "O\u001f" + tostring), "BE",
+        L("```"), L("")
+      else empty end ) )
+'
+
+# format_task_row NUM TOKEN DESC ANNOT -> one member line: "{num} {token}" padded to 20 columns,
+# the description truncated so the line stays within 100 characters before any annotation.
+format_task_row() {
+  local num="$1" tok="$2" desc="$3" annot="$4" prefix width avail trimmed
+  prefix="$(printf '%s %s' "$num" "$tok")"
+  width=${#prefix}
+  if [[ "$width" -lt 20 ]]; then
+    printf -v prefix '%-20s' "$prefix"
+  else
+    prefix="${prefix}  "
+  fi
+  avail=$((100 - ${#prefix}))
+  trimmed="$desc"
+  if [[ "${#trimmed}" -gt "$avail" && "$avail" -gt 3 ]]; then
+    trimmed="${trimmed:0:$((avail - 3))}..."
+  fi
+  if [[ -n "$annot" ]]; then
+    printf '%s%s   <- %s\n' "$prefix" "$trimmed" "$annot"
+  else
+    printf '%s\n' "${prefix}${trimmed}" | sed 's/[[:space:]]*$//'
+  fi
+}
+
+# render_milestone_file -> the whole generated file on stdout.
+render_milestone_file() {
+  local us=$'\x1f' archive_path arch_file plan
+  archive_path="$(dirname "$STATE_PATH")/archive/state.json"
+  arch_file="/dev/null"
+  if [[ -f "$archive_path" ]] && jq -e 'type == "object"' "$archive_path" >/dev/null 2>&1; then
+    arch_file="$archive_path"
+  fi
+
+  plan="$(jq -r --slurpfile arch "$arch_file" --argjson terminal "$TERMINAL_JQ" \
+    --arg sentinel "$ROADMAP_GENERATED_SENTINEL" "$MS_RENDER_JQ" "$STATE_PATH")"
+
+  # One jq pass loads every open task's display fields and its JSON (status_token's input).
+  local -A task_json=() task_desc=() task_annot=()
+  local num desc annot json
+  while IFS="$us" read -r num desc annot json; do
+    [[ -n "$num" ]] || continue
+    task_json["$num"]="$json"
+    task_desc["$num"]="$desc"
+    task_annot["$num"]="$annot"
+  done < <(jq -r '.[] | [(.project_number | tostring),
+      ((.title // .project_name // "") | tostring | gsub("[\t\n\r\u001f]+"; " ")),
+      ((.roadmap_annotation // "") | tostring | gsub("[\t\n\r\u001f]+"; " ")),
+      tojson] | join("\u001f")' <<<"$active_tasks_json")
+
+  local kind a b c rows="" tok
+  while IFS="$us" read -r kind a b c; do
+    case "$kind" in
+      L) printf '%s\n' "$a" ;;
+      BS) rows="" ;;
+      O)
+        tok="$(status_token "${task_json[$a]}")"
+        rows+="$(token_rank "$tok")${us}${a}${us}${tok}${us}${task_desc[$a]}${us}${task_annot[$a]}"$'\n'
+        ;;
+      X)
+        rows+="$(token_rank "$b")${us}${a}${us}${b}${us}${c}${us}"$'\n'
+        ;;
+      BE)
+        local _rank rnum rtok rdesc rannot
+        while IFS="$us" read -r _rank rnum rtok rdesc rannot; do
+          [[ -n "$rnum" ]] || continue
+          format_task_row "$rnum" "$rtok" "$rdesc" "$rannot"
+        done < <(printf '%s' "$rows" | sort -t"$us" -k1,1n -k2,2n)
+        ;;
+    esac
+  done <<<"$plan" | cat -s
+}
+
+# mode_regenerate_milestones -- writes the whole generated file. Reached only when the target
+# classifies as `generated` or is absent; every other verdict stays with the caller.
+mode_regenerate_milestones() {
+  PRUNED_COUNT=0
+  RETAINED_COUNT=0
+  ROADMAP_LAYOUT="generated"
+  local new_content
+  new_content="$(render_milestone_file)"
+  [[ -n "$new_content" ]] || { echo "ERROR: milestone render produced no output" >&2; return 1; }
+  mkdir -p "$(dirname "$ROADMAP_PATH")"
+  write_or_diff "$new_content"
+}
+
 mode_print() {
+  if [[ "$MILESTONE_SHAPE" -eq 1 ]]; then
+    render_milestone_file
+    return 0
+  fi
   render_open_work
   render_coverage_appendix '[]'
 }
@@ -558,15 +817,17 @@ _RM_ASSEMBLE_EOF_
 write_or_diff() {
   local new_content="$1" tmp changed_desc
   if [[ "$DRY_RUN" -eq 1 ]]; then
+    local base="$ROADMAP_PATH"
+    [[ -f "$base" ]] || base="/dev/null"
     tmp="$(mktemp)"
     printf '%s\n' "$new_content" >"$tmp"
-    if cmp -s "$ROADMAP_PATH" "$tmp"; then
+    if cmp -s "$base" "$tmp"; then
       changed_desc="no content change"
     else
       changed_desc="content would change"
     fi
     echo "OUTCOME: --${MODE} --dry-run diffed ${ROADMAP_PATH}; wrote nothing (layout=${ROADMAP_LAYOUT}, ${changed_desc})" >&2
-    diff -u "$ROADMAP_PATH" "$tmp" || true
+    diff -u "$base" "$tmp" || true
     rm -f "$tmp"
   else
     tmp="$(mktemp "$(dirname "$ROADMAP_PATH")/.roadmap-integration.XXXXXX")"
@@ -678,6 +939,19 @@ assemble_stage_roadmap() {
 }
 
 mode_regenerate() {
+  # A milestone-shaped store owns the whole file: write when the target is already a generated
+  # file, or is absent while the store has at least one milestone to render.
+  if [[ "$MILESTONE_SHAPE" -eq 1 ]]; then
+    local verdict
+    verdict="$(roadmap_preflight_classify "$ROADMAP_PATH")"
+    if [[ "$verdict" == "generated" ]] \
+       || { [[ "$verdict" == "absent" ]] \
+            && jq -e '(.roadmap_milestones // []) | length > 0' "$STATE_PATH" >/dev/null 2>&1; }; then
+      mode_regenerate_milestones
+      return $?
+    fi
+  fi
+
   if [[ ! -f "$ROADMAP_PATH" ]]; then
     echo "NOTE: no roadmap tracked at ${ROADMAP_PATH}; --regenerate is a supported no-op." >&2
     RUNS_COUNT=0; PRUNED_COUNT=0; RETAINED_COUNT=0
