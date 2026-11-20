@@ -428,36 +428,38 @@ and changes no production code, so nothing outside that file's own coverage is r
 
 ---
 
-### Phase 4: Consumer Exit-Code Handling [NOT STARTED]
+### Phase 4: Consumer Exit-Code Handling [COMPLETED]
 
 **Goal**: The one caller that classifies `git-commit-scoped.sh`'s exit codes treats `8` and `9` as
 non-failure observability rather than as a loud orchestration defect, and the one caller that
 passes them through documents that it does.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh` immediately
-  before editing.
-- [ ] Add an explicit `8|9)` arm to the WORK (i) `case "$commit_rc"` statement (around line 2118),
+- [x] Re-read `agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh` immediately
+  before editing. *(completed)*
+- [x] Add an explicit `8|9)` arm to the WORK (i) `case "$commit_rc"` statement (around line 2118),
   placed after the `2|3|4|5|6)` arm and before the `*)` catch-all, emitting a `NOTE:`-level
   message (never `ERROR:`) stating that the target repository's `specs` tree is wholly or partly
   gitignored, that this is the repository's own configuration and not an orchestration defect, and
   — for `9` — that the commit itself landed. Leave `commit_attribution_note` empty on this arm so
-  the emitted verdict JSON carries no failure attribution.
-- [ ] Do **not** record an `issue-record.sh` entry on the new arm: these are not issues.
-- [ ] Leave the demotion gate's `2|3|4|5)` arm (around line 2157) **unchanged** — it already
+  the emitted verdict JSON carries no failure attribution. *(completed)*
+- [x] Do **not** record an `issue-record.sh` entry on the new arm: these are not issues.
+  *(completed -- no such call added)*
+- [x] Leave the demotion gate's `2|3|4|5)` arm (around line 2157) **unchanged** — it already
   excludes `8` and `9` by construction. Extend only its explanatory comment block (which today
   enumerates exit `1`, exit `6`, and the unrecognized-code catch-all as the deliberate
   exclusions) to name `8` and `9` as two further deliberate exclusions, with the reason: a task
   whose only "failure" is that its target repository ignores `specs/` must never be demoted to
-  `partial`.
-- [ ] Update `agent-system/extensions/core/scripts/git-commit-phase.sh`'s `EXIT-CODE MAPPING`
+  `partial`. *(completed; the arm's own `2|3|4|5)` / `*) : ;;` code is byte-identical, only the
+  comment and the catch-all's inline note were extended)*
+- [x] Update `agent-system/extensions/core/scripts/git-commit-phase.sh`'s `EXIT-CODE MAPPING`
   header block (around line 180-195) to state that inner codes `8` and `9` also pass through
   verbatim, and that they do not collide with this script's own locally-reserved `6` because they
   land outside the `0-6` range it reserves. Record, without fixing it, that inner codes `6` and
   `7` **do** collide with that local `6` — a pre-existing ambiguity outside this task's scope
-  (non-goal) and a hazard a reader of this header should know about.
-- [ ] Make no change to `git-commit-phase.sh`'s post-commit completeness check: the research
-  ruled that site out with live evidence.
+  (non-goal) and a hazard a reader of this header should know about. *(completed)*
+- [x] Make no change to `git-commit-phase.sh`'s post-commit completeness check: the research
+  ruled that site out with live evidence. *(completed -- no change made)*
 
 **Timing**: 1.5 hours
 

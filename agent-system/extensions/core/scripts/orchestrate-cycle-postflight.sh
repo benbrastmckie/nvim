@@ -2138,6 +2138,21 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
         --session "$session_id" \
         >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
       ;;
+    8|9)
+      # V13 (git-commit-scoped.sh's gitignored-specs-path gate): the target repository's own
+      # `specs` tree is wholly (8) or partly (9) gitignored. This is the repository's OWN
+      # configuration, never an orchestration defect, so this arm is deliberately NOTE-level
+      # (never ERROR) and deliberately leaves commit_attribution_note empty — the emitted verdict
+      # JSON must carry no failure attribution for either code. For 9, the commit itself already
+      # landed (see context/standards/git-staging-scope.md's exit-code table); for 8, nothing
+      # survived to commit, but that absence is equally benign. No issue-record.sh call either:
+      # these are not issues.
+      if [ "$commit_rc" -eq 8 ]; then
+        echo "${notice_prefix} NOTE: git-commit-scoped.sh exited 8 for task ${task_number}'s per-cycle commit — this repository's own specs tree is wholly gitignored (Verified Finding V13), so nothing was committed this cycle. Not an orchestration defect." >&2
+      else
+        echo "${notice_prefix} NOTE: git-commit-scoped.sh exited 9 for task ${task_number}'s per-cycle commit — this repository's own specs tree is partly gitignored (Verified Finding V13); the trackable paths already committed successfully. Not an orchestration defect." >&2
+      fi
+      ;;
     *)
       # An unrecognized future exit code from git-commit-scoped.sh — treated like 2-6 (loud,
       # attributable, never silently swallowed) rather than falling through unclassified.
@@ -2153,7 +2168,11 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
   # no-op) and exit 6 (V9: a commit still landed alongside a dropped out-of-repository path) are
   # deliberately excluded — see context/standards/git-staging-scope.md's exit-code table. An
   # unrecognized future code (the `*)` catch-all above) is excluded too: whether a commit landed
-  # is unknown there, and fail-open means "do not demote on uncertainty".
+  # is unknown there, and fail-open means "do not demote on uncertainty". Exit 8 and exit 9
+  # (V13: the target repository's own specs tree is wholly or partly gitignored) are two further
+  # deliberate exclusions, for the same reason as exit 6: a task whose only "failure" is that its
+  # target repository ignores `specs/` must never be demoted to `partial` — that is the
+  # repository's own configuration, not evidence the task's work failed to land.
   case "$commit_rc" in
     2|3|4|5)
       if [ "$dispatch_status" = "implemented" ] && [ "$implemented_gate_passed" = "true" ] \
@@ -2192,13 +2211,14 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
         fi
       fi
       ;;
-    *) : ;; # exit 1, exit 6, and any unrecognized code: no demotion — see rationale above.
+    *) : ;; # exit 1, exit 6, exit 8/9, and any unrecognized code: no demotion — see rationale above.
   esac
   # HARD CONSTRAINT: `halt` and `infra_exempt_cycle` are never touched here, in either branch
   # above. `verdict` and the `completed`/`partial` status write ARE narrowly reassignable here —
   # but ONLY inside the exact gated conjunction immediately above (exit 2-5, an `implemented`
   # dispatch, `implemented_gate_passed`, no deploy-pending or derived-staleness refusal). Outside
-  # that conjunction (exit 1, exit 6, exit 7/`*)`, any non-implement dispatch_status, or a gate
+  # that conjunction (exit 1, exit 6, exit 7/`*)`, exit 8/9 (V13, its own dedicated NOTE arm in
+  # the first `case "$commit_rc"` statement above), any non-implement dispatch_status, or a gate
   # that did not pass) this call site changes nothing, exactly as before this block existed. See
   # context/standards/status-markers.md's [COMPLETED] subsection for the one sanctioned exception
   # this implements, and context/standards/git-staging-scope.md's caller-escalation residual

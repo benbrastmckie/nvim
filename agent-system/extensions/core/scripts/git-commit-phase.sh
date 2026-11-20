@@ -191,6 +191,23 @@
 #        script closes.
 #   2    Usage/argument error, before any commit is attempted.
 #
+# 8/9 PASSTHROUGH (git-commit-scoped.sh's V13 gate): inner codes 8 (all-ignored, nothing
+# committed) and 9 (partial-ignore, commit landed alongside a dropped gitignored path) are ALSO
+# passed through verbatim by the same "0-5 ... whenever the completeness check did not fail"
+# rule above -- they are not a separate case. They do NOT collide with this script's own
+# locally-reserved 6, because 8 and 9 land outside the 0-6 range this script reserves for its own
+# completeness-check failure.
+#
+# PRE-EXISTING, UNFIXED AMBIGUITY (recorded, not fixed, out of scope here): inner codes 6
+# (git-commit-scoped.sh's own V9 out-of-repository-drop-alongside-a-landed-commit code) and 7
+# (that script's V10 out-of-file_scope-drop-alongside-a-landed-commit code) DO collide with this
+# script's own locally-reserved 6 above -- a caller reading this script's bare exit code cannot
+# tell "git-commit-scoped.sh reported its own inner 6 or 7" apart from "this script's own
+# completeness check failed" without re-deriving which case actually applied. This is a
+# pre-existing hazard a reader of this header should know about; fixing it would widen this
+# change's surface into territory a separate, concurrently-scoped working-tree-residue
+# disposition policy effort also edits, so it is named here rather than fixed.
+#
 # Recovery from exit 6 is a follow-up commit of the named paths, never a widened pathspec --
 # matching the Containment Self-Check's own existing recovery guidance.
 #
