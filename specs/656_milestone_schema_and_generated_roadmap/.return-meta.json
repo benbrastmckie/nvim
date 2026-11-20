@@ -1,0 +1,53 @@
+{
+  "status": "researched",
+  "started_at": "2026-11-20T09:18:19Z",
+  "completed_at": "2026-11-20T10:05:00Z",
+  "dispatch_seq": 4,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/656_milestone_schema_and_generated_roadmap/reports/01_milestone-schema-generated-roadmap.md",
+      "summary": "Milestone schema design (primary_goals, roadmap_milestones, roadmap_context), whole-file render layout with a measured sf1-engine prototype, per-section pruning ledger, migration and losslessness gate, lint retarget disposition, and the files and tests the change reaches."
+    }
+  ],
+  "next_steps": "Run /orchestrate 656 to create implementation plan",
+  "user_decision": {
+    "question": "In a repository whose specs/ tree is gitignored (sf1-engine, and every repository init-specs.sh now sets up by default), should the generated roadmap stay at specs/ROADMAP.md, where no collaborator sees it, or be publishable at a tracked path?",
+    "options": [
+      "Add an optional roadmap_context.output_path field the renderer honours; default remains specs/ROADMAP.md",
+      "Always render to specs/ROADMAP.md; the dashboard stays local wherever specs/ is ignored"
+    ],
+    "recommended": "Add an optional roadmap_context.output_path field the renderer honours; default remains specs/ROADMAP.md",
+    "blocking": false
+  },
+  "memory_candidates": [
+    {
+      "content": "In the core extension's roadmap entries, the one length-bounded field (roadmap_batches[].description, maxLength 100, enforced by validate-state Check 13) held its bound in 37 of 37 live entries across two repositories, while every unbounded sibling (rationale, roadmap_notes paragraphs) grew to 500-10,800 characters each and made up about 70% of the rendered ROADMAP.md. When adding an agent-authored prose field to state.json that a generator renders, give it a schema maxLength and a validator check at introduction, and run the proposed bound against existing text first: a 200-char bound on goals failed 2 of 3 real paragraphs and a 300-char bound on settled decisions fails 7 of 20.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/656_milestone_schema_and_generated_roadmap/reports/01_milestone-schema-generated-roadmap.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["roadmap", "state-schema", "maxLength", "anti-fluff", "generated-artifact", "validate-state"]
+    },
+    {
+      "content": "The state-write backstop hook scans Bash command text: a command that writes any path shaped like *state.json while mentioning active_projects is refused, even when the target is a scratchpad fixture. For a read-only prototype over a real specs/state.json, read the state file unchanged and keep new or experimental keys in a separately named overlay file passed with jq --slurpfile, so no state-shaped file is written at all.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/656_milestone_schema_and_generated_roadmap/reports/01_milestone-schema-generated-roadmap.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["state-write", "hook", "prototype", "jq", "slurpfile", "scratchpad"]
+    },
+    {
+      "content": "scripts/lint/lint-roadmap-batch-proposals.sh parses the rendered specs/ROADMAP.md, not state.json, so its findings lag state: in one run it reported 1 terminal-member finding where validate-state.sh Check 13 reported 6 on the same store. 316 of its 326 findings in the source repository were finding (a), file_scope overlap with an out-of-batch task, which no other check owns; its single executable call site is scripts/orchestrate-conclusion-roadmap.sh.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/656_milestone_schema_and_generated_roadmap/reports/01_milestone-schema-generated-roadmap.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["lint", "roadmap", "batch-proposals", "conclusion-stage", "file_scope", "check-13"]
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1795163529_143ff8_656",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 9
+  }
+}

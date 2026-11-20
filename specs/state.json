@@ -18604,12 +18604,12 @@
     {
       "project_number": 656,
       "project_name": "milestone_schema_and_generated_roadmap",
-      "status": "not_started",
+      "status": "researched",
       "task_type": "meta",
       "topic": "orchestrator",
       "description": "Milestone schema in state.json and a wholly generated ROADMAP.md\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in /home/benjamin/.config/nvim, never a deployed .claude/** tree (a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md).\n\n=== GOAL ===\n\nGive ROADMAP.md a milestone layer and make the WHOLE file generated from specs/state.json, so the next milestones are easy for a collaborator to review and everything updates mechanically.\n\n=== BUILD ON WHAT ALREADY EXISTS -- DO NOT REBUILD IT ===\n\nThe archived task `roadmap_command_generated_from_state` already established the generated-from-state architecture: the `roadmap_batches` and `roadmap_notes` entries in specs/state.json, entry writes via state-write.sh, rendering via roadmap-integration.sh --regenerate, and the /roadmap command + skill-roadmap + roadmap-agent trio that maintains the entries. Its own recorded limit is the starting point for this task: only `## Next` and `## Open work` render from state, while every other section of the live file is still hand-authored. That hand-authored remainder is the material the user reports never reading.\n\n=== WHAT TO ADD to context/schemas/state-schema.json AND scripts/validate-state.sh TOGETHER (schema and validator move as one) ===\n\n- primary_goals -- drives the generated intro.\n- milestones[] -- ORDERED. Each milestone carries: a description of what it aims to achieve, progress, and git review/approval state.\n- batches nested UNDER a milestone, each with a statement of what that batch aims to achieve. Today roadmap_batches is flat and milestone-less; this is the structural change.\n- repo overview plus rules/conventions fields, sited so they do not crowd the milestones.\n\n=== GENERATED OUTPUT ===\n\nExtend generation from the two current sections to the entire file. No hand-authored sections remain. Section order, exactly:\n\n1. A brief intro carrying the primary goals, plus links to each milestone section and to the rules/conventions section.\n2. One section per milestone, in order, each listing its batches with what each batch aims to achieve.\n3. Rules, conventions and repo context LAST, for broader reader context.\n\nEach milestone section is a COLLABORATION DASHBOARD: brief progress plus git review/approval status, so a reviewer sees the state of the next milestones without reading the whole file.\n\n=== PRUNING IS A NAMED DELIVERABLE, not a side effect ===\n\nDecide, per section the generator currently emits, whether anyone reads it, and DROP what nobody does. The live ROADMAP.md of /home/benjamin/Projects/Sapience/sf1-engine is the worked example of the failure mode: multi-paragraph \"Why this order\" prose per batch, several screens long.\n\n=== RULE ON THE ADVISORY BATCH LINT ===\n\nscripts/lint/lint-roadmap-batch-proposals.sh validates HAND-AUTHORED /orchestrate batch proposals written into ROADMAP.md phase blocks, and is wired into the conclusion stage's roadmap step. Making the file wholly generated removes its input. Record exactly one disposition: retarget it at the state.json milestone/batch entries, or retire it, naming the call site either way. Leaving a lint pointed at text that can no longer exist is not an acceptable outcome.\n\n=== PRESERVE THE JUDGMENT/RENDERING SPLIT ===\n\nroadmap-agent and skill-roadmap decide batch membership, order, descriptions and missing dependency edges, and never render the file; roadmap-integration.sh renders and exercises no judgment. The schema change must not collapse that boundary.\n\n=== MIGRATION ===\n\nStores holding flat roadmap_batches/roadmap_notes with no milestones need a one-time migration to the milestone-nested shape, with a losslessness accounting gate. scripts/migrate-roadmap-next-to-state.sh is the in-store precedent for that shape of migration.\n\n=== TESTS THAT PIN CURRENT BEHAVIOUR -- update them, never bypass them ===\n\nscripts/tests/test-roadmap-generation.sh\nscripts/tests/test-validate-state.sh\nscripts/tests/test-generate-task-order.sh\nscripts/tests/test-orchestrate-suggest-next-batch.sh\nscripts/tests/test-migrate-roadmap-next-to-state.sh\n\nReconcile with the 49 existing \"milestone\" occurrences across the core extension rather than introducing a parallel vocabulary.\n\n=== ACCEPTANCE / DONE WHEN ===\n\nspecs/ROADMAP.md renders entirely from specs/state.json with no hand-authored section remaining; the generated file follows the three-section order above; each milestone section shows progress and git review/approval state; the pruning decisions and the advisory-lint disposition are both recorded; the migration runs with its losslessness gate passing; and all five test files above pass.\n\nFinal acceptance check: regenerate the ROADMAP.md of /home/benjamin/Projects/Sapience/sf1-engine from the new schema -- its milestones M0 through M4 are defined in integration/design.md section 7 with per-milestone gate text, its batches live in state.json roadmap_batches, and M0 has just been recorded closed -- then judge whether the output actually serves a reviewer.",
       "created": "2026-11-19T18:35:10Z",
-      "last_updated": "2026-11-19T22:03:22Z",
+      "last_updated": "2026-11-20T09:27:57Z",
       "dependencies": [
         654
       ],
@@ -18632,9 +18632,15 @@
         "specs/state.json",
         "specs/TODO.md"
       ],
-      "next_artifact_number": 1,
-      "session_id": "sess_1795113136_84ab7a",
-      "artifacts": [],
+      "next_artifact_number": 2,
+      "session_id": "sess_1795163529_143ff8",
+      "artifacts": [
+        {
+          "path": "specs/656_milestone_schema_and_generated_roadmap/reports/01_milestone-schema-generated-roadmap.md",
+          "type": "report",
+          "summary": "Milestone schema design (primary_goals, roadmap_milestones, roadmap_context), whole-file render layout with a measured sf1-engine prototype, per-section pruning ledger, migration and losslessness gate, lint retarget disposition, and the files and tests the change reaches."
+        }
+      ],
       "audit_verdict": {
         "proposal": {
           "id": "milestone_schema_and_generated_roadmap",
