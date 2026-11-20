@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 3,
+  "phases_completed": 0,
+  "phases_total": 1,
+  "summary": "Wrote a single-phase implementation plan for task 661. The research report already discharges both DONE WHEN clauses -- four options scored against all five criteria with the churn criterion applied first, recommending Option D (document the exposure, build nothing), plus a drafted durability statement -- so the only remaining work is one verify-and-summarize phase. Both carried-figure premise lines were re-validated against live state and confirmed unchanged: core's source_dir resolves and exists, and this record's file_scope is still the empty array. No file under agent-system/** is declared by any phase.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/661_unbacked_specs_durability_options/plans/01_unbacked-specs-durability-options.md",
+      "summary": "Single-phase plan: verify the research report against both DONE WHEN clauses, then write the completion summary carrying the drafted durability statement verbatim for the documentation record to place."
+    }
+  ]
+}

@@ -1,27 +1,30 @@
 {
-  "status": "researched",
-  "dispatch_seq": 1,
+  "status": "planned",
+  "dispatch_seq": 3,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/661_unbacked_specs_durability_options/reports/01_unbacked_specs_durability.md",
-      "summary": "Evaluates sibling-repo, orphan-branch-commit, external-sync, and do-nothing options for recovering an ignored specs/ tree; recommends documenting the exposure and building no mechanism, since every recoverability option reintroduces the cross-branch/cross-repo churn the ignored posture exists to avoid."
+      "type": "plan",
+      "path": "specs/661_unbacked_specs_durability_options/plans/01_unbacked-specs-durability-options.md",
+      "summary": "Single-phase plan: verify the research report against both DONE WHEN clauses, then write the completion summary carrying the drafted durability statement verbatim for the documentation record to place."
     }
   ],
-  "next_steps": "Run /orchestrate 661 to create implementation plan",
+  "next_steps": "Run /orchestrate 661 to execute the plan",
   "metadata": {
     "session_id": "sess_1795130570_6d4a1f_661",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 1,
+    "estimated_hours": 0.75,
+    "dependency_waves": 1
   },
   "memory_candidates": [
     {
-      "content": "When evaluating a proposed durability/backup mechanism for an ignored specs/ tree, apply the 'does it reintroduce cross-branch/cross-repo churn' test first: sibling repositories and orphan-branch archive commits both recover bytes but add a second branch/repo that every branch-enumerating tool (CI, stale-branch sweeps, PR listings) must now learn to skip -- the same cost class the ignored posture was adopted to remove.",
+      "content": "For a research-only record whose report already discharges every DONE WHEN clause, the honest plan is one verify-and-summarize phase, not a manufactured multi-phase decomposition. The remaining work is attestation plus a completion summary that carries the drafted deliverable verbatim; a verification verdict and the summary recording it cannot usefully be committed apart, because a failed verification changes what the summary says rather than adding a second deliverable. Split only when a phase boundary separates two independently committable artifacts.",
       "category": "PATTERN",
-      "source_artifact": "specs/661_unbacked_specs_durability_options/reports/01_unbacked_specs_durability.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["specs durability", "gitignore specs", "orphan branch", "cross-branch churn", "backup mechanism"]
+      "source_artifact": "specs/661_unbacked_specs_durability_options/plans/01_unbacked-specs-durability-options.md",
+      "confidence": 0.6,
+      "suggested_keywords": ["research-only task", "single-phase plan", "phase decomposition", "done-when attestation", "completion summary"]
     }
   ]
 }
