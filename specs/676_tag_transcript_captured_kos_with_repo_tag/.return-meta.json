@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795210345_ed54aa_676",
+  "dispatch_seq": 1,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/676_tag_transcript_captured_kos_with_repo_tag/reports/01_tag-transcript-captured-kos-repo.md",
+      "summary": "Identifies the live extract_local.py pipeline (not upload.py) as the active transcript-capture path, establishes from vendor code that a client-supplied provenance field survives to the stored KO (server only synthesizes one when absent), and recommends a new extension-owned script rewriting pending_kos.jsonl's provenance field between sapience sync and sapience review to inject [repo:<slug>]. Confirms no backfill API exists for already-uploaded untagged KOs."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "Sapience's live transcript-capture pipeline on a backend=anthropic/openai/ollama/relay machine is extract_local.py (sapience sync/review/pending/backfill), not upload.py -- upload.py is imported only as a session-reader library (import upload as up). upload.py's own _chunk()/post_kos() duplicate functions are a separate, unused 'default uploader' streaming path. per-repo-scoping.md's claim about upload.py's _chunk() dropping project before storage describes that dead path, not the live one.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/676_tag_transcript_captured_kos_with_repo_tag/reports/01_tag-transcript-captured-kos-repo.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sapience", "extract_local.py", "upload.py", "transcript-capture", "pending_kos"]
+    },
+    {
+      "content": "Sapience's /ingest-kos endpoint only synthesizes a provenance string from tool/sid/at when the posted KO lacks a provenance field; a client-supplied provenance (as tag_cowork_ko/tag_devin_ko/tag_memory_ko already demonstrate in extract_local.py, and as sapience-remember.sh's direct POST relies on) survives verbatim. This means a pre-review rewrite of a locally staged KO's provenance field (before sapience review posts it) is sufficient to make it discoverable via a source=[repo:<slug>] filtered search.",
+      "category": "PATTERN",
+      "source_artifact": "specs/676_tag_transcript_captured_kos_with_repo_tag/reports/01_tag-transcript-captured-kos-repo.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["sapience", "provenance", "repo-tag", "ingest-kos", "per-repo-scoping"]
+    },
+    {
+      "content": "~/.sapience/pending_kos.jsonl is a LEDGER_FILE (per extract_local.py's LEDGER_FILES tuple), explicitly preserved across `sapience update`/auto-update -- unlike the vendor CLIENT_FILES scripts (extract_local.py, upload.py, etc.) which ARE overwritten. A fix that only mutates this ledger file (never a vendor script) is durable across every future vendor auto-update, which is the key property for anything 'owned by' a source-store extension that cannot edit ~/.sapience/ directly.",
+      "category": "CONFIG",
+      "source_artifact": "specs/676_tag_transcript_captured_kos_with_repo_tag/reports/01_tag-transcript-captured-kos-repo.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sapience", "pending_kos.jsonl", "ledger-file", "auto-update", "durability"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 676 to create implementation plan"
+}
