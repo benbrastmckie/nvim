@@ -12,8 +12,8 @@
 #
 # The real skill-base.sh (and its update-task-status.sh/state.json dependency chain) is
 # deliberately NOT exercised here -- this suite stubs `skill_postflight_update` itself, the same
-# way sibling suites stub `verify-deploy.sh` rather than running the real gate battery, so this
-# suite is a fast, hermetic test of the gating conjunction and call shape, not of
+# way sibling suites stub the verify-deploy gate battery rather than running the real thing, so
+# this suite is a fast, hermetic test of the gating conjunction and call shape, not of
 # update-task-status.sh's own behavior (which has its own dedicated suite).
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error (the SUT
@@ -39,7 +39,7 @@ common_test_workdir_init
 # ─── Sandbox: a deployed-shaped scripts/ tree ($WORKDIR/.claude/scripts/) so deploy-root-guard.sh
 # (sourced by the SUT) does not refuse the invocation. skill-base.sh is a STUB here, not the real
 # file -- it defines only skill_postflight_update, logging every call to $CALL_LOG rather than
-# touching specs/state.json, mirroring sibling suites' own verify-deploy.sh stubbing. ─────────────
+# touching specs/state.json, mirroring sibling suites' own verify-deploy gate-battery stubbing. ──
 setup_sandbox() {
   rm -rf "$WORKDIR/sandbox"
   mkdir -p "$WORKDIR/sandbox/.claude/scripts/lib" "$WORKDIR/sandbox/specs/.orchestration"

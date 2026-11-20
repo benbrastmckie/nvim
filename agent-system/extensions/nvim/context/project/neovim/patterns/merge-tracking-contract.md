@@ -94,18 +94,26 @@ no sibling grant for the guard to protect.
 ### Scope boundary: the retained-fragments guard does not cover whole-key removal
 
 `opts.retained_fragments`/`opts.skip_array_removal` guard only the `"appended"` branch's
-per-item removal and `"hook_merged"`'s whole-block-appended half. They do **not** guard the
-wholesale-removal types -- `"new_array"`, `"new_object"`, `"new_value"` -- which unconditionally
-set `t[key] = nil` regardless of `opts`. This matters only if the FIRST-ever extension to
-populate a shared array or object key is unloaded while a sibling extension's own LATER
-contribution still sits in that same on-disk array/object: the unloading extension's own tracked
-record for that key is fixed at `"new_array"`/`"new_object"` from its own load time and never
-changes, so its removal is unconditional. This is pre-existing behavior, unchanged by this
-contract's fix (the wholesale-removal branches were already unconditional before it), and it
-does not affect the records this contract exists to describe: a repository's `permissions.allow`
-/`permissions.deny` arrays are essentially never empty before a second extension merges into
-them, so an extension's own tracked type for those keys is `"appended"`, not `"new_array"`, in
-every case observed in practice.
+per-item removal and `"hook_merged"`'s whole-block-appended half. They do **not** guard
+`"new_array"` or `"new_value"`, which unconditionally set `t[key] = nil` regardless of `opts`.
+This matters only if the FIRST-ever extension to populate a shared array key is unloaded while a
+sibling extension's own LATER contribution still sits in that same on-disk array: the unloading
+extension's own tracked record for that key is fixed at `"new_array"` from its own load time and
+never changes, so its removal is unconditional. This does not affect the records this contract
+exists to describe: a repository's `permissions.allow`/`permissions.deny` arrays are essentially
+never empty before a second extension merges into them, so an extension's own tracked type for
+those keys is `"appended"`, not `"new_array"`, in every case observed in practice.
+
+`"new_object"` is the one wholesale-removal type this no-longer applies to: `remove_tracked`
+recurses into its `children` exactly like the `"merged"` branch, then drops the object only if
+nothing is left inside it afterward. A sibling key added to that same object after this
+extension's own load -- most notably a hand-written `mcpServers` entry a user added directly to
+`.mcp.json` after this extension's own load first created the wrapper object -- survives a
+retraction that would otherwise have deleted the whole object outright. This closes the gap
+`mcpServers.<name>` first-time insertion exposed (see the array-path table below): a fresh
+`.mcp.json`'s `mcpServers` key is `"new_object"` for whichever extension first populates it, so
+the wholesale-removal reading previously in force here would have discarded any later
+hand-written sibling entry on that extension's next forced reload or unload.
 
 ### The accepted residual
 
@@ -131,7 +139,7 @@ behavior: `deny` is governed by the identical plain-array arm as `allow`.
 | Plain array (`permissions.allow`, `permissions.deny`, any other flat array) | **Fixed by this contract's change** | Was dedup-before-track; now records every item unconditionally, at any nesting depth the recursion reaches. |
 | Non-`matcher` hook-event array (e.g. sapience's `SessionStart`/`SessionEnd`/`UserPromptSubmit`/`Stop`, each a `{hooks = [...]}` block with no `matcher` key) | **Fixed by this contract's change** | `is_hook_event_array` rejects a block with no string `matcher` field, so the array falls through to the SAME plain-array arm above -- not a separate code path. |
 | Matcher-bearing hook-event array (e.g. `PreToolUse`) | **Immune, unchanged** | Routes through `merge_hook_event_array`, which tracks a block append or a hook replacement explicitly into its own `items`/`hook_items` -- it never had a dedup-before-track structure to begin with. |
-| `mcpServers.<name>` key, first-time insertion | **Immune, unchanged** | Object-keyed: deep_merge's "Object: recurse" arm tracks a never-before-seen server name as `"new_object"` regardless of that object's own nested field shapes, capturing the whole config in one step. Re-confirmed by reading the arm directly for this contract, not carried forward from an earlier, less precise reading. |
+| `mcpServers.<name>` key, first-time insertion | **Also fixed, separately** | Object-keyed: deep_merge's "Object: recurse" arm tracks a never-before-seen server name as `"new_object"`. `remove_tracked`'s `"new_object"` branch now recurses into that record's `children` and prunes the object only when it ends up empty, rather than deleting it outright -- so a hand-written sibling entry added to the same `mcpServers` object after this extension's own load survives a later retraction (see the Scope boundary section above). |
 | A nested array field inside an ALREADY-EXISTING `mcpServers.<name>` entry (e.g. re-merging the same fragment a second time touches `mcpServers.<name>.args`) | **Also fixed by this contract's change** | Once the server-name key already exists, deep_merge recurses into it as `"merged"`, and `args` (a plain array) is reached through the exact same plain-array arm as `permissions.allow` -- confirmed empirically while writing this contract's test coverage. This is not a second defect; it is the same arm, reached through one more level of object recursion, and the fix covers it identically. |
 | `index.json` entries (`M.append_index_entries`) | **Immune, unchanged** | A separate function, not part of `deep_merge`. Every processed entry's path is appended to `added_paths` and tracked unconditionally, whether it was a fresh append or an in-place upsert replacement. |
 

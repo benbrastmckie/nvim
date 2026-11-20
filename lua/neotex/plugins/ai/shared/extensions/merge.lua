@@ -580,8 +580,28 @@ function M.unmerge_settings(target_path, tracked_entries, opts)
   local function remove_tracked(t, track, fragments)
     for key, info in pairs(track) do
       if type(info) == "table" and info.type then
-        if info.type == "new_array" or info.type == "new_object" or info.type == "new_value" then
-          -- Remove entirely
+        if info.type == "new_array" or info.type == "new_value" then
+          -- A freshly-created array or scalar has no nested tracked structure to recurse
+          -- into, so wholesale removal is the only option.
+          t[key] = nil
+        elseif info.type == "new_object" and info.children then
+          -- The object itself did not exist before this merge, but something else may have
+          -- added a sibling key inside it since -- most notably a hand-written mcpServers
+          -- entry a user added directly to .mcp.json after this extension's own first load
+          -- created the wrapper object (requirement (d): a hand-written entry must survive
+          -- regeneration). Removing the whole object wholesale would destroy that too, so
+          -- recurse into only the tracked children, exactly like the "merged" branch below,
+          -- and drop the object only if nothing else is left inside it afterward.
+          if t[key] then
+            remove_tracked(t[key], info.children, descend(fragments, key))
+            if type(t[key]) == "table" and vim.tbl_isempty(t[key]) then
+              t[key] = nil
+            end
+          end
+        elseif info.type == "new_object" then
+          -- Defensive fallback: deep_merge always sets children = {} for a "new_object"
+          -- record, so this should not occur in practice. Preserve the previous,
+          -- unconditional-removal behavior rather than silently doing nothing.
           t[key] = nil
         elseif info.type == "appended" and info.items then
           -- Remove only appended items not retained by a sibling extension's fragment

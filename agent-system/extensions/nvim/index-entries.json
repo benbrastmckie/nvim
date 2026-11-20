@@ -228,7 +228,7 @@
         "retained_fragments"
       ],
       "summary": "How deep_merge's array-tracking record is built and consumed, the dedup-before-track defect and its fix, the sibling-extension-retention guard, the accepted residual, and the real repair route for a stale record",
-      "line_count": 155,
+      "line_count": 163,
       "load_when": {
         "agents": [],
         "task_types": []

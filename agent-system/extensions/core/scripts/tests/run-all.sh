@@ -748,8 +748,9 @@ fi
 # A handful of suites can only be meaningfully exercised from a repository that owns its own
 # local `agent-system/extensions/` checkout -- either because they test THIS repo's own
 # manifest/script-inventory self-consistency (test-manifest-scripts-sync.sh,
-# test-lint-hook-registration-paths.sh), resolve a script under test via `common_test_resolve_subject`
-# in its narrow "source-store" mode with no deployed/external fallback by design
+# test-lint-hook-registration-paths.sh), resolve a script under test via
+# `common_test_resolve_subject`/`common_test_declare_subject` in its narrow "source-store" mode
+# with no deployed/external fallback by design
 # (test-gate-out-derived-staleness.sh, test-gate-out-self-attribution.sh,
 # test-generate-task-order.sh, test-reconcile-demote-stranded.sh,
 # test-reconcile-handoff-status.sh, test-resume-scan-nonconformance.sh,

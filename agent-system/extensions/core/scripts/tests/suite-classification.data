@@ -157,6 +157,7 @@ test-orchestrate-batch-gate.sh	integration	invokes:verify-deploy.sh
 test-orchestrate-build-aux-dispatch.sh	unit	-
 test-orchestrate-build-dispatch.sh	integration	invokes:deploy-headless.sh,verify-deploy.sh,run-all.sh
 test-orchestrate-churn.sh	unit	-
+test-orchestrate-close-status-bind.sh	unit	-
 test-orchestrate-conclusion-aggregate.sh	unit	-
 test-orchestrate-conclusion-backstop.sh	unit	-
 test-orchestrate-conclusion-roadmap.sh	unit	-
@@ -200,6 +201,9 @@ test-runtime-file-tracking.sh	unit	-
 test-sapience-capture.sh	unit	-
 test-sapience-context-scoping.sh	unit	-
 test-sapience-mcp-registration.sh	unit	-
+test-sapience-project-bind.sh	unit	-
+test-sapience-publish.sh	unit	-
+test-sapience-vault-read.sh	unit	-
 test-script-inventory.sh	unit	-
 test-skill-base-lifecycle.sh	integration	invokes:deploy-headless.sh
 test-source-store-path-lib.sh	unit	-
