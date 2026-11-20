@@ -1,0 +1,21 @@
+{
+  "phase": 6,
+  "phase_name": "Redeploy, Negative Control, and Close",
+  "started_at": "2026-11-20T06:07:00Z",
+  "last_updated": "2026-11-20T06:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Negative control on protected files", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Negative control on framing", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Negative control on deliverable rules", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm line counts 0 changed before deploy", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Redeploy via deploy-headless.sh", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Re-run measure-eager-context.sh --check post-deploy", "status": "done", "files_touched": []},
+    {"id": 7, "description": "In-dispatch scoped check verify-touched.sh (no args)", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Record full gate deferral to orchestration close", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Write completion summary and commit", "status": "done", "files_touched": ["specs/662_reframe_docs_for_ignored_specs_default/summaries/01_reframe-docs-ignored-specs-summary.md"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

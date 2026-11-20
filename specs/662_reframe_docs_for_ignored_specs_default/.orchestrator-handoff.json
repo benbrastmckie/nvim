@@ -1,21 +1,21 @@
 {
-  "status": "planned",
-  "dispatch_seq": 14,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 15,
+  "phases_completed": 6,
   "phases_total": 6,
-  "summary": "Wrote a six-phase, four-wave implementation plan for the ignored-specs documentation reframe, built on the research report's corrected edit set rather than the dispatch's grep-assembled list: rules/state-management.md and rules/artifact-formats.md are dropped (no commit invariant in either), orchestrate-state-machine.md's commit-gated stall_suspected detector is the highest-priority surface, and task 661's durability statement is placed verbatim in orchestrator-runtime-files.md. A confirmatory grep during planning found two further surfaces beyond the report's list (context/workflows/command-lifecycle.md, context/orchestration/postflight-pattern.md), folded into the sweep phase. Two real gate collisions are planned for explicitly: rules/git-workflow.md is eager-loaded with only 1,128 B of recorded headroom against Gate 20's baseline, and four edit targets carry index-entries.json line_count rows whose drift is commit-blocking via Gate 3.",
+  "summary": "Completed all six implementation phases: placed task 661's durability statement verbatim in orchestrator-runtime-files.md, qualified rules/git-workflow.md's Commit Timing section within a 372-byte eager-context budget, reframed orchestrate-state-machine.md's exit-path table and mechanical-signal section naming stranded_suspected, added a third posture-skip outcome branch to all three process-workflow.md files, swept and reframed 6 additional surfaces (2 beyond the plan's declared list: preflight-postflight.md and git-integration.md), and redeployed with all negative controls clean. The two exemption standards and six other protected files are byte-unchanged; index-entries.json line_count drift fully resolved; measure-eager-context.sh --check exits 0.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/662_reframe_docs_for_ignored_specs_default/plans/01_reframe-docs-ignored-specs.md",
-      "summary": "Six-phase plan: durability statement placement, git-workflow.md Commit Timing reframe, orchestrate-state-machine.md detector-coverage reframe, three process-workflow commit steps, remaining-surface sweep, then redeploy with negative controls."
+      "type": "summary",
+      "path": "specs/662_reframe_docs_for_ignored_specs_default/summaries/01_reframe-docs-ignored-specs-summary.md",
+      "summary": "All six phases completed: every agent-system/extensions/core/** surface asserting a committed specs/ tree as an invariant is reframed to state both postures, task 661's durability statement is placed verbatim, and the deployed tree is regenerated."
     }
   ],
   "metadata": {
-    "session_id": "sess_1795130570_6d4a1f_662",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1795130570_6d4a1f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }

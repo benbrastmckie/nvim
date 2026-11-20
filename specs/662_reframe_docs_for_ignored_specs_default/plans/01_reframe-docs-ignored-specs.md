@@ -453,35 +453,51 @@ directive. No additional full sweep was run.
 
 ---
 
-### Phase 6: Redeploy, Negative Control, and Close [NOT STARTED]
+### Phase 6: Redeploy, Negative Control, and Close [COMPLETED]
 
 **Goal**: The deployed tree matches the source store, the protected files are provably unchanged,
 and the gate set is green or explicitly deferred to the orchestration close.
 
 **Tasks**:
-- [ ] Negative control on the protected files: `git diff --stat -- agent-system/extensions/core/context/standards/task-reference-exemptions.md agent-system/extensions/core/context/standards/record-version-exemptions.md agent-system/extensions/core/rules/state-management.md agent-system/extensions/core/rules/artifact-formats.md agent-system/extensions/core/context/standards/git-staging-scope.md agent-system/extensions/core/context/standards/absent-specs-git-history.md`
+- [x] Negative control on the protected files: `git diff --stat -- agent-system/extensions/core/context/standards/task-reference-exemptions.md agent-system/extensions/core/context/standards/record-version-exemptions.md agent-system/extensions/core/rules/state-management.md agent-system/extensions/core/rules/artifact-formats.md agent-system/extensions/core/context/standards/git-staging-scope.md agent-system/extensions/core/context/standards/absent-specs-git-history.md`
       over this task's full commit range. It MUST be empty. If any of the six shows a hunk, revert
-      that hunk before continuing.
-- [ ] Negative control on framing: grep the touched set for `deprecated|legacy|superseded|no longer`
-      and confirm no occurrence applies to the tracked posture.
-- [ ] Negative control on deliverable rules: confirm no task-number reference and no
+      that hunk before continuing. *(completed: empty)*
+- [x] Negative control on framing: grep the touched set for `deprecated|legacy|superseded|no longer`
+      and confirm no occurrence applies to the tracked posture. *(completed: no added hunk across
+      the full touched set contains any of these terms)*
+- [x] Negative control on deliverable rules: confirm no task-number reference and no
       record-versioning language landed under `agent-system/**` across this task's commits.
-- [ ] Confirm `generate-context-line-counts.sh --write` reports 0 changed (all per-phase
-      regenerations already landed) before deploying.
-- [ ] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh`, with a bounded
+      *(completed: clean)*
+- [x] Confirm `generate-context-line-counts.sh --write` reports 0 changed (all per-phase
+      regenerations already landed) before deploying. *(completed: 177/177 exact, 0 changed)*
+- [x] Redeploy: `bash agent-system/extensions/core/scripts/deploy-headless.sh`, with a bounded
       `timeout`, output redirected to a file and grepped for the line_count auto-repair line and
       any WARNING. If the auto-repair corrects anything, that is a per-phase miss — commit the
-      corrected `index-entries.json` as its own step and record it in the issue log.
-- [ ] Re-run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`
-      post-deploy and confirm it exits 0.
-- [ ] In-dispatch scoped check: `bash agent-system/extensions/core/scripts/verify-touched.sh`
+      corrected `index-entries.json` as its own step and record it in the issue log. *(completed:
+      0 line_count entries corrected, no WARNING line. Deploy landed; spot-checked durability
+      statement and posture-skip text present in the deployed `.claude/` tree. Deploy reported
+      RESULT=landed_verify_red from 1/41 unrelated fast-gate check
+      (lint-subject-resolution-declaration.sh flagging scripts/tests/run-all.sh, zero overlap
+      with this task's commit range or working tree) — logged via issue-record.sh as
+      pre-existing-breakage, not a task-662 regression)*
+- [x] Re-run `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/measure-eager-context.sh --check`
+      post-deploy and confirm it exits 0. *(completed: exits 0, TOTAL 70,877 B against 71,600 B
+      baseline)*
+- [x] In-dispatch scoped check: `bash agent-system/extensions/core/scripts/verify-touched.sh`
       (no arguments, so it derives this task's touched paths itself), bounded, redirected, grepped
-      for its verdict line.
-- [ ] Under `/orchestrate`, the complete gate set is DEFERRED to the orchestration close
+      for its verdict line. *(completed: 55 passed, 1 failed (1 expected, 0 NEW) plus a 98-suite
+      OWED fallback all passing. The 1 failure, test-verify-deploy-context-budget.sh, is a
+      documented known-failures.txt entry (class real-defect, owned elsewhere) and run-all.sh's
+      own accounting confirms 0 NEW failures — logged via issue-record.sh)*
+- [x] Under `/orchestrate`, the complete gate set is DEFERRED to the orchestration close
       (`context/contracts/batch-gate-stage.md`), not run independently here. Record that deferral
       explicitly in this phase's verification notes. Under a standalone, non-orchestrated run with
       no Move 4 to defer to, run `bash .claude/scripts/verify-deploy.sh` directly instead.
-- [ ] Write the completion summary and commit.
+      *(completed: this dispatch runs under `/orchestrate`'s orchestrator_mode; the complete
+      `verify-deploy.sh` gate set is deferred to the batch's orchestration close per the dispatch's
+      Batch Gate Deferral directive. This phase's own scoped discharge is the `verify-touched.sh`
+      (no-args) run above)*
+- [x] Write the completion summary and commit.
 
 **Timing**: 0.25 hours
 

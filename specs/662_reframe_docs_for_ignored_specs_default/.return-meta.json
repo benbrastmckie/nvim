@@ -1,15 +1,93 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 15,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/662_reframe_docs_for_ignored_specs_default/summaries/01_reframe-docs-ignored-specs-summary.md",
+      "summary": "All six phases completed: every agent-system/extensions/core/** surface asserting a committed specs/ tree as an invariant is reframed to state both postures, task 661's durability statement is placed verbatim, the two exemption standards stay byte-unchanged, and the deployed tree is regenerated."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Reframed every documentation surface in agent-system/extensions/core/** that asserted a committed specs/ tree as an invariant, across 6 phases: placed task 661's durability statement verbatim, qualified rules/git-workflow.md's Commit Timing section within a 400-byte eager-context budget, reframed orchestrate-state-machine.md's exit-path table and mechanical-signal section, added a third posture-skip outcome branch to all three process-workflow.md files, and swept + reframed 6 additional surfaces (2 beyond the plan's declared list). The two exemption standards and six other protected files are byte-unchanged; the deployed tree was regenerated and all line_count drift resolved."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/commands/todo.md",
+    "agent-system/extensions/core/context/orchestration/postflight-pattern.md",
+    "agent-system/extensions/core/context/processes/implementation-workflow.md",
+    "agent-system/extensions/core/context/processes/planning-workflow.md",
+    "agent-system/extensions/core/context/processes/research-workflow.md",
+    "agent-system/extensions/core/context/standards/git-integration.md",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/context/workflows/command-lifecycle.md",
+    "agent-system/extensions/core/context/workflows/preflight-postflight.md",
+    "agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md",
+    "agent-system/extensions/core/docs/templates/README.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/rules/git-workflow.md",
+    "specs/662_reframe_docs_for_ignored_specs_default/summaries/01_reframe-docs-ignored-specs-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In this codebase, generate-context-line-counts.sh refuses to run from the agent-system/extensions/<ext>/scripts/ source-store copy (repo-root guard error naming the deployed path), and must be invoked via the deployed .claude/scripts/ path instead -- but it still writes line_count regenerations into the SOURCE STORE's index-entries.json (confirmed via git status/git diff), so running the deployed binary is still the correct edit-target-preserving invocation, not a detour around source-store-deploy-boundary.md.",
+      "category": "PATTERN",
+      "source_artifact": "specs/662_reframe_docs_for_ignored_specs_default/summaries/01_reframe-docs-ignored-specs-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["generate-context-line-counts.sh", "repo-root-guard", "source-store", "deployed-scripts", "index-entries.json"]
+    },
+    {
+      "content": "verify-touched.sh's OWED fallback triggers whenever index-entries.json (or any other unmapped manifest/index file) is among the touched paths passed to it, expanding what looks like a small named-suite check into a ~98-suite, multi-minute cost-class-free sweep. Budget for this by using the bounded-build-waiter detached pattern (nohup + captured PID + kill -0 poll loop across tool calls) rather than a single foreground call with a short timeout, since the OWED sweep alone can exceed 10 minutes under load.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/662_reframe_docs_for_ignored_specs_default/summaries/01_reframe-docs-ignored-specs-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-touched.sh", "OWED-fallback", "bounded-build-waiter", "unmapped-path", "cost-class-free"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "generate-context-line-counts.sh invocation",
+      "value": "The script refuses to run from the agent-system source-store scripts/ copy (repo-root guard), but must be run via the deployed .claude/scripts/ path; it still writes line_count regenerations into the SOURCE STORE's index-entries.json, confirmed via git diff.",
+      "predicate": "finding is",
+      "confidence": 0.9
+    },
+    {
+      "subject": "verify-touched.sh OWED fallback cost",
+      "value": "Passing an unmapped index/manifest file (e.g. index-entries.json) as a touched path triggers a cost-class-free OWED fallback sweep of ~98 suites, which can take 5+ minutes even though the named Tier Justification suites are few -- this is a real, repeatable cost, not a one-off.",
+      "predicate": "finding is",
+      "confidence": 0.85
+    },
+    {
+      "subject": "test-gate-cache-equivalence.sh and test-verify-deploy-context-budget.sh",
+      "value": "Both are documented known-failures.txt entries (load-sensitive/real-defect classes respectively) that can surface as failures in an unrelated dispatch's verify-touched.sh run without indicating any regression from that dispatch's own edits -- confirmed by zero git diff overlap and run-all.sh's own '0 NEW' failure accounting.",
+      "predicate": "finding is",
+      "confidence": 0.85
+    },
+    {
+      "subject": "Sweep-authoritative phase pattern",
+      "value": "When a plan phase instructs 're-run the sweep grep and treat its output as the authoritative work list,' the live grep can legitimately find more surfaces than the plan's own pre-computed Scope Hypothesis named -- in task 662's Phase 5, 2 extra surfaces (preflight-postflight.md, git-integration.md) were found and reframed beyond the plan's declared 6-file list, following the phase's own explicit instruction rather than treating the plan's list as a ceiling.",
+      "predicate": "decision is",
+      "confidence": 0.8
+    },
+    {
+      "subject": "lint-subject-resolution-declaration.sh cascading failure",
+      "value": "A pre-existing violation in agent-system/extensions/core/scripts/tests/run-all.sh (unrelated to any specific task's edits, confirmed via empty git diff over the task's full commit range) was observed to cascade into a second, independently-documented test's fixture-setup failure (test-verify-deploy-context-budget.sh), because that test's own fixture requires a full verify-deploy run to report zero findings.",
+      "predicate": "finding is",
+      "confidence": 0.8
+    },
+    {
+      "subject": "Posture-skip documentation reframe pattern",
+      "value": "When softening a documentation surface's unqualified 'git commit created' assertion to cover a V13 posture-skip outcome, leave success-path-only log lines unchanged (e.g. 'Log: Git commit created: {hash}') and only soften the outcome-summarizing checkpoint/criterion lines that frame commit creation as the sole possible result -- applied consistently across 9+ surfaces in task 662.",
+      "predicate": "technique is",
+      "confidence": 0.75
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795130570_6d4a1f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 6,
+    "phases_total": 6
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/context/standards/git-integration.md",
