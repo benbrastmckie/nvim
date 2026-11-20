@@ -19722,7 +19722,8 @@
         "agent-system/extensions/core/scripts/init-specs.sh",
         "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
         "agent-system/extensions/core/scripts/tests/test-init-specs.sh",
-        "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"
+        "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh",
+        "agent-system/extensions/core/index-entries.json"
       ],
       "next_artifact_number": 2,
       "session_id": "sess_1795130570_6d4a1f",
