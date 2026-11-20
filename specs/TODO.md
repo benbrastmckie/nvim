@@ -51,9 +51,9 @@ next_project_number: 664
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — Determine what leaves files in the working tree and give...
 646 [NOT STARTED] — Decide and implement how .return-meta.json's status...
-659 [NOT STARTED] — Never demote on ignored specs skip
+659 [RESEARCHING] — Never demote on ignored specs skip
   └─ 662 [NOT STARTED] — Reframe docs for ignored specs default
-660 [NOT STARTED] — Init specs ignores specs by default
+660 [RESEARCHED] — Init specs ignores specs by default
   └─ 662 [NOT STARTED] — Reframe docs for ignored specs default (see above)
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
@@ -256,7 +256,7 @@ SCOPE DECLARATION (2026-11-19). This record's file_scope is deliberately EMPTY, 
 ---
 
 ### 660. Init specs ignores specs by default
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 658
@@ -280,7 +280,7 @@ DONE WHEN. A new repository is initialized with an ignored specs tree, an existi
 ---
 
 ### 659. Never demote on ignored specs skip
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 658
