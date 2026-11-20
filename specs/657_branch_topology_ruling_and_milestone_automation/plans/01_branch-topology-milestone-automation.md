@@ -1,7 +1,7 @@
 # Implementation Plan: Task #657
 
 - **Task**: 657 - Branch-topology ruling, then milestone automation and review gates
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 10.5 hours
 - **Dependencies**: 654 (completed), 656 (completed)
 - **Research Inputs**: specs/657_branch_topology_ruling_and_milestone_automation/reports/01_branch-topology-milestone-automation.md
@@ -219,51 +219,51 @@ conclusion-stage caller, which runs unconditionally.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Read the binding evidence and write the branch-topology ruling [NOT STARTED]
+### Phase 1: Read the binding evidence and write the branch-topology ruling [COMPLETED]
 
 **Goal**: A decision record that rules on branch granularity, merge strategy, landing mechanics
 and worktree isolation, with the recorded data-loss mechanism engaged by name rather than
 asserted away.
 
 **Tasks**:
-- [ ] Read `specs/decisions/worktree-isolation-removal-verdict.md` in full.
-- [ ] Read `specs/decisions/worktree-isolation-removal-reaffirmation.md` in full.
-- [ ] Read `specs/decisions/commit-layer-cluster-ordering.md`'s "Inputs to the branch feature"
+- [x] Read `specs/decisions/worktree-isolation-removal-verdict.md` in full. *(completed)*
+- [x] Read `specs/decisions/worktree-isolation-removal-reaffirmation.md` in full. *(completed)*
+- [x] Read `specs/decisions/commit-layer-cluster-ordering.md`'s "Inputs to the branch feature" *(completed)*
       and `CONDITION ON A RULING` material.
-- [ ] Write `specs/decisions/branch-topology-and-landing-strategy.md`, following the structure of
+- [x] Write `specs/decisions/branch-topology-and-landing-strategy.md`, following the structure of *(completed)*
       `commit-layer-cluster-ordering.md` (a rulings table with Basis and State-change columns,
       then an Edges section, then the re-measured premises) and naming tasks by slug with the
       number alongside.
-- [ ] Record ruling R1 (hot-path branch = the already-checked-out branch, verified at admission;
+- [x] Record ruling R1 (hot-path branch = the already-checked-out branch, verified at admission; *(completed)*
       no branch creation at any granularity during dispatch work) with its basis: the measured
       single-hit branch-awareness grep, and the checkout hazard against a shared working tree.
-- [ ] Record ruling R2 (milestone review history via `git commit-tree` + compare-and-swap
+- [x] Record ruling R2 (milestone review history via `git commit-tree` + compare-and-swap *(completed)*
       `git update-ref` onto `refs/heads/milestone/<id>`, one squash commit per completed task,
       resolved from `roadmap_milestones[].id` rather than any literal milestone name).
-- [ ] Record ruling R3 (merge strategy: squash per task, which is the short-lived-unit squash
+- [x] Record ruling R3 (merge strategy: squash per task, which is the short-lived-unit squash *(completed)*
       external convention endorses; whether the milestone ref is itself squashed when it finally
       merges stays the human reviewer's call at review time; no automatic rebase onto a moved
       base).
-- [ ] Record ruling R4 (the integration-branch declaration's key name and shape are fixed here;
+- [x] Record ruling R4 (the integration-branch declaration's key name and shape are fixed here; *(completed)*
       the schema row and admission enforcement are allocated to 655 — see `## Decisions`, D3 —
       and this task's scripts are consumers with a loud advisory fallback).
-- [ ] Record ruling R5 (worktree isolation is NOT reinstated) with the binding-evidence
+- [x] Record ruling R5 (worktree isolation is NOT reinstated) with the binding-evidence *(completed)*
       engagement written out: name the specific measured data-loss mechanism both records
       identify, and show why this design cannot reproduce it structurally — it creates no clone
       of mutable state, so there is no shared inode and no exclusion list for an unrelated script
       to miss; and the non-landing defect is closed by Phase 4 verifying the landing before the
       completion status write, not by assuming it.
-- [ ] Record ruling R6: the one-HEAD-per-repository premise holds, so 513's expected ref stays
+- [x] Record ruling R6: the one-HEAD-per-repository premise holds, so 513's expected ref stays *(completed)*
       per-repository and the dispatch's `CONDITION ON A RULING` does not fire.
-- [ ] Record ruling R7: `orchestrate-conclusion-roadmap.sh`'s existing unconditional Move 4
+- [x] Record ruling R7: `orchestrate-conclusion-roadmap.sh`'s existing unconditional Move 4 *(completed)*
       regenerate already satisfies Element 2's roadmap bullet, and `orchestrate-batch-gate.sh`'s
       existing once-per-invocation complete-gate run already satisfies its batch-testing bullet
       (see `## Decisions`, D6). No parallel path is built for either.
-- [ ] Record ruling R8: the milestone-completion step PREPARES the push and review request and
+- [x] Record ruling R8: the milestone-completion step PREPARES the push and review request and *(completed)*
       hands them to the user through `/please` and `/merge`; it never mints a grant, never infers
       permission from completion, and never pushes or opens a PR. State this explicitly as a
       deliverable property, not an implementation note.
-- [ ] Record, in a re-measured-premises section, the corrections in this plan's
+- [x] Record, in a re-measured-premises section, the corrections in this plan's *(completed)*
       `### Premise Re-Validation` items 5, 6 and 7, so a later reader does not re-derive them.
 
 **Timing**: 1.5 hours

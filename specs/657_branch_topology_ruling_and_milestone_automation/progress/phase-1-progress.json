@@ -1,0 +1,15 @@
+{
+  "phase": 1,
+  "phase_name": "Read the binding evidence and write the branch-topology ruling",
+  "started_at": "2026-11-20T00:00:00Z",
+  "last_updated": "2026-11-20T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read worktree-isolation-removal-verdict.md and reaffirmation.md", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Read commit-layer-cluster-ordering.md relevant sections", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Write branch-topology-and-landing-strategy.md with R1-R8 rulings", "status": "done", "files_touched": ["specs/decisions/branch-topology-and-landing-strategy.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

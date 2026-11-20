@@ -1,31 +1,13 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/657_branch_topology_ruling_and_milestone_automation/plans/01_branch-topology-milestone-automation.md",
-      "summary": "Seven-phase plan: rule first (branch topology, landing strategy, no worktree reinstatement) in phases 1-2, then build the milestone review ref by git ref plumbing, the pre-completion landing verification, and the consent-gated push/review handoff in phases 3-7."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795182687_598b95_657",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "task_number": 657,
-    "phase_count": 7,
-    "estimated_hours": 10.5,
-    "dependency_waves": [[1], [2, 3], [4, 5], [6], [7]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When authoring a plan phase's **Tier Justification** line, never spell out the phase's touched paths inline if any of them is a scripts/tests/test-*.sh file. validate-artifact.sh's Tier-Justification measurement check extracts every test-*.sh token on that line and compares the set against suite_selection_select's actual output, so a path list naming a not-yet-created suite warns twice ('fabricates coverage' for the new suite, 'under-verifies' for the 30+ suites the real selector returns). The clean, warning-free shape names only the entry point and points at the field: 'bash <source_store>/scripts/verify-touched.sh, invoked over this phase's Files to modify paths, resolves them to their covering suites and runs that narrowed pass -- <what it covers>.'",
-      "category": "PATTERN",
-      "source_artifact": "specs/657_branch_topology_ruling_and_milestone_automation/plans/01_branch-topology-milestone-automation.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["tier-justification", "validate-artifact", "suite-selection", "plan-authoring", "verify-touched"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 657 to execute the plan",
-  "dispatch_seq": 2
+    "session_id": "sess_1795182687_598b95",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
+  }
 }
