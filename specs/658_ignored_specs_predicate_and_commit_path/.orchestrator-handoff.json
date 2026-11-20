@@ -1,17 +1,17 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 4,
-  "summary": "Wrote a six-phase implementation plan for the gitignored-specs predicate and the distinct non-failure commit-path outcome. The plan adds scripts/lib/specs-ignore-lib.sh with two rc-based predicates, a V13 classification gate in git-commit-scoped.sh consulting that lib before case 1's existence test, two additive non-failure exit codes (8 all-ignored, 9 committed-but-ignored-drop), an 8|9 NOTE arm in orchestrate-cycle-postflight.sh, and the both-postures per-operation contract in git-staging-scope.md. Carried-figure re-validation found the description's 'no ignore-awareness exists anywhere in the commit path' claim false (git-commit-scoped.sh already calls git check-ignore -q in its ephemeral-exclude injection loop) and surfaced three surfaces the research missed: existing test case U5 asserts the exact behaviour V13 supersedes, a new lib+test pair needs manifest.json and suite-classification.data rows, and git-staging-scope.md already carries a 'git check-ignore -q MUST NOT be used' prohibition the plan must reconcile rather than contradict.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 6,
+  "summary": "Implemented all six plan phases: the shared gitignored-specs predicate library with its own 12-case test suite; the V13 classification gate in git-commit-scoped.sh (ignored_dropped ledger, exit codes 8/9, header documentation) plus the amended U5 and seven new AA1-AA7 fixture controls (renamed from the plan's own Y1-Y6 to avoid a pre-existing naming collision in the suite); consumer exit-code handling in orchestrate-cycle-postflight.sh and git-commit-phase.sh; the per-operation contract and V13 gate-label documentation in git-staging-scope.md; and a full redeploy with every edited/created file verified byte-identical against the deployed tree. All four re-run suites pass against the deployed tree (83/83, 84/84, 321/321, 12/12).",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/658_ignored_specs_predicate_and_commit_path/plans/01_ignored-specs-predicate-commit-path.md",
-      "summary": "Six phases in four waves ([1], [2], [3,4,5], [6]); 9 hours; validate-artifact.sh passes with zero warnings."
+      "type": "summary",
+      "path": "specs/658_ignored_specs_predicate_and_commit_path/summaries/01_ignored-specs-predicate-commit-path-summary.md",
+      "summary": "Full implementation summary covering all six phases, decisions, plan deviations, and verification results."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
   "blockers": [],
-  "next_action_hint": "Dispatch implement for task 658. Phase 2 is a declared atomic-batch (git-commit-scoped.sh plus the U5 test amendment must land in one commit). Never co-admit task 658 and task 618 into one batch -- both edit git-commit-scoped.sh."
+  "next_action_hint": "Task 658 is complete. Task 618 (working_tree_residue_disposition_policy), which shares file territory in git-commit-scoped.sh, should re-measure its own starting evidence now that V13 has landed, per the dispatch's own not-blocking ruling; the two tasks must never be co-admitted into one batch."
 }
