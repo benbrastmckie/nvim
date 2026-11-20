@@ -1079,8 +1079,8 @@ the full per-task scope contract. This section is the source of truth for MT com
 | Outcome | Commit issued where |
 |---------|---------------------|
 | `completed` | Move 3's per-task postflight iteration (`orchestrate-cycle-postflight.sh`), (message: complete research/plan/implementation, per that task's `dispatch_status`) |
-| `failed` | Move 3's postflight body still runs for a failed dispatch; artifacts and status changes it produced are real and committed |
-| `blocked` | Move 3's postflight body still runs; same reasoning as `failed` |
+| `failed` | Move 3's postflight body still runs for a failed dispatch; artifacts and status changes it produced are real, and committed unless the change set is specs-only under an ignored posture, in which case they are real and recorded through the V13 skip channel instead (see `context/standards/absent-specs-git-history.md`'s "The V13 Recording Contract" section) |
+| `blocked` | Move 3's postflight body still runs; same reasoning as `failed`, including the same specs-only-under-ignored-posture V13 skip channel |
 | Partial (gate-refused, or `MAX_CYCLES_MT` reached mid-loop) | Move 3's postflight body runs at the partial-form message on every cycle that reaches it, including the cycle where `MAX_CYCLES_MT` is hit |
 | Deferred self-modifying (a task whose own dispatch is deferred rather than run this cycle) | Never dispatched and never status-mutated this cycle, so it correctly produces no commit this cycle — it becomes eligible, and committable, on a later cycle |
 | Deferred-by-redeploy-checkpoint (a task excluded for the remainder of the invocation because the inter-cycle redeploy checkpoint's deploy/verify gate failed) | Never dispatched and never status-mutated for the rest of this invocation; distinct operator remedy from deferred-self-modifying — see `### The Inter-Cycle Redeploy Checkpoint` in `context/patterns/batch-orchestration-guardrails.md` |
@@ -1197,8 +1197,18 @@ failure to a task that had in fact finished its phases.
 
 `orchestrate-cycle-postflight.sh` emits `stall_suspected` for exactly the second row: phase is
 `plan` or `implement`, no outcome was recovered, and `git log --since=@<dispatch_start_ts>` over
-the task directory counts at least one commit. It is a git count only — no artifact prose is
-read, so the Context Flatness Guarantee is preserved. The field is **advisory**: it never changes
+the task directory counts at least one commit.
+
+Under a gitignored `specs/` tree, zero commits for a task directory is the expected outcome of
+fully successful `plan`-phase work (specs-only by construction in the common case), not evidence
+of failure; `stall_suspected`'s commit-gated trigger therefore does not fire for that case.
+`stranded_suspected` (see "### The Strand Variant: `stranded_suspected`" below — heartbeat-based,
+deliberately not gated on any commit count) is the detector that still covers it. This is a
+documented coverage split between two existing detectors, not a request to widen
+`stall_suspected` — see "The non-widening ruling, restated" below, which this does not contradict.
+
+It is a git count only — no artifact prose is read, so the Context Flatness Guarantee is
+preserved. The field is **advisory**: it never changes
 `verdict`, `persisted_status`, or `failed_tasks` bookkeeping, in the same way `report_missing`
 does not. The research phase never sets it, because `report_missing` and the D4 message-findings
 recovery already own that path.

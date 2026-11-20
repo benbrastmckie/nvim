@@ -223,34 +223,37 @@ comparing the two `TOTAL:` figures, rather than trusting the recorded `measured_
 
 ---
 
-### Phase 3: Reframe `orchestrate-state-machine.md` [NOT STARTED]
+### Phase 3: Reframe `orchestrate-state-machine.md` [COMPLETED]
 
 **Goal**: The document's two commit-assuming passages state the ignored-posture behaviour, and
 the commit-gated `stall_suspected` detector's degradation under that posture is explicit, naming
 `stranded_suspected` as the detector that still covers it.
 
 **Tasks**:
-- [ ] In `### Commit Granularity`'s "Exit-path coverage" table (around line 1077), qualify the
+- [x] In `### Commit Granularity`'s "Exit-path coverage" table (around line 1077), qualify the
       `failed` row (line 1082) and the `blocked` row (line 1083), whose current text asserts the
       produced artifacts and status changes "are real and committed". Restate as: real, and
       committed unless the change set is specs-only under an ignored posture, in which case they
       are real and recorded through the V13 skip channel instead — pointing at
       `context/standards/absent-specs-git-history.md`'s "The V13 Recording Contract" section
       rather than restating it. Keep the table's existing cell style; a short parenthetical plus
-      pointer is preferred over a new row.
-- [ ] In `### The mechanical signal` (around line 1196), after the sentence describing the
+      pointer is preferred over a new row. *(completed)*
+- [x] In `### The mechanical signal` (around line 1196), after the sentence describing the
       `git log --since=@<dispatch_start_ts>` commit count, add a short paragraph stating: under a
       gitignored `specs/` tree, zero commits for a task directory is the expected outcome of
       fully successful `plan`-phase work (which is specs-only by construction in the common
       case), not evidence of failure; `stall_suspected`'s commit-gated trigger therefore does not
       fire for that case; `stranded_suspected` (see "### The Strand Variant" below, heartbeat-based
       and deliberately not gated on any commit count) is the detector that still covers it.
-- [ ] Do NOT change any script. State explicitly in the added prose that this is a documented
+      *(completed)*
+- [x] Do NOT change any script. State explicitly in the added prose that this is a documented
       coverage split between two existing detectors, not a request to widen `stall_suspected` —
       the document's own "non-widening ruling" (around line 1270) forbids that widening and must
-      not be contradicted.
-- [ ] Confirm no task-number reference and no record-versioning vocabulary entered the file.
-- [ ] Commit.
+      not be contradicted. *(completed: added prose explicitly says so; non-widening ruling
+      paragraph untouched; `git diff --stat` over scripts/ is empty)*
+- [x] Confirm no task-number reference and no record-versioning vocabulary entered the file.
+      *(completed: grep clean of added hunks)*
+- [x] Commit. *(completed)*
 
 **Timing**: 1.25 hours
 

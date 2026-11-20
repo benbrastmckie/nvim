@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Reframe orchestrate-state-machine.md",
+  "started_at": "2026-11-20T05:00:00Z",
+  "last_updated": "2026-11-20T05:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Qualify failed/blocked exit-path rows", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 2, "description": "Add posture paragraph in The mechanical signal", "status": "done", "files_touched": ["agent-system/extensions/core/docs/architecture/orchestrate-state-machine.md"]},
+    {"id": 3, "description": "No script change; non-widening ruling unmodified", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm no task-number/record-versioning language entered", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Commit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
