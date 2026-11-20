@@ -51,7 +51,7 @@ next_project_number: 664
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — Determine what leaves files in the working tree and give...
 646 [NOT STARTED] — Decide and implement how .return-meta.json's status...
-660 [PLANNED] — Init specs ignores specs by default
+660 [IMPLEMENTING] — Init specs ignores specs by default
   └─ 662 [NOT STARTED] — Reframe docs for ignored specs default
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
@@ -254,7 +254,7 @@ SCOPE DECLARATION (2026-11-19). This record's file_scope is deliberately EMPTY, 
 ---
 
 ### 660. Init specs ignores specs by default
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 658

@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Add the whole-tree ignore block renderer",
+  "started_at": "2026-11-20T03:30:00Z",
+  "last_updated": "2026-11-20T03:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read runtime-file-patterns.sh before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add specs_tree_ignore_block() after runtime_specs_ignore_block()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"]},
+    {"id": 3, "description": "Write preamble stating repo-root rationale, fresh-repo-only scope, standards pointer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"]},
+    {"id": 4, "description": "Leave runtime_ignore_block()/runtime_specs_ignore_block() byte-identical", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Export new function same style as existing renderers (no export -f anywhere in file)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

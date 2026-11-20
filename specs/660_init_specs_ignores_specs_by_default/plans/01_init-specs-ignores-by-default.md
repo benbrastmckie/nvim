@@ -1,7 +1,7 @@
 # Implementation Plan: Task #660
 
 - **Task**: 660 - Init specs ignores specs by default
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.75 hours
 - **Dependencies**: None blocking (task 658 already completed; task 338 shares territory, declared not blocking)
 - **Research Inputs**: specs/660_init_specs_ignores_specs_by_default/reports/01_init-specs-ignores-by-default.md
@@ -139,26 +139,26 @@ in one wave, and every later phase depends on the behavior the earlier one intro
 
 ---
 
-### Phase 1: Add the whole-tree ignore block renderer [NOT STARTED]
+### Phase 1: Add the whole-tree ignore block renderer [COMPLETED]
 
 **Goal**: Give the new root-level managed block one canonical definition, alongside the two
 existing block renderers, so no consumer of it hand-writes the pattern.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh` immediately
-      before editing — task 338 shares this file and a concurrent sibling may have changed it.
-- [ ] Add `specs_tree_ignore_block()` after `runtime_specs_ignore_block()`, emitting the managed
-      block's body: an explanatory comment preamble plus exactly one pattern line, `/specs/`.
-- [ ] Write the preamble to state (a) why the rule must sit at the repo root — only a
+- [x] Re-read `agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh` immediately
+      before editing — task 338 shares this file and a concurrent sibling may have changed it. *(completed)*
+- [x] Add `specs_tree_ignore_block()` after `runtime_specs_ignore_block()`, emitting the managed
+      block's body: an explanatory comment preamble plus exactly one pattern line, `/specs/`. *(completed)*
+- [x] Write the preamble to state (a) why the rule must sit at the repo root — only a
       `.gitignore` at or above the root makes `git check-ignore -q -- specs` succeed, which is
       what `specs-ignore-lib.sh`'s `specs_tree_is_gitignored()` consults; (b) that it is written
       only for a repository with nothing tracked under `specs/`; (c) a pointer to
       `context/standards/orchestrator-runtime-files.md` for the posture split and the manual
-      opt-in runbook.
-- [ ] Leave `runtime_ignore_block()` and `runtime_specs_ignore_block()` output byte-identical —
+      opt-in runbook. *(completed)*
+- [x] Leave `runtime_ignore_block()` and `runtime_specs_ignore_block()` output byte-identical —
       `tests/test-runtime-file-tracking.sh` Case 3 pins the former to the standards file's
-      fenced block.
-- [ ] Export the new function exactly as the two existing renderers are exported.
+      fenced block. *(completed)*
+- [x] Export the new function exactly as the two existing renderers are exported.
 
 **Timing**: 0.5 hours
 
@@ -179,7 +179,7 @@ existing block renderers, so no consumer of it hand-writes the pattern.
   byte-for-byte (the same extraction Case 3 performs).
 - The `verify-touched.sh` invocation above runs green.
 
----
+--- *(completed)*
 
 ### Phase 2: Fresh-repo detection and root `.gitignore` managed write [NOT STARTED]
 

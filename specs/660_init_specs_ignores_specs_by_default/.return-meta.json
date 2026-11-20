@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/660_init_specs_ignores_specs_by_default/plans/01_init-specs-ignores-by-default.md",
-      "summary": "6-phase linear plan: new whole-tree ignore block renderer, init-specs.sh fresh-repo detection writing a root-level managed /specs/ block, posture-aware Check C, both-posture test coverage, standards-file posture split with manual opt-in runbook, and a redeploy phase whose negative control asserts the reference repository's tracked specs tree is untouched against the git index."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 12,
   "metadata": {
-    "session_id": "sess_1795130570_6d4a1f_660",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 5.75,
-    "dependency_waves": 6
-  },
-  "memory_candidates": [
-    {
-      "content": "Introducing a second legitimate POSTURE for a repository-level invariant (here: a whole specs/ tree gitignored by default versus tracked) silently invalidates every unconditional 'must never be X' assertion elsewhere in the system, plus the test fixtures that assert the old single-posture outcome. At plan time this is cheap to find and expensive to miss: grep the verification scripts for unconditional assertions over the affected paths, then grep the suites for fixtures that bootstrap the now-changed default and assert a whole-script exit code. In this case check-runtime-file-tracking.sh's Check C (durable provenance is never ignored) and test-init-specs.sh Case 6 (fresh fixture, no root .gitignore, commit specs/, assert exit 0) were both latent breaks that the research report had listed only as an optional follow-on. Fold them into the same plan rather than deferring -- a deferred posture-awareness gap ships a known-red suite.",
-      "category": "PATTERN",
-      "source_artifact": "specs/660_init_specs_ignores_specs_by_default/plans/01_init-specs-ignores-by-default.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["posture-split", "unconditional-invariant", "test-fixture-collision", "plan-scope-expansion", "gitignore-default", "verification-script"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 660 to execute the plan",
-  "dispatch_seq": 10
+    "session_id": "sess_1795130570_6d4a1f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
