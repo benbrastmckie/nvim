@@ -1,0 +1,25 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase plan for injecting a literal [repo:<slug>] tag into the provenance of pending Sapience capture KOs. Phase 1 authors an extension-owned sapience-tag-pending.sh that rewrites ~/.sapience/pending_kos.jsonl under the vendor's own ledger flock, resolving each record's slug via capture.projects[].name -> path_prefix -> the shared resolve_checkout_toplevel() block -> basename; Phase 2 adds a fixture-driven suite and extends the byte-identity lockstep guard; Phase 3 corrects the domain docs' population census and documents the sync -> tag -> review sequencing; Phase 4 redeploys and runs the scoped touched-path check, deferring the full gate set to the orchestration close. Backfill of already-uploaded untagged KOs is a declared non-goal (create and read are the vault's only KO operations), and no phase mutates the live ledger or posts to the vault.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/676_tag_transcript_captured_kos_with_repo_tag/plans/01_tag-pending-kos-repo-tag.md",
+      "summary": "4-phase plan: tagging script, fixture test suite plus lockstep registration, corrected population census, redeploy and scoped gate sweep."
+    }
+  ],
+  "user_decision": {
+    "question": "Should the implementation phase run the new tagging script against the live ~/.sapience/pending_kos.jsonl (3757 pending records across nvim, .dotfiles and sapience-app), or stop at shipping and fixture-testing the script and leave the live pass and the subsequent `sapience review` post to you?",
+    "options": [
+      "Ship and fixture-test only - the plan verifies with a read-only dry-run against the live ledger and hands you the operator command sequence; no record is mutated and nothing is posted to the vault",
+      "Also run the live pass - the implementation phase runs `--write` against the real ledger, tagging all 3757 pending records including 1687 belonging to the .dotfiles checkout and 810 to sapience-app, still without posting"
+    ],
+    "recommended": "Ship and fixture-test only - the plan verifies with a read-only dry-run against the live ledger and hands you the operator command sequence; no record is mutated and nothing is posted to the vault",
+    "blocking": false,
+    "obligation": "Keep every mutation inside this repository's declared write surface: the ledger lives under ~/.sapience/ (outside it), the tagging pass would rewrite records captured from two other checkouts, and the `sapience review` step that makes a tag permanent is a user-driven GNOME launcher surface with no delete or update API behind it."
+  },
+  "dispatch_seq": 2
+}

@@ -190,7 +190,7 @@ next_project_number: 677
 
 ### Sapience
 
-676 [RESEARCHED] — Tag transcript-captured KOs with the repo tag: Sapience...
+676 [PLANNED] — Tag transcript-captured KOs with the repo tag: Sapience...
 
 ### Decidability
 
@@ -204,11 +204,12 @@ next_project_number: 677
 ## Tasks
 
 ### 676. Tag transcript captured kos with repo tag
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
 - **Research**: [676_tag_transcript_captured_kos_with_repo_tag/reports/01_tag-transcript-captured-kos-repo.md]
+- **Plan**: [676_tag_transcript_captured_kos_with_repo_tag/plans/01_tag-pending-kos-repo-tag.md]
 
 **Description**: Tag transcript-captured KOs with the repo tag: Sapience transcript-capture KOs (staged in ~/.sapience/pending_kos.jsonl by the vendor capture path, e.g. 1260 pending for nvim) carry a `project: "<name>"` field but no literal `[repo:<slug>]` substring in `provenance`, so repo-scoped retrieval (sapience-retrieve.sh's `/v1/search?source=[repo:<slug>]` filter) cannot find them even after approval; an untagged nvim-topic search returned 39 session-capture KOs vs 4 tagged. Research where a `[repo:<slug>]` tag can be injected into captured KOs' provenance (the capture/extract/upload path is vendor-owned under ~/.sapience/ and overwritten by auto-update; options include a post-extract/pre-upload rewrite of pending_kos.jsonl owned by the sapience extension, a wrapper at review/upload time, or a vendor ask), keeping the slug resolution identical to sapience-remember.sh's (basename of the parent checkout's git toplevel, mapped from the KO's `project`/capture.projects path_prefix), and whether already-uploaded untagged KOs can be backfilled given there is no delete API. Edit target is the sapience extension source store (agent-system/extensions/sapience)
 
