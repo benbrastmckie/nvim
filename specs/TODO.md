@@ -13,9 +13,9 @@ next_project_number: 664
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,654,658,661,663 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,654,658,663 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,583,592,593,598,605,609,630,656,659,660 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,577,586,599,629,654,658 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,473,480,486,492,509,513,518,561,566,594,657,662 | 439,452,472,479,484,491,552,593,656,659,660,661 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 3 | 454,473,480,486,492,509,513,518,561,566,594,657,662 | 439,452,472,479,484,491,552,593,656,659,660 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 501,508,571,581,588,595,641,655 | 454,472,486,492,509,518,539,561,580,594,657 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 524,596,642 | 501,595,641 | core-agent-system, agent-system |
 
@@ -56,8 +56,6 @@ next_project_number: 664
     └─ 662 [NOT STARTED] — Reframe docs for ignored specs default
   └─ 660 [NOT STARTED] — Init specs ignores specs by default
     └─ 662 [NOT STARTED] — Reframe docs for ignored specs default (see above)
-661 [IMPLEMENTING] — Unbacked specs durability options
-  └─ 662 [NOT STARTED] — Reframe docs for ignored specs default (see above)
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
@@ -234,12 +232,13 @@ DONE WHEN. No surface asserts that the specs tree is committed as an invariant; 
 ---
 
 ### 661. Unbacked specs durability options
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: None
 - **Research**: [661_unbacked_specs_durability_options/reports/01_unbacked_specs_durability.md]
 - **Plan**: [661_unbacked_specs_durability_options/plans/01_unbacked-specs-durability-options.md]
+- **Summary**: [661_unbacked_specs_durability_options/summaries/01_unbacked-specs-durability-options-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). No task-number references and no record-versioning language under agent-system/**; both are permitted in this description.
 

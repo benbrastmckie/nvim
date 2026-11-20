@@ -21,7 +21,12 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/661_unbacked_specs_durability_options/summaries/01_unbacked-specs-durability-options-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["verbatim-quote", "sed-range-diff", "artifact-verification", "byte-for-byte"]
+      "suggested_keywords": [
+        "verbatim-quote",
+        "sed-range-diff",
+        "artifact-verification",
+        "byte-for-byte"
+      ]
     }
   ],
   "sapience_notes": [
@@ -65,7 +70,11 @@
     "session_id": "sess_1795130570_6d4a1f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 1,
     "phases_total": 1
   }

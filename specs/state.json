@@ -19861,13 +19861,13 @@
     },
     {
       "project_name": "unbacked_specs_durability_options",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "core-agent-system",
       "title": "Unbacked specs durability options",
       "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree -- see rules/source-store-deploy-boundary.md). No task-number references and no record-versioning language under agent-system/**; both are permitted in this description.\n\nGOAL. Recommend one way to keep an ignored specs tree recoverable. Research and a recommendation only: nothing is built, nothing is scheduled, and no mechanism is adopted by this task's completion.\n\nWHY. Once a repository's specs tree is gitignored, task state, reports, plans and summaries live on one disk with no git history behind them. The consumer that prompted this group holds 604 such files. Today the agent system says nothing about that exposure, and a reader who ignores specs/ for good reasons is given no account of what is lost if the working copy goes.\n\nWHAT TO WEIGH. At least: a sibling repository holding only specs trees; a periodic archive commit onto an orphan branch in the same repository; an external file-sync or snapshot mechanism the host already runs; and doing nothing beyond documenting the exposure. For each, state what it costs to set up, what it costs per task, what it recovers, what it silently fails to recover, and whether it reintroduces the cross-branch churn that ignoring specs/ was meant to remove. The last of those is the criterion that disqualifies the obvious answers, so apply it early.\n\nCONSTRAINT ON THE RECOMMENDATION. Recommend one option and say plainly why the others lose. Do not design an implementation, do not write a script, and do not add a hook. If the recommendation is to document the exposure and build nothing, that is a legitimate and complete outcome -- say so without hedging.\n\nDONE WHEN. A report states the options, the per-option verdict against the criteria above, and one recommendation; a short durability statement suitable for a reader of the rules is drafted for the docs task to place.\n\nSCOPE DECLARATION (2026-11-19). This record's file_scope is deliberately EMPTY, and that is the honest declaration rather than an omission to be repaired. By its own contract above it writes no file under agent-system/**: its two outputs are a report under its own specs/ artifact directory (in-scope derived output, never a file_scope excursion) and a drafted durability paragraph handed to the documentation record for placement. A declaration of the whole context/standards/ directory overlapped 23 distinct non-terminal records for no real territory and tripped validate-state.sh's coarse-declaration check; do not re-broaden it, and do not substitute context/standards/orchestrator-runtime-files.md either -- that file has four other claimants, one of which is this group's own scaffolding record and another its never-co-admit counterpart. Reading a standards file is not declaring it.",
       "created": "2026-11-19T20:15:55Z",
-      "last_updated": "2026-11-20T00:37:18Z",
+      "last_updated": "2026-11-20T01:53:38Z",
       "dependencies": [],
       "file_scope": [
         "specs/661_unbacked_specs_durability_options/plans/01_unbacked-specs-durability-options.md",
@@ -19885,6 +19885,11 @@
           "path": "specs/661_unbacked_specs_durability_options/plans/01_unbacked-specs-durability-options.md",
           "type": "plan",
           "summary": "Single-phase plan: verify the research report against both DONE WHEN clauses, then write the completion summary carrying the drafted durability statement verbatim for the documentation record to place."
+        },
+        {
+          "path": "specs/661_unbacked_specs_durability_options/summaries/01_unbacked-specs-durability-options-summary.md",
+          "type": "summary",
+          "summary": "Completion summary: DONE WHEN verification, unhedged Option D recommendation, and verbatim durability statement for the sibling documentation record to place."
         }
       ],
       "project_number": 661,
@@ -20146,7 +20151,8 @@
           "semantic": true
         },
         "degradations_count": 42
-      }
+      },
+      "completion_summary": "Confirmed the research report already satisfied both DONE WHEN clauses (all four options scored against all five criteria; a drafted durability statement under Recommendation for Placement), then wrote the completion summary carrying that statement byte-for-byte verbatim (diff-confirmed) plus the unhedged Option D recommendation. No file under agent-system/** was touched, matching this task's deliberately empty-of-source-store declared scope."
     },
     {
       "project_name": "reframe_docs_for_ignored_specs_default",

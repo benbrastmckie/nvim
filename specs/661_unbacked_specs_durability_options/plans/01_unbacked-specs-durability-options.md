@@ -1,7 +1,7 @@
 # Implementation Plan: Task #661
 
 - **Task**: 661 - Unbacked specs durability options
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 0.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/661_unbacked_specs_durability_options/reports/01_unbacked_specs_durability.md
