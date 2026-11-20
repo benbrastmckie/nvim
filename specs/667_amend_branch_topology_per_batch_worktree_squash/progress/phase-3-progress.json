@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Create the successor task records",
+  "started_at": "2026-11-20T21:10:00Z",
+  "last_updated": "2026-11-20T21:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create eight successor task records via audit-task-proposals.sh and state-write.sh, topic orchestrator, with file_scope", "status": "done",
+     "files_touched": ["specs/state.json", "specs/TODO.md", "specs/ROADMAP.md"]},
+    {"id": 2, "description": "Fill the amending record's Successor tasks section and the two-direction coverage check", "status": "done",
+     "files_touched": ["specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"]}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [],
+  "verification_notes": "local tier: validate-state.sh rc 0 (passed with 6 warnings, none a failure; the audit_verdict/audit_override unknown-field and file_scope missing-key warnings predate this phase except that 668-675 join the audit_verdict list). next_project_number 668 -> 676. jq shows 668-675 each not_started, meta, topic orchestrator, non-empty file_scope, description citing the amending record. git status shows no change outside specs/ from this phase (the modified .claude-extensions.json and untracked .pid were present at dispatch start). Each creation ran about 90 s, dominated by the audit.",
+  "handoff_count": 0
+}

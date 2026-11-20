@@ -333,29 +333,29 @@ declared files is recorded for the documentation-parity successor, not edited he
 
 ---
 
-### Phase 3: Create the successor task records [NOT STARTED]
+### Phase 3: Create the successor task records [COMPLETED]
 
 **Goal**: Elements 2 to 7, and every running-behaviour verification criterion in the task
 description, are owned by a task record that cites the amending record.
 
 **Tasks**:
-- [ ] Create each task below through the sanctioned creation path in
+- [x] Create each task below through the sanctioned creation path in
       `agent-system/extensions/core/commands/task.md` (Create Task mode, Step 6):
       `audit-task-proposals.sh` for the backlog verdict, then `state-write.sh` with
       `--audit-verdict` and `--regen-todo`, then the topic registration that step requires. Use
       topic `orchestrator` and task type `meta`. Never hand-roll a `jq ... > tmp && mv` write.
       A duplicate-of-open verdict naming 655 is expected; record each verdict and the reason
       for proceeding (655 is revised in Phase 4) in the amending record's "Successor tasks"
-      section.
-- [ ] Every description opens with the two standing constraints (source store is the edit
+      section. *(completed: 668-675 created; every audit returned duplicate-of-open naming 655; the creation path's user confirmation prompt is unreachable from a dispatched agent and was not asked -- recorded in the amending record)*
+- [x] Every description opens with the two standing constraints (source store is the edit
       target with redeploy; no task-number references or record-versioning language under
       `agent-system/**`), cites
       `specs/decisions/batch-worktree-isolation-and-task-squash-landing.md` by section for its
       rulings instead of restating them, names the report and
       `reports/01_two-root-consumers.tsv` where relevant, states that the design must hold with
       isolation declared off, forbids new prose in `skill-orchestrate/SKILL.md` and
-      `commands/orchestrate.md`, and lists the verification criteria it owns.
-- [ ] The eight successors, in dependency order:
+      `commands/orchestrate.md`, and lists the verification criteria it owns. *(completed)*
+- [x] The eight successors, in dependency order: *(completed: eight, no merge or split)*
   1. **Harness measurement for an external worktree.** Measure, in a live session, whether file
      tools prompt or refuse for a path outside the project directory, whether path-scoped rules
      apply there, what working directory a hook process receives, and what cwd a subagent gets.
@@ -404,13 +404,13 @@ description, are owned by a task record that cites the amending record.
      section, `ref-plumbing-landing.md`, the branch-target rule in `rules/git-workflow.md`, the
      schema rows' prose, and `index-entries.json` line counts. Current design only. Owns: "the
      rules, the narrative and the scripts state the same contract".
-- [ ] Give each successor a `file_scope` naming the source-store files its description lists,
-      using on-disk paths under `agent-system/extensions/core/`. Do not declare a directory.
-- [ ] Fill the amending record's "Successor tasks" section: one row per successor with its
-      assigned number, its slug, the elements and criteria it owns, and its audit verdict.
-- [ ] Check coverage in both directions: every sentence of the description's VERIFICATION
+- [x] Give each successor a `file_scope` naming the source-store files its description lists,
+      using on-disk paths under `agent-system/extensions/core/`. Do not declare a directory. *(completed)*
+- [x] Fill the amending record's "Successor tasks" section: one row per successor with its
+      assigned number, its slug, the elements and criteria it owns, and its audit verdict. *(completed)*
+- [x] Check coverage in both directions: every sentence of the description's VERIFICATION
       block that describes running behaviour appears in exactly one successor's owned list, and
-      "both worktree records are engaged defect by defect" is marked as discharged by Phase 1.
+      "both worktree records are engaged defect by defect" is marked as discharged by Phase 1. *(completed)*
 
 **Timing**: 2 hours
 

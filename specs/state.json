@@ -1,7 +1,2027 @@
 {
   "version": "1.1.0",
-  "next_project_number": 668,
+  "next_project_number": 676,
   "active_projects": [
+    {
+      "project_number": 675,
+      "project_name": "branch_topology_documentation_parity",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Rewrite the branch-strategy documentation to state the implemented batch-worktree contract",
+      "topic": "orchestrator",
+      "created": "2026-11-20T20:30:54Z",
+      "last_updated": "2026-11-20T20:30:54Z",
+      "session_id": "sess_1795203458_188c22",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/context/standards/git-workflow-narrative.md",
+        "agent-system/extensions/core/context/patterns/ref-plumbing-landing.md",
+        "agent-system/extensions/core/rules/git-workflow.md",
+        "agent-system/extensions/core/context/standards/repo-level-declarations.md",
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "next_artifact_number": 1,
+      "artifacts": [],
+      "description": "Rewrite the branch-strategy documentation to state the implemented batch-worktree contract\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.\n\nRULING THIS TASK BUILDS: specs/decisions/batch-worktree-isolation-and-task-squash-landing.md (the amending record). Read the sections named below before planning; they are cited, not restated, and the record wins over this description wherever the two differ. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md (the research report; if its task directory has been archived, find it by filename under specs/archive/).\n\nSTANDING CONSTRAINTS: (1) every behaviour built here must hold in a repository with isolation declared off (worktree_isolation undeclared or `off`), where no worktree and no batch branch exist; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both of which sit at their byte ceilings -- mechanics go in scripts and the dispatch composer; (3) repo-agnostic: no literal branch name and no consumer-repo path in any deliverable; (4) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.\n\nBUILDS: documentation parity for everything the amending record rules, AFTER the mechanics exist.\n\n1. Rewrite context/standards/git-workflow-narrative.md's Branch Strategy section to the implemented contract.\n2. Rewrite context/patterns/ref-plumbing-landing.md to match what the landing task left in service (the milestone ref's remaining role, if any, and the attribution landing).\n3. Add the branch-target rule to rules/git-workflow.md.\n4. Complete the prose around the `integration_branch` and `worktree_isolation` schema rows in context/standards/repo-level-declarations.md (the rows themselves are added by the admission task).\n5. Update index-entries.json line counts for every file touched.\n\nCURRENT DESIGN ONLY: state what the system does. No draft history, no \"no longer\", no attribution of a rejected alternative to an earlier design. Rejected alternatives may be stated on their own merits. Describe what was actually built by reading the scripts, not by copying the record: where a script and the record differ, report the difference instead of documenting the record.\n\nAlso check the header of milestone-ref-land.sh and any other script header that still describes every dispatch as running in one shared working tree, and bring each into line with what the landing task left.\n\nVERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION block; each is owned by exactly one task):\n- The rules, the narrative and the scripts state the same contract.",
+      "audit_verdict": {
+        "proposal": {
+          "id": "branch_topology_documentation_parity",
+          "project_number": null,
+          "title": "Rewrite the branch-strategy documentation to state the implemented batch-worktree contract"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 139,
+          "duplicate-of-open": 52,
+          "scope-blind": 43
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 674,
+            "project_name": "batch_worktree_cleanup_retention_orphan_report",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.632768361581921
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 673,
+            "project_name": "per_task_attribution_squash_landing",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.655367231638418
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 672,
+            "project_name": "two_root_classification_of_remaining_consumers",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.6384180790960452
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 671,
+            "project_name": "two_root_contract_in_hooks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.6440677966101694
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 670,
+            "project_name": "two_root_contract_dispatch_and_commit_scripts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.655367231638418
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 669,
+            "project_name": "integration_branch_admission_and_batch_worktree",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/repo-level-declarations.md"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.6779661016949152
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 668,
+            "project_name": "measure_harness_behaviour_for_external_worktree",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.6384180790960452
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 667,
+            "project_name": "amend_branch_topology_per_batch_worktree_squash",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.672316384180791
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.4689265536723164
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5819209039548022
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 398,
+            "project_name": "lean_plan_scope_rw_site_unfolding",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4011299435028249
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4406779661016949
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": [
+              "agent-system/extensions/core/index-entries.json"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.4858757062146893
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5480225988700564
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.519774011299435
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 453,
+            "project_name": "degraded_retrieval_zero_result_directive",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4124293785310734
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4519774011299435
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5084745762711864
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 457,
+            "project_name": "repo_specific_content_in_shared_source_store",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4180790960451977
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4576271186440678
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 479,
+            "project_name": "task_landing_target_requirement",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4180790960451977
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.519774011299435
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 486,
+            "project_name": "manifest_registration_dropped_from_phase_commit",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4011299435028249
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.480225988700565
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 506,
+            "project_name": "bounded_waiter_hook_fires_on_documenting_prose",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4067796610169492
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 43
+      }
+    },
+    {
+      "project_number": 674,
+      "project_name": "batch_worktree_cleanup_retention_orphan_report",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Build batch worktree cleanup, retention on partial batches, and orphan reporting in /refresh",
+      "topic": "orchestrator",
+      "created": "2026-11-20T20:28:52Z",
+      "last_updated": "2026-11-20T20:28:52Z",
+      "session_id": "sess_1795203458_188c22",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/batch-worktree.sh",
+        "agent-system/extensions/core/scripts/tests/test-batch-worktree.sh",
+        "agent-system/extensions/core/scripts/claude-refresh.sh",
+        "agent-system/extensions/core/commands/refresh.md",
+        "agent-system/extensions/core/skills/skill-refresh/SKILL.md"
+      ],
+      "next_artifact_number": 1,
+      "artifacts": [],
+      "description": "Build batch worktree cleanup, retention on partial batches, and orphan reporting in /refresh\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.\n\nRULING THIS TASK BUILDS: specs/decisions/batch-worktree-isolation-and-task-squash-landing.md (the amending record). Read the sections named below before planning; they are cited, not restated, and the record wins over this description wherever the two differ. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md (the research report; if its task directory has been archived, find it by filename under specs/archive/).\n\nSTANDING CONSTRAINTS: (1) every behaviour built here must hold in a repository with isolation declared off (worktree_isolation undeclared or `off`), where no worktree and no batch branch exist; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both of which sit at their byte ceilings -- mechanics go in scripts and the dispatch composer; (3) repo-agnostic: no literal branch name and no consumer-repo path in any deliverable; (4) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.\n\nBUILDS: record sections \"Cleanup and retention\" and \"Defects engaged\" entry 1.\n\n1. WHEN: only when every task of the batch has a recorded landing proof in the batch record. Never on an inferred verdict, never on an empty or nothing-to-land verdict. `git merge-tree --write-tree` equal to the integration tree is a necessary check and never by itself a proof.\n2. REMOVAL PRECONDITION: in the worktree, `git status --porcelain --ignored` shows nothing outside a declared allowlist. `git worktree remove` does not refuse on ignored files (report finding 6), so a build product or report on an ignored path would otherwise be deleted silently. Define the allowlist and where it is declared.\n3. REMOVAL: `git worktree remove` WITHOUT --force. A refusal is reported and the worktree stays.\n4. BRANCH DELETION: `git branch -d` refuses a squash-landed branch as unmerged. Delete by compare-and-swap, `git update-ref -d <ref> <proven tip>`, against the tip recorded with the landing proof, so a branch that advanced after its proof cannot be deleted.\n5. RETENTION: a task left [PARTIAL], [BLOCKED], failed or abandoned keeps worktree and branch for resume. A batch holding both landed and retained tasks keeps both.\n6. /refresh LISTS batch records whose session is not live and whose worktree still exists. It REMOVES NOTHING.\n\nShares commands/refresh.md, skills/skill-refresh/SKILL.md and claude-refresh.sh with `refresh_tmp_sweep_pass`; order the two at admission rather than editing concurrently.\n\nVERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION block; each is owned by exactly one task):\n- After a fully landed batch the worktree and branch are gone; after a partial one they remain.",
+      "audit_verdict": {
+        "proposal": {
+          "id": "batch_worktree_cleanup_retention_orphan_report",
+          "project_number": null,
+          "title": "Build batch worktree cleanup, retention on partial batches, and orphan reporting in /refresh"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 64,
+          "duplicate-of-open": 32,
+          "overlaps-open": 2,
+          "scope-blind": 43
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 673,
+            "project_name": "per_task_attribution_squash_landing",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.6787564766839378
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 672,
+            "project_name": "two_root_classification_of_remaining_consumers",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5647668393782384
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 671,
+            "project_name": "two_root_contract_in_hooks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.6217616580310881
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 670,
+            "project_name": "two_root_contract_dispatch_and_commit_scripts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.6269430051813472
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 669,
+            "project_name": "integration_branch_admission_and_batch_worktree",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/batch-worktree.sh",
+              "agent-system/extensions/core/scripts/tests/test-batch-worktree.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.6113989637305699
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 668,
+            "project_name": "measure_harness_behaviour_for_external_worktree",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5803108808290155
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 667,
+            "project_name": "amend_branch_topology_per_batch_worktree_squash",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.7150259067357513
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.41968911917098445
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5233160621761658
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41968911917098445
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5284974093264249
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.47150259067357514
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41450777202072536
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41450777202072536
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43523316062176165
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49740932642487046
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43523316062176165
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40932642487046633
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45595854922279794
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 517,
+            "project_name": "stage_regenerated_derived_files_in_phase_commits",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41968911917098445
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43005181347150256
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.533678756476684
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.48186528497409326
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41450777202072536
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 541,
+            "project_name": "snapshot_artifacts_contaminate_phase_commits",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40932642487046633
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 43
+      }
+    },
+    {
+      "project_number": 673,
+      "project_name": "per_task_attribution_squash_landing",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Land one attribution-built squash commit per completed task and verify it before the status write",
+      "topic": "orchestrator",
+      "created": "2026-11-20T20:26:53Z",
+      "last_updated": "2026-11-20T20:26:53Z",
+      "session_id": "sess_1795203458_188c22",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/task-squash-land.sh",
+        "agent-system/extensions/core/scripts/tests/test-task-squash-land.sh",
+        "agent-system/extensions/core/scripts/milestone-ref-land.sh",
+        "agent-system/extensions/core/scripts/tests/test-milestone-ref-land.sh",
+        "agent-system/extensions/core/scripts/milestone-review-handoff.sh",
+        "agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh",
+        "agent-system/extensions/core/manifest.json"
+      ],
+      "next_artifact_number": 1,
+      "artifacts": [],
+      "description": "Land one attribution-built squash commit per completed task and verify it before the status write\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.\n\nRULING THIS TASK BUILDS: specs/decisions/batch-worktree-isolation-and-task-squash-landing.md (the amending record). Read the sections named below before planning; they are cited, not restated, and the record wins over this description wherever the two differ. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md (the research report; if its task directory has been archived, find it by filename under specs/archive/).\n\nSTANDING CONSTRAINTS: (1) every behaviour built here must hold in a repository with isolation declared off (worktree_isolation undeclared or `off`), where no worktree and no batch branch exist; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both of which sit at their byte ceilings -- mechanics go in scripts and the dispatch composer; (3) repo-agnostic: no literal branch name and no consumer-repo path in any deliverable; (4) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.\n\nBUILDS: record sections \"R3, amended\", \"Defects engaged\" entry 4, and \"Built-mechanism verdicts\" (the retirement).\n\n1. LANDING, at a task's [IMPLEMENTING] -> [COMPLETED] transition in orchestrate-cycle-postflight.sh, under the existing specs/.commit-lock mutex, in the PRIMARY tree, which never changes branch: select the task's own commits on the batch branch between the merge base and the batch tip by the `task {N}` subject convention, merge commits excluded; apply with `git cherry-pick -n`; make ONE commit, subject `task {N}: {title}`, body carrying the session identity and the phase list. `git merge --squash` of an end commit is rejected by the record: it co-lands a sibling's unfinished commits when tasks interleave. Do not rely on `modified_files` to find the work; read the branch.\n2. REFUSAL, never a skip: an unlanded-range commit attributable to no task, or a pick conflict, refuses the landing, leaves the task un-completed and the branch intact, and names the offending commit.\n3. VERIFICATION strictly BEFORE the completion status write: blob equality over the task's own path set, between the new integration tip and the task's end commit. Full-tree equality is the wrong predicate here. Ship a deliberate NEGATIVE fixture proving the check fails when work did not land, and record that it was observed failing.\n4. Idempotent: a re-run after a recorded landing proof is a no-op. Record the proof (landed commit, proven batch tip) in the batch record; cleanup depends on it.\n5. BACK-MERGE the integration branch into the batch branch after each landing, so the next task's range has the correct merge base.\n6. TWO CONCURRENT BATCHES on one integration branch: the second landing is a real three-way pick that can conflict. Build the conflict fixture; the response is refusal with the branch intact; resume is a back-merge then a re-run.\n7. SOURCE-STORE COMMITS made by commit-source-store-path.sh in a second repository are outside the batch branch and outside the squash. State them in the squash body or rule otherwise, with reasons.\n8. RETIRE milestone-ref-land.sh as a landing mechanism and point milestone-review-handoff.sh's review range at the integration branch. RULE what an isolation-off repository uses in its place, since that script is its only landing check today; do not leave such a repository with no pre-completion landing verification.\n\nVERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION block; each is owned by exactly one task):\n- A multi-task batch produces one squash commit per completed task on the integration branch with its phase list in the body, the primary tree never having changed branch.\n- A task failing mid-batch leaves its commits, branch and worktree intact while its sibling lands.",
+      "audit_verdict": {
+        "proposal": {
+          "id": "per_task_attribution_squash_landing",
+          "project_number": null,
+          "title": "Land one attribution-built squash commit per completed task and verify it before the status write"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 160,
+          "duplicate-of-open": 33,
+          "overlaps-open": 5,
+          "scope-blind": 43
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 672,
+            "project_name": "two_root_classification_of_remaining_consumers",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.515695067264574
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 671,
+            "project_name": "two_root_contract_in_hooks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5990566037735849
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 670,
+            "project_name": "two_root_contract_dispatch_and_commit_scripts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5822222222222222
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 669,
+            "project_name": "integration_branch_admission_and_batch_worktree",
+            "shared_paths": [
+              "agent-system/extensions/core/manifest.json"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.6113744075829384
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 668,
+            "project_name": "measure_harness_behaviour_for_external_worktree",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.575
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 667,
+            "project_name": "amend_branch_topology_per_batch_worktree_squash",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/milestone-ref-land.sh",
+              "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+              "agent-system/extensions/core/scripts/tests/test-milestone-ref-land.sh",
+              "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.7456896551724138
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 639,
+            "project_name": "make_issue_record_failures_visible",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.2629310344827586
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.4224137931034483
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5517241379310345
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40948275862068967
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4051724137931034
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44396551724137934
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+              "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.45689655172413796
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49137931034482757
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+              "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.4482758620689655
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44396551724137934
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 509,
+            "project_name": "redeploy_phase_declaration_and_gate_criterion",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4224137931034483
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.47844827586206895
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 516,
+            "project_name": "lean_compliance_check_end_state_goal_polarity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40948275862068967
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 517,
+            "project_name": "stage_regenerated_derived_files_in_phase_commits",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4525862068965517
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4051724137931034
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 519,
+            "project_name": "infra_exempt_transport_error_dispatch_deaths",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+              "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.24568965517241378
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4353448275862069
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 43
+      }
+    },
+    {
+      "project_number": 672,
+      "project_name": "two_root_classification_of_remaining_consumers",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Classify every remaining project-root consumer as code-root, state-root or both",
+      "topic": "orchestrator",
+      "created": "2026-11-20T20:24:49Z",
+      "last_updated": "2026-11-20T20:24:49Z",
+      "session_id": "sess_1795203458_188c22",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/lib/common.sh",
+        "agent-system/extensions/core/scripts/deploy-root-guard.sh",
+        "agent-system/extensions/core/scripts/state-write.sh",
+        "agent-system/extensions/core/scripts/lib/central-log-lib.sh"
+      ],
+      "next_artifact_number": 1,
+      "artifacts": [],
+      "description": "Classify every remaining project-root consumer as code-root, state-root or both\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.\n\nRULING THIS TASK BUILDS: specs/decisions/batch-worktree-isolation-and-task-squash-landing.md (the amending record). Read the sections named below before planning; they are cited, not restated, and the record wins over this description wherever the two differ. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md (the research report; if its task directory has been archived, find it by filename under specs/archive/).\n\nSTANDING CONSTRAINTS: (1) every behaviour built here must hold in a repository with isolation declared off (worktree_isolation undeclared or `off`), where no worktree and no batch branch exist; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both of which sit at their byte ceilings -- mechanics go in scripts and the dispatch composer; (3) repo-agnostic: no literal branch name and no consumer-repo path in any deliverable; (4) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.\n\nBUILDS: the remainder of the two-root audit, after the commit scripts and the hooks.\n\nINPUT: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_two-root-consumers.tsv (one row per file with per-mechanism counts), plus the report's cross-check set and the agent, skill and command documents that invoke `.claude/scripts/` by relative path.\n\nDO: classify every row as code-root, state-root, or both, and fix each consumer that resolves the wrong one under a batch worktree. Three resolution mechanisms behave differently (report finding 8): fixed-depth from the script's own location follows the path the script was invoked by and so yields the state root; `rev-parse --show-toplevel` follows the working directory; $CLAUDE_PROJECT_DIR is always the primary tree. A consumer that needs the code root and gets the state root must refuse loudly, never degrade to a warning.\n\nTREAT THE REPORT'S COUNTS AS A HYPOTHESIS TO RE-DERIVE, not as a premise: it records 168 table rows, 26 further cross-check files (194 files) and 27 instruction documents. Re-run the enumeration at plan time and state the live counts. The report flags its own coverage gap: a consumer that reaches a root only through a sourced library function, with neither search token in its own file, matches neither pattern, and the instruction documents were counted by one pattern only. Close that gap by tracing the callers of the shared root resolvers (common_repo_root and its siblings), not by widening a grep.\n\nThe eight loaded extensions are in scope (core, lean, literature, sapience, email, nvim, nix, approvals); edit each extension's own source store. The file_scope below names only the shared resolvers known at creation; WIDEN it at plan time from the classification, file by file, never to a directory.\n\nExpect to divide: if the classification shows more than one plan's worth of wrong-root consumers, split by extension or by resolution mechanism and record the split.\n\nVERIFICATION CRITERIA THIS TASK OWNS: none of the originating task's running-behaviour criteria; its own criterion is stated in the body above.",
+      "audit_verdict": {
+        "proposal": {
+          "id": "two_root_classification_of_remaining_consumers",
+          "project_number": null,
+          "title": "Classify every remaining project-root consumer as code-root, state-root or both"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 54,
+          "duplicate-of-open": 33,
+          "overlaps-open": 2,
+          "scope-blind": 42
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 671,
+            "project_name": "two_root_contract_in_hooks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5990566037735849
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 670,
+            "project_name": "two_root_contract_dispatch_and_commit_scripts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.547085201793722
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 669,
+            "project_name": "integration_branch_admission_and_batch_worktree",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5545023696682464
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 668,
+            "project_name": "measure_harness_behaviour_for_external_worktree",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.595
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 667,
+            "project_name": "amend_branch_topology_per_batch_worktree_squash",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5964125560538116
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.4304932735426009
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5336322869955157
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4439461883408072
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5022421524663677
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.484304932735426
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4080717488789238
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4663677130044843
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 457,
+            "project_name": "repo_specific_content_in_shared_source_store",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40358744394618834
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4304932735426009
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 475,
+            "project_name": "audit_evidence_gate_internal_argjson_spill_bypass",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/state-write.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.2825112107623318
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49327354260089684
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4663677130044843
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4080717488789238
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4304932735426009
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 517,
+            "project_name": "stage_regenerated_derived_files_in_phase_commits",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4260089686098655
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4484304932735426
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4170403587443946
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 525,
+            "project_name": "task_type_detect_ext_root_dir_fallback",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/lib/common.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.36771300448430494
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5829596412556054
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4798206278026906
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 42
+      }
+    },
+    {
+      "project_number": 671,
+      "project_name": "two_root_contract_in_hooks",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Make the write-time and git-guard hooks two-root aware",
+      "topic": "orchestrator",
+      "created": "2026-11-20T20:22:53Z",
+      "last_updated": "2026-11-20T20:22:53Z",
+      "session_id": "sess_1795203458_188c22",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/hooks/guard-destructive-git.sh",
+        "agent-system/extensions/core/hooks/validate-no-task-references.sh",
+        "agent-system/extensions/core/hooks/validate-no-record-versioning.sh",
+        "agent-system/extensions/core/hooks/validate-meta-write.sh",
+        "agent-system/extensions/core/hooks/validate-state-sync.sh",
+        "agent-system/extensions/core/hooks/validate-plan-write.sh",
+        "agent-system/extensions/core/scripts/tests/test-guard-destructive-git.sh"
+      ],
+      "next_artifact_number": 1,
+      "artifacts": [],
+      "description": "Make the write-time and git-guard hooks two-root aware\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.\n\nRULING THIS TASK BUILDS: specs/decisions/batch-worktree-isolation-and-task-squash-landing.md (the amending record). Read the sections named below before planning; they are cited, not restated, and the record wins over this description wherever the two differ. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md (the research report; if its task directory has been archived, find it by filename under specs/archive/).\n\nSTANDING CONSTRAINTS: (1) every behaviour built here must hold in a repository with isolation declared off (worktree_isolation undeclared or `off`), where no worktree and no batch branch exist; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both of which sit at their byte ceilings -- mechanics go in scripts and the dispatch composer; (3) repo-agnostic: no literal branch name and no consumer-repo path in any deliverable; (4) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.\n\nBUILDS: record section \"Defects engaged\", entries 1 and 2 (the hook routes), and \"Cleanup and retention\" (its last bullet).\n\n1. guard-destructive-git.sh evaluates the tree the command TARGETS. Today it judges safety from `git status --porcelain` in its own process directory with no handling of `cd` or `git -C` in the command text; the report observed it blocking commands aimed at a scratch repository because this repository's tree was dirty. The same logic in reverse allows a destructive command aimed at a dirty batch worktree whenever the primary tree is clean, which is a route back to the destructive-release defect.\n2. While a batch record is live for the session, a write-time hook REFUSES an edit to a tracked non-state path under the primary root, naming the code root the edit should have targeted. This is the most likely failure in practice: an agent's working directory resets to the project directory on every Bash call and every relative path resolves there.\n3. CLASSIFY the payload-path hooks and libraries the report's cross-check found: they resolve no root of their own and take a path from the hook payload or a caller (the report names validate-no-task-references.sh, validate-meta-write.sh, validate-state-sync.sh and the email extension's mail-guard.sh). A payload path inside an external worktree is outside the project directory; each hook must either handle it or refuse loudly, never pass silently. Deployed settings reference $CLAUDE_PROJECT_DIR in hook commands, so hooks resolve the primary tree whatever the worktree contains.\n\nDepends on the harness measurement: what working directory and payload path a hook actually receives for a worktree file is measured there, not assumed here.\n\nVERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION block; each is owned by exactly one task):\n- No script commits from the wrong root, and a wrong-root invocation refuses loudly -- the HOOK half (the commit-path half is owned by the commit scripts task).",
+      "audit_verdict": {
+        "proposal": {
+          "id": "two_root_contract_in_hooks",
+          "project_number": null,
+          "title": "Make the write-time and git-guard hooks two-root aware"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 80,
+          "duplicate-of-open": 37,
+          "scope-blind": 43
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 670,
+            "project_name": "two_root_contract_dispatch_and_commit_scripts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.6745283018867925
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 669,
+            "project_name": "integration_branch_admission_and_batch_worktree",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5829383886255924
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 668,
+            "project_name": "measure_harness_behaviour_for_external_worktree",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.65
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 667,
+            "project_name": "amend_branch_topology_per_batch_worktree_squash",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.6273584905660378
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.4528301886792453
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5424528301886793
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4481132075471698
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4386792452830189
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5707547169811321
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4858490566037736
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4811320754716981
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 457,
+            "project_name": "repo_specific_content_in_shared_source_store",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41509433962264153
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4528301886792453
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4811320754716981
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4528301886792453
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41037735849056606
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 509,
+            "project_name": "redeploy_phase_declaration_and_gate_criterion",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44339622641509435
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4339622641509434
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 517,
+            "project_name": "stage_regenerated_derived_files_in_phase_commits",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4481132075471698
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42924528301886794
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.419811320754717
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5660377358490566
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4858490566037736
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4528301886792453
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 43
+      }
+    },
+    {
+      "project_number": 670,
+      "project_name": "two_root_contract_dispatch_and_commit_scripts",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Build the two-root contract in the dispatch composer and the commit scripts",
+      "topic": "orchestrator",
+      "created": "2026-11-20T20:21:01Z",
+      "last_updated": "2026-11-20T20:21:01Z",
+      "session_id": "sess_1795203458_188c22",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+        "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+        "agent-system/extensions/core/scripts/git-commit-phase.sh",
+        "agent-system/extensions/core/scripts/git-snapshot.sh",
+        "agent-system/extensions/core/scripts/verify-touched.sh",
+        "agent-system/extensions/core/scripts/orchestrator-postflight.sh",
+        "agent-system/extensions/core/scripts/skill-base.sh",
+        "agent-system/extensions/core/scripts/lake-build-guard.sh",
+        "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+        "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh",
+        "agent-system/extensions/core/scripts/tests/test-git-snapshot.sh",
+        "agent-system/extensions/core/scripts/tests/test-verify-touched.sh",
+        "agent-system/extensions/core/context/standards/git-staging-scope.md"
+      ],
+      "next_artifact_number": 1,
+      "artifacts": [],
+      "description": "Build the two-root contract in the dispatch composer and the commit scripts\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.\n\nRULING THIS TASK BUILDS: specs/decisions/batch-worktree-isolation-and-task-squash-landing.md (the amending record). Read the sections named below before planning; they are cited, not restated, and the record wins over this description wherever the two differ. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md (the research report; if its task directory has been archived, find it by filename under specs/archive/).\n\nSTANDING CONSTRAINTS: (1) every behaviour built here must hold in a repository with isolation declared off (worktree_isolation undeclared or `off`), where no worktree and no batch branch exist; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both of which sit at their byte ceilings -- mechanics go in scripts and the dispatch composer; (3) repo-agnostic: no literal branch name and no consumer-repo path in any deliverable; (4) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.\n\nBUILDS: record section \"Defects engaged\", entry 2 (the wrong-root defect, NOT closed by design and the amendment's primary risk), and \"R6, consequence\".\n\nTHE CONTRACT: the CODE root is the batch worktree; the STATE root is the primary tree, which holds specs/ and .claude/. Symlinking either into the worktree is rejected by the record. State is reached by absolute path; the code root is passed explicitly.\n\n1. orchestrate-build-dispatch.sh carries an absolute code-root path in the dispatch file whenever a batch record is live. It carries no isolation field, so nothing can be forwarded to the harness's own per-agent worktree option.\n2. Make two-root aware: git-commit-scoped.sh and git-commit-phase.sh (code pathspecs to the code root, specs/ pathspecs to the state root), git-snapshot.sh (snapshots the tree holding the task's edits), verify-touched.sh, orchestrator-postflight.sh, skill-base.sh, and the callers of lake-build-guard.sh (it already resolves from --dir; pass it the code root). commit-source-store-path.sh already takes an explicit target root and is the model.\n3. THE REFUSAL. While a batch record is live for the session, a code pathspec arriving with no code root is REFUSED before staging. The report's finding 3 reproduced the surviving silent shape with the live script: a relative pathspec naming a file modified only in the worktree prints \"nothing to commit ... (non-blocking)\" and exits 1, which every caller treats as benign. After this task that case must be unreachable, and a fixture must prove it. Also close the `cd <worktree>; git ...` shape the report observed, where a failed cd continues in the primary tree.\n4. Give phase_commit_boundary_mechanical_check's expected-ref parameter its per-tree value where isolation is on.\n\nUNCONFIRMED ASSUMPTION, NOT A USER RULING: in a repository where specs/ is tracked, this task assumes bookkeeping commits keep landing directly on the integration branch in the primary tree, and the per-task squash carries code only (record section \"Unconfirmed assumption\", option A). The user has not answered. If the user answers that bookkeeping must be held and folded into the squash, RE-PLAN this task's two-root split before building: it changes which root every specs/ pathspec targets.\n\nVERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION block; each is owned by exactly one task):\n- No script commits from the wrong root, and a wrong-root invocation refuses loudly -- the COMMIT-PATH half (the hook half is owned by the hooks task).",
+      "audit_verdict": {
+        "proposal": {
+          "id": "two_root_contract_dispatch_and_commit_scripts",
+          "project_number": null,
+          "title": "Build the two-root contract in the dispatch composer and the commit scripts"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 142,
+          "duplicate-of-open": 34,
+          "overlaps-open": 10,
+          "scope-blind": 43,
+          "superset-of-open": 4
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 669,
+            "project_name": "integration_branch_admission_and_batch_worktree",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5829383886255924
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 668,
+            "project_name": "measure_harness_behaviour_for_external_worktree",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.59
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 667,
+            "project_name": "amend_branch_topology_per_batch_worktree_squash",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.6355555555555555
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 639,
+            "project_name": "make_issue_record_failures_visible",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/git-commit-phase.sh",
+              "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.29777777777777775
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.4311111111111111
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.6
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 410,
+            "project_name": "close_result_sharing_replay_hole_build_guard",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/lake-build-guard.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.26222222222222225
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5555555555555556
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.48444444444444446
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4222222222222222
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4622222222222222
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.48444444444444446
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.48
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 484,
+            "project_name": "collapse_perpath_scope_excursion_issue_rows_into_o",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/git-commit-phase.sh",
+              "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+              "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+              "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.31555555555555553
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 486,
+            "project_name": "manifest_registration_dropped_from_phase_commit",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/git-staging-scope.md",
+              "agent-system/extensions/core/scripts/git-commit-phase.sh",
+              "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.3422222222222222
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/git-staging-scope.md",
+              "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+              "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.4533333333333333
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4311111111111111
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 509,
+            "project_name": "redeploy_phase_declaration_and_gate_criterion",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/skill-base.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.5066666666666667
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 516,
+            "project_name": "lean_compliance_check_end_state_goal_polarity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4088888888888889
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 517,
+            "project_name": "stage_regenerated_derived_files_in_phase_commits",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4577777777777778
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4266666666666667
+          },
+          {
+            "verdict": "superset-of-open",
+            "project_number": 520,
+            "project_name": "emit_deploy_ordering_in_implement_dispatch_body",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh",
+              "agent-system/extensions/core/scripts/tests/test-orchestrate-build-dispatch.sh"
+            ],
+            "mechanical_class": "superset",
+            "semantic_score": 0.2577777777777778
+          },
+          {
+            "verdict": "superset-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/git-staging-scope.md",
+              "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+              "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"
+            ],
+            "mechanical_class": "superset",
+            "semantic_score": 0.47555555555555556
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 43
+      }
+    },
+    {
+      "project_number": 669,
+      "project_name": "integration_branch_admission_and_batch_worktree",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Add integration-branch admission, the isolation declaration, and idempotent batch worktree setup",
+      "topic": "orchestrator",
+      "created": "2026-11-20T20:19:06Z",
+      "last_updated": "2026-11-20T20:19:06Z",
+      "session_id": "sess_1795203458_188c22",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh",
+        "agent-system/extensions/core/scripts/batch-worktree.sh",
+        "agent-system/extensions/core/scripts/tests/test-batch-worktree.sh",
+        "agent-system/extensions/core/context/standards/repo-level-declarations.md",
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+        "agent-system/extensions/core/manifest.json"
+      ],
+      "next_artifact_number": 1,
+      "artifacts": [],
+      "description": "Add integration-branch admission, the isolation declaration, and idempotent batch worktree setup\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.\n\nRULING THIS TASK BUILDS: specs/decisions/batch-worktree-isolation-and-task-squash-landing.md (the amending record). Read the sections named below before planning; they are cited, not restated, and the record wins over this description wherever the two differ. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md (the research report; if its task directory has been archived, find it by filename under specs/archive/).\n\nSTANDING CONSTRAINTS: (1) every behaviour built here must hold in a repository with isolation declared off (worktree_isolation undeclared or `off`), where no worktree and no batch branch exist; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both of which sit at their byte ceilings -- mechanics go in scripts and the dispatch composer; (3) repo-agnostic: no literal branch name and no consumer-repo path in any deliverable; (4) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.\n\nBUILDS: record sections \"R1, amended\", \"R2, amended\", \"R5, amended\" (the declaration), and built-mechanism verdict D3.\n\n1. DECLARATIONS. Add the schema rows for `integration_branch` (key name and shape fixed by ruling R4 of specs/decisions/branch-topology-and-landing-strategy.md) and `worktree_isolation` (values `batch` and `off`, undeclared means `off`) to context/standards/repo-level-declarations.md. Do not declare either key in any repository's .claude-extensions.json as part of this task.\n2. ADMISSION, in orchestrate-cycle-plan.sh's preflight, beside the existing lock probe and queue-check gates: resolve `integration_branch`; refuse the invocation when the primary tree is on another branch, or when tracked paths outside the state territory are dirty. A blanket clean-tree test is refused by the record (R1) -- fix the exact state-territory path set here and state it in the schema doc. The branch check applies with isolation on or off. Rule and state what admission does when `integration_branch` is undeclared (the existing consumers fall back to the checked-out branch with a named advisory).\n3. BATCH RECORD under the primary tree's state directory: session identity, integration branch and its tip at cut, batch branch name, absolute worktree path, and the per-task landing proofs later tasks append. Register it in context/standards/orchestrator-runtime-files.md. No script derives the worktree path; every consumer reads it from this record.\n4. WORKTREE CREATION, only when isolation is `batch`: `git worktree add <dir> -b <batch-branch> <integration-branch>`, sited per R2, idempotent on resume (keyed on the batch record), sparse and excluding `specs/` wherever `specs/` is tracked (the report's finding 4 gives the measured recipe). Nothing is cloned, hardlinked or symlinked in.\n5. COMPOSITION: must compose with task-lock, the session registry, the orchestration queue and MAX_TASKS, and preserve the batching-by-default doctrine. One worktree per invocation, never per dispatch or per task.\n\nThis absorbs the admission element of `branch_aware_orchestration_and_squash_landing`.\n\nVERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION block; each is owned by exactly one task):\n- An invocation started off the integration branch or on a dirty primary tree is refused at admission.\n- A multi-task batch produces one worktree and one batch branch.",
+      "audit_verdict": {
+        "proposal": {
+          "id": "integration_branch_admission_and_batch_worktree",
+          "project_number": null,
+          "title": "Add integration-branch admission, the isolation declaration, and idempotent batch worktree setup"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 175,
+          "duplicate-of-open": 29,
+          "overlaps-open": 4,
+          "scope-blind": 44
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 668,
+            "project_name": "measure_harness_behaviour_for_external_worktree",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.575
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 667,
+            "project_name": "amend_branch_topology_per_batch_worktree_squash",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.7109004739336493
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 639,
+            "project_name": "make_issue_record_failures_visible",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.2890995260663507
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 338,
+            "project_name": "sweep_task_support_file_tracked_or_ignored",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.2890995260663507
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5071090047393365
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44075829383886256
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4312796208530806
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.5213270142180095
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4881516587677725
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4075829383886256
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.46919431279620855
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41706161137440756
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4597156398104265
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44075829383886256
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4312796208530806
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 509,
+            "project_name": "redeploy_phase_declaration_and_gate_criterion",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43601895734597157
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44549763033175355
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 514,
+            "project_name": "convergence_guard_blind_to_zero_dispatch_cycles",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
+              "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.3981042654028436
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 517,
+            "project_name": "stage_regenerated_derived_files_in_phase_commits",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/repo-level-declarations.md"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.4312796208530806
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41706161137440756
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.5687203791469194
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4881516587677725
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44549763033175355
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 541,
+            "project_name": "snapshot_artifacts_contaminate_phase_commits",
+            "shared_paths": [
+              "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.41232227488151657
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5118483412322274
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 44
+      }
+    },
+    {
+      "project_number": 668,
+      "project_name": "measure_harness_behaviour_for_external_worktree",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Measure Claude Code harness behaviour for a worktree outside the project directory",
+      "topic": "orchestrator",
+      "created": "2026-11-20T20:17:06Z",
+      "last_updated": "2026-11-20T20:17:06Z",
+      "session_id": "sess_1795203458_188c22",
+      "dependencies": [],
+      "file_scope": [
+        "specs/decisions/external-worktree-harness-measurements.md",
+        "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"
+      ],
+      "next_artifact_number": 1,
+      "artifacts": [],
+      "description": "Measure Claude Code harness behaviour for a worktree outside the project directory\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.\n\nRULING THIS TASK BUILDS: specs/decisions/batch-worktree-isolation-and-task-squash-landing.md (the amending record). Read the sections named below before planning; they are cited, not restated, and the record wins over this description wherever the two differ. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md (the research report; if its task directory has been archived, find it by filename under specs/archive/).\n\nSTANDING CONSTRAINTS: (1) every behaviour built here must hold in a repository with isolation declared off (worktree_isolation undeclared or `off`), where no worktree and no batch branch exist; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both of which sit at their byte ceilings -- mechanics go in scripts and the dispatch composer; (3) repo-agnostic: no literal branch name and no consumer-repo path in any deliverable; (4) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.\n\nWHY: the amending record's R2 sites the batch worktree outside the repository, in a per-user state directory. That siting rests on four harness behaviours no dispatched agent could measure. They are a named precondition (record section \"Measured precondition\"), and every two-root task waits on this one.\n\nMEASURE, in a live session, against a scratch repository with a real `git worktree` at a path outside the project directory:\n1. Whether the file tools (Read, Edit, Write) prompt, refuse, or proceed for a path there, in each permission mode this system dispatches under.\n2. Whether path-scoped rules (`.claude/rules/*.md` `paths:` frontmatter) apply to files there.\n3. What working directory a hook process receives, and what path a PreToolUse/PostToolUse payload carries for a file there.\n4. What working directory a subagent starts in, and whether it resets between Bash calls to the project directory or to the worktree.\n\nDELIVERABLE: a measurement record under specs/decisions/ stating each result with the exact command or tool call that produced it. If any result refutes the siting, append a dated `**Amended by**` note to the amending record's R2 and \"Measured precondition\" sections ruling the changed siting. A refuting result is NOT worked around in a script, by a symlink, or by moving the worktree inside the repository.\n\nPARTS OF THIS MAY NEED THE USER AT THE KEYBOARD: permission prompts and interactive-mode behaviour cannot be observed from a dispatched subagent. State plainly in the record which results were measured by an agent and which were supplied by the user, and return a `user_decision` rather than guessing where a measurement could not be taken.\n\nThis task edits no script. It builds nothing under agent-system/**.\n\nVERIFICATION CRITERIA THIS TASK OWNS: none of the originating task's running-behaviour criteria; its own criterion is stated in the body above.",
+      "audit_verdict": {
+        "proposal": {
+          "id": "measure_harness_behaviour_for_external_worktree",
+          "project_number": null,
+          "title": "Measure Claude Code harness behaviour for a worktree outside the project directory"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 72,
+          "duplicate-of-open": 37,
+          "scope-blind": 43
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 667,
+            "project_name": "amend_branch_topology_per_batch_worktree_squash",
+            "shared_paths": [
+              "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.62
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 641,
+            "project_name": "reground_foreground_wait_cap_and_idiom",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.415
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.435
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.525
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.47
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.51
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.485
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.435
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 457,
+            "project_name": "repo_specific_content_in_shared_source_store",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.455
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.515
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 492,
+            "project_name": "corroboration_gated_backlog_prompt",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.455
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.415
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 509,
+            "project_name": "redeploy_phase_declaration_and_gate_criterion",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.415
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.445
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 517,
+            "project_name": "stage_regenerated_derived_files_in_phase_commits",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.455
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.405
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 523,
+            "project_name": "gate27_missing_declaration_call_site_counting",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.405
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.455
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.55
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.48
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.48
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 43
+      }
+    },
     {
       "project_number": 667,
       "project_name": "amend_branch_topology_per_batch_worktree_squash",

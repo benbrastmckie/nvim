@@ -486,7 +486,61 @@ symlink, or by moving the worktree inside the repository.
 
 ## Successor tasks
 
-Phase 3 of the implementing plan fills this section.
+Eight task records carry what this record rules and does not build. Each was created through the
+`/task` creation path (`audit-task-proposals.sh`, then `state-write.sh --allocate-into
+--audit-verdict`), with topic `orchestrator` and type `meta`. Each description cites this record
+by section instead of restating it.
+
+| Number | Slug | Elements and criteria owned | Backlog audit verdict against 655 |
+|---|---|---|---|
+| 668 | `measure_harness_behaviour_for_external_worktree` | The four measurements of "Measured precondition". Owns no running-behaviour criterion; its own criterion is a measurement record under `specs/decisions/` | duplicate-of-open, semantic only (0.53) |
+| 669 | `integration_branch_admission_and_batch_worktree` | Element 2 and D3: both declaration schema rows, admission, the batch record, idempotent sparse worktree creation. Owns: "an invocation started off the integration branch or on a dirty primary tree is refused at admission"; "a multi-task batch produces one worktree and one batch branch" | duplicate-of-open, path overlap (0.63) |
+| 670 | `two_root_contract_dispatch_and_commit_scripts` | Element 3, core: the code root in the dispatch file, the commit, snapshot, verification and build-guard callers, the pre-staging refusal, 513's per-tree expected ref. Carries the unconfirmed bookkeeping assumption. Owns: the commit-path half of "no script commits from the wrong root, and a wrong-root invocation refuses loudly" | duplicate-of-open, path overlap (0.53) |
+| 671 | `two_root_contract_in_hooks` | Element 3, hooks: `guard-destructive-git.sh` judging the targeted tree, the write-time refusal under the primary root, the payload-path hooks. Owns: the hook half of the same criterion | duplicate-of-open, semantic only (0.52) |
+| 672 | `two_root_classification_of_remaining_consumers` | Element 3, remainder: every row of `reports/01_two-root-consumers.tsv`, the cross-check set, the instruction documents. Owns no criterion of its own; it is the completeness half of the audit | duplicate-of-open, semantic only (0.48) |
+| 673 | `per_task_attribution_squash_landing` | Element 4: attribution landing, blob-equality verification with a negative fixture, back-merge, the two-batch conflict fixture, second-repository commits, retirement of `milestone-ref-land.sh`. Owns: "one squash commit per completed task on the integration branch with its phase list in the body, the primary tree never having changed branch"; "a task failing mid-batch leaves its commits, branch and worktree intact while its sibling lands" | duplicate-of-open, path overlap (0.59) |
+| 674 | `batch_worktree_cleanup_retention_orphan_report` | Element 5: the removal precondition, unforced removal, compare-and-swap deletion, retention, the mixed batch, report-only `/refresh`. Owns: "after a fully landed batch the worktree and branch are gone; after a partial one they remain" | duplicate-of-open, semantic only (0.54) |
+| 675 | `branch_topology_documentation_parity` | Element 7: the narrative's Branch Strategy section, `ref-plumbing-landing.md`, the rule in `rules/git-workflow.md`, the schema rows' prose, index line counts. Owns: "the rules, the narrative and the scripts state the same contract" | duplicate-of-open, path overlap (0.64) |
+
+**Count.** Eight, as planned. No unit had to be merged or split while writing the descriptions.
+672 is the one most likely to divide later, and its description says so.
+
+**Audit verdicts, and why creation proceeded.** Every proposal drew a `duplicate-of-open`
+verdict naming `branch_aware_orchestration_and_squash_landing` (655), as expected: these tasks
+take over 655's topology elements, and 655 is revised in the same dispatch to its one unrelated
+element (see "Edges"). The `/task` path asks the user to confirm creation on such a verdict.
+**That confirmation was not put to the user**: the prompt is unreachable from a dispatched
+agent, and the implementing plan directed proceeding with the verdict recorded. Each record
+carries its full verdict in its own `audit_verdict` field. A reader who disagrees abandons the
+record with `/task --abandon`.
+
+The audits also returned mechanical path overlaps with other open tasks. These are territory
+facts for admission to order, not duplication: 670 overlaps the commit-layer chain on the commit
+scripts (it is ordered behind that chain's tail by edge), 673 overlaps the open tasks that edit
+`orchestrate-cycle-postflight.sh`, and 674 shares the `/refresh` files with
+`refresh_tmp_sweep_pass` (664).
+
+**Element 6** (costs to measure and state) has no task of its own. Its content is this record's
+"Costs" and "Isolation-off repositories" sections; the one measurement it leaves open, the L2
+spike, is recorded as deferred and deliberately not created.
+
+**Coverage, checked in both directions.** The task description's VERIFICATION block has eight
+sentences.
+
+| VERIFICATION sentence | Owner |
+|---|---|
+| Both worktree records are engaged defect by defect in the amending record | Discharged by this record, "Defects engaged" |
+| An invocation started off the integration branch or on a dirty primary tree is refused at admission | 669 |
+| A multi-task batch produces one worktree and one batch branch | 669 |
+| ...and one squash commit per completed task on the integration branch with its phase list in the body, the primary tree never having changed branch | 673 |
+| A task failing mid-batch leaves its commits, branch and worktree intact while its sibling lands | 673 |
+| No script commits from the wrong root, and a wrong-root invocation refuses loudly | 670 (commit path) and 671 (hooks) |
+| After a fully landed batch the worktree and branch are gone; after a partial one they remain | 674 |
+| The rules, the narrative and the scripts state the same contract | 675 |
+
+No sentence is unowned. One is split across two owners by design, along the commit-path and
+hook halves, and each half is stated in its owner's description. Every owned criterion in a
+successor's description traces back to a row above.
 
 ## Edges
 
