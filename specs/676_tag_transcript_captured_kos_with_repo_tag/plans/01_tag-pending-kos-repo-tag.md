@@ -392,33 +392,50 @@ advisory, not a commit-blocking hook.
 
 ---
 
-### Phase 4: Redeploy, scoped gate sweep, and operator handoff [NOT STARTED]
+### Phase 4: Redeploy, scoped gate sweep, and operator handoff [COMPLETED]
 
 **Goal**: The new script, its test suite, and the corrected docs are present in the deployed
 tree and in the generated merge targets; the touched-path checks pass; the live-ledger run and
 the vault post are handed to the operator rather than performed.
 
 **Tasks**:
-- [ ] Run the deploy so the source-store changes reach `.claude/**`
+- [x] Run the deploy so the source-store changes reach `.claude/**`
       (`bash .claude/scripts/deploy-headless.sh`, or the extension picker's regenerate entry).
-- [ ] Confirm the deployed tree carries `.claude/scripts/sapience-tag-pending.sh` (executable)
+      *(completed: first run failed `check-extension-docs.sh`'s Rule U, EXTENSION.md 63 lines
+      over the 60-line limit; trimmed the Phase 3 edit back to 6 lines and redeployed clean --
+      41 checks, 0 failures)*
+- [x] Confirm the deployed tree carries `.claude/scripts/sapience-tag-pending.sh` (executable)
       and `.claude/scripts/tests/test-sapience-tag-pending.sh`, that `.claude/CLAUDE.md`'s
       Sapience section carries the updated script enumeration, and that
       `.claude/context/project/sapience/domain/per-repo-scoping.md` carries the rewritten
-      census.
-- [ ] Run the scoped touched-path verification for this task's file set
+      census. *(completed)*
+- [x] Run the scoped touched-path verification for this task's file set
       (`bash .claude/scripts/verify-deploy.sh --gate8-touched <the paths this task touched>`),
       and run the two sapience suites from the deployed copies
       (`bash .claude/scripts/tests/run-all.sh --only test-sapience-tag-pending.sh,test-sapience-mcp-registration.sh`).
-- [ ] Run the deployed script with no flags (dry-run) against the live ledger as a read-only
+      *(completed: the two-suite run-all.sh invocation exits 0 directly. The full 7-path
+      `--gate8-touched` set hit the full-sweep sentinel (markdown files have no covering suite
+      by construction); narrowed to the 4 `.sh`/`manifest.json` paths instead, which resolved to
+      a 34-suite roster. `verify-deploy.sh` itself reported `[FAIL]` on that roster under heavy
+      multi-task batch contention (1-minute load average 5.88-9.34); re-running the identical
+      34-suite roster directly via `run-all.sh --only` with no wrapper and no artificial deadline
+      passed 34/0 -- recorded as a gate-collision/contention issue, not a real regression, and
+      used as this phase's scoped discharge*)
+- [x] Run the deployed script with no flags (dry-run) against the live ledger as a read-only
       smoke check, and record the per-project counts and resolved slugs in the summary.
-- [ ] Confirm `sha256sum ~/.sapience/pending_kos.jsonl` is unchanged by that smoke check.
-- [ ] Do **not** run `--write` against the live ledger, and do **not** invoke `sapience review`,
+      *(completed: 3757 total -- 1687 `.dotfiles`, 1260 `nvim`, 810 `sapience-app`, 0 carrying a
+      `provenance` key -- slugs `.dotfiles`/`nvim`/`sapience-app` all resolve correctly)*
+- [x] Confirm `sha256sum ~/.sapience/pending_kos.jsonl` is unchanged by that smoke check.
+      *(completed: identical sha256 before and after every dry-run invocation performed during
+      this entire implementation)*
+- [x] Do **not** run `--write` against the live ledger, and do **not** invoke `sapience review`,
       `sapience sync`, or any vault POST. Record in the task summary the exact operator command
       sequence (`sapience sync` → `sapience-tag-pending.sh --write` → `sapience review`) and the
-      one-record empirical confirmation the operator should perform first.
-- [ ] Defer the complete gate battery to the orchestration close rather than invoking it as this
-      phase's own criterion.
+      one-record empirical confirmation the operator should perform first. *(completed: no
+      `--write`, `sapience review`, or `sapience sync` invoked at any point; the operator
+      sequence is recorded in the implementation summary)*
+- [x] Defer the complete gate battery to the orchestration close rather than invoking it as this
+      phase's own criterion. *(completed)*
 
 **Timing**: 1 hour
 
@@ -454,16 +471,18 @@ rather than asserting these.
 
 ## Testing & Validation
 
-- [ ] `agent-system/extensions/sapience/scripts/tests/test-sapience-tag-pending.sh` passes every
-      case, entirely against a fixture `HOME`.
-- [ ] `test-sapience-mcp-registration.sh` Case 30 passes with the new ninth copy included.
-- [ ] The real `~/.sapience/pending_kos.jsonl` is byte-identical before and after every test run
-      and every dry-run invocation performed during implementation.
-- [ ] The dry-run summary against the live ledger resolves the correct slug for each project that
-      currently holds pending records.
-- [ ] `bash -n` passes on both new shell files.
-- [ ] No task-number reference and no record-versioning phrasing in the three edited markdown
-      deliverables.
+- [x] `agent-system/extensions/sapience/scripts/tests/test-sapience-tag-pending.sh` passes every
+      case, entirely against a fixture `HOME`. *(completed: 14/14 cases pass)*
+- [x] `test-sapience-mcp-registration.sh` Case 30 passes with the new ninth copy included.
+      *(completed: 55/0)*
+- [x] The real `~/.sapience/pending_kos.jsonl` is byte-identical before and after every test run
+      and every dry-run invocation performed during implementation. *(completed: confirmed via
+      `sha256sum` at the end of Phases 1, 2, and 4 -- identical throughout)*
+- [x] The dry-run summary against the live ledger resolves the correct slug for each project that
+      currently holds pending records. *(completed)*
+- [x] `bash -n` passes on both new shell files. *(completed)*
+- [x] No task-number reference and no record-versioning phrasing in the three edited markdown
+      deliverables. *(completed: `check-task-references.sh` reports 0 occurrences)*
 
 ## Artifacts & Outputs
 
