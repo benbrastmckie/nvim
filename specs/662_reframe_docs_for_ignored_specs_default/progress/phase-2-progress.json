@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Reframe rules/git-workflow.md Commit Timing",
+  "started_at": "2026-11-20T04:53:00Z",
+  "last_updated": "2026-11-20T04:58:00Z",
+  "objectives": [
+    {"id": 1, "description": "Measure pre-edit eager total", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add compact posture paragraph under Commit Timing", "status": "done", "files_touched": ["agent-system/extensions/core/rules/git-workflow.md"]},
+    {"id": 3, "description": "Confirm hunk stays <= 400 bytes", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-run measure-eager-context.sh --check", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Commit", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

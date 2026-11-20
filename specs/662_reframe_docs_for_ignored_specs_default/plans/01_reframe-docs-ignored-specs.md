@@ -168,17 +168,18 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Reframe `rules/git-workflow.md` Commit Timing [NOT STARTED]
+### Phase 2: Reframe `rules/git-workflow.md` Commit Timing [COMPLETED]
 
 **Goal**: "Create Commits After" no longer reads as an unconditional post-condition, stated in a
 compact pointer form that keeps the eager context budget green.
 
 **Tasks**:
-- [ ] Measure the pre-edit eager total: `cd /home/benjamin/.config/nvim && REPO_ROOT=$(pwd) bash
+- [x] Measure the pre-edit eager total: `cd /home/benjamin/.config/nvim && REPO_ROOT=$(pwd) bash
       agent-system/extensions/core/scripts/measure-eager-context.sh --check`, capturing the
       `TOTAL: <bytes> B` line to a file and grepping it. Record the figure and the margin against
-      `baseline_bytes` (71,600 B) before writing anything.
-- [ ] Add ONE compact paragraph under `## Commit Timing` (after the "Create Commits After" list,
+      `baseline_bytes` (71,600 B) before writing anything. *(completed: pre-edit TOTAL 70,505 B,
+      margin 1,095 B; ran via deployed `.claude/scripts/` path per Phase 1's finding)*
+- [x] Add ONE compact paragraph under `## Commit Timing` (after the "Create Commits After" list,
       before "### Do Not Commit") stating: each listed lifecycle event still fires its commit
       attempt under either posture; under a wholly- or partly-gitignored `specs/` tree the attempt
       reports a non-failure skip (`git-commit-scoped.sh` exit `8`/`9`) for the ignored members
@@ -186,13 +187,14 @@ compact pointer form that keeps the eager context budget green.
       `context/standards/git-staging-scope.md`'s "Per-Operation Contract: Tracked vs. Gitignored
       `specs`" section and at `context/standards/orchestrator-runtime-files.md`'s Fresh-Repo
       Default section (where Phase 1 placed the durability statement) rather than re-deriving
-      either. Do NOT call the tracked posture deprecated, legacy or superseded.
-- [ ] Hard budget: keep the addition at or under 400 bytes. Count it (`git diff --stat` plus a
-      byte count of the added hunk) before proceeding.
-- [ ] Re-run `measure-eager-context.sh --check`. If it fires, trim this paragraph's wording — do
+      either. Do NOT call the tracked posture deprecated, legacy or superseded. *(completed)*
+- [x] Hard budget: keep the addition at or under 400 bytes. Count it (`git diff --stat` plus a
+      byte count of the added hunk) before proceeding. *(completed: added hunk measured 372 B)*
+- [x] Re-run `measure-eager-context.sh --check`. If it fires, trim this paragraph's wording — do
       NOT move `eager_load.baseline_bytes` in `context/config/orchestrator-context-budget.json`,
-      and do not relocate detail out of an unrelated eager file to buy room.
-- [ ] Commit.
+      and do not relocate detail out of an unrelated eager file to buy room. *(completed: post-edit
+      TOTAL 70,877 B, exits 0, baseline file unmodified)*
+- [x] Commit. *(completed)*
 
 **Timing**: 0.75 hours
 

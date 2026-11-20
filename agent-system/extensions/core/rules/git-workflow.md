@@ -45,6 +45,11 @@ task {N}: {action} {description}
 - Final implementation completion (includes summary)
 - Task archival operations
 
+Each event above still fires its commit attempt under either posture. A wholly- or
+partly-gitignored `specs/` tree reports a non-failure skip (`git-commit-scoped.sh` exit `8`/`9`)
+for ignored members instead of a commit — expected, not a gap. See `git-staging-scope.md`'s
+Per-Operation Contract section and `orchestrator-runtime-files.md`'s Fresh-Repo Default section.
+
 ### Do Not Commit
 - Partial/incomplete work — half-applied, unverified edits (a file half-written, an edit made but
   not yet checked to exist/be non-empty, a step abandoned mid-way). This does not forbid a
