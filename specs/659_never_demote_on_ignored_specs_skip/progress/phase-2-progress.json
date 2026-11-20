@@ -1,0 +1,14 @@
+{
+  "phase": 2,
+  "phase_name": "Record the no-task-context skip from git-commit-scoped.sh",
+  "started_at": "2026-11-20T02:51:00Z",
+  "last_updated": "2026-11-20T03:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read 740-770, 906-915, 1350-1359 before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add shared v13_record_skip_event helper + call at exit 8 and exit 9 sites + header comments", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-scoped.sh"]},
+    {"id": 3, "description": "Verify: bash -n, shellcheck, run-all --only suite, direct probe (with/without --task)", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

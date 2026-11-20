@@ -95,13 +95,18 @@
 #       ambiguous): a V13 drop's cause is definitively known and definitively benign. Evaluated
 #       BEFORE the V3 post-filter gate above, since the all-ignored shape would otherwise reach
 #       V3 first and be misreported as that same failure-flavoured refusal. No git add or git
-#       commit is attempted.
+#       commit is attempted. A no-`--task` invocation also appends one `specs/events.jsonl`
+#       deviation line via v13_record_skip_event; a `--task`-bearing invocation deliberately does
+#       not (its caller owns the task-local record).
 #   9 - the V13 partial-ignore decision below: a commit WAS created (commit_exit was 0) and one
 #       or more positive pathspecs were dropped as gitignored. Observability, not a refusal — the
 #       valid paths already committed successfully. Placed AFTER the V10 decision above, giving
 #       the precedence chain 6 (V9) > 7 (V10) > 9 (V13) by the same precedence-by-placement
 #       convention V9 and V10 already use relative to each other. Requires commit_exit to already
-#       be 0; the all-ignored shape (nothing survives to commit) stays exit 8 above instead.
+#       be 0; the all-ignored shape (nothing survives to commit) stays exit 8 above instead. A
+#       no-`--task` invocation also appends one `specs/events.jsonl` deviation line via
+#       v13_record_skip_event; a `--task`-bearing invocation deliberately does not (its caller
+#       owns the task-local record).
 #
 # Safety gates (empirically discovered; see specs/908_.../reports/02_commit-site-inventory.md):
 #   V2 - an unmatched path in the commit pathspec aborts the WHOLE commit in bare git. This
@@ -750,6 +755,30 @@ cached_untracking_pathspecs=()
 # admitting it to that ledger would re-impose exactly the failure-flavoured framing V13 exists to
 # remove. See exit codes 8 and 9 above for the dedicated non-failure outcomes this ledger feeds.
 ignored_dropped=()
+# v13_record_skip_event: best-effort durable record of a V13 skip for a caller that supplies no
+# --task (contention_task_number empty) -- exactly the callers that have no task-local
+# issue-record.sh context (e.g. the roadmap-regeneration commit). A --task-bearing caller
+# deliberately does NOT get an event line here: its own caller owns the task-local record (see
+# orchestrate-cycle-postflight.sh's 8|9) arm). Category is ALWAYS "deviation", never "blocker":
+# events-append.sh promotes only a blocker line to the cross-repo central log, and a benign
+# repository-configuration fact must never reach it. Unconditionally best-effort: redirects
+# stdout, swallows the exit code, and guards on the script existing, so an absent
+# events-append.sh, a deploy-root-guard.sh refusal, or any nonzero exit leaves this script's own
+# exit code and stdout contract (exits 0-9, the commit summary on stdout) byte-identical.
+v13_record_skip_event() {
+  local exit_code="$1"
+  [ -n "$contention_task_number" ] && return 0
+  [ -f "${SCRIPT_DIR}/events-append.sh" ] || return 0
+  local detail
+  detail=$(jq -c -n --arg code "$exit_code" --arg paths "${ignored_dropped[*]}" \
+    '{exit_code: ($code | tonumber), dropped_paths: $paths}' 2>/dev/null) || detail='{}'
+  bash "${SCRIPT_DIR}/events-append.sh" \
+    --event-type ignored_pathspec_skip --category deviation \
+    --session "$session_id" \
+    --message "git-commit-scoped.sh exited ${exit_code}: this repository's own specs tree is $( [ "$exit_code" -eq 8 ] && echo "wholly" || echo "partly" ) gitignored (Verified Finding V13); not a staging failure." \
+    --detail-json "$detail" \
+    >/dev/null 2>&1 || true
+}
 # Guarded source of the shared predicate library (same guarded pattern as
 # engine-written-state-paths-lib.sh's own call site above): resolved ONCE here, before the V2
 # loop, rather than per pathspec. specs_ignore_lib_available records whether the predicate is
@@ -912,6 +941,7 @@ done
 if [ "${#ignored_dropped[@]}" -gt 0 ] && [ "${#dropped_pathspecs[@]}" -eq 0 ] \
    && ! has_positive_pathspec "${filtered_pathspecs[@]}"; then
   echo "NOTE: git-commit-scoped.sh is not committing -- every positive pathspec was gitignored (Verified Finding V13); this repository's own specs tree is wholly or partly gitignored, which is this repository's own configuration, not a staging failure. Path(s): ${ignored_dropped[*]}" >&2
+  v13_record_skip_event 8
   exit 8
 fi
 
@@ -1356,6 +1386,7 @@ fi
 # V13 exit-8 gate above the V2 loop's own call site already fires first for that shape. ---
 if [ "${#ignored_dropped[@]}" -gt 0 ] && [ "$commit_exit" -eq 0 ]; then
   echo "NOTE: git-commit-scoped.sh committed, but one or more pathspecs were dropped as gitignored (Verified Finding V13); this repository's own specs tree is partly gitignored, which is this repository's own configuration, not a staging failure. Path(s): ${ignored_dropped[*]}" >&2
+  v13_record_skip_event 9
   exit 9
 fi
 

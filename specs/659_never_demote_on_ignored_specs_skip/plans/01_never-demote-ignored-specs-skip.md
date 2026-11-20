@@ -208,7 +208,7 @@ touches exactly one hunk.
 
 ---
 
-### Phase 2: Record the no-task-context skip from git-commit-scoped.sh [NOT STARTED]
+### Phase 2: Record the no-task-context skip from git-commit-scoped.sh [COMPLETED]
 
 **Goal**: A V13 drop in a caller that supplies no `--task` leaves a durable `specs/events.jsonl`
 line, so the roadmap-regeneration commit and the other task-context-free callers stop swallowing
@@ -216,27 +216,29 @@ the skip into an undifferentiated warning.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/git-commit-scoped.sh` lines 740-770 (the `ignored_dropped` ledger and the
+- [x] Re-read `scripts/git-commit-scoped.sh` lines 740-770 (the `ignored_dropped` ledger and the
       guarded `source` of `specs-ignore-lib.sh`), 906-915 (the exit-8 gate), and 1350-1359 (the
-      exit-9 gate) immediately before editing.
-- [ ] Add one shared, local helper (defined once near the `ignored_dropped` ledger) that emits the
+      exit-9 gate) immediately before editing. *(completed)*
+- [x] Add one shared, local helper (defined once near the `ignored_dropped` ledger) that emits the
       event: it fires only when `contention_task_number` is empty (no `--task`), and invokes
       `${SCRIPT_DIR}/events-append.sh` with `--event-type ignored_pathspec_skip`,
       `--category deviation`, `--session "$session_id"`, a one-line `--message` naming the exit
       code and that this is the repository's own ignore configuration, and a `--detail-json`
-      carrying the exit code and the dropped paths.
-- [ ] Use `--category deviation` and never `blocker`: `events-append.sh` promotes only a `blocker`
+      carrying the exit code and the dropped paths. *(completed: `v13_record_skip_event`)*
+- [x] Use `--category deviation` and never `blocker`: `events-append.sh` promotes only a `blocker`
       line to the cross-repo central log, and a benign repository-configuration fact must never
-      reach it. Record this reason as a comment at the call site.
-- [ ] Make the call unconditionally best-effort: redirect its stdout, swallow its exit code, and
+      reach it. Record this reason as a comment at the call site. *(completed)*
+- [x] Make the call unconditionally best-effort: redirect its stdout, swallow its exit code, and
       guard on the script existing, so an absent `events-append.sh`, a `deploy-root-guard.sh`
       refusal, or any nonzero exit leaves `git-commit-scoped.sh`'s own exit code and stdout
-      contract (exits 0-9, the commit summary on stdout) byte-identical.
-- [ ] Call the helper immediately before `exit 8` (line 915) and immediately before `exit 9`
+      contract (exits 0-9, the commit summary on stdout) byte-identical. *(completed)*
+- [x] Call the helper immediately before `exit 8` (line 915) and immediately before `exit 9`
       (line 1359), after each site's existing `NOTE:` echo. Keep both `NOTE:` lines unchanged.
-- [ ] Extend the header's exit-code commentary for 8 and 9 with one sentence each stating that a
+      *(completed)*
+- [x] Extend the header's exit-code commentary for 8 and 9 with one sentence each stating that a
       no-`--task` invocation also appends an `events.jsonl` deviation line, and that a
       `--task`-bearing invocation deliberately does not (its caller owns the task-local record).
+      *(completed)*
 
 **Timing**: 45 minutes
 
@@ -267,13 +269,13 @@ code's path. Confirm by re-reading those lines and checking the diff hunk count.
 
 **Verification**:
 
-- [ ] `bash -n` and `shellcheck` report no new finding.
-- [ ] `bash scripts/tests/run-all.sh --only <the selected set named in the Tier Justification>`
+- [x] `bash -n` and `shellcheck` report no new finding. *(completed)*
+- [x] `bash scripts/tests/run-all.sh --only <the selected set named in the Tier Justification>`
       exits 0 with AA1-AA7 still green. Derive the `--only` list from `suite_selection_select`
-      for this phase's touched path rather than hand-picking it.
-- [ ] A direct probe confirms the gate's direction: the same authentic all-ignored fixture invoked
+      for this phase's touched path rather than hand-picking it. *(completed: 19 passed, 0 failed)*
+- [x] A direct probe confirms the gate's direction: the same authentic all-ignored fixture invoked
       WITHOUT `--task` appends one `specs/events.jsonl` line and still exits 8, and invoked WITH
-      `--task` appends none and still exits 8.
+      `--task` appends none and still exits 8. *(completed: verified manually in an isolated sandbox fixture)*
 
 ---
 
