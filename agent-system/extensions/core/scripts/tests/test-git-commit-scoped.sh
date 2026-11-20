@@ -50,6 +50,13 @@ if [ "${#missing[@]}" -gt 0 ]; then
 fi
 
 TOP_WORKDIR="$(mktemp -d)"
+# REPO_ROOT: resolved once, used only by the AA8-AA10 fixture-containment guard below to prove
+# this suite's own events-append.sh calls (run against AA fixture repos, never this repository)
+# cannot land a line in THIS repository's own specs/events.jsonl.
+REPO_ROOT="$(common_test_repo_root "$SCRIPT_DIR")"
+REAL_EVENTS="$REPO_ROOT/specs/events.jsonl"
+REAL_EVENTS_SUM_BEFORE=""
+[ -f "$REAL_EVENTS" ] && REAL_EVENTS_SUM_BEFORE="$(sha256sum "$REAL_EVENTS" | awk '{print $1}')"
 # cleanup() is invoked indirectly via `trap cleanup EXIT` below.
 # shellcheck disable=SC2329
 cleanup() { [ -n "${TOP_WORKDIR:-}" ] && [ -d "$TOP_WORKDIR" ] && rm -rf "$TOP_WORKDIR"; }
@@ -2165,6 +2172,13 @@ build_repo_specs_ignored() {
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
     [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
+  # events-append.sh and its hard dependencies (common.sh, deploy-root-guard.sh already copied
+  # above via REQUIRED_SCRIPTS) plus its defensively-guarded central-log-lib.sh, so the real
+  # script runs inside this fixture and resolves PROJECT_ROOT to THIS repo (AA8/AA9 below), never
+  # the real repository's own specs/events.jsonl.
+  cp "$SRC_SCRIPTS_DIR/events-append.sh" "$repo/.claude/scripts/events-append.sh"
+  chmod +x "$repo/.claude/scripts/events-append.sh"
+  [ -f "$SRC_SCRIPTS_DIR/lib/central-log-lib.sh" ] && cp "$SRC_SCRIPTS_DIR/lib/central-log-lib.sh" "$repo/.claude/scripts/lib/central-log-lib.sh"
 
   mkdir -p "$repo/specs/999_probe"
   echo "todo" > "$repo/specs/TODO.md"
@@ -2199,6 +2213,11 @@ build_repo_specs_partially_ignored() {
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
     [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/specs-ignore-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
+  # events-append.sh and its hard dependencies -- see build_repo_specs_ignored's identical
+  # comment above; this builder needs the same copy for AA10 below.
+  cp "$SRC_SCRIPTS_DIR/events-append.sh" "$repo/.claude/scripts/events-append.sh"
+  chmod +x "$repo/.claude/scripts/events-append.sh"
+  [ -f "$SRC_SCRIPTS_DIR/lib/central-log-lib.sh" ] && cp "$SRC_SCRIPTS_DIR/lib/central-log-lib.sh" "$repo/.claude/scripts/lib/central-log-lib.sh"
 
   mkdir -p "$repo/specs"
   echo "specs/042_ignored_task/" > "$repo/.gitignore"
@@ -2415,6 +2434,99 @@ if grep -q 'if false; then' "$aa7_probe_dir/git-commit-scoped.sh.neutralised" \
 else
   common_test_fail "AA7 (control-of-the-controls, non-default): could not construct the neutralised scratch copy -- sed substitution did not apply as expected, control-of-the-controls probe skipped"
 fi
+
+# task-ref-ok:begin category 6-adjacent: the "--task 999" literal in the AA8/AA9 block below is
+# synthetic fixture data (an arbitrary scratch-repo probe identifier), the same convention the
+# V1-V8 and Z1-Z10 blocks above already use for this script's own --task CLI flag -- never a
+# citation of this repo's own ephemeral task tracker.
+# --- AA8/AA9/AA10: Phase 2's event-channel gate direction, pinned by test against authentic
+# ignored-specs fixtures. AA8 and AA9 share ONE fixture shape (the all-ignored repo) so the
+# --task presence/absence comparison is against the identical scenario, never two different
+# repos. ---
+
+# --- AA8: the all-ignored fixture invoked WITHOUT --task still exits 8, and the fixture's own
+# specs/events.jsonl gains exactly one line whose event_type is ignored_pathspec_skip and whose
+# category is deviation (asserted explicitly -- the assertion that keeps a future edit from
+# promoting this line to blocker and into the cross-repo central log). ---
+
+repo_aa8="$(build_repo_specs_ignored)"
+out_aa8="$(run_commit "$repo_aa8" --message "AA8 all-ignored, no --task" --session "sess_aa8" \
+  -- "specs/TODO.md" "specs/state.json" "specs/999_probe/" 2>&1)"
+rc_aa8=$?
+events_aa8="$repo_aa8/specs/events.jsonl"
+events_aa8_count=0
+events_aa8_type=""
+events_aa8_category=""
+if [ -f "$events_aa8" ]; then
+  events_aa8_count="$(wc -l < "$events_aa8" | tr -d ' ')"
+  events_aa8_type="$(jq -r '.event_type' "$events_aa8" 2>/dev/null)"
+  events_aa8_category="$(jq -r '.category' "$events_aa8" 2>/dev/null)"
+fi
+
+if [ "$rc_aa8" -eq 8 ] && [ "$events_aa8_count" = "1" ] \
+  && [ "$events_aa8_type" = "ignored_pathspec_skip" ] && [ "$events_aa8_category" = "deviation" ]; then
+  common_test_pass "AA8: an all-ignored fixture invoked WITHOUT --task still exits 8 and appends exactly one specs/events.jsonl line with event_type=ignored_pathspec_skip and category=deviation"
+else
+  common_test_fail "AA8: expected rc=8, exactly one events.jsonl line with event_type=ignored_pathspec_skip and category=deviation; got rc=$rc_aa8 count=$events_aa8_count type='$events_aa8_type' category='$events_aa8_category' output=$out_aa8"
+fi
+
+# --- AA9 (the negative half): the SAME scenario (a fresh all-ignored fixture, identical
+# pathspecs) invoked WITH --task still exits 8 and appends NO specs/events.jsonl line --
+# proving the channel split is structural (the postflight caller, which always passes --task,
+# cannot double-record alongside its own task-local issues.jsonl entry). ---
+
+repo_aa9="$(build_repo_specs_ignored)"
+out_aa9="$(run_commit "$repo_aa9" --message "AA9 all-ignored, WITH --task" --session "sess_aa9" --task 999 \
+  -- "specs/TODO.md" "specs/state.json" "specs/999_probe/" 2>&1)"
+rc_aa9=$?
+events_aa9="$repo_aa9/specs/events.jsonl"
+events_aa9_count=0
+[ -f "$events_aa9" ] && events_aa9_count="$(wc -l < "$events_aa9" | tr -d ' ')"
+
+if [ "$rc_aa9" -eq 8 ] && [ "$events_aa9_count" = "0" ]; then
+  common_test_pass "AA9: the identical all-ignored scenario invoked WITH --task still exits 8 and appends NO specs/events.jsonl line"
+else
+  common_test_fail "AA9: expected rc=8 and zero events.jsonl lines when --task is present; got rc=$rc_aa9 count=$events_aa9_count output=$out_aa9"
+fi
+
+# --- AA10: the partial-ignore fixture WITHOUT --task still exits 9, its trackable siblings
+# still land in HEAD (verified via git show, as AA3 already does, not by exit code alone), and
+# exactly one event line is appended. ---
+
+repo_aa10="$(build_repo_specs_partially_ignored)"
+before_aa10=$(git -C "$repo_aa10" rev-list --count HEAD)
+out_aa10="$(run_commit "$repo_aa10" --message "AA10 partial-ignore, no --task" --session "sess_aa10" \
+  -- "specs/TODO.md" "specs/state.json" "specs/042_ignored_task/" 2>&1)"
+rc_aa10=$?
+after_aa10=$(git -C "$repo_aa10" rev-list --count HEAD 2>/dev/null || echo "$before_aa10")
+show_aa10="$(git -C "$repo_aa10" show --name-only --format="" HEAD 2>/dev/null)"
+events_aa10="$repo_aa10/specs/events.jsonl"
+events_aa10_count=0
+[ -f "$events_aa10" ] && events_aa10_count="$(wc -l < "$events_aa10" | tr -d ' ')"
+
+if [ "$rc_aa10" -eq 9 ] && [ "$after_aa10" -eq $((before_aa10 + 1)) ] \
+  && echo "$show_aa10" | grep -qF "specs/TODO.md" \
+  && echo "$show_aa10" | grep -qF "specs/state.json" \
+  && ! echo "$show_aa10" | grep -qF "specs/042_ignored_task" \
+  && [ "$events_aa10_count" = "1" ]; then
+  common_test_pass "AA10: a partial-ignore fixture WITHOUT --task still exits 9, the trackable siblings still land in HEAD, and exactly one events.jsonl line is appended"
+else
+  common_test_fail "AA10: expected rc=9, HEAD+1, TODO.md/state.json in HEAD, 042_ignored_task absent, exactly one events.jsonl line; got rc=$rc_aa10 before=$before_aa10 after=$after_aa10 show='$show_aa10' events_count=$events_aa10_count output=$out_aa10"
+fi
+
+# --- Fixture-containment guard: this repository's OWN specs/events.jsonl (events-append.sh
+# resolves PROJECT_ROOT from SCRIPT_DIR, not from any committed repository) must be untouched by
+# AA8/AA9/AA10 above, which only ever write into their own scratch fixture repos. ---
+
+REAL_EVENTS_SUM_AFTER=""
+[ -f "$REAL_EVENTS" ] && REAL_EVENTS_SUM_AFTER="$(sha256sum "$REAL_EVENTS" | awk '{print $1}')"
+
+if [ "$REAL_EVENTS_SUM_BEFORE" = "$REAL_EVENTS_SUM_AFTER" ]; then
+  common_test_pass "Fixture containment: this repository's own specs/events.jsonl was NOT written by AA8/AA9/AA10 (checksum unchanged)"
+else
+  common_test_fail "Fixture containment: this repository's own specs/events.jsonl CHANGED during AA8/AA9/AA10 -- before=$REAL_EVENTS_SUM_BEFORE after=$REAL_EVENTS_SUM_AFTER"
+fi
+# task-ref-ok:end
 
 # =====================================================================
 # Summary

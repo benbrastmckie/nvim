@@ -410,34 +410,36 @@ pre-existing pass count is unchanged and only the new cases add to the total.
 
 ---
 
-### Phase 5: Event-channel coverage in the git-commit-scoped suite [NOT STARTED]
+### Phase 5: Event-channel coverage in the git-commit-scoped suite [COMPLETED]
 
 **Goal**: Phase 2's gate direction is pinned by test, in both directions, against authentic
 ignored-specs fixtures.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/tests/test-git-commit-scoped.sh` lines 2139-2290 (the AA fixture builder,
+- [x] Re-read `scripts/tests/test-git-commit-scoped.sh` lines 2139-2290 (the AA fixture builder,
       AA2's all-ignored case and AA3's partial-ignore case) and the `run_commit` helper at lines
-      171-175 before editing.
-- [ ] Extend the AA fixture builder so the fixture repository's `.claude/scripts/` also carries
+      171-175 before editing. *(completed)*
+- [x] Extend the AA fixture builder so the fixture repository's `.claude/scripts/` also carries
       `events-append.sh` and its hard dependencies (`lib/common.sh`, `deploy-root-guard.sh`, and
       whatever `events-append.sh` sources for its central-log promotion), so the real script runs
       inside the fixture and resolves `PROJECT_ROOT` to the fixture repository rather than this
-      repository.
-- [ ] Case AA8: the all-ignored fixture invoked WITHOUT `--task` still exits 8, and the fixture's
+      repository. *(completed: both `build_repo_specs_ignored` and `build_repo_specs_partially_ignored`
+      now copy `events-append.sh` and, when present, `lib/central-log-lib.sh`; `common.sh` and
+      `deploy-root-guard.sh` were already copied via `REQUIRED_SCRIPTS`)*
+- [x] Case AA8: the all-ignored fixture invoked WITHOUT `--task` still exits 8, and the fixture's
       own `specs/events.jsonl` gains exactly one line whose `event_type` is the new value and
       whose `category` is `deviation`. Assert the category explicitly — this is the assertion that
-      keeps a future edit from promoting the line to `blocker` and into the central log.
-- [ ] Case AA9 (the negative half): the same fixture invoked WITH `--task` still exits 8 and
+      keeps a future edit from promoting the line to `blocker` and into the central log. *(completed)*
+- [x] Case AA9 (the negative half): the same fixture invoked WITH `--task` still exits 8 and
       appends NO `specs/events.jsonl` line, proving the channel split is structural and that the
-      postflight caller cannot double-record.
-- [ ] Case AA10: the partial-ignore fixture without `--task` still exits 9, its trackable siblings
+      postflight caller cannot double-record. *(completed)*
+- [x] Case AA10: the partial-ignore fixture without `--task` still exits 9, its trackable siblings
       still land in HEAD (verified via `git show`, as AA3 already does, not by exit code alone),
-      and one event line is appended.
-- [ ] Assert in at least one case that this repository's own `specs/events.jsonl` was NOT written
+      and one event line is appended. *(completed)*
+- [x] Assert in at least one case that this repository's own `specs/events.jsonl` was NOT written
       by the suite — the fixture-containment guard for a script that resolves its own store from
-      `SCRIPT_DIR`.
+      `SCRIPT_DIR`. *(completed)*
 
 **Timing**: 45 minutes
 
@@ -462,10 +464,13 @@ their current assertions. Confirm by checking AA1-AA7's pass lines are unchanged
 
 **Verification**:
 
-- [ ] `bash scripts/tests/run-all.sh --only <the selected set named in the Tier Justification>`
-      exits 0 with AA1-AA7 green.
-- [ ] `git status --short` after the suite run shows no modification to this repository's own
-      `specs/events.jsonl`.
+- [x] `bash scripts/tests/run-all.sh --only <the selected set named in the Tier Justification>`
+      exits 0 with AA1-AA7 green. *(completed: 8/8 passed; direct run showed AA1-AA7 and the new
+      AA8/AA9/AA10 + containment case all green, 87/87 total)*
+- [x] `git status --short` after the suite run shows no modification to this repository's own
+      `specs/events.jsonl`. *(completed: the checksum-based containment assertion inside the
+      suite itself passed; `specs/events.jsonl`'s pre-existing dirty state from before this
+      dispatch began is unrelated and unchanged by the suite run)*
 
 ---
 
