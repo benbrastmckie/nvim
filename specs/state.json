@@ -5,12 +5,12 @@
     {
       "project_number": 676,
       "project_name": "tag_transcript_captured_kos_with_repo_tag",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "Tag transcript-captured KOs with the repo tag: Sapience transcript-capture KOs (staged in ~/.sapience/pending_kos.jsonl by the vendor capture path, e.g. 1260 pending for nvim) carry a `project: \"<name>\"` field but no literal `[repo:<slug>]` substring in `provenance`, so repo-scoped retrieval (sapience-retrieve.sh's `/v1/search?source=[repo:<slug>]` filter) cannot find them even after approval; an untagged nvim-topic search returned 39 session-capture KOs vs 4 tagged. Research where a `[repo:<slug>]` tag can be injected into captured KOs' provenance (the capture/extract/upload path is vendor-owned under ~/.sapience/ and overwritten by auto-update; options include a post-extract/pre-upload rewrite of pending_kos.jsonl owned by the sapience extension, a wrapper at review/upload time, or a vendor ask), keeping the slug resolution identical to sapience-remember.sh's (basename of the parent checkout's git toplevel, mapped from the KO's `project`/capture.projects path_prefix), and whether already-uploaded untagged KOs can be backfilled given there is no delete API. Edit target is the sapience extension source store (agent-system/extensions/sapience)",
       "topic": "sapience",
       "created": "2026-11-20T20:33:40Z",
-      "last_updated": "2026-11-20T21:48:36Z",
+      "last_updated": "2026-11-20T21:49:21Z",
       "audit_verdict": {
         "proposal": {
           "id": "tag_transcript_captured_kos_with_repo_tag",

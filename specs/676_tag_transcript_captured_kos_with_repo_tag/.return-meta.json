@@ -1,32 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/676_tag_transcript_captured_kos_with_repo_tag/plans/01_tag-pending-kos-repo-tag.md",
-      "summary": "4-phase plan adding an extension-owned sapience-tag-pending.sh that injects a [repo:<slug>] provenance tag into pending_kos.jsonl between sapience sync and sapience review, with a fixture test suite, a corrected population census, and a redeploy."
-    }
-  ],
-  "next_steps": "Run /orchestrate 676 to execute the plan",
-  "user_decision": {
-    "question": "Should the implementation phase run the new tagging script against the live ~/.sapience/pending_kos.jsonl (3757 pending records across nvim, .dotfiles and sapience-app), or stop at shipping and fixture-testing the script and leave the live pass and the subsequent `sapience review` post to you?",
-    "options": [
-      "Ship and fixture-test only - the plan verifies with a read-only dry-run against the live ledger and hands you the operator command sequence; no record is mutated and nothing is posted to the vault",
-      "Also run the live pass - the implementation phase runs `--write` against the real ledger, tagging all 3757 pending records including 1687 belonging to the .dotfiles checkout and 810 to sapience-app, still without posting"
-    ],
-    "recommended": "Ship and fixture-test only - the plan verifies with a read-only dry-run against the live ledger and hands you the operator command sequence; no record is mutated and nothing is posted to the vault",
-    "blocking": false,
-    "obligation": "Keep every mutation inside this repository's declared write surface: the ledger lives under ~/.sapience/ (outside it), the tagging pass would rewrite records captured from two other checkouts, and the `sapience review` step that makes a tag permanent is a user-driven GNOME launcher surface with no delete or update API behind it."
-  },
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795210345_ed54aa_676",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 5.5,
-    "dependency_waves": 3
-  },
-  "memory_candidates": [],
-  "dispatch_seq": 2
+    "session_id": "sess_1795210345_ed54aa",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

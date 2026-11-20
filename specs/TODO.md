@@ -190,7 +190,7 @@ next_project_number: 677
 
 ### Sapience
 
-676 [PLANNED] — Tag transcript-captured KOs with the repo tag: Sapience...
+676 [IMPLEMENTING] — Tag transcript-captured KOs with the repo tag: Sapience...
 
 ### Decidability
 
@@ -204,7 +204,7 @@ next_project_number: 677
 ## Tasks
 
 ### 676. Tag transcript captured kos with repo tag
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None

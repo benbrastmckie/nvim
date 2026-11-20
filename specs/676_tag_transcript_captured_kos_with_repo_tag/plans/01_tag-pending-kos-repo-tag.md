@@ -1,7 +1,7 @@
 # Implementation Plan: Task #676
 
 - **Task**: 676 - Tag transcript-captured KOs with the repo tag
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/676_tag_transcript_captured_kos_with_repo_tag/reports/01_tag-transcript-captured-kos-repo.md
@@ -124,46 +124,53 @@ roadmap consultation applies to this round.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Author the pending-ledger tagging script [NOT STARTED]
+### Phase 1: Author the pending-ledger tagging script [COMPLETED]
 
 **Goal**: A working, safe-by-default `sapience-tag-pending.sh` in the extension source store
 that resolves a repo slug per pending record and injects a `[repo:<slug>]`-carrying `provenance`,
 registered in the extension manifest.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/sapience/scripts/sapience-tag-pending.sh` with a header
+- [x] Create `agent-system/extensions/sapience/scripts/sapience-tag-pending.sh` with a header
       comment stating: what it mutates (`~/.sapience/pending_kos.jsonl` only), why the ledger
       file is a durable target (it is a `LEDGER_FILE`, preserved by `sapience update`, unlike the
       vendor `CLIENT_FILES`), the required operational sequencing (`sapience sync` → this script
       → `sapience review`), and that there is no delete or update API so a posted KO's tag is
-      final.
-- [ ] Extract the marker-delimited `resolve_checkout_toplevel()` block from
+      final. *(completed)*
+- [x] Extract the marker-delimited `resolve_checkout_toplevel()` block from
       `agent-system/extensions/sapience/scripts/sapience-remember.sh` **verbatim** (BEGIN/END
       markers and the in-block comment included, unedited) and paste it into the new script.
-- [ ] Build the project→slug map once per run: for each `.capture.projects[]` entry in
+      *(completed: byte-identity verified via diff of the extracted block)*
+- [x] Build the project→slug map once per run: for each `.capture.projects[]` entry in
       `~/.sapience/config.json`, resolve `.path_prefix` through `resolve_checkout_toplevel()` and
       record `basename(<toplevel>)` keyed by `.name`. An entry whose path does not resolve gets
-      no map entry (not an error).
-- [ ] Read the ledger line by line; for each record, skip it when `project` is empty or has no
+      no map entry (not an error). *(completed)*
+- [x] Read the ledger line by line; for each record, skip it when `project` is empty or has no
       map entry (count it as unresolvable), skip it when its existing `provenance` already
       contains the substring `[repo:` (idempotence), otherwise set `provenance` to
       `[repo:<slug>] session capture via sapience-tag-pending.sh` when the field is absent or
       empty, or append `" [repo:<slug>]"` to the existing value when it is non-empty.
-- [ ] Leave every other field byte-identical — in particular `_hash` (dedupe-load-bearing) and
+      *(completed)*
+- [x] Leave every other field byte-identical — in particular `_hash` (dedupe-load-bearing) and
       `project` (review-display-load-bearing) — and preserve one JSON object per line.
-- [ ] Wrap the whole load-mutate-rewrite cycle in a blocking exclusive `flock` on
+      *(completed: a fixture-caught bug — the initial jq rewrite omitted `-c`, producing
+      multi-line JSON that broke this exact invariant on a second pass — was found and fixed
+      before this item was checked off)*
+- [x] Wrap the whole load-mutate-rewrite cycle in a blocking exclusive `flock` on
       `~/.sapience/.ledger.lock`, and write back via `<path>.tmp.$$` + `mv` with mode `0600`,
       matching `extract_local.py`'s `_ledger_lock` and `_write_atomic` conventions exactly.
-- [ ] Make `--dry-run` the DEFAULT and require an explicit `--write` to mutate: the default run
+      *(completed: the lock fd is opened and acquired before the ledger is read and released
+      only after the rewritten file is in place)*
+- [x] Make `--dry-run` the DEFAULT and require an explicit `--write` to mutate: the default run
       prints a per-project summary (project name, resolved slug, records that would be tagged,
       records already tagged, records unresolvable) and touches nothing. Exit 0 on a clean pass
       (including a zero-change pass), non-zero with a message on stderr on an unreadable ledger,
-      an unreadable/invalid config, or a failed atomic write.
-- [ ] Add `sapience-tag-pending.sh` to `provides.scripts` in
+      an unreadable/invalid config, or a failed atomic write. *(completed)*
+- [x] Add `sapience-tag-pending.sh` to `provides.scripts` in
       `agent-system/extensions/sapience/manifest.json`, keeping the array's existing alphabetical
-      ordering.
-- [ ] Mark the script executable (`chmod +x`), matching the other executable scripts in that
-      directory.
+      ordering. *(completed)*
+- [x] Mark the script executable (`chmod +x`), matching the other executable scripts in that
+      directory. *(completed)*
 
 **Timing**: 1.5 hours
 
@@ -197,6 +204,24 @@ file is auto-updated outside this repository's control.
   would-be-tagged (none already tagged, since 0 of 3757 carry a `provenance` today).
 - `diff <(sed -n '/BEGIN sapience-worktree-checkout-resolution/,/END sapience-worktree-checkout-resolution ===/p' agent-system/extensions/sapience/scripts/sapience-remember.sh) <(sed -n '/BEGIN sapience-worktree-checkout-resolution/,/END sapience-worktree-checkout-resolution ===/p' agent-system/extensions/sapience/scripts/sapience-tag-pending.sh)` is empty.
 - `jq -e '.provides.scripts | index("sapience-tag-pending.sh")' agent-system/extensions/sapience/manifest.json` succeeds.
+
+**Batch Gate Deferral — scoped discharge record**: the dispatch's own narrowing invocation
+(`verify-deploy.sh --only-gate 8 --gate8-touched <new script path>,manifest.json
+--skip-unchanged`) hit the UNMAPPABLE touched-path case: `sapience-tag-pending.sh` is a
+brand-new file with no covering test suite yet (Phase 2, next, creates
+`test-sapience-tag-pending.sh`), so `suite_selection_select` returned the full-sweep sentinel and
+fell back to the complete unnarrowed `run-all.sh` battery under heavy multi-task batch
+contention (a stale gate-lock mutex reclaimed from another session, 1-minute load average 6.25,
+an overall `[FAIL]` from undiscoverable/failing suites unrelated to this task). Per the
+dispatch's UNMAPPABLE CRITERION carve-out, the two named checks this phase's own Tier
+Justification identifies were run directly and standalone instead:
+`agent-system/extensions/core/scripts/tests/test-manifest-scripts-sync.sh` (21 passed, 0 failed,
+once the new script was `git add`ed so `git ls-files` could see it) and
+`agent-system/extensions/core/scripts/tests/test-script-inventory.sh` (32 passed, 0 failed).
+`agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh` was also run
+standalone as a sanity check (55 passed, 0 failed, including Case 30 still green against the
+existing 8-file lockstep array). The complete, unscoped gate battery remains deferred to the
+once-per-invocation batch-level close, per the dispatch's own stated contract.
 
 ---
 

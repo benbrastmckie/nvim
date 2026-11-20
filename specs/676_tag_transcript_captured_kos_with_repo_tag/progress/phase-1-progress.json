@@ -1,0 +1,21 @@
+{
+  "phase": 1,
+  "phase_name": "Author the pending-ledger tagging script",
+  "started_at": "2026-11-20T21:00:00Z",
+  "last_updated": "2026-11-20T21:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create sapience-tag-pending.sh with header comment", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-tag-pending.sh"]},
+    {"id": 2, "description": "Extract resolve_checkout_toplevel() block verbatim", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-tag-pending.sh"]},
+    {"id": 3, "description": "Build project->slug map from capture.projects[]", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-tag-pending.sh"]},
+    {"id": 4, "description": "Read ledger, tag records idempotently (compose not clobber)", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-tag-pending.sh"]},
+    {"id": 5, "description": "Preserve _hash/project, one JSON object per line", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-tag-pending.sh"], "note": "found and fixed a real bug during fixture testing: initial jq rewrite omitted -c (compact), producing multi-line JSON records that broke the one-object-per-line invariant on a second pass. Fixed by adding jq -c."},
+    {"id": 6, "description": "flock + atomic tmp+mv write with mode 0600", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-tag-pending.sh"], "note": "restructured so the flock wraps the ENTIRE read-mutate-write cycle (acquired before the ledger is read), not just the final mv, matching the plan's 'wrap the whole load-mutate-rewrite cycle' requirement."},
+    {"id": 7, "description": "--dry-run default / --write required; summary + exit codes", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-tag-pending.sh"]},
+    {"id": 8, "description": "Register script in manifest.json provides.scripts", "status": "done", "files_touched": ["agent-system/extensions/sapience/manifest.json"]},
+    {"id": 9, "description": "chmod +x the new script", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-tag-pending.sh"]}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

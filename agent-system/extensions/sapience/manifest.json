@@ -17,6 +17,7 @@
       "sapience-publish.sh",
       "sapience-remember.sh",
       "sapience-retrieve.sh",
+      "sapience-tag-pending.sh",
       "sapience-vault-read.sh",
       "setup-sapience-mcp.sh",
       "tests/test-postflight-sapience-notes.sh",
