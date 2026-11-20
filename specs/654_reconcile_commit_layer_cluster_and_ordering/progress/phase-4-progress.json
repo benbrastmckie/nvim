@@ -1,0 +1,22 @@
+{
+  "phase": 4,
+  "phase_name": "Write the Decision Record",
+  "started_at": "2026-11-20T09:22:00Z",
+  "last_updated": "2026-11-20T09:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create specs/decisions/commit-layer-cluster-ordering.md", "status": "done", "files_touched": ["specs/decisions/commit-layer-cluster-ordering.md"]},
+    {"id": 2, "description": "Rulings section: fourteen rows", "status": "done", "files_touched": ["specs/decisions/commit-layer-cluster-ordering.md"]},
+    {"id": 3, "description": "Edges section: seven edges as present in state.json", "status": "done", "note": "No edge was dropped or refused, so none is qualified.", "files_touched": ["specs/decisions/commit-layer-cluster-ordering.md"]},
+    {"id": 4, "description": "Judgment calls section", "status": "done", "files_touched": ["specs/decisions/commit-layer-cluster-ordering.md"]},
+    {"id": 5, "description": "Re-measured premises section", "status": "done", "note": "The 501 co-admission bar was located in the counterpart task's description, not in 501's own; the record words it accordingly.", "files_touched": ["specs/decisions/commit-layer-cluster-ordering.md"]},
+    {"id": 6, "description": "Inputs to the branch feature section", "status": "done", "note": "Five items: the four appended to 655 plus the existing declaration site from the report.", "files_touched": ["specs/decisions/commit-layer-cluster-ordering.md"]},
+    {"id": 7, "description": "Not ruled on section", "status": "done", "files_touched": ["specs/decisions/commit-layer-cluster-ordering.md"]},
+    {"id": 8, "description": "How this was checked section", "status": "done", "note": "The 33-to-0 and 123-task figures are attributed to the report's simulation and stated as not re-run.", "files_touched": ["specs/decisions/commit-layer-cluster-ordering.md"]},
+    {"id": 9, "description": "Name tasks by slug with number alongside", "status": "done", "note": "Slug and number at first mention in each table row; bare numbers in Basis cells and prose that follow a slugged row.", "files_touched": []}
+  ],
+  "current_objective": 9,
+  "approaches_tried": [],
+  "deviations": [],
+  "verification": "Seven edge rows each matched by a jq read of the target's dependencies. Four NEEDS REVISION rows (513, 535, 536, 592) each carry the heading line. All three judgment answers present. Diff read through.",
+  "handoff_count": 0
+}

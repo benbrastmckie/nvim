@@ -195,20 +195,20 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 4: Write the Decision Record [NOT STARTED]
+### Phase 4: Write the Decision Record [COMPLETED]
 
 **Goal**: State the ordering and its basis in one durable record that matches the state actually written.
 
 **Tasks**:
-- [ ] Create `specs/decisions/commit-layer-cluster-ordering.md`, following the shape of its siblings in `specs/decisions/` (title line, short statement of what the record decides, then sections).
-- [ ] Section "Rulings": one row per member (thirteen, plus the completed ignored-specs member as "completed, nothing to order"), each with slug, number, ruling, basis, and the state change that carries it (edge number, "description revised", or "none" for UNAFFECTED). For 508 and 517, include the falsification condition from the report.
-- [ ] Section "Edges": the seven edges as actually present in `state.json` after Phase 2, with kind and basis, the resulting order diagram, and the reason edge 6 sits on 657. If Phase 1 or Phase 2 dropped or failed to write an edge, say so here; do not list an edge that is not in `state.json`.
-- [ ] Section "Judgment calls": the three answers with the deciding evidence and, for judgment 1, what would change the ruling.
-- [ ] Section "Re-measured premises": 535 and 536 stale, 501 line numbers moved and its co-admission annotation moot, the 570 blind spot, each marked as read from code or reproduced.
-- [ ] Section "Inputs to the branch feature": the four items appended to 655 in Phase 3.
-- [ ] Section "Not ruled on": the residual overlaps with open non-members, and 618 as invisible to any overlap test because it declares no `file_scope`.
-- [ ] Section "How this was checked": the overlap predicate (exact-or-directory-prefix on declared `file_scope`, excluding `__WHOLE_TREE__`, `git-staging-scope.md` and `general-implementation-agent.md`), the before/after unordered-pair figures as the report's own simulation result, and a statement that the simulation was a reimplementation while the write-time cycle check was the real one.
-- [ ] Name tasks by slug with the number alongside. The record lives under `specs/`, so task numbers are permitted.
+- [x] Create `specs/decisions/commit-layer-cluster-ordering.md`, following the shape of its siblings in `specs/decisions/` (title line, short statement of what the record decides, then sections). *(completed)*
+- [x] Section "Rulings": one row per member (thirteen, plus the completed ignored-specs member as "completed, nothing to order"), each with slug, number, ruling, basis, and the state change that carries it (edge number, "description revised", or "none" for UNAFFECTED). For 508 and 517, include the falsification condition from the report. *(completed)*
+- [x] Section "Edges": the seven edges as actually present in `state.json` after Phase 2, with kind and basis, the resulting order diagram, and the reason edge 6 sits on 657. If Phase 1 or Phase 2 dropped or failed to write an edge, say so here; do not list an edge that is not in `state.json`. *(completed)*
+- [x] Section "Judgment calls": the three answers with the deciding evidence and, for judgment 1, what would change the ruling. *(completed)*
+- [x] Section "Re-measured premises": 535 and 536 stale, 501 line numbers moved and its co-admission annotation moot, the 570 blind spot, each marked as read from code or reproduced. *(completed)*
+- [x] Section "Inputs to the branch feature": the four items appended to 655 in Phase 3. *(completed)*
+- [x] Section "Not ruled on": the residual overlaps with open non-members, and 618 as invisible to any overlap test because it declares no `file_scope`. *(completed)*
+- [x] Section "How this was checked": the overlap predicate (exact-or-directory-prefix on declared `file_scope`, excluding `__WHOLE_TREE__`, `git-staging-scope.md` and `general-implementation-agent.md`), the before/after unordered-pair figures as the report's own simulation result, and a statement that the simulation was a reimplementation while the write-time cycle check was the real one. *(completed)*
+- [x] Name tasks by slug with the number alongside. The record lives under `specs/`, so task numbers are permitted. *(completed)*
 
 **Timing**: 1 hour
 
