@@ -197,3 +197,14 @@ Two members are also gated today by open tasks outside the chain: 570 by 519 and
   write. Each of the seven edge targets gained exactly one dependency and lost none. Each of the
   seven revised descriptions begins with its baseline text, and the other eight are unchanged.
   The appended blocks open with `RE-MEASURED AND RULED (commit-layer cluster ordering`.
+
+**Amended by** `specs/decisions/branch-topology-and-landing-strategy.md`, 2026-11-20: the
+branch-topology ruling has landed (rulings R1-R8). Ruling R6 confirms the one-HEAD-per-repository
+premise holds, so `phase_commit_boundary_mechanical_check` (513)'s expected ref stays
+per-repository rather than becoming per-tree, and this record's `CONDITION ON A RULING` material
+(see `## Judgment calls`, item 1) does not fire. Ruling R4 also triggers this record's own
+falsification condition for `stage_regenerated_derived_files_in_phase_commits` (517): because the
+branch-topology ruling allocates the integration-branch declaration schema row in
+`context/standards/repo-level-declarations.md` to `branch_aware_orchestration_and_squash_landing`
+(655), 517 is now a predecessor of 655, per the Rulings table's own stated falsification
+condition for 517.

@@ -43,6 +43,15 @@ behind 553 regardless. Re-adding it here would reverse that remedy for no gain. 
 authoring time: 657's `dependencies` are `[654, 656]` (no 553); 655's are
 `[513, 553, 654, 657]`.
 
+**Written.** Exactly one new edge was written: `bash .claude/scripts/update-task-status.sh
+preflight 655 edge_only "$session_id" --depends-on-add='[517]'` succeeded, and
+`jq -r '.active_projects[]|select(.project_number==655)|.dependencies' specs/state.json` now
+reads `[513, 517, 553, 654, 657]`. 657's own `dependencies` remain `[654, 656]` — unchanged, and
+still excluding 553, confirmed by the same query against project 657. 655's description gained
+the ruling-revision block naming this record by filename, and
+`specs/decisions/commit-layer-cluster-ordering.md` gained one dated `**Amended by**` note
+recording both the 517 edge and the R6 confirmation.
+
 ## Re-measured premises
 
 | Premise | Finding | How established |

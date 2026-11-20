@@ -290,17 +290,17 @@ report/plan/summary artifact, so `validate-artifact.sh` has no type to check it 
 
 ---
 
-### Phase 2: Write the state changes the ruling implies [NOT STARTED]
+### Phase 2: Write the state changes the ruling implies [COMPLETED]
 
 **Goal**: The ruling's dependency edge, task-description revision, and cluster-record amendment
 note are written to durable state, with the already-resolved edge left alone.
 
 **Tasks**:
-- [ ] Re-confirm, with `jq` against `specs/state.json`, that 657's `dependencies` are `[654, 656]`
+- [x] Re-confirm, with `jq` against `specs/state.json`, that 657's `dependencies` are `[654, 656]` *(completed)*
       and 655's are `[513, 553, 654, 657]`. If 553 appears in 657's list, STOP and reconcile
       against `specs/decisions/commit-layer-cluster-ordering.md`'s Edge 6 row before proceeding —
       do not add it, and do not remove it without recording why.
-- [ ] Write the one new edge the ruling justifies: 655 gains 517
+- [x] Write the one new edge the ruling justifies: 655 gains 517 *(completed)*
       (`stage_regenerated_derived_files_in_phase_commits`) as a predecessor, because ruling R4
       allocates the integration-branch declaration schema in
       `context/standards/repo-level-declarations.md` to 655, which is the falsification condition
@@ -308,23 +308,23 @@ note are written to durable state, with the already-resolved edge left alone.
       `bash .claude/scripts/update-task-status.sh preflight 655 edge_only "$session_id" --depends-on-add='[517]'`
       and let its write-time cycle refusal run; if refused, record the refusal and the reason in
       the decision record rather than forcing the write.
-- [ ] Revise 655's description via `state-write.sh` (jq filter + `--arg`, `--regen-todo`): append a
+- [x] Revise 655's description via `state-write.sh` (jq filter + `--arg`, `--regen-todo`): append a *(completed)*
       block recording that the branch-topology ruling has landed, naming the decision record;
       state that per-invocation branch creation and `git merge --squash` landing are superseded by
       R1 and R2; state that Element A's admission-time branch check survives unchanged; state that
       655 now owns the `repo-level-declarations.md` schema row for the integration-branch key and
       the admission assertion; and state that the stale `BINDING CONSTRAINT, NOT RE-OPENABLE`
       block is superseded by the ruling, per that description's own trailing deference paragraph.
-- [ ] Append a dated amendment note to `specs/decisions/commit-layer-cluster-ordering.md` in the
+- [x] Append a dated amendment note to `specs/decisions/commit-layer-cluster-ordering.md` in the *(completed)*
       sanctioned `**Amended by** <doc>, <date>:` shape, recording: that the branch-topology ruling
       has landed and where; that ruling R6 confirms the one-HEAD-per-repository premise, so 513's
       expected ref stays per-repository and the record's `CONDITION ON A RULING` does not fire;
       and that 517 is now a predecessor of 655 under the record's own stated condition. The target
       file exists (confirmed at authoring time); if it is absent when this phase runs, write the
       same content into the new decision record's own amendment section instead and say so there.
-- [ ] Regenerate `specs/TODO.md` (`bash .claude/scripts/generate-todo.sh`) if `--regen-todo` was
+- [x] Regenerate `specs/TODO.md` (`bash .claude/scripts/generate-todo.sh`) if `--regen-todo` was *(completed)*
       not used on every write.
-- [ ] Record in the decision record's Edges section that exactly one new edge was written, and
+- [x] Record in the decision record's Edges section that exactly one new edge was written, and *(completed)*
       that the `657 -> 553` candidate was already resolved by moving it to 655 — with the live
       `dependencies` arrays quoted as the evidence.
 

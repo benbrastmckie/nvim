@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Write the state changes the ruling implies",
+  "started_at": "2026-11-20T00:10:00Z",
+  "last_updated": "2026-11-20T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm live dependencies via jq", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Write the 655 gains 517 edge", "status": "done", "files_touched": ["specs/state.json"]},
+    {"id": 3, "description": "Revise 655's description via state-write.sh", "status": "done", "files_touched": ["specs/state.json"]},
+    {"id": 4, "description": "Append amendment note to commit-layer-cluster-ordering.md", "status": "done", "files_touched": ["specs/decisions/commit-layer-cluster-ordering.md"]},
+    {"id": 5, "description": "Regenerate TODO.md", "status": "done", "files_touched": ["specs/TODO.md"]},
+    {"id": 6, "description": "Record Edges confirmation in decision record", "status": "done", "files_touched": ["specs/decisions/branch-topology-and-landing-strategy.md"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

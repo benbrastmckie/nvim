@@ -21,7 +21,7 @@ next_project_number: 664
 | 6 | 524 | 501 | core-agent-system |
 | 7 | 536 | 524 | agent-system |
 | 8 | 553 | 536,548 | agent-system |
-| 9 | 655 | 513,553,657 | orchestrator |
+| 9 | 655 | 513,517,553,657 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -469,7 +469,7 @@ Final acceptance check: regenerate the ROADMAP.md of /home/benjamin/Projects/Sap
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 513, Task 553, Task 654, Task 657
+- **Dependencies**: Task 513, Task 517, Task 553, Task 654, Task 657
 
 **Description**: Make orchestration branch-aware with a per-invocation branch and squash landing
 
@@ -523,6 +523,9 @@ VERIFICATION. A multi-task invocation produces one branch, phase commits from ev
 This task now depends on `branch_topology_ruling_and_milestone_automation`, whose Element 1 is an explicitly re-opened ruling on branch granularity (per invocation, per milestone, per task), merge strategy, landing mechanics AND worktree isolation itself, carrying written authority to revise this description. Read that task's decision record BEFORE planning and treat it as binding: wherever it differs from the branch-per-invocation design or from the "BINDING CONSTRAINT, NOT RE-OPENABLE" block stated above, the ruling wins and this description is stale at that point. Do not re-derive the topology question here, and do not proceed on the settled-design premise above without first checking what the ruling actually settled.
 
 RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-layer-cluster-ordering.md): This task is not a cluster member; this block is a pointer. Read the decision record before planning. ORDERING: this task now depends on phase_commit_boundary_mechanical_check (513), which carries an expected-ref parameter defaulting to HEAD; pass the resolved work branch to it and do not build a second branch-target detector. Through branch_topology_ruling_and_milestone_automation (657) this task also follows the whole commit-layer chain. RULED: neither source-store commit scoping nor the third containment site is a hard prerequisite for branch targeting. That ruling changes if the landing commit is routed through git-commit-scoped.sh --task in a second repository. INPUTS THIS TASK MUST DESIGN FOR: (a) a source-store path committed by commit-source-store-path.sh lands on whatever branch the second repository has checked out, so "phase commits land on the work branch" is not true for those commits unless designed for, and that script is not in this task's file_scope; (b) switching the single shared working tree to land a squash carries concurrent siblings' uncommitted edits across the switch; (c) specs/state.json and specs/TODO.md ride in every task's commits, so per-task ranges on a shared branch are not separable by path for those two files; (d) git-snapshot.sh --branch moves HEAD off the work branch during a snapshot.
+=== BRANCH-TOPOLOGY RULING HAS LANDED ===
+
+The branch-topology ruling named above has landed: specs/decisions/branch-topology-and-landing-strategy.md (rulings R1-R8). Per-invocation branch creation and git merge --squash landing, both named in the BINDING CONSTRAINT and WHAT TO BUILD blocks above, are SUPERSEDED by rulings R1 and R2: the hot-path branch is whatever single branch is already checked out (verified, never created, at any granularity), and a milestone's review history is built by git commit-tree plus compare-and-swap git update-ref onto refs/heads/milestone/<id>, never by checkout or git merge --squash. Element A's admission-time check (that the checked-out branch matches a declared integration branch) survives unchanged under this ruling. This task now owns: the repo-level-declarations.md schema row for the integration-branch declaration key (ruling R4 fixes the key's name and shape; this task documents and enforces it), and the admission-time assertion that the checked-out branch matches the declared value. The stale BINDING CONSTRAINT, NOT RE-OPENABLE block above is superseded by this ruling, per this description's own trailing deference paragraph ("wherever it differs ... the ruling wins and this description is stale at that point").
 
 ---
 
