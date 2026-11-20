@@ -14,7 +14,8 @@
 # own <scratch>/.claude/scripts/{orchestrate-conclusion-roadmap.sh,roadmap-integration.sh,
 # generate-task-order.sh,deploy-root-guard.sh,events-append.sh,issue-record.sh,
 # git-commit-scoped.sh,lint/lint-roadmap-batch-proposals.sh,lib/{common.sh,task-lookup-lib.sh,
-# runtime-file-patterns.sh,roadmap-preflight-lib.sh,status-vocabulary.sh}} and a real
+# runtime-file-patterns.sh,roadmap-preflight-lib.sh,status-vocabulary.sh,roadmap-entries-lib.sh,
+# file-scope-overlap.sh}} and a real
 # <scratch>/.git repo. The suite never reads or writes the real specs/ROADMAP.md,
 # specs/events.jsonl, or specs/state.json -- a checksum guard at the end confirms all three are
 # byte-identical to how this suite found them.
@@ -54,6 +55,10 @@ PREFLIGHT_SRC="$(resolve "lib/roadmap-preflight-lib.sh" "lib/roadmap-preflight-l
 common_test_declare_subject "$PREFLIGHT_SRC"
 STATUSVOC_SRC="$(resolve "lib/status-vocabulary.sh" "lib/status-vocabulary.sh")" || exit 2
 common_test_declare_subject "$STATUSVOC_SRC"
+ENTRIES_SRC="$(resolve "lib/roadmap-entries-lib.sh" "lib/roadmap-entries-lib.sh")" || exit 2
+common_test_declare_subject "$ENTRIES_SRC"
+SCOPE_OVERLAP_SRC="$(resolve "lib/file-scope-overlap.sh" "lib/file-scope-overlap.sh")" || exit 2
+common_test_declare_subject "$SCOPE_OVERLAP_SRC"
 ROADMAP_INTEGRATION_SRC="$(resolve "roadmap-integration.sh" "roadmap-integration.sh")" || exit 2
 common_test_declare_subject "$ROADMAP_INTEGRATION_SRC"
 GTO_SRC="$(resolve "generate-task-order.sh" "generate-task-order.sh")" || exit 2
@@ -99,6 +104,8 @@ build_sandbox() {
   cp "$RUNTIME_PATTERNS_SRC" "$scratch/.claude/scripts/lib/runtime-file-patterns.sh"
   cp "$PREFLIGHT_SRC" "$scratch/.claude/scripts/lib/roadmap-preflight-lib.sh"
   cp "$STATUSVOC_SRC" "$scratch/.claude/scripts/lib/status-vocabulary.sh"
+  cp "$ENTRIES_SRC" "$scratch/.claude/scripts/lib/roadmap-entries-lib.sh"
+  cp "$SCOPE_OVERLAP_SRC" "$scratch/.claude/scripts/lib/file-scope-overlap.sh"
   cp "$ROADMAP_INTEGRATION_SRC" "$scratch/.claude/scripts/roadmap-integration.sh"
   cp "$GTO_SRC" "$scratch/.claude/scripts/generate-task-order.sh"
   cp "$LINT_SRC" "$scratch/.claude/scripts/lint/lint-roadmap-batch-proposals.sh"
@@ -223,6 +230,11 @@ if [ "$caseA_commit_files" = "specs/ROADMAP.md" ]; then
 else
   common_test_fail "Case A: expected the HEAD commit to touch only specs/ROADMAP.md, got: $caseA_commit_files"
 fi
+if echo "$LAST_STDOUT" | grep -q "^Scan complete\. shape=.* findings="; then
+  common_test_pass "Case A: the advisory lint ran to completion and its scan line is in the outcome block"
+else
+  common_test_fail "Case A: expected the lint's 'Scan complete.' line in the outcome block, got stdout=$LAST_STDOUT"
+fi
 if grep -q "item_901\|Fixture item 901" "$SCRATCH_A/specs/ROADMAP.md"; then
   common_test_pass "Case A: the regenerated file actually contains the fixture item"
 else
@@ -286,6 +298,11 @@ if echo "$LAST_STDOUT" | grep -q "^OUTCOME:"; then
   common_test_fail "Case C: expected NO OUTCOME: line at all (regenerate never invoked), got stdout=$LAST_STDOUT"
 else
   common_test_pass "Case C: no OUTCOME: line is printed (regenerate was never invoked)"
+fi
+if echo "$LAST_STDOUT" | grep -q "^Scan complete\. shape=.* findings="; then
+  common_test_pass "Case C: the advisory lint runs on the degrade arm too (it reads state, never the file)"
+else
+  common_test_fail "Case C: expected the lint's 'Scan complete.' line on the degrade arm, got stdout=$LAST_STDOUT"
 fi
 if [ ! -f "$SCRATCH_C/specs/ROADMAP.md" ]; then
   common_test_pass "Case C: specs/ROADMAP.md stays absent (never scaffolded)"

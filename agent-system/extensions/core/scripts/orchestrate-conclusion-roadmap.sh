@@ -23,8 +23,7 @@
 # Preflight classify, before --regenerate is ever called: this stage has no interactive surface
 # (orchestrate runs autonomously, no confirmation gate between phases), so it cannot obtain the
 # approval a write-mode call onto an `absent` or `unknown` ROADMAP.md would need.
-#   - classic/stage: --regenerate, the scoped commit, then the advisory batch-proposal lint
-#     (exit code never acted on).
+#   - classic/stage: --regenerate, then the scoped commit.
 #   - absent/unknown: --regenerate and the commit are skipped entirely; specs/ROADMAP.md is left
 #     untouched. This call site NEVER scaffolds and NEVER auto-writes. Degrades loudly at three
 #     surfaces instead: a named structured warning in this step's own output; a durable
@@ -60,7 +59,9 @@
 # named, parseable block so Move 4 can fold it into the report Move 5 Step 6 emits: the verdict,
 # the roadmap-integration.sh `OUTCOME:` line verbatim (classic/stage only -- the degrade branch
 # never invokes --regenerate, so no `OUTCOME:` line is ever printed on that branch), the commit
-# sha or "none", and the advisory lint's findings (classic/stage only).
+# sha or "none", and the advisory lint's findings (every verdict -- the lint reads the authored
+# roadmap entries in specs/state.json, never the rendered file, so the degrade branch runs it
+# too; its exit code is never acted on).
 #
 # NOT RUNNABLE FROM THE SOURCE STORE: deploy-root-guard.sh (sourced below) fails loudly when
 # invoked from agent-system/extensions/core/scripts/. Deploy first (bash
@@ -199,10 +200,6 @@ case "$verdict" in
       esac
     fi
 
-    lint_rc=0
-    lint_output="$(bash "$LINT_SCRIPT" 2>&1)" || lint_rc=$?
-    echo "[orchestrate-conclusion-roadmap] advisory lint exit=${lint_rc} (never acted on)" >&2
-    printf '%s\n' "$lint_output" >&2
     ;;
   absent|unknown)
     degrade_summary="roadmap regenerate blocked: specs/ROADMAP.md classifies '${verdict}', no approval surface at conclusion -- the next interactive /roadmap run's own Stage 1 preflight gate resolves it."
@@ -234,6 +231,15 @@ case "$verdict" in
     ;;
 esac
 
+# ─── Advisory batch lint: every verdict ────────────────────────────────────────────────────────
+# The lint reads the authored roadmap entries in specs/state.json and never the rendered file,
+# so it runs on the degrade arm exactly as on the regenerate arm. Its exit code is never acted
+# on.
+lint_rc=0
+lint_output="$(bash "$LINT_SCRIPT" 2>&1)" || lint_rc=$?
+echo "[orchestrate-conclusion-roadmap] advisory lint exit=${lint_rc} (never acted on)" >&2
+printf '%s\n' "$lint_output" >&2
+
 # ─── Pending marker: this script's last action, skipped entirely under --dry-run ───────────────
 if [ "$dry_run" != "true" ]; then
   marker_path="$(runtime_conclusion_pending_marker_path "$SPECS_DIR" "$session_id")"
@@ -254,12 +260,6 @@ case "$verdict" in
   classic|stage)
     echo "${outcome_line}"
     echo "commit: ${commit_sha}"
-    echo "--- advisory batch-proposal lint findings (never acted on) ---"
-    if [ -n "$lint_output" ]; then
-      printf '%s\n' "$lint_output"
-    else
-      echo "(none)"
-    fi
     ;;
   absent|unknown)
     echo "regenerate: skipped (${degrade_summary})"
@@ -271,6 +271,12 @@ case "$verdict" in
     fi
     ;;
 esac
+echo "--- advisory batch-proposal lint findings (never acted on) ---"
+if [ -n "$lint_output" ]; then
+  printf '%s\n' "$lint_output"
+else
+  echo "(none)"
+fi
 echo "=== end outcome ==="
 
 exit 0

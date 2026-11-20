@@ -264,27 +264,27 @@ registered and follow that.
 
 ---
 
-### Phase 3: Retarget the Advisory Batch Lint at State [NOT STARTED]
+### Phase 3: Retarget the Advisory Batch Lint at State [COMPLETED]
 
 **Goal**: The lint reads `roadmap_milestones[].batches[]` through the accessor and no longer parses
 the rendered file.
 
 **Tasks**:
-- [ ] In `lint-roadmap-batch-proposals.sh` remove the parse layer (`RUN_LINE_RE`, the `## Next`
+- [x] In `lint-roadmap-batch-proposals.sh` remove the parse layer (`RUN_LINE_RE`, the `## Next`
   section scan, the fence walker, the `detect_layout` sniff, the `--roadmap` flag) and read batches
-  through `roadmap-entries-lib.sh`.
-- [ ] Keep finding (a) (file_scope overlap with an out-of-batch task) and finding (c) (more than
+  through `roadmap-entries-lib.sh`. *(completed)*
+- [x] Keep finding (a) (file_scope overlap with an out-of-batch task) and finding (c) (more than
   `MAX_TASKS` members). Remove finding (d); Check 13 owns terminal members. Narrow finding (f)
-  from the whole file to the bounded string fields of the roadmap entries.
-- [ ] Location labels become `[milestone ID batch N]`. Keep the advisory contract: exit 0 with
-  findings, no proposer behaviour. Rewrite the header comment to describe the state input.
-- [ ] In `orchestrate-conclusion-roadmap.sh` drop the `--roadmap` argument from the `LINT_SCRIPT`
+  from the whole file to the bounded string fields of the roadmap entries. *(completed)*
+- [x] Location labels become `[milestone ID batch N]`. Keep the advisory contract: exit 0 with
+  findings, no proposer behaviour. Rewrite the header comment to describe the state input. *(completed)*
+- [x] In `orchestrate-conclusion-roadmap.sh` drop the `--roadmap` argument from the `LINT_SCRIPT`
   invocation and also run the lint on the degrade arm, since it no longer needs the file. Do not
-  change the arm's verdict condition here; Phase 6 owns that.
-- [ ] Rewrite `test-lint-roadmap-batch-proposals.sh` fixtures to state entries, covering each kept
-  finding, a clean store, the flat fallback, and absence of the removed finding (d).
-- [ ] Update `test-orchestrate-conclusion-roadmap.sh` only where it pins the lint's invocation or
-  label text.
+  change the arm's verdict condition here; Phase 6 owns that. *(completed)*
+- [x] Rewrite `test-lint-roadmap-batch-proposals.sh` fixtures to state entries, covering each kept
+  finding, a clean store, the flat fallback, and absence of the removed finding (d). *(completed)*
+- [x] Update `test-orchestrate-conclusion-roadmap.sh` only where it pins the lint's invocation or
+  label text. *(completed)*
 
 **Timing**: 1.5 hours
 

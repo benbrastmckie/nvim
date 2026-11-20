@@ -1,0 +1,54 @@
+{
+  "phase": 3,
+  "phase_name": "Retarget the Advisory Batch Lint at State",
+  "started_at": "2026-11-20T10:21:47Z",
+  "last_updated": "2026-11-20T10:21:47Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "In `lint-roadmap-batch-proposals.sh` remove the parse layer (`RUN_LINE_RE`, the `## Next` section scan, the fence walker, the `detect_layout` sniff, the `--road",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lint/lint-roadmap-batch-proposals.sh",
+        "agent-system/extensions/core/scripts/tests/test-lint-roadmap-batch-proposals.sh",
+        "agent-system/extensions/core/scripts/orchestrate-conclusion-roadmap.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Keep finding (a) (file_scope overlap with an out-of-batch task) and finding (c) (more than `MAX_TASKS` members). Remove finding (d); Check 13 owns terminal memb",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "Location labels become `[milestone ID batch N]`. Keep the advisory contract: exit 0 with findings, no proposer behaviour. Rewrite the header comment to describe",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 4,
+      "description": "In `orchestrate-conclusion-roadmap.sh` drop the `--roadmap` argument from the `LINT_SCRIPT` invocation and also run the lint on the degrade arm, since it no lon",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 5,
+      "description": "Rewrite `test-lint-roadmap-batch-proposals.sh` fixtures to state entries, covering each kept finding, a clean store, the flat fallback, and absence of the remov",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 6,
+      "description": "Update `test-orchestrate-conclusion-roadmap.sh` only where it pins the lint's invocation or label text.",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "verification_notes": "- Interface tier. The three suites the plan names (test-lint-roadmap-batch-proposals, test-orchestrate-conclusion-roadmap, test-orchestrate-recap) were run from the source store with CORE_TEST_SUBJECT_MODE=source-store: 3 passed. shellcheck -S warning clean on the four files; check-task-references.sh = 0. grep for RUN_LINE_RE|detect_layout in the lint prints 0.\n- The conclusion script's lint invocation already passed no --roadmap argument; the change there is that the lint now runs after the verdict case on every arm, and its findings block prints on the degrade arm too.\n- The conclusion suite's sandbox never copied lib/file-scope-overlap.sh, so the lint had always exited 2 inside it unnoticed (its exit code is never acted on). The sandbox now copies that lib and roadmap-entries-lib.sh, and Cases A and C assert the lint's 'Scan complete.' line.\n- Finding (f) scans nine bounded string fields and labels each finding with the field's state path; batch findings are labelled [milestone ID batch N] or [batch N] for the flat shape.\n- The old suite's real-corpus default-resolution case was not carried over: from the source store the lint's default root resolves to the extension directory, so it only ever exercised the deployed copy."
+}
