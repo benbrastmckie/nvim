@@ -1,5 +1,5 @@
 ---
-next_project_number: 665
+next_project_number: 666
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 665
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,492,509,513,518,541,561,566,594 | 439,452,472,479,491,535,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 486,571,581,588,595,641 | 454,484,492,509,518,539,541,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
@@ -112,6 +112,7 @@ next_project_number: 665
 
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
+665 [NOT STARTED] — Record the last dispatching orchestration batch in a...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -182,6 +183,77 @@ next_project_number: 665
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 665. Record the last dispatching orchestration batch in a displaced Previous work section of the generated roadmap
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: Record the last dispatching orchestration batch in a displaced "Previous work" section of the generated roadmap
+
+GOAL (user's own words): "when I orchestrate a task, that task shows up under a 'Previous work', but only one orchestration batch should be listed, where it is displaced each time."
+
+Exactly ONE record is retained at any time: the most recent DISPATCHING /orchestrate invocation's batch. Each new dispatching invocation overwrites (displaces) it. Never an append-only history, never a growing list, never two batches at once.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in /home/benjamin/.config/nvim (resolved via .claude-extensions.json's .extensions.core.source_dir). Never hand-author under the deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (rules/source-store-deploy-boundary.md). Edit the source-store path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
+
+=== SETTLED BY THE REQUESTING OPERATOR -- NOT RE-OPENABLE ===
+
+R1. ONLY A DISPATCHING INVOCATION DISPLACES THE RECORD. An invocation that dispatched nothing leaves the existing record standing, untouched. The section means "the last batch that actually did work", not "the last command I typed". The operator was shown the alternative (every invocation displaces, with a "not dispatched" outcome rendered) and declined it explicitly. Do not re-litigate this; design to it.
+
+   The mechanical predicate is already available at the write site and must be used rather than re-derived: the invocation's multi-state file carries .dispatch_start_ts, a per-task map that is EMPTY exactly when no dispatch was issued. This is the same signal the existing Move 4 finalize sequence already reads to compute forward_progress_violated. A non-empty .dispatch_start_ts is the ruled definition of "dispatching"; an empty one means skip the write entirely and leave the prior record intact.
+
+R2. PLACEMENT: the section renders immediately AFTER the milestone summary table and BEFORE the first milestone section, as a top-level "## Previous work" heading. The operator chose this over a trailing position beside "Open tasks in no batch", on the grounds that "what just happened" should read before "what is planned". The existing reading order is otherwise unchanged: sentinel, "# Roadmap", primary-goals bullets, milestone summary table, [NEW SECTION], "See also" link, milestone sections, "Rules, conventions and repo context", "Open tasks in no batch". Resolve where the "See also" link sits relative to the new section as a presentation detail, but the section itself goes between the table and the first milestone.
+
+=== MEASURED EVIDENCE -- RE-DERIVABLE, DO NOT RE-DERIVE FROM SCRATCH ===
+
+M1. THE GENERATED ROADMAP IS A PURE FUNCTION OF state.json. scripts/roadmap-integration.sh computes the entire file in one jq pass held in the MS_RENDER_JQ shell variable, reading exactly four input families: .primary_goals (falling back to .active_goal), .roadmap_milestones[], .roadmap_context, and .active_projects[] plus the sibling archive at $(dirname STATE_PATH)/archive/state.json. It reads NOTHING from specs/events.jsonl, specs/.orchestration/, or git history. The new section must therefore be fed from a state.json key written ahead of the render, never derived at render time from an orchestration log.
+
+M2. THE RENDERED SECTION INVENTORY is small and fully enumerated by MS_RENDER_JQ's final emission block: the generated sentinel, "# Roadmap", the primary-goals bullet list, the milestone summary table, a "See also" link, one msection() per milestone (each containing bsection() per batch), an anchored "## Rules, conventions and repo context" holding listsec() subsections for Repository/Rules/Conventions, and a trailing "### Open tasks in no batch" fenced block. The new section slots into that emission block at the position R2 fixes.
+
+M3. THE RENDERER SPEAKS A LINE PROTOCOL, not direct printf. MS_RENDER_JQ emits L/BS/O/X/BE records consumed by render_milestone_file()'s while-read dispatcher: L prints a literal line; BS opens a row buffer; O emits an open task whose status token is resolved by status_token/token_rank from the task's own JSON; X emits a done or missing task with a caller-supplied token; BE flushes the buffer sorted by token rank then task number, through format_task_row. Reuse this protocol rather than inventing a second row formatter.
+
+   THE CENTRAL RENDERING PROBLEM: the existing O and X vocabulary reports a task's CURRENT status, not what a given invocation DID to it. The new section needs a per-invocation outcome. X already accepts a caller-supplied token (it is how "done" and "missing" are emitted today), so it is the closer fit -- but confirm that token_rank's sort order and format_task_row's column widths behave sensibly for whatever outcome vocabulary is chosen, and extend them deliberately rather than by accident.
+
+M4. THE ONCE-PER-INVOCATION WRITE SITE ALREADY EXISTS. scripts/orchestrate-conclusion-roadmap.sh is invoked unconditionally from skill-orchestrate's Move 4 finalize sequence, documented in context/contracts/conclusion-stage.md Step 5 as the SOLE executor -- never called from Move 5's body and never twice per invocation. It already receives --session SID and --state-file pointing at the invocation's multi-state file, which carries .task_numbers, .completed_tasks, .failed_tasks, .current_statuses, .dispatch_start_ts and .cycle_count. It already resolves the output path, classifies it via lib/roadmap-preflight-lib.sh classify, and on a `generated` verdict calls roadmap-integration.sh --regenerate followed by a scoped commit of that path alone. It is the correct site to land the displaced record BEFORE the regenerate it already performs, so one pass and one commit carry both.
+
+M5. THE MOTIVATING OBSERVATION. An orchestration invocation regenerated the roadmap and committed it, but the diff was a single unrelated line -- a newly created task appearing in "Open tasks in no batch" -- because the invocation dispatched nothing: the planner returned a no_eligible_stuck stop verdict at admission, three declared predecessors being unfinished and out of batch. Nothing in the file recorded that an orchestration had happened at all. Under R1 that specific run correctly writes no record; the gap it exposed is that a SUCCEEDING run leaves no trace either, which is what this work closes.
+
+=== WHAT TO BUILD ===
+
+A. STATE SCHEMA: one new state.json key holding exactly one record. The record needs at minimum the invocation's task numbers, each task's per-invocation outcome, each task's title (see D below), the session identity, and a timestamp. Decide and document whether it sits as a new top-level key beside roadmap_milestones/roadmap_context, or nested inside roadmap_context -- noting that roadmap_context currently holds only the three prose listsec families (overview/rules/conventions), so nesting an outcome record there may be a category error. Add the schema row to whichever declaration document owns the roadmap state surface, beside the existing roadmap_milestones/roadmap_context rows.
+
+B. WRITER in scripts/orchestrate-conclusion-roadmap.sh: compose the record from the multi-state file the script already reads and land it via state-write.sh -- never a hand-rolled jq-to-tmp-and-mv rewrite of state.json, which that script exists to own. Observe CLAUDE.md's jq-command-safety rule (use select(.x == "y" | not), never the != form, which gets escaped and breaks). The write must land BEFORE the --regenerate call in the same invocation so the regenerate already performs renders the new record in the same pass and the same commit. Displacement is a REPLACE of the single record, never an append. Gate the whole write on R1's .dispatch_start_ts predicate.
+
+C. RENDERER in scripts/roadmap-integration.sh's MS_RENDER_JQ plus render_milestone_file: emit the new section from the state key, at R2's position, reusing the L/BS/O/X/BE protocol and format_task_row per M3. An absent or empty record renders NO section at all -- not an empty heading, not a placeholder -- so a store that has never had a dispatching invocation produces the file it produces today.
+
+D. OUTCOME AND TITLE CARRYING: the record stores each task's title alongside its number, rather than resolving titles at render time from active_projects. Two reasons, both load-bearing: a completed task migrates out of active_projects into the archive and would otherwise lose its title or force the renderer to widen what it reads; and a vault operation renumbers tasks, after which a stored bare number is meaningless while a stored title still reads. State explicitly in the format doc that these titles are a point-in-time snapshot and intentionally do not track later retitling.
+
+=== DESIGN QUESTIONS TO RULE ON DURING PLANNING (do not silently default) ===
+
+Q1. Does the record still get written when the roadmap preflight verdict is NOT `generated` (absent, classic, stage, unknown), where orchestrate-conclusion-roadmap.sh skips the regenerate entirely and degrades loudly at three surfaces? State-writing and file-rendering are independent concerns, and a skipped render is not obviously a reason to lose the state record -- but a record written into a store whose roadmap is hand-authored will surface only at some later migration. Rule explicitly either way and document the ruling.
+
+Q2. What outcome does the record show for a dispatching invocation whose task ended in a non-terminal exception state ([PARTIAL], [BLOCKED]) versus completed versus failed? The multi-state file distinguishes .completed_tasks from .failed_tasks, but a task that was dispatched and ended [PARTIAL] or [BLOCKED] appears in NEITHER array, so the outcome vocabulary cannot be derived from those two arrays alone -- .current_statuses is the third input that closes the gap. Fix the full vocabulary and its render order.
+
+Q3. Does a run that dispatched some tasks and refused others record only the dispatched ones, or the whole invocation roster with the refused ones marked? R1 governs whether the RECORD IS WRITTEN AT ALL (any dispatch means it is); it does not settle the record's MEMBERSHIP once written. Rule explicitly.
+
+=== CONSTRAINTS ===
+
+- Repo-agnostic: no consumer-repo-specific path or literal in any deliverable.
+- Additive. Must not change the existing rendered sections' content or relative order beyond inserting the new section at R2's position, and must not alter what the roadmap commit stages (the scoped commit of the resolved output path alone).
+- The regenerate must stay a pure function of state.json (M1). Do not make the renderer read events.jsonl, specs/.orchestration/, or git.
+- Regenerating twice from unchanged state must stay byte-identical. The record carries a timestamp, so the timestamp must come from the WRITE, never from render time, or idempotence breaks.
+- The generator refuses to overwrite a non-generated file (refuse_non_generated, a permanent property per roadmap-format.md). Do not weaken that refusal.
+- Do not edit the roadmap generator's caller contract (context/patterns/roadmap-update.md) in a way that changes an existing caller's mode; this work adds a write to one caller, it does not re-wire the caller split. Note that postflight-tool-restrictions.md's Conclusion Stage table names that contract as invoked-never-edited from the stage body; this task edits the generator and its own documented caller script, which is a different actor from the stage body, so confirm the boundary reading during planning.
+- No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md). Note the tension this creates with A, C and D: the RECORD's own payload legitimately contains task numbers as DATA, in state.json and in the rendered roadmap under specs/**, which is the primary exemption zone for both rules -- but the prose of any script comment, doc or test under agent-system/** must not cite a task number.
+- git push and pull-request creation stay prohibited for agents (rules/pr-prohibition.md).
+
+=== VERIFICATION ===
+
+A dispatching /orchestrate invocation that completes a task leaves exactly one "Previous work" record naming that task, its title and its outcome, rendered between the milestone summary table and the first milestone section. A second dispatching invocation on a different task REPLACES that record entirely: the first invocation's tasks are gone from the file and the section never holds two batches. An invocation refused at admission with zero dispatches writes nothing and leaves the prior record byte-identical -- verified against the real signal, an empty .dispatch_start_ts. A store with no record renders no section and no empty heading. Regenerating twice from unchanged state is byte-identical. The generator still refuses to overwrite a non-generated file. Every pre-existing section renders unchanged apart from the insertion. Both named test scripts cover the new section, the displacement, the zero-dispatch no-write path, and the absent-record no-section path.
+
+---
 
 ### 664. Add a /tmp sweep pass to /refresh for dead scratchpad sessions and agent-test litter
 - **Status**: [NOT STARTED]
