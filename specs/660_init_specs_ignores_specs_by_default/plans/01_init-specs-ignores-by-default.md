@@ -158,7 +158,7 @@ existing block renderers, so no consumer of it hand-writes the pattern.
 - [x] Leave `runtime_ignore_block()` and `runtime_specs_ignore_block()` output byte-identical —
       `tests/test-runtime-file-tracking.sh` Case 3 pins the former to the standards file's
       fenced block. *(completed)*
-- [x] Export the new function exactly as the two existing renderers are exported.
+- [x] Export the new function exactly as the two existing renderers are exported. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -179,36 +179,36 @@ existing block renderers, so no consumer of it hand-writes the pattern.
   byte-for-byte (the same extraction Case 3 performs).
 - The `verify-touched.sh` invocation above runs green.
 
---- *(completed)*
+---
 
-### Phase 2: Fresh-repo detection and root `.gitignore` managed write [NOT STARTED]
+### Phase 2: Fresh-repo detection and root `.gitignore` managed write [COMPLETED]
 
 **Goal**: `init-specs.sh` writes the root-level whole-tree ignore block when, and only when,
 nothing is tracked under `specs/`; an already-tracked consumer's repo root is never written to.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/init-specs.sh` immediately before editing
-      (shared with task 338).
-- [ ] Add sentinel constants for the new block — `# BEGIN managed block: specs-tree-ignore` /
+- [x] Re-read `agent-system/extensions/core/scripts/init-specs.sh` immediately before editing
+      (shared with task 338). *(completed)*
+- [x] Add sentinel constants for the new block — `# BEGIN managed block: specs-tree-ignore` /
       `# END managed block: specs-tree-ignore` — kept textually distinct from the existing
-      `runtime-file-patterns.sh` sentinel pair.
-- [ ] Insert a new Step 5b after Step 5: when not inside a git work tree, print a named SKIP and
-      do nothing (mirroring Step 6's existing `git rev-parse --is-inside-work-tree` guard).
-- [ ] When inside a work tree, capture `git ls-files -- specs/`. Non-empty => print one
+      `runtime-file-patterns.sh` sentinel pair. *(completed)*
+- [x] Insert a new Step 5b after Step 5: when not inside a git work tree, print a named SKIP and
+      do nothing (mirroring Step 6's existing `git rev-parse --is-inside-work-tree` guard). *(completed)*
+- [x] When inside a work tree, capture `git ls-files -- specs/`. Non-empty => print one
       non-actionable line pointing at `orchestrator-runtime-files.md`'s opt-in runbook section
       and touch nothing at the repo root. Empty => ensure the repo-root `.gitignore` carries the
-      sentinel-delimited block rendered by `specs_tree_ignore_block()`.
-- [ ] Reuse Step 5's three-branch idiom verbatim in shape (create when the file is absent;
+      sentinel-delimited block rendered by `specs_tree_ignore_block()`. *(completed)*
+- [x] Reuse Step 5's three-branch idiom verbatim in shape (create when the file is absent;
       replace only the region between sentinels when both are present; append preserving all
-      existing content when neither is) and the existing `atomic_write` helper.
-- [ ] Resolve the write target for this new step via `git rev-parse --show-toplevel`, so a
+      existing content when neither is) and the existing `atomic_write` helper. *(completed)*
+- [x] Resolve the write target for this new step via `git rev-parse --show-toplevel`, so a
       non-root CWD cannot strand a root-level file; fall back to the relative `.gitignore` path
-      if resolution fails, and say so in a named notice.
-- [ ] Leave Step 5 unconditional and Step 6 untouched in both postures.
-- [ ] Update the script's header comment block: the numbered step list, the non-destructive
+      if resolution fails, and say so in a named notice. *(completed)*
+- [x] Leave Step 5 unconditional and Step 6 untouched in both postures. *(completed)*
+- [x] Update the script's header comment block: the numbered step list, the non-destructive
       paragraph, and Step 5's description — whose current sentence declares writing the
       consumer's repo-root `.gitignore` out of scope, which this step changes. State the two
-      postures explicitly in the header.
+      postures explicitly in the header. *(completed)*
 
 **Timing**: 1.25 hours
 

@@ -25,21 +25,37 @@
 #      context/standards/orchestrator-runtime-files.md's "Consumer Repo Setup" for why a
 #      specs/-relative file can be delivered directly where a repo-root one cannot). Content
 #      outside the sentinels is preserved byte-for-byte, so a consumer's own hand-added ignore
-#      lines survive a refresh.
+#      lines survive a refresh. Unconditional in both postures below.
+#   5b. TWO POSTURES, gated on whether anything is already tracked under specs/:
+#       - Fresh posture (git ls-files -- specs/ is empty): writes a SEPARATE, distinctly
+#         sentinelled managed block to the consumer's own REPO-ROOT .gitignore, containing one
+#         `/specs/` line, so the whole specs/ tree is ignored from the first run -- the only
+#         placement that can make `git check-ignore -q -- specs` succeed; a specs/-relative
+#         rule cannot ignore its own parent directory. See
+#         lib/runtime-file-patterns.sh's specs_tree_ignore_block() for the full rationale and
+#         context/standards/orchestrator-runtime-files.md for the posture split.
+#       - Tracked posture (anything already tracked under specs/): the repo root is NEVER
+#         written to, and nothing is untracked. A tracked consumer that wants to switch posture
+#         follows the manual opt-in runbook in orchestrator-runtime-files.md; there is no
+#         automatic or flag-driven bulk-untrack flow.
 #   6. Untracks (git rm --cached / git rm -r --cached, NEVER plain rm) any already-tracked file
 #      under specs/ matching the ephemeral runtime-file class, leaving the change staged for the
 #      caller's own scoped commit. Never touches .orchestrator-handoff.json or bare
 #      .return-meta.json -- those are durable provenance and MUST stay tracked (belt-and-braces
-#      skip in addition to the class regex already excluding them by construction).
+#      skip in addition to the class regex already excluding them by construction). Untouched by
+#      the two-posture split above: it only ever acts on the ephemeral class, in both postures.
 #
 # Non-destructive by construction: steps 2-5 each check existence/sentinel-presence before
 # writing, and NEVER overwrite anything that already exists (specs/.gitignore's managed block is
 # the one exception to "never touch an existing file", and even there only the sentinel-delimited
-# region is rewritten -- everything outside it is preserved verbatim). Step 6 only ever stages
-# `git rm --cached` deletions; it never deletes a working-tree copy and never commits.
+# region is rewritten -- everything outside it is preserved verbatim). Step 5b applies the same
+# non-destructive, sentinel-scoped write discipline to the repo-root .gitignore, and ONLY when
+# nothing is tracked under specs/ yet -- a tracked consumer's repo root is never touched by this
+# script, by any deploy, or by any loader run. Step 6 only ever stages `git rm --cached`
+# deletions; it never deletes a working-tree copy and never commits.
 #
 # Idempotent: a second run against an already-bootstrapped repo makes no filesystem changes and
-# stages no further git changes.
+# stages no further git changes, in either posture.
 #
 # Usage:
 #   init-specs.sh [--help]
@@ -75,6 +91,12 @@ fi
 
 GITIGNORE_BEGIN="# BEGIN managed block: runtime-file-patterns.sh"
 GITIGNORE_END="# END managed block: runtime-file-patterns.sh"
+
+# Distinct sentinel pair for the repo-root whole-tree ignore block written by Step 5b below.
+# Kept textually distinct from the pair above so the two managed blocks (specs/.gitignore's
+# ephemeral-class block and the repo root's whole-tree block) are never confused.
+SPECS_TREE_GITIGNORE_BEGIN="# BEGIN managed block: specs-tree-ignore"
+SPECS_TREE_GITIGNORE_END="# END managed block: specs-tree-ignore"
 
 # atomic_write <target-path> <content-on-stdin>
 # mktemp in the SAME directory as the target (so the final `mv` is a same-filesystem rename, not
@@ -159,6 +181,56 @@ else
   echo "APPENDED managed block to existing specs/.gitignore"
 fi
 
+# ── Step 5b: fresh-repo whole-tree ignore (repo-root .gitignore) ──────────
+# A repository with nothing tracked under specs/ yet gets its whole specs/ tree ignored by a
+# managed block written to the consumer's own REPO-ROOT .gitignore -- the only placement that
+# can make `git check-ignore -q -- specs` succeed (see specs_tree_ignore_block()'s own header in
+# lib/runtime-file-patterns.sh for why). A repository that already tracks something under
+# specs/ is never written to at the root by this step -- that is the non-negotiable guarantee
+# this step exists to uphold. Mirrors Step 6's own work-tree guard below.
+if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+  echo "SKIP specs-tree-ignore: not inside a git repository"
+else
+  specs_tracked_files="$(git ls-files -- specs/ 2> /dev/null || true)"
+  if [[ -n "$specs_tracked_files" ]]; then
+    echo "SKIP specs-tree-ignore: specs/ already tracks committed files -- repo root left untouched."
+    echo "      See context/standards/orchestrator-runtime-files.md's manual opt-in runbook to switch posture."
+  else
+    repo_root="$(git rev-parse --show-toplevel 2> /dev/null || true)"
+    if [[ -z "$repo_root" ]]; then
+      echo "WARN specs-tree-ignore: could not resolve repo root via git rev-parse --show-toplevel; falling back to the relative path .gitignore" >&2
+      repo_root="."
+    fi
+    ROOT_GITIGNORE_TARGET="${repo_root}/.gitignore"
+    SPECS_TREE_BLOCK="$(specs_tree_ignore_block)"
+    if [[ ! -f "$ROOT_GITIGNORE_TARGET" ]]; then
+      { echo "$SPECS_TREE_GITIGNORE_BEGIN"; echo "$SPECS_TREE_BLOCK"; echo "$SPECS_TREE_GITIGNORE_END"; } \
+        | atomic_write "$ROOT_GITIGNORE_TARGET"
+      echo "CREATED ${ROOT_GITIGNORE_TARGET} (specs-tree-ignore managed block)"
+    elif grep -qF "$SPECS_TREE_GITIGNORE_BEGIN" "$ROOT_GITIGNORE_TARGET" && grep -qF "$SPECS_TREE_GITIGNORE_END" "$ROOT_GITIGNORE_TARGET"; then
+      existing_specs_tree_region="$(awk -v b="$SPECS_TREE_GITIGNORE_BEGIN" -v e="$SPECS_TREE_GITIGNORE_END" '
+        $0==b {flag=1; next}
+        $0==e {flag=0; next}
+        flag {print}
+      ' "$ROOT_GITIGNORE_TARGET")"
+      if [[ "$existing_specs_tree_region" == "$SPECS_TREE_BLOCK" ]]; then
+        echo "SKIP ${ROOT_GITIGNORE_TARGET} specs-tree-ignore managed block already current"
+      else
+        awk -v b="$SPECS_TREE_GITIGNORE_BEGIN" -v e="$SPECS_TREE_GITIGNORE_END" -v newblock="$SPECS_TREE_BLOCK" '
+          $0==b {print; print newblock; flag=1; next}
+          $0==e {print; flag=0; next}
+          flag {next}
+          {print}
+        ' "$ROOT_GITIGNORE_TARGET" | atomic_write "$ROOT_GITIGNORE_TARGET"
+        echo "REFRESHED ${ROOT_GITIGNORE_TARGET} specs-tree-ignore managed block"
+      fi
+    else
+      { cat "$ROOT_GITIGNORE_TARGET"; echo ""; echo "$SPECS_TREE_GITIGNORE_BEGIN"; echo "$SPECS_TREE_BLOCK"; echo "$SPECS_TREE_GITIGNORE_END"; } \
+        | atomic_write "$ROOT_GITIGNORE_TARGET"
+      echo "APPENDED specs-tree-ignore managed block to existing ${ROOT_GITIGNORE_TARGET}"
+    fi
+  fi
+fi
 
 # ── Step 6: untrack already-tracked runtime-class files ────────────────────
 # Finds any file under specs/ that git already tracks and that matches the ephemeral
