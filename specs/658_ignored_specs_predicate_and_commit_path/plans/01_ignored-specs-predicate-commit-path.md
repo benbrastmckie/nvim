@@ -2,7 +2,7 @@
 
 - **Task**: 658 - Add a shared gitignored-specs predicate and a distinct, non-failure commit-path
   outcome for an all-ignored pathspec
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: None (task 618 shares file territory in `git-commit-scoped.sh`; declared
   not-blocking by the user's ruling, never co-admitted into one batch)
@@ -199,39 +199,41 @@ modified by this plan.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Shared Predicate Library and Its Own Tests [NOT STARTED]
+### Phase 1: Shared Predicate Library and Its Own Tests [COMPLETED]
 
 **Goal**: The predicate exists in exactly one place, is registered for deployment and for the
 suite lint, and has its own test asserting both polarities plus the partial-ignore case.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/core/scripts/lib/specs-ignore-lib.sh`, structured like
+- [x] Write `agent-system/extensions/core/scripts/lib/specs-ignore-lib.sh`, structured like
   `scripts/lib/engine-written-state-paths-lib.sh`: a contract statement, the fail-open posture
   (D6), an explicit enumeration of its consumers, and a recorded list of rejected candidates.
-  Sourced never executed; sets no shell options a caller inherits; never calls `exit`.
-- [ ] Export `specs_tree_is_gitignored <repo_root>` — `git -C "<repo_root>" check-ignore -q -- specs`,
+  Sourced never executed; sets no shell options a caller inherits; never calls `exit`. *(completed)*
+- [x] Export `specs_tree_is_gitignored <repo_root>` — `git -C "<repo_root>" check-ignore -q -- specs`,
   rc 0 = ignored, any other rc = not ignored / indeterminate. This answers the GOAL sentence's own
-  repository-level question verbatim.
-- [ ] Export `path_is_gitignored <repo_root> <path>` — `git -C "<repo_root>" check-ignore -q -- "<path>"`,
+  repository-level question verbatim. *(completed)*
+- [x] Export `path_is_gitignored <repo_root> <path>` — `git -C "<repo_root>" check-ignore -q -- "<path>"`,
   same rc contract. Document in the header that this is the function the `V13` gate consults per
   pathspec, and that its index-awareness (a tracked path reports *not ignored*) is the property
-  that makes a separate tracked/untracked test unnecessary at the call site.
-- [ ] Document in the header, explicitly, why this library does **not** duplicate
+  that makes a separate tracked/untracked test unnecessary at the call site. *(completed)*
+- [x] Document in the header, explicitly, why this library does **not** duplicate
   `engine-written-state-paths-lib.sh`'s path list and must never acquire one: this library answers
-  a question about a repository's ignore configuration, not about which paths the engine writes.
-- [ ] Write `agent-system/extensions/core/scripts/tests/test-specs-ignore-lib.sh` using this
+  a question about a repository's ignore configuration, not about which paths the engine writes. *(completed)*
+- [x] Write `agent-system/extensions/core/scripts/tests/test-specs-ignore-lib.sh` using this
   corpus's existing scratch-repo harness pattern (`mktemp -d`, per-fixture `git init`), asserting:
   a tracked-`specs` repo -> `specs_tree_is_gitignored` rc 1; a wholly-ignored-`specs` repo -> rc 0;
   a repo ignoring only one task subdirectory -> rc 1 for the whole tree **and** rc 0 for
   `path_is_gitignored` on that subdirectory; a tracked-but-ignore-matching file ->
   `path_is_gitignored` rc 1 (the index-awareness property, asserted directly rather than assumed);
   and the fail-open direction — a nonexistent `repo_root` yields a non-zero rc, never rc 0.
-- [ ] Add the row `test-specs-ignore-lib.sh<TAB>unit<TAB>-` to
+  *(completed: 12 cases, all PASS)*
+- [x] Add the row `test-specs-ignore-lib.sh<TAB>unit<TAB>-` to
   `agent-system/extensions/core/scripts/tests/suite-classification.data`, matching
-  `test-engine-written-state-paths-lib.sh`'s own row shape.
-- [ ] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` to add both
+  `test-engine-written-state-paths-lib.sh`'s own row shape. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` to add both
   new paths to `manifest.json`'s `provides.scripts` array, then re-run with `--check` and confirm
-  it reports clean.
+  it reports clean. *(completed: both new paths staged via `git add` so `git ls-files` could see
+  them, --write added 2 entries, --check reports CHECK PASSED)*
 
 **Timing**: 2 hours
 

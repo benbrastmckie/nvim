@@ -1,29 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/658_ignored_specs_predicate_and_commit_path/plans/01_ignored-specs-predicate-commit-path.md",
-      "summary": "Six-phase plan adding a shared gitignored-specs predicate library, a V13 classification gate with two new non-failure exit codes (8/9) in git-commit-scoped.sh, consumer exit-code handling, and the per-operation contract for both postures in git-staging-scope.md."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 6,
   "metadata": {
-    "session_id": "sess_1795130570_6d4a1f_658",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 6,
-    "estimated_hours": 9,
-    "dependency_waves": [[1], [2], [3, 4, 5], [6]]
-  },
-  "memory_candidates": [
-    {
-      "content": "When a plan adds a new classification gate to a long-lived shell script that already has an extensive test suite, the suite itself is a first-class edit surface the research phase routinely misses: an existing case may assert exactly the behaviour the new gate reclassifies. In git-commit-scoped.sh's suite, case U5 asserted exit 2 plus 'genuinely unstaged' for an untracked ignore-matched pathspec -- precisely the shape a new ignore-aware gate turns into a non-failure outcome. The authoring rule that falls out: before planning any new classification gate, grep the covering suite for the old outcome's own assertion strings, and schedule the gate and the suite amendment as one atomic-batch phase so the phase cannot close red. Separately, in this repository a new scripts/lib/*.sh plus scripts/tests/test-*.sh pair requires three registration surfaces that produce no authoring-time signal when missed: manifest.json's provides.scripts (repaired by sync-manifest-scripts.sh --write; a missing entry means the script is never deployed), tests/suite-classification.data (a unit/integration row, enforced by lint-unit-integration-boundary.sh), and index-entries.json's line_count for any edited indexed context file.",
-      "category": "PATTERN",
-      "source_artifact": "specs/658_ignored_specs_predicate_and_commit_path/plans/01_ignored-specs-predicate-commit-path.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["classification-gate", "test-suite-coupling", "atomic-batch", "manifest-provides-scripts", "suite-classification", "plan-authoring"]
-    }
-  ],
-  "dispatch_seq": 4
+    "session_id": "sess_1795130570_6d4a1f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
