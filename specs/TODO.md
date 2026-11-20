@@ -1,5 +1,5 @@
 ---
-next_project_number: 676
+next_project_number: 677
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 676
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,667,668,669,670,671,672,673,674,675 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,667,668,669,670,671,672,673,674,675,676 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,492,509,513,518,541,561,566,594 | 439,452,472,479,491,535,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 486,571,581,588,595,641 | 454,484,492,509,518,539,541,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
@@ -183,6 +183,10 @@ next_project_number: 676
 570 [NOT STARTED] — Stop the stall signal firing on commits it cannot attribute...
 571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
 
+### Sapience
+
+676 [NOT STARTED] — Tag transcript-captured KOs with the repo tag: Sapience...
+
 ### Decidability
 
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
@@ -193,6 +197,16 @@ next_project_number: 676
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 676. Tag transcript captured kos with repo tag
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: sapience
+- **Dependencies**: None
+
+**Description**: Tag transcript-captured KOs with the repo tag: Sapience transcript-capture KOs (staged in ~/.sapience/pending_kos.jsonl by the vendor capture path, e.g. 1260 pending for nvim) carry a `project: "<name>"` field but no literal `[repo:<slug>]` substring in `provenance`, so repo-scoped retrieval (sapience-retrieve.sh's `/v1/search?source=[repo:<slug>]` filter) cannot find them even after approval; an untagged nvim-topic search returned 39 session-capture KOs vs 4 tagged. Research where a `[repo:<slug>]` tag can be injected into captured KOs' provenance (the capture/extract/upload path is vendor-owned under ~/.sapience/ and overwritten by auto-update; options include a post-extract/pre-upload rewrite of pending_kos.jsonl owned by the sapience extension, a wrapper at review/upload time, or a vendor ask), keeping the slug resolution identical to sapience-remember.sh's (basename of the parent checkout's git toplevel, mapped from the KO's `project`/capture.projects path_prefix), and whether already-uploaded untagged KOs can be backfilled given there is no delete API. Edit target is the sapience extension source store (agent-system/extensions/sapience)
+
+---
 
 ### 675. Rewrite the branch-strategy documentation to state the implemented batch-worktree contract
 - **Status**: [NOT STARTED]
@@ -533,6 +547,22 @@ The design must therefore not assume worktrees are universal: every element abov
 - **Dependencies**: None
 
 **Description**: Re-site the branch-aware orchestration batch in the authored roadmap so it no longer precedes its own prerequisites
+
+=== FINDING, 2026-11-20 (written by amend_branch_topology_per_batch_worktree_squash; checked against live specs/state.json, not inferred from a commit subject) ===
+
+THE NAMED INSTANCE IS ALREADY APPLIED. Commit 7231ccbe2 ("roadmap: maintenance pass (re-site the branch-aware batch after its prerequisites)") moved the branch-aware batch from position 3 to position 19 under milestone M1. Its member's three non-terminal prerequisites sit at positions 9 (git_commit_scoped_gate_refusal_diagnostic), 15 (stage_regenerated_derived_files_in_phase_commits) and 18 (phase_commit_boundary_mechanical_check), all earlier; its other two dependencies are completed. Checked against the required outcome:
+- The batch sits after the last batch holding one of its prerequisites: YES (19 after 18).
+- No task is a member of two batches: YES (no task_id repeats across roadmap_milestones[].batches[]).
+- No batch lost a member without re-homing: YES (the sorted list of all batch members is identical before and after the commit, 127 entries).
+- The batch kept its --hard flag: YES.
+
+THE PRECISE REMAINDER IS THE SWEEP. This record also requires a sweep for the same inversion elsewhere under the milestone. Run now, the sweep finds exactly one: manifest_registration_dropped_from_phase_commit sits in the batch at position 8 and depends on snapshot_artifacts_contaminate_phase_commits, which sits in the batch at position 9. That edge is Edge 2 of specs/decisions/commit-layer-cluster-ordering.md. Whether to re-site, and which side moves, is the roadmap-authoring judgment this record describes; nothing was changed here.
+
+ONE FURTHER CHANGE SINCE THIS RECORD WAS WRITTEN. The branch-aware batch's single member has been narrowed to its generated-file-declaration element; its branch-topology elements moved to eight new tasks (specs/decisions/batch-worktree-isolation-and-task-squash-landing.md, "Successor tasks"), none of which is sited in any batch yet. The batch's --hard flag, its position and its rationale were authored for the superseded scope and should be re-judged in the same /roadmap pass that sites the new tasks.
+
+RECOMMENDED DISPOSITION: either narrow this record to the one-inversion remainder above, or abandon it and let the next /roadmap pass absorb both points. It was NOT abandoned by the task that wrote this finding; abandonment is the user's /task --abandon.
+
+=== ORIGINAL DESCRIPTION (unchanged below) ===
 
 The authored milestone batch that proposes the branch-aware orchestration and squash-landing work is sited at a position that runs BEFORE every batch holding its prerequisites. Its rendered dispatch command is therefore undispatchable from its authored position, and an operator who runs it as printed gets an admission refusal rather than work.
 
@@ -982,67 +1012,49 @@ Final acceptance check: regenerate the ROADMAP.md of /home/benjamin/Projects/Sap
 
 ---
 
-### 655. Make orchestration branch-aware with a per-invocation branch and squash landing
+### 655. Declare generated paths so they collapse in review
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 513, Task 517, Task 553, Task 654, Task 657
 
-**Description**: Make orchestration branch-aware with a per-invocation branch and squash landing
+**Description**: Declare generated paths so they collapse in review
 
-SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in /home/benjamin/.config/nvim (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh.
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.
 
-=== BINDING CONSTRAINT, NOT RE-OPENABLE ===
+SCOPE: THE GENERATED-FILE DECLARATION ONLY. This record's slug still names branch-aware orchestration and squash landing; that work is no longer here. See "WHAT MOVED" below.
 
-Every dispatch runs in the repository's SINGLE working tree. Per-dispatch `git worktree` isolation was built, was found to cause silent data loss, was removed rather than narrowed, and the removal was formally re-opened under new evidence and CONFIRMED. See specs/decisions/worktree-isolation-removal-verdict.md and specs/decisions/worktree-isolation-removal-reaffirmation.md. This task MUST NOT propose, design, or implement worktree isolation, and MUST NOT route around that verdict. Concurrency safety rests on declared file_scope, dependencies[] edges, and the contention inputs already in service.
+=== WHAT TO BUILD ===
 
-The direct consequence, which shapes the whole design: a single working tree can be checked out on exactly one branch at a time, so a branch per TASK is unachievable for a multi-task batch. The settled design is therefore a branch per INVOCATION.
+A repo-agnostic mechanism declaring machine-written paths so they collapse by default in review. `.gitattributes` with `linguist-generated=true` is the mechanism; the declaration site, and whether it is generated or hand-maintained, is the design question. The system already knows which paths it generates -- task-management artifacts under specs/, the deployed .claude/** tree, the regenerated task list and roadmap -- so it can declare them rather than asking the operator to enumerate them. It must not change what is COMMITTED, only how it RENDERS in review.
 
-=== MEASURED EVIDENCE -- RE-DERIVABLE, DO NOT RE-DERIVE FROM SCRATCH ===
+Inputs to design for:
+- `.claude-extensions.json` top-level keys, documented in context/standards/repo-level-declarations.md, are the existing home for a per-repository declaration (specs/decisions/commit-layer-cluster-ordering.md, "Inputs to the branch feature", item 5).
+- A repository may ignore `specs/` wholly or in part; a declaration for an ignored path must be harmless there.
+- Under the batch-worktree topology, and on that record's own unconfirmed assumption about bookkeeping commits (its "Unconfirmed assumption" section; the user has not ruled), the per-task squash commit carries code only wherever `specs/` is tracked, so the generated state files reach review as separate bookkeeping commits, not inside the squash. Design the declaration for the review surface a reader actually sees: the integration branch's range.
 
-GAP 1 -- orchestration has ZERO branch awareness. In agent-system/extensions/core:
-- `grep -rn "git checkout -b\|git switch -c" scripts/ hooks/` returns exactly ONE hit: git-snapshot.sh, inside its `--branch` rollback-snapshot path. That is a recovery feature, not a workflow.
-- `grep -rn "rev-parse --abbrev-ref" scripts/` returns four hits, three in scripts/tests/, the fourth in git-snapshot.sh saving the original branch for its revert.
-- Nothing in orchestrate-cycle-plan.sh, orchestrate-cycle-postflight.sh, git-commit-scoped.sh or git-commit-phase.sh reads, asserts, or creates a branch. Every phase commit lands on whatever branch the operator happened to leave checked out.
+=== WHAT MOVED ===
 
-GAP 2 -- the written Branch Strategy is aspirational prose with no mechanical backing. context/standards/git-workflow-narrative.md's "## Branch Strategy" section is eleven lines: "Work on `main` or feature branches", then "### Task Branches (Optional)" naming a `task-{N}-{slug}` convention. Optional, unenforced, unverified. rules/git-workflow.md specifies commit GRANULARITY in detail -- Commit Timing, the Commit-Per-Green-Substep Mandate -- and says nothing about branch TARGET.
+Every branch-topology element this record used to carry is superseded by specs/decisions/batch-worktree-isolation-and-task-squash-landing.md, which amends specs/decisions/branch-topology-and-landing-strategy.md, and is owned by the task named here:
+- Admission-time starting-branch verification, and per-invocation branch creation: `integration_branch_admission_and_batch_worktree`.
+- Phase commits landing on the invocation's branch: `two_root_contract_dispatch_and_commit_scripts`, with `two_root_contract_in_hooks` and `two_root_classification_of_remaining_consumers`.
+- Per-task squash landing: `per_task_attribution_squash_landing`.
+- Failure and partial retention: `per_task_attribution_squash_landing` (the branch is left intact on a refusal) and `batch_worktree_cleanup_retention_orphan_report` (retention and cleanup).
+- Documentation parity for the branch strategy: `branch_topology_documentation_parity`.
+Do not build any of those here.
 
-GAP 3 -- measured consequence in a consumer repository. One long-lived branch accumulated 2150 commits ahead of the release branch: 3461 files, +893,545/-19,420. Its open pull request sat at zero reviews for three days, against an unintended base branch. Four earlier per-task branches in the same repository all fork from one identical stale commit because nothing re-pointed them, leaving all four 2150 commits behind the live line. Of those 893,545 insertions, roughly 250,000 are generated or vendored: two hunspell dictionaries at 99,171 lines, dated measurement-run JSON at roughly 70,000, task-management artifacts at 64,641, a baseline ledger at 39,544, a single test fixture at 22,099. The failure mode is repo-agnostic; no part of it depends on that repository's specifics.
+=== CARRIED STATE TO CORRECT AT PLAN TIME ===
 
-=== WHAT TO BUILD (repo-agnostic throughout: no literal branch name, no consumer-repo path, in any deliverable) ===
-
-A. ADMISSION-TIME STARTING-BRANCH VERIFICATION, in orchestrate-cycle-plan.sh's preflight, beside the existing lock probe and queue-check gates. Resolve the intended integration branch from CONFIGURATION, never a literal: a per-repo declaration site, falling back to the current branch with a loud advisory when undeclared. Follow the advisory-vs-blocking posture the existing predispatch-review defect classes already establish rather than inventing a new one. The depended-on reconciliation task may have ruled that this element also satisfies the dispatch starting-position reverification task -- read its decision record and honor that ruling.
-
-B. PER-INVOCATION BRANCH CREATION, deterministic and idempotent: one branch per orchestrate invocation, cut from the resolved integration branch, named from the invocation's own session identity. Reused rather than recreated when an invocation resumes. Must interact correctly with the existing task-lock, session-registry and orchestration-queue machinery, and must not disturb the MAX_TASKS batch cap or the batching-by-default doctrine in context/patterns/batch-orchestration-guardrails.md -- preserving batching is a design requirement, since batching is that document's stated default way to work the system.
-
-C. PHASE COMMITS LAND ON THAT BRANCH, with the existing one-commit-per-phase rule and Commit-Per-Green-Substep Mandate granularity fully preserved. Additive: no change to commit SCOPE, pathspec containment, or message convention -- only to branch target. Phase commits from different tasks in one batch interleave on the shared branch, so each commit must remain attributable to its own task; the existing `task {N}: ...` message convention already supplies that, and the design must not weaken it, because element D depends on it.
-
-D. PER-TASK SQUASH LANDING at each task's own [IMPLEMENTING] -> [COMPLETED] transition in orchestrate-cycle-postflight.sh: collapse that task's own task-tagged commit range from the invocation branch into ONE commit on the integration branch, message `task {N}: {title}`, with the session identity and the phase list in the body so per-phase detail survives as prose rather than as commits. Per-task ranges on a shared branch are the central mechanical problem of this element -- solve it from commit attribution, not from assuming contiguity. Constraints: never a retroactive rewrite of an already-pushed branch; respect guard-destructive-git.sh (no bare amend, no HEAD-moving reset while another writer is live); prefer `git merge --squash` over interactive rebase, which this environment does not support (`git rebase -i` is unavailable).
-
-E. FAILURE AND PARTIAL RETENTION: a task ending [PARTIAL], [BLOCKED] or failed leaves its commits on the invocation branch un-squashed, so a later invocation resumes from them. Only a clean completion squashes. Define explicitly what happens to an abandoned task's commits and to an invocation branch whose tasks have all landed. State the disposition of a branch holding both a completed task's already-squashed range and a failed task's retained range.
-
-F. GENERATED-FILE DECLARATION for reviewability: a repo-agnostic mechanism declaring machine-written paths so they collapse by default in review (`.gitattributes` with `linguist-generated=true` is the mechanism; the declaration site and whether it is generated or hand-maintained is the design question). The system already knows which paths it generates -- task-management artifacts under specs/, the deployed .claude/** tree, the regenerated task list and roadmap -- so it can declare them rather than asking the operator to enumerate them. Must not change what is COMMITTED, only how it RENDERS in review.
-
-G. DOCUMENTATION PARITY: replace context/standards/git-workflow-narrative.md's "## Branch Strategy" section with the mechanically-backed contract this task implements, and add the branch-target rule to rules/git-workflow.md beside its existing granularity rules. A contract that the scripts enforce but the rules do not state is the defect GAP 2 names; do not reproduce it in the other direction.
+- `file_scope` still lists the seven files of the superseded scope (two orchestration scripts, two commit scripts, one rule file, two standards documents). It was left unchanged because this description does not fix which files the declaration touches. Re-declare it from the plan, file by file; until then it over-claims territory on the commit scripts.
+- `dependencies` still lists the predecessors of the superseded scope. They were left in place; the amending record's Edges section states which of them this scope still needs.
 
 === CONSTRAINTS ===
 
-- Repo-agnostic: no literal branch name and no consumer-repo-specific path in any deliverable. Integration-branch identity and branch naming come from configuration.
-- git push and pull-request creation stay prohibited for agents (rules/pr-prohibition.md). The deliverable hands the operator a squashed commit on the integration branch; the operator merges to the release branch themselves.
-- Must not break the existing lock, session-registry, queue, containment, or snapshot machinery. Additive wherever possible.
-- No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md).
-- The depended-on reconciliation task's rulings are INPUTS to this task, not suggestions: read its decision record during research and honor its prerequisite, revision and detector-scope rulings.
-- Size realistically. This spans two orchestration scripts, two commit scripts, one rule file and two standards documents, and it changes a contract every phase commit in every repository flows through. Expect systematic refactoring; do not plan it as a one-file change.
+- Repo-agnostic: no literal branch name and no consumer-repo-specific path in any deliverable.
+- git push and pull-request creation stay prohibited for agents (rules/pr-prohibition.md).
+- Must not change commit scope, pathspec containment, or staging. This is a rendering declaration.
 
-VERIFICATION. A multi-task invocation produces one branch, phase commits from every task on it, and one squashed commit per completed task on the integration branch with its phase list in the body. A task failing mid-batch leaves its commits on the branch while its sibling still lands. An invocation started from the wrong branch is caught at admission. The declared generated paths render collapsed in review. The rules and the narrative state the same contract the scripts enforce.
-=== THE BINDING CONSTRAINT BLOCK ABOVE IS SUBJECT TO A LATER RULING -- READ THAT RULING FIRST ===
-
-This task now depends on `branch_topology_ruling_and_milestone_automation`, whose Element 1 is an explicitly re-opened ruling on branch granularity (per invocation, per milestone, per task), merge strategy, landing mechanics AND worktree isolation itself, carrying written authority to revise this description. Read that task's decision record BEFORE planning and treat it as binding: wherever it differs from the branch-per-invocation design or from the "BINDING CONSTRAINT, NOT RE-OPENABLE" block stated above, the ruling wins and this description is stale at that point. Do not re-derive the topology question here, and do not proceed on the settled-design premise above without first checking what the ruling actually settled.
-
-RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-layer-cluster-ordering.md): This task is not a cluster member; this block is a pointer. Read the decision record before planning. ORDERING: this task now depends on phase_commit_boundary_mechanical_check (513), which carries an expected-ref parameter defaulting to HEAD; pass the resolved work branch to it and do not build a second branch-target detector. Through branch_topology_ruling_and_milestone_automation (657) this task also follows the whole commit-layer chain. RULED: neither source-store commit scoping nor the third containment site is a hard prerequisite for branch targeting. That ruling changes if the landing commit is routed through git-commit-scoped.sh --task in a second repository. INPUTS THIS TASK MUST DESIGN FOR: (a) a source-store path committed by commit-source-store-path.sh lands on whatever branch the second repository has checked out, so "phase commits land on the work branch" is not true for those commits unless designed for, and that script is not in this task's file_scope; (b) switching the single shared working tree to land a squash carries concurrent siblings' uncommitted edits across the switch; (c) specs/state.json and specs/TODO.md ride in every task's commits, so per-task ranges on a shared branch are not separable by path for those two files; (d) git-snapshot.sh --branch moves HEAD off the work branch during a snapshot.
-=== BRANCH-TOPOLOGY RULING HAS LANDED ===
-
-The branch-topology ruling named above has landed: specs/decisions/branch-topology-and-landing-strategy.md (rulings R1-R8). Per-invocation branch creation and git merge --squash landing, both named in the BINDING CONSTRAINT and WHAT TO BUILD blocks above, are SUPERSEDED by rulings R1 and R2: the hot-path branch is whatever single branch is already checked out (verified, never created, at any granularity), and a milestone's review history is built by git commit-tree plus compare-and-swap git update-ref onto refs/heads/milestone/<id>, never by checkout or git merge --squash. Element A's admission-time check (that the checked-out branch matches a declared integration branch) survives unchanged under this ruling. This task now owns: the repo-level-declarations.md schema row for the integration-branch declaration key (ruling R4 fixes the key's name and shape; this task documents and enforces it), and the admission-time assertion that the checked-out branch matches the declared value. The stale BINDING CONSTRAINT, NOT RE-OPENABLE block above is superseded by this ruling, per this description's own trailing deference paragraph ("wherever it differs ... the ruling wins and this description is stale at that point").
+VERIFICATION. The declared generated paths render collapsed in review. Nothing that was committed before is committed differently. In a repository that ignores `specs/`, the declaration is inert and produces no warning.
 
 ---
 
