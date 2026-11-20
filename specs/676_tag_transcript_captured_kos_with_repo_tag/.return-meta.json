@@ -1,9 +1,127 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/676_tag_transcript_captured_kos_with_repo_tag/summaries/01_tag-pending-kos-repo-tag-summary.md",
+      "summary": "All 4 phases completed: new sapience-tag-pending.sh ledger-tagging script, its 14-case fixture test suite plus extended lockstep guard, corrected population census and operational sequencing docs, and a clean redeploy with a scoped verification sweep. Live ledger never mutated; --write/sapience sync/sapience review left to the operator."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added agent-system/extensions/sapience/scripts/sapience-tag-pending.sh, a dry-run-by-default script that injects [repo:<slug>] into pending Sapience transcript-capture KOs' provenance before sapience review posts them, with a 14-case fixture test suite, an extended lockstep guard, corrected domain docs, and a clean redeploy (41/0)."
+  },
+  "modified_files": [
+    "agent-system/extensions/sapience/scripts/sapience-tag-pending.sh",
+    "agent-system/extensions/sapience/manifest.json",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-tag-pending.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh",
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/EXTENSION.md",
+    "agent-system/extensions/sapience/README.md",
+    "agent-system/extensions/sapience/index-entries.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When rewriting one field of a JSON-lines (JSONL) record in place with jq (`jq --arg v \"$x\" '.field = $v'`), always pass `-c` (compact mode). Without it, jq pretty-prints the output across multiple lines, which silently breaks a one-JSON-object-per-line file's line-count invariant and corrupts any later line-based read of the file. Caught by a fixture idempotence test, not by inspection.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/676_tag_transcript_captured_kos_with_repo_tag/summaries/01_tag-pending-kos-repo-tag-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "jq",
+        "jsonl",
+        "compact-mode",
+        "ledger",
+        "idempotence"
+      ]
+    },
+    {
+      "content": "When a script rewrites a shared ledger/queue file another process also reads-and-rewrites, take the SAME named flock the other process uses around the WHOLE read-mutate-write cycle (acquired before the read, released after the write), not just around the final write. Locking only the write leaves a read-then-lose-the-race window open against a concurrent writer.",
+      "category": "PATTERN",
+      "source_artifact": "specs/676_tag_transcript_captured_kos_with_repo_tag/summaries/01_tag-pending-kos-repo-tag-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "flock",
+        "ledger",
+        "concurrency",
+        "lost-write-race",
+        "atomic-write"
+      ]
+    },
+    {
+      "content": "verify-deploy.sh's --gate8-touched narrowing falls back to the full, unnarrowed run-all.sh battery (the 'full-sweep sentinel') whenever ANY one of the given touched paths has no suite_selection_select-resolvable covering suite -- e.g. a brand-new script with no test suite yet, or any markdown file (which structurally has none). Scope --gate8-touched to only the paths that DO have covering suites to get an actually-narrowed roster; handle the remaining paths via their own named checks run directly.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/676_tag_transcript_captured_kos_with_repo_tag/summaries/01_tag-pending-kos-repo-tag-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "verify-deploy",
+        "gate8-touched",
+        "full-sweep-sentinel",
+        "suite_selection_select",
+        "batch-gate-deferral"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "jq compact-mode rewrite of JSONL records",
+      "value": "jq --arg v \"$x\" '.field = $v' without -c pretty-prints the output across multiple lines by default, which corrupts a one-JSON-object-per-line file (e.g. a JSONL ledger) on any subsequent line-based read. Always pass -c when rewriting a single field of a JSONL record in place.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/sapience/scripts/sapience-tag-pending.sh"
+    },
+    {
+      "subject": "extract_local.py's _ledger_lock default lock path",
+      "value": "extract_local.py's _ledger_lock class (default name='ledger') takes a blocking exclusive flock on ~/.sapience/.ledger.lock around every load-update-rewrite of pending_kos.jsonl/extracted.json. An extension-owned script touching the same ledger must take the identical lock to avoid the exact lost-write race this class was built to prevent (Ari Sklar #8, 2026-09-19).",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "~/.sapience/extract_local.py"
+    },
+    {
+      "subject": "Sapience vault KO surface has no update or delete",
+      "value": "The vault's knowledge-object surface offers create (POST /ingest-kos) and read (/v1/search, /v1/ko/subjects) only; DELETE /v1/ko/<hash>, DELETE /v1/kos/<hash>, and POST /v1/ko/<hash>/delete all return 404. Every posted KO's provenance -- tagged or not -- is permanent; manual removal in the web app is the only remedy, and it deletes rather than retags.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.9
+    },
+    {
+      "subject": "Sapience transcript-capture live pipeline on this machine",
+      "value": "The live local transcript-extraction pipeline is ~/.sapience/extract_local.py, selected by ~/.sapience/config.json's \"backend\": \"anthropic\" key -- not upload.py, which extract_local.py merely imports for a handful of shared helpers while defining its own independent, dead-for-this-machine _chunk()/post_kos()/main() path.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "~/.sapience/extract_local.py"
+    },
+    {
+      "subject": "verify-deploy.sh gate8 touched-path narrowing fallback",
+      "value": "verify-deploy.sh's --gate8-touched narrowing falls back to the full unnarrowed run-all.sh battery whenever any given touched path has no suite_selection_select-resolvable covering suite -- including a brand-new not-yet-tested script or any markdown file. Scoping --gate8-touched to only the paths that do have covering suites avoids the fallback.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/verify-deploy.sh"
+    },
+    {
+      "subject": "Gate 8 contention under multi-task /orchestrate batch",
+      "value": "Under a heavy concurrent multi-task /orchestrate batch, verify-deploy.sh --only-gate 8 can report [FAIL] with a [CONTENTION] 1-minute-load-average line even when every underlying suite in the narrowed roster actually passes -- confirmed by re-running the identical --only roster directly via run-all.sh with no wrapper and no artificial per-gate deadline (34 passed, 0 failed). Treat such a FAIL as a contention/timeout artifact pending direct re-confirmation, not an automatic regression signal.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.75
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795210345_ed54aa",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 4,
+    "phases_total": 4
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

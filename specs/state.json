@@ -137,6 +137,11 @@
           "path": "specs/676_tag_transcript_captured_kos_with_repo_tag/plans/01_tag-pending-kos-repo-tag.md",
           "type": "plan",
           "summary": "4-phase plan: tagging script, fixture test suite plus lockstep registration, corrected population census, redeploy and scoped gate sweep."
+        },
+        {
+          "path": "specs/676_tag_transcript_captured_kos_with_repo_tag/summaries/01_tag-pending-kos-repo-tag-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 4 phases, verification results, decisions, and operator follow-up."
         }
       ],
       "next_artifact_number": 2,
@@ -149,7 +154,8 @@
         "agent-system/extensions/sapience/scripts/sapience-tag-pending.sh",
         "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh",
         "agent-system/extensions/sapience/scripts/tests/test-sapience-tag-pending.sh"
-      ]
+      ],
+      "completion_summary": "Added agent-system/extensions/sapience/scripts/sapience-tag-pending.sh, a dry-run-by-default script that injects [repo:<slug>] into pending Sapience transcript-capture KOs' provenance before sapience review posts them, with a 14-case fixture test suite, an extended lockstep guard, corrected domain docs, and a clean redeploy (41/0)."
     },
     {
       "project_number": 675,
