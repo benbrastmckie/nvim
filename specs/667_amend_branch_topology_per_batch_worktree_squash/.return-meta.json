@@ -1,0 +1,70 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md",
+      "summary": "Evidence and recommended rulings for amending R1-R3 and R5 to per-batch worktree side branches with per-task attribution landing; reproduces D1/D2/D4 and the surviving wrong-root defect, rejects the symlink candidate, rules Lean repositories to opt-out."
+    }
+  ],
+  "next_steps": "Run /orchestrate 667 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1795203458_188c22_667",
+    "agent_type": "general-research-agent",
+    "duration_seconds": 760,
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 10
+  },
+  "modified_files": [
+    "specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md",
+    "specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_two-root-consumers.tsv"
+  ],
+  "user_decision": {
+    "question": "In a repository where specs/ is tracked, may task-bookkeeping commits (research, plan, phase-marker, state) keep landing directly on the integration branch between the per-task squash commits, or must each task's state and artifact changes be held uncommitted and folded into its single squash commit?",
+    "options": [
+      "Bookkeeping commits land directly on the integration branch, as today; the squash commit carries code only",
+      "Hold each task's specs/ changes uncommitted in the primary tree and fold them into the task's squash commit"
+    ],
+    "recommended": "Bookkeeping commits land directly on the integration branch, as today; the squash commit carries code only",
+    "blocking": false
+  },
+  "claim_invalidations": [
+    {
+      "declaration_names": ["milestone-ref-land.sh", "merge-base --is-ancestor"],
+      "kind": "refutation",
+      "claim": "milestone-ref-land.sh --verify's ancestry assertion cannot hold after the first landing: a three-landing replay of the script's own primitives passes once and fails twice while tree equality passes all three times and fails on a deliberately unlanded commit.",
+      "evidence_path": "specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md"
+    },
+    {
+      "declaration_names": ["specs/ and .claude/ are gitignored"],
+      "kind": "refutation",
+      "claim": "specs/ is tracked in this repository (git check-ignore matches only /.claude/), so a fresh worktree carries a HEAD-stale specs/ copy and the symlink candidate cannot apply to it.",
+      "evidence_path": "specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md"
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "A directory-only gitignore pattern (trailing slash, e.g. /.claude/ or /specs/) does not match a symlink of the same name: the link shows as untracked, dirties the tree and blocks `git worktree remove`. A slashless pattern in the shared $GIT_COMMON_DIR/info/exclude covers it for every worktree. Separately, `git worktree remove` without --force refuses on modified and untracked files but NOT on ignored files, which it deletes silently.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["git worktree", "gitignore", "symlink", "info/exclude", "worktree remove"]
+    },
+    {
+      "content": "To land one task's work from a branch shared by interleaved tasks, `git merge --squash <end commit>` co-lands sibling commits; select the task's commits by subject and `git cherry-pick -n` them, then commit once. Verify by blob equality over the task's own path set (full-tree equality breaks once the target carries anything else). A squash-landed branch is refused by `git branch -d`; `git update-ref -d <ref> <proven-tip>` deletes it by compare-and-swap, so a branch that advanced after its proof cannot be deleted.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["squash landing", "cherry-pick", "update-ref", "tree equality", "batch branch"]
+    },
+    {
+      "content": "guard-destructive-git.sh decides dirtiness with `git status --porcelain` in the hook's own process directory and does not parse `cd` or `git -C` in the command text, so commands aimed at another repository or worktree are judged by the session tree's state: blocked when the session tree is dirty, allowed when it is clean. Scratch-fixture git experiments must avoid whole-tree staging and working-tree discard verbs for this reason.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["guard-destructive-git", "hook cwd", "worktree", "fixture", "git -C"]
+    }
+  ]
+}

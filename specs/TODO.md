@@ -114,7 +114,7 @@ next_project_number: 668
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 665 [NOT STARTED] — Record the last dispatching orchestration batch in a...
 666 [NOT STARTED] — Re-site the branch-aware orchestration batch in the authored...
-667 [NOT STARTED] — Amend branch-topology rulings R1-R3 and R5: per-batch...
+667 [RESEARCHED] — Amend branch-topology rulings R1-R3 and R5: per-batch...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -187,10 +187,11 @@ next_project_number: 668
 ## Tasks
 
 ### 667. Amend branch topology per batch worktree squash
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
+- **Research**: [667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md]
 
 **Description**: Amend branch-topology rulings R1-R3 and R5: per-batch worktree side branches with per-task squash landing onto the long-lived feature branch
 
@@ -212,9 +213,11 @@ Read specs/decisions/worktree-isolation-removal-verdict.md and specs/decisions/w
 - Postflight marking tasks completed while 18 and 10 commits sat stranded on unmerged branches. Closed only if landing is verified strictly before the completion status is written (Element 4).
 - Also engage the reaffirmation record's repo-scanning-pollution hazard: a worktree directory inside or beside the repository is seen by repo-wide greps, lints and gates. State where the worktree lives and why scans do not see it.
 
-=== DEFECTS IN THE CURRENTLY BUILT MECHANISM (read from the script, NOT yet reproduced -- reproduce before relying on them) ===
+=== DEFECTS IN THE CURRENTLY BUILT MECHANISM (read from the script; D1 is now CONFIRMED by live reproduction, D2-D4 remain script-read-only -- reproduce those before relying on them) ===
 
-D1. milestone-ref-land.sh --verify asserts git merge-base --is-ancestor HEAD refs/heads/milestone/<id>, but the landed commit is built by git commit-tree with a single parent (the old milestone tip, or the integration-branch tip on first landing). HEAD is therefore an ancestor only on a first landing under the undeclared-integration-branch fallback, where the parent IS HEAD. Every later landing, and any landing with a declared integration branch distinct from the work branch, should fail verify. Live state consistent with this: master is not an ancestor of refs/heads/milestone/M1 and sits 10 commits past it.
+D1. CONFIRMED BY LIVE REPRODUCTION, 2026-11-20, in a deploy consumer repository with integration_branch undeclared. milestone-ref-land.sh --verify asserts git merge-base --is-ancestor HEAD refs/heads/milestone/<id> (around script line 97), but the landing mode in the same script builds each landed commit with git commit-tree "$tree" -p "$parent", where parent="$old_tip" (the PREVIOUS MILESTONE TIP) whenever the ref already exists, falling back to the integration-branch tip only when the ref does not yet exist. Only the FIRST landing therefore has the work branch's HEAD as its parent, and only the first can satisfy the assertion; every later landing is parented on the milestone chain, which has by then diverged from the work branch, so the assertion is false PERMANENTLY -- not merely on a declared-integration-branch mismatch. Reproduced chain on refs/heads/milestone/M1 across a single four-landing batch: 2fd45e4e (parent = then-HEAD of the work branch, PASSED verify) <- 73ad8c0e (parent 2fd45e4e, FAILED) <- 6becef12 (parent 73ad8c0e, FAILED) <- c33db2b9 (parent 6becef12, FAILED). The landed trees were CORRECT throughout: every deliverable blob carried by the three failing landings was byte-identical between refs/heads/milestone/M1 and the work branch at the moment verify ran, while verify reported "task's work has not landed". This is a false-negative assertion, not a real landing failure.
+
+D1 IMPACT, measured rather than predicted: the orchestrate postflight treats a verify failure as grounds to refuse the completion status write, leaving the task at its in-flight status and advising "Re-run to retry the landing". That advice is unreachable for this failure mode -- each retry lands again and diverges the chain further -- so two tasks whose every plan phase was closed, whose work was committed, and whose handoff validation passed were stranded at [IMPLEMENTING] with no mechanical route to [COMPLETED]. Element 4's TREE EQUALITY verdict is therefore load-bearing for basic correctness, not only for squash semantics. Additionally rule on the postflight's own response: both the refusal and its retry message need a verdict, since the message as written sends an operator into an unbounded retry loop. A fixed check must still FAIL when work genuinely did not land -- demonstrate that with a deliberate negative fixture, because a check that cannot fail is worse than this one.
 D2. Under the fallback the first landing parents on HEAD itself, so refs/heads/milestone/M1 is master's full per-phase history plus one empty-diff commit; nothing is squashed.
 D3. integration_branch is undeclared in this repository's .claude-extensions.json and the admission-time check is unbuilt, so nothing verifies the starting branch.
 D4. The milestone ref is a parallel history: the work branch keeps every phase commit, so merging the ref back duplicates content.
