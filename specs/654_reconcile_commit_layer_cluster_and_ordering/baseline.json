@@ -179,5 +179,119 @@
     "535_false_sentence": "still present at git-staging-scope.md:365",
     "536_commit_source_store_path": "present",
     "edge_targets_not_started": true
+  },
+  "audit": {
+    "edges_present": [
+      {
+        "target": 535,
+        "pred": 567,
+        "present": true
+      },
+      {
+        "target": 486,
+        "pred": 541,
+        "present": true
+      },
+      {
+        "target": 501,
+        "pred": 570,
+        "present": true
+      },
+      {
+        "target": 536,
+        "pred": 524,
+        "present": true
+      },
+      {
+        "target": 553,
+        "pred": 536,
+        "present": true
+      },
+      {
+        "target": 657,
+        "pred": 553,
+        "present": true
+      },
+      {
+        "target": 655,
+        "pred": 513,
+        "present": true
+      }
+    ],
+    "needs_edge": [
+      {
+        "n": 486,
+        "in_edge": true
+      },
+      {
+        "n": 501,
+        "in_edge": true
+      },
+      {
+        "n": 524,
+        "in_edge": true
+      },
+      {
+        "n": 541,
+        "in_edge": true
+      },
+      {
+        "n": 553,
+        "in_edge": true
+      },
+      {
+        "n": 567,
+        "in_edge": true
+      },
+      {
+        "n": 570,
+        "in_edge": true
+      }
+    ],
+    "needs_revision": [
+      {
+        "n": 513,
+        "heading": true
+      },
+      {
+        "n": 535,
+        "heading": true
+      },
+      {
+        "n": 536,
+        "heading": true
+      },
+      {
+        "n": 592,
+        "heading": true
+      }
+    ],
+    "unaffected": [
+      {
+        "n": 508,
+        "deps_same": true,
+        "desc_same": true
+      },
+      {
+        "n": 517,
+        "deps_same": true,
+        "desc_same": true
+      }
+    ],
+    "audited_at": "2026-11-20",
+    "all_pass": true,
+    "outside_specs_modified_by_this_task": "none (git status --short -- agent-system .claude is empty; commits 45aa272dc..335d2ed88 touch only specs/)",
+    "validate_state_deep_final": {
+      "exit_status": 0,
+      "passed": 21,
+      "warnings": 10,
+      "failed": 0
+    },
+    "verify_touched": {
+      "exit_status": 0,
+      "result": "98 passed, 0 failed; 58 suites selected, 3 paths owed",
+      "caveat": "The touched set it derived was the ten uncommitted working-tree paths, nine of them not this task's (sibling plan and return-meta files, .claude-extensions.json, .pid, shared event logs). This task's own committed files were not in the set."
+    },
+    "full_gate_set": "deferred to the batch-level stage at orchestration close; not run in this dispatch"
   }
 }

@@ -230,18 +230,18 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 5: Ruling-to-State-Change Audit [NOT STARTED]
+### Phase 5: Ruling-to-State-Change Audit [COMPLETED]
 
 **Goal**: Show that no ruling is missing its state change, and close the task's verification obligation.
 
 **Tasks**:
-- [ ] For each NEEDS EDGE member (486, 501, 524, 541, 553, 567, 570), confirm with jq that it appears as target or predecessor in at least one of the seven edges present in `state.json`.
-- [ ] For each NEEDS REVISION member (513, 535, 536, 592), confirm its description carries the Phase 3 heading line.
-- [ ] For each UNAFFECTED member (508, 517), confirm its `dependencies` and description are identical to `baseline.json`.
-- [ ] Confirm no file outside `specs/` was modified by this task: `git status --short -- agent-system .claude` shows nothing attributable to this task, and in particular the four commit-layer scripts are untouched.
-- [ ] Run the scoped touched-path check: `bash .claude/scripts/verify-touched.sh --task-dir specs/654_reconcile_commit_layer_cluster_and_ordering`.
-- [ ] Run `bash .claude/scripts/validate-state.sh --deep` one last time.
-- [ ] Record in the phase's verification notes that the complete gate set is deferred to the orchestration close.
+- [x] For each NEEDS EDGE member (486, 501, 524, 541, 553, 567, 570), confirm with jq that it appears as target or predecessor in at least one of the seven edges present in `state.json`. *(completed)*
+- [x] For each NEEDS REVISION member (513, 535, 536, 592), confirm its description carries the Phase 3 heading line. *(completed)*
+- [x] For each UNAFFECTED member (508, 517), confirm its `dependencies` and description are identical to `baseline.json`. *(completed)*
+- [x] Confirm no file outside `specs/` was modified by this task: `git status --short -- agent-system .claude` shows nothing attributable to this task, and in particular the four commit-layer scripts are untouched. *(completed)*
+- [x] Run the scoped touched-path check: `bash .claude/scripts/verify-touched.sh --task-dir specs/654_reconcile_commit_layer_cluster_and_ordering`. *(completed)*
+- [x] Run `bash .claude/scripts/validate-state.sh --deep` one last time. *(completed)*
+- [x] Record in the phase's verification notes that the complete gate set is deferred to the orchestration close. *(completed)*
 
 **Timing**: 0.5 hours
 
@@ -258,12 +258,12 @@ Phases within the same wave can execute in parallel.
 
 ## Testing & Validation
 
-- [ ] Seven jq queries, one per edge, each showing the predecessor in the target's `dependencies`.
-- [ ] `validate-state.sh --deep` no worse than the pre-change baseline after Phases 2, 3 and 5.
-- [ ] Drain dry-run over the twelve chained tasks reports no cycle.
-- [ ] Seven descriptions carry the heading line and each begins with its baseline text.
-- [ ] Decision record's edge and revision rows all match `state.json`.
-- [ ] No path outside `specs/` modified.
+- [x] Seven jq queries, one per edge, each showing the predecessor in the target's `dependencies`. *(completed)*
+- [x] `validate-state.sh --deep` no worse than the pre-change baseline after Phases 2, 3 and 5. *(completed)*
+- [x] Drain dry-run over the twelve chained tasks reports no cycle. *(completed)*
+- [x] Seven descriptions carry the heading line and each begins with its baseline text. *(completed)*
+- [x] Decision record's edge and revision rows all match `state.json`. *(completed)*
+- [x] No path outside `specs/` modified. *(completed)*
 
 ## Artifacts & Outputs
 
