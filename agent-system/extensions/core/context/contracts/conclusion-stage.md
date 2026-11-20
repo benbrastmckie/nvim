@@ -404,9 +404,24 @@ verbatim with Step 5's own output. This is explicitly NOT a fourth channel — i
 `AskUserQuestion` gate, and the Exactly-One-Channel and Hint-Versus-Decision rules above do not
 apply to it, the same posture Step 7's suggester carries.
 
+**Milestone push/review handoff, non-fatal, `generated`-verdict only**: immediately after a
+successful regenerate (never on the degrade arm, never under `--dry-run`), the script invokes
+`scripts/milestone-review-handoff.sh --session SID` and folds its output into Step 5's own
+surfaced output, swallowing any failure (`|| true`) — a handoff failure must never fail this
+step, since the regenerate it follows has already succeeded. The handoff script itself only
+PREPARES: for each milestone whose derived batch-done count reaches its batch count on the
+`none -> prepared` `review.state` transition, it confirms the milestone's review ref
+(`refs/heads/milestone/<id>`, landed by `scripts/milestone-ref-land.sh` at each task's own
+completion — see `../patterns/ref-plumbing-landing.md`) carries the expected commit count,
+drafts `specs/milestones/<id>-review-handoff.md`, records `review.state: "prepared"` plus
+`review.ref` via `state-write.sh`, and prints the literal `/please`/`/merge` commands for the
+user to run themselves. It never pushes, never opens a PR/MR, and never mints a push grant —
+see `specs/decisions/branch-topology-and-landing-strategy.md`, ruling R8, for the full ruling
+this honors.
+
 The script's own stdout outcome block (the verdict, the `OUTCOME:` line verbatim when the
-regenerate branch ran, the commit sha or `none`, and the advisory lint's findings) folds into
-Step 6's combined report below. As its own last action (outside `--dry-run`), the script writes
+regenerate branch ran, the commit sha or `none`, the advisory lint's findings, and the
+milestone handoff's own output when it fired) folds into Step 6's combined report below. As its own last action (outside `--dry-run`), the script writes
 this invocation's conclusion-stage pending marker
 (`specs/.orchestration/.conclusion-pending-<session_id>.json`, carrying `session_id`,
 `cc_session_id`, `continuation_count: 0`, and `created_ts`) — read by

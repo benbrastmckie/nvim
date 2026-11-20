@@ -2601,7 +2601,7 @@
       "domain": "core",
       "subdomain": "contracts",
       "summary": "Orchestration conclusion stage (Move 5): derives three gated channels (direct fixes, agent-system changes, follow-up tasks) from aggregated per-task issues.jsonl logs, each firing only on its own explicit approval; the coexistence boundary with the skeleton-plan follow-up mechanism; the executable stage body",
-      "line_count": 525,
+      "line_count": 540,
       "keywords": [
         "conclusion-stage",
         "move-5",
@@ -3385,7 +3385,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Reactive git-workflow elaboration: commit-per-green-substep mechanism detail, snapshot-mode narrative, session ID lifecycle, branch strategy, and commit-failure error handling",
-      "line_count": 259,
+      "line_count": 297,
       "keywords": [
         "git-workflow",
         "commit-per-green-substep",
@@ -4122,6 +4122,29 @@
         "task_types": []
       },
       "on_demand": true
+    },
+    {
+      "path": "patterns/ref-plumbing-landing.md",
+      "domain": "core",
+      "subdomain": "patterns",
+      "summary": "The git commit-tree + git update-ref idiom for landing work onto a ref without touching the working tree, index, or HEAD, and its compare-and-swap and no-checkout obligations",
+      "line_count": 77,
+      "keywords": [
+        "ref-plumbing",
+        "commit-tree",
+        "update-ref",
+        "milestone-landing",
+        "worktree-isolation"
+      ],
+      "topics": [
+        "git-workflow"
+      ],
+      "load_when": {
+        "agents": [
+          "general-implementation-agent"
+        ],
+        "task_types": []
+      }
     }
   ]
 }

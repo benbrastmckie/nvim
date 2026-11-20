@@ -234,16 +234,54 @@ transcript. It exists solely for a human operator working the branch interactive
 
 ## Branch Strategy
 
-### Main Development
-- Work on `main` or feature branches
-- Commit frequently with descriptive messages
-- Keep commits atomic (one logical change per commit)
+See `specs/decisions/branch-topology-and-landing-strategy.md` for the full ruling (R1-R8) this
+section summarizes.
 
-### Task Branches (Optional)
-For complex multi-phase implementations:
-```
-task-{N}-{slug}
-```
+### The Hot-Path Branch
+
+Every dispatch runs in the repository's single shared working tree, checked out on whatever
+branch the operator left it on. No branch is created during dispatch work at any granularity —
+not per invocation, per task, or per milestone. Phase commits land on the already-checked-out
+branch; the admission-time check that this branch matches a declared integration branch (a
+`.claude-extensions.json` `integration_branch` string key, with a loud advisory fallback to the
+checked-out branch when undeclared) is a separate, consumer-owned concern.
+
+### Milestone Review History: Ref Plumbing, Never `checkout` Or `git merge --squash`
+
+A milestone's review-ready history is built from `git commit-tree` plus compare-and-swap
+`git update-ref`, never from `git checkout`/`git switch`/`git merge`. One squash commit is
+appended to `refs/heads/milestone/<id>` per completed task
+(`agent-system/extensions/core/scripts/milestone-ref-land.sh`), with `<id>` resolved from
+`roadmap_milestones[].id`. Neither primitive touches the working tree, the index, or `HEAD`, so
+a concurrent sibling dispatch in the same shared tree is structurally unaffected — see
+`context/patterns/ref-plumbing-landing.md` for the full idiom and its concurrency-safety
+property. Landing is verified (`milestone-ref-land.sh --verify`) strictly before a task's
+completion status is written, never after.
+
+### Merge Strategy
+
+Squash per task, landed onto the milestone ref. Whether the milestone ref is itself squashed
+again when it ultimately merges into the long-lived integration branch is left to the human
+reviewer's judgment at review time — no automatic rebase onto a moved integration-branch tip is
+built.
+
+### Milestone Completion: Prepare, Never Push
+
+When a milestone's batches are all done, `agent-system/extensions/core/scripts/milestone-review-handoff.sh`
+PREPARES the push and review request — it drafts `specs/milestones/<id>-review-handoff.md`,
+records `review.state: "prepared"` plus `review.ref`, and prints the literal `/please`/`/merge`
+commands for the user to run. It never mints a push grant, never infers permission from
+completion, and never calls `git push`, `git-push-granted.sh`, `gh`, or `glab` itself.
+`rules/pr-prohibition.md`'s prohibition and `hooks/guard-git-push.sh`'s mechanical refusal apply
+unconditionally regardless.
+
+### Worktree Isolation: Not Reinstated
+
+Per-dispatch `git worktree` isolation stays removed
+(`specs/decisions/worktree-isolation-removal-verdict.md`,
+`specs/decisions/worktree-isolation-removal-reaffirmation.md`). The unenforced, optional
+per-task branch-naming convention this section previously offered is removed along with it — it
+had no mechanical backing anywhere in this system.
 
 ## Error Handling (Commit Failures)
 

@@ -556,28 +556,28 @@ existing conclusion-stage script.
 
 ---
 
-### Phase 6: Reconcile the written standards with the implemented mechanism [NOT STARTED]
+### Phase 6: Reconcile the written standards with the implemented mechanism [COMPLETED]
 
 **Goal**: The Branch Strategy standard, the git-integration standard, and a new pattern document
 describe the mechanism that now exists, so the written standard and the enforced behaviour agree.
 
 **Tasks**:
-- [ ] Replace `context/standards/git-workflow-narrative.md`'s `## Branch Strategy` section with
+- [x] Replace `context/standards/git-workflow-narrative.md`'s `## Branch Strategy` section with *(completed)*
       the ruled contract: the single long-lived checked-out branch for phase commits, the
       per-milestone review ref built by ref plumbing, and the `/please` + `/merge` handoff. Remove
       the unenforced optional task-branch convention. Re-locate the section by heading, not by the
       line numbers measured at plan-authoring time.
-- [ ] Update `context/standards/git-integration.md` wherever it states branch behaviour that the
+- [x] Update `context/standards/git-integration.md` wherever it states branch behaviour that the *(completed)*
       ruling changes; if it states none, record that finding rather than editing it.
-- [ ] Add `context/patterns/ref-plumbing-landing.md`: the `commit-tree`/`update-ref` idiom, its
+- [x] Add `context/patterns/ref-plumbing-landing.md`: the `commit-tree`/`update-ref` idiom, its *(completed)*
       concurrency-safety property (no working tree, index or `HEAD` mutation), the compare-and-swap
       obligation, and the prohibition on reaching for `checkout` to land work in a shared tree.
-- [ ] Add a step to `context/contracts/conclusion-stage.md` documenting the handoff as the
+- [x] Add a step to `context/contracts/conclusion-stage.md` documenting the handoff as the *(completed)*
       roadmap stage's downstream, non-fatal companion, and stating that it prepares and never
       pushes.
-- [ ] Add the new context file's entry to `agent-system/extensions/core/index-entries.json`
+- [x] Add the new context file's entry to `agent-system/extensions/core/index-entries.json` *(completed)*
       (path, domain, subdomain, summary, line_count, keywords, topics, load_when, on_demand).
-- [ ] Cross-check every new or edited file for task-number references and record-versioning
+- [x] Cross-check every new or edited file for task-number references and record-versioning *(completed)*
       language; both are lint-enforced outside `specs/**`.
 
 **Timing**: 1.5 hours
