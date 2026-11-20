@@ -241,7 +241,9 @@ Commands update task status to "completed" and link artifacts AFTER subagent com
     - status-sync-manager returned "completed" status
     - state.json status field verified on disk
     - Artifact links verified in TODO.md
-    - Git commit created (or warning logged)
+    - Git commit created, a non-failure posture skip under a gitignored `specs/` tree (see
+      `context/standards/git-staging-scope.md`'s Per-Operation Contract section), or a warning
+      logged
   </validation>
   <checkpoint>Status and artifacts verified before return</checkpoint>
 </stage>

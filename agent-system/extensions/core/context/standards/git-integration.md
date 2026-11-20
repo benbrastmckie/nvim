@@ -2,7 +2,11 @@
 
 ## Overview
 
-All state-changing operations MUST create git commits for traceability and rollback capability.
+All state-changing operations MUST attempt a git commit for traceability and rollback capability.
+Under a wholly- or partly-gitignored `specs/` tree, that attempt reports a non-failure skip
+(`git-commit-scoped.sh` exit `8`/`9`) for the ignored members instead of creating a commit —
+supported and expected, not a gap. See `context/standards/git-staging-scope.md`'s Per-Operation
+Contract section.
 
 ## Git Commit Delegation Pattern
 
@@ -37,7 +41,11 @@ After successful state-changing operation:
    - Log: "Git commit created: {commit_hash}"
    - Include commit hash in success message
 
-4. If git commit fails:
+4. If git commit reports a posture skip (`git-commit-scoped.sh` exit `8`/`9`, all staged members
+   under a gitignored `specs/` tree): this is a non-failure, expected outcome, not an error — see
+   `context/standards/git-staging-scope.md`'s Per-Operation Contract section — and needs no remedy.
+
+5. If git commit fails for a genuine reason (not a posture skip):
    - Log warning: "Git commit failed (non-critical): {error}"
    - Continue with success message (files already updated)
 
