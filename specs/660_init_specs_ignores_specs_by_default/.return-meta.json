@@ -26,21 +26,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/660_init_specs_ignores_specs_by_default/summaries/01_init-specs-ignores-by-default-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["doc-sync-pin", "fenced-block-extraction", "awk-unanchored-match", "test-collision", "markdown-fixture"]
+      "suggested_keywords": [
+        "doc-sync-pin",
+        "fenced-block-extraction",
+        "awk-unanchored-match",
+        "test-collision",
+        "markdown-fixture"
+      ]
     },
     {
       "content": "git check-ignore -q -- <path> (and any predicate built on it, such as specs_tree_is_gitignored()) answers 'not ignored' (rc 1) for a path that does not exist on disk, regardless of a .gitignore pattern that would otherwise match it -- confirmed by direct experiment (mkdir the path first and the same check flips to rc 0). A test fixture for such a predicate must create the directory/file on disk before invoking the check under test; a fixture with only a committed .gitignore and no matching real path will always exercise the false branch.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/660_init_specs_ignores_specs_by_default/summaries/01_init-specs-ignores-by-default-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["git-check-ignore", "test-fixture-construction", "gitignore-predicate", "false-negative"]
+      "suggested_keywords": [
+        "git-check-ignore",
+        "test-fixture-construction",
+        "gitignore-predicate",
+        "false-negative"
+      ]
     },
     {
       "content": "A context/doc-index line-count regenerator (generate-context-line-counts.sh) that has its own deploy-root-guard refuses a bare source-store-relative invocation with a 'bogus repo root' error. Its own header documents the bypass: REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write, run from the repo root. Use this bypass rather than deploying first just to regenerate a doc-sync index entry mid-implementation.",
       "category": "CONFIG",
       "source_artifact": "specs/660_init_specs_ignores_specs_by_default/summaries/01_init-specs-ignores-by-default-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-root-guard", "REPO_ROOT-bypass", "source-store-invocation", "line-count-regen"]
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "REPO_ROOT-bypass",
+        "source-store-invocation",
+        "line-count-regen"
+      ]
     }
   ],
   "sapience_notes": [
@@ -84,8 +100,14 @@
     "session_id": "sess_1795130570_6d4a1f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

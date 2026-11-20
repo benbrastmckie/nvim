@@ -19737,6 +19737,11 @@
           "path": "specs/660_init_specs_ignores_specs_by_default/plans/01_init-specs-ignores-by-default.md",
           "type": "plan",
           "summary": "6-phase plan: lib renderer, init-specs.sh fresh-repo detection and root-level /specs/ managed block, posture-aware Check C, both-posture tests, standards posture split plus manual opt-in runbook, redeploy with an index-asserted negative control."
+        },
+        {
+          "path": "specs/660_init_specs_ignores_specs_by_default/summaries/01_init-specs-ignores-by-default-summary.md",
+          "type": "summary",
+          "summary": "A fresh-repo whole-specs/-tree-ignored default added to init-specs.sh, check-runtime-file-tracking.sh made posture-aware, both postures pinned by tests, orchestrator-runtime-files.md documents the split and opt-in runbook, redeployed with all four negative-control assertions and the positive-control lifecycle passing."
         }
       ],
       "project_number": 660,
@@ -19904,7 +19909,8 @@
           "semantic": true
         },
         "degradations_count": 42
-      }
+      },
+      "completion_summary": "Implemented a fresh-repo whole-specs/-tree-ignored default in init-specs.sh (new Step 5b, gated on git ls-files -- specs/), made check-runtime-file-tracking.sh's Check C posture-aware, pinned both postures with new/reconciled tests across two suites, documented the posture split and manual opt-in runbook in orchestrator-runtime-files.md, and redeployed with all four blocking negative-control assertions and the positive-control full lifecycle passing against this repository's own tracked specs/ tree and a throwaway scratch repo respectively."
     },
     {
       "project_name": "unbacked_specs_durability_options",
