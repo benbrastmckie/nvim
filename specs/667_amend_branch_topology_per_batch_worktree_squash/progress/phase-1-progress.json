@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "phase_name": "Write the amending decision record and the amendment notes",
+  "started_at": "2026-11-20T20:00:00Z",
+  "last_updated": "2026-11-20T20:25:00Z",
+  "objectives": [
+    {"id": 1, "description": "Read the four binding records and the cluster-ordering sections in full", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Write the amending decision record with attributed measurements", "status": "done",
+     "files_touched": ["specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"]},
+    {"id": 3, "description": "Append dated amendment notes to the two amended records", "status": "done",
+     "files_touched": ["specs/decisions/branch-topology-and-landing-strategy.md", "specs/decisions/commit-layer-cluster-ordering.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [],
+  "verification_notes": "prose tier: diff read-through; both amended records show additions only (0 removed lines); grep for the Amended-by note returns 1 in each; record has 5 defect entries + 3 omitted-hazard entries; Unconfirmed assumption section states the user has not ruled.",
+  "handoff_count": 0
+}

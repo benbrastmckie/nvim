@@ -1,22 +1,18 @@
 {
-  "status": "planned",
-  "dispatch_seq": 2,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/667_amend_branch_topology_per_batch_worktree_squash/plans/01_batch-worktree-squash-amendment.md",
-      "summary": "Five-phase plan: write the amending decision record, repair milestone-ref-land.sh --verify (defect D1), create eight successor tasks for Elements 2-7, revise 655/666 and write edges, redeploy."
-    }
-  ],
-  "next_steps": "Run /orchestrate 667 to execute the plan",
-  "metadata": {
-    "session_id": "sess_1795203458_188c22_667",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 8.5,
-    "dependency_waves": 4
+  "status": "in_progress",
+  "dispatch_seq": 3,
+  "started_at": "2026-11-20T00:00:00Z",
+  "artifacts": [],
+  "partial_progress": {
+    "stage": "initializing",
+    "details": "Implementation dispatch started; no phase closed yet.",
+    "phases_completed": 0,
+    "phases_total": 5
   },
-  "memory_candidates": []
+  "metadata": {
+    "session_id": "sess_1795203458_188c22",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

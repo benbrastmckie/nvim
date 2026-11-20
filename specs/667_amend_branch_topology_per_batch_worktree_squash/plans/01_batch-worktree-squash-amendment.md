@@ -1,7 +1,7 @@
 # Implementation Plan: Task #667
 
 - **Task**: 667 - Amend branch-topology rulings R1-R3 and R5: per-batch worktree side branches with per-task squash landing onto the long-lived feature branch
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8.5 hours
 - **Dependencies**: None declared. Successor tasks created by Phase 3 depend on this task and on 513, 517, 553 as ruled in Phase 4.
 - **Research Inputs**: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md
@@ -161,22 +161,22 @@ summary as a follow-up for `/roadmap`.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Write the amending decision record and the amendment notes [NOT STARTED]
+### Phase 1: Write the amending decision record and the amendment notes [COMPLETED]
 
 **Goal**: The amendment exists as a durable decision record that a successor task can cite, and
 both amended records point at it.
 
 **Tasks**:
-- [ ] Read in full, before writing anything: `specs/decisions/branch-topology-and-landing-strategy.md`,
+- [x] Read in full, before writing anything: `specs/decisions/branch-topology-and-landing-strategy.md`,
       `specs/decisions/worktree-isolation-removal-verdict.md`,
       `specs/decisions/worktree-isolation-removal-reaffirmation.md`,
       `specs/archive/301_reopen_worktree_isolation_verdict/reports/02_worktree-isolation-reopened.md`,
       and the Judgment calls, Edges and Inputs sections of
       `specs/decisions/commit-layer-cluster-ordering.md`. The research report's summary of them
       does not substitute for this read. If the archive path is absent, locate the report with
-      `find specs -name '02_worktree-isolation-reopened.md'` and record the path actually read.
-- [ ] Write `specs/decisions/batch-worktree-isolation-and-task-squash-landing.md` with these
-      sections:
+      `find specs -name '02_worktree-isolation-reopened.md'` and record the path actually read. *(completed: archive path was present; all five sources read in this dispatch)*
+- [x] Write `specs/decisions/batch-worktree-isolation-and-task-squash-landing.md` with these
+      sections: *(completed)*
   - **Authority**: the user's 2026-11-20 decision, in the words the task description records,
     and the statement that R4, R7 and R8 are not re-opened.
   - **Defects engaged**: one entry per recorded defect (destructive release on
@@ -220,18 +220,18 @@ both amended records point at it.
     around.
   - **Edges** and **Successor tasks**: left as headed placeholders stating that Phases 3 and 4
     fill them.
-- [ ] Attribute every measurement to its source: "measured in the research report" for the
+- [x] Attribute every measurement to its source: "measured in the research report" for the
       carried fixture results, with the report's path; "re-derived at plan time" for the eight
-      items in this plan's Premise Re-Validation.
-- [ ] Append a dated note to `specs/decisions/branch-topology-and-landing-strategy.md` in the
+      items in this plan's Premise Re-Validation. *(completed)*
+- [x] Append a dated note to `specs/decisions/branch-topology-and-landing-strategy.md` in the
       shape `**Amended by** batch-worktree-isolation-and-task-squash-landing.md, 2026-11-20:`
       naming R1, R2, R3 and R5 as amended and R6 as carrying a consequence. Do not rewrite the
-      original rulings.
-- [ ] Append a dated note in the same shape to `specs/decisions/commit-layer-cluster-ordering.md`
+      original rulings. *(completed)*
+- [x] Append a dated note in the same shape to `specs/decisions/commit-layer-cluster-ordering.md`
       recording that Judgment 1's stated condition ("reinstates any form of tree isolation") has
       fired, and that source-store commit scoping and the third containment site become semantic
       predecessors of the two-root work. Place it beside the existing amendment note, not in
-      place of it.
+      place of it. *(completed)*
 
 **Timing**: 2 hours
 

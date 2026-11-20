@@ -208,3 +208,15 @@ branch-topology ruling allocates the integration-branch declaration schema row i
 `context/standards/repo-level-declarations.md` to `branch_aware_orchestration_and_squash_landing`
 (655), 517 is now a predecessor of 655, per the Rulings table's own stated falsification
 condition for 517.
+
+**Amended by** batch-worktree-isolation-and-task-squash-landing.md, 2026-11-20: the condition
+`## Judgment calls` item 1 names as what would change its ruling ("a 657 ruling that reinstates
+any form of tree isolation") has fired. `specs/decisions/batch-worktree-isolation-and-task-squash-landing.md`
+amends the branch-topology record's R5 to reinstate isolation at batch granularity, so the
+one-`HEAD`-per-repository evidence item 1 rests on no longer holds where a repository declares
+isolation on. Source-store commit scoping (536) and the third containment site (567) become
+semantic predecessors of the two-root work on the commit scripts, not territory-only ones, and
+the expected ref of `phase_commit_boundary_mechanical_check` (513) becomes per tree there. The
+note above this one, recording that the condition did not fire, describes the ruling as it stood
+before this amendment. The edges written for this are listed in the amending record's Edges
+section; no edge in this record's own Edges table is removed.

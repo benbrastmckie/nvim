@@ -79,3 +79,19 @@ isolation question only. It does not itself build `milestone-ref-land.sh`,
 `milestone-review-handoff.sh`, the postflight landing-verification call site, or the standards
 reconciliation — each is its own phase of the implementing plan, built on this ruling rather than
 folded into it.
+
+## Amendments
+
+**Amended by** batch-worktree-isolation-and-task-squash-landing.md, 2026-11-20: rulings R1, R2,
+R3 and R5 are amended, and R6 carries a consequence. The Rulings table above is left as decided
+and is no longer the whole ruling for those five rows; read
+`specs/decisions/batch-worktree-isolation-and-task-squash-landing.md` beside it. In brief: R1
+keeps the primary working tree on the declared integration branch and adds an admission refusal;
+R2 allows one side branch and one worktree per orchestrate invocation; R3 lands one squash
+commit per completed task directly on the integration branch, built by attribution; R5
+reinstates worktree isolation at batch granularity only, as a per-repository declaration that is
+off unless declared, with nothing cloned or linked; and under R6 the expected ref of
+`phase_commit_boundary_mechanical_check` (513) becomes per tree where isolation is on. R4, R7
+and R8 are not amended. `milestone-ref-land.sh` (R2 as originally ruled) stays in service until
+the amending record's landing successor retires it; its `--verify` predicate is tree equality,
+not ancestry.
