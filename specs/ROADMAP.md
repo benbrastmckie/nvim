@@ -22,14 +22,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 
 **Batch 2** (done) -- Decide before building: the commit-layer order, the milestone schema, then the topology ruling
 
-**Batch 3** -- Build branch-aware orchestration and squash landing once the topology ruling settles its design
-
-```
-/orchestrate 655 --hard
-655 blocked:513,517,553  Make orchestration branch-aware with a per-invocation branch and squash ...
-```
-
-**Batch 4** -- Make verify-deploy's verdict mean something again: the live reds, one roster row, two gate rulings
+**Batch 3** -- Make verify-deploy's verdict mean something again: the live reds, one roster row, two gate rulings
 
 ```
 /orchestrate 645, 560, 629, 630, 631, 632
@@ -41,7 +34,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 645 ready           Fix the .mcp.json merge defect that drops a hand-authored server entry across...   <- the unit/integration boundary suite is red again from a later cause its provenance list predates
 ```
 
-**Batch 5** -- Hard stops: task creation dies on a big verdict, a lock never reaps, a run never converges
+**Batch 4** -- Hard stops: task creation dies on a big verdict, a lock never reaps, a run never converges
 
 ```
 /orchestrate 475, 613, 514, 574
@@ -51,7 +44,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 613 ready           Make session liveness distinguish a dead same-process session so an orphaned ...
 ```
 
-**Batch 6** -- What one dispatch hands the next: settle the handoff/return-meta shapes, fix failure accounting
+**Batch 5** -- What one dispatch hands the next: settle the handoff/return-meta shapes, fix failure accounting
 
 ```
 /orchestrate 556, 472, 646, 551, 519, 570, 577, 609
@@ -65,7 +58,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 646 ready           Decide and implement how .return-meta.json's status vocabulary admits non-pha...
 ```
 
-**Batch 7** -- Make a full battery's numbers trustworthy: the standing cost verdicts, then one stale roster row
+**Batch 6** -- Make a full battery's numbers trustworthy: the standing cost verdicts, then one stale roster row
 
 ```
 /orchestrate 586, 605
@@ -73,7 +66,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 605 blocked:586     Flag an advisory known-failures roster row whose named suite now passes
 ```
 
-**Batch 8** -- Two false validator failures, plus the plan-time record of the path-set rule behind one fix
+**Batch 7** -- Two false validator failures, plus the plan-time record of the path-set rule behind one fix
 
 ```
 /orchestrate 545, 579, 575
@@ -82,7 +75,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 579 ready           Record the selector's full-path-set aggregation rule in the Tier Justificatio...
 ```
 
-**Batch 9** -- Evidence integrity: stop losing issue entries, normalize classes, collapse scope-excursion rows
+**Batch 8** -- Evidence integrity: stop losing issue entries, normalize classes, collapse scope-excursion rows
 
 ```
 /orchestrate 639, 477, 484, 486, 501, 508, 524
@@ -95,7 +88,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 639 ready           Make issue-record.sh failures visible instead of silently losing the evidence...
 ```
 
-**Batch 10** -- Commit containment: stop phase commits dropping legitimate files and carrying foreign ones
+**Batch 9** -- Commit containment: stop phase commits dropping legitimate files and carrying foreign ones
 
 ```
 /orchestrate 548, 567, 553, 598, 536, 535, 541
@@ -108,7 +101,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 567 ready           Port the deployed-tree containment strip into git-commit-scoped.sh
 ```
 
-**Batch 11** -- Dispatch composition: gate narrowing, starting position, deploy order, prior art, stale seq
+**Batch 10** -- Dispatch composition: gate narrowing, starting position, deploy order, prior art, stale seq
 
 ```
 /orchestrate 599, 592, 520, 565, 518, 571
@@ -120,7 +113,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 599 ready           Give the batch-gate-deferral directive a narrowing form that covers a phase t...
 ```
 
-**Batch 12** -- Bounded-waiter: unstrand the dispatches a blocked wait killed, and stop the hook self-refusing
+**Batch 11** -- Bounded-waiter: unstrand the dispatches a blocked wait killed, and stop the hook self-refusing
 
 ```
 /orchestrate 506, 542, 552, 561
@@ -130,7 +123,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 542 ready           Record the launch-side PID-fidelity condition on the bounded-waiter detach form
 ```
 
-**Batch 13** -- Enforcement that silently does not run: a half-matching glob, two dead fixtures, grep counts
+**Batch 12** -- Enforcement that silently does not run: a half-matching glob, two dead fixtures, grep counts
 
 ```
 /orchestrate 521, 525, 510, 511, 523
@@ -141,7 +134,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 525 ready           Repair the always-failing extensions-directory fallback in the task-type dete...
 ```
 
-**Batch 14** -- Settle the duplication-exclusion record, then propagate the bounded-wait contract it gates
+**Batch 13** -- Settle the duplication-exclusion record, then propagate the bounded-wait contract it gates
 
 ```
 /orchestrate 431, 474, 439, 454, 641, 642
@@ -153,7 +146,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 431 ready           Record the gate-enforced verbatim-duplication exclusion class as durable agen...
 ```
 
-**Batch 15** -- The dead-command-recommendation lint, both claimants together: builtin exemption and /ide reds
+**Batch 14** -- The dead-command-recommendation lint, both claimants together: builtin exemption and /ide reds
 
 ```
 /orchestrate 512, 590
@@ -161,7 +154,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 590 ready           Resolve the /ide dead-command-recommendation findings
 ```
 
-**Batch 16** -- Declare the generated surfaces a dispatch stales, and stop repo content leaking to the store
+**Batch 15** -- Declare the generated surfaces a dispatch stales, and stop repo content leaking to the store
 
 ```
 /orchestrate 455, 502, 457, 517
@@ -171,7 +164,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 502 ready           Require research reports to enumerate generated doc-sync surfaces
 ```
 
-**Batch 17** -- Rule on what the system leaves behind: a per-class residue policy and the tracked/ignored split
+**Batch 16** -- Rule on what the system leaves behind: a per-class residue policy and the tracked/ignored split
 
 ```
 /orchestrate 618, 338
@@ -179,7 +172,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 618 ready           Determine what leaves files in the working tree and give every residue class ...   <- re-measure its git-commit-scoped.sh evidence after the ignored-specs predicate lands; no edge
 ```
 
-**Batch 18** -- Task creation and the backlog/selection surfaces: landing targets, corroboration, one renderer
+**Batch 17** -- Task creation and the backlog/selection surfaces: landing targets, corroboration, one renderer
 
 ```
 /orchestrate 438, 479, 491, 492, 559, 580, 581
@@ -192,12 +185,19 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 580 ready           Correct the interactive-selection threshold model to AskUserQuestion's real f...
 ```
 
-**Batch 19** -- Two detectors over the landing-target contract: stranded research, a commit-less plan phase
+**Batch 18** -- Two detectors over the landing-target contract: stranded research, a commit-less plan phase
 
 ```
 /orchestrate 480, 513
 480 blocked:479     Advisory detector for research tasks stranded at RESEARCHED with artifacts bu...
 513 blocked:479     Mechanically detect a plan phase that closed without its own commit
+```
+
+**Batch 19** -- Branch-aware admission and milestone-ref landing, sited after its commit-layer prerequisites
+
+```
+/orchestrate 655 --hard
+655 blocked:513,517,553  Make orchestration branch-aware with a per-invocation branch and squash ...   <- prereqs sit in Batches 9/15/18; landing is a milestone ref, not a squash
 ```
 
 **Batch 20** -- Three init.lua claimants: make a load trust its project root, then the registry and defaults
@@ -351,4 +351,6 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 ```
 498 HOLD            Replace the email preference harvest tally substrate
 664 ready           Add a /tmp sweep pass to /refresh for dead scratchpad sessions and agent-test...
+665 ready           Record the last dispatching orchestration batch in a displaced Previous work ...
+666 ready           re_site_branch_aware_batch_after_prerequisites
 ```
