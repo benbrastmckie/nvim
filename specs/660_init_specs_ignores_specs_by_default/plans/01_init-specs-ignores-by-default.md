@@ -293,33 +293,46 @@ and reading all three per-check verdicts, not the exit code alone.
 
 ---
 
-### Phase 4: Test coverage for both postures [NOT STARTED]
+### Phase 4: Test coverage for both postures [COMPLETED]
 
 **Goal**: Both postures — fresh/ignored and existing/tracked — are pinned by tests that assert
 against git state, and the one pre-existing case that collides with the new default is
 reconciled rather than deleted.
 
 **Tasks**:
-- [ ] Run `tests/test-init-specs.sh` and `tests/test-runtime-file-tracking.sh` first and record
-      the per-case verdicts as the pre-change baseline.
-- [ ] `tests/test-init-specs.sh`: add a case asserting a fresh bootstrap writes the root managed
+- [x] Run `tests/test-init-specs.sh` and `tests/test-runtime-file-tracking.sh` first and record
+      the per-case verdicts as the pre-change baseline. *(completed: 23 passed/0 failed and 9
+      passed/0 failed respectively, captured before any Phase 4 edit)*
+- [x] `tests/test-init-specs.sh`: add a case asserting a fresh bootstrap writes the root managed
       block (both sentinels, `/specs/` between them) and that `git check-ignore -q -- specs`
-      exits 0 afterward.
-- [ ] Add an idempotence case: a second run leaves that root `.gitignore` byte-identical.
-- [ ] Add the negative control: a fixture that commits a file under `specs/` before running
+      exits 0 afterward. *(completed: Case 9)*
+- [x] Add an idempotence case: a second run leaves that root `.gitignore` byte-identical.
+      *(completed: Case 10)*
+- [x] Add the negative control: a fixture that commits a file under `specs/` before running
       `init-specs.sh` must come out with no `specs-tree-ignore` sentinel anywhere in its root
       `.gitignore` and with `git ls-files -- specs/` returning the same set as before the run —
-      asserted against the index, not the script's exit code.
-- [ ] Reconcile Case 6: it bootstraps a fresh fixture with no root `.gitignore`, commits
+      asserted against the index, not the script's exit code. *(completed: Case 11; manually
+      confirmed non-tautological by temporarily inverting the gate in a scratch copy and
+      observing the sentinel leak, then restoring the real script unedited)*
+- [x] Reconcile Case 6: it bootstraps a fresh fixture with no root `.gitignore`, commits
       `specs/`, and asserts `check-runtime-file-tracking.sh` exits 0. Under the new default
       `git add specs/` stages nothing and Check C would fire. Re-point it at the posture-aware
       expectation (exit 0 with Check C SKIPped), or split it into one case per posture — but do
       not drop the `specs/.gitignore`-only ephemeral-coverage assertion it exists to protect.
-- [ ] `tests/test-runtime-file-tracking.sh`: add a case covering the posture-aware Check C skip
+      *(completed: Case 6 now seeds a tracked specs/ file BEFORE the first init-specs.sh call so
+      the fixture starts in the tracked posture it always existed to pin — exit 0, Check C not
+      skipped, specs/.gitignore-only coverage preserved; the complementary "exit 0 with Check C
+      SKIPped" scenario is covered by test-runtime-file-tracking.sh's new Case 6 below)*
+- [x] `tests/test-runtime-file-tracking.sh`: add a case covering the posture-aware Check C skip
       (fresh/ignored fixture => exit 0 with the SKIP line present), and confirm Case 4
       (over-ignored provenance in a tracked-specs fixture still FAILs) and Case 7's
-      force-tracked-ephemeral pin both still pass unchanged.
-- [ ] Re-run both suites and compare per-case verdicts against the recorded baseline.
+      force-tracked-ephemeral pin both still pass unchanged. *(completed: new Case 6; Case 4 of
+      this suite and Case 7 of test-init-specs.sh both reconfirmed passing unchanged)*
+- [x] Re-run both suites and compare per-case verdicts against the recorded baseline.
+      *(completed: against the edited source-store scripts directly (TREE_ROOTS temporarily
+      reordered in a disposable copy, since the deployed tree still resolves first and is stale
+      until Phase 6) -- 30 passed/0 failed and 13 passed/0 failed; every pre-existing case name
+      still passes except Case 6's intended reconciliation, plus the new cases)*
 
 **Timing**: 1.25 hours
 

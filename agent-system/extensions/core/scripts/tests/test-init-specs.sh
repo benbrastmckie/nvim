@@ -9,7 +9,12 @@
 # (.orchestrator-handoff.json / .return-meta.json) is never touched, and
 # check-runtime-file-tracking.sh passes on the bootstrapped repo using ONLY specs/.gitignore
 # coverage (no root .gitignore at all) while still catching an already-tracked ephemeral file
-# regardless of ignore coverage (the item (h) regression pin).
+# regardless of ignore coverage (the item (h) regression pin). Also pins both postures of the
+# fresh-repo whole-tree default: a fresh bootstrap (nothing tracked under specs/) writes a
+# repo-root specs-tree-ignore managed block and is idempotent (Cases 9-10), and an
+# already-tracked consumer's repo root is never written to (Case 11, asserted against the git
+# index) -- Case 6 is reconciled to seed a tracked specs/ file first so it keeps pinning the
+# tracked posture it always existed to protect.
 #
 # Structural model: context/standards/shell-script-testing.md (PASSED/FAILED counters,
 # pass()/fail()/info() helpers, mktemp -d scratch repo(s), never resolves against the live tree
@@ -276,24 +281,33 @@ else
 fi
 
 # =====================================================================
-# Case 6: check-runtime-file-tracking.sh exits 0 on the bootstrapped repo using ONLY
-# specs/.gitignore coverage (no root .gitignore at all) -- proves item (f) without a logic
-# change (Check A's `git check-ignore -q` already honors specs/.gitignore at any depth).
+# Case 6 (RECONCILED for the fresh-posture default): check-runtime-file-tracking.sh exits 0 on
+# the bootstrapped repo using ONLY specs/.gitignore coverage (no root .gitignore at all) --
+# proves item (f) without a logic change (Check A's `git check-ignore -q` already honors
+# specs/.gitignore at any depth). Under the fresh-posture default, init-specs.sh's Step 5b would
+# write a root-level specs-tree-ignore block the moment `git ls-files -- specs/` is empty, which
+# is exactly the state this fixture used to be in at its first init-specs.sh call. A file is now
+# seeded and committed under specs/ BEFORE that first call, so the fixture starts in the TRACKED
+# posture this case was always meant to pin: an existing consumer whose specs/.gitignore-only
+# coverage protects it, with no repo-root ignore rule at all.
 # =====================================================================
 REPO6="$(build_fixture_repo repo6)"
+mkdir -p "$REPO6/specs"
+echo "pre-existing task history" > "$REPO6/specs/seed.txt"
+(cd "$REPO6" && git add specs/seed.txt && git_commit "$REPO6" "seed pre-existing tracked specs/ file")
 (cd "$REPO6" && bash .claude/scripts/init-specs.sh > /dev/null 2>&1)
 if [[ -f "$REPO6/.gitignore" ]]; then
-  common_test_fail "Case 6: fixture repo unexpectedly has a root .gitignore -- test setup invalid"
+  common_test_fail "Case 6: fixture repo unexpectedly has a root .gitignore -- the tracked-posture root-write guarantee is broken"
 else
-  common_test_info "Case 6: confirmed no root .gitignore exists in the fixture repo"
+  common_test_info "Case 6: confirmed no root .gitignore exists in the fixture repo (tracked posture)"
 fi
 (cd "$REPO6" && git add specs/ && git_commit "$REPO6" "bootstrap")
 case6_output="$(cd "$REPO6" && bash .claude/scripts/check-runtime-file-tracking.sh 2>&1)"
 case6_exit=$?
-if [[ "$case6_exit" -eq 0 ]] && echo "$case6_output" | grep -q 'PASS'; then
-  common_test_pass "Case 6: check-runtime-file-tracking.sh exits 0 / PASS using only specs/.gitignore"
+if [[ "$case6_exit" -eq 0 ]] && echo "$case6_output" | grep -q 'PASS' && ! echo "$case6_output" | grep -q 'Check C SKIPPED'; then
+  common_test_pass "Case 6: check-runtime-file-tracking.sh exits 0 / PASS using only specs/.gitignore (tracked posture, Check C not skipped)"
 else
-  common_test_fail "Case 6: expected exit 0 / PASS, got exit $case6_exit:"
+  common_test_fail "Case 6: expected exit 0 / PASS with Check C not skipped, got exit $case6_exit:"
   echo "$case6_output" | sed 's/^/    /'
 fi
 
@@ -324,6 +338,80 @@ if (cd "$REPO1" && git check-ignore -q specs/tmp/claude-tts-notify.log); then
   common_test_pass "Case 8: specs/tmp/claude-tts-notify.log is ignored"
 else
   common_test_fail "Case 8: specs/tmp/claude-tts-notify.log is NOT ignored"
+fi
+
+# =====================================================================
+# Case 9 (fresh posture): a fresh bootstrap with nothing tracked under specs/ writes the
+# repo-root specs-tree-ignore managed block, and git check-ignore -q -- specs exits 0 afterward.
+# =====================================================================
+REPO9="$(build_fixture_repo repo9)"
+common_test_info "Case 9: fresh bootstrap writes the repo-root specs-tree-ignore managed block"
+case9_output="$(cd "$REPO9" && bash .claude/scripts/init-specs.sh 2>&1)"
+case9_exit=$?
+if [[ "$case9_exit" -eq 0 ]]; then
+  common_test_pass "Case 9: init-specs.sh exits 0"
+else
+  common_test_fail "Case 9: expected exit 0, got $case9_exit:"
+  echo "$case9_output" | sed 's/^/    /'
+fi
+if [[ -f "$REPO9/.gitignore" ]] \
+  && grep -qF '# BEGIN managed block: specs-tree-ignore' "$REPO9/.gitignore" \
+  && grep -qF '# END managed block: specs-tree-ignore' "$REPO9/.gitignore" \
+  && grep -qF '/specs/' "$REPO9/.gitignore"; then
+  common_test_pass "Case 9: repo-root .gitignore carries both specs-tree-ignore sentinels with /specs/ between them"
+else
+  common_test_fail "Case 9: repo-root .gitignore missing or lacks the specs-tree-ignore managed block"
+fi
+if (cd "$REPO9" && git check-ignore -q -- specs); then
+  common_test_pass "Case 9: git check-ignore -q -- specs exits 0 after one run"
+else
+  common_test_fail "Case 9: git check-ignore -q -- specs did not exit 0"
+fi
+
+# =====================================================================
+# Case 10: idempotence of the repo-root specs-tree-ignore managed block -- a second run changes
+# no bytes of the root .gitignore (no double-append, no duplicate sentinels).
+# =====================================================================
+common_test_info "Case 10: idempotence -- second run leaves the root .gitignore byte-identical"
+before_root_sum="$(sha256sum "$REPO9/.gitignore" | awk '{print $1}')"
+case10_output="$(cd "$REPO9" && bash .claude/scripts/init-specs.sh 2>&1)"
+after_root_sum="$(sha256sum "$REPO9/.gitignore" | awk '{print $1}')"
+if [[ "$before_root_sum" == "$after_root_sum" ]]; then
+  common_test_pass "Case 10: second run leaves the root .gitignore byte-identical"
+else
+  common_test_fail "Case 10: second run changed the root .gitignore (not idempotent)"
+fi
+if echo "$case10_output" | grep -qF 'specs-tree-ignore managed block already current'; then
+  common_test_pass "Case 10: second run reports the specs-tree-ignore SKIP line"
+else
+  common_test_fail "Case 10: second run did not report the expected specs-tree-ignore SKIP line:"
+  echo "$case10_output" | sed 's/^/    /'
+fi
+
+# =====================================================================
+# Case 11 (negative control, tracked posture): a fixture that commits a file under specs/
+# BEFORE running init-specs.sh must come out of the run with no specs-tree-ignore sentinel
+# anywhere in its root .gitignore, and with git ls-files -- specs/ returning the same set as
+# before the run -- asserted against the index, not the script's exit code.
+# =====================================================================
+REPO11="$(build_fixture_repo repo11)"
+mkdir -p "$REPO11/specs"
+echo "pre-existing task history" > "$REPO11/specs/seed.txt"
+(cd "$REPO11" && git add specs/seed.txt && git_commit "$REPO11" "seed pre-existing tracked specs/ file")
+before_ls="$(cd "$REPO11" && git ls-files -- specs/ | sort)"
+common_test_info "Case 11: negative control -- specs/ already tracked before init-specs.sh runs"
+(cd "$REPO11" && bash .claude/scripts/init-specs.sh > /dev/null 2>&1)
+after_ls="$(cd "$REPO11" && git ls-files -- specs/ | sort)"
+if [[ "$before_ls" == "$after_ls" ]]; then
+  common_test_pass "Case 11: git ls-files -- specs/ is unchanged after the run"
+else
+  common_test_fail "Case 11: git ls-files -- specs/ changed after the run:"
+  diff <(echo "$before_ls") <(echo "$after_ls") | sed 's/^/    /'
+fi
+if [[ -f "$REPO11/.gitignore" ]] && grep -qF 'specs-tree-ignore' "$REPO11/.gitignore"; then
+  common_test_fail "Case 11: specs-tree-ignore sentinel leaked into the tracked-posture root .gitignore"
+else
+  common_test_pass "Case 11: no specs-tree-ignore sentinel in the tracked-posture root .gitignore (and none was created)"
 fi
 
 # =====================================================================

@@ -1,0 +1,21 @@
+{
+  "phase": 4,
+  "phase_name": "Test coverage for both postures",
+  "started_at": "2026-11-20T04:40:00Z",
+  "last_updated": "2026-11-20T05:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Capture pre-change baseline for both suites", "status": "done", "files_touched": []},
+    {"id": 2, "description": "test-init-specs.sh: fresh-posture root-block case (Case 9)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-init-specs.sh"]},
+    {"id": 3, "description": "test-init-specs.sh: idempotence case (Case 10)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-init-specs.sh"]},
+    {"id": 4, "description": "test-init-specs.sh: tracked-posture negative control (Case 11)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-init-specs.sh"]},
+    {"id": 5, "description": "Reconcile Case 6 to seed a tracked file, preserving specs/.gitignore-only intent", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-init-specs.sh"]},
+    {"id": 6, "description": "test-runtime-file-tracking.sh: posture-aware Check C skip case (Case 6)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"]},
+    {"id": 7, "description": "Re-run both suites against edited source-store scripts; compare to baseline", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Case 6 fixture with only a committed .gitignore (no specs/ dir)", "result": "failed", "reason": "git check-ignore -q -- specs reports not-ignored for a nonexistent path regardless of a matching pattern; fixed by mkdir -p specs/ before invoking the script under test"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

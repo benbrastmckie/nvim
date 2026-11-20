@@ -193,6 +193,50 @@ else
 fi
 
 # =====================================================================
+# Case 6 (posture-aware Check C skip): a repo whose whole specs/ tree is gitignored by design
+# (the fresh-repo default) makes Check C's "provenance is not ignored" assertion inapplicable --
+# the check is SKIPPED (named, not silent), and the run still exits 0 via Checks A and B.
+# =====================================================================
+IGNOREDTREE="$WORKDIR/ignored-tree-repo"
+mkdir -p "$IGNOREDTREE"
+git -C "$IGNOREDTREE" init -q
+echo "/specs/" > "$IGNOREDTREE/.gitignore"
+git -C "$IGNOREDTREE" add .gitignore
+git_commit "$IGNOREDTREE" "scratch init: whole specs/ tree ignored by design"
+# `git check-ignore -q -- specs` (the bare-path form specs_tree_is_gitignored() consults) only
+# reports "ignored" for a path that exists on disk -- a nonexistent `specs` answers "not
+# ignored" regardless of any matching pattern. The directory must exist for this fixture to
+# exercise the posture predicate at all.
+mkdir -p "$IGNOREDTREE/specs"
+
+common_test_info "Case 6: posture-aware Check C SKIP on a whole-tree-ignored repo"
+case6_output="$(cd "$IGNOREDTREE" && bash "$CHECK_SCRIPT" 2>&1)"
+case6_exit=$?
+if [[ "$case6_exit" -eq 0 ]]; then
+  common_test_pass "Case 6: exit 0 on the whole-tree-ignored posture"
+else
+  common_test_fail "Case 6: expected exit 0, got $case6_exit:"
+  echo "$case6_output" | sed 's/^/    /'
+fi
+if echo "$case6_output" | grep -q 'Check C SKIPPED'; then
+  common_test_pass "Case 6: a named Check C SKIPPED line is present"
+else
+  common_test_fail "Case 6: expected a named Check C SKIPPED line, got:"
+  echo "$case6_output" | sed 's/^/    /'
+fi
+if echo "$case6_output" | grep -q 'Check A passed' && echo "$case6_output" | grep -q 'Check B passed'; then
+  common_test_pass "Case 6: Checks A and B are both reported as passed"
+else
+  common_test_fail "Case 6: Checks A/B not both reported as passed:"
+  echo "$case6_output" | sed 's/^/    /'
+fi
+if echo "$case6_output" | grep -q 'all three checks passed'; then
+  common_test_fail "Case 6: summary wrongly reported 'all three checks passed' for a SKIPped Check C"
+else
+  common_test_pass "Case 6: summary does not claim 'all three checks passed' when Check C was skipped"
+fi
+
+# =====================================================================
 echo ""
 echo "Results: $PASSED passed, $FAILED failed"
 if [[ "$FAILED" -eq 0 ]]; then
