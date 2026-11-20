@@ -362,38 +362,38 @@ run together with the diff read-through the prose-adjacent `specs/**` edits need
 
 ---
 
-### Phase 3: Build the milestone-ref landing script and its suite [NOT STARTED]
+### Phase 3: Build the milestone-ref landing script and its suite [COMPLETED]
 
 **Goal**: A tested script that appends one squash commit per completed task onto its milestone's
 ref, without ever touching the working tree, the index, or `HEAD`.
 
 **Tasks**:
-- [ ] Write `agent-system/extensions/core/scripts/milestone-ref-land.sh`: given a task number and
+- [x] Write `agent-system/extensions/core/scripts/milestone-ref-land.sh`: given a task number and *(completed)*
       session id, resolve the task's milestone from `roadmap_milestones[].batches[].task_ids`
       (no milestone -> clean no-op exit 0 with a named note, never an error).
-- [ ] Resolve the integration branch from the declaration key ruling R4 fixes, falling back to the
+- [x] Resolve the integration branch from the declaration key ruling R4 fixes, falling back to the *(completed)*
       currently checked-out branch with a loud, named advisory when the key is undeclared.
-- [ ] Compute `tree=$(git rev-parse HEAD^{tree})`; compute the parent as the milestone ref's
+- [x] Compute `tree=$(git rev-parse HEAD^{tree})`; compute the parent as the milestone ref's *(completed)*
       current tip, or the integration branch's tip for the milestone's first landing.
-- [ ] Create the commit with `git commit-tree`, subject `task {N}: {title}` per
+- [x] Create the commit with `git commit-tree`, subject `task {N}: {title}` per *(completed)*
       `rules/git-workflow.md`'s convention, with the phase list in the body.
-- [ ] Update the ref with the three-argument compare-and-swap form
+- [x] Update the ref with the three-argument compare-and-swap form *(completed)*
       `git update-ref refs/heads/milestone/<id> <new> <old>`; on a lost race, re-read the tip,
       recompute, and retry under the existing task lock — never a new lock, never a force update.
-- [ ] Add a `--verify` mode asserting `git merge-base --is-ancestor HEAD refs/heads/milestone/<id>`,
+- [x] Add a `--verify` mode asserting `git merge-base --is-ancestor HEAD refs/heads/milestone/<id>`, *(completed)*
       for Phase 4's pre-completion check.
-- [ ] Assert the script never calls `git checkout`, `git switch`, `git merge`, `git push`, or
+- [x] Assert the script never calls `git checkout`, `git switch`, `git merge`, `git push`, or *(completed)*
       `git reset`, and document that property in its header.
-- [ ] Write `agent-system/extensions/core/scripts/tests/test-milestone-ref-land.sh`: per simulated
+- [x] Write `agent-system/extensions/core/scripts/tests/test-milestone-ref-land.sh`: per simulated *(completed)*
       landing, assert the ref's commit count, its parent chain, and tree equality against the live
       branch; assert `HEAD`, the index, and the working tree are byte-identical before and after;
       assert the compare-and-swap refusal path; assert the no-milestone no-op; assert the
       undeclared-key advisory fallback.
-- [ ] Add the suite's row to `agent-system/extensions/core/scripts/tests/suite-classification.data`
+- [x] Add the suite's row to `agent-system/extensions/core/scripts/tests/suite-classification.data` *(completed)*
       (TAB-separated: basename, class, reason) — a data edit, never a documentation edit.
-- [ ] Register the new scripts with `bash .claude/scripts/sync-manifest-scripts.sh --write`, then
+- [x] Register the new scripts with `bash .claude/scripts/sync-manifest-scripts.sh --write`, then *(completed)*
       confirm with `--check`.
-- [ ] Re-run the suite selector over this phase's paths and add a
+- [x] Re-run the suite selector over this phase's paths and add a *(completed)*
       `scripts/tests/suite-selection-map.data` row only if basename pairing does not resolve the
       new script to its new suite.
 

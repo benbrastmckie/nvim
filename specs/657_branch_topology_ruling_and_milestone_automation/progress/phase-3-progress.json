@@ -1,0 +1,15 @@
+{
+  "phase": 3,
+  "phase_name": "Build the milestone-ref landing script and its suite",
+  "started_at": "2026-11-20T00:30:00Z",
+  "last_updated": "2026-11-20T00:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Write milestone-ref-land.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/milestone-ref-land.sh"]},
+    {"id": 2, "description": "Write test-milestone-ref-land.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-milestone-ref-land.sh"]},
+    {"id": 3, "description": "Register suite-classification.data and manifest.json", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/suite-classification.data", "agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
