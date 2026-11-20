@@ -13,11 +13,16 @@ next_project_number: 664
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,535,536,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,654,663 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,540,541,544,546,550,552,553,570,576,583,592,593,598,605,609,630,656 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,535,539,542,548,549,556,563,577,586,599,629,654 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,473,480,486,492,509,513,518,561,566,594,657 | 439,452,472,479,484,491,552,593,656 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
-| 4 | 501,508,571,581,588,595,641,655 | 454,472,486,492,509,518,539,561,580,594,657 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
-| 5 | 524,596,642 | 501,595,641 | core-agent-system, agent-system |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,654,663 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630,656 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629,654 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,473,480,492,509,513,518,541,561,566,594 | 439,452,472,479,491,535,552,593 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 4 | 486,571,581,588,595,641 | 454,484,492,509,518,539,541,561,580,594 | core-agent-system, file-scope-lifecycle, agent-system |
+| 5 | 501,508,596,642 | 472,486,570,595,641 | file-scope-lifecycle, agent-system |
+| 6 | 524 | 501 | core-agent-system |
+| 7 | 536 | 524 | agent-system |
+| 8 | 553 | 536,548 | agent-system |
+| 9 | 657 | 553,656 | orchestrator |
+| 10 | 655 | 513,657 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -114,6 +119,7 @@ next_project_number: 664
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
+  └─ 655 [NOT STARTED] — Make orchestration branch-aware with a per-invocation branch... (see above)
 
 ### Agent System
 
@@ -125,9 +131,6 @@ next_project_number: 664
 512 [PLANNED] — Exempt built-in commands from the dead-command-recommendation...
 529 [NOT STARTED] — Evaluate whether formal:logic implement routing should...
 530 [NOT STARTED] — Land the three agent-system context extensions recorded by...
-535 [NOT STARTED] — Carve a task's own specs/ artifacts out of...
-  └─ 541 [NOT STARTED] — Stop git-snapshot.sh --no-revert artifacts from contaminating...
-536 [NOT STARTED] — Source-store-aware commit path and plan-time...
 537 [NOT STARTED] — Plan-compliance spot-check misses evidence-probe-scoped Goals
 539 [NOT STARTED] — State the precedence and snapshot-prerequisite rules for a...
   └─ 540 [NOT STARTED] — Record five measured lean4 facts: the decide-synthesis...
@@ -164,6 +167,10 @@ next_project_number: 664
 640 [NOT STARTED] — Add a derived-percentage bug class to the census methodology...
 645 [NOT STARTED] — Fix the .mcp.json merge defect that drops a hand-authored...
 533 [NOT STARTED] — lake-build-guard replays stale result for env lean FILE
+535 [NOT STARTED] — Carve a task's own specs/ artifacts out of...
+  └─ 541 [NOT STARTED] — Stop git-snapshot.sh --no-revert artifacts from contaminating...
+536 [NOT STARTED] — Source-store-aware commit path and plan-time...
+  └─ 553 [NOT STARTED] — Name the typst-sync gate as the cause when... (see above)
 546 [NOT STARTED] — Diagnose the zero-result literature retrieval and settle the...
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
 570 [NOT STARTED] — Stop the stall signal firing on commits it cannot attribute...
@@ -347,7 +354,7 @@ MEASURED SCOPE CORRECTION (2026-11-19, after this record was written). The sente
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 654, Task 656
+- **Dependencies**: Task 553, Task 654, Task 656
 
 **Description**: Branch-topology ruling, then milestone automation and review gates
 
@@ -457,7 +464,7 @@ Final acceptance check: regenerate the ROADMAP.md of /home/benjamin/Projects/Sap
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 654, Task 657
+- **Dependencies**: Task 513, Task 654, Task 657
 
 **Description**: Make orchestration branch-aware with a per-invocation branch and squash landing
 
@@ -4132,7 +4139,7 @@ surface, and that rationale does not survive into this repository.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: Task 548
+- **Dependencies**: Task 536, Task 548
 
 **Description**: META TASK. ONE defect, ONE record: when `git-commit-scoped.sh`'s commit attempt is refused by
 this repository's typst-sync pre-commit gate, the script's own caller-facing verdict misnames the
@@ -5818,7 +5825,7 @@ as a number resolving to an unrelated record here.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 524
 
 **Description**: Two gaps surfaced when a lean implementation task edited the agent-system source store (~/.config/nvim) from this repository. (1) COMMIT SCOPING: git-commit-scoped.sh (source: agent-system/extensions/core/scripts/git-commit-scoped.sh) resolves PROJECT_ROOT from its own BASH_SOURCE location (SCRIPT_DIR/common_repo_root, near line 233) and cd's there before staging, so it can only commit in the repository whose deploy tree it lives in; it also stages whole files. A task editing agent-system/extensions/lean/index-entries.json and context/project/lean4/domain/ladder-counter-observables.md in the source store hit a pre-existing uncommitted FOREIGN hunk in the same JSON file (an unrelated line_count bump), and had to hand-stage a HEAD-derived blob carrying only its own edits (git hash-object + git update-index --cacheinfo) and then run plain `git commit` with the session trailer by hand -- bypassing the whole scoped-commit contract (commit-lock mutex serialization, ephemeral-exclusion injection, the V3 degenerate-pathspec gate, the session-trailer convention). Deliverable: EITHER a source-store-aware commit path (e.g. an opt-in --repo-root parameter whose default remains today's BASH_SOURCE-derived resolution so every existing caller is byte-identical, which also forces a decision on where the commit-lock mutex and claim leases live when the committed repo is not the calling repo), OR -- if a second repository root is judged out of scope for that script -- a hunk-scoped staging procedure documented verbatim in the source-store/deploy boundary narrative (.claude/context/standards/source-store-deploy-boundary-narrative.md, source under agent-system/extensions/core/context/standards/) so an agent follows a sanctioned recipe instead of improvising git plumbing. (2) REGISTRATION-DESCRIPTION REVIEW: when the CONTENT of a registered context note is rewritten, two registration DESCRIPTIONS of that note -- the extension's source-store README.md row and the index-entries.json summary -- can still assert claims the rewrite overturns. In the observed case both carried a sentence the task's result refuted, and the plan's explicit 'no registration change required' item did not anticipate it. Deliverable: a plan-time check (planner-agent and/or the plan-format standard) that whenever a plan rewrites the content of a registered context note, that note's registration descriptions are enumerated as review targets rather than assumed stable. Originating observation: specs/775_residue_index_factorization_lemma/issues.jsonl entry iss_1791841137268_YNCuUv (class: cross-task ownership/territory, severity minor, resolution worked_around). SCOPE NOTE: all edits land in the source store under ~/.config/nvim/agent-system/, never in a deployed .claude/ tree (see .claude/rules/source-store-deploy-boundary.md).
 
@@ -5841,7 +5848,7 @@ as a number resolving to an unrelated record here.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 567
 
 **Description**: Carve a task's own specs/ artifacts out of git-commit-phase.sh's containment filter, so a task's own plan file is never dropped from its own phase commit.
 
@@ -7484,7 +7491,7 @@ change); NO cited entry carries a contrary `suggested_channel` hint -- every one
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
-- **Dependencies**: Task 328, Task 430, Task 435, Task 448, Task 461, Task 472, Task 476, Task 484, Task 486
+- **Dependencies**: Task 328, Task 430, Task 435, Task 448, Task 461, Task 472, Task 476, Task 484, Task 486, Task 570
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json (that file carries NO top-level source_dir, only per-extension entries) and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -7786,7 +7793,7 @@ SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, neve
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
-- **Dependencies**: Task 430, Task 446, Task 484, Task 494
+- **Dependencies**: Task 430, Task 446, Task 484, Task 494, Task 541
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

@@ -114,12 +114,12 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 2: Write the Seven Dependency Edges [NOT STARTED]
+### Phase 2: Write the Seven Dependency Edges [COMPLETED]
 
 **Goal**: Put every NEEDS EDGE ruling, and the edge judgment 3 requires, into `specs/state.json`.
 
 **Tasks**:
-- [ ] For each row below, run `bash .claude/scripts/update-task-status.sh preflight <target> edge_only "$session_id" --depends-on-add='[<pred>]'`, one call per edge, in this order:
+- [x] For each row below, run `bash .claude/scripts/update-task-status.sh preflight <target> edge_only "$session_id" --depends-on-add='[<pred>]'`, one call per edge, in this order: *(completed)*
 
   | # | Target (gains the dependency) | Predecessor | Kind |
   |---|---|---|---|
@@ -131,11 +131,11 @@ Phases within the same wave can execute in parallel.
   | 6 | 657 branch_topology_ruling_and_milestone_automation | 553 git_commit_scoped_gate_refusal_diagnostic | territory |
   | 7 | 655 branch_aware_orchestration_and_squash_landing | 513 phase_commit_boundary_mechanical_check | semantic |
 
-- [ ] After each call, confirm the edge with `jq '.active_projects[]|select(.project_number==<target>)|.dependencies' specs/state.json`.
-- [ ] If the write-time cycle refusal rejects an edge, stop the phase, record the refused edge and the reported cycle, and mark the phase `[PARTIAL]`. Do not invent a replacement edge.
-- [ ] Run `bash .claude/scripts/validate-state.sh --deep` after all seven are written.
-- [ ] Run the drain confirmation the `--depends-on-add` header assigns to the caller: `bash .claude/scripts/orchestrate-cycle-plan.sh --dry-run --state-file specs/state.json 567 535 541 486 570 501 524 536 553 513 657 655`. A report that a member is blocked by an open non-member (for example 484 or 548) is expected and is not a failure; a report of a cycle or an undrainable set is.
-- [ ] Regenerate `specs/TODO.md` with `bash .claude/scripts/generate-todo.sh` if the edge calls did not already do so.
+- [x] After each call, confirm the edge with `jq '.active_projects[]|select(.project_number==<target>)|.dependencies' specs/state.json`. *(completed)*
+- [x] If the write-time cycle refusal rejects an edge, stop the phase, record the refused edge and the reported cycle, and mark the phase `[PARTIAL]`. Do not invent a replacement edge. *(completed)*
+- [x] Run `bash .claude/scripts/validate-state.sh --deep` after all seven are written. *(completed)*
+- [x] Run the drain confirmation the `--depends-on-add` header assigns to the caller: `bash .claude/scripts/orchestrate-cycle-plan.sh --dry-run --state-file specs/state.json 567 535 541 486 570 501 524 536 553 513 657 655`. A report that a member is blocked by an open non-member (for example 484 or 548) is expected and is not a failure; a report of a cycle or an undrainable set is. *(completed)*
+- [x] Regenerate `specs/TODO.md` with `bash .claude/scripts/generate-todo.sh` if the edge calls did not already do so. *(completed)*
 
 **Timing**: 0.5 hours
 
