@@ -1,7 +1,7 @@
 # Implementation Plan: Task #659
 
 - **Task**: 659 - Never demote on an ignored-specs skip
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: Task 658 (completed) supplies `scripts/lib/specs-ignore-lib.sh`'s predicate and `git-commit-scoped.sh`'s V13 exit-code split (8/9); this plan builds on both and must not re-implement either
 - **Research Inputs**: specs/659_never_demote_on_ignored_specs_skip/reports/01_never-demote-ignored-specs-skip.md

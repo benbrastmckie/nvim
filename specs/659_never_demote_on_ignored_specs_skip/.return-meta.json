@@ -27,21 +27,38 @@
       "category": "PATTERN",
       "source_artifact": "specs/659_never_demote_on_ignored_specs_skip/summaries/01_never-demote-ignored-specs-skip-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["specs-ignore-lib", "V13", "test-fixture", "setup_sandbox", "git-commit-scoped", "gitignore"]
+      "suggested_keywords": [
+        "specs-ignore-lib",
+        "V13",
+        "test-fixture",
+        "setup_sandbox",
+        "git-commit-scoped",
+        "gitignore"
+      ]
     },
     {
       "content": "When a phase's own declared verification bullet surfaces a FAIL that traces to a file outside the plan's Files to modify / the task's declared file_scope, confirm it is genuinely pre-existing by running the specific failing check directly against the live, unmodified file (not by git-stashing a multi-file uncommitted change set in a shared working tree, which risks losing or scrambling concurrent work). Record the confirmed-pre-existing finding as a non-blocking issues.jsonl entry, add a #### Reasoned Exclusions record to the plan citing that entry as evidence, and close the phase [COMPLETED WITH EXCLUSIONS] rather than either silently claiming a clean pass or parking the phase at [PARTIAL].",
       "category": "PATTERN",
       "source_artifact": "specs/659_never_demote_on_ignored_specs_skip/summaries/01_never-demote-ignored-specs-skip-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["reasoned-exclusions", "pre-existing-defect", "verification", "completed-with-exclusions", "scope-boundary"]
+      "suggested_keywords": [
+        "reasoned-exclusions",
+        "pre-existing-defect",
+        "verification",
+        "completed-with-exclusions",
+        "scope-boundary"
+      ]
     }
   ],
   "metadata": {
     "session_id": "sess_1795130570_6d4a1f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 7,
     "phases_total": 7
   },
