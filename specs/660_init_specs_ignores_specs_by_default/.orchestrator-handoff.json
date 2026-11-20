@@ -1,0 +1,18 @@
+{
+  "task_number": 660,
+  "phase": "plan",
+  "status": "planned",
+  "session_id": "sess_1795130570_6d4a1f_660",
+  "dispatch_seq": 10,
+  "phases_completed": 0,
+  "phases_total": 6,
+  "summary": "Wrote a 6-phase linear implementation plan for making a freshly initialized repository land with its whole specs tree gitignored. The design adopts the research report's root-level managed-block approach gated on git ls-files -- specs/ being empty, and expands scope beyond the three originally declared files to fold in check-runtime-file-tracking.sh's Check C and both affected test suites, because plan authoring found test-init-specs.sh Case 6 is a live break under the new default rather than the optional follow-on the report had described. The final phase's negative control asserts the reference repository's tracked specs tree is untouched against the git index, not against any script's exit code.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/660_init_specs_ignores_specs_by_default/plans/01_init-specs-ignores-by-default.md",
+      "summary": "6-phase plan: lib renderer, init-specs.sh fresh-repo detection and root-level /specs/ managed block, posture-aware Check C, both-posture tests, standards posture split plus manual opt-in runbook, redeploy with an index-asserted negative control."
+    }
+  ]
+}
