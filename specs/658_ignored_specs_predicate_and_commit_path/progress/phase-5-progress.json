@@ -1,0 +1,21 @@
+{
+  "phase": 5,
+  "phase_name": "git-staging-scope.md -- Per-Operation Contract for Both Postures",
+  "started_at": "2026-11-20T04:00:00Z",
+  "last_updated": "2026-11-20T04:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read git-staging-scope.md before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add exit 8/9 rows to Exit-Code Contract table", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 3, "description": "Add V13 gate label after V10", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 4, "description": "Correct gate-label enumeration intro sentence", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 5, "description": "Amend Positive-Pathspec Ignore-Advisory Hazard scoped prohibition + cross-references + measured plain-mv finding", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 6, "description": "Add new both-postures per-operation subsection", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 7, "description": "No task-number references / no record-versioning language", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Measured the real call-site rename pattern (plain mv + pathspec pair, per Rename and Directory-Move Staging) against the modified script directly, rather than relying only on AA6's git-mv probe", "result": "worked", "reason": "AA6 used git mv per the plan's own Phase 3 wording, which pre-stages the destination and sidesteps V13 via index-awareness; the plain-mv pattern is what real call sites actually use (commands/todo.md's accumulator), and it DOES exercise V13 (destination dropped, exit 9, source's deletion still lands) -- documented this measured distinction in the Tracked-vs-moved paragraph"},
+    {"approach": "check-record-versioning.sh flagged one new advisory for 'no longer tracked by git' wording", "result": "reworded", "reason": "avoided even the advisory tier by describing git's tracking state without the flagged phrase; file now carries the same 9 pre-existing advisories as baseline, 0 new, 0 blocking"}
+  ],
+  "handoff_count": 0
+}

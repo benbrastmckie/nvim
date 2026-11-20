@@ -485,7 +485,7 @@ comment-only, so no behaviour outside those two files' own coverage changes.
 
 ---
 
-### Phase 5: `git-staging-scope.md` — Per-Operation Contract for Both Postures [NOT STARTED]
+### Phase 5: `git-staging-scope.md` — Per-Operation Contract for Both Postures [COMPLETED]
 
 **Goal**: The standards document states the contract for a tracked-`specs` repository and for a
 wholly- or partly-ignored one, documents `8`/`9` and `V13` beside the existing codes and gate
@@ -493,36 +493,41 @@ labels, and reconciles the new gate's use of `git check-ignore -q` with the exis
 instead of contradicting it.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md` immediately
-  before editing.
-- [ ] Add rows for exit `8` and exit `9` to the `### Exit-Code Contract and Safety Gates` table
+- [x] Re-read `agent-system/extensions/core/context/standards/git-staging-scope.md` immediately
+  before editing. *(completed)*
+- [x] Add rows for exit `8` and exit `9` to the `### Exit-Code Contract and Safety Gates` table
   (currently at line 809), in the same voice as the existing rows, each stating the precedence
-  relationship to `6` and `7` and that both are observability rather than refusals.
-- [ ] Add a `- **V13** —` gate label after the existing `V10` entry, in the same voice: the
+  relationship to `6` and `7` and that both are observability rather than refusals. *(completed)*
+- [x] Add a `- **V13** —` gate label after the existing `V10` entry, in the same voice: the
   live-reproduced defect (an untracked, gitignored positive pathspec reaching case 1 and refusing
   the whole invocation under V7's exit `2`), the placement rule, the dedicated `ignored_dropped`
   ledger and why it is **not** mirrored into `dropped_pathspecs` (D1), and a cross-reference to
-  the new library.
-- [ ] Update the subsection's own introductory sentence, which today lists the documented gate
+  the new library. *(completed)*
+- [x] Update the subsection's own introductory sentence, which today lists the documented gate
   labels as "(V2, V3, V5, V6, V8, V9)" while the table and label list already carry V10 — bring
-  that enumeration current, including V13.
-- [ ] Amend `## Positive-Pathspec Ignore-Advisory Hazard` (line 61) to scope its existing
+  that enumeration current, including V13. *(completed)*
+- [x] Amend `## Positive-Pathspec Ignore-Advisory Hazard` (line 61) to scope its existing
   prohibition explicitly (Risk R1): "`git check-ignore -q` MUST NOT be used to detect **this**
   case" — the tracked-but-ignore-matching advisory shape, where the primitive disagrees with
   `git add` — and add a forward pointer stating that the **untracked**-and-ignored question is a
   different question, that the same index-awareness is exactly what makes `check-ignore -q` the
   correct primitive for it, and that `V13` answers it through the shared library. Add the matching
-  back-reference from the new `V13` label.
-- [ ] Add a new subsection, a sibling of `## Per-Operation Scope`, stating for each of
+  back-reference from the new `V13` label. *(completed; also measured and documented the real
+  plain-mv call-site pattern's outcome in the Tracked-vs-moved-distinction paragraph -- see
+  progress file)*
+- [x] Add a new subsection, a sibling of `## Per-Operation Scope`, stating for each of
   `research` / `plan` / `implement`: a tracked-`specs` repository commits exactly as it does
   today, unchanged; a repository whose `specs` tree is wholly or partly gitignored sees the
   relevant paths dropped under `V13` with a non-failure outcome; and **what gets staged does not
   change** in either posture — the staging lists are identical, only the outcome reported for an
-  ignored member of such a list differs.
-- [ ] Add no task-number references and no record-versioning language anywhere in the file
+  ignored member of such a list differs. *(completed: "## Per-Operation Contract: Tracked vs.
+  Gitignored specs")*
+- [x] Add no task-number references and no record-versioning language anywhere in the file
   (`rules/no-task-references-in-deliverables.md`,
   `rules/no-record-versioning-in-deliverables.md`): state the current contract only, never that it
-  "previously" said something else.
+  "previously" said something else. *(completed: check-task-references.sh 0 occurrences;
+  check-record-versioning.sh 0 BLOCKING, 9 ADVISORY -- identical to this file's own pre-edit
+  baseline, 0 new)*
 
 **Timing**: 1.5 hours
 
@@ -549,11 +554,22 @@ repository (D8).
 
 **Verification**:
 - Diff read-through confirms every changed hunk is prose, and that the amended prohibition and the
-  new `V13` label cross-reference each other.
+  new `V13` label cross-reference each other. *(confirmed: 113 insertions/20 deletions, entirely
+  prose)*
 - `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
-  reports both gates running (never SKIP) and passing.
+  reports both gates running (never SKIP) and passing. *(measured: gate 4 (task-reference lint)
+  PASSES; gate 3 (doc-lint) runs (never SKIP) but FAILS -- its only two finding classes are
+  exactly the two the plan already anticipates and defers: (a) "deployed script content drift"
+  for this task's own not-yet-redeployed source-store files (the general pre-redeploy state
+  Phase 6's redeploy resolves), and (b) Rule R's `git-staging-scope.md` line_count mismatch
+  (1091 declared vs. 1184 actual) -- precisely this phase's own declared Scope Hypothesis,
+  whose reconciliation D8 explicitly schedules in Phase 6, not here. No other finding class
+  appeared. Re-running this same gate-3/4 invocation after Phase 6's redeploy and reconciliation
+  is expected to clear it.*
 - `bash .claude/scripts/check-task-references.sh` and
   `bash .claude/scripts/check-record-versioning.sh` report no new findings for the edited file.
+  *(confirmed: 0 task-reference occurrences; 0 BLOCKING / 9 ADVISORY record-versioning findings,
+  identical to this file's own pre-edit baseline)*
 
 ---
 

@@ -69,15 +69,27 @@ the same nonzero `git add` exit — but unlike the exclude-entry case, the add d
 genuinely fail: the file is staged correctly. Trusting `git add`'s exit code here is a false
 negative, not a hard failure, and the two cases must not be treated as the same defect.
 
-**`git check-ignore -q` MUST NOT be used to detect this case.** It is index-aware and reports
-"not ignored" (exit 1) for exactly these already-tracked paths — directly contradicting `git
-add`'s own advisory on the same path. Only `git check-ignore -v --no-index` agrees with `git
-add`'s view, and even that is unnecessary: the sanctioned implementation (`git-commit-scoped.sh`'s
-V7 gate, documented in that script's own header) does not pre-check at all. It captures `git add`'s
-output and exit code without branching on them, then verifies ACTUAL POST-ADD INDEX STATE per
-positive pathspec (`git ls-files --error-unmatch` plus a `git diff --quiet` residual check) —
-tolerating the advisory false negative while still refusing a genuine failure (e.g. the
-out-of-repo-pathspec hard failure, which stages nothing and must keep refusing).
+**`git check-ignore -q` MUST NOT be used to detect THIS case** — the tracked-but-ignore-matching
+advisory shape above, where the primitive disagrees with `git add`'s own exit code. It is
+index-aware and reports "not ignored" (exit 1) for exactly these already-tracked paths —
+directly contradicting `git add`'s own advisory on the same path. Only `git check-ignore -v
+--no-index` agrees with `git add`'s view, and even that is unnecessary: the sanctioned
+implementation (`git-commit-scoped.sh`'s V7 gate, documented in that script's own header) does
+not pre-check at all. It captures `git add`'s output and exit code without branching on them,
+then verifies ACTUAL POST-ADD INDEX STATE per positive pathspec (`git ls-files --error-unmatch`
+plus a `git diff --quiet` residual check) — tolerating the advisory false negative while still
+refusing a genuine failure (e.g. the out-of-repo-pathspec hard failure, which stages nothing and
+must keep refusing).
+
+**The UNTRACKED-and-ignored question is a different question, answered by `git check-ignore -q`
+directly.** "Is this path, which is NOT yet tracked, gitignored" is exactly the question V13 (see
+"Exit-Code Contract and Safety Gates" below) exists to answer, and the SAME index-awareness that
+makes `git check-ignore -q` the WRONG primitive for the tracked-but-ignore-matching shape above is
+precisely what makes it the CORRECT primitive for this one: an untracked path has no index entry
+to disagree with, so there is no advisory-vs-actual-outcome gap for the primitive to misreport.
+V13 answers this question through `scripts/lib/specs-ignore-lib.sh`'s shared predicate rather
+than a re-implemented inline check. See V13's own gate-label entry below for the full account,
+and the forward cross-reference back to this paragraph it carries.
 
 **Index presence is NOT the universal success signal, and the gate does not treat it as one.**
 A positive pathspec whose every tracked file `git add` just staged as DELETED is correctly ABSENT
@@ -95,13 +107,21 @@ simply no longer refused.
 
 **Tracked-vs-moved distinction, by mechanism**: this hazard applies only to a path that is
 ALREADY TRACKED when the ignore rule first matches it. A file relocated by a plain `mv` into an
-ignore-matched destination is, at that destination, a BRAND-NEW UNTRACKED path — `git add`
-genuinely drops it, with nothing staged, because there is no existing index entry for `git
-ls-files --error-unmatch` to find. The V7 post-add verification above correctly refuses this
-case rather than tolerating it. "Rename and Directory-Move Staging" below describes the
-pairing obligation for a move's two endpoints; a caller moving a file INTO an ignore-matched
-directory needs its own destination-ignored guard on top of that pairing — this contract's V7
-tolerance does not and cannot substitute for one.
+ignore-matched destination is, at that destination, a BRAND-NEW UNTRACKED path — V13 classifies
+and drops it before `git add` ever sees it (the destination-ignored guard "Rename and
+Directory-Move Staging" below says such a caller needs, now provided mechanically rather than
+left to the caller). Measured directly against the paired-pathspec pattern that section mandates
+(both the old and new paths named together, a plain `mv` — never `git mv` — having already moved
+the content): the vacated source path is still tracked and still resolves against `HEAD`, so it
+lands via the existing fully-staged-deletion acceptance exactly as an ordinary move's source half
+does, while the destination is dropped under V13 with a non-failure `NOTE:`, yielding the
+partial-ignore exit `9`. No tracked content is lost — the moved file remains on disk at its new,
+correctly-still-gitignored location; git correctly stops tracking it there, matching the
+repository's own ignore configuration. A
+caller that pre-stages the move itself (`git mv`, rather than a plain `mv` plus this script's own
+`git add`) sidesteps V13 entirely for the SAME reason the tracked-but-ignore-matching shape above
+does: the destination is already a tracked index entry by the time this script runs, so
+`path_is_gitignored` correctly reports it as not ignored, and the rename commits normally.
 
 **`git add -f` / `--ignore-errors` is not the sanctioned remedy.** Either would also force-stage
 a genuinely untracked, genuinely-should-stay-ignored path — the exact over-staging this contract
@@ -255,6 +275,35 @@ acquired at the shared command preflight gate, which prevents two dispatches aga
 task number from running concurrently in the first place. A reader evaluating whether a
 same-task staging scope needs its own concurrency remedy should start there rather than
 re-deriving it by search.
+
+## Per-Operation Contract: Tracked vs. Gitignored `specs`
+
+The scopes above describe WHAT each operation stages. This section states the contract for the
+TWO POSSIBLE POSTURES of the target repository's `specs` tree itself, answered once per
+repository (and once per pathspec, for a partial posture) by `scripts/lib/specs-ignore-lib.sh`
+and consulted by V13 (see "Exit-Code Contract and Safety Gates" below). There is no
+configuration key or global switch for this — the posture is determined at runtime from the
+target repository's own `.gitignore` state, for every one of `research`, `plan`, and `implement`
+alike:
+
+- **A repository whose `specs` tree is TRACKED** (this repository's own root is the reference
+  case, tracking tens of thousands of `specs/**` files) commits exactly as described in the
+  scopes above, unchanged. V13 never fires for a tracked path — `path_is_gitignored`'s
+  index-awareness guarantees this structurally, not by convention.
+- **A repository whose `specs` tree is WHOLLY OR PARTLY gitignored** sees exactly the same
+  staging LISTS built by the scopes above — `ephemeral_excludes`, the task directory, `TODO.md`,
+  `state.json`, and so on are computed identically either way. What differs is only the OUTCOME
+  reported for whichever members of that list resolve to an untracked, gitignored path: V13
+  drops each such member before `git add` can see it, and the invocation reports that drop as
+  its own dedicated, non-failure exit code (`8` for an all-ignored pathspec, `9` when at least
+  one trackable member still lands) rather than as a staging failure indistinguishable from a
+  genuine one.
+
+**What never changes between the two postures**: the set of paths a caller declares for staging.
+This contract's commit-scope recipes (the Reference Template below, the per-operation scopes
+above) are never conditioned on whether the target repository ignores `specs/` — a caller does
+not need to detect or branch on the posture itself. The posture only changes what the EXIT CODE
+and stderr NOTE communicate about a member of that same, unconditionally-computed list.
 
 ## Multi-Task Application
 
@@ -809,8 +858,8 @@ left for each caller to rediscover:
 ### Exit-Code Contract and Safety Gates
 
 `git-commit-scoped.sh`'s own header documents its full exit-code table and safety-gate labels
-(V2, V3, V5, V6, V8, V9); this subsection mirrors that table here so a reader of this document is
-not left to open the script for it.
+(V2, V3, V5, V6, V8, V9, V10, V13); this subsection mirrors that table here so a reader of this
+document is not left to open the script for it.
 
 | Exit code | Meaning |
 |-----------|---------|
@@ -822,6 +871,8 @@ not left to open the script for it.
 | `5` | The V8 refusal below: a commit WAS created (`commit_exit` was `0`) but one or more named positive pathspecs did not land in `HEAD` as intended. Dedicated and never folded into `commit_exit`, since the defining feature of this defect is that `commit_exit` is already `0`. |
 | `6` | The V9 decision below: a commit WAS created (`commit_exit` was `0`) and one or more positive pathspecs were dropped as out-of-repository. Observability, not a refusal — the valid paths already committed successfully. |
 | `7` | The V10 decision below: a commit WAS created (`commit_exit` was `0`) and one or more positive pathspecs were dropped as outside the dispatching task's own declared `file_scope`. Observability, not a refusal — the valid paths already committed successfully. Never emitted when `--task` is omitted, nor when V9 also fired for the same invocation (V9's own exit `6` keeps precedence by placement). The all-dropped shape stays exit `2` (V3, above) and the survivors-but-no-commit shape stays exit `4` (V6, above) — reaching `7` requires `commit_exit` to already be `0`. |
+| `8` | The V13 decision below (all-ignored shape): every surviving positive pathspec was dropped as gitignored, AND no other drop reason contributed, AND no positive entry survives to commit. Evaluated BEFORE V3 above, since this shape would otherwise reach V3's own refusal first. Observability, not a refusal — this is the target repository's own configuration (a wholly or partly gitignored `specs` tree), never a staging failure, and is deliberately distinct from both V3's exit `2` and V6's exit `4`: a V13 drop's cause is definitively known and definitively benign, unlike the ambiguous-cause shapes those two gates exist to flag. No `git add` or `git commit` is attempted. |
+| `9` | The V13 decision below (partial-ignore shape): a commit WAS created (`commit_exit` was `0`) and one or more positive pathspecs were dropped as gitignored. Observability, not a refusal — the valid trackable paths already committed successfully. Placed AFTER the V10 decision above, giving the precedence chain `6` (V9) > `7` (V10) > `9` (V13) by the same precedence-by-placement convention V9 and V10 already use relative to each other. Requires `commit_exit` to already be `0`; the all-ignored shape (nothing survives to commit) stays exit `8` above instead. |
 
 Gate labels, in the same voice as the script header:
 
@@ -912,6 +963,37 @@ Gate labels, in the same voice as the script header:
   EMPTY, which disables this entire check by construction, the same single-disable-switch shape
   V5's own fail-open posture already uses. See exit code `7` above for the resulting observable
   outcome on a commit that nonetheless succeeds.
+- **V13** — a positive pathspec names an UNTRACKED path that is also gitignored, consulted via
+  `scripts/lib/specs-ignore-lib.sh`'s `path_is_gitignored` (never a re-implemented `git
+  check-ignore` call) — a live-reproduced defect: before this gate existed, V2's matched-case
+  test admitted such a path with no ignore-awareness, `git add` silently skipped it, and the V7
+  post-add verification further below then refused the WHOLE invocation with exit `2`'s
+  "genuinely unstaged" wording — indistinguishable from a real staging failure, and in a mixed
+  pathspec, withholding every OTHER trackable sibling path's legitimate commit along with it.
+  This gate now classifies such a pathspec as its own drop reason BEFORE V2's matched case can
+  claim it, exactly as V9/V10/V11 already do for their own cases. Evaluated AFTER V9, V10, and
+  V11 (so a path that is also out-of-repository, out-of-`file_scope`, or part of a
+  cached-untracking shape keeps its existing, already-tested classification) and BEFORE V2's
+  matched case (so a doomed path never reaches the single all-or-nothing `git add` call).
+  `path_is_gitignored` is INDEX-AWARE: a path that is already TRACKED reports "not ignored" even
+  when it also matches a `.gitignore` rule, under both a parent-directory rule and a direct
+  file-level rule — this is exactly the property that makes a separate tracked/untracked test
+  unnecessary here, and it is why V13 structurally cannot misclassify the pre-existing
+  tracked-but-ignore-matching advisory shape V7 already tolerates (see "Positive-Pathspec
+  Ignore-Advisory Hazard" above — that section's existing prohibition on `git check-ignore -q`
+  scopes to a DIFFERENT question, the tracked-but-ignore-matching advisory shape, not this one;
+  see the cross-reference added there). A V13-classified path is dropped with a `NOTE:`
+  (deliberately never an `ERROR:` — this is not a failure) textually distinct from V2's,
+  V9's, and V10's own messages, added to neither the add set nor the commit set, and recorded in
+  a dedicated `ignored_dropped` ledger that is deliberately NEVER mirrored into the shared drop
+  ledger V6 reads — a V13 drop's cause is definitively known and definitively benign, unlike the
+  ambiguous-cause shapes that ledger exists to flag for V6's exit `4`. When the predicate is
+  unavailable (a failed `source` of the library), V13 is a no-op and every pathspec falls
+  straight through to V2's matched case unchanged — today's behavior exactly. See exit codes `8`
+  and `9` above for the resulting observable outcomes. The predicate's shared-library placement
+  — one `specs_tree_is_gitignored`/`path_is_gitignored` pair, consulted by this one call site,
+  rather than an inline `git check-ignore` reimplemented per caller — mirrors
+  `lib/engine-written-state-paths-lib.sh`'s own already-established pattern for this script.
 
 **Recorded caller-escalation residual**: every call site other than
 `orchestrate-cycle-postflight.sh` still wraps the invocation as `cmd || echo "WARN: ...
@@ -931,7 +1013,14 @@ for "an unrecognized future exit code," which prints the same shape of named `ER
 number, exit code, non-blocking) without the durable `issue-record.sh` entry the explicit list
 gets — a real, if slightly reduced, observability gap rather than a silent swallow, and a
 natural candidate for that explicit list to adopt `7` by name in a future pass over this script.
-Neither path changes `halt` or `infra_exempt_cycle`. `verdict` and the task's own STATUS (not
+Exit `8` and exit `9` (V13) get a THIRD treatment, distinct from both of the above: their own
+dedicated `8|9)` arm, placed after the explicit `2|3|4|5|6)` list and before the `*)` catch-all,
+printing a `NOTE:`-level message (never `ERROR:`) and leaving the verdict JSON's attribution
+note empty — deliberately never promoted into the explicit ERROR-level list, because unlike
+exits `2`-`6` (and unlike `7`'s still-unresolved gap), an `8`/`9` outcome is never an
+orchestration defect at all: it is the target repository's own configuration (a wholly or
+partly gitignored `specs` tree). No `issue-record.sh` entry is fired for this arm — these are
+not issues. Neither path changes `halt` or `infra_exempt_cycle`. `verdict` and the task's own STATUS (not
 merely its issue log) ARE narrowly reassignable, but only inside one additional, separately-gated
 block sited immediately after this exit-code `case` statement: when the exit code is `2`, `3`,
 `4`, or `5` for an `implemented` dispatch whose completion-claim gate just passed (the exact
@@ -946,7 +1035,11 @@ committed, is never second-guessed. See `context/standards/status-markers.md`'s 
 subsection for the sanctioned terminal-state exception this implements. Exit `7` still has not
 been adopted into the explicit `2|3|4|5|6)` list above (the observability gap noted two
 paragraphs up), and is correspondingly excluded from the demotion gate as well — both by the same
-"a `*)` catch-all code might not mean a commit failed to land" fail-open reasoning.
+"a `*)` catch-all code might not mean a commit failed to land" fail-open reasoning. Exit `8` and
+exit `9` are two FURTHER deliberate exclusions from the demotion gate, for a stronger reason than
+`7`'s fail-open uncertainty: a task whose only "failure" is that its target repository ignores
+`specs/` must never be demoted to `partial` at all — that is the repository's own configuration,
+not evidence the task's own work failed to land.
 `orchestrate-unwind-dispatch.sh` and `lib/redeploy-checkpoint-lib.sh` are deliberately left on the
 `|| echo` idiom: both pass only fixed, caller-constructed literals to this script, never a
 `modified_files` entry, so neither is structurally exposed to this defect.
