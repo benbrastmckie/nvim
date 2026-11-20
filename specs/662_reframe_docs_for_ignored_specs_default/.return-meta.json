@@ -33,14 +33,26 @@
       "category": "PATTERN",
       "source_artifact": "specs/662_reframe_docs_for_ignored_specs_default/summaries/01_reframe-docs-ignored-specs-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["generate-context-line-counts.sh", "repo-root-guard", "source-store", "deployed-scripts", "index-entries.json"]
+      "suggested_keywords": [
+        "generate-context-line-counts.sh",
+        "repo-root-guard",
+        "source-store",
+        "deployed-scripts",
+        "index-entries.json"
+      ]
     },
     {
       "content": "verify-touched.sh's OWED fallback triggers whenever index-entries.json (or any other unmapped manifest/index file) is among the touched paths passed to it, expanding what looks like a small named-suite check into a ~98-suite, multi-minute cost-class-free sweep. Budget for this by using the bounded-build-waiter detached pattern (nohup + captured PID + kill -0 poll loop across tool calls) rather than a single foreground call with a short timeout, since the OWED sweep alone can exceed 10 minutes under load.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/662_reframe_docs_for_ignored_specs_default/summaries/01_reframe-docs-ignored-specs-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["verify-touched.sh", "OWED-fallback", "bounded-build-waiter", "unmapped-path", "cost-class-free"]
+      "suggested_keywords": [
+        "verify-touched.sh",
+        "OWED-fallback",
+        "bounded-build-waiter",
+        "unmapped-path",
+        "cost-class-free"
+      ]
     }
   ],
   "sapience_notes": [
@@ -85,7 +97,11 @@
     "session_id": "sess_1795130570_6d4a1f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
   },

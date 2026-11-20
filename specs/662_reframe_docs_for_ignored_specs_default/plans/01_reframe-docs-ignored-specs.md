@@ -1,7 +1,7 @@
 # Implementation Plan: Task #662
 
 - **Task**: 662 - Reframe docs for ignored-specs default
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (consumes the landed outputs of tasks 658-661)
 - **Research Inputs**: specs/662_reframe_docs_for_ignored_specs_default/reports/01_reframe-docs-ignored-specs.md
