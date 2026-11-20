@@ -116,7 +116,7 @@ All commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE (sk
 | `/merge` | `/merge` | Create pull/merge request for current branch (user-only) |
 | `/please` | `/please push origin feature-x` | Authorize one blocked push (user-only) |
 | `/telemetry` | `/telemetry --meta\|--review "<question>"\|--dream` | Cross-repo agent-system improvement proposals, read-only ad hoc telemetry inquiry, and speculative prompt-history theme surfacing |
-| `/roadmap` | `/roadmap [instruction]` | Maintain the `roadmap_batches`/`roadmap_notes` entries `specs/ROADMAP.md` renders from -- full pass with no argument, scoped to a quoted instruction otherwise |
+| `/roadmap` | `/roadmap [instruction]` | Maintain the `roadmap_milestones`/`primary_goals`/`roadmap_context` entries `specs/ROADMAP.md` renders from -- full pass with no argument, scoped to a quoted instruction otherwise |
 | `/recap` | `/recap` | Speak the latest `/orchestrate` run's recap through piper, or print it (user-only) |
 
 ### Batching

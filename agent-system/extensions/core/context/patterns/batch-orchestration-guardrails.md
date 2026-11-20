@@ -554,12 +554,12 @@ MT path but a defect in them fails loudly or is merely cosmetic, not a silent wr
 
 `orchestrate-suggest-next-batch.sh`'s `build_ready_set()` (non-terminal; not itself
 hold/implementing/blocked/partial; every `dependencies[]` entry absent-or-completed) and
-`roadmap-integration.sh`'s `render_next()` (a batch all of whose `task_ids` members are now
-terminal is omitted entirely; a batch with a mix of terminal and non-terminal members renders
-its still-live members only) are the SAME readiness concept — "is this task still something to
+`roadmap-integration.sh`'s whole-file render (a batch all of whose `task_ids` members are done
+collapses to one `(done)` line; a batch with a mix lists only its open members on its
+`/orchestrate` line) are the SAME readiness concept — "is this task still something to
 act on, or has it already finished" — applied at two different bars for two different purposes.
 `build_ready_set()`'s bar is stricter (it also excludes hold/implementing/blocked/partial, which
-`render_next()` does not need to, since those statuses are non-terminal and still rendered as
+the render does not need to, since those statuses are non-terminal and still rendered as
 live), and the two functions live in different scripts for different consumers (a next-batch
 suggestion vs. a roadmap render). They are not unified into one shared function — no live
 caller needs both bars at once, and premature unification would couple two scripts that

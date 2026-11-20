@@ -38,7 +38,7 @@ All 20 commands use checkpoint-based execution: GATE IN (preflight) -> DELEGATE 
 | `/fix-it` | `/fix-it [PATH...]` | Scan for FIX:/NOTE:/TODO:/QUESTION: tags |
 | `/refresh` | `/refresh` | Clean orphaned processes and old files |
 | `/spawn` | `/spawn N` | Spawn new tasks to unblock a blocked task |
-| `/roadmap` | `/roadmap [instruction]` | Maintain the roadmap_batches/roadmap_notes entries specs/ROADMAP.md renders from |
+| `/roadmap` | `/roadmap [instruction]` | Maintain the milestone, batch and context entries specs/ROADMAP.md renders from |
 | `/telemetry` | `/telemetry --meta\|--review "<question>"\|--dream` | Cross-repo improvement proposals, ad hoc telemetry inquiry, and prompt-history theme surfacing |
 | `/merge` | `/merge` | Create pull/merge request for current branch |
 | `/project-overview` | `/project-overview` | Interactive repo scan and project-overview.md generation |

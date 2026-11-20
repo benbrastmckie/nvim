@@ -302,14 +302,15 @@ only.
 
 **Suggested next batch**: from `orchestrate-suggest-next-batch.sh --next-batch`
 (`context/contracts/conclusion-stage.md`'s Step 7). The suggester first walks
-`specs/state.json`'s authored `roadmap_batches` array, in authored order: each batch's members
+`specs/state.json`'s authored batches (those under every non-closed `roadmap_milestones` entry,
+in milestone-then-batch order), in authored order: each batch's members
 are readiness-filtered locally, an empty-filtered batch is skipped at zero probe cost, and the
 first non-empty filtered batch is probed through the same admission chain every other candidate
 source uses. On success, the render names the batch's authored position and `description`
 (`Authored roadmap batch N -- {description}:`), notes any omitted not-ready member by name when
 the filtered set is a proper subset of the authored `task_ids`, and the three mechanical options
 below are NOT also rendered for that invocation. When no authored batch survives filtering and
-probing — including when `roadmap_batches` is absent or an empty array, which is a silent,
+probing — including when the store holds no authored batch at all, which is a silent,
 zero-probe fallback with no extra line — and at least one authored batch WAS checked, one
 explicit line states how many batches were checked, how many were skipped as empty-filtered, and
 how many were probed but deferred, before falling through to the mechanical options.
