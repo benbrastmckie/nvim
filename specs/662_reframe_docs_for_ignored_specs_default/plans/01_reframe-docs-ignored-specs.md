@@ -1,7 +1,7 @@
 # Implementation Plan: Task #662
 
 - **Task**: 662 - Reframe docs for ignored-specs default
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None (consumes the landed outputs of tasks 658-661)
 - **Research Inputs**: specs/662_reframe_docs_for_ignored_specs_default/reports/01_reframe-docs-ignored-specs.md
@@ -119,27 +119,29 @@ Both lines the dispatch flagged were checked against live state during this plan
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Place the Durability Statement [NOT STARTED]
+### Phase 1: Place the Durability Statement [COMPLETED]
 
 **Goal**: Task 661's drafted durability statement is present verbatim at the end of
 `orchestrator-runtime-files.md`'s Fresh-Repo Default section, so later phases can point at it.
 
 **Tasks**:
-- [ ] Read `specs/661_unbacked_specs_durability_options/summaries/01_unbacked-specs-durability-options-summary.md`,
+- [x] Read `specs/661_unbacked_specs_durability_options/summaries/01_unbacked-specs-durability-options-summary.md`,
       section "### Durability statement (verbatim, for the documentation record to place)", and
       copy the blockquoted statement byte-for-byte. Strip the `> ` quote markers, keeping the
-      text itself unmodified.
-- [ ] Insert it into `context/standards/orchestrator-runtime-files.md` as a new labelled
+      text itself unmodified. *(completed)*
+- [x] Insert it into `context/standards/orchestrator-runtime-files.md` as a new labelled
       paragraph immediately after the "Manual opt-in runbook" subsection's closing paragraph
       (currently ending `...see "Forward-Only Migration Note" below for the shared rationale.`,
       around line 592) and before `## Untracking Already-Committed Ephemeral Files` (currently
       line 593). Give it a short bold lead-in in the file's own existing style (e.g.
-      `**Durability of an ignored specs tree**:`).
-- [ ] Confirm the inserted text is byte-identical to the source: extract both and `diff` them.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` and
+      `**Durability of an ignored specs tree**:`). *(completed)*
+- [x] Confirm the inserted text is byte-identical to the source: extract both and `diff` them.
+      *(completed: normalized-whitespace diff empty; nested bold markup preserved)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` and
       confirm it reports the `standards/orchestrator-runtime-files.md` row corrected (declared
-      was 645, matching pre-edit actual).
-- [ ] Commit both files together as one green sub-step.
+      was 645, matching pre-edit actual). *(completed: ran the deployed `.claude/scripts/`
+      copy per the script's own repo-root guard; 645 -> 655, re-run reports 0 changed)*
+- [x] Commit both files together as one green sub-step. *(completed)*
 
 **Timing**: 0.75 hours
 

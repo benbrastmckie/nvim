@@ -590,6 +590,16 @@ included, because the consumer is deliberately switching postures rather than co
 drifted file. There is no retroactive history backfill either way — see "Forward-Only Migration
 Note" below for the shared rationale.
 
+**Durability of an ignored specs tree**: **If the specs tree is gitignored**, task state, reports,
+plans, and summaries exist only on this working copy's disk. No commit, branch, or repository
+preserves them. Losing or discarding this working copy loses all of it, with no git history to
+recover from. This project does not provide, and does not recommend adopting, a mechanism to back
+up an ignored specs tree — a sibling repository, an archive branch, or a sync tool each either
+reintroduces the cross-branch or cross-repository overhead the ignored posture exists to avoid,
+or is a host-level concern this project cannot verify or configure. If specs/ durability matters
+for a given repository, track it instead; the tracked posture remains fully supported and carries
+its own git history for free.
+
 ## Untracking Already-Committed Ephemeral Files
 
 If any ephemeral-class file was committed before this policy was applied (as observed live in

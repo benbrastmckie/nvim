@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "dispatch_seq": 14,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/662_reframe_docs_for_ignored_specs_default/plans/01_reframe-docs-ignored-specs.md",
-      "summary": "Six-phase, four-wave plan reframing nine core source-store surfaces for the ignored-specs posture, placing task 661's durability statement verbatim, with eager-context-budget and index-entries.json line_count gate collisions planned for explicitly."
-    }
-  ],
-  "phase_count": 6,
-  "estimated_hours": 5.5,
-  "dependency_waves": 4,
-  "next_steps": "Run /orchestrate 662 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 15,
   "metadata": {
-    "session_id": "sess_1795130570_6d4a1f_662",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "memory_candidates": [
-    {
-      "content": "In this codebase, any phase editing a file under a core extension's context/** tree must declare that extension's index-entries.json in the same phase's Files to modify and run generate-context-line-counts.sh --write there: check-extension-docs.sh Rule R fails on line_count drift, and verify-deploy.sh Gate 3 aggregates that doc-lint, so the drift is commit-blocking. Paths under rules/**, docs/**, and commands/** carry no indexed row and so have no such coupling -- index-entries.json paths are stored relative to context/, which is why a naive grep for the full source-store-relative path finds zero rows and can mislead a planner into thinking no coupling exists.",
-      "category": "PATTERN",
-      "source_artifact": "specs/662_reframe_docs_for_ignored_specs_default/plans/01_reframe-docs-ignored-specs.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["index-entries.json", "line_count", "Rule R", "coupled-generated-surface", "context-relative-paths"]
-    }
-  ]
+    "session_id": "sess_1795130570_6d4a1f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
