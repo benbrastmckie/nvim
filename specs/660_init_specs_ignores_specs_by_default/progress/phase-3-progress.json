@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Make Check C posture-aware",
+  "started_at": "2026-11-20T04:15:00Z",
+  "last_updated": "2026-11-20T04:35:00Z",
+  "objectives": [
+    {"id": 1, "description": "Source lib/specs-ignore-lib.sh with deploy-tree-first/source-store-fallback idiom", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-runtime-file-tracking.sh"]},
+    {"id": 2, "description": "Gate Check C on specs_tree_is_gitignored()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-runtime-file-tracking.sh"]},
+    {"id": 3, "description": "Leave Checks A and B unconditional", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Update summary output so skipped Check C is not reported as all-passed", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-runtime-file-tracking.sh"]},
+    {"id": 5, "description": "Update header contract for both postures", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/check-runtime-file-tracking.sh"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

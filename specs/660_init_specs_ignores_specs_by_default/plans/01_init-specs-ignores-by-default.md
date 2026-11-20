@@ -242,27 +242,27 @@ literal.
 
 ---
 
-### Phase 3: Make Check C posture-aware [NOT STARTED]
+### Phase 3: Make Check C posture-aware [COMPLETED]
 
 **Goal**: `check-runtime-file-tracking.sh` passes on a freshly bootstrapped repository whose
 whole `specs/` tree is ignored by design, without weakening the check for a tracked repository.
 
 **Tasks**:
-- [ ] Source `lib/specs-ignore-lib.sh` using the same deploy-tree-first / source-store-fallback
+- [x] Source `lib/specs-ignore-lib.sh` using the same deploy-tree-first / source-store-fallback
       idiom the script already uses for `lib/runtime-file-patterns.sh`
       (`${SCRIPT_DIR}/lib/specs-ignore-lib.sh`), failing loudly with a named error if absent, in
-      the same style as the existing library guard.
-- [ ] Gate Check C on `specs_tree_is_gitignored "$(git rev-parse --show-toplevel)"`: when it
+      the same style as the existing library guard. *(completed)*
+- [x] Gate Check C on `specs_tree_is_gitignored "$(git rev-parse --show-toplevel)"`: when it
       returns 0, print a named SKIP stating that the whole-tree-ignored posture makes the
       "provenance is not ignored" assertion inapplicable, and do not set `FAILURES`; when it
       returns non-zero, run today's assertion unchanged, including the `git check-ignore -v`
-      offending-line output and the never-run-`git rm --cached` remediation note.
-- [ ] Leave Checks A and B unconditional — `specs/.gitignore` is still written in both postures,
-      and no ephemeral file becomes tracked under either.
-- [ ] Update the summary output so a skipped Check C is not reported as "all three checks
-      passed".
-- [ ] Update the script's header contract: Check C's description and the stated exit-code
-      contract must name both postures.
+      offending-line output and the never-run-`git rm --cached` remediation note. *(completed)*
+- [x] Leave Checks A and B unconditional — `specs/.gitignore` is still written in both postures,
+      and no ephemeral file becomes tracked under either. *(completed)*
+- [x] Update the summary output so a skipped Check C is not reported as "all three checks
+      passed". *(completed)*
+- [x] Update the script's header contract: Check C's description and the stated exit-code
+      contract must name both postures. *(completed)*
 
 **Timing**: 0.75 hours
 

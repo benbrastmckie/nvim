@@ -11,7 +11,12 @@
 #       notes that the file stays on disk.
 #   C - Provenance not over-ignored: `.orchestrator-handoff.json` and `.return-meta.json` are
 #       NOT ignored. A repo that ignores them fails this check with the offending .gitignore
-#       line named via `git check-ignore -v`.
+#       line named via `git check-ignore -v`. POSTURE-AWARE: a repository whose whole `specs/`
+#       tree is gitignored by design (the fresh-repo default `init-specs.sh` writes when nothing
+#       is tracked under `specs/` yet -- see context/standards/orchestrator-runtime-files.md)
+#       makes this assertion inapplicable by construction, since durable provenance under an
+#       ignored `specs/` is ignored right along with everything else; Check C is SKIPPED (named,
+#       not silent) in that posture and run unchanged in the other.
 #
 # Checks A and B both derive their probe/pattern lists from scripts/lib/runtime-file-patterns.sh
 # -- the single canonical definition of the ephemeral-class membership, also consumed by
@@ -20,7 +25,9 @@
 # Repo Setup" block by tests/test-runtime-file-tracking.sh Case 3. Do not hand-add a class member
 # to either list below -- add it to the lib instead, in exactly one place.
 #
-# Exit code: 0 if all checks pass, 1 if any check fails.
+# Exit code: 0 if all checks pass or Check C was SKIPPED under the whole-tree-ignored posture,
+#            1 if any check fails. Both postures are summarized explicitly -- a skipped Check C
+#            is never reported as "all three checks passed".
 #
 # Usage: bash agent-system/extensions/core/scripts/check-runtime-file-tracking.sh
 #        (or the deployed copy: bash .claude/scripts/check-runtime-file-tracking.sh)
@@ -47,6 +54,16 @@ if [[ ! -f "$RUNTIME_LIB" ]]; then
 fi
 # shellcheck disable=SC1090
 . "$RUNTIME_LIB"
+
+# Same deploy-tree-first / source-store-fallback resolution as above, for the posture predicate
+# Check C consults.
+SPECS_IGNORE_LIB="${SCRIPT_DIR}/lib/specs-ignore-lib.sh"
+if [[ ! -f "$SPECS_IGNORE_LIB" ]]; then
+  echo "ERROR: shared library lib/specs-ignore-lib.sh not found at: $SPECS_IGNORE_LIB" >&2
+  exit 5
+fi
+# shellcheck disable=SC1090
+. "$SPECS_IGNORE_LIB"
 
 # Ephemeral-class representative paths (Check A), derived from the lib. Directory classes
 # (.lock/, .dispatch/, .deploy-lock/, .scope-lock/, .commit-lock/, .sessions/) are probed with a
@@ -115,21 +132,32 @@ else
   echo -e "${GREEN}Check B passed${NC} — no ephemeral-class file is tracked"
 fi
 
-# ── Check C: provenance not over-ignored ──────────────────────────────────────
+# ── Check C: provenance not over-ignored (posture-aware) ───────────────────────
 echo ""
 echo "Check C - durable provenance (.orchestrator-handoff.json / .return-meta.json) is NOT ignored:"
 c_failed=0
-for probe in "${DURABLE_PROBES[@]}"; do
-  if git check-ignore -q "$probe" 2>/dev/null; then
-    c_failed=1
-    offending_line=$(git check-ignore -v "$probe" 2>/dev/null)
-    echo -e "  ${RED}FAIL${NC} $probe is ignored (must be tracked): $offending_line"
-    echo "        remediation: remove the offending .gitignore line. Never run git rm --cached on this file."
-  else
-    echo -e "  ${GREEN}OK${NC}   $probe is not ignored"
-  fi
-done
-if [ "$c_failed" -eq 1 ]; then
+c_skipped=0
+repo_root_for_posture="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ -n "$repo_root_for_posture" ] && specs_tree_is_gitignored "$repo_root_for_posture"; then
+  c_skipped=1
+  echo -e "  ${GREEN}SKIP${NC} whole specs/ tree is gitignored by design (fresh-repo default) —"
+  echo "       the \"provenance is not ignored\" assertion is inapplicable in this posture."
+  echo "       See context/standards/orchestrator-runtime-files.md for the posture split."
+else
+  for probe in "${DURABLE_PROBES[@]}"; do
+    if git check-ignore -q "$probe" 2>/dev/null; then
+      c_failed=1
+      offending_line=$(git check-ignore -v "$probe" 2>/dev/null)
+      echo -e "  ${RED}FAIL${NC} $probe is ignored (must be tracked): $offending_line"
+      echo "        remediation: remove the offending .gitignore line. Never run git rm --cached on this file."
+    else
+      echo -e "  ${GREEN}OK${NC}   $probe is not ignored"
+    fi
+  done
+fi
+if [ "$c_skipped" -eq 1 ]; then
+  echo -e "${GREEN}Check C SKIPPED${NC} (whole-tree-ignored posture)"
+elif [ "$c_failed" -eq 1 ]; then
   FAILURES=1
   echo -e "${RED}Check C FAILED${NC} — durable provenance must never be gitignored or untracked."
 else
@@ -140,7 +168,11 @@ fi
 echo ""
 echo "================================================================================"
 if [ "$FAILURES" -eq 0 ]; then
-  echo -e "${GREEN}PASS${NC} — all three checks passed."
+  if [ "$c_skipped" -eq 1 ]; then
+    echo -e "${GREEN}PASS${NC} — Checks A and B passed; Check C SKIPPED (whole-tree-ignored posture)."
+  else
+    echo -e "${GREEN}PASS${NC} — all three checks passed."
+  fi
   exit 0
 else
   echo -e "${RED}FAIL${NC} — one or more checks failed. See context/standards/orchestrator-runtime-files.md."
