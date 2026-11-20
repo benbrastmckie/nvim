@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "dispatch_seq": 2,
-  "summary": "Wrote a five-phase, 8.5-hour plan for task 667. The task itself delivers the amending decision record, the urgent milestone-ref-land.sh --verify repair, and eight successor task records with edges; Elements 2-7 are built by those successors, not here. The unanswered bookkeeping-commit question is carried as an unconfirmed assumption, not a user ruling.",
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "summary": "All five plan phases closed. Wrote the amending decision record for R1-R3 and R5, repaired milestone-ref-land.sh --verify to tree equality (defect D1) with a negative fixture, created successor tasks 668-675 with dependency edges, narrowed 655 and wrote a finding into 666, then redeployed. Elements 2-7 are owned by the successors and are not built; the complete gate set was deferred to the batch stage and only the narrowed touched-path check (19 of 19 suites) was run.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/667_amend_branch_topology_per_batch_worktree_squash/plans/01_batch-worktree-squash-amendment.md",
-      "summary": "Five-phase plan: amending record, D1 verify repair, successor tasks, 655/666 revision and edges, redeploy."
+      "type": "summary",
+      "path": "specs/667_amend_branch_topology_per_batch_worktree_squash/summaries/01_batch-worktree-squash-amendment-summary.md",
+      "summary": "Implementation summary: amending record, D1 verify repair, successors 668-675, 655/666 revision, redeploy, deviations and follow-ups."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": []
 }

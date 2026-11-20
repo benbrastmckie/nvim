@@ -1,0 +1,21 @@
+{
+  "phase": 5,
+  "phase_name": "Redeploy and close",
+  "started_at": "2026-11-20T22:25:00Z",
+  "last_updated": "2026-11-20T22:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy, diff the edited scripts, check manifest registration", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Scoped touched-path check after redeploy", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Write the implementation summary", "status": "done",
+     "files_touched": ["specs/667_amend_branch_topology_per_batch_worktree_squash/summaries/01_batch-worktree-squash-amendment-summary.md"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "5.1", "description": "Run deploy-headless.sh from the repository root", "type": "altered",
+     "reason": "Run with --skip-verify because its inline verify-deploy.sh --skip-slow pass is a complete fast-gate sweep, which the dispatch's Batch Gate Deferral defers to the batch stage; the deploy reported landed_verify_skipped (exit 4), which is not a passed verification.",
+     "annotation": "*(deviation: altered — run with --skip-verify; the inline fast-gate sweep is deferred with the complete gate set to the batch stage; result landed_verify_skipped, exit 4)*"}
+  ],
+  "verification_notes": "Verification Tier full, DISCHARGED AGAINST THE SCOPED TIER per the dispatch's Batch Gate Deferral: bash .claude/scripts/verify-touched.sh over the four Phase 2 paths, run after the redeploy, 19 suites selected, 19 passed, 0 owed, 0 no-suite-by-class. The complete gate set was DEFERRED to the once-per-invocation batch stage and was not run independently in this dispatch; deploy-headless.sh's inline fast-gate pass was suppressed with --skip-verify for the same reason. diff: the four edited files are identical between the source store and .claude/scripts. sync-manifest-scripts.sh --check passed. validate-state.sh passed with warnings, 0 failed.",
+  "handoff_count": 0
+}

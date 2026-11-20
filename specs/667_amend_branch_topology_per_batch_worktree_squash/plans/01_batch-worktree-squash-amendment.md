@@ -509,26 +509,26 @@ arrays after writing, and treat the list quoted in the decision record as the re
 
 ---
 
-### Phase 5: Redeploy and close [NOT STARTED]
+### Phase 5: Redeploy and close [COMPLETED]
 
 **Goal**: The deployed tree carries the repaired scripts, and the task's own work is verified
 together.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` from the repository
+- [x] Run `bash agent-system/extensions/core/scripts/deploy-headless.sh` from the repository
       root so the deployed `.claude/scripts/` copies of the two edited scripts match the source
-      store. Do not hand-edit anything under `.claude/`.
-- [ ] Confirm the deployed copies match: `diff` each of the two edited scripts against its
-      deployed counterpart under `.claude/scripts/`.
-- [ ] Confirm no manifest change is owed: this task adds no script, so
+      store. Do not hand-edit anything under `.claude/`. *(deviation: altered — run with --skip-verify; the inline fast-gate sweep is deferred with the complete gate set to the batch stage; result landed_verify_skipped, exit 4)*
+- [x] Confirm the deployed copies match: `diff` each of the two edited scripts against its
+      deployed counterpart under `.claude/scripts/`. *(completed)*
+- [x] Confirm no manifest change is owed: this task adds no script, so
       `bash .claude/scripts/sync-manifest-scripts.sh --check` should report no gap. If it
-      reports one, the gap predates this task; record it and do not widen scope.
-- [ ] Run the scoped touched-path check over the task's source-store paths.
-- [ ] Write the implementation summary. It must state, as follow-ups: the successor tasks by
+      reports one, the gap predates this task; record it and do not widen scope. *(completed)*
+- [x] Run the scoped touched-path check over the task's source-store paths. *(completed: 19 suites, 19 passed, 0 owed, after the redeploy)*
+- [x] Write the implementation summary. It must state, as follow-ups: the successor tasks by
       number; `/roadmap` siting for them and for 655's batch; `/task --abandon 666` if Phase 4
       found it applied; the unanswered bookkeeping-commit question; and, for any deploy
       consumer repository with tasks stranded at `[IMPLEMENTING]` by D1, that redeploying there
-      and re-running the orchestration is the recovery route.
+      and re-running the orchestration is the recovery route. *(completed)*
 
 **Timing**: 1 hour
 
