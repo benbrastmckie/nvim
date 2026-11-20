@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Wrote a nine-phase, 16-hour plan for the milestone schema and wholly generated ROADMAP.md; validate-artifact.sh passes it with 0 warnings. The plan proceeds on the research report's recommended optional roadmap_context.output_path and keeps the flat keys in the schema as the unmigrated-store shape. One non-blocking user decision is raised: whether the sf1-engine acceptance render runs on a copy (planned default) or in place. Two issue-log entries were recorded this dispatch.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/656_milestone_schema_and_generated_roadmap/plans/01_milestone-schema-generated-roadmap.md",
+      "summary": "Nine-phase implementation plan across seven dependency waves."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 9,
+  "blockers": [],
+  "dispatch_seq": 5
+}

@@ -112,7 +112,7 @@ next_project_number: 664
 
 477 [NOT STARTED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
-656 [RESEARCHED] — Milestone schema in state.json and a wholly generated ROADMAP.md
+656 [PLANNED] — Milestone schema in state.json and a wholly generated ROADMAP.md
   └─ 657 [NOT STARTED] — Branch-topology ruling, then milestone automation and review...
     └─ 655 [NOT STARTED] — Make orchestration branch-aware with a per-invocation branch...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
@@ -393,11 +393,12 @@ RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-lay
 ---
 
 ### 656. Milestone schema in state.json and a wholly generated ROADMAP.md
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 654
 - **Research**: [656_milestone_schema_and_generated_roadmap/reports/01_milestone-schema-generated-roadmap.md]
+- **Plan**: [656_milestone_schema_and_generated_roadmap/plans/01_milestone-schema-generated-roadmap.md]
 
 **Description**: Milestone schema in state.json and a wholly generated ROADMAP.md
 
