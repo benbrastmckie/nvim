@@ -24,7 +24,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 
 ```
 /orchestrate 657 --hard
-657 ready           Branch-topology ruling, then milestone automation and review gates
+657 IN FLIGHT       Branch-topology ruling, then milestone automation and review gates
 654 done            Reconcile the open commit-layer cluster and write its dependency ordering
 656 done            Milestone schema in state.json and a wholly generated ROADMAP.md
 ```
@@ -33,7 +33,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 
 ```
 /orchestrate 655 --hard
-655 blocked:513,553,657  Make orchestration branch-aware with a per-invocation branch and squash ...
+655 blocked:513,517,553,657  Make orchestration branch-aware with a per-invocation branch and squ...
 ```
 
 **Batch 4** -- Make verify-deploy's verdict mean something again: the live reds, one roster row, two gate rulings
