@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "sapience-remember.sh Project Tagging and Its First Test Suite",
+  "started_at": "2026-11-21T19:50:00Z",
+  "last_updated": "2026-11-21T20:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add optional project-key resolution to sapience-remember.sh (resolve .sapience/project.json's cid, resolve to key via GET /v1/people/projects, add project field)", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-remember.sh"]},
+    {"id": 2, "description": "Add --project-key flag short-circuiting the GET", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-remember.sh"]},
+    {"id": 3, "description": "Encode the degrade rule (no binding -> untagged byte-identical; binding+resolution failure -> untagged with stderr warning, never a refusal) in code and header", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-remember.sh"]},
+    {"id": 4, "description": "Add project_cid non-goal to the header as an explicit checkable statement", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-remember.sh"]},
+    {"id": 5, "description": "Create test-sapience-remember.sh, the script's first suite, modelled on test-sapience-publish.sh's harness, covering cases (a)-(e)", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-remember.sh"]},
+    {"id": 6, "description": "Add two policy-invariant cases (f) settings-fragment.json grant set and (g) sapience-project-bind.sh has zero config.json/capture.projects references", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-remember.sh"]},
+    {"id": 7, "description": "Register the new suite via sync-manifest-scripts.sh --write", "status": "done", "files_touched": ["agent-system/extensions/sapience/manifest.json"]},
+    {"id": 8, "description": "Re-run suite_selection_select over sapience-remember.sh and confirm test-sapience-remember.sh now appears in its output", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {"approach": "Resolve settings-fragment.json via a SCRIPT_DIR-relative path (../../settings-fragment.json)", "result": "failed", "reason": "works from the source tree but fails when the suite itself runs from a deployed .claude/scripts/tests/ copy, since the fragment has no standalone deployed file (it is merge-targeted into .claude/settings.local.json) -- fixed by resolving via common_test_ext_root(REPO_ROOT) instead, which works from either tree"}
+  ],
+  "handoff_count": 0
+}

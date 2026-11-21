@@ -26,6 +26,7 @@
       "tests/test-sapience-mcp-registration.sh",
       "tests/test-sapience-project-bind.sh",
       "tests/test-sapience-publish.sh",
+      "tests/test-sapience-remember.sh",
       "tests/test-sapience-tag-pending.sh",
       "tests/test-sapience-vault-read.sh",
       "verify-sapience-context-scoping.sh",

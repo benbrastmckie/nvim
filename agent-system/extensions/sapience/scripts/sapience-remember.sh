@@ -38,6 +38,33 @@
 # The host/token/slug resolution block below is deliberately COPIED from sapience-retrieve.sh,
 # not shared via a scripts/lib/ helper -- a shared helper would add a path outside this task's
 # declared file_scope. See that script for the duplicated logic's source of truth.
+#
+# PROJECT-KEY RESOLUTION (linked-repo tagging): when this repo carries a `.sapience/project.json`
+# binding (written by sapience-project-bind.sh), the KO body additionally carries a plain
+# `project: "<key>"` field, resolved at runtime via GET /v1/people/projects -- the SAME shape
+# `sapience-publish.sh ko` already implements (its runtime-resolution block and its defensive
+# response-unwrapping), copied here rather than extracted to a shared helper for the same
+# file_scope reason as the host/token/slug block above. An explicit `--project-key <key>` flag
+# short-circuits the GET entirely (consumed by postflight-sapience-notes.sh): the flag wins, then
+# the binding file, then nothing.
+#
+# DEGRADE RULE (deliberately differs from `sapience-publish.sh ko`, which REFUSES to write
+# untagged on any resolution failure -- that script serves a human-confirmed single write, where
+# refusing and surfacing the error to the person is the right failure mode. This script serves a
+# bounded postflight set written non-interactively at task-boundary time, where losing a note
+# entirely is the worse failure):
+#   - No `.sapience/project.json` at all           -> write UNTAGGED, byte-identical to today.
+#   - Binding present but resolution fails (no GET
+#     token/host issue aside -- a non-JSON response,
+#     no matching entry, or a matching entry with no
+#     `key`)                                       -> write UNTAGGED, with a WARNING on stderr.
+#   Neither case is ever a refusal, and neither case ever drops the note.
+#
+# NON-GOAL: `project_cid` is NEVER sent on any call. The REPO_LINK_FOR path that would make the
+# server trust a client-supplied cid is confirmed dark for this token, and `_project_stamp` would
+# unconditionally overwrite a client-set `ko['project']` the day that path is ever
+# server-verified -- so this script sends only the plain `project` (key) field, exactly like
+# `sapience-publish.sh ko`, and needs no code change when that flag eventually flips.
 
 set -euo pipefail
 
@@ -49,11 +76,12 @@ SUBJECT=""
 VALUE=""
 SOURCE_LOC=""
 DRY_RUN="false"
+PROJECT_KEY_OVERRIDE=""
 
 usage() {
   cat >&2 <<'USAGE'
 Usage: sapience-remember.sh --subject S --value V [--predicate P] [--ko-type T]
-                             [--confidence C] [--source-loc L] [--dry-run]
+                             [--confidence C] [--source-loc L] [--project-key K] [--dry-run]
 
 Required:
   --subject S       KO subject
@@ -64,7 +92,14 @@ Optional:
   --ko-type T       default: "insight"
   --confidence C    default: 0.8
   --source-loc L    optional source_loc field
+  --project-key K   short-circuits runtime project-key resolution (wins over any
+                     .sapience/project.json binding; no GET /v1/people/projects made)
   --dry-run         print the request body (token redacted) and exit 0 without a request
+
+Project tagging: with no .sapience/project.json binding and no --project-key, the body carries
+no `project` field at all (byte-identical to pre-tagging behavior). With a binding (or
+--project-key) but resolution fails, the body still carries no `project` field, and a warning is
+printed to stderr -- this never refuses and never drops the note. `project_cid` is never sent.
 
 Exit codes:
   0 - written >= 1 (or --dry-run)
@@ -93,6 +128,9 @@ while [ "$#" -gt 0 ]; do
     --source-loc)
       [ "$#" -ge 2 ] || { echo "sapience-remember.sh: --source-loc requires a value" >&2; exit 1; }
       SOURCE_LOC="$2"; shift 2 ;;
+    --project-key)
+      [ "$#" -ge 2 ] || { echo "sapience-remember.sh: --project-key requires a value" >&2; exit 1; }
+      PROJECT_KEY_OVERRIDE="$2"; shift 2 ;;
     --dry-run)
       DRY_RUN="true"; shift ;;
     -h|--help)
@@ -187,8 +225,45 @@ fi
 # tag plus a human-meaningful remainder naming the writing surface. ---
 provenance="[repo:${repo_slug}] via sapience-remember.sh (Claude Code dispatch)"
 
+# --- Project-key resolution (see header: PROJECT-KEY RESOLUTION / DEGRADE RULE). --project-key
+# wins outright, with no GET. Otherwise: no $repo_toplevel/.sapience/project.json binding means
+# no tag at all (byte-identical to pre-tagging behavior); a binding present triggers
+# GET /v1/people/projects, matched against the binding's cid the SAME defensive way
+# sapience-publish.sh's ko subcommand does -- but unlike that subcommand, every failure path here
+# degrades to an UNTAGGED write with a stderr warning rather than refusing. project_key stays ""
+# (never set) on every degrade path; the body-construction step below omits the `project` field
+# entirely whenever project_key is empty. ---
+project_key=""
+if [ -n "$PROJECT_KEY_OVERRIDE" ]; then
+  project_key="$PROJECT_KEY_OVERRIDE"
+else
+  link_file="${repo_toplevel}/.sapience/project.json"
+  binding_cid=""
+  if [ -f "$link_file" ] && jq -e . "$link_file" >/dev/null 2>&1; then
+    binding_cid="$(jq -r '.project // empty' "$link_file" 2>/dev/null)" || binding_cid=""
+  fi
+  if [ -n "$binding_cid" ]; then
+    encoded_token_for_get="$(jq -rn --arg v "$sapience_token" '$v|@uri')"
+    projects_url="${sapience_host}/v1/people/projects?token=${encoded_token_for_get}"
+    projects_response="$(curl -sS --connect-timeout 3 --max-time 8 \
+      -H 'X-Sapience-Client: sapience-remember.sh' \
+      "$projects_url" 2>/dev/null)" || projects_response=""
+    if [ -z "$projects_response" ] || ! echo "$projects_response" | jq -e . >/dev/null 2>&1; then
+      echo "sapience-remember.sh: WARNING -- non-JSON or empty response from GET /v1/people/projects; writing untagged" >&2
+    else
+      project_key="$(echo "$projects_response" | jq -r --arg cid "$binding_cid" '
+        (if has("projects") then .projects elif (type == "array") then . else [] end) // [] |
+        map(select((.cid // .id // "") == $cid)) | .[0].key // empty
+      ' 2>/dev/null)" || project_key=""
+      if [ -z "$project_key" ]; then
+        echo "sapience-remember.sh: WARNING -- binding cid ${binding_cid} did not match any entry in GET /v1/people/projects (or that entry had no key); writing untagged" >&2
+      fi
+    fi
+  fi
+fi
+
 # --- Build the request body. explicit is set to true unconditionally -- there is no flag that
-# can turn it off. ---
+# can turn it off. project_cid is NEVER sent (see header Non-Goal). ---
 body="$(jq -n \
   --arg token "$sapience_token" \
   --arg subject "$SUBJECT" \
@@ -198,6 +273,7 @@ body="$(jq -n \
   --argjson confidence "$CONFIDENCE" \
   --arg provenance "$provenance" \
   --arg source_loc "$SOURCE_LOC" \
+  --arg project "$project_key" \
   '{
     token: $token,
     kos: [
@@ -209,7 +285,8 @@ body="$(jq -n \
         confidence: $confidence,
         provenance: $provenance,
         explicit: true
-      } + (if $source_loc != "" then {source_loc: $source_loc} else {} end))
+      } + (if $source_loc != "" then {source_loc: $source_loc} else {} end)
+        + (if $project != "" then {project: $project} else {} end))
     ],
     source: "sapience-remember.sh"
   }')"

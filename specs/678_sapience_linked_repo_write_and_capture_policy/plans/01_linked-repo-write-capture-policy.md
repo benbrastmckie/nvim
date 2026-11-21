@@ -221,50 +221,54 @@ regenerator — not this estimate — set `line_count`.
 
 ---
 
-### Phase 2: `sapience-remember.sh` Project Tagging and Its First Test Suite [NOT STARTED]
+### Phase 2: `sapience-remember.sh` Project Tagging and Its First Test Suite [COMPLETED]
 
 **Goal**: An orchestrated run in a linked repo produces a project-tagged note through the existing
 sanctioned write path, with unlinked behavior byte-identical to today.
 
 **Tasks**:
 
-- [ ] Add optional project-key resolution to `agent-system/extensions/sapience/scripts/sapience-remember.sh`:
+- [x] Add optional project-key resolution to `agent-system/extensions/sapience/scripts/sapience-remember.sh`: *(completed)*
       resolve the git toplevel, read `.sapience/project.json`'s `.project` cid, resolve it to a
       `key` via `GET /v1/people/projects`, and add `project: "<key>"` to the KO body. Reuse the
       shape `sapience-publish.sh`'s `ko` subcommand already implements (its runtime-resolution
       block and its defensive response-unwrapping), consistent with that script's own precedent of
       copying rather than extracting a shared helper.
-- [ ] Add an optional `--project-key <key>` flag that short-circuits the `GET` (consumed by
+- [x] Add an optional `--project-key <key>` flag that short-circuits the `GET` (consumed by *(completed)*
       Phase 4), mirroring `sapience-publish.sh`'s `--project` override precedence: explicit flag
       wins, then the binding file, then nothing.
-- [ ] Encode the degrade rule explicitly, in code and in the header: **no `.sapience/project.json`
+- [x] Encode the degrade rule explicitly, in code and in the header: **no `.sapience/project.json` *(completed)*
       → write untagged, exactly as today, byte-identical body**; **binding present but resolution
       fails (non-JSON response, no matching entry, no `key`) → write untagged with a warning on
       stderr**, never a refusal and never a dropped note. State in the header why this differs
       from `sapience-publish.sh ko`, which refuses to write untagged: that script serves a
       human-confirmed single write, this one serves a bounded postflight set where losing a note
       is the worse failure.
-- [ ] Add the `project_cid` non-goal to the header as an explicit, checkable statement (mirroring
+- [x] Add the `project_cid` non-goal to the header as an explicit, checkable statement (mirroring *(completed)*
       `sapience-publish.sh`'s), naming the `REPO_LINK_FOR`-is-dark reason, so a future editor meets
       the constraint before adding the field.
-- [ ] Create `agent-system/extensions/sapience/scripts/tests/test-sapience-remember.sh` — the first
+- [x] Create `agent-system/extensions/sapience/scripts/tests/test-sapience-remember.sh` — the first *(completed: 11 assertions passing, numbered cases 1-7 covering (a)-(g))*
       suite for this script — modelled on `test-sapience-publish.sh`'s harness (`write_binding`,
       `STUB_PROJECTS_BODY`, `common_test_pass`), covering: (a) a fixture binding plus stubbed
       project list yields a `--dry-run` body containing `"project": "<key>"`; (b) no binding yields
       a body with no `project` key at all; (c) no `project_cid` key appears anywhere in any body;
       (d) `--project-key` wins over the binding and makes no `GET`; (e) binding present but the
       project list has no matching entry still writes, untagged, with a stderr warning and exit 0.
-- [ ] Add two policy-invariant cases to the same suite, as the checks for Rulings 1 and 3 (noting
+- [x] Add two policy-invariant cases to the same suite, as the checks for Rulings 1 and 3 (noting *(completed: cases 6-7)*
       in the suite header why they live here rather than in a suite of their own): (f)
       `settings-fragment.json`'s `permissions.allow[]` holds exactly the seven `mcp__sapience__*`
       read grants and none of `sapience_remember`/`sapience_wrapup`/`sapience_handoff`/
       `sapience_adddoc`; (g) `sapience-project-bind.sh` contains zero references to
       `~/.sapience/config.json` or `capture.projects` (measured baseline today: zero).
-- [ ] Register the new suite by running `bash .claude/scripts/sync-manifest-scripts.sh --write`
-      (Rule Q requires every script on disk to appear in `provides.scripts`).
-- [ ] Re-run `suite_selection_select` over `scripts/sapience-remember.sh` and confirm
+- [x] Register the new suite by running `bash .claude/scripts/sync-manifest-scripts.sh --write`
+      (Rule Q requires every script on disk to appear in `provides.scripts`). *(completed; required
+      `git add`-ing the new untracked file first, since the sync script derives its "on disk" set
+      from `git ls-files`)*
+- [x] Re-run `suite_selection_select` over `scripts/sapience-remember.sh` and confirm
       `test-sapience-remember.sh` now appears in its output (it cannot today, the file not
-      existing), so the narrowing mechanism actually covers this script going forward.
+      existing), so the narrowing mechanism actually covers this script going forward. *(completed;
+      required a redeploy first, since the lib's grep-based reference stratum reads deployed
+      fixtures)*
 
 **Timing**: 2 hours
 
