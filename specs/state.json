@@ -380,9 +380,9 @@
           "summary": "Five-phase plan: pick mode, link registration with 404/403 policy, vendor delegation with single-writer normalization, /sapience picker surface, domain link-route record."
         },
         {
-          "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-4-handoff-20261121T213746Z.md",
+          "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-5-handoff-20261121T221000Z.md",
           "type": "handoff",
-          "summary": "Phase 4 completion handoff: the Stage-5-reused exactly-one-or-refuse disambiguation design, the first-surface ordering decision, and the two extra stale-count corrections made beside the new fifth bullet."
+          "summary": "Phase 5 completion handoff: the in-scope Ruling 5 correction, the Batch Gate Deferral narrowing used for this full-tier phase, and the self-caused index-entries.json line_count fix."
         }
       ],
       "next_artifact_number": 2,
@@ -392,7 +392,8 @@
         "agent-system/extensions/sapience/scripts/sapience-project-bind.sh",
         "agent-system/extensions/sapience/scripts/tests/test-sapience-project-bind.sh",
         "agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"
-      ]
+      ],
+      "completion_summary": "Implemented all 5 phases of task 681: sapience-project-bind.sh gained pick and --project bind-to-existing modes alongside its unchanged create mode, registering the repository through POST /v1/people/projects/<cid>/link with a 404/403 status-code policy, a single canonical file writer, and vendor-CLI delegation proven byte-identical by test; /sapience surfaces the bind as a fifth candidate in its one approval picker; and the two sapience domain-design records now document the link mechanism and the fifth surface, including a correction to a sentence Phases 1-3 of this same task invalidated."
     },
     {
       "project_number": 680,

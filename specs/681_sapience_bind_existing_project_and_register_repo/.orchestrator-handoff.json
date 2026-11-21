@@ -1,18 +1,23 @@
 {
   "status": "implemented",
-  "dispatch_seq": 18,
+  "dispatch_seq": 19,
   "task_number": 681,
   "phase": "implement",
-  "phases_completed": 4,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Implemented Phase 4 of the bind-existing-project plan: SKILL.md's Stage 1 binding gate no longer hard-stops on a missing/invalid .sapience/project.json -- it runs the read-only pick and carries the result forward as a 'Project binding' candidate surface through Stages 7-11 of the existing single AskUserQuestion approval picker (option ceiling moved four -> five), reusing Stage 5's exactly-one-or-refuse discipline for the pick's zero-row and multi-row cases rather than adding a second picker. verify-touched.sh: 27 passed, 1 failed (1 expected, 0 NEW), the one failure being pre-existing deployed-mirror drift for this extension, not a regression. Phase 4 is committed and marked [COMPLETED]; phase 5 remains.",
+  "summary": "Implemented Phase 5 (Domain Record -- Link Mechanism and the Fifth Surface), the final phase of the plan: per-repo-scoping.md gained a new appended section documenting the three-key project.json format, the real GET /v1/people/projects response shape, the link route's gate order and 404/403 policy, the response trap, and D1's vendor-delegation reconciliation; command-draft-and-picker.md was extended from four to five candidate surfaces, with the pre-check default and the Dark Migration Path updated, plus an in-scope correction to a Ruling 5 sentence this task's own Phases 1-3 invalidated. All 5 plan phases are now [COMPLETED]. Scoped verification (gates 3,4, this dispatch's Batch Gate Deferral narrowing) is green except the pre-existing, already-documented deployed-mirror drift from Phases 1-3. One residual: agent-system/extensions/sapience/index-entries.json (a self-caused, mechanically-regenerated line_count fix) could not be committed because it falls outside task 681's declared file_scope and both the phase-commit wrapper and the direct scoped-commit script independently refuse it; it is recorded in .return-meta.json's proposed_file_scope and left modified-but-uncommitted pending a file_scope widening.",
   "blockers": [],
   "plan_markers_verified": true,
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-4-handoff-20261121T213746Z.md",
-      "summary": "Phase 4 completion handoff: the Stage-5-reused exactly-one-or-refuse disambiguation design, the first-surface ordering decision, and the two extra stale-count corrections made beside the new fifth bullet."
+      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-5-handoff-20261121T221000Z.md",
+      "summary": "Phase 5 completion handoff: the in-scope Ruling 5 correction, the Batch Gate Deferral narrowing used for this full-tier phase, and the self-caused index-entries.json line_count fix."
+    },
+    {
+      "type": "summary",
+      "path": "specs/681_sapience_bind_existing_project_and_register_repo/summaries/01_bind-existing-project-register-repo-summary.md",
+      "summary": "Full-task implementation summary covering all 5 phases."
     }
   ],
   "metadata": {
