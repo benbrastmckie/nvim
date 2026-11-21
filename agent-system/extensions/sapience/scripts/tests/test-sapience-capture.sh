@@ -101,6 +101,11 @@ fi
 common_test_declare_subject "$GUARD_SCRIPT"
 common_test_declare_subject "$COMMON_SH"
 
+API_LIB="$(common_test_resolve_subject "sapience-api-lib.sh" "deploy-tree-first" \
+  "$REPO_ROOT/.claude/scripts/lib/sapience-api-lib.sh" \
+  "$SCRIPT_DIR/../lib/sapience-api-lib.sh")" || exit 2
+common_test_declare_subject "$API_LIB"
+
 PASSED=0
 FAILED=0
 
@@ -595,6 +600,148 @@ run_sr() {
     common_test_pass "(12) write-side dry-run: .kos[0].explicit is unconditionally true"
   else
     common_test_fail "(12) write-side dry-run: .kos[0].explicit is unconditionally true" "explicit=$explicit_field"
+  fi
+}
+
+# --- resolver_write_binding <dir> <cid> [extra-key] [extra-value] -- writes a link file at
+#     <dir>/.sapience/project.json. With no extra-key/extra-value, writes exactly the three-key
+#     project/name/repo shape (the fixture's own basename is used as `repo`, mirroring
+#     write_binding's convention in test-sapience-publish.sh / test-sapience-remember.sh). With
+#     both given, adds a fourth key -- used by case 16's token-shaped-key rejection. Named
+#     distinctly from those other suites' own `write_binding` (and from the one Phase 2 of this
+#     plan adds to THIS file for sapience-retrieve.sh's link-present cases) so neither collides
+#     with the other's narrower fixture shape. ---
+resolver_write_binding() {
+  local dir="$1" cid="$2" extra_key="${3:-}" extra_val="${4:-}"
+  mkdir -p "$dir/.sapience"
+  if [ -n "$extra_key" ]; then
+    jq -n --arg project "$cid" --arg name "Test Project" --arg repo "$(basename "$dir")" \
+      --arg ek "$extra_key" --arg ev "$extra_val" \
+      '{project: $project, name: $name, repo: $repo} | .[$ek] = $ev' \
+      > "$dir/.sapience/project.json"
+  else
+    jq -n --arg project "$cid" --arg name "Test Project" --arg repo "$(basename "$dir")" \
+      '{project: $project, name: $name, repo: $repo}' > "$dir/.sapience/project.json"
+  fi
+}
+
+# resolver_read <dir> -- sources API_LIB in an isolated subshell (so each case's sourcing never
+# pollutes this suite's own shell state) and calls sapience_project_link_read, echoing its
+# stdout and propagating its exit code.
+resolver_read() {
+  local dir="$1"
+  bash -c 'source "$1"; sapience_project_link_read "$2"' _ "$API_LIB" "$dir"
+}
+
+# resolver_cid <dir> -- same isolation convention as resolver_read, for sapience_project_link_cid.
+resolver_cid() {
+  local dir="$1"
+  bash -c 'source "$1"; sapience_project_link_cid "$2"' _ "$API_LIB" "$dir"
+}
+
+# =====================================================================================
+# Case 13: a valid three-key binding is accepted -- sapience_project_link_read echoes the
+# compact JSON and sapience_project_link_cid echoes just the project cid, both via the real
+# API_LIB sourced directly (not through sapience-retrieve.sh/sapience-remember.sh).
+# =====================================================================================
+{
+  dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  resolver_write_binding "$dir" "cid-abc123"
+  out="$(resolver_read "$dir" 2>/dev/null)"
+  rc=$?
+  cid_out="$(resolver_cid "$dir" 2>/dev/null)"
+  cid_rc=$?
+
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(13) valid three-key binding: sapience_project_link_read returns 0"
+  else
+    common_test_fail "(13) valid three-key binding: sapience_project_link_read returns 0" "got rc=$rc"
+  fi
+  if [ "$(echo "$out" | jq -r '.project' 2>/dev/null)" = "cid-abc123" ]; then
+    common_test_pass "(13) valid three-key binding: echoed JSON carries the project cid"
+  else
+    common_test_fail "(13) valid three-key binding: echoed JSON carries the project cid" "out=$out"
+  fi
+  if [ "$cid_rc" -eq 0 ] && [ "$cid_out" = "cid-abc123" ]; then
+    common_test_pass "(13) valid three-key binding: sapience_project_link_cid echoes just the cid"
+  else
+    common_test_fail "(13) valid three-key binding: sapience_project_link_cid echoes just the cid" "rc=$cid_rc out=$cid_out"
+  fi
+}
+
+# =====================================================================================
+# Case 14: a missing link file returns 1 with no output and no stderr noise -- the ordinary
+# "no link" case this function's every caller treats as a silent fallback.
+# =====================================================================================
+{
+  dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  err_file="$(mktemp -p "$TOP_WORKDIR")"
+  out="$(resolver_read "$dir" 2>"$err_file")"
+  rc=$?
+  err="$(cat "$err_file")"
+
+  if [ "$rc" -eq 1 ]; then
+    common_test_pass "(14) missing link file: returns 1"
+  else
+    common_test_fail "(14) missing link file: returns 1" "got rc=$rc"
+  fi
+  if [ -z "$out" ] && [ -z "$err" ]; then
+    common_test_pass "(14) missing link file: no stdout, no stderr"
+  else
+    common_test_fail "(14) missing link file: no stdout, no stderr" "out=$out err=$err"
+  fi
+}
+
+# =====================================================================================
+# Case 15: a non-JSON link file returns 1 with no output.
+# =====================================================================================
+{
+  dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  mkdir -p "$dir/.sapience"
+  echo "not json at all" > "$dir/.sapience/project.json"
+  out="$(resolver_read "$dir" 2>/dev/null)"
+  rc=$?
+
+  if [ "$rc" -eq 1 ] && [ -z "$out" ]; then
+    common_test_pass "(15) non-JSON link file: returns 1 with no output"
+  else
+    common_test_fail "(15) non-JSON link file: returns 1 with no output" "rc=$rc out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 16: a four-key object carrying a token-shaped extra key is refused -- the exact-
+# three-key check refuses it structurally, never via a separate key-name pattern.
+# =====================================================================================
+{
+  dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  resolver_write_binding "$dir" "cid-abc123" "token" "shhh-do-not-read-this"
+  out="$(resolver_read "$dir" 2>/dev/null)"
+  rc=$?
+
+  if [ "$rc" -eq 1 ] && [ -z "$out" ]; then
+    common_test_pass "(16) four-key token-shaped-key object: refused (returns 1, no output)"
+  else
+    common_test_fail "(16) four-key token-shaped-key object: refused (returns 1, no output)" "rc=$rc out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 17: a path-shaped repo value is refused even though it is otherwise a valid three-key
+# object -- mirrors sapience-project-bind.sh's own pre-write path-shape check.
+# =====================================================================================
+{
+  dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  mkdir -p "$dir/.sapience"
+  jq -n --arg project "cid-abc123" --arg name "Test Project" --arg repo "../etc/passwd" \
+    '{project: $project, name: $name, repo: $repo}' > "$dir/.sapience/project.json"
+  out="$(resolver_read "$dir" 2>/dev/null)"
+  rc=$?
+
+  if [ "$rc" -eq 1 ] && [ -z "$out" ]; then
+    common_test_pass "(17) path-shaped repo value: refused (returns 1, no output)"
+  else
+    common_test_fail "(17) path-shaped repo value: refused (returns 1, no output)" "rc=$rc out=$out"
   fi
 }
 

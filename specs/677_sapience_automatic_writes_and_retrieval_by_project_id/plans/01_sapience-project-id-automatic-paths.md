@@ -1,7 +1,7 @@
 # Implementation Plan: Task #677
 
 - **Task**: 677 - Sapience automatic writes and retrieval by project id
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: None blocking this plan. Live end-to-end exercise of the read-side path is gated on the app serving the link routes for this account (`sapience-app`'s `open_mvp_flags_and_create_linked_team_project`, not started; `repo_link_code_onto_release_line`, HOLD) and on `REPO_LINK_FOR` being non-empty in the deployed `fly.toml` (currently `""`). Every phase below is buildable and testable against a stub today.
 - **Research Inputs**: specs/677_sapience_automatic_writes_and_retrieval_by_project_id/reports/01_sapience-project-id-automatic-paths.md
@@ -168,7 +168,7 @@ Phases within the same wave can execute in parallel. This plan is fully sequenti
 and 3 each touch `scripts/tests/test-sapience-capture.sh`, so running them concurrently would
 mean two writers in one file rather than genuine parallelism.
 
-### Phase 1: Shared Link Resolver in `lib/sapience-api-lib.sh` [NOT STARTED]
+### Phase 1: Shared Link Resolver in `lib/sapience-api-lib.sh` [COMPLETED]
 
 **Goal**: One function, in the library two scripts already source, that resolves an
 already-resolved checkout toplevel to a validated `.sapience/project.json` binding — agreeing
@@ -177,30 +177,35 @@ reject cases.
 
 **Tasks**:
 
-- [ ] Read `agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh` in full, including
-      its CONTRACT header block, before editing.
-- [ ] Add `sapience_project_link_read <toplevel>`: echoes the link file's compact JSON and
+- [x] Read `agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh` in full, including
+      its CONTRACT header block, before editing. *(completed)*
+- [x] Add `sapience_project_link_read <toplevel>`: echoes the link file's compact JSON and
       returns 0 on a valid binding; returns 1 with no output (and no stderr noise) when the file
       is absent, unreadable, not JSON, or fails validation. Validation mirrors
       `repo_link.py`'s `parse_link` exactly: the object carries exactly the three string keys
       `project`, `name`, `repo`; `repo` matches `^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$` and is never
-      path-shaped; any token/key/secret-shaped key present is a refusal.
-- [ ] Add a companion `sapience_project_link_cid <toplevel>` (or document the single-function
+      path-shaped; any token/key/secret-shaped key present is a refusal. *(completed)*
+- [x] Add a companion `sapience_project_link_cid <toplevel>` (or document the single-function
       equivalent) that echoes just the `project` cid, so a consumer needing only the cid does not
-      re-parse the JSON at its own call site.
-- [ ] Write the function's header contract: it takes an ALREADY-RESOLVED toplevel and contains no
+      re-parse the JSON at its own call site. *(completed)*
+- [x] Write the function's header contract: it takes an ALREADY-RESOLVED toplevel and contains no
       copy of the `sapience-worktree-checkout-resolution` block (so
       `test-sapience-mcp-registration.sh`'s Case 30 nine-copy lockstep set is unchanged by this
       task); it performs a single-location lookup at `<toplevel>/.sapience/project.json` and
       deliberately does NOT mirror `repo_link.py`'s upward, 40-level `find_link` walk, because
       the two agree wherever `sapience-project-bind.sh` writes the file and the single lookup is
-      what every existing write path relies on.
-- [ ] Add unit cases to `agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh`
+      what every existing write path relies on. *(completed)*
+- [x] Add unit cases to `agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh`
       that source the lib directly and call the resolver: a valid three-key binding (accepted,
       cid echoed), a missing file (returns 1, no output), a non-JSON file (returns 1), a
       four-key / token-shaped-key object (refused), and a path-shaped `repo` value (refused).
-- [ ] Confirm the lib still sets no shell options of its own and that the new function behaves
-      correctly under a caller running `set -euo pipefail`.
+      *(completed: cases 13-17, 7 assertions, sourced via common_test_resolve_subject so
+      CORE_TEST_SUBJECT_MODE=source-store picks up the freshly-edited lib rather than the stale
+      deployed copy)*
+- [x] Confirm the lib still sets no shell options of its own and that the new function behaves
+      correctly under a caller running `set -euo pipefail`. *(completed: no `set` lines added;
+      cases 13-17 source the lib from within `test-sapience-capture.sh`, itself running under
+      `set -uo pipefail`)*
 
 **Timing**: 1 hour
 
@@ -225,9 +230,9 @@ task and Case 30's array, not just this plan's prose, needs re-reading.
 
 **Verification**:
 
-- [ ] `CORE_TEST_SUBJECT_MODE=source-store bash agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh` passes, with the pre-existing cases 1-12 unchanged and the new resolver cases passing.
-- [ ] `CORE_TEST_SUBJECT_MODE=source-store bash agent-system/extensions/sapience/scripts/tests/test-sapience-publish.sh` and `.../test-sapience-vault-read.sh` still pass (both source this lib).
-- [ ] `grep -c 'BEGIN sapience-worktree-checkout-resolution' agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh` returns 0, confirming no sixth copy of the lockstep block was added.
+- [x] `CORE_TEST_SUBJECT_MODE=source-store bash agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh` passes, with the pre-existing cases 1-12 unchanged and the new resolver cases passing. *(completed: 43 passed, 0 failed)*
+- [x] `CORE_TEST_SUBJECT_MODE=source-store bash agent-system/extensions/sapience/scripts/tests/test-sapience-publish.sh` and `.../test-sapience-vault-read.sh` still pass (both source this lib). *(completed: 53 passed/0 failed and 19 passed/0 failed respectively)*
+- [x] `grep -c 'BEGIN sapience-worktree-checkout-resolution' agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh` returns 0, confirming no sixth copy of the lockstep block was added. *(completed: returns 0)*
 
 ---
 

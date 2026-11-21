@@ -264,3 +264,92 @@ sapience_get() {
   unset _path _query _encoded_token _url _retry_after_raw _retry_delay
   return 0
 }
+
+# sapience_project_link_read <toplevel> -- resolves <toplevel>/.sapience/project.json, the ONLY
+# location sapience-project-bind.sh's write_link_file() ever writes. Echoes the link file's
+# compact JSON ({"project":...,"name":...,"repo":...}) on stdout and returns 0 on a valid
+# binding. Returns 1 with NO output and NO stderr noise when the file is absent, unreadable, not
+# JSON, or fails validation -- a missing or invalid link is the ordinary "no link" case this
+# function's every caller treats as a silent fallback, never an error to surface.
+#
+# Validation mirrors the server's own repo_link.py parse_link() field for field: the parsed JSON
+# must be an object carrying EXACTLY the three string keys `project` (cid), `name` (display
+# name), `repo` (short name) -- no fourth key of any shape. This exact-three-key check refuses a
+# token/key/secret/password-shaped extra key structurally (any such object has 4+ keys, not 3),
+# rather than via a separate key-name pattern. `repo` must additionally match
+# ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$ and must not look path-shaped (contains "/" or ".."), the
+# same two checks sapience-project-bind.sh already applies before its own write.
+#
+# BOUNDARY, stated explicitly rather than left for a future reader to re-derive: this function
+# takes an ALREADY-RESOLVED checkout toplevel as its one argument and contains no copy of the
+# sapience-worktree-checkout-resolution block nine other call sites in this extension share
+# byte-identically (test-sapience-mcp-registration.sh Case 30's lockstep set) -- resolving the
+# toplevel is the CALLER's job, same as every other function in this file. It also performs a
+# SINGLE-LOCATION lookup only, deliberately NOT repo_link.py's own upward, 40-level find_link()
+# walk -- the two agree wherever the link file sits at the repository root, which is the only
+# place write_link_file() ever writes it, so the narrower lookup matches what every existing
+# write path already relies on.
+sapience_project_link_read() {
+  local _spl_toplevel="${1:-}" _spl_file _spl_raw _spl_keys _spl_repo
+
+  if [ -z "$_spl_toplevel" ] || [ ! -f "${_spl_toplevel}/.sapience/project.json" ]; then
+    unset _spl_toplevel
+    return 1
+  fi
+  _spl_file="${_spl_toplevel}/.sapience/project.json"
+
+  _spl_raw="$(cat "$_spl_file" 2>/dev/null)" || {
+    unset _spl_toplevel _spl_file
+    return 1
+  }
+  if [ -z "$_spl_raw" ] || ! echo "$_spl_raw" | jq -e 'type == "object"' >/dev/null 2>&1; then
+    unset _spl_toplevel _spl_file _spl_raw
+    return 1
+  fi
+
+  _spl_keys="$(echo "$_spl_raw" | jq -c '[keys[]] | sort' 2>/dev/null)" || _spl_keys=""
+  if [ "$_spl_keys" != '["name","project","repo"]' ]; then
+    unset _spl_toplevel _spl_file _spl_raw _spl_keys
+    return 1
+  fi
+
+  if ! echo "$_spl_raw" | jq -e \
+    '(.project | type == "string") and (.name | type == "string") and (.repo | type == "string")' \
+    >/dev/null 2>&1; then
+    unset _spl_toplevel _spl_file _spl_raw _spl_keys
+    return 1
+  fi
+
+  _spl_repo="$(echo "$_spl_raw" | jq -r '.repo')"
+  if ! [[ "$_spl_repo" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$ ]]; then
+    unset _spl_toplevel _spl_file _spl_raw _spl_keys _spl_repo
+    return 1
+  fi
+  case "$_spl_repo" in
+    */*|*..*)
+      unset _spl_toplevel _spl_file _spl_raw _spl_keys _spl_repo
+      return 1
+      ;;
+  esac
+
+  echo "$_spl_raw" | jq -c '.'
+  unset _spl_toplevel _spl_file _spl_raw _spl_keys _spl_repo
+  return 0
+}
+
+# sapience_project_link_cid <toplevel> -- convenience wrapper over sapience_project_link_read for
+# a caller that only needs the project cid, so it does not re-parse the JSON at its own call
+# site. Echoes just the `project` field on stdout and returns 0 on a valid binding; returns 1
+# with no output under the exact same no-link/invalid-link cases sapience_project_link_read
+# rejects (see that function's own contract above for the full list).
+sapience_project_link_cid() {
+  local _spc_toplevel="${1:-}" _spc_link
+
+  _spc_link="$(sapience_project_link_read "$_spc_toplevel")" || {
+    unset _spc_toplevel _spc_link
+    return 1
+  }
+  echo "$_spc_link" | jq -r '.project'
+  unset _spc_toplevel _spc_link
+  return 0
+}

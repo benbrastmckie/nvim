@@ -1,30 +1,9 @@
 {
-  "status": "planned",
-  "dispatch_seq": 23,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/plans/01_sapience-project-id-automatic-paths.md",
-      "summary": "Five-phase plan: shared link resolver in lib/sapience-api-lib.sh, read-side project_cid in sapience-retrieve.sh with a pre-pinned no-link negative control, per-repo-scoping.md design statement, and a closing verification phase; write-side project_cid excluded per sf1-engine Ruling 7."
-    }
-  ],
-  "next_steps": "Run /orchestrate 677 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 24,
   "metadata": {
-    "session_id": "sess_1795284367_d33b60_677",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "phase_count": 5,
-  "estimated_hours": 5.5,
-  "dependency_waves": [[1], [2], [3], [4], [5]],
-  "memory_candidates": [
-    {
-      "content": "The sapience extension's worktree-checkout-resolution block is pinned byte-identical across NINE copies, not five: test-sapience-mcp-registration.sh Case 30's LOCKSTEP_FILES array names the MCP registration hook, verify-sapience-mcp.sh, and seven slug-deriving scripts (sapience-retrieve.sh, sapience-remember.sh, verify-sapience-context-scoping.sh, sapience-project-bind.sh, sapience-vault-read.sh, sapience-publish.sh, sapience-tag-pending.sh). Several scripts' own headers still describe a five-copy set, so the figure must be re-derived from Case 30's array rather than from any script comment or report. Any new sapience script needing a checkout toplevel either adds a tenth copy AND joins that array, or -- preferably -- takes an already-resolved toplevel as a parameter and adds no copy at all.",
-      "category": "PATTERN",
-      "source_artifact": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/plans/01_sapience-project-id-automatic-paths.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["sapience", "lockstep", "worktree-resolution", "case-30", "byte-identical", "shared-resolver"]
-    }
-  ]
+    "session_id": "sess_1795284367_d33b60",
+    "agent_type": "general-implementation-agent",
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

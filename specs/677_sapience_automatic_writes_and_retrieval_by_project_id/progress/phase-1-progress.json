@@ -1,0 +1,48 @@
+{
+  "phase": 1,
+  "phase_name": "Shared Link Resolver in lib/sapience-api-lib.sh",
+  "started_at": "2026-11-21T22:20:00Z",
+  "last_updated": "2026-11-21T22:25:31Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read sapience-api-lib.sh in full including CONTRACT header before editing",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Add sapience_project_link_read <toplevel> with repo_link.py-matching validation",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Add companion sapience_project_link_cid <toplevel>",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Write the function's header contract (already-resolved toplevel, no worktree-resolution copy, single-location lookup vs find_link upward walk)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Add accept/reject unit cases to test-sapience-capture.sh",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Confirm no shell options set by the lib and correct behavior under set -euo pipefail callers",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -878,12 +878,12 @@
     {
       "project_number": 677,
       "project_name": "sapience_automatic_writes_and_retrieval_by_project_id",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "Make the Sapience extension's automatic paths use the linked project instead of a directory-name label. Territory: agent-system/extensions/sapience/ (scripts sapience-remember.sh, postflight-sapience-notes.sh, sapience-retrieve.sh, sapience-project-bind.sh, sapience-publish.sh; context/project/sapience/domain/per-repo-scoping.md and injection-site-scoping.md). Today sapience-remember.sh sets provenance \"[repo:<slug>] via sapience-remember.sh\" where the slug is the basename of the checkout's git toplevel, so two collaborators who cloned under different directory names produce different tags and neither write reaches a shared project; its only automatic caller, postflight-sapience-notes.sh, sends no project field; sapience-retrieve.sh reads back by a source= substring match on that label. The binding already exists and is unused by these paths: sapience-project-bind.sh writes .sapience/project.json as {project: <cid>, name, repo} and sapience-publish.sh resolves a project key from it. Build: (1) one resolver, shared by every script, from the working directory to the committed .sapience/project.json, agreeing field for field with the app's repo_link.parse_link; (2) when a link is present, sapience-remember.sh and the postflight pass send project_cid on POST /ingest-kos and surface a project_rejected reply as a recorded issue rather than a silent success; (3) sapience-retrieve.sh sends project_cid so the dispatch memory block is the project's notes, with the label match kept only as the no-link fallback; (4) with no link file every script's request is byte-identical to today's, proved by a negative control; (5) the domain docs state the current design, including that the installed vendor mcp.py accepts a project argument on sapience_remember, which per-repo-scoping.md does not mention. Depends on the app serving the link routes for the account (sapience-app tasks open_mvp_flags_and_create_linked_team_project and repo_link_code_onto_release_line) and on a vendor client that resolves the link (dotfiles task for the payload); the scripts here call the HTTP API directly and can be built and tested against a stub before either lands. Done when a postflight note written in a linked repo is tagged to the project and visible to the other member, and a dispatch in that repo receives a memory block drawn from project notes.",
       "topic": "sapience",
       "created": "2026-11-21T00:06:43Z",
-      "last_updated": "2026-11-21T22:14:44Z",
+      "last_updated": "2026-11-21T22:16:55Z",
       "audit_verdict": {
         "proposal": {
           "id": "sapience_automatic_writes_and_retrieval_by_project_id",
