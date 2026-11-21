@@ -991,9 +991,9 @@
           "summary": "Five-phase plan: shared link resolver, read-side project_cid with a pre-pinned no-link negative control, domain-doc design statement, closing verification; write-side project_cid excluded per Ruling 7."
         },
         {
-          "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-2-handoff-20261121T224603Z.md",
+          "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-3-handoff-20261121T231823Z.md",
           "type": "handoff",
-          "summary": "Phase 2 completion handoff with resume instructions for Phase 3."
+          "summary": "Phase 3 completion handoff with current state, key decisions, and the two unrelated batch-noise FAILs observed during verification."
         }
       ],
       "next_artifact_number": 2,

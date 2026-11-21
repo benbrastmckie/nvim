@@ -1,15 +1,15 @@
 {
   "status": "partial",
-  "dispatch_seq": 25,
-  "phases_completed": 2,
+  "dispatch_seq": 26,
+  "summary": "Phase 3 (Read-Side project_cid in sapience-retrieve.sh) is complete. The script now resolves a committed .sapience/project.json binding via the Phase 1 lib/sapience-api-lib.sh resolver and appends project_cid to its /v1/search request, appending nothing on any failure path and benignly degrading (never exit 2) on a 2xx project_rejected reply. Four new test cases plus the unmodified Phase 2 negative control all pass (59/59 assertions), the sibling context-scoping suite passes (6/6), and a grep confirms no write path acquired project_cid. 3 of 5 plan phases are now complete; Phase 4 (document the design in per-repo-scoping.md) and Phase 5 (close the round) remain.",
+  "phases_completed": 3,
   "phases_total": 5,
-  "summary": "Implemented Phase 2 of 5 for task 677 under a single-phase Phase Mission restriction. Extended test-sapience-capture.sh: build_curl_stub now records each invocation's URL to .curl_urls (plus a curl_urls readback helper), build_scratch now copies lib/sapience-api-lib.sh into the scratch tree for Phase 3, a write_binding helper mirrors test-sapience-remember.sh/test-sapience-publish.sh's own convention, and case 18 is the pre-change negative control: run against the UNMODIFIED sapience-retrieve.sh, it proves the request's query-parameter NAME set is exactly q/source/limit/token with source= carrying the fixture's own minted slug. All 18 cases / 46 assertions pass. The batch-gate-deferral scoped verify-touched.sh run showed one unrelated, non-reproducing timing flake (test-handoff-dispatch-identity.sh case2-mismatch-inside-window; standalone re-run passed 13/13). Committed as a single phase-closing commit.",
-  "blockers": [],
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-2-handoff-20261121T224603Z.md",
-      "summary": "Phase 2 completion handoff with resume instructions for Phase 3."
+      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-3-handoff-20261121T231823Z.md",
+      "summary": "Phase 3 completion handoff with current state, key decisions, and the two unrelated batch-noise FAILs observed during verification."
     }
-  ]
+  ],
+  "blockers": []
 }
