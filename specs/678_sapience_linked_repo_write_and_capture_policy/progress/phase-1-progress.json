@@ -1,0 +1,16 @@
+{
+  "phase": 1,
+  "phase_name": "Rulings Record and Index Wiring",
+  "started_at": "2026-11-21T18:36:25Z",
+  "last_updated": "2026-11-21T18:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Create linked-repo-write-policy.md with one section per ruling plus cross-harness agreement", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/linked-repo-write-policy.md"]},
+    {"id": 2, "description": "Add matching index-entries.json entry copying transcript-filter-ceiling.md's field set", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]},
+    {"id": 3, "description": "Run generate-context-line-counts.sh --write to resync line_count", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]},
+    {"id": 4, "description": "Add one-line pointer in README.md's index", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/README.md", "agent-system/extensions/sapience/index-entries.json"]},
+    {"id": 5, "description": "Confirm no task-number references in the new file", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

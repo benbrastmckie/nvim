@@ -1,0 +1,10 @@
+[
+  {
+    "question": "The linked-repo half of the done-when criterion cannot be exercised live here: this repository carries no .sapience/project.json, and creating a real binding is a permanent, undeletable write to your hosted vault. Verify against a fixture binding, or bind a real repository first?",
+    "answer": "Fixture-based verification — a scratch repo with a .sapience/project.json fixture and a stubbed GET /v1/people/projects, reusing the harness test-sapience-publish.sh already has; nothing reaches the live vault",
+    "cycle": 2,
+    "timestamp": "2026-11-21T18:33:59Z",
+    "description_fingerprint": "6db36506e073104fd958c0c36d097d77a5ec0f2eef867e6f4cad61d2c5f6a84d",
+    "obligation": "Demonstrate that an orchestrated run in a repo carrying .sapience/project.json emits a KO body containing a resolved \"project\": \"<key>\" field and no project_cid key, while the same run in an unlinked repo emits a byte-identical body to today's."
+  }
+]

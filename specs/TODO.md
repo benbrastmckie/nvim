@@ -192,7 +192,7 @@ next_project_number: 684
 
 ### Sapience
 
-678 [PLANNED] — Decide and encode how a Claude Code session in a linked repo...
+678 [IMPLEMENTING] — Decide and encode how a Claude Code session in a linked repo...
   └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
 681 [PLANNED] — Let the Sapience extension bind a repository to an existing...
   └─ 677 [NOT STARTED] — Make the Sapience extension's automatic paths use the linked...
@@ -264,7 +264,7 @@ next_project_number: 684
 ---
 
 ### 678. Sapience linked repo write and capture policy
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None

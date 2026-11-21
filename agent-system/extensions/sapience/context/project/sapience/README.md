@@ -15,6 +15,7 @@ on demand, never eager-loaded by a hook or an index `load_when` entry -- see
 | `domain/per-repo-scoping.md` | Need the repo-tag-filtered scoping mechanism, `sapience-retrieve.sh`/`sapience-remember.sh`'s contracts, the postflight-wrapup tagged-write call site's bound/dry-run/degrade rules, or the no-delete-API / unreviewed-write / two-population hazards |
 | `domain/injection-site-scoping.md` | Need the three primary-session hook sites' exact transmit/honor behavior, the two measured foreclosures on `POST /v1/cli/context`, the label-never-suppress ruling, or the vendor-ask/machine-wide-duplicate owner actions |
 | `domain/command-draft-and-picker.md` | Need the `/sapience` draft-assembly heuristics (most-relevant-doc, decision-shaped), the single approval picker's pre-check defaults and literal-payload discipline, or the option-construction marker site |
+| `domain/linked-repo-write-policy.md` | Need the rulings on how a `.sapience/project.json`-linked repo differs from an unlinked one (write-tool grant, mid-run ban, capture opt-in, transcript filtering, non-creator suggestions) or their cross-harness agreement with `sf1-engine` |
 
 None of these files is auto-loaded for any agent or command. Read one explicitly, or `grep`
 across `context/project/sapience/` when a sapience-related question arises mid-task.

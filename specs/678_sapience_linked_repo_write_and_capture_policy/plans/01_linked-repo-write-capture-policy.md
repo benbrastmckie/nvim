@@ -1,7 +1,7 @@
 # Implementation Plan: Task #678
 
 - **Task**: 678 - Sapience linked-repo write and capture policy
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/678_sapience_linked_repo_write_and_capture_policy/reports/01_linked-repo-write-capture-policy.md
@@ -143,7 +143,7 @@ the report:
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Rulings Record and Index Wiring [NOT STARTED]
+### Phase 1: Rulings Record and Index Wiring [COMPLETED]
 
 **Goal**: One durable, indexed domain record stating Rulings 1-5, each with its check, citing
 `sf1-engine`'s `integration/project-link.md` section 10 rather than paraphrasing it into a second
@@ -151,8 +151,8 @@ drifting copy.
 
 **Tasks**:
 
-- [ ] Create `agent-system/extensions/sapience/context/project/sapience/domain/linked-repo-write-policy.md`
-      with one section per ruling:
+- [x] Create `agent-system/extensions/sapience/context/project/sapience/domain/linked-repo-write-policy.md`
+      with one section per ruling: *(completed: 126 lines, within the 90-130 scope hypothesis)*
       - **Ruling 1** (write-tool grant and per-session bound): unchanged in a linked repo — the
         seven read-shaped grants stand, the four write tools stay withheld, and a linked repo's
         project-tagged writes share the SAME existing 3-8-note postflight bound, never a second
@@ -177,16 +177,19 @@ drifting copy.
         `integration/project-link.md` section 10 as the governing contract and stating that the
         rulings here agree with it by citation, discharging the obligation that document's
         cross-repository register records.
-- [ ] Add the matching entry to `agent-system/extensions/sapience/index-entries.json`, copying the
+- [x] Add the matching entry to `agent-system/extensions/sapience/index-entries.json`, copying the
       field set of the existing `transcript-filter-ceiling.md` entry (`path`, `domain`,
       `subdomain`, `topics`, `keywords`, `summary`, `line_count`, `load_when`, `on_demand`) so
-      Rule T schema conformance holds.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` so
-      the new entry's `line_count` matches `wc -l` (Rule R, hard-FAIL).
-- [ ] Add a one-line pointer to the new file in
-      `agent-system/extensions/sapience/context/project/sapience/README.md`'s index.
-- [ ] Use no task-number references anywhere in the new file (it is a deliverable outside
+      Rule T schema conformance holds. *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` so
+      the new entry's `line_count` matches `wc -l` (Rule R, hard-FAIL). *(completed: 9 sapience
+      entries, 9 exact, 0 changed — line_count 126 was already correct)*
+- [x] Add a one-line pointer to the new file in
+      `agent-system/extensions/sapience/context/project/sapience/README.md`'s index. *(completed;
+      README.md's own line_count bumped 20 -> 21 in the same line-count regeneration pass)*
+- [x] Use no task-number references anywhere in the new file (it is a deliverable outside
       `specs/**`): cite filenames, section headings, and `sf1-engine`'s document instead.
+      *(completed: grep returns no match)*
 
 **Timing**: 1.5 hours
 
