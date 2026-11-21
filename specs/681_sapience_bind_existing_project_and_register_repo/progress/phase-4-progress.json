@@ -1,0 +1,27 @@
+{
+  "phase": 4,
+  "phase_name": "/sapience Pick Surface -- Stage 1 Into the One Approval Picker",
+  "started_at": "2026-11-21T21:21:13Z",
+  "last_updated": "2026-11-21T22:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Stage 1: rewrite the binding gate -- missing/invalid link file no longer stops; run read-only pick, carry listing forward as a candidate surface", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"], "note": "Adopted exactly-one-or-refuse disambiguation (mirroring Stage 5's collaborator-resolution discipline) for the zero-row and multi-row cases, since the plan's description names a singular preview id but the pick can list more than one row."},
+    {"id": 2, "description": "Stage 7: add Project binding preview via --project <id> with no --confirm", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"]},
+    {"id": 3, "description": "Stage 8: add binding row inside the existing askuserquestion-option-construction marker pair; update four->five ceiling wording", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"]},
+    {"id": 4, "description": "Stage 9: add binding option object with role note + pointer to printed payload", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"]},
+    {"id": 5, "description": "Stage 10: confirmed bind re-invokes identical Stage 7 vector with --confirm appended", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"]},
+    {"id": 6, "description": "Stage 11: report bind's three distinct outcomes by name (written+registered; written-locally-only 404; refused-nothing-written 403)", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"]},
+    {"id": 7, "description": "Update Stage 8 surface-ceiling wording from four to five options, and matching sentence in Stage 9 preamble", "status": "done", "files_touched": ["agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"], "note": "Also corrected two further stale 'four' counts in Stage 11's own prose (the five-surfaces/five-success-shapes intro and the five-cases-never-retried closing line) since the plan's own new fifth bullet sits directly beside them -- a plain correctness fix beyond the two sites the task bullet named explicitly."}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "4.1",
+      "description": "Stage 1 pick-to-single-candidate resolution when the pick lists more than one accepted/owned project",
+      "type": "altered",
+      "reason": "The dispatch description and plan task list name a single preview/bind id ('--project \"<id>\"') but sapience-project-bind.sh's pick mode can return any number of rows; the plan itself does not specify a disambiguation rule. Reused Stage 5's existing exactly-one-or-refuse discipline (never silently guess) rather than inventing a new mechanism or adding a second AskUserQuestion (explicitly a Non-Goal).",
+      "annotation": "*(deviation: altered -- added explicit zero-row/multi-row UNAVAILABLE handling, reusing Stage 5's exactly-one-or-refuse discipline, since the plan's single-id framing underspecified the multi-row case)*"
+    }
+  ]
+}

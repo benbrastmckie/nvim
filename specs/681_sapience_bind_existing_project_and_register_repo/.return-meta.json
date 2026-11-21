@@ -1,6 +1,6 @@
 {
-  "status": "implemented",
-  "dispatch_seq": 17,
+  "status": "in_progress",
+  "dispatch_seq": 18,
   "artifacts": [
     {
       "type": "handoff",
@@ -20,7 +20,11 @@
     "session_id": "sess_1795284367_d33b60",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 5
   },
@@ -30,14 +34,26 @@
       "category": "PATTERN",
       "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/summaries/01_bind-existing-project-register-repo-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["single-writer invariant", "delegation", "read-back normalization", "byte-identity proof", "subprocess fixture"]
+      "suggested_keywords": [
+        "single-writer invariant",
+        "delegation",
+        "read-back normalization",
+        "byte-identity proof",
+        "subprocess fixture"
+      ]
     },
     {
       "content": "To test a byte-identity requirement between two independently-constructed code paths that each embed a basename-derived value (e.g. a cwd-derived repo slug) in their output, build the two scratch fixtures with a fixed, shared leaf directory name (via mkdir under two different mktemp -d parents) rather than two independent mktemp -d calls -- this keeps the basename-derived field identical across both paths without weakening the comparison to 'ignore that one field', so a whole-file cmp remains a meaningful, exact proof.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/summaries/01_bind-existing-project-register-repo-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["byte-identity test", "basename-derived value", "scratch fixture", "mktemp", "cmp comparison"]
+      "suggested_keywords": [
+        "byte-identity test",
+        "basename-derived value",
+        "scratch fixture",
+        "mktemp",
+        "cmp comparison"
+      ]
     }
   ],
   "sapience_notes": [

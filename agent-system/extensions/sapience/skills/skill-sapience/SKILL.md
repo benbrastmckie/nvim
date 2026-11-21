@@ -50,22 +50,41 @@ repo_toplevel="$(git rev-parse --show-toplevel 2>/dev/null)" || {
 link_file="${repo_toplevel}/.sapience/project.json"
 ```
 
-If `$link_file` does not exist (or is not valid JSON): **STOP here.** This repository has no
-Sapience project binding yet. Report to the user, verbatim, the exact command they must run
-themselves to create one:
+If `$link_file` exists and is valid JSON, this repository is already bound: there is no Project
+binding candidate surface this run (nothing to pick), and Stage 2 proceeds as normal.
 
-```
-No Sapience project binding found at {link_file}.
+If `$link_file` does not exist or is not valid JSON, this is not a hard stop: run the read-only
+pick and capture its listing:
 
-Creating a binding shares a fresh project with a collaborator -- an outward-facing mutation
-that notifies them -- so this command never does it autonomously (HARD CONSTRAINT 5 in the
-governing plan). Run this yourself when ready:
-
-    bash .claude/scripts/sapience-project-bind.sh --name "<display name>" --confirm
+```bash
+pick_listing="$(bash .claude/scripts/sapience-project-bind.sh)"
+pick_rc=$?
 ```
 
-Never run `sapience-project-bind.sh` from this skill, in any mode, with or without `--confirm`.
-If the binding exists, proceed to Stage 2.
+`pick_rc=1` is this invocation's own expected, non-error shape (see the script's own header
+comment) — treat it as a normal result, never a failure. Parse `$pick_listing` (one row per
+line: `{display name}  ({id})  [creator|member]`) and carry the result forward to Stages 7-9 as
+the **Project binding** candidate surface, applying the same exactly-one-or-refuse discipline
+Stage 5 already applies to collaborator resolution — never silently guessed:
+
+- **Exactly one row**: that row's id (`binding_project_id`), display name
+  (`binding_project_name`), and creator/member tag are the bind target used throughout Stages 7,
+  9, 10, and 11.
+- **Zero rows**: UNAVAILABLE (Stage 8) — the caller is on no shared project at all. State,
+  verbatim, that creating a fresh project is still available, but only by the user's own hand,
+  run outside this skill:
+  ```
+      bash .claude/scripts/sapience-project-bind.sh --name "<display name>" --confirm
+  ```
+- **More than one row**: UNAVAILABLE (Stage 8) — ambiguous, never guessed at. Name every
+  candidate (display name and id) in the reason text and point at the disambiguating command the
+  user can run themselves: `bash .claude/scripts/sapience-project-bind.sh --project "<name or
+  id>" --confirm`.
+
+Keep the prohibition in force in its correct, narrowed form: this skill never runs
+`sapience-project-bind.sh` with `--confirm` anywhere except Stage 10's re-invocation of a
+user-checked option, and never performs a bind unattended — the read-only pick above is the only
+automatic invocation this stage makes. Proceed to Stage 2 either way.
 
 ## Stage 2: Read the Envelope
 
@@ -168,11 +187,19 @@ option — there is no collaborator to address).
 
 ## Stage 7: Preview Every Candidate Surface
 
-For each candidate surface that resolved a target in Stages 4-6, build its exact
-`sapience-publish.sh` argument vector and run it WITHOUT `--confirm`, capturing stdout: that is
-the literal payload (D6) — the SAME construction path the confirmed write in Stage 10 reuses, so
-this is never a second, hand-written preview string.
+For each candidate surface that resolved a target in Stage 1 or Stages 4-6, build its exact
+`sapience-publish.sh` (or, for the Project binding surface, `sapience-project-bind.sh`) argument
+vector and run it WITHOUT `--confirm`, capturing stdout: that is the literal payload (D6) — the
+SAME construction path the confirmed write in Stage 10 reuses, so this is never a second,
+hand-written preview string.
 
+- **Project binding** (only when Stage 1's pick resolved exactly one row — never when it is
+  UNAVAILABLE):
+  ```bash
+  project_binding_preview="$(bash .claude/scripts/sapience-project-bind.sh --project "$binding_project_id")"
+  ```
+  Its dry-run output is the literal `{"repo": "<slug>"}` link payload (D2) — the SAME
+  construction path Stage 10's confirmed call reuses.
 - **Doc comment** (when a target doc resolved in Stage 4):
   ```bash
   doc_comment_preview="$(bash .claude/scripts/sapience-publish.sh doc-comment "$target_slug" --body "$draft_comment_body")"
@@ -216,13 +243,15 @@ be visible above the picker.
 
 <!-- askuserquestion-option-construction: sapience-approval-picker -->
 
-Build the option list for Stage 9 here, and nowhere else in this file. At most four options
+Build the option list for Stage 9 here, and nowhere else in this file. At most five options
 exist (one per candidate surface); this never needs batching, tiering, or a "Select all" option,
-because the measured ceiling is four. Pre-check defaults, exactly as
-`domain/command-draft-and-picker.md` states them:
+because the measured ceiling is five. Pre-check defaults, exactly as
+`domain/command-draft-and-picker.md` states them, with the Project binding row (new in this
+phase) following the same table discipline:
 
 | Option | Included when | Pre-checked when |
 |--------|----------------|-------------------|
+| Project binding | No link file exists (Stage 1) — included whether the pick resolved exactly one row or hit a zero/ambiguous-row UNAVAILABLE state, the reason stated either way | Never — the role note must be read before binding to someone else's project is a known choice |
 | Doc comment | A target doc resolved in Stage 4 | Always (when included) |
 | Decision-log row | The decision-log doc resolved AND its body was obtainable (Stage 7) | Stage 4's decision-shaped test is true |
 | Repo-tagged KOs | Always | Always |
@@ -247,6 +276,10 @@ Exactly one `AskUserQuestion` call, covering every surface built in Stage 8 in o
   "multiSelect": true,
   "options": [
     {
+      "label": "Project binding — {binding_project_name}",
+      "description": "{role note: creator -- notes flow to the collaborator without a per-note confirm | accepted member -- notes land as suggestions only the project's author sees until confirmed} — full payload printed above. UNAVAILABLE and not selectable when Stage 1's pick found zero or more than one candidate (reason stated above)."
+    },
+    {
       "label": "Doc comment on {target_slug}",
       "description": "{first ~80 chars of doc_comment_preview's body} — full payload printed above"
     },
@@ -266,7 +299,7 @@ Exactly one `AskUserQuestion` call, covering every surface built in Stage 8 in o
 }
 ```
 
-There is no delete API and no post-write review gate on any of these four surfaces — a confirmed
+There is no delete API and no post-write review gate on any of these five surfaces — a confirmed
 write here is permanent, which is the entire reason this picker is single, mandatory, and
 payload-literal rather than summary-based (see `domain/command-draft-and-picker.md`'s "Why the
 Picker Is Mandatory and Single").
@@ -277,6 +310,7 @@ For each option the user checked in Stage 9, re-invoke the IDENTICAL argument ve
 Stage 7 with `--confirm` appended — never a re-derived or re-typed vector:
 
 ```bash
+bash .claude/scripts/sapience-project-bind.sh --project "$binding_project_id" --confirm
 bash .claude/scripts/sapience-publish.sh doc-comment "$target_slug" --body "$draft_comment_body" --confirm
 bash .claude/scripts/sapience-publish.sh doc-version "$decision_log_slug" --body-file "$proposed_body_file" --confirm
 bash .claude/scripts/sapience-publish.sh ko --note "$note_1" --note "$note_2" ... --confirm
@@ -291,8 +325,14 @@ independently-sized cap of its own.
 ## Stage 11: Outcome Reporting
 
 Report each confirmed surface's result distinctly — never a single pooled "done" line, because
-the four surfaces have four different success shapes:
+the five surfaces have five different success shapes:
 
+- **Project binding**: one of three outcomes, named explicitly — written and registered (the
+  link route returned a 2xx `ok: true`); written locally only, because the server returned 404
+  and does not read it yet; or refused with nothing written, because the caller has not joined
+  the project (403). In every case, relay the invocation's own last line of output verbatim as
+  this skill's closing instruction for this surface (the exact file to commit, or that nothing
+  was written on the 403 refusal) — never a different path invented here.
 - **Doc comment**: written, with the returned `hash`/`n`, or a named failure.
 - **Decision-log row** (`doc-version`): one of its four verified outcomes, named explicitly —
   `409 head_moved` (refused, nothing written, the doc changed since `base_rev` was fetched),
@@ -303,7 +343,7 @@ the four surfaces have four different success shapes:
 - **DM**: its two sequential writes reported in order (the DM itself, then the resulting
   comment), naming whether a new conversation was created or an existing one was reused.
 
-A confirmed write is never retried, in any of the four cases above, including a failure: there
+A confirmed write is never retried, in any of the five cases above, including a failure: there
 is no delete API, so a retry on an ambiguous or failed response risks duplicating a record that
 cannot be removed. Report the failure and stop; do not re-issue the same `--confirm` call.
 

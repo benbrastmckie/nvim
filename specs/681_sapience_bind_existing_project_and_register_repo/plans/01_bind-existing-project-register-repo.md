@@ -427,35 +427,38 @@ The marker-delimited worktree block stays unedited.
 
 ---
 
-### Phase 4: `/sapience` Pick Surface — Stage 1 Into the One Approval Picker [NOT STARTED]
+### Phase 4: `/sapience` Pick Surface — Stage 1 Into the One Approval Picker [COMPLETED]
 
 **Goal**: in a repository with no link file, `/sapience` offers the bind as a candidate option in
 its single existing approval picker instead of stopping, and never writes unattended.
 
 **Tasks**:
 
-- [ ] Rewrite Stage 1's binding gate: a missing or invalid `$link_file` is no longer a stop. Run
+- [x] Rewrite Stage 1's binding gate: a missing or invalid `$link_file` is no longer a stop. Run
       the read-only pick (`bash .claude/scripts/sapience-project-bind.sh` with no arguments; exit 1
       is the expected, non-error shape), capture the listing, and carry it forward as a candidate
       surface. Keep the prohibition in force in its correct, narrowed form: this skill never runs
       the script with `--confirm` outside Stage 10, and never performs the bind unattended.
-- [ ] Stage 7: add a "Project binding" preview built the same way as the other four —
+      *(completed: zero-row and multi-row cases resolved via Stage 5's exactly-one-or-refuse
+      discipline, reused rather than invented — see deviations)*
+- [x] Stage 7: add a "Project binding" preview built the same way as the other four —
       `bash .claude/scripts/sapience-project-bind.sh --project "<id>"` with no `--confirm`, whose
-      output is the literal link payload, printed in full above the picker.
-- [ ] Stage 8: add the binding row to the option table **inside the existing
+      output is the literal link payload, printed in full above the picker. *(completed)*
+- [x] Stage 8: add the binding row to the option table **inside the existing
       `askuserquestion-option-construction` marker pair** — no second block, no second
       `AskUserQuestion`. Included when no link file exists; never pre-checked, because the role
-      note has to be read before binding to someone else's project is chosen.
-- [ ] Stage 9: add the binding option object, with the role note in its description alongside the
-      pointer to the printed payload.
-- [ ] Stage 10: the confirmed bind re-invokes the identical Stage 7 vector with `--confirm`
-      appended.
-- [ ] Stage 11: report the bind's three distinct outcomes by name — written and registered;
+      note has to be read before binding to someone else's project is chosen. *(completed)*
+- [x] Stage 9: add the binding option object, with the role note in its description alongside the
+      pointer to the printed payload. *(completed)*
+- [x] Stage 10: the confirmed bind re-invokes the identical Stage 7 vector with `--confirm`
+      appended. *(completed)*
+- [x] Stage 11: report the bind's three distinct outcomes by name — written and registered;
       written locally only because the server returned 404 and does not read it yet; refused with
-      nothing written because the caller has not joined the project.
-- [ ] Update Stage 8's surface-ceiling wording from four options to five, and the matching
+      nothing written because the caller has not joined the project. *(completed)*
+- [x] Update Stage 8's surface-ceiling wording from four options to five, and the matching
       sentence in Stage 9's preamble. Stage 12's empty-selection contract is unchanged and stays
-      as-is.
+      as-is. *(completed: also corrected two further stale "four" counts in Stage 11's own prose
+      beside the new fifth bullet)*
 
 **Timing**: 1 hour
 
@@ -496,16 +499,25 @@ it.
 
 **Verification**:
 
-- [ ] `bash .claude/scripts/verify-touched.sh agent-system/extensions/sapience/skills/skill-sapience/SKILL.md`
-      green.
-- [ ] Exactly one `askuserquestion-option-construction` marker pair remains, and exactly one
-      `AskUserQuestion` call is described in the file.
-- [ ] Every `sapience-project-bind.sh` invocation in the file is either argument-free (the pick) or
-      a `--project <id>` form; the only `--confirm` occurrence is inside Stage 10.
-- [ ] Stage 8's option table and Stage 9's option list both carry five surfaces, and no stated
-      count still reads "four".
-- [ ] No task-number reference and no record-versioning language was introduced (both repo rules
-      apply to this path).
+- [x] `bash .claude/scripts/verify-touched.sh agent-system/extensions/sapience/skills/skill-sapience/SKILL.md`
+      green. *(completed: 27 passed, 1 failed (1 expected, 0 NEW) -- the one failure is
+      `test-verify-deploy-context-budget.sh`, named in this phase's own expected-suite roster
+      above and caused by the pre-existing, already-documented deployed-`.claude/`-mirror drift
+      for this extension, not by this phase's edit)*
+- [x] Exactly one `askuserquestion-option-construction` marker pair remains, and exactly one
+      `AskUserQuestion` call is described in the file. *(completed: confirmed via grep, and that
+      the literal `AskUserQuestion` mention count (5) is unchanged from before this phase's edit)*
+- [x] Every `sapience-project-bind.sh` invocation in the file is either argument-free (the pick) or
+      a `--project <id>` form; the only `--confirm` occurrence is inside Stage 10. *(completed: the
+      only skill-EXECUTED `--confirm` invocation is Stage 10's; the two other `--confirm`
+      occurrences are inside verbatim manual commands the skill tells the user to run themselves
+      (Stage 1's zero-row and multi-row UNAVAILABLE reasons), never executed by the skill, matching
+      the pre-existing pattern this same Stage 1 already used for its create-mode suggestion)*
+- [x] Stage 8's option table and Stage 9's option list both carry five surfaces, and no stated
+      count still reads "four". *(completed)*
+- [x] No task-number reference and no record-versioning language was introduced (both repo rules
+      apply to this path). *(completed: checked via `git diff` grep against both rules' forbidden
+      phrase lists)*
 
 ---
 
