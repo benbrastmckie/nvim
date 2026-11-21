@@ -1,7 +1,108 @@
 {
   "version": "1.1.0",
-  "next_project_number": 677,
+  "next_project_number": 678,
   "active_projects": [
+    {
+      "project_number": 677,
+      "project_name": "sapience_automatic_writes_and_retrieval_by_project_id",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Make the Sapience extension's automatic paths use the linked project instead of a directory-name label. Territory: agent-system/extensions/sapience/ (scripts sapience-remember.sh, postflight-sapience-notes.sh, sapience-retrieve.sh, sapience-project-bind.sh, sapience-publish.sh; context/project/sapience/domain/per-repo-scoping.md and injection-site-scoping.md). Today sapience-remember.sh sets provenance \"[repo:<slug>] via sapience-remember.sh\" where the slug is the basename of the checkout's git toplevel, so two collaborators who cloned under different directory names produce different tags and neither write reaches a shared project; its only automatic caller, postflight-sapience-notes.sh, sends no project field; sapience-retrieve.sh reads back by a source= substring match on that label. The binding already exists and is unused by these paths: sapience-project-bind.sh writes .sapience/project.json as {project: <cid>, name, repo} and sapience-publish.sh resolves a project key from it. Build: (1) one resolver, shared by every script, from the working directory to the committed .sapience/project.json, agreeing field for field with the app's repo_link.parse_link; (2) when a link is present, sapience-remember.sh and the postflight pass send project_cid on POST /ingest-kos and surface a project_rejected reply as a recorded issue rather than a silent success; (3) sapience-retrieve.sh sends project_cid so the dispatch memory block is the project's notes, with the label match kept only as the no-link fallback; (4) with no link file every script's request is byte-identical to today's, proved by a negative control; (5) the domain docs state the current design, including that the installed vendor mcp.py accepts a project argument on sapience_remember, which per-repo-scoping.md does not mention. Depends on the app serving the link routes for the account (sapience-app task repo_link_release_state_and_two_account_walkthrough) and on a vendor client that resolves the link (dotfiles task for the payload); the scripts here call the HTTP API directly and can be built and tested against a stub before either lands. Done when a postflight note written in a linked repo is tagged to the project and visible to the other member, and a dispatch in that repo receives a memory block drawn from project notes.",
+      "topic": "sapience",
+      "created": "2026-11-21T00:06:43Z",
+      "last_updated": "2026-11-21T00:06:43Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "sapience_automatic_writes_and_retrieval_by_project_id",
+          "project_number": null,
+          "title": "Carry the linked project id on automatic Sapience writes and retrieval"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 27,
+          "duplicate-of-open": 9,
+          "scope-blind": 43
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.41134751773049644
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44680851063829785
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.46808510638297873
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45390070921985815
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41843971631205673
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5319148936170213
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4326241134751773
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40425531914893614
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45390070921985815
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 43
+      }
+    },
     {
       "project_number": 676,
       "project_name": "tag_transcript_captured_kos_with_repo_tag",
