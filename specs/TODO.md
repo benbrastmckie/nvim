@@ -1,5 +1,5 @@
 ---
-next_project_number: 678
+next_project_number: 679
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 678
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,677 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,677,678 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,492,509,513,518,541,561,566,594,669 | 439,452,472,479,491,517,535,552,593,668 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 486,571,581,588,595,641,671 | 454,484,492,509,518,539,541,561,580,594,669 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
@@ -191,6 +191,7 @@ next_project_number: 678
 ### Sapience
 
 677 [NOT STARTED] — Make the Sapience extension's automatic paths use the linked...
+678 [NOT STARTED] — Decide and encode how a Claude Code session in a linked repo...
 
 ### Decidability
 
@@ -202,6 +203,16 @@ next_project_number: 678
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 678. Sapience linked repo write and capture policy
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: sapience
+- **Dependencies**: None
+
+**Description**: Decide and encode how a Claude Code session in a linked repo creates project notes automatically, which the extension's current policy prevents. Territory: agent-system/extensions/sapience/ (settings-fragment.json, rules/sapience-write-path.md, merge-sources/claudemd.md, context/project/sapience/domain/review-gate-boundary.md, transcript-filter-ceiling.md, per-repo-scoping.md). Four things block automatic contribution today: the fragment grants only the seven read-shaped tools, so sapience_remember and sapience_wrapup are denied in headless runs; the extension's own surfaces tell agents not to call sapience_remember mid-run and supersede the vendor's save-as-it-lands nudge; capture opt-in (the capture map in ~/.sapience/config.json) is unconnected to extension activation, so a repo with the extension loaded is still never extracted; and orchestrated and subagent transcripts are filtered out of extraction (1013 of 1295 on this machine). The reasons for the current policy still hold outside a linked repo: direct /ingest-kos writes bypass the auto_approve review gate and there is no delete API, so a write is permanent and unreviewed. Rule on each, for a repo that carries .sapience/project.json and for one that does not: (1) whether the write tools are granted in a linked repo and under what bound per session; (2) whether the mid-run ban is lifted there, and if so for which note kinds (the person's own typed decisions versus agent-authored findings); (3) whether a link file implies capture opt-in for that repo and who writes the capture-map entry; (4) whether orchestrated transcripts stay filtered, given the postflight pass already distils them; (5) how a non-creator member's notes, which the server lands as suggestions only the author sees until confirmed, are surfaced to that member. Agree with the write rule in the sf1-engine repository's integration/project-link.md so both harnesses apply one policy. Then encode the rulings in the fragment, the rule file and the docs, each with a check. Done when a plain interactive session and an orchestrated run in a linked repo each produce project notes by the ruled path, and the same two in an unlinked repo behave as today.
+
+---
 
 ### 677. Sapience automatic writes and retrieval by project id
 - **Status**: [NOT STARTED]
