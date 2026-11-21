@@ -1,63 +1,39 @@
 {
   "status": "partial",
-  "dispatch_seq": 26,
+  "dispatch_seq": 27,
   "partial_progress": {
-    "stage": "phase_mission_single_phase",
-    "details": "Phase Mission restricted this dispatch to Phase 3 only (5-phase plan). Phase 3 completed and committed; phases 4-5 remain for subsequent dispatches.",
-    "handoff_path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-3-handoff-20261121T231823Z.md",
+    "stage": "territory_contention_blocked",
+    "details": "Phase 4's own pre-edit gate (plan task item 1) requires checking git status for a foreign uncommitted modification to agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md or agent-system/extensions/sapience/index-entries.json, both declared in concurrent sibling task 682's file_scope, and to stop and report rather than proceed on a hit. git status --short showed index-entries.json already carrying an uncommitted line_count correction for two entries (per-repo-scoping.md 410->502 and command-draft-and-picker.md 126->137, both left stale by commit 4304a7e00 / task 681 phase 5); per-repo-scoping.md itself was clean against HEAD. state.json confirms task 682 is status implementing with both files in its declared file_scope and its own plan phase 4 scheduled to add a paragraph to per-repo-scoping.md -- a real two-writer collision risk on the same prose file, not a cosmetic one. Honored the gate literally: no edit was made to either file this dispatch. Phases 1-3 remain completed; phase 4 is unstarted, not partially started, so no mid-phase resume state exists -- the next dispatch simply re-runs this gate once task 682 has committed.",
     "phases_completed": 3,
     "phases_total": 5
   },
-  "artifacts": [
-    {
-      "type": "handoff",
-      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-3-handoff-20261121T231823Z.md",
-      "summary": "Phase 3 completion handoff: sapience-retrieve.sh now sources lib/sapience-api-lib.sh, resolves the Phase 1 project binding, appends project_cid on success, benignly degrades on project_rejected, and the header contract is updated; next dispatch starts Phase 4."
-    }
-  ],
+  "artifacts": [],
   "completion_data": {
-    "completion_summary": "sapience-retrieve.sh now resolves a committed .sapience/project.json binding via lib/sapience-api-lib.sh's sapience_project_link_cid and appends &project_cid=<cid> to its /v1/search request when a valid binding resolves, appending nothing on any failure path (no-link byte-identity preserved). A 2xx response carrying a non-empty project_rejected prints one bounded stderr warning and falls through to the existing hit-extraction path on the same response, never exiting 2 or re-issuing the request. Four new link-present/malformed/project_rejected/non-2xx cases (19-22, 13 assertions) were added to test-sapience-capture.sh, and Phase 2's negative-control case 18 re-runs unmodified and still passes. All 59 assertions in test-sapience-capture.sh pass, test-sapience-context-scoping.sh's 6 cases pass, and a grep confirms project_cid appears nowhere in sapience-remember.sh or postflight-sapience-notes.sh outside the pre-existing Non-Goal header text."
+    "completion_summary": "No phase 4 edits were made. The phase's own pre-edit gate detected a foreign uncommitted modification to one of its two declared files (index-entries.json), caused by concurrently-active sibling task 682 (file_scope includes both per-repo-scoping.md and index-entries.json), and the gate's literal instruction (stop and report on a foreign modification) was honored rather than worked around."
   },
-  "modified_files": [
-    "agent-system/extensions/sapience/scripts/sapience-retrieve.sh",
-    "agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"
-  ],
+  "modified_files": [],
   "memory_candidates": [],
   "sapience_notes": [
     {
-      "subject": "project_cid placement inside sapience-retrieve.sh's response-handling pipeline",
+      "subject": "Stale index-entries.json line_count drift from commit 4304a7e00",
       "predicate": "finding is",
-      "value": "The project_rejected benign-degrade check must sit AFTER the non-JSON-body guard and BEFORE the hit-list normalization step, reading the same already-parsed $response variable -- this lets the degrade path fall through to the existing hit-extraction code with zero duplication and guarantees no second network request is ever issued for this case.",
-      "confidence": 0.85,
-      "source_loc": "agent-system/extensions/sapience/scripts/sapience-retrieve.sh"
+      "value": "Commit 4304a7e00 (task 681 phase 5) edited both per-repo-scoping.md (to 502 lines) and command-draft-and-picker.md (to 137 lines) without updating their line_count fields in agent-system/extensions/sapience/index-entries.json (left at the stale 410/126). The correction was present uncommitted in a later working tree, not from that commit itself -- a reminder that index-entries.json line_count updates are easy to drop from a doc-editing commit and are not caught by any gate observed so far.",
+      "confidence": 0.75,
+      "source_loc": "agent-system/extensions/sapience/index-entries.json"
     },
     {
-      "subject": "project_cid vs project vs &project= on this vault's /v1/search endpoint",
+      "subject": "Plan-authored pre-edit gates can name a concurrency hazard precisely enough to act on without re-deriving it",
       "predicate": "finding is",
-      "value": "This vault's /v1/search endpoint now has THREE distinct, non-interchangeable project-shaped identifiers in play: the plain &project= query parameter (confirmed dead -- silently ignored), the write-side's plain project (key) field sapience-remember.sh sends on /ingest-kos (unrelated endpoint, unrelated field), and the new project_cid query parameter sapience-retrieve.sh now sends on /v1/search, honored only when REPO_LINK_FOR is enabled for the account. Conflating any two of these three is an easy mistake when extending this extension's scripts.",
-      "confidence": 0.9,
-      "source_loc": "agent-system/extensions/sapience/scripts/sapience-retrieve.sh"
-    },
-    {
-      "subject": "deploy-headless.sh cleanly resolves gate3 deployed-script drift mid-task",
-      "predicate": "finding is",
-      "value": "Running 'timeout 540 bash .claude/scripts/deploy-headless.sh' against a repo whose deployed .claude/ tree had drifted from the sapience extension's source store (5 files, from uncommitted Phase 1-2 edits) produced RESULT=landed_verify_clean and cleared all 5 gate3 deployed-script-content-drift FINDINGs on the next verify-touched.sh run, with zero hand-patching of .claude/** -- confirming the <deploy-freshness-context> remedy works cleanly as a mid-task corrective step, not only at session start.",
-      "confidence": 0.9,
-      "source_loc": "agent-system/extensions/sapience/scripts/sapience-retrieve.sh"
-    },
-    {
-      "subject": "a plan phase's own Tier Justification dependent-suite list disambiguates batch noise from real regressions",
-      "predicate": "finding is",
-      "value": "Running verify-touched.sh under a heavy concurrent multi-task /orchestrate batch surfaced 2 FAILs (test-orchestrate-cycle-plan.sh, test-verify-deploy-gate-selection.sh) that named neither this phase's touched files nor any suite in this phase's own plan-authored Tier Justification dependent-suite enumeration. Checking that all 8 of the Tier Justification's own named suites passed gave a concrete, phase-scoped way to attribute the 2 unrelated FAILs to shared-working-tree batch noise from other concurrently-dispatched tasks rather than this phase's own edits, without needing to inspect those suites' internals.",
-      "confidence": 0.85,
+      "value": "This task's own Phase 4 plan text named the exact two files and the exact sibling task number (682) likely to collide on them, written at plan-authoring time before either dispatch ran. When the predicted collision materialized (task 682 status implementing, file_scope containing both files, uncommitted index-entries.json diff present), the plan's literal 'stop and report' instruction was followed rather than second-guessed with an ad hoc workaround (e.g. git stash isolation), since the plan author already had full visibility into the shared-scope hazard that a first-time implementer would not.",
+      "confidence": 0.8,
       "source_loc": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/plans/01_sapience-project-id-automatic-paths.md"
     },
     {
-      "subject": "test-verify-deploy-gate-selection.sh case(q) is a load-sensitive timing flake",
+      "subject": "Two sibling tasks both scheduled to edit per-repo-scoping.md's same design-doc sections",
       "predicate": "finding is",
-      "value": "case(q) in test-verify-deploy-gate-selection.sh asserts VERIFY_DEPLOY_NESTED=1 is slower than an unguarded --jobs 4 run as proof the nested guard forces sequential execution; under a heavy concurrent multi-task /orchestrate batch it failed with the nested-guard run (19323ms) measuring FASTER than the unguarded run (22153ms) -- a second, distinct example (alongside the previously-recorded Gate 8 contention finding) of a wall-clock-comparison assertion in this test suite being unreliable under machine load, not a logic regression.",
-      "confidence": 0.8,
-      "source_loc": "agent-system/extensions/core/scripts/tests/test-verify-deploy-gate-selection.sh"
+      "value": "Task 677 phase 4 and task 682 phase 4 (per task 682's own plan: 'token-location documentation') are both scheduled to add paragraphs to agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md. Running both in the same batch without serializing on this file risks a genuine content collision, not just an index-metadata one -- worth sequencing (a depends-on edge) rather than relying on each dispatch's own pre-edit gate to catch it every cycle.",
+      "confidence": 0.75,
+      "source_loc": "specs/682_sapience_mcp_entry_carries_no_token/plans/01_remove-token-from-mcp-entry.md"
     }
   ],
   "metadata": {
