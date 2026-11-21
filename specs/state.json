@@ -753,12 +753,12 @@
     {
       "project_number": 678,
       "project_name": "sapience_linked_repo_write_and_capture_policy",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "description": "Decide and encode how a Claude Code session in a linked repo creates project notes automatically, which the extension's current policy prevents. Territory: agent-system/extensions/sapience/ (settings-fragment.json, rules/sapience-write-path.md, merge-sources/claudemd.md, context/project/sapience/domain/review-gate-boundary.md, transcript-filter-ceiling.md, per-repo-scoping.md). Four things block automatic contribution today: the fragment grants only the seven read-shaped tools, so sapience_remember and sapience_wrapup are denied in headless runs; the extension's own surfaces tell agents not to call sapience_remember mid-run and supersede the vendor's save-as-it-lands nudge; capture opt-in (the capture map in ~/.sapience/config.json) is unconnected to extension activation, so a repo with the extension loaded is still never extracted; and orchestrated and subagent transcripts are filtered out of extraction (1013 of 1295 on this machine). The reasons for the current policy still hold outside a linked repo: direct /ingest-kos writes bypass the auto_approve review gate and there is no delete API, so a write is permanent and unreviewed. Rule on each, for a repo that carries .sapience/project.json and for one that does not: (1) whether the write tools are granted in a linked repo and under what bound per session; (2) whether the mid-run ban is lifted there, and if so for which note kinds (the person's own typed decisions versus agent-authored findings); (3) whether a link file implies capture opt-in for that repo and who writes the capture-map entry; (4) whether orchestrated transcripts stay filtered, given the postflight pass already distils them; (5) how a non-creator member's notes, which the server lands as suggestions only the author sees until confirmed, are surfaced to that member. Agree with the write rule in the sf1-engine repository's integration/project-link.md so both harnesses apply one policy. Then encode the rulings in the fragment, the rule file and the docs, each with a check. Done when a plain interactive session and an orchestrated run in a linked repo each produce project notes by the ruled path, and the same two in an unlinked repo behave as today.",
       "topic": "sapience",
       "created": "2026-11-21T00:07:14Z",
-      "last_updated": "2026-11-21T18:19:42Z",
+      "last_updated": "2026-11-21T18:31:52Z",
       "audit_verdict": {
         "proposal": {
           "id": "sapience_linked_repo_write_and_capture_policy",
@@ -794,15 +794,36 @@
         },
         "degradations_count": 45
       },
-      "session_id": "sess_1795284367_d33b60_678",
+      "session_id": "sess_1795284367_d33b60",
       "artifacts": [
         {
           "path": "specs/678_sapience_linked_repo_write_and_capture_policy/reports/01_linked-repo-write-capture-policy.md",
           "type": "report",
           "summary": "Rules on all five linked-repo write/capture questions by adopting sf1-engine's integration/project-link.md section 10 by citation (that document names this task by slug as an owed obligation); finds the four blockers are link-state-independent and recommends one concrete mechanism (extending sapience-remember.sh to send the plain project key field, never project_cid) to satisfy the orchestrated-run-produces-project-notes done-when criterion."
+        },
+        {
+          "path": "specs/678_sapience_linked_repo_write_and_capture_policy/plans/01_linked-repo-write-capture-policy.md",
+          "type": "plan",
+          "summary": "6 phases, 3 waves, 8 hours: rulings record and index wiring, sapience-remember.sh project tagging with its first test suite, rule file and domain-doc pointers, resolve-once postflight pass-through, line-neutral EXTENSION.md pointer, and a final deploy plus done-when verification phase."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "file_scope": [
+        "__WHOLE_TREE__",
+        "agent-system/extensions/sapience/EXTENSION.md",
+        "agent-system/extensions/sapience/context/project/sapience/README.md",
+        "agent-system/extensions/sapience/context/project/sapience/domain/command-draft-and-picker.md",
+        "agent-system/extensions/sapience/context/project/sapience/domain/linked-repo-write-policy.md",
+        "agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md",
+        "agent-system/extensions/sapience/context/project/sapience/domain/transcript-filter-ceiling.md",
+        "agent-system/extensions/sapience/index-entries.json",
+        "agent-system/extensions/sapience/manifest.json",
+        "agent-system/extensions/sapience/rules/sapience-write-path.md",
+        "agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh",
+        "agent-system/extensions/sapience/scripts/sapience-remember.sh",
+        "agent-system/extensions/sapience/scripts/tests/test-postflight-sapience-notes.sh",
+        "agent-system/extensions/sapience/scripts/tests/test-sapience-remember.sh"
+      ]
     },
     {
       "project_number": 677,

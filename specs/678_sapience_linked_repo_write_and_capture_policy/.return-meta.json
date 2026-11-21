@@ -1,40 +1,40 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "task_number": 678,
-  "session_id": "sess_1795284367_d33b60_678",
-  "dispatch_seq": 2,
-  "findings_count": 5,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/reports/01_linked-repo-write-capture-policy.md",
-      "summary": "Rules on all five linked-repo write/capture questions by adopting sf1-engine's integration/project-link.md section 10 by citation (that document names this task by slug as an owed obligation); finds the four blockers are link-state-independent and recommends one concrete mechanism (extending sapience-remember.sh to send the plain project key field, never project_cid) to satisfy the orchestrated-run-produces-project-notes done-when criterion."
+      "type": "plan",
+      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/plans/01_linked-repo-write-capture-policy.md",
+      "summary": "6 phases, 3 waves, 8 hours: rulings record and index wiring, sapience-remember.sh project tagging with its first test suite, rule file and domain-doc pointers, resolve-once postflight pass-through, line-neutral EXTENSION.md pointer, and a final deploy plus done-when verification phase."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1795284367_d33b60_678",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 8,
+    "dependency_waves": 3
+  },
+  "user_decision": {
+    "question": "The linked-repo half of the done-when criterion cannot be exercised live here: this repository carries no .sapience/project.json, and creating a real binding is a permanent, undeletable write to your hosted vault. Verify against a fixture binding, or bind a real repository first?",
+    "options": [
+      "Fixture-based verification — a scratch repo with a .sapience/project.json fixture and a stubbed GET /v1/people/projects, reusing the harness test-sapience-publish.sh already has; nothing reaches the live vault",
+      "Bind a real repository — you run sapience-project-bind.sh yourself to create a project, then the done-when criterion is confirmed end to end against the live API"
+    ],
+    "recommended": "Fixture-based verification — a scratch repo with a .sapience/project.json fixture and a stubbed GET /v1/people/projects, reusing the harness test-sapience-publish.sh already has; nothing reaches the live vault",
+    "blocking": false,
+    "obligation": "Demonstrate that an orchestrated run in a repo carrying .sapience/project.json emits a KO body containing a resolved \"project\": \"<key>\" field and no project_cid key, while the same run in an unlinked repo emits a byte-identical body to today's."
+  },
   "memory_candidates": [
     {
-      "content": "sf1-engine's integration/project-link.md (read at /home/benjamin/Projects/Sapience/sf1-engine) is the cross-harness governing contract for Sapience's linked-project feature: section 10 states 7 rulings (Q39 origin/suggestion default, gate M4 for a linked repo, per-session write bound, attribution, a 6-filter sharing policy generalized from hub-runner/solo_sync.py, folder-move resolution, and a leak-path gate keeping automatic project_cid writes OFF until two named leaks close). Its own cross-repository register names other repos' tasks by slug as owed obligations -- check that register before re-deriving a policy the external document may already settle.",
+      "content": "Any plan that edits an extension's doc/context surfaces in this repo must declare three coupled, commit-blocking surfaces in the SAME phase as the edit, all enforced by check-extension-docs.sh (verify-deploy Gate 3), both of whose gate modes default to `hard`: (1) Rule R -- every index-entries.json entry's `line_count` is checked against `wc -l` of its source file, remedy `generate-context-line-counts.sh --write`; (2) Rule U -- EXTENSION.md has a hard 60-line ceiling from extension-slim-standard.md, and at least the sapience extension's sits at exactly 60, so a pointer addition needs an offsetting removal; (3) Rule Q -- a script on disk absent from manifest.json's provides.scripts fails, remedy `sync-manifest-scripts.sh --write`. A phase that adds a context file or a test script without declaring and regenerating these fails Gate 3 rather than its own named check.",
       "category": "PATTERN",
-      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/reports/01_linked-repo-write-capture-policy.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["sapience", "project-link", "sf1-engine", "cross-repository", "linked-repo"]
-    },
-    {
-      "content": "Sapience's sapience-publish.sh 'ko' subcommand already writes a project-tagged KO using the plain, pre-verification 'project' key field (resolved at runtime from .sapience/project.json's cid via GET /v1/people/projects), and explicitly never sends project_cid because REPO_LINK_FOR is confirmed dark for this credential (command-draft-and-picker.md's 'Dark Migration Path', corroborated by sf1-engine project-link.md section 7's flag table). This means such a write carries no server-side origin/suggestion enforcement yet -- it is safe today precisely because it doesn't reach that machinery, not because the machinery was checked and passed.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/reports/01_linked-repo-write-capture-policy.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["sapience", "project_cid", "REPO_LINK_FOR", "sapience-publish", "write-path"]
-    },
-    {
-      "content": "skill-sapience's entire /sapience write mechanism (sapience-publish.sh's four surfaces, gated behind Stage 9's single mandatory AskUserQuestion approval picker) is structurally confined to a plain interactive session: AskUserQuestion is categorically withheld from every Agent-tool dispatch regardless of frontmatter, so this path can never fire mid-run in an orchestrated/headless dispatch. This is a stronger guarantee than a written policy ban.",
-      "category": "PATTERN",
-      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/reports/01_linked-repo-write-capture-policy.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["sapience", "AskUserQuestion", "skill-sapience", "orchestrated-dispatch", "interactive-only"]
+      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/plans/01_linked-repo-write-capture-policy.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["check-extension-docs", "index-entries", "line_count", "EXTENSION.md", "provides.scripts", "plan-authoring"]
     }
   ],
-  "next_steps": "Run /orchestrate 678 to create implementation plan"
+  "dispatch_seq": 6,
+  "next_steps": "Run /orchestrate 678 to execute the plan"
 }
