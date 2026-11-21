@@ -1,82 +1,6 @@
 {
-  "status": "partial",
-  "dispatch_seq": 12,
-  "partial_progress": {
-    "stage": "phase_boundary_stop",
-    "details": "Hard-mode Phase Mission directive scoped this dispatch to Phase 4 only ('Implement phase 4 only. Do not continue past this phase'). Phase 4 is fully [COMPLETED] and verified; phases 5-6 remain for a subsequent dispatch.",
-    "handoff_path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-4-handoff-20261121T201000Z.md",
-    "phases_completed": 4,
-    "phases_total": 6
-  },
-  "artifacts": [
-    {
-      "type": "summary",
-      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/summaries/01_linked-repo-write-capture-policy-summary.md",
-      "summary": "Implementation summary covering Phases 3-4; status IN PROGRESS pending phases 5-6."
-    },
-    {
-      "type": "handoff",
-      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-4-handoff-20261121T201000Z.md",
-      "summary": "Phase 4 completed and committed; resume point and context for Phase 5."
-    }
-  ],
-  "completion_data": {
-    "completion_summary": "Resolved postflight-sapience-notes.sh's Sapience project key once per completed task instead of once per note, by duplicating sapience-remember.sh's PROJECT-KEY RESOLUTION block directly into the calling script and forwarding the result as --project-key to every per-note call; an unlinked repo's behavior is unchanged (zero GETs, no flag forwarded). Added two new regression cases (linked: one GET, same key on every call; unlinked: zero GETs, no flag) to test-postflight-sapience-notes.sh, bringing it to 41/41 passing; test-sapience-remember.sh's Phase 2 flag contract remains 11/11."
-  },
-  "modified_files": [
-    "agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh",
-    "agent-system/extensions/sapience/scripts/tests/test-postflight-sapience-notes.sh"
-  ],
-  "memory_candidates": [
-    {
-      "content": "When a test suite's own declared file_scope restricts an edit to one script and its test file, but the correct fix conceptually belongs partly in a sibling script that is out of scope, duplicating the sibling's relevant block directly (with a header note explaining why) is the sanctioned move in this codebase -- it mirrors the pattern the sibling's own PROJECT-KEY RESOLUTION / sapience-worktree-checkout-resolution blocks already use for the same reason, rather than widening file_scope mid-phase.",
-      "category": "PATTERN",
-      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/summaries/01_linked-repo-write-capture-policy-summary.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["file_scope", "duplication pattern", "sapience-remember.sh", "lockstep set", "source-store-deploy-boundary"]
-    },
-    {
-      "content": "verify-touched.sh's run-all.sh invocation resolves each selected test suite's script-under-test via the deployed .claude/ mirror first (deploy-tree-first), with no CORE_TEST_SUBJECT_MODE override of its own -- so a verify-touched.sh run taken while an extension's deployed tree is known-stale (per the dispatch's own <deploy-freshness-context>) silently exercises the OLD deployed copy, not the edited source-store copy, even though it reports a clean pass. The authoritative check of a source-store-only change, before its next redeploy, is a direct `CORE_TEST_SUBJECT_MODE=source-store bash <source-store-suite>.sh` invocation, not the batch-deferred verify-touched.sh probe.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/summaries/01_linked-repo-write-capture-policy-summary.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["verify-touched.sh", "CORE_TEST_SUBJECT_MODE", "deploy-tree-first", "stale deploy", "source-store"]
-    }
-  ],
-  "sapience_notes": [
-    {
-      "subject": "postflight-sapience-notes.sh resolve-once pass-through for the linked-repo project key",
-      "value": "postflight-sapience-notes.sh now resolves this repo's Sapience project key at most once per completed task (duplicating sapience-remember.sh's own PROJECT-KEY RESOLUTION block rather than modifying that script, which was out of this phase's declared file_scope) and forwards it to every per-note sapience-remember.sh call as --project-key, cutting a linked repo's GET /v1/people/projects count from one-per-note to one-per-task. An unlinked repo's behavior (no .sapience/project.json) is unchanged: zero GETs, no --project-key forwarded.",
-      "predicate": "decision is",
-      "ko_type": "decision",
-      "confidence": 0.85,
-      "source_loc": "agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh"
-    },
-    {
-      "subject": "Resolve-once degrade path is exact only on the success branch",
-      "value": "When postflight-sapience-notes.sh's own project-key resolution fails (binding present but the GET fails or matches no entry), it omits --project-key from every per-note call, so each sapience-remember.sh invocation still attempts its own per-call fallback GET (its pre-existing behavior for that one call). The 'one GET per task' guarantee is therefore exact for the success path (what the plan's own Verification criterion tests) and a best-effort improvement -- one issue row recorded once, rather than per-note silence -- on the degrade path, not a hard GET-count bound there.",
-      "predicate": "finding is",
-      "ko_type": "finding",
-      "confidence": 0.85,
-      "source_loc": "agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh"
-    },
-    {
-      "subject": "verify-touched.sh does not exercise a source-store-only change ahead of redeploy",
-      "value": "verify-touched.sh's run-all.sh invocation resolves each test suite's script-under-test deploy-tree-first with no CORE_TEST_SUBJECT_MODE override, so running it while an extension's deployed tree is flagged stale reports a clean pass by exercising the OLD deployed copy, not the edited source-store copy. Confirmed live on this task: the scoped verify-touched.sh probe reported 98 passed/0 failed while the sapience extension's deployed tree was still stale, whereas CORE_TEST_SUBJECT_MODE=source-store bash test-postflight-sapience-notes.sh was the call that actually exercised this phase's new code.",
-      "predicate": "finding is",
-      "ko_type": "finding",
-      "confidence": 0.85,
-      "source_loc": "agent-system/extensions/core/scripts/verify-touched.sh"
-    },
-    {
-      "subject": "Repo-root resolution in a postflight script must come from the script's own location, not cwd",
-      "value": "postflight-sapience-notes.sh resolves PROJECT_ROOT via common_repo_root(\"$SCRIPT_DIR\", 2) rather than from cwd, matching sapience-remember.sh's identical convention, because its two production call sites (orchestrate-cycle-postflight.sh, reconcile-task-status.sh) invoke it by an absolute, ${SKILL_REPO_ROOT}/${PROJECT_ROOT}-qualified path without guaranteeing cwd is the repo root at that point.",
-      "predicate": "finding is",
-      "ko_type": "finding",
-      "confidence": 0.8,
-      "source_loc": "agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh"
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 13,
   "metadata": {
     "session_id": "sess_1795284367_d33b60",
     "agent_type": "general-implementation-agent",
@@ -84,6 +8,5 @@
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
     "phases_completed": 4,
     "phases_total": 6
-  },
-  "next_steps": "Dispatch Phase 5 (Line-Neutral EXTENSION.md Pointer) next."
+  }
 }

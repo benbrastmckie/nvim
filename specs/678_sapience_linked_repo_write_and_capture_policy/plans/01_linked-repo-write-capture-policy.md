@@ -423,20 +423,25 @@ instruction-surface set and writing what it returns, not these numbers.
 
 ---
 
-### Phase 5: Line-Neutral `EXTENSION.md` Pointer [NOT STARTED]
+### Phase 5: Line-Neutral `EXTENSION.md` Pointer [COMPLETED]
 
 **Goal**: The new record reachable from the merged `.claude/CLAUDE.md` section, without breaching
 the 60-line ceiling.
 
 **Tasks**:
 
-- [ ] Record `wc -l agent-system/extensions/sapience/EXTENSION.md` before editing (expected 60).
-- [ ] Add `context/project/sapience/domain/linked-repo-write-policy.md` to the `### Context
+- [x] Record `wc -l agent-system/extensions/sapience/EXTENSION.md` before editing (expected 60). *(completed: measured 60, matching the expectation)*
+- [x] Add `context/project/sapience/domain/linked-repo-write-policy.md` to the `### Context
       Pointers` list, and offset the addition by condensing an existing wrapped paragraph in the
       same file so the total does not grow. Do not drop an existing pointer to make room.
-- [ ] Do not create or reference `merge-sources/claudemd.md`; `manifest.json`'s
+      *(completed: appended as the 8th list entry; offset by rejoining the two-line `/sapience`
+      paragraph into one source line, a pure line-count reduction with no change to rendered
+      content since Markdown already treated the pair as one soft-wrapped paragraph)*
+- [x] Do not create or reference `merge-sources/claudemd.md`; `manifest.json`'s
       `merge_targets.claudemd.source` is `EXTENSION.md` and that is the only merge source.
-- [ ] Re-record `wc -l` and confirm it is at most 60.
+      *(completed: confirmed no `merge-sources/` directory exists under
+      agent-system/extensions/sapience/)*
+- [x] Re-record `wc -l` and confirm it is at most 60. *(completed: measured 60, at the ceiling)*
 
 **Timing**: 0.5 hours
 
