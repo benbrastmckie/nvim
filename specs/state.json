@@ -259,6 +259,11 @@
           "path": "specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md",
           "type": "record",
           "summary": "Per-shape measurement results and the unconditional verdict for build item (2)."
+        },
+        {
+          "path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-2-handoff-20261121T220952Z.md",
+          "type": "handoff",
+          "summary": "Phase 2 completion handoff naming Phase 3 as the immediate next action."
         }
       ],
       "next_artifact_number": 2,
