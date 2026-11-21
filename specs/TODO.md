@@ -1,5 +1,5 @@
 ---
-next_project_number: 683
+next_project_number: 684
 ---
 
 # TODO
@@ -13,9 +13,9 @@ next_project_number: 683
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,678,680,681,682 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,678,680,681,682,683 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630,677 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629,681 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,473,480,492,509,513,518,541,561,566,594,669,679 | 439,452,472,479,491,517,535,552,593,668,677,678 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 3 | 454,473,480,492,509,513,518,541,561,566,594,669,679 | 439,452,472,479,491,517,535,552,593,668,677,678,682 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 486,571,581,588,595,641,671 | 454,484,492,509,518,539,541,561,580,594,669 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 501,508,596,642 | 472,486,570,595,641 | file-scope-lifecycle, agent-system |
 | 6 | 524 | 501 | core-agent-system |
@@ -197,6 +197,8 @@ next_project_number: 683
   └─ 677 [NOT STARTED] — Make the Sapience extension's automatic paths use the linked...
     └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a... (see above)
 682 [NOT STARTED] — Stop writing the Sapience token into the per-project MCP...
+  └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a... (see above)
+683 [NOT STARTED] — Couple Sapience capture enablement to sapience-extension...
 
 ### Decidability
 
@@ -208,6 +210,16 @@ next_project_number: 683
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 683. Couple sapience capture to extension activation
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: sapience
+- **Dependencies**: None
+
+**Description**: Couple Sapience capture enablement to sapience-extension activation: extend the existing bidirectional SessionStart hook (agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh, which already registers/removes the per-project MCP entry from .claude-extensions.json's .extensions.sapience.status) so the same two branches also enable/disable transcript capture for that repo by calling the vendor's own CLI -- `sapience projects on <checkout toplevel>` when the extension is active, `sapience projects off <checkout toplevel>` when it is not -- never by hand-editing ~/.sapience/config.json, so the vendor client stays the sole writer of the capture map (under its own lock) and survives vendor auto-update. Path must be resolved through the shared worktree-aware resolve_checkout_toplevel() block so a worktree enables its parent checkout, and the call must be idempotent and silent in steady state (only act, and only emit an additionalContext notice, when capture.projects[] state actually differs from the extension state), preserving the hook's always-exit-0 / one-JSON-line contract and degrading silently when the `sapience` binary or config.json is absent. Research must settle: (1) whether the legacy top-level `folders` list in config.json also gates what extract_local.py reads and whether `sapience projects on <path>` keeps it in step (if not, how to reconcile without a second writer); (2) whether `sapience projects on|off` is safe to run non-interactively from a hook (no prompt, no network dependency that could hang session start -- note projects_cli ends with capture_sync()), and what a bounded timeout should be; (3) whether the reap pass should also turn capture off for vanished project directories; (4) how sapience_capture.deny_reason treats candidate paths; (5) whether the companion-owned ~/.dotfiles user-level hook/installer copy needs a matching change to stay byte-identical. Also rewrite per-repo-scoping.md's 'Capture/Activation Reconciliation' subsection (which currently rules that this extension must NOT write capture.projects[].enabled and that any coupling belongs in ~/.dotfiles) to state the new design and why routing through the vendor CLI removes the two-writers hazard; update verify-sapience-mcp.sh's check (i) accordingly; add fixture-HOME test coverage (stubbed `sapience` binary) for on, off, steady-state-silent, missing-binary, and worktree cases. Document caveats: one-session-start lag, first sync after enable backfills the configured `days` window, and off is not retroactive for already-posted KOs. Acceptance test (operator-run, not agent-run): with the extension loaded in /home/benjamin/Projects/Sapience/sf1-engine and its agent system reloaded, the next session start there adds sf1-engine to `sapience projects` as enabled, and unloading the extension turns it off at the following session start. Edit target is the sapience extension source store (agent-system/extensions/sapience)
+
+---
 
 ### 682. Sapience mcp entry carries no token
 - **Status**: [NOT STARTED]
@@ -243,7 +255,7 @@ next_project_number: 683
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: sapience
-- **Dependencies**: Task 677, Task 678
+- **Dependencies**: Task 677, Task 678, Task 682
 
 **Description**: Give a collaborator who does not use this extension picker a documented, minimal path to contribute to a linked project from Claude Code. The deployed .claude/ tree is a gitignored artifact of this loader, so a clone of a linked repo carries none of the Sapience wiring, and the Nix module, sops secrets, enforced hooks key and /nix/store paths in the MCP entry are specific to one machine. Territory: agent-system/extensions/sapience/ docs plus whatever in-repo files the path needs. Write and test the path: (1) the prerequisites (their own Sapience account and token, the vendor client at a version that resolves the link, accepted membership of the shared project); (2) MCP registration by `claude mcp add` or a committed .mcp.json that names no machine path and no secret; (3) the hooks a member needs for injection (session-start briefing, per-prompt context) as a settings snippet, and what they get with the MCP server alone and no hooks; (4) what in the repo is committed for everyone (.sapience/project.json and nothing else) versus per person; (5) a verify step that proves a write from their session lands in the project and a search returns project notes; (6) the same for a collaborator who does load this extension. State plainly which behaviours depend on the person's own configuration, since each collaborator wires injection their own way. Run the path once on a clean Claude Code profile and record the result. Done when a second person can follow the page from a fresh clone to a verified project note without help.
 
