@@ -1,93 +1,76 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 18,
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-3-handoff-20261121T211737Z.md",
-      "summary": "Phase 3 (vendor delegation with single-writer normalization) completed; records the delegated/HTTP byte-identity design, the deployed-mirror verify-touched.sh staleness caveat (carried forward), and the host's own vendor client genuinely predating link support."
+      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-4-handoff-20261121T213746Z.md",
+      "summary": "Phase 4 (/sapience Pick Surface -- Stage 1 Into the One Approval Picker) completed; records the Stage-5-reused exactly-one-or-refuse disambiguation design for the pick's zero/multi-row cases, the first-surface ordering decision, and the two extra stale-count corrections made beside the new fifth bullet."
     }
   ],
-  "next_steps": "Dispatch Phase 4 (/sapience Pick Surface) of the same plan; Phase 5 depends on both 3 and 4.",
+  "next_steps": "Dispatch Phase 5 (Domain Record -- Link Mechanism and the Fifth Surface) of the same plan; it depends on Phases 3 and 4, both now [COMPLETED].",
   "completion_data": {
-    "completion_summary": "Implemented Phase 3 of 5: bind mode now delegates its --confirm registration to the installed vendor client's own `link` subcommand when statically detected as supported (python3 \"$SAPIENCE_CLI_PATH\" link <value> --name <repo_slug>), reading the vendor's written file back and re-rendering it through write_link_file() so this script remains the sole, canonical writer either way; any non-success vendor outcome falls through to Phase 2's own HTTP path unchanged. Added test cases 22-24 against a synthetic sapience_cli.py fixture (never the real installation); all 24 cases (61 assertions) pass against the source store."
+    "completion_summary": "Implemented Phase 4 of 5: SKILL.md's Stage 1 binding gate no longer hard-stops on a missing/invalid link file -- it runs the read-only pick and carries the result forward as a 'Project binding' candidate surface through Stages 7-11 of the existing single AskUserQuestion approval picker (ceiling moved four -> five), reusing Stage 5's exactly-one-or-refuse discipline for the pick's zero-row and multi-row cases rather than adding a second picker. verify-touched.sh: 27 passed, 1 failed (1 expected, 0 NEW) -- the one failure is the pre-existing, already-documented deployed-.claude/-mirror drift for the sapience extension, not a regression from this edit."
   },
   "modified_files": [
-    "agent-system/extensions/sapience/scripts/sapience-project-bind.sh",
-    "agent-system/extensions/sapience/scripts/tests/test-sapience-project-bind.sh"
+    "agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"
   ],
   "metadata": {
     "session_id": "sess_1795284367_d33b60",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ],
-    "phases_completed": 3,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
     "phases_total": 5
   },
   "memory_candidates": [
     {
-      "content": "When a plan requires that a delegated subprocess's own written output file become the canonical artifact (never the delegate's raw serialization), read the file back by its own declared keys and re-render through the same single-writer helper the non-delegated path already uses, rather than trusting the delegate's bytes directly. This turns 'byte-identical on either path' into a structurally enforced invariant (both paths funnel through one writer) instead of a hope about two independently-maintained serializers staying in sync.",
+      "content": "When a plan's task text names a single preview/confirm id for a picker option (e.g. '--project \"<id>\"') but the underlying read-only listing it is built from can return zero, one, or many rows, do not invent a new disambiguation mechanism or a second interactive prompt if the same file already has an exactly-one-or-refuse pattern for a structurally identical problem (e.g. an existing collaborator-name resolution stage). Reusing that existing discipline for the new surface's zero-row/multi-row cases keeps the file's refusal vocabulary consistent and avoids a second AskUserQuestion call that a Non-Goal may already forbid.",
       "category": "PATTERN",
       "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/summaries/01_bind-existing-project-register-repo-summary.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "single-writer invariant",
-        "delegation",
-        "read-back normalization",
-        "byte-identity proof",
-        "subprocess fixture"
-      ]
+      "confidence": 0.8,
+      "suggested_keywords": ["exactly-one-or-refuse", "disambiguation reuse", "picker option design", "AskUserQuestion", "Non-Goal constraint"]
     },
     {
-      "content": "To test a byte-identity requirement between two independently-constructed code paths that each embed a basename-derived value (e.g. a cwd-derived repo slug) in their output, build the two scratch fixtures with a fixed, shared leaf directory name (via mkdir under two different mktemp -d parents) rather than two independent mktemp -d calls -- this keeps the basename-derived field identical across both paths without weakening the comparison to 'ignore that one field', so a whole-file cmp remains a meaningful, exact proof.",
+      "content": "A cheap regression check for 'no new interactive call was added to a prose skill file': grep the whole file for the literal tool-invocation string (e.g. \"AskUserQuestion\") and diff the total occurrence count against the pre-edit count via `git show HEAD:<file> | grep -c ...` vs. the post-edit count. The count should be invariant across an edit that only adds content inside an existing marker-bracketed construction block, since the string's legitimate appearances are the one real call plus a fixed set of descriptive cross-references to it.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/summaries/01_bind-existing-project-register-repo-summary.md",
-      "confidence": 0.8,
-      "suggested_keywords": [
-        "byte-identity test",
-        "basename-derived value",
-        "scratch fixture",
-        "mktemp",
-        "cmp comparison"
-      ]
+      "confidence": 0.75,
+      "suggested_keywords": ["regression check", "grep count diff", "marker-bracketed block", "prose skill file", "git show baseline"]
     }
   ],
   "sapience_notes": [
     {
-      "subject": "Vendor CLI delegation detection must be static, never a live probe",
-      "value": "The sapience CLI binary on $PATH (a NixOS-packaged wrapper) cannot be used to detect or invoke a vendor client's `link` subcommand at all: it dispatches via a fixed case table with no `link` branch and no fallback into the underlying sapience_cli.py's own argument parser, so invoking it for 'link' fails regardless of what the Python file underneath actually supports. Detection must grep the Python source file directly (grep -q \"sub == 'link'\") and invocation must go straight at `python3 \"$SAPIENCE_CLI_PATH\" link ...`, bypassing the $PATH wrapper entirely. Confirmed live: this machine's installed ~/.sapience/sapience_cli.py (1122 lines) genuinely predates `link` support and falls through to a generic usage printout with no network call.",
-      "predicate": "finding is",
-      "ko_type": "insight",
-      "confidence": 0.9,
-      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh:sapience_vendor_cli_supports_link"
-    },
-    {
-      "subject": "Reconciling a delegation requirement with a 'write anyway on 404' requirement",
-      "value": "Pure delegation to a vendor CLI cannot satisfy a '404 still writes the file in a degraded state' requirement when the vendor's own CLI writes nothing on 404. The resolution that preserves both requirements: delegate only the write-and-register call itself, and only when the vendor client exits 0 with a link file actually present on disk; read that file's own keys back and re-render them through the single-writer helper that already handles the create and non-delegated bind paths. Any other vendor outcome (non-zero exit, or exit 0 with no file) falls through unchanged to the script's own HTTP path, which alone implements the 404/403 status-code policy. Accepted consequence: against a link-capable client, a 404 or 403 outcome causes both the vendor's POST and this script's own POST to fire -- harmless since both are non-mutating at those statuses.",
+      "subject": "Reusing an existing disambiguation pattern instead of inventing one for an underspecified multi-row case",
+      "value": "A plan task named a single '--project \"<id>\"' preview for a new picker surface, but the read-only pick it depends on can return zero, one, or more than one row, and the plan did not specify how to resolve that. Rather than invent a new mechanism or add a second AskUserQuestion call (an explicit Non-Goal), the implementation reused the file's own existing exactly-one-or-refuse discipline (already used for collaborator-name resolution): exactly one row becomes the live candidate; zero or more than one row makes the surface UNAVAILABLE with a named reason and a manual command, never a silent guess.",
       "predicate": "finding is",
       "ko_type": "decision",
       "confidence": 0.85,
-      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh:delegate_link"
+      "source_loc": "agent-system/extensions/sapience/skills/skill-sapience/SKILL.md:Stage 1"
     },
     {
-      "subject": "Never classify a delegated subprocess's outcome by parsing its stdout/stderr",
-      "value": "sapience-project-bind.sh's delegate_link() redirects the vendor CLI's entire stdout and stderr to /dev/null unconditionally. Classification of the delegation outcome is by exit code and by the written link file's own JSON content only -- never by matching against the vendor's English prose, which carries no stability contract and could change wording across vendor versions without notice.",
-      "predicate": "finding is",
-      "ko_type": "decision",
-      "confidence": 0.85,
-      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh:delegate_link"
-    },
-    {
-      "subject": "verify-touched.sh deployed-mode smoke check vs. authoritative source-store check (carried forward from Phases 1-2)",
-      "value": "bash .claude/scripts/verify-touched.sh in this repo runs run-all.sh in its default 'deployed' mode, which executes the deployed, pre-edit copy of a suite whenever that extension's deployed .claude/ mirror is stale -- reconfirmed this phase: the deployed test-sapience-project-bind.sh still lacked cases 22-24 even though the narrowed verify-touched.sh run reported green (it was running the stale 21-case deployed file). The authoritative check for a source-store edit under this condition remains the direct CORE_TEST_SUBJECT_MODE=source-store invocation of the suite from its source-store path, which this phase confirmed green at 24 cases / 61 assertions.",
+      "subject": "verify-touched.sh's deployed-mode staleness caveat also covers prose skill files, not only scripts",
+      "value": "The deployed-.claude/-mirror staleness caveat recorded in Phases 1-3 of this task (verify-touched.sh running the deployed, pre-edit copy of a suite when an extension's deployed mirror is stale) was reconfirmed to apply to a prose SKILL.md edit too: the narrowed run's one expected failure (test-verify-deploy-context-budget.sh) reported gate3/gate5 content-drift findings naming skills/skill-sapience/SKILL.md alongside the two already-known drifted script files for the sapience extension. The caveat is about the extension's deployed mirror as a whole, not specific to a file type.",
       "predicate": "finding is",
       "ko_type": "insight",
       "confidence": 0.85,
-      "source_loc": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-3-handoff-20261121T211737Z.md"
+      "source_loc": "agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"
+    },
+    {
+      "subject": "A stale numeric count beside new content is worth correcting even outside the task's literally-named edit sites",
+      "value": "A task's own wording scoped a 'four options -> five options' rewording to two named sentences (Stage 8's ceiling, Stage 9's closing paragraph), but two further sentences in Stage 11 ('the four surfaces have four different success shapes' and 'any of the four cases above') sat directly beside the newly-added fifth bullet and would have been an immediately visible, self-contradicting inaccuracy if left unedited. Treated as a plain correctness fix within the same file edit rather than a scope expansion requiring a stop.",
+      "predicate": "finding is",
+      "ko_type": "decision",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/sapience/skills/skill-sapience/SKILL.md:Stage 11"
+    },
+    {
+      "subject": "no-record-versioning-in-deliverables.md's forbidden-phrase list catches ordinary behavior-change prose, not only document-draft-history narration",
+      "value": "Drafting Stage 1's new prose with the phrase 'this is no longer a stop' triggered the repo's no-record-versioning-in-deliverables.md rule even though the sentence describes a behavior change, not the document's own draft lineage -- the rule's forbidden list includes 'no longer' literally, with no carve-out for describing a design's current behavior relative to its own prior behavior. Remedy: state the current behavior directly ('this is not a hard stop') without referencing what it used to be.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": ".claude/rules/no-record-versioning-in-deliverables.md"
     }
   ]
 }

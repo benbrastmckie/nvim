@@ -1,18 +1,18 @@
 {
   "status": "implemented",
-  "dispatch_seq": 17,
+  "dispatch_seq": 18,
   "task_number": 681,
   "phase": "implement",
-  "phases_completed": 3,
+  "phases_completed": 4,
   "phases_total": 5,
-  "summary": "Implemented Phase 3 of the bind-existing-project plan: bind mode now delegates its --confirm registration to the installed vendor client's own `link` subcommand when statically detected as supported, reading the vendor's written file back and re-rendering it through write_link_file() so this script remains the sole canonical writer either way; any non-success vendor outcome falls through to Phase 2's own HTTP path unchanged. Added test cases 22-24 against a synthetic sapience_cli.py fixture (24/24 cases, 61/61 assertions pass against the source store). Phase 3 is committed and marked [COMPLETED]; phases 4-5 remain.",
+  "summary": "Implemented Phase 4 of the bind-existing-project plan: SKILL.md's Stage 1 binding gate no longer hard-stops on a missing/invalid .sapience/project.json -- it runs the read-only pick and carries the result forward as a 'Project binding' candidate surface through Stages 7-11 of the existing single AskUserQuestion approval picker (option ceiling moved four -> five), reusing Stage 5's exactly-one-or-refuse discipline for the pick's zero-row and multi-row cases rather than adding a second picker. verify-touched.sh: 27 passed, 1 failed (1 expected, 0 NEW), the one failure being pre-existing deployed-mirror drift for this extension, not a regression. Phase 4 is committed and marked [COMPLETED]; phase 5 remains.",
   "blockers": [],
   "plan_markers_verified": true,
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-3-handoff-20261121T211737Z.md",
-      "summary": "Phase 3 completion handoff: the delegated/HTTP byte-identity design, the grep-confirmed no-vendor-prose-parsing invariant, and the carried-forward verify-touched.sh deployed-mirror staleness caveat."
+      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-4-handoff-20261121T213746Z.md",
+      "summary": "Phase 4 completion handoff: the Stage-5-reused exactly-one-or-refuse disambiguation design, the first-surface ordering decision, and the two extra stale-count corrections made beside the new fifth bullet."
     }
   ],
   "metadata": {
