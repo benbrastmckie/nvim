@@ -1,16 +1,15 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 23,
-  "summary": "Wrote a five-phase implementation plan for the Sapience project-id automatic paths. Scope follows the research report's governing finding: write-side project_cid is EXCLUDED (sf1-engine integration/project-link.md section 10 Ruling 7, agreed by this repo's linked-repo-write-policy.md and rules/sapience-write-path.md), so the three write scripts are untouched. The plan delivers a shared link resolver in scripts/lib/sapience-api-lib.sh, the read-side project_cid path in sapience-retrieve.sh with a URL-recording negative control pinned before the change, and a per-repo-scoping.md design statement including the &project= vs project_cid distinction and the vendor mcp.py project argument. validate-artifact.sh passes with 0 warnings.",
+  "status": "partial",
+  "dispatch_seq": 24,
+  "phases_completed": 1,
+  "phases_total": 5,
+  "summary": "Implemented Phase 1 of 5 for task 677 under a single-phase Phase Mission restriction. Added sapience_project_link_read/sapience_project_link_cid to agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh, a single-location .sapience/project.json resolver taking an already-resolved toplevel and validating field-for-field against repo_link.py's parse_link, with no copy of the nine-copy worktree-resolution lockstep block. Added accept/reject unit cases 13-17 to test-sapience-capture.sh. All three phase verification commands pass (43/0, 53/0, 19/0 across test-sapience-capture.sh, test-sapience-publish.sh, test-sapience-vault-read.sh), and the lockstep grep confirms 0 new copies. Committed as a single phase-closing commit.",
+  "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/plans/01_sapience-project-id-automatic-paths.md",
-      "summary": "Five-phase plan: shared link resolver, read-side project_cid with a pre-pinned no-link negative control, domain-doc design statement, closing verification; write-side project_cid excluded per Ruling 7."
+      "type": "handoff",
+      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-1-handoff-20261121T222608Z.md",
+      "summary": "Phase 1 completion handoff with resume instructions for Phase 2."
     }
-  ],
-  "phases_completed": 0,
-  "phases_total": 5,
-  "blockers": []
+  ]
 }

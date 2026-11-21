@@ -1,9 +1,57 @@
 {
-  "status": "in_progress",
+  "status": "partial",
   "dispatch_seq": 24,
+  "partial_progress": {
+    "stage": "phase_mission_single_phase",
+    "details": "Phase Mission restricted this dispatch to Phase 1 only (5-phase plan). Phase 1 completed and committed; phases 2-5 remain for subsequent dispatches.",
+    "handoff_path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-1-handoff-20261121T222608Z.md",
+    "phases_completed": 1,
+    "phases_total": 5
+  },
+  "artifacts": [
+    {
+      "type": "handoff",
+      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-1-handoff-20261121T222608Z.md",
+      "summary": "Phase 1 completion handoff: shared link resolver added to lib/sapience-api-lib.sh with unit coverage; next dispatch starts Phase 2."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added sapience_project_link_read and sapience_project_link_cid to agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh: a single-location .sapience/project.json resolver, taking an already-resolved toplevel, validating exactly the three string keys project/name/repo field-for-field against repo_link.py's parse_link, with no copy of the nine-copy worktree-resolution lockstep block. Added accept/reject unit cases 13-17 to test-sapience-capture.sh (43 passed, 0 failed); test-sapience-publish.sh and test-sapience-vault-read.sh still pass; grep confirms 0 copies of the lockstep block added."
+  },
+  "modified_files": [
+    "agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"
+  ],
+  "memory_candidates": [],
+  "sapience_notes": [
+    {
+      "subject": "sapience-api-lib.sh test resolution under CORE_TEST_SUBJECT_MODE",
+      "predicate": "finding is",
+      "value": "common_test_resolve_subject (which honors CORE_TEST_SUBJECT_MODE) must be used to resolve a sapience-api-lib.sh test subject, never a hand-rolled deploy-then-source if/elif like test-sapience-publish.sh's own API_LIB block uses -- that hand-rolled form ignores CORE_TEST_SUBJECT_MODE entirely. Confirmed live: with the sapience extension's deployed .claude/ tree stale relative to the source store, the hand-rolled form silently sourced the OLD deployed lib (missing newly-added functions) even with CORE_TEST_SUBJECT_MODE=source-store set, producing rc=127 'command not found' for every new function call until switched to common_test_resolve_subject.",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"
+    },
+    {
+      "subject": "sapience-project-bind.sh write_link_file three-key validation",
+      "predicate": "finding is",
+      "value": "repo_link.py's parse_link requires an object with EXACTLY three string keys (project/name/repo); a 'token/key/secret/password-shaped extra key' refusal is satisfied structurally by the exact-key-count check alone -- any object carrying a fourth key of any shape already fails validation, so no separate key-name-pattern check is needed to cover that case.",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh"
+    },
+    {
+      "subject": "sapience worktree-checkout-resolution lockstep count",
+      "predicate": "finding is",
+      "value": "Confirmed live via grep -rc 'BEGIN sapience-worktree-checkout-resolution' across agent-system/extensions/sapience/scripts/: exactly 9 production/verification scripts each carry one copy (sapience-vault-read.sh, sapience-remember.sh, verify-sapience-mcp.sh, sapience-publish.sh, verify-sapience-context-scoping.sh, sapience-tag-pending.sh, sapience-retrieve.sh, sapience-project-bind.sh, test-sapience-mcp-registration.sh), matching the plan's re-derived Scope Hypothesis rather than the stale 'five copies' figure in an earlier research report.",
+      "confidence": 0.95,
+      "source_loc": "agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795284367_d33b60",
     "agent_type": "general-implementation-agent",
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 1,
+    "phases_total": 5
   }
 }
