@@ -1,24 +1,19 @@
 {
   "status": "partial",
-  "dispatch_seq": 20,
+  "dispatch_seq": 22,
   "phase": "implement",
-  "summary": "Completed Phase 1 of 5: mechanically confirmed all five mcp.py invocation shapes (--statusline, --briefing-text, --receipt, --effect-line, bare stdio initialize) resolve the Sapience token from ~/.sapience/config.json with SAPIENCE_TOKEN stripped from the environment, with no divergent shape. The dispatch's Phase Mission directive limited execution to Phase 1 only; phases 2-5 remain.",
+  "summary": "Completed Phase 2 of 5: setup-sapience-mcp.sh's generate_sapience_config() now emits env {SAPIENCE_HOST} only, with resolve_token() and its call site deleted; verify-sapience-mcp.sh's check (b) hardcodes EXPECTED_HAS_TOKEN=false and fails a token-bearing entry with a named remedy. Both files committed together as one atomic batch (1ad3905a9). The dispatch's Phase Mission directive limited execution to Phase 2 only; phases 3-5 remain.",
   "artifacts": [
     {
-      "type": "record",
-      "path": "specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md",
-      "summary": "Per-shape measurement results and the unconditional verdict for build item (2)."
-    },
-    {
       "type": "handoff",
-      "path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-1-handoff-20261121T215919Z.md",
-      "summary": "Phase 1 completion handoff naming Phase 2 as the immediate next action."
+      "path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-2-handoff-20261121T220952Z.md",
+      "summary": "Phase 2 completion handoff naming Phase 3 as the immediate next action."
     }
   ],
-  "phases_completed": 1,
+  "phases_completed": 2,
   "phases_total": 5,
   "blockers": [],
   "plan_markers_verified": true,
-  "continuation_path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-1-handoff-20261121T215919Z.md",
-  "next_action_hint": "Dispatch Phase 2: writer emits a token-free entry, verifier refuses a token-bearing one (atomic-batch commit across setup-sapience-mcp.sh and verify-sapience-mcp.sh). Re-read both files first per the plan's sibling-683-collision risk note."
+  "continuation_path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-2-handoff-20261121T220952Z.md",
+  "next_action_hint": "Dispatch Phase 3: regression test with negative control, appended to agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh (a positive case scanning the whole entry for the configured token value, plus a negative control on a fixture entry that does carry it)."
 }
