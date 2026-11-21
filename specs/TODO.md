@@ -13,9 +13,9 @@ next_project_number: 683
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,677,678,680,681,682 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630,679 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629,677,678 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,473,480,492,509,513,518,541,561,566,594,669 | 439,452,472,479,491,517,535,552,593,668 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,678,680,681,682 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630,677 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629,681 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,473,480,492,509,513,518,541,561,566,594,669,679 | 439,452,472,479,491,517,535,552,593,668,677,678 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 486,571,581,588,595,641,671 | 454,484,492,509,518,539,541,561,580,594,669 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 501,508,596,642 | 472,486,570,595,641 | file-scope-lifecycle, agent-system |
 | 6 | 524 | 501 | core-agent-system |
@@ -191,11 +191,11 @@ next_project_number: 683
 
 ### Sapience
 
-677 [NOT STARTED] — Make the Sapience extension's automatic paths use the linked...
-  └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
 678 [NOT STARTED] — Decide and encode how a Claude Code session in a linked repo...
-  └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a... (see above)
+  └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
 681 [NOT STARTED] — Let the Sapience extension bind a repository to an existing...
+  └─ 677 [NOT STARTED] — Make the Sapience extension's automatic paths use the linked...
+    └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a... (see above)
 682 [NOT STARTED] — Stop writing the Sapience token into the per-project MCP...
 
 ### Decidability
@@ -263,9 +263,9 @@ next_project_number: 683
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: sapience
-- **Dependencies**: None
+- **Dependencies**: Task 681
 
-**Description**: Make the Sapience extension's automatic paths use the linked project instead of a directory-name label. Territory: agent-system/extensions/sapience/ (scripts sapience-remember.sh, postflight-sapience-notes.sh, sapience-retrieve.sh, sapience-project-bind.sh, sapience-publish.sh; context/project/sapience/domain/per-repo-scoping.md and injection-site-scoping.md). Today sapience-remember.sh sets provenance "[repo:<slug>] via sapience-remember.sh" where the slug is the basename of the checkout's git toplevel, so two collaborators who cloned under different directory names produce different tags and neither write reaches a shared project; its only automatic caller, postflight-sapience-notes.sh, sends no project field; sapience-retrieve.sh reads back by a source= substring match on that label. The binding already exists and is unused by these paths: sapience-project-bind.sh writes .sapience/project.json as {project: <cid>, name, repo} and sapience-publish.sh resolves a project key from it. Build: (1) one resolver, shared by every script, from the working directory to the committed .sapience/project.json, agreeing field for field with the app's repo_link.parse_link; (2) when a link is present, sapience-remember.sh and the postflight pass send project_cid on POST /ingest-kos and surface a project_rejected reply as a recorded issue rather than a silent success; (3) sapience-retrieve.sh sends project_cid so the dispatch memory block is the project's notes, with the label match kept only as the no-link fallback; (4) with no link file every script's request is byte-identical to today's, proved by a negative control; (5) the domain docs state the current design, including that the installed vendor mcp.py accepts a project argument on sapience_remember, which per-repo-scoping.md does not mention. Depends on the app serving the link routes for the account (sapience-app task repo_link_release_state_and_two_account_walkthrough) and on a vendor client that resolves the link (dotfiles task for the payload); the scripts here call the HTTP API directly and can be built and tested against a stub before either lands. Done when a postflight note written in a linked repo is tagged to the project and visible to the other member, and a dispatch in that repo receives a memory block drawn from project notes.
+**Description**: Make the Sapience extension's automatic paths use the linked project instead of a directory-name label. Territory: agent-system/extensions/sapience/ (scripts sapience-remember.sh, postflight-sapience-notes.sh, sapience-retrieve.sh, sapience-project-bind.sh, sapience-publish.sh; context/project/sapience/domain/per-repo-scoping.md and injection-site-scoping.md). Today sapience-remember.sh sets provenance "[repo:<slug>] via sapience-remember.sh" where the slug is the basename of the checkout's git toplevel, so two collaborators who cloned under different directory names produce different tags and neither write reaches a shared project; its only automatic caller, postflight-sapience-notes.sh, sends no project field; sapience-retrieve.sh reads back by a source= substring match on that label. The binding already exists and is unused by these paths: sapience-project-bind.sh writes .sapience/project.json as {project: <cid>, name, repo} and sapience-publish.sh resolves a project key from it. Build: (1) one resolver, shared by every script, from the working directory to the committed .sapience/project.json, agreeing field for field with the app's repo_link.parse_link; (2) when a link is present, sapience-remember.sh and the postflight pass send project_cid on POST /ingest-kos and surface a project_rejected reply as a recorded issue rather than a silent success; (3) sapience-retrieve.sh sends project_cid so the dispatch memory block is the project's notes, with the label match kept only as the no-link fallback; (4) with no link file every script's request is byte-identical to today's, proved by a negative control; (5) the domain docs state the current design, including that the installed vendor mcp.py accepts a project argument on sapience_remember, which per-repo-scoping.md does not mention. Depends on the app serving the link routes for the account (sapience-app tasks open_mvp_flags_and_create_linked_team_project and repo_link_code_onto_release_line) and on a vendor client that resolves the link (dotfiles task for the payload); the scripts here call the HTTP API directly and can be built and tested against a stub before either lands. Done when a postflight note written in a linked repo is tagged to the project and visible to the other member, and a dispatch in that repo receives a memory block drawn from project notes.
 
 ---
 
