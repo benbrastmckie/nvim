@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Read-Side project_cid in sapience-retrieve.sh",
+  "started_at": "2026-11-21T21:00:00Z",
+  "last_updated": "2026-11-21T22:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read sapience-retrieve.sh before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Source lib/sapience-api-lib.sh, no sapience_api_init/sapience_get", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-retrieve.sh"]},
+    {"id": 3, "description": "Resolve binding and append project_cid on success, nothing on any failure", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-retrieve.sh"]},
+    {"id": 4, "description": "project_rejected benign-degrade warning, never exit 2, never re-issue", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-retrieve.sh"]},
+    {"id": 5, "description": "Update script header contract", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/sapience-retrieve.sh"]},
+    {"id": 6, "description": "Add link-present/malformed/project_rejected/non-2xx test cases", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]},
+    {"id": 7, "description": "Re-run Phase 2 negative control unmodified", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

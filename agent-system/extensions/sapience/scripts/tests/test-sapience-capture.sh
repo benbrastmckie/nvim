@@ -813,6 +813,143 @@ write_binding() {
   fi
 }
 
+# =====================================================================================
+# Case 19: a valid link-present binding yields a URL carrying both `project_cid=<cid>` and the
+# unchanged `source=[repo:<slug>]` -- the link-present positive case for task item (1)/(3).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  slug="$(basename "$scratch")"
+  write_binding "$scratch" "cid-link-valid-999"
+  out="$(CURL_STUB_CODE=200 CURL_STUB_BODY='{"results":[{"subject":"keybinding fault","predicate":"root cause","object_value":"stale cache","score":0.9}]}' \
+    run_sr "$scratch" "$stub_dir" "diagnosing a keybinding fault" "general" 2>/dev/null)"
+  rc=$?
+  url="$(curl_urls "$stub_dir" | tail -1)"
+  encoded_source="$(jq -rn --arg v "[repo:${slug}]" '$v|@uri')"
+
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(19) link-present valid binding: exit 0"
+  else
+    common_test_fail "(19) link-present valid binding: exit 0" "got rc=$rc"
+  fi
+  if echo "$url" | grep -qF "project_cid=cid-link-valid-999"; then
+    common_test_pass "(19) link-present valid binding: URL carries project_cid=<cid>"
+  else
+    common_test_fail "(19) link-present valid binding: URL carries project_cid=<cid>" "url=$url"
+  fi
+  if echo "$url" | grep -qF "source=${encoded_source}"; then
+    common_test_pass "(19) link-present valid binding: source= is unchanged (fixture's own slug)"
+  else
+    common_test_fail "(19) link-present valid binding: source= is unchanged (fixture's own slug)" "url=$url slug=$slug"
+  fi
+}
+
+# =====================================================================================
+# Case 20: a malformed binding (fails the resolver's validation) yields the Phase 2 negative
+# control's exact URL -- no project_cid, no project, same q/source/limit/token param set.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  slug="$(basename "$scratch")"
+  mkdir -p "$scratch/.sapience"
+  jq -n --arg project "cid-malformed" --arg name "Test Project" \
+    '{project: $project, name: $name}' > "$scratch/.sapience/project.json"
+  out="$(CURL_STUB_CODE=200 CURL_STUB_BODY='{"results":[]}' \
+    run_sr "$scratch" "$stub_dir" "diagnosing a keybinding fault" "general" 2>/dev/null)"
+  rc=$?
+  url="$(curl_urls "$stub_dir" | tail -1)"
+  query="${url#*\?}"
+  param_names="$(echo "$query" | tr '&' '\n' | cut -d= -f1 | sort | tr '\n' ' ' | sed 's/ *$//')"
+  encoded_source="$(jq -rn --arg v "[repo:${slug}]" '$v|@uri')"
+
+  if [ "$rc" -eq 1 ]; then
+    common_test_pass "(20) malformed binding: benign exit code 1 (zero-hit search)"
+  else
+    common_test_fail "(20) malformed binding: benign exit code 1 (zero-hit search)" "got rc=$rc"
+  fi
+  if [ "$param_names" = "limit q source token" ]; then
+    common_test_pass "(20) malformed binding: query params are exactly q/source/limit/token (no project_cid)"
+  else
+    common_test_fail "(20) malformed binding: query params are exactly q/source/limit/token (no project_cid)" "params=[$param_names] url=$url"
+  fi
+  if echo "$query" | grep -qF "source=${encoded_source}"; then
+    common_test_pass "(20) malformed binding: source= carries the fixture's own minted slug"
+  else
+    common_test_fail "(20) malformed binding: source= carries the fixture's own minted slug" "query=$query slug=$slug"
+  fi
+}
+
+# =====================================================================================
+# Case 21: a 2xx body carrying a non-empty `project_rejected` exits 0 with the envelope (never
+# 2) plus a bounded warning naming the rejection value on stderr, and extracts hits from the
+# SAME response rather than re-issuing the request.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  write_binding "$scratch" "cid-link-valid-999"
+  err_file="$(mktemp -p "$TOP_WORKDIR")"
+  out="$(CURL_STUB_CODE=200 CURL_STUB_BODY='{"project_rejected":"REPO_LINK_FOR disabled","results":[{"subject":"keybinding fault","predicate":"root cause","object_value":"stale cache","score":0.9}]}' \
+    run_sr "$scratch" "$stub_dir" "diagnosing a keybinding fault" "general" 2>"$err_file")"
+  rc=$?
+  err="$(cat "$err_file")"
+  count="$(curl_call_count "$stub_dir")"
+
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(21) project_rejected on 2xx: exit 0, never 2"
+  else
+    common_test_fail "(21) project_rejected on 2xx: exit 0, never 2" "got rc=$rc"
+  fi
+  if echo "$out" | grep -q "<memory-context>" && echo "$out" | grep -q "keybinding fault"; then
+    common_test_pass "(21) project_rejected on 2xx: hits extracted from the SAME response"
+  else
+    common_test_fail "(21) project_rejected on 2xx: hits extracted from the SAME response" "out=$out"
+  fi
+  if echo "$err" | grep -q "project_rejected" && echo "$err" | grep -q "REPO_LINK_FOR disabled"; then
+    common_test_pass "(21) project_rejected on 2xx: bounded warning names the rejection value"
+  else
+    common_test_fail "(21) project_rejected on 2xx: bounded warning names the rejection value" "err=$err"
+  fi
+  if [ "$count" = "1" ]; then
+    common_test_pass "(21) project_rejected on 2xx: never re-issued without the parameter (one call)"
+  else
+    common_test_fail "(21) project_rejected on 2xx: never re-issued without the parameter (one call)" "count=$count"
+  fi
+}
+
+# =====================================================================================
+# Case 22: with a link present, a non-2xx response still exits 2 exactly as before -- the
+# project binding never changes the genuine-failure path.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  write_binding "$scratch" "cid-link-valid-999"
+  err_file="$(mktemp -p "$TOP_WORKDIR")"
+  out="$(CURL_STUB_CODE=401 CURL_STUB_BODY='{"error": "unauthorized"}' \
+    run_sr "$scratch" "$stub_dir" "diagnosing a keybinding fault" "general" 2>"$err_file")"
+  rc=$?
+  err="$(cat "$err_file")"
+
+  if [ "$rc" -eq 2 ]; then
+    common_test_pass "(22) link-present non-2xx: genuine-failure exit code 2, unchanged"
+  else
+    common_test_fail "(22) link-present non-2xx: genuine-failure exit code 2, unchanged" "got rc=$rc"
+  fi
+  if [ -z "$out" ]; then
+    common_test_pass "(22) link-present non-2xx: empty stdout"
+  else
+    common_test_fail "(22) link-present non-2xx: empty stdout" "stdout=$out"
+  fi
+  if echo "$err" | grep -q "401"; then
+    common_test_pass "(22) link-present non-2xx: unchanged diagnostic carries the status"
+  else
+    common_test_fail "(22) link-present non-2xx: unchanged diagnostic carries the status" "err=$err"
+  fi
+}
+
 echo ""
 echo "=== Results: $PASSED passed, $FAILED failed ==="
 if [ "$FAILED" -gt 0 ]; then

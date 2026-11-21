@@ -287,7 +287,7 @@ the harness change leaked into a script and the phase boundary needs restating.
 
 ---
 
-### Phase 3: Read-Side `project_cid` in `sapience-retrieve.sh` [NOT STARTED]
+### Phase 3: Read-Side `project_cid` in `sapience-retrieve.sh` [COMPLETED]
 
 **Goal**: A linked repository's dispatch memory block is drawn from the project's notes, an
 unlinked or malformed-link repository's request is byte-identical to today's, and a
@@ -296,33 +296,33 @@ transport failure.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/sapience/scripts/sapience-retrieve.sh` immediately before
-      editing.
-- [ ] Source `lib/sapience-api-lib.sh` after the existing `lib/common.sh` source and
+- [x] Re-read `agent-system/extensions/sapience/scripts/sapience-retrieve.sh` immediately before
+      editing. *(completed)*
+- [x] Source `lib/sapience-api-lib.sh` after the existing `lib/common.sh` source and
       `PROJECT_ROOT` bootstrap. Do NOT call `sapience_api_init` and do NOT route the request
       through `sapience_get`: this phase changes the URL's query string only, leaving the
       script's own host/token resolution, `issue_request` function, cold-start retry, and exit-code
-      split untouched, so the no-link request stays byte-identical.
-- [ ] After the repo-slug block, resolve the binding with the Phase 1 resolver against the
+      split untouched, so the no-link request stays byte-identical. *(completed)*
+- [x] After the repo-slug block, resolve the binding with the Phase 1 resolver against the
       already-resolved `$repo_toplevel`. On success, URL-encode the cid the same way every other
       parameter is encoded (`jq -rn --arg v "$cid" '$v|@uri'`) and append
       `&project_cid=${encoded_cid}` to the `/v1/search` URL. On any failure path (no file,
-      malformed, failed validation), append nothing at all.
-- [ ] On a 2xx response whose JSON body carries a non-empty `project_rejected`, print one bounded
+      malformed, failed validation), append nothing at all. *(completed)*
+- [x] On a 2xx response whose JSON body carries a non-empty `project_rejected`, print one bounded
       stderr warning naming the rejection value and continue through the existing hit-extraction
       path unchanged — never exit 2, and never re-issue the request without the parameter (the
-      retained `source=` filter already makes the response label-scoped).
-- [ ] Update the script's own header: the read path's `project_cid` parameter, its gating on the
+      retained `source=` filter already makes the response label-scoped). *(completed)*
+- [x] Update the script's own header: the read path's `project_cid` parameter, its gating on the
       server's `REPO_LINK_FOR` flag, the `project_cid`-vs-`&project=` distinction, the
       no-link byte-identity guarantee, and the `project_rejected` benign-degrade rule. State that
-      the script sends no `project_cid` on any write path because it makes none.
-- [ ] Add the link-present cases to `test-sapience-capture.sh`: a valid binding yields a URL
+      the script sends no `project_cid` on any write path because it makes none. *(completed)*
+- [x] Add the link-present cases to `test-sapience-capture.sh`: a valid binding yields a URL
       carrying both `project_cid=<cid>` and the unchanged `source=[repo:<slug>]`; a malformed
       binding yields the Phase 2 control URL exactly; a 2xx body carrying `project_rejected`
       exits 0 with the envelope (or 1 on zero hits) plus the warning on stderr, never 2; a
-      non-2xx response still exits 2 exactly as before.
-- [ ] Re-run Phase 2's negative-control case unmodified and confirm it still passes — this is
-      task item (4)'s proof.
+      non-2xx response still exits 2 exactly as before. *(completed: cases 19-22, 13 assertions)*
+- [x] Re-run Phase 2's negative-control case unmodified and confirm it still passes — this is
+      task item (4)'s proof. *(completed: case 18 unmodified, still passes)*
 
 **Timing**: 1.5 hours
 
@@ -339,10 +339,10 @@ transport failure.
 
 **Verification**:
 
-- [ ] `CORE_TEST_SUBJECT_MODE=source-store bash agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh` passes, with Phase 2's negative-control case green and unmodified.
-- [ ] The link-present case's recorded URL contains both `project_cid=` and `source=`, asserted against the fixture's own cid and minted slug.
-- [ ] `CORE_TEST_SUBJECT_MODE=source-store bash agent-system/extensions/sapience/scripts/tests/test-sapience-context-scoping.sh` still passes (it exercises this script's envelope contract).
-- [ ] `grep -n 'project_cid' agent-system/extensions/sapience/scripts/sapience-remember.sh agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh` shows only the pre-existing Non-Goal header text, confirming no write path acquired the parameter.
+- [x] `CORE_TEST_SUBJECT_MODE=source-store bash agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh` passes, with Phase 2's negative-control case green and unmodified. *(completed: 59 passed, 0 failed)*
+- [x] The link-present case's recorded URL contains both `project_cid=` and `source=`, asserted against the fixture's own cid and minted slug. *(completed: case 19)*
+- [x] `CORE_TEST_SUBJECT_MODE=source-store bash agent-system/extensions/sapience/scripts/tests/test-sapience-context-scoping.sh` still passes (it exercises this script's envelope contract). *(completed: 6 passed, 0 failed)*
+- [x] `grep -n 'project_cid' agent-system/extensions/sapience/scripts/sapience-remember.sh agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh` shows only the pre-existing Non-Goal header text, confirming no write path acquired the parameter. *(completed: only lines 63/102/266 of sapience-remember.sh's pre-existing Non-Goal text; postflight-sapience-notes.sh has zero matches)*
 
 ---
 

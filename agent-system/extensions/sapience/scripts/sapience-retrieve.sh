@@ -5,11 +5,31 @@
 #
 # Queries GET /v1/search filtered to this repo's tag (embedded in each KO's `provenance` string
 # as a literal "[repo:<slug>]" substring, filtered on read via `source=`) and emits the SAME
-# <memory-context> envelope every Stage 4a call site's consumer contract expects. Repo-scoping
-# works ONLY through that provenance tag; the vault's `project` field is
-# a dead end (`/v1/search` silently ignores `&project=`). See
-# context/project/sapience/domain/per-repo-scoping.md for the full mechanism, why it is the only
-# one that works, and the sibling write path (sapience-remember.sh).
+# <memory-context> envelope every Stage 4a call site's consumer contract expects. The `source=`
+# label filter is sent UNCONDITIONALLY on every request and remains the baseline repo-scoping
+# mechanism; the vault's `&project=` parameter is a separate, still-dead-end field
+# (`/v1/search` silently ignores it). See context/project/sapience/domain/per-repo-scoping.md for
+# the full mechanism and the sibling write path (sapience-remember.sh).
+#
+# PROJECT-SCOPED READS (`project_cid`): when this repository carries a committed
+# `.sapience/project.json` binding (written by sapience-project-bind.sh), this script also
+# resolves it via `lib/sapience-api-lib.sh`'s `sapience_project_link_cid` against the
+# already-resolved checkout toplevel and sends the binding's cid as a `project_cid` query
+# parameter on this SAME `/v1/search` request. `project_cid` is a DISTINCT parameter from both
+# the dead-end `&project=` above and from the write side's plain `project` (key) field
+# (sapience-remember.sh sends `project`, never `project_cid` -- it has no project_cid code at
+# all, because it makes no read). The server only honors `project_cid` when `REPO_LINK_FOR` is
+# enabled for this account; because `source=` is always sent too, an unhonored `project_cid`
+# still narrows to this repo's own tagged notes rather than returning nothing. A 2xx response
+# whose body carries a non-empty `project_rejected` is a BENIGN degrade, not a transport
+# failure: one bounded warning goes to stderr and the SAME response is used for hit extraction
+# (never exit 2, never a second request without the parameter -- the retained `source=` filter
+# already makes that response label-scoped). With no binding file at all, or one that is
+# missing, unreadable, non-JSON, or fails the resolver's three-key/path-shape validation,
+# nothing is appended to the URL and the request stays byte-identical to the pre-project-aware
+# request -- the no-link case costs no extra field and no extra network call. This script issues
+# only a GET; it has no write path of its own, and so never sends `project_cid` on a write
+# because it makes none.
 #
 # Exit 0 with the envelope on stdout when at least one matching KO survives the token budget.
 # Exit 1 (empty stdout) on every BENIGN no-match path: missing args, unresolvable repo slug, no
@@ -74,6 +94,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/common.sh"
 PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 # shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/sapience-api-lib.sh"
+# shellcheck disable=SC1091
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 
 # --- Keyword extraction: lowercase, split on non-alpha, stop-word filter, length>3, dedupe,
@@ -136,6 +158,14 @@ if [ -z "$repo_slug" ]; then
   exit 1
 fi
 
+# --- Project binding resolution (Phase 1 resolver, lib/sapience-api-lib.sh). Any failure (no
+# file, malformed, failed validation) leaves project_cid empty -- the no-link byte-identity
+# case -- and nothing is appended to the URL below. ---
+project_cid=""
+if resolved_cid="$(sapience_project_link_cid "$repo_toplevel" 2>/dev/null)"; then
+  project_cid="$resolved_cid"
+fi
+
 # --- Host/token resolution (mirrors ~/.sapience/mcp.py's own precedence) ---
 CONFIG_FILE="${HOME}/.sapience/config.json"
 
@@ -162,6 +192,11 @@ encoded_source="$(jq -rn --arg v "[repo:${repo_slug}]" '$v|@uri')"
 encoded_token="$(jq -rn --arg v "$sapience_token" '$v|@uri')"
 
 url="${sapience_host}/v1/search?q=${encoded_q}&source=${encoded_source}&limit=${MAX_ENTRIES}&token=${encoded_token}"
+
+if [ -n "$project_cid" ]; then
+  encoded_cid="$(jq -rn --arg v "$project_cid" '$v|@uri')"
+  url="${url}&project_cid=${encoded_cid}"
+fi
 
 # --- Single request, extracted into a function so the bounded cold-start retry below can
 # invoke it a second time without duplicating the curl call. --write-out appends the HTTP status
@@ -234,6 +269,16 @@ esac
 if [ -z "$response" ] || ! echo "$response" | jq -e . >/dev/null 2>&1; then
   echo "sapience-retrieve.sh: genuine failure -- non-JSON body (HTTP ${http_status}): ${response:0:300}" >&2
   exit 2
+fi
+
+# --- project_rejected benign degrade: the server can accept the request (2xx) while rejecting
+# the project_cid itself (e.g. REPO_LINK_FOR not enabled for this account, or the cid unknown to
+# it). This is never a transport/HTTP failure -- print one bounded warning and fall through to
+# the existing hit-extraction path on this SAME response, which is already label-scoped via the
+# retained source= filter. Never re-issue the request without the parameter. ---
+project_rejected="$(echo "$response" | jq -r '.project_rejected // empty' 2>/dev/null)" || project_rejected=""
+if [ -n "$project_rejected" ]; then
+  echo "sapience-retrieve.sh: project_cid rejected by server (project_rejected=${project_rejected:0:200}) -- falling back to the label-scoped result" >&2
 fi
 
 # --- Normalize the hit list: a "results" array when present, else the bare top-level array,
