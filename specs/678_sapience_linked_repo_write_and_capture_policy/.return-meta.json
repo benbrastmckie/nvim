@@ -32,7 +32,13 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/summaries/01_linked-repo-write-capture-policy-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["EXTENSION.md", "Rule U", "line-count offset", "markdown soft-wrap", "line-neutral edit"]
+      "suggested_keywords": [
+        "EXTENSION.md",
+        "Rule U",
+        "line-count offset",
+        "markdown soft-wrap",
+        "line-neutral edit"
+      ]
     }
   ],
   "sapience_notes": [
@@ -65,9 +71,16 @@
     "session_id": "sess_1795284367_d33b60",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 5,
     "phases_total": 6
   },
-  "next_steps": "Dispatch Phase 6 (Deploy, Done-When Verification, and Orchestration-Close Deferral) next."
+  "next_steps": "Dispatch Phase 6 (Deploy, Done-When Verification, and Orchestration-Close Deferral) next.",
+  "proposed_file_scope": [
+    ".claude-extensions.json"
+  ]
 }

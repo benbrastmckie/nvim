@@ -1,0 +1,19 @@
+{
+  "phase": 6,
+  "phase_name": "Deploy, Done-When Verification, and Orchestration-Close Deferral",
+  "started_at": "2026-11-21T20:25:00Z",
+  "last_updated": "2026-11-21T20:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Regenerate deployed tree via deploy-headless.sh", "status": "done", "files_touched": [".claude-extensions.json"]},
+    {"id": 2, "description": "Linked half fixture-based: scratch repo + stubbed GET, run postflight path end to end under --dry-run, confirm project key and no project_cid", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Linked half interactive path: confirm by inspection + test-sapience-publish.sh cases that /sapience Stage 9 picker remains ruled path; record agent-exercise limit", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Unlinked half live: confirm sapience-remember.sh --dry-run and postflight path emit bodies with no project key, byte-identical to Phase 2 pre-change output", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Re-read every ruling's check in the new record and confirm each one actually runs and reports what it claims", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run the scoped touched-path check (verify-touched.sh) for this dispatch", "status": "done", "files_touched": []},
+    {"id": 7, "description": "State explicitly that the complete gate set is deferred to orchestration close", "status": "done", "files_touched": ["specs/678_sapience_linked_repo_write_and_capture_policy/plans/01_linked-repo-write-capture-policy.md", "specs/678_sapience_linked_repo_write_and_capture_policy/summaries/01_linked-repo-write-capture-policy-summary.md"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

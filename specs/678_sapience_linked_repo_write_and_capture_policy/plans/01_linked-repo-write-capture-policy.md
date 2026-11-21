@@ -467,35 +467,49 @@ before/after `wc -l` the task list already requires, not with this statement.
 
 ---
 
-### Phase 6: Deploy, Done-When Verification, and Orchestration-Close Deferral [NOT STARTED]
+### Phase 6: Deploy, Done-When Verification, and Orchestration-Close Deferral [COMPLETED]
 
 **Goal**: The deployed tree carries every change, and both halves of the done-when criterion are
 demonstrated — the linked half against a fixture binding, the unlinked half live in this repository.
 
 **Tasks**:
 
-- [ ] Regenerate the deployed tree: `timeout 540 bash .claude/scripts/deploy-headless.sh` (the
+- [x] Regenerate the deployed tree: `timeout 540 bash .claude/scripts/deploy-headless.sh` (the
       dispatch reports the sapience extension's deployed copy already stale before this task's
       changes; the Bash tool `timeout` parameter must be raised to 600000, not its 120000ms
-      default). Do not hand-patch any file under `.claude/**` as a substitute.
-- [ ] Linked half, fixture-based: in a scratch git repo carrying a `.sapience/project.json`
+      default). Do not hand-patch any file under `.claude/**` as a substitute. *(completed:
+      `deploy-headless.sh` reported `RESULT=landed_verify_clean`, 41 checks/0 failures; the
+      sapience extension's `source_git_head` now matches the current source HEAD)*
+- [x] Linked half, fixture-based: in a scratch git repo carrying a `.sapience/project.json`
       fixture with a stubbed `GET /v1/people/projects`, run the postflight path end to end under
       `--dry-run` and confirm each emitted body carries `"project": "<key>"` and no `project_cid`.
-- [ ] Linked half, interactive path: confirm by inspection plus the existing
+      *(completed: `postflight-sapience-notes.sh --dry-run` against the fixture repo emitted
+      `"project": "oliver-ben"` with no `project_cid` key anywhere, exit 0)*
+- [x] Linked half, interactive path: confirm by inspection plus the existing
       `test-sapience-publish.sh` cases that `/sapience`'s Stage 9 picker remains the ruled path for
       a person's typed decision, and record in the summary that this path cannot be exercised by an
       agent at all (`AskUserQuestion` is withheld from every `Agent`-tool dispatch) — a stated
-      verification limit, not a silent gap.
-- [ ] Unlinked half, live: from this repository's own root, confirm `sapience-remember.sh --dry-run`
+      verification limit, not a silent gap. *(completed: `skill-sapience/SKILL.md` Stage 9 is
+      still the single `AskUserQuestion` approval picker; `test-sapience-publish.sh` 53/0; the
+      interactive run itself is agent-exercise-limited, recorded in the summary rather than
+      silently skipped)*
+- [x] Unlinked half, live: from this repository's own root, confirm `sapience-remember.sh --dry-run`
       and the postflight path emit bodies with no `project` key, byte-identical to the pre-change
-      output captured in Phase 2.
-- [ ] Re-read every ruling's check in the new record and confirm each one, as written, actually
-      runs and reports what the record claims it reports.
-- [ ] Run the scoped touched-path check for this dispatch:
-      `bash .claude/scripts/verify-touched.sh <every path this task touched>`.
-- [ ] State explicitly, in the phase's own verification notes and in the summary, that the complete
+      output captured in Phase 2. *(completed: both the pre-Phase-2 `sapience-remember.sh` and
+      the pre-Phase-4 `postflight-sapience-notes.sh`, run live and unlinked, produced
+      sorted-key-identical bodies to the current deployed scripts)*
+- [x] Re-read every ruling's check in the new record and confirm each one, as written, actually
+      runs and reports what the record claims it reports. *(completed: all 5 rulings' checks
+      re-run and confirmed — see Phase 6 Verification Notes in the summary)*
+- [x] Run the scoped touched-path check for this dispatch:
+      `bash .claude/scripts/verify-touched.sh <every path this task touched>`. *(completed:
+      `verify-touched.sh` (no-args form) selected 61 suites + 5 owed across 16 touched paths —
+      98 passed, 0 failed, 0 NEW)*
+- [x] State explicitly, in the phase's own verification notes and in the summary, that the complete
       gate set is **deferred to the orchestration close** (the once-per-invocation batch gate stage)
-      rather than independently run in this dispatch.
+      rather than independently run in this dispatch. *(completed: stated below and in the summary;
+      this dispatch ran the scoped `verify-touched.sh` battery plus the plan's own
+      `--only-gate 3` check, never the full `verify-deploy.sh` sweep)*
 
 **Timing**: 1.5 hours
 
@@ -521,18 +535,25 @@ demonstrated — the linked half against a fixture binding, the unlinked half li
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/sapience/scripts/tests/test-sapience-remember.sh` — all cases,
+- [x] `bash agent-system/extensions/sapience/scripts/tests/test-sapience-remember.sh` — all cases,
       including the Ruling 1 grant assertion and the Ruling 3 zero-reference assertion.
-- [ ] `bash agent-system/extensions/sapience/scripts/tests/test-postflight-sapience-notes.sh` —
-      all cases, old and new.
-- [ ] `bash agent-system/extensions/sapience/scripts/tests/test-sapience-publish.sh` — still green
+      *(completed: 11 passed, 0 failed)*
+- [x] `bash agent-system/extensions/sapience/scripts/tests/test-postflight-sapience-notes.sh` —
+      all cases, old and new. *(completed: 41 passed, 0 failed)*
+- [x] `bash agent-system/extensions/sapience/scripts/tests/test-sapience-publish.sh` — still green
       (its `ko` project-resolution cases are the model this task copies and must not regress).
-- [ ] `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3 /home/benjamin/.config/nvim`
-      — no Rule Q/R/S/T/U/V finding for the sapience extension.
-- [ ] Every ruling in the new record has a check that was actually executed, with its observed
-      result recorded in the summary — never a check asserted to pass on sight.
-- [ ] No deliverable file outside `specs/**` contains a task-number reference or
-      record-versioning language.
+      *(completed: 53 passed, 0 failed)*
+- [x] `bash .claude/scripts/verify-deploy.sh --skip-slow --only-gate 3 /home/benjamin/.config/nvim`
+      — no Rule Q/R/S/T/U/V finding for the sapience extension. *(completed: ran with
+      `--skip-unchanged` added per this dispatch's Batch Gate Deferral directive; 2 checks, 0
+      failures — the Phase 2-4 deploy-drift FAIL seen before this phase's deploy is gone)*
+- [x] Every ruling in the new record has a check that was actually executed, with its observed
+      result recorded in the summary — never a check asserted to pass on sight. *(completed: see
+      Phase 6 Verification Notes in the summary — all 5 rulings' checks re-run live)*
+- [x] No deliverable file outside `specs/**` contains a task-number reference or
+      record-versioning language. *(completed: this phase added no new deliverable prose outside
+      `specs/**`; only `.claude-extensions.json` and the whole-tree deploy regeneration changed
+      outside `specs/**`, neither of which is prose)*
 
 ## Artifacts & Outputs
 
