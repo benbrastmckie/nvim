@@ -5,12 +5,12 @@
     {
       "project_number": 683,
       "project_name": "couple_sapience_capture_to_extension_activation",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "description": "Couple Sapience capture enablement to sapience-extension activation: extend the existing bidirectional SessionStart hook (agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh, which already registers/removes the per-project MCP entry from .claude-extensions.json's .extensions.sapience.status) so the same two branches also enable/disable transcript capture for that repo by calling the vendor's own CLI -- `sapience projects on <checkout toplevel>` when the extension is active, `sapience projects off <checkout toplevel>` when it is not -- never by hand-editing ~/.sapience/config.json, so the vendor client stays the sole writer of the capture map (under its own lock) and survives vendor auto-update. Path must be resolved through the shared worktree-aware resolve_checkout_toplevel() block so a worktree enables its parent checkout, and the call must be idempotent and silent in steady state (only act, and only emit an additionalContext notice, when capture.projects[] state actually differs from the extension state), preserving the hook's always-exit-0 / one-JSON-line contract and degrading silently when the `sapience` binary or config.json is absent. Research must settle: (1) whether the legacy top-level `folders` list in config.json also gates what extract_local.py reads and whether `sapience projects on <path>` keeps it in step (if not, how to reconcile without a second writer); (2) whether `sapience projects on|off` is safe to run non-interactively from a hook (no prompt, no network dependency that could hang session start -- note projects_cli ends with capture_sync()), and what a bounded timeout should be; (3) whether the reap pass should also turn capture off for vanished project directories; (4) how sapience_capture.deny_reason treats candidate paths; (5) whether the companion-owned ~/.dotfiles user-level hook/installer copy needs a matching change to stay byte-identical. Also rewrite per-repo-scoping.md's 'Capture/Activation Reconciliation' subsection (which currently rules that this extension must NOT write capture.projects[].enabled and that any coupling belongs in ~/.dotfiles) to state the new design and why routing through the vendor CLI removes the two-writers hazard; update verify-sapience-mcp.sh's check (i) accordingly; add fixture-HOME test coverage (stubbed `sapience` binary) for on, off, steady-state-silent, missing-binary, and worktree cases. Document caveats: one-session-start lag, first sync after enable backfills the configured `days` window, and off is not retroactive for already-posted KOs. Acceptance test (operator-run, not agent-run): with the extension loaded in /home/benjamin/Projects/Sapience/sf1-engine and its agent system reloaded, the next session start there adds sf1-engine to `sapience projects` as enabled, and unloading the extension turns it off at the following session start. Edit target is the sapience extension source store (agent-system/extensions/sapience)",
       "topic": "sapience",
       "created": "2026-11-21T18:03:58Z",
-      "last_updated": "2026-11-21T18:18:36Z",
+      "last_updated": "2026-11-21T18:20:19Z",
       "audit_verdict": {
         "proposal": {
           "id": "couple_sapience_capture_to_extension_activation",
@@ -102,7 +102,7 @@
         },
         "degradations_count": 49
       },
-      "session_id": "sess_1795284367_d33b60",
+      "session_id": "sess_1795284367_d33b60_683",
       "file_scope": [
         "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
         "agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh",
@@ -122,12 +122,12 @@
     {
       "project_number": 682,
       "project_name": "sapience_mcp_entry_carries_no_token",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "description": "Stop writing the Sapience token into the per-project MCP entry in ~/.claude.json. Territory: agent-system/extensions/sapience/ (scripts/setup-sapience-mcp.sh, hooks/sapience-mcp-register-project.sh, scripts/verify-sapience-mcp.sh, scripts/tests/test-sapience-mcp-registration.sh, context/project/sapience/domain/per-repo-scoping.md). setup-sapience-mcp.sh builds each project's entry with env {SAPIENCE_HOST, SAPIENCE_TOKEN} whenever a token is resolvable, so the raw token is copied in plaintext into ~/.claude.json once per registered project, is printed by any `jq .projects[...]` or `claude mcp get` inspection, and from there enters a session transcript that the capture path may extract. The vendor mcp.py falls back to ~/.sapience/config.json (mode 0600) when SAPIENCE_TOKEN is unset, and the script already supports an entry with no token. Build: (1) measure that every code path of the installed mcp.py the entry reaches (the stdio server, --briefing-text, --receipt, --effect-line) resolves the token from config.json with the variable unset, and record any that does not; (2) if all do, write the entry with SAPIENCE_HOST only, and migrate existing entries in place on the next SessionStart registration, idempotently; if one does not, keep the variable only for that case and say which; (3) verify-sapience-mcp.sh check (b) fails on an entry that carries a token, naming the remedy; (4) a test that a registered entry contains no value equal to the configured token, with a negative control on a fixture entry that does; (5) state in per-repo-scoping.md where the token lives and where it must never be copied; (6) list the other places the token is written on this machine (the sops secret, config.json, any wrapper environment) and confirm none is world-readable or committed, naming the dotfiles module as the owner of anything found there. Done when no project entry in ~/.claude.json holds the token, the MCP server still authenticates in a fresh session, and the verifier fails on a regression.",
       "topic": "sapience",
       "created": "2026-11-21T17:28:54Z",
-      "last_updated": "2026-11-21T18:18:04Z",
+      "last_updated": "2026-11-21T18:20:03Z",
       "audit_verdict": {
         "proposal": {
           "id": "sapience_mcp_entry_carries_no_token",
@@ -235,7 +235,7 @@
         },
         "degradations_count": 49
       },
-      "session_id": "sess_1795284367_d33b60",
+      "session_id": "sess_1795284367_d33b60_682",
       "artifacts": [
         {
           "path": "specs/682_sapience_mcp_entry_carries_no_token/reports/01_remove-token-from-mcp-entry.md",
@@ -248,12 +248,12 @@
     {
       "project_number": 681,
       "project_name": "sapience_bind_existing_project_and_register_repo",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "description": "Let the Sapience extension bind a repository to an existing shared project as well as to a new one, and register the repository with the server, so every repository a person works in can be linked the same way. Territory: agent-system/extensions/sapience/ (scripts/sapience-project-bind.sh, scripts/lib/sapience-api-lib.sh, commands/sapience.md, skills/skill-sapience/SKILL.md, context/project/sapience/domain/per-repo-scoping.md and command-draft-and-picker.md, scripts/tests/test-sapience-project-bind.sh). Today sapience-project-bind.sh has one mode: it creates a FRESH project through POST /v1/people/projects/share and writes .sapience/project.json. It cannot bind to a project the person already belongs to (a project a collaborator created and shared appears under `received` in GET /v1/people/projects and is unreachable from the script), it never calls POST /v1/people/projects/<cid>/link, so the server's linked-repository list never learns of a repository the script bound, and with two connections of the same display name it refuses without --to. The app's own client carries `sapience link [<name or id>]`, which lists accepted and owned projects, registers the repository and writes the same file. Build: (1) a pick mode: with no project named, list the caller's accepted and owned projects (title, id, creator or member) and exit non-zero without writing; with --project <name or id>, bind to that one; (2) keep the create mode behind its existing --name and --confirm pair; (3) in both modes register the repository through the link route and treat a 404 (feature not available for this account) as a named, non-fatal state in which the file is still written and the reply says the server does not read it yet, and a 403 (not a member) as a refusal that writes nothing; (4) when the installed vendor client provides `sapience link`, delegate pick-and-register to it and keep this script's own HTTP path only as the fallback for a client that predates it, with the file byte-identical on either path, proved by a test; (5) state in the reply what the caller's role means for their notes (a creator's notes flow to the collaborator; a non-creator member's land as suggestions only the author sees until confirmed), so binding to someone else's project is a known choice; (6) surface the pick in /sapience as its first step in a repository with no link file, through the command's one approval picker, never as an unattended write; (7) the reply ends with the exact file to commit, and the script commits nothing. Tests against a stub: pick lists both registers, bind-existing writes the three-key file and calls the link route once, a 404 writes the file and reports the state, a 403 writes nothing, create still refuses without --confirm. Belongs before sapience_automatic_writes_and_retrieval_by_project_id in dispatch order, which reads the file this writes. Done when running the bind from a fresh clone of any repository links it to a chosen existing project or a new one and the repository appears in that project's linked-repository list where the server supports it.",
       "topic": "sapience",
       "created": "2026-11-21T17:28:24Z",
-      "last_updated": "2026-11-21T18:16:49Z",
+      "last_updated": "2026-11-21T18:31:28Z",
       "audit_verdict": {
         "proposal": {
           "id": "sapience_bind_existing_project_and_register_repo",
@@ -351,9 +351,21 @@
           "path": "specs/681_sapience_bind_existing_project_and_register_repo/reports/01_bind-existing-project-register-repo.md",
           "type": "report",
           "summary": "Ground-truths the Sapience repo-link route and vendor CLI link_cmd directly against the live server source, confirms the real GET /v1/people/projects response shape and the 404/403 gate order, and flags two implementation pitfalls (a schema mismatch reused from adjacent out-of-scope call sites, and the link response's project field not being a cid) plus a real design tension between delegating to the vendor sapience link and this task's own 404-write requirement."
+        },
+        {
+          "path": "specs/681_sapience_bind_existing_project_and_register_repo/plans/01_bind-existing-project-register-repo.md",
+          "type": "plan",
+          "summary": "Five-phase plan: pick mode, link registration with 404/403 policy, vendor delegation with single-writer normalization, /sapience picker surface, domain link-route record."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "file_scope": [
+        "agent-system/extensions/sapience/context/project/sapience/domain/command-draft-and-picker.md",
+        "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+        "agent-system/extensions/sapience/scripts/sapience-project-bind.sh",
+        "agent-system/extensions/sapience/scripts/tests/test-sapience-project-bind.sh",
+        "agent-system/extensions/sapience/skills/skill-sapience/SKILL.md"
+      ]
     },
     {
       "project_number": 680,
@@ -741,12 +753,12 @@
     {
       "project_number": 678,
       "project_name": "sapience_linked_repo_write_and_capture_policy",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "description": "Decide and encode how a Claude Code session in a linked repo creates project notes automatically, which the extension's current policy prevents. Territory: agent-system/extensions/sapience/ (settings-fragment.json, rules/sapience-write-path.md, merge-sources/claudemd.md, context/project/sapience/domain/review-gate-boundary.md, transcript-filter-ceiling.md, per-repo-scoping.md). Four things block automatic contribution today: the fragment grants only the seven read-shaped tools, so sapience_remember and sapience_wrapup are denied in headless runs; the extension's own surfaces tell agents not to call sapience_remember mid-run and supersede the vendor's save-as-it-lands nudge; capture opt-in (the capture map in ~/.sapience/config.json) is unconnected to extension activation, so a repo with the extension loaded is still never extracted; and orchestrated and subagent transcripts are filtered out of extraction (1013 of 1295 on this machine). The reasons for the current policy still hold outside a linked repo: direct /ingest-kos writes bypass the auto_approve review gate and there is no delete API, so a write is permanent and unreviewed. Rule on each, for a repo that carries .sapience/project.json and for one that does not: (1) whether the write tools are granted in a linked repo and under what bound per session; (2) whether the mid-run ban is lifted there, and if so for which note kinds (the person's own typed decisions versus agent-authored findings); (3) whether a link file implies capture opt-in for that repo and who writes the capture-map entry; (4) whether orchestrated transcripts stay filtered, given the postflight pass already distils them; (5) how a non-creator member's notes, which the server lands as suggestions only the author sees until confirmed, are surfaced to that member. Agree with the write rule in the sf1-engine repository's integration/project-link.md so both harnesses apply one policy. Then encode the rulings in the fragment, the rule file and the docs, each with a check. Done when a plain interactive session and an orchestrated run in a linked repo each produce project notes by the ruled path, and the same two in an unlinked repo behave as today.",
       "topic": "sapience",
       "created": "2026-11-21T00:07:14Z",
-      "last_updated": "2026-11-21T18:17:26Z",
+      "last_updated": "2026-11-21T18:19:42Z",
       "audit_verdict": {
         "proposal": {
           "id": "sapience_linked_repo_write_and_capture_policy",
@@ -782,7 +794,7 @@
         },
         "degradations_count": 45
       },
-      "session_id": "sess_1795284367_d33b60",
+      "session_id": "sess_1795284367_d33b60_678",
       "artifacts": [
         {
           "path": "specs/678_sapience_linked_repo_write_and_capture_policy/reports/01_linked-repo-write-capture-policy.md",

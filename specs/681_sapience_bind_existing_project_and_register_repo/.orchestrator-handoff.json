@@ -1,0 +1,23 @@
+{
+  "status": "planned",
+  "dispatch_seq": 5,
+  "task_number": 681,
+  "phase": "plan",
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a five-phase implementation plan for the Sapience bind-existing-project work. Phases 1-3 build the script's pick mode, the link-route registration with its 404/403 policy, and vendor delegation normalized through a single canonical writer; Phase 4 wires the pick into /sapience's one approval picker; Phase 5 adds the domain link-route record. The dispatch's conflicting requirements (3) and (4) are reconciled explicitly as decision D1: delegate the bind, but make this script the sole writer and classify every non-success outcome by status code rather than by parsing the vendor's prose.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/681_sapience_bind_existing_project_and_register_repo/plans/01_bind-existing-project-register-repo.md",
+      "summary": "Five-phase plan: pick mode, link registration with 404/403 policy, vendor delegation with single-writer normalization, /sapience picker surface, domain link-route record."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1795284367_d33b60_681",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+  }
+}
