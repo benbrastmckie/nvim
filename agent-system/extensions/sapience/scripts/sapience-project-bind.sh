@@ -73,10 +73,35 @@
 # file (see above).
 #
 # Single-writer invariant: write_link_file() is the ONLY site in this file that writes
-# .sapience/project.json -- the create path (`.share.id`) and the bind path (the picked row's own
-# id, captured before the POST) both route through it. The link response's own `project` field,
-# when present, is the {kind, key, name} descriptor dict -- NEVER a channel cid, unlike the share
-# response's `.share.id` -- and no code path in this file reads a cid out of it.
+# .sapience/project.json -- the create path (`.share.id`), the bind path (the picked row's own
+# id, captured before the POST), and the vendor-delegated bind path's read-back normalization
+# all route through it. The link response's own `project` field, when present, is the
+# {kind, key, name} descriptor dict -- NEVER a channel cid, unlike the share response's
+# `.share.id` -- and no code path in this file reads a cid out of it.
+#
+# Vendor delegation (bind mode, --confirm only): when the installed client's own sapience_cli.py
+# supports a `link` subcommand (detected statically -- see sapience_vendor_cli_supports_link()
+# below, never a live invocation), this script delegates the actual registration call to it:
+# `python3 "$SAPIENCE_CLI_PATH" link "<value>" --name "$repo_slug" [--force]`. The vendor's own
+# --name is the REPOSITORY short name; this script's own --name (create mode) is the PROJECT
+# display name -- the two flags are never conflated even though both end up writing a `repo`
+# field. SAPIENCE_CLI_PATH defaults to "$HOME/.sapience/sapience_cli.py" and is overridable so a
+# test can point it at a fixture and never at the live, credential-bearing installation. The
+# `sapience` binary on $PATH CANNOT be used for this at all: it is a packaged wrapper with a
+# fixed `case` table, no `link` branch and no fallback into sapience_cli.py's own argument
+# parser, so it can neither invoke nor detect `link` support -- delegation and detection both go
+# straight at sapience_cli.py via python3, never through $PATH.
+#
+# On a vendor exit 0 with a link file present, this script reads the three keys back out of IT
+# (never trusting the vendor's own serialization as-is) and re-renders them through
+# write_link_file(), so the on-disk bytes are this script's canonical rendering on either path --
+# byte-identity is an enforced invariant, not a hope about two independent serializers. On a
+# vendor exit non-zero, or exit 0 with no file written, this script falls through to its own HTTP
+# path below, which classifies the outcome by HTTP status only. Accepted consequence: against a
+# link-capable client, a 404 or 403 fires the vendor's own POST and then this script's POST a
+# second time -- both are non-mutating at those statuses, so the duplicate is harmless; the
+# alternative (classifying on the vendor's English stdout/stderr) is not a contract and is never
+# done anywhere in this file.
 #
 # No reference, anywhere in this file, to sapience_remember / sapience_wrapup / sapience_handoff
 # / sapience_adddoc as a write path (rules/sapience-write-path.md). The one write this script
@@ -102,6 +127,9 @@ CONFIRM="false"
 TO_OVERRIDE=""
 PROJECT_VALUE=""
 FORCE="false"
+# Overridable so a test points this at a scratch fixture and never at the live,
+# credential-bearing installation (see the header's "Vendor delegation" paragraph).
+SAPIENCE_CLI_PATH="${SAPIENCE_CLI_PATH:-$HOME/.sapience/sapience_cli.py}"
 
 usage() {
   cat >&2 <<'USAGE'
@@ -324,6 +352,31 @@ print_bind_role_note() {
   unset _pbrn_owner
 }
 
+# --- sapience_vendor_cli_supports_link -- static detection ONLY (never a live invocation): true
+# when $SAPIENCE_CLI_PATH exists and its own source contains the literal string the dev-source
+# client's `link` branch is keyed on ("sub == 'link'"). An installed client that predates `link`
+# support (confirmed live on this machine: ~/.sapience/sapience_cli.py, 1122 lines, falls through
+# to the generic usage printout) correctly returns false here, as does a missing file. ---
+sapience_vendor_cli_supports_link() {
+  [ -n "${SAPIENCE_CLI_PATH:-}" ] && [ -f "$SAPIENCE_CLI_PATH" ] && grep -q "sub == 'link'" "$SAPIENCE_CLI_PATH" 2>/dev/null
+}
+
+# --- delegate_link <value> <repo-slug> <force-bool> -- invokes the vendor CLI's own `link`
+# subcommand directly via python3 (never through the $PATH `sapience` wrapper, which has no
+# `link` branch and no fallback into sapience_cli.py's own argument parser at all -- see header).
+# Runs with cwd = repo_toplevel so a file the vendor writes lands at the exact path this script's
+# own write_link_file() would write to. Returns the vendor's own exit status; stdout/stderr are
+# discarded unconditionally -- nothing here, or anywhere else in this file, parses vendor prose to
+# decide anything (D1). ---
+delegate_link() {
+  local _dl_value="$1" _dl_repo="$2" _dl_force="$3"
+  if [ "$_dl_force" = "true" ]; then
+    (cd "$repo_toplevel" && python3 "$SAPIENCE_CLI_PATH" link "$_dl_value" --name "$_dl_repo" --force) >/dev/null 2>&1
+  else
+    (cd "$repo_toplevel" && python3 "$SAPIENCE_CLI_PATH" link "$_dl_value" --name "$_dl_repo") >/dev/null 2>&1
+  fi
+}
+
 # --- Pick mode (no --name, no --project): list the caller's accepted and owned projects and
 # exit non-zero, writing and POSTing nothing. ---
 if [ "$MODE" = "pick" ]; then
@@ -387,6 +440,31 @@ if [ "$MODE" = "bind" ]; then
     echo "sapience-project-bind.sh: DRY-RUN -- pass --confirm to actually link this repository to \"$bind_display_name\" (${bind_cid}) (no POST made; the GET /v1/people/projects lookup above already fired)" >&2
     SAPIENCE_DRY_RUN=1 sapience_post "/v1/people/projects/${bind_cid}/link" "$bind_link_payload"
     exit 0
+  fi
+
+  # --- Vendor delegation (D1, D4): only on --project <value> --confirm, never on dry-run or
+  # pick. Detection is static; invocation never parses vendor stdout/stderr -- see header. On
+  # success (vendor exit 0 + link file written), read its three keys back out and re-render
+  # canonically; any other outcome falls through to the HTTP path below unchanged. ---
+  if sapience_vendor_cli_supports_link; then
+    echo "sapience-project-bind.sh: delegating to the installed vendor client's own 'link' subcommand ($SAPIENCE_CLI_PATH)..." >&2
+    delegate_link_rc=0
+    delegate_link "$PROJECT_VALUE" "$repo_slug" "$FORCE" || delegate_link_rc=$?
+    if [ "$delegate_link_rc" -eq 0 ] && [ -f "$bind_link_file" ]; then
+      delegate_project="$(jq -r '.project // empty' "$bind_link_file" 2>/dev/null)" || delegate_project=""
+      delegate_name="$(jq -r '.name // empty' "$bind_link_file" 2>/dev/null)" || delegate_name=""
+      delegate_repo="$(jq -r '.repo // empty' "$bind_link_file" 2>/dev/null)" || delegate_repo=""
+      if [ -n "$delegate_project" ] && [ -n "$delegate_repo" ]; then
+        bind_written_file="$(write_link_file "$delegate_project" "$delegate_name" "$delegate_repo")"
+        print_bind_role_note "$bind_owner"
+        echo "sapience-project-bind.sh: linked via the vendor client and normalized to this script's canonical rendering; wrote ${bind_written_file}" >&2
+        echo "sapience-project-bind.sh: commit this file: ${bind_written_file}"
+        exit 0
+      fi
+      echo "sapience-project-bind.sh: vendor client exited 0 but its link file carried no usable project/repo -- falling through to this script's own HTTP path" >&2
+    else
+      echo "sapience-project-bind.sh: vendor client delegation did not produce a usable link (exit ${delegate_link_rc}) -- falling through to this script's own HTTP path" >&2
+    fi
   fi
 
   echo "sapience-project-bind.sh: linking this repository to \"$bind_display_name\" (${bind_cid})..." >&2

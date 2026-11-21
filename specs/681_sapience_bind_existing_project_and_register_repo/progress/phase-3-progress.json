@@ -1,0 +1,48 @@
+{
+  "phase": 3,
+  "phase_name": "Vendor Delegation With Single-Writer Normalization",
+  "started_at": "2026-11-21T00:00:00Z",
+  "last_updated": "2026-11-21T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add SAPIENCE_CLI_PATH override defaulting to $HOME/.sapience/sapience_cli.py",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Static capability detection (sapience_vendor_cli_supports_link) plus header note on the $PATH wrapper's inability to reach or detect link",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Delegate only on --project <value> --confirm via delegate_link(); header note distinguishing vendor --name (repo short name) from this script's --name (project display name)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Vendor exit 0 with link file present: read project/name/repo back out and re-render through write_link_file(); print success and role note exactly as the HTTP path does",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Vendor exit non-zero, or exit 0 with no file: fall through to the HTTP path; header note on the accepted double-POST consequence at 404/403",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Add test cases 22-24 against a synthetic sapience_cli.py fixture (build_cli_fixture, build_scratch_named helpers)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-project-bind.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

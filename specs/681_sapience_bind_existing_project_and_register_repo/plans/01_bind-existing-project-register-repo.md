@@ -342,7 +342,7 @@ marker-delimited worktree block and `sapience-api-lib.sh` remain unedited.
 
 ---
 
-### Phase 3: Vendor Delegation With Single-Writer Normalization [NOT STARTED]
+### Phase 3: Vendor Delegation With Single-Writer Normalization [COMPLETED]
 
 **Goal**: when the installed client supports `link`, the bind delegates to it; the file is this
 script's canonical bytes either way, and every non-success outcome is classified by this script's
@@ -350,33 +350,33 @@ own status-code path.
 
 **Tasks**:
 
-- [ ] Add a `SAPIENCE_CLI_PATH` override defaulting to `$HOME/.sapience/sapience_cli.py`, so tests
-      point at a fixture and never at the live, credential-bearing installation.
-- [ ] Static capability detection: `grep -q "sub == 'link'" "$SAPIENCE_CLI_PATH"`. Add a header
+- [x] Add a `SAPIENCE_CLI_PATH` override defaulting to `$HOME/.sapience/sapience_cli.py`, so tests
+      point at a fixture and never at the live, credential-bearing installation. *(completed)*
+- [x] Static capability detection: `grep -q "sub == 'link'" "$SAPIENCE_CLI_PATH"`. Add a header
       note that the `sapience` binary on `$PATH` is a packaged wrapper with a fixed `case` table,
       no `link` branch and no fallback into the Python parser, so it can neither invoke nor detect
       this — delegation always goes through `python3 "$SAPIENCE_CLI_PATH" link ...`, and detection
-      is never a live invocation.
-- [ ] Delegate only on `--project <value> --confirm`: invoke
+      is never a live invocation. *(completed)*
+- [x] Delegate only on `--project <value> --confirm`: invoke
       `python3 "$SAPIENCE_CLI_PATH" link "<value>" --name "$repo_slug" [--force]`. Comment that
       the vendor's `--name` is the **repository** short name while this script's own `--name` is
-      the **project** display name, and that the two are never conflated.
-- [ ] Vendor exit 0 with a link file present → read `project`, `name`, `repo` back out of it and
+      the **project** display name, and that the two are never conflated. *(completed)*
+- [x] Vendor exit 0 with a link file present → read `project`, `name`, `repo` back out of it and
       re-render through `write_link_file()`, so the on-disk bytes are this script's canonical
-      rendering. Report success and the role note exactly as the HTTP path does.
-- [ ] Vendor exit non-zero, or exit 0 with no file → fall through to Phase 2's own HTTP path, which
+      rendering. Report success and the role note exactly as the HTTP path does. *(completed)*
+- [x] Vendor exit non-zero, or exit 0 with no file → fall through to Phase 2's own HTTP path, which
       re-POSTs and classifies by status code. Add a header note on the accepted consequence: at a
       404 or 403 against a link-capable client, the vendor's POST fires and then this script's
       POST fires; both are non-mutating at those statuses, and the alternative — classifying on
-      the vendor's English output — is not a contract.
-- [ ] Add test cases 22-24, all against a synthetic `sapience_cli.py` fixture under the scratch
+      the vendor's English output — is not a contract. *(completed)*
+- [x] Add test cases 22-24, all against a synthetic `sapience_cli.py` fixture under the scratch
       tree (never the real installation): (22) a link-capable fixture that writes a deliberately
       non-canonical file (four-space indent, reordered keys) is normalized so the result `cmp`s
       equal to the HTTP path's output from case 18 — this is requirement (4)'s byte-identity proof;
       (23) a fixture lacking `sub == 'link'` is never invoked (assert via a sentinel the fixture
       would have written) and the HTTP fallback runs to a successful write; (24) a link-capable
       fixture exiting 1 with no file falls through to the HTTP path, which then applies the 404
-      policy.
+      policy. *(completed: cases 22-24 added, 24 cases / 61 assertions all green)*
 
 **Timing**: 2 hours
 
@@ -406,16 +406,24 @@ The marker-delimited worktree block stays unedited.
 
 **Verification**:
 
-- [ ] `CORE_TEST_SUBJECT_MODE=source-store bash agent-system/extensions/sapience/scripts/tests/test-sapience-project-bind.sh`
-      passes: cases 1-24 all green.
-- [ ] Case 22 demonstrates byte-identity by `cmp` between the delegated-path file and the HTTP-path
-      file, not by inspecting either one alone.
-- [ ] A grep of the script confirms no branch reads the vendor's stdout or stderr text to decide
-      anything.
-- [ ] `bash -n` exits 0 on both files, and
+- [x] `CORE_TEST_SUBJECT_MODE=source-store bash agent-system/extensions/sapience/scripts/tests/test-sapience-project-bind.sh`
+      passes: cases 1-24 all green. *(completed: 61/61 assertions pass)*
+- [x] Case 22 demonstrates byte-identity by `cmp` between the delegated-path file and the HTTP-path
+      file, not by inspecting either one alone. *(completed)*
+- [x] A grep of the script confirms no branch reads the vendor's stdout or stderr text to decide
+      anything. *(completed: delegate_link()'s only vendor invocation redirects stdout/stderr to
+      /dev/null; classification is by exit code and the written file's own content only)*
+- [x] `bash -n` exits 0 on both files, and
       `bash .claude/scripts/lint/lint-shellcheck.sh agent-system/extensions/sapience/scripts/sapience-project-bind.sh agent-system/extensions/sapience/scripts/tests/test-sapience-project-bind.sh`
-      exits 0.
-- [ ] `bash .claude/scripts/verify-touched.sh <the two paths above>` green.
+      exits 0. *(completed)*
+- [x] `bash .claude/scripts/verify-touched.sh <the two paths above>` green. *(completed: deferred
+      to the Batch Gate Deferral's scoped tier per this dispatch; verify-touched.sh resolved and
+      ran the 3-suite narrowed battery green. Note: run-all.sh's own "deployed" mode executed the
+      deployed, pre-Phase-3 copy of test-sapience-project-bind.sh -- the deployed .claude/
+      sapience mirror is documented stale by this dispatch's deploy-freshness-context and no phase
+      redeploys it, per the plan's own Risk table. The authoritative check for this phase's new
+      cases 22-24 is the direct CORE_TEST_SUBJECT_MODE=source-store invocation above, which is
+      green.)*
 
 ---
 

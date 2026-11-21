@@ -54,6 +54,16 @@
 #   (20) `--project <value> --confirm`, link route 403: writes nothing, exits non-zero.
 #   (21) Create mode (--name, no --confirm) still fires no mutation under the new mode
 #        selector -- restates Case 3's safety property after Phase 2's changes.
+#   (22) A link-capable `sapience_cli.py` fixture that writes a deliberately non-canonical file
+#        (4-space indent, reordered keys) is normalized so the result `cmp`s byte-identical to
+#        the HTTP path's own output for the same project/repo -- requirement (4)'s byte-identity
+#        proof, demonstrated by `cmp` between the two outputs rather than inspecting either one
+#        alone.
+#   (23) A fixture lacking `sub == 'link'` (detected statically, never a live invocation) is
+#        never invoked at all (asserted via a sentinel the fixture would have written had it
+#        run), and the HTTP fallback runs to a successful write.
+#   (24) A link-capable fixture that exits 1 with no file written falls through to the HTTP
+#        path, which then applies the 404 policy.
 #
 # Follows the core shell-test convention: common_test_pass/_fail/_info from lib/common.sh,
 # PASSED/FAILED integer counters, a mktemp -d workdir with a trap EXIT cleanup,
@@ -152,6 +162,83 @@ build_scratch() {
   git -C "$scratch" config user.name "test"
   git -C "$scratch" commit -q --allow-empty -m "seed"
   echo "$scratch"
+}
+
+# build_scratch_named <leaf-name> -- same tree as build_scratch, but the scratch directory's own
+# basename is the given leaf name rather than mktemp's random one. Used only where the test needs
+# two independently-constructed scratch repos to share the same repo_slug (basename), e.g. case
+# 22's byte-identity cmp between a delegated-path file and an HTTP-path file. ---
+build_scratch_named() {
+  local leaf="$1" parent scratch
+  parent="$(mktemp -d -p "$TOP_WORKDIR")"
+  scratch="$parent/$leaf"
+  mkdir -p "$scratch/.claude/scripts/lib"
+  cp "$SCRIPT_UNDER_TEST" "$scratch/.claude/scripts/sapience-project-bind.sh"
+  cp "$API_LIB" "$scratch/.claude/scripts/lib/sapience-api-lib.sh"
+  cp "$GUARD_SCRIPT" "$scratch/.claude/scripts/deploy-root-guard.sh"
+  cp "$COMMON_SH" "$scratch/.claude/scripts/lib/common.sh"
+  chmod +x "$scratch/.claude/scripts/sapience-project-bind.sh"
+  git -C "$scratch" init -q
+  git -C "$scratch" config user.email "test@example.com"
+  git -C "$scratch" config user.name "test"
+  git -C "$scratch" commit -q --allow-empty -m "seed"
+  echo "$scratch"
+}
+
+# build_cli_fixture <capable-bool> -- writes a synthetic sapience_cli.py fixture under the
+# scratch tree (NEVER the real ~/.sapience/sapience_cli.py) that this suite's own
+# sapience_vendor_cli_supports_link() detection and delegate_link() invocation are exercised
+# against. Behavior is driven entirely by env vars at invocation time (FIXTURE_SENTINEL,
+# FIXTURE_EXIT_CODE, FIXTURE_WRITE_FILE, FIXTURE_NONCANONICAL, FIXTURE_LINK_CID,
+# FIXTURE_LINK_NAME, FIXTURE_LINK_REPO) -- mirroring the curl stub's own env-var-driven
+# convention. When capable-bool is "true" the fixture's own source carries the literal
+# "sub == 'link'" marker the static detection greps for; when "false" it carries no such string
+# anywhere, so detection must report it as unsupported and delegate_link() must never be invoked
+# against it. Echoes the fixture's path.
+build_cli_fixture() {
+  local capable="$1" fixture
+  fixture="$(mktemp -p "$TOP_WORKDIR" --suffix=.py)"
+  {
+    echo "#!/usr/bin/env python3"
+    if [ "$capable" = "true" ]; then
+      echo "# fixture capability marker: sub == 'link'"
+    else
+      echo "# fixture capability marker: absent in this generation (predates link support)"
+    fi
+    cat <<'FIXTURE_BODY'
+import json
+import os
+import sys
+
+sentinel = os.environ.get("FIXTURE_SENTINEL")
+if sentinel:
+    with open(sentinel, "w") as f:
+        f.write("invoked\n")
+
+exit_code = int(os.environ.get("FIXTURE_EXIT_CODE", "0"))
+write_file = os.environ.get("FIXTURE_WRITE_FILE", "true") == "true"
+
+if write_file:
+    link_dir = ".sapience"
+    os.makedirs(link_dir, exist_ok=True)
+    cid = os.environ.get("FIXTURE_LINK_CID", "fixture-cid")
+    name = os.environ.get("FIXTURE_LINK_NAME", "Fixture Project")
+    repo = os.environ.get("FIXTURE_LINK_REPO", "fixture-repo")
+    noncanonical = os.environ.get("FIXTURE_NONCANONICAL", "false") == "true"
+    path = os.path.join(link_dir, "project.json")
+    with open(path, "w") as f:
+        if noncanonical:
+            # Deliberately non-canonical: 4-space indent, reordered keys.
+            json.dump({"name": name, "repo": repo, "project": cid}, f, indent=4)
+        else:
+            json.dump({"project": cid, "name": name, "repo": repo}, f, indent=2)
+        f.write("\n")
+
+sys.exit(exit_code)
+FIXTURE_BODY
+  } > "$fixture"
+  chmod +x "$fixture"
+  echo "$fixture"
 }
 
 BIN_REL=".claude/scripts/sapience-project-bind.sh"
@@ -678,6 +765,137 @@ print(json.dumps({'project':'cid-owner','name':'Owner Project','repo':'$(basenam
     common_test_pass "(21) create mode, no --confirm: no file written (no mutation occurred)"
   else
     common_test_fail "(21) create mode, no --confirm: no file written (no mutation occurred)"
+  fi
+}
+
+# =====================================================================================
+# Case 22: a link-capable fixture that writes a deliberately non-canonical file (4-space
+# indent, reordered keys) is normalized so the result `cmp`s byte-identical to the HTTP path's
+# own output for the same project/repo -- requirement (4)'s byte-identity proof, by `cmp`
+# between the two outputs rather than inspecting either one alone. Both scratches share the
+# same leaf name (build_scratch_named) so repo_slug -- and therefore the written `repo` field --
+# is identical on both paths.
+# =====================================================================================
+{
+  scratch_delegate="$(build_scratch_named "case22-repo")"
+  scratch_http="$(build_scratch_named "case22-repo")"
+  stub_dir="$(build_curl_stub)"
+  fixture="$(build_cli_fixture "true")"
+  owner_row='{"ok":true,"shared":[{"id":"cid-owner","title":"Owner Project","owner":true,"accepted":true,"project":{"key":"owner-project"}}],"received":[]}'
+  sentinel="$(mktemp -u -p "$TOP_WORKDIR")"
+
+  out_delegate="$(GET_PROJECTS_BODY="$owner_row" \
+    SAPIENCE_CLI_PATH="$fixture" FIXTURE_SENTINEL="$sentinel" \
+    FIXTURE_LINK_CID="cid-owner" FIXTURE_LINK_NAME="Owner Project" FIXTURE_LINK_REPO="case22-repo" \
+    FIXTURE_NONCANONICAL="true" \
+    run_bind_stubbed "$scratch_delegate" "$stub_dir" --project "Owner Project" --confirm 2>&1)"
+  rc_delegate=$?
+
+  if [ "$rc_delegate" -eq 0 ]; then
+    common_test_pass "(22) delegated path: exit 0"
+  else
+    common_test_fail "(22) delegated path: exit 0" "got rc=$rc_delegate out=$out_delegate"
+  fi
+
+  delegate_link_calls="$(link_call_count "$stub_dir")"
+  if [ "$delegate_link_calls" = "0" ]; then
+    common_test_pass "(22) delegated path: this script's own HTTP link route was never called"
+  else
+    common_test_fail "(22) delegated path: this script's own HTTP link route was never called" "link_calls=$delegate_link_calls"
+  fi
+
+  out_http="$(GET_PROJECTS_BODY="$owner_row" LINK_CODE=200 LINK_BODY='{"ok":true}' \
+    run_bind_stubbed "$scratch_http" "$stub_dir" --project "Owner Project" --confirm 2>&1)"
+  rc_http=$?
+  if [ "$rc_http" -eq 0 ]; then
+    common_test_pass "(22) HTTP path: exit 0"
+  else
+    common_test_fail "(22) HTTP path: exit 0" "got rc=$rc_http out=$out_http"
+  fi
+
+  if [ -f "$scratch_delegate/.sapience/project.json" ] && [ -f "$scratch_http/.sapience/project.json" ] \
+    && cmp -s "$scratch_delegate/.sapience/project.json" "$scratch_http/.sapience/project.json"; then
+    common_test_pass "(22) delegated-path file is byte-identical to the HTTP-path file"
+  else
+    common_test_fail "(22) delegated-path file is byte-identical to the HTTP-path file" \
+      "delegate=$(cat "$scratch_delegate/.sapience/project.json" 2>/dev/null) vs http=$(cat "$scratch_http/.sapience/project.json" 2>/dev/null)"
+  fi
+}
+
+# =====================================================================================
+# Case 23: a fixture lacking `sub == 'link'` is never invoked (asserted via a sentinel the
+# fixture would have written had it run), and the HTTP fallback runs to a successful write.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  fixture="$(build_cli_fixture "false")"
+  sentinel="$(mktemp -u -p "$TOP_WORKDIR")"
+  owner_row='{"ok":true,"shared":[{"id":"cid-owner","title":"Owner Project","owner":true,"accepted":true,"project":{"key":"owner-project"}}],"received":[]}'
+
+  out="$(GET_PROJECTS_BODY="$owner_row" LINK_CODE=200 LINK_BODY='{"ok":true}' \
+    SAPIENCE_CLI_PATH="$fixture" FIXTURE_SENTINEL="$sentinel" \
+    run_bind_stubbed "$scratch" "$stub_dir" --project "Owner Project" --confirm 2>&1)"
+  rc=$?
+
+  if ! [ -e "$sentinel" ]; then
+    common_test_pass "(23) incapable fixture: never invoked (no sentinel written)"
+  else
+    common_test_fail "(23) incapable fixture: never invoked (no sentinel written)"
+  fi
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(23) incapable fixture: HTTP fallback succeeds, exit 0"
+  else
+    common_test_fail "(23) incapable fixture: HTTP fallback succeeds, exit 0" "got rc=$rc out=$out"
+  fi
+  if [ -f "$scratch/.sapience/project.json" ] && [ "$(jq -r '.project' "$scratch/.sapience/project.json" 2>/dev/null)" = "cid-owner" ]; then
+    common_test_pass "(23) incapable fixture: HTTP fallback writes the link file"
+  else
+    common_test_fail "(23) incapable fixture: HTTP fallback writes the link file"
+  fi
+  link_calls="$(link_call_count "$stub_dir")"
+  if [ "$link_calls" = "1" ]; then
+    common_test_pass "(23) incapable fixture: this script's own HTTP link route called exactly once"
+  else
+    common_test_fail "(23) incapable fixture: this script's own HTTP link route called exactly once" "link_calls=$link_calls"
+  fi
+}
+
+# =====================================================================================
+# Case 24: a link-capable fixture that exits 1 with no file written falls through to the HTTP
+# path, which then applies the 404 policy.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  fixture="$(build_cli_fixture "true")"
+  member_row='{"ok":true,"shared":[],"received":[{"id":"cid-member","title":"Member Project","owner":false,"accepted":true,"project":{"key":"member-project"}}]}'
+
+  out="$(GET_PROJECTS_BODY="$member_row" LINK_CODE=404 LINK_BODY='{"error":"not enabled"}' \
+    SAPIENCE_CLI_PATH="$fixture" FIXTURE_EXIT_CODE="1" FIXTURE_WRITE_FILE="false" \
+    run_bind_stubbed "$scratch" "$stub_dir" --project "Member Project" --confirm 2>&1)"
+  rc=$?
+
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(24) capable fixture, exit 1 no file: falls through to HTTP 404 policy, exit 0"
+  else
+    common_test_fail "(24) capable fixture, exit 1 no file: falls through to HTTP 404 policy, exit 0" "got rc=$rc out=$out"
+  fi
+  if [ -f "$scratch/.sapience/project.json" ] && [ "$(jq -r '.project' "$scratch/.sapience/project.json" 2>/dev/null)" = "cid-member" ]; then
+    common_test_pass "(24) capable fixture, exit 1 no file: HTTP 404 fallback still writes the file"
+  else
+    common_test_fail "(24) capable fixture, exit 1 no file: HTTP 404 fallback still writes the file"
+  fi
+  if echo "$out" | grep -qi "404" && echo "$out" | grep -qi "locally only"; then
+    common_test_pass "(24) capable fixture, exit 1 no file: reply names the degraded 404 state"
+  else
+    common_test_fail "(24) capable fixture, exit 1 no file: reply names the degraded 404 state" "out=$out"
+  fi
+  link_calls="$(link_call_count "$stub_dir")"
+  if [ "$link_calls" = "1" ]; then
+    common_test_pass "(24) capable fixture, exit 1 no file: this script's own HTTP link route called exactly once"
+  else
+    common_test_fail "(24) capable fixture, exit 1 no file: this script's own HTTP link route called exactly once" "link_calls=$link_calls"
   fi
 }
 
