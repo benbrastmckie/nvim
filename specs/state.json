@@ -380,9 +380,9 @@
           "summary": "Five-phase plan: pick mode, link registration with 404/403 policy, vendor delegation with single-writer normalization, /sapience picker surface, domain link-route record."
         },
         {
-          "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-2-handoff-20261121T000000Z.md",
+          "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-3-handoff-20261121T211737Z.md",
           "type": "handoff",
-          "summary": "Phase 2 completion handoff: the sapience_post command-substitution/subshell fix needed for status-code branching, the existing-link guard's check-once ordering, and the carried-forward verify-touched.sh deployed-mirror staleness caveat."
+          "summary": "Phase 3 completion handoff: the delegated/HTTP byte-identity design, the grep-confirmed no-vendor-prose-parsing invariant, and the carried-forward verify-touched.sh deployed-mirror staleness caveat."
         }
       ],
       "next_artifact_number": 2,

@@ -1,16 +1,16 @@
 {
   "status": "implemented",
-  "dispatch_seq": 16,
+  "dispatch_seq": 17,
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-2-handoff-20261121T000000Z.md",
-      "summary": "Phase 2 (link registration, 404/403 policy, canonical write, role note) completed; records the sapience_post subshell/command-substitution fix needed for the HTTP-status branch and the deployed-mirror verify-touched.sh staleness caveat carried forward from Phase 1."
+      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-3-handoff-20261121T211737Z.md",
+      "summary": "Phase 3 (vendor delegation with single-writer normalization) completed; records the delegated/HTTP byte-identity design, the deployed-mirror verify-touched.sh staleness caveat (carried forward), and the host's own vendor client genuinely predating link support."
     }
   ],
-  "next_steps": "Dispatch Phase 3 (Vendor Delegation With Single-Writer Normalization) of the same plan; Phase 4 is also unblocked and can run in the same wave.",
+  "next_steps": "Dispatch Phase 4 (/sapience Pick Surface) of the same plan; Phase 5 depends on both 3 and 4.",
   "completion_data": {
-    "completion_summary": "Implemented Phase 2 of 5: write_link_file() is now the sole writer of .sapience/project.json on every path (create and bind); bind mode gained a dry-run posture, an existing-link guard (--force to overwrite), a confirmed POST /v1/people/projects/<cid>/link classified strictly by HTTP status (2xx success / 404 locally-recorded / 403 refusal / other loud failure), a role-note from the picked row's owner flag, and a final 'commit this file' line. Added test cases 18-21; all 21 cases (49 assertions) pass against the source store."
+    "completion_summary": "Implemented Phase 3 of 5: bind mode now delegates its --confirm registration to the installed vendor client's own `link` subcommand when statically detected as supported (python3 \"$SAPIENCE_CLI_PATH\" link <value> --name <repo_slug>), reading the vendor's written file back and re-rendering it through write_link_file() so this script remains the sole, canonical writer either way; any non-success vendor outcome falls through to Phase 2's own HTTP path unchanged. Added test cases 22-24 against a synthetic sapience_cli.py fixture (never the real installation); all 24 cases (61 assertions) pass against the source store."
   },
   "modified_files": [
     "agent-system/extensions/sapience/scripts/sapience-project-bind.sh",
@@ -21,57 +21,57 @@
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 2,
+    "phases_completed": 3,
     "phases_total": 5
   },
   "memory_candidates": [
     {
-      "content": "Calling a sourced bash-library function via command substitution (x=\"$(libfunc ...)\") forks a subshell; any non-local variable the function assigns to \"return\" a second value to its caller (e.g. an HTTP status alongside a response body on stdout) never reaches the caller, and reads back empty/unset there, even though the assignment itself is a plain global write inside the function. The library's own header comment claiming the value is 'set into the CALLER's shell, since this file is sourced, not subshelled' is true of the library's sourcing but not of a $(...) call site -- sourcing and command substitution are independent. Fix: redirect the function's stdout to a temp file instead (libfunc ... > \"$tmp\"; out=\"$(cat \"$tmp\")\"), which keeps the call in-process so the side-channel assignment survives.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/summaries/01_bind-existing-project-register-repo-summary.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["bash subshell", "command substitution", "sourced library", "side-channel return value", "HTTP status capture"]
-    },
-    {
-      "content": "When a plan task says 'branch on <status variable> only' for a sourced HTTP helper's caller-visible status side-channel, verify empirically (e.g. with a local curl-stub harness) that the side-channel variable is actually populated at the call site before trusting the plan's described branching to work -- a pre-existing call site using the same helper elsewhere in the same file can carry the exact same latent bug silently (its own non-2xx cases happen to be caught by a secondary body-shape check instead), masking the defect until a new call site relies on the status value alone.",
+      "content": "When a plan requires that a delegated subprocess's own written output file become the canonical artifact (never the delegate's raw serialization), read the file back by its own declared keys and re-render through the same single-writer helper the non-delegated path already uses, rather than trusting the delegate's bytes directly. This turns 'byte-identical on either path' into a structurally enforced invariant (both paths funnel through one writer) instead of a hope about two independently-maintained serializers staying in sync.",
       "category": "PATTERN",
       "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/summaries/01_bind-existing-project-register-repo-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["single-writer invariant", "delegation", "read-back normalization", "byte-identity proof", "subprocess fixture"]
+    },
+    {
+      "content": "To test a byte-identity requirement between two independently-constructed code paths that each embed a basename-derived value (e.g. a cwd-derived repo slug) in their output, build the two scratch fixtures with a fixed, shared leaf directory name (via mkdir under two different mktemp -d parents) rather than two independent mktemp -d calls -- this keeps the basename-derived field identical across both paths without weakening the comparison to 'ignore that one field', so a whole-file cmp remains a meaningful, exact proof.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/summaries/01_bind-existing-project-register-repo-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["status-code branching", "latent bug", "empirical verification", "plan task validation", "HTTP status classification"]
+      "suggested_keywords": ["byte-identity test", "basename-derived value", "scratch fixture", "mktemp", "cmp comparison"]
     }
   ],
   "sapience_notes": [
     {
-      "subject": "sapience_post's HTTP-status side-channel and command substitution",
-      "value": "sapience-api-lib.sh's sapience_post sets sapience_api_post_http_status as a plain (non-local) global assignment intended to reach the caller, but that assignment is lost whenever the caller captures sapience_post's stdout via x=\"$(sapience_post ...)\" -- command substitution forks a subshell, so the status variable reads back empty in the parent shell. The library's own header comment ('set into the CALLER's shell, since this file is sourced, not subshelled') describes the file's sourcing, not the call site's subshelling, and is misleading on this point. Confirmed the pre-existing create-mode call site in sapience-project-bind.sh carries this same defect latently (its non-2xx failure cases are still caught by a secondary ok:true/body-shape check, masking it). Workaround used in the new bind-mode path: redirect sapience_post's stdout to a temp file instead of using $(...), which keeps the call in-process.",
+      "subject": "Vendor CLI delegation detection must be static, never a live probe",
+      "value": "The sapience CLI binary on $PATH (a NixOS-packaged wrapper) cannot be used to detect or invoke a vendor client's `link` subcommand at all: it dispatches via a fixed case table with no `link` branch and no fallback into the underlying sapience_cli.py's own argument parser, so invoking it for 'link' fails regardless of what the Python file underneath actually supports. Detection must grep the Python source file directly (grep -q \"sub == 'link'\") and invocation must go straight at `python3 \"$SAPIENCE_CLI_PATH\" link ...`, bypassing the $PATH wrapper entirely. Confirmed live: this machine's installed ~/.sapience/sapience_cli.py (1122 lines) genuinely predates `link` support and falls through to a generic usage printout with no network call.",
       "predicate": "finding is",
       "ko_type": "insight",
       "confidence": 0.9,
-      "source_loc": "agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh:sapience_post"
+      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh:sapience_vendor_cli_supports_link"
     },
     {
-      "subject": "Link route 404/403 policy as implemented in sapience-project-bind.sh",
-      "value": "POST /v1/people/projects/<cid>/link is classified strictly by HTTP status, never by parsing any response or vendor prose: 2xx with ok:true writes .sapience/project.json and reports success; 404 (feature not enabled for this account, or the cid/membership lookup missing server-side) still writes the file and reports the binding as recorded locally only; 403 (not an accepted member) writes nothing and reports a refusal naming 'join the project first'; any other status, a non-JSON body, or a missing ok:true on a 2xx is a loud failure that writes nothing.",
+      "subject": "Reconciling a delegation requirement with a 'write anyway on 404' requirement",
+      "value": "Pure delegation to a vendor CLI cannot satisfy a '404 still writes the file in a degraded state' requirement when the vendor's own CLI writes nothing on 404. The resolution that preserves both requirements: delegate only the write-and-register call itself, and only when the vendor client exits 0 with a link file actually present on disk; read that file's own keys back and re-render them through the single-writer helper that already handles the create and non-delegated bind paths. Any other vendor outcome (non-zero exit, or exit 0 with no file) falls through unchanged to the script's own HTTP path, which alone implements the 404/403 status-code policy. Accepted consequence: against a link-capable client, a 404 or 403 outcome causes both the vendor's POST and this script's own POST to fire -- harmless since both are non-mutating at those statuses.",
       "predicate": "finding is",
       "ko_type": "decision",
       "confidence": 0.85,
-      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh"
+      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh:delegate_link"
     },
     {
-      "subject": "Existing-link guard ordering in bind mode",
-      "value": "The bind-mode existing-link guard (refuse to silently replace a binding to a different project; --force overwrites) is checked once, immediately after resolving the --project value to a row, before both the dry-run payload print and the confirmed POST -- not only immediately before the write. This means a conflicting existing link is reported even on a dry-run invocation, rather than only surfacing at --confirm time.",
+      "subject": "Never classify a delegated subprocess's outcome by parsing its stdout/stderr",
+      "value": "sapience-project-bind.sh's delegate_link() redirects the vendor CLI's entire stdout and stderr to /dev/null unconditionally. Classification of the delegation outcome is by exit code and by the written link file's own JSON content only -- never by matching against the vendor's English prose, which carries no stability contract and could change wording across vendor versions without notice.",
       "predicate": "finding is",
       "ko_type": "decision",
-      "confidence": 0.8,
-      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh"
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh:delegate_link"
     },
     {
-      "subject": "verify-touched.sh deployed-mode smoke check vs. authoritative source-store check (carried forward from Phase 1)",
-      "value": "In this repo, bash .claude/scripts/verify-touched.sh runs run-all.sh in deployed mode by default, executing the STALE deployed copy of a suite when that extension's deployed mirror is out of date -- confirmed again this phase: the deployed test-sapience-project-bind.sh still lacks cases 15-21 even though verify-touched.sh reported green. The authoritative check for a source-store edit remains the direct CORE_TEST_SUBJECT_MODE=source-store invocation of the suite from its source-store path.",
+      "subject": "verify-touched.sh deployed-mode smoke check vs. authoritative source-store check (carried forward from Phases 1-2)",
+      "value": "bash .claude/scripts/verify-touched.sh in this repo runs run-all.sh in its default 'deployed' mode, which executes the deployed, pre-edit copy of a suite whenever that extension's deployed .claude/ mirror is stale -- reconfirmed this phase: the deployed test-sapience-project-bind.sh still lacked cases 22-24 even though the narrowed verify-touched.sh run reported green (it was running the stale 21-case deployed file). The authoritative check for a source-store edit under this condition remains the direct CORE_TEST_SUBJECT_MODE=source-store invocation of the suite from its source-store path, which this phase confirmed green at 24 cases / 61 assertions.",
       "predicate": "finding is",
       "ko_type": "insight",
       "confidence": 0.85,
-      "source_loc": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-2-handoff-20261121T000000Z.md"
+      "source_loc": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-3-handoff-20261121T211737Z.md"
     }
   ]
 }

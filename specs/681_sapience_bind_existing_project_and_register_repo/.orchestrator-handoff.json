@@ -1,18 +1,18 @@
 {
   "status": "implemented",
-  "dispatch_seq": 16,
+  "dispatch_seq": 17,
   "task_number": 681,
   "phase": "implement",
-  "phases_completed": 2,
+  "phases_completed": 3,
   "phases_total": 5,
-  "summary": "Implemented Phase 2 of the bind-existing-project plan: write_link_file() is now the sole writer of .sapience/project.json on every path; bind mode gained a dry-run posture, an existing-link guard (--force to overwrite), a confirmed POST /v1/people/projects/<cid>/link classified strictly by HTTP status (2xx success / 404 locally-recorded / 403 refusal / other loud failure), a role note from the picked row's owner flag, and a final 'commit this file' line. Added test cases 18-21 (49/49 assertions pass against the source store). Phase 2 is committed and marked [COMPLETED]; phases 3-5 remain.",
+  "summary": "Implemented Phase 3 of the bind-existing-project plan: bind mode now delegates its --confirm registration to the installed vendor client's own `link` subcommand when statically detected as supported, reading the vendor's written file back and re-rendering it through write_link_file() so this script remains the sole canonical writer either way; any non-success vendor outcome falls through to Phase 2's own HTTP path unchanged. Added test cases 22-24 against a synthetic sapience_cli.py fixture (24/24 cases, 61/61 assertions pass against the source store). Phase 3 is committed and marked [COMPLETED]; phases 4-5 remain.",
   "blockers": [],
   "plan_markers_verified": true,
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-2-handoff-20261121T000000Z.md",
-      "summary": "Phase 2 completion handoff: the sapience_post command-substitution/subshell fix needed for status-code branching, the existing-link guard's check-once ordering, and the carried-forward verify-touched.sh deployed-mirror staleness caveat."
+      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-3-handoff-20261121T211737Z.md",
+      "summary": "Phase 3 completion handoff: the delegated/HTTP byte-identity design, the grep-confirmed no-vendor-prose-parsing invariant, and the carried-forward verify-touched.sh deployed-mirror staleness caveat."
     }
   ],
   "metadata": {
