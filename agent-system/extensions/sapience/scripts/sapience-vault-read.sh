@@ -151,8 +151,25 @@ repo_name="$(basename "$repo_toplevel")"
 # end via `jq -s`. record_error never aborts the script. ---
 ERRORS_FILE="$(mktemp 2>/dev/null)" || ERRORS_FILE="/dev/null"
 # shellcheck disable=SC2329  # invoked indirectly via `trap cleanup EXIT` below
-cleanup() { [ "$ERRORS_FILE" != "/dev/null" ] && rm -f "$ERRORS_FILE"; }
+cleanup() {
+  [ "$ERRORS_FILE" != "/dev/null" ] && rm -f "$ERRORS_FILE"
+  [ -n "${JSON_DIR:-}" ] && rm -rf "$JSON_DIR"
+}
 trap cleanup EXIT
+
+# --- json_file: a vault payload is unbounded (a doc body, a project's notes), and a JSON value
+# handed to jq as an `--argjson` ARGUMENT is bounded by the kernel's per-argument limit
+# (MAX_ARG_STRLEN, 128 KiB on Linux): one large response makes the exec fail with "Argument list
+# too long". Every payload-sized value therefore reaches jq as a FILE via `--slurpfile`, read
+# back as `$name[0]`. json_file writes the value to a private temp file and echoes its path. ---
+JSON_DIR="$(mktemp -d 2>/dev/null)" || {
+  echo "sapience-vault-read.sh: could not create a temp directory" >&2
+  exit 1
+}
+json_file() {
+  printf '%s\n' "$2" > "${JSON_DIR}/$1.json"
+  printf '%s' "${JSON_DIR}/$1.json"
+}
 
 record_error() {
   local source="$1" message="$2"
@@ -304,14 +321,16 @@ if [ "$docs_json" != "null" ]; then
 
     _body_resp="$(sapience_get "/v1/docs/${slug}" "versions=1")"; _body_rc=$?
     if [ "$_body_rc" -eq 0 ] && [ -n "$_body_resp" ] && echo "$_body_resp" | jq -e . >/dev/null 2>&1; then
-      jq -nc --arg slug "$slug" --argjson body "$_body_resp" '{($slug): $body}' >> "$bodies_tmp" 2>/dev/null
+      jq -nc --arg slug "$slug" --slurpfile body "$(json_file doc_body "$_body_resp")" \
+        '{($slug): $body[0]}' >> "$bodies_tmp" 2>/dev/null
     else
       record_error "doc_bodies" "GET /v1/docs/${slug}?versions=1 failed or returned a non-JSON body"
     fi
 
     _comments_resp="$(sapience_get "/v1/docs/${slug}/comments")"; _comments_rc=$?
     if [ "$_comments_rc" -eq 0 ] && [ -n "$_comments_resp" ] && echo "$_comments_resp" | jq -e . >/dev/null 2>&1; then
-      jq -nc --arg slug "$slug" --argjson comments "$_comments_resp" '{($slug): $comments}' >> "$comments_tmp" 2>/dev/null
+      jq -nc --arg slug "$slug" --slurpfile comments "$(json_file doc_comments_one "$_comments_resp")" \
+        '{($slug): $comments[0]}' >> "$comments_tmp" 2>/dev/null
     else
       record_error "doc_comments" "GET /v1/docs/${slug}/comments failed or returned a non-JSON body"
     fi
@@ -376,15 +395,16 @@ else
 fi
 
 vault_json="$(jq -nc \
-  --argjson projects "$projects_json" \
-  --argjson docs "$docs_json" \
-  --argjson doc_bodies "$doc_bodies_json" \
-  --argjson doc_comments "$doc_comments_json" \
-  --argjson project_notes "$project_notes_json" \
-  --argjson suggestions "$suggestions_json" \
-  --argjson notifications "$notifications_json" \
-  '{projects: $projects, docs: $docs, doc_bodies: $doc_bodies, doc_comments: $doc_comments,
-    project_notes: $project_notes, suggestions: $suggestions, notifications: $notifications}')"
+  --slurpfile projects "$(json_file projects "$projects_json")" \
+  --slurpfile docs "$(json_file docs "$docs_json")" \
+  --slurpfile doc_bodies "$(json_file doc_bodies "$doc_bodies_json")" \
+  --slurpfile doc_comments "$(json_file doc_comments "$doc_comments_json")" \
+  --slurpfile project_notes "$(json_file project_notes "$project_notes_json")" \
+  --slurpfile suggestions "$(json_file suggestions "$suggestions_json")" \
+  --slurpfile notifications "$(json_file notifications "$notifications_json")" \
+  '{projects: $projects[0], docs: $docs[0], doc_bodies: $doc_bodies[0],
+    doc_comments: $doc_comments[0], project_notes: $project_notes[0],
+    suggestions: $suggestions[0], notifications: $notifications[0]}')"
 
 # =====================================================================================
 # --update-cursor: the ONLY write this script performs. Records current HEAD.
@@ -410,10 +430,16 @@ jq -nc \
   --arg schema "sapience-vault-read/1" \
   --arg generated_at "$generated_at" \
   --argjson repo "$repo_json" \
-  --argjson local "$local_json" \
-  --argjson vault "$vault_json" \
-  --argjson errors "$(errors_json)" \
-  '{schema: $schema, generated_at: $generated_at, repo: $repo, local: $local, vault: $vault, errors: $errors}'
+  --slurpfile local "$(json_file local "$local_json")" \
+  --slurpfile vault "$(json_file vault "$vault_json")" \
+  --slurpfile errors "$(json_file errors "$(errors_json)")" \
+  '{schema: $schema, generated_at: $generated_at, repo: $repo, local: $local[0], vault: $vault[0],
+    errors: $errors[0]}' || {
+  # An envelope that failed to assemble must never look like a successful read: without this
+  # the script would fall through to `exit 0` with empty stdout.
+  echo "sapience-vault-read.sh: envelope assembly failed; no envelope was emitted" >&2
+  exit 3
+}
 
 if [ "$vault_success_count" -eq 0 ]; then
   exit 2
