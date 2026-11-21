@@ -191,14 +191,14 @@ next_project_number: 684
 
 ### Sapience
 
-678 [NOT STARTED] — Decide and encode how a Claude Code session in a linked repo...
+678 [RESEARCHING] — Decide and encode how a Claude Code session in a linked repo...
   └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
-681 [NOT STARTED] — Let the Sapience extension bind a repository to an existing...
+681 [RESEARCHING] — Let the Sapience extension bind a repository to an existing...
   └─ 677 [NOT STARTED] — Make the Sapience extension's automatic paths use the linked...
     └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a... (see above)
-682 [NOT STARTED] — Stop writing the Sapience token into the per-project MCP...
+682 [RESEARCHING] — Stop writing the Sapience token into the per-project MCP...
   └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a... (see above)
-683 [NOT STARTED] — Couple Sapience capture enablement to sapience-extension...
+683 [RESEARCHING] — Couple Sapience capture enablement to sapience-extension...
 
 ### Decidability
 
@@ -212,7 +212,7 @@ next_project_number: 684
 ## Tasks
 
 ### 683. Couple sapience capture to extension activation
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
@@ -222,7 +222,7 @@ next_project_number: 684
 ---
 
 ### 682. Sapience mcp entry carries no token
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
@@ -232,7 +232,7 @@ next_project_number: 684
 ---
 
 ### 681. Sapience bind existing project and register repo
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
@@ -262,7 +262,7 @@ next_project_number: 684
 ---
 
 ### 678. Sapience linked repo write and capture policy
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
