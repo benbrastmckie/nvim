@@ -1,20 +1,20 @@
 {
   "status": "partial",
-  "dispatch_seq": 12,
-  "summary": "Implemented Phase 4 of 6 (Resolve-Once Pass-Through at the Postflight Call Site) for the sapience linked-repo write and capture policy task. postflight-sapience-notes.sh now resolves this repo's Sapience project key at most once per completed task (duplicating sapience-remember.sh's own PROJECT-KEY RESOLUTION block, since that script was out of this phase's file_scope) and forwards it as --project-key to every per-note call; an unlinked repo stays byte-identical (zero GETs, no flag). test-postflight-sapience-notes.sh gained two new cases (linked: one GET, same key on all calls; unlinked: zero GETs) and now passes 41/41; test-sapience-remember.sh's Phase 2 flag contract remains 11/11. Both run with CORE_TEST_SUBJECT_MODE=source-store since the sapience extension's deployed tree was already flagged stale at dispatch start (Phase 6 redeploys). The scoped verify-touched.sh battery (deploy-tree-first, so it did not exercise this phase's new source-store code) reported 98 passed, 0 failed. The hard-mode Phase Mission directive scoped this dispatch to Phase 4 only; phases 5-6 remain.",
+  "dispatch_seq": 13,
+  "summary": "Implemented Phase 5 of 6 (Line-Neutral EXTENSION.md Pointer) for the sapience linked-repo write and capture policy task. Added a Context Pointers entry for the new linked-repo-write-policy.md record to agent-system/extensions/sapience/EXTENSION.md, offsetting the one-line addition by rejoining two adjacent source lines of the existing /sapience paragraph into one (a pure line-count reduction with no rendered-content change, since Markdown already treated them as one soft-wrapped paragraph). The file measured exactly 60 lines before and after, matching its zero-headroom Rule U ceiling; no merge-sources/claudemd.md file was created or referenced. verify-touched.sh selected and passed 3 suites (test-index-entries-schema.sh, test-manifest-scripts-sync.sh, test-sapience-capture.sh). verify-deploy.sh --only-gate 3 --skip-unchanged reported no Rule U/V finding for EXTENSION.md; its one FAIL is the same pre-existing Phase 2-4 deploy-drift condition already known from this task's prior cycles, deferred to Phase 6's deploy step. The hard-mode Phase Mission directive scoped this dispatch to Phase 5 only; Phase 6 remains.",
   "blockers": [],
-  "phases_completed": 4,
+  "phases_completed": 5,
   "phases_total": 6,
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-4-handoff-20261121T201000Z.md",
-      "summary": "Phase 4 completion handoff: current state, decisions, and resume point for Phase 5."
+      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-5-handoff-20261121T202146Z.md",
+      "summary": "Phase 5 completion handoff: current state, decisions, and resume point for Phase 6."
     },
     {
       "type": "summary",
       "path": "specs/678_sapience_linked_repo_write_and_capture_policy/summaries/01_linked-repo-write-capture-policy-summary.md",
-      "summary": "Implementation summary covering Phases 3-4; status IN PROGRESS pending phases 5-6."
+      "summary": "Implementation summary covering Phases 3-5; status IN PROGRESS pending Phase 6."
     }
   ]
 }
