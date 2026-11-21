@@ -1,15 +1,15 @@
 {
   "status": "partial",
-  "dispatch_seq": 9,
-  "summary": "Implemented Phase 1 of 6 (Rulings Record and Index Wiring) for the sapience linked-repo write and capture policy task. Created the new linked-repo-write-policy.md domain record stating Rulings 1-5 plus the Cross-Harness Agreement with sf1-engine's integration/project-link.md section 10, wired it into index-entries.json and the README index, and resynced line_count for both the new file and README.md. All phase-1 verification passed (no Rule R/S/T finding; verify-touched.sh green aside from one pre-existing EXPECTED-flaky timeout unrelated to this change). The hard-mode Phase Mission directive scoped this dispatch to Phase 1 only; phases 2-6 remain.",
+  "dispatch_seq": 10,
+  "summary": "Implemented Phase 2 of 6 (sapience-remember.sh Project Tagging and Its First Test Suite) for the sapience linked-repo write and capture policy task. Added optional runtime project-key resolution, a --project-key override flag, and a degrade-on-failure (never refuse) rule to sapience-remember.sh, plus its first regression suite (11 assertions across 7 cases, including the two Ruling 1/3 policy invariants). Registered the suite in manifest.json and confirmed suite_selection_select now resolves it. Unlinked-case output confirmed byte-identical to the pre-change script; scoped verify-touched.sh battery green aside from one pre-existing EXPECTED-flaky timeout unrelated to this change; no Rule Q finding. The hard-mode Phase Mission directive scoped this dispatch to Phase 2 only; phases 3-6 remain.",
   "blockers": [],
-  "phases_completed": 1,
+  "phases_completed": 2,
   "phases_total": 6,
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-1-handoff-20261121T190000Z.md",
-      "summary": "Phase 1 completion handoff: current state, decisions, and resume point for Phase 2."
+      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-2-handoff-20261121T194907Z.md",
+      "summary": "Phase 2 completion handoff: current state, decisions, and resume point for Phase 3."
     }
   ]
 }

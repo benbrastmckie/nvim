@@ -2,75 +2,89 @@
   "status": "partial",
   "partial_progress": {
     "stage": "phase_boundary_stop",
-    "details": "Hard-mode Phase Mission directive scoped this dispatch to Phase 1 only ('Implement phase 1 only. Do not continue past this phase'). Phase 1 is fully [COMPLETED] and verified; phases 2-6 remain for a subsequent dispatch.",
-    "handoff_path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-1-handoff-20261121T190000Z.md",
-    "phases_completed": 1,
+    "details": "Hard-mode Phase Mission directive scoped this dispatch to Phase 2 only ('Implement phase 2 only. Do not continue past this phase'). Phase 2 is fully [COMPLETED] and verified; phases 3-6 remain for a subsequent dispatch.",
+    "handoff_path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-2-handoff-20261121T194907Z.md",
+    "phases_completed": 2,
     "phases_total": 6
   },
   "artifacts": [
     {
       "type": "summary",
-      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-1-handoff-20261121T190000Z.md",
-      "summary": "Phase 1 (Rulings Record and Index Wiring) completed and committed; resume point and context for Phase 2."
+      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-2-handoff-20261121T194907Z.md",
+      "summary": "Phase 2 (sapience-remember.sh Project Tagging and Its First Test Suite) completed and committed; resume point and context for Phase 3."
     }
   ],
   "completion_data": {
-    "completion_summary": "Created the new linked-repo-write-policy.md domain record stating Rulings 1-5 and the Cross-Harness Agreement with sf1-engine's integration/project-link.md section 10, added its index-entries.json entry, resynced line_count for it and for README.md after adding a one-line pointer row. All phase-1 verification passed (no Rule R/S/T finding; verify-touched.sh green aside from one pre-existing EXPECTED-flaky timeout; no task-number references)."
+    "completion_summary": "Added optional runtime project-key resolution, a --project-key override flag, and the degrade-on-failure rule (never a refusal) to sapience-remember.sh, plus its first regression suite (test-sapience-remember.sh, 11 assertions across 7 cases including the two Ruling 1/3 policy invariants). Registered the new suite in manifest.json via sync-manifest-scripts.sh --write and confirmed suite_selection_select now resolves it for sapience-remember.sh. Unlinked-case output confirmed byte-identical to the pre-change script; scoped verify-touched.sh battery green aside from one pre-existing EXPECTED-flaky timeout; no Rule Q finding."
   },
   "modified_files": [
-    "agent-system/extensions/sapience/context/project/sapience/domain/linked-repo-write-policy.md",
-    "agent-system/extensions/sapience/index-entries.json",
-    "agent-system/extensions/sapience/context/project/sapience/README.md"
+    "agent-system/extensions/sapience/scripts/sapience-remember.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-remember.sh",
+    "agent-system/extensions/sapience/manifest.json"
   ],
   "memory_candidates": [
     {
-      "content": "generate-context-line-counts.sh (and check-extension-docs.sh / other scripts sharing the same deploy-root-guard.sh pattern) refuse to run directly from the agent-system source store path (e.g. agent-system/extensions/core/scripts/...) with a deploy-root-guard error, because '../..' resolves to a bogus repo root from that location. The sanctioned bypass for a deliberate source-store invocation is prefixing REPO_ROOT=$(pwd), e.g. `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` -- confirmed working this session.",
-      "category": "PATTERN",
-      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-1-handoff-20261121T190000Z.md",
+      "content": "sync-manifest-scripts.sh derives each extension's on-disk script set from `git ls-files <ext>/scripts`, not a plain filesystem walk. A brand-new, not-yet-`git add`-ed test file is therefore invisible to it (reports as already in sync even though the file exists on disk) until it is staged. The fix is `git add` the new file before running `sync-manifest-scripts.sh --write`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-2-handoff-20261121T194907Z.md",
       "confidence": 0.9,
-      "suggested_keywords": ["generate-context-line-counts", "deploy-root-guard", "REPO_ROOT", "source store", "check-extension-docs"]
+      "suggested_keywords": ["sync-manifest-scripts", "git ls-files", "provides.scripts", "manifest.json", "Rule Q"]
+    },
+    {
+      "content": "suite_selection_select's resolution for a given script relies on a grep-based reference stratum over the DEPLOYED .claude/scripts/tests/ tree, not the source store. A brand-new test suite that references its subject script by name will not appear in suite_selection_select's output until a redeploy has copied it into the deployed tree -- confirms the existing memory note about agent-definition-file NO-SUITE-BY-CLASS probes generalizes to this case too.",
+      "category": "PATTERN",
+      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-2-handoff-20261121T194907Z.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["suite_selection_select", "suite-selection-lib", "deploy-headless", "test discovery"]
+    },
+    {
+      "content": "A fixed-content test subject with no standalone deployed copy (e.g. an extension's settings-fragment.json, which is merge-targeted into .claude/settings.local.json rather than copied verbatim) must be resolved via common_test_ext_root(REPO_ROOT) + '<ext-name>/<file>', never a SCRIPT_DIR-relative '../../file' path -- the relative path only works when the suite itself happens to run from the source tree, and silently breaks when the same suite runs from a deployed .claude/scripts/tests/ copy (a different directory depth with no sibling settings-fragment.json at all).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-2-handoff-20261121T194907Z.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["common_test_ext_root", "settings-fragment.json", "deploy-tree-first", "test fixture resolution"]
     }
   ],
   "sapience_notes": [
     {
-      "subject": "verify-touched.sh OWED-NOT-PAID fallback cost for a brand-new context file",
-      "value": "A genuinely new, unreferenced context file (not yet cited anywhere) triggers verify-touched.sh's OWED-NOT-PAID fallback, running the full free-cost-class suite battery (~98 suites) in addition to the normally-resolved suite set for the other touched paths -- taking several minutes rather than seconds. Confirmed live in the nvim config repo this session; this is by design, not a defect, and mirrors the same classification-branch behavior already documented for a new agent-definition file.",
-      "predicate": "finding is",
-      "ko_type": "finding",
-      "confidence": 0.85,
-      "source_loc": "agent-system/extensions/sapience/context/project/sapience/domain/linked-repo-write-policy.md"
-    },
-    {
-      "subject": "sf1-engine cross-repository obligation discharge for the sapience linked-repo write policy",
-      "value": "sf1-engine's integration/project-link.md section 10 names this task by its stable slug (sapience_linked_repo_write_and_capture_policy) directly in its own cross-repository register as an obligation owed back: a statement of the same write rule and sharing policy from the Claude Code side, agreeing with sf1-engine's SF-1-harness ruling by citation rather than by independent re-derivation.",
+      "subject": "sapience-remember.sh project-key resolution degrade rule",
+      "value": "sapience-remember.sh's new project-key resolution (added in the sapience_linked_repo_write_and_capture_policy task) deliberately degrades to an untagged write with a stderr warning on every resolution failure (no binding, non-JSON GET response, no matching cid, matching entry with no key), never refusing -- the opposite of sapience-publish.sh ko's refuse-on-failure behavior. Rationale: sapience-remember.sh serves a non-interactive, bounded postflight note set where losing a note outright is worse than writing it untagged.",
       "predicate": "decision is",
       "ko_type": "decision",
       "confidence": 0.9,
-      "source_loc": "/home/benjamin/Projects/Sapience/sf1-engine/integration/project-link.md"
+      "source_loc": "agent-system/extensions/sapience/scripts/sapience-remember.sh"
     },
     {
-      "subject": "sf1-engine ruling 7's gate does not reach a pre-verification project key field",
-      "value": "sf1-engine ruling 7 keeps automatic project writes attaching a verified project_cid gated OFF until two named leak paths close (a dispatched child's subsequent turns reaching the lossless feed as if typed; and Claude Code worker turns running with every hook/permission/instruction surface disabled). A plain, pre-verification 'project' key field that never sends project_cid sits entirely below that gate, so extending sapience-remember.sh with such a field does not require ruling 7's gate to be lifted.",
+      "subject": "sapience-publish.sh ko's project-key resolution shape reused verbatim",
+      "value": "sapience-remember.sh's project-key resolution (binding cid -> GET /v1/people/projects -> jq-matched key, never project_cid) is a direct copy of sapience-publish.sh ko's existing runtime-resolution block and defensive response-unwrapping, confirming that shape is now established precedent across both Sapience write scripts rather than a one-off.",
       "predicate": "finding is",
       "ko_type": "finding",
       "confidence": 0.85,
-      "source_loc": "/home/benjamin/Projects/Sapience/sf1-engine/integration/project-link.md"
+      "source_loc": "agent-system/extensions/sapience/scripts/sapience-publish.sh"
     },
     {
-      "subject": "rules/sapience-write-path.md's corpus figure is under-counted",
-      "value": "rules/sapience-write-path.md claims 14 files under the sapience extension's source store path, exactly three of which legitimately name the MCP write tools in a discussion (not prescription) sense. A live grep over those 14 surfaces found five, not three: per-repo-scoping.md, review-gate-boundary.md, EXTENSION.md, index-entries.json, and the rule file itself. EXTENSION.md's prohibition/supersession prose and index-entries.json's keywords array are legitimate discussion occurrences the rule's sanctioned-site list never named.",
-      "predicate": "correction is",
-      "ko_type": "correction",
-      "confidence": 0.9,
-      "source_loc": "agent-system/extensions/sapience/rules/sapience-write-path.md"
-    },
-    {
-      "subject": "test-gate-cache-equivalence.sh is a known-flaky, EXPECTED-to-fail suite",
-      "value": "run-all.sh's own failure classification marks test-gate-cache-equivalence.sh's 600s-per-suite timeout as (EXPECTED) rather than a NEW failure, observed twice in back-to-back verify-touched.sh runs this session with otherwise 0 NEW failures across ~120 total suite invocations. A lone EXPECTED failure for this one suite is not evidence of a regression from an unrelated change.",
+      "subject": "sync-manifest-scripts.sh's git-ls-files dependency",
+      "value": "sync-manifest-scripts.sh's 'on disk' script count for an extension is derived from `git ls-files <ext>/scripts`, not a filesystem walk -- a newly-created, not-yet-staged test file is invisible to it until `git add`-ed. Measured live: the script reported sapience as fully in sync (20/20) immediately after a new test file was written to disk, and only detected it (21/21 after --write) once the file was staged.",
       "predicate": "finding is",
       "ko_type": "finding",
-      "confidence": 0.8,
-      "source_loc": ".claude/scripts/tests/run-all.sh"
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/sync-manifest-scripts.sh"
+    },
+    {
+      "subject": "suite_selection_select's deployed-tree dependency for a new suite",
+      "value": "suite_selection_select's grep-based reference stratum resolves a new test suite for its subject script only after that suite has been copied into the deployed .claude/scripts/tests/ tree -- a suite that exists only in the source store (agent-system/extensions/<ext>/scripts/tests/) is invisible to it until a redeploy. Measured live this session: the lookup returned the suite only after `deploy-headless.sh` ran a second time following the suite's creation and manifest registration.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"
+    },
+    {
+      "subject": "Write-tool-created shell scripts lack the executable bit",
+      "value": "A new .sh test file created via the Write tool does not carry the executable bit; run-all.sh's deployed-tree discovery reports it as [SKIP] not executable (exec-bit regression?) until chmod +x is applied at the SOURCE-STORE copy and the tree is redeployed (chmod on only the deployed copy would be discarded on the next redeploy, per the source-store/deploy-boundary rule).",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/sapience/scripts/tests/test-sapience-remember.sh"
     }
   ],
   "metadata": {
@@ -78,9 +92,9 @@
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 1,
+    "phases_completed": 2,
     "phases_total": 6
   },
-  "dispatch_seq": 9,
-  "next_steps": "Dispatch Phase 2 (sapience-remember.sh project tagging and its first test suite) next; it depends on no earlier phase and may run in the same wave as a resumed Phase 1 would have."
+  "dispatch_seq": 10,
+  "next_steps": "Dispatch Phase 3 (Rule File and Existing-Doc Ruling Pointers) next; it threads the new linked-repo-write-policy.md record and this phase's resolved code shape into rules/sapience-write-path.md and the three existing domain docs."
 }
