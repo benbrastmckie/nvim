@@ -1,18 +1,24 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 7,
-  "summary": "Wrote a 5-phase, ~4-hour plan to stop the Sapience token being written into the per-project MCP entry. Phase 1 measures mcp.py's token resolution with SAPIENCE_TOKEN unset; Phase 2 drops the token branch from the writer and inverts verifier check (b) as one atomic batch; Phase 3 adds the regression case plus its negative control; Phase 4 documents the token's homes and the never-copy boundary; Phase 5 (final, full tier) migrates the live entries, verifies end to end, and redeploys. Re-measured every carried figure against live state: 6 of 6 project entries in ~/.claude.json carry the token today, and no mcp.py path needs the variable.",
+  "status": "partial",
+  "dispatch_seq": 20,
+  "phase": "implement",
+  "summary": "Completed Phase 1 of 5: mechanically confirmed all five mcp.py invocation shapes (--statusline, --briefing-text, --receipt, --effect-line, bare stdio initialize) resolve the Sapience token from ~/.sapience/config.json with SAPIENCE_TOKEN stripped from the environment, with no divergent shape. The dispatch's Phase Mission directive limited execution to Phase 1 only; phases 2-5 remain.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/682_sapience_mcp_entry_carries_no_token/plans/01_remove-token-from-mcp-entry.md",
-      "summary": "5 phases, 4 dependency waves, ~4 hours: measure mcp.py fallback, writer+verifier atomic batch, regression test with negative control, token-location documentation, live migration and end-to-end verification."
+      "type": "record",
+      "path": "specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md",
+      "summary": "Per-shape measurement results and the unconditional verdict for build item (2)."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-1-handoff-20261121T215919Z.md",
+      "summary": "Phase 1 completion handoff naming Phase 2 as the immediate next action."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 1,
   "phases_total": 5,
   "blockers": [],
   "plan_markers_verified": true,
-  "next_action_hint": "Implement phase 1. NOTE: sibling task 683 declares an identical five-file file_scope and is also in planning this cycle -- 682's harvested file_scope will newly overlap it, so the admission gate should serialize the two implement dispatches rather than running them concurrently."
+  "continuation_path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-1-handoff-20261121T215919Z.md",
+  "next_action_hint": "Dispatch Phase 2: writer emits a token-free entry, verifier refuses a token-bearing one (atomic-batch commit across setup-sapience-mcp.sh and verify-sapience-mcp.sh). Re-read both files first per the plan's sibling-683-collision risk note."
 }

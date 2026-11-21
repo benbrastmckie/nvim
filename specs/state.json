@@ -254,6 +254,11 @@
           "path": "specs/682_sapience_mcp_entry_carries_no_token/plans/01_remove-token-from-mcp-entry.md",
           "type": "plan",
           "summary": "5 phases, 4 dependency waves, ~4 hours: measure mcp.py fallback, writer+verifier atomic batch, regression test with negative control, token-location documentation, live migration and end-to-end verification."
+        },
+        {
+          "path": "specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md",
+          "type": "record",
+          "summary": "Per-shape measurement results and the unconditional verdict for build item (2)."
         }
       ],
       "next_artifact_number": 2,

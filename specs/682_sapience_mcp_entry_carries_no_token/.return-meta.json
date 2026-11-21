@@ -1,30 +1,64 @@
 {
-  "status": "planned",
+  "status": "partial",
+  "dispatch_seq": 20,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/682_sapience_mcp_entry_carries_no_token/plans/01_remove-token-from-mcp-entry.md",
-      "summary": "5-phase plan removing the Sapience token from the per-project MCP entry: measure mcp.py's config.json fallback, writer+verifier atomic batch, regression test with negative control, token-location documentation, live migration and end-to-end verification."
+      "type": "record",
+      "path": "specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md",
+      "summary": "Phase 1 measurement: all five mcp.py invocation shapes (--statusline, --briefing-text, --receipt, --effect-line, bare stdio initialize) resolve the Sapience token from ~/.sapience/config.json with SAPIENCE_TOKEN stripped from the environment; no divergent shape. Build item (2) applies unconditionally."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-1-handoff-20261121T215919Z.md",
+      "summary": "Phase 1 complete, phase mission limited this dispatch to phase 1 only; next action is Phase 2 (writer+verifier atomic batch)."
+    }
+  ],
+  "partial_progress": {
+    "stage": "phase_mission_single_phase_limit",
+    "details": "Dispatch's Phase Mission directive limited execution to Phase 1 only ('Implement phase 1 only. Do not continue past this phase.'). Phase 1 completed, verified, and committed cleanly; phases 2-5 remain for subsequent dispatches.",
+    "phases_completed": 1,
+    "phases_total": 5
+  },
+  "completion_data": {
+    "completion_summary": "Completed Phase 1 of the token-removal plan: mechanically confirmed (not just by inspection) that all five mcp.py invocation shapes resolve the Sapience token from ~/.sapience/config.json with SAPIENCE_TOKEN absent from the environment, with no divergent shape. Wrote the measurement record, checked off Phase 1's tasks, and committed cleanly. Phases 2-5 (writer/verifier edit, regression test, documentation, live migration) remain."
+  },
+  "modified_files": [
+    "specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md"
+  ],
+  "memory_candidates": [],
+  "sapience_notes": [
+    {
+      "subject": "~/.sapience/mcp.py token resolution",
+      "value": "TOKEN = os.environ.get('SAPIENCE_TOKEN') or _CFG.get('token') or '' at mcp.py:44 is a single module-level statement evaluated at import, before any CLI-flag or stdio dispatch. Confirmed mechanically (not just by reading) that all four named invocation shapes (--briefing-text, --receipt, --effect-line, bare stdio server) plus the --statusline auth probe authenticate successfully with SAPIENCE_TOKEN stripped from the environment, falling back to ~/.sapience/config.json's .token field. No shape requires the environment variable.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.95,
+      "source_loc": "specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md"
+    },
+    {
+      "subject": "Measuring a secret-handling code path without printing the secret",
+      "value": "When mechanically verifying that a script resolves a credential from a fallback file rather than requiring the env var, record only length + a short SHA-256 fingerprint (e.g. first 12 hex chars) of the resolved value, never the raw secret -- sufficient to later detect a regression (value changed) without the record itself becoming a new place the secret is held in plaintext.",
+      "predicate": "decision is",
+      "ko_type": "pattern",
+      "confidence": 0.85,
+      "source_loc": "specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md"
+    },
+    {
+      "subject": "mcp.py stdio server auth guard location",
+      "value": "The bare stdio MCP server shape in ~/.sapience/mcp.py guards on `if not TOKEN: sys.stderr.write('Set SAPIENCE_TOKEN...'); sys.exit(1)` at mcp.py:2015-2016, immediately before the stdin JSON-RPC read loop and after every CLI-flag branch (--briefing-text, --receipt, --effect-line, --statusline, --stats, etc.) has already been checked and skipped. A successful `initialize` JSON-RPC reply is therefore proof the token resolved, without needing to read TOKEN's value.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "/home/benjamin/.sapience/mcp.py:2015-2050"
     }
   ],
   "metadata": {
-    "session_id": "sess_1795284367_d33b60_682",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 4,
-    "dependency_waves": [[1], [2, 4], [3], [5]]
+    "session_id": "sess_1795284367_d33b60",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 1,
+    "phases_total": 5
   },
-  "memory_candidates": [
-    {
-      "content": "The live Sapience MCP registration writer is $HOME/.claude/scripts/setup-sapience-mcp.sh -- a user-level copy placed by install-sapience-mcp-session-hook.sh, whose HOOK_SRC/WRITER_SRC resolve relative to the installer's own $SCRIPT_DIR. The SessionStart hook at $HOME/.claude/hooks/ invokes that user-level copy, NOT the per-repo deployed .claude/scripts/ copy. Consequence: a source-store edit to agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh does not reach production via deploy-headless.sh; the installer must be re-run FROM the source store (where $SCRIPT_DIR is the source-store scripts dir) for the edited writer to take effect. A repo redeploy alone changes only the inert deployed copy. This is a general pattern for any extension that installs user-level ($HOME/.claude/) artifacts rather than relying solely on the per-repo deploy tree: such an extension has two propagation paths, and only one of them is deploy-headless.sh.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/682_sapience_mcp_entry_carries_no_token/plans/01_remove-token-from-mcp-entry.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["sapience", "mcp-registration", "user-level-install", "deploy-propagation", "source-store", "sessionstart-hook"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 682 to execute the plan",
-  "dispatch_seq": 7
+  "next_steps": "Dispatch Phase 2 (writer emits token-free entry; verifier refuses a token-bearing one, atomic-batch commit) next."
 }
