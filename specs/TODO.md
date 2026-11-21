@@ -197,7 +197,7 @@ next_project_number: 684
 681 [RESEARCHED] — Let the Sapience extension bind a repository to an existing...
   └─ 677 [NOT STARTED] — Make the Sapience extension's automatic paths use the linked...
     └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a... (see above)
-682 [RESEARCHING] — Stop writing the Sapience token into the per-project MCP...
+682 [RESEARCHED] — Stop writing the Sapience token into the per-project MCP...
   └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a... (see above)
 683 [RESEARCHING] — Couple Sapience capture enablement to sapience-extension...
 
@@ -218,10 +218,11 @@ next_project_number: 684
 ---
 
 ### 682. Sapience mcp entry carries no token
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
+- **Research**: [682_sapience_mcp_entry_carries_no_token/reports/01_remove-token-from-mcp-entry.md]
 
 **Description**: Stop writing the Sapience token into the per-project MCP entry in ~/.claude.json. Territory: agent-system/extensions/sapience/ (scripts/setup-sapience-mcp.sh, hooks/sapience-mcp-register-project.sh, scripts/verify-sapience-mcp.sh, scripts/tests/test-sapience-mcp-registration.sh, context/project/sapience/domain/per-repo-scoping.md). setup-sapience-mcp.sh builds each project's entry with env {SAPIENCE_HOST, SAPIENCE_TOKEN} whenever a token is resolvable, so the raw token is copied in plaintext into ~/.claude.json once per registered project, is printed by any `jq .projects[...]` or `claude mcp get` inspection, and from there enters a session transcript that the capture path may extract. The vendor mcp.py falls back to ~/.sapience/config.json (mode 0600) when SAPIENCE_TOKEN is unset, and the script already supports an entry with no token. Build: (1) measure that every code path of the installed mcp.py the entry reaches (the stdio server, --briefing-text, --receipt, --effect-line) resolves the token from config.json with the variable unset, and record any that does not; (2) if all do, write the entry with SAPIENCE_HOST only, and migrate existing entries in place on the next SessionStart registration, idempotently; if one does not, keep the variable only for that case and say which; (3) verify-sapience-mcp.sh check (b) fails on an entry that carries a token, naming the remedy; (4) a test that a registered entry contains no value equal to the configured token, with a negative control on a fixture entry that does; (5) state in per-repo-scoping.md where the token lives and where it must never be copied; (6) list the other places the token is written on this machine (the sops secret, config.json, any wrapper environment) and confirm none is world-readable or committed, naming the dotfiles module as the owner of anything found there. Done when no project entry in ~/.claude.json holds the token, the MCP server still authenticates in a fresh session, and the verifier fails on a regression.
 

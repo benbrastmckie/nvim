@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795284367_d33b60_682",
+  "dispatch_seq": 3,
+  "task_number": 682,
+  "findings_count": 7,
+  "next_steps": "Run /orchestrate 682 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/682_sapience_mcp_entry_carries_no_token/reports/01_remove-token-from-mcp-entry.md",
+      "summary": "Confirms every mcp.py invocation shape (stdio server, --briefing-text, --receipt, --effect-line) resolves the token from ~/.sapience/config.json via one shared module-level line with SAPIENCE_TOKEN unset; recommends dropping the token branch from setup-sapience-mcp.sh's generate_sapience_config(), inverting verify-sapience-mcp.sh check (b), adding a negative-control regression test, documenting token locations/copy-boundary in per-repo-scoping.md, and flags an unrelated dead dotfiles-repo writer as a non-blocking follow-up."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "~/.sapience/mcp.py resolves its credential via a single module-level statement (TOKEN = os.environ.get('SAPIENCE_TOKEN') or _CFG.get('token') or '') executed once at import, before any sys.argv/CLI-flag dispatch. Every invocation shape (bare stdio server, --briefing-text, --receipt, --effect-line, --statusline, etc.) therefore resolves the token identically and falls back to ~/.sapience/config.json when the env var is unset -- there is no per-flag divergence to audit separately. os.path.expanduser('~') also resolves via the passwd database when HOME is unset, so this fallback is robust even in a stripped spawn environment.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/682_sapience_mcp_entry_carries_no_token/reports/01_remove-token-from-mcp-entry.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sapience", "mcp.py", "token-resolution", "module-level", "config.json-fallback"]
+    },
+    {
+      "content": "~/.dotfiles/packages/sapience-flake/lib/wrappers.nix defines sapience-register-mcp (backed by a passing Nix check, checks/register-mcp.nix) that writes SAPIENCE_TOKEN into a TOP-LEVEL ~/.claude.json .mcpServers.sapience entry when a token is resolvable. grepping modules/home/services/sapience.nix for any reference to this wrapper (wrappers., register-mcp, sapienceRegisterMcp) returns nothing -- it is not invoked by the home-manager module actually applied on this machine, consistent with setup-sapience-mcp.sh's own header note that the former machine-wide sapienceMcpServer/registerMcpServer option has been retired. It is dead code today but would reintroduce a token-bearing entry if ever re-wired.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/682_sapience_mcp_entry_carries_no_token/reports/01_remove-token-from-mcp-entry.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["sapience", "dotfiles", "dead-code", "mcp-registration", "sapience-register-mcp"]
+    },
+    {
+      "content": "setup-sapience-mcp.sh's process_write() already does whole-entry (never per-field) comparison and replacement of the per-project MCP registration entry. This means any future change to the canonical entry shape (e.g. dropping a field) self-migrates every existing registered entry on the very next writer invocation (the SessionStart hook calls the writer unconditionally for an active repo) with zero additional migration code -- a divergent existing entry is simply judged non-canonical and replaced wholesale.",
+      "category": "PATTERN",
+      "source_artifact": "specs/682_sapience_mcp_entry_carries_no_token/reports/01_remove-token-from-mcp-entry.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["sapience", "setup-sapience-mcp", "whole-entry-replacement", "idempotent-migration"]
+    }
+  ]
+}
