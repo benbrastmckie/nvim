@@ -1,0 +1,47 @@
+{
+  "status": "researched",
+  "dispatch_seq": 4,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/683_couple_sapience_capture_to_extension_activation/reports/01_capture-activation-coupling.md",
+      "summary": "Vendor-CLI mechanics for coupling sapience transcript capture to extension activation: projects_cli safety/timeout mitigation, the unresolved legacy-folders double-gate, reap-for-vanished-projects feasibility, deny_reason behavior, and the ~/.dotfiles companion-copy task-siting constraint."
+    }
+  ],
+  "next_steps": "Run /orchestrate 683 to create implementation plan",
+  "metadata": {
+    "session_id": "sess_1795284367_d33b60_683",
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "memory_candidates": [
+    {
+      "content": "~/.sapience/config.json has TWO independent gates on session-transcript capture: the legacy top-level 'folders' list (upload.py's _session_candidates()/sync() filter session discovery by it, bailing outright when folders==[]) and the per-project 'capture.projects[].enabled' map (consulted only AFTER the folders filter, via _capture_allows()/capture_meta()). The vendor CLI 'sapience projects on|off <path>' (upload.py:projects_cli) touches ONLY the second list. 'folders' is written only by the interactive onboarding chooser or --reset; a non-interactive run without SAPIENCE_ALLOW_ONBOARD=1 is refused, and that override OVERWRITES the whole saved folder choice rather than adding to it. So enabling a brand-new project via 'sapience projects on' alone makes it show as enabled without actually being captured until folders is separately (and currently only manually/interactively) reconciled.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/683_couple_sapience_capture_to_extension_activation/reports/01_capture-activation-coupling.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["sapience", "capture", "folders", "projects_cli", "config.json", "extract_local.py"]
+    },
+    {
+      "content": "upload.py's capture_sync() (called unconditionally at the end of projects_cli's on/off/auto/target/mode branches) makes up to two blocking HTTP calls (timeout=8 each) unless env SAPIENCE_NO_CAPTURE_SYNC=1 is set, in which case it returns immediately with zero network activity. For any hook/automation that calls 'sapience projects on|off <path>' non-interactively, set SAPIENCE_NO_CAPTURE_SYNC=1 in its environment rather than relying only on an outer `timeout` wrapper -- it removes the network dependency entirely instead of merely bounding it.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/683_couple_sapience_capture_to_extension_activation/reports/01_capture-activation-coupling.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["sapience", "SAPIENCE_NO_CAPTURE_SYNC", "capture_sync", "non-interactive", "timeout"]
+    },
+    {
+      "content": "sapience_capture.py's set_project()/normalize()/is_project_root() never check os.path.isdir on an EXISTING capture.projects[] entry (only on creating a brand-new one) -- so 'sapience projects off <path>' correctly disables an entry even after its directory has been deleted, and an orphaned enabled entry is never silently dropped by normalize(). A reap pass for vanished sapience-capture projects is therefore mechanically safe to add (mirrors setup-sapience-mcp.sh --reap's existing MCP-registration reap, but for capture.projects[] instead).",
+      "category": "PATTERN",
+      "source_artifact": "specs/683_couple_sapience_capture_to_extension_activation/reports/01_capture-activation-coupling.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sapience", "reap", "capture.projects", "set_project", "orphaned-entry"]
+    }
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh",
+    "agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh",
+    "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh",
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"
+  ]
+}
