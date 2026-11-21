@@ -5,11 +5,12 @@ mandatory approval picker. `skill-sapience` implements against this record rathe
 re-deciding these rules inline; citation of this file's section names stands in for restating
 the rationale.
 
-## The Four Candidate Write Surfaces
+## The Five Candidate Write Surfaces
 
-Every candidate surface the picker can offer maps 1:1 onto one `scripts/sapience-publish.sh`
-subcommand. No other write mechanism exists, and no instruction surface names anything else as
-a write path:
+Four of the five candidate surfaces the picker can offer map 1:1 onto one
+`scripts/sapience-publish.sh` subcommand; the fifth maps onto `scripts/sapience-project-bind.sh`'s
+own bind mode instead. No other write mechanism exists for any of the five, and no instruction
+surface names anything else as a write path:
 
 | Surface | `sapience-publish.sh` subcommand | Target |
 |---------|-----------------------------------|--------|
@@ -17,6 +18,7 @@ a write path:
 | Decision-log row | `doc-version <slug> --body-file ...` | The decision-log doc specifically |
 | Repo-tagged KOs | `ko --note ... [--project <cid>]` | The bound project |
 | DM to a collaborator | `dm --to ... --body ...` | Whoever `--message` named or the resolved pick |
+| Project binding | *(`sapience-project-bind.sh --project <id>` — not `sapience-publish.sh`)* | The already-accepted-or-owned project Stage 1's pick resolved |
 
 ## Pre-Check Defaults
 
@@ -27,6 +29,9 @@ a write path:
 - Repo-tagged KOs: pre-checked by default.
 - DM: present and pre-checked only when the run was invoked with `--message`; otherwise absent
   from the option set entirely, not merely unchecked.
+- Project binding: present whenever no link file exists (Stage 1), whether the pick resolved
+  exactly one row or hit a zero-row/multi-row UNAVAILABLE state; never pre-checked — the role
+  note must be read before binding to someone else's project is a known choice.
 
 ## Most Relevant Doc (a rule, not a judgment)
 
@@ -38,9 +43,11 @@ slug. Never hardcode a slug — every run re-derives this from the live envelope
 ## Ruling 5: A Member's Own Pending Suggestions Surface Through This Draft
 
 A non-creator member's own tagged note lands server-side as a suggestion only that member sees
-until confirmed (an empty `cross = doors & (sent | added | ...)` intersection, since this
-repo's own binding is always the owner side -- `sapience-project-bind.sh` always creates a
-fresh project rather than joining one). No new mechanism answers this: `vault.suggestions` is
+until confirmed (an empty `cross = doors & (sent | added | ...)` intersection). This repo's own
+binding may be either side: `sapience-project-bind.sh`'s create mode makes it the owner, and its
+bind mode can instead make it a non-creator accepted member of someone else's project -- see
+`domain/per-repo-scoping.md`'s "The Repo-Link Mechanism" section for the bind path and the
+pick-versus-create distinction. No new mechanism answers the member-side case: `vault.suggestions` is
 already wired into `sapience-vault-read.sh`'s read envelope and is already folded into this
 draft-assembly step, so it fires on every interactive `/sapience` invocation in a linked repo
 with no new code needed. When the envelope's `vault.suggestions` is non-empty, the assembled
@@ -116,11 +123,15 @@ drift from it).
 
 ## The Dark Migration Path
 
-A repo-to-project binding mechanism exists server-side but is confirmed OFF for the credential
-this extension currently uses: a probe carrying a bogus project identifier returned a normal
-answer with none of the markers an enabled binding check would add, and the installed MCP
-client's own source has zero references to that identifier field. This design treats that path
-as the eventual target, not a rejected alternative: migrating onto it is a change inside
-`scripts/sapience-publish.sh` and `scripts/sapience-vault-read.sh` themselves (how the project
-key is resolved and sent), never a change to `/sapience`'s command grammar or to this picker's
-shape. Nothing here forecloses that migration.
+`POST /v1/people/projects/<cid>/link` is actively called by the Project binding surface's
+confirmed write, with a 404 handled as a named, non-fatal outcome (the binding is recorded
+locally only) rather than a theoretical probe response. The broader repo-to-project binding
+mechanism this call feeds into -- `project_cid` attached to every call, and
+`project_room_contribute` writing straight into the room -- remains confirmed OFF for the
+credential this extension currently uses: a probe carrying a bogus project identifier returned a
+normal answer with none of the markers an enabled binding check would add, and the installed MCP
+client's own source has zero references to that identifier field. This design treats that
+broader mechanism as the eventual target, not a rejected alternative: migrating onto it is a
+change inside `scripts/sapience-publish.sh` and `scripts/sapience-vault-read.sh` themselves (how
+the project key is resolved and sent), never a change to `/sapience`'s command grammar or to
+this picker's shape. Nothing here forecloses that migration.

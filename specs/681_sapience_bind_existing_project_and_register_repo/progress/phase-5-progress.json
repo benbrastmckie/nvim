@@ -1,0 +1,24 @@
+{
+  "phase": 5,
+  "phase_name": "Domain Record -- Link Mechanism and the Fifth Surface",
+  "started_at": "2026-11-21T00:00:00Z",
+  "last_updated": "2026-11-21T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read both target files immediately before editing; check for foreign modifications", "status": "done", "files_touched": []},
+    {"id": 2, "description": "per-repo-scoping.md: append new ## The Repo-Link Mechanism section (includes D1 resolution record)", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 3, "description": "command-draft-and-picker.md: five-surface table, pre-check default, Dark Migration Path update, plus in-scope Ruling 5 correction", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/command-draft-and-picker.md"]},
+    {"id": 4, "description": "Verify no task-number refs / record-versioning language; run scoped verification (gates 3,4); fix self-caused index-entries.json line_count drift", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "5.3",
+      "description": "command-draft-and-picker.md Ruling 5: 'this repo's own binding is always the owner side' parenthetical",
+      "type": "altered",
+      "reason": "Phases 1-3 of this task invalidated the claim by adding the --project bind-to-existing mode; the sentence sits in a file within this phase's own edit territory, so it was corrected in place rather than left visibly false. The identical sentence in linked-repo-write-policy.md (out of territory) was left unedited and recorded as a follow-up issue instead.",
+      "annotation": "see plan Phase 5 Deviations subsection"
+    }
+  ]
+}

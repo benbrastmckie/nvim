@@ -408,3 +408,95 @@ anywhere in this source store's own scripts. Enabling scheduled extraction is th
 made in `~/.dotfiles`, outside this repository's write surface; this section documents the
 mechanism and its owner so that choice does not need to be re-discovered by live measurement each
 time the question comes up.
+
+## The Repo-Link Mechanism
+
+A repository binds to a Sapience project through `scripts/sapience-project-bind.sh`, which writes
+the repository's own `.sapience/project.json` and, on the bind path, registers that binding with
+the server through `POST /v1/people/projects/<cid>/link`. This section documents the file format,
+the listing endpoint's real response shape, the link route's gate order and its two named
+non-success outcomes, and the vendor-delegation rule.
+
+### The Three-Key File and Its Serializer
+
+`.sapience/project.json` holds exactly three string keys, in order `project` (the channel cid),
+`name` (the project's display name), and `repo` (this repository's short name) — two-space
+indent, one trailing newline, no fourth key. This is byte-identical to the server's own
+`repo_link.py` `link_text()` serializer, and `write_link_file()` in `sapience-project-bind.sh` is
+the file's sole writer on every path — create, bind success, bind-404, and the
+vendor-delegated bind's read-back normalization all route through it, so the on-disk bytes are
+one script's canonical rendering regardless of which path produced them. The server's own
+`parse_link` refuses any dict carrying a token/key/secret/password-shaped key, and refuses a
+`repo` value that fails `^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$` or that looks path-shaped — both
+checks are mirrored client-side before any write, matching that contract. Multiple repositories
+are supported independently: each repository's own binding lives in its own toplevel's
+`.sapience/project.json`, one file per repository.
+
+### `GET /v1/people/projects`'s Real Shape
+
+The listing endpoint returns `{ok, candidates, shared, received, invites, ...}` — never
+`{projects: [...]}` and never a bare array. The caller's own accepted-or-owned row set is
+`(.shared // []) + (.received // []) | map(select(.accepted or .owner))`. Two other call sites in
+this extension — `sapience-publish.sh`'s `ko` subcommand and `sapience-vault-read.sh`'s
+`notes_cid` resolution — consume this same endpoint with a `has("projects")`-shaped expression
+that resolves to `[]` against the real shape; both are out of this task's territory and are
+recorded here as a named follow-up rather than fixed.
+
+### Pick, Bind, and Create
+
+`sapience-project-bind.sh` has three modes, selected by which flag is present: no flag lists the
+caller's accepted and owned rows (via the row filter above) and exits non-zero, writing and
+POSTing nothing; `--project <name|id>` resolves the value to exactly one such row — matched
+case-insensitively against `id`, `title`, and `project.key` — and binds this repository to it;
+`--name <display name>` creates a fresh project and shares it with a collaborator. Pick and bind
+never mutate without `--confirm`; create never mutates without both `--name` and `--confirm`.
+
+### The Link Route's Gate Order and Its Two Named Non-Success Outcomes
+
+`POST /v1/people/projects/<cid>/link` gates, in order: the write-permission check (401), the
+`repo_link.enabled` feature flag (404), the channel/membership lookup (404), unaccepted
+membership (403), then success (200). The two non-success statuses the bind path treats as
+distinct, deliberate outcomes rather than uniform failures:
+
+- **404** — either the feature is off for this account or the channel/membership lookup missed;
+  the server's own response body differs only in prose between the two, so the client-side policy
+  is deliberately safe under either reading. The file is still written (`write_link_file()`
+  fires), and the caller is told plainly that the server does not read the file yet — the binding
+  is recorded locally only.
+- **403** — the caller is not yet an accepted member of the project. Nothing is written; the
+  caller is told to join the project first.
+
+Any other non-2xx status, a non-JSON body, or a `2xx` body missing `ok: true` is a loud,
+non-zero-exit failure that writes nothing — never a success-shaped guess.
+
+### The Response Trap
+
+The link route's `200` response carries a `project` field, but it is the `{kind, key, name}`
+descriptor dict, never the channel cid — unlike the create path's `POST
+/v1/people/projects/share` response, whose `.share.id` IS the cid. The bind path never reads a
+cid out of the link response at all: the cid it writes is the row's own `id`, captured from the
+pick/match step before the POST ever fires.
+
+### Static Vendor-Capability Detection
+
+The installed vendor client (`~/.sapience/sapience_cli.py`) may or may not carry a `link`
+subcommand; detection is a static `grep` for the literal string its `link` branch is keyed on,
+never a live invocation. The `sapience` binary on `$PATH` cannot stand in for this check or for
+the delegation itself: it is a packaged bash wrapper with a fixed `case` table, no `link` branch,
+and no fallback into the Python client's own argument parser — delegation and detection both go
+straight at `sapience_cli.py` via `python3`, never through `$PATH`.
+
+### D1: Reconciling the 404-Write Requirement With Vendor Delegation
+
+Delegating the bind to a link-capable vendor client and still writing the file on a 404 are not
+simultaneously satisfiable by pure delegation — the vendor's own `link` command reports nothing
+was written and exits non-zero on a 404, with nothing to write back. The reconciliation: when the
+vendor exits 0 and writes a link file, this script reads its three keys back out and re-renders
+them through `write_link_file()`, so the on-disk bytes are this script's canonical rendering on
+either path — byte-identity between the delegated and the direct-HTTP path is an enforced
+invariant, not an assumption about two independent serializers. When the vendor exits non-zero, or
+exits 0 with no file written, the bind falls through to the direct HTTP path above, which
+classifies the outcome by status code alone. The accepted consequence: against a link-capable
+client, a 404 or 403 fires the vendor's own POST and then this script's POST a second time; both
+are non-mutating at those statuses, so the duplicate is harmless, and the alternative —
+classifying on the vendor's own stdout/stderr prose — is never done anywhere in this mechanism.

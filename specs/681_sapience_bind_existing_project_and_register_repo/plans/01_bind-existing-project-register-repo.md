@@ -521,7 +521,7 @@ it.
 
 ---
 
-### Phase 5: Domain Record — Link Mechanism and the Fifth Surface [NOT STARTED]
+### Phase 5: Domain Record — Link Mechanism and the Fifth Surface [COMPLETED]
 
 **Goal**: the extension's durable design record documents the repo-link mechanism it currently
 omits entirely, and the picker record reflects five surfaces and a route that is now actively
@@ -529,10 +529,14 @@ called.
 
 **Tasks**:
 
-- [ ] **Re-read both target files immediately before editing** (concurrent sibling 683 declares
+- [x] **Re-read both target files immediately before editing** (concurrent sibling 683 declares
       `per-repo-scoping.md` in its own `file_scope`). If a foreign uncommitted modification or a
-      foreign commit is present, stop and report rather than proceeding.
-- [ ] `per-repo-scoping.md`: **append** a new `## The Repo-Link Mechanism` section — editing no
+      foreign commit is present, stop and report rather than proceeding. *(completed: `git status
+      --porcelain` and `git log` over both files showed no foreign uncommitted modification; both
+      files HAD been touched by task 678, but that task completed and committed fully before task
+      681 phase 1 even started, so there is no live concurrency — not a foreign-in-progress write.
+      Full detail in Deviations below.)*
+- [x] `per-repo-scoping.md`: **append** a new `## The Repo-Link Mechanism` section — editing no
       existing section, which is what keeps this phase's hunks disjoint from the sibling's.
       Content: the three-key `.sapience/project.json` format and its server-side serializer; the
       real `GET /v1/people/projects` response shape and the `accepted or owner` row filter; the
@@ -541,18 +545,23 @@ called.
       never a cid; the pick-versus-create distinction; the static vendor-capability detection rule
       and why the `$PATH` wrapper is a dead end for it. Add a short named note that two other
       scripts in this extension consume the same endpoint with a shape that does not match it,
-      recorded as a follow-up rather than fixed here.
-- [ ] `command-draft-and-picker.md`: extend "The Four Candidate Write Surfaces" to five, retitled
+      recorded as a follow-up rather than fixed here. *(completed: appended, no existing section
+      edited — confirmed by `git diff` showing additions only)*
+- [x] `command-draft-and-picker.md`: extend "The Four Candidate Write Surfaces" to five, retitled
       accordingly, with the binding row mapping to `sapience-project-bind.sh --project <id>`; add
       its pre-check default (present when no link file exists, never pre-checked) to "Pre-Check
       Defaults"; and update "The Dark Migration Path" so the route reads as actively called by the
       bind path with a 404 as a named handled outcome, while the `REPO_LINK_FOR` gate itself is
-      unchanged and still off for this credential.
-- [ ] Record D1's resolution (delegate the bind, normalize to one writer, classify by status code,
+      unchanged and still off for this credential. *(completed)*
+- [x] Record D1's resolution (delegate the bind, normalize to one writer, classify by status code,
       never parse vendor prose) in the `per-repo-scoping.md` section, so the reconciliation is
-      discoverable from the domain record and not only from this plan.
-- [ ] Both files: no task-number references and no record-versioning language ("no longer",
-      "previously", "supersedes", a version label); state the current design only.
+      discoverable from the domain record and not only from this plan. *(completed: "### D1:
+      Reconciling the 404-Write Requirement With Vendor Delegation" subsection)*
+- [x] Both files: no task-number references and no record-versioning language ("no longer",
+      "previously", "supersedes", a version label); state the current design only. *(completed:
+      verified via `check-task-references.sh` on both files — 0 occurrences each — and a manual
+      grep for the forbidden-phrase list against the diff, matching only false-positive `/v1/`
+      substrings)*
 
 **Timing**: 1 hour
 
@@ -580,22 +589,44 @@ this phase requires editing an existing section there.
 
 **Verification**:
 
-- [ ] In-dispatch obligation (scoped): `suite_selection_select` over this phase's touched set
+- [x] In-dispatch obligation (scoped): `suite_selection_select` over this phase's touched set
       returns `__FULL_SWEEP__` alone — both paths are source-store markdown with no mapped suite —
       so the covering check is the source-store-repository gate subset
       `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
       (that root holds both a deployed `.claude/` tree and `agent-system/extensions`, which the
-      gate-0 contract requires), together with a diff read-through of both files.
-- [ ] `bash .claude/scripts/check-task-references.sh` reports no new occurrence in either file.
-- [ ] `command-draft-and-picker.md` carries five surfaces in its table and no remaining "four"
+      gate-0 contract requires), together with a diff read-through of both files. *(completed,
+      narrowed per this dispatch's own Batch Gate Deferral directive to `--only-gate 3,4
+      --skip-unchanged` rather than `--skip-slow`: first run surfaced two genuine, self-caused
+      `index-entries.json` `line_count` mismatches, fixed via `bash
+      .claude/scripts/generate-context-line-counts.sh --write` against the deployed copy (writes
+      only the source-store `index-entries.json`, never the deployed tree); re-run is green for
+      gates 3/4 except the two pre-existing, already-documented `sapience-project-bind.sh` /
+      `test-sapience-project-bind.sh` deployed-mirror-drift failures from Phases 1-3, explicitly
+      deferred below.)*
+- [x] `bash .claude/scripts/check-task-references.sh` reports no new occurrence in either file.
+      *(completed: 0 occurrences in each)*
+- [x] `command-draft-and-picker.md` carries five surfaces in its table and no remaining "four"
       count; `per-repo-scoping.md`'s pre-existing sections are untouched (`git diff` shows
-      additions only).
-- [ ] **The complete gate set is deferred to the orchestration close** (Move 4 / the
+      additions only). *(completed)*
+- [x] **The complete gate set is deferred to the orchestration close** (Move 4 / the
       once-per-invocation batch gate stage), not run independently here. The stale-deployed-mirror
       redeploy (`bash .claude/scripts/deploy-headless.sh`, bounded-wait idiom) is deferred to that
       same close, deliberately: running it inside a phase would be a whole-tree claim serializing
       against three concurrent siblings, and no phase in this plan hand-patches `.claude/**` as a
-      substitute.
+      substitute. *(confirmed: not run in this phase)*
+
+#### Deviations
+
+- **Beyond the literal task list**: Ruling 5 in `command-draft-and-picker.md` asserted "this
+  repo's own binding is always the owner side -- `sapience-project-bind.sh` always creates a
+  fresh project rather than joining one," a claim Phases 1-3 of this same task invalidated by
+  adding the `--project` bind-to-existing mode. Since this file is within Phase 5's own declared
+  edit territory and the stale sentence sits immediately beside this phase's own table/pre-check
+  edits, the parenthetical was corrected in place rather than left visibly false in a file this
+  phase was already touching. The identical sentence in `linked-repo-write-policy.md` (committed
+  by task 678, out of this task's declared territory) was left unedited and recorded as a
+  follow-up via `issue-record.sh` instead.
+- No other deviation from the plan's task list.
 
 ---
 

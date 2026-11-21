@@ -19,7 +19,11 @@
     "session_id": "sess_1795284367_d33b60",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 5
   },
@@ -29,14 +33,26 @@
       "category": "PATTERN",
       "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/summaries/01_bind-existing-project-register-repo-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["exactly-one-or-refuse", "disambiguation reuse", "picker option design", "AskUserQuestion", "Non-Goal constraint"]
+      "suggested_keywords": [
+        "exactly-one-or-refuse",
+        "disambiguation reuse",
+        "picker option design",
+        "AskUserQuestion",
+        "Non-Goal constraint"
+      ]
     },
     {
       "content": "A cheap regression check for 'no new interactive call was added to a prose skill file': grep the whole file for the literal tool-invocation string (e.g. \"AskUserQuestion\") and diff the total occurrence count against the pre-edit count via `git show HEAD:<file> | grep -c ...` vs. the post-edit count. The count should be invariant across an edit that only adds content inside an existing marker-bracketed construction block, since the string's legitimate appearances are the one real call plus a fixed set of descriptive cross-references to it.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/summaries/01_bind-existing-project-register-repo-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["regression check", "grep count diff", "marker-bracketed block", "prose skill file", "git show baseline"]
+      "suggested_keywords": [
+        "regression check",
+        "grep count diff",
+        "marker-bracketed block",
+        "prose skill file",
+        "git show baseline"
+      ]
     }
   ],
   "sapience_notes": [
@@ -72,5 +88,8 @@
       "confidence": 0.8,
       "source_loc": ".claude/rules/no-record-versioning-in-deliverables.md"
     }
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/sapience/index-entries.json"
   ]
 }
