@@ -1,22 +1,28 @@
 {
-  "status": "planned",
-  "dispatch_seq": 5,
+  "status": "implemented",
+  "dispatch_seq": 15,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/681_sapience_bind_existing_project_and_register_repo/plans/01_bind-existing-project-register-repo.md",
-      "summary": "Five-phase plan adding a pick/bind mode and link-route registration to sapience-project-bind.sh, with the script as sole writer of .sapience/project.json on both the vendor-delegated and HTTP-fallback paths, plus the /sapience picker surface and the domain link-route record."
+      "type": "handoff",
+      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-1-handoff-20261121T205515Z.md",
+      "summary": "Phase 1 (pick mode listing and --project resolution, read-only) completed; records the confirm-without-mode deviation and the deployed-mirror verify-touched.sh staleness caveat for the next dispatch."
     }
   ],
-  "next_steps": "Run /orchestrate 681 to execute the plan",
+  "next_steps": "Dispatch phase 2 (Link Registration, the 404/403 Policy, Canonical Write, Role Note) of the same plan.",
+  "completion_data": {
+    "completion_summary": "Implemented Phase 1 of 5: sapience-project-bind.sh gained a mode selector (create/bind/pick), a fetch_project_rows() helper correctly filtering (.shared // []) + (.received // []) by accepted-or-owner, a pick-mode listing, and case-insensitive --project resolution to exactly one row, with no write or POST performed. Added test cases 15-17 and a GET /v1/people/projects stub branch; all 17 cases (36 assertions) pass against the source store."
+  },
+  "modified_files": [
+    "agent-system/extensions/sapience/scripts/sapience-project-bind.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-project-bind.sh"
+  ],
   "metadata": {
-    "session_id": "sess_1795284367_d33b60_681",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 8,
-    "dependency_waves": 4
+    "session_id": "sess_1795284367_d33b60",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 1,
+    "phases_total": 5
   },
   "memory_candidates": [
     {
@@ -25,6 +31,47 @@
       "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/plans/01_bind-existing-project-register-repo.md",
       "confidence": 0.85,
       "suggested_keywords": ["CORE_TEST_SUBJECT_MODE", "deploy-tree-first", "stale deployed tree", "plan verification", "source store", "whole-tree claim"]
+    },
+    {
+      "content": "bash .claude/scripts/verify-touched.sh runs run-all.sh in DEPLOYED mode by default (scripts root .claude/scripts), which ignores CORE_TEST_SUBJECT_MODE entirely and so silently exercises a stale .claude/scripts mirror instead of edited agent-system/extensions/** source, even when the exact same suite also passes correctly when invoked directly with CORE_TEST_SUBJECT_MODE=source-store. A phase whose only in-phase check is the bare verify-touched.sh invocation can pass green without ever running the edited code; the direct source-store invocation of the named test suite is the authoritative check, and verify-touched.sh's green result should be treated as a non-informative confirmation of suite wiring, not of the edit's correctness, until the deployed mirror is refreshed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-1-handoff-20261121T205515Z.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["verify-touched.sh", "deployed mode", "CORE_TEST_SUBJECT_MODE", "stale mirror", "run-all.sh", "source-store verification"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "GET /v1/people/projects response shape",
+      "value": "The real response is {ok, candidates, shared, received, invites, ...} -- never {projects: [...]} and never a bare array. The caller's accepted-or-owned row set is (.shared // []) + (.received // []) | map(select(.accepted or .owner)). The has(\"projects\")/bare-array idiom used elsewhere in this extension resolves to [] against this real shape.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh:fetch_project_rows"
+    },
+    {
+      "subject": "verify-touched.sh and the deployed-mirror staleness hazard",
+      "value": "bash .claude/scripts/verify-touched.sh invokes run-all.sh in deployed mode by default and does not forward or respect CORE_TEST_SUBJECT_MODE, so it silently tests the stale .claude/scripts mirror rather than edited agent-system/extensions/** source. A green verify-touched.sh result is not evidence the edited code was exercised; the authoritative per-phase check for a source-store edit is the direct CORE_TEST_SUBJECT_MODE=source-store invocation of the named suite.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-1-handoff-20261121T205515Z.md"
+    },
+    {
+      "subject": "shellcheck SC2034 and multiple assignments",
+      "value": "shellcheck's SC2034 (appears unused) flags the LAST assignment site of a variable it considers unused, not the first. A `# shellcheck disable=SC2034` comment placed above an earlier declaration (e.g. FORCE=\"\") does not suppress a later re-assignment of the same variable inside a case arm; the disable comment must sit directly above the assignment shellcheck actually flags.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh:135"
+    },
+    {
+      "subject": "Mode-selector design preserving pre-existing CLI test behavior",
+      "value": "When adding a third no-argument-implied mode (pick) to a script whose existing contract treated '--confirm with no other mode flag' as a missing-required-argument refusal, an explicit guard for 'confirm with neither mode flag' is needed to keep that pre-existing refusal message intact -- a literal 'neither flag present -> new default mode' selector would silently reclassify that combination into the new mode instead of preserving the old refusal.",
+      "predicate": "finding is",
+      "ko_type": "decision",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh:98"
     }
   ]
 }
