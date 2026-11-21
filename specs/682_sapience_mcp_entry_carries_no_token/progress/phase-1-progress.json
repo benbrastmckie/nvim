@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Measure mcp.py token resolution with SAPIENCE_TOKEN unset",
+  "started_at": "2026-11-21T21:58:00Z",
+  "last_updated": "2026-11-21T21:59:30Z",
+  "objectives": [
+    {"id": 1, "description": "Capture resolved token's length and fingerprint from config.json", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Invoke each CLI-flag shape with SAPIENCE_TOKEN stripped (--briefing-text, --receipt, --effect-line, --statusline)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Exercise the bare stdio server shape via one initialize JSON-RPC line on stdin", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Write per-shape outcome to records/01_mcp-token-resolution-measurement.md", "status": "done", "files_touched": ["specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md"]},
+    {"id": 5, "description": "State in the record whether build item (2) applies unconditionally or which shape diverged", "status": "done", "files_touched": ["specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

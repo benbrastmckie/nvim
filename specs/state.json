@@ -130,12 +130,12 @@
     {
       "project_number": 682,
       "project_name": "sapience_mcp_entry_carries_no_token",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "Stop writing the Sapience token into the per-project MCP entry in ~/.claude.json. Territory: agent-system/extensions/sapience/ (scripts/setup-sapience-mcp.sh, hooks/sapience-mcp-register-project.sh, scripts/verify-sapience-mcp.sh, scripts/tests/test-sapience-mcp-registration.sh, context/project/sapience/domain/per-repo-scoping.md). setup-sapience-mcp.sh builds each project's entry with env {SAPIENCE_HOST, SAPIENCE_TOKEN} whenever a token is resolvable, so the raw token is copied in plaintext into ~/.claude.json once per registered project, is printed by any `jq .projects[...]` or `claude mcp get` inspection, and from there enters a session transcript that the capture path may extract. The vendor mcp.py falls back to ~/.sapience/config.json (mode 0600) when SAPIENCE_TOKEN is unset, and the script already supports an entry with no token. Build: (1) measure that every code path of the installed mcp.py the entry reaches (the stdio server, --briefing-text, --receipt, --effect-line) resolves the token from config.json with the variable unset, and record any that does not; (2) if all do, write the entry with SAPIENCE_HOST only, and migrate existing entries in place on the next SessionStart registration, idempotently; if one does not, keep the variable only for that case and say which; (3) verify-sapience-mcp.sh check (b) fails on an entry that carries a token, naming the remedy; (4) a test that a registered entry contains no value equal to the configured token, with a negative control on a fixture entry that does; (5) state in per-repo-scoping.md where the token lives and where it must never be copied; (6) list the other places the token is written on this machine (the sops secret, config.json, any wrapper environment) and confirm none is world-readable or committed, naming the dotfiles module as the owner of anything found there. Done when no project entry in ~/.claude.json holds the token, the MCP server still authenticates in a fresh session, and the verifier fails on a regression.",
       "topic": "sapience",
       "created": "2026-11-21T17:28:54Z",
-      "last_updated": "2026-11-21T18:32:28Z",
+      "last_updated": "2026-11-21T21:56:57Z",
       "audit_verdict": {
         "proposal": {
           "id": "sapience_mcp_entry_carries_no_token",
@@ -270,12 +270,12 @@
     {
       "project_number": 681,
       "project_name": "sapience_bind_existing_project_and_register_repo",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "Let the Sapience extension bind a repository to an existing shared project as well as to a new one, and register the repository with the server, so every repository a person works in can be linked the same way. Territory: agent-system/extensions/sapience/ (scripts/sapience-project-bind.sh, scripts/lib/sapience-api-lib.sh, commands/sapience.md, skills/skill-sapience/SKILL.md, context/project/sapience/domain/per-repo-scoping.md and command-draft-and-picker.md, scripts/tests/test-sapience-project-bind.sh). Today sapience-project-bind.sh has one mode: it creates a FRESH project through POST /v1/people/projects/share and writes .sapience/project.json. It cannot bind to a project the person already belongs to (a project a collaborator created and shared appears under `received` in GET /v1/people/projects and is unreachable from the script), it never calls POST /v1/people/projects/<cid>/link, so the server's linked-repository list never learns of a repository the script bound, and with two connections of the same display name it refuses without --to. The app's own client carries `sapience link [<name or id>]`, which lists accepted and owned projects, registers the repository and writes the same file. Build: (1) a pick mode: with no project named, list the caller's accepted and owned projects (title, id, creator or member) and exit non-zero without writing; with --project <name or id>, bind to that one; (2) keep the create mode behind its existing --name and --confirm pair; (3) in both modes register the repository through the link route and treat a 404 (feature not available for this account) as a named, non-fatal state in which the file is still written and the reply says the server does not read it yet, and a 403 (not a member) as a refusal that writes nothing; (4) when the installed vendor client provides `sapience link`, delegate pick-and-register to it and keep this script's own HTTP path only as the fallback for a client that predates it, with the file byte-identical on either path, proved by a test; (5) state in the reply what the caller's role means for their notes (a creator's notes flow to the collaborator; a non-creator member's land as suggestions only the author sees until confirmed), so binding to someone else's project is a known choice; (6) surface the pick in /sapience as its first step in a repository with no link file, through the command's one approval picker, never as an unattended write; (7) the reply ends with the exact file to commit, and the script commits nothing. Tests against a stub: pick lists both registers, bind-existing writes the three-key file and calls the link route once, a 404 writes the file and reports the state, a 403 writes nothing, create still refuses without --confirm. Belongs before sapience_automatic_writes_and_retrieval_by_project_id in dispatch order, which reads the file this writes. Done when running the bind from a fresh clone of any repository links it to a chosen existing project or a new one and the repository appears in that project's linked-repository list where the server supports it.",
       "topic": "sapience",
       "created": "2026-11-21T17:28:24Z",
-      "last_updated": "2026-11-21T20:46:53Z",
+      "last_updated": "2026-11-21T21:56:18Z",
       "audit_verdict": {
         "proposal": {
           "id": "sapience_bind_existing_project_and_register_repo",
@@ -383,6 +383,11 @@
           "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-5-handoff-20261121T221000Z.md",
           "type": "handoff",
           "summary": "Phase 5 completion handoff: the in-scope Ruling 5 correction, the Batch Gate Deferral narrowing used for this full-tier phase, and the self-caused index-entries.json line_count fix."
+        },
+        {
+          "path": "specs/681_sapience_bind_existing_project_and_register_repo/summaries/01_bind-existing-project-register-repo-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: 01_bind-existing-project-register-repo-summary.md"
         }
       ],
       "next_artifact_number": 2,
@@ -863,12 +868,12 @@
     {
       "project_number": 677,
       "project_name": "sapience_automatic_writes_and_retrieval_by_project_id",
-      "status": "not_started",
+      "status": "researching",
       "task_type": "meta",
       "description": "Make the Sapience extension's automatic paths use the linked project instead of a directory-name label. Territory: agent-system/extensions/sapience/ (scripts sapience-remember.sh, postflight-sapience-notes.sh, sapience-retrieve.sh, sapience-project-bind.sh, sapience-publish.sh; context/project/sapience/domain/per-repo-scoping.md and injection-site-scoping.md). Today sapience-remember.sh sets provenance \"[repo:<slug>] via sapience-remember.sh\" where the slug is the basename of the checkout's git toplevel, so two collaborators who cloned under different directory names produce different tags and neither write reaches a shared project; its only automatic caller, postflight-sapience-notes.sh, sends no project field; sapience-retrieve.sh reads back by a source= substring match on that label. The binding already exists and is unused by these paths: sapience-project-bind.sh writes .sapience/project.json as {project: <cid>, name, repo} and sapience-publish.sh resolves a project key from it. Build: (1) one resolver, shared by every script, from the working directory to the committed .sapience/project.json, agreeing field for field with the app's repo_link.parse_link; (2) when a link is present, sapience-remember.sh and the postflight pass send project_cid on POST /ingest-kos and surface a project_rejected reply as a recorded issue rather than a silent success; (3) sapience-retrieve.sh sends project_cid so the dispatch memory block is the project's notes, with the label match kept only as the no-link fallback; (4) with no link file every script's request is byte-identical to today's, proved by a negative control; (5) the domain docs state the current design, including that the installed vendor mcp.py accepts a project argument on sapience_remember, which per-repo-scoping.md does not mention. Depends on the app serving the link routes for the account (sapience-app tasks open_mvp_flags_and_create_linked_team_project and repo_link_code_onto_release_line) and on a vendor client that resolves the link (dotfiles task for the payload); the scripts here call the HTTP API directly and can be built and tested against a stub before either lands. Done when a postflight note written in a linked repo is tagged to the project and visible to the other member, and a dispatch in that repo receives a memory block drawn from project notes.",
       "topic": "sapience",
       "created": "2026-11-21T00:06:43Z",
-      "last_updated": "2026-11-21T00:06:43Z",
+      "last_updated": "2026-11-21T21:57:19Z",
       "audit_verdict": {
         "proposal": {
           "id": "sapience_automatic_writes_and_retrieval_by_project_id",
@@ -962,7 +967,8 @@
       },
       "dependencies": [
         681
-      ]
+      ],
+      "session_id": "sess_1795284367_d33b60_677"
     },
     {
       "project_number": 676,

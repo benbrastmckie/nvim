@@ -13,9 +13,9 @@ next_project_number: 684
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,680,681,682,683 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630,677 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629,681 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,473,480,492,509,513,518,541,561,566,594,669,679 | 439,452,472,479,491,517,535,552,593,668,677,682 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,677,680,682,683 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630,679 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629,677,682 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,473,480,492,509,513,518,541,561,566,594,669 | 439,452,472,479,491,517,535,552,593,668 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 486,571,581,588,595,641,671 | 454,484,492,509,518,539,541,561,580,594,669 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 501,508,596,642 | 472,486,570,595,641 | file-scope-lifecycle, agent-system |
 | 6 | 524 | 501 | core-agent-system |
@@ -192,10 +192,9 @@ next_project_number: 684
 
 ### Sapience
 
-681 [IMPLEMENTING] — Let the Sapience extension bind a repository to an existing...
-  └─ 677 [NOT STARTED] — Make the Sapience extension's automatic paths use the linked...
-    └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
-682 [PLANNED] — Stop writing the Sapience token into the per-project MCP...
+677 [RESEARCHING] — Make the Sapience extension's automatic paths use the linked...
+  └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
+682 [IMPLEMENTING] — Stop writing the Sapience token into the per-project MCP...
   └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a... (see above)
 683 [PLANNED] — Couple Sapience capture enablement to sapience-extension...
 
@@ -218,7 +217,7 @@ next_project_number: 684
 ---
 
 ### 682. Sapience mcp entry carries no token
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
@@ -230,13 +229,14 @@ next_project_number: 684
 ---
 
 ### 681. Sapience bind existing project and register repo
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
 - **Research**: [681_sapience_bind_existing_project_and_register_repo/reports/01_bind-existing-project-register-repo.md]
 - **Plan**: [681_sapience_bind_existing_project_and_register_repo/plans/01_bind-existing-project-register-repo.md]
 - **Handoff**: [681_sapience_bind_existing_project_and_register_repo/handoffs/phase-5-handoff-20261121T221000Z.md]
+- **Summary**: [681_sapience_bind_existing_project_and_register_repo/summaries/01_bind-existing-project-register-repo-summary.md]
 
 **Description**: Let the Sapience extension bind a repository to an existing shared project as well as to a new one, and register the repository with the server, so every repository a person works in can be linked the same way. Territory: agent-system/extensions/sapience/ (scripts/sapience-project-bind.sh, scripts/lib/sapience-api-lib.sh, commands/sapience.md, skills/skill-sapience/SKILL.md, context/project/sapience/domain/per-repo-scoping.md and command-draft-and-picker.md, scripts/tests/test-sapience-project-bind.sh). Today sapience-project-bind.sh has one mode: it creates a FRESH project through POST /v1/people/projects/share and writes .sapience/project.json. It cannot bind to a project the person already belongs to (a project a collaborator created and shared appears under `received` in GET /v1/people/projects and is unreachable from the script), it never calls POST /v1/people/projects/<cid>/link, so the server's linked-repository list never learns of a repository the script bound, and with two connections of the same display name it refuses without --to. The app's own client carries `sapience link [<name or id>]`, which lists accepted and owned projects, registers the repository and writes the same file. Build: (1) a pick mode: with no project named, list the caller's accepted and owned projects (title, id, creator or member) and exit non-zero without writing; with --project <name or id>, bind to that one; (2) keep the create mode behind its existing --name and --confirm pair; (3) in both modes register the repository through the link route and treat a 404 (feature not available for this account) as a named, non-fatal state in which the file is still written and the reply says the server does not read it yet, and a 403 (not a member) as a refusal that writes nothing; (4) when the installed vendor client provides `sapience link`, delegate pick-and-register to it and keep this script's own HTTP path only as the fallback for a client that predates it, with the file byte-identical on either path, proved by a test; (5) state in the reply what the caller's role means for their notes (a creator's notes flow to the collaborator; a non-creator member's land as suggestions only the author sees until confirmed), so binding to someone else's project is a known choice; (6) surface the pick in /sapience as its first step in a repository with no link file, through the command's one approval picker, never as an unattended write; (7) the reply ends with the exact file to commit, and the script commits nothing. Tests against a stub: pick lists both registers, bind-existing writes the three-key file and calls the link route once, a 404 writes the file and reports the state, a 403 writes nothing, create still refuses without --confirm. Belongs before sapience_automatic_writes_and_retrieval_by_project_id in dispatch order, which reads the file this writes. Done when running the bind from a fresh clone of any repository links it to a chosen existing project or a new one and the repository appears in that project's linked-repository list where the server supports it.
 
@@ -276,7 +276,7 @@ next_project_number: 684
 ---
 
 ### 677. Sapience automatic writes and retrieval by project id
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: Task 681

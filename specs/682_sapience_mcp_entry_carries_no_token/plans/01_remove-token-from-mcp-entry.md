@@ -1,7 +1,7 @@
 # Implementation Plan: Stop writing the Sapience token into the per-project MCP entry
 
 - **Task**: 682 - Stop writing the Sapience token into the per-project MCP entry in ~/.claude.json
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/682_sapience_mcp_entry_carries_no_token/reports/01_remove-token-from-mcp-entry.md
@@ -121,18 +121,18 @@ No roadmap context was provided to this dispatch.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Measure mcp.py token resolution with SAPIENCE_TOKEN unset [NOT STARTED]
+### Phase 1: Measure mcp.py token resolution with SAPIENCE_TOKEN unset [COMPLETED]
 
 **Goal**: Establish mechanically — not by reading the source — that each of the four invocation
 shapes the MCP entry reaches resolves the token from `~/.sapience/config.json` with
 `SAPIENCE_TOKEN` absent from the environment, and record any shape that does not.
 
 **Tasks**:
-- [ ] Capture the resolved token's length and a short fingerprint (never the value) from `~/.sapience/config.json` so later assertions can compare without printing the secret.
-- [ ] Invoke each shape with the variable stripped, using an absolute interpreter path so no `PATH` is needed: `env -i HOME="$HOME" /usr/bin/env python3 ~/.sapience/mcp.py --briefing-text`, `... --receipt`, `... --effect-line`, and `... --statusline` as the cheap authentication probe (it prints `sapience: set token` exactly when `TOKEN` is empty). Resolve the absolute `python3` path once up front rather than assuming `/usr/bin/python3`.
-- [ ] Exercise the bare stdio server shape the entry's `command`/`args` actually spawn: pipe one `initialize` JSON-RPC line on stdin under the same stripped environment and confirm a `result` reply rather than the `Set SAPIENCE_TOKEN` stderr message and `exit 1` that the `if not TOKEN:` guard produces.
-- [ ] Write the per-shape outcome to `specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md`: the command run, the observed result, and a verdict line per shape. Record the token only as length plus fingerprint.
-- [ ] If any shape fails, state in that record which one and why, and note that Phase 2 must keep `SAPIENCE_TOKEN` for that case alone. If all pass, state that build item (2) applies unconditionally.
+- [x] Capture the resolved token's length and a short fingerprint (never the value) from `~/.sapience/config.json` so later assertions can compare without printing the secret. *(completed: length 16, sha256[:12]=1ccd05e02475)*
+- [x] Invoke each shape with the variable stripped, using an absolute interpreter path so no `PATH` is needed: `env -i HOME="$HOME" /usr/bin/env python3 ~/.sapience/mcp.py --briefing-text`, `... --receipt`, `... --effect-line`, and `... --statusline` as the cheap authentication probe (it prints `sapience: set token` exactly when `TOKEN` is empty). Resolve the absolute `python3` path once up front rather than assuming `/usr/bin/python3`. *(completed: all four PASS)*
+- [x] Exercise the bare stdio server shape the entry's `command`/`args` actually spawn: pipe one `initialize` JSON-RPC line on stdin under the same stripped environment and confirm a `result` reply rather than the `Set SAPIENCE_TOKEN` stderr message and `exit 1` that the `if not TOKEN:` guard produces. *(completed: PASS, well-formed result reply)*
+- [x] Write the per-shape outcome to `specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md`: the command run, the observed result, and a verdict line per shape. Record the token only as length plus fingerprint. *(completed)*
+- [x] If any shape fails, state in that record which one and why, and note that Phase 2 must keep `SAPIENCE_TOKEN` for that case alone. If all pass, state that build item (2) applies unconditionally. *(completed: all 5 probes PASS; build item (2) applies unconditionally)*
 
 **Timing**: 0.5 hours
 
