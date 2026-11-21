@@ -1,27 +1,15 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 6,
-  "summary": "Wrote a 6-phase plan that answers all five linked-repo questions by adopting sf1-engine's integration/project-link.md section 10 by citation, and found four of the five answers to be 'no change based on link state'. The one real gap is that sapience-remember.sh sends no project field at all, so the plan extends it with the same runtime project-key resolution sapience-publish.sh ko already implements (plain project key, never project_cid) plus the script's first test suite, and threads each ruling into a new indexed domain record, the write-path rule, and the three domain docs that own its reasoning. Three measured constraints shaped the phasing: EXTENSION.md sits at exactly 60 of its hard 60-line ceiling, index-entries.json line_count is a hard-failing coupled surface for every context edit, and the rule file's own 'exactly three' corpus figure is under-counted at a measured five. A concurrent sibling task holds per-repo-scoping.md in its declared file_scope this cycle, so that file is excluded from every phase and cited by heading instead.",
+  "status": "partial",
+  "dispatch_seq": 9,
+  "summary": "Implemented Phase 1 of 6 (Rulings Record and Index Wiring) for the sapience linked-repo write and capture policy task. Created the new linked-repo-write-policy.md domain record stating Rulings 1-5 plus the Cross-Harness Agreement with sf1-engine's integration/project-link.md section 10, wired it into index-entries.json and the README index, and resynced line_count for both the new file and README.md. All phase-1 verification passed (no Rule R/S/T finding; verify-touched.sh green aside from one pre-existing EXPECTED-flaky timeout unrelated to this change). The hard-mode Phase Mission directive scoped this dispatch to Phase 1 only; phases 2-6 remain.",
+  "blockers": [],
+  "phases_completed": 1,
+  "phases_total": 6,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/plans/01_linked-repo-write-capture-policy.md",
-      "summary": "6 phases, 3 waves, 8 hours: rulings record and index wiring, sapience-remember.sh project tagging with its first test suite, rule file and domain-doc pointers, resolve-once postflight pass-through, line-neutral EXTENSION.md pointer, and a final deploy plus done-when verification phase."
+      "type": "handoff",
+      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-1-handoff-20261121T190000Z.md",
+      "summary": "Phase 1 completion handoff: current state, decisions, and resume point for Phase 2."
     }
-  ],
-  "phases_completed": 0,
-  "phases_total": 6,
-  "blockers": [],
-  "user_decision": {
-    "question": "The linked-repo half of the done-when criterion cannot be exercised live here: this repository carries no .sapience/project.json, and creating a real binding is a permanent, undeletable write to your hosted vault. Verify against a fixture binding, or bind a real repository first?",
-    "options": [
-      "Fixture-based verification — a scratch repo with a .sapience/project.json fixture and a stubbed GET /v1/people/projects, reusing the harness test-sapience-publish.sh already has; nothing reaches the live vault",
-      "Bind a real repository — you run sapience-project-bind.sh yourself to create a project, then the done-when criterion is confirmed end to end against the live API"
-    ],
-    "recommended": "Fixture-based verification — a scratch repo with a .sapience/project.json fixture and a stubbed GET /v1/people/projects, reusing the harness test-sapience-publish.sh already has; nothing reaches the live vault",
-    "blocking": false,
-    "obligation": "Demonstrate that an orchestrated run in a repo carrying .sapience/project.json emits a KO body containing a resolved \"project\": \"<key>\" field and no project_cid key, while the same run in an unlinked repo emits a byte-identical body to today's."
-  },
-  "next_action_hint": "Run /orchestrate 678 to implement the plan. Phases 1 and 2 are independent and can start in either order."
+  ]
 }

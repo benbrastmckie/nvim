@@ -827,6 +827,11 @@
           "path": "specs/678_sapience_linked_repo_write_and_capture_policy/plans/01_linked-repo-write-capture-policy.md",
           "type": "plan",
           "summary": "6 phases, 3 waves, 8 hours: rulings record and index wiring, sapience-remember.sh project tagging with its first test suite, rule file and domain-doc pointers, resolve-once postflight pass-through, line-neutral EXTENSION.md pointer, and a final deploy plus done-when verification phase."
+        },
+        {
+          "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-1-handoff-20261121T190000Z.md",
+          "type": "handoff",
+          "summary": "Phase 1 completion handoff: current state, decisions, and resume point for Phase 2."
         }
       ],
       "next_artifact_number": 2,
