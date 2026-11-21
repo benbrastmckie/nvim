@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 7,
+  "summary": "Wrote a 5-phase, ~4-hour plan to stop the Sapience token being written into the per-project MCP entry. Phase 1 measures mcp.py's token resolution with SAPIENCE_TOKEN unset; Phase 2 drops the token branch from the writer and inverts verifier check (b) as one atomic batch; Phase 3 adds the regression case plus its negative control; Phase 4 documents the token's homes and the never-copy boundary; Phase 5 (final, full tier) migrates the live entries, verifies end to end, and redeploys. Re-measured every carried figure against live state: 6 of 6 project entries in ~/.claude.json carry the token today, and no mcp.py path needs the variable.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/682_sapience_mcp_entry_carries_no_token/plans/01_remove-token-from-mcp-entry.md",
+      "summary": "5 phases, 4 dependency waves, ~4 hours: measure mcp.py fallback, writer+verifier atomic batch, regression test with negative control, token-location documentation, live migration and end-to-end verification."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": [],
+  "plan_markers_verified": true,
+  "next_action_hint": "Implement phase 1. NOTE: sibling task 683 declares an identical five-file file_scope and is also in planning this cycle -- 682's harvested file_scope will newly overlap it, so the admission gate should serialize the two implement dispatches rather than running them concurrently."
+}
