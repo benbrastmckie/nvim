@@ -1,7 +1,236 @@
 {
   "version": "1.1.0",
-  "next_project_number": 680,
+  "next_project_number": 681,
   "active_projects": [
+    {
+      "project_number": 680,
+      "project_name": "gate_cache_key_in_deployed_repos",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Fix gate-cache-lib.sh so verify-deploy.sh --skip-unchanged can compute a cache key in a deployed (consumer) repository, and repair test-deploy-baseline-lib.sh's failing warm-cache control case. agent-system/extensions/core/scripts/lib/gate-cache-lib.sh resolves its implementation-digest inputs only under `<root>/agent-system/extensions/core/...` (verify-deploy.sh, the registry-declared paths, and scripts/lib -- around the three `$_root/agent-system/extensions` lookups). A consumer repo that receives only the regenerated .claude/ mirror has no agent-system/ directory, so gate_cache_composite_key returns the CANNOT_COMPUTE sentinel, no specs/.gate-cache/gateN.json is ever written, and --skip-unchanged silently degrades to a full run on every invocation in every deployed repo (fail-open, safe, but the cache is inert). Observed in a deploy-only repo: `bash .claude/scripts/tests/test-deploy-baseline-lib.sh` reports 29 passed, 1 failed -- \"control: a genuinely matching warm-cache entry was expected to skip gate 1 but did not\" -- followed by `chmod: cannot access .../specs/.gate-cache/gate1.json`, because the test symlinks `$VD_REPO_ROOT/agent-system` into its scratch target and that path does not exist there; every agent that runs verify-touched.sh's fallback sweep in such a repo re-reports this as a new failure. Deliver: (1) a layout fallback in gate-cache-lib.sh that resolves the same inputs under `<root>/.claude/scripts/...` when `<root>/agent-system/extensions` is absent, keeping the source-store layout authoritative when present and keeping the sentinel/fail-open behavior when neither resolves; (2) test-deploy-baseline-lib.sh's scratch setup linking whichever layout exists so the control and the three corruption classes run in both layouts; (3) a test-gate-cache-lib.sh case covering the deployed layout. Acceptance: both suites pass from the source store and from a deployed copy, and a second `verify-deploy.sh --skip-unchanged --only-gate 1` in a deployed repo prints SKIP-CACHED. Edit the source store only, then redeploy.",
+      "topic": "core-agent-system",
+      "created": "2026-11-21T15:14:29Z",
+      "last_updated": "2026-11-21T15:14:29Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "gate_cache_key_in_deployed_repos",
+          "project_number": null,
+          "title": "Fix gate-cache-lib.sh cache key in deployed repos and the warm-cache control test"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 97,
+          "duplicate-of-open": 44,
+          "scope-blind": 46
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 645,
+            "project_name": "repair_seven_failing_gate8_suites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4778761061946903
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.4424778761061947
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5398230088495575
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4424778761061947
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5132743362831859
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49557522123893805
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.504424778761062
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 455,
+            "project_name": "preflag_module_wiring_invariant_failures",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4690265486725664
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 457,
+            "project_name": "repo_specific_content_in_shared_source_store",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40707964601769914
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5575221238938053
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4778761061946903
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 486,
+            "project_name": "manifest_registration_dropped_from_phase_commit",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40707964601769914
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.504424778761062
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 504,
+            "project_name": "lean_goals_block_harvest_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40707964601769914
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4336283185840708
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 509,
+            "project_name": "redeploy_phase_declaration_and_gate_criterion",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4424778761061947
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40707964601769914
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 516,
+            "project_name": "lean_compliance_check_end_state_goal_polarity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45132743362831856
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 517,
+            "project_name": "stage_regenerated_derived_files_in_phase_commits",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4690265486725664
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45132743362831856
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 523,
+            "project_name": "gate27_missing_declaration_call_site_counting",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4247787610619469
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4424778761061947
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 525,
+            "project_name": "task_type_detect_ext_root_dir_fallback",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4424778761061947
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 533,
+            "project_name": "lake_build_guard_stale_replay_env_lean_file",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49557522123893805
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.6017699115044248
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 46
+      }
+    },
     {
       "project_number": 679,
       "project_name": "sapience_collaborator_setup_for_plain_claude_code",

@@ -1,5 +1,5 @@
 ---
-next_project_number: 680
+next_project_number: 681
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 680
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,677,678 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,677,678,680 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630,679 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629,677,678 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,492,509,513,518,541,561,566,594,669 | 439,452,472,479,491,517,535,552,593,668 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 486,571,581,588,595,641,671 | 454,484,492,509,518,539,541,561,580,594,669 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
@@ -59,6 +59,7 @@ next_project_number: 680
 618 [NOT STARTED] — Determine what leaves files in the working tree and give...
 646 [NOT STARTED] — Decide and implement how .return-meta.json's status...
 664 [NOT STARTED] — Add a /tmp sweep pass to /refresh for dead scratchpad...
+680 [NOT STARTED] — Fix gate-cache-lib.sh so verify-deploy.sh --skip-unchanged...
 452 [NOT STARTED] — Require a verification criterion over a repo-wide gate with...
   └─ 566 [NOT STARTED] — Document that the validate-state.sh cycle check requires...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
@@ -205,6 +206,16 @@ next_project_number: 680
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 680. Gate cache key in deployed repos
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Fix gate-cache-lib.sh so verify-deploy.sh --skip-unchanged can compute a cache key in a deployed (consumer) repository, and repair test-deploy-baseline-lib.sh's failing warm-cache control case. agent-system/extensions/core/scripts/lib/gate-cache-lib.sh resolves its implementation-digest inputs only under `<root>/agent-system/extensions/core/...` (verify-deploy.sh, the registry-declared paths, and scripts/lib -- around the three `$_root/agent-system/extensions` lookups). A consumer repo that receives only the regenerated .claude/ mirror has no agent-system/ directory, so gate_cache_composite_key returns the CANNOT_COMPUTE sentinel, no specs/.gate-cache/gateN.json is ever written, and --skip-unchanged silently degrades to a full run on every invocation in every deployed repo (fail-open, safe, but the cache is inert). Observed in a deploy-only repo: `bash .claude/scripts/tests/test-deploy-baseline-lib.sh` reports 29 passed, 1 failed -- "control: a genuinely matching warm-cache entry was expected to skip gate 1 but did not" -- followed by `chmod: cannot access .../specs/.gate-cache/gate1.json`, because the test symlinks `$VD_REPO_ROOT/agent-system` into its scratch target and that path does not exist there; every agent that runs verify-touched.sh's fallback sweep in such a repo re-reports this as a new failure. Deliver: (1) a layout fallback in gate-cache-lib.sh that resolves the same inputs under `<root>/.claude/scripts/...` when `<root>/agent-system/extensions` is absent, keeping the source-store layout authoritative when present and keeping the sentinel/fail-open behavior when neither resolves; (2) test-deploy-baseline-lib.sh's scratch setup linking whichever layout exists so the control and the three corruption classes run in both layouts; (3) a test-gate-cache-lib.sh case covering the deployed layout. Acceptance: both suites pass from the source store and from a deployed copy, and a second `verify-deploy.sh --skip-unchanged --only-gate 1` in a deployed repo prints SKIP-CACHED. Edit the source store only, then redeploy.
+
+---
 
 ### 679. Sapience collaborator setup for plain claude code
 - **Status**: [NOT STARTED]
