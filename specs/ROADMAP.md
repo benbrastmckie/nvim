@@ -6,9 +6,30 @@
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
+| [M2: Sapience linked projects and collaborator access](#milestone-m2) | planned | 0/5 | none |
 | [M1: Current work](#milestone-m1) | active | 8/127 | none |
 
 See also: [Rules, conventions and repo context](#roadmap-context)
+
+<a id="milestone-m2"></a>
+## M2: Sapience linked projects and collaborator access
+
+Make a repository bindable to a shared Sapience project and workable by a second person: bind and register the repo, resolve every automatic write and read through the link, rule the linked-repo write policy, and keep the token out of the per-project MCP entry.
+
+- **Progress**: planned -- 0/1 batches, 0/5 tasks done -- Raised ahead of the legacy backlog on operator request; nothing dispatched yet.
+- **Review**: none
+- **Gate**: A collaborator with their own account and a plain Claude Code install goes from a fresh clone of a linked repo to a verified project note without help; every automatic write and retrieval resolves the linked project rather than a directory-name label; no registered MCP entry carries the Sapience token.
+
+**Batch 1** -- Make the link decide every Sapience write, read and policy, and keep the token out of the entry
+
+```
+/orchestrate 681, 678, 682, 677, 679 --hard
+677 blocked:681     sapience_automatic_writes_and_retrieval_by_project_id
+679 blocked:677,678,682  sapience_collaborator_setup_for_plain_claude_code
+678 ready           sapience_linked_repo_write_and_capture_policy
+681 ready           sapience_bind_existing_project_and_register_repo
+682 ready           sapience_mcp_entry_carries_no_token
+```
 
 <a id="milestone-m1"></a>
 ## M1: Current work
@@ -361,4 +382,5 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 665 ready           Record the last dispatching orchestration batch in a displaced Previous work ...
 666 ready           re_site_branch_aware_batch_after_prerequisites
 668 ready           Measure Claude Code harness behaviour for a worktree outside the project dire...
+680 ready           gate_cache_key_in_deployed_repos
 ```

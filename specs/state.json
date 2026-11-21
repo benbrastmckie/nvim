@@ -460,7 +460,8 @@
       "last_updated": "2026-11-21T00:07:46Z",
       "dependencies": [
         677,
-        678
+        678,
+        682
       ],
       "audit_verdict": {
         "proposal": {
@@ -24238,6 +24239,33 @@
     ]
   },
   "roadmap_milestones": [
+    {
+      "id": "M2",
+      "title": "Sapience linked projects and collaborator access",
+      "aim": "Make a repository bindable to a shared Sapience project and workable by a second person: bind and register the repo, resolve every automatic write and read through the link, rule the linked-repo write policy, and keep the token out of the per-project MCP entry.",
+      "gate": "A collaborator with their own account and a plain Claude Code install goes from a fresh clone of a linked repo to a verified project note without help; every automatic write and retrieval resolves the linked project rather than a directory-name label; no registered MCP entry carries the Sapience token.",
+      "progress": {
+        "status": "planned",
+        "note": "Raised ahead of the legacy backlog on operator request; nothing dispatched yet."
+      },
+      "review": {
+        "state": "none"
+      },
+      "batches": [
+        {
+          "task_ids": [
+            681,
+            678,
+            682,
+            677,
+            679
+          ],
+          "description": "Make the link decide every Sapience write, read and policy, and keep the token out of the entry",
+          "flags": "--hard",
+          "rationale": "Placed first by instruction (prioritize 677-679, 681-682), and a new milestone rather than a head-insert into M1 because M1's own aim asks for its contents to be divided into real milestones -- this strand is one: a repository that is bound to a shared project and usable by a second person.\n\nOne batch, not two, on the dominance rule in batch-orchestration-guardrails.md: shared file territory outranks width. All five declare agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md in their own territory statements, and 677/678 additionally share injection-site-scoping.md and review-gate-boundary.md. None of the five carries a file_scope field, so the creation-time overlap checker has nothing to compare and the batch itself is the only mechanism that makes the collision visible at all. Splitting 682 out as its own leading batch was considered and rejected for that reason alone -- it is independent in the graph, but it writes the same doc.\n\nGraph shape inside the batch: 681 -> 677 -> 679, 678 -> 679, and (added on this pass) 682 -> 679. 681, 678 and 682 share wave 1; 677 is wave 2; 679 is wave 3. 679 is the milestone's gate task, so the batch drains to it.\n\nThe 682 -> 679 edge is derivable from 679's own requirements, not from co-membership: 679 item (2) asks for an MCP registration that 'names no machine path and no secret', and item (6) asks for the same path for a collaborator who DOES load this extension -- which is exactly the registration 682 changes. Written before 682 lands, that page documents an entry shape 682 then invalidates.\n\nNot added, deliberately: no edge among 681/678/682. They are mutually independent in substance and any ordering between them would be this agent's own preference dressed as a graph fact. The per-repo-scoping.md concurrency hazard among them is real but is an ordering/dispatch concern, to be answered by declaring file_scope on the five or dispatching narrower, not by inventing edges.\n\n--hard because three of the five are rulings or contracts rather than edits: 678 rules five open policy questions and must agree with another repository's write rule, 682 needs a measured per-code-path check of the installed vendor client plus a negative control, and 679 is only done when the path has been run on a clean profile."
+        }
+      ]
+    },
     {
       "id": "M1",
       "title": "Current work",
