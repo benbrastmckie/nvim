@@ -1,5 +1,5 @@
 ---
-next_project_number: 679
+next_project_number: 680
 ---
 
 # TODO
@@ -14,7 +14,7 @@ next_project_number: 679
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 338,342,383,390,398,410,421,431,437,438,451,453,455,456,463,475,477,491,498,502,504,506,510,511,512,514,519,520,521,522,525,529,530,537,539,542,545,548,549,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,677,678 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
+| 2 | 384,399,439,452,457,462,472,474,479,481,484,516,517,523,533,535,540,544,546,550,552,570,576,583,592,593,598,605,609,630,679 | 383,390,398,410,431,438,451,453,455,463,477,504,511,519,539,542,548,549,556,563,567,577,586,599,629,677,678 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,492,509,513,518,541,561,566,594,669 | 439,452,472,479,491,517,535,552,593,668 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 4 | 486,571,581,588,595,641,671 | 454,484,492,509,518,539,541,561,580,594,669 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 501,508,596,642 | 472,486,570,595,641 | file-scope-lifecycle, agent-system |
@@ -191,7 +191,9 @@ next_project_number: 679
 ### Sapience
 
 677 [NOT STARTED] — Make the Sapience extension's automatic paths use the linked...
+  └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
 678 [NOT STARTED] — Decide and encode how a Claude Code session in a linked repo...
+  └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a... (see above)
 
 ### Decidability
 
@@ -203,6 +205,16 @@ next_project_number: 679
   └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
+
+### 679. Sapience collaborator setup for plain claude code
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: sapience
+- **Dependencies**: Task 677, Task 678
+
+**Description**: Give a collaborator who does not use this extension picker a documented, minimal path to contribute to a linked project from Claude Code. The deployed .claude/ tree is a gitignored artifact of this loader, so a clone of a linked repo carries none of the Sapience wiring, and the Nix module, sops secrets, enforced hooks key and /nix/store paths in the MCP entry are specific to one machine. Territory: agent-system/extensions/sapience/ docs plus whatever in-repo files the path needs. Write and test the path: (1) the prerequisites (their own Sapience account and token, the vendor client at a version that resolves the link, accepted membership of the shared project); (2) MCP registration by `claude mcp add` or a committed .mcp.json that names no machine path and no secret; (3) the hooks a member needs for injection (session-start briefing, per-prompt context) as a settings snippet, and what they get with the MCP server alone and no hooks; (4) what in the repo is committed for everyone (.sapience/project.json and nothing else) versus per person; (5) a verify step that proves a write from their session lands in the project and a search returns project notes; (6) the same for a collaborator who does load this extension. State plainly which behaviours depend on the person's own configuration, since each collaborator wires injection their own way. Run the path once on a clean Claude Code profile and record the result. Done when a second person can follow the page from a fresh clone to a verified project note without help.
+
+---
 
 ### 678. Sapience linked repo write and capture policy
 - **Status**: [NOT STARTED]

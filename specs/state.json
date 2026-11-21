@@ -1,7 +1,160 @@
 {
   "version": "1.1.0",
-  "next_project_number": 679,
+  "next_project_number": 680,
   "active_projects": [
+    {
+      "project_number": 679,
+      "project_name": "sapience_collaborator_setup_for_plain_claude_code",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "Give a collaborator who does not use this extension picker a documented, minimal path to contribute to a linked project from Claude Code. The deployed .claude/ tree is a gitignored artifact of this loader, so a clone of a linked repo carries none of the Sapience wiring, and the Nix module, sops secrets, enforced hooks key and /nix/store paths in the MCP entry are specific to one machine. Territory: agent-system/extensions/sapience/ docs plus whatever in-repo files the path needs. Write and test the path: (1) the prerequisites (their own Sapience account and token, the vendor client at a version that resolves the link, accepted membership of the shared project); (2) MCP registration by `claude mcp add` or a committed .mcp.json that names no machine path and no secret; (3) the hooks a member needs for injection (session-start briefing, per-prompt context) as a settings snippet, and what they get with the MCP server alone and no hooks; (4) what in the repo is committed for everyone (.sapience/project.json and nothing else) versus per person; (5) a verify step that proves a write from their session lands in the project and a search returns project notes; (6) the same for a collaborator who does load this extension. State plainly which behaviours depend on the person's own configuration, since each collaborator wires injection their own way. Run the path once on a clean Claude Code profile and record the result. Done when a second person can follow the page from a fresh clone to a verified project note without help.",
+      "topic": "sapience",
+      "created": "2026-11-21T00:07:46Z",
+      "last_updated": "2026-11-21T00:07:46Z",
+      "dependencies": [
+        677,
+        678
+      ],
+      "audit_verdict": {
+        "proposal": {
+          "id": "sapience_collaborator_setup_for_plain_claude_code",
+          "project_number": null,
+          "title": "Write the collaborator setup path for a plain Claude Code install"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 42,
+          "duplicate-of-open": 15,
+          "scope-blind": 45
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4188034188034188
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 451,
+            "project_name": "snapshot_lean_challenge_at_plan_time",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4444444444444444
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4188034188034188
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4358974358974359
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.46153846153846156
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4358974358974359
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5042735042735043
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.48717948717948717
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.46153846153846156
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5042735042735043
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 546,
+            "project_name": "literature_search_zero_result_degraded_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4188034188034188
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 548,
+            "project_name": "plan_contingency_file_scope_and_containment_drop",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4188034188034188
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 561,
+            "project_name": "bounded_waiter_load_sizing_and_output_capture",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5042735042735043
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 665,
+            "project_name": "previous_work_section_in_generated_roadmap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41025641025641024
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 45
+      }
+    },
     {
       "project_number": 678,
       "project_name": "sapience_linked_repo_write_and_capture_policy",
