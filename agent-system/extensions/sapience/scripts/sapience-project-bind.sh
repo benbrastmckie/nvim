@@ -26,9 +26,16 @@
 # project.key, follow) and exit 0 without a network call.
 #
 # The bind path (--project) registers this repository with a project the caller already belongs
-# to (accepted member or owner) via POST /v1/people/projects/<cid>/link -- this registration
-# itself, the 404/403 outcome policy, and the canonical write are added in a later phase; THIS
-# phase only resolves --project to exactly one row, writing and POSTing nothing.
+# to (accepted member or owner) via POST /v1/people/projects/<cid>/link. Default posture (no
+# --confirm) is dry-run: print the literal {"repo": "<slug>"} payload and exit 0 without a POST
+# (the one resolving GET /v1/people/projects lookup above already fired, unlike create-mode
+# dry-run, which makes no network call at all). --confirm POSTs and classifies the outcome by
+# HTTP status ONLY, never by parsing vendor or server prose: 2xx with ok:true writes the file and
+# reports success; 404 (the feature not available for this account, or the cid/membership lookup
+# missing) writes the file anyway and reports that the server does not read it yet (bound
+# locally only); 403 (not an accepted member) writes nothing and refuses; any other outcome is a
+# loud failure that writes nothing. A prior binding to a DIFFERENT project is never silently
+# replaced -- re-run with --force to overwrite it.
 #
 # Why creating (never reusing) a project matters MECHANICALLY, not as a preference: the server's
 # project_split_confirmed computes `cross = doors & (sent | added | first_doors-if-owner-and-not-
@@ -61,7 +68,15 @@
 # Loud-failure discipline on the share response, written against the CONFIRMED {ok, project, to}
 # shape (never sapience-remember.sh's written/gated/set_aside field names -- this response has
 # none of them): a non-2xx HTTP status, a non-JSON body, an empty `to` array, or a response
-# lacking `ok: true` is a loud, non-zero-exit failure, never a success-shaped guess.
+# lacking `ok: true` is a loud, non-zero-exit failure, never a success-shaped guess. The link
+# route's 404 is the ONE deliberate exception to "non-2xx is a failure": it still writes the
+# file (see above).
+#
+# Single-writer invariant: write_link_file() is the ONLY site in this file that writes
+# .sapience/project.json -- the create path (`.share.id`) and the bind path (the picked row's own
+# id, captured before the POST) both route through it. The link response's own `project` field,
+# when present, is the {kind, key, name} descriptor dict -- NEVER a channel cid, unlike the share
+# response's `.share.id` -- and no code path in this file reads a cid out of it.
 #
 # No reference, anywhere in this file, to sapience_remember / sapience_wrapup / sapience_handoff
 # / sapience_adddoc as a write path (rules/sapience-write-path.md). The one write this script
@@ -69,14 +84,16 @@
 # MCP tool call.
 #
 # Exit codes:
-#   0 - dry-run printed (no --confirm), the share succeeded and .sapience/project.json was
-#       written, or (bind mode, this phase) --project resolved to exactly one row
+#   0 - dry-run printed (no --confirm), the share/link succeeded and .sapience/project.json was
+#       written, the link route returned 404 (written locally only), or (pick mode) the listing
+#       printed
 #   1 - bad arguments (both --name and --project, --confirm with neither, missing --name's or
-#       --to's value, ambiguous --to, --project matching zero or more than one row),
-#       unresolvable repo toplevel, no token configured, curl transport failure, non-JSON
-#       response, invalid key/repo value
-#   2 - the server reported a failure-shaped response (non-2xx status, empty `to`, missing
-#       `ok: true`)
+#       --to's value, ambiguous --to, --project matching zero or more than one row, pick mode
+#       with no rows), unresolvable repo toplevel, no token configured, curl transport failure,
+#       non-JSON response, invalid key/repo value, an existing conflicting link without --force
+#   2 - the server reported a failure-shaped response on the create path (non-2xx status, empty
+#       `to`, missing `ok: true`), or the link route returned 403 (join the project first) or any
+#       other non-2xx/non-404 outcome on the bind path
 
 set -euo pipefail
 
@@ -84,7 +101,6 @@ NAME=""
 CONFIRM="false"
 TO_OVERRIDE=""
 PROJECT_VALUE=""
-# shellcheck disable=SC2034 # consumed by bind mode's existing-link overwrite, added in a later phase
 FORCE="false"
 
 usage() {
@@ -110,12 +126,14 @@ Optional:
                      different project
 
 Exit codes:
-  0 - dry-run printed, the share/link succeeded and .sapience/project.json was written, or
-      --project resolved to exactly one row (pick/bind resolution only, no write)
+  0 - dry-run printed, the share/link succeeded and .sapience/project.json was written, or the
+      link route returned 404 (written locally only; the server does not read it yet)
   1 - bad arguments, unresolvable repo toplevel, no token, curl/network failure, non-JSON
-      response, invalid key/repo value, --project matching zero or more than one row
-  2 - the server reported a failure-shaped response (non-2xx status, empty 'to', missing
-      'ok: true')
+      response, invalid key/repo value, --project matching zero or more than one row, an
+      existing conflicting link without --force
+  2 - the server reported a failure-shaped response (create mode: non-2xx status, empty 'to',
+      missing 'ok: true'; bind mode: the link route returned 403, or any other non-2xx/non-404
+      outcome)
 USAGE
 }
 
@@ -133,7 +151,6 @@ while [ "$#" -gt 0 ]; do
       [ "$#" -ge 2 ] || { echo "sapience-project-bind.sh: --to requires a value" >&2; exit 1; }
       TO_OVERRIDE="$2"; shift 2 ;;
     --force)
-      # shellcheck disable=SC2034 # consumed by bind mode's existing-link overwrite, added in a later phase
       FORCE="true"; shift ;;
     -h|--help)
       usage; exit 0 ;;
@@ -271,6 +288,42 @@ fetch_project_rows() {
   return 0
 }
 
+# --- write_link_file <cid> <display-name> <repo-slug> -- the SOLE writer of
+# .sapience/project.json on every path (create, bind-success, bind-404, and -- when vendor
+# delegation is added in a later phase -- its read-back normalization too). Writes EXACTLY three
+# string keys, in order project/name/repo, 2-space indent, one trailing newline --
+# byte-identical to repo_link.py's link_text() serializer. Echoes the written path on stdout. ---
+write_link_file() {
+  local _wlf_cid="$1" _wlf_name="$2" _wlf_repo="$3" _wlf_dir _wlf_file
+  _wlf_dir="${repo_toplevel}/.sapience"
+  mkdir -p "$_wlf_dir"
+  _wlf_file="${_wlf_dir}/project.json"
+  jq -n \
+    --arg project "$_wlf_cid" \
+    --arg name "$_wlf_name" \
+    --arg repo "$_wlf_repo" \
+    '{project: $project, name: $name, repo: $repo}' > "$_wlf_file"
+  printf '%s' "$_wlf_file"
+  unset _wlf_cid _wlf_name _wlf_repo _wlf_dir _wlf_file
+}
+
+# --- print_bind_role_note <owner-bool> -- the caller's role on the bound project determines
+# where their Sapience notes land, derived from the picked row's own `owner` flag (no extra
+# call): the CREATOR's notes flow to the collaborator without a per-note confirm (follow:true,
+# per the mechanical note above); a non-creator ACCEPTED MEMBER's notes land as suggestions only
+# the project's author sees until confirmed. Printed on the bind success path and the 404 path
+# -- both write the file, so both are a "binding to someone else's project" decision worth
+# surfacing. ---
+print_bind_role_note() {
+  local _pbrn_owner="${1:-false}"
+  if [ "$_pbrn_owner" = "true" ]; then
+    echo "sapience-project-bind.sh: you are this project's creator -- your notes flow to the collaborator." >&2
+  else
+    echo "sapience-project-bind.sh: you are an accepted member, not the creator -- your notes land as suggestions only the project's author sees until confirmed." >&2
+  fi
+  unset _pbrn_owner
+}
+
 # --- Pick mode (no --name, no --project): list the caller's accepted and owned projects and
 # exit non-zero, writing and POSTing nothing. ---
 if [ "$MODE" = "pick" ]; then
@@ -287,8 +340,8 @@ if [ "$MODE" = "pick" ]; then
 fi
 
 # --- Bind mode (--project <name|id>): resolve the value to exactly one accepted-or-owned row,
-# case-insensitively against id, title, and project.key. THIS PHASE resolves only -- it writes
-# and POSTs nothing; link registration is added in a later phase. ---
+# case-insensitively against id, title, and project.key, then register this repository with it
+# through POST /v1/people/projects/<cid>/link (D1/D2). ---
 if [ "$MODE" = "bind" ]; then
   bind_rows="$(fetch_project_rows)" || exit 1
   bind_needle="$(echo "$PROJECT_VALUE" | tr '[:upper:]' '[:lower:]')"
@@ -310,10 +363,83 @@ if [ "$MODE" = "bind" ]; then
     echo "sapience-project-bind.sh: --project \"$PROJECT_VALUE\" resolved to a row with no usable id -- refusing before any write" >&2
     exit 1
   fi
-  # Resolution-only scaffold for this phase: a later phase replaces this exit with the
-  # dry-run/--confirm link-registration flow (D2), reusing bind_cid/bind_display_name/bind_owner.
-  echo "sapience-project-bind.sh: resolved --project \"$PROJECT_VALUE\" to \"$bind_display_name\" (${bind_cid}) as $( [ "$bind_owner" = "true" ] && echo creator || echo member ) -- no write or POST made yet" >&2
-  exit 0
+
+  bind_link_file="${repo_toplevel}/.sapience/project.json"
+
+  # Existing-link guard: a prior binding to a DIFFERENT project is never silently replaced.
+  # Checked before any dry-run print or POST, on both postures, since it is about whether this
+  # invocation should proceed at all, not only about the write itself.
+  if [ -f "$bind_link_file" ] && [ "$FORCE" != "true" ]; then
+    bind_existing_cid="$(jq -r '.project // empty' "$bind_link_file" 2>/dev/null)" || bind_existing_cid=""
+    if [ -n "$bind_existing_cid" ] && [ "$bind_existing_cid" != "$bind_cid" ]; then
+      echo "sapience-project-bind.sh: ${bind_link_file} is already bound to a different project (${bind_existing_cid}) -- re-run with --force to overwrite it with \"$bind_display_name\" (${bind_cid}); refusing before any write" >&2
+      exit 1
+    fi
+  fi
+
+  bind_link_payload="$(jq -n --arg repo "$repo_slug" '{repo: $repo}')"
+
+  # --- Bind-mode dry-run posture (default, no --confirm): print the literal link payload and
+  # exit 0 WITHOUT POSTing. One deliberate asymmetry from create-mode dry-run (D2): the
+  # fetch_project_rows() GET above already fired -- a read, not a mutation -- while create-mode
+  # dry-run makes no network call at all. ---
+  if [ "$CONFIRM" != "true" ]; then
+    echo "sapience-project-bind.sh: DRY-RUN -- pass --confirm to actually link this repository to \"$bind_display_name\" (${bind_cid}) (no POST made; the GET /v1/people/projects lookup above already fired)" >&2
+    SAPIENCE_DRY_RUN=1 sapience_post "/v1/people/projects/${bind_cid}/link" "$bind_link_payload"
+    exit 0
+  fi
+
+  echo "sapience-project-bind.sh: linking this repository to \"$bind_display_name\" (${bind_cid})..." >&2
+  # NOT `bind_response="$(sapience_post ...)"`: command substitution forks a subshell, so
+  # sapience_api_post_http_status -- a plain (non-local) global assignment inside sapience_post,
+  # meant to reach the caller -- never crosses back out and reads as empty here, silently
+  # defeating the status-only branch below. Redirecting stdout to a temp file instead keeps the
+  # call in THIS shell, so the assignment lands where this script can read it.
+  bind_response_tmp="$(mktemp)" || { echo "sapience-project-bind.sh: FAILED -- could not create a temp file for the link response" >&2; exit 2; }
+  sapience_post "/v1/people/projects/${bind_cid}/link" "$bind_link_payload" > "$bind_response_tmp"
+  bind_post_rc=$?
+  bind_response="$(cat "$bind_response_tmp" 2>/dev/null)"
+  rm -f "$bind_response_tmp"
+  [ "$bind_post_rc" -eq 0 ] || exit 1
+
+  # MUST NOT: bind_cid is the PICKED ROW's own id, captured above before this POST. The link
+  # response's own `project` field, when present, is the {kind, key, name} descriptor dict --
+  # NEVER a channel cid, unlike the share response's `.share.id` read in the create path below.
+  # Nothing in this branch reads a cid out of $bind_response; classification below is by HTTP
+  # status only, never by parsing response or vendor prose.
+  case "${sapience_api_post_http_status:-}" in
+    2??)
+      if [ -z "$bind_response" ] || ! echo "$bind_response" | jq -e . >/dev/null 2>&1; then
+        echo "sapience-project-bind.sh: FAILED -- non-JSON or empty response from POST /v1/people/projects/${bind_cid}/link: ${bind_response:0:300}" >&2
+        exit 2
+      fi
+      bind_ok="$(echo "$bind_response" | jq -r '.ok // false' 2>/dev/null)" || bind_ok="false"
+      if [ "$bind_ok" != "true" ]; then
+        echo "sapience-project-bind.sh: FAILED -- link route returned ok=${bind_ok}: ${bind_response:0:300}" >&2
+        exit 2
+      fi
+      bind_written_file="$(write_link_file "$bind_cid" "$bind_display_name" "$repo_slug")"
+      print_bind_role_note "$bind_owner"
+      echo "sapience-project-bind.sh: linked and registered with \"$bind_display_name\" (${bind_cid}); wrote ${bind_written_file}" >&2
+      echo "sapience-project-bind.sh: commit this file: ${bind_written_file}"
+      exit 0
+      ;;
+    404)
+      bind_written_file="$(write_link_file "$bind_cid" "$bind_display_name" "$repo_slug")"
+      print_bind_role_note "$bind_owner"
+      echo "sapience-project-bind.sh: the server did not accept the link (HTTP 404 from the link route) and does not read this file yet -- binding recorded locally only; wrote ${bind_written_file}" >&2
+      echo "sapience-project-bind.sh: commit this file: ${bind_written_file}"
+      exit 0
+      ;;
+    403)
+      echo "sapience-project-bind.sh: REFUSED -- join the project first (HTTP 403 from the link route: not an accepted member); wrote nothing" >&2
+      exit 2
+      ;;
+    *)
+      echo "sapience-project-bind.sh: FAILED -- POST /v1/people/projects/${bind_cid}/link returned HTTP ${sapience_api_post_http_status:-<none>}: ${bind_response:0:300}" >&2
+      exit 2
+      ;;
+  esac
 fi
 
 # --- Dry-run posture (default, no --confirm): print the LITERAL payload shape and exit 0
@@ -409,15 +535,10 @@ if [ -z "$project_cid" ]; then
   exit 2
 fi
 
-# --- Persist the binding: EXACTLY three string keys, in order project/name/repo, 2-space
-# indent, one trailing newline -- byte-identical to repo_link.py's link_text() serializer. ---
-mkdir -p "${repo_toplevel}/.sapience"
-link_file="${repo_toplevel}/.sapience/project.json"
-jq -n \
-  --arg project "$project_cid" \
-  --arg name "$NAME" \
-  --arg repo "$repo_slug" \
-  '{project: $project, name: $name, repo: $repo}' > "$link_file"
+# --- Persist the binding through the SOLE write_link_file() writer (see its own header for the
+# exact byte format). ---
+link_file="$(write_link_file "$project_cid" "$NAME" "$repo_slug")"
 
-echo "sapience-project-bind.sh: shared \"${NAME}\" with ${to_len} recipient(s); wrote ${link_file}"
+echo "sapience-project-bind.sh: shared \"${NAME}\" with ${to_len} recipient(s); wrote ${link_file}" >&2
+echo "sapience-project-bind.sh: commit this file: ${link_file}"
 exit 0

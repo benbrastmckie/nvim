@@ -46,6 +46,14 @@
 #        row with the correct [creator]/[member] labels, exits non-zero, writes nothing.
 #   (16) A `received` row with accepted:false and owner:false is excluded from the pick listing.
 #   (17) `--project nonexistent` refuses with a non-zero exit and writes nothing.
+#   (18) `--project <value> --confirm`, link route success: the written
+#        .sapience/project.json is byte-identical to repo_link.py's link_text() output
+#        (project=the picked row's id, name, repo) and the link route is called exactly once.
+#   (19) `--project <value> --confirm`, link route 404: the file is still written and the
+#        reply names the degraded ("recorded locally only") state, exit 0.
+#   (20) `--project <value> --confirm`, link route 403: writes nothing, exits non-zero.
+#   (21) Create mode (--name, no --confirm) still fires no mutation under the new mode
+#        selector -- restates Case 3's safety property after Phase 2's changes.
 #
 # Follows the core shell-test convention: common_test_pass/_fail/_info from lib/common.sh,
 # PASSED/FAILED integer counters, a mktemp -d workdir with a trap EXIT cleanup,
@@ -182,6 +190,11 @@ case "$url" in
     printf '%s' "${GET_PROJECTS_BODY:-{\}}"
     printf '\n%s' "${GET_PROJECTS_CODE:-200}"
     ;;
+  *v1/people/projects/*/link*)
+    echo "1" >> "$(dirname "$0")/.link_calls"
+    printf '%s' "${LINK_BODY:-{\}}"
+    printf '\n%s' "${LINK_CODE:-200}"
+    ;;
   *)
     echo "test stub: unrecognized URL: $url" >&2
     exit 7
@@ -191,6 +204,17 @@ exit 0
 STUB
   chmod +x "$stub_dir/curl"
   echo "$stub_dir"
+}
+
+# link_call_count <stub_dir> -- echoes the number of times the link route
+# (*v1/people/projects/*/link*) was hit against this stub, 0 if never.
+link_call_count() {
+  local stub_dir="$1"
+  if [ -f "$stub_dir/.link_calls" ]; then
+    wc -l < "$stub_dir/.link_calls" | tr -d ' '
+  else
+    echo 0
+  fi
 }
 
 # run_bind_stubbed <scratch> <stub_dir> [args...] -- invokes with curl PATH-shadowed and a fixed
@@ -530,6 +554,130 @@ run_loud_failure_case 12 "missing ok:true" "200" '{"to":["X"],"share":{"id":"c1"
     common_test_pass "(17) --project nonexistent: no file written"
   else
     common_test_fail "(17) --project nonexistent: no file written"
+  fi
+}
+
+# =====================================================================================
+# Case 18: --project <value> --confirm, link route success -- byte-identical
+# .sapience/project.json and the link route called exactly once.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  out="$(GET_PROJECTS_BODY='{"ok":true,"shared":[{"id":"cid-owner","title":"Owner Project","owner":true,"accepted":true,"project":{"key":"owner-project"}}],"received":[]}' \
+    LINK_CODE=200 LINK_BODY='{"ok":true}' \
+    run_bind_stubbed "$scratch" "$stub_dir" --project "Owner Project" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(18) bind --confirm success: exit 0"
+  else
+    common_test_fail "(18) bind --confirm success: exit 0" "got rc=$rc out=$out"
+  fi
+
+  expected_file="$(mktemp -p "$TOP_WORKDIR")"
+  python3 -c "
+import json
+print(json.dumps({'project':'cid-owner','name':'Owner Project','repo':'$(basename "$scratch")'}, indent=2, sort_keys=False)+'\n', end='')
+" > "$expected_file" 2>/dev/null
+
+  if [ -f "$scratch/.sapience/project.json" ] && cmp -s "$scratch/.sapience/project.json" "$expected_file"; then
+    common_test_pass "(18) bind --confirm success: .sapience/project.json is byte-identical to the expected link_text output"
+  else
+    common_test_fail "(18) bind --confirm success: .sapience/project.json is byte-identical to the expected link_text output" \
+      "$(cat "$scratch/.sapience/project.json" 2>/dev/null) vs expected $(cat "$expected_file")"
+  fi
+
+  link_calls="$(link_call_count "$stub_dir")"
+  if [ "$link_calls" = "1" ]; then
+    common_test_pass "(18) bind --confirm success: link route called exactly once"
+  else
+    common_test_fail "(18) bind --confirm success: link route called exactly once" "link_calls=$link_calls"
+  fi
+
+  if echo "$out" | grep -q "commit this file: $scratch/.sapience/project.json"; then
+    common_test_pass "(18) bind --confirm success: reply ends with the exact file to commit"
+  else
+    common_test_fail "(18) bind --confirm success: reply ends with the exact file to commit" "out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 19: --project <value> --confirm, link route 404 -- the file is still written and the
+# reply names the degraded state, exit 0.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  out="$(GET_PROJECTS_BODY='{"ok":true,"shared":[],"received":[{"id":"cid-member","title":"Member Project","owner":false,"accepted":true,"project":{"key":"member-project"}}]}' \
+    LINK_CODE=404 LINK_BODY='{"error":"not enabled"}' \
+    run_bind_stubbed "$scratch" "$stub_dir" --project "Member Project" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(19) bind --confirm, link route 404: exit 0"
+  else
+    common_test_fail "(19) bind --confirm, link route 404: exit 0" "got rc=$rc out=$out"
+  fi
+  if [ -f "$scratch/.sapience/project.json" ] && [ "$(jq -r '.project' "$scratch/.sapience/project.json" 2>/dev/null)" = "cid-member" ]; then
+    common_test_pass "(19) bind --confirm, link route 404: file is still written"
+  else
+    common_test_fail "(19) bind --confirm, link route 404: file is still written"
+  fi
+  if echo "$out" | grep -qi "404" && echo "$out" | grep -qi "locally only"; then
+    common_test_pass "(19) bind --confirm, link route 404: reply names the degraded state"
+  else
+    common_test_fail "(19) bind --confirm, link route 404: reply names the degraded state" "out=$out"
+  fi
+  if echo "$out" | grep -qi "suggestions only the project's author sees"; then
+    common_test_pass "(19) bind --confirm, link route 404: non-creator member role note is printed"
+  else
+    common_test_fail "(19) bind --confirm, link route 404: non-creator member role note is printed" "out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 20: --project <value> --confirm, link route 403 -- writes nothing, exits non-zero.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  out="$(GET_PROJECTS_BODY='{"ok":true,"shared":[{"id":"cid-owner","title":"Owner Project","owner":true,"accepted":true,"project":{"key":"owner-project"}}],"received":[]}' \
+    LINK_CODE=403 LINK_BODY='{"error":"forbidden"}' \
+    run_bind_stubbed "$scratch" "$stub_dir" --project "Owner Project" --confirm 2>&1)"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    common_test_pass "(20) bind --confirm, link route 403: refused with a non-zero exit"
+  else
+    common_test_fail "(20) bind --confirm, link route 403: refused with a non-zero exit" "got rc=$rc out=$out"
+  fi
+  if ! [ -e "$scratch/.sapience/project.json" ]; then
+    common_test_pass "(20) bind --confirm, link route 403: no file written"
+  else
+    common_test_fail "(20) bind --confirm, link route 403: no file written"
+  fi
+  if echo "$out" | grep -qi "join the project first"; then
+    common_test_pass "(20) bind --confirm, link route 403: reply names the refusal"
+  else
+    common_test_fail "(20) bind --confirm, link route 403: reply names the refusal" "out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 21: create mode (--name, no --confirm) still fires no mutation under the new mode
+# selector -- restates Case 3's safety property after Phase 2's changes.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  out="$(SAPIENCE_TOKEN="$TOKEN_FIXTURE" run_bind "$scratch" --name "Agent System Work" 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(21) create mode, no --confirm: exit 0 with no curl stub installed"
+  else
+    common_test_fail "(21) create mode, no --confirm: exit 0 with no curl stub installed" "got rc=$rc out=$out"
+  fi
+  if ! [ -e "$scratch/.sapience/project.json" ]; then
+    common_test_pass "(21) create mode, no --confirm: no file written (no mutation occurred)"
+  else
+    common_test_fail "(21) create mode, no --confirm: no file written (no mutation occurred)"
   fi
 }
 

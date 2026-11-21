@@ -249,7 +249,7 @@ and confirms the two-file scope by `git status --short` before staging.
 
 ---
 
-### Phase 2: Link Registration, the 404/403 Policy, Canonical Write, Role Note [NOT STARTED]
+### Phase 2: Link Registration, the 404/403 Policy, Canonical Write, Role Note [COMPLETED]
 
 **Goal**: bind mode registers the repository through the link route, applies the two named
 non-success policies, writes the canonical three-key file through one writer, and reports the
@@ -257,19 +257,21 @@ caller's role and the file to commit.
 
 **Tasks**:
 
-- [ ] Extract today's `jq -n --arg project --arg name --arg repo '{project: $project, name: $name,
+- [x] Extract today's `jq -n --arg project --arg name --arg repo '{project: $project, name: $name,
       repo: $repo}'` write into a `write_link_file()` helper taking cid, display name, and repo
       slug. Route the existing create path through it unchanged, so exactly one writer exists in
-      the file.
-- [ ] Bind-mode default posture (no `--confirm`): after resolving the row in Phase 1, print the
+      the file. *(completed)*
+- [x] Bind-mode default posture (no `--confirm`): after resolving the row in Phase 1, print the
       literal `POST /v1/people/projects/<cid>/link` payload (`{"repo": "<slug>"}`) via
       `SAPIENCE_DRY_RUN=1 sapience_post` and exit 0 without POSTing. Document in the header that
       this posture makes the one resolving `GET` (a read) while create-mode dry-run makes no call
-      at all.
-- [ ] Existing-link guard: when `.sapience/project.json` already exists and its `project` differs
+      at all. *(completed)*
+- [x] Existing-link guard: when `.sapience/project.json` already exists and its `project` differs
       from the resolved cid, refuse with the exact re-run instruction naming `--force`, exit 1,
-      write nothing. `--force` overwrites.
-- [ ] `--project <value> --confirm`: POST `{"repo": "<slug>"}` to
+      write nothing. `--force` overwrites. *(completed: checked once, before both the dry-run
+      print and the confirmed POST, since it governs whether the invocation should proceed at
+      all)*
+- [x] `--project <value> --confirm`: POST `{"repo": "<slug>"}` to
       `/v1/people/projects/<cid>/link`, then branch on `sapience_api_post_http_status` only:
       - `2xx` with `.ok == true` → `write_link_file()`, report success, exit 0.
       - `404` → `write_link_file()` anyway, report plainly that the server did not accept the link
@@ -277,20 +279,29 @@ caller's role and the file to commit.
       - `403` → write nothing, report "join the project first", exit 2.
       - any other non-2xx, a non-JSON body, or a missing `ok: true` → loud named failure, write
         nothing, exit 2.
-- [ ] Add an inline MUST NOT comment at the response-handling site: the cid comes from the picked
+      *(completed: discovered and worked around a latent bug in this sense -- calling
+      `sapience_post` via `x="$(sapience_post ...)"` command substitution forks a subshell, so
+      its non-local `sapience_api_post_http_status` assignment never reaches the caller and
+      reads back empty; the bind path instead redirects `sapience_post`'s stdout to a temp file,
+      which keeps the call in-process so the status assignment is actually visible. Recorded
+      inline in the script and as an issue-log entry; `sapience-api-lib.sh` itself is untouched,
+      staying within this phase's declared scope)*
+- [x] Add an inline MUST NOT comment at the response-handling site: the cid comes from the picked
       row; the link response's `project` field is the `{kind, key, name}` descriptor dict and is
-      never a cid, unlike the share response's `.share.id`.
-- [ ] Role note, from the picked row's own `owner` flag (no extra call): creator → their notes flow
+      never a cid, unlike the share response's `.share.id`. *(completed)*
+- [x] Role note, from the picked row's own `owner` flag (no extra call): creator → their notes flow
       to the collaborator; non-creator accepted member → their notes land as suggestions only the
-      author sees until confirmed. Printed on the success path and on the 404 path.
-- [ ] End the reply with the exact file to commit (`<toplevel>/.sapience/project.json`). Confirm by
-      grep that the bind path contains no `git` invocation of any kind.
-- [ ] Add test cases 18-21: (18) bind success writes the three-key file byte-identically to the
+      author sees until confirmed. Printed on the success path and on the 404 path. *(completed)*
+- [x] End the reply with the exact file to commit (`<toplevel>/.sapience/project.json`). Confirm by
+      grep that the bind path contains no `git` invocation of any kind. *(completed: grep over
+      the bind-mode block for "git " returns no match)*
+- [x] Add test cases 18-21: (18) bind success writes the three-key file byte-identically to the
       expected `link_text()` output and calls the link route exactly once (the stub increments a
       counter file per link-URL hit; assert `1`); (19) a `404` from the link route writes the file
       and the report names the degraded state, exit 0; (20) a `403` writes nothing and exits
       non-zero; (21) create mode with `--name` and no `--confirm` still fires no mutation (restate
-      the existing dry-run safety property against the new mode selector).
+      the existing dry-run safety property against the new mode selector). *(completed: all 21
+      cases, 49 assertions, pass against the source store)*
 
 **Timing**: 2 hours
 

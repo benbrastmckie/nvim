@@ -1,0 +1,66 @@
+{
+  "phase": 2,
+  "phase_name": "Link Registration, the 404/403 Policy, Canonical Write, Role Note",
+  "started_at": "2026-11-21T00:00:00Z",
+  "last_updated": "2026-11-21T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extract the project.json write into write_link_file(), route create path through it",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Bind-mode dry-run posture: print link payload via SAPIENCE_DRY_RUN=1 sapience_post, exit 0",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Existing-link guard: refuse a conflicting prior binding unless --force",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 4,
+      "description": "--project <value> --confirm: POST the link route, branch on HTTP status (2xx/404/403/other)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 5,
+      "description": "MUST NOT comment: link response's project field is a descriptor dict, never a cid",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Role note from the picked row's owner flag, printed on success and 404 paths",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 7,
+      "description": "End the reply with the exact file to commit; confirm no git invocation in the bind path",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 8,
+      "description": "Add test cases 18-21 with a link-route stub branch and call counter",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-project-bind.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Call sapience_post via x=\"$(sapience_post ...)\" command substitution in the bind-mode confirm path, then branch on sapience_api_post_http_status",
+      "result": "failed",
+      "reason": "command substitution forks a subshell; sapience_post's non-local sapience_api_post_http_status assignment never reaches the caller, so the status always read back empty and the case statement always fell through to the default/loud-failure branch regardless of the real HTTP status"
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}
