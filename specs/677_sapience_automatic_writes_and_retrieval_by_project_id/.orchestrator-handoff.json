@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 23,
+  "summary": "Wrote a five-phase implementation plan for the Sapience project-id automatic paths. Scope follows the research report's governing finding: write-side project_cid is EXCLUDED (sf1-engine integration/project-link.md section 10 Ruling 7, agreed by this repo's linked-repo-write-policy.md and rules/sapience-write-path.md), so the three write scripts are untouched. The plan delivers a shared link resolver in scripts/lib/sapience-api-lib.sh, the read-side project_cid path in sapience-retrieve.sh with a URL-recording negative control pinned before the change, and a per-repo-scoping.md design statement including the &project= vs project_cid distinction and the vendor mcp.py project argument. validate-artifact.sh passes with 0 warnings.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/plans/01_sapience-project-id-automatic-paths.md",
+      "summary": "Five-phase plan: shared link resolver, read-side project_cid with a pre-pinned no-link negative control, domain-doc design statement, closing verification; write-side project_cid excluded per Ruling 7."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 5,
+  "blockers": []
+}
