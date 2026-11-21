@@ -29,7 +29,7 @@
       "topics": ["sapience", "review-gate", "permissions", "staging"],
       "keywords": ["auto_approve", "sapience_remember", "sapience_wrapup", "sapience_handoff", "sapience_adddoc", "settings-fragment", "ingest-kos", "7 grants", "scope-matched"],
       "summary": "Staged-and-reviewed transcript-extraction path vs. direct-and-unreviewed MCP write tools and sapience-remember.sh, the now-scope-matched 7-grant/per-project-registration tradeoff, and the four write-tool disposition table",
-      "line_count": 114,
+      "line_count": 119,
       "load_when": {},
       "on_demand": true
     },
@@ -62,7 +62,7 @@
       "topics": ["sapience", "transcript-filter", "orchestration"],
       "keywords": ["source_skip", "harness-started", "subagent", "SAPIENCE_INCLUDE_HEADLESS", "upload.py"],
       "summary": "source_skip() classification mechanics in upload.py and why orchestrated/subagent work cannot reach the vault except by explicit tool call",
-      "line_count": 45,
+      "line_count": 61,
       "load_when": {},
       "on_demand": true
     },
@@ -73,7 +73,7 @@
       "topics": ["sapience", "command-draft-and-picker", "askuserquestion"],
       "keywords": ["most-relevant-doc", "decision-shaped", "sapience-publish.sh", "literal-payload", "option-construction", "3-8-note-bound"],
       "summary": "The /sapience draft-assembly heuristics (most-relevant-doc, decision-shaped), the single approval picker's pre-check defaults and literal-payload discipline, the option-construction marker site, and the dark project_cid migration path",
-      "line_count": 108,
+      "line_count": 126,
       "load_when": {},
       "on_demand": true
     },

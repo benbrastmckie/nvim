@@ -112,3 +112,8 @@ recorded decision rather than silence:
 Naming a tool in this table is **discussion**, not prescription: the standing rule (see
 `rules/sapience-write-path.md`) distinguishes naming a tool AS the write path a write SHOULD take
 from documenting, as this table does, which tools exist and why each is not used.
+
+This disposition is unchanged in a repo carrying `.sapience/project.json`: Ruling 2 in
+`context/project/sapience/domain/linked-repo-write-policy.md` holds the mid-run ban in force for
+both a linked and an unlinked repo, for both the person's own typed decisions and
+agent-authored findings, so nothing in the table above is reconsidered on linkage alone.

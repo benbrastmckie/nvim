@@ -43,3 +43,19 @@ tool call; see `review-gate-boundary.md`'s `## Write-Tool Disposition` section f
 the four MCP write tools is named as the write path. This is the direct motivation for this
 extension's gap-2 instruction: a documentation-only postflight call is not a workaround for a
 missing feature, it is the only mechanism that can function at all for orchestrated dispatches.
+
+## Ruling 4: Link State Does Not Loosen This Filter
+
+A repo carrying `.sapience/project.json` gets no exemption from `source_skip()`:
+`subagent`/`harness-started` classification is a fixed, non-overridable gate independent of
+project linkage, and the premise that the postflight pass makes the filter redundant does not
+hold either. Postflight writes a bounded, curated 3-8-note set the completing agent itself
+selected as noteworthy -- a different object from the full raw transcript, not a superset of it.
+Admitting the full orchestrated transcript into extraction alongside that curated set would
+reintroduce exactly the unbounded, unreviewed, un-curated volume this filter and the write-path
+bound both exist to prevent. See
+`context/project/sapience/domain/linked-repo-write-policy.md`'s Ruling 4 for the full
+cross-harness statement of this ruling.
+
+**Check**: a linked repo's session transcripts classify `subagent`/`harness-started` in
+`~/.sapience/source_rules.json` exactly as an unlinked repo's do -- linking changes no verdict.

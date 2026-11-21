@@ -35,6 +35,24 @@ greatest `activity.at` whose `activity.by` is NOT the running identity. If no su
 pick the doc with the greatest `updated`. Break any remaining tie by lexicographically smallest
 slug. Never hardcode a slug — every run re-derives this from the live envelope.
 
+## Ruling 5: A Member's Own Pending Suggestions Surface Through This Draft
+
+A non-creator member's own tagged note lands server-side as a suggestion only that member sees
+until confirmed (an empty `cross = doors & (sent | added | ...)` intersection, since this
+repo's own binding is always the owner side -- `sapience-project-bind.sh` always creates a
+fresh project rather than joining one). No new mechanism answers this: `vault.suggestions` is
+already wired into `sapience-vault-read.sh`'s read envelope and is already folded into this
+draft-assembly step, so it fires on every interactive `/sapience` invocation in a linked repo
+with no new code needed. When the envelope's `vault.suggestions` is non-empty, the assembled
+draft names each pending suggestion in its summary text -- never silently omitted -- so the
+member can see what is waiting. Promoting a suggestion to a confirmed note remains the member's
+own action inside the Sapience app, never performed autonomously by an agent from this draft.
+See `context/project/sapience/domain/linked-repo-write-policy.md`'s Ruling 5 for the full
+rationale and the member/owner-side asymmetry it rests on.
+
+**Check**: a `/sapience` dry-run against a fixture `vault.suggestions` payload with at least one
+entry produces a draft naming the pending suggestion in its summary text.
+
 ## Decision-Shaped (a rule, not a judgment)
 
 The assembled draft is decision-shaped iff EITHER of the following holds:

@@ -302,38 +302,46 @@ pre-change file and by the suite's own pass count, not by this estimate.
 
 ---
 
-### Phase 3: Rule File and Existing-Doc Ruling Pointers [NOT STARTED]
+### Phase 3: Rule File and Existing-Doc Ruling Pointers [COMPLETED]
 
 **Goal**: Each ruling reachable from the surface that already owns its reasoning, and the rule
 file's own corpus figures corrected to measured values.
 
 **Tasks**:
 
-- [ ] Add a "Link State Does Not Change the Write Path" section to
+- [x] Add a "Link State Does Not Change the Write Path" section to
       `agent-system/extensions/sapience/rules/sapience-write-path.md` stating Rulings 1 and 2: the
       grant is link-state-independent; the mid-run ban holds for both the person's typed decisions
       and agent-authored findings; a linked repo's project-tagged writes inherit the existing
       3-8-note bound and never add a second one. Point to the new record for the full rulings and
       to `sf1-engine`'s `integration/project-link.md` section 10 for the cross-harness contract.
-- [ ] Correct that file's corpus figure. It currently reads "14 files under the source store path,
+      *(completed)*
+- [x] Correct that file's corpus figure. It currently reads "14 files under the source store path,
       exactly three of which legitimately name the MCP write tools." The 14 is accurate; re-measure
       the second number after Phase 1 landed its new record and write the measured value.
-- [ ] Add the sanctioned-discussion sites the list is missing — `EXTENSION.md` (its prohibition and
+      *(completed: measured 5 of 14 via the named grep; wrote 5 and named all five files)*
+- [x] Add the sanctioned-discussion sites the list is missing — `EXTENSION.md` (its prohibition and
       vendor-supersession prose) and `index-entries.json` (its `keywords` array) — plus the new
       `linked-repo-write-policy.md` record, so the advisory inspection the rule prescribes has a
       correct baseline instead of flagging four legitimate sites.
-- [ ] Add Ruling 4 to `context/project/sapience/domain/transcript-filter-ceiling.md`: the
+      *(completed: also added the rule file's own "Permission Grant" section as the fourth
+      previously-missing legitimate site)*
+- [x] Add Ruling 4 to `context/project/sapience/domain/transcript-filter-ceiling.md`: the
       `source_skip()` filter stays in force in a linked repo, and the postflight pass does not make
       it redundant — a bounded curated set is a different object from the raw transcript, and
-      admitting the latter would reopen the leak surfaces `sf1-engine` ruling 7 names.
-- [ ] Add Ruling 5 to `context/project/sapience/domain/command-draft-and-picker.md`, next to the
+      admitting the latter would reopen the leak surfaces `sf1-engine` ruling 7 names. *(completed)*
+- [x] Add Ruling 5 to `context/project/sapience/domain/command-draft-and-picker.md`, next to the
       Stage 3 draft-assembly material it concerns: `vault.suggestions` is the ruled surfacing path
       for a member's own pending suggestions, and promoting one stays the member's action.
-- [ ] Add a Ruling 2 pointer to `context/project/sapience/domain/review-gate-boundary.md`'s
+      *(completed)*
+- [x] Add a Ruling 2 pointer to `context/project/sapience/domain/review-gate-boundary.md`'s
       `## Write-Tool Disposition` section: the disposition is unchanged in a linked repo.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
-      resync the three edited context files' `line_count` values.
-- [ ] Use no task-number references in any edited file (all are deliverables outside `specs/**`).
+      *(completed)*
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` to
+      resync the three edited context files' `line_count` values. *(completed: review-gate-boundary.md
+      114->119, transcript-filter-ceiling.md 45->61, command-draft-and-picker.md 108->126)*
+- [x] Use no task-number references in any edited file (all are deliverables outside `specs/**`).
+      *(completed: verified via grep, zero matches)*
 
 **Timing**: 1.5 hours
 

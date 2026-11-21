@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Rule File and Existing-Doc Ruling Pointers",
+  "started_at": "2026-11-21T00:00:00Z",
+  "last_updated": "2026-11-21T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Link-State section (Rulings 1-2) + corrected corpus figure + completed sanctioned-discussion list to rules/sapience-write-path.md", "status": "done", "files_touched": ["agent-system/extensions/sapience/rules/sapience-write-path.md"]},
+    {"id": 2, "description": "Add Ruling 4 to transcript-filter-ceiling.md", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/transcript-filter-ceiling.md"]},
+    {"id": 3, "description": "Add Ruling 5 to command-draft-and-picker.md", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/command-draft-and-picker.md"]},
+    {"id": 4, "description": "Add Ruling 2 pointer to review-gate-boundary.md Write-Tool Disposition section", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md"]},
+    {"id": 5, "description": "Resync index-entries.json line_count values via generate-context-line-counts.sh --write", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
