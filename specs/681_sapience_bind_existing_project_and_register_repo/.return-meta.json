@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "dispatch_seq": 1,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/681_sapience_bind_existing_project_and_register_repo/reports/01_bind-existing-project-register-repo.md",
+      "summary": "Ground-truths the Sapience repo-link route and vendor CLI link_cmd directly against the live server source, confirms the real GET /v1/people/projects response shape and the 404/403 gate order, and flags two implementation pitfalls (a schema mismatch reused from adjacent out-of-scope call sites, and the link response's project field not being a cid) plus a real design tension between delegating to the vendor sapience link and this task's own 404-write requirement."
+    }
+  ],
+  "next_steps": "Run /orchestrate 681 to create an implementation plan",
+  "metadata": {
+    "session_id": "sess_1795284367_d33b60_681",
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 9
+  },
+  "memory_candidates": [
+    {
+      "content": "On this machine, the NixOS-packaged `sapience` binary on $PATH is a fixed bash `case` dispatcher (extract_local.py/mcp.py per-subcommand) with no fallback to sapience_cli.py's own argument parser -- an unrecognized subcommand (e.g. `sapience link`) always prints \"unknown command\" and exits 2, regardless of what the installed ~/.sapience/sapience_cli.py itself supports. Any future script that wants to use a sapience_cli.py-only subcommand must invoke `python3 \"$HOME/.sapience/sapience_cli.py\" <subcommand> ...` directly, never through the $PATH `sapience` wrapper. Detecting whether the installed sapience_cli.py supports a given subcommand should be a static grep against its source (e.g. `grep -q \"sub == '<name>'\"`), not a live invocation.",
+      "category": "PATTERN",
+      "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/reports/01_bind-existing-project-register-repo.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["sapience", "sapience_cli.py", "nix", "PATH wrapper", "delegation", "subcommand detection"]
+    },
+    {
+      "content": "The real Sapience server's GET /v1/people/projects response shape is {ok, candidates, shared, received, invites, sources_available, completeness, me} -- shared = projects this token created, received = projects shared to this token (active, not revoked, may include not-yet-accepted invites). Each row carries id/title/owner/accepted/from/members/project{kind,key,name}/linked_repos. Two existing call sites in agent-system/extensions/sapience (sapience-publish.sh's ko subcommand, sapience-vault-read.sh's notes_cid resolution) instead parse this response as `(if has(\"projects\") then .projects elif (type==\"array\") then . else [] end)`, which matches neither this shape nor any other /v1/people/projects*-family response found in brain_server.py -- that jq expression resolves to [] against the live server every time, so both call sites' resolution may already be silently empty in production. Confirmed by direct read of brain_server.py's _people_projects/project_register/_project_register_full, not by a live network probe.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/reports/01_bind-existing-project-register-repo.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["sapience", "GET /v1/people/projects", "schema mismatch", "jq", "latent bug"]
+    },
+    {
+      "content": "Sapience's POST /v1/people/projects/<cid>/link route (repo_link.py / brain_server.py's project_repo_link) returns, on success, {ok:true, project:{kind,key,name}, name:<display>} -- the `project` field here is the project DESCRIPTOR DICT, not the channel cid, unlike POST /v1/people/projects/share's response where `.share.id` IS the cid. A caller linking to an existing project already has the cid from its own pick step and must never try to re-derive it from this response. Gate order: _docs_write_gate (401 on no token) -> repo_link.enabled(tok) (REPO_LINK_FOR env allowlist, off by default -> 404 \"not found\") -> _project_link_gate (channel/member not found -> 404 \"no such project share\"; active member but not accepted_member -> 403 \"join the project first\").",
+      "category": "INSIGHT",
+      "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/reports/01_bind-existing-project-register-repo.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["sapience", "repo_link.py", "project link route", "404", "403", "gate order"]
+    }
+  ]
+}

@@ -54,6 +54,8 @@ next_project_number: 684
 579 [NOT STARTED] — Record the selector's full-path-set aggregation rule in the...
 580 [NOT STARTED] — Correct the interactive-selection threshold model to...
   └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt... (see above)
+586 [PARTIAL] — Stand up the suite and gate wall-clock cost consumer: delete,...
+  └─ 605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 590 [RESEARCHED] — Resolve the /ide dead-command-recommendation findings
 613 [NOT STARTED] — Make session liveness distinguish a dead same-process session...
 618 [NOT STARTED] — Determine what leaves files in the working tree and give...
@@ -70,7 +72,6 @@ next_project_number: 684
 523 [NOT STARTED] — Make Gate 27 MISSING\_DECLARATION count call sites, not...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
-605 [NOT STARTED] — Flag an advisory known-failures roster row whose named suite...
 
 ### Extensions
 
@@ -193,7 +194,7 @@ next_project_number: 684
 
 678 [RESEARCHING] — Decide and encode how a Claude Code session in a linked repo...
   └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
-681 [RESEARCHING] — Let the Sapience extension bind a repository to an existing...
+681 [RESEARCHED] — Let the Sapience extension bind a repository to an existing...
   └─ 677 [NOT STARTED] — Make the Sapience extension's automatic paths use the linked...
     └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a... (see above)
 682 [RESEARCHING] — Stop writing the Sapience token into the per-project MCP...
@@ -203,11 +204,6 @@ next_project_number: 684
 ### Decidability
 
 557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
-
-### Uncategorized
-
-586 [PARTIAL] — Stand up the suite and gate wall-clock cost consumer: delete,...
-  └─ 605 [NOT STARTED] — (core-agent-system: Flag an advisory known-failures...) (see above)
 
 ## Tasks
 
@@ -232,10 +228,11 @@ next_project_number: 684
 ---
 
 ### 681. Sapience bind existing project and register repo
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
+- **Research**: [681_sapience_bind_existing_project_and_register_repo/reports/01_bind-existing-project-register-repo.md]
 
 **Description**: Let the Sapience extension bind a repository to an existing shared project as well as to a new one, and register the repository with the server, so every repository a person works in can be linked the same way. Territory: agent-system/extensions/sapience/ (scripts/sapience-project-bind.sh, scripts/lib/sapience-api-lib.sh, commands/sapience.md, skills/skill-sapience/SKILL.md, context/project/sapience/domain/per-repo-scoping.md and command-draft-and-picker.md, scripts/tests/test-sapience-project-bind.sh). Today sapience-project-bind.sh has one mode: it creates a FRESH project through POST /v1/people/projects/share and writes .sapience/project.json. It cannot bind to a project the person already belongs to (a project a collaborator created and shared appears under `received` in GET /v1/people/projects and is unreachable from the script), it never calls POST /v1/people/projects/<cid>/link, so the server's linked-repository list never learns of a repository the script bound, and with two connections of the same display name it refuses without --to. The app's own client carries `sapience link [<name or id>]`, which lists accepted and owned projects, registers the repository and writes the same file. Build: (1) a pick mode: with no project named, list the caller's accepted and owned projects (title, id, creator or member) and exit non-zero without writing; with --project <name or id>, bind to that one; (2) keep the create mode behind its existing --name and --confirm pair; (3) in both modes register the repository through the link route and treat a 404 (feature not available for this account) as a named, non-fatal state in which the file is still written and the reply says the server does not read it yet, and a 403 (not a member) as a refusal that writes nothing; (4) when the installed vendor client provides `sapience link`, delegate pick-and-register to it and keep this script's own HTTP path only as the fallback for a client that predates it, with the file byte-identical on either path, proved by a test; (5) state in the reply what the caller's role means for their notes (a creator's notes flow to the collaborator; a non-creator member's land as suggestions only the author sees until confirmed), so binding to someone else's project is a known choice; (6) surface the pick in /sapience as its first step in a repository with no link file, through the command's one approval picker, never as an unattended write; (7) the reply ends with the exact file to commit, and the script commits nothing. Tests against a stub: pick lists both registers, bind-existing writes the three-key file and calls the link route once, a 404 writes the file and reports the state, a 403 writes nothing, create still refuses without --confirm. Belongs before sapience_automatic_writes_and_retrieval_by_project_id in dispatch order, which reads the file this writes. Done when running the bind from a fresh clone of any repository links it to a chosen existing project or a new one and the repository appears in that project's linked-repository list where the server supports it.
 
@@ -3244,6 +3241,7 @@ The documentary check (the rule present at the sited section, reachable from the
 ### 586. Stand up the suite and gate wall-clock cost consumer: delete, optimize, or demote every suite the probe indicts
 - **Status**: [PARTIAL]
 - **Task Type**: meta
+- **Topic**: core-agent-system
 - **Dependencies**: Task 476
 - **Research**: [586_suite_gate_cost_standing_consumer/reports/02_suite-cost-verdict-table.md]
 - **Plan**: [586_suite_gate_cost_standing_consumer/plans/02_suite-cost-consumer-actions.md]
