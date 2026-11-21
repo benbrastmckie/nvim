@@ -192,7 +192,7 @@ next_project_number: 684
 
 ### Sapience
 
-681 [PLANNED] — Let the Sapience extension bind a repository to an existing...
+681 [IMPLEMENTING] — Let the Sapience extension bind a repository to an existing...
   └─ 677 [NOT STARTED] — Make the Sapience extension's automatic paths use the linked...
     └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
 682 [PLANNED] — Stop writing the Sapience token into the per-project MCP...
@@ -230,7 +230,7 @@ next_project_number: 684
 ---
 
 ### 681. Sapience bind existing project and register repo
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None

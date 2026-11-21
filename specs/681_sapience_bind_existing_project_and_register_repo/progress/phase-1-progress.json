@@ -1,0 +1,62 @@
+{
+  "phase": 1,
+  "phase_name": "Pick Mode — Listing and --project Resolution (Read-Only)",
+  "started_at": "2026-11-21T00:00:00Z",
+  "last_updated": "2026-11-21T00:00:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extend arg loop with --project and --force; mutual-exclusivity and confirm-without-mode guards; mode selector (create/bind/pick)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 2,
+      "description": "fetch_project_rows() row-extraction helper over GET /v1/people/projects with the correct (.shared // []) + (.received // []) filter, forbidding the has(\"projects\") idiom",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Pick mode listing (title/id/creator-or-member), exit 1, empty-set named refusal",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 4,
+      "description": "--project matching (case-insensitive id/title/project.key), exactly-one-match resolution capturing cid/display_name/owner",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Header comment and usage() updated for three modes and new flags; exit-code table extended",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/sapience-project-bind.sh"]
+    },
+    {
+      "id": 6,
+      "description": "Test suite curl stub extended with GET_PROJECTS_BODY/GET_PROJECTS_CODE branch for *v1/people/projects\\?*",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-project-bind.sh"]
+    },
+    {
+      "id": 7,
+      "description": "Test cases 15-17 (pick lists shared+received accepted rows; unaccepted received row excluded; --project nonexistent refuses)",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-project-bind.sh"]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.1",
+      "description": "Extend the argument loop with --project and --force",
+      "type": "altered",
+      "reason": "Added an explicit refusal for --confirm given with neither --name nor --project, to preserve pre-existing Case 2 (\"--confirm alone\" refuses mentioning --name) under the new mode selector, which the plan's task text did not spell out but which backward compatibility with cases 1-14 requires.",
+      "annotation": "*(completed: also added an explicit refusal for --confirm given with neither --name nor --project, needed to keep pre-existing Case 2 green under the new mode selector)*"
+    }
+  ]
+}

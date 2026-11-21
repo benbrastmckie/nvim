@@ -42,6 +42,10 @@
 #        sapience-remember.sh's copy (the lockstep guard's own precondition, checked here too so
 #        a divergence is caught at this suite's own level, not only in test-sapience-mcp-
 #        registration.sh's Case 30).
+#   (15) Pick mode (no --name, no --project) lists one `shared` row and one `received` accepted
+#        row with the correct [creator]/[member] labels, exits non-zero, writes nothing.
+#   (16) A `received` row with accepted:false and owner:false is excluded from the pick listing.
+#   (17) `--project nonexistent` refuses with a non-zero exit and writes nothing.
 #
 # Follows the core shell-test convention: common_test_pass/_fail/_info from lib/common.sh,
 # PASSED/FAILED integer counters, a mktemp -d workdir with a trap EXIT cleanup,
@@ -173,6 +177,10 @@ case "$url" in
   *v1/people/projects/share*)
     printf '%s' "${POST_SHARE_BODY:-{\}}"
     printf '\n%s' "${POST_SHARE_CODE:-200}"
+    ;;
+  *v1/people/projects\?*)
+    printf '%s' "${GET_PROJECTS_BODY:-{\}}"
+    printf '\n%s' "${GET_PROJECTS_CODE:-200}"
     ;;
   *)
     echo "test stub: unrecognized URL: $url" >&2
@@ -443,6 +451,85 @@ run_loud_failure_case 12 "missing ok:true" "200" '{"to":["X"],"share":{"id":"c1"
     common_test_pass "(14) worktree-checkout-resolution block is byte-identical to sapience-remember.sh's"
   else
     common_test_fail "(14) worktree-checkout-resolution block is byte-identical to sapience-remember.sh's"
+  fi
+}
+
+# =====================================================================================
+# Case 15: pick mode lists one `shared` row and one `received` accepted row with the correct
+# [creator]/[member] labels, exits non-zero, writes nothing.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  out="$(GET_PROJECTS_BODY='{"ok":true,"shared":[{"id":"cid-owner","title":"Owner Project","owner":true,"accepted":true,"project":{"key":"owner-project"}}],"received":[{"id":"cid-member","title":"Member Project","owner":false,"accepted":true,"project":{"key":"member-project"}}]}' \
+    run_bind_stubbed "$scratch" "$stub_dir" 2>&1)"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    common_test_pass "(15) pick mode: exits non-zero"
+  else
+    common_test_fail "(15) pick mode: exits non-zero" "got rc=$rc out=$out"
+  fi
+  if echo "$out" | grep -q "Owner Project  (cid-owner)  \[creator\]"; then
+    common_test_pass "(15) pick mode: lists the owned shared row as [creator]"
+  else
+    common_test_fail "(15) pick mode: lists the owned shared row as [creator]" "out=$out"
+  fi
+  if echo "$out" | grep -q "Member Project  (cid-member)  \[member\]"; then
+    common_test_pass "(15) pick mode: lists the accepted received row as [member]"
+  else
+    common_test_fail "(15) pick mode: lists the accepted received row as [member]" "out=$out"
+  fi
+  if ! [ -e "$scratch/.sapience/project.json" ]; then
+    common_test_pass "(15) pick mode: writes nothing"
+  else
+    common_test_fail "(15) pick mode: writes nothing"
+  fi
+}
+
+# =====================================================================================
+# Case 16: a `received` row with accepted:false and owner:false is excluded from the listing.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  out="$(GET_PROJECTS_BODY='{"ok":true,"shared":[],"received":[{"id":"cid-unaccepted","title":"Unaccepted Project","owner":false,"accepted":false,"project":{"key":"unaccepted-project"}}]}' \
+    run_bind_stubbed "$scratch" "$stub_dir" 2>&1)"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    common_test_pass "(16) unaccepted received row: pick mode still exits non-zero"
+  else
+    common_test_fail "(16) unaccepted received row: pick mode still exits non-zero" "got rc=$rc out=$out"
+  fi
+  if ! echo "$out" | grep -q "Unaccepted Project"; then
+    common_test_pass "(16) unaccepted received row: excluded from the listing"
+  else
+    common_test_fail "(16) unaccepted received row: excluded from the listing" "out=$out"
+  fi
+  if echo "$out" | grep -qi "not on any shared project"; then
+    common_test_pass "(16) unaccepted received row: empty filtered set names its own refusal"
+  else
+    common_test_fail "(16) unaccepted received row: empty filtered set names its own refusal" "out=$out"
+  fi
+}
+
+# =====================================================================================
+# Case 17: --project nonexistent refuses with a non-zero exit and writes nothing.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  out="$(GET_PROJECTS_BODY='{"ok":true,"shared":[{"id":"cid-owner","title":"Owner Project","owner":true,"accepted":true,"project":{"key":"owner-project"}}],"received":[]}' \
+    run_bind_stubbed "$scratch" "$stub_dir" --project "nonexistent" 2>&1)"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    common_test_pass "(17) --project nonexistent: refused with a non-zero exit"
+  else
+    common_test_fail "(17) --project nonexistent: refused with a non-zero exit" "got rc=$rc out=$out"
+  fi
+  if ! [ -e "$scratch/.sapience/project.json" ]; then
+    common_test_pass "(17) --project nonexistent: no file written"
+  else
+    common_test_fail "(17) --project nonexistent: no file written"
   fi
 }
 

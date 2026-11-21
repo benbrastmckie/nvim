@@ -2,7 +2,7 @@
 
 - **Task**: 681 - Let the Sapience extension bind a repository to an existing shared project as
   well as to a new one, and register the repository with the server
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 8 hours
 - **Dependencies**: None blocking. Ordered before
   `sapience_automatic_writes_and_retrieval_by_project_id`, which reads the file this task writes.
@@ -171,41 +171,46 @@ the script header so the divergence is deliberate rather than accidental.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Pick Mode — Listing and `--project` Resolution (Read-Only) [NOT STARTED]
+### Phase 1: Pick Mode — Listing and `--project` Resolution (Read-Only) [COMPLETED]
 
 **Goal**: `sapience-project-bind.sh` can list the caller's accepted and owned projects and
 resolve a `--project <name|id>` to exactly one row, writing nothing and POSTing nothing.
 
 **Tasks**:
 
-- [ ] Extend the argument loop with `--project <name|id>` and `--force`, keeping `--name`,
+- [x] Extend the argument loop with `--project <name|id>` and `--force`, keeping `--name`,
       `--confirm`, `--to` unchanged. Refuse loudly when both `--name` and `--project` are given
-      (two different modes, never silently preferring one).
-- [ ] Replace the unconditional `--name is required` guard with a mode selector: `--name` present
+      (two different modes, never silently preferring one). *(completed: also added an explicit
+      refusal for `--confirm` given with neither `--name` nor `--project`, needed to keep
+      pre-existing Case 2 green under the new mode selector)*
+- [x] Replace the unconditional `--name is required` guard with a mode selector: `--name` present
       → create mode (today's behavior, unchanged); `--project` present → bind mode; neither →
-      pick mode.
-- [ ] Add a row-extraction helper over `sapience_get "/v1/people/projects"`: validate the body is
+      pick mode. *(completed)*
+- [x] Add a row-extraction helper over `sapience_get "/v1/people/projects"`: validate the body is
       JSON, then take `(.shared // []) + (.received // []) | map(select(.accepted or .owner))`.
       Add an inline comment stating that `has("projects")` / bare-array handling is **wrong** for
       this endpoint and naming the two adjacent call sites that use it, so the idiom is not
-      reintroduced by a future reader.
-- [ ] Pick mode: print one line per row as `<title>  (<id>)  [creator|member]`, derived from the
+      reintroduced by a future reader. *(completed: fetch_project_rows())*
+- [x] Pick mode: print one line per row as `<title>  (<id>)  [creator|member]`, derived from the
       row's own `owner` flag; exit 1; write nothing. An empty filtered row set is its own named
-      refusal ("you are not on any shared project yet"), exit 1.
-- [ ] `--project <value>`: match case-insensitively against `id`, `title`, and `project.key`;
+      refusal ("you are not on any shared project yet"), exit 1. *(completed)*
+- [x] `--project <value>`: match case-insensitively against `id`, `title`, and `project.key`;
       exactly one match or a named refusal pointing at the no-argument listing, exit 1. Capture
       `cid` (the row's `id`), `display_name` (`title // project.name // id`), and `owner`.
-- [ ] Update the file header comment and `usage()` for the three modes and the new flags, and
-      extend the exit-code table.
-- [ ] Extend the test suite's curl stub with a branch for `*v1/people/projects\?*` driven by
+      *(completed: resolution only in this phase, per the phase Goal -- the resolved
+      cid/display_name/owner are printed and the script exits 0 with no write/POST; a later phase
+      replaces that exit with the dry-run/--confirm link-registration flow)*
+- [x] Update the file header comment and `usage()` for the three modes and the new flags, and
+      extend the exit-code table. *(completed)*
+- [x] Extend the test suite's curl stub with a branch for `*v1/people/projects\?*` driven by
       `GET_PROJECTS_BODY` / `GET_PROJECTS_CODE`, placed alongside the existing
       `*v1/people/projects/share*` branch (the two URL patterns are disjoint — `/projects?` versus
       `/projects/<cid>/share` — so no ordering dependency is introduced; assert this by keeping
-      both cases green).
-- [ ] Add test cases 15-17: (15) pick mode lists one `shared` row and one `received` accepted row
+      both cases green). *(completed)*
+- [x] Add test cases 15-17: (15) pick mode lists one `shared` row and one `received` accepted row
       with the correct `[creator]`/`[member]` labels, exits non-zero, writes nothing; (16) a
       `received` row with `accepted: false` and `owner: false` is excluded from the listing;
-      (17) `--project nonexistent` refuses with a non-zero exit and writes nothing.
+      (17) `--project nonexistent` refuses with a non-zero exit and writes nothing. *(completed)*
 
 **Timing**: 2 hours
 

@@ -1,17 +1,34 @@
 #!/usr/bin/env bash
-# sapience-project-bind.sh - Interactive, confirm-or-refuse creation of a FRESH Sapience project,
-# shared with one collaborator, with the binding persisted to this repo's .sapience/project.json.
+# sapience-project-bind.sh - Three modes over this repo's binding to a Sapience project:
+#   (1) pick mode (no --name, no --project): lists the caller's accepted and owned projects and
+#       exits non-zero, writing and POSTing nothing.
+#   (2) bind mode (--project <name|id>): resolves the value to exactly one already-accepted or
+#       owned project and registers this repository with it through the link route.
+#   (3) create mode (--name <display name>, unchanged from before this script had the other two
+#       modes): confirm-or-refuse creation of a FRESH Sapience project, shared with one
+#       collaborator, with the binding persisted the same way.
 #
-# Usage: sapience-project-bind.sh --name "<display name>" --confirm [--to <person id>]
-#        sapience-project-bind.sh --name "<display name>"                 # dry-run (default)
+# Usage: sapience-project-bind.sh                                          # pick (list, exit non-zero)
+#        sapience-project-bind.sh --project "<name or id>" --confirm [--force]
+#        sapience-project-bind.sh --project "<name or id>"                 # bind dry-run (default)
+#        sapience-project-bind.sh --name "<display name>" --confirm [--to <person id>]
+#        sapience-project-bind.sh --name "<display name>"                 # create dry-run (default)
 #
-# This is the ONE outward-facing mutation in the sapience-project-binding-and-vault-read task
-# group: POST /v1/people/projects/share notifies the named collaborator immediately. It therefore
-# MUST happen interactively, with the user confirming the project NAME, never autonomously and
-# never during an unattended run. Both an explicit --name and a separate, non-default --confirm
-# flag are required before any network call fires; omitting either refuses with a non-zero exit
-# and no call. The default posture (no --confirm) is --dry-run: print the literal payload this
-# script would send (to, project.kind, project.key, follow) and exit 0 without a network call.
+# --name and --project are mutually exclusive: two different modes, never silently preferring
+# one. --confirm requires one of them; given alone it is refused (nothing to confirm).
+#
+# The create path (--name) is the ONE outward-facing mutation that notifies a collaborator
+# immediately: POST /v1/people/projects/share. It therefore MUST happen interactively, with the
+# user confirming the project NAME, never autonomously and never during an unattended run. Both
+# an explicit --name and a separate, non-default --confirm flag are required before any network
+# call fires; omitting either refuses with a non-zero exit and no call. The default posture (no
+# --confirm) is --dry-run: print the literal payload this script would send (to, project.kind,
+# project.key, follow) and exit 0 without a network call.
+#
+# The bind path (--project) registers this repository with a project the caller already belongs
+# to (accepted member or owner) via POST /v1/people/projects/<cid>/link -- this registration
+# itself, the 404/403 outcome policy, and the canonical write are added in a later phase; THIS
+# phase only resolves --project to exactly one row, writing and POSTing nothing.
 #
 # Why creating (never reusing) a project matters MECHANICALLY, not as a preference: the server's
 # project_split_confirmed computes `cross = doors & (sent | added | first_doors-if-owner-and-not-
@@ -52,9 +69,10 @@
 # MCP tool call.
 #
 # Exit codes:
-#   0 - dry-run printed (no --confirm), or the share succeeded and .sapience/project.json was
-#       written
-#   1 - bad arguments (missing --name, missing --confirm's required pairing, ambiguous --to),
+#   0 - dry-run printed (no --confirm), the share succeeded and .sapience/project.json was
+#       written, or (bind mode, this phase) --project resolved to exactly one row
+#   1 - bad arguments (both --name and --project, --confirm with neither, missing --name's or
+#       --to's value, ambiguous --to, --project matching zero or more than one row),
 #       unresolvable repo toplevel, no token configured, curl transport failure, non-JSON
 #       response, invalid key/repo value
 #   2 - the server reported a failure-shaped response (non-2xx status, empty `to`, missing
@@ -65,24 +83,37 @@ set -euo pipefail
 NAME=""
 CONFIRM="false"
 TO_OVERRIDE=""
+PROJECT_VALUE=""
+# shellcheck disable=SC2034 # consumed by bind mode's existing-link overwrite, added in a later phase
+FORCE="false"
 
 usage() {
   cat >&2 <<'USAGE'
-Usage: sapience-project-bind.sh --name "<display name>" --confirm [--to <person id>]
-       sapience-project-bind.sh --name "<display name>"                 # dry-run (default)
+Usage: sapience-project-bind.sh                                          # pick (list, exit non-zero)
+       sapience-project-bind.sh --project "<name or id>" --confirm [--force]
+       sapience-project-bind.sh --project "<name or id>"                 # bind dry-run (default)
+       sapience-project-bind.sh --name "<display name>" --confirm [--to <person id>]
+       sapience-project-bind.sh --name "<display name>"                 # create dry-run (default)
 
-Required:
-  --name N          Display name for the FRESH project to create and share
+Modes (mutually exclusive):
+  (no flag)         Pick mode: list the caller's accepted and owned projects, exit non-zero
+  --project N        Bind mode: register this repository with the already-accepted/owned
+                     project N (matched case-insensitively against id, title, or project.key)
+  --name N          Create mode: display name for a FRESH project to create and share
 
 Optional:
-  --confirm         Actually perform the outward-facing share (default: dry-run, no network call)
-  --to ID           Collaborator person id (GET /v1/people); required only when this brain has
-                     more than one connection, since the target cannot be inferred unambiguously
+  --confirm         Actually perform the outward-facing call (default: dry-run, no network
+                     mutation); requires --name or --project
+  --to ID           Create mode only: collaborator person id (GET /v1/people); required only
+                     when this brain has more than one connection
+  --force           Bind mode only: overwrite an existing .sapience/project.json bound to a
+                     different project
 
 Exit codes:
-  0 - dry-run printed, or the share succeeded and .sapience/project.json was written
+  0 - dry-run printed, the share/link succeeded and .sapience/project.json was written, or
+      --project resolved to exactly one row (pick/bind resolution only, no write)
   1 - bad arguments, unresolvable repo toplevel, no token, curl/network failure, non-JSON
-      response, invalid key/repo value
+      response, invalid key/repo value, --project matching zero or more than one row
   2 - the server reported a failure-shaped response (non-2xx status, empty 'to', missing
       'ok: true')
 USAGE
@@ -93,11 +124,17 @@ while [ "$#" -gt 0 ]; do
     --name)
       [ "$#" -ge 2 ] || { echo "sapience-project-bind.sh: --name requires a value" >&2; exit 1; }
       NAME="$2"; shift 2 ;;
+    --project)
+      [ "$#" -ge 2 ] || { echo "sapience-project-bind.sh: --project requires a value" >&2; exit 1; }
+      PROJECT_VALUE="$2"; shift 2 ;;
     --confirm)
       CONFIRM="true"; shift ;;
     --to)
       [ "$#" -ge 2 ] || { echo "sapience-project-bind.sh: --to requires a value" >&2; exit 1; }
       TO_OVERRIDE="$2"; shift 2 ;;
+    --force)
+      # shellcheck disable=SC2034 # consumed by bind mode's existing-link overwrite, added in a later phase
+      FORCE="true"; shift ;;
     -h|--help)
       usage; exit 0 ;;
     *)
@@ -107,9 +144,22 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-if [ -z "$NAME" ]; then
-  echo "sapience-project-bind.sh: --name is required (this is an outward-facing mutation; the project name must be explicit, never defaulted)" >&2
+if [ -n "$NAME" ] && [ -n "$PROJECT_VALUE" ]; then
+  echo "sapience-project-bind.sh: --name and --project are mutually exclusive (create mode vs. bind mode) -- never silently preferring one" >&2
   exit 1
+fi
+
+if [ "$CONFIRM" = "true" ] && [ -z "$NAME" ] && [ -z "$PROJECT_VALUE" ]; then
+  echo "sapience-project-bind.sh: --confirm requires --name (create mode) or --project (bind mode); neither was given" >&2
+  exit 1
+fi
+
+if [ -n "$NAME" ]; then
+  MODE="create"
+elif [ -n "$PROJECT_VALUE" ]; then
+  MODE="bind"
+else
+  MODE="pick"
 fi
 
 # --- Paths ---
@@ -177,16 +227,94 @@ case "$repo_slug" in
     ;;
 esac
 
-# --- Derive project.key from --name as a slug: lowercase, non-alphanumeric runs -> single
-# hyphen, trimmed of leading/trailing hyphens, validated against the same repo-name-shaped
-# pattern the server's own key convention expects. ---
-project_key="$(echo "$NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
-if [ -z "$project_key" ] || ! [[ "$project_key" =~ $REPO_NAME_RE ]]; then
-  echo "sapience-project-bind.sh: --name \"$NAME\" produced an invalid project key \"$project_key\" (expected ${REPO_NAME_RE}) -- refusing before any write" >&2
-  exit 1
+# --- Derive project.key from --name as a slug (create mode only): lowercase, non-alphanumeric
+# runs -> single hyphen, trimmed of leading/trailing hyphens, validated against the same
+# repo-name-shaped pattern the server's own key convention expects. ---
+if [ "$MODE" = "create" ]; then
+  project_key="$(echo "$NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
+  if [ -z "$project_key" ] || ! [[ "$project_key" =~ $REPO_NAME_RE ]]; then
+    echo "sapience-project-bind.sh: --name \"$NAME\" produced an invalid project key \"$project_key\" (expected ${REPO_NAME_RE}) -- refusing before any write" >&2
+    exit 1
+  fi
 fi
 
 sapience_api_init || exit 1
+
+# --- fetch_project_rows -- GET /v1/people/projects and echo the caller's accepted-or-owned row
+# set as a compact JSON array on stdout. Shared by pick mode (lists every row) and bind mode
+# (matches --project against this same row set).
+#
+# The REAL response shape is `{ok, candidates, shared, received, invites, ...}` -- never
+# `{projects: [...]}` and never a bare array. The row set is `shared + received`, filtered to
+# `accepted or owner`.
+#
+# MUST NOT reintroduce the `has("projects")` / bare-array idiom: it is WRONG for this endpoint
+# and resolves to `[]` against the real shape. Two call sites elsewhere in this extension already
+# use that wrong idiom -- sapience-publish.sh's `ko` subcommand and sapience-vault-read.sh's
+# `notes_cid` resolution -- both OUT OF THIS TASK'S TERRITORY and deliberately left as a named
+# follow-up rather than fixed here; do not copy their expression into this file.
+#
+# Returns 1 with a stderr message on a transport failure, an empty response, or a non-JSON body.
+fetch_project_rows() {
+  local _fpr_response _fpr_rows
+  _fpr_response="$(sapience_get "/v1/people/projects")" || return 1
+  if [ -z "$_fpr_response" ] || ! echo "$_fpr_response" | jq -e . >/dev/null 2>&1; then
+    echo "sapience-project-bind.sh: non-JSON or empty response from GET /v1/people/projects" >&2
+    return 1
+  fi
+  _fpr_rows="$(echo "$_fpr_response" | jq -c '(.shared // []) + (.received // []) | map(select(.accepted or .owner))' 2>/dev/null)" || {
+    echo "sapience-project-bind.sh: could not extract rows from GET /v1/people/projects" >&2
+    return 1
+  }
+  printf '%s' "$_fpr_rows"
+  unset _fpr_response _fpr_rows
+  return 0
+}
+
+# --- Pick mode (no --name, no --project): list the caller's accepted and owned projects and
+# exit non-zero, writing and POSTing nothing. ---
+if [ "$MODE" = "pick" ]; then
+  pick_rows="$(fetch_project_rows)" || exit 1
+  pick_count="$(echo "$pick_rows" | jq 'length' 2>/dev/null)" || pick_count=0
+  if [ -z "$pick_count" ] || [ "$pick_count" = "0" ]; then
+    echo "sapience-project-bind.sh: you are not on any shared project yet (GET /v1/people/projects returned no accepted/owned rows); create one with --name instead" >&2
+    exit 1
+  fi
+  echo "$pick_rows" | jq -r '
+    .[] | (.title // .project.name // .id // "(untitled)") + "  (" + (.id // "") + ")  [" +
+    (if .owner then "creator" else "member" end) + "]"'
+  exit 1
+fi
+
+# --- Bind mode (--project <name|id>): resolve the value to exactly one accepted-or-owned row,
+# case-insensitively against id, title, and project.key. THIS PHASE resolves only -- it writes
+# and POSTs nothing; link registration is added in a later phase. ---
+if [ "$MODE" = "bind" ]; then
+  bind_rows="$(fetch_project_rows)" || exit 1
+  bind_needle="$(echo "$PROJECT_VALUE" | tr '[:upper:]' '[:lower:]')"
+  bind_matches="$(echo "$bind_rows" | jq -c --arg needle "$bind_needle" '
+    map(select(
+      ((.id // "") | ascii_downcase) == $needle or
+      ((.title // "") | ascii_downcase) == $needle or
+      ((.project.key // "") | ascii_downcase) == $needle
+    ))' 2>/dev/null)" || bind_matches="[]"
+  bind_match_count="$(echo "$bind_matches" | jq 'length' 2>/dev/null)" || bind_match_count=0
+  if [ "$bind_match_count" != "1" ]; then
+    echo "sapience-project-bind.sh: --project \"$PROJECT_VALUE\" matched ${bind_match_count} project(s) (expected exactly 1) -- run with no arguments to list the caller's accepted and owned projects and pick one unambiguously" >&2
+    exit 1
+  fi
+  bind_cid="$(echo "$bind_matches" | jq -r '.[0].id // empty')"
+  bind_display_name="$(echo "$bind_matches" | jq -r '.[0].title // .[0].project.name // .[0].id // empty')"
+  bind_owner="$(echo "$bind_matches" | jq -r '.[0].owner // false')"
+  if [ -z "$bind_cid" ]; then
+    echo "sapience-project-bind.sh: --project \"$PROJECT_VALUE\" resolved to a row with no usable id -- refusing before any write" >&2
+    exit 1
+  fi
+  # Resolution-only scaffold for this phase: a later phase replaces this exit with the
+  # dry-run/--confirm link-registration flow (D2), reusing bind_cid/bind_display_name/bind_owner.
+  echo "sapience-project-bind.sh: resolved --project \"$PROJECT_VALUE\" to \"$bind_display_name\" (${bind_cid}) as $( [ "$bind_owner" = "true" ] && echo creator || echo member ) -- no write or POST made yet" >&2
+  exit 0
+fi
 
 # --- Dry-run posture (default, no --confirm): print the LITERAL payload shape and exit 0
 # WITHOUT a network call -- not even the GET /v1/people discovery call below, which is a
