@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "task_number": 678,
+  "session_id": "sess_1795284367_d33b60_678",
+  "dispatch_seq": 2,
+  "findings_count": 5,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/reports/01_linked-repo-write-capture-policy.md",
+      "summary": "Rules on all five linked-repo write/capture questions by adopting sf1-engine's integration/project-link.md section 10 by citation (that document names this task by slug as an owed obligation); finds the four blockers are link-state-independent and recommends one concrete mechanism (extending sapience-remember.sh to send the plain project key field, never project_cid) to satisfy the orchestrated-run-produces-project-notes done-when criterion."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "sf1-engine's integration/project-link.md (read at /home/benjamin/Projects/Sapience/sf1-engine) is the cross-harness governing contract for Sapience's linked-project feature: section 10 states 7 rulings (Q39 origin/suggestion default, gate M4 for a linked repo, per-session write bound, attribution, a 6-filter sharing policy generalized from hub-runner/solo_sync.py, folder-move resolution, and a leak-path gate keeping automatic project_cid writes OFF until two named leaks close). Its own cross-repository register names other repos' tasks by slug as owed obligations -- check that register before re-deriving a policy the external document may already settle.",
+      "category": "PATTERN",
+      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/reports/01_linked-repo-write-capture-policy.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sapience", "project-link", "sf1-engine", "cross-repository", "linked-repo"]
+    },
+    {
+      "content": "Sapience's sapience-publish.sh 'ko' subcommand already writes a project-tagged KO using the plain, pre-verification 'project' key field (resolved at runtime from .sapience/project.json's cid via GET /v1/people/projects), and explicitly never sends project_cid because REPO_LINK_FOR is confirmed dark for this credential (command-draft-and-picker.md's 'Dark Migration Path', corroborated by sf1-engine project-link.md section 7's flag table). This means such a write carries no server-side origin/suggestion enforcement yet -- it is safe today precisely because it doesn't reach that machinery, not because the machinery was checked and passed.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/reports/01_linked-repo-write-capture-policy.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["sapience", "project_cid", "REPO_LINK_FOR", "sapience-publish", "write-path"]
+    },
+    {
+      "content": "skill-sapience's entire /sapience write mechanism (sapience-publish.sh's four surfaces, gated behind Stage 9's single mandatory AskUserQuestion approval picker) is structurally confined to a plain interactive session: AskUserQuestion is categorically withheld from every Agent-tool dispatch regardless of frontmatter, so this path can never fire mid-run in an orchestrated/headless dispatch. This is a stronger guarantee than a written policy ban.",
+      "category": "PATTERN",
+      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/reports/01_linked-repo-write-capture-policy.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sapience", "AskUserQuestion", "skill-sapience", "orchestrated-dispatch", "interactive-only"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 678 to create implementation plan"
+}
