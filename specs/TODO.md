@@ -199,7 +199,7 @@ next_project_number: 684
     └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a... (see above)
 682 [PLANNED] — Stop writing the Sapience token into the per-project MCP...
   └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a... (see above)
-683 [PLANNING] — Couple Sapience capture enablement to sapience-extension...
+683 [PLANNED] — Couple Sapience capture enablement to sapience-extension...
 
 ### Decidability
 
@@ -208,11 +208,12 @@ next_project_number: 684
 ## Tasks
 
 ### 683. Couple sapience capture to extension activation
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: None
 - **Research**: [683_couple_sapience_capture_to_extension_activation/reports/01_capture-activation-coupling.md]
+- **Plan**: [683_couple_sapience_capture_to_extension_activation/plans/01_capture-activation-coupling.md]
 
 **Description**: Couple Sapience capture enablement to sapience-extension activation: extend the existing bidirectional SessionStart hook (agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh, which already registers/removes the per-project MCP entry from .claude-extensions.json's .extensions.sapience.status) so the same two branches also enable/disable transcript capture for that repo by calling the vendor's own CLI -- `sapience projects on <checkout toplevel>` when the extension is active, `sapience projects off <checkout toplevel>` when it is not -- never by hand-editing ~/.sapience/config.json, so the vendor client stays the sole writer of the capture map (under its own lock) and survives vendor auto-update. Path must be resolved through the shared worktree-aware resolve_checkout_toplevel() block so a worktree enables its parent checkout, and the call must be idempotent and silent in steady state (only act, and only emit an additionalContext notice, when capture.projects[] state actually differs from the extension state), preserving the hook's always-exit-0 / one-JSON-line contract and degrading silently when the `sapience` binary or config.json is absent. Research must settle: (1) whether the legacy top-level `folders` list in config.json also gates what extract_local.py reads and whether `sapience projects on <path>` keeps it in step (if not, how to reconcile without a second writer); (2) whether `sapience projects on|off` is safe to run non-interactively from a hook (no prompt, no network dependency that could hang session start -- note projects_cli ends with capture_sync()), and what a bounded timeout should be; (3) whether the reap pass should also turn capture off for vanished project directories; (4) how sapience_capture.deny_reason treats candidate paths; (5) whether the companion-owned ~/.dotfiles user-level hook/installer copy needs a matching change to stay byte-identical. Also rewrite per-repo-scoping.md's 'Capture/Activation Reconciliation' subsection (which currently rules that this extension must NOT write capture.projects[].enabled and that any coupling belongs in ~/.dotfiles) to state the new design and why routing through the vendor CLI removes the two-writers hazard; update verify-sapience-mcp.sh's check (i) accordingly; add fixture-HOME test coverage (stubbed `sapience` binary) for on, off, steady-state-silent, missing-binary, and worktree cases. Document caveats: one-session-start lag, first sync after enable backfills the configured `days` window, and off is not retroactive for already-posted KOs. Acceptance test (operator-run, not agent-run): with the extension loaded in /home/benjamin/Projects/Sapience/sf1-engine and its agent system reloaded, the next session start there adds sf1-engine to `sapience projects` as enabled, and unloading the extension turns it off at the following session start. Edit target is the sapience extension source store (agent-system/extensions/sapience)
 

@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "phase": "plan",
+  "dispatch_seq": 8,
+  "summary": "Wrote a 6-phase, ~9h plan coupling capture.projects[].enabled bidirectionally to .extensions.sapience.status. Architecture: two new standalone actions on setup-sapience-mcp.sh (--capture-set on|off, --reap-capture) wrapping SAPIENCE_NO_CAPTURE_SYNC=1 timeout 15 sapience projects on|off, invoked from the existing SessionStart hook's two branches and its ungated reap pass; this needs zero installer and zero manifest change because the installer already seeds that writer to ~/.claude/scripts/. All eight trigger-class premises in the dispatch description were re-validated against the research report and live state and all hold. Two gaps are carried as explicit Non-Goals with operator follow-ups recorded in Phase 6: the legacy folders list (a second upstream gate no vendor CLI can safely grow non-interactively, and sf1-engine is in neither list today) and the byte-identical ~/.dotfiles companion copy, which is a different repository.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/683_couple_sapience_capture_to_extension_activation/plans/01_capture-activation-coupling.md",
+      "summary": "6-phase plan: writer --capture-set action, writer --reap-capture sweep, hook wiring plus caveats, verifier check (i) WARN, per-repo-scoping.md rewrite with the folders double-gate, then redeploy and operator handoff."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 6,
+  "blockers": []
+}
