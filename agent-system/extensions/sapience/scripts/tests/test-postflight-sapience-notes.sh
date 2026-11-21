@@ -29,6 +29,10 @@
 #   7. value with a double quote and a newline -> arrives at the stub as one intact argument
 #   8. --dry-run                      -> propagates --dry-run into every stub invocation
 #   9. missing/malformed .return-meta.json -> treated as N == 0 (one gap row, exit 0)
+#  10. (Phase 4) linked repo: binding + stubbed GET -> exactly one GET for a 3-note batch, all
+#      3 calls carry the same resolved --project-key
+#  11. (Phase 4) unlinked repo: no binding -> zero GETs, no --project-key flag at all (today's
+#      shape, byte-identical)
 #
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED; 2 -- environment error
 # (postflight-sapience-notes.sh, deploy-root-guard.sh, issue-record.sh, or a lib/ dependency not
@@ -211,6 +215,75 @@ issues_jsonl_classes() {
   local f="$scratch/specs/$DEMO_TASK_DIR_NAME/issues.jsonl"
   [ -f "$f" ] || return 0
   jq -r '.class' "$f" 2>/dev/null
+}
+
+# =====================================================================================
+# Phase 4 (resolve-once pass-through) fixtures and helpers.
+# =====================================================================================
+
+PSN_FIXTURE_CID="psn-cid-fixture-1"
+PSN_FIXTURE_KEY="psn-key-fixture-1"
+PSN_PROJECTS_FIXTURE='{"ok":true,"projects":[{"cid":"psn-cid-fixture-1","key":"psn-key-fixture-1","name":"PSN Fixture Project"}]}'
+
+# --- write_binding <scratch> <cid> -- writes a minimal .sapience/project.json binding at the
+#     scratch repo's toplevel. Mirrors test-sapience-remember.sh's own write_binding helper
+#     (that script reads the same `.project` field as the binding's cid). ---
+write_binding() {
+  local scratch="$1" cid="$2"
+  mkdir -p "$scratch/.sapience"
+  jq -n --arg project "$cid" --arg name "PSN Fixture" --arg repo "$(basename "$scratch")" \
+    '{project: $project, name: $name, repo: $repo}' > "$scratch/.sapience/project.json"
+}
+
+# --- build_curl_stub <stub_dir> <hit_dir> -- installs a curl stub dispatching on URL substring
+#     (GET /v1/people/projects is the only call Phase 4's resolve_project_key_once ever makes),
+#     driven by STUB_PROJECTS_BODY. Appends one "projects" line to <hit_dir>/branch_hits per
+#     call, so a case can assert an exact GET count via curl_hit_count below. Mirrors
+#     test-sapience-remember.sh's own build_curl_stub. Echoes the stub directory. ---
+build_curl_stub() {
+  local stub_dir="$1" hit_dir="$2"
+  mkdir -p "$stub_dir" "$hit_dir"
+  cat > "$stub_dir/curl" <<STUB
+#!/usr/bin/env bash
+url="\${!#}"
+case "\$url" in
+  *v1/people/projects*)
+    echo "projects" >> "$hit_dir/branch_hits"
+    printf '%s' "\${STUB_PROJECTS_BODY:-{\\}}"
+    ;;
+  *)
+    echo "test stub: unrecognized URL: \$url" >&2
+    exit 7
+    ;;
+esac
+exit 0
+STUB
+  chmod +x "$stub_dir/curl"
+  echo "$stub_dir"
+}
+
+# --- curl_hit_count <hit_dir> -- counts "projects" lines recorded by the curl stub above, or 0
+#     if the file does not exist. ---
+curl_hit_count() {
+  local hit_dir="$1" n
+  if [ -f "$hit_dir/branch_hits" ]; then
+    n="$(grep -c '^projects$' "$hit_dir/branch_hits" 2>/dev/null)" || true
+    echo "${n:-0}"
+  else
+    echo 0
+  fi
+}
+
+# --- run_psn_stubbed <scratch> <stub_dir> [args...] -- like run_psn, but prepends PATH with
+#     <stub_dir> (the curl stub above) and runs with an isolated HOME + a fixture SAPIENCE_TOKEN,
+#     mirroring test-sapience-remember.sh's own run_remember_stubbed convention, so this suite
+#     never depends on (or risks reading) any real ~/.sapience/config.json on the host running
+#     it. ---
+run_psn_stubbed() {
+  local scratch="$1" stub_dir="$2"; shift 2
+  env PATH="$stub_dir:$PATH" HOME="$TOP_WORKDIR" SAPIENCE_TOKEN="test-token-fixture" \
+    bash "$scratch/.claude/scripts/postflight-sapience-notes.sh" \
+    --task-dir "$scratch/specs/$DEMO_TASK_DIR_NAME" --task "$DEMO_TASK_NUMBER" "$@"
 }
 
 # =====================================================================================
@@ -539,6 +612,109 @@ line two after a real newline'
     common_test_pass "(9b) malformed .return-meta.json: exactly one knowledge-capture gap row"
   else
     common_test_fail "(9b) malformed .return-meta.json: exactly one knowledge-capture gap row" "classes=$classes"
+  fi
+}
+
+# =====================================================================================
+# Case 10 (Phase 4): linked fixture -- a .sapience/project.json binding plus a stubbed
+# GET /v1/people/projects yields exactly ONE GET for a multi-note batch, and every note's
+# sapience-remember.sh call carries the SAME resolved --project-key.
+# =====================================================================================
+{
+  mapfile -t _bs < <(build_scratch --with-stub)
+  scratch="${_bs[0]}"
+  recorder="${_bs[1]}"
+  write_binding "$scratch" "$PSN_FIXTURE_CID"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  notes="$(mint_notes_json 3)"
+  write_return_meta "$scratch" "$notes"
+
+  out="$(STUB_RECORDER="$recorder" STUB_PROJECTS_BODY="$PSN_PROJECTS_FIXTURE" \
+    run_psn_stubbed "$scratch" "$stub_dir" 2>/dev/null)"
+  rc=$?
+  count="$(stub_call_count "$recorder")"
+  classes="$(issues_jsonl_classes "$scratch")"
+  get_hits="$(curl_hit_count "$hit_dir")"
+  key_flag_count="$(grep -cx -- '--project-key' "$recorder" 2>/dev/null)" || true
+  key_flag_count="${key_flag_count:-0}"
+  key_value_count="$(grep -cx -- "$PSN_FIXTURE_KEY" "$recorder" 2>/dev/null)" || true
+  key_value_count="${key_value_count:-0}"
+
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(10) linked: exit 0"
+  else
+    common_test_fail "(10) linked: exit 0" "got rc=$rc"
+  fi
+  if [ "$count" -eq 3 ]; then
+    common_test_pass "(10) linked: exactly 3 stub calls"
+  else
+    common_test_fail "(10) linked: exactly 3 stub calls" "count=$count"
+  fi
+  if [ "$get_hits" -eq 1 ]; then
+    common_test_pass "(10) linked: exactly one GET /v1/people/projects observed"
+  else
+    common_test_fail "(10) linked: exactly one GET /v1/people/projects observed" "get_hits=$get_hits"
+  fi
+  if [ "$key_flag_count" -eq 3 ] && [ "$key_value_count" -eq 3 ]; then
+    common_test_pass "(10) linked: all 3 calls carry the SAME resolved --project-key"
+  else
+    common_test_fail "(10) linked: all 3 calls carry the SAME resolved --project-key" \
+      "key_flag_count=$key_flag_count key_value_count=$key_value_count rec=$(cat "$recorder" 2>/dev/null)"
+  fi
+  if [ -z "$classes" ]; then
+    common_test_pass "(10) linked: no issue rows (resolution succeeded)"
+  else
+    common_test_fail "(10) linked: no issue rows (resolution succeeded)" "classes=$classes"
+  fi
+}
+
+# =====================================================================================
+# Case 11 (Phase 4): unlinked fixture (no .sapience/project.json) -- zero GETs issued, and
+# every sapience-remember.sh call stays byte-identical in shape to pre-Phase-4 behavior (no
+# --project-key flag at all).
+# =====================================================================================
+{
+  mapfile -t _bs < <(build_scratch --with-stub)
+  scratch="${_bs[0]}"
+  recorder="${_bs[1]}"
+  hit_dir="$(mktemp -d -p "$TOP_WORKDIR")"
+  stub_dir="$(build_curl_stub "$(mktemp -d -p "$TOP_WORKDIR")" "$hit_dir")"
+  notes="$(mint_notes_json 2)"
+  write_return_meta "$scratch" "$notes"
+
+  out="$(STUB_RECORDER="$recorder" run_psn_stubbed "$scratch" "$stub_dir" 2>/dev/null)"
+  rc=$?
+  count="$(stub_call_count "$recorder")"
+  classes="$(issues_jsonl_classes "$scratch")"
+  get_hits="$(curl_hit_count "$hit_dir")"
+  key_flag_count="$(grep -cx -- '--project-key' "$recorder" 2>/dev/null)" || true
+  key_flag_count="${key_flag_count:-0}"
+
+  if [ "$rc" -eq 0 ]; then
+    common_test_pass "(11) unlinked: exit 0"
+  else
+    common_test_fail "(11) unlinked: exit 0" "got rc=$rc"
+  fi
+  if [ "$count" -eq 2 ]; then
+    common_test_pass "(11) unlinked: exactly 2 stub calls"
+  else
+    common_test_fail "(11) unlinked: exactly 2 stub calls" "count=$count"
+  fi
+  if [ "$get_hits" -eq 0 ]; then
+    common_test_pass "(11) unlinked: zero GETs issued"
+  else
+    common_test_fail "(11) unlinked: zero GETs issued" "get_hits=$get_hits"
+  fi
+  if [ "$key_flag_count" -eq 0 ]; then
+    common_test_pass "(11) unlinked: no --project-key flag in any call (byte-identical to today)"
+  else
+    common_test_fail "(11) unlinked: no --project-key flag in any call (byte-identical to today)" "key_flag_count=$key_flag_count"
+  fi
+  if [ -z "$classes" ]; then
+    common_test_pass "(11) unlinked: no issue rows"
+  else
+    common_test_fail "(11) unlinked: no issue rows" "classes=$classes"
   fi
 }
 

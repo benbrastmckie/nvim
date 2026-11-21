@@ -28,6 +28,19 @@
 # `infrastructure/transport unavailable` issue row carrying that call's stderr, and the loop
 # CONTINUES to the remaining notes -- never aborts on first failure, never retries.
 #
+# RESOLVE-ONCE PASS-THROUGH (linked repo): before the per-note loop, this script resolves this
+# repo's Sapience project key AT MOST ONCE for the whole batch (mirroring sapience-remember.sh's
+# own PROJECT-KEY RESOLUTION block -- see that script's header -- but duplicated rather than
+# shared, for the same declared-file_scope reason that block gives for its own duplication) and
+# forwards the result to every `sapience-remember.sh` call as `--project-key`, which short-
+# circuits that script's own per-call GET /v1/people/projects. Net effect: a linked repo (one
+# carrying `.sapience/project.json`) issues exactly one GET for a whole completed task instead of
+# one per note. An unlinked repo (no binding file) takes a pure filesystem-stat path: zero GETs,
+# no `--project-key` forwarded, byte-identical to pre-Phase-4 behavior. A resolution that fails
+# (binding present but the GET fails or matches nothing) degrades the WHOLE batch to untagged
+# writes -- never a refusal, never a dropped note -- and is mirrored by exactly one
+# `infrastructure/transport unavailable` issue row recorded once up front, not per note.
+#
 # Exit codes: 0 on every path except a usage error (missing --task-dir or --task), which exits 1
 # so a caller's `|| note` guard can distinguish misuse from a degraded write. Every
 # `issue-record.sh` call this script makes is itself `|| true`-guarded: a recording failure must
@@ -37,6 +50,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/common.sh"
 # shellcheck disable=SC1091
 . "${SCRIPT_DIR}/deploy-root-guard.sh" || exit 1
 
@@ -108,6 +123,96 @@ if [ ! -f "${SCRIPT_DIR}/sapience-remember.sh" ]; then
   exit 0
 fi
 
+# --- PROJECT_ROOT: resolved from this script's own location (never from cwd), matching
+#     sapience-remember.sh's identical convention -- the call sites that invoke this script
+#     (orchestrate-cycle-postflight.sh, reconcile-task-status.sh) do not guarantee cwd is the
+#     repo root. ---
+PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
+
+# --- resolve_checkout_toplevel <dir> -- resolves <dir> to its git toplevel, following a linked
+#     worktree to its PARENT CHECKOUT rather than the worktree itself. Echoes the toplevel path
+#     and returns 0, or returns 1 with no output when <dir> is not inside a git repository.
+#     Logic mirrors sapience-remember.sh's own marker-delimited
+#     `sapience-worktree-checkout-resolution` block, but is deliberately NOT added to that
+#     block's tracked nine-file lockstep set (test-sapience-mcp-registration.sh Case 30) -- this
+#     phase's own declared file_scope is limited to this script and its test suite, so the two
+#     copies are intentionally independent rather than retrofitted into that list. ---
+resolve_checkout_toplevel() {
+  local dir="${1:-.}" git_dir common_dir
+  git_dir="$(git -C "$dir" rev-parse --git-dir 2>/dev/null)" || return 1
+  common_dir="$(git -C "$dir" rev-parse --git-common-dir 2>/dev/null)" || return 1
+  if [ "$git_dir" = "$common_dir" ]; then
+    git -C "$dir" rev-parse --show-toplevel 2>/dev/null
+    return $?
+  fi
+  case "$common_dir" in
+    /*) : ;;
+    *) common_dir="$(cd "$dir" 2>/dev/null && pwd)/$common_dir" ;;
+  esac
+  (cd "$common_dir/.." 2>/dev/null && pwd)
+}
+
+# --- project_binding_present -- cheap, network-free existence check for this repo's
+#     `.sapience/project.json` binding file. Used only to decide whether a resolution attempt (and
+#     a possible degrade issue row) is warranted at all -- the unlinked path (no binding) must
+#     issue NO GET and NO issue row, staying a pure filesystem stat. ---
+project_binding_present() {
+  local repo_toplevel
+  repo_toplevel="$(resolve_checkout_toplevel "$PROJECT_ROOT" 2>/dev/null)" || return 1
+  [ -n "$repo_toplevel" ] || return 1
+  [ -f "${repo_toplevel}/.sapience/project.json" ]
+}
+
+# --- resolve_project_key_once -- issues AT MOST ONE GET /v1/people/projects for the whole task
+#     (never per note). Echoes the resolved key on success (one line); echoes nothing on any
+#     failure (unresolvable toplevel, unreadable/malformed binding, no empty cid, no token, a
+#     curl failure, a non-JSON response, or no matching entry) -- every failure path is a silent
+#     "write untagged" signal to the caller, never an error. Resolution shape (host/token
+#     precedence, binding-cid match) is copied from sapience-remember.sh's PROJECT-KEY
+#     RESOLUTION block; see that script's header for the source of truth. ---
+resolve_project_key_once() {
+  local repo_toplevel link_file binding_cid config_file sapience_host sapience_token
+  local encoded_token projects_url projects_response key
+
+  repo_toplevel="$(resolve_checkout_toplevel "$PROJECT_ROOT" 2>/dev/null)" || return 0
+  [ -n "$repo_toplevel" ] || return 0
+
+  link_file="${repo_toplevel}/.sapience/project.json"
+  [ -f "$link_file" ] || return 0
+  jq -e . "$link_file" >/dev/null 2>&1 || return 0
+  binding_cid="$(jq -r '.project // empty' "$link_file" 2>/dev/null)" || binding_cid=""
+  [ -n "$binding_cid" ] || return 0
+
+  config_file="${HOME}/.sapience/config.json"
+  sapience_host="${SAPIENCE_HOST:-}"
+  if [ -z "$sapience_host" ] && [ -f "$config_file" ]; then
+    sapience_host="$(jq -r '.host // empty' "$config_file" 2>/dev/null)" || sapience_host=""
+  fi
+  [ -z "$sapience_host" ] && sapience_host="https://app.spnc.ai"
+  sapience_host="${sapience_host%/}"
+
+  sapience_token="${SAPIENCE_TOKEN:-}"
+  if [ -z "$sapience_token" ] && [ -f "$config_file" ]; then
+    sapience_token="$(jq -r '.token // empty' "$config_file" 2>/dev/null)" || sapience_token=""
+  fi
+  [ -n "$sapience_token" ] || return 0
+
+  encoded_token="$(jq -rn --arg v "$sapience_token" '$v|@uri')"
+  projects_url="${sapience_host}/v1/people/projects?token=${encoded_token}"
+  projects_response="$(curl -sS --connect-timeout 3 --max-time 8 \
+    -H 'X-Sapience-Client: postflight-sapience-notes.sh' \
+    "$projects_url" 2>/dev/null)" || projects_response=""
+  [ -n "$projects_response" ] || return 0
+  printf '%s' "$projects_response" | jq -e . >/dev/null 2>&1 || return 0
+
+  key="$(printf '%s' "$projects_response" | jq -r --arg cid "$binding_cid" '
+    (if has("projects") then .projects elif (type == "array") then . else [] end) // [] |
+    map(select((.cid // .id // "") == $cid)) | .[0].key // empty
+  ' 2>/dev/null)" || key=""
+  [ -n "$key" ] && printf '%s\n' "$key"
+  return 0
+}
+
 # --- issue_record -- non-fatal wrapper around issue-record.sh, forwarding the optional
 #     --session/--phase/--dispatch-seq context this script itself received. A recording failure
 #     never fails this script. ---
@@ -150,6 +255,20 @@ fi
 
 honored_count="$(printf '%s' "$honored_json" | jq 'length')"
 
+# --- Resolve-once pass-through: at most ONE GET /v1/people/projects for this whole batch,
+#     computed before the per-note loop starts. An unlinked repo (no binding) never calls
+#     project_binding_present's network path at all, so it costs nothing and issues no GET and
+#     no issue row -- see header "RESOLVE-ONCE PASS-THROUGH" for the full contract. ---
+PROJECT_KEY=""
+if project_binding_present; then
+  PROJECT_KEY="$(resolve_project_key_once)"
+  if [ -z "$PROJECT_KEY" ]; then
+    issue_record --kind issue --class "infrastructure/transport unavailable" --severity minor \
+      --resolution worked_around \
+      --what-happened "Task ${TASK_NUMBER}: linked-repo project-key resolution (GET /v1/people/projects) failed or matched no entry for this batch of ${honored_count} note(s); writing untagged for the whole batch (degrade, no note dropped, no further GET issued by this script)."
+  fi
+fi
+
 i=0
 while [ "$i" -lt "$honored_count" ]; do
   entry="$(printf '%s' "$honored_json" | jq -c ".[$i]")"
@@ -181,6 +300,7 @@ while [ "$i" -lt "$honored_count" ]; do
   [ -n "$ko_type" ] && remember_args+=(--ko-type "$ko_type")
   [ -n "$confidence" ] && remember_args+=(--confidence "$confidence")
   [ -n "$source_loc" ] && remember_args+=(--source-loc "$source_loc")
+  [ -n "$PROJECT_KEY" ] && remember_args+=(--project-key "$PROJECT_KEY")
   [ "$DRY_RUN" = "true" ] && remember_args+=(--dry-run)
 
   remember_out=""

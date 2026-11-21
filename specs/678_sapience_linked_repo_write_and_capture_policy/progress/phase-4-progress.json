@@ -1,0 +1,18 @@
+{
+  "phase": 4,
+  "phase_name": "Resolve-Once Pass-Through at the Postflight Call Site",
+  "started_at": "2026-11-21T00:00:00Z",
+  "last_updated": "2026-11-21T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Resolve the project key once before the per-note loop and pass it to every sapience-remember.sh invocation as --project-key", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh"]},
+    {"id": 2, "description": "Keep the existing degrade posture: resolution failure degrades the whole batch to untagged writes with one infrastructure/transport unavailable issue row; unlinked path issues no GET at all", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh"]},
+    {"id": 3, "description": "Forward --dry-run to the new flag path so the dry-run preview still prints each note's real body", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh"]},
+    {"id": 4, "description": "Extend test-postflight-sapience-notes.sh with a linked fixture (N notes, same resolved key, exactly one GET) and an unlinked fixture (byte-identical to today)", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-postflight-sapience-notes.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Add a sapience-remember.sh-side resolve-only flag and call it once from postflight-sapience-notes.sh", "result": "rejected", "reason": "sapience-remember.sh is not in this phase's declared Files to modify; duplicating its PROJECT-KEY RESOLUTION block directly inside postflight-sapience-notes.sh (same pattern that block's own header already uses for its own duplication) stayed within the two declared files."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

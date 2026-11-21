@@ -377,24 +377,30 @@ instruction-surface set and writing what it returns, not these numbers.
 
 ---
 
-### Phase 4: Resolve-Once Pass-Through at the Postflight Call Site [NOT STARTED]
+### Phase 4: Resolve-Once Pass-Through at the Postflight Call Site [COMPLETED]
 
 **Goal**: One `GET /v1/people/projects` per completed task rather than one per note.
 
 **Tasks**:
 
-- [ ] In `agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh`, resolve the
+- [x] In `agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh`, resolve the
       project key once (reusing the same resolution path, or by one `sapience-remember.sh`-side
       call whose result is reused) before the per-note loop, and pass it to every
       `sapience-remember.sh` invocation as `--project-key`.
-- [ ] Keep the script's existing posture exactly: a resolution failure degrades to untagged writes
+      *(completed: resolution path reused by duplicating sapience-remember.sh's PROJECT-KEY
+      RESOLUTION block directly into this script, since adding a resolve-only flag to
+      sapience-remember.sh itself was outside this phase's declared file_scope)*
+- [x] Keep the script's existing posture exactly: a resolution failure degrades to untagged writes
       for the whole set, records one `infrastructure/transport unavailable` issue row, and never
       aborts the loop or drops a note; the unlinked path is unchanged and issues no `GET` at all.
-- [ ] Forward `--dry-run` to the new flag path so the existing dry-run preview still prints each
-      note's real body.
-- [ ] Extend `agent-system/extensions/sapience/scripts/tests/test-postflight-sapience-notes.sh`
+      *(completed)*
+- [x] Forward `--dry-run` to the new flag path so the existing dry-run preview still prints each
+      note's real body. *(completed: --project-key and --dry-run are independent conditional
+      appends to the same remember_args array; neither one's presence affects the other)*
+- [x] Extend `agent-system/extensions/sapience/scripts/tests/test-postflight-sapience-notes.sh`
       with: a linked fixture producing N notes each carrying the same resolved key with exactly one
       `GET` observed; and an unlinked fixture producing byte-identical bodies to today's.
+      *(completed: Cases 10 and 11; full suite 41/41 passing)*
 
 **Timing**: 1 hour
 
