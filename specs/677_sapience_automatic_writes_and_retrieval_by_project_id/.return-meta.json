@@ -1,0 +1,41 @@
+{
+  "status": "researched",
+  "dispatch_seq": 21,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/reports/01_sapience-project-id-automatic-paths.md",
+      "summary": "Research on linking Sapience automatic write/retrieval paths to the project id: confirms write-side project-key resolution already exists and must NOT be upgraded to a verified project_cid (conflicts with sf1-engine's cross-harness-agreed Ruling 7 on autonomous writes), confirms the read-side project_cid path is genuinely unbuilt and safe to add, and confirms both named app-side dependencies are unmet today."
+    }
+  ],
+  "next_steps": "Run /orchestrate 677 to create an implementation plan that excludes write-side project_cid (per Ruling 7), builds the read-side sapience-retrieve.sh project_cid path against a stub, and updates per-repo-scoping.md per the report's Context Extension Recommendations.",
+  "metadata": {
+    "session_id": "sess_1795284367_d33b60_677",
+    "agent_type": "general-research-agent",
+    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+  },
+  "findings_count": 7,
+  "memory_candidates": [
+    {
+      "content": "sf1-engine's integration/project-link.md section 10 Ruling 7 forbids any write attaching a VERIFIED project_cid from an autonomous task run unless write_origin resolves to 'typed', gated off until two named leak paths close (dispatched-child subsequent turns; non-typed registration of command expansions/skill text/dispatch files for the ported task-workflow archive). This repo's own linked-repo-write-policy.md Ruling 2 and Cross-Harness Agreement already state the Claude Code side agrees: the existing plain project-KEY field (never project_cid) sits below that gate. brain_server.py's _ingest_kos handler confirms the stakes of crossing it: a verified project_cid write overwrites ko['author'] with the real member's own display name and delivers live (follow:true) with no suggestion-lane gating. Any future Sapience task asking to 'send project_cid' from an automatic/postflight write site must be checked against this ruling before implementation, not just against local per-repo-scoping.md docs.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/reports/01_sapience-project-id-automatic-paths.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["sapience", "project_cid", "ruling-7", "sf1-engine", "cross-harness", "write-origin"]
+    },
+    {
+      "content": "/v1/search and /v1/recent on the Sapience server (brain_server.py) honor a project_cid query parameter as a strict pre-filter (gated on repo_link.enabled(tok), i.e. the REPO_LINK_FOR flag, and verified via cli_project_scope.gate) -- this is a DIFFERENT parameter from the plain &project= slug that per-repo-scoping.md already documented as silently ignored by /v1/search. Both claims are true simultaneously; they must not be conflated when reading or extending that doc. REPO_LINK_FOR is deployed \"\" (off) in sapience-app's fly.toml as of this finding, so this path is unexercisable live today and must be tested against a stub.",
+      "category": "PATTERN",
+      "source_artifact": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/reports/01_sapience-project-id-automatic-paths.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["sapience", "project_cid", "v1-search", "repo_link_for", "per-repo-scoping"]
+    },
+    {
+      "content": "The installed vendor ~/.sapience/mcp.py's sapience_remember MCP tool accepts an optional 'project' argument, but it is an UNRELATED mechanism to the per-repository link/project_cid feature: it is company-store routing (project_slug()/route_ko() matched against config.json's \"routes\" map, falling back to COMPANY_PROJECT/SAPIENCE_PROJECT) that picks which TOKEN a write posts to, not a tagged-write or per-repo-scoping mechanism. per-repo-scoping.md's write-tools section did not mention this argument as of this finding, which could read as a false completeness claim.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/reports/01_sapience-project-id-automatic-paths.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["sapience", "mcp.py", "sapience_remember", "project-argument", "route_ko"]
+    }
+  ]
+}
