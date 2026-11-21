@@ -306,24 +306,8 @@ resolve_host() {
     printf '%s' "$DEFAULT_HOST"
 }
 
-# resolve_token -- ~/.sapience/config.json's .token when present and non-empty, else empty.
-# "Register without a token until config.json has one" -- the same fallback this machine's
-# `sapienceMcpServer` nix activation uses for the top-level entry today.
-resolve_token() {
-    local token
-    if [ -r "$SAPIENCE_CONFIG" ]; then
-        token=$(jq -r '.token // empty' "$SAPIENCE_CONFIG" 2>/dev/null || echo "")
-        if [ -n "$token" ] && [ "$token" != "null" ]; then
-            printf '%s' "$token"
-            return 0
-        fi
-    fi
-    printf '%s' ""
-}
-
 INTERPRETER="$(resolve_interpreter)"
 HOST="$(resolve_host)"
-TOKEN="$(resolve_token)"
 MCP_PY="$HOME/.sapience/mcp.py"
 
 log "Configuration:"
@@ -335,18 +319,23 @@ log "  Host: $HOST"
 log ""
 
 # Generate the sapience configuration. Identical shape at every scope -- only WHERE it is
-# written differs.
+# written differs. The entry never carries a token environment variable: mcp.py resolves the
+# bearer token itself from ~/.sapience/config.json (mode 0600) via one shared module-level
+# statement, evaluated at import before any CLI-flag or stdio dispatch, with that variable
+# unset -- see context/project/sapience/domain/per-repo-scoping.md for the full token-homes
+# record. Writing the raw token into this entry would copy a secret into a file that is
+# routinely inspected in plaintext (`jq .projects[...]`, `claude mcp get`) and reachable by
+# Sapience's own transcript-capture path.
 generate_sapience_config() {
     jq -n \
         --arg command "$INTERPRETER" \
         --arg script "$MCP_PY" \
         --arg host "$HOST" \
-        --arg token "$TOKEN" \
         '{
             type: "stdio",
             command: $command,
             args: [$script],
-            env: ({ SAPIENCE_HOST: $host } + (if ($token | length) > 0 then { SAPIENCE_TOKEN: $token } else {} end))
+            env: { SAPIENCE_HOST: $host }
         }'
 }
 

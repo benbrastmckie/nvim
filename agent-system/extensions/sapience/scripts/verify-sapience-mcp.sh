@@ -261,12 +261,9 @@ else
             EXPECTED_COMMAND="$(command -v python3 2>/dev/null || echo "")"
         fi
         EXPECTED_HOST="$DEFAULT_HOST"
-        EXPECTED_HAS_TOKEN=false
         if [ -r "$SAPIENCE_CONFIG" ]; then
             CFG_HOST="$(jq -r '.host // empty' "$SAPIENCE_CONFIG" 2>/dev/null || echo "")"
             [ -n "$CFG_HOST" ] && [ "$CFG_HOST" != "null" ] && EXPECTED_HOST="$CFG_HOST"
-            CFG_TOKEN="$(jq -r '.token // empty' "$SAPIENCE_CONFIG" 2>/dev/null || echo "")"
-            [ -n "$CFG_TOKEN" ] && [ "$CFG_TOKEN" != "null" ] && EXPECTED_HAS_TOKEN=true
         fi
 
         ACTUAL_COMMAND=$(jq -r '.command // empty' <<< "$PROJECT_ENTRY")
@@ -284,7 +281,7 @@ else
                 [ "$ACTUAL_COMMAND" = "$EXPECTED_COMMAND" ] || MISMATCH="command (got $ACTUAL_COMMAND, expected $EXPECTED_COMMAND)"
                 [ -z "$MISMATCH" ] && { [ "$ACTUAL_ARGS0" = "$HOME/.sapience/mcp.py" ] || MISMATCH="args[0] (got $ACTUAL_ARGS0)"; }
                 [ -z "$MISMATCH" ] && { [ "$ACTUAL_HOST" = "$EXPECTED_HOST" ] || MISMATCH="env.SAPIENCE_HOST (got $ACTUAL_HOST, expected $EXPECTED_HOST)"; }
-                [ -z "$MISMATCH" ] && { [ "$ACTUAL_HAS_TOKEN" = "$EXPECTED_HAS_TOKEN" ] || MISMATCH="env token presence (got $ACTUAL_HAS_TOKEN, expected $EXPECTED_HAS_TOKEN)"; }
+                [ -z "$MISMATCH" ] && { [ "$ACTUAL_HAS_TOKEN" = "false" ] || MISMATCH="entry carries env.SAPIENCE_TOKEN; remedy: re-run setup-sapience-mcp.sh --scope project to replace it with the token-free canonical shape"; }
 
                 if [ -z "$MISMATCH" ]; then
                     pass "(b) project-scoped sapience entry for $EXPECTED_PROJECT_PATH matches the canonical shape"

@@ -192,7 +192,7 @@ next_project_number: 684
 
 ### Sapience
 
-677 [RESEARCHED] — Make the Sapience extension's automatic paths use the linked...
+677 [PLANNING] — Make the Sapience extension's automatic paths use the linked...
   └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
 682 [IMPLEMENTING] — Stop writing the Sapience token into the per-project MCP...
   └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a... (see above)
@@ -277,7 +277,7 @@ next_project_number: 684
 ---
 
 ### 677. Sapience automatic writes and retrieval by project id
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: Task 681

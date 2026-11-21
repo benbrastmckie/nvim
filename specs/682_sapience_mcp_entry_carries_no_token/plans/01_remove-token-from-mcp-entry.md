@@ -154,21 +154,21 @@ shapes the MCP entry reaches resolves the token from `~/.sapience/config.json` w
 
 ---
 
-### Phase 2: Writer emits a token-free entry; verifier refuses a token-bearing one [NOT STARTED]
+### Phase 2: Writer emits a token-free entry; verifier refuses a token-bearing one [COMPLETED]
 
 **Goal**: Make "no token in the entry" the canonical shape on both sides at once — the writer
 stops emitting it, and check (b) starts failing it with a named remedy.
 
 **Tasks**:
-- [ ] Re-read both files immediately beforehand (sibling 683 declares the identical file set); stop and report if either carries a foreign modification.
-- [ ] If Phase 1's record flagged a diverging shape, narrow this phase's change to keep `SAPIENCE_TOKEN` for that case only, and say which in the commit message. Otherwise proceed unconditionally.
-- [ ] In `generate_sapience_config()`, drop the `--arg token "$TOKEN"` plumbing and the `(if ($token | length) > 0 then { SAPIENCE_TOKEN: $token } else {} end)` branch so `env` is always exactly `{ SAPIENCE_HOST: $host }`.
-- [ ] Delete `resolve_token()` and its `TOKEN="$(resolve_token)"` call site; confirm by grep that no other reference to `$TOKEN` or `resolve_token` remains in the script.
-- [ ] Update the script's own header/comment text where it describes the entry as carrying a token, so the file does not document a shape it no longer writes.
-- [ ] In check (b), replace the `config.json`-token-presence branch that sets `EXPECTED_HAS_TOKEN=true` with a constant `false`, and drop the now-unused `CFG_TOKEN` read.
-- [ ] Reword the mismatch message for this dimension so a token-bearing entry reads as the defect and names the remedy, e.g. `entry carries env.SAPIENCE_TOKEN; remedy: re-run setup-sapience-mcp.sh --scope project to replace it with the token-free canonical shape`.
-- [ ] Confirm the idempotent-migration claim rather than assuming it: in a throwaway `HOME` fixture, hand-write a token-bearing entry, run the changed writer once, and assert the entry is token-free; run it a second time and assert the file is byte-identical.
-- [ ] Commit both files as one atomic batch.
+- [x] Re-read both files immediately beforehand (sibling 683 declares the identical file set); stop and report if either carries a foreign modification. *(completed: both files clean at phase start, confirmed via `git status --short`)*
+- [x] If Phase 1's record flagged a diverging shape, narrow this phase's change to keep `SAPIENCE_TOKEN` for that case only, and say which in the commit message. Otherwise proceed unconditionally. *(completed: Phase 1's record found no divergent shape; proceeded unconditionally)*
+- [x] In `generate_sapience_config()`, drop the `--arg token "$TOKEN"` plumbing and the `(if ($token | length) > 0 then { SAPIENCE_TOKEN: $token } else {} end)` branch so `env` is always exactly `{ SAPIENCE_HOST: $host }`. *(completed)*
+- [x] Delete `resolve_token()` and its `TOKEN="$(resolve_token)"` call site; confirm by grep that no other reference to `$TOKEN` or `resolve_token` remains in the script. *(completed: grep confirms zero remaining references)*
+- [x] Update the script's own header/comment text where it describes the entry as carrying a token, so the file does not document a shape it no longer writes. *(completed: no header text named the token before the edit; added an explanatory comment at generate_sapience_config() instead)*
+- [x] In check (b), replace the `config.json`-token-presence branch that sets `EXPECTED_HAS_TOKEN=true` with a constant `false`, and drop the now-unused `CFG_TOKEN` read. *(completed)*
+- [x] Reword the mismatch message for this dimension so a token-bearing entry reads as the defect and names the remedy, e.g. `entry carries env.SAPIENCE_TOKEN; remedy: re-run setup-sapience-mcp.sh --scope project to replace it with the token-free canonical shape`. *(completed)*
+- [x] Confirm the idempotent-migration claim rather than assuming it: in a throwaway `HOME` fixture, hand-write a token-bearing entry, run the changed writer once, and assert the entry is token-free; run it a second time and assert the file is byte-identical. *(completed: token-free after run 1, byte-identical after run 2)*
+- [x] Commit both files as one atomic batch. *(completed)*
 
 **Timing**: 0.75 hours
 
