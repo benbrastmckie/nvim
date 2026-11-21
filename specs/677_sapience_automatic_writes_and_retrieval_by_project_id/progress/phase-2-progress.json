@@ -1,0 +1,42 @@
+{
+  "phase": 2,
+  "phase_name": "URL-Recording Stub and the Pre-Change Negative Control",
+  "started_at": "2026-11-21T22:30:00Z",
+  "last_updated": "2026-11-21T22:45:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Extend build_curl_stub to append each invocation's URL to a .curl_urls recorder file and add a curl_urls <stub_dir> readback helper",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]
+    },
+    {
+      "id": 2,
+      "description": "Extend build_scratch to also copy lib/sapience-api-lib.sh into the scratch tree",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]
+    },
+    {
+      "id": 3,
+      "description": "Add the negative-control case: no .sapience/project.json anywhere under scratch, recorded URL's query-parameter set is exactly q/source/limit/token",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]
+    },
+    {
+      "id": 4,
+      "description": "Add a write_binding <scratch> <cid> helper mirroring test-sapience-remember.sh/test-sapience-publish.sh for Phase 3's link-present cases",
+      "status": "done",
+      "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"]
+    },
+    {
+      "id": 5,
+      "description": "Run the suite against the UNMODIFIED sapience-retrieve.sh and confirm the negative-control case passes",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

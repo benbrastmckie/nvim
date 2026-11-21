@@ -236,7 +236,7 @@ task and Case 30's array, not just this plan's prose, needs re-reading.
 
 ---
 
-### Phase 2: URL-Recording Stub and the Pre-Change Negative Control [NOT STARTED]
+### Phase 2: URL-Recording Stub and the Pre-Change Negative Control [COMPLETED]
 
 **Goal**: The test harness records every request URL, and today's `sapience-retrieve.sh` request
 shape is pinned as an assertion *before* any code change — so the same assertion re-run after
@@ -244,21 +244,24 @@ Phase 3 is a real negative control for task item (4) rather than a restatement o
 
 **Tasks**:
 
-- [ ] Extend `build_curl_stub` in `test-sapience-capture.sh` to append each invocation's URL (its
+- [x] Extend `build_curl_stub` in `test-sapience-capture.sh` to append each invocation's URL (its
       last argument) to a `.curl_urls` recorder file alongside the existing `.curl_call_count`,
       and add a `curl_urls <stub_dir>` readback helper. The addition is additive: every existing
       case's dispatch behavior (the `_1`/`_2`/unsuffixed response tiers) is unchanged.
-- [ ] Extend `build_scratch` to also copy `lib/sapience-api-lib.sh` into
+      *(completed)*
+- [x] Extend `build_scratch` to also copy `lib/sapience-api-lib.sh` into
       `<scratch>/.claude/scripts/lib/`, so the scratch tree is ready for Phase 3's source line.
-- [ ] Add the negative-control case: with no `.sapience/project.json` anywhere under the scratch
+      *(completed)*
+- [x] Add the negative-control case: with no `.sapience/project.json` anywhere under the scratch
       repo, assert the recorded URL's query-parameter set is exactly `q`, `source`, `limit`,
       `token` — no `project_cid`, no `project` — and that `source=` carries the fixture's own
-      minted slug rather than a hardcoded name.
-- [ ] Add a `write_binding <scratch> <cid>` helper to this suite, mirroring the one
+      minted slug rather than a hardcoded name. *(completed: case 18)*
+- [x] Add a `write_binding <scratch> <cid>` helper to this suite, mirroring the one
       `test-sapience-remember.sh` and `test-sapience-publish.sh` already use (same three-key
-      `{project, name, repo}` shape), for Phase 3's link-present cases.
-- [ ] Run the suite against the UNMODIFIED `sapience-retrieve.sh` and confirm the
+      `{project, name, repo}` shape), for Phase 3's link-present cases. *(completed)*
+- [x] Run the suite against the UNMODIFIED `sapience-retrieve.sh` and confirm the
       negative-control case passes — this is the baseline that gives the control its force.
+      *(completed: 46 passed, 0 failed, including case 18 against the unmodified script)*
 
 **Timing**: 1 hour
 
@@ -279,8 +282,8 @@ the harness change leaked into a script and the phase boundary needs restating.
 
 **Verification**:
 
-- [ ] `CORE_TEST_SUBJECT_MODE=source-store bash agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh` passes with the new negative-control case green against the unmodified script.
-- [ ] The recorded URL asserted by that case contains neither `project_cid` nor `project`, confirmed by the case's own assertion text rather than by inspection alone.
+- [x] `CORE_TEST_SUBJECT_MODE=source-store bash agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh` passes with the new negative-control case green against the unmodified script. *(completed: 46 passed, 0 failed)*
+- [x] The recorded URL asserted by that case contains neither `project_cid` nor `project`, confirmed by the case's own assertion text rather than by inspection alone. *(completed: case 18 asserts the exact param-name set `limit q source token`)*
 
 ---
 

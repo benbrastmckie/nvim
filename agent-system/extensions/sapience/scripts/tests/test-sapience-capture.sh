@@ -123,6 +123,7 @@ build_scratch() {
   cp "$SCRIPT_UNDER_TEST" "$scratch/.claude/scripts/sapience-retrieve.sh"
   cp "$GUARD_SCRIPT" "$scratch/.claude/scripts/deploy-root-guard.sh"
   cp "$COMMON_SH" "$scratch/.claude/scripts/lib/common.sh"
+  cp "$API_LIB" "$scratch/.claude/scripts/lib/sapience-api-lib.sh"
   chmod +x "$scratch/.claude/scripts/sapience-retrieve.sh"
   git -C "$scratch" init -q
   git -C "$scratch" config user.email "test@example.com"
@@ -184,10 +185,13 @@ build_curl_stub() {
   stub_dir="$(mktemp -d -p "$TOP_WORKDIR")"
   : > "$stub_dir/.curl_call_count"
   : > "$stub_dir/.sleep_durations"
+  : > "$stub_dir/.curl_urls"
   cat > "$stub_dir/curl" <<'STUB'
 #!/usr/bin/env bash
 counter_file="${STUB_DIR:-$(dirname "$0")}/.curl_call_count"
+urls_file="${STUB_DIR:-$(dirname "$0")}/.curl_urls"
 echo x >> "$counter_file" 2>/dev/null || true
+echo "${@: -1}" >> "$urls_file" 2>/dev/null || true
 call_index="$(wc -l < "$counter_file" 2>/dev/null | tr -d ' ')"
 [ -z "$call_index" ] && call_index=1
 
@@ -237,6 +241,17 @@ sleep_durations() {
   local stub_dir="$1"
   if [ -f "$stub_dir/.sleep_durations" ]; then
     cat "$stub_dir/.sleep_durations"
+  else
+    printf ''
+  fi
+}
+
+# curl_urls <stub_dir> -- echoes each recorded curl invocation's URL (its last argument, exactly
+# as the script under test passed it), one per line (empty if none).
+curl_urls() {
+  local stub_dir="$1"
+  if [ -f "$stub_dir/.curl_urls" ]; then
+    cat "$stub_dir/.curl_urls"
   else
     printf ''
   fi
@@ -742,6 +757,59 @@ resolver_cid() {
     common_test_pass "(17) path-shaped repo value: refused (returns 1, no output)"
   else
     common_test_fail "(17) path-shaped repo value: refused (returns 1, no output)" "rc=$rc out=$out"
+  fi
+}
+
+# write_binding <scratch> <cid> -- mirrors the helper of the same name in
+# test-sapience-remember.sh / test-sapience-publish.sh: writes the three-key
+# {project, name, repo} binding to <scratch>/.sapience/project.json, using the fixture's own
+# basename as `repo` (build_scratch's scratch root doubles as the git toplevel, so this is the
+# same path sapience-retrieve.sh's resolver will look up via $repo_toplevel). Named distinctly
+# from resolver_write_binding above (that one feeds the API_LIB resolver's own direct unit
+# cases 13-17; this one feeds sapience-retrieve.sh's link-present cases added in a later phase)
+# so neither collides with the other's narrower fixture shape.
+write_binding() {
+  local scratch="$1" cid="$2"
+  mkdir -p "$scratch/.sapience"
+  jq -n --arg project "$cid" --arg name "Test Project" --arg repo "$(basename "$scratch")" \
+    '{project: $project, name: $name, repo: $repo}' > "$scratch/.sapience/project.json"
+}
+
+# =====================================================================================
+# Case 18: THE PRE-CHANGE NEGATIVE CONTROL (task item 4). With no .sapience/project.json
+# anywhere under the scratch repo, the recorded request URL's query-parameter set is exactly
+# q/source/limit/token -- no project_cid, no project -- and source= carries the fixture's own
+# minted slug rather than a hardcoded name. Run here against the UNMODIFIED
+# sapience-retrieve.sh, this case's assertion is the baseline; re-running it unchanged after a
+# later phase adds the project_cid-sending code is what gives it force as a real negative
+# control rather than a restatement of new behavior.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  stub_dir="$(build_curl_stub)"
+  slug="$(basename "$scratch")"
+  out="$(CURL_STUB_CODE=200 CURL_STUB_BODY='{"results":[]}' \
+    run_sr "$scratch" "$stub_dir" "diagnosing a keybinding fault" "general" 2>/dev/null)"
+  rc=$?
+  url="$(curl_urls "$stub_dir" | tail -1)"
+  query="${url#*\?}"
+  param_names="$(echo "$query" | tr '&' '\n' | cut -d= -f1 | sort | tr '\n' ' ' | sed 's/ *$//')"
+  encoded_source="$(jq -rn --arg v "[repo:${slug}]" '$v|@uri')"
+
+  if [ "$rc" -eq 1 ]; then
+    common_test_pass "(18) no-link negative control: benign exit code 1 (zero-hit search)"
+  else
+    common_test_fail "(18) no-link negative control: benign exit code 1 (zero-hit search)" "got rc=$rc"
+  fi
+  if [ "$param_names" = "limit q source token" ]; then
+    common_test_pass "(18) no-link negative control: query params are exactly q/source/limit/token"
+  else
+    common_test_fail "(18) no-link negative control: query params are exactly q/source/limit/token" "params=[$param_names] url=$url"
+  fi
+  if echo "$query" | grep -qF "source=${encoded_source}"; then
+    common_test_pass "(18) no-link negative control: source= carries the fixture's own minted slug"
+  else
+    common_test_fail "(18) no-link negative control: source= carries the fixture's own minted slug" "query=$query slug=$slug"
   fi
 }
 
