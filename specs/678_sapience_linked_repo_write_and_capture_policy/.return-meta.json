@@ -1,70 +1,88 @@
 {
-  "status": "partial",
-  "dispatch_seq": 13,
-  "partial_progress": {
-    "stage": "phase_boundary_stop",
-    "details": "Hard-mode Phase Mission directive scoped this dispatch to Phase 5 only ('Implement phase 5 only. Do not continue past this phase'). Phase 5 is fully [COMPLETED] and verified; Phase 6 remains for a subsequent dispatch.",
-    "handoff_path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-5-handoff-20261121T202146Z.md",
-    "phases_completed": 5,
-    "phases_total": 6
-  },
+  "status": "implemented",
+  "dispatch_seq": 14,
   "artifacts": [
     {
       "type": "summary",
       "path": "specs/678_sapience_linked_repo_write_and_capture_policy/summaries/01_linked-repo-write-capture-policy-summary.md",
-      "summary": "Implementation summary covering Phases 3-5; status IN PROGRESS pending Phase 6."
+      "summary": "Full six-phase implementation summary; status COMPLETED. Covers the five rulings record, sapience-remember.sh project tagging, rule/doc pointer threading, resolve-once postflight pass-through, the line-neutral EXTENSION.md pointer, and Phase 6's deploy plus done-when verification (fixture-based linked half, live unlinked half)."
     },
     {
       "type": "handoff",
-      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-5-handoff-20261121T202146Z.md",
-      "summary": "Phase 5 completed and committed; resume point and context for Phase 6."
+      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-6-handoff-20261121T205500Z.md",
+      "summary": "Phase 6 (final phase) completion handoff: all 6 phases done, task complete."
     }
   ],
   "completion_data": {
-    "completion_summary": "Added a pointer to the new linked-repo-write-policy.md record in agent-system/extensions/sapience/EXTENSION.md's Context Pointers list, offsetting the addition by rejoining two source lines of the /sapience paragraph into one (a pure line-count reduction, no rendered-content change), keeping the file at exactly 60 lines against its hard 60-line Rule U ceiling. No merge-sources/claudemd.md file was created or referenced."
+    "completion_summary": "Regenerated the deployed .claude/ tree (deploy-headless.sh, landed_verify_clean, 41 checks/0 failures) and demonstrated both halves of the done-when criterion: a fixture-based scratch-repo run of postflight-sapience-notes.sh (.sapience/project.json binding + stubbed GET /v1/people/projects) emitted a body carrying a resolved project key and no project_cid, while a live run from this repository's own (unlinked) root produced output byte-identical to the pre-change scripts. Re-ran every ruling's check from linked-repo-write-policy.md live; all 5 confirmed. verify-touched.sh (98 passed/0 failed) and all three sapience test suites (11+41+53 passed/0 failed) are green; verify-deploy.sh --only-gate 3 --skip-unchanged shows the Phase 2-4 deploy-drift FAIL is now cleared. The complete verify-deploy.sh gate set is deferred to the orchestration close per the dispatch's Batch Gate Deferral directive. Task transitioned to [COMPLETED] via update-task-status.sh postflight (the 'implement does inline' pattern)."
   },
   "modified_files": [
-    "agent-system/extensions/sapience/EXTENSION.md"
+    ".claude-extensions.json",
+    "agent-system/extensions/sapience/EXTENSION.md",
+    "agent-system/extensions/sapience/context/project/sapience/README.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/command-draft-and-picker.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/linked-repo-write-policy.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/transcript-filter-ceiling.md",
+    "agent-system/extensions/sapience/index-entries.json",
+    "agent-system/extensions/sapience/manifest.json",
+    "agent-system/extensions/sapience/rules/sapience-write-path.md",
+    "agent-system/extensions/sapience/scripts/postflight-sapience-notes.sh",
+    "agent-system/extensions/sapience/scripts/sapience-remember.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-postflight-sapience-notes.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-remember.sh",
+    "specs/678_sapience_linked_repo_write_and_capture_policy/plans/01_linked-repo-write-capture-policy.md",
+    "specs/678_sapience_linked_repo_write_and_capture_policy/summaries/01_linked-repo-write-capture-policy-summary.md"
   ],
   "memory_candidates": [
     {
-      "content": "When a Markdown file has two adjacent non-blank source lines belonging to the same paragraph (no blank line between them), rejoining them into one physical line is a zero-risk way to reduce source line count by exactly one with no change to rendered output -- useful for a doc pinned at a hard line-count ceiling (e.g. EXTENSION.md's Rule U 60-line limit) that needs to add one line elsewhere (e.g. a new list item) without net growth.",
-      "category": "TECHNIQUE",
+      "content": "A task's declared file_scope entry of the literal string __WHOLE_TREE__ (used to describe a phase whose 'Files to modify' is 'the entire deployed tree, regenerated by deploy-headless.sh') is NOT treated as a wildcard by git-commit-phase.sh's Containment Self-Check -- it is a plain string compared for exact/ancestor match like any other entry. A tracked file deploy-headless.sh itself rewrites (e.g. .claude-extensions.json) is still dropped as out-of-scope unless it is ALSO separately listed in file_scope, and must be landed via the mechanical follow-up-commit trigger (a scoped git-commit-scoped.sh call for that one path) rather than assumed covered by the __WHOLE_TREE__ marker.",
+      "category": "PATTERN",
       "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/summaries/01_linked-repo-write-capture-policy-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": [
-        "EXTENSION.md",
-        "Rule U",
-        "line-count offset",
-        "markdown soft-wrap",
-        "line-neutral edit"
-      ]
+      "suggested_keywords": ["__WHOLE_TREE__", "file_scope", "Containment Self-Check", "proposed_file_scope", "deploy-headless.sh"]
     }
   ],
   "sapience_notes": [
     {
-      "subject": "EXTENSION.md Rule U zero-headroom edits can be offset by rejoining soft-wrapped source lines",
-      "value": "agent-system/extensions/sapience/EXTENSION.md was exactly 60 lines against check-extension-docs.sh's hard 60-line Rule U ceiling before and after adding a new Context Pointers list entry. The addition was offset by rejoining two adjacent source lines of an existing paragraph (the /sapience paragraph) into one physical line -- Markdown already rendered them as a single soft-wrapped paragraph, so this changes zero rendered content while reducing source line count by exactly one, netting the file back to 60 lines.",
+      "subject": "Fixture-based linked-repo verification: scratch repo plus stubbed GET, reusing a real test fixture's cid/key pair",
+      "value": "To verify a linked-repo code path's done-when criterion without a permanent, undeletable write to the hosted vault, build a standalone scratch git repo carrying a .sapience/project.json binding and copy the deployed scripts (postflight-sapience-notes.sh, sapience-remember.sh, deploy-root-guard.sh, lib/common.sh) into a mirrored .claude/scripts/ tree inside it, with a PATH-shadowing curl stub answering only the one GET endpoint the dry-run path reaches (GET /v1/people/projects). Reusing an existing test suite's proven cid/key fixture pair (mEdYrFW_qClSGDfx / oliver-ben) keeps the fixture realistic without inventing new values. This exercises the production script end-to-end (not just its own narrower unit-test suite) while guaranteeing zero network reach to the real vault.",
       "predicate": "decision is",
       "ko_type": "decision",
       "confidence": 0.85,
-      "source_loc": "agent-system/extensions/sapience/EXTENSION.md"
+      "source_loc": "specs/678_sapience_linked_repo_write_and_capture_policy"
     },
     {
-      "subject": "check-extension-docs.sh deploy-drift FAILs for sapience are pre-existing, not introduced by Phase 5",
-      "value": "Running verify-deploy.sh --only-gate 3 --skip-unchanged after the EXTENSION.md edit reported a FAIL for the sapience extension, but the FAIL is deployed-script/rule content drift against scripts/postflight-sapience-notes.sh, scripts/tests/test-postflight-sapience-notes.sh, and rules/sapience-write-path.md -- all edited by earlier phases of the same task and not yet redeployed, matching the dispatch's own stated <deploy-freshness-context> staleness warning. No Rule U or Rule V finding was reported for EXTENSION.md itself; the deploy-headless.sh run that clears this drift is deferred to the plan's own later deploy phase.",
-      "predicate": "finding is",
-      "ko_type": "finding",
-      "confidence": 0.85,
-      "source_loc": "agent-system/extensions/sapience/EXTENSION.md"
-    },
-    {
-      "subject": "manifest.json's merge_targets.claudemd.source is EXTENSION.md itself, with no separate merge-sources file for this extension",
-      "value": "agent-system/extensions/sapience has no merge-sources/ directory at all; manifest.json's merge_targets.claudemd.source resolves directly to EXTENSION.md, confirmed by filesystem check both before and after this edit. A task description or dispatch referencing a merge-sources/claudemd.md path for this extension is citing a path that does not exist.",
+      "subject": "__WHOLE_TREE__ in a declared file_scope is a literal string, not a wildcard, for git-commit-phase.sh's Containment Self-Check",
+      "value": "A plan phase declaring Files to modify as __WHOLE_TREE__ (deploy-headless.sh regenerates the entire deployed tree) does not make git-commit-phase.sh's Containment Self-Check admit every file that regeneration touches. .claude-extensions.json (a tracked file deploy-headless.sh rewrites) was dropped as out-of-scope on the phase commit despite __WHOLE_TREE__ being present in the task's declared file_scope, because the Containment predicate does exact/ancestor path matching against each file_scope string, never pattern expansion. The drop was recovered correctly via the designed mechanism: git-commit-phase.sh deposited the dropped path into .return-meta.json's proposed_file_scope, and a scoped git-commit-scoped.sh follow-up commit (never a second git-commit-phase.sh call, which would re-run the same check and drop it again) landed it.",
       "predicate": "finding is",
       "ko_type": "finding",
       "confidence": 0.9,
-      "source_loc": "agent-system/extensions/sapience/manifest.json"
+      "source_loc": ".claude/scripts/git-commit-phase.sh"
+    },
+    {
+      "subject": "orchestrator-postflight.sh documents 'implement does inline' for the update-task-status.sh postflight call",
+      "value": "orchestrator-postflight.sh's own Stage 7 comment states its update-task-status.sh postflight call applies to research and plan operations only, because 'implement does inline' -- the completing implementation agent itself calls update-task-status.sh postflight directly when all plan phases are done, rather than waiting for the orchestrator's own postflight stage to do it. The final 'task {N}: complete implementation' git commit (covering the resulting specs/TODO.md and specs/state.json changes) and the sapience_notes vault write (postflight-sapience-notes.sh, gated on postflight_rc==0) are deliberately left to the orchestrator's own orchestrate-cycle-postflight.sh stage, which runs after the implementation dispatch returns and reads its .orchestrator-handoff.json/.return-meta.json.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/orchestrator-postflight.sh"
+    },
+    {
+      "subject": "Vendor ~/.sapience source has zero link-state awareness in its transcript-classification path, confirmed by direct grep",
+      "value": "The claim that source_skip()'s subagent/harness-started classification is independent of Sapience project-link state (no .sapience/project.json awareness) was corroborated by a direct grep for 'project' across the installed vendor ~/.sapience/*.py files, which returned zero hits in that classification context -- not merely re-asserted from this repository's own documentation. This is the kind of claim worth verifying against the actual vendor-owned artifact when one is reachable, rather than trusting a repo-side description of code outside the repo.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.75,
+      "source_loc": "context/project/sapience/domain/transcript-filter-ceiling.md"
+    },
+    {
+      "subject": "A ruling's 'check' can split into a mechanically-verifiable half and a structurally agent-exercise-limited half",
+      "value": "When a documented verification check names behavior behind an AskUserQuestion-gated interactive skill (e.g. a /sapience draft naming a pending suggestion), the check should be split explicitly: the data-plumbing half (does the upstream data source correctly carry the fixture value through, e.g. sapience-vault-read.sh passing a non-empty vault.suggestions entry to its output unmodified) is run live and confirmed; the draft-generation half is recorded as a stated verification limit identical in kind to any other AskUserQuestion-withheld-from-Agent-dispatch limitation, never silently treated as passed and never silently skipped.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/sapience/context/project/sapience/domain/linked-repo-write-policy.md"
     }
   ],
   "metadata": {
@@ -76,10 +94,10 @@
       "implement",
       "general-implementation-agent"
     ],
-    "phases_completed": 5,
+    "phases_completed": 6,
     "phases_total": 6
   },
-  "next_steps": "Dispatch Phase 6 (Deploy, Done-When Verification, and Orchestration-Close Deferral) next.",
+  "next_steps": "None. All 6 phases complete; task transitioned to [COMPLETED]. Orchestrator conclusion stage should create the 'task 678: complete implementation' commit and the postflight sapience-notes vault write.",
   "proposed_file_scope": [
     ".claude-extensions.json"
   ]

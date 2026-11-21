@@ -1,20 +1,20 @@
 {
-  "status": "partial",
-  "dispatch_seq": 13,
-  "summary": "Implemented Phase 5 of 6 (Line-Neutral EXTENSION.md Pointer) for the sapience linked-repo write and capture policy task. Added a Context Pointers entry for the new linked-repo-write-policy.md record to agent-system/extensions/sapience/EXTENSION.md, offsetting the one-line addition by rejoining two adjacent source lines of the existing /sapience paragraph into one (a pure line-count reduction with no rendered-content change, since Markdown already treated them as one soft-wrapped paragraph). The file measured exactly 60 lines before and after, matching its zero-headroom Rule U ceiling; no merge-sources/claudemd.md file was created or referenced. verify-touched.sh selected and passed 3 suites (test-index-entries-schema.sh, test-manifest-scripts-sync.sh, test-sapience-capture.sh). verify-deploy.sh --only-gate 3 --skip-unchanged reported no Rule U/V finding for EXTENSION.md; its one FAIL is the same pre-existing Phase 2-4 deploy-drift condition already known from this task's prior cycles, deferred to Phase 6's deploy step. The hard-mode Phase Mission directive scoped this dispatch to Phase 5 only; Phase 6 remains.",
+  "status": "implemented",
+  "dispatch_seq": 14,
+  "summary": "Implemented Phase 6 of 6 (Deploy, Done-When Verification, and Orchestration-Close Deferral), completing the task. Regenerated the deployed tree (deploy-headless.sh, landed_verify_clean). Demonstrated the done-when criterion's linked half via a scratch-repo fixture (.sapience/project.json binding + stubbed GET /v1/people/projects): postflight-sapience-notes.sh --dry-run emitted a body carrying a resolved project key and no project_cid. Demonstrated the unlinked half live from this repository's own root: current deployed scripts produce output byte-identical to the pre-change scripts. Re-ran all 5 rulings' checks from linked-repo-write-policy.md live and confirmed each. verify-touched.sh (98 passed/0 failed), test-sapience-remember.sh (11/0), test-postflight-sapience-notes.sh (41/0), and test-sapience-publish.sh (53/0) are all green; verify-deploy.sh --only-gate 3 --skip-unchanged confirms the Phase 2-4 deploy-drift FAIL is cleared. The full verify-deploy.sh gate set is deferred to the orchestration close per the Batch Gate Deferral directive. Task transitioned [IMPLEMENTING] -> [COMPLETED] via update-task-status.sh postflight inline (the documented 'implement does inline' pattern); the resulting specs/TODO.md and specs/state.json changes are left uncommitted for the orchestrator's own 'task 678: complete implementation' commit and sapience-notes vault write.",
   "blockers": [],
-  "phases_completed": 5,
+  "phases_completed": 6,
   "phases_total": 6,
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-5-handoff-20261121T202146Z.md",
-      "summary": "Phase 5 completion handoff: current state, decisions, and resume point for Phase 6."
+      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-6-handoff-20261121T205500Z.md",
+      "summary": "Phase 6 (final phase) completion handoff: all 6 phases done, task complete."
     },
     {
       "type": "summary",
       "path": "specs/678_sapience_linked_repo_write_and_capture_policy/summaries/01_linked-repo-write-capture-policy-summary.md",
-      "summary": "Implementation summary covering Phases 3-5; status IN PROGRESS pending Phase 6."
+      "summary": "Full six-phase implementation summary; status COMPLETED."
     }
   ]
 }

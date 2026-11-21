@@ -1,7 +1,7 @@
 # Implementation Plan: Task #678
 
 - **Task**: 678 - Sapience linked-repo write and capture policy
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/678_sapience_linked_repo_write_and_capture_policy/reports/01_linked-repo-write-capture-policy.md

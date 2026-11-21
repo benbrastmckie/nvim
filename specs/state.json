@@ -775,12 +775,12 @@
     {
       "project_number": 678,
       "project_name": "sapience_linked_repo_write_and_capture_policy",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "Decide and encode how a Claude Code session in a linked repo creates project notes automatically, which the extension's current policy prevents. Territory: agent-system/extensions/sapience/ (settings-fragment.json, rules/sapience-write-path.md, merge-sources/claudemd.md, context/project/sapience/domain/review-gate-boundary.md, transcript-filter-ceiling.md, per-repo-scoping.md). Four things block automatic contribution today: the fragment grants only the seven read-shaped tools, so sapience_remember and sapience_wrapup are denied in headless runs; the extension's own surfaces tell agents not to call sapience_remember mid-run and supersede the vendor's save-as-it-lands nudge; capture opt-in (the capture map in ~/.sapience/config.json) is unconnected to extension activation, so a repo with the extension loaded is still never extracted; and orchestrated and subagent transcripts are filtered out of extraction (1013 of 1295 on this machine). The reasons for the current policy still hold outside a linked repo: direct /ingest-kos writes bypass the auto_approve review gate and there is no delete API, so a write is permanent and unreviewed. Rule on each, for a repo that carries .sapience/project.json and for one that does not: (1) whether the write tools are granted in a linked repo and under what bound per session; (2) whether the mid-run ban is lifted there, and if so for which note kinds (the person's own typed decisions versus agent-authored findings); (3) whether a link file implies capture opt-in for that repo and who writes the capture-map entry; (4) whether orchestrated transcripts stay filtered, given the postflight pass already distils them; (5) how a non-creator member's notes, which the server lands as suggestions only the author sees until confirmed, are surfaced to that member. Agree with the write rule in the sf1-engine repository's integration/project-link.md so both harnesses apply one policy. Then encode the rulings in the fragment, the rule file and the docs, each with a check. Done when a plain interactive session and an orchestrated run in a linked repo each produce project notes by the ruled path, and the same two in an unlinked repo behave as today.",
       "topic": "sapience",
       "created": "2026-11-21T00:07:14Z",
-      "last_updated": "2026-11-21T18:34:11Z",
+      "last_updated": "2026-11-21T20:41:06Z",
       "audit_verdict": {
         "proposal": {
           "id": "sapience_linked_repo_write_and_capture_policy",
@@ -829,13 +829,14 @@
           "summary": "6 phases, 3 waves, 8 hours: rulings record and index wiring, sapience-remember.sh project tagging with its first test suite, rule file and domain-doc pointers, resolve-once postflight pass-through, line-neutral EXTENSION.md pointer, and a final deploy plus done-when verification phase."
         },
         {
-          "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-5-handoff-20261121T202146Z.md",
+          "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-6-handoff-20261121T205500Z.md",
           "type": "handoff",
-          "summary": "Phase 5 completion handoff: current state, decisions, and resume point for Phase 6."
+          "summary": "Phase 6 (final phase) completion handoff: all 6 phases done, task complete."
         }
       ],
       "next_artifact_number": 2,
       "file_scope": [
+        ".claude-extensions.json",
         "__WHOLE_TREE__",
         "agent-system/extensions/sapience/EXTENSION.md",
         "agent-system/extensions/sapience/context/project/sapience/README.md",
@@ -850,7 +851,8 @@
         "agent-system/extensions/sapience/scripts/sapience-remember.sh",
         "agent-system/extensions/sapience/scripts/tests/test-postflight-sapience-notes.sh",
         "agent-system/extensions/sapience/scripts/tests/test-sapience-remember.sh"
-      ]
+      ],
+      "completion_summary": "Regenerated the deployed .claude/ tree (deploy-headless.sh, landed_verify_clean, 41 checks/0 failures) and demonstrated both halves of the done-when criterion: a fixture-based scratch-repo run of postflight-sapience-notes.sh (.sapience/project.json binding + stubbed GET /v1/people/projects) emitted a body carrying a resolved project key and no project_cid, while a live run from this repository's own (unlinked) root produced output byte-identical to the pre-change scripts. Re-ran every ruling's check from linked-repo-write-policy.md live; all 5 confirmed. verify-touched.sh (98 passed/0 failed) and all three sapience test suites (11+41+53 passed/0 failed) are green; verify-deploy.sh --only-gate 3 --skip-unchanged shows the Phase 2-4 deploy-drift FAIL is now cleared. The complete verify-deploy.sh gate set is deferred to the orchestration close per the dispatch's Batch Gate Deferral directive. Task transitioned to [COMPLETED] via update-task-status.sh postflight (the 'implement does inline' pattern)."
     },
     {
       "project_number": 677,
