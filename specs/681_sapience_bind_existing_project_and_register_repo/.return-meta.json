@@ -1,16 +1,16 @@
 {
   "status": "implemented",
-  "dispatch_seq": 15,
+  "dispatch_seq": 16,
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-1-handoff-20261121T205515Z.md",
-      "summary": "Phase 1 (pick mode listing and --project resolution, read-only) completed; records the confirm-without-mode deviation and the deployed-mirror verify-touched.sh staleness caveat for the next dispatch."
+      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-2-handoff-20261121T000000Z.md",
+      "summary": "Phase 2 (link registration, 404/403 policy, canonical write, role note) completed; records the sapience_post subshell/command-substitution fix needed for the HTTP-status branch and the deployed-mirror verify-touched.sh staleness caveat carried forward from Phase 1."
     }
   ],
-  "next_steps": "Dispatch phase 2 (Link Registration, the 404/403 Policy, Canonical Write, Role Note) of the same plan.",
+  "next_steps": "Dispatch Phase 3 (Vendor Delegation With Single-Writer Normalization) of the same plan; Phase 4 is also unblocked and can run in the same wave.",
   "completion_data": {
-    "completion_summary": "Implemented Phase 1 of 5: sapience-project-bind.sh gained a mode selector (create/bind/pick), a fetch_project_rows() helper correctly filtering (.shared // []) + (.received // []) by accepted-or-owner, a pick-mode listing, and case-insensitive --project resolution to exactly one row, with no write or POST performed. Added test cases 15-17 and a GET /v1/people/projects stub branch; all 17 cases (36 assertions) pass against the source store."
+    "completion_summary": "Implemented Phase 2 of 5: write_link_file() is now the sole writer of .sapience/project.json on every path (create and bind); bind mode gained a dry-run posture, an existing-link guard (--force to overwrite), a confirmed POST /v1/people/projects/<cid>/link classified strictly by HTTP status (2xx success / 404 locally-recorded / 403 refusal / other loud failure), a role-note from the picked row's owner flag, and a final 'commit this file' line. Added test cases 18-21; all 21 cases (49 assertions) pass against the source store."
   },
   "modified_files": [
     "agent-system/extensions/sapience/scripts/sapience-project-bind.sh",
@@ -21,57 +21,57 @@
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 1,
+    "phases_completed": 2,
     "phases_total": 5
   },
   "memory_candidates": [
     {
-      "content": "When a plan phase edits a file under agent-system/extensions/** and its test suite uses common_test_resolve_subject with mode \"deploy-tree-first\", the in-phase verification MUST export CORE_TEST_SUBJECT_MODE=source-store or it silently runs the STALE deployed .claude/ copy instead of the edited source. common_test_resolve_subject emits only a stderr WARNING in that case and still returns the deployed path, never a non-zero exit -- so a phase whose verification criteria just name the suite will pass green against unedited code. The alternative (running deploy-headless.sh inside the phase) is a whole-tree claim that serializes against every concurrent sibling, so the env override is the right choice for a per-phase check and the redeploy belongs at the orchestration close.",
-      "category": "PATTERN",
-      "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/plans/01_bind-existing-project-register-repo.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["CORE_TEST_SUBJECT_MODE", "deploy-tree-first", "stale deployed tree", "plan verification", "source store", "whole-tree claim"]
+      "content": "Calling a sourced bash-library function via command substitution (x=\"$(libfunc ...)\") forks a subshell; any non-local variable the function assigns to \"return\" a second value to its caller (e.g. an HTTP status alongside a response body on stdout) never reaches the caller, and reads back empty/unset there, even though the assignment itself is a plain global write inside the function. The library's own header comment claiming the value is 'set into the CALLER's shell, since this file is sourced, not subshelled' is true of the library's sourcing but not of a $(...) call site -- sourcing and command substitution are independent. Fix: redirect the function's stdout to a temp file instead (libfunc ... > \"$tmp\"; out=\"$(cat \"$tmp\")\"), which keeps the call in-process so the side-channel assignment survives.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/summaries/01_bind-existing-project-register-repo-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash subshell", "command substitution", "sourced library", "side-channel return value", "HTTP status capture"]
     },
     {
-      "content": "bash .claude/scripts/verify-touched.sh runs run-all.sh in DEPLOYED mode by default (scripts root .claude/scripts), which ignores CORE_TEST_SUBJECT_MODE entirely and so silently exercises a stale .claude/scripts mirror instead of edited agent-system/extensions/** source, even when the exact same suite also passes correctly when invoked directly with CORE_TEST_SUBJECT_MODE=source-store. A phase whose only in-phase check is the bare verify-touched.sh invocation can pass green without ever running the edited code; the direct source-store invocation of the named test suite is the authoritative check, and verify-touched.sh's green result should be treated as a non-informative confirmation of suite wiring, not of the edit's correctness, until the deployed mirror is refreshed.",
+      "content": "When a plan task says 'branch on <status variable> only' for a sourced HTTP helper's caller-visible status side-channel, verify empirically (e.g. with a local curl-stub harness) that the side-channel variable is actually populated at the call site before trusting the plan's described branching to work -- a pre-existing call site using the same helper elsewhere in the same file can carry the exact same latent bug silently (its own non-2xx cases happen to be caught by a secondary body-shape check instead), masking the defect until a new call site relies on the status value alone.",
       "category": "PATTERN",
-      "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-1-handoff-20261121T205515Z.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["verify-touched.sh", "deployed mode", "CORE_TEST_SUBJECT_MODE", "stale mirror", "run-all.sh", "source-store verification"]
+      "source_artifact": "specs/681_sapience_bind_existing_project_and_register_repo/summaries/01_bind-existing-project-register-repo-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["status-code branching", "latent bug", "empirical verification", "plan task validation", "HTTP status classification"]
     }
   ],
   "sapience_notes": [
     {
-      "subject": "GET /v1/people/projects response shape",
-      "value": "The real response is {ok, candidates, shared, received, invites, ...} -- never {projects: [...]} and never a bare array. The caller's accepted-or-owned row set is (.shared // []) + (.received // []) | map(select(.accepted or .owner)). The has(\"projects\")/bare-array idiom used elsewhere in this extension resolves to [] against this real shape.",
+      "subject": "sapience_post's HTTP-status side-channel and command substitution",
+      "value": "sapience-api-lib.sh's sapience_post sets sapience_api_post_http_status as a plain (non-local) global assignment intended to reach the caller, but that assignment is lost whenever the caller captures sapience_post's stdout via x=\"$(sapience_post ...)\" -- command substitution forks a subshell, so the status variable reads back empty in the parent shell. The library's own header comment ('set into the CALLER's shell, since this file is sourced, not subshelled') describes the file's sourcing, not the call site's subshelling, and is misleading on this point. Confirmed the pre-existing create-mode call site in sapience-project-bind.sh carries this same defect latently (its non-2xx failure cases are still caught by a secondary ok:true/body-shape check, masking it). Workaround used in the new bind-mode path: redirect sapience_post's stdout to a temp file instead of using $(...), which keeps the call in-process.",
       "predicate": "finding is",
       "ko_type": "insight",
       "confidence": 0.9,
-      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh:fetch_project_rows"
+      "source_loc": "agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh:sapience_post"
     },
     {
-      "subject": "verify-touched.sh and the deployed-mirror staleness hazard",
-      "value": "bash .claude/scripts/verify-touched.sh invokes run-all.sh in deployed mode by default and does not forward or respect CORE_TEST_SUBJECT_MODE, so it silently tests the stale .claude/scripts mirror rather than edited agent-system/extensions/** source. A green verify-touched.sh result is not evidence the edited code was exercised; the authoritative per-phase check for a source-store edit is the direct CORE_TEST_SUBJECT_MODE=source-store invocation of the named suite.",
+      "subject": "Link route 404/403 policy as implemented in sapience-project-bind.sh",
+      "value": "POST /v1/people/projects/<cid>/link is classified strictly by HTTP status, never by parsing any response or vendor prose: 2xx with ok:true writes .sapience/project.json and reports success; 404 (feature not enabled for this account, or the cid/membership lookup missing server-side) still writes the file and reports the binding as recorded locally only; 403 (not an accepted member) writes nothing and reports a refusal naming 'join the project first'; any other status, a non-JSON body, or a missing ok:true on a 2xx is a loud failure that writes nothing.",
       "predicate": "finding is",
-      "ko_type": "insight",
+      "ko_type": "decision",
       "confidence": 0.85,
-      "source_loc": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-1-handoff-20261121T205515Z.md"
+      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh"
     },
     {
-      "subject": "shellcheck SC2034 and multiple assignments",
-      "value": "shellcheck's SC2034 (appears unused) flags the LAST assignment site of a variable it considers unused, not the first. A `# shellcheck disable=SC2034` comment placed above an earlier declaration (e.g. FORCE=\"\") does not suppress a later re-assignment of the same variable inside a case arm; the disable comment must sit directly above the assignment shellcheck actually flags.",
-      "predicate": "finding is",
-      "ko_type": "insight",
-      "confidence": 0.8,
-      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh:135"
-    },
-    {
-      "subject": "Mode-selector design preserving pre-existing CLI test behavior",
-      "value": "When adding a third no-argument-implied mode (pick) to a script whose existing contract treated '--confirm with no other mode flag' as a missing-required-argument refusal, an explicit guard for 'confirm with neither mode flag' is needed to keep that pre-existing refusal message intact -- a literal 'neither flag present -> new default mode' selector would silently reclassify that combination into the new mode instead of preserving the old refusal.",
+      "subject": "Existing-link guard ordering in bind mode",
+      "value": "The bind-mode existing-link guard (refuse to silently replace a binding to a different project; --force overwrites) is checked once, immediately after resolving the --project value to a row, before both the dry-run payload print and the confirmed POST -- not only immediately before the write. This means a conflicting existing link is reported even on a dry-run invocation, rather than only surfacing at --confirm time.",
       "predicate": "finding is",
       "ko_type": "decision",
       "confidence": 0.8,
-      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh:98"
+      "source_loc": "agent-system/extensions/sapience/scripts/sapience-project-bind.sh"
+    },
+    {
+      "subject": "verify-touched.sh deployed-mode smoke check vs. authoritative source-store check (carried forward from Phase 1)",
+      "value": "In this repo, bash .claude/scripts/verify-touched.sh runs run-all.sh in deployed mode by default, executing the STALE deployed copy of a suite when that extension's deployed mirror is out of date -- confirmed again this phase: the deployed test-sapience-project-bind.sh still lacks cases 15-21 even though verify-touched.sh reported green. The authoritative check for a source-store edit remains the direct CORE_TEST_SUBJECT_MODE=source-store invocation of the suite from its source-store path.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-2-handoff-20261121T000000Z.md"
     }
   ]
 }

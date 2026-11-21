@@ -1,18 +1,18 @@
 {
   "status": "implemented",
-  "dispatch_seq": 15,
+  "dispatch_seq": 16,
   "task_number": 681,
   "phase": "implement",
-  "phases_completed": 1,
+  "phases_completed": 2,
   "phases_total": 5,
-  "summary": "Implemented Phase 1 of the bind-existing-project plan: sapience-project-bind.sh gained a create/bind/pick mode selector, a fetch_project_rows() helper over GET /v1/people/projects with the correct accepted-or-owner row filter, a pick-mode listing, and case-insensitive --project resolution to exactly one row -- all read-only, writing and POSTing nothing. Added test cases 15-17 (36/36 assertions pass against the source store). Phase 1 is committed and marked [COMPLETED]; phases 2-5 remain.",
+  "summary": "Implemented Phase 2 of the bind-existing-project plan: write_link_file() is now the sole writer of .sapience/project.json on every path; bind mode gained a dry-run posture, an existing-link guard (--force to overwrite), a confirmed POST /v1/people/projects/<cid>/link classified strictly by HTTP status (2xx success / 404 locally-recorded / 403 refusal / other loud failure), a role note from the picked row's owner flag, and a final 'commit this file' line. Added test cases 18-21 (49/49 assertions pass against the source store). Phase 2 is committed and marked [COMPLETED]; phases 3-5 remain.",
   "blockers": [],
   "plan_markers_verified": true,
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-1-handoff-20261121T205515Z.md",
-      "summary": "Phase 1 completion handoff: mode-selector design, the confirm-without-mode deviation, and the verify-touched.sh deployed-mirror staleness caveat."
+      "path": "specs/681_sapience_bind_existing_project_and_register_repo/handoffs/phase-2-handoff-20261121T000000Z.md",
+      "summary": "Phase 2 completion handoff: the sapience_post command-substitution/subshell fix needed for status-code branching, the existing-link guard's check-once ordering, and the carried-forward verify-touched.sh deployed-mirror staleness caveat."
     }
   ],
   "metadata": {
