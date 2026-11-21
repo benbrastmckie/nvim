@@ -1,15 +1,20 @@
 {
   "status": "partial",
-  "dispatch_seq": 10,
-  "summary": "Implemented Phase 2 of 6 (sapience-remember.sh Project Tagging and Its First Test Suite) for the sapience linked-repo write and capture policy task. Added optional runtime project-key resolution, a --project-key override flag, and a degrade-on-failure (never refuse) rule to sapience-remember.sh, plus its first regression suite (11 assertions across 7 cases, including the two Ruling 1/3 policy invariants). Registered the suite in manifest.json and confirmed suite_selection_select now resolves it. Unlinked-case output confirmed byte-identical to the pre-change script; scoped verify-touched.sh battery green aside from one pre-existing EXPECTED-flaky timeout unrelated to this change; no Rule Q finding. The hard-mode Phase Mission directive scoped this dispatch to Phase 2 only; phases 3-6 remain.",
+  "dispatch_seq": 11,
+  "summary": "Implemented Phase 3 of 6 (Rule File and Existing-Doc Ruling Pointers) for the sapience linked-repo write and capture policy task. Threaded Rulings 1, 2, 4, and 5 from Phase 1's linked-repo-write-policy.md record into rules/sapience-write-path.md (new Link-State section, corrected 5-of-14 corpus figure, six-site sanctioned-discussion list) and three existing domain docs (transcript-filter-ceiling.md, command-draft-and-picker.md, review-gate-boundary.md), plus an index-entries.json line_count resync. Scoped verify-touched.sh battery: 98 passed, 0 failed. Gate 3's Rule R (line_count accuracy) reported no sapience finding; its one FAIL was the already-flagged, pre-existing deployed-content-drift condition on rules/sapience-write-path.md, correctly deferred to Phase 6's deploy step rather than cleared here. The hard-mode Phase Mission directive scoped this dispatch to Phase 3 only; phases 4-6 remain.",
   "blockers": [],
-  "phases_completed": 2,
+  "phases_completed": 3,
   "phases_total": 6,
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-2-handoff-20261121T194907Z.md",
-      "summary": "Phase 2 completion handoff: current state, decisions, and resume point for Phase 3."
+      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-3-handoff-20261121T200000Z.md",
+      "summary": "Phase 3 completion handoff: current state, decisions, and resume point for Phase 4."
+    },
+    {
+      "type": "summary",
+      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/summaries/01_linked-repo-write-capture-policy-summary.md",
+      "summary": "Interim implementation summary covering Phase 3 only; status IN PROGRESS pending phases 4-6."
     }
   ]
 }

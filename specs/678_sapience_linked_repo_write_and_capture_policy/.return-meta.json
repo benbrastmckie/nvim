@@ -1,90 +1,75 @@
 {
   "status": "partial",
+  "dispatch_seq": 11,
   "partial_progress": {
     "stage": "phase_boundary_stop",
-    "details": "Hard-mode Phase Mission directive scoped this dispatch to Phase 2 only ('Implement phase 2 only. Do not continue past this phase'). Phase 2 is fully [COMPLETED] and verified; phases 3-6 remain for a subsequent dispatch.",
-    "handoff_path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-2-handoff-20261121T194907Z.md",
-    "phases_completed": 2,
+    "details": "Hard-mode Phase Mission directive scoped this dispatch to Phase 3 only ('Implement phase 3 only. Do not continue past this phase'). Phase 3 is fully [COMPLETED] and verified; phases 4-6 remain for a subsequent dispatch.",
+    "handoff_path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-3-handoff-20261121T200000Z.md",
+    "phases_completed": 3,
     "phases_total": 6
   },
   "artifacts": [
     {
       "type": "summary",
-      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-2-handoff-20261121T194907Z.md",
-      "summary": "Phase 2 (sapience-remember.sh Project Tagging and Its First Test Suite) completed and committed; resume point and context for Phase 3."
+      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/summaries/01_linked-repo-write-capture-policy-summary.md",
+      "summary": "Interim implementation summary covering Phase 3 (Rule File and Existing-Doc Ruling Pointers) only; status IN PROGRESS pending phases 4-6."
+    },
+    {
+      "type": "handoff",
+      "path": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-3-handoff-20261121T200000Z.md",
+      "summary": "Phase 3 completed and committed; resume point and context for Phase 4."
     }
   ],
   "completion_data": {
-    "completion_summary": "Added optional runtime project-key resolution, a --project-key override flag, and the degrade-on-failure rule (never a refusal) to sapience-remember.sh, plus its first regression suite (test-sapience-remember.sh, 11 assertions across 7 cases including the two Ruling 1/3 policy invariants). Registered the new suite in manifest.json via sync-manifest-scripts.sh --write and confirmed suite_selection_select now resolves it for sapience-remember.sh. Unlinked-case output confirmed byte-identical to the pre-change script; scoped verify-touched.sh battery green aside from one pre-existing EXPECTED-flaky timeout; no Rule Q finding."
+    "completion_summary": "Threaded Rulings 1, 2, 4, and 5 from Phase 1's linked-repo-write-policy.md record into rules/sapience-write-path.md and three existing domain docs (transcript-filter-ceiling.md, command-draft-and-picker.md, review-gate-boundary.md) as pure prose, corrected the rule file's stale corpus figure to the measured 5-of-14, completed its sanctioned-discussion-site list to six entries, and resynced index-entries.json line_count values for the three edited context files."
   },
   "modified_files": [
-    "agent-system/extensions/sapience/scripts/sapience-remember.sh",
-    "agent-system/extensions/sapience/scripts/tests/test-sapience-remember.sh",
-    "agent-system/extensions/sapience/manifest.json"
+    "agent-system/extensions/sapience/rules/sapience-write-path.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/transcript-filter-ceiling.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/command-draft-and-picker.md",
+    "agent-system/extensions/sapience/context/project/sapience/domain/review-gate-boundary.md",
+    "agent-system/extensions/sapience/index-entries.json"
   ],
   "memory_candidates": [
     {
-      "content": "sync-manifest-scripts.sh derives each extension's on-disk script set from `git ls-files <ext>/scripts`, not a plain filesystem walk. A brand-new, not-yet-`git add`-ed test file is therefore invisible to it (reports as already in sync even though the file exists on disk) until it is staged. The fix is `git add` the new file before running `sync-manifest-scripts.sh --write`.",
+      "content": "generate-context-line-counts.sh refuses to run directly from the agent-system source store ('must run from a deployed scripts/ tree'), but it already supports a documented REPO_ROOT override: `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` runs cleanly from the source store and writes only the index-entries.json line_count fields that are actually stale, leaving every other field and array formatting untouched.",
       "category": "TECHNIQUE",
-      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-2-handoff-20261121T194907Z.md",
+      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/summaries/01_linked-repo-write-capture-policy-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["sync-manifest-scripts", "git ls-files", "provides.scripts", "manifest.json", "Rule Q"]
+      "suggested_keywords": ["generate-context-line-counts", "REPO_ROOT override", "index-entries.json", "source store", "Rule R"]
     },
     {
-      "content": "suite_selection_select's resolution for a given script relies on a grep-based reference stratum over the DEPLOYED .claude/scripts/tests/ tree, not the source store. A brand-new test suite that references its subject script by name will not appear in suite_selection_select's output until a redeploy has copied it into the deployed tree -- confirms the existing memory note about agent-definition-file NO-SUITE-BY-CLASS probes generalizes to this case too.",
+      "content": "check-extension-docs.sh's doc-lint distinguishes a line_count-accuracy finding (Rule R, in source index-entries.json) from a 'deployed rule content drift (deployed != extension source)' finding -- the latter fires whenever a source-store instruction file is edited ahead of a redeploy, independent of Rule R, and is the expected transient state between a source edit and its next deploy rather than a regression in the edit itself.",
       "category": "PATTERN",
-      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-2-handoff-20261121T194907Z.md",
+      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/summaries/01_linked-repo-write-capture-policy-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["suite_selection_select", "suite-selection-lib", "deploy-headless", "test discovery"]
-    },
-    {
-      "content": "A fixed-content test subject with no standalone deployed copy (e.g. an extension's settings-fragment.json, which is merge-targeted into .claude/settings.local.json rather than copied verbatim) must be resolved via common_test_ext_root(REPO_ROOT) + '<ext-name>/<file>', never a SCRIPT_DIR-relative '../../file' path -- the relative path only works when the suite itself happens to run from the source tree, and silently breaks when the same suite runs from a deployed .claude/scripts/tests/ copy (a different directory depth with no sibling settings-fragment.json at all).",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-2-handoff-20261121T194907Z.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["common_test_ext_root", "settings-fragment.json", "deploy-tree-first", "test fixture resolution"]
+      "suggested_keywords": ["check-extension-docs.sh", "Rule R", "deployed rule content drift", "verify-deploy gate 3", "source-store-deploy-boundary"]
     }
   ],
   "sapience_notes": [
     {
-      "subject": "sapience-remember.sh project-key resolution degrade rule",
-      "value": "sapience-remember.sh's new project-key resolution (added in the sapience_linked_repo_write_and_capture_policy task) deliberately degrades to an untagged write with a stderr warning on every resolution failure (no binding, non-JSON GET response, no matching cid, matching entry with no key), never refusing -- the opposite of sapience-publish.sh ko's refuse-on-failure behavior. Rationale: sapience-remember.sh serves a non-interactive, bounded postflight note set where losing a note outright is worse than writing it untagged.",
+      "subject": "Sapience linked-repo write-path rulings threaded into existing domain docs",
+      "value": "Rulings 1, 2, 4, and 5 governing how a Claude Code repo carrying .sapience/project.json differs from an unlinked one (write-tool grant, mid-run ban, transcript filtering, and member-suggestion surfacing) are each now stated directly in the surface that already owns that reasoning (rules/sapience-write-path.md, transcript-filter-ceiling.md, command-draft-and-picker.md, review-gate-boundary.md), citing the dedicated linked-repo-write-policy.md record rather than duplicating its rationale.",
       "predicate": "decision is",
       "ko_type": "decision",
-      "confidence": 0.9,
-      "source_loc": "agent-system/extensions/sapience/scripts/sapience-remember.sh"
-    },
-    {
-      "subject": "sapience-publish.sh ko's project-key resolution shape reused verbatim",
-      "value": "sapience-remember.sh's project-key resolution (binding cid -> GET /v1/people/projects -> jq-matched key, never project_cid) is a direct copy of sapience-publish.sh ko's existing runtime-resolution block and defensive response-unwrapping, confirming that shape is now established precedent across both Sapience write scripts rather than a one-off.",
-      "predicate": "finding is",
-      "ko_type": "finding",
       "confidence": 0.85,
-      "source_loc": "agent-system/extensions/sapience/scripts/sapience-publish.sh"
+      "source_loc": "agent-system/extensions/sapience/rules/sapience-write-path.md"
     },
     {
-      "subject": "sync-manifest-scripts.sh's git-ls-files dependency",
-      "value": "sync-manifest-scripts.sh's 'on disk' script count for an extension is derived from `git ls-files <ext>/scripts`, not a filesystem walk -- a newly-created, not-yet-staged test file is invisible to it until `git add`-ed. Measured live: the script reported sapience as fully in sync (20/20) immediately after a new test file was written to disk, and only detected it (21/21 after --write) once the file was staged.",
+      "subject": "sapience-write-path.md's governed-corpus figure was stale",
+      "value": "The rule file's own corpus figure ('exactly three' .md instruction surfaces legitimately naming an MCP write tool, out of 14) was stale; a fresh grep for the four MCP write-tool names across the 14 .md instruction surfaces under agent-system/extensions/sapience/ found 5 (EXTENSION.md, the rule file itself, review-gate-boundary.md, linked-repo-write-policy.md, per-repo-scoping.md), all legitimate discussion sites rather than prescriptions.",
       "predicate": "finding is",
       "ko_type": "finding",
       "confidence": 0.9,
-      "source_loc": "agent-system/extensions/core/scripts/sync-manifest-scripts.sh"
+      "source_loc": "agent-system/extensions/sapience/rules/sapience-write-path.md"
     },
     {
-      "subject": "suite_selection_select's deployed-tree dependency for a new suite",
-      "value": "suite_selection_select's grep-based reference stratum resolves a new test suite for its subject script only after that suite has been copied into the deployed .claude/scripts/tests/ tree -- a suite that exists only in the source store (agent-system/extensions/<ext>/scripts/tests/) is invisible to it until a redeploy. Measured live this session: the lookup returned the suite only after `deploy-headless.sh` ran a second time following the suite's creation and manifest registration.",
-      "predicate": "finding is",
-      "ko_type": "finding",
-      "confidence": 0.85,
-      "source_loc": "agent-system/extensions/core/scripts/lib/suite-selection-lib.sh"
-    },
-    {
-      "subject": "Write-tool-created shell scripts lack the executable bit",
-      "value": "A new .sh test file created via the Write tool does not carry the executable bit; run-all.sh's deployed-tree discovery reports it as [SKIP] not executable (exec-bit regression?) until chmod +x is applied at the SOURCE-STORE copy and the tree is redeployed (chmod on only the deployed copy would be discarded on the next redeploy, per the source-store/deploy-boundary rule).",
+      "subject": "generate-context-line-counts.sh REPO_ROOT override for source-store invocation",
+      "value": "generate-context-line-counts.sh's deploy-root-guard only fires when REPO_ROOT is unset; running `REPO_ROOT=$(pwd) bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write` from the repo root is the sanctioned way to resync an extension's source-store index-entries.json line_count values without a redeploy detour, confirmed working live for the sapience extension (3 of 9 entries corrected, 0 unrelated changes).",
       "predicate": "finding is",
       "ko_type": "finding",
       "confidence": 0.9,
-      "source_loc": "agent-system/extensions/sapience/scripts/tests/test-sapience-remember.sh"
+      "source_loc": "agent-system/extensions/core/scripts/generate-context-line-counts.sh"
     }
   ],
   "metadata": {
@@ -92,9 +77,8 @@
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 2,
+    "phases_completed": 3,
     "phases_total": 6
   },
-  "dispatch_seq": 10,
-  "next_steps": "Dispatch Phase 3 (Rule File and Existing-Doc Ruling Pointers) next; it threads the new linked-repo-write-policy.md record and this phase's resolved code shape into rules/sapience-write-path.md and the three existing domain docs."
+  "next_steps": "Dispatch Phase 4 (Resolve-Once Pass-Through at the Postflight Call Site) next."
 }
