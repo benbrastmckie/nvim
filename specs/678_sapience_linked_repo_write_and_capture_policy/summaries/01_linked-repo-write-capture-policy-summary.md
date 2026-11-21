@@ -4,19 +4,21 @@
 - **Status**: [IN PROGRESS]
 - **Started**: 2026-11-21T19:00:00Z
 - **Completed**: (phases 5-6 pending)
-- **Effort**: ~1 hour (Phase 3) + ~1 hour (Phase 4)
+- **Effort**: ~1 hour (Phase 3) + ~1 hour (Phase 4) + ~0.3 hour (Phase 5)
 - **Dependencies**: None
 - **Artifacts**: plans/01_linked-repo-write-capture-policy.md
 - **Standards**: summary-format.md, status-markers.md, artifact-management.md, tasks.md
 
 ## Overview
 
-This dispatch covers Phase 3 ("Rule File and Existing-Doc Ruling Pointers") and Phase 4
-("Resolve-Once Pass-Through at the Postflight Call Site") of the six-phase plan, each a separate
-hard-mode dispatch per the Phase Mission directive. Phase 3 threads the five rulings already
-recorded in Phase 1's new `linked-repo-write-policy.md` record into the surfaces that each own a
-piece of the reasoning. Phase 4 cuts the per-task `GET /v1/people/projects` call count for a
-linked repo from one-per-note to one-per-task.
+This dispatch covers Phase 3 ("Rule File and Existing-Doc Ruling Pointers"), Phase 4
+("Resolve-Once Pass-Through at the Postflight Call Site"), and Phase 5 ("Line-Neutral
+`EXTENSION.md` Pointer") of the six-phase plan, each a separate hard-mode dispatch per the Phase
+Mission directive. Phase 3 threads the five rulings already recorded in Phase 1's new
+`linked-repo-write-policy.md` record into the surfaces that each own a piece of the reasoning.
+Phase 4 cuts the per-task `GET /v1/people/projects` call count for a linked repo from
+one-per-note to one-per-task. Phase 5 makes the new record reachable from the merged
+`.claude/CLAUDE.md` section without breaching `EXTENSION.md`'s 60-line ceiling.
 
 ## What Changed
 
@@ -92,19 +94,28 @@ linked repo from one-per-note to one-per-task.
   tree for the sapience extension was already flagged stale at dispatch start; Phase 6 redeploys).
   New Case 10 confirmed exactly one GET for a 3-note linked batch; new Case 11 confirmed zero
   GETs and no `--project-key` flag for an unlinked batch.
+- Tests (Phase 5): `verify-touched.sh agent-system/extensions/sapience/EXTENSION.md` selected and
+  passed 3 suites (`test-index-entries-schema.sh`, `test-manifest-scripts-sync.sh`,
+  `test-sapience-capture.sh`): 3 passed, 0 failed. `wc -l` on `EXTENSION.md` measured 60 both
+  before and after the edit. `verify-deploy.sh --only-gate 3 --skip-unchanged` (the dispatch's
+  Batch Gate Deferral scoped narrowing) reported no Rule U/V finding for `EXTENSION.md`
+  specifically; its one FAIL is the same pre-existing Phase 2-4 deploy-drift condition already
+  named above, not attributable to Phase 5's edit.
 
 ## Impacts
 
-- Phases 5-6 (`EXTENSION.md` pointer, deploy/done-when verification) remain to complete the task.
-  Phase 3's edits are additive prose only. Phase 4's edit changes `postflight-sapience-notes.sh`
-  runtime behavior only for a repo carrying `.sapience/project.json` -- an unlinked repo's
-  behavior (every repo in this codebase today) is unchanged.
+- Phase 6 (deploy/done-when verification) remains to complete the task. Phase 3's edits are
+  additive prose only. Phase 4's edit changes `postflight-sapience-notes.sh` runtime behavior
+  only for a repo carrying `.sapience/project.json` -- an unlinked repo's behavior (every repo in
+  this codebase today) is unchanged. Phase 5's edit is a net-zero-line, purely additive context
+  pointer with no runtime behavior change.
 
 ## Follow-ups
 
-- Phase 6 must redeploy (`deploy-headless.sh`) to clear the `rules/sapience-write-path.md`
-  content-drift condition Phase 3's edit (and the pre-existing staleness) left in
-  `check-extension-docs.sh`'s Gate 3 output, and to carry Phase 4's `postflight-sapience-notes.sh`
+- Phase 6 must redeploy (`deploy-headless.sh`) to clear the `rules/sapience-write-path.md`,
+  `scripts/postflight-sapience-notes.sh`, and `scripts/tests/test-postflight-sapience-notes.sh`
+  content-drift conditions Phases 3-4's edits (and the pre-existing staleness) left in
+  `check-extension-docs.sh`'s Gate 3 output, which will also carry Phase 5's `EXTENSION.md`
   change into the deployed tree.
 
 ## References
@@ -112,4 +123,5 @@ linked repo from one-per-note to one-per-task.
 - Plan: `specs/678_sapience_linked_repo_write_and_capture_policy/plans/01_linked-repo-write-capture-policy.md`
 - Phase 3 handoff: `specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-3-handoff-20261121T200000Z.md`
 - Phase 4 handoff: `specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-4-handoff-20261121T201000Z.md`
+- Phase 5 handoff: `specs/678_sapience_linked_repo_write_and_capture_policy/handoffs/phase-5-handoff-20261121T202146Z.md`
 - Phase 1 record: `agent-system/extensions/sapience/context/project/sapience/domain/linked-repo-write-policy.md`
