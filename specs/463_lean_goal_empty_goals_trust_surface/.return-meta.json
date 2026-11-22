@@ -1,34 +1,17 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/463_lean_goal_empty_goals_trust_surface/plans/01_lean-goal-trust-surface.md",
-      "summary": "Four-phase plan siting the lean_goal empty-goals trust-surface statement once in mcp-tools-guide.md's lean_goal section with the sorryAx mechanism measured locally on Lean 4.33.0-rc1, pointing lean-implementation-flow.md's Stage 4B item 5 at it without restating, deleting the one in-scope restatement from the lean extension README's capability table, and closing with a redeploy that declares __WHOLE_TREE__."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795360608_7bb5fd_463",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 1.9,
-    "dependency_waves": 3
+    "session_id": "sess_1795360608_7bb5fd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
   },
+  "dispatch_seq": 16,
   "proposed_file_scope": [
-    "agent-system/extensions/lean/README.md",
-    "__WHOLE_TREE__"
-  ],
-  "next_steps": "Run /orchestrate 463 to execute the plan",
-  "memory_candidates": [
-    {
-      "content": "For a source-store prose/markdown edit (a context/, rules/, or agents/ file under agent-system/extensions/**), verify-touched.sh is NOT the cheap covering check a plan should name: suite_selection_select returns __FULL_SWEEP__ for such a path, and verify-touched.sh classifies it OWED rather than no-suite-by-class, which makes it run the ENTIRE battery (measured: 98 suites, 0 suite(s) selected / 1 owed). The cheap, honest covering check for that path class is plan-format.md's __FULL_SWEEP__ sub-case (b) gate subset instead -- verify-deploy.sh --skip-slow --only-gate 3,4 <repo_root>, with the repository root holding .claude-extensions.json passed as TARGET, never the resolved source_dir. Note the asymmetry within one extension: an extension's own README.md DOES map to real suites (18 basenames), so a phase mixing a README edit with a context-file edit produces a MIXED selector output and must be split into separate phases for either justification to be honest.",
-      "category": "PATTERN",
-      "source_artifact": "specs/463_lean_goal_empty_goals_trust_surface/plans/01_lean-goal-trust-surface.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["verify-touched", "suite-selection", "FULL_SWEEP", "verification-tier", "plan-authoring", "source-store"]
-    }
-  ],
-  "dispatch_seq": 10
+    "agent-system/extensions/lean/index-entries.json"
+  ]
 }

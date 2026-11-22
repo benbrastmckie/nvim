@@ -1,0 +1,29 @@
+{
+  "phase": 1,
+  "phase_name": "State the lean_goal Trust Surface Once, in mcp-tools-guide.md",
+  "started_at": "2026-11-22T00:00:00Z",
+  "last_updated": "2026-11-22T00:10:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Replace the false 'no goals' = proof complete equivalence with the canonical trust-surface statement, measured mechanism, and named lean_verify check",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md",
+        "agent-system/extensions/lean/index-entries.json"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.1",
+      "description": "Toolchain pin for the measured sorryAx mechanism",
+      "type": "altered",
+      "reason": "Plan specified Lean 4.33.0-rc1 as the measured pin. This host's resolved elan toolchain is 4.27.0-rc1. Re-ran the 4-line probe on 4.27.0-rc1 with identical result, and wrote 4.27.0-rc1 as the pin per the plan's own explicit instruction to do so on version divergence.",
+      "annotation": "*(deviation: altered — toolchain pin written as 4.27.0-rc1, the version resolved on this host, per plan's own divergence instruction)*"
+    }
+  ]
+}

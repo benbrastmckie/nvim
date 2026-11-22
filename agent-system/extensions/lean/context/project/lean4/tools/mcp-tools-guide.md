@@ -82,7 +82,16 @@ full registration/permission split.
 **Usage**:
 - Omit `column` to see `goals_before` (line start) and `goals_after` (line end)
 - Shows how the tactic transforms the state
-- "no goals" = proof complete
+- An empty `goals_after` means no goals remain open at that position. It is NOT evidence that the
+  declaration elaborates. An elaboration error inside a tactic term — for example an unknown
+  constant in a closing `exact` — is recovered by Lean's elaborator with a synthetic `sorryAx`
+  placeholder, which closes the goal, so `lean_goal` reports no goals while the declaration
+  carries a `sorryAx` axiom. Measured: on Lean 4.27.0-rc1, a theorem closed by `exact` on an
+  unknown constant reports an unknown-constant error and `#print axioms` on that theorem reports
+  `depends on axioms: [sorryAx]`. The check that covers this: `lean_verify` on the declaration's
+  fully qualified name, whose axiom check surfaces the synthetic `sorryAx` even though no literal
+  `sorry` token appears in the source — which is why per-step verification pairs `lean_goal` with
+  `lean_verify` rather than treating `lean_verify` as optional belt-and-suspenders.
 
 ```
 Parameters:

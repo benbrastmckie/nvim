@@ -1,7 +1,7 @@
 # Implementation Plan: Task #463
 
 - **Task**: 463 - State that `lean_goal`'s empty `goals_after` is not evidence a declaration elaborates
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: `lean_tier_vocabulary_to_build_scope_mapping` (confirmed landed — its tier
   table is live at `lean-implementation-flow.md` lines 88-93, re-read at planning time)
@@ -159,20 +159,21 @@ Phase 3 removes a restatement that should not be removed before its replacement 
 
 ---
 
-### Phase 1: State the `lean_goal` Trust Surface Once, in `mcp-tools-guide.md` [NOT STARTED]
+### Phase 1: State the `lean_goal` Trust Surface Once, in `mcp-tools-guide.md` [COMPLETED]
 
 **Goal**: Replace the false equivalence at `mcp-tools-guide.md`'s `#### lean_goal` section with
 the corrected claim, the measured mechanism, and the named cheaper-than-full-build check — the
 single canonical statement every other site will point at.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md` in
+- [x] Re-read `agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md` in
       full immediately before editing (a sibling may have moved it; line numbers below were
-      re-derived at planning time and drift).
-- [ ] Re-derive the target line by content, not by number: the bullet
+      re-derived at planning time and drift). *(completed)*
+- [x] Re-derive the target line by content, not by number: the bullet
       `- "no goals" = proof complete` under the `#### lean_goal` heading (at planning time:
       heading line 79, bullet line 85, `goals_before`/`goals_after` bullet line 83).
-- [ ] Replace that bullet with the canonical statement. Substance required, wording may be
+      *(completed: confirmed unchanged at planning-time line numbers)*
+- [x] Replace that bullet with the canonical statement. Substance required, wording may be
       refined:
       - an empty `goals_after` means no goals remain open at that position;
       - it is NOT evidence that the declaration elaborates;
@@ -186,24 +187,31 @@ single canonical statement every other site will point at.
       - the check: `lean_verify` on the declaration's fully qualified name, whose axiom check
         surfaces the synthetic `sorryAx` even though no literal `sorry` token appears in the
         source — which is why per-step verification pairs the two tools rather than treating
-        `lean_verify` as optional belt-and-suspenders.
-- [ ] Leave the `goals_before`/`goals_after` bullet at line 83 and the parameter block below the
-      section unchanged.
-- [ ] Write the prose stating current semantics only. MUST NOT use "previously", "no longer",
+        `lean_verify` as optional belt-and-suspenders. *(completed: pin written as 4.27.0-rc1,
+        the version resolved on this host — see deviation below)*
+- [x] Leave the `goals_before`/`goals_after` bullet at line 83 and the parameter block below the
+      section unchanged. *(completed: confirmed by git diff — single hunk, lines 83 and the
+      parameter block untouched)*
+- [x] Write the prose stating current semantics only. MUST NOT use "previously", "no longer",
       "formerly", "used to", "this section used to say", or any other phrasing relative to an
-      unstated past — `no-record-versioning-in-deliverables.md` governs this path.
-- [ ] Describe the motivating incident, if at all, by durable anchors only (the unknown-constant
+      unstated past — `no-record-versioning-in-deliverables.md` governs this path. *(completed:
+      verified by grep over the new hunk)*
+- [x] Describe the motivating incident, if at all, by durable anchors only (the unknown-constant
       shape in a closing `exact`, the two tool names). MUST NOT carry a task number, a
       repo-qualified issue identifier, or any `{repo}:{N}:{id}` citation —
-      `no-task-references-in-deliverables.md` governs this path.
-- [ ] MUST NOT name `lean_diagnostic_messages` anywhere in the new text: it is globally blocked
-      17 lines above, in this same file.
-- [ ] Optionally re-run the four-line probe from the Overview to re-confirm the measured claim
+      `no-task-references-in-deliverables.md` governs this path. *(completed: no incident
+      narrative written; mechanism stated directly with no citation)*
+- [x] MUST NOT name `lean_diagnostic_messages` anywhere in the new text: it is globally blocked
+      17 lines above, in this same file. *(completed: verified by grep — only the pre-existing
+      blocked-tools row matches)*
+- [x] Optionally re-run the four-line probe from the Overview to re-confirm the measured claim
       against whatever toolchain `lean --version` resolves on this host; if it resolves to a
       different version than 4.33.0-rc1, write that version in the pin instead and record the
-      divergence via `issue-record.sh`.
-- [ ] Record any issue or win via `issue-record.sh` as it arises; if there is genuinely nothing
-      to record for this phase, attest that explicitly in the handoff prose.
+      divergence via `issue-record.sh`. *(completed: host resolved 4.27.0-rc1; probe re-run with
+      identical sorryAx result; divergence recorded via issue-record.sh)*
+- [x] Record any issue or win via `issue-record.sh` as it arises; if there is genuinely nothing
+      to record for this phase, attest that explicitly in the handoff prose. *(completed: toolchain
+      divergence recorded)*
 
 **Timing**: 0.75 hours
 
