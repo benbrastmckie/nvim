@@ -7,6 +7,13 @@
     "core",
     "literature"
   ],
+  "observers": {
+    "lean-challenge-observe": {
+      "script": "scripts/lean-challenge-observe.sh",
+      "task_type": "lean4",
+      "timeout_seconds": 120
+    }
+  },
   "provides": {
     "agents": [
       "lean-research-agent.md",
@@ -31,6 +38,7 @@
       "contracts"
     ],
     "scripts": [
+      "lean-challenge-observe.sh",
       "lean-sorry-census.sh",
       "tests/fixtures/challenge/plan_keyword_noise.md",
       "tests/fixtures/challenge/plan_list_item_goals.md",
@@ -40,6 +48,7 @@
       "tests/fixtures/challenge/plan_r11_abbrev_between.md",
       "tests/fixtures/challenge/plan_r12_anon_instance.md",
       "tests/fixtures/challenge/plan_r14_trailing_prose.md",
+      "tests/test-lean-challenge-observe.sh",
       "tests/test-lean-sorry-census.sh",
       "lean-src-roots.sh",
       "tests/test-lean-src-roots.sh",

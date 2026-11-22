@@ -297,28 +297,28 @@ with the `local` row's own diff read-through.
 
 ---
 
-### Phase 2: Register the observer and derive `provides.scripts` [NOT STARTED]
+### Phase 2: Register the observer and derive `provides.scripts` [COMPLETED]
 
 **Goal**: The observer is declared in the lean manifest with a validated `observers` block and a
 non-default timeout, and both new scripts reach `provides.scripts` through the sanctioned
 derive-from-disk repair rather than a hand edit.
 
 **Tasks**:
-- [ ] Add an `observers` object to `agent-system/extensions/lean/manifest.json` with a single key
+- [x] Add an `observers` object to `agent-system/extensions/lean/manifest.json` with a single key
       `lean-challenge-observe`: `script` = `scripts/lean-challenge-observe.sh`, `task_type` =
       `lean4`, `timeout_seconds` = `120`. Declare **no** `topic` key -- this seam is
       `task_type`-keyed by design, and Rule X rejects any key outside the allowed set.
-- [ ] Record the `timeout_seconds: 120` choice in the manifest's own adjacent context only if the
+- [x] Record the `timeout_seconds: 120` choice in the manifest's own adjacent context only if the
       schema admits it; otherwise carry the reasoning to Phase 4's design-record edit instead of
       inventing a manifest key Rule X will reject.
-- [ ] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` and read
+- [x] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --check` and read
       its report: it should name both Phase 1 files as undeclared.
-- [ ] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` to derive
+- [x] Run `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write` to derive
       `provides.scripts` from the tracked `scripts/` tree, then re-run `--check` and confirm it is
       clean.
-- [ ] Confirm the top-level `hooks` key is still **absent** from the lean manifest. This plan adds
+- [x] Confirm the top-level `hooks` key is still **absent** from the lean manifest. This plan adds
       no lifecycle hook; a stray `hooks` object would be an unintended second seam.
-- [ ] Review the resulting `manifest.json` diff hunk by hunk before staging, and stage that one
+- [x] Review the resulting `manifest.json` diff hunk by hunk before staging, and stage that one
       file by explicit path.
 
 **Timing**: 0.5 hours
