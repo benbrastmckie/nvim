@@ -224,7 +224,7 @@ no suite, so the real suite names are the honest claim, not the sentinel).
 
 ---
 
-### Phase 2: Make the File Reachable at Plan Time [IN PROGRESS]
+### Phase 2: Make the File Reachable at Plan Time [COMPLETED]
 
 **Goal**: `dependency-tracing.md`'s index entry carries the `plan-authoring` keyword, so
 `planner-agent.md` Stage 4 item 13's query selects it for every `lean4` plan dispatch — with no
@@ -245,8 +245,8 @@ change to the core planner and no `planner-agent` entry in any `load_when.agents
       unchanged, summary remains accurate)*
 - [x] Confirm the file still parses: `jq empty agent-system/extensions/lean/index-entries.json`.
       *(completed)*
-- [ ] Stage `index-entries.json` by explicit name and commit, after confirming the diff contains
-      only this entry's keyword hunk.
+- [x] Stage `index-entries.json` by explicit name and commit, after confirming the diff contains
+      only this entry's keyword hunk. *(completed: commit 6c133f2c3, no foreign hunks)*
 
 **Timing**: 0.25 hours
 
@@ -277,34 +277,54 @@ selecting `test-index-entries-schema.sh`, `test-context-reachability.sh`,
 
 ---
 
-### Phase 3: Redeploy and Confirm Plan-Time Reachability End to End [NOT STARTED]
+### Phase 3: Redeploy and Confirm Plan-Time Reachability End to End [IN PROGRESS]
 
 **Goal**: The deployed tree carries the new content and the new keyword, the entry's `line_count`
 is accurate in the source store after deploy's own regeneration sweep, and the Stage 4 item 13
 query demonstrably selects `dependency-tracing.md` for a `lean4` plan dispatch.
 
 **Tasks**:
-- [ ] Confirm no foreign build or deploy is in flight (`git log` to confirm recent commits are
+- [x] Confirm no foreign build or deploy is in flight (`git log` to confirm recent commits are
       this task's own; report rather than proceed if a foreign commit or foreign uncommitted
-      modification is present).
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree. Capture its
+      modification is present). *(completed: recent commits were declared concurrent siblings
+      451/504/537/463, not unexpected)*
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree. Capture its
       `line_count auto-repair` report line: deploy runs
       `generate-context-line-counts.sh --write` across every extension's source index, so it may
-      also correct entries belonging to concurrent siblings' files.
-- [ ] Inspect `git diff -- agent-system/extensions/lean/index-entries.json` after the deploy. If
+      also correct entries belonging to concurrent siblings' files. *(completed: first run hit
+      transient sibling-504 in-flight-edit/load contention, RESULT=landed_verify_red on 3 of 41
+      checks, none in task 398's file scope; re-ran after sibling committed and got
+      RESULT=landed_verify_clean, 41/41; "line_count auto-repair: 0 entry/entries corrected")*
+- [x] Inspect `git diff -- agent-system/extensions/lean/index-entries.json` after the deploy. If
       the sweep corrected only this task's own entry (expected, since Phase 1 already resynced
       it, so the likely outcome is no diff at all), commit nothing further. If it corrected a
       sibling's entry, leave that hunk uncommitted and report it — it is that sibling's to carry.
-- [ ] Confirm the deployed index carries the keyword:
+      *(completed: no diff at all — zero entries corrected)*
+- [x] Confirm the deployed index carries the keyword:
       `jq -r '.entries[] | select(.path | test("dependency-tracing")) | .keywords' .claude/context/index.json`.
-- [ ] Reproduce Stage 4 item 13's query against the deployed index for `task_type` `lean4` and
+      *(completed: confirmed present)*
+- [x] Reproduce Stage 4 item 13's query against the deployed index for `task_type` `lean4` and
       confirm `project/lean4/patterns/dependency-tracing.md` is now among the hits:
       `jq -r '.entries[] | select(.path | startswith("project/")) | select(((.load_when.task_types // []) | index("lean4")) and (((.keywords // []) + (.topics // [])) | index("plan-authoring"))) | .path' .claude/context/index.json`.
-- [ ] Confirm the deployed copy of `dependency-tracing.md` matches the source-store copy
-      (`diff` the two) and carries the new section content.
-- [ ] Run the scoped touched-path check over this task's own touched paths and record the result.
-- [ ] Record in the phase's verification notes that the complete gate set is deferred to the
-      orchestration close rather than independently run in this dispatch.
+      *(completed: hits are dependency-tracing.md and plan-authoring-gate-collisions.md)*
+- [x] Confirm the deployed copy of `dependency-tracing.md` matches the source-store copy
+      (`diff` the two) and carries the new section content. *(completed: diff empty, identical)*
+- [x] Run the scoped touched-path check over this task's own touched paths and record the result.
+      *(completed: verify-touched.sh over both touched paths, 98 passed 0 failed)*
+- [x] Record in the phase's verification notes that the complete gate set is deferred to the
+      orchestration close rather than independently run in this dispatch. *(completed: see
+      Verification Notes below)*
+
+**Verification Notes**: per this dispatch's Batch Gate Deferral directive (this task is one of
+several `implement`-phase dispatches inside one multi-task `/orchestrate` batch invocation), the
+complete gate set (`verify-deploy.sh` run standalone/unflagged) is deferred to the orchestration
+close's once-per-invocation batch gate stage and was NOT independently re-run here beyond what
+`deploy-headless.sh` itself already invokes as part of landing the deploy. The in-dispatch
+obligation — `verify-touched.sh` over this task's own touched paths — is green (98 passed, 0
+failed). Note for the batch-stage full sweep: `deploy-headless.sh`'s own internal verify-deploy
+pass, run a second time after a transient sibling-contention red, already came back clean
+(41/41) as a side effect of landing this phase's deploy — this is not a substitute for the
+batch-stage sweep, which still runs once for the whole invocation per the directive.
 
 **Timing**: 0.5 hours
 
