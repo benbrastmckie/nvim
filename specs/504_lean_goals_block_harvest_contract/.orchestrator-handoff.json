@@ -1,17 +1,17 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 504,
-  "phase": "plan",
-  "session_id": "sess_1795360608_7bb5fd_504",
-  "dispatch_seq": 11,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1795360608_7bb5fd",
+  "dispatch_seq": 15,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a four-phase implementation plan adopting the research's settled decision (a): narrow lean-plan-compliance-check.sh's Goals-prose fallback harvest to the per-bullet leading-identifier-run algorithm its sibling reader already implements and plan-format.md already documents, leaving the document untouched. Planning established one consequence the research missed and verified it empirically: a drop-in port changes the harvested name set for four of the suite's nineteen existing cases (C13 harvests zero and flips to skipped; C14/C15/C16 lose trailing-prose identifiers), with a 19/19 green baseline confirmed first, so Phase 1 pre-declares that fallout as an atomic batch instead of leaving an implementer to meet four red cases mid-phase. The recommended two-stage bash/grep port was also validated against three Goals shapes at planning time, discharging the research's top risk. Plan validates clean against validate-artifact.sh.",
+  "summary": "Narrowed lean-plan-compliance-check.sh's Goals-prose fallback harvest from a whole-range backtick sweep to a per-bullet leading-identifier-run (matching plan-format.md's documented contract and lean-challenge-snapshot.sh's sibling implementation), using possessive `\\s*+` quantifiers to fix a PCRE backtracking artifact discovered live during verification that the plan's own literal plain-quantifier regex exhibited on prose-leading bullets. Re-baselined C13 (now skipped, SUPERSEDED) and C14/C15/C16 (rewritten into conformant shape), added regression cases C20 (C13's intent preserved on a conformant shape), C21 (the record's minimum verification bar) and C22 (first coverage of Challenge-Statements-preferred-harvest precedence), and corrected a stale fixture comment. Suite grew from 19 to 22 cases, all green; the sibling snapshot suite's 37 cases are unchanged. Batch Gate Deferral's scoped verify-touched.sh check passed clean on an untruncated re-run after a transient, tree-flux-attributed failure signal on the first (truncated) run.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/504_lean_goals_block_harvest_contract/plans/01_goals-block-harvest-contract.md",
-      "summary": "Four-phase plan: narrow the fallback harvest and re-baseline the four affected cases (atomic-batch), add the required regression coverage plus first Challenge-preferred-harvest coverage, correct the stale plan_goals_preamble.md fixture comment, and verify."
+      "type": "summary",
+      "path": "specs/504_lean_goals_block_harvest_contract/summaries/01_goals-block-harvest-contract-summary.md",
+      "summary": "Full implementation summary: all four phases, deviations, verification results, and two deferred follow-up observations (Goals-range header-shape acceptance gap; goals-block-reader-parity.md context file)."
     }
   ],
   "blockers": []

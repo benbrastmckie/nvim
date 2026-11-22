@@ -8078,12 +8078,18 @@
           "path": "specs/504_lean_goals_block_harvest_contract/plans/01_goals-block-harvest-contract.md",
           "type": "plan",
           "summary": "Four-phase plan: narrow the fallback harvest and re-baseline the four affected cases (atomic-batch), add the required regression coverage plus first Challenge-preferred-harvest coverage, correct the stale plan_goals_preamble.md fixture comment, and verify."
+        },
+        {
+          "path": "specs/504_lean_goals_block_harvest_contract/summaries/01_goals-block-harvest-contract-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary: all four phases, deviations, verification results, and two deferred follow-up observations (Goals-range header-shape acceptance gap; goals-block-reader-parity.md context file)."
         }
       ],
       "audit_override": "Migration of a mis-sited BimodalLogic record under the migrate-mis-sited-agent-system-task-delta record; ruling performed per its own ahead-of-Phase-1 precedent, grounds recorded in that record's 2026-11-05 amendment. Directed by the repository owner.",
       "title": "Reconcile the Lean Goals-block harvester with its documented contract",
       "session_id": "sess_1795360608_7bb5fd",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Narrowed lean-plan-compliance-check.sh's Goals-prose fallback harvest to a per-bullet leading-identifier-run (matching plan-format.md's documented contract and lean-challenge-snapshot.sh's sibling implementation), using possessive quantifiers to fix a PCRE backtracking artifact discovered during verification. Re-baselined C13-C16, added regression cases C20-C22, and corrected a stale fixture comment. Test suite grew from 19 to 22 cases, all green; the sibling snapshot suite's 37 cases are unchanged."
     },
     {
       "project_number": 506,

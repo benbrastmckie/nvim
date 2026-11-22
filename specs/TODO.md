@@ -6948,6 +6948,7 @@ MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_li
 - **Dependencies**: None
 - **Research**: [504_lean_goals_block_harvest_contract/reports/01_goals-block-harvest-contract.md]
 - **Plan**: [504_lean_goals_block_harvest_contract/plans/01_goals-block-harvest-contract.md]
+- **Summary**: [504_lean_goals_block_harvest_contract/summaries/01_goals-block-harvest-contract-summary.md]
 
 **Description**: MIGRATED FROM BimodalLogic 2026-11-05. This record was filed into ~/Projects/BimodalLogic/specs/
 by an /orchestrate conclusion-stage channel-(b) dispatch, which files into the repository it runs
