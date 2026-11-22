@@ -1,0 +1,39 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795360608_7bb5fd_504",
+  "dispatch_seq": 4,
+  "findings_count": 8,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/504_lean_goals_block_harvest_contract/reports/01_goals-block-harvest-contract.md",
+      "summary": "Resolves the Goals-block harvest-vs-contract disagreement: decision (a) (narrow lean-plan-compliance-check.sh's Goals-prose fallback harvest to the leading-identifier-run algorithm lean-challenge-snapshot.sh already implements and plan-format.md already documents), with empirical before/after repro and a flagged-but-out-of-scope header-shape gap."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "In agent-system/extensions/lean/scripts/, lean-plan-compliance-check.sh and lean-challenge-snapshot.sh both independently read a plan's **Goals** block and must not drift apart on accepted shapes (each has a 'SHARED FRAGILITY' comment cross-referencing the other). lean-challenge-snapshot.sh's extract_goal_names() was narrowed to a per-bullet leading-identifier-run (commit 8d3ab3283, 2026-11-04) at the same time plan-format.md's 'identifiers must LEAD the bullet' contract language was written -- the document was authored to describe that one reader's behaviour. When auditing either reader for a Goals-harvest bug, check the sibling reader and plan-format.md's '## Lean Challenge Statements' section first: the fix may already exist on one side.",
+      "category": "PATTERN",
+      "source_artifact": "specs/504_lean_goals_block_harvest_contract/reports/01_goals-block-harvest-contract.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lean-plan-compliance-check", "lean-challenge-snapshot", "goals-block", "leading-identifier-run", "plan-format"]
+    },
+    {
+      "content": "lean-plan-compliance-check.sh's CHALLENGE-STATEMENTS-PREFERRED HARVEST (commit 614922216, 2026-11-09) causes the script to harvest goal identifiers from the ## Lean Challenge Statements section's own declaration lines instead of **Goals** prose whenever that section yields >=1 name, under non-refutation polarity. This means any bug in the legacy Goals-prose fallback harvest is only reachable for: (1) goal_polarity: refutation plans, which unconditionally bypass the preferred harvest, or (2) a plan missing/mis-heading its Challenge Statements section. A test fixture meant to exercise the fallback harvest must deliberately omit a populated Challenge Statements section (or use refutation polarity), otherwise it silently routes through the already-working preferred path and proves nothing.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/504_lean_goals_block_harvest_contract/reports/01_goals-block-harvest-contract.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["lean-plan-compliance-check", "challenge-statements-preferred-harvest", "test-fixture", "goal-polarity", "refutation"]
+    },
+    {
+      "content": "Shape-based token exclusion (is_excluded_token() in lean-plan-compliance-check.sh: reserved keywords, lowercase-rooted dotted projections, filename-shaped tokens) cannot be extended to exclude binder names (P, hP) or ordinary cross-referenced pre-existing identifiers from a Goals-prose harvest -- they have no distinguishing shape. Only a positional rule (leading-identifier-run: only the bullet's leading backtick-run counts, trailing prose never scanned) generalizes to this class, as proven by lean-challenge-snapshot.sh's extract_goal_names().",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/504_lean_goals_block_harvest_contract/reports/01_goals-block-harvest-contract.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["harvest-narrowing", "leading-identifier-run", "shape-exclusion-limits", "lean-goals-block"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 504 to create implementation plan"
+}
