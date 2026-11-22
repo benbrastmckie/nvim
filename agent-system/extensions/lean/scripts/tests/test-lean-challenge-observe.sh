@@ -184,6 +184,129 @@ else
   fail "usage error: expected exit 2, got ${usage_rc}"
 fi
 
+# ── End-to-end resolution, inertness, non-blocking, and CWD assertions (driven by the deployed
+# ── run-task-observers.sh, never --dry-run's own resolution logic in isolation) -- added once
+# ── this observer is also registered in manifest.json and deployed, so resolution is real. ────
+# A placeholder fixture identifier, never this record's own number -- resolution behavior does
+# not depend on which number is used, and run-task-observers.sh's own task-dir argument need
+# not resolve to a real directory for these cases (no filesystem check on it).
+FIXTURE_ID="999"
+FIXTURE_TASK_DIR="specs/${FIXTURE_ID}_lean_challenge_observe_fixture"
+
+REPO_ROOT="$(cd "$SCRIPT_DIR" && git rev-parse --show-toplevel 2>/dev/null)"
+RTO="${REPO_ROOT:-}/.claude/scripts/run-task-observers.sh"
+
+if [[ -n "$REPO_ROOT" ]] && [[ -x "$RTO" ]]; then
+  # ── Case 9: resolution -- lean4/planned resolves to exactly one lean-challenge-observe
+  # ── match, matched_on=task_type. ───────────────────────────────────────────────────────────
+  dryrun_out="$( ( cd "$REPO_ROOT" && bash "$RTO" --task "$FIXTURE_ID" --task-type lean4 --topic "" \
+    --task-dir "$FIXTURE_TASK_DIR" --session plan-verify \
+    --status planned --dry-run ) 2>&1 )"
+  match_lines="$(printf '%s\n' "$dryrun_out" | grep -c 'would invoke observer lean-challenge-observe' || true)"
+  if [[ "$match_lines" -eq 1 ]]; then
+    pass "resolution: lean4/planned resolves to exactly one lean-challenge-observe match"
+  else
+    fail "resolution: expected exactly one match, got ${match_lines} -- output: ${dryrun_out}"
+  fi
+  if printf '%s\n' "$dryrun_out" | grep -q 'matched_on=task_type'; then
+    pass "resolution: match is matched_on=task_type"
+  else
+    fail "resolution: expected matched_on=task_type -- output: ${dryrun_out}"
+  fi
+
+  # ── Case 10: inertness -- task_type=general and task_type=nix each resolve ZERO ───────────
+  # ── lean-challenge-observe matches -- the observer is unreachable for a non-lean4 task. ────
+  for tt in general nix; do
+    inert_out="$( ( cd "$REPO_ROOT" && bash "$RTO" --task "$FIXTURE_ID" --task-type "$tt" --topic "" \
+      --task-dir "$FIXTURE_TASK_DIR" --session plan-verify \
+      --status planned --dry-run ) 2>&1 )"
+    if printf '%s\n' "$inert_out" | grep -q 'lean-challenge-observe'; then
+      fail "inertness: task_type=${tt} unexpectedly resolved lean-challenge-observe"
+    else
+      pass "inertness: task_type=${tt} resolves zero lean-challenge-observe matches"
+    fi
+  done
+else
+  info "SKIP resolution/inertness cases: ${RTO} not deployed or not executable (run deploy-headless.sh first)"
+fi
+
+# ── Non-blocking (fixture observer exits non-zero / hangs past timeout) and CWD pins, in an ───
+# ── isolated scratch sandbox around the REAL run-task-observers.sh + its library collaborators
+# ── -- modeled on agent-system/extensions/core/scripts/tests/test-run-task-observers.sh's own
+# ── build_scratch/declare_observer pattern, scoped down to this observer's own registration. ──
+RTO_LIB_DIR="${REPO_ROOT:-}/.claude/scripts"
+if [[ -n "$REPO_ROOT" ]] && [[ -x "${RTO_LIB_DIR}/run-task-observers.sh" ]] \
+    && [[ -f "${RTO_LIB_DIR}/lib/common.sh" ]] && [[ -f "${RTO_LIB_DIR}/lib/manifest-routing-lib.sh" ]]; then
+  NB_SCRATCH="$(mktemp -d "${WORKDIR}/nb-scratch.XXXXXX")"
+  mkdir -p "${NB_SCRATCH}/.claude/scripts/lib" "${NB_SCRATCH}/.claude/extensions/lean" "${NB_SCRATCH}/specs/fixture_demo_task"
+  cp "${RTO_LIB_DIR}/run-task-observers.sh" "${NB_SCRATCH}/.claude/scripts/run-task-observers.sh"
+  cp "${RTO_LIB_DIR}/events-append.sh" "${NB_SCRATCH}/.claude/scripts/events-append.sh"
+  cp "${RTO_LIB_DIR}/deploy-root-guard.sh" "${NB_SCRATCH}/.claude/scripts/deploy-root-guard.sh"
+  cp "${RTO_LIB_DIR}/lib/common.sh" "${NB_SCRATCH}/.claude/scripts/lib/common.sh"
+  cp "${RTO_LIB_DIR}/lib/manifest-routing-lib.sh" "${NB_SCRATCH}/.claude/scripts/lib/manifest-routing-lib.sh"
+  chmod +x "${NB_SCRATCH}/.claude/scripts/run-task-observers.sh" "${NB_SCRATCH}/.claude/scripts/events-append.sh"
+  : > "${NB_SCRATCH}/specs/fixture_demo_task/issues.jsonl"
+  : > "${NB_SCRATCH}/specs/fixture_demo_task/metrics.jsonl"
+
+  write_nb_manifest() {
+    local to="$1"
+    printf '{"name": "lean", "observers": {"lean-challenge-observe": {"script": "scripts/lean-challenge-observe.sh", "task_type": "lean4", "timeout_seconds": %s}}}\n' "$to" \
+      > "${NB_SCRATCH}/.claude/extensions/lean/manifest.json"
+  }
+
+  run_nb_rto() {
+    ( cd "${NB_SCRATCH}" && bash .claude/scripts/run-task-observers.sh \
+      --task "$FIXTURE_ID" --task-type lean4 --topic "" --task-dir specs/fixture_demo_task \
+      --session nb-sess --status planned )
+  }
+
+  # ── Case 11: a fixture observer forced to exit non-zero still leaves ───────────────────────
+  # ── run-task-observers.sh exiting 0. ────────────────────────────────────────────────────────
+  write_nb_manifest 10
+  printf '#!/usr/bin/env bash\nexit 7\n' > "${NB_SCRATCH}/.claude/scripts/lean-challenge-observe.sh"
+  chmod +x "${NB_SCRATCH}/.claude/scripts/lean-challenge-observe.sh"
+  run_nb_rto >/dev/null 2>&1
+  nb_rc=$?
+  if [[ "$nb_rc" -eq 0 ]]; then
+    pass "non-blocking: a fixture observer exiting 7 still leaves run-task-observers.sh at rc 0"
+  else
+    fail "non-blocking: run-task-observers.sh exited ${nb_rc}, expected 0"
+  fi
+
+  # ── Case 12: a fixture observer hanging past its (short) timeout_seconds is killed, and ────
+  # ── run-task-observers.sh still exits 0, within a bounded wall-clock margin. ────────────────
+  write_nb_manifest 1
+  printf '#!/usr/bin/env bash\nsleep 30\nexit 0\n' > "${NB_SCRATCH}/.claude/scripts/lean-challenge-observe.sh"
+  chmod +x "${NB_SCRATCH}/.claude/scripts/lean-challenge-observe.sh"
+  start_ts=$(date +%s)
+  run_nb_rto >/dev/null 2>&1
+  nb_rc=$?
+  end_ts=$(date +%s)
+  elapsed=$((end_ts - start_ts))
+  if [[ "$nb_rc" -eq 0 ]] && [[ "$elapsed" -lt 20 ]]; then
+    pass "non-blocking: a fixture observer hanging past its 1s timeout is killed (elapsed=${elapsed}s) and run-task-observers.sh still exits 0"
+  else
+    fail "non-blocking: expected rc 0 and elapsed <20s, got rc=${nb_rc} elapsed=${elapsed}s"
+  fi
+
+  # ── Case 13: CWD pin -- the observer is invoked with CWD == the scratch root (the repo ────
+  # ── root that owns specs/), never .claude/scripts/ or anywhere else. ────────────────────────
+  write_nb_manifest 10
+  cwd_seen_file="${NB_SCRATCH}/cwd-seen.txt"
+  printf '#!/usr/bin/env bash\npwd > %q\nexit 0\n' "$cwd_seen_file" > "${NB_SCRATCH}/.claude/scripts/lean-challenge-observe.sh"
+  chmod +x "${NB_SCRATCH}/.claude/scripts/lean-challenge-observe.sh"
+  run_nb_rto >/dev/null 2>&1
+  seen_cwd="$(cat "$cwd_seen_file" 2>/dev/null || echo "")"
+  resolved_scratch="$(cd "$NB_SCRATCH" && pwd)"
+  if [[ "$seen_cwd" == "$resolved_scratch" ]]; then
+    pass "CWD: the observer inherits the repo root as its working directory (${seen_cwd})"
+  else
+    fail "CWD: expected '${resolved_scratch}', observer saw '${seen_cwd}'"
+  fi
+else
+  info "SKIP non-blocking/CWD scratch cases: run-task-observers.sh collaborators not resolvable from ${REPO_ROOT:-<unresolved>}"
+fi
+
 echo ""
 echo "$PASSED passed, $FAILED failed"
 [[ "$FAILED" -eq 0 ]]

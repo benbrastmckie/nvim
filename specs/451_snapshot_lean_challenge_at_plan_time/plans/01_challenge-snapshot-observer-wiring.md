@@ -357,7 +357,7 @@ here.
 
 ---
 
-### Phase 3: Deploy, then pin end-to-end firing and the untouched gate [NOT STARTED]
+### Phase 3: Deploy, then pin end-to-end firing and the untouched gate [COMPLETED]
 
 **Goal**: With the observer deployed, prove it actually fires for a lean4 task at `planned`,
 prove it is inert for a non-lean task type, prove a failing observer cannot fail the plan phase,
@@ -365,26 +365,26 @@ and pin that this plan changed nothing about the exit-73 gate, `PRE_IMPLEMENTATI
 `--force`'s incident-shaped warning.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree, so
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree, so
       `.claude/scripts/lean-challenge-observe.sh` exists and is executable. Confirm both with
       `test -x`; a `missing_script` or `not_executable` observer skip is the exact silent failure
       this step exists to rule out.
-- [ ] Budget for a second `deploy-headless.sh` run if `check-extension-docs.sh` fires on
+- [x] Budget for a second `deploy-headless.sh` run if `check-extension-docs.sh` fires on
       registration completeness after the first.
-- [ ] Extend `agent-system/extensions/lean/scripts/tests/test-lean-challenge-observe.sh` with a
+- [x] Extend `agent-system/extensions/lean/scripts/tests/test-lean-challenge-observe.sh` with a
       resolution assertion driven by `run-task-observers.sh --dry-run`: for
       `--task-type lean4 --status planned` it prints exactly one
       `would invoke observer lean-challenge-observe (...) matched_on=...` line and invokes
       nothing.
-- [ ] Add the inertness assertion on the same path: `--task-type general` and `--task-type nix`
+- [x] Add the inertness assertion on the same path: `--task-type general` and `--task-type nix`
       each resolve **zero** observer matches for this extension, so the observer is unreachable
       for a non-lean4 task.
-- [ ] Add the non-blocking assertion: an observer script forced to exit non-zero, and one forced
+- [x] Add the non-blocking assertion: an observer script forced to exit non-zero, and one forced
       to hang past its timeout, each leave `run-task-observers.sh` exiting 0 -- so a plan phase
       can never fail because a snapshot could not be taken.
-- [ ] Add the CWD assertion: the observer resolves `specs/` relative to the working directory it
+- [x] Add the CWD assertion: the observer resolves `specs/` relative to the working directory it
       inherits, and is invoked from the repo root that owns `specs/`.
-- [ ] Extend `agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh` with
+- [x] Extend `agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh` with
       regression pins, each asserted on the script's own exit status:
       (i) `PRE_IMPLEMENTATION_STATUSES` still equals `not_started researching researched planning planned`
       exactly -- assert against the literal string, not a substring;
@@ -393,7 +393,7 @@ and pin that this plan changed nothing about the exit-73 gate, `PRE_IMPLEMENTATI
       (iv) the re-plan refusal in **both** directions -- a second plain invocation against an
       existing manifest exits 73 and leaves the manifest byte-identical, while the same invocation
       with `--force` overwrites it and warns.
-- [ ] Add the acceptance pin the symptom actually names: after a `planned`-status observer run
+- [x] Add the acceptance pin the symptom actually names: after a `planned`-status observer run
       produces a manifest, a subsequent `--check` exits **0** rather than 71.
 
 **Timing**: 1.5 hours

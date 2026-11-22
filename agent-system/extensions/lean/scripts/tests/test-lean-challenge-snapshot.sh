@@ -859,6 +859,79 @@ else
 fi
 
 # ===========================================================================
+# Case G1: PRE_IMPLEMENTATION_STATUSES is still EXACTLY its original literal -- asserted
+# against the whole string, never a substring, so a silent narrowing or widening of the
+# pre-implementation set is caught even if every individual status in it still happens to pass
+# the gate loop correctly.
+# ===========================================================================
+actual_pre_impl=$(grep -o 'PRE_IMPLEMENTATION_STATUSES="[^"]*"' "$TOOL_SRC")
+if [ "$actual_pre_impl" = 'PRE_IMPLEMENTATION_STATUSES="not_started researching researched planning planned"' ]; then
+  pass "G1: PRE_IMPLEMENTATION_STATUSES is unchanged, asserted against the whole literal string"
+else
+  fail "G1: PRE_IMPLEMENTATION_STATUSES literal changed -- got: $actual_pre_impl"
+fi
+
+# ===========================================================================
+# Case M4: re-plan refusal -- a second plain invocation against an EXISTING manifest (status
+# still 'planned', no status-gate issue at all) exits 73 and leaves the manifest BYTE-IDENTICAL
+# (content hash and mtime both unchanged), because the manifest-exists refusal is independent of
+# the status gate.
+# ===========================================================================
+repo=$(make_repo "m4" 908 plan_r1.md)
+run_tool "$repo" 908 "$repo" >/dev/null 2>&1
+manifest="$repo/specs/908_proj/challenge/manifest.json"
+before_hash=$(sha256sum "$manifest" | awk '{print $1}')
+before_mtime=$(stat -c '%Y' "$manifest" 2>/dev/null || stat -f '%m' "$manifest")
+sleep 1
+out=$(run_tool "$repo" 908 "$repo" 2>&1)
+rc=$?
+after_hash=$(sha256sum "$manifest" | awk '{print $1}')
+after_mtime=$(stat -c '%Y' "$manifest" 2>/dev/null || stat -f '%m' "$manifest")
+if [ "$rc" -eq 73 ] && [ "$before_hash" = "$after_hash" ] && [ "$before_mtime" = "$after_mtime" ]; then
+  pass "M4: re-plan refusal (no --force) exits 73 and leaves the manifest byte-identical (hash and mtime both unchanged)"
+else
+  fail "M4: expected exit 73 with an untouched manifest, got rc=$rc hash_changed=$([ "$before_hash" != "$after_hash" ] && echo yes || echo no) mtime_changed=$([ "$before_mtime" != "$after_mtime" ] && echo yes || echo no): $out"
+fi
+
+# ===========================================================================
+# Case M5: the SAME re-plan invocation with --force overwrites the existing manifest -- the
+# other direction of the re-plan ruling (REFUSE by default, overwrite only with --force). Status
+# is still 'planned' throughout M4/M5 (never left pre-implementation), so the loud INCIDENT text
+# does NOT print here -- that text is tied exclusively to bypassing the STATUS gate (the
+# past-'planned' branch), a DIFFERENT exit-73 site from the manifest-exists refusal this case
+# exercises. Pinned here on exit status and the overwrite itself (mtime advances), not on a
+# warning string this code path never emits -- see the design record for the precise statement.
+# ===========================================================================
+out=$(run_tool "$repo" 908 "$repo" --force 2>&1)
+rc=$?
+after_force_mtime=$(stat -c '%Y' "$manifest" 2>/dev/null || stat -f '%m' "$manifest")
+if [ "$rc" -eq 0 ] && [ "$after_force_mtime" != "$before_mtime" ]; then
+  pass "M5: re-plan WITH --force overwrites the manifest (mtime advanced), exit 0, status still 'planned' so no INCIDENT text is expected"
+else
+  fail "M5: expected --force to overwrite (rc 0, mtime advanced), got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case M6: the acceptance pin the symptom itself names -- BEFORE any snapshot exists, --check
+# exits 71 (no manifest to verify against); AFTER a planned-status snapshot run, the identical
+# --check invocation exits 0. This is the exact 71 -> 0 transition the whole task exists to
+# produce, distinct from Cases C1-C4's content-drift focus above.
+# ===========================================================================
+accept_repo=$(make_repo "m6" 909 plan_r1.md)
+out=$(run_tool "$accept_repo" --check 909 "$accept_repo" 2>&1)
+before_check_rc=$?
+run_tool "$accept_repo" 909 "$accept_repo" >/dev/null 2>&1
+mkdir -p "$accept_repo/Theories"
+cp "$FIXTURES_DIR/solution_honest.lean" "$accept_repo/Theories/Basic.lean"
+out=$(run_tool "$accept_repo" --check 909 "$accept_repo" 2>&1)
+after_check_rc=$?
+if [ "$before_check_rc" -eq 71 ] && [ "$after_check_rc" -eq 0 ]; then
+  pass "M6: --check exits 71 with no manifest, then 0 once a planned-status snapshot has produced one"
+else
+  fail "M6: expected 71 then 0, got before=$before_check_rc after=$after_check_rc: $out"
+fi
+
+# ===========================================================================
 # Summary
 # ===========================================================================
 echo ""

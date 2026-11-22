@@ -1,0 +1,17 @@
+{
+  "phase": 3,
+  "phase_name": "Deploy, then pin end-to-end firing and the untouched gate",
+  "started_at": "2026-11-22T00:45:00Z",
+  "last_updated": "2026-11-22T02:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh so lean-challenge-observe.sh is deployed and executable", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Extend test-lean-challenge-observe.sh with resolution/inertness/non-blocking/CWD assertions via run-task-observers.sh --dry-run", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-challenge-observe.sh"]},
+    {"id": 3, "description": "Extend test-lean-challenge-snapshot.sh with gate-unchanged, force-warning, re-plan-both-directions, check-exits-0 pins", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh"]}
+  ],
+  "current_objective": 3,
+  "approaches_tried": [
+    {"approach": "Assert an INCIDENT warning fires when --force overwrites an existing manifest while status is still 'planned'", "result": "failed", "reason": "The script only prints INCIDENT text when bypassing the STATUS gate (past-planned); the manifest-exists refusal's --force bypass is silent when status never left 'planned'. Corrected the assertion to pin rc 0 + mtime advance instead."}
+  ],
+  "deviations": [],
+  "handoff_count": 0
+}
