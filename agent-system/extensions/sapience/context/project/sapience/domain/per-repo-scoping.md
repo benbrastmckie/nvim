@@ -13,12 +13,19 @@ returns none, however large the vault is overall.
 
 No other field does this:
 
-- **`project` is a dead end.** `/v1/search` silently ignores `&project=` — a real slug, another
-  repo's slug, and a nonexistent slug all return the identical result set. `/v1/sf1/handoff
-  ?project=X` merely echoes the slug back with `project_known: false` and still returns
-  cross-project KOs even for a bogus project. `/v1/sf1/state` returns 404. `/v1/projects` returns
-  403 `{"code": "company_only"}` — project surfaces are a paid-team feature on this account, not
-  a per-repo-scoping primitive available here.
+- **`&project=` is a dead end; `project_cid` is a different parameter that is not.** `/v1/search`
+  silently ignores `&project=` — a real slug, another repo's slug, and a nonexistent slug all
+  return the identical result set. `/v1/sf1/handoff?project=X` merely echoes the slug back with
+  `project_known: false` and still returns cross-project KOs even for a bogus project.
+  `/v1/sf1/state` returns 404. `/v1/projects` returns 403 `{"code": "company_only"}` — project
+  surfaces are a paid-team feature on this account, not a per-repo-scoping primitive available
+  here. `project_cid` is a structurally distinct query parameter that `/v1/search` and
+  `/v1/recent` DO honor as a strict pre-filter, verified directly in `brain_server.py`'s own
+  handlers — but that honoring is itself gated on `repo_link.enabled(tok)` (the `REPO_LINK_FOR`
+  feature flag, deployed `""` for this account), so the honoring path is unexercisable live today
+  and is confirmed stub-verified only. Both statements hold at once: `&project=` is dead on this
+  account for the reason above, and `project_cid` is a live server capability this account cannot
+  yet reach.
 - **`source_loc`** (the field the `sapience_remember` MCP tool's own `source` argument populates)
   is not matched by the `source=` filter and is not returned in search results. It names where a
   finding came from; it does not scope who can read it back.
@@ -31,6 +38,19 @@ returns a fixed `"<Name> via <Client> session (MCP)"` shape; setting `explicit` 
 `user_asked` argument only appends a fixed `', asked by the user'` literal, still with no repo
 marker). Tagged writes therefore go through `POST /ingest-kos` directly, which accepts an
 arbitrary `provenance` string verbatim — this is what `sapience-remember.sh` does.
+
+The installed vendor `~/.sapience/mcp.py` does carry a `project` argument on its own
+`sapience_remember` tool, and it is worth naming here precisely because it is unrelated to the
+mechanism above: it is company-store ROUTING, not per-repository tagging. `route_ko(ko,
+project)` resolves the argument (or, absent one, the KO's own `project` field) through
+`project_slug()` and matches it against `config.json`'s `routes` map, falling back to
+`COMPANY_PROJECT`/`SAPIENCE_PROJECT` (default `"sapience-labs"`), to decide whether a write lands
+in the shared company store or the caller's personal brain. This picks a destination STORE; it
+still cannot produce a `[repo:<slug>]`-tagged write, for the same reason given above — the
+connector's `remember_provenance()` shape has no injectable repo marker regardless of which store
+the write lands in. (This is a discussion of the tool's existence and boundary, not a
+prescription of it as a write path — `rules/sapience-write-path.md`'s "Discussing a Tool vs.
+Prescribing It as a Write Path" governs this paragraph.)
 
 ## The Two Scripts
 
@@ -62,6 +82,19 @@ arbitrary `provenance` string verbatim — this is what `sapience-remember.sh` d
   Whether or not a retry fires, the terminal behavior on a second failure (or on any
   non-retried genuine failure) is the unchanged exit-2 fail-open degrade: `issue-record.sh`
   records the failure non-fatally and the dispatch proceeds with an empty `memory_context`.
+
+  **Project-scoped reads.** When this repository carries a committed `.sapience/project.json`
+  binding (written by `sapience-project-bind.sh`), this script additionally resolves it through
+  the shared resolver against the already-resolved checkout toplevel and sends the binding's cid
+  as a `project_cid` query parameter on the SAME `/v1/search` request — the retained `source=`
+  label filter is sent unconditionally regardless, so the dispatch memory block becomes the
+  project's own notes when the server honors `project_cid`, and stays label-scoped exactly as
+  before when it does not. With no link file, or one that is missing, unreadable, non-JSON, or
+  fails the resolver's three-key/path-shape validation, nothing is appended to the URL and the
+  request is byte-identical to the pre-project-aware request. A 2xx response whose body carries a
+  non-empty `project_rejected` is a benign degrade, not the exit-2 transport branch: one bounded
+  warning goes to stderr and the same response is used for hit extraction, never a second request
+  without the parameter.
 - **`sapience-remember.sh --subject S --value V [...]`** — a repo-tagged, `explicit: true` write
   via `POST /ingest-kos`. `explicit: true` is mandatory, not an optional flag: a realistically
   worded note posted without it is silently discarded by the server's noise gate, returning
@@ -69,6 +102,27 @@ arbitrary `provenance` string verbatim — this is what `sapience-remember.sh` d
   script sets `explicit: true` unconditionally (no flag can turn it off) and treats `gated >= 1`,
   a non-empty `set_aside` array, or an absent/zero `written` as a loud, non-zero-exit failure
   naming the triggering field on stderr, never a silent success.
+
+  **Project-key write, never `project_cid`.** With the same `.sapience/project.json` binding
+  present, this script additionally resolves the binding's cid to a plain `project: "<key>"`
+  field — looked up at runtime via `GET /v1/people/projects` against the binding's cid, exactly
+  the same accepted-or-owned row shape `sapience-project-bind.sh` consumes — and carries it on the
+  KO body. It never sends `project_cid`: a verified `project_cid` write is the one `sf1-engine`
+  ruling 7 holds shut while two named leak surfaces stay open (see
+  `linked-repo-write-policy.md` and `rules/sapience-write-path.md`), and `project_cid` trusting a
+  client-supplied value is not server-verified for this token in any case. With no binding file,
+  no `--project-key` override, or a resolution failure (a non-JSON listing, or a cid with no
+  matching row), the write degrades to untagged-by-project with a stderr warning — never refused,
+  never dropped — and is byte-identical to the pre-linking write.
+
+  **The shared resolver.** `sapience_project_link_read` (and its cid-only wrapper
+  `sapience_project_link_cid`) in `scripts/lib/sapience-api-lib.sh` is the one place this binding
+  file is read, taking an already-resolved checkout toplevel from its caller. Both
+  `sapience-retrieve.sh`'s read-side `project_cid` lookup above and `sapience-remember.sh`'s own
+  binding-cid read go through it. The host/token resolution and the worktree-checkout-resolution
+  block remain duplicated across scripts exactly as before this resolver existed — unchanged, and
+  still pinned by `test-sapience-mcp-registration.sh` Case 30's lockstep byte-identity check —
+  because consolidating those predates this resolver and is out of its boundary.
 
 Both scripts are declared in this extension's `manifest.json` `provides.scripts` array and are
 deployed to `.claude/scripts/`. `sapience-retrieve.sh` is called from core's

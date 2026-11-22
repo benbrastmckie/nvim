@@ -346,7 +346,7 @@ transport failure.
 
 ---
 
-### Phase 4: State the Current Design in `per-repo-scoping.md` [NOT STARTED]
+### Phase 4: State the Current Design in `per-repo-scoping.md` [COMPLETED]
 
 **Goal**: The domain doc states the design a reader now faces: two distinct project-shaped
 parameters on `/v1/search`, the read side's `project_cid` path and its fallbacks, the vendor
@@ -355,48 +355,49 @@ governing ruling.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`
+- [x] Re-read `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`
       immediately before editing, and check `git status --short` for a foreign uncommitted
       modification to it or to `index-entries.json`: both are in concurrent sibling task 682's
       declared `file_scope` this cycle. On a foreign modification, stop and report rather than
-      proceeding.
-- [ ] In the `## The Mechanism, and Why It Is the Only One That Works` section's
+      proceeding. *(completed: gate re-run clean, both files unmodified in the working tree)*
+- [x] In the `## The Mechanism, and Why It Is the Only One That Works` section's
       "**`project` is a dead end**" bullet, add the parameter distinction: `&project=` (a plain
       slug) is silently ignored by `/v1/search`, while `project_cid` is a different parameter
       that `/v1/search` and `/v1/recent` do honor as a strict pre-filter — verified in
       `brain_server.py`'s own handlers, gated on `repo_link.enabled(tok)` (the `REPO_LINK_FOR`
       flag, deployed `""` for this account), so it is unexercisable live today and is
       stub-verified only. Both statements are true at once; the existing dead-end claim about
-      `&project=` stands as written.
-- [ ] In `## Why the MCP Write Tools Cannot Produce a Tagged Write`, add a short paragraph on the
+      `&project=` stands as written. *(completed)*
+- [x] In `## Why the MCP Write Tools Cannot Produce a Tagged Write`, add a short paragraph on the
       installed vendor `~/.sapience/mcp.py`'s `project` argument to `sapience_remember`: it
       exists, and it is company-store ROUTING (`project_slug()` / `route_ko()` matched against
       `config.json`'s `routes` map, falling back to `COMPANY_PROJECT` / `SAPIENCE_PROJECT`) that
       picks which token a write posts to — unrelated to the per-repository link mechanism, and
       still unable to produce a tagged write for the reason the section already gives. This is a
       discussion site, not a write-path prescription (`rules/sapience-write-path.md`'s
-      "Discussing a Tool vs. Prescribing It as a Write Path").
-- [ ] In `## The Two Scripts`, extend the `sapience-retrieve.sh` bullet with the read-side
+      "Discussing a Tool vs. Prescribing It as a Write Path"). *(completed)*
+- [x] In `## The Two Scripts`, extend the `sapience-retrieve.sh` bullet with the read-side
       `project_cid` behavior: sent when a valid `.sapience/project.json` resolves through the
       shared resolver, alongside the retained `source=` label filter; no parameter and a
       byte-identical request with no link or a malformed one; a `project_rejected` reply is a
-      benign label-filtered degrade with a stderr warning, not the exit-2 branch.
-- [ ] Add a short statement of the write side's current design and its boundary: the write path
+      benign label-filtered degrade with a stderr warning, not the exit-2 branch. *(completed)*
+- [x] Add a short statement of the write side's current design and its boundary: the write path
       sends a plain `project: "<key>"` resolved from the binding's cid and never `project_cid`,
       because a verified `project_cid` write is the one `sf1-engine` section 10 Ruling 7 holds
       shut while two named leak paths remain open — citing `linked-repo-write-policy.md` and
       `rules/sapience-write-path.md` as the durable carriers rather than restating their rulings.
-- [ ] Name the shared resolver and its boundary: `sapience_project_link_read` in
+      *(completed)*
+- [x] Name the shared resolver and its boundary: `sapience_project_link_read` in
       `scripts/lib/sapience-api-lib.sh` is the one link reader, taking an already-resolved
       toplevel; the host/token and worktree-resolution duplications are unchanged and still
-      pinned by `test-sapience-mcp-registration.sh` Case 30.
-- [ ] Update this file's `line_count` in `agent-system/extensions/sapience/index-entries.json`
+      pinned by `test-sapience-mcp-registration.sh` Case 30. *(completed)*
+- [x] Update this file's `line_count` in `agent-system/extensions/sapience/index-entries.json`
       (currently `502` for `project/sapience/domain/per-repo-scoping.md`) to the post-edit
       `wc -l` value, by a targeted single-field edit — not by invoking any whole-tree
-      regeneration.
-- [ ] Write no task-number reference into either file (`.claude/rules/no-task-references-in-deliverables.md`)
+      regeneration. *(completed: 502 -> 556, matching post-edit wc -l)*
+- [x] Write no task-number reference into either file (`.claude/rules/no-task-references-in-deliverables.md`)
       and no record-versioning language (`.claude/rules/no-record-versioning-in-deliverables.md`):
-      state the current design, not what an earlier draft said.
+      state the current design, not what an earlier draft said. *(completed: check-task-references.sh and check-record-versioning.sh both pass on the new text)*
 
 **Timing**: 1.25 hours
 
@@ -419,10 +420,10 @@ staging; a second changed entry means a sibling's edit was captured and must be 
 
 **Verification**:
 
-- [ ] `wc -l agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md` equals the `line_count` recorded for `project/sapience/domain/per-repo-scoping.md` in `index-entries.json`.
-- [ ] `jq -e . agent-system/extensions/sapience/index-entries.json` succeeds and `git diff` on that file shows exactly one changed `line_count` field.
-- [ ] `bash .claude/scripts/check-task-references.sh` (or the repo's own entry point for that lint) reports no new finding for either file, and exits 0.
-- [ ] `git diff --staged` before the commit lists only this phase's two files, with no sibling hunks.
+- [x] `wc -l agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md` equals the `line_count` recorded for `project/sapience/domain/per-repo-scoping.md` in `index-entries.json`. *(confirmed: both 556)*
+- [x] `jq -e . agent-system/extensions/sapience/index-entries.json` succeeds and `git diff` on that file shows exactly one changed `line_count` field. *(confirmed)*
+- [x] `bash .claude/scripts/check-task-references.sh` (or the repo's own entry point for that lint) reports no new finding for either file, and exits 0. *(confirmed: 0 occurrences, exit 0, on both files)*
+- [x] `git diff --staged` before the commit lists only this phase's two files, with no sibling hunks. *(confirmed at commit time)*
 
 ---
 

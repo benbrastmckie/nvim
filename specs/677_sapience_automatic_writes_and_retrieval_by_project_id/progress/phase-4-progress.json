@@ -1,0 +1,20 @@
+{
+  "phase": 4,
+  "phase_name": "State the Current Design in per-repo-scoping.md",
+  "started_at": "2026-11-21T23:50:00Z",
+  "last_updated": "2026-11-22T00:01:39Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read per-repo-scoping.md and check git status --short for a foreign uncommitted modification to it or index-entries.json before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add the project_cid vs &project= parameter distinction to the dead-end bullet", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 3, "description": "Add vendor mcp.py project-argument (company-store routing) paragraph to the MCP write tools section", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 4, "description": "Extend sapience-retrieve.sh bullet with read-side project_cid behavior", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 5, "description": "State the write side's current design and boundary (plain project key, never project_cid)", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 6, "description": "Name the shared resolver (sapience_project_link_read) and its boundary", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 7, "description": "Update index-entries.json line_count for per-repo-scoping.md to the post-edit wc -l value", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]},
+    {"id": 8, "description": "No task-number references and no record-versioning language in either file", "status": "done", "files_touched": []}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
