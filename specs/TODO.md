@@ -13,18 +13,20 @@ next_project_number: 684
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,455,456,462,475,477,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,548,550,551,556,559,560,563,565,567,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,679,680 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,439,457,472,474,479,481,484,509,517,523,533,535,540,544,546,552,566,570,583,592,593,598,605,609,630 | 383,390,410,431,438,452,453,455,477,511,519,539,542,548,556,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,473,480,492,513,518,541,561,588,594,669 | 439,472,479,491,509,517,535,552,593,668 | core-agent-system, orchestrator, agent-system |
-| 4 | 486,571,581,595,641,671 | 454,484,492,518,539,541,561,580,594,669 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
-| 5 | 501,508,596,642 | 472,486,570,595,641 | file-scope-lifecycle, agent-system |
-| 6 | 524 | 501 | core-agent-system |
-| 7 | 536 | 524 | agent-system |
-| 8 | 553 | 536,548 | agent-system |
-| 9 | 655,670 | 513,517,553,669 | orchestrator |
-| 10 | 672,673 | 670,671 | orchestrator |
-| 11 | 674 | 673 | orchestrator |
-| 12 | 675 | 672,674 | orchestrator |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,455,456,462,475,477,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,567,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,679,680 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,439,457,474,479,481,509,517,523,533,535,540,544,546,552,566,570,583,592,593,605,609,630 | 383,390,410,431,438,452,453,455,511,519,539,542,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,472,480,492,513,541,561,588,594 | 439,479,491,509,535,552,556,570,593 | core-agent-system, orchestrator, agent-system |
+| 4 | 473,484,518,581,595,641,669 | 454,472,477,492,517,539,541,561,580,594,668 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 5 | 486,571,596,642,671 | 484,518,595,641,669 | file-scope-lifecycle, orchestrator, agent-system |
+| 6 | 501,508 | 472,486 | file-scope-lifecycle |
+| 7 | 524 | 501 | core-agent-system |
+| 8 | 536 | 524 | agent-system |
+| 9 | 548 | 536 | agent-system |
+| 10 | 553,598 | 548 | agent-system |
+| 11 | 655,670 | 513,517,553,669 | orchestrator |
+| 12 | 672,673 | 670,671 | orchestrator |
+| 13 | 674 | 673 | orchestrator |
+| 14 | 675 | 672,674 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -152,9 +154,6 @@ next_project_number: 684
       └─ 641 [NOT STARTED] — Re-ground the documented foreground-wait cap and make the...
         └─ 642 [NOT STARTED] — Re-propagate the amended bounded-wait contract bullets to the...
 545 [NOT STARTED] — Report a reversed validate-artifact.sh invocation as an...
-548 [NOT STARTED] — Harvest a plan's declared contingency files into file\_scope,...
-  └─ 553 [NOT STARTED] — Name the typst-sync gate as the cause when...
-  └─ 598 [NOT STARTED] — Provide a sanctioned in-dispatch remedy for a mechanically...
 550 [NOT STARTED] — Probe the Lean LSP index state at dispatch start and...
 551 [NOT STARTED] — Close the recurring stale-handoff defect and find out why the...
 556 [NOT STARTED] — Fix validate-handoff.sh crash-as-false-negative and settle...
@@ -179,7 +178,9 @@ next_project_number: 684
 535 [NOT STARTED] — Carve a task's own specs/ artifacts out of...
   └─ 541 [NOT STARTED] — Stop git-snapshot.sh --no-revert artifacts from contaminating...
 536 [NOT STARTED] — Source-store-aware commit path and plan-time...
-  └─ 553 [NOT STARTED] — Name the typst-sync gate as the cause when... (see above)
+  └─ 548 [NOT STARTED] — Harvest a plan's declared contingency files into file\_scope,...
+    └─ 553 [NOT STARTED] — Name the typst-sync gate as the cause when...
+    └─ 598 [NOT STARTED] — Provide a sanctioned in-dispatch remedy for a mechanically...
 546 [NOT STARTED] — Diagnose the zero-result literature retrieval and settle the...
 570 [NOT STARTED] — Stop the stall signal firing on commits it cannot attribute...
 571 [NOT STARTED] — Invalidate an in-flight dispatch whose dispatch\_seq has been...
@@ -376,7 +377,7 @@ VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION b
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 513, Task 553, Task 669
+- **Dependencies**: Task 513, Task 536, Task 553, Task 567, Task 669
 
 **Description**: Build the two-root contract in the dispatch composer and the commit scripts
 
@@ -406,7 +407,7 @@ VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION b
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 517, Task 667, Task 668
+- **Dependencies**: Task 517, Task 541, Task 667, Task 668
 
 **Description**: Add integration-branch admission, the isolation declaration, and idempotent batch worktree setup
 
@@ -4493,7 +4494,7 @@ as a number resolving to an unrelated record here.
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 536
 
 **Description**: META TASK. TWO defects, ONE record, because they are one mechanism: `git-commit-scoped.sh`'s
 V10 containment guard drops any pathspec the dispatching task's declared `file_scope` does not
@@ -7514,7 +7515,7 @@ TERRITORY EDGES -- git-commit-phase.sh is SHARED FILE TERRITORY with three open 
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
-- **Dependencies**: Task 430, Task 446, Task 469, Task 477
+- **Dependencies**: Task 430, Task 446, Task 469, Task 477, Task 541
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -8139,7 +8140,7 @@ CONCURRENT TERRITORY NOTE: orchestrate-state-machine.md and the surrounding arch
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 328, Task 378, Task 428, Task 435, Task 556
+- **Dependencies**: Task 328, Task 378, Task 428, Task 435, Task 556, Task 570
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/ and agent-system/extensions/lean/ (never .claude/**, a gitignored disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/**; both are permitted in this description.
 

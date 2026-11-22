@@ -6,11 +6,119 @@
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
+| [M4: Clear the path to isolated batch landing: measurement, commit layer, detectors](#milestone-m4) | planned | 0/21 | none |
+| [M3: Reviewable landing: batch worktrees, squash commits, generated-path collapse](#milestone-m3) | planned | 0/8 | none |
 | [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 5/6 | none |
-| [M3: Reviewable landing: batch worktrees, squash commits, generated-path collapse](#milestone-m3) | planned | 0/9 | none |
-| [M1: Current work](#milestone-m1) | active | 15/126 | none |
+| [M1: Current work](#milestone-m1) | active | 15/106 | none |
 
 See also: [Rules, conventions and repo context](#roadmap-context)
+
+<a id="milestone-m4"></a>
+## M4: Clear the path to isolated batch landing: measurement, commit layer, detectors
+
+Close everything standing in front of the batch-worktree landing work: measure the harness against an external worktree, settle which paths a commit drops and from which root, and land the phase-commit boundary detector whose expected ref the two-root contract makes per tree.
+
+- **Progress**: planned -- 0/6 batches, 0/21 tasks done -- Not the landing work itself -- only the measurement and the commit-layer and detector fixes it waits on.
+- **Review**: none
+- **Gate**: The four harness behaviours are measured and recorded, or R2's worktree siting is amended by what they show; the containment, parity, divergence and source-store chain through git-commit-scoped.sh is closed to its refusal diagnostic; the phase-commit boundary detector takes an expected-ref parameter; and integration-branch admission and the two-root tasks have no open dependency left.
+
+**Batch 1** -- Measure the harness against an external worktree before any of the topology is built
+
+```
+/orchestrate 668
+668 ready           Measure Claude Code harness behaviour for a worktree outside the project dire...
+```
+
+**Batch 2** -- Make a phase commit own the surfaces it stales, so the isolation declaration has a schema row
+
+```
+/orchestrate 455, 517
+517 blocked:455     Require a phase commit to regenerate and stage the derived surfaces it stales
+455 ready           Pre-flag the predictable first-run module-invariant failures that wiring a ne...
+```
+
+**Batch 3** -- Settle which paths a phase commit may drop, and how one drop event is recorded
+
+```
+/orchestrate 567, 535, 541, 477, 484, 486
+484 blocked:477,541 Collapse per-path scope excursion issue rows into one record per drop event
+486 blocked:484,541 Stop a required extension manifest.json registration being dropped from a pha...
+535 blocked:567     Carve a task's own specs/ artifacts out of git-commit-phase.sh's containment ...
+541 blocked:535     Stop git-snapshot.sh --no-revert artifacts from contaminating phase commits w...
+477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
+567 ready           Port the deployed-tree containment strip into git-commit-scoped.sh
+```
+
+**Batch 4** -- Make every containment and commit site agree before the two-root split lands on them
+
+```
+/orchestrate 556, 519, 570, 472, 501, 524, 536
+472 blocked:556,570 Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop...
+501 blocked:472,484,486,570  Give the cycle-postflight containment site predicate parity and a gu...   <- the ignored-specs postflight narrowing it must not co-admit with has closed, so that bar can no longer bind
+524 blocked:484,501 Rule on a staged-vs-working-tree divergence signal for a pathspec commit, and...
+536 blocked:524     Source-store-aware commit path and plan-time registration-description review
+570 blocked:519     Stop the stall signal firing on commits it cannot attribute to the dispatch u...
+519 ready           Infra exempt transport error dispatch deaths
+556 ready           Fix validate-handoff.sh crash-as-false-negative and settle the canonical bloc...
+```
+
+**Batch 5** -- Finish the containment block last, once the sites that reshape it have settled
+
+```
+/orchestrate 548, 553
+548 blocked:536     Harvest a plan's declared contingency files into file_scope, and stop the con...
+553 blocked:536,548 Name the typst-sync gate as the cause when git-commit-scoped.sh reports a ref...
+```
+
+**Batch 6** -- Make a phase closing without its commit detectable, on a landing target it can name
+
+```
+/orchestrate 438, 479, 513
+479 blocked:438     Require every task to name a landing target: a creation-time gate on report-o...
+513 blocked:479     Mechanically detect a plan phase that closed without its own commit
+438 ready           Dependency edges conflate semantic and serialization rationale, and a semanti...
+```
+
+<a id="milestone-m3"></a>
+## M3: Reviewable landing: batch worktrees, squash commits, generated-path collapse
+
+Make a batch's work land as reviewable git history: run each batch in its own worktree off an admitted integration branch, land one attribution-built squash commit per completed task, and declare machine-written paths so a diff collapses them.
+
+- **Progress**: planned -- 0/4 batches, 0/8 tasks done -- Prerequisites moved to M4; the topology starts once the stale-surface declaration and the harness measurement close.
+- **Review**: none
+- **Gate**: A batch run in an isolated worktree leaves one attribution-built squash commit per completed task on its integration branch, verified before the status write; a partial batch retains its worktree and /refresh reports an orphan; the branch-strategy documentation states the implemented contract; declared generated paths render collapsed in review.
+
+**Batch 1** -- Admit the integration branch, stand up the batch worktree, make the hooks two-root aware
+
+```
+/orchestrate 669, 671 --hard
+669 blocked:517,541,668  Add integration-branch admission, the isolation declaration, and idempot...
+671 blocked:668,669 Make the write-time and git-guard hooks two-root aware
+```
+
+**Batch 2** -- Carry the two-root contract into dispatch and the commit scripts, then land the per-task squash
+
+```
+/orchestrate 670, 672, 673 --hard
+670 blocked:513,536,553,567,669  Build the two-root contract in the dispatch composer and the com...
+672 blocked:670     Classify every remaining project-root consumer as code-root, state-root or both
+673 blocked:670,671 Land one attribution-built squash commit per completed task and verify it bef...
+```
+
+**Batch 3** -- Close the worktree lifecycle: cleanup, partial retention, orphan reporting, docs parity
+
+```
+/orchestrate 674, 675
+674 blocked:673     Build batch worktree cleanup, retention on partial batches, and orphan report...
+675 blocked:672,673,674  Rewrite the branch-strategy documentation to state the implemented batch...
+```
+
+**Batch 4** -- Declare machine-written paths so a reviewer's diff collapses them by default
+
+```
+/orchestrate 655
+655 blocked:513,517,553  Declare generated paths so they collapse in review   <- its three prereqs now sit in M4's declaration, chain and detector batches; scope is now the declaration only
+```
 
 <a id="milestone-m2"></a>
 ## M2: Sapience linked projects, capture activation and collaborator access
@@ -34,60 +142,12 @@ Make a repository bindable to a shared Sapience project and workable by a second
 682 done            sapience_mcp_entry_carries_no_token
 ```
 
-<a id="milestone-m3"></a>
-## M3: Reviewable landing: batch worktrees, squash commits, generated-path collapse
-
-Make a batch's work land as reviewable git history: run each batch in its own worktree off an admitted integration branch, land one attribution-built squash commit per completed task, and declare machine-written paths so a diff collapses them.
-
-- **Progress**: planned -- 0/5 batches, 0/9 tasks done -- Raised alongside the Sapience work; only the harness measurement is ready, the rest waits on commit-layer prerequisites in M1.
-- **Review**: none
-- **Gate**: A batch run in an isolated worktree leaves one attribution-built squash commit per completed task on its integration branch, verified before the status write; a partial batch retains its worktree and /refresh reports an orphan; the branch-strategy documentation states the implemented contract; declared generated paths render collapsed in review.
-
-**Batch 1** -- Measure the harness against an external worktree before any of the topology is built
-
-```
-/orchestrate 668
-668 ready           Measure Claude Code harness behaviour for a worktree outside the project dire...
-```
-
-**Batch 2** -- Admit the integration branch, stand up the batch worktree, make the hooks two-root aware
-
-```
-/orchestrate 669, 671 --hard
-669 blocked:517,668 Add integration-branch admission, the isolation declaration, and idempotent b...
-671 blocked:668,669 Make the write-time and git-guard hooks two-root aware
-```
-
-**Batch 3** -- Carry the two-root contract into dispatch and the commit scripts, then land the per-task squash
-
-```
-/orchestrate 670, 672, 673 --hard
-670 blocked:513,553,669  Build the two-root contract in the dispatch composer and the commit scripts
-672 blocked:670     Classify every remaining project-root consumer as code-root, state-root or both
-673 blocked:670,671 Land one attribution-built squash commit per completed task and verify it bef...
-```
-
-**Batch 4** -- Close the worktree lifecycle: cleanup, partial retention, orphan reporting, docs parity
-
-```
-/orchestrate 674, 675
-674 blocked:673     Build batch worktree cleanup, retention on partial batches, and orphan report...
-675 blocked:672,673,674  Rewrite the branch-strategy documentation to state the implemented batch...
-```
-
-**Batch 5** -- Declare machine-written paths so a reviewer's diff collapses them by default
-
-```
-/orchestrate 655
-655 blocked:513,517,553  Declare generated paths so they collapse in review   <- its three prereqs sit in M1's commit-containment, generated-surfaces and detector batches; scope is now the declaration only
-```
-
 <a id="milestone-m1"></a>
 ## M1: Current work
 
 Work already scheduled when this store adopted milestones. Divide it into real milestones on a later /roadmap run.
 
-- **Progress**: active -- 2/29 batches, 15/126 tasks done
+- **Progress**: active -- 2/29 batches, 15/106 tasks done
 - **Review**: none
 
 **Batch 1** (done) -- Support a gitignored specs tree: price the durability exposure, then the predicate and demotion fix
@@ -116,16 +176,12 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 613 ready           Make session liveness distinguish a dead same-process session so an orphaned ...
 ```
 
-**Batch 5** -- What one dispatch hands the next: settle the handoff/return-meta shapes, fix failure accounting
+**Batch 5** -- What one dispatch hands the next: the return-meta vocabulary, the stale handoff, two aux-plan gaps
 
 ```
-/orchestrate 556, 472, 646, 551, 519, 570, 577, 609
-472 blocked:556     Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop...
-570 blocked:519     Stop the stall signal firing on commits it cannot attribute to the dispatch u...
+/orchestrate 646, 551, 577, 609
 609 blocked:577     Stop a pending user question from charging its own task into failed_tasks and...
-519 ready           Infra exempt transport error dispatch deaths
 551 ready           Close the recurring stale-handoff defect and find out why the return-meta sch...
-556 ready           Fix validate-handoff.sh crash-as-false-negative and settle the canonical bloc...
 577 ready           Make a blocker-triggered aux plan-revision consumable by triage, and stop the...
 646 ready           Decide and implement how .return-meta.json's status vocabulary admits non-pha...
 ```
@@ -147,30 +203,19 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 579 ready           Record the selector's full-path-set aggregation rule in the Tier Justificatio...
 ```
 
-**Batch 8** -- Evidence integrity: stop losing issue entries, normalize classes, collapse scope-excursion rows
+**Batch 8** -- Two residues of the containment work: lost issue entries, and where shared metadata belongs
 
 ```
-/orchestrate 639, 477, 484, 486, 501, 508, 524
-484 blocked:477     Collapse per-path scope excursion issue rows into one record per drop event
-486 blocked:484,541 Stop a required extension manifest.json registration being dropped from a pha...
-501 blocked:472,484,486,570  Give the cycle-postflight containment site predicate parity and a gu...   <- never co-admit with the ignored-specs postflight narrowing -- owner ruling, no edge either way
+/orchestrate 639, 508
 508 blocked:486     Rule on where shared extension metadata belongs in the containment allowlist,...
-524 blocked:484,501 Rule on a staged-vs-working-tree divergence signal for a pathspec commit, and...
-477 ready           Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
 639 ready           Make issue-record.sh failures visible instead of silently losing the evidence...
 ```
 
-**Batch 9** -- Commit containment: stop phase commits dropping legitimate files and carrying foreign ones
+**Batch 9** -- The sanctioned in-dispatch remedy for a coupled pair path the containment guard drops
 
 ```
-/orchestrate 548, 567, 553, 598, 536, 535, 541
-535 blocked:567     Carve a task's own specs/ artifacts out of git-commit-phase.sh's containment ...
-536 blocked:524     Source-store-aware commit path and plan-time registration-description review
-541 blocked:535     Stop git-snapshot.sh --no-revert artifacts from contaminating phase commits w...
-553 blocked:536,548 Name the typst-sync gate as the cause when git-commit-scoped.sh reports a ref...
+/orchestrate 598
 598 blocked:548     Provide a sanctioned in-dispatch remedy for a mechanically coupled pair path ...
-548 ready           Harvest a plan's declared contingency files into file_scope, and stop the con...
-567 ready           Port the deployed-tree containment strip into git-commit-scoped.sh
 ```
 
 **Batch 10** -- Dispatch composition: gate narrowing, starting position, deploy order, prior art, stale seq
@@ -226,13 +271,11 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 590 ready           Resolve the /ide dead-command-recommendation findings
 ```
 
-**Batch 15** -- Declare the generated surfaces a dispatch stales, and stop repo content leaking to the store
+**Batch 15** -- Stop repo content leaking to the store, and make a report name the surfaces it stales
 
 ```
-/orchestrate 455, 502, 457, 517
+/orchestrate 502, 457
 457 blocked:455     Repo-specific content has leaked into the shared agent-system source store
-517 blocked:455     Require a phase commit to regenerate and stage the derived surfaces it stales
-455 ready           Pre-flag the predictable first-run module-invariant failures that wiring a ne...
 502 ready           Require research reports to enumerate generated doc-sync surfaces
 ```
 
@@ -244,25 +287,22 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 618 ready           Determine what leaves files in the working tree and give every residue class ...   <- re-measure its git-commit-scoped.sh evidence after the ignored-specs predicate lands; no edge
 ```
 
-**Batch 17** -- Task creation and the backlog/selection surfaces: landing targets, corroboration, one renderer
+**Batch 17** -- The backlog and selection surfaces: corroboration, duplicate rows, one question renderer
 
 ```
-/orchestrate 438, 479, 491, 492, 559, 580, 581
-479 blocked:438     Require every task to name a landing target: a creation-time gate on report-o...
+/orchestrate 491, 492, 559, 580, 581
 492 blocked:479,491 Make backlog-audit corroboration computable and gate the confirm prompt on it
 581 blocked:438,479,492,580  Extract one shared AskUserQuestion option renderer and adopt it acro...
-438 ready           Dependency edges conflate semantic and serialization rationale, and a semanti...
 491 ready           Fix the Pass-2 semantic scorer whose normalization inflates against verbose c...
 559 ready           Stop one low-specificity shared path from producing duplicate-of-open, and se...
 580 ready           Correct the interactive-selection threshold model to AskUserQuestion's real f...
 ```
 
-**Batch 18** -- Two detectors over the landing-target contract: stranded research, a commit-less plan phase
+**Batch 18** -- The advisory detector for research stranded with no landing target named
 
 ```
-/orchestrate 480, 513
+/orchestrate 480
 480 blocked:479     Advisory detector for research tasks stranded at RESEARCHED with artifacts bu...
-513 blocked:479     Mechanically detect a plan phase that closed without its own commit
 ```
 
 **Batch 19** -- Three init.lua claimants: make a load trust its project root, then the registry and defaults

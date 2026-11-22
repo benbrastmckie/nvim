@@ -1785,7 +1785,9 @@
       "session_id": "sess_1795203458_188c22",
       "dependencies": [
         513,
+        536,
         553,
+        567,
         669
       ],
       "file_scope": [
@@ -2068,6 +2070,7 @@
       "session_id": "sess_1795203458_188c22",
       "dependencies": [
         517,
+        541,
         667,
         668
       ],
@@ -5398,7 +5401,8 @@
         378,
         428,
         435,
-        556
+        556,
+        570
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/validate-handoff.sh",
@@ -6932,7 +6936,8 @@
         430,
         446,
         469,
-        477
+        477,
+        541
       ],
       "file_scope": [
         "agent-system/extensions/core/scripts/git-commit-phase.sh",
@@ -8037,7 +8042,7 @@
         },
         "degradations_count": 36
       },
-      "roadmap_annotation": "never co-admit with the ignored-specs postflight narrowing -- owner ruling, no edge either way"
+      "roadmap_annotation": "the ignored-specs postflight narrowing it must not co-admit with has closed, so that bar can no longer bind"
     },
     {
       "project_number": 502,
@@ -12720,7 +12725,9 @@
       "effort": "medium",
       "parent_task": null,
       "topic": "agent-system",
-      "dependencies": [],
+      "dependencies": [
+        536
+      ],
       "file_scope": [
         "agent-system/extensions/core/scripts/plan-file-scope-harvest.sh",
         "agent-system/extensions/core/scripts/git-commit-scoped.sh",
@@ -19421,7 +19428,7 @@
         "degradations_count": 43
       },
       "title": "Declare generated paths so they collapse in review",
-      "roadmap_annotation": "its three prereqs sit in M1's commit-containment, generated-surfaces and detector batches; scope is now the declaration only"
+      "roadmap_annotation": "its three prereqs now sit in M4's declaration, chain and detector batches; scope is now the declaration only"
     },
     {
       "project_number": 664,
@@ -19821,6 +19828,127 @@
   },
   "roadmap_milestones": [
     {
+      "id": "M4",
+      "title": "Clear the path to isolated batch landing: measurement, commit layer, detectors",
+      "aim": "Close everything standing in front of the batch-worktree landing work: measure the harness against an external worktree, settle which paths a commit drops and from which root, and land the phase-commit boundary detector whose expected ref the two-root contract makes per tree.",
+      "gate": "The four harness behaviours are measured and recorded, or R2's worktree siting is amended by what they show; the containment, parity, divergence and source-store chain through git-commit-scoped.sh is closed to its refusal diagnostic; the phase-commit boundary detector takes an expected-ref parameter; and integration-branch admission and the two-root tasks have no open dependency left.",
+      "progress": {
+        "status": "planned",
+        "note": "Not the landing work itself -- only the measurement and the commit-layer and detector fixes it waits on."
+      },
+      "review": {
+        "state": "none"
+      },
+      "batches": [
+        {
+          "task_ids": [
+            668
+          ],
+          "description": "Measure the harness against an external worktree before any of the topology is built",
+          "rationale": "First and alone, per the isolation record's Measured precondition: the four harness behaviours cannot be measured from a dispatched agent, every two-root successor depends on this one, and a refutation amends R2's siting by a dated note rather than being worked around. Kept out of a wider batch so the amendment decision, if it comes, lands before anything is built on the siting."
+        },
+        {
+          "task_ids": [
+            455,
+            517
+          ],
+          "description": "Make a phase commit own the surfaces it stales, so the isolation declaration has a schema row",
+          "rationale": "The shortest path to unblocking integration-branch admission: 517 is the only non-measurement predecessor of 669, and it waits on 455 alone. Sited second so the admission work is reachable in two dispatches rather than behind the commit-script chain. 455 still carries a cross-batch unordered overlap with 548 on plan-file-scope-harvest.sh; it is nine waves earlier, so no edge was written."
+        },
+        {
+          "task_ids": [
+            567,
+            535,
+            541,
+            477,
+            484,
+            486
+          ],
+          "description": "Settle which paths a phase commit may drop, and how one drop event is recorded",
+          "rationale": "The head of the commit-layer chain fixed by commit-layer-cluster-ordering.md (567 -> 535 -> 541), plus the drop-reporting pair (477 -> 484) and the registration fix (486) that both read the same containment filter. Two edges were added to make this batch admissible as a sequence: 484 after 541 (git-commit-phase.sh, and 535 transitively) orders the reporting collapse behind the drop-set changes it reports on. This is the critical path to 670; it runs before the detector batch for that reason."
+        },
+        {
+          "task_ids": [
+            556,
+            519,
+            570,
+            472,
+            501,
+            524,
+            536
+          ],
+          "description": "Make every containment and commit site agree before the two-root split lands on them",
+          "rationale": "The chain tail through orchestrate-cycle-postflight.sh and git-commit-scoped.sh, in the order the commit-layer record fixed (570 -> 501 -> 524 -> 536), with the two feeders it needs (519 -> 570, 556 -> 472). Edge added: 472 after 570, which orders 472 against both postflight claimants at once at zero cost to the critical path. 472/486/517 remain unordered on agents/general-implementation-agent.md -- the coarse agent file the commit-layer record excluded from edge justification."
+        },
+        {
+          "task_ids": [
+            548,
+            553
+          ],
+          "description": "Finish the containment block last, once the sites that reshape it have settled",
+          "rationale": "553 was already placed last in the chain on its own principle that a message change is cheapest on settled structure; 548 is held to the same principle by the new edge 548 after 536, which orders it against 567, 501, 524 and 536 all at once -- five unordered pairs on git-commit-scoped.sh's containment block closed by one edge, at a cost of one wave. 553 is the task 670 actually waits on."
+        },
+        {
+          "task_ids": [
+            438,
+            479,
+            513
+          ],
+          "description": "Make a phase closing without its commit detectable, on a landing target it can name",
+          "rationale": "The second predecessor line of 670: 513 supplies the expected-ref parameter the two-root work makes per tree, and it waits on the landing-target contract (479) and the edge-rationale record (438). Three waves deep and off the critical path, so sited after the commit-script chain."
+        }
+      ]
+    },
+    {
+      "id": "M3",
+      "title": "Reviewable landing: batch worktrees, squash commits, generated-path collapse",
+      "aim": "Make a batch's work land as reviewable git history: run each batch in its own worktree off an admitted integration branch, land one attribution-built squash commit per completed task, and declare machine-written paths so a diff collapses them.",
+      "gate": "A batch run in an isolated worktree leaves one attribution-built squash commit per completed task on its integration branch, verified before the status write; a partial batch retains its worktree and /refresh reports an orphan; the branch-strategy documentation states the implemented contract; declared generated paths render collapsed in review.",
+      "progress": {
+        "status": "planned",
+        "note": "Prerequisites moved to M4; the topology starts once the stale-surface declaration and the harness measurement close."
+      },
+      "review": {
+        "state": "none"
+      },
+      "batches": [
+        {
+          "task_ids": [
+            669,
+            671
+          ],
+          "flags": "--hard",
+          "description": "Admit the integration branch, stand up the batch worktree, make the hooks two-root aware",
+          "rationale": "Unchanged in membership. 669 gained an edge on 541 this pass: both write context/standards/orchestrator-runtime-files.md and they shared a wave, and 669's new runtime-file rows are better built on a settled snapshot-artifact section. The edge costs nothing on the critical path, since 670 waits on the far longer commit-script chain either way."
+        },
+        {
+          "task_ids": [
+            670,
+            672,
+            673
+          ],
+          "flags": "--hard",
+          "description": "Carry the two-root contract into dispatch and the commit scripts, then land the per-task squash",
+          "rationale": "Unchanged. 672 is kept here rather than dropped for not being named in the prioritisation instruction: 675 cannot complete without it, and it classifies against the contract 670 fixes. 670 gained direct edges on 536 and 567 this pass, making explicit the semantic dependency the isolation record says currently rides on a chain written for file territory."
+        },
+        {
+          "task_ids": [
+            674,
+            675
+          ],
+          "description": "Close the worktree lifecycle: cleanup, partial retention, orphan reporting, docs parity",
+          "rationale": "Unchanged. 674 still shares the three /refresh files with 664 with no edge between them, as the isolation record decided; admission orders that pair."
+        },
+        {
+          "task_ids": [
+            655
+          ],
+          "description": "Declare machine-written paths so a reviewer's diff collapses them by default",
+          "rationale": "Stays a batch of one. Its file_scope still lists the seven files of its superseded scope, so it shows mechanical overlaps with 669, 670, 673 and 675 that are not real claims; the isolation record directs that it be re-declared at plan time and that no edge be written onto it."
+        }
+      ]
+    },
+    {
       "id": "M2",
       "title": "Sapience linked projects, capture activation and collaborator access",
       "aim": "Make a repository bindable to a shared Sapience project and workable by a second person: bind and register the repo, resolve every automatic write and read through the link, let extension activation alone decide capture, and keep the token out of the MCP entry.",
@@ -19851,62 +19979,6 @@
           "description": "Make the link decide every Sapience write, read and policy, and keep the token out of the entry",
           "flags": "--hard",
           "rationale": "Placed first by instruction (prioritize 677-679, 681-682), and a new milestone rather than a head-insert into M1 because M1's own aim asks for its contents to be divided into real milestones -- this strand is one: a repository that is bound to a shared project and usable by a second person.\n\nOne batch, not two, on the dominance rule in batch-orchestration-guardrails.md: shared file territory outranks width. All five declare agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md in their own territory statements, and 677/678 additionally share injection-site-scoping.md and review-gate-boundary.md. None of the five carries a file_scope field, so the creation-time overlap checker has nothing to compare and the batch itself is the only mechanism that makes the collision visible at all. Splitting 682 out as its own leading batch was considered and rejected for that reason alone -- it is independent in the graph, but it writes the same doc.\n\nGraph shape inside the batch: 681 -> 677 -> 679, 678 -> 679, and (added on this pass) 682 -> 679. 681, 678 and 682 share wave 1; 677 is wave 2; 679 is wave 3. 679 is the milestone's gate task, so the batch drains to it.\n\nThe 682 -> 679 edge is derivable from 679's own requirements, not from co-membership: 679 item (2) asks for an MCP registration that 'names no machine path and no secret', and item (6) asks for the same path for a collaborator who DOES load this extension -- which is exactly the registration 682 changes. Written before 682 lands, that page documents an entry shape 682 then invalidates.\n\nNot added, deliberately: no edge among 681/678/682. They are mutually independent in substance and any ordering between them would be this agent's own preference dressed as a graph fact. The per-repo-scoping.md concurrency hazard among them is real but is an ordering/dispatch concern, to be answered by declaring file_scope on the five or dispatching narrower, not by inventing edges.\n\n--hard because three of the five are rulings or contracts rather than edits: 678 rules five open policy questions and must agree with another repository's write rule, 682 needs a measured per-code-path check of the installed vendor client plus a negative control, and 679 is only done when the path has been run on a clean profile."
-        }
-      ]
-    },
-    {
-      "id": "M3",
-      "title": "Reviewable landing: batch worktrees, squash commits, generated-path collapse",
-      "aim": "Make a batch's work land as reviewable git history: run each batch in its own worktree off an admitted integration branch, land one attribution-built squash commit per completed task, and declare machine-written paths so a diff collapses them.",
-      "gate": "A batch run in an isolated worktree leaves one attribution-built squash commit per completed task on its integration branch, verified before the status write; a partial batch retains its worktree and /refresh reports an orphan; the branch-strategy documentation states the implemented contract; declared generated paths render collapsed in review.",
-      "progress": {
-        "status": "planned",
-        "note": "Raised alongside the Sapience work; only the harness measurement is ready, the rest waits on commit-layer prerequisites in M1."
-      },
-      "review": {
-        "state": "none"
-      },
-      "batches": [
-        {
-          "task_ids": [
-            668
-          ],
-          "description": "Measure the harness against an external worktree before any of the topology is built",
-          "rationale": "The only member of this milestone that is dispatchable today, and the measurement every later batch's design rests on: whether the harness tolerates a working tree outside the project directory. Alone on purpose. A negative answer invalidates the worktree topology itself rather than one task's scope, so nothing downstream should be dispatched in the same run that could still contradict it."
-        },
-        {
-          "task_ids": [
-            669,
-            671
-          ],
-          "description": "Admit the integration branch, stand up the batch worktree, make the hooks two-root aware",
-          "rationale": "The invariants everything after this assumes: admission refuses a run from the wrong starting branch, the isolation declaration exists and defaults off, worktree setup is idempotent, and the write-time and git-guard hooks stop treating one root as both code root and state root. Ordered by the graph, not by this batch: the hooks task declares an edge on the admission task. --hard for the contract breadth, and because every behaviour here must also hold in a repository with isolation undeclared, where no worktree and no batch branch exist.",
-          "flags": "--hard"
-        },
-        {
-          "task_ids": [
-            670,
-            672,
-            673
-          ],
-          "description": "Carry the two-root contract into dispatch and the commit scripts, then land the per-task squash",
-          "rationale": "The heaviest batch in the milestone: a contract every phase commit in every repository flows through, plus the landing mechanic itself. The squash task sits with its own two prerequisites rather than later, because isolating one task's commit range has to be solved from attribution recorded by the commit scripts this batch rewrites, not from assuming contiguity. Blocked on commit-containment and landing-target work that stays in M1; that is an ordering constraint on dispatch, not a reason to site the batch lower than the review goal it serves.",
-          "flags": "--hard"
-        },
-        {
-          "task_ids": [
-            674,
-            675
-          ],
-          "description": "Close the worktree lifecycle: cleanup, partial retention, orphan reporting, docs parity",
-          "rationale": "What makes the topology survivable rather than merely buildable: a partial or failed batch must keep its worktree and its unlanded commits, a vanished one must be reportable, and the branch-strategy documentation must state the contract that actually shipped. Documentation parity sits here, with the behaviour it describes, rather than in a documentation batch far away where it would be written against a design nobody had run yet."
-        },
-        {
-          "task_ids": [
-            655
-          ],
-          "description": "Declare machine-written paths so a reviewer's diff collapses them by default",
-          "rationale": "Re-sited out of the legacy backlog into the milestone whose goal it serves: this is the review-rendering half of reviewable landing. Its scope is now the generated-file declaration alone; every branch-topology element it used to carry is owned by the four batches above, so the --hard flag authored for that superseded breadth is dropped -- what remains is one repo-agnostic declaration mechanism plus the question of where the declaration is written and whether it is generated. Last in the milestone because it changes nothing about what is committed, only how a diff renders, and because its own prerequisites are the deepest of any member here."
         }
       ]
     },
@@ -19967,17 +20039,13 @@
         },
         {
           "task_ids": [
-            556,
-            472,
             646,
             551,
-            519,
-            570,
             577,
             609
           ],
-          "description": "What one dispatch hands the next: settle the handoff/return-meta shapes, fix failure accounting",
-          "rationale": "- **One surface, eight defects, and the surface is the handoff itself.** Six of the eight declare\n  `orchestrate-cycle-postflight.sh` and its suite -- still the most contended single path in the\n  backlog. Batching is the default here precisely because of that overlap, not in spite of it.\n\n- **`556` leads and an edge was written for it.** `556` and `472` are the same incident\n  (`validate-handoff.sh` Check 7 indexing a string-shaped `blockers` element, jq exit 5 escaping\n  `set -euo pipefail` as an undocumented crash) filed twice, from opposite ends. `556` owns the\n  ruling -- three authorities disagree about the canonical `blockers` shape and it says in its own\n  text to settle that FIRST, because the ruling decides which side of the fix is the\n  non-conforming one. `472` then conforms the validator, the postflight attribution and the\n  authoring instructions to whatever `556` ruled. The two share three declared paths\n  (`validate-handoff.sh`, its suite, `orchestrator-handoff-schema.json`), so this is an order a\n  record states over real shared territory: **`472` is now declared behind `556`**.\n\n- **`646` is the same class on the other carrier.** `.return-meta.json`'s status vocabulary has\n  no room for terminal outcomes that are legitimate but are not lifecycle-phase names, and all\n  four such values emitted across five extensions are rejected by the validator meant to govern\n  them. A validator that refuses every legitimate value is indistinguishable, to a caller, from\n  one that found a real fault -- the identical failure mode `556` and `472` close on the handoff.\n\n- **`551`, `519`, `570`, `577`, `609` are the failure-accounting half.** `551` closes a\n  stale-handoff detection that has fired across at least twelve distinct records (one of them ten\n  times) plus a detection that reached the user with no ledger entry behind it. `519` stops an\n  infrastructure transport death being charged as the task's own failure, and `570` -- already\n  edged behind it -- stops the stall signal counting commits it cannot attribute to the dispatch\n  under judgement. `577` makes a blocker-triggered aux revision consumable by triage, and `609`\n  (already edged behind `577`) stops a pending user question charging its own task into\n  `failed_tasks` and killing its dependents. A mis-charged failure propagates: it kills dependents\n  that were never broken, which is why this sits above the correctness batches rather than among\n  them.\n\n- **The remaining in-batch overlaps were deliberately left unedged.** Five members claim\n  `orchestrate-cycle-postflight.sh`; edging all ten unordered pairs would chain defects that are\n  genuinely independent, and co-membership is this list's ordering judgment, not graph evidence.\n  The admission gate's own `file_scope_collision` deferral serializes them within the batch\n  mechanically, and array position states the intended order."
+          "description": "What one dispatch hands the next: the return-meta vocabulary, the stale handoff, two aux-plan gaps",
+          "rationale": "- **One surface, eight defects, and the surface is the handoff itself.** Six of the eight declare\n  `orchestrate-cycle-postflight.sh` and its suite -- still the most contended single path in the\n  backlog. Batching is the default here precisely because of that overlap, not in spite of it.\n\n- **`556` leads and an edge was written for it.** `556` and `472` are the same incident\n  (`validate-handoff.sh` Check 7 indexing a string-shaped `blockers` element, jq exit 5 escaping\n  `set -euo pipefail` as an undocumented crash) filed twice, from opposite ends. `556` owns the\n  ruling -- three authorities disagree about the canonical `blockers` shape and it says in its own\n  text to settle that FIRST, because the ruling decides which side of the fix is the\n  non-conforming one. `472` then conforms the validator, the postflight attribution and the\n  authoring instructions to whatever `556` ruled. The two share three declared paths\n  (`validate-handoff.sh`, its suite, `orchestrator-handoff-schema.json`), so this is an order a\n  record states over real shared territory: **`472` is now declared behind `556`**.\n\n- **`646` is the same class on the other carrier.** `.return-meta.json`'s status vocabulary has\n  no room for terminal outcomes that are legitimate but are not lifecycle-phase names, and all\n  four such values emitted across five extensions are rejected by the validator meant to govern\n  them. A validator that refuses every legitimate value is indistinguishable, to a caller, from\n  one that found a real fault -- the identical failure mode `556` and `472` close on the handoff.\n\n- **`551`, `519`, `570`, `577`, `609` are the failure-accounting half.** `551` closes a\n  stale-handoff detection that has fired across at least twelve distinct records (one of them ten\n  times) plus a detection that reached the user with no ledger entry behind it. `519` stops an\n  infrastructure transport death being charged as the task's own failure, and `570` -- already\n  edged behind it -- stops the stall signal counting commits it cannot attribute to the dispatch\n  under judgement. `577` makes a blocker-triggered aux revision consumable by triage, and `609`\n  (already edged behind `577`) stops a pending user question charging its own task into\n  `failed_tasks` and killing its dependents. A mis-charged failure propagates: it kills dependents\n  that were never broken, which is why this sits above the correctness batches rather than among\n  them.\n\n- **The remaining in-batch overlaps were deliberately left unedged.** Five members claim\n  `orchestrate-cycle-postflight.sh`; edging all ten unordered pairs would chain defects that are\n  genuinely independent, and co-membership is this list's ordering judgment, not graph evidence.\n  The admission gate's own `file_scope_collision` deferral serializes them within the batch\n  mechanically, and array position states the intended order. Reshaped: its commit-layer, declaration and detector members moved to M4, where they are sited as the prerequisites of the batch-worktree landing work."
         },
         {
           "task_ids": [
@@ -19999,28 +20067,17 @@
         {
           "task_ids": [
             639,
-            477,
-            484,
-            486,
-            501,
-            508,
-            524
+            508
           ],
-          "description": "Evidence integrity: stop losing issue entries, normalize classes, collapse scope-excursion rows",
-          "rationale": "- **`639` leads because it is silent data loss in the evidence base everything downstream reads.**\n  `issue-record.sh` accepts `--session` and rejects `--session-id` through its catch-all arm, and\n  the script's own prescribed invocation form redirects both streams to `/dev/null`, so a mistyped\n  flag writes nothing and says nothing. An empty `issues.jsonl` is then indistinguishable from a\n  dispatch that genuinely had nothing to record -- and `/orchestrate`'s conclusion stage treats\n  that file as its entire evidence base. Every judgment this list makes about recurrence rests on\n  that store being complete.\n\n- **`477` is the vocabulary the same store is written in**, and it shares\n  `context/formats/issue-log.md` with both `639` and `484`. Normalizing the class enum and\n  rejecting the aggregate's malformed repeated-flag call before anything else rewrites rows is the\n  cheap order.\n\n- **`484` -> `486` -> `501`/`508` -> `524` is a chain the graph already carries, and it is the\n  scope-excursion half of the same concern.** `484` collapses per-path excursion rows into one\n  record per drop event, which is what makes the rows readable at all; `486` stops a required\n  extension `manifest.json` registration being dropped from a phase commit as an excursion;\n  `501` gives the cycle-postflight containment site predicate parity plus a guarded recovery route\n  for a dropped path; `508` rules on where shared extension metadata belongs in the allowlist and\n  narrows the repo-wide sync tools' writes; `524` rules on the staged-vs-working-tree divergence\n  signal and names the partial-stage trap. A dropped path is lost work, so this is functionality,\n  not hygiene.\n\n- **`501` depends on `472`, one batch above.** That is an ordering constraint satisfied by array\n  position, not a reason to move either record.\n- **`486` additionally waits on `541`, one batch BELOW, and that inversion is deliberately left standing.** Measured on the live graph, `541` (snapshot artifacts contaminating phase commits) sits in the commit-containment batch immediately after this one, so `486` -- and `501`, `508` and `524` behind it -- cannot land in the run this batch's position implies. Unlike a single-member batch, this one still dispatches: five of its seven members are admissible from here, so the rendered command advances real work and the blocked members defer, which is the normal and intended reading of a batch line. The inversion is NOT fixable by reordering the two batches, because the dependency chain genuinely interleaves them: `567` -> `535` -> `541` all sit below, `486` -> `501` -> `524` all sit here, and `536` -> `553` sit below again, so each batch holds a predecessor of the other. Resolving it properly means re-splitting both batches along that chain, which destroys the evidence-integrity and commit-containment themes each description is authored around and produces a group over the batch cap if merged. That is a membership re-authoring job for a full pass with both themes in view, not a position fix."
+          "description": "Two residues of the containment work: lost issue entries, and where shared metadata belongs",
+          "rationale": "- **`639` leads because it is silent data loss in the evidence base everything downstream reads.**\n  `issue-record.sh` accepts `--session` and rejects `--session-id` through its catch-all arm, and\n  the script's own prescribed invocation form redirects both streams to `/dev/null`, so a mistyped\n  flag writes nothing and says nothing. An empty `issues.jsonl` is then indistinguishable from a\n  dispatch that genuinely had nothing to record -- and `/orchestrate`'s conclusion stage treats\n  that file as its entire evidence base. Every judgment this list makes about recurrence rests on\n  that store being complete.\n\n- **`477` is the vocabulary the same store is written in**, and it shares\n  `context/formats/issue-log.md` with both `639` and `484`. Normalizing the class enum and\n  rejecting the aggregate's malformed repeated-flag call before anything else rewrites rows is the\n  cheap order.\n\n- **`484` -> `486` -> `501`/`508` -> `524` is a chain the graph already carries, and it is the\n  scope-excursion half of the same concern.** `484` collapses per-path excursion rows into one\n  record per drop event, which is what makes the rows readable at all; `486` stops a required\n  extension `manifest.json` registration being dropped from a phase commit as an excursion;\n  `501` gives the cycle-postflight containment site predicate parity plus a guarded recovery route\n  for a dropped path; `508` rules on where shared extension metadata belongs in the allowlist and\n  narrows the repo-wide sync tools' writes; `524` rules on the staged-vs-working-tree divergence\n  signal and names the partial-stage trap. A dropped path is lost work, so this is functionality,\n  not hygiene.\n\n- **`501` depends on `472`, one batch above.** That is an ordering constraint satisfied by array\n  position, not a reason to move either record.\n- **`486` additionally waits on `541`, one batch BELOW, and that inversion is deliberately left standing.** Measured on the live graph, `541` (snapshot artifacts contaminating phase commits) sits in the commit-containment batch immediately after this one, so `486` -- and `501`, `508` and `524` behind it -- cannot land in the run this batch's position implies. Unlike a single-member batch, this one still dispatches: five of its seven members are admissible from here, so the rendered command advances real work and the blocked members defer, which is the normal and intended reading of a batch line. The inversion is NOT fixable by reordering the two batches, because the dependency chain genuinely interleaves them: `567` -> `535` -> `541` all sit below, `486` -> `501` -> `524` all sit here, and `536` -> `553` sit below again, so each batch holds a predecessor of the other. Resolving it properly means re-splitting both batches along that chain, which destroys the evidence-integrity and commit-containment themes each description is authored around and produces a group over the batch cap if merged. That is a membership re-authoring job for a full pass with both themes in view, not a position fix. Reshaped: its commit-layer, declaration and detector members moved to M4, where they are sited as the prerequisites of the batch-worktree landing work."
         },
         {
           "task_ids": [
-            548,
-            567,
-            553,
-            598,
-            536,
-            535,
-            541
+            598
           ],
-          "description": "Commit containment: stop phase commits dropping legitimate files and carrying foreign ones",
-          "rationale": "- **Both failure directions of one mechanism, batched because they are the same files.** Seven\n  members over `git-commit-scoped.sh`/`git-commit-phase.sh` and their suites: under-staging loses\n  work a dispatch actually did, over-staging commits another session's edits. Neither is\n  recoverable by re-running the dispatch, which is why this ranks above the validator and\n  composition batches below.\n\n- **The drop side, rooted at `548`**: `548` harvests a plan's declared contingency files into\n  `file_scope` so a legitimately-modified file stops being dropped; `553` (edged behind it) names\n  the typst-sync gate as the cause when a refused commit is reported, instead of leaving the\n  operator with an unattributed refusal; `598` (also edged behind it) provides the sanctioned\n  in-dispatch remedy for a mechanically coupled pair path the V10 containment guard drops. `567`\n  ports the deployed-tree containment strip into `git-commit-scoped.sh` so the two commit paths\n  stop disagreeing, and `536` adds the source-store-aware commit path plus plan-time registration\n  review.\n\n- **The contamination side, `535` -> `541`**: a phase commit drops its own plan artifact, and\n  `git-snapshot.sh --no-revert` artifacts contaminate phase commits with other tasks' files. The\n  edge is already carried.\n\n- **Cross-batch overlap, left to array position**: `484`, `486`, `501`, `508` and `524` (batch\n  five) claim `git-commit-scoped.sh` and `git-staging-scope.md` too. Batch five runs first and the\n  two never dispatch concurrently, so no edge is asserted between them."
+          "description": "The sanctioned in-dispatch remedy for a coupled pair path the containment guard drops",
+          "rationale": "- **Both failure directions of one mechanism, batched because they are the same files.** Seven\n  members over `git-commit-scoped.sh`/`git-commit-phase.sh` and their suites: under-staging loses\n  work a dispatch actually did, over-staging commits another session's edits. Neither is\n  recoverable by re-running the dispatch, which is why this ranks above the validator and\n  composition batches below.\n\n- **The drop side, rooted at `548`**: `548` harvests a plan's declared contingency files into\n  `file_scope` so a legitimately-modified file stops being dropped; `553` (edged behind it) names\n  the typst-sync gate as the cause when a refused commit is reported, instead of leaving the\n  operator with an unattributed refusal; `598` (also edged behind it) provides the sanctioned\n  in-dispatch remedy for a mechanically coupled pair path the V10 containment guard drops. `567`\n  ports the deployed-tree containment strip into `git-commit-scoped.sh` so the two commit paths\n  stop disagreeing, and `536` adds the source-store-aware commit path plus plan-time registration\n  review.\n\n- **The contamination side, `535` -> `541`**: a phase commit drops its own plan artifact, and\n  `git-snapshot.sh --no-revert` artifacts contaminate phase commits with other tasks' files. The\n  edge is already carried.\n\n- **Cross-batch overlap, left to array position**: `484`, `486`, `501`, `508` and `524` (batch\n  five) claim `git-commit-scoped.sh` and `git-staging-scope.md` too. Batch five runs first and the\n  two never dispatch concurrently, so no edge is asserted between them. Reshaped: its commit-layer, declaration and detector members moved to M4, where they are sited as the prerequisites of the batch-worktree landing work."
         },
         {
           "task_ids": [
@@ -20077,13 +20134,11 @@
         },
         {
           "task_ids": [
-            455,
             502,
-            457,
-            517
+            457
           ],
-          "description": "Declare the generated surfaces a dispatch stales, and stop repo content leaking to the store",
-          "rationale": "- **A generated surface nobody declared is a surface nobody regenerates**, and the stale copy is\n  then read as truth by the next dispatch. All four members are about making that surface visible\n  at the point it is created.\n\n- `455` pre-flags the predictable first-run module-invariant failures that wiring a new module\n  forces, where the generated-surface knowledge already lives. `502` requires research reports to\n  enumerate the generated doc-sync surfaces they touch -- the research-phase counterpart. `517`\n  (edged behind `455`) requires a phase commit to regenerate and stage the derived surfaces it\n  stales, which is the enforcement end.\n\n- `457` is here because it is the same leak in the other direction: repo-specific content has\n  leaked into the shared agent-system source store, where every consuming repository reads it. It\n  is edged behind `455` already and shares `plan-file-scope-harvest.sh` with it.\n\n- **Below the enforcement batch** because these are contracts to be written rather than checks\n  that are currently lying."
+          "description": "Stop repo content leaking to the store, and make a report name the surfaces it stales",
+          "rationale": "- **A generated surface nobody declared is a surface nobody regenerates**, and the stale copy is\n  then read as truth by the next dispatch. All four members are about making that surface visible\n  at the point it is created.\n\n- `455` pre-flags the predictable first-run module-invariant failures that wiring a new module\n  forces, where the generated-surface knowledge already lives. `502` requires research reports to\n  enumerate the generated doc-sync surfaces they touch -- the research-phase counterpart. `517`\n  (edged behind `455`) requires a phase commit to regenerate and stage the derived surfaces it\n  stales, which is the enforcement end.\n\n- `457` is here because it is the same leak in the other direction: repo-specific content has\n  leaked into the shared agent-system source store, where every consuming repository reads it. It\n  is edged behind `455` already and shares `plan-file-scope-harvest.sh` with it.\n\n- **Below the enforcement batch** because these are contracts to be written rather than checks\n  that are currently lying. Reshaped: its commit-layer, declaration and detector members moved to M4, where they are sited as the prerequisites of the batch-worktree landing work."
         },
         {
           "task_ids": [
@@ -20095,24 +20150,21 @@
         },
         {
           "task_ids": [
-            438,
-            479,
             491,
             492,
             559,
             580,
             581
           ],
-          "description": "Task creation and the backlog/selection surfaces: landing targets, corroboration, one renderer",
-          "rationale": "- **The operator-facing surface, batched on real shared territory**: `context/workflows/\n  meta-interview.md` is claimed by `438`, `479`, `492` and `581`; `commands/task.md` by `438`,\n  `479` and `492`; `context/patterns/backlog-reconciliation.md` by `491`, `492` and `559`;\n  `multi-task-creation-standard.md` by `438`, `492` and `559`. Seven records over four shared\n  files is a batch by measurement, not by theme.\n\n- **The order is the graph's**: `438` (dependency-edge rationale conflates semantic and\n  serialization grounds, and a semantic edge is filed with no check against landed artifacts) ->\n  `479` (every task must name a landing target) -> `492` (corroboration computable, confirm prompt\n  gated on it), with `491` (the Pass-2 semantic scorer whose normalization inflates against\n  verbose records) ahead of `492` and `580` (AskUserQuestion's real four-option ceiling) ahead of\n  `581`. `581` extracts one shared option renderer and adopts it across all four selection\n  surfaces, and depends on `580`, `438`, `479` and `492` -- so it is last by necessity.\n\n- `559` settles the low-specificity shared-path case that produces spurious duplicate-of-open\n  verdicts, plus Component 7 under `/orchestrate`.\n\n- **Placed below the correctness batches** because this is the quality of what gets filed and\n  chosen, not whether a filed task can be executed. It is the highest-ranked batch that is not\n  about the machinery itself."
+          "description": "The backlog and selection surfaces: corroboration, duplicate rows, one question renderer",
+          "rationale": "- **The operator-facing surface, batched on real shared territory**: `context/workflows/\n  meta-interview.md` is claimed by `438`, `479`, `492` and `581`; `commands/task.md` by `438`,\n  `479` and `492`; `context/patterns/backlog-reconciliation.md` by `491`, `492` and `559`;\n  `multi-task-creation-standard.md` by `438`, `492` and `559`. Seven records over four shared\n  files is a batch by measurement, not by theme.\n\n- **The order is the graph's**: `438` (dependency-edge rationale conflates semantic and\n  serialization grounds, and a semantic edge is filed with no check against landed artifacts) ->\n  `479` (every task must name a landing target) -> `492` (corroboration computable, confirm prompt\n  gated on it), with `491` (the Pass-2 semantic scorer whose normalization inflates against\n  verbose records) ahead of `492` and `580` (AskUserQuestion's real four-option ceiling) ahead of\n  `581`. `581` extracts one shared option renderer and adopts it across all four selection\n  surfaces, and depends on `580`, `438`, `479` and `492` -- so it is last by necessity.\n\n- `559` settles the low-specificity shared-path case that produces spurious duplicate-of-open\n  verdicts, plus Component 7 under `/orchestrate`.\n\n- **Placed below the correctness batches** because this is the quality of what gets filed and\n  chosen, not whether a filed task can be executed. It is the highest-ranked batch that is not\n  about the machinery itself. Reshaped: its commit-layer, declaration and detector members moved to M4, where they are sited as the prerequisites of the batch-worktree landing work."
         },
         {
           "task_ids": [
-            480,
-            513
+            480
           ],
-          "description": "Two detectors over the landing-target contract: stranded research, a commit-less plan phase",
-          "rationale": "- **Both depend on `479`, immediately above, and on nothing else that is open.** Splitting them\n  out of that batch keeps it at seven rather than nine and makes the dependency explicit by array\n  position: the contract is stated first, then detected.\n\n- `480` is the advisory detector for research tasks stranded at RESEARCHED with artifacts but no\n  named landing target -- the backlog shape `479`'s gate prevents going forward, applied\n  retroactively to what is already filed. `513` mechanically detects a plan phase that closed\n  without its own commit.\n\n- They share `context/contracts/phase-closure.md` with `518` (batch eight), which runs earlier;\n  that cross-batch overlap is left to array position."
+          "description": "The advisory detector for research stranded with no landing target named",
+          "rationale": "- **Both depend on `479`, immediately above, and on nothing else that is open.** Splitting them\n  out of that batch keeps it at seven rather than nine and makes the dependency explicit by array\n  position: the contract is stated first, then detected.\n\n- `480` is the advisory detector for research tasks stranded at RESEARCHED with artifacts but no\n  named landing target -- the backlog shape `479`'s gate prevents going forward, applied\n  retroactively to what is already filed. `513` mechanically detects a plan phase that closed\n  without its own commit.\n\n- They share `context/contracts/phase-closure.md` with `518` (batch eight), which runs earlier;\n  that cross-batch overlap is left to array position. Reshaped: its commit-layer, declaration and detector members moved to M4, where they are sited as the prerequisites of the batch-worktree landing work."
         },
         {
           "task_ids": [
