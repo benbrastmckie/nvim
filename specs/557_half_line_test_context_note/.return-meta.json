@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/557_half_line_test_context_note/plans/01_half-line-test-context-note.md",
-      "summary": "Four-phase plan to author the half-line test as a durable lean4 context note in the lean extension source store, register it in the context index, cross-link it from three pointer surfaces, and redeploy with scoped verification."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 20,
   "metadata": {
-    "session_id": "sess_1795360608_7bb5fd_557",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 3,
-    "dependency_waves": 4
-  },
-  "memory_candidates": [],
-  "next_steps": "Run /orchestrate 557 to execute the plan",
-  "dispatch_seq": 7
+    "session_id": "sess_1795360608_7bb5fd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

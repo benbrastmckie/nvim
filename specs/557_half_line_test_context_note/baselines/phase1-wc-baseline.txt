@@ -1,0 +1,4 @@
+   41 agent-system/extensions/lean/EXTENSION.md
+   32 agent-system/extensions/lean/context/project/lean4/README.md
+  330 agent-system/extensions/lean/context/project/lean4/domain/ladder-counter-observables.md
+  403 total

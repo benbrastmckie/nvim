@@ -1,7 +1,7 @@
 # Implementation Plan: Task #557
 
 - **Task**: 557 - Half-line test context note
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: None (no research report was produced for this round; the plan is grounded
@@ -144,45 +144,53 @@ all of it.
 
 ---
 
-### Phase 1: Ground the Claims and Capture the Pre-Edit Baseline [NOT STARTED]
+### Phase 1: Ground the Claims and Capture the Pre-Edit Baseline [COMPLETED]
 
 **Goal**: Fix every declaration name, probe path, and disclaimer the note will carry against the
 files that actually carry them, and capture the pre-edit gate state so Phase 4's comparison is
 against a measured baseline rather than an assumption.
 
 **Tasks**:
-- [ ] Read the half-line-test section, the pincer sentence, and the "What this probe does NOT
+- [x] Read the half-line-test section, the pincer sentence, and the "What this probe does NOT
       settle" paragraph of
       `/home/benjamin/Projects/BimodalLogic/specs/evidence/seam-gluing-ray-product/one-sided-count-move-refutation.lean`.
       Record verbatim: the two questions, the decision rule, and the two declarations named as
-      killing each direction.
-- [ ] Confirm each declaration the note will cite exists in the file that is cited for it:
+      killing each direction. *(completed: verbatim text captured in
+      baselines/phase1-grounding-findings.md)*
+- [x] Confirm each declaration the note will cite exists in the file that is cited for it:
       `cntAt_eq_of_pend_eq_fwd`, `cntAt_eq_of_lab_eq_fwd_of_pendFactorsLab`,
       `futAtomPreservingCountMove_refuted`, `atomPreservingCountMove_refuted_via_fwd`,
       `futAtomPreservingCountMove_refutedO`, `PastAtomPreservingCountMove`,
       `FutAtomPreservingCountMove`, and the namespace `Probe855O`; and
       `splice_type_invariance_refuted` in
       `specs/evidence/seam-gluing-ray-product/ladder-splice-type-refutation.lean`. Any name that
-      does not resolve is dropped from the note rather than cited on faith.
-- [ ] Confirm the enabling biconditional's name as the probe states it
+      does not resolve is dropped from the note rather than cited on faith. *(completed: all
+      names resolved via grep, none dropped)*
+- [x] Confirm the enabling biconditional's name as the probe states it
       (`PlusLanguage.PlusRayFibre.plusStab_iff_rays`, for `⊡φ ↔ ▷◁φ ↔ ◁▷φ`) and the landed
       `▷`-shaped count move it attributes (`exists_spliced_ladderPath_of_pend_past`).
-- [ ] Confirm the two "six" sets differ: list the probe files cited by
+      *(completed: both confirmed as stated verbatim in the probe's own docstring)*
+- [x] Confirm the two "six" sets differ: list the probe files cited by
       `agent-system/extensions/lean/context/project/lean4/domain/ladder-counter-observables.md`
       and compare against the probe files named in the originating report's
       mechanism-by-mechanism table. Record the overlap and the difference; this is what the
-      Phase 3 cross-pointer clause must be accurate about.
-- [ ] Confirm the sibling note does not already state the half-line test (grep it for
+      Phase 3 cross-pointer clause must be accurate about. *(completed: 4-file overlap, 2
+      different each side, recorded in baselines/phase1-grounding-findings.md; see issue-log for
+      the "three" vs. four discrepancy against the plan's Risk table)*
+- [x] Confirm the sibling note does not already state the half-line test (grep it for
       `half-line`, `half line`, `one-sided`), so Phase 2 is authoring, not duplicating.
-- [ ] Capture the baseline, each to its own file under this task's directory, with the exit
+      *(completed: zero hits)*
+- [x] Capture the baseline, each to its own file under this task's directory, with the exit
       status recorded alongside the output:
       `bash .claude/scripts/generate-context-line-counts.sh --check`;
       `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`.
-- [ ] Record `wc -l` for `agent-system/extensions/lean/EXTENSION.md`,
+      *(completed: both exit 0, captured under baselines/)*
+- [x] Record `wc -l` for `agent-system/extensions/lean/EXTENSION.md`,
       `.../context/project/lean4/README.md`, and
       `.../context/project/lean4/domain/ladder-counter-observables.md`, so Phase 3's line-count
-      refresh can be checked against a known before-state.
-- [ ] Record issue-log entries as they arise, per this dispatch's Issue Log section.
+      refresh can be checked against a known before-state. *(completed: 41/32/330)*
+- [x] Record issue-log entries as they arise, per this dispatch's Issue Log section.
+      *(completed: one minor issue recorded for the overlap-count discrepancy)*
 
 **Timing**: 0.5 hours
 

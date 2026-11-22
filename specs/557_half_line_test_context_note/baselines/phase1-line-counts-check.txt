@@ -1,0 +1,34 @@
+approvals: 4 entries, 4 exact, 0 mismatch, 0 null, 0 missing source
+books: 23 entries, 23 exact, 0 mismatch, 0 null, 0 missing source
+core: 178 entries, 178 exact, 0 mismatch, 0 null, 0 missing source
+cslib: 19 entries, 19 exact, 0 mismatch, 0 null, 0 missing source
+email: 11 entries, 11 exact, 0 mismatch, 0 null, 0 missing source
+epidemiology: 15 entries, 15 exact, 0 mismatch, 0 null, 0 missing source
+filetypes: 11 entries, 11 exact, 0 mismatch, 0 null, 0 missing source
+formal: 49 entries, 49 exact, 0 mismatch, 0 null, 0 missing source
+founder: 34 entries, 34 exact, 0 mismatch, 0 null, 0 missing source
+latex: 10 entries, 10 exact, 0 mismatch, 0 null, 0 missing source
+lean: 45 entries, 45 exact, 0 mismatch, 0 null, 0 missing source
+literature: 28 entries, 28 exact, 0 mismatch, 0 null, 0 missing source
+memory: 9 entries, 9 exact, 0 mismatch, 0 null, 0 missing source
+nix: 12 entries, 12 exact, 0 mismatch, 0 null, 0 missing source
+nvim: 25 entries, 25 exact, 0 mismatch, 0 null, 0 missing source
+present: 37 entries, 37 exact, 0 mismatch, 0 null, 0 missing source
+python: 6 entries, 6 exact, 0 mismatch, 0 null, 0 missing source
+rust: 1 entries, 1 exact, 0 mismatch, 0 null, 0 missing source
+sapience: 9 entries, 9 exact, 0 mismatch, 0 null, 0 missing source
+slidev: 15 entries, 15 exact, 0 mismatch, 0 null, 0 missing source
+typescript: 9 entries, 9 exact, 0 mismatch, 0 null, 0 missing source
+typst: 28 entries, 28 exact, 0 mismatch, 0 null, 0 missing source
+web: 24 entries, 24 exact, 0 mismatch, 0 null, 0 missing source
+z3: 5 entries, 5 exact, 0 mismatch, 0 null, 0 missing source
+
+=== Summary (check mode) ===
+Total entries checked: 607
+Exact match: 607
+Numeric mismatch: 0
+Null line_count: 0
+Missing source file: 0
+
+CHECK PASSED: all line_count values are exact
+exit: 0

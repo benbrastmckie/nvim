@@ -190,7 +190,7 @@ next_project_number: 684
 
 ### Decidability
 
-557 [PLANNED] — Record the half-line test as a lean4 context pattern note
+557 [IMPLEMENTING] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
 
@@ -3617,7 +3617,7 @@ repository numbering space and is recorded here as provenance.
 
 ### 557. Record the half-line test as a lean4 context pattern note
 - **Effort**: small
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: decidability
 - **Dependencies**: None
