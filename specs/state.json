@@ -4955,7 +4955,7 @@
     {
       "project_number": 398,
       "project_name": "lean_plan_scope_rw_site_unfolding",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "topic": "lean-extension",
       "title": "Record that a grep for dependents misses rw-site definitional unfolding, and make that guidance reachable at plan time",
@@ -4977,7 +4977,7 @@
       ],
       "next_artifact_number": 2,
       "created": "2026-10-14T00:15:51Z",
-      "last_updated": "2026-11-22T15:50:50Z",
+      "last_updated": "2026-11-22T15:53:30Z",
       "effort": "medium",
       "priority": null,
       "session_id": "sess_1795360608_7bb5fd",
@@ -5149,7 +5149,7 @@
     {
       "project_number": 451,
       "project_name": "snapshot_lean_challenge_at_plan_time",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Take the Lean Challenge snapshot in the plan phase, where it is still meaningful, instead of leaving it to an implement phase the status gate correctly refuses",
       "topic": "lean-extension",
@@ -5185,7 +5185,7 @@
         }
       ],
       "created": "2026-10-19T04:37:20Z",
-      "last_updated": "2026-11-22T15:51:17Z",
+      "last_updated": "2026-11-22T15:53:46Z",
       "session_id": "sess_1795360608_7bb5fd",
       "next_artifact_number": 2
     },
@@ -8042,7 +8042,7 @@
     {
       "project_number": 504,
       "project_name": "lean_goals_block_harvest_contract",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "description": "MIGRATED FROM BimodalLogic 2026-11-05. This record was filed into ~/Projects/BimodalLogic/specs/\nby an /orchestrate conclusion-stage channel-(b) dispatch, which files into the repository it runs\nin. Its edit targets resolve only under this repository's agent-system/** source store, so it\ncould neither be read nor committed where it was filed. Moved here under the migrate-mis-sited\nrecord's nine numbered constraints; description body below is preserved verbatim, every iss_*\ncitation id intact. file_scope has been rewritten to source-store-only paths, which is constraint\n(7) and NOT a defect repair.\n\nCROSS-REPO REFERENCE MAP, required by constraint (3). The body below cites BimodalLogic record\nnumbers, which do not resolve in this repository. Read them as: BimodalLogic #839 ->\nplan_contingency_file_scope_and_containment_drop; #785 -> lean_plan_gate_collision_authoring_guidance;\n#840 -> lean_unusedarguments_narrow_remedy_route; #847 -> file_scope_external_source_store_containment\n-- all four still sited in BimodalLogic and themselves pending the same migration ruling. The\n{task, entry_id} citations resolve against ~/Projects/BimodalLogic/specs/{NNN}_{SLUG}/issues.jsonl\nand remain readable cross-repo with: jq -c 'select(.entry_id==\"<id>\")' <that path>.\n\nIts \"NOTE ON file_scope AND THE EXTERNAL STORE\" paragraph below is now INVERTED and must be read\nas history, not instruction: sited here, the agent-system/** paths resolve natively and a phase\ncommit CAN carry them. Expect no containment drops on those paths from this repository.\n\n========================================================================\nMETA TASK. ONE defect, ONE record: `lean-plan-compliance-check.sh` and the contract\n`context/formats/plan-format.md` documents disagree about what a plan's `**Goals**` block\ncontributes as goal declarations. The script and the document cannot both be right; this record\nsettles WHICH, deliberately.\n\nMEASURED {871, iss_1793913951568_HzkOMJ} (class `tooling-contract`, phase `plan`). The script\nharvests EVERY backticked token in the Goals block, not only the leading identifier that\nplan-format.md's `## Lean Challenge Statements` section describes. Binder names cited in\ndescriptive prose (`P`, `hP`) and cross-referenced PRE-EXISTING lemmas\n(`plusValidIn_reflectTime`, `lcN_plusValidZTime`) were harvested as goal declarations. Two of them\ncan never resolve as declarations introduced by the plan, so the Final Verification spot-check\nwould have failed permanently, not transiently. The affected plan had to work around it by\nstripping every backtick from its Goals prose -- a workaround that degrades the plan's own\nreadability to satisfy a harvester, and that the next plan author will not know to apply.\n\nVERIFY THE MECHANISM FIRST, do not trust this summary. In the source store's\n`scripts/lean-plan-compliance-check.sh` the harvest is a `sed` range over `/^\\*\\*Goals\\*\\*/` to\nthe next `/^\\*\\*[^G]/` piped through a backticked-token extraction, followed by a per-name\ndeclaration grep across the resolved Lean source roots. The script's own header already records\ntwo prior narrowings of the same harvest (a keyword exclusion list, so a backticked `sorry` or\n`box` in prose is no longer harvested; and a colon-optional Goals-range fix) -- so this is the\nTHIRD narrowing of one over-broad harvest, which is itself evidence about where the contract\nshould live. The header also warns that two Goals-block readers must not drift apart on which\nheader shapes they accept; find the second reader before changing either.\n\nTHE DECISION THIS RECORD OWES, with the rejected alternative recorded on its own merits:\n\n  (a) Narrow the SCRIPT to the documented contract -- harvest only the leading identifier of each\n      Goals entry -- making descriptive backticks in Goals prose safe again.\n  (b) Widen the DOCUMENT to state the script's actual behavior, i.e. make \"no backticks in Goals\n      prose except goal identifiers\" an explicit, discoverable authoring rule rather than folklore\n      a plan author discovers by a permanent verification failure.\n\nWeigh (a) against the keyword-exclusion precedent already in the script: that precedent chose to\nnarrow the harvest rather than to constrain prose, which is an argument for (a). Weigh (b) against\nthe risk that a leading-identifier rule mis-parses the multi-line and parenthesized Goals shapes\nthe test fixtures already cover (`plan_r19_multiline_paren_goals.md`, `plan_r18_paren_goals.md`,\n`plan_list_item_goals.md`, `plan_goals_preamble.md`). Whichever is chosen, the stripped-backticks\nworkaround must NOT be the settled answer.\n\nVERIFICATION: extend `scripts/tests/test-lean-plan-compliance-check.sh` and the\n`scripts/tests/fixtures/challenge/` fixture set rather than replacing them. The minimum bar is a\nregression fixture whose Goals block cites a pre-existing lemma and a binder name in prose and\nwhich the check does not fail on.\n\nSCOPE BOUNDARY. Two adjacent open records own the Challenge block's OTHER contracts and must not\nbe edited here: #813 (precedence and snapshot-prerequisite rules for a pinned Challenge block) and\n#824 (making a fixture-dependent gate statement expressible under `lean-challenge-snapshot.sh`).\nThis record owns only the Goals-block harvest-versus-contract disagreement.\n\nEDIT TARGET, binding. Per `rules/source-store-deploy-boundary.md` this repository's `.claude/`\ntree is a gitignored, disposable deploy artifact regenerated from a source store; a hand-authored\nfile under `.claude/**` is silently wiped by the next regeneration -- the edit appears to succeed\nand has no lasting effect. Make every edit under the source store at the path mirroring the\ndeployed one. RE-DERIVE the store rather than trusting this note: `source_dir` lives PER-EXTENSION\nat `.extensions.<name>.source_dir` in `<project-root>/.claude-extensions.json`, not as a\ntop-level key, so a top-level `jq -r '.source_dir'` returning null must NOT be read as the key\nbeing absent. Re-derive with, for example:\n\n  jq -r '.extensions.core.source_dir' .claude-extensions.json\n\nwhich currently yields `/home/benjamin/.config/nvim/agent-system/extensions/core`. If `source_dir`\nis absent or its path does not exist when this task runs, record that as an observation of its own\nrather than silently hand-authoring under `.claude/**`.\n\nNOTE ON file_scope AND THE EXTERNAL STORE. The store is a DIFFERENT git repository\n(`/home/benjamin/.config/nvim/agent-system`), so the `agent-system/extensions/**` entries in this\ntask's declared `file_scope` do not resolve inside this repository and a phase commit here cannot\ncarry them. That mismatch is a known, separately-recorded defect (open backlog record #847) --\nexpect containment drops on those paths and do not treat them as this task's own defect.\n\nPROVENANCE. The citations below are {task number, entry_id} pairs into\n`specs/{NNN}_{SLUG}/issues.jsonl`, readable by `entry_id`; each is reproducible with\n`jq -c 'select(.entry_id==\"<id>\")' specs/{NNN}_{SLUG}/issues.jsonl`. These defects were derived\nfrom the aggregated issue logs of a five-task `/orchestrate` batch run and grouped by class across\ntasks. The orchestrator's conclusion stage classified this record to channel (b) (agent-system\nchange); NO cited entry carries a contrary `suggested_channel` hint -- every one records\n`suggested_channel: null`, verified directly.",
       "effort": "medium",
@@ -8055,7 +8055,7 @@
         "agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"
       ],
       "created": "2026-11-06T06:54:49Z",
-      "last_updated": "2026-11-22T15:52:17Z",
+      "last_updated": "2026-11-22T15:54:05Z",
       "artifacts": [
         {
           "path": "specs/504_lean_goals_block_harvest_contract/reports/01_goals-block-harvest-contract.md",

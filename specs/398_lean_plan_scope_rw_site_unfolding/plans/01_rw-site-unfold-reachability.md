@@ -1,7 +1,7 @@
 # Implementation Plan: Task #398
 
 - **Task**: 398 - lean_plan_scope_rw_site_unfolding
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: 397 (ordering constraint on `agent-system/extensions/lean/index-entries.json` only; no content coupling)
 - **Research Inputs**: specs/398_lean_plan_scope_rw_site_unfolding/reports/01_rw_site_unfolding_reachability.md
@@ -141,45 +141,48 @@ provenance does not belong in a deliverable.
 Phases within the same wave can execute in parallel. Phases 1 and 2 both write
 `index-entries.json` and are deliberately serialized rather than parallelized.
 
-### Phase 1: Land the Worked Example and the Enumerated Unfold-Spelling Probe [NOT STARTED]
+### Phase 1: Land the Worked Example and the Enumerated Unfold-Spelling Probe [IN PROGRESS]
 
 **Goal**: The `## Grep-Based Blast Radius: Cover Unfold Spellings, Not Just Importers` section
 carries the concrete worked example and a runnable, enumerated multi-spelling grep probe, and the
 index entry's coupled `line_count` matches the file's new length.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md`
+- [x] Re-read `agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md`
       in full immediately before editing (a sibling may have touched it; the territory block
-      requires the re-read).
-- [ ] Extend the existing `## Grep-Based Blast Radius...` section in place with the concrete
+      requires the re-read). *(completed)*
+- [x] Extend the existing `## Grep-Based Blast Radius...` section in place with the concrete
       worked example: a fixture file carrying an `rw [<def>]` of the changed definition while not
       being a direct dependent of the defining module; the definitional switch unfolding to a
       different fixed-point representative; the induction lemma unifying through that
       representative into a whnf/kernel heartbeat timeout at the 200000-heartbeat limit; and the
       complete repair set's shape (3 sites across 2 files). Name the originating run as a Lean 4
       orchestration run in a separate repository — never a task number, never a `specs/**` path.
-- [ ] Replace that section's free-text spelling description with an enumerated, runnable probe:
+      *(completed)*
+- [x] Replace that section's free-text spelling description with an enumerated, runnable probe:
       an explicit spelling list plus a short shell loop grepping the whole repository for each,
       in the same give-runnable-code style the four probe shapes already use. Candidate
       enumeration (the implementer may refine the members, but see the count obligation below):
       `rw [name]`, `rw [← name]`, `rw [name] at h`, `simp [name]`, `simp only [name]`,
       `dsimp [name]`, `unfold name`, `unfold_let name`, `delta name`, `show _ from name`, a
       `@[simp]`-triggered unfold of `name`, and a `@[reducible]`-triggered unfold of `name`.
-- [ ] Label the enumeration inline as **reconstructed** from Lean 4's own unfold-triggering
+      *(completed: used the twelve-item candidate list verbatim as the shell array)*
+- [x] Label the enumeration inline as **reconstructed** from Lean 4's own unfold-triggering
       syntax forms rather than transcribed from the originating run's issue log, which is not
-      reachable from this repository. Do not present it as a verbatim list.
-- [ ] Make the prose's stated count and the enumeration's actual length agree. If the refined
+      reachable from this repository. Do not present it as a verbatim list. *(completed)*
+- [x] Make the prose's stated count and the enumeration's actual length agree. If the refined
       list is not twelve items, the prose says the number the list actually has — a number
       asserted in prose that disagrees with its own list is the defect this task exists to avoid
-      reproducing.
-- [ ] Confirm `## Four Probe Shapes` and its four `### Shape N:` headings are byte-identical to
+      reproducing. *(completed: prose says "twelve forms", array has 12 entries — verified
+      mechanically)*
+- [x] Confirm `## Four Probe Shapes` and its four `### Shape N:` headings are byte-identical to
       their pre-edit state, and that the new material sits in the sibling section rather than
-      under that heading.
-- [ ] Re-read the live `wc -l` of the edited file, then update **only** the
+      under that heading. *(completed: grep counts unchanged at 1 and 4 respectively)*
+- [x] Re-read the live `wc -l` of the edited file, then update **only** the
       `project/lean4/patterns/dependency-tracing.md` entry's `line_count` in
       `agent-system/extensions/lean/index-entries.json` with an `Edit` whose `old_string` spans
       the entry's `"path"` and `"line_count"` lines together (that pair is unique; a bare
-      `"line_count": 242` is not).
+      `"line_count": 242` is not). *(completed: 242 -> 286)*
 - [ ] Review `git status --short` and `git diff --staged`, stage the two files by explicit name,
       and commit. If `index-entries.json` carries a hunk for any other entry, stop and report it
       rather than committing it.

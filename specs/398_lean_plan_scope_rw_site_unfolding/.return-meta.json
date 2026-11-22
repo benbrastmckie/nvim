@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/398_lean_plan_scope_rw_site_unfolding/plans/01_rw-site-unfold-reachability.md",
-      "summary": "3-phase plan (1.5h) landing the rw-site worked example and an enumerated unfold-spelling grep probe in dependency-tracing.md, tagging its own index entry with plan-authoring to make it reachable at plan time, then redeploying and verifying the Stage 4 item 13 query end to end."
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 13,
   "metadata": {
-    "session_id": "sess_1795360608_7bb5fd_398",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 3,
-    "estimated_hours": 1.5,
-    "dependency_waves": 3
-  },
-  "memory_candidates": [
-    {
-      "content": "When authoring a plan phase's **Tier Justification**, run suite_selection_select (via verify-touched.sh or by sourcing scripts/lib/suite-selection-lib.sh) ONCE over the phase's entire Files-to-modify set, never per path. A phase mixing a pure-markdown context file with a structured data file (e.g. an extension's index-entries.json) yields a MIXED selector output: the __FULL_SWEEP__ sentinel for the unmapped markdown path alongside real suite basenames for the mapped one. The honest claim in that case names the real suites and omits the sentinel entirely -- the sentinel is a claimable suite name only when it is the selector's ENTIRE output. Composing the claim from per-path runs produces a sentinel-only claim for the markdown path and a union that genuinely disagrees with the single multi-path call.",
-      "category": "PATTERN",
-      "source_artifact": "specs/398_lean_plan_scope_rw_site_unfolding/plans/01_rw-site-unfold-reachability.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["verification-tier", "tier-justification", "suite-selection", "full-sweep-sentinel", "plan-authoring", "verify-touched"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 398 to execute the plan",
-  "dispatch_seq": 8
+    "session_id": "sess_1795360608_7bb5fd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }

@@ -105,12 +105,12 @@ next_project_number: 684
 
 ### Lean Extension
 
-398 [PLANNED] — Record that a grep for dependents misses rw-site definitional...
+398 [IMPLEMENTING] — Record that a grep for dependents misses rw-site definitional...
   └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
-451 [PLANNED] — Take the Lean Challenge snapshot in the plan phase, where it...
+451 [IMPLEMENTING] — Take the Lean Challenge snapshot in the plan phase, where it...
   └─ 462 [NOT STARTED] — Give lean-challenge-snapshot.sh --check a scope limit so a...
 463 [PLANNED] — State that lean\_goal's empty goals\_after is not evidence a...
-504 [PLANNED] — Reconcile the Lean Goals-block harvester with its documented...
+504 [IMPLEMENTING] — Reconcile the Lean Goals-block harvester with its documented...
   └─ 516 [NOT STARTED] — Stop the Lean plan compliance check failing on...
 
 ### Orchestrator
@@ -6942,7 +6942,7 @@ MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_li
 
 ### 504. Reconcile the Lean Goals-block harvester with its documented contract
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
@@ -8906,7 +8906,7 @@ these two existing facilities.
 ---
 
 ### 451. Take the Lean Challenge snapshot in the plan phase, where it is still meaningful, instead of leaving it to an implement phase the status gate correctly refuses
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 385, Task 420, Task 435
@@ -9465,7 +9465,7 @@ line_count there is now stale (claims 31, actual 32).
 
 ### 398. Record that a grep for dependents misses rw-site definitional unfolding, and make that guidance reachable at plan time
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 397

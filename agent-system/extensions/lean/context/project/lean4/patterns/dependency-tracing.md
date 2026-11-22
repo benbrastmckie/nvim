@@ -226,6 +226,50 @@ for each spelling, not just for the defining module's import. An import-only gre
 imports this module"; it does not answer "who unfolds this definition" — and the two sets are
 not the same.
 
+**Worked example** (from a Lean 4 orchestration run in a separate repository; recounted here as
+reported provenance, not transcribed from that repository's own files, which are not reachable
+from this one). A phase switched a definition's form so that it unfolded to a different
+fixed-point representative. A fixture file carried `rw [untlLive]` and was NOT a direct dependent
+of the defining module — a plain-text grep for importers of that module never surfaced it. After
+the switch, that `rw` unfolded through to the new fixed-point representative and made an
+induction lemma unify through it, which drove the kernel/whnf check into a 200000-heartbeat
+timeout. The complete repair set turned out to be three sites across two files — wider than the
+import-grep's blast-radius estimate by exactly the one file the import grep could not see,
+because that file's only connection to the defining module was the unfold spelling, never the
+import graph.
+
+**The actual working recipe**: a repo-wide grep over every spelling that can trigger a
+definitional unfold, run as one loop rather than a single `grep -rln` on the defining name alone.
+The spelling list below is **reconstructed** from Lean 4's own unfold-triggering syntax forms for
+this file — it is not a transcription of the originating run's own issue log, which this
+repository cannot read — and names twelve forms:
+
+```bash
+name="someDef"  # the definition being switched
+spellings=(
+  "rw \[${name}\]"
+  "rw \[← ${name}\]"
+  "rw \[${name}\] at"
+  "simp \[${name}\]"
+  "simp only \[${name}\]"
+  "dsimp \[${name}\]"
+  "unfold ${name}"
+  "unfold_let ${name}"
+  "delta ${name}"
+  "show .* from ${name}"
+  "@\[simp\].*${name}"
+  "@\[reducible\].*${name}"
+)
+for spelling in "${spellings[@]}"; do
+  echo "=== ${spelling} ==="
+  grep -rn --include='*.lean' -E "${spelling}" .
+done
+```
+
+Running the loop above over every spelling, not just the bare defining name, is what actually
+surfaces a caller like the fixture file above: it carries no importer-visible connection to the
+defining module, only an unfold spelling the import-only grep never checks.
+
 ## Usability Without the Originating Repository
 
 Every code block above is a complete, standalone template with placeholder names
