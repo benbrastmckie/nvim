@@ -114,10 +114,12 @@
 # verifier carries check (i)):
 #   (44) An inactive fixture with a capture-enabled matching prefix fails check (i) by name with
 #        exit 1 (synthetic -- no live instance of this direction exists on this machine).
-#   (45) An active fixture with `enabled: false` emits the informational line and does NOT fail.
-#   (46) An active fixture with no matching path_prefix emits the same informational line.
+#   (45) An active fixture with `enabled: false` emits the new lag-tolerant [WARN] (i) line
+#        (never [FAIL] (i)), with exit 0.
+#   (46) An active fixture with no matching path_prefix emits the same [WARN] (i) line.
 #   (47) A nested-prefix fixture (a shorter enabled prefix and a longer disabled one both
 #        matching) resolves to the LONGER entry.
+#   (72) The resolved entry's name still appears in the [WARN] (i) line.
 #
 # Check (j) cases -- postflight tagged-write reachability, against the resolved project's
 # DEPLOYED tree (added once the verifier carries check (j)):
@@ -1399,39 +1401,75 @@ else
   fi
 
   # =====================================================================
-  # Case 45: an active fixture with enabled:false emits the informational line and does NOT
-  # fail check (i).
+  # Case 45: an active fixture with enabled:false emits the new lag-tolerant [WARN] (i) line
+  # (never [FAIL] (i)), and the verifier's own exit status is unaffected (still 0 here --
+  # nothing else in this fixture fails).
   # =====================================================================
   HOME45="$WORKDIR/case45/home"
   PROJ45="$WORKDIR/case45/repo"
-  mkdir -p "$HOME45/.sapience" "$PROJ45"
-  echo '{}' > "$HOME45/.claude.json"
+  mkdir -p "$HOME45/.claude" "$HOME45/.sapience" "$PROJ45"
+  echo '{}' > "$HOME45/.claude/settings.json"
   jq -n --arg p "$PROJ45" '{"capture": {"mode": "opt-in", "projects": [{"path_prefix": $p, "name": "case45", "enabled": false}]}}' > "$HOME45/.sapience/config.json"
   jq -n '{"extensions": {"sapience": {"status": "active", "merged_sections": {"settings": {"hooks": true, "permissions": true}}}}}' > "$PROJ45/.claude-extensions.json"
-
-  OUT45=$(cd "$PROJ45" && HOME="$HOME45" bash "$VERIFIER_SRC" --project "$PROJ45" 2>&1)
-  if printf '%s' "$OUT45" | grep -q 'capture not enabled' && ! printf '%s' "$OUT45" | grep -q '\[FAIL\] (i)'; then
-    pass "Case 45: an active fixture with enabled:false emits the informational line and does not fail check (i)"
+  # Otherwise-all-green fixture (mirrors case 20's recipe) so the ONLY check in play for the
+  # overall exit status below is (i)'s new non-failing WARN, never the now-WARN line itself
+  # masquerading as "still exit 0" while OTHER checks are actually what is failing.
+  if [ -f "$INSTALLER_SRC" ]; then
+    HOME="$HOME45" bash "$INSTALLER_SRC" > /dev/null 2>&1
   else
-    fail "Case 45: expected an informational line and no [FAIL] (i); output=$OUT45"
+    mkdir -p "$HOME45/.claude/hooks" "$HOME45/.claude/scripts"
+    cp "$HOOK_SRC" "$HOME45/.claude/hooks/sapience-mcp-register-project.sh" 2>/dev/null
+    cp "$WRITER_SRC" "$HOME45/.claude/scripts/setup-sapience-mcp.sh" 2>/dev/null
+    chmod +x "$HOME45/.claude/hooks/sapience-mcp-register-project.sh" "$HOME45/.claude/scripts/setup-sapience-mcp.sh" 2>/dev/null
+  fi
+  HOME="$HOME45" bash "$WRITER_SRC" --project "$PROJ45" --scope project > /dev/null 2>&1
+
+  RC45=0
+  OUT45=$(cd "$PROJ45" && HOME="$HOME45" bash "$VERIFIER_SRC" --project "$PROJ45" 2>&1) || RC45=$?
+  if printf '%s' "$OUT45" | grep -q 'capture not enabled' && printf '%s' "$OUT45" | grep -q '\[WARN\] (i)' \
+     && ! printf '%s' "$OUT45" | grep -q '\[FAIL\] (i)' && [ "$RC45" -eq 0 ]; then
+    pass "Case 45: an active fixture with enabled:false emits the new [WARN] (i) line, never [FAIL] (i), with exit 0"
+  else
+    fail "Case 45: expected a [WARN] (i) line, no [FAIL] (i), and exit 0; rc=$RC45 output=$OUT45"
   fi
 
   # =====================================================================
-  # Case 46: an active fixture with no matching path_prefix emits the same informational line.
+  # Case 46: an active fixture with no matching path_prefix emits the same [WARN] (i) line.
   # =====================================================================
   HOME46="$WORKDIR/case46/home"
   PROJ46="$WORKDIR/case46/repo"
   OTHER46="$WORKDIR/case46/other-unrelated-path"
-  mkdir -p "$HOME46/.sapience" "$PROJ46"
-  echo '{}' > "$HOME46/.claude.json"
+  mkdir -p "$HOME46/.claude" "$HOME46/.sapience" "$PROJ46"
+  echo '{}' > "$HOME46/.claude/settings.json"
   jq -n --arg p "$OTHER46" '{"capture": {"mode": "opt-in", "projects": [{"path_prefix": $p, "name": "unrelated", "enabled": true}]}}' > "$HOME46/.sapience/config.json"
   jq -n '{"extensions": {"sapience": {"status": "active", "merged_sections": {"settings": {"hooks": true, "permissions": true}}}}}' > "$PROJ46/.claude-extensions.json"
-
-  OUT46=$(cd "$PROJ46" && HOME="$HOME46" bash "$VERIFIER_SRC" --project "$PROJ46" 2>&1)
-  if printf '%s' "$OUT46" | grep -q 'capture not enabled' && ! printf '%s' "$OUT46" | grep -q '\[FAIL\] (i)'; then
-    pass "Case 46: an active fixture with no matching path_prefix emits the same informational line"
+  if [ -f "$INSTALLER_SRC" ]; then
+    HOME="$HOME46" bash "$INSTALLER_SRC" > /dev/null 2>&1
   else
-    fail "Case 46: expected an informational line and no [FAIL] (i); output=$OUT46"
+    mkdir -p "$HOME46/.claude/hooks" "$HOME46/.claude/scripts"
+    cp "$HOOK_SRC" "$HOME46/.claude/hooks/sapience-mcp-register-project.sh" 2>/dev/null
+    cp "$WRITER_SRC" "$HOME46/.claude/scripts/setup-sapience-mcp.sh" 2>/dev/null
+    chmod +x "$HOME46/.claude/hooks/sapience-mcp-register-project.sh" "$HOME46/.claude/scripts/setup-sapience-mcp.sh" 2>/dev/null
+  fi
+  HOME="$HOME46" bash "$WRITER_SRC" --project "$PROJ46" --scope project > /dev/null 2>&1
+
+  RC46=0
+  OUT46=$(cd "$PROJ46" && HOME="$HOME46" bash "$VERIFIER_SRC" --project "$PROJ46" 2>&1) || RC46=$?
+  if printf '%s' "$OUT46" | grep -q 'capture not enabled' && printf '%s' "$OUT46" | grep -q '\[WARN\] (i)' \
+     && ! printf '%s' "$OUT46" | grep -q '\[FAIL\] (i)' && [ "$RC46" -eq 0 ]; then
+    pass "Case 46: an active fixture with no matching path_prefix emits the same [WARN] (i) line, with exit 0"
+  else
+    fail "Case 46: expected a [WARN] (i) line, no [FAIL] (i), and exit 0; rc=$RC46 output=$OUT46"
+  fi
+
+  # =====================================================================
+  # Case 72: the resolved entry's name still appears in the [WARN] (i) line (case 45's fixture
+  # names its entry 'case45').
+  # =====================================================================
+  if printf '%s' "$OUT45" | grep '\[WARN\] (i)' | grep -q "'case45'"; then
+    pass "Case 72: the resolved entry's name appears in the [WARN] (i) line"
+  else
+    fail "Case 72: expected the resolved entry name 'case45' in the [WARN] (i) line; output=$OUT45"
   fi
 
   # =====================================================================

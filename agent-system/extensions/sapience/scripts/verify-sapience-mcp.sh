@@ -126,6 +126,17 @@ fail() {
     fi
 }
 
+# warn() -- a non-failing, named advisory: unlike fail(), never sets OVERALL_OK=false. Used by
+# check (i)'s active+not-enabled-or-absent outcome, which can legitimately occur on every
+# one-session-start lag or silent hook degradation and must never be a hard failure.
+warn() {
+    if $QUIET; then
+        echo "WARN"
+    else
+        echo "[WARN] $1"
+    fi
+}
+
 # === BEGIN sapience-worktree-checkout-resolution (byte-identical in every copy: this hook,
 # verify-sapience-mcp.sh, sapience-retrieve.sh, sapience-remember.sh, and
 # verify-sapience-context-scoping.sh -- test-sapience-mcp-registration.sh's lockstep case
@@ -426,21 +437,23 @@ log "  (g) ~/.sapience/config.json hooks opt-out value: ${HOOKS_OPT_VALUE}"
 # (or equal to) $EXPECTED_PROJECT_PATH, mirroring ~/.sapience/sapience_capture.py's
 # for_cwd()/match_project() longest-prefix-wins rule (_under(): cwd == prefix, or
 # cwd.startswith(prefix.rstrip('/') + '/')) rather than reinventing a match rule. Four outcomes:
-# active+enabled -> pass; active+not-enabled-or-absent -> informational (never a failure);
+# active+enabled -> pass; active+not-enabled-or-absent -> a lag-tolerant WARN (never a failure);
 # inactive+enabled -> fail (a capture-enabled path whose repository never opted into this
 # extension's grants/hooks); inactive+not-enabled -> silent. An unreadable config.json or one
 # carrying no "capture" key at all is a skip, not a failure.
 #
 # RECONCILIATION RULING (GOAL 2's sub-question, ruled on rather than deferred): this source
-# store stops at this verifier check and does NOT write capture.projects[].enabled from either
-# the SessionStart registration hook or the installer. Two reasons: (1) no script in this
-# extension reads or writes the "capture" key today -- adding a writer here would be new,
-# unreviewed surface, not a fix to an existing one; (2) ~/.dotfiles already owns a capture-map
-# writer, so a second independent writer in this source store would create the
-# two-writers-disagreeing hazard this extension's own Hazards census already warns about for the
-# MCP-registration entry (where byte-identical convergence across writers is deliberately
-# maintained and no equivalent guarantee would exist here). If active reconciliation is built at
-# all, it belongs in ~/.dotfiles -- see per-repo-scoping.md's reconciliation-ruling subsection.
+# store DOES write capture.projects[].enabled now, from the SessionStart registration hook's two
+# bidirectional branches and its ungated reap pass, but exclusively by invoking the vendor's own
+# `sapience projects on|off <path>` CLI (setup-sapience-mcp.sh's --capture-set/--reap-capture
+# actions) -- never by hand-editing ~/.sapience/config.json. The vendor client therefore remains
+# the SOLE writer of that file's "capture" key, under its own lock, exactly mirroring how
+# setup-sapience-mcp.sh is already the sole writer of ~/.claude.json: this extension is a
+# well-behaved CALLER of that one writer, not a second independent one, which is what removes
+# the two-writers-disagreeing hazard the prior ruling here rested on. See
+# per-repo-scoping.md's "Capture/Activation Reconciliation" subsection for the full argument,
+# the one-session-start lag, the sync-backfill and non-retroactive-off caveats, and the
+# `folders` double-gate this check's WARN below names but does not resolve.
 if [ -r "$SAPIENCE_CONFIG" ] && jq -e 'has("capture")' "$SAPIENCE_CONFIG" > /dev/null 2>&1; then
     CAPTURE_MATCH="$(jq -c --arg proj "$EXPECTED_PROJECT_PATH" '
         (.capture.projects // []) as $projects |
@@ -466,7 +479,13 @@ if [ -r "$SAPIENCE_CONFIG" ] && jq -e 'has("capture")' "$SAPIENCE_CONFIG" > /dev
         if [ "$CAPTURE_ENABLED" = "true" ]; then
             pass "(i) sapience extension active and capture enabled for $EXPECTED_PROJECT_PATH (project '$CAPTURE_NAME')"
         else
-            log "  (i) sapience extension active but capture not enabled for $EXPECTED_PROJECT_PATH (resolved entry: '${CAPTURE_NAME:-none}') -- informational only, not a failure"
+            # Deliberately NOT a failure (does not set OVERALL_OK=false): this can legitimately
+            # occur on every one-session-start lag, on a silently-degraded hook (the sapience
+            # binary absent, or the bounded vendor-CLI call timing out), or because capture is
+            # gated a second time by the legacy top-level "folders" list, which
+            # `sapience projects on` never touches -- see per-repo-scoping.md's "folders
+            # double-gate" subsection.
+            warn "(i) sapience extension active but capture not enabled for $EXPECTED_PROJECT_PATH (resolved entry: '${CAPTURE_NAME:-none}') -- one-session-start lag, a silently-degraded hook (absent sapience binary or a timed-out vendor-CLI call), or the folders double-gate; not a failure"
         fi
     else
         if [ "$CAPTURE_ENABLED" = "true" ]; then

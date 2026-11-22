@@ -1,0 +1,18 @@
+{
+  "phase": 4,
+  "phase_name": "Verifier Check (i) Update",
+  "started_at": "2026-11-22T10:45:00Z",
+  "last_updated": "2026-11-22T11:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Rewrite the RECONCILIATION RULING comment", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh"]},
+    {"id": 2, "description": "Change active+not-enabled-or-absent to a non-failing WARN naming the three causes", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh"]},
+    {"id": 3, "description": "Amend cases (45)/(46) and add a resolved-entry-name WARN case (72)", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"]},
+    {"id": 4, "description": "Run full suite", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "amend cases 45/46 by only adding a [ \"$RC\" -eq 0 ] assertion to the existing minimal fixtures (no MCP registration, no installed files, no settings.json)", "result": "failed", "reason": "those fixtures were never all-green to begin with -- checks (b)/(c)/(d) already failed independently of check (i), so the overall exit was always 1 regardless of check (i)'s own outcome. Rebuilt both fixtures using case 20's recipe (real installer + a real writer registration) so the overall exit genuinely reflects only check (i)'s new non-failing WARN behavior."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

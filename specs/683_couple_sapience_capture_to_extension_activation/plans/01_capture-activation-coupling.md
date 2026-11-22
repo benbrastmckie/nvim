@@ -383,33 +383,37 @@ is warranted for the registration half does, and that follow-up is recorded, nev
 
 ---
 
-### Phase 4: Verifier Check (i) Update [NOT STARTED]
+### Phase 4: Verifier Check (i) Update [COMPLETED]
 
 **Goal**: check (i) stops asserting that this source store never writes
 `capture.projects[].enabled`, and reports an active-but-not-enabled repo as a lag-tolerant WARN
 instead of a bare informational line.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh` immediately before
-      editing.
-- [ ] Replace the inline RECONCILIATION RULING comment block above check (i) with the new design:
+- [x] Re-read `agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh` immediately before
+      editing. *(completed)*
+- [x] Replace the inline RECONCILIATION RULING comment block above check (i) with the new design:
       this source store now writes the field, exclusively via `sapience projects on|off` invoked
       from `setup-sapience-mcp.sh`'s `--capture-set`/`--reap-capture` actions, so the extension is
       a caller of the vendor's single writer rather than a second independent writer. Point at
-      `per-repo-scoping.md` for the full argument rather than restating it.
-- [ ] Change the active + not-enabled-or-absent outcome from informational to a WARN that names
+      `per-repo-scoping.md` for the full argument rather than restating it. *(completed)*
+- [x] Change the active + not-enabled-or-absent outcome from informational to a WARN that names
       the three legitimate causes -- the one-session-start lag, a silently-degraded hook (absent
       `sapience` binary, timeout), and the `folders` double-gate -- and does **not** set
       `OVERALL_OK=false`. Use the file's existing reporting helper for warnings if one exists;
       otherwise emit via `log` with an explicit `WARN` prefix and state in a comment that this is
-      deliberately not a failure.
-- [ ] Leave the inactive + enabled FAIL, the active + enabled PASS, the inactive + not-enabled
+      deliberately not a failure. *(completed: added a new warn() helper matching pass()/fail()'s
+      own style, since neither existed before)*
+- [x] Leave the inactive + enabled FAIL, the active + enabled PASS, the inactive + not-enabled
       silence, and the longest-prefix match rule exactly as they are -- the match rule stays the
       reporting-side counterpart to Phase 1's exact-path write decision, and the comment says so.
-- [ ] Amend the existing check (i) cases (45) and (46) to assert the new WARN text and a still-zero
+      *(completed)*
+- [x] Amend the existing check (i) cases (45) and (46) to assert the new WARN text and a still-zero
       exit, and add one case asserting the resolved-entry name still appears in the WARN line.
-      Leave cases (44) and (47) asserting unchanged behavior.
-- [ ] Run the full suite.
+      Leave cases (44) and (47) asserting unchanged behavior. *(completed: cases 45/46 rebuilt as
+      otherwise-all-green fixtures per case 20's recipe so "still-zero exit" is a genuine overall
+      exit 0, not merely check (i)'s own non-contribution to a nonzero exit; new case 72)*
+- [x] Run the full suite. *(completed: 75 passed, 0 failed)*
 
 **Timing**: 1.5 hours
 
