@@ -6,7 +6,7 @@
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
-| [M2: Sapience linked projects and collaborator access](#milestone-m2) | planned | 3/5 | none |
+| [M2: Sapience linked projects and collaborator access](#milestone-m2) | planned | 4/5 | none |
 | [M1: Current work](#milestone-m1) | active | 8/127 | none |
 
 See also: [Rules, conventions and repo context](#roadmap-context)
@@ -16,16 +16,16 @@ See also: [Rules, conventions and repo context](#roadmap-context)
 
 Make a repository bindable to a shared Sapience project and workable by a second person: bind and register the repo, resolve every automatic write and read through the link, rule the linked-repo write policy, and keep the token out of the per-project MCP entry.
 
-- **Progress**: planned -- 0/1 batches, 3/5 tasks done -- Raised ahead of the legacy backlog on operator request; nothing dispatched yet.
+- **Progress**: planned -- 0/1 batches, 4/5 tasks done -- Raised ahead of the legacy backlog on operator request; nothing dispatched yet.
 - **Review**: none
 - **Gate**: A collaborator with their own account and a plain Claude Code install goes from a fresh clone of a linked repo to a verified project note without help; every automatic write and retrieval resolves the linked project rather than a directory-name label; no registered MCP entry carries the Sapience token.
 
-**Batch 1** -- Make the link decide every Sapience write, read and policy, and keep the token out of the entry (3/5 done)
+**Batch 1** -- Make the link decide every Sapience write, read and policy, and keep the token out of the entry (4/5 done)
 
 ```
-/orchestrate 677, 679 --hard
-677 PARTIAL         sapience_automatic_writes_and_retrieval_by_project_id
-679 blocked:677     sapience_collaborator_setup_for_plain_claude_code
+/orchestrate 679 --hard
+679 ready           sapience_collaborator_setup_for_plain_claude_code
+677 done            sapience_automatic_writes_and_retrieval_by_project_id
 678 done            sapience_linked_repo_write_and_capture_policy
 681 done            sapience_bind_existing_project_and_register_repo
 682 done            sapience_mcp_entry_carries_no_token
@@ -371,7 +371,6 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 
 ```
 498 HOLD            Replace the email preference harvest tally substrate
-683 IN FLIGHT       couple_sapience_capture_to_extension_activation
 669 blocked:517,668 Add integration-branch admission, the isolation declaration, and idempotent b...
 670 blocked:513,553,669  Build the two-root contract in the dispatch composer and the commit scripts
 671 blocked:668,669 Make the write-time and git-guard hooks two-root aware
@@ -384,4 +383,5 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 666 ready           re_site_branch_aware_batch_after_prerequisites
 668 ready           Measure Claude Code harness behaviour for a worktree outside the project dire...
 680 ready           gate_cache_key_in_deployed_repos
+683 ready           couple_sapience_capture_to_extension_activation
 ```
