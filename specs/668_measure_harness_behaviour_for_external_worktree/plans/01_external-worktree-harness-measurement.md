@@ -1,7 +1,7 @@
 # Implementation Plan: Task #668
 
 - **Task**: 668 - Measure Claude Code harness behaviour for a worktree outside the project directory
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.5 hours
 - **Dependencies**: 667
 - **Research Inputs**: specs/668_measure_harness_behaviour_for_external_worktree/reports/01_external-worktree-harness-measurement.md

@@ -2325,12 +2325,12 @@
     {
       "project_number": 668,
       "project_name": "measure_harness_behaviour_for_external_worktree",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Measure Claude Code harness behaviour for a worktree outside the project directory",
       "topic": "orchestrator",
       "created": "2026-11-20T20:17:06Z",
-      "last_updated": "2026-11-22T22:39:04Z",
+      "last_updated": "2026-11-22T22:54:13Z",
       "session_id": "sess_1795385635_7a23a6",
       "dependencies": [
         667
@@ -2351,6 +2351,11 @@
           "path": "specs/668_measure_harness_behaviour_for_external_worktree/plans/01_external-worktree-harness-measurement.md",
           "type": "plan",
           "summary": "Three-phase closure plan (waves: 1,2 parallel then 3); all edits under specs/**, no agent-system/** edit and no redeploy."
+        },
+        {
+          "path": "specs/668_measure_harness_behaviour_for_external_worktree/summaries/01_external-worktree-harness-measurement-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary: precondition discharge and measurement-record closure, both decision records committed."
         }
       ],
       "description": "Measure Claude Code harness behaviour for a worktree outside the project directory\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.\n\nRULING THIS TASK BUILDS: specs/decisions/batch-worktree-isolation-and-task-squash-landing.md (the amending record). Read the sections named below before planning; they are cited, not restated, and the record wins over this description wherever the two differ. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md (the research report; if its task directory has been archived, find it by filename under specs/archive/).\n\nSTANDING CONSTRAINTS: (1) every behaviour built here must hold in a repository with isolation declared off (worktree_isolation undeclared or `off`), where no worktree and no batch branch exist; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both of which sit at their byte ceilings -- mechanics go in scripts and the dispatch composer; (3) repo-agnostic: no literal branch name and no consumer-repo path in any deliverable; (4) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.\n\nWHY: the amending record's R2 sites the batch worktree outside the repository, in a per-user state directory. That siting rests on four harness behaviours no dispatched agent could measure. They are a named precondition (record section \"Measured precondition\"), and every two-root task waits on this one.\n\nMEASURE, in a live session, against a scratch repository with a real `git worktree` at a path outside the project directory:\n1. Whether the file tools (Read, Edit, Write) prompt, refuse, or proceed for a path there, in each permission mode this system dispatches under.\n2. Whether path-scoped rules (`.claude/rules/*.md` `paths:` frontmatter) apply to files there.\n3. What working directory a hook process receives, and what path a PreToolUse/PostToolUse payload carries for a file there.\n4. What working directory a subagent starts in, and whether it resets between Bash calls to the project directory or to the worktree.\n\nDELIVERABLE: a measurement record under specs/decisions/ stating each result with the exact command or tool call that produced it. If any result refutes the siting, append a dated `**Amended by**` note to the amending record's R2 and \"Measured precondition\" sections ruling the changed siting. A refuting result is NOT worked around in a script, by a symlink, or by moving the worktree inside the repository.\n\nPARTS OF THIS MAY NEED THE USER AT THE KEYBOARD: permission prompts and interactive-mode behaviour cannot be observed from a dispatched subagent. State plainly in the record which results were measured by an agent and which were supplied by the user, and return a `user_decision` rather than guessing where a measurement could not be taken.\n\nThis task edits no script. It builds nothing under agent-system/**.\n\nVERIFICATION CRITERIA THIS TASK OWNS: none of the originating task's running-behaviour criteria; its own criterion is stated in the body above.",
@@ -2574,7 +2579,8 @@
           "semantic": true
         },
         "degradations_count": 43
-      }
+      },
+      "completion_summary": "Discharged `batch-worktree-isolation-and-task-squash-landing.md`'s 'Measured precondition' with a dated `**Discharged by**` note citing `external-worktree-harness-behaviour.md`, and closed that measurement record against its own stated criterion (exact-call appendix, explicit agent-measured/user-supplied attribution, named Residuals section). Both decision records are tracked and committed; no result refuted the siting, so no `**Amended by**` note was added anywhere."
     },
     {
       "project_number": 666,

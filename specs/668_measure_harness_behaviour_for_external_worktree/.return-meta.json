@@ -21,7 +21,14 @@
       "category": "PATTERN",
       "source_artifact": "specs/668_measure_harness_behaviour_for_external_worktree/summaries/01_external-worktree-harness-measurement-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["decision-record", "measured-precondition", "amended-by", "discharge-note", "successor-visibility", "grep-count-pitfall"]
+      "suggested_keywords": [
+        "decision-record",
+        "measured-precondition",
+        "amended-by",
+        "discharge-note",
+        "successor-visibility",
+        "grep-count-pitfall"
+      ]
     }
   ],
   "sapience_notes": [
@@ -88,7 +95,11 @@
     "session_id": "sess_1795385635_7a23a6",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
   }
