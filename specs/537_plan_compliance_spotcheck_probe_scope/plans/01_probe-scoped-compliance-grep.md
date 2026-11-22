@@ -2,7 +2,7 @@
 
 - **Task**: 537 - lean-implementation-agent's plan-compliance spot-check does not search
   plan-pinned evidence-probe locations outside `lean-src-roots.sh`'s roots
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/537_plan_compliance_spotcheck_probe_scope/reports/01_plan-compliance-probe-scope.md

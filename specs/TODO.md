@@ -13,7 +13,7 @@ next_project_number: 684
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,455,456,462,475,477,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,537,539,542,545,548,549,550,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,679,680 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,455,456,462,475,477,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,548,549,550,551,556,557,559,560,563,565,567,574,575,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,679,680 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,439,457,472,474,479,481,484,509,517,523,533,535,540,544,546,552,566,570,576,583,592,593,598,605,609,630 | 383,390,410,431,438,452,453,455,477,511,519,539,542,548,549,556,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,492,513,518,541,561,588,594,669 | 439,472,479,491,509,517,535,552,593,668 | core-agent-system, orchestrator, agent-system |
 | 4 | 486,571,581,595,641,671 | 454,484,492,518,539,541,561,580,594,669 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
@@ -141,7 +141,6 @@ next_project_number: 684
 512 [PLANNED] — Exempt built-in commands from the dead-command-recommendation...
 529 [NOT STARTED] — Evaluate whether formal:logic implement routing should...
 530 [NOT STARTED] — Land the three agent-system context extensions recorded by...
-537 [IMPLEMENTING] — Plan-compliance spot-check misses evidence-probe-scoped Goals
 539 [NOT STARTED] — State the precedence and snapshot-prerequisite rules for a...
   └─ 540 [NOT STARTED] — Record five measured lean4 facts: the decide-synthesis...
   └─ 544 [NOT STARTED] — Make a fixture-dependent Lean gate statement expressible and...
@@ -5464,12 +5463,13 @@ as a number resolving to an unrelated record here.
 
 ### 537. Plan-compliance spot-check misses evidence-probe-scoped Goals
 - **Effort**: low
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
 - **Research**: [537_plan_compliance_spotcheck_probe_scope/reports/01_plan-compliance-probe-scope.md]
 - **Plan**: [537_plan_compliance_spotcheck_probe_scope/plans/01_probe-scoped-compliance-grep.md]
+- **Summary**: [537_plan_compliance_spotcheck_probe_scope/summaries/01_probe-scoped-compliance-grep-summary.md]
 
 **Description**: lean-implementation-agent's Final Verification Stage step 5 ('Plan compliance spot-check'; source: agent-system/extensions/lean/agents/lean-implementation-agent.md) greps the plan's Goal names ONLY under the roots returned by lean-src-roots.sh (FormalSystem, Tests, BimodalTools; source: agent-system/extensions/lean/scripts/lean-src-roots.sh). Plans following this repository's evidence-probe convention pin their Goals in specs/evidence/**/*.lean, outside those roots. On one such plan the literal check reported 8 of 8 Goals MISSING while a probe-scoped grep found 8 of 8 present at their pinned signatures; the agent recorded both readings in .return-meta.json and set compliance_check from the plan-named location rather than the heuristic's scope. So the heuristic produced a FALSE FAILURE that had to be overridden by hand -- and an uncorrected one would have forced status 'partial' via the stage's own rule ('If failed, set status: partial'), and would have been surfaced at GATE OUT by the skill's Stage 6b read of metadata.compliance_check. Note the replacement-target integrity sub-check in the same code block greps the same "${lean_roots[@]}" scope and inherits the identical blind spot. Deliverable: have the spot-check derive its grep scope from the PLAN itself -- the plan's Files-to-modify list, or the Challenge snapshot manifest -- unioned with (not substituted for) the resolved source roots, so both in-tree and probe-scoped Goals are found; apply the same widened scope to the replacement-target sub-check; leave step 0's resolve-or-abort posture and the roots-only consumers elsewhere in the stage (sorry census, axiom and vacuity checks, build) unchanged. Originating observation: specs/775_residue_index_factorization_lemma/issues.jsonl entry iss_1791842368633_NJQxnS (class: tooling bug or gap, severity minor, resolution worked_around). SCOPE NOTE: the edit target is the source store under ~/.config/nvim/agent-system/extensions/lean/, never the deployed .claude/ tree (see .claude/rules/source-store-deploy-boundary.md).
 

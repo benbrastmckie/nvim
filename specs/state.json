@@ -12425,7 +12425,7 @@
     },
     {
       "project_name": "plan_compliance_spotcheck_probe_scope",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Plan-compliance spot-check misses evidence-probe-scoped Goals",
       "description": "lean-implementation-agent's Final Verification Stage step 5 ('Plan compliance spot-check'; source: agent-system/extensions/lean/agents/lean-implementation-agent.md) greps the plan's Goal names ONLY under the roots returned by lean-src-roots.sh (FormalSystem, Tests, BimodalTools; source: agent-system/extensions/lean/scripts/lean-src-roots.sh). Plans following this repository's evidence-probe convention pin their Goals in specs/evidence/**/*.lean, outside those roots. On one such plan the literal check reported 8 of 8 Goals MISSING while a probe-scoped grep found 8 of 8 present at their pinned signatures; the agent recorded both readings in .return-meta.json and set compliance_check from the plan-named location rather than the heuristic's scope. So the heuristic produced a FALSE FAILURE that had to be overridden by hand -- and an uncorrected one would have forced status 'partial' via the stage's own rule ('If failed, set status: partial'), and would have been surfaced at GATE OUT by the skill's Stage 6b read of metadata.compliance_check. Note the replacement-target integrity sub-check in the same code block greps the same \"${lean_roots[@]}\" scope and inherits the identical blind spot. Deliverable: have the spot-check derive its grep scope from the PLAN itself -- the plan's Files-to-modify list, or the Challenge snapshot manifest -- unioned with (not substituted for) the resolved source roots, so both in-tree and probe-scoped Goals are found; apply the same widened scope to the replacement-target sub-check; leave step 0's resolve-or-abort posture and the roots-only consumers elsewhere in the stage (sorry census, axiom and vacuity checks, build) unchanged. Originating observation: specs/775_residue_index_factorization_lemma/issues.jsonl entry iss_1791842368633_NJQxnS (class: tooling bug or gap, severity minor, resolution worked_around). SCOPE NOTE: the edit target is the source store under ~/.config/nvim/agent-system/extensions/lean/, never the deployed .claude/ tree (see .claude/rules/source-store-deploy-boundary.md).\n\n=== MIGRATION PROVENANCE (appended on migration; every line above this marker is the record verbatim) ===\nMigrated from the BimodalLogic repository, where this record was #780 (project_name `plan_compliance_spotcheck_probe_scope`), on 2026-11-08, under the ruling that all meta records live in this repository, following\ncontext/patterns/cross-repo-task-migration.md.\n\nCITATION RESOLVABILITY (procedure step 3, discharged by repo-qualified absolute path): the 1 iss_* id(s) cited above resolve ONLY in the source repository. Resolve with:\n  grep -l '<iss_id>' /home/benjamin/Projects/BimodalLogic/specs/*/issues.jsonl\nRead every bare specs/... path above as repo-qualified to /home/benjamin/Projects/BimodalLogic/.\nFILE SCOPE (procedure step 6, DERIVED): this record declared none, or declared only deployed paths. The scope\nabove was derived from the edit targets its own text names, and each path was verified to exist in this\nrepository before being written.\nPARENT: source-repository parent #775 did not migrate; recorded as provenance rather than\nas a number resolving to an unrelated record here.\n",
@@ -12443,11 +12443,16 @@
           "path": "specs/537_plan_compliance_spotcheck_probe_scope/plans/01_probe-scoped-compliance-grep.md",
           "type": "plan",
           "summary": "3-phase plan: widen the two per-name lookup functions' grep scope (Phase 1), pin the widened/preserved scopes and the fail-soft fallback with six regression cases (Phase 2), regenerate the deployed tree and defer the complete gate set to the orchestration close (Phase 3)."
+        },
+        {
+          "path": "specs/537_plan_compliance_spotcheck_probe_scope/summaries/01_probe-scoped-compliance-grep-summary.md",
+          "type": "summary",
+          "summary": "All 3 plan phases completed: widened the per-name lookup scope, pinned it with 6 regression cases, and regenerated the deployed tree."
         }
       ],
       "project_number": 537,
       "created": "2026-10-12T22:12:31Z",
-      "last_updated": "2026-11-22T18:05:00Z",
+      "last_updated": "2026-11-22T18:26:18Z",
       "file_scope": [
         "__WHOLE_TREE__",
         "agent-system/extensions/lean/agents/lean-implementation-agent.md",
@@ -12467,7 +12472,8 @@
       },
       "audit_override": "cross-repo relocation of 34 already-created, already-audited meta records out of BimodalLogic, under the user ruling that all meta records live in this repository; these are not new proposals. audit-task-proposals.sh cannot run over this corpus: jq argv overflow at 24 and at 3-per-chunk, the defect closed task 858 did not fix.",
       "session_id": "sess_1795360608_7bb5fd",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Widened lean-plan-compliance-check.sh's find_decl_files/find_field_files to search the resolved Lean source roots unioned with the plan's own declared paths (Files-to-modify harvest plus Challenge manifest join) under must-exist polarity, fixing the false-failure spot-check reported in iss_1791842368633_NJQxnS; the replacement_targets integrity sweep inherits the widening automatically. Pinned with 6 new regression cases and redeployed; suite is 28 passed/0 failed from both the source store and the deployed tree."
     },
     {
       "project_number": 539,

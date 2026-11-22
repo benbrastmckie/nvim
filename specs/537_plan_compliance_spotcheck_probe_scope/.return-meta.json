@@ -1,9 +1,100 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 18,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/537_plan_compliance_spotcheck_probe_scope/summaries/01_probe-scoped-compliance-grep-summary.md",
+      "summary": "All 3 plan phases completed: widened lean-plan-compliance-check.sh's per-name lookup scope to union the resolved Lean source roots with the plan's own harvested Files-to-modify paths and Challenge manifest join (must-exist polarity only), pinned the behavior with 6 new regression cases (renumbered C23-C28), and regenerated the deployed tree. Suite: 28 passed, 0 failed, both source-store and deployed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Widened lean-plan-compliance-check.sh's find_decl_files/find_field_files to search the resolved Lean source roots unioned with the plan's own declared paths (Files-to-modify harvest plus Challenge manifest join) under must-exist polarity, fixing the false-failure spot-check reported in iss_1791842368633_NJQxnS; the replacement_targets integrity sweep inherits the widening automatically. Pinned with 6 new regression cases and redeployed; suite is 28 passed/0 failed from both the source store and the deployed tree."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh",
+    "agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a resolution ladder (env override + N fallback rungs, following lean-comparator-run.sh's env-override-with-sibling-default precedent) must also support a deliberate fail-soft test seam (set the override to a nonexistent path to simulate full unresolvability), an explicitly-set override must be TERMINAL -- used if readable, else treated as unresolved outright, never falling through to the remaining rungs. A uniform existence-checked cascade that treats the override as just another rung silently defeats the test seam whenever a later rung (e.g. a source-store sibling-extension path) happens to resolve, which is exactly the case where the test is most needed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/537_plan_compliance_spotcheck_probe_scope/summaries/01_probe-scoped-compliance-grep-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "env override",
+        "resolution ladder",
+        "fail-soft",
+        "test seam",
+        "bash BASH_SOURCE sibling default"
+      ]
+    },
+    {
+      "content": "A grep-based plan-compliance or declaration-presence check that scopes its search to a fixed set of resolved source roots can be widened to also cover plan-pinned evidence-probe locations by unioning in paths harvested from the plan's own 'Files to modify' field (via plan-file-scope-harvest.sh) plus an optional Challenge-manifest project_root+challenge_path join -- both derived from the existing plan_file argument, gated on jq, and fully fail-soft on every failure mode (no jq, unresolvable harvester, non-zero/empty harvest, absent/unparseable manifest). Apply such a widening only under the check's 'must exist' polarity, never under a 'must be absent' (refutation) polarity, since a refutation plan's own evidence probe routinely pins the very identifier that must be absent -- widening it in would manufacture the mirror false failure.",
+      "category": "PATTERN",
+      "source_artifact": "specs/537_plan_compliance_spotcheck_probe_scope/summaries/01_probe-scoped-compliance-grep-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "plan-file-scope-harvest.sh",
+        "search scope widening",
+        "fail-soft",
+        "polarity-conditioned",
+        "Challenge manifest join"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "lean-plan-compliance-check.sh harvester-resolution ladder",
+      "value": "An explicitly-set LEAN_PLAN_COMPLIANCE_HARVESTER override must be treated as terminal (used if readable, else fail-soft outright) rather than as one more existence-checked rung in a 4-rung cascade -- the latter silently defeats the deliberate fail-soft test seam (override pointed at a nonexistent path) whenever a later rung (the source-store sibling-extension path) happens to resolve, which during this task's own implementation it always did when run from the source store.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh"
+    },
+    {
+      "subject": "verify-touched.sh mid-implementation, before a redeploy",
+      "value": "Measured directly: running verify-touched.sh against a source-store script path before deploy-headless.sh has redeployed it runs against the STALE deployed copy (mode: deployed), not the source-store edits just made. Its green exit does not validate the source-store change; the suite must be run directly against the source-store file for ground truth until the phase that redeploys actually runs.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.9,
+      "source_loc": ".claude/scripts/verify-touched.sh"
+    },
+    {
+      "subject": "test-lean-plan-compliance-check.sh suite baseline drift from a concurrent sibling task",
+      "value": "A plan's plan-time-measured suite baseline (19 passed, 0 failed) had drifted to 22 passed/0 failed by implement time because sibling task #504, declaring the same two files in its own file_scope this same cycle, had already landed two more cases (C21, C22) in the interim -- a concrete, realized instance of the exact territory-overlap risk the plan's own Risk table had flagged in advance.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"
+    },
+    {
+      "subject": "plan-file-scope-harvest.sh's deployed-tree and unexpanded-variable refusals",
+      "value": "plan-file-scope-harvest.sh reports a refused .claude/-prefixed or unexpanded-$VAR-shaped harvested path via a single stderr warning naming the entry and the governing rule, but never signals the refusal through its exit code -- a refusal is folded into the returned JSON array's omission, not an error. A downstream read-only consumer of this harvest (as opposed to the file_scope-declaration-time consumer the refusal exists for) should redirect this stderr to /dev/null rather than let it leak into its own output.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/plan-file-scope-harvest.sh"
+    },
+    {
+      "subject": "comparator-gate Preflight 4's solution_module derivation",
+      "value": "lean-implementation-agent.md step 6's Preflight 4 (deriving solution_module from a manifest's theorem_names) carries the identical roots-only scope limitation this task fixed in the plan-compliance spot-check, via its own separate inline grep over \"${lean_roots[@]}\" rather than reusing find_decl_files. A plan pinning Goals in an evidence-probe location and also opting into --compare would still hit comparator_solution_module_unresolved. Deliberately left unfixed (plan Non-Goals); recorded as a follow-up candidate.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/lean/agents/lean-implementation-agent.md"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795360608_7bb5fd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }
