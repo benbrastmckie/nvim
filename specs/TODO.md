@@ -196,7 +196,7 @@ next_project_number: 684
 
 ### Decidability
 
-557 [PLANNING] — Record the half-line test as a lean4 context pattern note
+557 [PLANNED] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
 
@@ -3623,10 +3623,11 @@ repository numbering space and is recorded here as provenance.
 
 ### 557. Record the half-line test as a lean4 context pattern note
 - **Effort**: small
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: decidability
 - **Dependencies**: None
+- **Plan**: [557_half_line_test_context_note/plans/01_half-line-test-context-note.md]
 
 **Description**: Record the half-line test as a durable lean4 context note: given a proposed transport or index condition, name the half-line the counter is read from and the half-line the formula is read from; if both are forward, the proposal is already decided by the recorded refutation mechanism and needs no fresh probe. This is the reusable product of the one-sided open-modal probe, whose six-mechanism survival analysis lives in specs/evidence/seam-gluing-ray-product/one-sided-count-move-refutation.lean. SOURCE-STORE BOUNDARY: author under the source_dir resolved from .claude-extensions.json, at the path mirroring context/project/lean4/patterns/, never hand-authored under .claude/**. Keep it a test an agent can apply in one reading.
 

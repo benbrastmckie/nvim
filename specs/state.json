@@ -12882,19 +12882,31 @@
       "title": "Record the half-line test as a lean4 context pattern note",
       "description": "Record the half-line test as a durable lean4 context note: given a proposed transport or index condition, name the half-line the counter is read from and the half-line the formula is read from; if both are forward, the proposal is already decided by the recorded refutation mechanism and needs no fresh probe. This is the reusable product of the one-sided open-modal probe, whose six-mechanism survival analysis lives in specs/evidence/seam-gluing-ray-product/one-sided-count-move-refutation.lean. SOURCE-STORE BOUNDARY: author under the source_dir resolved from .claude-extensions.json, at the path mirroring context/project/lean4/patterns/, never hand-authored under .claude/**. Keep it a test an agent can apply in one reading.\n\n=== MIGRATION PROVENANCE (appended on migration; every line above this marker is the record verbatim) ===\nMigrated from the BimodalLogic repository, where this record was #863 (project_name `half_line_test_context_note`), on 2026-11-08, under the ruling that all meta records live in this repository, following\ncontext/patterns/cross-repo-task-migration.md.\n\nCITATION RESOLVABILITY (procedure step 3): no iss_* ids cited; nothing to re-point.\nFILE SCOPE (procedure step 7): deployed .claude/** mirror entries were stripped as a consequence of the move,\nnot as a correction -- they were declared so the source repository overlap gate could see a collision\nsurface, and that rationale does not survive into this repository.\nPARENT: source-repository parent #855 did not migrate; recorded as provenance rather than\nas a number resolving to an unrelated record here.\n",
       "file_scope": [
-        "agent-system/extensions/lean/context/patterns/half-line-test.md"
+        "__WHOLE_TREE__",
+        "agent-system/extensions/lean/EXTENSION.md",
+        "agent-system/extensions/lean/context/patterns/half-line-test.md",
+        "agent-system/extensions/lean/context/project/lean4/README.md",
+        "agent-system/extensions/lean/context/project/lean4/domain/ladder-counter-observables.md",
+        "agent-system/extensions/lean/context/project/lean4/patterns/half-line-test.md",
+        "agent-system/extensions/lean/index-entries.json"
       ],
       "project_number": 557,
       "project_name": "half_line_test_context_note",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "effort": "small",
       "parent_task": null,
       "topic": "decidability",
       "dependencies": [],
       "created": "2026-11-05T02:10:19Z",
-      "last_updated": "2026-11-22T15:19:12Z",
-      "artifacts": [],
+      "last_updated": "2026-11-22T15:35:01Z",
+      "artifacts": [
+        {
+          "path": "specs/557_half_line_test_context_note/plans/01_half-line-test-context-note.md",
+          "type": "plan",
+          "summary": "Four-phase plan: ground claims and baseline, author the note, register and cross-link it, redeploy with scoped verification deferring the complete gate set to the orchestration close."
+        }
+      ],
       "migrated_from": {
         "repo": "BimodalLogic",
         "project_number": 863,
@@ -12906,7 +12918,7 @@
         "migrated": "2026-11-08"
       },
       "audit_override": "cross-repo relocation of 34 already-created, already-audited meta records out of BimodalLogic, under the user ruling that all meta records live in this repository; these are not new proposals. audit-task-proposals.sh cannot run over this corpus: jq argv overflow at 24 and at 3-per-chunk, the defect closed task 858 did not fix.",
-      "session_id": "sess_1795360608_7bb5fd_557"
+      "session_id": "sess_1795360608_7bb5fd"
     },
     {
       "project_number": 559,
