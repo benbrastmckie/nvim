@@ -265,24 +265,24 @@ verified inventory of every place the token is written on this machine.
 
 ---
 
-### Phase 5: Migrate the live entries and verify end to end [NOT STARTED]
+### Phase 5: Migrate the live entries and verify end to end [COMPLETED]
 
 **Goal**: Reach the task's done condition on the real machine: no project entry in
 `~/.claude.json` holds the token, the MCP server still authenticates, and the verifier fails on
 a regression.
 
 **Tasks**:
-- [ ] Re-check `git status --short` for foreign modifications from sibling 683 before any whole-tree action; stop and report rather than proceeding if any are present.
-- [ ] Re-run `bash agent-system/extensions/sapience/scripts/install-sapience-mcp-session-hook.sh --dry-run` first, then without the flag, **from the source store**, so the edited writer reaches `$HOME/.claude/scripts/setup-sapience-mcp.sh` — the copy the SessionStart hook actually invokes. A source-store edit alone does not reach production.
-- [ ] Back up `~/.claude.json` to a `0600` file before mutating it, noting that the backup contains the token in plaintext and must not outlive this phase.
-- [ ] Enumerate every project path whose entry carries `env.SAPIENCE_TOKEN` (observed: 6 of 6 project-scoped sapience entries) and drive the installed writer over each with `--scope project --project <path>`, rather than waiting for six separate SessionStart registrations.
-- [ ] Assert the done condition by value, not by key: no string anywhere under `.projects` in `~/.claude.json` equals the configured token, and no entry has an `env.SAPIENCE_TOKEN` key.
-- [ ] Confirm the server still authenticates with the variable absent: the stripped-environment `--statusline` probe prints a real line rather than `sapience: set token`, and the stdio `initialize` handshake returns a `result`. Re-run the Phase 1 probes against the post-migration state rather than trusting the pre-migration measurement.
-- [ ] Run `verify-sapience-mcp.sh` against this repository and confirm check (b) passes on the real, now token-free entry.
-- [ ] Confirm the verifier fails on a regression: reintroduce the token into one throwaway fixture entry and confirm exit 1 with a `[FAIL] (b)` line naming the remedy.
-- [ ] Remove the `~/.claude.json` backup once the above all pass, and confirm it is gone.
-- [ ] Redeploy so the deployed tree stops diverging from the edited source store (the dispatch reports `.claude/` as stale for the sapience extension), which also auto-repairs Phase 4's `index-entries.json` `line_count`: `timeout 540 bash .claude/scripts/deploy-headless.sh`, invoked with the Bash tool's `timeout` raised to 600000 per the bounded-wait idiom.
-- [ ] Record the completion of each item (1)-(6) against its evidence, including item (6)'s inventory result.
+- [x] Re-check `git status --short` for foreign modifications from sibling 683 before any whole-tree action; stop and report rather than proceeding if any are present. *(completed: only sibling-task specs/** edits present, none touching this task's territory; proceeded)*
+- [x] Re-run `bash agent-system/extensions/sapience/scripts/install-sapience-mcp-session-hook.sh --dry-run` first, then without the flag, **from the source store**, so the edited writer reaches `$HOME/.claude/scripts/setup-sapience-mcp.sh` — the copy the SessionStart hook actually invokes. A source-store edit alone does not reach production. *(completed: dry-run previewed two file copies, live run copied both; diff against source-store writer now empty)*
+- [x] Back up `~/.claude.json` to a `0600` file before mutating it, noting that the backup contains the token in plaintext and must not outlive this phase. *(completed: 0600 timestamped backup taken before first mutation)*
+- [x] Enumerate every project path whose entry carries `env.SAPIENCE_TOKEN` (observed: 6 of 6 project-scoped sapience entries) and drive the installed writer over each with `--scope project --project <path>`, rather than waiting for six separate SessionStart registrations. *(completed: 6 of 6 enumerated and migrated)*
+- [x] Assert the done condition by value, not by key: no string anywhere under `.projects` in `~/.claude.json` equals the configured token, and no entry has an `env.SAPIENCE_TOKEN` key. *(completed: both jq assertions return 0)*
+- [x] Confirm the server still authenticates with the variable absent: the stripped-environment `--statusline` probe prints a real line rather than `sapience: set token`, and the stdio `initialize` handshake returns a `result`. Re-run the Phase 1 probes against the post-migration state rather than trusting the pre-migration measurement. *(completed: both probes re-run post-migration with env -i; authenticated reply and a well-formed `result` both observed)*
+- [x] Run `verify-sapience-mcp.sh` against this repository and confirm check (b) passes on the real, now token-free entry. *(completed: full verifier run, all checks including (b) PASS)*
+- [x] Confirm the verifier fails on a regression: reintroduce the token into one throwaway fixture entry and confirm exit 1 with a `[FAIL] (b)` line naming the remedy. *(completed: discharged via Phase 3's own fixture-based Cases 54/55a/55b in test-sapience-mcp-registration.sh, re-run in this phase as part of the full 58/58-case suite pass — a sentinel token, never the live one)*
+- [x] Remove the `~/.claude.json` backup once the above all pass, and confirm it is gone. *(completed: backup removed and absence confirmed)*
+- [x] Redeploy so the deployed tree stops diverging from the edited source store (the dispatch reports `.claude/` as stale for the sapience extension), which also auto-repairs Phase 4's `index-entries.json` `line_count`: `timeout 540 bash .claude/scripts/deploy-headless.sh`, invoked with the Bash tool's `timeout` raised to 600000 per the bounded-wait idiom. *(completed: deploy-headless.sh landed clean, 41 checks 0 failures; deployed writer now byte-identical to source store; line_count already correct from Phase 4, confirmed unchanged at 618)*
+- [x] Record the completion of each item (1)-(6) against its evidence, including item (6)'s inventory result. *(completed: recorded via issue-record.sh kind:win, and in this phase's progress file/handoff; item (6)'s token-location inventory reconfirmed non-world-readable: config.json + 3 backups, both sf1-hub-ben files, and ~/.claude.json itself all 0600 owner-only; /run/secrets/sapience_token 0400 owner-only; secrets.yaml git-tracked but sops-encrypted, owned by ~/.dotfiles)*
 
 **Timing**: 1 hour
 
@@ -308,15 +308,15 @@ a regression.
 
 ## Testing & Validation
 
-- [ ] All five Phase 1 probes resolve the token from `config.json` with `SAPIENCE_TOKEN` unset, recorded per shape.
-- [ ] `test-sapience-mcp-registration.sh` passes in full, including existing Cases 1, 2, 3, 7, 20, 22 and both new cases.
-- [ ] The new positive case fails when Phase 2's writer change is temporarily reverted, proving it discriminates.
-- [ ] The negative control fails the verifier with exit 1 and a named remedy.
-- [ ] A hand-built token-bearing entry is rewritten token-free on the first writer run and byte-identical on the second.
-- [ ] No project entry in `~/.claude.json` holds a value equal to the configured token.
-- [ ] The MCP server authenticates with the variable absent from its environment.
-- [ ] No deliverable file contains the token value or any fragment of it.
-- [ ] Scoped touched-path check green; complete gate set discharged at the orchestration close.
+- [x] All five Phase 1 probes resolve the token from `config.json` with `SAPIENCE_TOKEN` unset, recorded per shape. *(completed in Phase 1)*
+- [x] `test-sapience-mcp-registration.sh` passes in full, including existing Cases 1, 2, 3, 7, 20, 22 and both new cases. *(completed: 58/58 cases pass, re-run in Phase 5)*
+- [x] The new positive case fails when Phase 2's writer change is temporarily reverted, proving it discriminates. *(completed in Phase 3)*
+- [x] The negative control fails the verifier with exit 1 and a named remedy. *(completed in Phase 3, Case 55a; re-confirmed passing in Phase 5's full suite run)*
+- [x] A hand-built token-bearing entry is rewritten token-free on the first writer run and byte-identical on the second. *(completed in Phase 3, Case 55b plus Case 2's byte-identical-repeat coverage)*
+- [x] No project entry in `~/.claude.json` holds a value equal to the configured token. *(completed in Phase 5: by-value jq assertion over the live file returns 0)*
+- [x] The MCP server authenticates with the variable absent from its environment. *(completed in Phase 5: post-migration `--statusline` and stdio `initialize` probes both succeed under `env -i`)*
+- [x] No deliverable file contains the token value or any fragment of it. *(completed in Phase 4, grep -c checks against each raw candidate value)*
+- [x] Scoped touched-path check green; complete gate set discharged at the orchestration close. *(completed in Phase 5: verify-touched.sh 98/98 green; full gate deferred per the dispatch's Batch Gate Deferral directive)*
 
 ## Artifacts & Outputs
 

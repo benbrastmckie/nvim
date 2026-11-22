@@ -1,0 +1,24 @@
+{
+  "phase": 5,
+  "phase_name": "Migrate the live entries and verify end to end",
+  "started_at": "2026-11-22T00:44:00Z",
+  "last_updated": "2026-11-22T01:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-check git status for foreign modifications before any whole-tree action", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-run install-sapience-mcp-session-hook.sh (dry-run then live) from the source store", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Back up ~/.claude.json to a 0600 file before mutating", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Enumerate and migrate all 6 token-bearing project entries via the installed writer", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Assert the done condition by value (no SAPIENCE_TOKEN key, no matching string anywhere under .projects)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Re-confirm authentication with SAPIENCE_TOKEN absent (statusline + stdio initialize probes)", "status": "done", "files_touched": []},
+    {"id": 7, "description": "Run verify-sapience-mcp.sh against this repo and confirm check (b) passes", "status": "done", "files_touched": []},
+    {"id": 8, "description": "Confirm the verifier fails on a regression fixture with a named remedy", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Remove the plaintext ~/.claude.json backup and confirm it is gone", "status": "done", "files_touched": []},
+    {"id": 10, "description": "Redeploy via deploy-headless.sh so the deployed tree stops diverging from the source store", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]},
+    {"id": 11, "description": "Record completion of build items (1)-(6) against evidence, including item (6)'s inventory", "status": "done", "files_touched": ["specs/682_sapience_mcp_entry_carries_no_token/plans/01_remove-token-from-mcp-entry.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0,
+  "notes": "Phase 5 closes the plan: no project entry in ~/.claude.json holds the token (verified by value), the MCP server authenticates with SAPIENCE_TOKEN absent, verify-sapience-mcp.sh and its 58-case regression suite (including the sentinel-token negative control) pass, and the deployed tree is redeployed clean against the edited source store. A security finding was surfaced and recorded (kind: issue, severity: blocking) during this phase: setup-sapience-mcp.sh's own non-quiet 'diverges from the sanctioned shape' diagnostic printed the live token value in cleartext to this dispatch's Bash tool-output stream 6 times while migrating the 6 project entries -- a new transcript-exposure vector the task's own premise is meant to close. Flagged for the user's decision on token rotation and a redaction fast-follow; see issue log and user_decision field."
+}

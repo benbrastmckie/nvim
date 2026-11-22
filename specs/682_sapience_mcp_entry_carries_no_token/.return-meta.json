@@ -1,6 +1,6 @@
 {
-  "status": "partial",
-  "dispatch_seq": 29,
+  "status": "in_progress",
+  "dispatch_seq": 30,
   "artifacts": [
     {
       "type": "handoff",
