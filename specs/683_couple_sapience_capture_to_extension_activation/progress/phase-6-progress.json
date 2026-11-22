@@ -1,0 +1,19 @@
+{
+  "phase": 6,
+  "phase_name": "Redeploy, Scoped Verification, and Operator Handoff",
+  "started_at": "2026-11-22T11:40:00Z",
+  "last_updated": "2026-11-22T11:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh to converge the deployed tree", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"]},
+    {"id": 2, "description": "Run scoped touched-path check over all edited files", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Re-run test-sapience-mcp-registration.sh against final state", "status": "done", "files_touched": []},
+    {"id": 4, "description": "install-sapience-mcp-session-hook.sh --dry-run", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Write operator-followups record", "status": "done", "files_touched": ["specs/683_couple_sapience_capture_to_extension_activation/records/operator-followups.md"]}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "run deploy-headless.sh unflagged against the first-cut diff", "result": "failed", "reason": "shellcheck lint (gate within verify-deploy.sh) caught a genuine SC2034 (unused OUT70 variable in test-sapience-mcp-registration.sh case 70) this task introduced. Fixed by referencing OUT70 in the case's own fail() message; re-ran deploy-headless.sh and verify-deploy.sh's fast gates passed clean (41 checks, 0 failures)."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

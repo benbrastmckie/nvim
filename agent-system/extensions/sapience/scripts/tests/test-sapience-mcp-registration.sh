@@ -1805,7 +1805,7 @@ else
   if [ "$ARGS70" = "projects on $CHECKOUTWT3" ] && [ "$CAPTURE_CHECKOUT70" = "true" ] && [ "$CAPTURE_WT70" = "ABSENT" ]; then
     pass "Case 70: a worktree invocation keys the capture call on the parent checkout, never the worktree"
   else
-    fail "Case 70: args='$ARGS70' checkout=$CAPTURE_CHECKOUT70 (want true) worktree=$CAPTURE_WT70 (want ABSENT)"
+    fail "Case 70: args='$ARGS70' checkout=$CAPTURE_CHECKOUT70 (want true) worktree=$CAPTURE_WT70 (want ABSENT) output=$OUT70"
   fi
 
   # Case 29: after cases 25-28, the fixture ~/.claude.json carries EXACTLY the checkout key and

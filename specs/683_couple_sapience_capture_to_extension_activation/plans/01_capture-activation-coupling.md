@@ -505,36 +505,46 @@ new subsection.
 
 ---
 
-### Phase 6: Redeploy, Scoped Verification, and Operator Handoff [NOT STARTED]
+### Phase 6: Redeploy, Scoped Verification, and Operator Handoff [COMPLETED]
 
 **Goal**: the deployed tree carries the change, the touched paths verify green, and the two
 operator-owned follow-ups are recorded explicitly rather than implied.
 
 **Tasks**:
-- [ ] Run `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool `timeout` parameter
+- [x] Run `timeout 540 bash .claude/scripts/deploy-headless.sh` (Bash tool `timeout` parameter
       raised to 600000, per `context/patterns/external-process-wait.md` Rule 1) to clear the
       sapience staleness this dispatch's deploy-freshness notice reported and to converge any
-      remaining generated index values.
-- [ ] Run the scoped touched-path check over every path this task modified, and state explicitly
+      remaining generated index values. *(completed: first run caught a genuine SC2034
+      shellcheck finding this task introduced -- test-sapience-mcp-registration.sh:1800's unused
+      `OUT70` -- fixed by using it in case 70's failure message; second run: PASS, 41 check(s),
+      0 failure(s), RESULT=landed_verify_clean)*
+- [x] Run the scoped touched-path check over every path this task modified, and state explicitly
       that the complete gate set is deferred to the orchestration close
-      (`context/contracts/batch-gate-stage.md`), not run independently here.
-- [ ] Run `bash agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh`
-      once more against the final state of all five edited files.
-- [ ] Run `bash .claude/scripts/install-sapience-mcp-session-hook.sh --dry-run` and confirm it
+      (`context/contracts/batch-gate-stage.md`), not run independently here. *(completed: 8
+      suite(s) selected + 1 OWED fallback across the 6 touched paths, 98 passed / 0 failed. The
+      complete gate set is deferred to the orchestration close, not independently run here.)*
+- [x] Run `bash agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh`
+      once more against the final state of all five edited files. *(completed: 75 passed, 0
+      failed, against the final state of all SIX edited files -- the plan's "five" undercounts
+      by one; `index-entries.json` is also an edited file per Phase 5's own Files-to-modify list)*
+- [x] Run `bash .claude/scripts/install-sapience-mcp-session-hook.sh --dry-run` and confirm it
       reports it would copy the updated hook and writer to `$HOME/.claude/{hooks,scripts}/`. Do
       **not** run it for real: it mutates user-level state affecting every repository on this
-      machine at next session start, and the acceptance test is operator-run.
-- [ ] Record the two operator-owned follow-ups in the task's durable record (its description in
+      machine at next session start, and the acceptance test is operator-run. *(completed:
+      reported both DRY RUN copy lines and that settings.json is already a no-op; not run for
+      real)*
+- [x] Record the two operator-owned follow-ups in the task's durable record (its description in
       `specs/state.json`, or a file under this task's `records/` directory -- never an
       orchestration sidecar): (1) run `install-sapience-mcp-session-hook.sh` to refresh the
       user-level hook and writer, then exercise the acceptance test in
       `/home/benjamin/Projects/Sapience/sf1-engine`; (2) file a task in `~/.dotfiles` to mirror
       this diff into that repository's own copies of the hook and the writer, restoring the
-      byte-identity confirmed broken by Phase 3.
-- [ ] Note in the same record that `/home/benjamin/Projects/Sapience/sf1-engine` is in neither
+      byte-identity confirmed broken by Phase 3. *(completed:
+      specs/683_couple_sapience_capture_to_extension_activation/records/operator-followups.md)*
+- [x] Note in the same record that `/home/benjamin/Projects/Sapience/sf1-engine` is in neither
       `capture.projects[]` nor `folders` today, so the acceptance test will show it as `enabled`
       while its transcripts stay ungated by `folders` until the operator runs the onboarding
-      chooser once.
+      chooser once. *(completed)*
 
 **Timing**: 1 hour
 
@@ -562,28 +572,33 @@ operator-owned follow-ups are recorded explicitly rather than implied.
 
 ## Testing & Validation
 
-- [ ] `test-sapience-mcp-registration.sh` exits 0 with every pre-existing case still passing and
-      every new case reported PASS.
-- [ ] Writer: `--capture-set on`/`off` invoke the stub with `projects on|off <path>` and
-      `SAPIENCE_NO_CAPTURE_SYNC=1` in the environment.
-- [ ] Writer: steady state, `--dry-run`, and an absent `sapience` binary each record no stub
-      invocation and exit 0 silently.
-- [ ] Writer: an enabled parent prefix with no exact child entry still triggers an `on` for the
-      child (the exact-path decision).
-- [ ] Writer: `--reap-capture` turns off a vanished `enabled: true` entry and leaves a sibling
-      whose path exists untouched in the same fixture.
-- [ ] Hook: active -> `on`, inactive-with-entry -> `off`, steady state -> `{}`, missing binary ->
-      `{}`, and a linked-worktree invocation passes the **parent checkout** path.
-- [ ] Hook: every invocation emits exactly one line that parses as JSON, including the case where
-      both the capture reap and the per-repo half have something to report.
-- [ ] Verifier: check (i) reports active + not-enabled as a non-failing WARN naming the lag, the
+- [x] `test-sapience-mcp-registration.sh` exits 0 with every pre-existing case still passing and
+      every new case reported PASS. *(completed: 75 passed, 0 failed)*
+- [x] Writer: `--capture-set on`/`off` invoke the stub with `projects on|off <path>` and
+      `SAPIENCE_NO_CAPTURE_SYNC=1` in the environment. *(completed: cases 56-57)*
+- [x] Writer: steady state, `--dry-run`, and an absent `sapience` binary each record no stub
+      invocation and exit 0 silently. *(completed: cases 58, 61, 59)*
+- [x] Writer: an enabled parent prefix with no exact child entry still triggers an `on` for the
+      child (the exact-path decision). *(completed: case 60)*
+- [x] Writer: `--reap-capture` turns off a vanished `enabled: true` entry and leaves a sibling
+      whose path exists untouched in the same fixture. *(completed: case 62)*
+- [x] Hook: active -> `on`, inactive-with-entry -> `off`, steady state -> `{}`, missing binary ->
+      `{}`, and a linked-worktree invocation passes the **parent checkout** path. *(completed:
+      cases 66, 67, 68, 69, 70)*
+- [x] Hook: every invocation emits exactly one line that parses as JSON, including the case where
+      both the capture reap and the per-repo half have something to report. *(completed: case 71)*
+- [x] Verifier: check (i) reports active + not-enabled as a non-failing WARN naming the lag, the
       silent-degrade causes, and the `folders` gate; the inactive + enabled FAIL is unchanged.
-- [ ] `index-entries.json` parses and its `line_count` for the edited context file matches `wc -l`.
-- [ ] No task-number references and no record-versioning language in the edited deliverables.
+      *(completed: cases 45, 46, 72, 44 unchanged)*
+- [x] `index-entries.json` parses and its `line_count` for the edited context file matches `wc -l`.
+      *(completed: 656 == 656)*
+- [x] No task-number references and no record-versioning language in the edited deliverables.
+      *(completed: check-task-references.sh 0 occurrences; check-record-versioning.sh 0 BLOCKING)*
 - [ ] Operator-run, outside this task: with the extension loaded in
       `/home/benjamin/Projects/Sapience/sf1-engine` and the installer re-run, the next session start
       there shows `sf1-engine` as `enabled` in `sapience projects`, and unloading the extension
-      turns it off at the following session start.
+      turns it off at the following session start. *(operator-run; recorded as a follow-up in
+      records/operator-followups.md, not performed by this dispatch)*
 
 ## Artifacts & Outputs
 
