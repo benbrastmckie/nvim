@@ -123,9 +123,15 @@
           "path": "specs/683_couple_sapience_capture_to_extension_activation/plans/01_capture-activation-coupling.md",
           "type": "plan",
           "summary": "6-phase plan: writer --capture-set action, writer --reap-capture sweep, hook wiring plus caveats, verifier check (i) WARN, per-repo-scoping.md rewrite with the folders double-gate, then redeploy and operator handoff."
+        },
+        {
+          "path": "specs/683_couple_sapience_capture_to_extension_activation/summaries/01_capture-activation-coupling-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all six phases, decisions, deviations, and verification evidence."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Coupled ~/.sapience/config.json's capture.projects[].enabled bidirectionally to a repository's sapience-extension activation state, via the SessionStart hook invoking two new standalone setup-sapience-mcp.sh actions (--capture-set, --reap-capture) that exclusively shell out to the vendor's sapience projects on|off CLI, keyed on the parent checkout. Updated verify-sapience-mcp.sh check (i) to a non-failing WARN, rewrote per-repo-scoping.md's reconciliation ruling and added a folders double-gate subsection, added 17 new fixture-HOME test cases (56-72, 75/75 total passing), and completed a clean redeploy (verify-deploy.sh 41/41)."
     },
     {
       "project_number": 680,

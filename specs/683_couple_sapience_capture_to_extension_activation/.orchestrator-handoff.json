@@ -1,16 +1,21 @@
 {
-  "status": "planned",
-  "phase": "plan",
-  "dispatch_seq": 8,
-  "summary": "Wrote a 6-phase, ~9h plan coupling capture.projects[].enabled bidirectionally to .extensions.sapience.status. Architecture: two new standalone actions on setup-sapience-mcp.sh (--capture-set on|off, --reap-capture) wrapping SAPIENCE_NO_CAPTURE_SYNC=1 timeout 15 sapience projects on|off, invoked from the existing SessionStart hook's two branches and its ungated reap pass; this needs zero installer and zero manifest change because the installer already seeds that writer to ~/.claude/scripts/. All eight trigger-class premises in the dispatch description were re-validated against the research report and live state and all hold. Two gaps are carried as explicit Non-Goals with operator follow-ups recorded in Phase 6: the legacy folders list (a second upstream gate no vendor CLI can safely grow non-interactively, and sf1-engine is in neither list today) and the byte-identical ~/.dotfiles companion copy, which is a different repository.",
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 9,
+  "summary": "Implemented all six plan phases: setup-sapience-mcp.sh gained --capture-set on|off and --reap-capture actions invoking the vendor's sapience projects CLI; the SessionStart hook now couples capture.projects[].enabled bidirectionally, keyed on the parent checkout (confirmed live via a fixture worktree); verify-sapience-mcp.sh check (i) demotes active+not-enabled to a non-failing WARN; per-repo-scoping.md states the new design and a new folders-double-gate subsection. 17 new fixture-HOME test cases added (56-72), full suite 75/75 passing. deploy-headless.sh landed clean (verify-deploy.sh 41/41) after fixing one genuine shellcheck finding this task introduced. Operator follow-ups (refresh the user-level hook/writer and run the sf1-engine acceptance test; mirror the diff into ~/.dotfiles) recorded in records/operator-followups.md.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/683_couple_sapience_capture_to_extension_activation/plans/01_capture-activation-coupling.md",
-      "summary": "6-phase plan: writer --capture-set action, writer --reap-capture sweep, hook wiring plus caveats, verifier check (i) WARN, per-repo-scoping.md rewrite with the folders double-gate, then redeploy and operator handoff."
+      "type": "summary",
+      "path": "specs/683_couple_sapience_capture_to_extension_activation/summaries/01_capture-activation-coupling-summary.md",
+      "summary": "Full implementation summary covering all six phases, decisions, deviations, and verification evidence."
+    },
+    {
+      "type": "record",
+      "path": "specs/683_couple_sapience_capture_to_extension_activation/records/operator-followups.md",
+      "summary": "The two operator-owned follow-ups and the folders double-gate caveat on the acceptance test."
     }
   ],
-  "phases_completed": 0,
+  "phases_completed": 6,
   "phases_total": 6,
   "blockers": []
 }
