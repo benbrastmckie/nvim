@@ -13,7 +13,7 @@ next_project_number: 684
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,455,456,462,475,477,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,548,550,551,556,557,559,560,563,565,567,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,679,680 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,455,456,462,475,477,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,548,550,551,556,559,560,563,565,567,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,668,679,680 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,439,457,472,474,479,481,484,509,517,523,533,535,540,544,546,552,566,570,583,592,593,598,605,609,630 | 383,390,410,431,438,452,453,455,477,511,519,539,542,548,556,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,473,480,492,513,518,541,561,588,594,669 | 439,472,479,491,509,517,535,552,593,668 | core-agent-system, orchestrator, agent-system |
 | 4 | 486,571,581,595,641,671 | 454,484,492,518,539,541,561,580,594,669 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
@@ -187,10 +187,6 @@ next_project_number: 684
 ### Sapience
 
 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
-
-### Decidability
-
-557 [IMPLEMENTING] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
 
@@ -3617,11 +3613,12 @@ repository numbering space and is recorded here as provenance.
 
 ### 557. Record the half-line test as a lean4 context pattern note
 - **Effort**: small
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: decidability
 - **Dependencies**: None
 - **Plan**: [557_half_line_test_context_note/plans/01_half-line-test-context-note.md]
+- **Summary**: [557_half_line_test_context_note/summaries/01_half-line-test-context-note-summary.md]
 
 **Description**: Record the half-line test as a durable lean4 context note: given a proposed transport or index condition, name the half-line the counter is read from and the half-line the formula is read from; if both are forward, the proposal is already decided by the recorded refutation mechanism and needs no fresh probe. This is the reusable product of the one-sided open-modal probe, whose six-mechanism survival analysis lives in specs/evidence/seam-gluing-ray-product/one-sided-count-move-refutation.lean. SOURCE-STORE BOUNDARY: author under the source_dir resolved from .claude-extensions.json, at the path mirroring context/project/lean4/patterns/, never hand-authored under .claude/**. Keep it a test an agent can apply in one reading.
 

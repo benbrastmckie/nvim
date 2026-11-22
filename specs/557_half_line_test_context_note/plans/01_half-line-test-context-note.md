@@ -1,7 +1,7 @@
 # Implementation Plan: Task #557
 
 - **Task**: 557 - Half-line test context note
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: None (no research report was produced for this round; the plan is grounded

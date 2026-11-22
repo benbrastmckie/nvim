@@ -39,14 +39,26 @@
       "category": "INSIGHT",
       "source_artifact": "specs/557_half_line_test_context_note/summaries/01_half-line-test-context-note-summary.md",
       "confidence": 0.75,
-      "suggested_keywords": ["verify-touched", "owed-fallback", "cost-class", "run-all", "full-sweep"]
+      "suggested_keywords": [
+        "verify-touched",
+        "owed-fallback",
+        "cost-class",
+        "run-all",
+        "full-sweep"
+      ]
     },
     {
       "content": "test-gate-cache-equivalence.sh is a pre-registered, load-sensitive known-failure (.claude/scripts/tests/known-failures.txt) that times out at its own internal 600s bound under host contention, reproducibly, even when re-run standalone with no other suites in parallel. Do not attribute this suite's timeout to content/lint changes in a dispatch that only touched markdown/JSON; check known-failures.txt first rather than re-running it repeatedly.",
       "category": "PATTERN",
       "source_artifact": "specs/557_half_line_test_context_note/summaries/01_half-line-test-context-note-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["known-failures", "test-gate-cache-equivalence", "flaky-test", "load-sensitive", "run-all"]
+      "suggested_keywords": [
+        "known-failures",
+        "test-gate-cache-equivalence",
+        "flaky-test",
+        "load-sensitive",
+        "run-all"
+      ]
     }
   ],
   "sapience_notes": [
@@ -95,7 +107,11 @@
     "session_id": "sess_1795360608_7bb5fd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   }
