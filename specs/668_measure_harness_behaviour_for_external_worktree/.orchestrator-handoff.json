@@ -1,15 +1,25 @@
 {
-  "status": "planned",
-  "dispatch_seq": 2,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 3,
+  "phases_completed": 3,
   "phases_total": 3,
-  "summary": "Planned the closure work for this measurement task. The four harness measurements and the deliverable record under specs/decisions/ already exist from the research dispatch, so the plan takes no new measurement: Phase 1 discharges the amending record's \"Measured precondition\" and R2 siting caveat with a dated **Discharged by** note (never **Amended by** -- nothing was refuted), Phase 2 closes the measurement record against its own criterion (exact command/tool call per result, agent-measured vs user-supplied attribution, both residuals in one section), Phase 3 verifies the refutation branch was not taken and commits both records. Live-state check: the measurement record is still untracked, since the research commit staged only the report -- Phase 3 stages it explicitly.",
+  "summary": "Closed the already-measured precondition rather than re-measuring: discharged the amending record's (batch-worktree-isolation-and-task-squash-landing.md) \"Measured precondition\" section and R2's closing sentence with a dated **Discharged by** note citing the measurement record, kept the existing conditional sentence verbatim, and added no **Amended by** marker since no result refuted the siting. Closed external-worktree-harness-behaviour.md against its own stated criterion: an exact-call appendix per measurement, an explicit agent-measured/user-supplied label per measurement, and a named Residuals section covering both open items. Both decision records are tracked and committed (one per phase, via git-commit-phase.sh). The one open question (file-tool behaviour under a non-bypassPermissions mode) is still unanswered and is re-relayed as a non-blocking user_decision.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/668_measure_harness_behaviour_for_external_worktree/plans/01_external-worktree-harness-measurement.md",
-      "summary": "Three-phase closure plan (waves: 1,2 parallel then 3); all edits under specs/**, no agent-system/** edit and no redeploy."
+      "type": "summary",
+      "path": "specs/668_measure_harness_behaviour_for_external_worktree/summaries/01_external-worktree-harness-measurement-summary.md",
+      "summary": "Implementation summary: precondition discharge and measurement-record closure, both decision records committed."
+    },
+    {
+      "type": "decision-record",
+      "path": "specs/decisions/external-worktree-harness-behaviour.md",
+      "summary": "The task's deliverable: closed against its own stated criterion with an exact-call appendix, per-measurement attribution, and a Residuals section."
+    },
+    {
+      "type": "decision-record",
+      "path": "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md",
+      "summary": "Amending record: precondition discharged via a dated note; no amendment, since no result refuted the siting."
     }
   ]
 }

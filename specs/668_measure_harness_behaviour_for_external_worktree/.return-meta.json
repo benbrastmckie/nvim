@@ -1,10 +1,95 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 3,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/668_measure_harness_behaviour_for_external_worktree/summaries/01_external-worktree-harness-measurement-summary.md",
+      "summary": "Closes the already-measured precondition: discharges the amending record's 'Measured precondition' with a dated note, closes the measurement record against its own exact-call/attribution/residuals criterion, and commits both decision records."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Discharged `batch-worktree-isolation-and-task-squash-landing.md`'s 'Measured precondition' with a dated `**Discharged by**` note citing `external-worktree-harness-behaviour.md`, and closed that measurement record against its own stated criterion (exact-call appendix, explicit agent-measured/user-supplied attribution, named Residuals section). Both decision records are tracked and committed; no result refuted the siting, so no `**Amended by**` note was added anywhere."
+  },
+  "modified_files": [
+    "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md",
+    "specs/decisions/external-worktree-harness-behaviour.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a decision record names a measured precondition and the measurement comes back NOT refuting the ruling, the record that named the precondition still needs an edit -- but an `**Amended by**` note is the wrong marker, because nothing was amended. Use a distinct dated `**Discharged by** <record>, <date>:` note instead, and leave the record's own conditional rule (\"if a measurement refutes the siting, the ruling is amended ... it is not worked around\") verbatim, since discharge records that the measurement ran, it does not retire the rule for a future re-measurement. Verify the marker count via `git diff` rather than a raw `grep -c` on the phrase: a decision record can already carry an unrelated plain-text occurrence of the same words (e.g. a coverage table cell), inflating the count.",
+      "category": "PATTERN",
+      "source_artifact": "specs/668_measure_harness_behaviour_for_external_worktree/summaries/01_external-worktree-harness-measurement-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["decision-record", "measured-precondition", "amended-by", "discharge-note", "successor-visibility", "grep-count-pitfall"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "Claude Code harness: worktree outside the project directory",
+      "predicate": "finding is",
+      "value": "File tools (Read/Write/Edit) proceed with no prompt or refusal for a path outside the project directory under bypassPermissions mode, but a registered content-validation PreToolUse hook still fires and can still block a Write/Edit there exactly as it would inside the project -- location does not bypass content gating.",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "specs/decisions/external-worktree-harness-behaviour.md"
+    },
+    {
+      "subject": "Claude Code harness: path-scoped rules and external paths",
+      "predicate": "finding is",
+      "value": "A session's .claude/rules/*.md paths: frontmatter glob does not match a file outside the project directory, even when the glob pattern matches the file's relative path. A live same-session A/B touch (external first, in-project second) of the identical glob showed no reminder for the external touch and an immediate one for the very next in-project touch -- ruling out dedupe as the explanation.",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "specs/decisions/external-worktree-harness-behaviour.md"
+    },
+    {
+      "subject": "guard-destructive-git.sh hook anchoring",
+      "predicate": "finding is",
+      "value": "A Bash-matched PreToolUse hook's safety decision (guard-destructive-git.sh) is anchored to the primary project tree's own git status, independent of the Bash command's own cd target. Measured by blocking a safe `git reset --hard HEAD` aimed at a provably clean external git worktree, because the unrelated primary tree was dirty -- the converse of the already-known defect where a destructive command aimed at a dirty worktree is wrongly allowed when the primary tree is clean. Both directions are one root mechanism, not two.",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "specs/decisions/external-worktree-harness-behaviour.md"
+    },
+    {
+      "subject": "Dispatched subagent Bash tool cwd",
+      "predicate": "finding is",
+      "value": "A dispatched subagent starts in the primary project directory, and its Bash tool's working directory resets between separate tool calls back to the primary project directory -- never to wherever a prior call's cd left it, and never to an external git worktree, even when a real external worktree exists for the whole measurement pass. Confirmed twice independently (this dispatch's own session, and a freshly spawned context-free general-purpose subagent given the same three-call pwd/cd/pwd sequence). A two-root design cannot rely on an ambient cwd switch; the worktree path must be carried explicitly.",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "specs/decisions/external-worktree-harness-behaviour.md"
+    },
+    {
+      "subject": "verify-touched.sh no-argument form",
+      "predicate": "finding is",
+      "value": "Run with no arguments, verify-touched.sh derives touched paths from the whole working tree plus the committed diff against its own determined base, not just one task's own files -- so under a multi-task /orchestrate batch it naturally reflects every sibling task's concurrently dirty files, not a single task's declared file_scope. It can also run well past the harness's ~180s foreground-display auto-background threshold when many suites are selected (36 suites, 98 tests here), requiring a bounded kill -0 wait on the real OS PID rather than a tight shell timeout wrapper.",
+      "ko_type": "finding",
+      "confidence": 0.75,
+      "source_loc": ".claude/scripts/verify-touched.sh"
+    },
+    {
+      "subject": "Decision-record discharge vs. amendment marker",
+      "predicate": "decision is",
+      "value": "Closing a decision record's named precondition after a measurement that does NOT refute the ruling uses a distinct **Discharged by** <record>, <date>: marker, never **Amended by** -- the latter is reserved for when a measurement actually changes the ruling. Grep-based verification of marker counts should use git diff (what was actually added) rather than a raw grep -c on the phrase, since the phrase can already occur elsewhere in the file unrelated to the marker convention.",
+      "ko_type": "decision",
+      "confidence": 0.8,
+      "source_loc": "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"
+    }
+  ],
+  "user_decision": {
+    "question": "Carried forward unanswered, because the measurement record's only unmeasured result is what file tools (Read/Edit/Write) do for a path outside the project directory under a non-bypassPermissions mode: does /orchestrate (or any agent dispatch) in this environment ever run from a session NOT started with --dangerously-skip-permissions? No dispatched agent can observe this.",
+    "options": [
+      "Confirm dispatches always run under bypassPermissions here; the record closes with no residual on this item.",
+      "Report that a non-bypass mode is sometimes used, and (optionally) what you see when a subagent's tool call targets an external path under it; recorded as the user-supplied result.",
+      "Leave it open; the record states it plainly as an unmeasured residual, as it does today."
+    ],
+    "recommended": "Confirm dispatches always run under bypassPermissions here; the record closes with no residual on this item.",
+    "blocking": false
+  },
   "metadata": {
     "session_id": "sess_1795385635_7a23a6",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }

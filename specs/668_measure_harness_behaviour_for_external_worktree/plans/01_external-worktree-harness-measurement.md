@@ -257,39 +257,56 @@ diff read-through.
 
 ---
 
-### Phase 3: Verify closure, confirm the refutation branch was not taken, and commit [NOT STARTED]
+### Phase 3: Verify closure, confirm the refutation branch was not taken, and commit [COMPLETED]
 
 **Goal**: both records are consistent, no constraint was breached, and both land in one commit —
 including the measurement record, which is untracked today.
 
 **Tasks**:
-- [ ] Negative check on the refutation branch: confirm the amending record carries no
+- [x] Negative check on the refutation branch: confirm the amending record carries no
       `**Amended by**` note attributable to this task, and the measurement record's Provenance
       still reads "Amends nothing". A refuting result was never found, so neither file may claim
-      an amendment.
-- [ ] Confirm scope: `git status --short` lists only the two decision records and this task's own
+      an amendment. *(completed: confirmed via grep -- only the pre-existing Verdict/Provenance
+      sentences mention "Amended by"/"Amends nothing"; no new amendment note added)*
+- [x] Confirm scope: `git status --short` lists only the two decision records and this task's own
       `specs/668_measure_harness_behaviour_for_external_worktree/**` artifacts. No
       `agent-system/**` path appears, so no source-store edit was made and
-      `deploy-headless.sh` is neither required nor run.
-- [ ] Confirm the byte-ceiling constraint: `git status --short` has no entry for
-      `skill-orchestrate/SKILL.md` or `commands/orchestrate.md` under any root.
-- [ ] Confirm the repo-agnostic constraint across both edited files with one grep for absolute
-      paths, this repository's own directory name, and any literal branch name.
-- [ ] Scoped touched-path check: run
+      `deploy-headless.sh` is neither required nor run. *(completed: both decision records had
+      already landed in the Phase 1/2 commits by the time Phase 3 ran, so `git status --short`
+      at Phase 3 start showed only this task's own `specs/668_*/**` artifacts -- confirming the
+      same scope from the other direction)*
+- [x] Confirm the byte-ceiling constraint: `git status --short` has no entry for
+      `skill-orchestrate/SKILL.md` or `commands/orchestrate.md` under any root. *(completed)*
+- [x] Confirm the repo-agnostic constraint across both edited files with one grep for absolute
+      paths, this repository's own directory name, and any literal branch name. *(completed:
+      `grep -nE "/home/benjamin|/home/|nvim|dotfiles"` over both files returned nothing)*
+- [x] Scoped touched-path check: run
       `bash .claude/scripts/verify-touched.sh specs/decisions/external-worktree-harness-behaviour.md specs/decisions/batch-worktree-isolation-and-task-squash-landing.md`
       and record its verdict verbatim. The selector returns `__FULL_SWEEP__` for this set (every
       touched path unmapped — the normal result for `specs/**` prose); record the sentinel result
-      honestly and claim no suite.
-- [ ] Under `/orchestrate`, defer the complete gate set to the orchestration close rather than
+      honestly and claim no suite. *(deviation: altered -- this dispatch's own dispatch file
+      (`.dispatch/3.md`, Batch Gate Deferral section) directs running `verify-touched.sh` with NO
+      arguments, since it derives touched paths itself from the whole working tree plus the
+      committed diff, rather than the plan's two-path invocation. Run as directed: 98 passed, 0
+      failed; "36 suite(s) selected, 5 owed, 0 no-suite-by-class, across 16 touched path(s) --
+      touched-path narrowed via verify-touched.sh, NOT a full-battery pass." The run took longer
+      than the harness's 180s foreground-display threshold and was auto-backgrounded twice; both
+      times resolved with a bounded `kill -0` wait on the real OS PID, never a retry.)*
+- [x] Under `/orchestrate`, defer the complete gate set to the orchestration close rather than
       invoking it here, and record that deferral in this phase's own verification notes. On a
       standalone, non-orchestrated run with no orchestration close to defer to, run
-      `bash .claude/scripts/verify-deploy.sh` directly instead.
-- [ ] Stage both decision records explicitly by path and commit via
+      `bash .claude/scripts/verify-deploy.sh` directly instead. *(completed: this dispatch runs
+      under `/orchestrate` (`orchestrator_mode: true`); the complete gate set is deferred to the
+      orchestration close, per the dispatch file's Batch Gate Deferral section)*
+- [x] Stage both decision records explicitly by path and commit via
       `.claude/scripts/git-commit-scoped.sh`. Targeted file-list staging only — no `git add -A`,
-      no `git add .`, no directory or glob pathspec, no `git commit -am`.
-- [ ] Record at least one `issue-record.sh` entry for this dispatch (`--kind issue` or
+      no `git add .`, no directory or glob pathspec, no `git commit -am`. *(completed earlier:
+      both records were staged and committed via `git-commit-phase.sh` at the close of Phase 1
+      and Phase 2 respectively, each using targeted file-list staging derived from that phase's
+      own `files_touched`; neither is re-staged here since both are already clean against HEAD)*
+- [x] Record at least one `issue-record.sh` entry for this dispatch (`--kind issue` or
       `--kind win`); if genuinely nothing arose, attest that explicitly in the handoff summary
-      rather than silently recording nothing.
+      rather than silently recording nothing. *(completed: one `--kind win` entry recorded)*
 
 **Timing**: 0.4 hours
 
