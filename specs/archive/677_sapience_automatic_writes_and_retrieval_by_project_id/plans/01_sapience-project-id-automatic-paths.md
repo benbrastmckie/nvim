@@ -1,7 +1,7 @@
 # Implementation Plan: Task #677
 
 - **Task**: 677 - Sapience automatic writes and retrieval by project id
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None blocking this plan. Live end-to-end exercise of the read-side path is gated on the app serving the link routes for this account (`sapience-app`'s `open_mvp_flags_and_create_linked_team_project`, not started; `repo_link_code_onto_release_line`, HOLD) and on `REPO_LINK_FOR` being non-empty in the deployed `fly.toml` (currently `""`). Every phase below is buildable and testable against a stub today.
 - **Research Inputs**: specs/677_sapience_automatic_writes_and_retrieval_by_project_id/reports/01_sapience-project-id-automatic-paths.md

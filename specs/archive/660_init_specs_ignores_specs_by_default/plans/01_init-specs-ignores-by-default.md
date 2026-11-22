@@ -1,7 +1,7 @@
 # Implementation Plan: Task #660
 
 - **Task**: 660 - Init specs ignores specs by default
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.75 hours
 - **Dependencies**: None blocking (task 658 already completed; task 338 shares territory, declared not blocking)
 - **Research Inputs**: specs/660_init_specs_ignores_specs_by_default/reports/01_init-specs-ignores-by-default.md

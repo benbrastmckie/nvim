@@ -1,7 +1,7 @@
 # Implementation Plan: Task #676
 
 - **Task**: 676 - Tag transcript-captured KOs with the repo tag
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 5.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/676_tag_transcript_captured_kos_with_repo_tag/reports/01_tag-transcript-captured-kos-repo.md

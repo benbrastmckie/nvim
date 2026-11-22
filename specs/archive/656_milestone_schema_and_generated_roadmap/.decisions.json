@@ -1,0 +1,16 @@
+[
+  {
+    "question": "In a repository whose specs/ tree is gitignored (sf1-engine, and every repository init-specs.sh now sets up by default), should the generated roadmap stay at specs/ROADMAP.md, where no collaborator sees it, or be publishable at a tracked path?",
+    "answer": "Add an optional roadmap_context.output_path field the renderer honours; default remains specs/ROADMAP.md",
+    "cycle": 4,
+    "timestamp": "2026-11-20T12:05:43Z",
+    "description_fingerprint": "54f2c5af4777ca9b28ccf89e8cd07ddc32ac0f887dac6cea5345740d9ed78bb1"
+  },
+  {
+    "question": "For the final acceptance check, should the implementer migrate and regenerate the live sf1-engine store in place, or render from a migrated copy kept under this task's records/ directory and leave sf1-engine's own store to a /roadmap run in that repository?",
+    "answer": "Render from a migrated copy under this task's records/ directory; write nothing in sf1-engine",
+    "cycle": 5,
+    "timestamp": "2026-11-20T12:05:43Z",
+    "description_fingerprint": "54f2c5af4777ca9b28ccf89e8cd07ddc32ac0f887dac6cea5345740d9ed78bb1"
+  }
+]

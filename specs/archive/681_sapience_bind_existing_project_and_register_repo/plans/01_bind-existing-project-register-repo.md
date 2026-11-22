@@ -2,7 +2,7 @@
 
 - **Task**: 681 - Let the Sapience extension bind a repository to an existing shared project as
   well as to a new one, and register the repository with the server
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 8 hours
 - **Dependencies**: None blocking. Ordered before
   `sapience_automatic_writes_and_retrieval_by_project_id`, which reads the file this task writes.

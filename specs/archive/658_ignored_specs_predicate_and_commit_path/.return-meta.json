@@ -1,0 +1,19 @@
+{
+  "status": "failed",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "summary": "No research performed. Task 658 is already [COMPLETED] in specs/state.json (last_updated 2026-11-20T01:57:08Z) with a full research report, plan, and summary already on disk and six implementation-phase commits plus a post-deploy reconcile commit already in git history. This dispatch (phase=research, dispatch_seq=2, artifact_number=1) appears to be a stale/duplicate re-send of an earlier research dispatch from before the task's completion registered -- writing a new report at the same 01_ artifact slot would duplicate work already verified complete. No files were modified by this dispatch.",
+  "metadata": {
+    "session_id": "sess_1795130570_6d4a1f_658",
+    "task_number": 658,
+    "reason": "stale_dispatch_task_already_completed",
+    "existing_artifacts": [
+      "specs/658_ignored_specs_predicate_and_commit_path/reports/01_ignored-specs-predicate-research.md",
+      "specs/658_ignored_specs_predicate_and_commit_path/plans/01_ignored-specs-predicate-commit-path.md",
+      "specs/658_ignored_specs_predicate_and_commit_path/summaries/01_ignored-specs-predicate-commit-path-summary.md"
+    ],
+    "completion_commit": "c4f06001b task 658: complete implementation (post-deploy reconcile)"
+  },
+  "dispatch_seq": 2,
+  "next_steps": "Do not re-dispatch research for task 658 -- it is already [COMPLETED]. If this stale dispatch recurs, investigate the orchestrator cycle/loop-guard state that produced it."
+}

@@ -2,7 +2,7 @@
 
 - **Task**: 658 - Add a shared gitignored-specs predicate and a distinct, non-failure commit-path
   outcome for an all-ignored pathspec
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 9 hours
 - **Dependencies**: None (task 618 shares file territory in `git-commit-scoped.sh`; declared
   not-blocking by the user's ruling, never co-admitted into one batch)
