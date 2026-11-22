@@ -145,6 +145,8 @@ For each proof/theorem in the phase:
      f. If still stuck, log state and return partial
    ```
 5. **Verify step completion** with `lean_goal` (proof state) and `lean_verify` (axiom/sorry check); do NOT run `lake build` per-step
+   - Both tools are required, not interchangeable — see `../tools/mcp-tools-guide.md`'s `lean_goal`
+     section for why an empty `goals_after` alone is not evidence of a complete step.
 
 ### 4C. Verify Phase Completion
 

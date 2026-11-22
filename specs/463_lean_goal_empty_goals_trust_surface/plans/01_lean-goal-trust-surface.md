@@ -255,37 +255,42 @@ showing a single-hunk change confined to the `#### lean_goal` section, and with
 
 ---
 
-### Phase 2: Point the Flow Document's Step-Verification Line at the Statement [NOT STARTED]
+### Phase 2: Point the Flow Document's Step-Verification Line at the Statement [COMPLETED]
 
 **Goal**: Make Stage 4B item 5 of `lean-implementation-flow.md` explain *why* both tools are
 required by pointing at Phase 1's statement, without duplicating it and without weakening the
 instruction.
 
 **Tasks**:
-- [ ] Re-read
+- [x] Re-read
       `agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md`
       immediately before editing. The tier table from the dependency task is live at lines 88-93;
-      do not disturb it.
-- [ ] Locate Stage 4B item 5 by content, not number (at planning time line 147):
+      do not disturb it. *(completed)*
+- [x] Locate Stage 4B item 5 by content, not number (at planning time line 147):
       `5. **Verify step completion** with \`lean_goal\` (proof state) and \`lean_verify\`
-      (axiom/sorry check); do NOT run \`lake build\` per-step`.
-- [ ] Append a pointer to that line (or as an indented continuation of it) carrying only: that
+      (axiom/sorry check); do NOT run \`lake build\` per-step`. *(completed: found unchanged at
+      line 147)*
+- [x] Append a pointer to that line (or as an indented continuation of it) carrying only: that
       both tools are required rather than interchangeable, and a relative link to
       `../tools/mcp-tools-guide.md`'s `lean_goal` section for the reason. The pointer MUST NOT
       restate the mechanism, the measured evidence, or the caveat text — the dispatch's "do not
-      write it twice" constraint governs here.
-- [ ] Leave the imperative halves byte-identical: the instruction to use `lean_goal` and
-      `lean_verify`, and `do NOT run \`lake build\` per-step`.
-- [ ] Leave the REPEAT-loop step d (planning-time line 143), the tier table's `local` row (line
+      write it twice" constraint governs here. *(completed)*
+- [x] Leave the imperative halves byte-identical: the instruction to use `lean_goal` and
+      `lean_verify`, and `do NOT run \`lake build\` per-step`. *(completed: verified unchanged by
+      grep)*
+- [x] Leave the REPEAT-loop step d (planning-time line 143), the tier table's `local` row (line
       91), and the Stage 5 note (line 184) unedited. Each already names both tools together, and
       Stage 5 already states that neither phase-end nor the final build substitutes for the
-      other — editing them would multiply the pointer rather than site it once.
-- [ ] Confirm the link target resolves: from
+      other — editing them would multiply the pointer rather than site it once. *(completed:
+      confirmed unedited by read-through)*
+- [x] Confirm the link target resolves: from
       `context/project/lean4/agents/`, `../tools/mcp-tools-guide.md` must exist on disk.
-- [ ] Same two prose constraints as Phase 1: no record-versioning language, no task-number or
-      cross-repo issue reference.
-- [ ] Record any issue or win via `issue-record.sh` as it arises; if genuinely nothing, attest
-      that explicitly in the handoff prose.
+      *(completed: confirmed with `test -f`)*
+- [x] Same two prose constraints as Phase 1: no record-versioning language, no task-number or
+      cross-repo issue reference. *(completed: verified by grep)*
+- [x] Record any issue or win via `issue-record.sh` as it arises; if genuinely nothing, attest
+      that explicitly in the handoff prose. *(completed: nothing new beyond the recurring
+      index-entries.json line_count finding already recorded in Phase 1)*
 
 **Timing**: 0.4 hours
 
