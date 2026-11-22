@@ -117,6 +117,73 @@ documents the recognition and reporting mechanics on the tool side.
   therefore already the correct and intended outcome for such a plan, and `--compare` is in effect
   inapplicable to it by decision, not by omission.
 
+## Producing and Consuming Call Sites
+
+**Producing call site**: the `lean-challenge-observe` post-task observer
+(`scripts/lean-challenge-observe.sh`), registered in `manifest.json`'s `observers` block
+(`task_type: lean4`, `timeout_seconds: 120`, no `topic` key) and invoked from
+`orchestrate-cycle-postflight.sh`'s completion path. The observer discriminates purely on the
+`resting_status` it receives: at `planned` — the one plan-cycle resting status the exit-`73`
+status gate already admits — it invokes this script with no `--force`, so the status gate is
+made *irrelevant* rather than weakened; the gate still runs and still refuses on its own terms,
+it is simply never asked to refuse here because the status is always `planned` at this call
+site.
+
+**Consuming call site**: the SAME observer, at the implement-side resting statuses
+(`implementing`, `partial`, `pr_ready`, `completed`), invokes this script's `--check` drift
+verdict. This is the tool's first-ever `--check` call site; before it existed, `--check` had no
+caller anywhere in this source tree.
+
+**Why the observer seam, not a `postflight` lifecycle hook or a core call**: the observer
+registration wins on every axis the alternatives were measured against — it is extension-local
+(lean-specific behaviour stays in the lean extension), needs zero core edits, is advisory and
+non-blocking *by written contract* (an observer can never change task status, never fail a
+dispatch, never block; its return code is recorded as one `task_observer_run` event and
+otherwise ignored), is bounded by a `timeout`, and discriminates on `resting_status` — the very
+value the status gate itself evaluates, so the producing and consuming call sites can never
+fight the gate. A `postflight` lifecycle hook was considered and rejected: it would have required
+plumbing a `TASK_TYPE` value through `orchestrate-cycle-postflight.sh` that core's own extension
+authoring guide directs authors not to add as a substitute fix, where the observer seam already
+receives the correctly-resolved local `task_type` and a freshly-read `resting_status` with no
+core edit at all.
+
+**Re-plan ruling: REFUSE, inherited, not reimplemented.** Re-running this script against an
+existing manifest — whether triggered by a second plan cycle, a `/revise`, or any other
+re-entry — refuses with exit `73` and leaves the manifest untouched (byte-identical content and
+mtime), exactly as the existing manifest-exists refusal already behaves; the observer adds no
+new idempotence logic of its own. `--force` remains the only override. Its loud INCIDENT warning
+is printed specifically when `--force` bypasses the STATUS gate (a task past `planned`) — the
+observer's own producing call site never exercises that branch, since it only ever calls without
+`--force` at `planned`. A `--force`-bypassed overwrite of an existing manifest while status is
+*still* `planned` (the plain manifest-exists refusal, a different exit-`73` site from the status
+gate) succeeds silently — no INCIDENT text, since nothing status-incident-shaped occurred — but
+still leaves the *original* commit SHA's content forever retrievable via `git show`, per the
+SHA-pin immutability mechanism above.
+
+**`timeout_seconds: 120`, not the observer-seam default of `30`.** This script's snapshot path
+commits into the *target Lean project's own* git history, an operation that can exceed a 30-second
+default on a loaded host. A timeout degrades to the correct, already-documented failure mode —
+a warning and no manifest — never a hard failure, so the wider budget only reduces how often that
+degraded path is hit; it does not change what happens when it is.
+
+**`project_root` limitation.** The observer passes `.` as `project_root` and relies entirely on
+its own inherited working directory being the repo root that owns both `.claude/scripts/` and
+`specs/` — the same single-repo assumption this script's own CWD convention above already
+requires of every caller. A Lean project nested below the repo root, or living in a different
+repository from the `specs/` tree that drives it, is not supported by this seam.
+
+**Structural side effect, intentional.** Every qualifying lean4 plan cycle commits a Challenge
+into the target project's own git history automatically, as a direct consequence of the observer
+registration; outside this seam, the same commit requires deliberate human invocation of this
+script. This is the intended immutability mechanism operating as designed — a Challenge the
+agent can rewrite certifies nothing — not a defect to be mitigated.
+
+**`/orchestrate`-only reach.** The observer's single invocation site is
+`orchestrate-cycle-postflight.sh`'s completion path. A lean4 plan produced by `/revise` or any
+other dispatch outside `/orchestrate`'s own cycle gets no snapshot from this seam. `/orchestrate`
+is the only dispatch path that produces a lean4 plan today (the lean extension provides no
+standalone plan skill), so this gap is latent rather than live.
+
 ## Manifest Schema
 
 `specs/{NNN}_{SLUG}/challenge/manifest.json`, read verbatim by the Comparator compare step:
@@ -150,7 +217,7 @@ the two tools share an operator-facing vocabulary rather than inventing a second
 | `0` | OK | Comparator's own `verified`/pass exit |
 | `64` | Usage error | `lean-comparator-run.sh`'s own `64` usage error |
 | `65` | Statement drift detected (`--check` mode only) | Comparator's `statement_mismatch` verdict |
-| `71` | Config error — identifier-set mismatch between `## Lean Challenge Statements` and `**Goals**:`, or an identifier resolvable by neither R1 nor R2 | Comparator's `config_error` verdict |
+| `71` | Config error — identifier-set mismatch between `## Lean Challenge Statements` and `**Goals**:`, an identifier resolvable by neither R1 nor R2, OR (in `--check` mode) no manifest found at the expected path, or the pinned trust anchor at the manifest's recorded commit SHA is unreadable from the target project's git history | Comparator's `config_error` verdict |
 | `72` | Zero-goal plan — intentional, no Challenge produced (marker-recognized, `**Goals**:` also empty) | (new to this tool; no Comparator analogue) |
 | `73` | Snapshot refused — status-gate refusal (regeneration attempted past `planned`, or an existing manifest without `--force`) | (new to this tool; no Comparator analogue — Comparator has no notion of a status gate) |
 
@@ -163,6 +230,16 @@ Promotion to a hard gate is a separate, later decision to be taken on evidence f
 the same operator decision already recorded, unchanged, for `lean-comparator-run.sh` in
 `comparator-integration.md`. Nothing produced by this task wires the snapshot or any drift
 verdict into a completion gate.
+
+**Promotion ruling: DECLINED, on two independent grounds.** First, a known false-ambiguity defect
+in the `--check` verdict (a research prototype under `specs/` can declare a pinned name that is
+never meant to satisfy the drift check) is an open, unlanded precondition for promoting this
+verdict to blocking — a blocking check that can fail on a correct tree because of that defect
+would be worse than no check at all. Second, "evidence from real runs" is this section's own
+pre-existing promotion test, and this seam's `lean-challenge-observe` call site is its first-ever
+real invocation — there is no accumulated evidence yet to promote on. Declining now is therefore
+not deferral by default; promoting before either ground clears would invert the order this
+section already sets. The verdict stays advisory.
 
 ## Demonstrated Behaviour
 

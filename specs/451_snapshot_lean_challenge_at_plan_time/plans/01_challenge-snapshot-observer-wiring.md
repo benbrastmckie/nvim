@@ -439,7 +439,7 @@ alongside the two real paths.
 
 ---
 
-### Phase 4: Record every ruling, and correct the two now-false header claims [NOT STARTED]
+### Phase 4: Record every ruling, and correct the two now-false header claims [COMPLETED]
 
 **Goal**: The design record and the rule state the current design on its own merits -- where the
 snapshot is produced, where `--check` is consumed, what a re-plan does, why promotion is declined,
@@ -447,59 +447,59 @@ what `project_root` assumes, and what the new commit-volume side effect is -- an
 `lean-challenge-snapshot.sh`'s own header stops asserting two things that are no longer true.
 
 **Tasks**:
-- [ ] In `agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md`, add a
+- [x] In `agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md`, add a
       section naming the producing call site: the `lean-challenge-observe` observer, invoked from
       `orchestrate-cycle-postflight.sh`'s completion path, discriminating on `resting_status`, and
       producing a snapshot only at `planned` -- the one plan-cycle resting status the exit-73 gate
       already admits, so the producing site never fights the gate.
-- [ ] In the same file, name the consuming call site (the same observer at the implement-side
+- [x] In the same file, name the consuming call site (the same observer at the implement-side
       statuses) and record why the observer seam was chosen over a `postflight` lifecycle hook or
       a core call: extension-local, zero core edits, advisory and non-blocking by written
       contract, bounded by `timeout`, and discriminating on the very status the gate evaluates.
-- [ ] Record the re-plan ruling in that file: REFUSE, inherited from the existing exit-73
+- [x] Record the re-plan ruling in that file: REFUSE, inherited from the existing exit-73
       manifest-exists refusal, because a Challenge the agent can silently overwrite certifies
       nothing. State that `--force` remains the only override and remains incident-shaped.
-- [ ] Record the `timeout_seconds: 120` choice and its reason (the snapshot commits into the
+- [x] Record the `timeout_seconds: 120` choice and its reason (the snapshot commits into the
       target project's git history, which can exceed the 30-second default on a loaded host; a
       timeout degrades to a warning plus no manifest, which is the correct failure mode).
-- [ ] Record the `project_root` limitation plainly: the observer passes `.` and inherits the repo
+- [x] Record the `project_root` limitation plainly: the observer passes `.` and inherits the repo
       root as its working directory, so a Lean project nested below the repo root, or living in a
       different repository from the `specs/` tree, is not supported by this seam.
-- [ ] Record the structural side effect: every qualifying lean4 plan cycle now commits a Challenge
+- [x] Record the structural side effect: every qualifying lean4 plan cycle now commits a Challenge
       into the target project's own history automatically. State it as the intended immutability
       mechanism, not a defect.
-- [ ] Record the `/orchestrate`-only reach: the observer's single invocation site means a lean4
+- [x] Record the `/orchestrate`-only reach: the observer's single invocation site means a lean4
       plan produced outside `/orchestrate`'s own cycle gets no snapshot.
-- [ ] Widen that file's exit-code table row for `71` so it covers `do_check()`'s manifest-absent
+- [x] Widen that file's exit-code table row for `71` so it covers `do_check()`'s manifest-absent
       and unreadable-trust-anchor uses, not only the identifier-set mismatch it currently names.
-- [ ] Amend the `## Gate Strength: Advisory Only` section (confirmed present at line 157) to
+- [x] Amend the `## Gate Strength: Advisory Only` section (confirmed present at line 157) to
       record the ruling: promotion is DECLINED, on the two grounds in this plan's Decisions
       section -- 462's unlanded false-ambiguity defect, and the section's own "evidence from real
       runs" test, which this seam's first-ever call site has not yet had the chance to satisfy.
       Keep the advisory verdict itself unchanged.
-- [ ] In `agent-system/extensions/lean/rules/plan-compliance.md`, amend the `ADVISORY ONLY`
+- [x] In `agent-system/extensions/lean/rules/plan-compliance.md`, amend the `ADVISORY ONLY`
       paragraph (confirmed present at line 61) to note that `--check` now has a real call site and
       that its verdict is nonetheless retained as advisory, with the reason in one line. Leave the
       existing escalation route (mark the phase `[BLOCKED]` and raise it; never quietly edit the
       recorded Challenge) exactly as written.
-- [ ] In `agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh`, replace the false
+- [x] In `agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh`, replace the false
       clause at line 97 -- which asserts the script "is not itself deployed as a Claude Code
       artifact -- see manifest.json" -- with the correct statement: it IS listed in
       `provides.scripts` and IS deployed executable into consumer trees. Keep the surrounding CWD
       convention, which is accurate and load-bearing, intact. Re-derive the line number before
       editing; the sentence begins on the preceding line.
-- [ ] In the same file's `GATE STRENGTH:` header block (confirmed present at line 25), replace the
+- [x] In the same file's `GATE STRENGTH:` header block (confirmed present at line 25), replace the
       clause asserting the script is "a standalone CLI, not wired into any completion gate by this
       script or by anything else in this source tree". Half of it is now false and half is still
       true, so state both precisely: it IS invoked by the `lean-challenge-observe` observer, and it
       is still wired into no completion gate, because an observer's return code is recorded as an
       event and otherwise ignored.
-- [ ] Both edits to `lean-challenge-snapshot.sh` are comment-only. Do not touch the status gate,
+- [x] Both edits to `lean-challenge-snapshot.sh` are comment-only. Do not touch the status gate,
       `PRE_IMPLEMENTATION_STATUSES`, `do_check()`, or any executable line.
-- [ ] Declare `index-entries.json` below but do NOT hand-edit its `line_count`: this phase moves
+- [x] Declare `index-entries.json` below but do NOT hand-edit its `line_count`: this phase moves
       `challenge-snapshot.md`'s line count, and Phase 5 reconciles the derived value with the
       sanctioned generator.
-- [ ] State every ruling on its own merits. No task numbers and no record-versioning language in
+- [x] State every ruling on its own merits. No task numbers and no record-versioning language in
       any of these four files.
 
 **Timing**: 1.25 hours

@@ -57,11 +57,15 @@ whether the declaration name matches.
 compares each named theorem's pinned signature (recorded at snapshot time, before
 implementation) against the current working tree's same-named declaration, independently of
 whether Comparator is ever wired in — see
-`context/project/lean4/domain/challenge-snapshot.md` for the full design. **Its verdict is
-ADVISORY ONLY**: a drift finding from `--check` MUST NOT be treated as grounds to fail a task,
-set `verification_passed` false, or downgrade a status on its own. Treat a `--check` drift
-finding the same way any other plan-compliance concern is treated under this rule: as a signal
-to investigate, not an automatic verdict.
+`context/project/lean4/domain/challenge-snapshot.md` for the full design. This check now has a
+real call site: the `lean-challenge-observe` post-task observer runs it at the implement-side
+resting statuses. **Its verdict is retained as ADVISORY ONLY** nonetheless, because the evidence
+needed to consider promoting it to blocking (real-run history, plus a precondition fix on a
+known false-ambiguity defect) does not yet exist — see the design record's `## Gate Strength:
+Advisory Only` section for the full ruling. A drift finding from `--check` MUST NOT be treated as
+grounds to fail a task, set `verification_passed` false, or downgrade a status on its own. Treat
+a `--check` drift finding the same way any other plan-compliance concern is treated under this
+rule: as a signal to investigate, not an automatic verdict.
 
 **If a drift finding turns out to reflect a genuinely wrong recorded statement** (the plan
 itself specified something that should not have been specified), the sanctioned route is the

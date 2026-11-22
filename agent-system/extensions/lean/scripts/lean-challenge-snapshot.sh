@@ -25,9 +25,11 @@
 # GATE STRENGTH: this script's `--check` verdict is ADVISORY ONLY, exactly like
 # lean-comparator-run.sh's own verdict. A drift finding (exit 65) MUST NOT be interpreted by any
 # caller as grounds to set verification_passed false, downgrade a task's status, or block
-# completion -- that promotion is a separate, later, not-yet-made decision. This script is a
-# standalone CLI, not wired into any completion gate by this script or by anything else in this
-# source tree.
+# completion -- that promotion is a separate, later, not-yet-made decision. This script IS
+# invoked -- by the `lean-challenge-observe` post-task observer, both to produce a snapshot
+# (resting_status planned) and to run --check (the implement-side resting statuses) -- but is
+# still wired into no completion gate: an observer's own return code is recorded as one
+# task_observer_run event and otherwise ignored, never read by any status or verification logic.
 #
 # Usage:
 #   lean-challenge-snapshot.sh <task_number> <project_root> [--commit REF]
@@ -93,11 +95,12 @@
 set -uo pipefail
 
 # Repo root: three levels up from agent-system/extensions/lean/scripts/ when run from the source
-# store, OR the project root when run from a deployed .claude/scripts/ copy (this script is not
-# itself deployed as a Claude Code artifact -- see manifest.json -- but is invoked directly by
-# task number against a repo checkout, so it resolves specs/ relative to the CURRENT WORKING
-# DIRECTORY, exactly like lean-comparator-run.sh's own plan-resolution convention. Callers MUST
-# invoke this script from the repo root that owns the specs/{padded}_{slug}/ directory.
+# store, OR the project root when run from a deployed .claude/scripts/ copy (this script IS
+# listed in manifest.json's provides.scripts and IS deployed executable into consumer trees --
+# see manifest.json -- and is invoked directly by task number against a repo checkout, so it
+# resolves specs/ relative to the CURRENT WORKING DIRECTORY, exactly like
+# lean-comparator-run.sh's own plan-resolution convention. Callers MUST invoke this script from
+# the repo root that owns the specs/{padded}_{slug}/ directory.
 
 usage() {
   echo "Usage: lean-challenge-snapshot.sh <task_number> <project_root> [--commit REF] [--challenge-module NAME] [--force] [--dry-run [--compile]] [--json]" >&2

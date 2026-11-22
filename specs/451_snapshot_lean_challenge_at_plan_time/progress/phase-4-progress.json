@@ -1,0 +1,16 @@
+{
+  "phase": 4,
+  "phase_name": "Record every ruling, and correct the two now-false header claims",
+  "started_at": "2026-11-22T02:20:00Z",
+  "last_updated": "2026-11-22T02:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add Producing and Consuming Call Sites section to challenge-snapshot.md, recording registration rationale, re-plan ruling, timeout, project_root, side effect, and /orchestrate-only reach", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md"]},
+    {"id": 2, "description": "Widen the exit-71 table row and amend Gate Strength: Advisory Only with the declined-promotion ruling", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md"]},
+    {"id": 3, "description": "Amend plan-compliance.md's ADVISORY ONLY paragraph to note the new call site", "status": "done", "files_touched": ["agent-system/extensions/lean/rules/plan-compliance.md"]},
+    {"id": 4, "description": "Correct the two now-false header claims in lean-challenge-snapshot.sh (comment-only)", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}
