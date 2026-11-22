@@ -419,7 +419,7 @@ this path, and the very file being edited.
 
 ---
 
-### Phase 3: Regenerate the deployed tree and close the gate obligation [NOT STARTED]
+### Phase 3: Regenerate the deployed tree and close the gate obligation [COMPLETED]
 
 **Goal**: the runtime copy the lean implementation agent actually invokes
 (`.claude/scripts/lean-plan-compliance-check.sh`) carries the widened scope and resolves its
@@ -428,31 +428,39 @@ gate set explicitly deferred to the orchestration close.
 
 **Tasks**:
 
-- [ ] Confirm the working tree holds both committed phases and nothing unrelated to this task is
-      staged.
-- [ ] Regenerate the deployed tree with the bounded-wait idiom the deploy path requires:
+- [x] Confirm the working tree holds both committed phases and nothing unrelated to this task is
+      staged. *(completed: both phase commits present in git log, nothing staged)*
+- [x] Regenerate the deployed tree with the bounded-wait idiom the deploy path requires:
       `timeout 540 bash .claude/scripts/deploy-headless.sh`, invoked with the Bash tool's
       `timeout` parameter raised to 600000 rather than its 120000ms default (see
       `context/patterns/external-process-wait.md` Rule 1). Require exit 0. This is whole-tree
-      regeneration, which is why `__WHOLE_TREE__` is declared below.
-- [ ] Confirm `.claude/scripts/lean-plan-compliance-check.sh` and
+      regeneration, which is why `__WHOLE_TREE__` is declared below. *(completed: exit 0,
+      RESULT=landed_verify_clean, 41 checks/0 failures)*
+- [x] Confirm `.claude/scripts/lean-plan-compliance-check.sh` and
       `.claude/scripts/tests/test-lean-plan-compliance-check.sh` are byte-identical to their
-      source-store counterparts (`diff` on each, expecting no output).
-- [ ] Confirm the deployed script's harvester resolution succeeds on its first non-override rung:
-      `.claude/scripts/plan-file-scope-harvest.sh` exists next to it and is readable.
-- [ ] Run the suite from its deployed location
+      source-store counterparts (`diff` on each, expecting no output). *(completed: both diff
+      clean)*
+- [x] Confirm the deployed script's harvester resolution succeeds on its first non-override rung:
+      `.claude/scripts/plan-file-scope-harvest.sh` exists next to it and is readable. *(completed)*
+- [x] Run the suite from its deployed location
       (`bash .claude/scripts/tests/test-lean-plan-compliance-check.sh`) and require every case
       green there too — the source-store run in Phase 2 exercises the source-store resolution
       rung, and this run exercises the sibling-directory rung that production actually uses.
-- [ ] Run the scoped touched-path check that discharges this phase's own in-dispatch obligation:
+      *(completed: 28 passed, 0 failed)*
+- [x] Run the scoped touched-path check that discharges this phase's own in-dispatch obligation:
       `bash .claude/scripts/verify-touched.sh agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh`
       (one invocation over the whole touched set, never one per path). Require exit 0.
-- [ ] State explicitly, in the dispatch's own return, that the complete gate set is deferred to
+      *(completed: rc=0, resolved to the one covering suite)*
+- [x] State explicitly, in the dispatch's own return, that the complete gate set is deferred to
       the orchestration close (`context/contracts/batch-gate-stage.md`) and is NOT run
-      independently in this phase.
-- [ ] Record the comparator-gate Preflight 4 blind spot as a follow-up candidate in the task's
+      independently in this phase. *(completed: stated here and in this phase's own progress
+      file/handoff -- the dispatch's Batch Gate Deferral directive scopes this phase's declared
+      `full` tier to the narrowing invocation above; the complete gate set runs once for the
+      whole batch at the orchestration close, not independently here)*
+- [x] Record the comparator-gate Preflight 4 blind spot as a follow-up candidate in the task's
       issue log, so the out-of-scope decision leaves a durable trace rather than only a sentence
-      in this plan.
+      in this plan. *(completed: recorded via issue-record.sh, class "tooling bug or gap",
+      severity minor)*
 
 **Timing**: 0.5 hours
 
