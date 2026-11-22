@@ -8245,6 +8245,7 @@ Nothing was lost in the observed run, and that is precisely the risk: the failur
 - **Dependencies**: Task 412
 - **Research**: [463_lean_goal_empty_goals_trust_surface/reports/01_lean-goal-trust-surface.md]
 - **Plan**: [463_lean_goal_empty_goals_trust_surface/plans/01_lean-goal-trust-surface.md]
+- **Summary**: [463_lean_goal_empty_goals_trust_surface/summaries/01_lean-goal-trust-surface-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: resolve `source_dir` from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. Never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description, which lives under specs/**.
 

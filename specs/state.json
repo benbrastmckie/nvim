@@ -5358,7 +5358,8 @@
         "agent-system/extensions/lean/README.md",
         "agent-system/extensions/lean/context/project/lean4/agents/lean-implementation-flow.md",
         "agent-system/extensions/lean/context/project/lean4/domain/metadata-trust-surfaces.md",
-        "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md"
+        "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md",
+        "agent-system/extensions/lean/index-entries.json"
       ],
       "artifacts": [
         {
@@ -5370,12 +5371,18 @@
           "path": "specs/463_lean_goal_empty_goals_trust_surface/plans/01_lean-goal-trust-surface.md",
           "type": "plan",
           "summary": "Four-phase implementation plan: canonical statement in mcp-tools-guide.md, pointer in lean-implementation-flow.md, README gloss deletion, redeploy with __WHOLE_TREE__ claim. 1.9h estimated, 3 dependency waves."
+        },
+        {
+          "path": "specs/463_lean_goal_empty_goals_trust_surface/summaries/01_lean-goal-trust-surface-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all four phases of the lean_goal trust-surface task."
         }
       ],
       "created": "2026-11-04T01:29:14Z",
       "last_updated": "2026-11-22T17:59:38Z",
       "session_id": "sess_1795360608_7bb5fd",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Replaced the false 'no goals' = proof complete equivalence in mcp-tools-guide.md's lean_goal section with a corrected trust-surface statement, the measured sorryAx mechanism (re-measured locally at Lean 4.27.0-rc1), and the named lean_verify check; pointed lean-implementation-flow.md's Stage 4B item 5 at it without restating; removed the parallel restatement from the extension README's capability table; and redeployed the tree (RESULT=landed_verify_clean). One named residual (lean-implementation-agent.md step 9) excluded due to a concurrent sibling's territory claim and recorded via issue-record.sh."
     },
     {
       "project_number": 472,
