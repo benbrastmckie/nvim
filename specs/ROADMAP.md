@@ -6,7 +6,7 @@
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
-| [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 4/6 | none |
+| [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 5/6 | none |
 | [M3: Reviewable landing: batch worktrees, squash commits, generated-path collapse](#milestone-m3) | planned | 0/9 | none |
 | [M1: Current work](#milestone-m1) | active | 8/126 | none |
 
@@ -17,22 +17,17 @@ See also: [Rules, conventions and repo context](#roadmap-context)
 
 Make a repository bindable to a shared Sapience project and workable by a second person: bind and register the repo, resolve every automatic write and read through the link, let extension activation alone decide capture, and keep the token out of the MCP entry.
 
-- **Progress**: active -- 0/2 batches, 4/6 tasks done -- Link, policy and token work landed; capture coupling then collaborator setup remain.
+- **Progress**: active -- 1/2 batches, 5/6 tasks done -- Link, policy and token work landed; capture coupling then collaborator setup remain.
 - **Review**: none
 - **Gate**: A collaborator with their own account and a plain Claude Code install goes from a fresh clone of a linked repo to a verified project note without help; every automatic write and retrieval resolves the linked project rather than a directory-name label; loading or unloading the extension is the only switch over a repo's capture; no registered MCP entry carries the Sapience token.
 
-**Batch 1** -- Let extension activation alone decide this repo's capture, through the vendor CLI
-
-```
-/orchestrate 683
-683 ready           couple_sapience_capture_to_extension_activation
-```
+**Batch 1** (done) -- Let extension activation alone decide this repo's capture, through the vendor CLI
 
 **Batch 2** -- Make the link decide every Sapience write, read and policy, and keep the token out of the entry (4/5 done)
 
 ```
 /orchestrate 679 --hard
-679 blocked:683     sapience_collaborator_setup_for_plain_claude_code
+679 ready           sapience_collaborator_setup_for_plain_claude_code
 677 done            sapience_automatic_writes_and_retrieval_by_project_id
 678 done            sapience_linked_repo_write_and_capture_policy
 681 done            sapience_bind_existing_project_and_register_repo
