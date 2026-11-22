@@ -35,6 +35,32 @@
 # deleting the whole project row would discard unrelated session/history/cost metadata. `--reap`
 # is a standalone, cross-project action: it ignores `--scope` and needs no `--project`.
 #
+# --capture-set on|off (capture/activation coupling): couples ~/.sapience/config.json's
+# capture.projects[].enabled for ONE project path to the SessionStart hook's own
+# .extensions.sapience.status detection, EXCLUSIVELY by shelling out to the vendor's own
+# `sapience projects on|off <path>` CLI -- never by hand-editing config.json -- so the vendor
+# client remains the sole writer of that file under its own lock and the coupling survives
+# vendor auto-update. The idempotence decision (see capture_state_for_path below) reads the
+# EXACT-PATH entry, not the longest-prefix match verify-sapience-mcp.sh's check (i) uses for
+# reporting: set_project() matches and creates an entry keyed on the exact realpath'd path, so
+# the exact-path entry is the only state an on/off call actually changes -- deciding from a
+# parent-prefix match would make a child repo under an enabled parent never get its own entry.
+# Silent and idempotent in steady state: acts, and emits a --quiet notice, only when a post-call
+# re-read shows the exact-path state actually changed. Degrades silently (exit 0, no notice) on
+# every failure path: absent `sapience` binary, a timeout, a nonzero CLI exit, or a
+# set_project() -> None refusal (checkout root is $HOME, or a TCC-denied top-level folder).
+#
+# --reap-capture (cross-project capture reaper): mirrors --reap above, but for
+# ~/.sapience/config.json's capture.projects[] instead of ~/.claude.json's .projects[]. Turns
+# off (via the same vendor CLI call) every entry whose `enabled` is `true` and whose
+# `path_prefix` is no longer a directory on disk -- set_project() matches by string-equal
+# path_prefix with no `isdir` check on the lookup path, and normalize()/is_project_root() never
+# drop an entry for not existing on disk, so a vanished project would otherwise stay
+# `enabled: true` indefinitely. Degrades silently when config.json is unreadable, carries no
+# "capture" key, or the `sapience` binary is absent. An unreadable/unmounted path reads as
+# absent via `[ ! -d ]` and is turned off as if orphaned -- accepted, since the next session
+# start in that repo re-enables it via the register branch.
+#
 # Usage: ./setup-sapience-mcp.sh [OPTIONS]
 #
 # Options:
@@ -47,6 +73,14 @@
 #                        <path> that is no longer a directory on disk (cross-project; ignores
 #                        --scope and --project). Other servers and the project row itself are
 #                        left untouched; an emptied .mcpServers becomes {} and stays that way.
+#   --capture-set VALUE  on | off -- couple ~/.sapience/config.json's capture.projects[].enabled
+#                        for --project (default: pwd) to VALUE, exclusively via the vendor's own
+#                        `sapience projects on|off` CLI. Idempotent and silent in steady state;
+#                        degrades silently when the `sapience` binary is absent or the call
+#                        fails. Ignores --scope/--remove.
+#   --reap-capture       Turn off (via the vendor CLI) every capture.projects[] entry whose
+#                        path_prefix no longer exists on disk and whose enabled is true
+#                        (cross-project; ignores --scope and --project).
 #   --quiet             Silent and exit 0 when the entry already matches; one line when it
 #                        writes. Suitable for hook invocation.
 #   --help              Show this help message
@@ -81,6 +115,8 @@ DRY_RUN=false
 REMOVE=false
 RETIRE_GLOBAL=false
 REAP=false
+CAPTURE_SET=""
+REAP_CAPTURE=false
 QUIET=false
 PROJECT_PATH=""
 SCOPE="project"
@@ -111,6 +147,14 @@ while [[ $# -gt 0 ]]; do
             REAP=true
             shift
             ;;
+        --capture-set)
+            CAPTURE_SET="$2"
+            shift 2
+            ;;
+        --reap-capture)
+            REAP_CAPTURE=true
+            shift
+            ;;
         --quiet|-q)
             QUIET=true
             shift
@@ -131,6 +175,14 @@ case "$SCOPE" in
     project|global|both) ;;
     *)
         echo "Error: --scope must be one of: project, global, both (got: $SCOPE)"
+        exit 1
+        ;;
+esac
+
+case "$CAPTURE_SET" in
+    ""|on|off) ;;
+    *)
+        echo "Error: --capture-set must be one of: on, off (got: $CAPTURE_SET)"
         exit 1
         ;;
 esac
@@ -233,6 +285,106 @@ process_reap() {
 
 if $REAP; then
     process_reap
+    exit 0
+fi
+
+# sapience_cli VERB PATH -- the single invocation site for the vendor capture CLI
+# (`sapience projects on|off <path>`). Resolves the `sapience` binary via `command -v`,
+# returning non-zero with nothing on stdout/stderr when it is absent -- every caller below
+# degrades silently when this returns non-zero. SAPIENCE_NO_CAPTURE_SYNC=1 makes projects_cli's
+# trailing capture_sync() network-free (the guard at ~/.sapience/upload.py:1023 returns before
+# any HTTP call is made); the outer `timeout 15` is defense-in-depth, chosen deliberately below
+# the ~16s two-blocking-call network worst case so a future vendor version that drops the env
+# guard still cannot hang session start past 15s rather than absorbing the full wait.
+sapience_cli() {
+    local verb="$1" path="$2" bin
+    bin="$(command -v sapience 2>/dev/null || echo "")"
+    if [ -z "$bin" ]; then
+        return 1
+    fi
+    SAPIENCE_NO_CAPTURE_SYNC=1 timeout 15 "$bin" projects "$verb" "$path" > /dev/null 2>&1
+}
+
+# capture_state_for_path PATH -- echoes "enabled", "disabled", or "absent" for the EXACT-PATH
+# (never longest-prefix) capture.projects[] entry matching the realpath-normalized PATH.
+# Exact-path, not longest-prefix: this is the WRITE-side idempotence decision, distinct from
+# verify-sapience-mcp.sh's check (i), which mirrors sapience_capture.py's for_cwd()/
+# match_project() longest-prefix-wins rule for REPORTING purposes. set_project() matches and
+# creates an entry keyed on the exact realpath'd path it is given, so the exact-path entry is
+# the only state an on/off call actually changes -- deciding idempotence from a parent-prefix
+# match would make a child repo sitting under an enabled parent prefix never acquire its own
+# entry. Both sides of the comparison are realpath'd, since set_project() normalizes its own
+# key the same way. Returns non-zero (echoing nothing) when ~/.sapience/config.json is
+# unreadable or carries no "capture" key at all.
+capture_state_for_path() {
+    local path="$1" normalized entry enabled
+
+    if [ ! -r "$SAPIENCE_CONFIG" ] || ! jq -e 'has("capture")' "$SAPIENCE_CONFIG" > /dev/null 2>&1; then
+        return 1
+    fi
+
+    normalized="$(realpath "$path" 2>/dev/null || readlink -f "$path" 2>/dev/null || echo "$path")"
+
+    entry="$(jq -c --arg p "$normalized" '
+        (.capture.projects // []) | map(select((.path_prefix // "") == $p)) | last // null
+    ' "$SAPIENCE_CONFIG" 2>/dev/null || echo "null")"
+
+    if [ -z "$entry" ] || [ "$entry" = "null" ]; then
+        echo "absent"
+        return 0
+    fi
+
+    enabled="$(jq -r '.enabled // false' <<< "$entry" 2>/dev/null || echo "false")"
+    if [ "$enabled" = "true" ]; then
+        echo "enabled"
+    else
+        echo "disabled"
+    fi
+}
+
+# process_capture_set VALUE -- the --capture-set on|off action body. Resolves the target path
+# (--project, default pwd); reads its current EXACT-PATH capture state; exits silently when it
+# already matches VALUE (steady state); otherwise calls sapience_cli, then RE-READS the state
+# and emits the one-line --quiet notice only when it actually changed -- so a refused
+# set_project() call is reported truthfully regardless of the CLI's own exit convention.
+# --dry-run reports the transition it would make (against the pre-call state) and returns
+# without calling sapience_cli at all.
+process_capture_set() {
+    local value="$1" target before after
+
+    target="${PROJECT_PATH:-$(pwd)}"
+    before="$(capture_state_for_path "$target" 2>/dev/null || echo "")"
+    [ -z "$before" ] && before="absent"
+
+    if [ "$value" = "on" ] && [ "$before" = "enabled" ]; then
+        log "sapience capture already enabled for $target. No changes needed."
+        return 0
+    fi
+    if [ "$value" = "off" ] && { [ "$before" = "disabled" ] || [ "$before" = "absent" ]; }; then
+        log "sapience capture already ${before} for $target. No changes needed."
+        return 0
+    fi
+
+    if $DRY_RUN; then
+        log "[DRY RUN] Would set capture $value for $target (current: $before)"
+        return 0
+    fi
+
+    sapience_cli "$value" "$target" || true
+
+    after="$(capture_state_for_path "$target" 2>/dev/null || echo "")"
+    [ -z "$after" ] && after="absent"
+
+    if [ "$after" != "$before" ]; then
+        log "sapience: set capture $value for $target (was: $before, now: $after)"
+        [ "$QUIET" = "true" ] && echo "sapience: capture ${value} for $target"
+    else
+        log "sapience: capture $value for $target had no effect (still: $after) -- the sapience binary may be absent, timed out, or refused the request."
+    fi
+}
+
+if [ -n "$CAPTURE_SET" ]; then
+    process_capture_set "$CAPTURE_SET"
     exit 0
 fi
 

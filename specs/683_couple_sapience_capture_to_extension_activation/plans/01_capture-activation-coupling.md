@@ -1,7 +1,7 @@
 # Implementation Plan: Couple Sapience Capture to Extension Activation
 
 - **Task**: 683 - Couple Sapience capture enablement to sapience-extension activation
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 9 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/683_couple_sapience_capture_to_extension_activation/reports/01_capture-activation-coupling.md
@@ -201,39 +201,39 @@ Phases within the same wave can execute in parallel. This plan is fully sequenti
 build on each other's shared helpers in one file, and Phases 3-4 both append cases to the single
 `test-sapience-mcp-registration.sh` suite, so serializing them avoids same-file contention.
 
-### Phase 1: Writer-Side `--capture-set` Action [NOT STARTED]
+### Phase 1: Writer-Side `--capture-set` Action [COMPLETED]
 
 **Goal**: `setup-sapience-mcp.sh` gains an idempotent, silent-in-steady-state
 `--capture-set on|off --project PATH` action that is the single place the vendor capture CLI is
 invoked, plus the two helpers the next phase reuses -- with its own fixture test cases.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh` immediately before
-      editing (three concurrent siblings on this working tree have undeclared scope).
-- [ ] Add `sapience_cli VERB PATH`: resolve the binary with `command -v sapience`, return non-zero
+- [x] Re-read `agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh` immediately before
+      editing (three concurrent siblings on this working tree have undeclared scope). *(completed)*
+- [x] Add `sapience_cli VERB PATH`: resolve the binary with `command -v sapience`, return non-zero
       silently when absent, and otherwise invoke
       `SAPIENCE_NO_CAPTURE_SYNC=1 timeout 15 sapience projects "$VERB" "$PATH"` with stdout and
       stderr captured, never leaked. Record the 15s choice and its sub-worst-case rationale in a
-      comment.
-- [ ] Add `capture_state_for_path PATH`: realpath-normalize the argument (`realpath`/`readlink -f`,
+      comment. *(completed)*
+- [x] Add `capture_state_for_path PATH`: realpath-normalize the argument (`realpath`/`readlink -f`,
       falling back to the raw value), read `$SAPIENCE_CONFIG`, and echo `enabled`, `disabled`, or
       `absent` for the **exact-path** `capture.projects[]` entry. Return non-zero silently when
       the file is unreadable or carries no `capture` key. Comment the exact-path-vs-longest-prefix
-      choice, pointing at check (i) as the reporting-side counterpart.
-- [ ] Add the `--capture-set VALUE` flag (`on`|`off`, validated with a loud error on any other
+      choice, pointing at check (i) as the reporting-side counterpart. *(completed)*
+- [x] Add the `--capture-set VALUE` flag (`on`|`off`, validated with a loud error on any other
       value, matching the existing `--scope` validation shape) to the argument loop and to the
-      header/`--help` usage block.
-- [ ] Implement the action as a standalone branch placed beside `--retire-global`/`--reap` --
+      header/`--help` usage block. *(completed)*
+- [x] Implement the action as a standalone branch placed beside `--retire-global`/`--reap` --
       above `PROJECT_PATH`/`SCOPE` resolution and above `resolve_interpreter`'s hard `exit 1`,
-      for the same reason that placement comment already gives: no interpreter is needed.
-- [ ] Action body: resolve the target path (`--project`, default `pwd`); read the current exact-path
+      for the same reason that placement comment already gives: no interpreter is needed. *(completed)*
+- [x] Action body: resolve the target path (`--project`, default `pwd`); read the current exact-path
       state; exit 0 silently when it already matches the requested value; otherwise call
       `sapience_cli`, then **re-read** the state and emit the one-line `--quiet` notice only when
       it actually changed. Exit 0 on every path, including a nonzero CLI exit, a timeout, an absent
-      binary, and a `set_project` -> `None` refusal.
-- [ ] Support `--dry-run` for the new action: report the transition it would make and mutate
-      nothing.
-- [ ] Append writer-level cases to
+      binary, and a `set_project` -> `None` refusal. *(completed)*
+- [x] Support `--dry-run` for the new action: report the transition it would make and mutate
+      nothing. *(completed)*
+- [x] Append writer-level cases to
       `agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh`, using the
       existing `mktemp -d` fixture-HOME convention and a PATH-shadowed recording `sapience` stub
       modelled on `test-sapience-capture.sh`'s `build_curl_stub`: (a) `on` with no existing entry
@@ -242,8 +242,8 @@ invoked, plus the two helpers the next phase reuses -- with its own fixture test
       (c) steady state (`on` against an already-enabled exact entry) records no stub invocation and
       prints nothing; (d) no stub on `PATH` at all exits 0 silently; (e) an enabled **parent**
       prefix with no exact entry for the child still invokes `on` for the child (the exact-path
-      decision from Decisions 2); (f) `--dry-run` records no stub invocation.
-- [ ] Run the full suite and confirm the pre-existing cases still pass alongside the new ones.
+      decision from Decisions 2); (f) `--dry-run` records no stub invocation. *(completed: cases 56-61)*
+- [x] Run the full suite and confirm the pre-existing cases still pass alongside the new ones. *(completed: 64 passed, 0 failed)*
 
 **Timing**: 2 hours
 

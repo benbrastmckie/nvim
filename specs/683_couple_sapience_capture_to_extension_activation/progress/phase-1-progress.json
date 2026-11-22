@@ -1,0 +1,28 @@
+{
+  "phase": 1,
+  "phase_name": "Writer-Side --capture-set Action",
+  "started_at": "2026-11-22T09:08:03Z",
+  "last_updated": "2026-11-22T09:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add sapience_cli and capture_state_for_path helpers", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh"]},
+    {"id": 2, "description": "Add --capture-set flag, argument loop, header/help", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh"]},
+    {"id": 3, "description": "Implement --capture-set standalone action branch with dry-run support", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh"]},
+    {"id": 4, "description": "Append writer-level fixture-HOME test cases (56)-(61) plus sapience stub builder", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"]},
+    {"id": 5, "description": "Run full suite and confirm no regression", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 5,
+  "approaches_tried": [
+    {"approach": "sapience_stub_call_count using grep -c with trailing || echo 0", "result": "failed", "reason": "grep -c prints '0' on no-match AND exits nonzero, so the || echo 0 fallback doubled the output to '0\\n0'; fixed by capturing grep's stdout separately from its exit status"},
+    {"approach": "simulate missing sapience binary via PATH=<empty-dir>:/usr/bin:/bin", "result": "failed", "reason": "this machine has no /usr/bin/bash or /bin/bash (NixOS); bash itself failed to resolve. Replaced with build_path_without_sapience(), a single scratch dir of symlinks to everything on the ambient PATH except any file literally named 'sapience'"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.x",
+      "description": "Phase 1's task list only asks for --capture-set; Phase 2's --reap-capture header documentation was written ahead of schedule in the same header edit (the --reap-capture action itself and its process_reap_capture function are NOT implemented yet -- those remain Phase 2's own task)",
+      "type": "altered",
+      "reason": "Documenting both standalone actions together in the header comment block in one pass was clearer than splitting the prose edit across two phases; no functional code for --reap-capture was added in this phase",
+      "annotation": "*(deviation: altered -- --reap-capture documented in the header ahead of schedule; its implementation remains Phase 2's task)*"
+    }
+  ]
+}

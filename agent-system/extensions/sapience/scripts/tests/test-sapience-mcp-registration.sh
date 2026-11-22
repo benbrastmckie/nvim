@@ -31,6 +31,17 @@
 #   (34) An unrelated top-level key and an unrelated non-sapience project row both survive a
 #        --reap byte-for-byte.
 #
+# --capture-set writer cases (Phase 1, capture/activation coupling via the vendor CLI):
+#   (56) --capture-set on with no existing entry invokes a PATH-shadowed `sapience` stub with
+#        `projects on <path>` and SAPIENCE_NO_CAPTURE_SYNC=1 in its environment.
+#   (57) --capture-set off against an enabled:true entry invokes `projects off <path>`.
+#   (58) Steady state: --capture-set on against an already-enabled EXACT entry records no stub
+#        invocation and prints nothing under --quiet.
+#   (59) No `sapience` stub on PATH at all exits 0 silently.
+#   (60) An enabled PARENT prefix with no exact entry for the CHILD still invokes `on` for the
+#        child (the exact-path idempotence decision, not the longest-prefix match).
+#   (61) --capture-set --dry-run records no stub invocation and mutates nothing.
+#
 # Hook cases (Phase 3, added once the hook exists):
 #   (10) Active repo (.claude-extensions.json shows extensions.sapience.status == "active")
 #        registers the project-scoped entry and emits an additionalContext notice.
@@ -527,6 +538,226 @@ else
   else
     fail "Discrimination check: expected the orphan's sapience entry to survive under the inverted filter; it was reaped anyway (sapience=$SAPIENCE_DISC)"
   fi
+fi
+
+# =====================================================================
+# build_sapience_stub -- installs a minimal PATH-shadowing `sapience` stub into a fresh scratch
+# directory (under $WORKDIR), modelled on test-sapience-capture.sh's build_curl_stub. Records
+# each invocation's full argv and whether SAPIENCE_NO_CAPTURE_SYNC was "1" in its environment
+# into a recorder file inside the stub directory, then MUTATES the fixture
+# $HOME/.sapience/config.json's capture.projects[] the way the real vendor CLI's set_project()
+# would -- `projects on <path>` sets (or creates) that exact path_prefix's "enabled": true;
+# `projects off <path>` sets it false if present, and is a no-op if absent -- so a steady-state
+# second call can be observed as "no stub invocation" rather than only inferred.
+# =====================================================================
+build_sapience_stub() {
+  local stub_dir
+  stub_dir="$(mktemp -d -p "$WORKDIR")"
+  : > "$stub_dir/.calls"
+  cat > "$stub_dir/sapience" <<'STUB'
+#!/usr/bin/env bash
+calls_file="${STUB_DIR:-$(dirname "$0")}/.calls"
+{
+  printf 'ARGS:%s\n' "$*"
+  printf 'NO_CAPTURE_SYNC:%s\n' "${SAPIENCE_NO_CAPTURE_SYNC:-}"
+} >> "$calls_file" 2>/dev/null || true
+if [ "$1" = "projects" ]; then
+  verb="$2"; path="$3"
+  cfg="$HOME/.sapience/config.json"
+  if [ -f "$cfg" ]; then
+    tmp="$(mktemp)"
+    if [ "$verb" = "on" ]; then
+      jq --arg p "$path" '
+        (.capture.projects // []) as $ps |
+        ($ps | map(.path_prefix) | index($p)) as $idx |
+        if $idx == null then .capture.projects = ($ps + [{"path_prefix": $p, "enabled": true}])
+        else .capture.projects[$idx].enabled = true end
+      ' "$cfg" > "$tmp" 2>/dev/null && mv "$tmp" "$cfg"
+    else
+      jq --arg p "$path" '
+        (.capture.projects // []) as $ps |
+        ($ps | map(.path_prefix) | index($p)) as $idx |
+        if $idx == null then . else .capture.projects[$idx].enabled = false end
+      ' "$cfg" > "$tmp" 2>/dev/null && mv "$tmp" "$cfg"
+    fi
+  fi
+fi
+exit 0
+STUB
+  chmod +x "$stub_dir/sapience"
+  echo "$stub_dir"
+}
+
+# sapience_stub_call_count <stub_dir> -- number of recorded invocations. `grep -c` on a
+# no-match file already prints "0" AND exits nonzero, so a trailing `|| echo 0` would double it
+# to "0\n0" -- the count is captured separately from the exit status instead.
+sapience_stub_call_count() {
+  local stub_dir="$1" n
+  if [ -f "$stub_dir/.calls" ]; then
+    n="$(grep -c '^ARGS:' "$stub_dir/.calls" 2>/dev/null)"
+    [ -z "$n" ] && n=0
+    printf '%s' "$n"
+  else
+    printf '0'
+  fi
+}
+
+# build_path_without_sapience -- a fresh, single-directory PATH (symlinks to every executable
+# reachable on the CURRENT $PATH, EXCEPT any file named `sapience`) so a test case can simulate
+# "no sapience binary installed" while bash/jq/realpath/readlink/timeout and everything else
+# this writer needs still resolve normally -- removing the real sapience binary's own containing
+# directory wholesale would also remove jq, since both live in the same nix-profile bin/ on this
+# machine.
+build_path_without_sapience() {
+  local scratch dir entry base
+  scratch="$(mktemp -d -p "$WORKDIR")"
+  local old_ifs="$IFS"
+  IFS=':'
+  for dir in $PATH; do
+    [ -d "$dir" ] || continue
+    for entry in "$dir"/*; do
+      [ -e "$entry" ] || continue
+      base="$(basename "$entry")"
+      [ "$base" = "sapience" ] && continue
+      [ -e "$scratch/$base" ] && continue
+      ln -s "$entry" "$scratch/$base" 2>/dev/null || true
+    done
+  done
+  IFS="$old_ifs"
+  printf '%s' "$scratch"
+}
+
+# sapience_stub_last_args <stub_dir> -- the most recent recorded invocation's argv line.
+sapience_stub_last_args() {
+  local stub_dir="$1"
+  grep '^ARGS:' "$stub_dir/.calls" 2>/dev/null | tail -1 | sed 's/^ARGS://'
+}
+
+# sapience_stub_last_no_capture_sync <stub_dir> -- the most recent invocation's recorded
+# SAPIENCE_NO_CAPTURE_SYNC value.
+sapience_stub_last_no_capture_sync() {
+  local stub_dir="$1"
+  grep '^NO_CAPTURE_SYNC:' "$stub_dir/.calls" 2>/dev/null | tail -1 | sed 's/^NO_CAPTURE_SYNC://'
+}
+
+# =====================================================================
+# Case 56: --capture-set on with no existing entry invokes the stub with
+# `projects on <path>` and SAPIENCE_NO_CAPTURE_SYNC=1 in its environment.
+# =====================================================================
+HOME56="$WORKDIR/case56/home"
+PROJ56="$WORKDIR/case56/proj"
+mkdir -p "$HOME56/.sapience" "$PROJ56"
+echo '{}' > "$HOME56/.sapience/config.json"
+STUB56="$(build_sapience_stub)"
+
+PATH="$STUB56:$PATH" STUB_DIR="$STUB56" HOME="$HOME56" bash "$WRITER_SRC" --capture-set on --project "$PROJ56" --quiet > /dev/null 2>&1
+CALLS56="$(sapience_stub_call_count "$STUB56")"
+ARGS56="$(sapience_stub_last_args "$STUB56")"
+NOCS56="$(sapience_stub_last_no_capture_sync "$STUB56")"
+ENABLED56="$(jq -r --arg p "$PROJ56" '(.capture.projects // []) | map(select(.path_prefix == $p)) | last.enabled' "$HOME56/.sapience/config.json")"
+
+if [ "$CALLS56" = "1" ] && [ "$ARGS56" = "projects on $PROJ56" ] && [ "$NOCS56" = "1" ] && [ "$ENABLED56" = "true" ]; then
+  pass "Case 56: --capture-set on with no existing entry invokes the stub with 'projects on <path>' and SAPIENCE_NO_CAPTURE_SYNC=1"
+else
+  fail "Case 56: calls=$CALLS56 args='$ARGS56' nocs=$NOCS56 enabled=$ENABLED56"
+fi
+
+# =====================================================================
+# Case 57: --capture-set off against an enabled:true entry invokes `projects off <path>`.
+# =====================================================================
+HOME57="$WORKDIR/case57/home"
+PROJ57="$WORKDIR/case57/proj"
+mkdir -p "$HOME57/.sapience" "$PROJ57"
+jq -n --arg p "$PROJ57" '{"capture": {"projects": [{"path_prefix": $p, "enabled": true}]}}' > "$HOME57/.sapience/config.json"
+STUB57="$(build_sapience_stub)"
+
+PATH="$STUB57:$PATH" STUB_DIR="$STUB57" HOME="$HOME57" bash "$WRITER_SRC" --capture-set off --project "$PROJ57" --quiet > /dev/null 2>&1
+CALLS57="$(sapience_stub_call_count "$STUB57")"
+ARGS57="$(sapience_stub_last_args "$STUB57")"
+ENABLED57="$(jq -r --arg p "$PROJ57" '(.capture.projects // []) | map(select(.path_prefix == $p)) | last.enabled' "$HOME57/.sapience/config.json")"
+
+if [ "$CALLS57" = "1" ] && [ "$ARGS57" = "projects off $PROJ57" ] && [ "$ENABLED57" = "false" ]; then
+  pass "Case 57: --capture-set off against an enabled:true entry invokes 'projects off <path>'"
+else
+  fail "Case 57: calls=$CALLS57 args='$ARGS57' enabled=$ENABLED57"
+fi
+
+# =====================================================================
+# Case 58: steady state -- --capture-set on against an already-enabled EXACT entry records no
+# stub invocation and prints nothing (--quiet).
+# =====================================================================
+HOME58="$WORKDIR/case58/home"
+PROJ58="$WORKDIR/case58/proj"
+mkdir -p "$HOME58/.sapience" "$PROJ58"
+jq -n --arg p "$PROJ58" '{"capture": {"projects": [{"path_prefix": $p, "enabled": true}]}}' > "$HOME58/.sapience/config.json"
+STUB58="$(build_sapience_stub)"
+
+OUT58="$(PATH="$STUB58:$PATH" STUB_DIR="$STUB58" HOME="$HOME58" bash "$WRITER_SRC" --capture-set on --project "$PROJ58" --quiet 2>&1)"
+CALLS58="$(sapience_stub_call_count "$STUB58")"
+
+if [ "$CALLS58" = "0" ] && [ -z "$OUT58" ]; then
+  pass "Case 58: steady state (--capture-set on against an already-enabled exact entry) records no stub invocation and prints nothing"
+else
+  fail "Case 58: calls=$CALLS58 out='$OUT58'"
+fi
+
+# =====================================================================
+# Case 59: no `sapience` stub on PATH at all exits 0 silently (--quiet).
+# =====================================================================
+HOME59="$WORKDIR/case59/home"
+PROJ59="$WORKDIR/case59/proj"
+mkdir -p "$HOME59/.sapience" "$PROJ59"
+echo '{}' > "$HOME59/.sapience/config.json"
+NO_SAPIENCE_PATH="$(build_path_without_sapience)"
+
+RC59=0
+OUT59="$(PATH="$NO_SAPIENCE_PATH" HOME="$HOME59" bash "$WRITER_SRC" --capture-set on --project "$PROJ59" --quiet 2>&1)" || RC59=$?
+
+if [ "$RC59" -eq 0 ] && [ -z "$OUT59" ]; then
+  pass "Case 59: no sapience binary on PATH exits 0 silently"
+else
+  fail "Case 59: rc=$RC59 out='$OUT59'"
+fi
+
+# =====================================================================
+# Case 60: an enabled PARENT prefix with no exact entry for the CHILD still invokes `on` for
+# the child (the exact-path idempotence decision, not the longest-prefix match).
+# =====================================================================
+HOME60="$WORKDIR/case60/home"
+PARENT60="$WORKDIR/case60/parent"
+CHILD60="$PARENT60/child"
+mkdir -p "$HOME60/.sapience" "$CHILD60"
+jq -n --arg parent "$PARENT60" '{"capture": {"projects": [{"path_prefix": $parent, "enabled": true}]}}' > "$HOME60/.sapience/config.json"
+STUB60="$(build_sapience_stub)"
+
+PATH="$STUB60:$PATH" STUB_DIR="$STUB60" HOME="$HOME60" bash "$WRITER_SRC" --capture-set on --project "$CHILD60" --quiet > /dev/null 2>&1
+CALLS60="$(sapience_stub_call_count "$STUB60")"
+ARGS60="$(sapience_stub_last_args "$STUB60")"
+
+if [ "$CALLS60" = "1" ] && [ "$ARGS60" = "projects on $CHILD60" ]; then
+  pass "Case 60: an enabled parent prefix with no exact entry for the child still triggers an 'on' call for the child"
+else
+  fail "Case 60: calls=$CALLS60 args='$ARGS60'"
+fi
+
+# =====================================================================
+# Case 61: --capture-set --dry-run records no stub invocation and mutates nothing.
+# =====================================================================
+HOME61="$WORKDIR/case61/home"
+PROJ61="$WORKDIR/case61/proj"
+mkdir -p "$HOME61/.sapience" "$PROJ61"
+echo '{}' > "$HOME61/.sapience/config.json"
+STUB61="$(build_sapience_stub)"
+BEFORE61="$(md5sum "$HOME61/.sapience/config.json" | awk '{print $1}')"
+
+PATH="$STUB61:$PATH" STUB_DIR="$STUB61" HOME="$HOME61" bash "$WRITER_SRC" --capture-set on --project "$PROJ61" --dry-run > /dev/null 2>&1
+CALLS61="$(sapience_stub_call_count "$STUB61")"
+AFTER61="$(md5sum "$HOME61/.sapience/config.json" | awk '{print $1}')"
+
+if [ "$CALLS61" = "0" ] && [ "$BEFORE61" = "$AFTER61" ]; then
+  pass "Case 61: --capture-set --dry-run records no stub invocation and mutates nothing"
+else
+  fail "Case 61: calls=$CALLS61 before=$BEFORE61 after=$AFTER61"
 fi
 
 # =====================================================================

@@ -1,30 +1,6 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/683_couple_sapience_capture_to_extension_activation/plans/01_capture-activation-coupling.md",
-      "summary": "6-phase, ~9h plan coupling capture.projects[].enabled to sapience-extension activation via two new standalone actions on setup-sapience-mcp.sh, invoked from the existing bidirectional SessionStart hook; includes verifier check (i) update, per-repo-scoping.md rewrite with the folders double-gate caveat, and fixture-HOME tests against a stubbed sapience binary."
-    }
-  ],
-  "next_steps": "Run /orchestrate 683 to execute the plan",
-  "phase_count": 6,
-  "estimated_hours": 9,
-  "dependency_waves": [[1], [2], [3], [4], [5], [6]],
-  "memory_candidates": [
-    {
-      "content": "A read-side resolution rule is not automatically the right predicate for a write-side idempotence check. When coupling a hook to an external config map, the idempotence decision must compare against the exact state the WRITER keys on, not against whatever resolution rule the READER uses. Concrete case: ~/.sapience/config.json's capture.projects[] is READ by longest-path-prefix match (sapience_capture.py's for_cwd()/match_project()), but sapience_capture.set_project() creates and matches an entry by exact string-equal realpath'd path_prefix. Deciding 'already in the desired state, skip the call' from the longest-prefix match would make a child repo sitting under an enabled parent prefix never acquire its own entry, so the coupling silently never fires for it. Generalization: before writing an idempotence guard against external state, identify the writer's own key predicate separately from the reader's, and guard on the writer's.",
-      "category": "PATTERN",
-      "source_artifact": "specs/683_couple_sapience_capture_to_extension_activation/plans/01_capture-activation-coupling.md",
-      "confidence": 0.65,
-      "suggested_keywords": ["idempotence", "longest-prefix-match", "exact-path", "write-vs-read-predicate", "hook-coupling", "external-config-map"]
-    }
-  ],
-  "metadata": {
-    "session_id": "sess_1795284367_d33b60_683",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
-  },
-  "dispatch_seq": 8
+  "status": "in_progress",
+  "agent_type": "general-implementation-agent",
+  "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+  "session_id": "sess_1795338334_a6ddd9"
 }
