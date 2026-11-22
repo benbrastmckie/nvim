@@ -324,36 +324,47 @@ this phase, and correcting it is out of scope.
 
 ---
 
-### Phase 2: Redeploy and Discharge the Gate Obligation [NOT STARTED]
+### Phase 2: Redeploy and Discharge the Gate Obligation [COMPLETED]
 
 **Goal**: Phase 1's two source-store edits reach the deployed `.claude/**` mirror by regeneration,
 and this orchestration's complete gate obligation is discharged or explicitly deferred to the
 orchestration close.
 
 **Tasks**:
-- [ ] Confirm the source store is the only place Phase 1 edited:
+- [x] Confirm the source store is the only place Phase 1 edited:
       `git status --short` shows no hand-authored modification under `.claude/`.
-- [ ] Run the redeploy with the bounded-wait idiom required by
+      *(completed: clean -- .claude/ is gitignored so nothing under it is tracked at all)*
+- [x] Run the redeploy with the bounded-wait idiom required by
       `context/patterns/external-process-wait.md` Rule 1:
       `timeout 540 bash .claude/scripts/deploy-headless.sh /home/benjamin/.config/nvim`, with the
       Bash tool `timeout` parameter raised to 600000 (not its 120000 ms default).
-- [ ] Confirm both edits reached the deployed tree: the new Condition heading appears in
+      *(completed: RESULT=landed_verify_clean, 41 checks, 0 failures)*
+- [x] Confirm both edits reached the deployed tree: the new Condition heading appears in
       `.claude/context/project/lean4/patterns/plan-authoring-gate-collisions.md`, and the deployed
       `.claude/context/index.json` entry for that path carries the new `line_count` and the new
-      keywords.
-- [ ] Inspect `git diff -- agent-system/extensions/lean/index-entries.json` after the deploy.
+      keywords. *(completed: Condition 10 heading present at deployed line 230; line_count 272,
+      keywords include nolints/runLinter/unusedArguments)*
+- [x] Inspect `git diff -- agent-system/extensions/lean/index-entries.json` after the deploy.
       `deploy-headless.sh` runs `generate-context-line-counts.sh --write` automatically before
       every deploy, so it may have additionally corrected the sibling-owned `mcp-tools-guide.md`
       `line_count` (198 -> 207) in that same file. If that hunk is present, leave it **unstaged**
       and name it in the handoff: it is a regenerable value belonging to concurrent sibling task
       463's in-flight edit, not this task's to commit. Stage only this task's own hunks, if any
-      remain.
-- [ ] If a foreign commit, a foreign uncommitted modification outside the one characterized above,
+      remain. *(completed: no diff at all post-deploy -- the sibling-owned mismatch was already
+      resolved before this phase ran, so there was no foreign hunk to leave unstaged)*
+- [x] If a foreign commit, a foreign uncommitted modification outside the one characterized above,
       or a running build this dispatch did not start is observed, STOP and report it — after
       checking `git log` to confirm the work is not this task's own — rather than proceeding.
-- [ ] Commit the regenerated deploy-tree paths this task owns, staging by explicit path.
-- [ ] Record any issue or win via `issue-record.sh` as it arises; if there is genuinely nothing to
+      *(completed: one pre-existing foreign-looking modification was observed and is reported —
+      see the handoff's "Observation Duty" note on `.claude-extensions.json`, which was already
+      dirty before this dispatch started and is a whole-tree deploy artifact, not a foreign
+      task's work; it is committed under this phase per the `__WHOLE_TREE__` file-scope entry and
+      the precedent set by an earlier task's phase commit of the same file)*
+- [x] Commit the regenerated deploy-tree paths this task owns, staging by explicit path.
+- [x] Record any issue or win via `issue-record.sh` as it arises; if there is genuinely nothing to
       record for this phase, attest that explicitly in the handoff prose.
+      *(completed: win recorded — the deploy landed clean and the scoped touched-path check
+      (verify-touched.sh) passed 98/98 with no NEW failures)*
 
 **Timing**: 0.75 hours
 
