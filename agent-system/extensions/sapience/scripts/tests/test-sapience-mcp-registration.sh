@@ -100,6 +100,17 @@
 #        naming that call site.
 #   (53) No deployed .claude/scripts tree at all logs a skip, never a pass or a fail.
 #
+# Token-removal regression cases -- pin "a registered entry contains no value equal to the
+# configured token" so a future edit reintroducing SAPIENCE_TOKEN fails loudly, with a negative
+# control proving the assertion discriminates rather than passing vacuously:
+#   (54) A sentinel token value in config.json never appears anywhere in the written entry
+#        (whole-entry scan, not just the SAPIENCE_TOKEN key) -- token-free regardless of
+#        config.json content.
+#   (55) Negative control: a hand-built ~/.claude.json entry that DOES embed the sentinel token
+#        is flagged by both sides -- verify-sapience-mcp.sh fails check (b) with exit 1 and a
+#        named remedy (55a), and the writer's own whole-entry comparison judges the same entry
+#        divergent and replaces it with the token-free canonical shape (55b).
+#
 # Worktree cases (added once worktree-aware checkout resolution lands; skipped if `git worktree`
 # is unusable or the hook/verifier sources do not exist yet):
 #   (25) A worktree of a LOADED checkout registers an entry keyed on the checkout's path, with
@@ -1099,6 +1110,66 @@ else
   else
     fail "Case 53: expected a skip line and no [PASS]/[FAIL] (j) line; output=$OUT53"
   fi
+fi
+
+# =====================================================================
+# Token-removal regression cases: pin "a registered entry contains no value equal to the
+# configured token", with a negative control proving the assertion discriminates.
+# =====================================================================
+
+# Case 54: a sentinel token value in config.json never appears anywhere in the written entry
+# (whole-entry scan, not just the SAPIENCE_TOKEN key -- this still catches a future change that
+# relocates the token to a different field).
+HOME54="$WORKDIR/case54/home"
+PROJ54="$WORKDIR/case54/proj"
+mkdir -p "$HOME54" "$PROJ54" "$HOME54/.sapience"
+SENTINEL54="sapience-test-sentinel-token-54"
+echo '{}' > "$HOME54/.claude.json"
+jq -n --arg t "$SENTINEL54" '{"token": $t}' > "$HOME54/.sapience/config.json"
+
+HOME="$HOME54" bash "$WRITER_SRC" --project "$PROJ54" --scope project > /dev/null 2>&1
+MATCH54=$(jq -r --arg p "$PROJ54" '.projects[$p].mcpServers.sapience | .. | strings' "$HOME54/.claude.json" 2>/dev/null | grep -F -x "$SENTINEL54" || true)
+
+if [ -z "$MATCH54" ]; then
+  pass "Case 54: a sentinel token in config.json never appears anywhere in the written entry (whole-entry scan)"
+else
+  fail "Case 54: sentinel token leaked into the written entry: $MATCH54"
+fi
+
+# Case 55: negative control -- a hand-built ~/.claude.json entry that DOES embed the sentinel
+# token must be flagged by both sides. A positive assertion that cannot fail is not coverage.
+HOME55="$WORKDIR/case55/home"
+PROJ55="$WORKDIR/case55/repo"
+mkdir -p "$HOME55/.sapience" "$PROJ55"
+SENTINEL55="sapience-test-sentinel-token-55"
+echo '{}' > "$HOME55/.sapience/config.json"
+jq -n '{"extensions": {"sapience": {"status": "active"}}}' > "$PROJ55/.claude-extensions.json"
+RESOLVED_PY55="$(command -v python3 2>/dev/null || echo /usr/bin/python3)"
+jq -n --arg p "$PROJ55" --arg t "$SENTINEL55" --arg cmd "$RESOLVED_PY55" --arg script "$HOME55/.sapience/mcp.py" \
+  '{"projects": {($p): {"mcpServers": {"sapience": {"type": "stdio", "command": $cmd, "args": [$script], "env": {"SAPIENCE_HOST": "https://app.spnc.ai", "SAPIENCE_TOKEN": $t}}}}}}' \
+  > "$HOME55/.claude.json"
+
+# 55a: the verifier (no --quiet, so the named message is visible) fails check (b) with exit 1
+# and a remedy, BEFORE anything repairs the fixture.
+RC55=0
+OUT55=$(cd "$PROJ55" && HOME="$HOME55" bash "$VERIFIER_SRC" --project "$PROJ55" 2>&1) || RC55=$?
+
+if [ "$RC55" -eq 1 ] && printf '%s' "$OUT55" | grep -q '\[FAIL\] (b)' && printf '%s' "$OUT55" | grep -qi 'remedy'; then
+  pass "Case 55a: a token-bearing entry fails the verifier with exit 1, a [FAIL] (b) line, and a named remedy"
+else
+  fail "Case 55a: expected exit 1 with a [FAIL] (b) remedy line; rc=$RC55 output=$OUT55"
+fi
+
+# 55b: the writer's OWN whole-entry comparison, run against the SAME unpatched fixture, judges
+# it divergent and replaces it with the token-free canonical shape.
+HOME="$HOME55" bash "$WRITER_SRC" --project "$PROJ55" --scope project > /dev/null 2>&1
+HAS_TOKEN55=$(jq -r --arg p "$PROJ55" '.projects[$p].mcpServers.sapience.env | has("SAPIENCE_TOKEN")' "$HOME55/.claude.json")
+MATCH55=$(jq -r --arg p "$PROJ55" '.projects[$p].mcpServers.sapience | .. | strings' "$HOME55/.claude.json" 2>/dev/null | grep -F -x "$SENTINEL55" || true)
+
+if [ "$HAS_TOKEN55" = "false" ] && [ -z "$MATCH55" ]; then
+  pass "Case 55b: the writer's own whole-entry comparison judges the token-bearing entry divergent and replaces it with the token-free canonical shape"
+else
+  fail "Case 55b: expected the token removed and the sentinel absent; has_token=$HAS_TOKEN55 leftover_match=$MATCH55"
 fi
 
 # =====================================================================

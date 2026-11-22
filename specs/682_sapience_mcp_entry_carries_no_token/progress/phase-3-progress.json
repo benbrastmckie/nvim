@@ -1,0 +1,23 @@
+{
+  "phase": 3,
+  "phase_name": "Regression test with negative control",
+  "started_at": "2026-11-21T22:20:00Z",
+  "last_updated": "2026-11-21T22:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read the suite and its header manifest immediately beforehand; take the next free case numbers from what the file actually shows", "status": "done", "files_touched": [], "note": "Confirmed highest existing case is 53 (Check (j) cases); no plan-revision sentinel present. New cases numbered 54-55."},
+    {"id": 2, "description": "Add the positive case: sentinel token in config.json never appears anywhere in the written entry (whole-entry scan)", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"]},
+    {"id": 3, "description": "Add the negative control: a hand-built entry that DOES embed the sentinel is flagged by both the writer's own comparison and verify-sapience-mcp.sh exiting 1 with a [FAIL] (b) line", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"]},
+    {"id": 4, "description": "Assert the failure message names a remedy", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"], "note": "Folded into case 55a's assertion (grep -qi 'remedy' on the verifier's non-quiet output) rather than a separate case."},
+    {"id": 5, "description": "Extend the header-comment case manifest with the new case numbers and descriptions", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"]},
+    {"id": 6, "description": "Run the whole suite, not only the new cases", "status": "done", "files_touched": [], "note": "58 passed, 0 failed, including cases 1-53 and the new 54/55a/55b."}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": {
+    "live_proof": "Reverted setup-sapience-mcp.sh to the pre-Phase-2 (1ad3905a9^) commit content, re-ran the suite: case 54 FAILED (sentinel leaked into the entry) while 55a/55b still passed, proving case 54 depends on a real comparison rather than passing vacuously. Restored the fixed file afterward (byte-identical to the pre-revert version via diff, confirmed with git status --short showing no diff) and re-ran: 58 passed, 0 failed.",
+    "scoped_suite_result": "bash agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh: 58 passed, 0 failed.",
+    "batch_gate_deferral": "Ran bash .claude/scripts/verify-touched.sh per the dispatch's Batch Gate Deferral directive. It reported 97 passed, 1 failed (1 NEW): .claude/scripts/tests/test-stall-reprompt-wiring.sh, which asserts producer/consumer wiring for the stall_suspected/stranded_suspected signal in skill-orchestrate/SKILL.md and orchestrate-cycle-postflight.sh -- entirely unrelated to this phase's territory (agent-system/extensions/sapience/**). The working tree carries unrelated uncommitted changes from other concurrently-running sessions (task 677's orchestration work, per git log and the active impl-677* agents in this session), which verify-touched.sh's own whole-tree diff detection picks up alongside this phase's one touched file. This phase's own git status --short shows only test-sapience-mcp-registration.sh modified; the stall-reprompt-wiring failure is collateral from the shared dirty tree, not caused by this phase's change, and is out of this phase's declared territory. Recorded via issue-record.sh rather than treated as a phase-blocking regression."
+  }
+}

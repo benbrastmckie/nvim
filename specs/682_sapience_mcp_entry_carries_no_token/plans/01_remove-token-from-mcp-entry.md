@@ -194,19 +194,19 @@ stops emitting it, and check (b) starts failing it with a named remedy.
 
 ---
 
-### Phase 3: Regression test with negative control [NOT STARTED]
+### Phase 3: Regression test with negative control [COMPLETED]
 
 **Goal**: Pin "a registered entry contains no value equal to the configured token" so a future
 edit reintroducing it fails loudly, and prove the assertion discriminates rather than passing
 vacuously.
 
 **Tasks**:
-- [ ] Re-read the suite and its header manifest immediately beforehand. This plan observed case numbers running 1-53; take the next free numbers from what the file actually shows, not the ones named here, in case sibling 683 has already appended cases.
-- [ ] Add the positive case: a fixture `HOME` whose `~/.sapience/config.json` carries a known sentinel token value, run the writer `--scope project`, then assert via a whole-entry scan (`jq -r '.. | strings' <entry>` or equivalent, not only `env.SAPIENCE_TOKEN`) that the sentinel appears nowhere in the written entry. Scanning the whole entry rather than one key is the point: it still catches a future change that relocates the token to a different field.
-- [ ] Add the negative control: hand-build a `~/.claude.json` entry that **does** embed the sentinel, and assert it is correctly flagged — by the writer's own existing-entry comparison judging it divergent and replacing it, and by `verify-sapience-mcp.sh` exiting 1 with a `[FAIL] (b)` line. A positive assertion that cannot fail is not coverage.
-- [ ] Assert the failure message names a remedy, so the regression is actionable and not merely detected.
-- [ ] Extend the header-comment case manifest with the new case numbers and one-line descriptions, following the file's existing convention.
-- [ ] Run the whole suite, not only the new cases.
+- [x] Re-read the suite and its header manifest immediately beforehand. This plan observed case numbers running 1-53; take the next free numbers from what the file actually shows, not the ones named here, in case sibling 683 has already appended cases. *(completed: confirmed highest existing case is still 53; new cases numbered 54-55)*
+- [x] Add the positive case: a fixture `HOME` whose `~/.sapience/config.json` carries a known sentinel token value, run the writer `--scope project`, then assert via a whole-entry scan (`jq -r '.. | strings' <entry>` or equivalent, not only `env.SAPIENCE_TOKEN`) that the sentinel appears nowhere in the written entry. Scanning the whole entry rather than one key is the point: it still catches a future change that relocates the token to a different field. *(completed: Case 54)*
+- [x] Add the negative control: hand-build a `~/.claude.json` entry that **does** embed the sentinel, and assert it is correctly flagged — by the writer's own existing-entry comparison judging it divergent and replacing it, and by `verify-sapience-mcp.sh` exiting 1 with a `[FAIL] (b)` line. A positive assertion that cannot fail is not coverage. *(completed: Case 55a verifier-side, Case 55b writer-side)*
+- [x] Assert the failure message names a remedy, so the regression is actionable and not merely detected. *(completed: folded into Case 55a's assertion)*
+- [x] Extend the header-comment case manifest with the new case numbers and one-line descriptions, following the file's existing convention. *(completed)*
+- [x] Run the whole suite, not only the new cases. *(completed: 58 passed, 0 failed)*
 
 **Timing**: 1 hour
 
