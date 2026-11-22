@@ -8912,6 +8912,7 @@ these two existing facilities.
 - **Dependencies**: Task 385, Task 420, Task 435
 - **Research**: [451_snapshot_lean_challenge_at_plan_time/reports/01_hook-registration-and-postflight-bridging.md]
 - **Plan**: [451_snapshot_lean_challenge_at_plan_time/plans/01_challenge-snapshot-observer-wiring.md]
+- **Summary**: [451_snapshot_lean_challenge_at_plan_time/summaries/01_challenge-snapshot-observer-wiring-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/** (primarily) and agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

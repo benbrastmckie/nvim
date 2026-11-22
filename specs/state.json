@@ -5188,12 +5188,18 @@
           "path": "specs/451_snapshot_lean_challenge_at_plan_time/plans/01_challenge-snapshot-observer-wiring.md",
           "type": "plan",
           "summary": "Five-phase plan: author the observer and its suite; register it and derive provides.scripts; deploy and pin end-to-end firing plus the untouched exit-73 gate; record every ruling and correct two now-false header claims; reconcile the derived index and close."
+        },
+        {
+          "path": "specs/451_snapshot_lean_challenge_at_plan_time/summaries/01_challenge-snapshot-observer-wiring-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all five phases: observer authoring and suite, manifest registration, end-to-end deployment/firing verification, design-record/rule updates with header corrections, and index reconciliation."
         }
       ],
       "created": "2026-10-19T04:37:20Z",
       "last_updated": "2026-11-22T15:53:46Z",
       "session_id": "sess_1795360608_7bb5fd",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Wired the Lean Challenge snapshot to a new post-task observer (lean-challenge-observe.sh) that produces the snapshot at plan-time (resting_status planned) and consumes --check at the implement-side statuses, replacing the never-invoked plan-format.md expectation with a real, registered call site. Extended both regression suites (29 and 41 passing cases respectively), recorded every ruling the originating change request asked for in the design record and plan-compliance.md, corrected two now-false header comments in lean-challenge-snapshot.sh (comment-only), and reconciled the derived index-entries.json line count."
     },
     {
       "project_number": 452,
