@@ -1,19 +1,19 @@
 {
   "status": "partial",
-  "dispatch_seq": 28,
+  "dispatch_seq": 29,
   "phase": "implement",
-  "summary": "Completed Phase 3 of 5: added Case 54 (a sentinel token in config.json never appears anywhere in the written entry, whole-entry scan) and Case 55 (negative control: a hand-built token-bearing entry is flagged by both the verifier, exit 1 with a named-remedy [FAIL] (b) line, and the writer's own whole-entry comparison, which replaces it) to test-sapience-mcp-registration.sh. Proved the positive assertion live by reverting the writer to its pre-Phase-2 shape and confirming Case 54 fails, then restoring it. Full suite: 58 passed, 0 failed. The dispatch's Phase Mission directive limited execution to Phase 3 only; phases 4-5 remain.",
+  "summary": "Completed Phase 4 of 5: added a new subsection to per-repo-scoping.md ('The Token's Durable Homes and the Never-Copy Boundary') documenting each of the token's durable homes and owners, the resolution path, the never-copy boundary, its enforcing surfaces, and the orphaned wrapper hazard. A by-value re-check of all four candidate locations found a real divergence (the active config.json token no longer matches /run/secrets/sapience_token) and corrected the plan's own guess about sf1-hub-ben's files (they match the active token, not a different credential). Confirmed secrets.yaml remains sole, sops-encrypted. Bumped index-entries.json's line_count and keywords. The dispatch's Phase Mission directive limited execution to Phase 4 only; phase 5 remains.",
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-3-handoff-20261122T002119Z.md",
-      "summary": "Phase 3 completion handoff naming Phase 4 as the immediate next action."
+      "path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-4-handoff-20261122T003952Z.md",
+      "summary": "Phase 4 completion handoff naming Phase 5 as the immediate next action."
     }
   ],
-  "phases_completed": 3,
+  "phases_completed": 4,
   "phases_total": 5,
   "blockers": [],
   "plan_markers_verified": true,
-  "continuation_path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-3-handoff-20261122T002119Z.md",
-  "next_action_hint": "Dispatch Phase 4: document the token's homes and the copy boundary in per-repo-scoping.md, backed by a verified inventory of every place the token is written on this machine."
+  "continuation_path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-4-handoff-20261122T003952Z.md",
+  "next_action_hint": "Dispatch Phase 5: migrate the live ~/.claude.json entries, verify authentication, run verify-sapience-mcp.sh and its regression fixture, remove the plaintext backup, and redeploy via deploy-headless.sh."
 }

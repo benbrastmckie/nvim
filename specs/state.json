@@ -261,9 +261,9 @@
           "summary": "Per-shape measurement results and the unconditional verdict for build item (2)."
         },
         {
-          "path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-3-handoff-20261122T002119Z.md",
+          "path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-4-handoff-20261122T003952Z.md",
           "type": "handoff",
-          "summary": "Phase 3 completion handoff naming Phase 4 as the immediate next action."
+          "summary": "Phase 4 completion handoff naming Phase 5 as the immediate next action."
         }
       ],
       "next_artifact_number": 2,
