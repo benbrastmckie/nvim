@@ -750,7 +750,7 @@ When approaching context limit:
    `bounded-build-waiter.md`'s canonical idiom — never via the harness's
    `Bash(run_in_background: true)` tool parameter, and never by ending the turn to await a
    notification.
-9. Always verify proofs are actually complete ("no goals")
+9. Always verify proofs are actually complete via `lean_verify` on the fully-qualified declaration name — see `context/project/lean4/tools/mcp-tools-guide.md`'s `lean_goal` section for why an empty `goals_after` alone is not evidence of a complete declaration
 10. **ALWAYS update plan file phase markers with Edit tool**
 11. Always create summary file before returning implemented status
 12. **NEVER call lean_diagnostic_messages or lean_file_outline**
