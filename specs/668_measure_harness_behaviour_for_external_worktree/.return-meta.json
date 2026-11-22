@@ -1,55 +1,40 @@
 {
-  "status": "researched",
-  "dispatch_seq": 1,
+  "status": "planned",
+  "dispatch_seq": 2,
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/668_measure_harness_behaviour_for_external_worktree/reports/01_external-worktree-harness-measurement.md",
-      "summary": "Research report summarizing the four live measurements and citing the decision record they produced."
-    },
-    {
-      "type": "report",
-      "path": "specs/decisions/external-worktree-harness-behaviour.md",
-      "summary": "The task's named deliverable: a measurement record stating each of the four harness behaviours the amending record's R2 siting depends on, with the exact command/tool call that produced each result, and a verdict that none refutes the siting."
+      "type": "plan",
+      "path": "specs/668_measure_harness_behaviour_for_external_worktree/plans/01_external-worktree-harness-measurement.md",
+      "summary": "Three-phase closure plan: discharge the amending record's measured precondition, close the measurement record against its own exact-call/attribution criterion, then verify and commit both decision records."
     }
   ],
-  "next_steps": "Run /orchestrate 668 to create an implementation plan, or proceed directly with the dependent successor tasks (669-675), which were already waiting on this measurement.",
+  "next_steps": "Run /orchestrate 668 to execute the plan",
   "metadata": {
     "session_id": "sess_1795385635_7a23a6_668",
-    "agent_type": "general-research-agent",
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 4
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 1.5,
+    "dependency_waves": 2
   },
   "memory_candidates": [
     {
-      "content": "guard-destructive-git.sh's destructive-command safety check is anchored to the primary project tree's own git status regardless of a Bash command's own cd target -- confirmed in both directions live: it wrongly allows a destructive command aimed at a dirty external worktree when the primary tree is clean (prior finding), and it wrongly blocks a safe destructive-pattern command aimed at a provably clean external worktree when the unrelated primary tree is dirty (this task's own live reproduction: committed the worktree clean, then ran `cd <clean external worktree> && git reset --hard HEAD` in one Bash call and had it blocked citing the primary tree's uncommitted changes). Any two-root hook fix must repoint this anchor at the actual command target, not patch one direction only.",
+      "content": "When a decision record names a measured precondition and the measurement comes back NOT refuting the ruling, the record that named the precondition still needs an edit -- but an `**Amended by**` note is the wrong marker, because nothing was amended. Use a distinct dated `**Discharged by** <record>, <date>:` note instead, and leave the record's own conditional rule (\"if a measurement refutes the siting, the ruling is amended ... it is not worked around\") verbatim, since discharge records that the measurement ran, it does not retire the rule for a future re-measurement. Without this, every downstream successor keeps reading \"rests on behaviour that has not been measured\" from the record it actually consults, while the measurement record it never reads holds the answer.",
       "category": "PATTERN",
-      "source_artifact": "specs/decisions/external-worktree-harness-behaviour.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["guard-destructive-git", "worktree", "hook", "cwd", "primary-tree-anchor"]
-    },
-    {
-      "content": "Path-scoped .claude/rules/*.md `paths:` frontmatter does not match a file whose touched path lies outside the session's own project directory, even when the glob (e.g. lua/**/*.lua) would otherwise match the path's trailing segments. Confirmed by a same-session A/B: the first touch of a matching path this session (an external git-worktree file) produced no rule reminder; the very next touch of the same glob, now in-project, triggered the reminder immediately (including on a nonexistent in-project path, ruling out read-success as the trigger). A worktree of the same repository carries the identical rule file content, so this only affects whether path-scoped guidance is surfaced while editing files that happen to live in the worktree -- a usability cost, not a correctness defect.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/decisions/external-worktree-harness-behaviour.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["path-scoped-rules", "worktree", "claude-rules", "frontmatter", "paths-glob"]
-    },
-    {
-      "content": "A dispatched subagent's Bash tool cwd always resets to the primary project directory between separate tool calls -- never to wherever a prior call's own `cd` left it, and never to any worktree, even when a real external git worktree exists for the whole session. Confirmed twice independently (the dispatching agent itself, and a freshly spawned, context-free general-purpose subagent asked to run the identical three-call pwd/cd-pwd/pwd sequence). Any two-root design must therefore carry the worktree path explicitly (dispatch-file field, script argument) rather than relying on an ambient cwd switch.",
-      "category": "PATTERN",
-      "source_artifact": "specs/decisions/external-worktree-harness-behaviour.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["subagent", "cwd-reset", "bash-tool", "worktree", "two-root"]
+      "source_artifact": "specs/668_measure_harness_behaviour_for_external_worktree/plans/01_external-worktree-harness-measurement.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["decision-record", "measured-precondition", "amended-by", "discharge-note", "successor-visibility"]
     }
   ],
   "user_decision": {
-    "question": "File-tool (Read/Edit/Write) behaviour for a path outside the project directory was measured only under bypassPermissions, the one mode this system's dispatched agents could be shown to run under from static configuration. Does /orchestrate (or any agent dispatch) ever run from a session not started with --dangerously-skip-permissions, and if so, what happens when a subagent's tool call targets a path outside the project directory under that mode?",
+    "question": "Carried forward unanswered from the research dispatch, because the plan's Phase 2 branches on it: does /orchestrate (or any agent dispatch) in this environment ever run from a session NOT started with --dangerously-skip-permissions? The measurement record's only unmeasured result is what file tools (Read/Edit/Write) do for a path outside the project directory under a non-bypassPermissions mode (default, plan, acceptEdits), which no dispatched agent can observe.",
     "options": [
-      "Confirm /orchestrate dispatches always run under bypassPermissions (--dangerously-skip-permissions) in this environment; no further measurement needed.",
-      "Report that a non-bypass interactive mode is sometimes used for a dispatch, and describe (or let a future interactive session observe) what the file-tool prompt looks like for an external path under that mode."
+      "Confirm dispatches always run under bypassPermissions here; Phase 2 records that confirmation as user-supplied and the record closes with no residual on this item.",
+      "Report that a non-bypass mode is sometimes used, and (optionally) what you see when a subagent's tool call targets an external path under it; Phase 2 records that as the user-supplied result.",
+      "Leave it open; Phase 2 states it plainly as an unmeasured residual and re-relays this question."
     ],
-    "recommended": "Confirm /orchestrate dispatches always run under bypassPermissions (--dangerously-skip-permissions) in this environment; no further measurement needed.",
+    "recommended": "Confirm dispatches always run under bypassPermissions here; Phase 2 records that confirmation as user-supplied and the record closes with no residual on this item.",
     "blocking": false
   }
 }

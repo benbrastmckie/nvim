@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 2,
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Planned the closure work for this measurement task. The four harness measurements and the deliverable record under specs/decisions/ already exist from the research dispatch, so the plan takes no new measurement: Phase 1 discharges the amending record's \"Measured precondition\" and R2 siting caveat with a dated **Discharged by** note (never **Amended by** -- nothing was refuted), Phase 2 closes the measurement record against its own criterion (exact command/tool call per result, agent-measured vs user-supplied attribution, both residuals in one section), Phase 3 verifies the refutation branch was not taken and commits both records. Live-state check: the measurement record is still untracked, since the research commit staged only the report -- Phase 3 stages it explicitly.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/668_measure_harness_behaviour_for_external_worktree/plans/01_external-worktree-harness-measurement.md",
+      "summary": "Three-phase closure plan (waves: 1,2 parallel then 3); all edits under specs/**, no agent-system/** edit and no redeploy."
+    }
+  ]
+}
