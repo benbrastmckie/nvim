@@ -86,6 +86,14 @@ formula-derived depth and must be computed, not guessed. Its gate verdict is SEP
 a mechanism beyond the six below: both verdicts are compiled, and a gate probing one coordinate
 certifies one coordinate.
 
+**Before working through the six mechanisms below, run the candidate through
+`patterns/half-line-test.md`'s half-line test first**: a proposed transport or index condition
+whose counter and formula are both forward is already decided by that test's own recorded
+mechanisms and needs no fresh probe here. That test's own six probe citations are a different
+enumeration from the six mechanisms below — the two sets overlap only partially, and neither is
+a subset of the other, so passing the half-line test does not stand in for checking the six
+mechanisms below, and vice versa.
+
 ## The six mechanisms
 
 **(1) The gap at the first idle state.** `Count`'s region-start clause reads `c' = n`, so the gap

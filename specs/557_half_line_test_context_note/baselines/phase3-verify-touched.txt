@@ -1,0 +1,313 @@
+verify-touched.sh: timings file (diagnostic-only; NOT an input to suite-cost-hints.txt): /tmp/verify-touched-timings.BlcJ9O
+verify-touched.sh: 4 touched path(s):
+    agent-system/extensions/lean/index-entries.json
+    agent-system/extensions/lean/EXTENSION.md
+    agent-system/extensions/lean/context/project/lean4/README.md
+    agent-system/extensions/lean/context/project/lean4/domain/ladder-counter-observables.md
+verify-touched.sh: preflight passed (map/class data parse, every named suite exists, the OWED fallback set is non-empty, any declared backend conforms).
+/home/benjamin/.config/nvim/.claude/scripts/lib/unmapped-fallback-lib.sh: line 128: /dev/null/no-task-dir/records/full-sweep-owed.jsonl: Not a directory
+WARNING: verify-touched.sh: 1 owed path(s) with no --task-dir given -- reported below but NOT durably recorded. Pass --task-dir to write records/full-sweep-owed.jsonl.
+
+verify-touched.sh: resolution summary
+  SELECT (resolved via default/explicit-map/declared backend):
+      test-context-reachability.sh
+      test-deploy-orphans.sh
+      test-index-entries-schema.sh
+      test-install-uninstall-extension.sh
+      test-manifest-scripts-sync.sh
+      test-roadmap-command-registration.sh
+      test-sapience-capture.sh
+      test-check-record-versioning.sh
+      test-check-task-references.sh
+      test-gate3-parallel-equivalence.sh
+      test-gate3-strict-equivalence.sh
+      test-gate-cache-equivalence.sh
+      test-lean-src-roots.sh
+      test-lint-agent-contracts.sh
+      test-lint-dead-command-recommendations.sh
+      test-lint-extension-readme-table.sh
+      test-milestone-ref-land.sh
+      test-milestone-review-handoff.sh
+      test-orchestrate-batch-admit.sh
+      test-plan-file-scope-harvest.sh
+      test-record-version-patterns.sh
+      test-script-inventory.sh
+      test-validate-state.sh
+  OWED (fallback set: --cost-class free):
+      agent-system/extensions/lean/context/project/lean4/domain/ladder-counter-observables.md
+verify-touched.sh: root '.' (./.claude/scripts/tests/run-all.sh) -- running 23 selected suite(s): --only test-context-reachability.sh,test-deploy-orphans.sh,test-index-entries-schema.sh,test-install-uninstall-extension.sh,test-manifest-scripts-sync.sh,test-roadmap-command-registration.sh,test-sapience-capture.sh,test-check-record-versioning.sh,test-check-task-references.sh,test-gate3-parallel-equivalence.sh,test-gate3-strict-equivalence.sh,test-gate-cache-equivalence.sh,test-lean-src-roots.sh,test-lint-agent-contracts.sh,test-lint-dead-command-recommendations.sh,test-lint-extension-readme-table.sh,test-milestone-ref-land.sh,test-milestone-review-handoff.sh,test-orchestrate-batch-admit.sh,test-plan-file-scope-harvest.sh,test-record-version-patterns.sh,test-script-inventory.sh,test-validate-state.sh
+[run-all] Mode: deployed (scripts root: /home/benjamin/.config/nvim/.claude/scripts)
+[run-all] Discovered 23 suite(s).
+
+Note: --only narrowed this run to 23 suite(s); specs/.gate-lock is not touched for a narrowed run (suite narrowing already discharges a sub-full verification tier; it must not wait out a sibling's full battery).
+[run-all] Built shared deployed-tree fixture once at /tmp/tmp.fb7uLHHwFJ/deployed (read-only, lent to 1 consumer suite(s)).
+[run-all] [INFO] 7 suite(s) have no cost hint in suite-cost-hints.txt (advisory only, does not affect which suites run): test-install-uninstall-extension.sh test-lint-dead-command-recommendations.sh test-lint-extension-readme-table.sh test-milestone-ref-land.sh test-milestone-review-handoff.sh test-roadmap-command-registration.sh test-sapience-capture.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-check-record-versioning.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-check-record-versioning.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-check-task-references.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-check-task-references.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-context-reachability.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-context-reachability.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-deploy-orphans.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-deploy-orphans.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate3-parallel-equivalence.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate3-parallel-equivalence.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate3-strict-equivalence.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate3-strict-equivalence.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate-cache-equivalence.sh
+[FAIL] /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate-cache-equivalence.sh
+    TIMEOUT: /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate-cache-equivalence.sh exceeded the 600s per-suite bound and was killed
+    [PASS] cold baseline: all 18 cache-eligible gates in the tested set went clean and warm (18/18 entries written), and gate 4 (permanently uncacheable in this fixture, see header) also passed clean
+    [PASS] negative case: no change -> all 18 cache-eligible gates skip, only gate 4's own 1 real check runs, exit 0
+    [PASS] mtime independence: touching every file in the fixture leaves the skip count at 18/18
+    [PASS] determinism: identical [verify-deploy] summary line at --jobs 1 and --jobs 4 on the skip path
+    [PASS] per-gate corpus-violation re-run: all 17 MECH_LOOP_GATES gates re-run (not SKIP-CACHED) when the last path in their own resolved corpus changes by one byte (gate 22 covered separately by Case G22)
+    [PASS] Case G1: deleting a declared gate-1 corpus file forces a re-run that reports the missing file
+    [PASS] Case G2: clearing settings.json's .hooks forces a re-run that reports the missing registrations
+    [PASS] Case G4: gate 4 reports a seeded task-reference violation, and its composite key is confirmed CANNOT_COMPUTE (worktree .git-file limitation; fail-open, never a false skip)
+    [PASS] Case G6: removing an agent's model: field forces a re-run that reports the missing field
+    [PASS] Case G10: corrupting specs/state.json's JSON forces a re-run that reports the schema failure
+    [PASS] Case G22: an unguarded 'cd' (SC2164) forces a re-run that reports a real shellcheck finding
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-index-entries-schema.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-index-entries-schema.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-install-uninstall-extension.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-install-uninstall-extension.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lean-src-roots.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lean-src-roots.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-agent-contracts.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-agent-contracts.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-dead-command-recommendations.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-dead-command-recommendations.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-extension-readme-table.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-extension-readme-table.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-manifest-scripts-sync.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-manifest-scripts-sync.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-milestone-ref-land.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-milestone-ref-land.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-milestone-review-handoff.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-milestone-review-handoff.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-batch-admit.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-batch-admit.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-plan-file-scope-harvest.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-plan-file-scope-harvest.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-record-version-patterns.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-record-version-patterns.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-roadmap-command-registration.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-roadmap-command-registration.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-sapience-capture.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-sapience-capture.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-script-inventory.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-script-inventory.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-validate-state.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-validate-state.sh
+
+[run-all] Failing suites (1):
+    /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate-cache-equivalence.sh (EXPECTED)
+[run-all] 22 passed, 1 failed (1 expected, 0 NEW), 0 skipped, 23 total
+verify-touched.sh: root '.' (./.claude/scripts/tests/run-all.sh) -- running the OWED fallback set: --cost-class free
+[run-all] Mode: deployed (scripts root: /home/benjamin/.config/nvim/.claude/scripts)
+[run-all] Discovered 98 suite(s).
+
+[run-all] Built shared deployed-tree fixture once at /tmp/tmp.41ueGlEKSS/deployed (read-only, lent to 1 consumer suite(s)).
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-shellcheck-parallel.sh (load-sensitive: serialized, not in the parallel pool)
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/test-state-write-regen-timing.sh (load-sensitive: serialized, not in the parallel pool)
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-approve-classify.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-approve-classify.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-approve-paths.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-approve-paths.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-approve-refusals.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-approve-refusals.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-approve-structural.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-approve-structural.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-askuserquestion-rehome.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-askuserquestion-rehome.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-backfill-file-scope.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-backfill-file-scope.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-census-count.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-census-count.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-check-record-versioning.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-check-record-versioning.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-check-task-references.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-check-task-references.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-common-lib.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-common-lib.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-consumer-freshness.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-consumer-freshness.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-corroborate-phase-counts.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-corroborate-phase-counts.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-deploy-baseline-lib.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-deploy-baseline-lib.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-deploy-freshness.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-deploy-freshness.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-deploy-ledger-lib.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-deploy-ledger-lib.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-deploy-orphans.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-deploy-orphans.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-deploy-verify-overlap.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-deploy-verify-overlap.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-deploy-verify-wiring.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-deploy-verify-wiring.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-derived-artifact-probe-lib.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-derived-artifact-probe-lib.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-dispatch-metrics.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-dispatch-metrics.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-dispatch-strand-probe.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-dispatch-strand-probe.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-double-loading-check.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-double-loading-check.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate3-strict-equivalence.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate3-strict-equivalence.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate-cache-lib.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate-cache-lib.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate-out-derived-staleness.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate-out-derived-staleness.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate-out-self-attribution.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-gate-out-self-attribution.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-generate-task-order.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-generate-task-order.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-handoff-dispatch-identity.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-handoff-dispatch-identity.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-handoff-reader-parity.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-handoff-reader-parity.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-issue-record.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-issue-record.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lean-mcp-preflight-check.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lean-mcp-preflight-check.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lean-mcp-registration.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lean-mcp-registration.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lean-sorry-census.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lean-sorry-census.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lean-src-roots.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lean-src-roots.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-agent-contracts-await-notification.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-agent-contracts-await-notification.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-agent-contracts-handoff-section.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-agent-contracts-handoff-section.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-agent-contracts.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-agent-contracts.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-branch-gated-sections.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-branch-gated-sections.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-deploy-caller-wrap.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-deploy-caller-wrap.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-directory-pathspec-boundary.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-directory-pathspec-boundary.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-hook-registration-paths.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-hook-registration-paths.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-lifecycle-status-var.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-lifecycle-status-var.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-postflight-boundary.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-postflight-boundary.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-scoped-commit-boundary.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-scoped-commit-boundary.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-shellcheck-parallel.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-shellcheck-parallel.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-shellcheck.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-shellcheck.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-state-writer-boundary.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-state-writer-boundary.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-task-lookup-adoption.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-lint-task-lookup-adoption.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-literature-build-index.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-literature-build-index.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-manage-topics-create-order.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-manage-topics-create-order.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-manifest-scripts-sync.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-manifest-scripts-sync.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-mint-dispatch-seq.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-mint-dispatch-seq.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-batch-admit.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-batch-admit.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-batch-gate.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-batch-gate.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-build-aux-dispatch.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-build-aux-dispatch.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-churn.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-churn.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-conclusion-aggregate.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-conclusion-aggregate.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-predispatch-review.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-predispatch-review.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-record-decision.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-record-decision.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-recover-message-findings.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-recover-message-findings.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-recover-outcome.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-orchestrate-recover-outcome.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-phase-heading-patterns.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-phase-heading-patterns.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-phase-heartbeat.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-phase-heartbeat.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-plan-file-scope-harvest.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-plan-file-scope-harvest.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-postflight-marker-schema.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-postflight-marker-schema.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-quality-gate-notation.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-quality-gate-notation.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-reconcile-demote-stranded.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-reconcile-demote-stranded.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-reconcile-handoff-status.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-reconcile-handoff-status.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-record-stash-provenance.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-record-stash-provenance.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-record-version-patterns.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-record-version-patterns.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-redeploy-remedy-lib.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-redeploy-remedy-lib.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-resume-scan-nonconformance.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-resume-scan-nonconformance.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-return-meta-status-vocabulary.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-return-meta-status-vocabulary.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-run-all-failure-reporting.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-run-all-failure-reporting.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-runtime-file-tracking.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-runtime-file-tracking.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-script-inventory.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-script-inventory.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-stall-reprompt-wiring.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-stall-reprompt-wiring.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-status-vocabulary.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-status-vocabulary.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-subagent-postflight-marker.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-subagent-postflight-marker.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-sweep-invalidated-claims.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-sweep-invalidated-claims.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-task-lock-liveness.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-task-lock-liveness.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-task-reference-patterns-lib.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-task-reference-patterns-lib.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-task-type-detect.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-task-type-detect.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-title-sim-dedup.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-title-sim-dedup.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-todo-move-pair-staging.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-todo-move-pair-staging.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-update-plan-status.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-update-plan-status.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-validate-bounded-waiter.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-validate-bounded-waiter.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-validate-handoff-location.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-validate-handoff-location.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-validate-handoff.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-validate-handoff.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-validate-no-task-references.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-validate-no-task-references.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-validate-return-meta.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-validate-return-meta.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/tests/test-validate-wiring.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/tests/test-validate-wiring.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/test-lit-pipeline.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/test-lit-pipeline.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/test-session-registry.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/test-session-registry.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/test-session-runtime-files.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/test-session-runtime-files.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/test-state-write-regen-timing.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/test-state-write-regen-timing.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/test-state-write-spill-names.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/test-state-write-spill-names.sh
+[run-all] [RUN]  /home/benjamin/.config/nvim/.claude/scripts/test-task-lock-reap.sh
+[run-all] [PASS] /home/benjamin/.config/nvim/.claude/scripts/test-task-lock-reap.sh
+
+[run-all] 98 passed, 0 failed (0 expected, 0 NEW), 0 skipped, 98 total
+verify-touched.sh: touched-path run reported a failure -- see the run-all.sh output above (touched-path narrowed via verify-touched.sh, NOT a full-battery pass).
+exit: 1

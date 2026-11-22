@@ -1,0 +1,25 @@
+{
+  "phase": 3,
+  "phase_name": "Register the Note and Cross-Link It",
+  "started_at": "2026-11-22T00:00:00Z",
+  "last_updated": "2026-11-22T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read index-entries.json before editing; confirm no concurrent sibling modification", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add new index entry with path/domain/subdomain/summary/line_count", "status": "done", "files_touched": ["agent-system/extensions/lean/index-entries.json"]},
+    {"id": 3, "description": "Set load_when (agents/task_types), no planner-agent", "status": "done", "files_touched": ["agent-system/extensions/lean/index-entries.json"]},
+    {"id": 4, "description": "Set keywords", "status": "done", "files_touched": ["agent-system/extensions/lean/index-entries.json"]},
+    {"id": 5, "description": "No description/tags keys", "status": "done", "files_touched": ["agent-system/extensions/lean/index-entries.json"]},
+    {"id": 6, "description": "Add EXTENSION.md pointer line, confirm under 60-line ceiling", "status": "done", "files_touched": ["agent-system/extensions/lean/EXTENSION.md"]},
+    {"id": 7, "description": "Add README.md Key Files line", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/README.md"]},
+    {"id": 8, "description": "Add cross-pointer in ladder-counter-observables.md distinguishing the two six-sets", "status": "done", "files_touched": ["agent-system/extensions/lean/context/project/lean4/domain/ladder-counter-observables.md"]},
+    {"id": 9, "description": "Refresh line_count via generate-context-line-counts.sh --write then --check", "status": "done", "files_touched": ["agent-system/extensions/lean/index-entries.json"]},
+    {"id": 10, "description": "Stage only this task's own hunks at commit time", "status": "done", "files_touched": []},
+    {"id": 11, "description": "Record issue-log entries", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 11,
+  "approaches_tried": [
+    {"approach": "verify-touched.sh over the four Phase 3 paths", "result": "partial", "reason": "22/23 selected suites passed; test-gate-cache-equivalence.sh timed out at its own 600s internal bound. Confirmed pre-registered known-failure (load-sensitive, unrelated to content changes) via known-failures.txt, and reproduced the same timeout twice more standalone. Treated as discharged (0 NEW failures) rather than re-run indefinitely."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

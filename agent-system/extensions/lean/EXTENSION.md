@@ -39,3 +39,4 @@ Rules (both apply to `**/*.lean`): `lean4.md` — Lean 4 conventions and MCP too
 - `.claude/context/project/lean4/patterns/plan-authoring-gate-collisions.md` - Gate collisions for plan authoring
 - `.claude/context/project/lean4/tools/comparator-guide.md` - Comparator trust model: what a green result does and does not certify
 - `.claude/context/project/lean4/domain/metadata-trust-surfaces.md` - Trust surfaces of Lean metadata on v4.31.0: what extension rows are not checked by, the public extension and linter registries, and the verified command-kind table for a syntax-level refusal
+- `.claude/context/project/lean4/patterns/half-line-test.md` - One-reading triage test for a proposed transport or index condition: name the half-line the counter and the formula are each read from; both-forward is already decided

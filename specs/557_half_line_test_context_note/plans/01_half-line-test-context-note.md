@@ -319,54 +319,61 @@ recorded resolution is removed, not footnoted.
 
 ---
 
-### Phase 3: Register the Note and Cross-Link It [NOT STARTED]
+### Phase 3: Register the Note and Cross-Link It [COMPLETED]
 
 **Goal**: Make the note reachable by the terms an agent would search and from the surfaces a
 reader is already standing on, and keep every generated `line_count` exact in the same phase that
 moves it.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/lean/index-entries.json` immediately before editing: a
+- [x] Re-read `agent-system/extensions/lean/index-entries.json` immediately before editing: a
       concurrent sibling in this same cycle declares it in its own `file_scope`, so a foreign
       append is possible. A foreign modification is a STOP-and-report condition, checked against
-      `git log` first, not something to work around.
-- [ ] Add one entry for `project/lean4/patterns/half-line-test.md` to the `entries` array, with:
+      `git log` first, not something to work around. *(completed: `git log` showed no concurrent
+      modification by another task)*
+- [x] Add one entry for `project/lean4/patterns/half-line-test.md` to the `entries` array, with:
       `path`, `domain` `project`, `subdomain` `lean`, a `summary` naming what the note decides
       (the two questions, the both-forward verdict, the one mechanism per direction, and the
-      boundary), and `line_count`.
-- [ ] Set that entry's `load_when` to `agents: ["lean-research-agent",
+      boundary), and `line_count`. *(completed)*
+- [x] Set that entry's `load_when` to `agents: ["lean-research-agent",
       "lean-implementation-agent"]` and `task_types: ["lean4"]`, matching every sibling pattern
       entry. **Do not add `planner-agent`** (or any other cross-domain shared agent) to
       `load_when.agents`: the adaptive query ORs its dimensions, so a shared agent named in a
       domain entry loads that domain's content into every other domain's dispatch — see
-      `context/patterns/context-discovery.md`'s cross-domain-shared-agent hazard.
-- [ ] Set `keywords` to the terms an agent holding a candidate condition would actually search,
+      `context/patterns/context-discovery.md`'s cross-domain-shared-agent hazard. *(completed,
+      verified via jq)*
+- [x] Set `keywords` to the terms an agent holding a candidate condition would actually search,
       at minimum: `lean4`, `half-line`, `transport-condition`, `index-condition`, `one-sided`,
-      `open-modal`, `forward-determined`, `refutation-mechanism`.
-- [ ] Add no `description` and no `tags` key (both schema-forbidden), keep `load_when` keys drawn
+      `open-modal`, `forward-determined`, `refutation-mechanism`. *(completed)*
+- [x] Add no `description` and no `tags` key (both schema-forbidden), keep `load_when` keys drawn
       only from `agents`/`commands`/`task_types`/`always`, and keep `path`, `domain`,
-      `subdomain`, `summary`, `line_count` all present.
-- [ ] Add one pointer line to `agent-system/extensions/lean/EXTENSION.md`'s `### Context
+      `subdomain`, `summary`, `line_count` all present. *(completed, verified via jq)*
+- [x] Add one pointer line to `agent-system/extensions/lean/EXTENSION.md`'s `### Context
       Pointers` list, in the deployed-path form the neighbouring lines already use, with a
       one-clause description. Re-measure with `wc -l` afterwards and confirm the file stays under
-      the 60-line ceiling (41 lines before the edit, measured at plan time).
-- [ ] Add one line to the `## Key Files` list of
+      the 60-line ceiling (41 lines before the edit, measured at plan time). *(completed: 42
+      lines after edit)*
+- [x] Add one line to the `## Key Files` list of
       `agent-system/extensions/lean/context/project/lean4/README.md`, in that list's existing
-      `path - description` form.
-- [ ] Add one cross-pointer to
+      `path - description` form. *(completed)*
+- [x] Add one cross-pointer to
       `agent-system/extensions/lean/context/project/lean4/domain/ladder-counter-observables.md`,
       placed where a reader about to work through its mechanisms will see it, saying that a
       candidate should be run through the half-line test first and naming the new note's path.
       Include the one clause distinguishing the two "six" sets, exactly as grounded in Phase 1 —
-      assert no identity between them.
-- [ ] Refresh every affected generated `line_count` IN THIS PHASE, because the edits above move
+      assert no identity between them. *(completed: placed immediately before "## The six
+      mechanisms")*
+- [x] Refresh every affected generated `line_count` IN THIS PHASE, because the edits above move
       the quantity the extension-docs lint checks: run
       `bash .claude/scripts/generate-context-line-counts.sh --write` (the DEPLOYED entry point —
       the source-store copy refuses to run and exits with a diagnostic, measured at plan time),
       then `--check` to confirm zero drift. This touches `line_count` and nothing else.
-- [ ] Stage only this task's own hunks, with an explicit file list; never `git add -A`, `git add
-      .`, a directory pathspec, or a glob.
-- [ ] Record issue-log entries as they arise.
+      *(completed: --write touched exactly 3 entries, --check then reports zero mismatch)*
+- [x] Stage only this task's own hunks, with an explicit file list; never `git add -A`, `git add
+      .`, a directory pathspec, or a glob. *(will be done at phase-commit time via
+      git-commit-phase.sh's derived file list)*
+- [x] Record issue-log entries as they arise. *(completed: one minor issue recorded for
+      test-gate-cache-equivalence.sh's pre-registered load-sensitive timeout)*
 
 **Timing**: 0.75 hours
 

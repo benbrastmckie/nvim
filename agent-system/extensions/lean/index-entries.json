@@ -204,6 +204,32 @@
       ]
     },
     {
+      "path": "project/lean4/patterns/half-line-test.md",
+      "line_count": 84,
+      "load_when": {
+        "agents": [
+          "lean-research-agent",
+          "lean-implementation-agent"
+        ],
+        "task_types": [
+          "lean4"
+        ]
+      },
+      "domain": "project",
+      "subdomain": "lean",
+      "summary": "A one-reading triage test for a proposed transport or index condition: name the half-line the counter is read from and the half-line the formula is read from; both-forward is already decided by one recorded mechanism per direction, with a stated boundary for the past-read/snce case the test does not decide",
+      "keywords": [
+        "lean4",
+        "half-line",
+        "transport-condition",
+        "index-condition",
+        "one-sided",
+        "open-modal",
+        "forward-determined",
+        "refutation-mechanism"
+      ]
+    },
+    {
       "path": "project/lean4/standards/lean4-style-guide.md",
       "line_count": 130,
       "load_when": {
@@ -590,7 +616,7 @@
     },
     {
       "path": "project/lean4/README.md",
-      "line_count": 32,
+      "line_count": 33,
       "load_when": {
         "agents": [
           "lean-research-agent",
@@ -936,7 +962,7 @@
     },
     {
       "path": "project/lean4/domain/ladder-counter-observables.md",
-      "line_count": 330,
+      "line_count": 338,
       "load_when": {
         "agents": [
           "lean-research-agent",

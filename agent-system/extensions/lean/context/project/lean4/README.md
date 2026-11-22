@@ -22,6 +22,7 @@ This directory contains context files for Lean 4 theorem prover development.
 - `domain/ladder-counter-observables.md` - The five mechanisms that defeat a clipped-coordinate index of a deadline-ladder cell (three against index shapes, two against object-exhibited parameters), the five-part falsification gate each implies, and the parameter-origin rule as a NECESSARY condition (formula-derived clip and threshold; a modulus dominating every letter-definable sub-object period) with its sufficiency OPEN
 - `patterns/measurement-harness-strictness.md` - Why a pure `let` binding a timed value floats its evaluation past the second clock read, producing a false `0ms` reading, and how to force it inside the measured window instead
 - `context/project/books/patterns/record-maintenance.md` (books extension) - record-editing diagnostics map, for a `lean4`-typed task amending `docs/book-convention*`
+- `patterns/half-line-test.md` - One-reading triage test for a proposed transport or index condition: name the half-line the counter and the formula are each read from; both-forward is already decided
 
 ## For Research
 
