@@ -1,17 +1,102 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 20,
+  "proposed_file_scope": [
+    ".claude-extensions.json"
+  ],
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/557_half_line_test_context_note/summaries/01_half-line-test-context-note-summary.md",
+      "summary": "Four-phase implementation: grounded the half-line test against the originating probe files, authored the note in the lean extension source store, registered and cross-linked it, and redeployed with scoped verification deferring the complete gate set to the orchestration close."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Authored agent-system/extensions/lean/context/project/lean4/patterns/half-line-test.md (84 lines) recording the half-line test for transport/index conditions, registered it in index-entries.json with discoverable keywords, cross-linked it from EXTENSION.md, the lean4 README.md, and the sibling ladder-counter-observables.md note, and redeployed the tree clean."
+  },
+  "modified_files": [
+    ".claude-extensions.json",
+    "agent-system/extensions/lean/EXTENSION.md",
+    "agent-system/extensions/lean/context/project/lean4/README.md",
+    "agent-system/extensions/lean/context/project/lean4/domain/ladder-counter-observables.md",
+    "agent-system/extensions/lean/context/project/lean4/patterns/half-line-test.md",
+    "agent-system/extensions/lean/index-entries.json",
+    "specs/557_half_line_test_context_note/baselines/phase1-grounding-findings.md",
+    "specs/557_half_line_test_context_note/baselines/phase1-line-counts-check.txt",
+    "specs/557_half_line_test_context_note/baselines/phase1-verify-deploy-gate34.txt",
+    "specs/557_half_line_test_context_note/baselines/phase1-wc-baseline.txt",
+    "specs/557_half_line_test_context_note/baselines/phase2-verify-deploy-gate34.txt",
+    "specs/557_half_line_test_context_note/baselines/phase3-verify-touched.txt",
+    "specs/557_half_line_test_context_note/baselines/phase4-deploy.log",
+    "specs/557_half_line_test_context_note/baselines/phase4-validate-context-index.txt",
+    "specs/557_half_line_test_context_note/baselines/phase4-verify-deploy-gate34.txt",
+    "specs/557_half_line_test_context_note/baselines/phase4-verify-touched.txt",
+    "specs/557_half_line_test_context_note/summaries/01_half-line-test-context-note-summary.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "verify-touched.sh's OWED fallback runs run-all.sh's FULL 98-suite battery (not a scoped subset) whenever a touched path has no suite mapping, under a '--cost-class free' label that does not reflect actual wall-clock cost. Two markdown-only touched paths with no mapping triggered this fallback twice during a single implement dispatch (once per phase), each adding several minutes beyond the already-selected 23-suite run.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/557_half_line_test_context_note/summaries/01_half-line-test-context-note-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["verify-touched", "owed-fallback", "cost-class", "run-all", "full-sweep"]
+    },
+    {
+      "content": "test-gate-cache-equivalence.sh is a pre-registered, load-sensitive known-failure (.claude/scripts/tests/known-failures.txt) that times out at its own internal 600s bound under host contention, reproducibly, even when re-run standalone with no other suites in parallel. Do not attribute this suite's timeout to content/lint changes in a dispatch that only touched markdown/JSON; check known-failures.txt first rather than re-running it repeatedly.",
+      "category": "PATTERN",
+      "source_artifact": "specs/557_half_line_test_context_note/summaries/01_half-line-test-context-note-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["known-failures", "test-gate-cache-equivalence", "flaky-test", "load-sensitive", "run-all"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "verify-touched.sh OWED fallback cost",
+      "value": "A touched path with no suite mapping triggers verify-touched.sh's OWED fallback, which runs run-all.sh's entire suite battery (98 suites observed in this repository) under a '--cost-class free' label, despite taking several minutes wall-clock. This happened twice in one implement dispatch because two markdown-only paths (a new context note plus an existing one) both lacked suite mappings.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.8,
+      "source_loc": "specs/557_half_line_test_context_note/baselines/phase3-verify-touched.txt"
+    },
+    {
+      "subject": "test-gate-cache-equivalence.sh known-failure",
+      "value": "test-gate-cache-equivalence.sh is documented in .claude/scripts/tests/known-failures.txt as load-sensitive (harness-level per-suite-timeout-vs-load interaction, not a suite-code defect). It reproducibly timed out at its own internal 600s bound in this session even when re-run standalone with no other suites running concurrently, confirming the documented classification rather than attributable to the implementing task's markdown/JSON-only changes.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": ".claude/scripts/tests/known-failures.txt"
+    },
+    {
+      "subject": "Half-line test decision rule",
+      "value": "A proposed transport or index condition stated via the open modals is already decided if both the counter and the formula are read from the forward half-line: the frozen-future direction dies to Probe855O.cntAt_eq_of_pend_eq_fwd, and the freed-future direction dies to Probe761S.splice_type_invariance_refuted. This is now recorded as a durable lean4 context pattern note rather than something that must be rediscovered per proposal.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/lean/context/project/lean4/patterns/half-line-test.md"
+    },
+    {
+      "subject": "Two six-mechanism sets do not coincide",
+      "value": "The lean4 context note domain/ladder-counter-observables.md's six mechanisms defeating a clipped-coordinate index, and the half-line test's own six probe citations (from the originating report's mechanism-by-mechanism table), overlap in only 4 of 6 files and neither is a subset of the other. The plan's own Risk table estimated a 'three'-file overlap; direct measurement found four. Neither deliverable transcribes either table or its count, only the fact that they differ.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "specs/557_half_line_test_context_note/baselines/phase1-grounding-findings.md"
+    },
+    {
+      "subject": "git-commit-phase.sh Containment Self-Check drop-and-propose mechanics",
+      "value": "When a whole-tree redeploy (deploy-headless.sh) incidentally modifies a repo-root tracked file not in a task's declared file_scope (.claude-extensions.json, regenerated with a timestamp/content refresh), git-commit-phase.sh's Containment Self-Check drops it from the phase commit, emits a WARNING, and deposits the path into .return-meta.json's proposed_file_scope array. A scoped follow-up commit via git-commit-scoped.sh directly (never a second git-commit-phase.sh call for the same path, which would re-hit the same unwidened file_scope and drop it again) is the correct remedy.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.8,
+      "source_loc": "specs/557_half_line_test_context_note/.return-meta.json"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795360608_7bb5fd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "implement",
-      "general-implementation-agent"
-    ]
-  },
-  "proposed_file_scope": [
-    ".claude-extensions.json"
-  ]
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 4,
+    "phases_total": 4
+  }
 }

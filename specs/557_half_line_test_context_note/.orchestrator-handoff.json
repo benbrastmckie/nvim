@@ -1,15 +1,17 @@
 {
-  "status": "planned",
-  "phases_completed": 0,
-  "phases_total": 4,
-  "summary": "Wrote a four-phase implementation plan for the half-line test context note. No research report existed for this round, and the Stage 1.5 assessment found research unnecessary: the cited probe is readable on this filesystem and plan-time reads grounded every declaration name, probe path, and disclaimer the note must carry. One correction surfaced: the dispatch description mis-locates the six-mechanism survival analysis (it is not in the .lean probe), resolved as a citation decision recorded in the plan. The plan validates with zero warnings and harvests five real paths plus the __WHOLE_TREE__ sentinel.",
-  "blockers": [],
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 20,
+  "summary": "Authored and registered the half-line test as a durable lean4 context pattern note (agent-system/extensions/lean/context/project/lean4/patterns/half-line-test.md), cross-linked it from three pointer surfaces, and redeployed with scoped verification. All four plan phases completed and committed; one pre-registered, load-sensitive known-failure (test-gate-cache-equivalence.sh) surfaced in the scoped touched-path check but is unrelated to this task's markdown/JSON-only changes.",
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/557_half_line_test_context_note/plans/01_half-line-test-context-note.md",
-      "summary": "Four-phase plan: ground claims and baseline, author the note, register and cross-link it, redeploy with scoped verification deferring the complete gate set to the orchestration close."
+      "type": "summary",
+      "path": "specs/557_half_line_test_context_note/summaries/01_half-line-test-context-note-summary.md",
+      "summary": "Four-phase implementation: grounded the half-line test against the originating probe files, authored the note, registered and cross-linked it, and redeployed with scoped verification deferring the complete gate set to the orchestration close."
     }
   ],
-  "dispatch_seq": 7
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": [],
+  "plan_markers_verified": true
 }
