@@ -9,8 +9,7 @@
       "description": "Replace the false 'no goals' = proof complete equivalence with the canonical trust-surface statement, measured mechanism, and named lean_verify check",
       "status": "done",
       "files_touched": [
-        "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md",
-        "agent-system/extensions/lean/index-entries.json"
+        "agent-system/extensions/lean/context/project/lean4/tools/mcp-tools-guide.md"
       ]
     }
   ],

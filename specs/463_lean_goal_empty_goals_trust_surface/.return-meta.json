@@ -10,5 +10,8 @@
       "general-implementation-agent"
     ]
   },
-  "dispatch_seq": 16
+  "dispatch_seq": 16,
+  "proposed_file_scope": [
+    "agent-system/extensions/lean/index-entries.json"
+  ]
 }

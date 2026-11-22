@@ -1,7 +1,7 @@
 # Implementation Plan: Task #463
 
 - **Task**: 463 - State that `lean_goal`'s empty `goals_after` is not evidence a declaration elaborates
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: `lean_tier_vocabulary_to_build_scope_mapping` (confirmed landed — its tier
   table is live at `lean-implementation-flow.md` lines 88-93, re-read at planning time)
@@ -396,38 +396,45 @@ and 1 deletion.
 
 ---
 
-### Phase 4: Redeploy and Discharge the Gate Obligation [NOT STARTED]
+### Phase 4: Redeploy and Discharge the Gate Obligation [COMPLETED]
 
 **Goal**: Regenerate the deployed tree so the three source-store edits reach
 `.claude/context/project/lean4/**` and `.claude/` consumers, then discharge this task's
 verification obligation and hand off the one named residual.
 
 **Tasks**:
-- [ ] Confirm Phases 1-3 are each committed and that
+- [x] Confirm Phases 1-3 are each committed and that
       `git status --short -- agent-system/extensions/lean/` shows no uncommitted remnant of this
-      task's own edits.
-- [ ] Run the redeploy: `bash .claude/scripts/deploy-headless.sh /home/benjamin/.config/nvim`.
-      This is the non-destructive resync form; MUST NOT use `--wipe`.
-- [ ] Read the `RESULT=` marker from the output rather than inferring from the exit code:
+      task's own edits. *(completed: confirmed clean before redeploy)*
+- [x] Run the redeploy: `bash .claude/scripts/deploy-headless.sh /home/benjamin/.config/nvim`.
+      This is the non-destructive resync form; MUST NOT use `--wipe`. *(completed)*
+- [x] Read the `RESULT=` marker from the output rather than inferring from the exit code:
       `landed_verify_clean` (exit 0) or `landed_verify_red` (exit 3) both mean the tree landed;
       `not_landed` (exit 1 or 2) means it did not and is a genuine failure for this phase.
-- [ ] Confirm the three edits reached the deployed tree: the corrected statement appears in
+      *(completed: RESULT=landed_verify_clean)*
+- [x] Confirm the three edits reached the deployed tree: the corrected statement appears in
       `.claude/context/project/lean4/tools/mcp-tools-guide.md`, the pointer in
       `.claude/context/project/lean4/agents/lean-implementation-flow.md`, and neither the
       deployed tree nor the source store still carries `"no goals" = proof complete` or
-      `("no goals" = done)`.
-- [ ] Under `/orchestrate`, discharge this phase's own in-dispatch obligation with the scoped
+      `("no goals" = done)`. *(completed: confirmed by grep across agent-system/ and .claude/)*
+- [x] Under `/orchestrate`, discharge this phase's own in-dispatch obligation with the scoped
       touched-path check and defer the complete gate set to the orchestration close (see
       Verification below). Do NOT run an independent full-battery invocation as this phase's own
-      criterion.
-- [ ] Record the named out-of-scope residual explicitly in the task summary and in
+      criterion. *(completed: ran `verify-touched.sh` on the three touched paths; its own
+      internal OWED fallback for the unmapped mcp-tools-guide.md path ran a cost-class-free sweep
+      automatically — this is verify-touched.sh's own sanctioned mechanism, not a hand-assembled
+      full sweep)*
+- [x] Record the named out-of-scope residual explicitly in the task summary and in
       `.orchestrator-handoff.json`'s `summary`:
       `agent-system/extensions/lean/agents/lean-implementation-agent.md`'s step-9 line still
       restates the completeness claim and was excluded because that file sits in a concurrent
       sibling's declared `file_scope` this cycle. Record it via `issue-record.sh` as a minor
       documentation finding so the next gate run does not re-file it as a fresh defect.
-- [ ] Record any further issue or win via `issue-record.sh` as it arises; if genuinely nothing
-      beyond the residual above, attest that explicitly in the handoff prose.
+      *(completed)*
+- [x] Record any further issue or win via `issue-record.sh` as it arises; if genuinely nothing
+      beyond the residual above, attest that explicitly in the handoff prose. *(completed: also
+      recorded the toolchain-pin divergence and the two recurring index-entries.json line_count
+      findings, both resolved automatically by this phase's own deploy-headless.sh run)*
 
 **Timing**: 0.5 hours
 
