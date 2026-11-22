@@ -1,5 +1,95 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 19,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/549_lean_unusedarguments_narrow_remedy_route/summaries/01_unusedarguments-narrow-remedy-summary.md",
+      "summary": "Both phases complete: appended Condition 10 (the unusedArguments ledger-row-vs-set_option decision) to the lean plan-authoring gate-collision checklist with its index-entries.json metadata reconciled, then redeployed the tree and discharged the gate obligation via the scoped Batch Gate Deferral check."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Appended Condition 10 to the lean extension's plan-authoring gate-collision checklist, recording that lake exe runLinter --update is a wholesale ledger reserialization and naming the narrow nolints.json hand-insert route, with the ledger-row-vs-set_option decision made and recorded. Reconciled the coupled index-entries.json metadata in the same phase and redeployed the tree in a second phase, landing clean with the scoped Batch Gate Deferral check (verify-touched.sh, 98/98) rather than a full-battery sweep."
+  },
+  "modified_files": [
+    "agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md",
+    "agent-system/extensions/lean/index-entries.json",
+    ".claude-extensions.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "git-commit-phase.sh's Phase-Commit Containment Self-Check tests files_touched paths against a task's declared file_scope by literal string containment (exact match or directory/glob ancestor) -- it does NOT special-case the __WHOLE_TREE__ sentinel token into matching every path. A phase whose Files-to-modify block declares __WHOLE_TREE__ (e.g. a deploy-headless.sh redeploy phase) still gets any path outside the task's literal file_scope array (like the top-level .claude-extensions.json deploy manifest) silently dropped from the phase commit, deposited into proposed_file_scope, and requires a separate scoped follow-up commit via git-commit-scoped.sh to land. Expect this drop on any __WHOLE_TREE__-declared phase that touches a generated artifact not literally enumerated in file_scope, and have the follow-up-commit trigger ready rather than treating the WARNING as a defect.",
+      "category": "PATTERN",
+      "source_artifact": "specs/549_lean_unusedarguments_narrow_remedy_route/summaries/01_unusedarguments-narrow-remedy-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "git-commit-phase",
+        "WHOLE_TREE",
+        "file_scope",
+        "containment-check",
+        "proposed_file_scope",
+        "deploy-headless"
+      ]
+    },
+    {
+      "content": "When a plan's verification criterion is written as a baseline delta against a specific measured finding (e.g. 'gate 3,4 is RED with exactly one sibling-owned finding; a pass requires every finding to be outside this plan's file union'), re-measure the baseline fresh at verification time rather than assuming the plan-time measurement still holds -- in a concurrent multi-task batch, another dispatch may resolve the baseline finding between plan time and implementation time, which only strengthens the result (the criterion still passes, now against zero findings instead of one), but asserting the stale baseline as still-true would be an unverified carried figure.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/549_lean_unusedarguments_narrow_remedy_route/summaries/01_unusedarguments-narrow-remedy-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "baseline-delta",
+        "verification-criteria",
+        "concurrent-batch",
+        "stale-baseline",
+        "carried-figure"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "lean extension's plan-authoring-gate-collisions.md Condition 10",
+      "predicate": "decision is",
+      "value": "unusedArguments findings from Lean's batch/environment linter pass (lake exe runLinter, the #lint family) must be suppressed via a scripts/nolints.json ledger row (or a confirmed-supported @[nolint unusedArguments] attribute), never via an in-source set_option -- the batch pass does not read an option named after a linter it owns, so a set_option suppression for this category risks a silent no-op that only surfaces the next time the gate runs.",
+      "ko_type": "decision",
+      "confidence": 0.9
+    },
+    {
+      "subject": "lake exe runLinter --update <lib>",
+      "predicate": "finding is",
+      "value": "regenerates the whole project lint ledger (scripts/nolints.json) in its own serialization rather than performing an additive insert; one measured run rewrote 1,119 lines to record a single intended exemption. A plan naming this command as the remedy for one unusedArguments finding is authorizing a repository-wide file rewrite mid-phase.",
+      "ko_type": "fact",
+      "confidence": 0.85
+    },
+    {
+      "subject": "Lean plan Challenge Statements block pinning a hypothesis",
+      "predicate": "finding is",
+      "value": "a Goal whose signature is pinned by a plan's Lean Challenge Statements block predictably trips an unusedArguments linter finding whenever the pinned hypothesis is not read by the proof body -- the hypothesis is in the signature because the Challenge pins it, not because the proof needs it. Each pinned-but-unread hypothesis produces one finding, and a plan pinning several such Goals meets the same collision once per Goal.",
+      "ko_type": "insight",
+      "confidence": 0.85
+    },
+    {
+      "subject": "git-commit-phase.sh Phase-Commit Containment Self-Check",
+      "predicate": "finding is",
+      "value": "the containment predicate checks literal path containment against a task's declared file_scope array and does not special-case the __WHOLE_TREE__ sentinel token into matching every path -- a __WHOLE_TREE__-declared phase (e.g. a deploy-headless.sh redeploy) still has any path outside the literal file_scope array (such as the top-level .claude-extensions.json deploy manifest) dropped from the phase commit and deposited into proposed_file_scope, requiring a separate git-commit-scoped.sh follow-up commit to land it.",
+      "ko_type": "fact",
+      "confidence": 0.85,
+      "source_loc": "specs/549_lean_unusedarguments_narrow_remedy_route/.return-meta.json"
+    },
+    {
+      "subject": "scripts/nolints.json narrow hand-insert format",
+      "predicate": "finding is",
+      "value": "the ledger is a flat [[linterName, declName], ...] array serialized one element per line (a four-line block per row) with no canonical sort -- rows sit in append order -- so placing a hand-inserted exemption row next to an existing exemption of the same shape is the only format-faithful placement, not a stylistic preference.",
+      "ko_type": "fact",
+      "confidence": 0.8
+    },
+    {
+      "subject": "verify-deploy.sh gate 3,4 baseline for agent-system/extensions/lean during task 549",
+      "predicate": "finding is",
+      "value": "the plan-time-measured baseline RED (one sibling-owned mcp-tools-guide.md line_count mismatch) had already been resolved by another concurrent dispatch before this task's implementation phases ran, so re-measuring fresh at verification time (rather than trusting the stale plan-time baseline) found both gate 3,4 and generate-context-line-counts.sh --check fully green.",
+      "ko_type": "fact",
+      "confidence": 0.75
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795360608_7bb5fd",
     "agent_type": "general-implementation-agent",
@@ -8,9 +98,10 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
+    ],
+    "phases_completed": 2,
+    "phases_total": 2
   },
-  "dispatch_seq": 19,
   "proposed_file_scope": [
     ".claude-extensions.json"
   ]

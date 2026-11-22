@@ -2,7 +2,7 @@
 
 - **Task**: 549 - Give the Lean `unusedArguments` remedy a narrow route instead of the wholesale
   `runLinter --update` rewrite
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None (`state.json` `dependencies: []`; the BimodalLogic-numbering edge on 785
   was dropped at migration — `migrated_from.dropped_dependencies: [785]`, re-verified at plan time)
