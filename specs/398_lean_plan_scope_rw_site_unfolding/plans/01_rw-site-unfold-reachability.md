@@ -277,7 +277,7 @@ selecting `test-index-entries-schema.sh`, `test-context-reachability.sh`,
 
 ---
 
-### Phase 3: Redeploy and Confirm Plan-Time Reachability End to End [IN PROGRESS]
+### Phase 3: Redeploy and Confirm Plan-Time Reachability End to End [COMPLETED]
 
 **Goal**: The deployed tree carries the new content and the new keyword, the entry's `line_count`
 is accurate in the source store after deploy's own regeneration sweep, and the Stage 4 item 13
@@ -358,19 +358,19 @@ batch-stage sweep, which still runs once for the whole invocation per the direct
 
 ## Testing & Validation
 
-- [ ] `## Four Probe Shapes` heading and its four `### Shape N:` children are unchanged.
-- [ ] The new material lives in the `## Grep-Based Blast Radius...` section, not as a fifth probe
+- [x] `## Four Probe Shapes` heading and its four `### Shape N:` children are unchanged.
+- [x] The new material lives in the `## Grep-Based Blast Radius...` section, not as a fifth probe
       shape.
-- [ ] The spelling enumeration's length equals the count the prose states, and is labelled a
+- [x] The spelling enumeration's length equals the count the prose states, and is labelled a
       reconstruction.
-- [ ] The worked example names no task number and no `specs/**` path, and uses no
+- [x] The worked example names no task number and no `specs/**` path, and uses no
       record-versioning phrasing.
-- [ ] Source `index-entries.json` `line_count` for the entry equals `wc -l` of the file.
-- [ ] Source and deployed `index-entries.json`/`index.json` both carry `plan-authoring` on the
+- [x] Source `index-entries.json` `line_count` for the entry equals `wc -l` of the file.
+- [x] Source and deployed `index-entries.json`/`index.json` both carry `plan-authoring` on the
       entry; `load_when` is unchanged and no `load_when.agents[]` anywhere names `planner-agent`.
-- [ ] The Stage 4 item 13 query selects the file for `task_type` `lean4` against the deployed
+- [x] The Stage 4 item 13 query selects the file for `task_type` `lean4` against the deployed
       index.
-- [ ] Every commit stages only this task's own explicitly named files.
+- [x] Every commit stages only this task's own explicitly named files.
 
 ## Artifacts & Outputs
 
