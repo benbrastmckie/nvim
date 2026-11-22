@@ -301,7 +301,7 @@ its C16/C17 cases specifically cover the dotted-name resolution the port could r
 
 ---
 
-### Phase 2: Add the record's required regression coverage [NOT STARTED]
+### Phase 2: Add the record's required regression coverage [COMPLETED]
 
 **Goal**: Pin the measured defect as a permanent regression case, and give the
 `CHALLENGE-STATEMENTS-PREFERRED HARVEST` feature its first test coverage so the two harvest paths
@@ -309,26 +309,35 @@ cannot be confused by a future fixture author.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh`
-      immediately before editing.
-- [ ] Add case C21 — the record's minimum verification bar. A plan whose Goals block cites a
+- [x] Re-read `agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh`
+      immediately before editing. *(completed)*
+- [x] Add case C21 — the record's minimum verification bar. A plan whose Goals block cites a
       pre-existing lemma and a binder name in trailing prose, with **no**
       `## Lean Challenge Statements` section at all (so the fallback harvest is genuinely the
       active path, not the already-working preferred one), under default must-exist polarity.
       Assert the exact harvested set, not just the verdict: `[OK]` for the one leading identifier,
       `COMPLIANCE_CHECK: passed`, exit 0, and the explicit *absence* of any output line mentioning
       the prose-cited binder names or pre-existing lemma names. Name the measured provenance in
-      the case's header comment.
-- [ ] State in C21's header comment why the fixture omits the Challenge Statements section: with
+      the case's header comment. *(completed)*
+- [x] State in C21's header comment why the fixture omits the Challenge Statements section: with
       one present and populated, the preferred harvest would take precedence and the case would
-      pass today unchanged, proving nothing about this narrowing.
-- [ ] Add case C22 — the first coverage of the `CHALLENGE-STATEMENTS-PREFERRED HARVEST` feature.
+      pass today unchanged, proving nothing about this narrowing. *(completed)*
+- [x] Add case C22 — the first coverage of the `CHALLENGE-STATEMENTS-PREFERRED HARVEST` feature.
       The same Goals prose as C21, but *with* a populated `## Lean Challenge Statements` section
       declaring the one real goal with a `sorry` body. Assert that the harvest source reported in
       the `skipped`/verdict path is the Challenge Statements section, that the one declared
       identifier is `[OK]`, and that no prose-cited token appears in the output. This pins the
       precedence that makes C21's fixture design load-bearing.
-- [ ] Re-run the full suite and confirm 22 passed, 0 failed.
+      *(deviation: altered — `harvest_source` is mechanically verified to be emitted only on the
+      `skipped` verdict's own echo (the one call site in lean-plan-compliance-check.sh), never on
+      a passing/failing one, so there is no literal "harvest source" string in stdout for a
+      passing case like C22 to assert against. Asserted the same precedence structurally instead:
+      exactly one `[OK]` line (the Challenge-declared `comm`) and the absence of every
+      trailing-prose name, documented in C22's own header comment alongside why the exact-set
+      assertion alone cannot distinguish the two harvest paths on this fixture (both would
+      harvest `comm` as the leading Goals-bullet identifier too) and what does distinguish them
+      (inspection of the `if [ -n "$challenge_names_raw" ]` dispatch))*
+- [x] Re-run the full suite and confirm 22 passed, 0 failed. *(completed: 22 passed, 0 failed)*
 
 **Timing**: 0.75 hours
 

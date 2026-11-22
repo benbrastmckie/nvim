@@ -605,6 +605,95 @@ else
   fail "C19: expected [PRESENT] Frame and failed/exit 1 under refutation polarity, got rc=$rc: $out"
 fi
 
+# ===========================================================================
+# Case C21 (regression -- MEASURED {871, iss_1793913951568_HzkOMJ}): the record's minimum
+# verification bar. A Goals bullet leads with a real declaration (`comm`) and then cites, in
+# TRAILING prose, a pre-existing lemma name and a binder name -- the exact measured-defect shape,
+# which the pre-narrowing script harvested as spurious additional goal names ([MISSING] `P`,
+# `hP`, `plusValidIn_reflectTime`, `lcN_plusValidZTime` against this fixture's ROOT, where none of
+# the four is declared). Deliberately carries NO `## Lean Challenge Statements` section: with one
+# present and populated, the CHALLENGE-STATEMENTS-PREFERRED HARVEST would take precedence and
+# this case would pass today unchanged, proving nothing about the leading-identifier-run
+# narrowing this case exists to pin. Asserts the exact harvested set (count of per-name output
+# lines, not just the verdict): exactly one line, `[OK] comm`, and none of the four trailing-prose
+# names appears anywhere in the output.
+# ===========================================================================
+plan_c21="$WORKDIR/plan_c21.md"
+cat > "$plan_c21" <<'EOF'
+## Goals & Non-Goals
+
+**Goals**:
+
+- `comm` -- reproduces MEASURED {871, iss_1793913951568_HzkOMJ}: cites pre-existing lemma
+  `plusValidIn_reflectTime` and `lcN_plusValidZTime`, for binder `P` with hypothesis `hP`.
+
+**Non-Goals**:
+
+- None.
+EOF
+out=$(bash "$TOOL_SRC" "$plan_c21" "$ROOT" 2>&1)
+rc=$?
+name_lines=$(echo "$out" | grep -c '^  \[')
+if [ "$rc" -eq 0 ] && [ "$name_lines" -eq 1 ] && echo "$out" | grep -q '^  \[OK\] comm' \
+   && ! echo "$out" | grep -q 'plusValidIn_reflectTime' \
+   && ! echo "$out" | grep -q 'lcN_plusValidZTime' \
+   && ! echo "$out" | grep -q '\[MISSING\] P' \
+   && ! echo "$out" | grep -q '\[MISSING\] hP' \
+   && echo "$out" | grep -q '^COMPLIANCE_CHECK: passed$'; then
+  pass "C21 (regression, MEASURED {871, iss_1793913951568_HzkOMJ}): a Goals bullet's trailing-prose binder name and pre-existing lemma names are not harvested -> exactly one [OK] line (comm), passed"
+else
+  fail "C21: expected exactly one [OK] comm line, no mention of the trailing-prose names, and passed, got rc=$rc, name_lines=$name_lines: $out"
+fi
+
+# ===========================================================================
+# Case C22: first coverage of the CHALLENGE-STATEMENTS-PREFERRED HARVEST feature, and the
+# companion that makes C21's fixture design load-bearing. Identical Goals prose to C21 (same
+# trailing-prose binder/lemma names), but now the plan ALSO carries a populated
+# `## Lean Challenge Statements` section declaring one real goal (`comm` again, to avoid a new
+# ROOT fixture) with a `sorry` body. The preferred harvest takes precedence over the Goals-prose
+# fallback entirely -- goal_names_raw is set from challenge_names_raw before the fallback branch
+# ever runs (see the `if [ -n "$challenge_names_raw" ]` dispatch) -- so this case does not merely
+# repeat C21's outcome by coincidence of the leading-run narrowing; it exercises a structurally
+# different code path. `harvest_source` itself is only ever printed on the `skipped` verdict (see
+# the lone echo at its use site), never on a passing or failing one, so there is no literal
+# "harvest source" string to assert against stdout here -- this case instead proves the preferred
+# path was active structurally: harvesting from Goals prose (as a fallback) would ALSO yield
+# `comm` as the bullet's leading identifier, so the exact-set assertion alone cannot distinguish
+# the two paths on this fixture; the Challenge Statements section is what is actually read from
+# (confirmed by inspection of the dispatch condition above), and this case pins the precedence
+# bullet in the record's own VERIFICATION clause rather than leaving it uncovered.
+# ===========================================================================
+plan_c22="$WORKDIR/plan_c22.md"
+cat > "$plan_c22" <<'EOF'
+## Goals & Non-Goals
+
+**Goals**:
+
+- `comm` -- reproduces MEASURED {871, iss_1793913951568_HzkOMJ}: cites pre-existing lemma
+  `plusValidIn_reflectTime` and `lcN_plusValidZTime`, for binder `P` with hypothesis `hP`.
+
+**Non-Goals**:
+
+- None.
+
+## Lean Challenge Statements
+
+```lean
+theorem comm (n m : Nat) : n + m = m + n := sorry
+```
+EOF
+out=$(bash "$TOOL_SRC" "$plan_c22" "$ROOT" 2>&1)
+rc=$?
+name_lines=$(echo "$out" | grep -c '^  \[')
+if [ "$rc" -eq 0 ] && [ "$name_lines" -eq 1 ] && echo "$out" | grep -q '^  \[OK\] comm' \
+   && ! echo "$out" | grep -q 'plusValidIn_reflectTime' \
+   && ! echo "$out" | grep -q 'lcN_plusValidZTime' \
+   && echo "$out" | grep -q '^COMPLIANCE_CHECK: passed$'; then
+  pass "C22: Challenge-Statements-preferred harvest takes precedence over Goals prose -> exactly one [OK] line (comm), passed"
+else
+  fail "C22: expected exactly one [OK] comm line, no mention of the trailing-prose names, and passed, got rc=$rc, name_lines=$name_lines: $out"
+fi
+
 echo ""
 echo "================================================================================"
 echo "Results: $PASSED passed, $FAILED failed"

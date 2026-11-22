@@ -1,0 +1,35 @@
+{
+  "phase": 2,
+  "phase_name": "Add the record's required regression coverage",
+  "started_at": "2026-11-22T00:30:00Z",
+  "last_updated": "2026-11-22T00:40:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add case C21 (measured-defect regression, no Challenge Statements section)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Add case C22 (Challenge-preferred-harvest precedence)",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Re-run full suite, confirm 22 passed 0 failed",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
