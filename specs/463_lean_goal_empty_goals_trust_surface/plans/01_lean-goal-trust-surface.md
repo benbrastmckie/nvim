@@ -330,26 +330,29 @@ showing one hunk whose context does not include those regions.
 
 ---
 
-### Phase 3: Delete the False Equivalence From the Extension README's Capability Table [NOT STARTED]
+### Phase 3: Delete the False Equivalence From the Extension README's Capability Table [COMPLETED]
 
 **Goal**: Remove the one in-scope restatement of `"no goals" = done`, so the extension does not
 contradict its own corrected statement — a deletion, not a second statement.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/lean/README.md` immediately before editing.
-- [ ] Locate the capability-table row by content (at planning time line 54):
-      `` | `lean_goal` | Proof state at a file position ("no goals" = done) | ``.
-- [ ] Edit that row's Purpose cell to drop the false parenthetical, leaving an accurate,
+- [x] Re-read `agent-system/extensions/lean/README.md` immediately before editing. *(completed)*
+- [x] Locate the capability-table row by content (at planning time line 54):
+      `` | `lean_goal` | Proof state at a file position ("no goals" = done) | ``. *(completed:
+      found unchanged at line 54)*
+- [x] Edit that row's Purpose cell to drop the false parenthetical, leaving an accurate,
       caveat-free gloss (for example: proof state at a file position, reporting `goals_before`
       and `goals_after`). MUST NOT add the caveat, the mechanism, or a pointer here — the
       capability table is a one-line inventory, and restating the statement in it is the failure
-      mode the dispatch's "do not write it twice" constraint names.
-- [ ] Leave every other row of the table unchanged, including the `lean_verify` row
-      (`Axiom check and source scan`) and the `lean_diagnostic_messages` row.
-- [ ] Same two prose constraints as Phase 1: no record-versioning language, no task-number or
-      cross-repo issue reference.
-- [ ] Record any issue or win via `issue-record.sh` as it arises; if genuinely nothing, attest
-      that explicitly in the handoff prose.
+      mode the dispatch's "do not write it twice" constraint names. *(completed)*
+- [x] Leave every other row of the table unchanged, including the `lean_verify` row
+      (`Axiom check and source scan`) and the `lean_diagnostic_messages` row. *(completed:
+      confirmed by `git diff --numstat` = 1 insertion, 1 deletion)*
+- [x] Same two prose constraints as Phase 1: no record-versioning language, no task-number or
+      cross-repo issue reference. *(completed: verified by grep)*
+- [x] Record any issue or win via `issue-record.sh` as it arises; if genuinely nothing, attest
+      that explicitly in the handoff prose. *(completed: recorded the two touched-path-run
+      findings, both naming files outside this plan's scope)*
 
 **Timing**: 0.25 hours
 

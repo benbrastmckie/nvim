@@ -51,7 +51,7 @@ command-path invariant. No API key required. The server depends on a working Lea
 
 | Tool | Purpose |
 |------|---------|
-| `lean_goal` | Proof state at a file position ("no goals" = done) |
+| `lean_goal` | Proof state at a file position, reporting `goals_before` and `goals_after` |
 | `lean_diagnostic_messages` | Compiler errors/warnings for a file |
 | `lean_hover_info` | Type signature and docstring at position |
 | `lean_multi_attempt` | Test tactics at a position without editing |
