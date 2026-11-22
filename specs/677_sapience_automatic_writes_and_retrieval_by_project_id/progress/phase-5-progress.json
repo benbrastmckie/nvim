@@ -1,0 +1,17 @@
+{
+  "phase": 5,
+  "phase_name": "Close the Round",
+  "started_at": "2026-11-21T00:00:00Z",
+  "last_updated": "2026-11-21T00:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run the eight named suites under CORE_TEST_SUBJECT_MODE=source-store", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-confirm write-path invariant by inspection (write scripts unmodified, no MCP write tool named as a write path)", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Run scoped touched-path check (verify-touched.sh) over the four task-modified files", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Record full gate set deferral to orchestration close in verification notes", "status": "done", "files_touched": ["specs/677_sapience_automatic_writes_and_retrieval_by_project_id/plans/01_sapience-project-id-automatic-paths.md"]},
+    {"id": 5, "description": "Write round summary and emit sapience_notes/memory_candidates", "status": "done", "files_touched": ["specs/677_sapience_automatic_writes_and_retrieval_by_project_id/summaries/01_sapience-project-id-automatic-paths-summary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

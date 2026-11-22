@@ -427,7 +427,7 @@ staging; a second changed entry means a sibling's edit was captured and must be 
 
 ---
 
-### Phase 5: Close the Round [NOT STARTED]
+### Phase 5: Close the Round [COMPLETED]
 
 **Goal**: Every suite this task's paths reach is green against the source-store copies, the
 lockstep and write-path invariants are re-confirmed unbroken, and the complete gate set is
@@ -435,25 +435,32 @@ handed to the orchestration close.
 
 **Tasks**:
 
-- [ ] Run, with `CORE_TEST_SUBJECT_MODE=source-store`:
+- [x] Run, with `CORE_TEST_SUBJECT_MODE=source-store`:
       `test-sapience-capture.sh`, `test-sapience-remember.sh`,
       `test-postflight-sapience-notes.sh`, `test-sapience-publish.sh`,
       `test-sapience-vault-read.sh`, `test-sapience-project-bind.sh`,
       `test-sapience-context-scoping.sh`, and `test-sapience-mcp-registration.sh` — the last
       specifically to confirm Case 30's nine-copy worktree-block byte-identity assertion still
-      passes with no copy added or removed.
-- [ ] Re-confirm the write-path invariant by inspection: `sapience-remember.sh`,
+      passes with no copy added or removed. *(completed: 59, 11, 41, 53, 19, 61, 6, and 58
+      passed respectively, 0 failed in each; Case 30 explicitly green)*
+- [x] Re-confirm the write-path invariant by inspection: `sapience-remember.sh`,
       `postflight-sapience-notes.sh`, and `sapience-publish.sh` are unmodified by this task
       (`git diff HEAD --stat` lists none of them), and no instruction surface added in Phase 4
-      names an MCP write tool as a write path.
-- [ ] Run the scoped touched-path check over this task's own paths:
+      names an MCP write tool as a write path. *(completed: `git diff 8ec2fda6c~1 HEAD --stat`
+      over the three scripts is empty; the Phase 4 mentions of `sapience_remember` in
+      per-repo-scoping.md are discussion-only, naming why the tool cannot produce a tagged
+      write, matching `rules/sapience-write-path.md`'s sanctioned discussion site)*
+- [x] Run the scoped touched-path check over this task's own paths:
       `bash agent-system/extensions/core/scripts/verify-touched.sh` with the four files this
-      task modified, and record its verdict.
-- [ ] Record, in this phase's own verification notes, that the complete gate set is DEFERRED to
+      task modified, and record its verdict. *(completed: exit 0; 16 suite(s) selected + 1
+      owed fallback (98 suites), 114/114 passed, 0 failed)*
+- [x] Record, in this phase's own verification notes, that the complete gate set is DEFERRED to
       the orchestration close (`context/contracts/batch-gate-stage.md`) rather than independently
-      run in this dispatch, per `plan-format.md`'s "Batch-aware deferral".
-- [ ] Emit the 3-8 `sapience_notes` the postflight pass consumes, and the `memory_candidates` the
-      round's findings warrant, in `.return-meta.json`.
+      run in this dispatch, per `plan-format.md`'s "Batch-aware deferral". *(completed: recorded
+      below in this phase's Verification list per this dispatch's `## Batch Gate Deferral`
+      directive)*
+- [x] Emit the 3-8 `sapience_notes` the postflight pass consumes, and the `memory_candidates` the
+      round's findings warrant, in `.return-meta.json`. *(completed)*
 
 **Timing**: 0.75 hours
 
@@ -467,13 +474,17 @@ handed to the orchestration close.
 
 **Verification**:
 
-- [ ] All eight named suites pass under `CORE_TEST_SUBJECT_MODE=source-store`, with
-      `test-sapience-mcp-registration.sh`'s Case 30 explicitly green.
-- [ ] `bash agent-system/extensions/core/scripts/verify-touched.sh agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh agent-system/extensions/sapience/scripts/sapience-retrieve.sh agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md agent-system/extensions/sapience/index-entries.json` reports a passing narrowed verdict, exit status checked, not only its printed output read.
-- [ ] Under `/orchestrate`, the complete gate set (`verify-deploy.sh`) is DEFERRED to the
+- [x] All eight named suites pass under `CORE_TEST_SUBJECT_MODE=source-store`, with
+      `test-sapience-mcp-registration.sh`'s Case 30 explicitly green. *(confirmed)*
+- [x] `bash agent-system/extensions/core/scripts/verify-touched.sh agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh agent-system/extensions/sapience/scripts/sapience-retrieve.sh agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md agent-system/extensions/sapience/index-entries.json` reports a passing narrowed verdict, exit status checked, not only its printed output read. *(confirmed: exit 0, 16 selected + 98 OWED-fallback, 114/114 passed, 0 failed)*
+- [x] Under `/orchestrate`, the complete gate set (`verify-deploy.sh`) is DEFERRED to the
       once-per-invocation orchestration close and that deferral is stated in this phase's closing
       notes; in a standalone, non-orchestrated run with no such close, `bash .claude/scripts/verify-deploy.sh`
-      is run directly here instead.
+      is run directly here instead. *(confirmed: this dispatch runs under `/orchestrate` as one
+      of several concurrent implement-phase dispatches in a multi-task batch per this dispatch's
+      own `## Batch Gate Deferral` directive; the complete `verify-deploy.sh` gate set is
+      DEFERRED to the once-per-invocation orchestration close, discharged here instead against
+      the scoped `verify-touched.sh` tier above and the eight named suites)*
 
 ---
 

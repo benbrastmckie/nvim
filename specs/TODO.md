@@ -192,7 +192,7 @@ next_project_number: 684
 
 ### Sapience
 
-677 [PARTIAL] — Make the Sapience extension's automatic paths use the linked...
+677 [IMPLEMENTING] — Make the Sapience extension's automatic paths use the linked...
   └─ 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
 683 [PLANNED] — Couple Sapience capture enablement to sapience-extension...
 
@@ -277,7 +277,7 @@ next_project_number: 684
 ---
 
 ### 677. Sapience automatic writes and retrieval by project id
-- **Status**: [PARTIAL]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: sapience
 - **Dependencies**: Task 681
