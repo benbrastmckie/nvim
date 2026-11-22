@@ -94,13 +94,17 @@ shapes; one existing is not grounds to loosen the other.
 
 ## Ruling 5: A non-creator member's gated suggestions surface through the existing `/sapience` draft
 
-No new mechanism; this documents an existing one as a ruling. `sapience-project-bind.sh` always
-creates a fresh project rather than joining an existing one, because the creator/owner receives
-`follow:true` and sees every member's notes flow without a per-note confirm, while a non-creator
-member's own tagged note lands as a suggestion only that member sees (an empty
-`cross = doors & (sent | added | ...)` intersection). Because this repo's own binding is always
-the owner side, the question is live only for the member-side half: a member reading back its own
-pending suggestions. `GET /v1/people/projects/suggestions` — already wired into
+No new mechanism; this documents an existing one as a ruling. `sapience-project-bind.sh` supports
+both creating a fresh project and binding to an existing one picked from the caller's accepted or
+owned rows (`--project <name|id>`), so this repo's own binding can land on either the owner side
+(the creator/owner receives `follow:true` and sees every member's notes flow without a per-note
+confirm) or the non-owner member side (joining a project someone else owns and received). Which
+side it lands on is derived from the picked row's own `owner` flag and surfaces to the caller at
+bind time (`print_bind_role_note()`). A non-creator member's own tagged note lands as a
+suggestion only that member sees (an empty `cross = doors & (sent | added | ...)` intersection),
+so the question is live for this repo whenever its own binding is the non-owner member side: a
+member reading back its own pending suggestions. `GET /v1/people/projects/suggestions` — already
+wired into
 `sapience-vault-read.sh`'s `vault.suggestions` field and already folded into `/sapience`'s Stage
 3 draft-assembly instruction — already is that surfacing path, firing on every interactive
 `/sapience` invocation in a linked repo with no new code needed. Promoting a suggestion to a

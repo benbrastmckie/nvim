@@ -95,7 +95,7 @@
       "topics": ["sapience", "linked-repo", "project-link", "write-policy"],
       "keywords": ["project.json", "project_cid", "sf1-engine", "vault.suggestions", "capture.projects", "REPO_LINK_FOR"],
       "summary": "Five rulings on how a .sapience/project.json-linked repo differs from an unlinked one (write-tool grant, mid-run ban, capture opt-in, transcript filtering, non-creator suggestions) and their cross-harness agreement with sf1-engine's integration/project-link.md section 10",
-      "line_count": 126,
+      "line_count": 130,
       "load_when": {},
       "on_demand": true
     }
