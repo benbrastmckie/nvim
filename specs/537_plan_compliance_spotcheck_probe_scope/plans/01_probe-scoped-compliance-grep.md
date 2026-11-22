@@ -2,7 +2,7 @@
 
 - **Task**: 537 - lean-implementation-agent's plan-compliance spot-check does not search
   plan-pinned evidence-probe locations outside `lean-src-roots.sh`'s roots
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.5 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/537_plan_compliance_spotcheck_probe_scope/reports/01_plan-compliance-probe-scope.md
@@ -213,7 +213,7 @@ them.
 
 ---
 
-### Phase 1: Widen the per-name lookup scope to the plan's own declared paths [NOT STARTED]
+### Phase 1: Widen the per-name lookup scope to the plan's own declared paths [COMPLETED]
 
 **Goal**: `find_decl_files` and `find_field_files` search the resolved roots unioned with
 plan-derived paths under must-exist polarity, deriving that union from `$plan_file` alone and
@@ -223,23 +223,30 @@ polarity are unchanged; the script's header documents all of it.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh` in full
+- [x] Re-read `agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh` in full
       immediately before editing. Sibling task #504 declares this same file this cycle, so
       confirm by `git log`/`git status` that no foreign commit or foreign uncommitted modification
-      has landed; STOP and report if one has, rather than proceeding.
-- [ ] Re-derive the call-site inventory by grep rather than trusting this plan's line numbers:
+      has landed; STOP and report if one has, rather than proceeding. *(completed: #504's commits
+      to this file (8e3d64d56, c9e743fb2) are already-committed history, not a foreign uncommitted
+      modification; `git status --porcelain` on the two target files was clean)*
+- [x] Re-derive the call-site inventory by grep rather than trusting this plan's line numbers:
       `grep -n '"\${lean_roots\[@\]}"' <file>` must show exactly four consumers — two in
       `find_decl_files`, one in `find_field_files`'s bare-name branch, one in
       `find_module_files`'s directory loop. If the count differs, stop and reconcile before
-      editing.
-- [ ] Add a harvester-resolution ladder near the top of the script, following
+      editing. *(completed: confirmed exactly four, matching the hypothesis)*
+- [x] Add a harvester-resolution ladder near the top of the script, following
       `lean-comparator-run.sh`'s env-override-with-sibling-default precedent: honor
       `LEAN_PLAN_COMPLIANCE_HARVESTER` when set, else take the first of
       `$(dirname "${BASH_SOURCE[0]:-$0}")/plan-file-scope-harvest.sh`,
       `.claude/scripts/plan-file-scope-harvest.sh`, and
       `$(dirname "${BASH_SOURCE[0]:-$0}")/../../core/scripts/plan-file-scope-harvest.sh` that
       exists and is readable. Resolving to nothing is a fail-soft condition, not an error.
-- [ ] Add an `extra_paths=()` derivation block positioned after the polarity resolution and before
+      *(completed: a SET override is terminal -- used if readable, else treated as unresolved
+      outright, never falling through to the remaining three rungs; see the plan's own
+      Verification bullet 3, which requires the nonexistent-path override to reach the fully
+      fail-soft outcome rather than silently falling through to the always-present source-store
+      rung)*
+- [x] Add an `extra_paths=()` derivation block positioned after the polarity resolution and before
       the three lookup-function definitions, gated as a whole by `command -v jq >/dev/null 2>&1`:
       (a) run the resolved harvester on `"$plan_file"` with its stderr redirected to `/dev/null`
       (its deployed-tree and unexpanded-variable refusals belong to the `file_scope` consumer, not
@@ -247,34 +254,46 @@ polarity are unchanged; the script's header documents all of it.
       `\.lean$` that satisfy `[ -f ]`; (b) derive
       `task_dir="$(dirname "$(dirname "$plan_file")")"` and, when
       `$task_dir/challenge/manifest.json` exists, append the `project_root` + `challenge_path`
-      join when that joined path satisfies `[ -f ]`. Deduplicate the result.
-- [ ] Make every failure path in that block emit at most one `>&2` note and continue: no `jq`, no
+      join when that joined path satisfies `[ -f ]`. Deduplicate the result. *(completed)*
+- [x] Make every failure path in that block emit at most one `>&2` note and continue: no `jq`, no
       resolvable harvester, a non-zero harvester exit, an absent or unparseable manifest, or an
       empty result each leave `extra_paths` empty and the rest of the check running unchanged.
-- [ ] Assign the search scope exactly once, conditioned on polarity (Decision D6):
+      *(completed: the absent/unparseable-manifest case is silent per Decision D4's "never an
+      error" framing, rather than emitting a note for a routine/expected condition)*
+- [x] Assign the search scope exactly once, conditioned on polarity (Decision D6):
       `search_roots=("${lean_roots[@]}" "${extra_paths[@]}")` under must-exist polarity,
       `search_roots=("${lean_roots[@]}")` under refutation polarity. Do not duplicate either
-      lookup function to express this.
-- [ ] Replace `"${lean_roots[@]}"` with `"${search_roots[@]}"` at exactly the three per-name grep
+      lookup function to express this. *(completed)*
+- [x] Replace `"${lean_roots[@]}"` with `"${search_roots[@]}"` at exactly the three per-name grep
       sites confirmed above (both greps in `find_decl_files`, the bare-name grep in
       `find_field_files`). Leave `find_module_files`'s `for root in "${lean_roots[@]}"` loop
-      reading the roots array directly.
-- [ ] Leave the `replacement_targets` sweep's code untouched and confirm by reading it that it
+      reading the roots array directly. *(completed)*
+- [x] Leave the `replacement_targets` sweep's code untouched and confirm by reading it that it
       still obtains its file through `find_decl_files` — that reuse is what discharges the
       dispatch's "same widened scope for the replacement-target sub-check" requirement.
-- [ ] Reword the trailing scope phrase in the per-name `[OK]`/`[MISSING]`/`[PRESENT]` messages so
+      *(completed: confirmed by reading -- no edit made)*
+- [x] Reword the trailing scope phrase in the per-name `[OK]`/`[MISSING]`/`[PRESENT]` messages so
       a plan-named hit is not reported as a roots hit (Decision D8), keeping the leading fragments
-      `found as a structure/class field` and `found as a Lean module` byte-identical.
-- [ ] Add the sixth entry to the header's "Changes beyond the original (behaviour-preserving)
+      `found as a structure/class field` and `found as a Lean module` byte-identical. *(completed:
+      only the must-exist-polarity [OK]/[MISSING] decl/field lines were reworded; the module [OK]
+      line and all refutation-polarity lines keep their original, still-accurate phrasing since
+      their scope was not widened)*
+- [x] Add the sixth entry to the header's "Changes beyond the original (behaviour-preserving)
       extraction" inventory, in that section's established format: what widened, that the
       replacement-target sweep inherits it, that refutation polarity and `find_module_files` are
-      deliberately excluded and why, and that the whole derivation is fail-soft.
-- [ ] Run `bash agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh` and
-      require `19 passed, 0 failed` — the clean baseline measured at plan time.
-- [ ] Reproduce the fix against a scratch fixture mirroring the plan-time reproduction (a
+      deliberately excluded and why, and that the whole derivation is fail-soft. *(completed)*
+- [x] Run `bash agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh` and
+      require `19 passed, 0 failed` — the clean baseline measured at plan time. *(completed:
+      live re-read found the baseline had drifted to 22 passed, 0 failed (C1-C19, C21, C22) since
+      sibling task #504 committed C21/C22 after this plan was written; re-verified 22 passed, 0
+      failed unchanged after this phase's edits, per the pre-write re-read obligation rather than
+      the stale plan-time count)*
+- [x] Reproduce the fix against a scratch fixture mirroring the plan-time reproduction (a
       declaration present only in a `.lean` file named by the fixture plan's own `Files to modify`
       block, with a source root holding something else) and confirm the verdict flips from
-      `[MISSING]`/failed/exit 1 to `[OK]`/passed/exit 0.
+      `[MISSING]`/failed/exit 1 to `[OK]`/passed/exit 0. *(completed: also confirmed the negative
+      case (genuinely absent name) still fails, and the `LEAN_PLAN_COMPLIANCE_HARVESTER`-unresolved
+      fail-soft fallback returns to `[MISSING]`/failed/exit 1 with exactly one stderr note)*
 - [ ] Commit with an explicit single-file pathspec via `.claude/scripts/git-commit-scoped.sh`,
       after reviewing `git status --short` and `git diff --staged`.
 

@@ -88,6 +88,26 @@
 #   `is_excluded_token()` below still applies to the harvested set afterward, as a redundant
 #   second guard, not because the leading-run narrowing alone is insufficient today.
 #
+#   PLAN-DERIVED SEARCH-SCOPE WIDENING (must-exist polarity only): a plan following this
+#   repository's evidence-probe convention pins its Goals in a `.lean` file deliberately outside
+#   `lean-src-roots.sh`'s resolved roots (e.g. `specs/evidence/**/*.lean`), so the per-name
+#   lookup used to report every such Goal [MISSING] and fail the whole check even though the
+#   declaration plainly existed where the plan itself said it would (see iss_1791842368633_NJQxnS).
+#   `find_decl_files` and `find_field_files` (and, through its existing reuse of
+#   `find_decl_files`, the `replacement_targets` integrity sweep) now search the resolved source
+#   roots UNIONED WITH paths the plan under check itself declares: its own harvested
+#   "Files to modify" `.lean` entries (via `plan-file-scope-harvest.sh`) and the Challenge
+#   snapshot manifest's `project_root`+`challenge_path` join, both derived from the existing
+#   `plan_file` argument alone -- no new argument, no caller-side change. Deliberately NOT
+#   widened: `find_module_files` (a bare module-path Goal inside a probe file still resolves
+#   [MISSING] -- splicing individual files into its directory-shaped roots array would silently
+#   miscompute paths) and refutation polarity (a refutation plan's own evidence probe routinely
+#   pins the very identifier that must be ABSENT, so unioning it in would manufacture the mirror
+#   false failure this widening exists to remove). The whole derivation is fail-soft: no `jq`, an
+#   unresolvable harvester, a non-zero harvester exit or empty result, or an absent/unparseable
+#   Challenge manifest each degrade silently to today's roots-only behaviour, never to a hard
+#   script failure.
+#
 # See test-lean-plan-compliance-check.sh's characterization cases (which this phase's new cases
 # sit alongside) for the pre-existing quirks this extraction otherwise still preserves.
 #
@@ -185,6 +205,96 @@ is_excluded_token() {
   esac
   return 1
 }
+
+# ---------------------------------------------------------------------------------------------
+# PLAN-DERIVED SEARCH-SCOPE WIDENING (this task's own addition -- see the header's sixth
+# inventory entry below). Under must-exist polarity only (Decision D6), find_decl_files and
+# find_field_files search the resolved Lean source roots UNIONED WITH paths the plan under
+# check itself declares: its own harvested "Files to modify" .lean entries, plus the Challenge
+# snapshot manifest's project_root+challenge_path join when one exists. Both are derived
+# entirely from the existing $plan_file argument -- no new argument, no caller-side change.
+# Refutation polarity keeps the roots-only scope unconditionally (see the search_roots
+# assignment below): a refutation plan's own evidence probe routinely pins the very identifier
+# that must be ABSENT, so unioning it in would manufacture the mirror false failure this task
+# exists to remove. Every failure mode below (no jq, an unresolvable harvester, a non-zero
+# harvester exit or empty result, an absent or unparseable Challenge manifest, a harvested path
+# that is not `.lean` or does not exist) degrades silently to today's roots-only behaviour --
+# this block never turns a degraded derivation into a hard script failure.
+#
+# Harvester resolution ladder -- first existing-and-readable rung wins; none found is fail-soft,
+# not an error. Mirrors lean-comparator-run.sh's env-override-with-sibling-default precedent for
+# lake-build-guard.sh, extended with a repo-relative deployed rung and a source-store
+# sibling-extension rung: unlike that guard/runner pair, this script and
+# plan-file-scope-harvest.sh are siblings only in the DEPLOYED tree (both under .claude/scripts/)
+# -- in the source store they live under different extension directories
+# (agent-system/extensions/lean/scripts/ vs. agent-system/extensions/core/scripts/).
+pcc_self_dir="$(dirname "${BASH_SOURCE[0]:-$0}")"
+if [ -n "${LEAN_PLAN_COMPLIANCE_HARVESTER:-}" ]; then
+  # An explicitly set override is terminal: used if readable, else treated as unresolved outright
+  # (the deliberate test seam for simulating the fully-unresolvable case), never falling through
+  # to the sibling-directory/repo-relative/source-store rungs below.
+  if [ -r "$LEAN_PLAN_COMPLIANCE_HARVESTER" ]; then
+    harvester_bin="$LEAN_PLAN_COMPLIANCE_HARVESTER"
+  else
+    harvester_bin=""
+  fi
+elif [ -r "$pcc_self_dir/plan-file-scope-harvest.sh" ]; then
+  harvester_bin="$pcc_self_dir/plan-file-scope-harvest.sh"
+elif [ -r ".claude/scripts/plan-file-scope-harvest.sh" ]; then
+  harvester_bin=".claude/scripts/plan-file-scope-harvest.sh"
+elif [ -r "$pcc_self_dir/../../core/scripts/plan-file-scope-harvest.sh" ]; then
+  harvester_bin="$pcc_self_dir/../../core/scripts/plan-file-scope-harvest.sh"
+else
+  harvester_bin=""
+fi
+
+extra_paths=()
+if command -v jq >/dev/null 2>&1; then
+  if [ -n "$harvester_bin" ]; then
+    harvest_json=$(bash "$harvester_bin" "$plan_file" 2>/dev/null)
+    harvest_rc=$?
+    if [ "$harvest_rc" -eq 0 ] && [ -n "$harvest_json" ]; then
+      while IFS= read -r hpath; do
+        [ -n "$hpath" ] || continue
+        case "$hpath" in
+          *.lean) [ -f "$hpath" ] && extra_paths+=("$hpath") ;;
+        esac
+      done < <(printf '%s' "$harvest_json" | jq -r '.[]' 2>/dev/null)
+    else
+      echo "lean-plan-compliance-check.sh: NOTE: plan-file-scope-harvest.sh ($harvester_bin) produced no usable Files-to-modify list for $plan_file (exit $harvest_rc); continuing with the resolved source roots alone." >&2
+    fi
+  else
+    echo "lean-plan-compliance-check.sh: NOTE: plan-file-scope-harvest.sh could not be resolved (override via LEAN_PLAN_COMPLIANCE_HARVESTER); continuing with the resolved source roots alone." >&2
+  fi
+
+  # Challenge manifest join (Decision D4) -- absence is normal, never an error, so this half
+  # emits no stderr note of its own; it simply contributes nothing to extra_paths.
+  pcc_task_dir="$(dirname "$(dirname "$plan_file")")"
+  pcc_manifest="$pcc_task_dir/challenge/manifest.json"
+  if [ -f "$pcc_manifest" ]; then
+    pcc_proj_root=$(jq -r '.project_root // empty' "$pcc_manifest" 2>/dev/null)
+    pcc_chal_path=$(jq -r '.challenge_path // empty' "$pcc_manifest" 2>/dev/null)
+    if [ -n "$pcc_proj_root" ] && [ -n "$pcc_chal_path" ]; then
+      pcc_chal_file="$pcc_proj_root/$pcc_chal_path"
+      [ -f "$pcc_chal_file" ] && extra_paths+=("$pcc_chal_file")
+    fi
+  fi
+else
+  echo "lean-plan-compliance-check.sh: NOTE: jq not found on PATH; plan-derived search-scope widening skipped, continuing with the resolved source roots alone." >&2
+fi
+
+if [ "${#extra_paths[@]}" -gt 0 ]; then
+  mapfile -t extra_paths < <(printf '%s\n' "${extra_paths[@]}" | sort -u)
+fi
+
+# search_roots (Decision D6) -- assigned exactly once, conditioned on polarity, so neither
+# find_decl_files nor find_field_files is duplicated to express the widening.
+if [ "$goal_polarity" = "refutation" ]; then
+  search_roots=("${lean_roots[@]}")
+else
+  search_roots=("${lean_roots[@]}" "${extra_paths[@]}")
+fi
+# ---------------------------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------------------------
 # Declaration-line ERE fragments -- see the header comment's DECLARATION-KIND AND DOTTED-NAME
@@ -289,7 +399,7 @@ fi
 # `Foo.comm` would be satisfied by any `theorem comm` anywhere in the tree.
 find_decl_files() {
   local name="$1" files
-  files=$(grep -rlE "$(decl_line_ere "$name")" "${lean_roots[@]}" 2>/dev/null)
+  files=$(grep -rlE "$(decl_line_ere "$name")" "${search_roots[@]}" 2>/dev/null)
   if [ -z "$files" ] && [[ "$name" == *.* ]]; then
     local rest="$name" prefix="" f
     while [[ "$rest" == *.* ]]; do
@@ -302,7 +412,7 @@ find_decl_files() {
         [ -n "$f" ] || continue
         grep -qE "$ns_ere" "$f" 2>/dev/null && files="${files:+$files
 }$f"
-      done < <(grep -rlE "$(decl_line_ere "$rest")" "${lean_roots[@]}" 2>/dev/null)
+      done < <(grep -rlE "$(decl_line_ere "$rest")" "${search_roots[@]}" 2>/dev/null)
     done
   fi
   [ -n "$files" ] && printf '%s\n' "$files" | sort -u
@@ -327,7 +437,7 @@ find_field_files() {
       grep -qE "$(field_line_ere "$field")" "$f" 2>/dev/null && printf '%s\n' "$f"
     done < <(find_decl_files "$struct")
   else
-    grep -rlE "$(field_line_ere "$name")" "${lean_roots[@]}" 2>/dev/null
+    grep -rlE "$(field_line_ere "$name")" "${search_roots[@]}" 2>/dev/null
   fi
 }
 
@@ -372,16 +482,22 @@ if [ "$goal_polarity" = "refutation" ]; then
   # The replacement_targets integrity sweep assumes a present declaration whose body can be
   # inspected -- it does not apply under refutation polarity and is deliberately skipped.
 else
-  # MUST-EXIST POLARITY (default, unchanged): every harvested name must be PRESENT.
+  # MUST-EXIST POLARITY (default, unchanged): every harvested name must be PRESENT. The trailing
+  # scope phrase below names the plan's own declared paths too (Decision D8): find_decl_files and
+  # find_field_files now search search_roots, which can include a hit outside the resolved source
+  # roots, so a hit there is no longer honestly described as "in the resolved source roots"
+  # alone. find_module_files stays roots-only (unchanged -- see the header's DECLARATION-KIND AND
+  # DOTTED-NAME WIDENING paragraph and this task's Non-Goals), so its own [OK] line keeps its
+  # original, still-accurate phrasing untouched.
   for name in $goal_names; do
     if [ -n "$(find_decl_files "$name")" ]; then
-      echo "  [OK] $name — found in the resolved source roots"
+      echo "  [OK] $name — found in the resolved source roots or the plan's own declared paths"
     elif [ -n "$(find_field_files "$name")" ]; then
-      echo "  [OK] $name — found as a structure/class field in the resolved source roots"
+      echo "  [OK] $name — found as a structure/class field in the resolved source roots or the plan's own declared paths"
     elif [ -n "$(find_module_files "$name")" ]; then
       echo "  [OK] $name — found as a Lean module under the resolved source roots"
     else
-      echo "  [MISSING] $name — not found in the resolved source roots"
+      echo "  [MISSING] $name — not found in the resolved source roots or the plan's own declared paths"
       compliance_failed=true
     fi
   done

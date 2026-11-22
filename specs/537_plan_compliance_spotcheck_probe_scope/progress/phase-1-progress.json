@@ -1,0 +1,35 @@
+{
+  "phase": 1,
+  "phase_name": "Widen the per-name lookup scope to the plan's own declared paths",
+  "started_at": "2026-11-22T18:06:12Z",
+  "last_updated": "2026-11-22T18:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read lean-plan-compliance-check.sh in full; confirm no foreign commit/mod from sibling task #504", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Re-derive call-site inventory by grep: exactly four \"${lean_roots[@]}\" consumers", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Add harvester-resolution ladder (env override + 3 fallback rungs)", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh"]},
+    {"id": 4, "description": "Add extra_paths=() derivation block (harvester + Challenge manifest, jq-gated)", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh"]},
+    {"id": 5, "description": "Fail-soft notes for every failure path in the derivation block", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh"]},
+    {"id": 6, "description": "Assign search_roots conditioned on polarity (D6)", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh"]},
+    {"id": 7, "description": "Replace lean_roots with search_roots at the 3 per-name grep sites", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh"]},
+    {"id": 8, "description": "Confirm replacement_targets sweep untouched and still reuses find_decl_files", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Reword trailing scope phrase in output messages (D8), preserving leading fragments", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh"]},
+    {"id": 10, "description": "Add sixth header-inventory entry", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh"]},
+    {"id": 11, "description": "Run existing suite, require clean baseline unchanged", "status": "done", "files_touched": []},
+    {"id": 12, "description": "Reproduce fix against scratch fixture, confirm MISSING->OK flip plus fail-soft override behavior", "status": "done", "files_touched": []},
+    {"id": 13, "description": "Commit via git-commit-scoped.sh with explicit single-file pathspec", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 13,
+  "approaches_tried": [
+    {
+      "approach": "Harvester-resolution ladder treats an explicitly-set LEAN_PLAN_COMPLIANCE_HARVESTER override as just another cascading rung (existence-checked like the other three), falling through to sibling/repo-relative/source-store rungs when the override path does not exist",
+      "result": "failed",
+      "reason": "Phase 1's own Verification bullet requires LEAN_PLAN_COMPLIANCE_HARVESTER pointed at a nonexistent path to produce the fully-unresolved fail-soft outcome ([MISSING]/failed/exit 1). A full cascade instead silently fell through to the source-store sibling rung (which always exists when running from the source store), so the override had no observable effect -- the deliberate test seam was defeated. Fixed by making an explicitly-set override terminal: used if readable, else treated as unresolved outright, never falling through to the remaining rungs. This matches lean-comparator-run.sh's own env-override-with-sibling-default precedent, where the override (when set) is used as-is with no existence-check fallback."
+    }
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Suite baseline at this dispatch's live re-read was 22 passed, 0 failed (C1-C19, C21, C22), not the plan-time-measured 19 -- sibling task #504 landed commits adding C21/C22 since the plan was written. Re-verified unchanged (still 22/22) after this phase's edits, per the pre-write re-read obligation rather than trusting the stale plan-time figure.",
+    "Scratch end-to-end reproduction in the session scratchpad (p1repro/) confirmed: (a) the unmodified script (git show HEAD) reports [MISSING] probeOnly / failed / exit 1 against the probe fixture, reproducing the originating defect; (b) the fixed script reports [OK] probeOnly / passed / exit 0 against the same fixture; (c) a genuinely absent name still reports [MISSING]/failed/exit 1; (d) LEAN_PLAN_COMPLIANCE_HARVESTER pointed at a nonexistent path returns to (a)'s roots-only outcome with exactly one fail-soft NOTE on stderr."
+  ]
+}

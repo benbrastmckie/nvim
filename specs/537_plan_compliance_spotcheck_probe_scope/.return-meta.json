@@ -1,31 +1,9 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/537_plan_compliance_spotcheck_probe_scope/plans/01_probe-scoped-compliance-grep.md",
-      "summary": "3-phase plan widening lean-plan-compliance-check.sh's per-name lookup scope to union the resolved Lean source roots with the plan's own harvested Files-to-modify paths and Challenge manifest join, under must-exist polarity only, plus six regression cases and a deploy-tree regeneration."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795360608_7bb5fd_537",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "task_number": 537,
-    "phase_count": 3,
-    "estimated_hours": 2.5,
-    "dependency_waves": [[1], [2], [3]]
-  },
-  "memory_candidates": [
-    {
-      "content": "A bash script's scope-widening change that must work in BOTH the agent-system source store and the deployed .claude/ tree needs a cross-script resolution ladder, not a single sibling-directory default: in the deployed tree two extensions' scripts sit side by side in .claude/scripts/, but in the source store they live in different extension directories (agent-system/extensions/<a>/scripts vs .../<b>/scripts). The precedent shape is lean-comparator-run.sh's env-override-with-sibling-default (${VAR:-$(dirname \"${BASH_SOURCE[0]:-$0}\")/other.sh}), extended with a repo-relative .claude/scripts/ rung and a ../../<other-ext>/scripts/ rung. Without the source-store rung, a test suite that runs the script straight out of the source store silently exercises the fail-soft fallback instead of the new code path, and passes for the wrong reason.",
-      "category": "PATTERN",
-      "source_artifact": "specs/537_plan_compliance_spotcheck_probe_scope/plans/01_probe-scoped-compliance-grep.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["cross-extension script call", "source store", "deployed tree", "BASH_SOURCE resolution", "fail-soft fallback", "shell test fixture"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 537 to execute the plan",
-  "dispatch_seq": 12
+    "session_id": "sess_1795360608_7bb5fd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  }
 }
