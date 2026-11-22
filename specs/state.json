@@ -5149,7 +5149,7 @@
     {
       "project_number": 451,
       "project_name": "snapshot_lean_challenge_at_plan_time",
-      "status": "planning",
+      "status": "planned",
       "task_type": "meta",
       "title": "Take the Lean Challenge snapshot in the plan phase, where it is still meaningful, instead of leaving it to an implement phase the status gate correctly refuses",
       "topic": "lean-extension",
@@ -5160,12 +5160,16 @@
         435
       ],
       "file_scope": [
+        "__WHOLE_TREE__",
         "agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh",
         "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
         "agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md",
+        "agent-system/extensions/lean/index-entries.json",
         "agent-system/extensions/lean/manifest.json",
         "agent-system/extensions/lean/rules/plan-compliance.md",
+        "agent-system/extensions/lean/scripts/lean-challenge-observe.sh",
         "agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh",
+        "agent-system/extensions/lean/scripts/tests/test-lean-challenge-observe.sh",
         "agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh"
       ],
       "artifacts": [
@@ -5173,11 +5177,16 @@
           "path": "specs/451_snapshot_lean_challenge_at_plan_time/reports/01_hook-registration-and-postflight-bridging.md",
           "type": "report",
           "summary": "Confirms option (a) (a postflight hook in extensions/lean/manifest.json) is viable but currently non-functional for plan/implement postflight reached via /orchestrate's own cycle, because orchestrate-cycle-postflight.sh never bridges its resolved task_type into the ambient TASK_TYPE global skill_run_extension_hook reads -- a generic core gap, not lean-specific, with a precedented one-line fix (mirroring command-gate-out.sh's verification-stage pattern). Also finds idempotence (manifest-exists refusal) and both inertness constraints (non-lean task type; zero-goal plan) are already satisfied by landed mechanisms requiring no new hook logic, corrects the dispatch's misnamed option-(b) file (orchestrate-cycle-plan.sh is the composer, not the postflight writer), and recommends declining --check promotion pending task 462."
+        },
+        {
+          "path": "specs/451_snapshot_lean_challenge_at_plan_time/plans/01_challenge-snapshot-observer-wiring.md",
+          "type": "plan",
+          "summary": "Five-phase plan: author the observer and its suite; register it and derive provides.scripts; deploy and pin end-to-end firing plus the untouched exit-73 gate; record every ruling and correct two now-false header claims; reconcile the derived index and close."
         }
       ],
       "created": "2026-10-19T04:37:20Z",
-      "last_updated": "2026-11-22T15:36:08Z",
-      "session_id": "sess_1795360608_7bb5fd_451",
+      "last_updated": "2026-11-22T15:51:17Z",
+      "session_id": "sess_1795360608_7bb5fd",
       "next_artifact_number": 2
     },
     {

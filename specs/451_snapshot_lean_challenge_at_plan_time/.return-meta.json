@@ -1,42 +1,41 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1795360608_7bb5fd_451",
-  "dispatch_seq": 2,
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/451_snapshot_lean_challenge_at_plan_time/reports/01_hook-registration-and-postflight-bridging.md",
-      "summary": "Confirms option (a) (a postflight hook in extensions/lean/manifest.json) is viable but currently non-functional for plan/implement postflight reached via /orchestrate's own cycle, because orchestrate-cycle-postflight.sh never bridges its resolved task_type into the ambient TASK_TYPE global skill_run_extension_hook reads -- a generic core gap, not lean-specific, with a precedented one-line fix (mirroring command-gate-out.sh's verification-stage pattern). Also finds idempotence (manifest-exists refusal) and both inertness constraints (non-lean task type; zero-goal plan) are already satisfied by landed mechanisms requiring no new hook logic, corrects the dispatch's misnamed option-(b) file (orchestrate-cycle-plan.sh is the composer, not the postflight writer), and recommends declining --check promotion pending task 462."
+      "type": "plan",
+      "path": "specs/451_snapshot_lean_challenge_at_plan_time/plans/01_challenge-snapshot-observer-wiring.md",
+      "summary": "Five-phase plan wiring the Lean Challenge snapshot to a post-task OBSERVER declared in the lean manifest (producing at resting_status 'planned', consuming --check on the implement-side statuses), superseding the research report's postflight-lifecycle-hook plus core TASK_TYPE bridging fix and touching zero core files."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1795360608_7bb5fd_451",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 5.25,
+    "dependency_waves": [[1], [2, 4], [3], [5]]
+  },
   "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+    "agent-system/extensions/lean/manifest.json",
+    "agent-system/extensions/lean/scripts/lean-challenge-observe.sh",
+    "agent-system/extensions/lean/scripts/tests/test-lean-challenge-observe.sh",
+    "agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh",
+    "agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh",
+    "agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md",
+    "agent-system/extensions/lean/rules/plan-compliance.md",
+    "agent-system/extensions/lean/index-entries.json",
+    "__WHOLE_TREE__"
   ],
   "memory_candidates": [
     {
-      "content": "skill_preflight_update/skill_postflight_update (skill-base.sh) invoke skill_run_extension_hook with an ambient \"${TASK_TYPE:-}\" global rather than accepting task_type as a parameter. This works only inside a skill's own continuous SKILL.md bash session, where skill_validate_input set TASK_TYPE earlier in the SAME process. Any caller invoked as a fresh bash process (e.g. orchestrate-cycle-postflight.sh, run via `bash .claude/scripts/orchestrate-cycle-postflight.sh ...` once per task) never has TASK_TYPE set, so every postflight hook for every extension silently resolves to skipped_no_extension. The established, already-production fix pattern for this exact shape of problem is command-gate-out.sh's verification-stage call site: resolve task_type locally (e.g. via jq against specs/state.json) and pass it DIRECTLY as skill_run_extension_hook's 3rd positional argument, bypassing the global -- or, more minimally, just set TASK_TYPE=\"$task_type\" once before any skill_postflight_update call in the non-skill-session script.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/451_snapshot_lean_challenge_at_plan_time/reports/01_hook-registration-and-postflight-bridging.md",
-      "confidence": 0.92,
-      "suggested_keywords": ["skill_run_extension_hook", "TASK_TYPE", "postflight hook", "orchestrate-cycle-postflight", "lifecycle-hooks"]
-    },
-    {
-      "content": "When a CLI script already refuses to overwrite its own output artifact without an explicit --force (e.g. lean-challenge-snapshot.sh's exit-73 manifest-exists refusal), a new automated caller (a lifecycle hook, a CI step) that invokes the script plainly, without --force, inherits that refusal as its own idempotence/re-run behaviour for free -- no new idempotence design or code is needed at the call site. Check for this before designing a fresh idempotence mechanism around an existing tool.",
+      "content": "This agent system has TWO distinct extension dispatch seams that are easy to conflate, and the choice between them is usually decided by which one actually receives a usable task_type. (1) LIFECYCLE HOOKS: a manifest's TOP-LEVEL `hooks` object (preflight|context_injection|verification|postflight), invoked by skill-base.sh's skill_run_extension_hook, resolved by STRING EQUALITY on the manifest's single-valued top-level `task_type`. Its `postflight` stage is effectively DEAD on the /orchestrate path: skill_postflight_update passes the ambient `${TASK_TYPE:-}` global, and orchestrate-cycle-postflight.sh sets no TASK_TYPE anywhere (its `task_type` is a lowercase local from --task-type), so the hook resolves to skipped_no_extension for every extension and every task type. Note TASK_DIR *is* set there, so only task_type is missing. core/docs/guides/creating-extensions.md's 'Observers vs. Lifecycle Hooks' section already documents this and explicitly directs authors NOT to repair it by plumbing TASK_TYPE through. (2) POST-TASK OBSERVERS: a manifest's `observers` object, invoked by run-task-observers.sh from orchestrate-cycle-postflight.sh's completion path, which passes the correctly-resolved LOCAL task_type plus a freshly-read persisted_status, is prefix-aware on both topic and task_type, resolve-ALL, timeout-bounded, and advisory/non-blocking by written contract (return code recorded as one task_observer_run event and otherwise ignored). It fires once per dispatch for research/plan/implement alike, gated on is_live only. CONSEQUENCE: for any need shaped as 'run something extension-local after a phase's status lands', reach for the observer seam, not a postflight lifecycle hook. The observer's $6 resting_status is often a BETTER discriminator than the hook's $operation, because it is the value status gates themselves evaluate. Live precedent: books extension's books-observe.sh plus tests/test-books-observe.sh; validated by check-extension-docs.sh Rule X.",
       "category": "PATTERN",
-      "source_artifact": "specs/451_snapshot_lean_challenge_at_plan_time/reports/01_hook-registration-and-postflight-bridging.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["idempotence", "manifest-exists-refusal", "re-run-safety", "force-flag", "wrapping-existing-tool"]
-    },
-    {
-      "content": "In this agent system, every lean4-toolchain script that takes a project_root (lean-challenge-snapshot.sh, lean-comparator-run.sh --project-root, lean-src-roots.sh) requires it as an explicit, non-defaulted argument and assumes a single-repo layout: the Lean project and the specs/ tree that drives it live in the SAME git repository, with project_root == the repo root. No existing mechanism derives project_root from a task number or task_dir. A new caller (e.g. a lifecycle hook invoked with only task_number/task_type/task_dir/session_id/operation) should default project_root to \".\" (the cwd it runs from, which is always the repo root per skill-base.sh's own ambient convention) rather than trying to invent a new resolution mechanism -- and should record the single-repo assumption explicitly as a stated limitation, not silently.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/451_snapshot_lean_challenge_at_plan_time/reports/01_hook-registration-and-postflight-bridging.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["project_root", "lean4-toolchain", "single-repo-assumption", "cwd-convention", "lifecycle-hook-defaults"]
+      "source_artifact": "specs/451_snapshot_lean_challenge_at_plan_time/plans/01_challenge-snapshot-observer-wiring.md",
+      "confidence": 0.93,
+      "suggested_keywords": ["post-task-observers", "lifecycle-hooks", "run-task-observers", "TASK_TYPE", "resting_status", "extension-dispatch-seam"]
     }
   ],
-  "next_steps": "Run /orchestrate 451 to create implementation plan"
+  "next_steps": "Run /orchestrate 451 to execute the plan",
+  "dispatch_seq": 9
 }
