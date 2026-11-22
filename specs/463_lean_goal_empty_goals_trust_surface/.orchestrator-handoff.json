@@ -1,19 +1,21 @@
 {
-  "status": "planned",
-  "task_number": 463,
-  "phase": "plan",
-  "session_id": "sess_1795360608_7bb5fd_463",
-  "dispatch_seq": 10,
-  "phases_completed": 0,
-  "phases_total": 4,
-  "summary": "Wrote a four-phase plan siting the lean_goal trust-surface statement once in mcp-tools-guide.md's #### lean_goal section (replacing the direct false equivalence at the proof-complete bullet), pointing lean-implementation-flow.md's Stage 4B item 5 at it without restating, deleting the one in-scope restatement from the lean extension README's capability table, and closing with a redeploy phase that declares the __WHOLE_TREE__ sentinel. Planning closed the research report's one open evidentiary gap: a four-line standalone Lean probe measured the synthetic-sorryAx mechanism directly on Lean 4.33.0-rc1 (goal closed, '#print axioms' reports sorryAx), so the plan mandates the claim be written as measured with its toolchain pin rather than hedged. Two scope calls were made explicitly rather than by default: README.md is IN scope (a one-cell deletion, no sibling claims it, widening travels the sanctioned plan-file-scope-harvest route), and agents/lean-implementation-agent.md is OUT of scope because it sits in concurrent sibling task 537's declared file_scope this cycle -- that residual is named in the plan for the implementer to carry into the summary and handoff. metadata-trust-surfaces.md and index-entries.json are deliberately untouched (siting candidate (a); both affected files' indexed summaries stay accurate). Plan validates with 0 warnings after three authoring defects the validator caught were fixed.",
-  "blockers": [],
+  "status": "implemented",
+  "phase": "implement",
+  "dispatch_seq": 16,
+  "summary": "Completed all four phases: stated the lean_goal empty-goals-after trust surface once in mcp-tools-guide.md with the measured sorryAx mechanism, pointed lean-implementation-flow.md's step-verification line at it, removed the extension README's parallel false-equivalence restatement, and redeployed cleanly (RESULT=landed_verify_clean). Named residual: agent-system/extensions/lean/agents/lean-implementation-agent.md line 753 still restates the false completeness claim, excluded because that file sits in a concurrent sibling task's declared file_scope this cycle.",
   "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/463_lean_goal_empty_goals_trust_surface/summaries/01_lean-goal-trust-surface-summary.md",
+      "summary": "Implementation summary covering all four phases of the lean_goal trust-surface task."
+    },
     {
       "type": "plan",
       "path": "specs/463_lean_goal_empty_goals_trust_surface/plans/01_lean-goal-trust-surface.md",
-      "summary": "Four-phase implementation plan: canonical statement in mcp-tools-guide.md, pointer in lean-implementation-flow.md, README gloss deletion, redeploy with __WHOLE_TREE__ claim. 1.9h estimated, 3 dependency waves."
+      "summary": "Four-phase plan, all phases marked [COMPLETED]."
     }
   ],
-  "next_steps": "Run /orchestrate 463 to execute the plan"
+  "phases_completed": 4,
+  "phases_total": 4,
+  "blockers": []
 }
