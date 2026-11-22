@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "phases_completed": 0,
+  "phases_total": 2,
+  "summary": "Wrote a 2-phase plan appending one new Condition to the lean extension's existing plan-authoring gate-collision checklist (the unusedArguments ledger-row remedy, the narrow hand-insert route, and the ledger-row-vs-set_option decision), plus a redeploy phase. Corrected the research report's Finding 6: index-entries.json line_count drift is commit-BLOCKING via check-extension-docs.sh Rule R (exact equality, no tolerance) run by verify-deploy.sh gate 3, not advisory as the report claimed, so the metadata reconciliation is folded into the same phase as the append per the coupled-generated-surface obligation. Measured the gate-3 baseline as RED with exactly one out-of-scope finding owned by concurrent sibling task 463, and measured the source-repo ledger's real shape (228 rows, 914 lines, flat unsorted array, 4 lines per row) to sharpen the guidance text.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/549_lean_unusedarguments_narrow_remedy_route/plans/01_unusedarguments-narrow-remedy.md",
+      "summary": "2-phase plan: append the unusedArguments ledger-row Condition and reconcile its index entry in the same phase (local tier), then redeploy and discharge the gate obligation (full tier, __WHOLE_TREE__)."
+    }
+  ],
+  "dispatch_seq": 17
+}

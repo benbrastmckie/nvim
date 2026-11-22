@@ -1,39 +1,30 @@
 {
-  "status": "researched",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/549_lean_unusedarguments_narrow_remedy_route/reports/01_unusedarguments-narrow-remedy.md",
-      "summary": "Finds the target gate-collision file already exists (9 Conditions, dependency on BimodalLogic task 785 dropped at migration); drafts Condition 10 naming the nolints.json narrow-remedy route and deciding ledger-row vs in-source set_option for the unusedArguments batch-linter category."
+      "type": "plan",
+      "path": "specs/549_lean_unusedarguments_narrow_remedy_route/plans/01_unusedarguments-narrow-remedy.md",
+      "summary": "2-phase plan appending one new Condition to the lean extension's plan-authoring gate-collision checklist (unusedArguments ledger-row remedy, narrow hand-insert route, ledger-row-vs-set_option decision) with its coupled index-entries.json metadata reconciled in the same phase, followed by a whole-tree redeploy phase."
     }
   ],
-  "next_steps": "Run /orchestrate 549 to create implementation plan",
-  "proposed_file_scope": [
-    "agent-system/extensions/lean/index-entries.json"
+  "next_steps": "Run /orchestrate 549 to execute the plan",
+  "phase_count": 2,
+  "estimated_hours": 1.75,
+  "dependency_waves": 2,
+  "memory_candidates": [
+    {
+      "content": "index-entries.json's line_count field has TWO enforcement surfaces with different severities, and reading only one of them misclassifies the obligation. validate-context-index.sh compares declared vs actual with a tolerance and calls log_warning (advisory). But check-extension-docs.sh's Rule R (check_line_count_accuracy) compares with EXACT string equality and no tolerance, reporting through index_truth_report as a FAIL -- and verify-deploy.sh gate 3 runs check-extension-docs.sh --quiet. So any edit that changes a context file's line count is commit-BLOCKING and its index_entries.json line_count must be reconciled in the SAME phase, not deferred. Related hazard: generate-context-line-counts.sh --write rewrites every mismatched entry across all extensions' index-entries.json files, so under concurrency it will silently pull a sibling task's line_count correction into your own commit when both entries live in the same extension's file -- hand-edit the single entry instead. deploy-headless.sh runs --write automatically before every deploy, so the same collateral appears again at deploy time.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/549_lean_unusedarguments_narrow_remedy_route/plans/01_unusedarguments-narrow-remedy.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["line_count", "index-entries", "check-extension-docs", "Rule R", "generate-context-line-counts", "coupled-generated-surface"]
+    }
   ],
   "metadata": {
     "session_id": "sess_1795360608_7bb5fd_549",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 6,
-    "issue_log_contribution": 2
+    "delegation_path": ["orchestrator", "plan", "planner-agent"]
   },
-  "memory_candidates": [
-    {
-      "content": "In this agent system's lean extension, agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md is a living checklist that multiple independent tasks append numbered Conditions to over time (confirmed: Conditions 1-9 already exist, authored by commits c48adb7cf, 6ffc0f227, dd51473b8 -- unrelated to any single task's own description). A task whose description claims this file 'does not exist yet' may be stale: always read the file directly before trusting a dispatch's claim about a shared, append-only guidance file's current state, especially after a cross-repo task migration (check state.json's migrated_from.dropped_dependencies for edges that were silently dropped rather than satisfied).",
-      "category": "PATTERN",
-      "source_artifact": "specs/549_lean_unusedarguments_narrow_remedy_route/reports/01_unusedarguments-narrow-remedy.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["lean4", "plan-authoring-gate-collisions", "cross-repo-migration", "dropped-dependency", "shared-append-only-file"]
-    },
-    {
-      "content": "For Mathlib-style Lean linting: a batch/environment-linter finding (e.g. unusedArguments, raised via lake exe runLinter / #lint) is suppressed by an external ledger (nolints.json) or an in-source @[nolint <name>] declaration attribute -- never by set_option. set_option linter.<name> false only controls elaboration-time linter diagnostics (e.g. unusedVariables, unusedFintypeInType), which is why the two suppression styles can coexist on the same declaration for different finding categories. A plan pre-authorizing a set_option suppression for a batch-linter category risks a silent no-op.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/549_lean_unusedarguments_narrow_remedy_route/reports/01_unusedarguments-narrow-remedy.md",
-      "confidence": 0.6,
-      "suggested_keywords": ["lean4", "mathlib-lint", "unusedArguments", "nolints.json", "set_option", "env-linter"]
-    }
-  ],
-  "dispatch_seq": 6
+  "dispatch_seq": 17
 }
