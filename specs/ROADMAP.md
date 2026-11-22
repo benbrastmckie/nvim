@@ -8,7 +8,7 @@
 |---|---|---|---|
 | [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 5/6 | none |
 | [M3: Reviewable landing: batch worktrees, squash commits, generated-path collapse](#milestone-m3) | planned | 0/9 | none |
-| [M1: Current work](#milestone-m1) | active | 8/126 | none |
+| [M1: Current work](#milestone-m1) | active | 15/126 | none |
 
 See also: [Rules, conventions and repo context](#roadmap-context)
 
@@ -87,7 +87,7 @@ Make a batch's work land as reviewable git history: run each batch in its own wo
 
 Work already scheduled when this store adopted milestones. Divide it into real milestones on a later /roadmap run.
 
-- **Progress**: active -- 2/29 batches, 8/126 tasks done
+- **Progress**: active -- 2/29 batches, 15/126 tasks done
 - **Review**: none
 
 **Batch 1** (done) -- Support a gitignored specs tree: price the durability exposure, then the predicate and demotion fix
@@ -274,37 +274,37 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 663 ready           Resolve the extension loader's project_dir to the git toplevel and refuse a l...
 ```
 
-**Batch 20** -- Snapshot the Lean Challenge at plan time, then the baseline-relative and redeploy gate rules
+**Batch 20** -- Snapshot the Lean Challenge at plan time, then the baseline-relative and redeploy gate rules (1/6 done)
 
 ```
-/orchestrate 451, 462, 452, 566, 509, 588
-452 blocked:451     Require a verification criterion over a repo-wide gate with standing pre-exis...
-462 blocked:451     Give lean-challenge-snapshot.sh --check a scope limit so a research prototype...
+/orchestrate 462, 452, 566, 509, 588
 509 blocked:452     Make a redeploy phase declarable without polluting file_scope, and bar a pre-...
 566 blocked:452     Document that the validate-state.sh cycle check requires --deep at every call...
 588 blocked:509     Bar a pre-redeploy plan step from naming a deploy-tree-resolved subject unles...
-451 ready           Take the Lean Challenge snapshot in the plan phase, where it is still meaning...
+452 ready           Require a verification criterion over a repo-wide gate with standing pre-exis...
+462 ready           Give lean-challenge-snapshot.sh --check a scope limit so a research prototype...
+451 done            Take the Lean Challenge snapshot in the plan phase, where it is still meaning...
 ```
 
-**Batch 21** -- The Lean compliance checker and its context strand: harvest contract, trust surfaces, probes
+**Batch 21** -- The Lean compliance checker and its context strand: harvest contract, trust surfaces, probes (4/7 done)
 
 ```
-/orchestrate 504, 516, 398, 399, 463, 550, 537
-399 blocked:398     Record three measured lean4 gotchas: IO-forced timing harnesses, docstring/se...
-516 blocked:504     Stop the Lean plan compliance check failing on not-yet-reached end-state deli...
-550 blocked:463     Probe the Lean LSP index state at dispatch start and propagate the degraded e...
-398 ready           Record that a grep for dependents misses rw-site definitional unfolding, and ...
-463 ready           State that lean_goal's empty goals_after is not evidence a declaration elabor...
-504 ready           Reconcile the Lean Goals-block harvester with its documented contract
-537 ready           Plan-compliance spot-check misses evidence-probe-scoped Goals
+/orchestrate 516, 399, 550
+399 ready           Record three measured lean4 gotchas: IO-forced timing harnesses, docstring/se...
+516 ready           Stop the Lean plan compliance check failing on not-yet-reached end-state deli...
+550 ready           Probe the Lean LSP index state at dispatch start and propagate the degraded e...
+398 done            Record that a grep for dependents misses rw-site definitional unfolding, and ...
+463 done            State that lean_goal's empty goals_after is not evidence a declaration elabor...
+504 done            Reconcile the Lean Goals-block harvester with its documented contract
+537 done            Plan-compliance spot-check misses evidence-probe-scoped Goals
 ```
 
-**Batch 22** -- The narrow unusedArguments remedy, then the gate-naming and replay-window record over it
+**Batch 22** -- The narrow unusedArguments remedy, then the gate-naming and replay-window record over it (1/2 done)
 
 ```
-/orchestrate 549, 576
-576 blocked:549     Record the Lean verification-tier gate-naming rule, the Constraints-consumed ...
-549 ready           Give the Lean unusedArguments remedy a narrow route instead of the wholesale ...
+/orchestrate 576
+576 ready           Record the Lean verification-tier gate-naming rule, the Constraints-consumed ...
+549 done            Give the Lean unusedArguments remedy a narrow route instead of the wholesale ...
 ```
 
 **Batch 23** -- Settle the pinned Challenge block's authoring rules, then the five plan records quoting them
@@ -313,7 +313,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 /orchestrate 539, 540, 544, 593, 594, 595, 596
 540 blocked:539     Record five measured lean4 facts: the decide-synthesis working form, the axio...
 544 blocked:539     Make a fixture-dependent Lean gate statement expressible and mechanically che...
-593 blocked:451,599 Require pinned Lean Challenge signatures to be measured at plan time
+593 blocked:599     Require pinned Lean Challenge signatures to be measured at plan time
 594 blocked:593,599 Size symmetric-pair phases and iteration obligations separately
 595 blocked:539,593,594,599  Define Goal Polarity semantics for decision-gate plans
 596 blocked:593,594,595,599  Separate generator-written files from hand-edited read-only scope de...
@@ -364,14 +364,14 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 530 ready           Land the three agent-system context extensions recorded by the cslib omega-au...
 ```
 
-**Batch 29** -- Documentation and standards conformance: boundary docs, skeletons, census method, one note
+**Batch 29** -- Documentation and standards conformance: boundary docs, skeletons, census method, one note (1/4 done)
 
 ```
-/orchestrate 473, 522, 640, 557
+/orchestrate 473, 522, 640
 473 blocked:472     Strip record-versioning language from the boundary-owned architecture docs
 522 ready           Fix report/summary heading-skeleton conformance across agents
-557 ready           Record the half-line test as a lean4 context pattern note
 640 ready           Add a derived-percentage bug class to the census methodology standard
+557 done            Record the half-line test as a lean4 context pattern note
 ```
 
 <a id="roadmap-context"></a>
