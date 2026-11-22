@@ -141,7 +141,7 @@ provenance does not belong in a deliverable.
 Phases within the same wave can execute in parallel. Phases 1 and 2 both write
 `index-entries.json` and are deliberately serialized rather than parallelized.
 
-### Phase 1: Land the Worked Example and the Enumerated Unfold-Spelling Probe [IN PROGRESS]
+### Phase 1: Land the Worked Example and the Enumerated Unfold-Spelling Probe [COMPLETED]
 
 **Goal**: The `## Grep-Based Blast Radius: Cover Unfold Spellings, Not Just Importers` section
 carries the concrete worked example and a runnable, enumerated multi-spelling grep probe, and the
@@ -183,9 +183,9 @@ index entry's coupled `line_count` matches the file's new length.
       `agent-system/extensions/lean/index-entries.json` with an `Edit` whose `old_string` spans
       the entry's `"path"` and `"line_count"` lines together (that pair is unique; a bare
       `"line_count": 242` is not). *(completed: 242 -> 286)*
-- [ ] Review `git status --short` and `git diff --staged`, stage the two files by explicit name,
+- [x] Review `git status --short` and `git diff --staged`, stage the two files by explicit name,
       and commit. If `index-entries.json` carries a hunk for any other entry, stop and report it
-      rather than committing it.
+      rather than committing it. *(completed: commit 5f5070c0e, no foreign hunks)*
 
 **Timing**: 0.75 hours
 
@@ -224,23 +224,27 @@ no suite, so the real suite names are the honest claim, not the sentinel).
 
 ---
 
-### Phase 2: Make the File Reachable at Plan Time [NOT STARTED]
+### Phase 2: Make the File Reachable at Plan Time [IN PROGRESS]
 
 **Goal**: `dependency-tracing.md`'s index entry carries the `plan-authoring` keyword, so
 `planner-agent.md` Stage 4 item 13's query selects it for every `lean4` plan dispatch — with no
 change to the core planner and no `planner-agent` entry in any `load_when.agents[]`.
 
 **Tasks**:
-- [ ] Re-read the `project/lean4/patterns/dependency-tracing.md` entry in
-      `agent-system/extensions/lean/index-entries.json` immediately beforehand.
-- [ ] Add `"plan-authoring"` to that entry's `keywords[]` array with an `Edit` anchored on a
+- [x] Re-read the `project/lean4/patterns/dependency-tracing.md` entry in
+      `agent-system/extensions/lean/index-entries.json` immediately beforehand. *(completed)*
+- [x] Add `"plan-authoring"` to that entry's `keywords[]` array with an `Edit` anchored on a
       unique `old_string` inside this entry's own keyword block (e.g. the
       `"reverse-dependency"` / `"retirement"` pair). Do not pipe the file through `jq`.
-- [ ] Leave `load_when` untouched: `agents` stays `["lean-implementation-agent"]`, `task_types`
+      *(completed)*
+- [x] Leave `load_when` untouched: `agents` stays `["lean-implementation-agent"]`, `task_types`
       stays `["lean4"]`. Adding `planner-agent` here is prohibited and is not an alternative.
-- [ ] Optionally refresh the entry's `summary` only if the added keyword makes it inaccurate; the
-      current summary is accurate, so the default is to leave it alone.
-- [ ] Confirm the file still parses: `jq empty agent-system/extensions/lean/index-entries.json`.
+      *(completed: verified unchanged)*
+- [x] Optionally refresh the entry's `summary` only if the added keyword makes it inaccurate; the
+      current summary is accurate, so the default is to leave it alone. *(completed: left
+      unchanged, summary remains accurate)*
+- [x] Confirm the file still parses: `jq empty agent-system/extensions/lean/index-entries.json`.
+      *(completed)*
 - [ ] Stage `index-entries.json` by explicit name and commit, after confirming the diff contains
       only this entry's keyword hunk.
 

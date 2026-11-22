@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Make the File Reachable at Plan Time",
+  "started_at": "2026-11-22T16:00:00Z",
+  "last_updated": "2026-11-22T16:02:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read index-entries.json entry immediately beforehand", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add plan-authoring to keywords[] via unique Edit", "status": "done", "files_touched": ["agent-system/extensions/lean/index-entries.json"]},
+    {"id": 3, "description": "Leave load_when untouched", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Optionally refresh summary (skip, still accurate)", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Confirm jq empty parses the file", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Stage index-entries.json by name and commit", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
