@@ -14,6 +14,19 @@
 # (C13: failed without the polarity declaration, passed with it). See the suite's own call site
 # for this task's Decision D2.
 #
+# Cases C23-C28 pin the PLAN-DERIVED SEARCH-SCOPE WIDENING (find_decl_files/find_field_files
+# searching the resolved source roots unioned with the plan's own declared paths, must-exist
+# polarity only -- see lean-plan-compliance-check.sh's own header for the full rationale):
+# the inverted regression for the originating symptom, plus silent filtering of a non-`.lean`
+# and a nonexistent `.lean` Files-to-modify entry (C23); the Challenge manifest
+# project_root+challenge_path join exercised independently of any Files to modify contribution
+# (C24); the replacement_targets integrity sweep inheriting the widened scope through its
+# existing find_decl_files reuse (C25); the LEAN_PLAN_COMPLIANCE_HARVESTER-unresolvable fail-soft
+# fallback returning to today's roots-only outcome (C26); refutation polarity's roots-only scope
+# left deliberately unwidened, so a probe file pinning the very identifier that must be ABSENT is
+# not read as a presence (C27, Decision D6); and a structure FIELD resolved through
+# find_field_files's own widened grep rather than via find_decl_files (C28).
+#
 # Exit codes: 0 -- all cases PASS; 1 -- at least one case FAILED.
 
 set -uo pipefail
@@ -692,6 +705,222 @@ if [ "$rc" -eq 0 ] && [ "$name_lines" -eq 1 ] && echo "$out" | grep -q '^  \[OK\
   pass "C22: Challenge-Statements-preferred harvest takes precedence over Goals prose -> exactly one [OK] line (comm), passed"
 else
   fail "C22: expected exactly one [OK] comm line, no mention of the trailing-prose names, and passed, got rc=$rc, name_lines=$name_lines: $out"
+fi
+
+# ===========================================================================
+# PLAN-DERIVED SEARCH-SCOPE WIDENING fixtures (C23-C28) -- see this suite's own header comment.
+# This probe fixture lives OUTSIDE $ROOT (i.e. outside every resolved lean_root argument), so any
+# of it resolving at all proves the widening is active, never the pre-existing roots-only lookup.
+# ===========================================================================
+mkdir -p "$WORKDIR/probe"
+cat > "$WORKDIR/probe/Probe.lean" <<'EOF'
+theorem probeTheorem (n : Nat) : n = n := rfl
+
+structure ProbeFrame where
+  probeField : Nat
+
+theorem probeReplacement (n : Nat) : n = n := by exact probeOld n
+EOF
+cat > "$WORKDIR/notes.md" <<'EOF'
+Not a Lean file -- a Files-to-modify entry naming this must be filtered silently.
+EOF
+
+# ===========================================================================
+# Case C23: the inverted regression for the originating symptom (iss_1791842368633_NJQxnS) -- a
+# must-exist Goal (`probeTheorem`) present ONLY in a `.lean` file this plan's own
+# `**Files to modify**:` block names, outside the `lean_root` argument. Expect `[OK]` and
+# `COMPLIANCE_CHECK: passed`, exit 0 -- before Phase 1's widening this fixture reproduced
+# `[MISSING]`/failed/exit 1 exactly as the originating record describes. The same block also
+# names a non-`.lean` entry and a nonexistent `.lean` entry, both of which must be filtered
+# silently -- no stray grep/file-not-found error reaching stdout/stderr.
+# ===========================================================================
+plan_c23="$WORKDIR/plan_c23.md"
+cat > "$plan_c23" <<EOF
+## Goals & Non-Goals
+
+**Goals**:
+
+- \`probeTheorem\` -- present only in a probe fixture this plan's own Files to modify block
+  names, outside the resolved source roots.
+
+**Non-Goals**:
+
+- None.
+
+## Implementation Phases
+
+### Phase 1: Fixture [NOT STARTED]
+
+**Files to modify**:
+- \`$WORKDIR/probe/Probe.lean\` - the probe fixture
+- \`$WORKDIR/notes.md\` - a non-\`.lean\` entry, must be filtered silently
+- \`$WORKDIR/probe/Missing.lean\` - a nonexistent \`.lean\` entry, must be filtered silently
+EOF
+out=$(bash "$TOOL_SRC" "$plan_c23" "$ROOT" 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] && echo "$out" | grep -q '^  \[OK\] probeTheorem' \
+   && echo "$out" | grep -q '^COMPLIANCE_CHECK: passed$' \
+   && ! echo "$out" | grep -qi 'no such file\|cannot open\|command not found'; then
+  pass "C23: a Goal present only in a plan-named Files-to-modify .lean path resolves [OK], passed -- inverted regression for iss_1791842368633_NJQxnS, with the non-.lean/nonexistent entries filtered silently"
+else
+  fail "C23: expected [OK] probeTheorem and passed with no stray file-error output, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case C24: a Goal present only at the Challenge snapshot manifest's project_root+challenge_path
+# join, with NO Files to modify contribution at all -- exercising the manifest half of the
+# widening independently of the harvester half.
+# ===========================================================================
+mkdir -p "$WORKDIR/task_c24/plans" "$WORKDIR/task_c24/challenge" "$WORKDIR/c24_project"
+cat > "$WORKDIR/c24_project/Challenge.lean" <<'EOF'
+theorem probeChallenge (n : Nat) : n = n := rfl
+EOF
+cat > "$WORKDIR/task_c24/challenge/manifest.json" <<EOF
+{"project_root": "$WORKDIR/c24_project", "challenge_path": "Challenge.lean"}
+EOF
+plan_c24="$WORKDIR/task_c24/plans/01_c24.md"
+cat > "$plan_c24" <<'EOF'
+## Goals & Non-Goals
+
+**Goals**:
+
+- `probeChallenge` -- present only via the Challenge snapshot manifest's project_root and
+  challenge_path join.
+
+**Non-Goals**:
+
+- None.
+EOF
+out=$(bash "$TOOL_SRC" "$plan_c24" "$ROOT" 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] && echo "$out" | grep -q '^  \[OK\] probeChallenge' \
+   && echo "$out" | grep -q '^COMPLIANCE_CHECK: passed$'; then
+  pass "C24: a Goal present only at the Challenge manifest's project_root+challenge_path join resolves [OK], passed"
+else
+  fail "C24: expected [OK] probeChallenge and passed, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case C25: the replacement_targets integrity sweep inherits the widened scope through its
+# existing find_decl_files reuse -- a must-exist plan whose prose declares a replacement target,
+# whose new declaration lives in the widened probe file (not under $ROOT), and still delegates
+# to the replaced name. Expect [INTEGRITY FAIL] and failed, proving the sweep did not silently
+# stay roots-only.
+# ===========================================================================
+plan_c25="$WORKDIR/plan_c25.md"
+cat > "$plan_c25" <<EOF
+## Goals & Non-Goals
+
+**Goals**:
+
+- \`probeReplacement\` -- replacement for \`probeOld\`.
+
+**Non-Goals**:
+
+- None.
+
+## Implementation Phases
+
+### Phase 1: Fixture [NOT STARTED]
+
+**Files to modify**:
+- \`$WORKDIR/probe/Probe.lean\` - the probe fixture
+EOF
+out=$(bash "$TOOL_SRC" "$plan_c25" "$ROOT" 2>&1)
+rc=$?
+if [ "$rc" -eq 1 ] && echo "$out" | grep -q '^  \[INTEGRITY FAIL\] probeReplacement delegates to probeOld' \
+   && echo "$out" | grep -q '^COMPLIANCE_CHECK: failed$'; then
+  pass "C25: the replacement_targets sweep catches a stale delegation living in a widened probe file -> [INTEGRITY FAIL], failed"
+else
+  fail "C25: expected an [INTEGRITY FAIL] line for probeReplacement/probeOld and failed, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case C26: with LEAN_PLAN_COMPLIANCE_HARVESTER pointed at a nonexistent path, the same fixture
+# as C23 returns to today's roots-only outcome -- [MISSING], failed, exit 1 -- with no hard
+# bash error beyond the single fail-soft NOTE, pinning the fallback as a degradation, not a
+# crash.
+# ===========================================================================
+out=$(LEAN_PLAN_COMPLIANCE_HARVESTER=/nonexistent/plan-file-scope-harvest.sh bash "$TOOL_SRC" "$plan_c23" "$ROOT" 2>&1)
+rc=$?
+note_lines=$(echo "$out" | grep -c 'lean-plan-compliance-check.sh: NOTE:')
+if [ "$rc" -eq 1 ] && echo "$out" | grep -q '^  \[MISSING\] probeTheorem' \
+   && echo "$out" | grep -q '^COMPLIANCE_CHECK: failed$' && [ "$note_lines" -eq 1 ]; then
+  pass "C26: LEAN_PLAN_COMPLIANCE_HARVESTER pointed at a nonexistent path degrades to the roots-only [MISSING]/failed outcome with exactly one fail-soft NOTE"
+else
+  fail "C26: expected [MISSING] probeTheorem, failed, and exactly one NOTE line, got rc=$rc, note_lines=$note_lines: $out"
+fi
+
+# ===========================================================================
+# Case C27 (Decision D6): refutation polarity keeps the roots-only scope even when this plan's
+# own Files to modify names a probe file that pins the very identifier that must be ABSENT --
+# widening it in would manufacture the mirror false failure this task exists to remove. Expect
+# [OK] (absent from the resolved source roots, as required) and passed.
+# ===========================================================================
+plan_c27="$WORKDIR/plan_c27.md"
+cat > "$plan_c27" <<EOF
+## Goals & Non-Goals
+
+- **Goal Polarity**: refutation
+
+**Goals**:
+
+- \`probeTheorem\` -- must be absent from the resolved source roots; this plan's own Files to
+  modify block below deliberately names a probe file that declares it, proving refutation
+  polarity does not widen into it (Decision D6).
+
+**Non-Goals**:
+
+- None.
+
+## Implementation Phases
+
+### Phase 1: Fixture [NOT STARTED]
+
+**Files to modify**:
+- \`$WORKDIR/probe/Probe.lean\` - the probe fixture (pins the identifier that must be ABSENT)
+EOF
+out=$(bash "$TOOL_SRC" "$plan_c27" "$ROOT" 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] && echo "$out" | grep -q '^  \[OK\] probeTheorem' \
+   && echo "$out" | grep -q '^COMPLIANCE_CHECK: passed$'; then
+  pass "C27 (Decision D6): refutation polarity is unaffected by the plan-derived widening -- a probe file pinning the must-be-absent identifier is not read as a presence"
+else
+  fail "C27: expected [OK] probeTheorem and passed under refutation polarity, got rc=$rc: $out"
+fi
+
+# ===========================================================================
+# Case C28: a structure FIELD present only in the widened probe file resolves through
+# find_field_files's OWN widened grep (the bare-NAME branch), not by reaching the result through
+# find_decl_files.
+# ===========================================================================
+plan_c28="$WORKDIR/plan_c28.md"
+cat > "$plan_c28" <<EOF
+## Goals & Non-Goals
+
+**Goals**:
+
+- \`probeField\` -- a structure field declared only in the probe fixture outside the resolved
+  source roots.
+
+**Non-Goals**:
+
+- None.
+
+## Implementation Phases
+
+### Phase 1: Fixture [NOT STARTED]
+
+**Files to modify**:
+- \`$WORKDIR/probe/Probe.lean\` - the probe fixture
+EOF
+out=$(bash "$TOOL_SRC" "$plan_c28" "$ROOT" 2>&1)
+rc=$?
+if [ "$rc" -eq 0 ] && echo "$out" | grep -q '^  \[OK\] probeField — found as a structure/class field' \
+   && echo "$out" | grep -q '^COMPLIANCE_CHECK: passed$'; then
+  pass "C28: a structure field present only in a widened probe file resolves through find_field_files's own widened grep, passed"
+else
+  fail "C28: expected [OK] probeField with the structure/class field fragment and passed, got rc=$rc: $out"
 fi
 
 echo ""

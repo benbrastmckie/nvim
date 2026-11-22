@@ -1,0 +1,30 @@
+{
+  "phase": 2,
+  "phase_name": "Pin the widened scope, the preserved scopes, and the fallback with regression cases",
+  "started_at": "2026-11-22T18:15:01Z",
+  "last_updated": "2026-11-22T18:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read test file, confirm no foreign commit/mod; take real highest case number (C22, not plan-time C19)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add probe fixture outside $ROOT (theorem, structure+field, delegating declaration)", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"]},
+    {"id": 3, "description": "Case C23: inverted regression -- Goal present only in a Files-to-modify .lean path, plus non-.lean/nonexistent-.lean filtering", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"]},
+    {"id": 4, "description": "Case C24: Goal present only via Challenge manifest project_root+challenge_path join", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"]},
+    {"id": 5, "description": "Case C25: replacement_targets sweep INTEGRITY FAIL on a widened probe file", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"]},
+    {"id": 6, "description": "Case C26: LEAN_PLAN_COMPLIANCE_HARVESTER nonexistent -> fail-soft roots-only MISSING", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"]},
+    {"id": 7, "description": "Case C27: refutation polarity unaffected by widening (D6)", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"]},
+    {"id": 8, "description": "Case C28: structure field present only in widened probe file via find_field_files", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"]},
+    {"id": 9, "description": "Update suite header comment naming the new cases", "status": "done", "files_touched": ["agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"]},
+    {"id": 10, "description": "Run suite, require every case green (old 22 + 6 new = 28)", "status": "done", "files_touched": []},
+    {"id": 11, "description": "Regression-bind check: reverting Phase 1's 3 call-site swaps makes C23,C24,C25,C28 fail while C26,C27 still pass", "status": "done", "files_touched": []},
+    {"id": 12, "description": "Commit via git-commit-scoped.sh with explicit single-file pathspec", "status": "in_progress", "files_touched": []}
+  ],
+  "current_objective": 12,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "notes": [
+    "Case numbering: this phase's six new cases are C23-C28 (not the plan-time C20-C25), appended strictly after the live tail's C22 which sibling task #504 had already added.",
+    "Final suite total: 28 passed, 0 failed (22 pre-existing + 6 new), confirmed in the source-store copy directly.",
+    "Regression-bind check performed in the session scratchpad against a scratch copy of the script with the 3 search_roots call sites reverted to lean_roots: confirmed C23, C24, C25, C28 fail and C26, C27 still pass, exactly as the plan's Scope Hypothesis/Verification predicted for the equivalent plan-time-numbered cases (C20/C21/C22/C25 fail, C23/C24 pass).",
+    "verify-touched.sh at this phase ran against the DEPLOYED copy (.claude/scripts/tests/..., mode: deployed) since Phase 3 has not yet redeployed -- it passed (1 passed) but against the pre-Phase-1/2 stale deployed script+suite, not this phase's source-store edits. The source-store suite was already independently confirmed 28/0 directly above; Phase 3 is responsible for the deployed-location re-verification after redeploying."
+  ]
+}

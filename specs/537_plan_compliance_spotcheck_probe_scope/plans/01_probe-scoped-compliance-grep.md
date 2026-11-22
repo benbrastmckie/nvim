@@ -333,7 +333,7 @@ this path, and this file's own covering suite.
 
 ---
 
-### Phase 2: Pin the widened scope, the preserved scopes, and the fallback with regression cases [NOT STARTED]
+### Phase 2: Pin the widened scope, the preserved scopes, and the fallback with regression cases [COMPLETED]
 
 **Goal**: `test-lean-plan-compliance-check.sh` characterizes every behavior Phase 1 introduced or
 deliberately preserved, so a later reader cannot mistake any of them for an accident and a
@@ -341,44 +341,51 @@ regression in any one of them fails loudly.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh` and
+- [x] Re-read `agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh` and
       take the suite's current highest case number from its tail (C19 at plan time) rather than
       assuming it; sibling task #504 may have appended its own cases first. Apply the same
-      foreign-commit STOP check as Phase 1.
-- [ ] Add a probe fixture outside `$ROOT` (e.g. `$WORKDIR/probe/Probe.lean`) declaring one
+      foreign-commit STOP check as Phase 1. *(completed: live tail was C22 (C1-C19, C21, C22; #504
+      had already landed C21/C22), not the plan-time C19; `git status --porcelain` on the file was
+      clean)*
+- [x] Add a probe fixture outside `$ROOT` (e.g. `$WORKDIR/probe/Probe.lean`) declaring one
       theorem, one `structure` with a field, and one declaration that delegates to a name the
-      fixture plan states it replaces.
-- [ ] Append a case (C20 at plan-time numbering): a must-exist plan whose Goal names a declaration
+      fixture plan states it replaces. *(completed)*
+- [x] Append a case (C20 at plan-time numbering): a must-exist plan whose Goal names a declaration
       present ONLY in a `.lean` file its own `**Files to modify**:` block names, outside the
       `lean_root` argument. Expect `[OK]` and `COMPLIANCE_CHECK: passed`, exit 0 — the inverted
       regression for the originating symptom. Include in the same fixture's `Files to modify`
       block one non-`.lean` entry and one nonexistent `.lean` entry, asserting both are filtered
-      silently with no grep error in the output.
-- [ ] Append a case (C21): a plan with no probe path in `Files to modify` whose Goal names a
+      silently with no grep error in the output. *(completed: appended as C23, renumbered upward
+      per this phase's own Scope Hypothesis instruction since C20/C21/C22 were plan-time numbers
+      and C21/C22 are already occupied by #504)*
+- [x] Append a case (C21): a plan with no probe path in `Files to modify` whose Goal names a
       declaration present only at the path recorded by a synthetic
       `challenge/manifest.json` written next to the plan's own task directory (`project_root` +
       `challenge_path`). Expect `[OK]`, passed — exercising the manifest half independently.
-- [ ] Append a case (C22): a must-exist plan whose prose declares a replacement target and whose
+      *(completed: appended as C24, same renumbering)*
+- [x] Append a case (C22): a must-exist plan whose prose declares a replacement target and whose
       new declaration — living in a widened probe file, not under `$ROOT` — still delegates to the
       replaced name. Expect `[INTEGRITY FAIL]` and failed, proving the sweep inherited the widened
-      scope.
-- [ ] Append a case (C23): the same fixture as C20 with `LEAN_PLAN_COMPLIANCE_HARVESTER` set to a
+      scope. *(completed: appended as C25, same renumbering)*
+- [x] Append a case (C23): the same fixture as C20 with `LEAN_PLAN_COMPLIANCE_HARVESTER` set to a
       nonexistent path. Expect today's roots-only outcome — `[MISSING]`, failed, exit 1 — with no
-      hard error, pinning the fail-soft fallback.
-- [ ] Append a case (C24): a refutation-polarity plan whose Goal names an identifier present ONLY
+      hard error, pinning the fail-soft fallback. *(completed: appended as C26, reusing the C23
+      fixture; same renumbering)*
+- [x] Append a case (C24): a refutation-polarity plan whose Goal names an identifier present ONLY
       in a probe file its own `Files to modify` block names. Expect `[OK]` and passed — refutation
       polarity keeps the roots-only scope, so the probe body is not read as a presence. Give the
       case a header comment naming Decision D6 as the reason, so the behavior reads as chosen
-      rather than overlooked.
-- [ ] Append a case (C25): a must-exist plan whose Goal names a `structure` FIELD present only in
+      rather than overlooked. *(completed: appended as C27, same renumbering)*
+- [x] Append a case (C25): a must-exist plan whose Goal names a `structure` FIELD present only in
       a widened probe file. Expect `[OK]` with the preserved `found as a structure/class field`
       fragment, exercising `find_field_files`'s own widened grep rather than reaching the result
-      through `find_decl_files`.
-- [ ] Update the suite's header comment to name the new cases and what each pins, matching the
-      existing header's per-case-group convention.
-- [ ] Run the suite and require every case green, old and new, with the total equal to the
-      plan-time baseline of 19 plus the cases actually appended.
-- [ ] Commit with an explicit single-file pathspec after reviewing `git status --short` and
+      through `find_decl_files`. *(completed: appended as C28, same renumbering)*
+- [x] Update the suite's header comment to name the new cases and what each pins, matching the
+      existing header's per-case-group convention. *(completed)*
+- [x] Run the suite and require every case green, old and new, with the total equal to the
+      plan-time baseline of 19 plus the cases actually appended. *(completed: 28 passed, 0 failed
+      -- 22 live-baseline (not the stale plan-time 19) + 6 appended)*
+- [x] Commit with an explicit single-file pathspec after reviewing `git status --short` and
       `git diff --staged`.
 
 **Timing**: 1 hour
