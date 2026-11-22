@@ -1,0 +1,17 @@
+{
+  "phase": 4,
+  "phase_name": "Final verification and deferred-observation record",
+  "started_at": "2026-11-22T08:00:00Z",
+  "last_updated": "2026-11-22T08:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run both lean test suites together, confirm both exit 0", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Run shellcheck gate on both modified shell files, confirm exit 0", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm git status shows only the three declared files modified", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Record deferred follow-ups and third-narrowing observation in summary", "status": "done", "files_touched": ["specs/504_lean_goals_block_harvest_contract/summaries/01_goals-block-harvest-contract-summary.md"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {"approach": "verify-touched.sh scoped batch-gate check", "result": "succeeded on re-run", "reason": "first run's truncated tail obscured a transient failure signal caused by concurrent sibling tree mutation; untruncated re-run was clean (overall_rc 0)"}
+  ],
+  "handoff_count": 0
+}

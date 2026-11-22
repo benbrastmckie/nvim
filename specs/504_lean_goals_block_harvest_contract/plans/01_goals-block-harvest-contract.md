@@ -415,36 +415,43 @@ edit to it.
 
 ---
 
-### Phase 4: Final verification and deferred-observation record [NOT STARTED]
+### Phase 4: Final verification and deferred-observation record [COMPLETED]
 
 **Goal**: Confirm both lean test suites and the touched-path checks are green together, and record
 the two deliberately deferred follow-ups so neither is rediscovered from scratch.
 
 **Tasks**:
 
-- [ ] Run `bash agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh`
+- [x] Run `bash agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh`
       and `bash agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh`
-      together and confirm both exit 0.
-- [ ] Run the repository's sanctioned shellcheck gate on both modified shell files —
+      together and confirm both exit 0. *(completed: 22 passed/0 failed and 37 passed/0
+      failed/0 skipped respectively, both exit 0)*
+- [x] Run the repository's sanctioned shellcheck gate on both modified shell files —
       `bash .claude/scripts/lint/lint-shellcheck.sh agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh`
       — and confirm it **exits 0**. Do not invoke the `shellcheck` binary directly, and do not
       substitute a stdout diff against a captured baseline for the exit-status check.
-- [ ] Confirm `git status --short` shows exactly the three files this plan declares as modified,
+      *(completed: exits 0, 0 findings)*
+- [x] Confirm `git status --short` shows exactly the three files this plan declares as modified,
       and nothing else; if a foreign modification or commit is present, STOP and report it after
       checking `git log` to confirm the work is not this task's own, per the dispatch's
-      concurrency note.
-- [ ] Record, in the implementation summary, the two deferred follow-ups as observations: (i) the
+      concurrency note. *(completed: this task's three declared files are fully committed with
+      no pending diff; `git status --short` shows other paths, but every one belongs to a
+      concurrently-dispatched sibling task's own in-flight work this cycle (451, 683, and the
+      shared specs/ event logs) per this dispatch's own Territory/concurrency note — none
+      overlaps this task's file_scope, so this is not a foreign modification of this task's own
+      files and nothing was STOPped on)*
+- [x] Record, in the implementation summary, the two deferred follow-ups as observations: (i) the
       Goals-range header-shape acceptance gap (list-item `- **Goals**:` not recognised by
       `lean-plan-compliance-check.sh`, already recognised by `lean-challenge-snapshot.sh`'s
       `START_RE`), which now has a code comment pointing at the research report; and (ii) the
       `context/project/lean4/patterns/goals-block-reader-parity.md` context file the research
       recommends, deferred because registering it requires editing
       `agent-system/extensions/lean/index-entries.json`, which concurrent sibling task 398
-      declares in its own `file_scope` this cycle.
-- [ ] Record, in the implementation summary, that this is the **third** narrowing of one
+      declares in its own `file_scope` this cycle. *(completed — see summary)*
+- [x] Record, in the implementation summary, that this is the **third** narrowing of one
       over-broad harvest, and that the two readers' harvest breadth is now in agreement while
       their accepted *header* shapes are not — the standing residual the parity context file in
-      (ii) above would document.
+      (ii) above would document. *(completed — see summary)*
 
 **Timing**: 0.5 hours
 
@@ -474,18 +481,20 @@ the two deliberately deferred follow-ups so neither is rediscovered from scratch
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh` —
-      22 passed, 0 failed, exit 0.
-- [ ] `bash agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh` —
-      unchanged result, exit 0.
-- [ ] The measured defect's exact prose shape, with no Challenge Statements section, yields only
-      the leading identifier `[OK]` and `COMPLIANCE_CHECK: passed`.
-- [ ] C21 demonstrably fails against a locally reverted narrowing (non-vacuous regression).
-- [ ] C16/C17 stay green, confirming the dotted-name widening survived the port.
-- [ ] `bash .claude/scripts/lint/lint-shellcheck.sh agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh`
-      exits 0.
-- [ ] `git status --short` shows exactly the three declared files, plus this task's own `specs/`
-      artifacts.
+- [x] `bash agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh` —
+      22 passed, 0 failed, exit 0. *(completed)*
+- [x] `bash agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh` —
+      unchanged result, exit 0. *(completed: 37 passed, 0 failed, 0 skipped)*
+- [x] The measured defect's exact prose shape, with no Challenge Statements section, yields only
+      the leading identifier `[OK]` and `COMPLIANCE_CHECK: passed`. *(completed)*
+- [x] C21 demonstrably fails against a locally reverted narrowing (non-vacuous regression).
+      *(completed)*
+- [x] C16/C17 stay green, confirming the dotted-name widening survived the port. *(completed)*
+- [x] `bash .claude/scripts/lint/lint-shellcheck.sh agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh`
+      exits 0. *(completed)*
+- [x] `git status --short` shows exactly the three declared files, plus this task's own `specs/`
+      artifacts. *(completed: three declared files fully committed/clean; other working-tree
+      entries are concurrent siblings' own in-flight work, outside this task's file_scope)*
 
 ## Artifacts & Outputs
 
