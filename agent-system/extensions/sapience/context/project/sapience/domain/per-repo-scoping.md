@@ -261,6 +261,68 @@ home-manager activation and merged into the enforced `hooks` key on every switch
 independent writer converging on the identical command string, rather than this extension's own
 installer taking on a second write target. See the durability detail below.
 
+### The Token's Durable Homes and the Never-Copy Boundary
+
+The Sapience bearer token this registration triad authenticates with has exactly three durable
+homes on this machine, each with a distinct owner, and `~/.claude.json`'s per-project MCP entry
+is never one of them:
+
+- **`/run/secrets/sapience_token`** (mode `-r--------`) — the sops-nix provisioned secret,
+  decrypted at activation time by `~/.dotfiles/modules/system/secrets.nix`. Its sole committed
+  form is `~/.dotfiles/secrets/secrets.yaml`'s `sapience_token` key, sops-encrypted
+  (`ENC[AES256_GCM,...]`); the repository never carries the plaintext value. `~/.dotfiles` owns
+  this location.
+- **`~/.sapience/config.json`'s `.token` field** (mode `-rw-------`) — vendor payload /
+  bootstrap state, not nix-declared. This is the field `mcp.py`'s one shared module-level
+  statement (`TOKEN = os.environ.get('SAPIENCE_TOKEN') or _CFG.get('token') or ''`) resolves
+  when `SAPIENCE_TOKEN` is absent from the environment, before any CLI-flag or stdio dispatch —
+  the mechanism that makes the per-project MCP entry's `env` safe to write without the variable
+  at all. The vendor payload / bootstrap process owns this location.
+- **`~/.config/sf1-hub-ben/env` and `~/.config/sf1-hub-ben/sapience-token`** (mode
+  `-rw-------` each) — a separate tool's (the SF-1 hub runner's) own copy of the same
+  credential, populated manually via `sf1-hub-ben token` rather than written by any home-manager
+  activation; the module's own stated policy (`~/.dotfiles/modules/home/services/sf1-hub-ben.nix`)
+  is that nothing granting consent or holding a credential belongs in an activation script. The
+  `~/.dotfiles` sf1-hub-ben module owns the directory's packaging; the token content inside it is
+  populated by the person, not by nix.
+
+**A by-value check — comparing the resolved strings, never their filenames — found a real
+divergence worth recording rather than assuming the four locations agree.** The token
+`~/.sapience/config.json` currently resolves (and that `mcp.py` therefore actually
+authenticates with) is byte-identical to the one in both `~/.config/sf1-hub-ben/env` and
+`~/.config/sf1-hub-ben/sapience-token`, but is a different string, of a different length, from
+the one in `/run/secrets/sapience_token`; `config.json`'s own oldest on-disk backup holds the
+value that matches the sops secret, while its two newer backups match the value currently
+active. The sops-provisioned secret and the value `mcp.py` actually authenticates with are, at
+the time of this writing, two different credentials — most likely because a rotation was applied
+directly to `config.json` (and to the sf1-hub-ben copies) without a matching update to
+`~/.dotfiles/secrets/secrets.yaml`. Reconciling the sops secret with the active token, if that is
+wanted, is a `~/.dotfiles`-owned action; this task neither performs nor requires it, since the
+per-project MCP entry's own correctness depends only on `config.json` holding a working token,
+which it does.
+
+**The never-copy boundary.** None of the three homes above is ever copied into
+`~/.claude.json`'s per-project MCP entry, at any scope. That file is routinely inspected in
+plaintext (`jq .projects[...]`, `claude mcp get`) and is within reach of Sapience's own
+transcript-capture path, so a copy of the token there is a secret that can round-trip into the
+very vault it authenticates against. The entry instead carries only `env: { SAPIENCE_HOST:
+<host> }`; `mcp.py` resolves the token itself, from `config.json`, as described above.
+
+**Enforcing surfaces.** Three surfaces hold this boundary, named here so a future reader sees
+where it is held rather than only that it exists: `setup-sapience-mcp.sh`'s
+`generate_sapience_config()`, which emits the token-free `env` shape unconditionally; check (b)
+in `verify-sapience-mcp.sh`, which fails a token-bearing entry and names the remedy
+(re-running `setup-sapience-mcp.sh --scope project` to replace it with the token-free canonical
+shape); and `test-sapience-mcp-registration.sh`'s regression cases, which assert no value in a
+written entry equals the configured token and that a hand-built token-bearing fixture entry is
+flagged by both the writer's own whole-entry comparison and the verifier.
+
+**A latent hazard, noted rather than closed.** The orphaned `sapience-register-mcp` wrapper in
+`~/.dotfiles/packages/sapience-flake/lib/wrappers.nix` is unreachable from any applied
+home-manager module today, so it writes nothing on this machine — but if it were ever wired into
+an applied module, its own token-handling would need the same by-value scrutiny this subsection
+gives the writer above. `~/.dotfiles` owns it.
+
 ## Worktree Resolution and the Two-Channel Asymmetry
 
 A session running in a LINKED GIT WORKTREE (for example a throwaway automated checkout of a

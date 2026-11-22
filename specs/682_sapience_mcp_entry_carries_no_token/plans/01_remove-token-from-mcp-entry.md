@@ -228,21 +228,21 @@ vacuously.
 
 ---
 
-### Phase 4: Document the token's homes and the copy boundary [NOT STARTED]
+### Phase 4: Document the token's homes and the copy boundary [COMPLETED]
 
 **Goal**: State in `per-repo-scoping.md` where the token durably lives, who owns each location,
 and that it must never be copied into `~/.claude.json` at any scope — and back that with a
 verified inventory of every place the token is written on this machine.
 
 **Tasks**:
-- [ ] Re-read the doc immediately beforehand (sibling 683 declares it too); stop and report any foreign modification.
-- [ ] Re-verify each location's mode and ownership rather than carrying the research report's figures forward: `/run/secrets/sapience_token` (observed `-r--------`, sops-nix), `~/.sapience/config.json` (observed `-rw-------`, vendor payload) and its `.bak-*` siblings, `~/.config/sf1-hub-ben/env` and `~/.config/sf1-hub-ben/sapience-token` (both observed `-rw-------`).
-- [ ] Compare by **value**, not by filename, which of those files actually hold the Sapience bearer token. `~/.config/sf1-hub-ben/sapience-token` is 17 bytes against `/run/secrets/sapience_token`'s 43, so it is probably a different credential for a different subsystem — state what the comparison shows rather than assuming the name implies the value.
-- [ ] Confirm no plaintext copy is committed anywhere: the one git-tracked artifact is `~/.dotfiles/secrets/secrets.yaml`, sops-encrypted. Re-check rather than assert.
-- [ ] Add a named subsection to the doc — after "The MCP-Registration Triad" or as a numbered Hazards entry, matching whichever the surrounding text reads better with — stating: the token's durable homes and each one's owner (`~/.dotfiles` owns the sops secret; the vendor payload / bootstrap owns `config.json`); that `mcp.py` resolves it from `config.json` with the variable unset, via one shared module-level statement; and that it must never be copied into `~/.claude.json` at any scope, because that file is routinely inspected in plaintext (`jq .projects[...]`, `claude mcp get`) and is within reach of Sapience's own transcript-capture path, so a copy there is a secret that can round-trip into the vault it authenticates against.
-- [ ] Name the enforcing surfaces in the same subsection — the writer's unconditional token-free `env`, check (b)'s refusal, and the regression case — so a future reader sees where the boundary is held, not only that it exists.
-- [ ] State the token's locations and owners without quoting any token value or fragment.
-- [ ] Note the orphaned `~/.dotfiles` `sapience-register-mcp` wrapper as a one-line latent hazard, naming `~/.dotfiles` as the owner and that no applied module path reaches it today.
+- [x] Re-read the doc immediately beforehand (sibling 683 declares it too); stop and report any foreign modification. *(completed: `git status`/`git log` confirmed clean, no foreign modification)*
+- [x] Re-verify each location's mode and ownership rather than carrying the research report's figures forward: `/run/secrets/sapience_token` (observed `-r--------`, sops-nix), `~/.sapience/config.json` (observed `-rw-------`, vendor payload) and its `.bak-*` siblings, `~/.config/sf1-hub-ben/env` and `~/.config/sf1-hub-ben/sapience-token` (both observed `-rw-------`). *(completed: all five modes confirmed exactly as observed)*
+- [x] Compare by **value**, not by filename, which of those files actually hold the Sapience bearer token. `~/.config/sf1-hub-ben/sapience-token` is 17 bytes against `/run/secrets/sapience_token`'s 43, so it is probably a different credential for a different subsystem — state what the comparison shows rather than assuming the name implies the value. *(completed: the plan's guess was wrong in an informative way — by-value fingerprint comparison [length + sha256[:12], never the raw value] showed `sf1-hub-ben/sapience-token` and `sf1-hub-ben/env`'s `SAPIENCE_TOKEN` are byte-identical to the token `config.json` currently resolves, not a different credential; that active token in turn does NOT match `/run/secrets/sapience_token` — a real divergence between the sops secret and the active token, recorded in the new subsection and via `issue-record.sh` rather than assumed in sync)*
+- [x] Confirm no plaintext copy is committed anywhere: the one git-tracked artifact is `~/.dotfiles/secrets/secrets.yaml`, sops-encrypted. Re-check rather than assert. *(completed: `git ls-files` confirms it is tracked; its `sapience_token` key is `ENC[AES256_GCM,...]`, never plaintext)*
+- [x] Add a named subsection to the doc — after "The MCP-Registration Triad" or as a numbered Hazards entry, matching whichever the surrounding text reads better with — stating: the token's durable homes and each one's owner (`~/.dotfiles` owns the sops secret; the vendor payload / bootstrap owns `config.json`); that `mcp.py` resolves it from `config.json` with the variable unset, via one shared module-level statement; and that it must never be copied into `~/.claude.json` at any scope, because that file is routinely inspected in plaintext (`jq .projects[...]`, `claude mcp get`) and is within reach of Sapience's own transcript-capture path, so a copy there is a secret that can round-trip into the vault it authenticates against. *(completed: added "### The Token's Durable Homes and the Never-Copy Boundary" after "The MCP-Registration Triad")*
+- [x] Name the enforcing surfaces in the same subsection — the writer's unconditional token-free `env`, check (b)'s refusal, and the regression case — so a future reader sees where the boundary is held, not only that it exists. *(completed)*
+- [x] State the token's locations and owners without quoting any token value or fragment. *(completed: verified via `grep -c` of each candidate token value against the doc, all return 0)*
+- [x] Note the orphaned `~/.dotfiles` `sapience-register-mcp` wrapper as a one-line latent hazard, naming `~/.dotfiles` as the owner and that no applied module path reaches it today. *(completed)*
 
 **Timing**: 0.75 hours
 

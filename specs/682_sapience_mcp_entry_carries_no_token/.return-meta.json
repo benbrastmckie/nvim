@@ -1,69 +1,6 @@
 {
-  "status": "partial",
-  "dispatch_seq": 28,
-  "artifacts": [
-    {
-      "type": "handoff",
-      "path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-3-handoff-20261122T002119Z.md",
-      "summary": "Phase 3 complete, phase mission limited this dispatch to phase 3 only; next action is Phase 4 (document the token's homes and the copy boundary)."
-    }
-  ],
-  "partial_progress": {
-    "stage": "phase_mission_single_phase_limit",
-    "details": "Dispatch's Phase Mission directive limited execution to Phase 3 only ('Implement phase 3 only. Do not continue past this phase.'). Phase 3 completed, verified, and committed cleanly (eac7bb097); phases 4-5 remain for subsequent dispatches.",
-    "handoff_path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-3-handoff-20261122T002119Z.md",
-    "phases_completed": 3,
-    "phases_total": 5
-  },
-  "completion_data": {
-    "completion_summary": "Added Case 54 (positive: a sentinel token in config.json never appears anywhere in the written entry, whole-entry scan) and Case 55 (negative control: a hand-built token-bearing entry is flagged by both the verifier with a named remedy, and the writer's own whole-entry comparison, which replaces it) to test-sapience-mcp-registration.sh, with the positive assertion proven live by a temporary revert/restore cycle. Full suite: 58 passed, 0 failed."
-  },
-  "modified_files": [
-    "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"
-  ],
-  "memory_candidates": [],
-  "sapience_notes": [
-    {
-      "subject": "setup-sapience-mcp.sh token resolution",
-      "value": "The writer's resolve_token() (deleted in this task) read ~/.sapience/config.json's `.token` field, distinct from `.host` which resolve_host() still reads; a prior version of this plan's negative-control fixture must set config.json's token under the key `token`, not `SAPIENCE_TOKEN`.",
-      "predicate": "finding is",
-      "ko_type": "finding",
-      "confidence": 0.9,
-      "source_loc": "agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh"
-    },
-    {
-      "subject": "verify-sapience-mcp.sh fail() output under --quiet",
-      "value": "fail() prints only the bare word FAIL when --quiet is set, not the named [FAIL] (b) ... remedy message; a test asserting on the remedy text must invoke the verifier without --quiet.",
-      "predicate": "finding is",
-      "ko_type": "finding",
-      "confidence": 0.95,
-      "source_loc": "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh"
-    },
-    {
-      "subject": "setup-sapience-mcp.sh process_write whole-entry comparison",
-      "value": "process_write() compares the existing entry to the canonical one with jq's $a == $b over the whole JSON object, so ANY divergence (including an extra env key like SAPIENCE_TOKEN not present in the canonical shape) triggers a full wholesale replacement, not a per-field patch -- this is what makes a token-bearing legacy entry self-heal on the next writer run with no special-casing needed.",
-      "predicate": "finding is",
-      "ko_type": "finding",
-      "confidence": 0.9,
-      "source_loc": "agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh:399-454"
-    },
-    {
-      "subject": "verify-touched.sh scope in a multi-task shared working tree",
-      "value": "verify-touched.sh derives its touched-path corpus from the full working-tree diff, not from a single task's own declared file_scope -- so in a repo where multiple /orchestrate dispatches run concurrently against the same working tree, an unrelated sibling task's uncommitted changes can pull in and fail an unrelated suite (observed: task 677's in-flight orchestration work caused test-stall-reprompt-wiring.sh to be selected and fail during a task-682 dispatch whose own git status --short showed only one unrelated file modified).",
-      "predicate": "finding is",
-      "ko_type": "finding",
-      "confidence": 0.85,
-      "source_loc": ".claude/scripts/verify-touched.sh"
-    },
-    {
-      "subject": "test-sapience-mcp-registration.sh header-comment Phase labels",
-      "value": "The suite's existing header-comment sections labeled 'Phase 2/3/4/5' refer to an ancestor task's own plan structure (Writer/Hook/Installer/Verifier cases), not to the current token-removal task's Phase 1-5 structure -- a future case addition for a different task should avoid reusing the word 'Phase N' in a new header section to prevent two different meanings colliding in the same file.",
-      "predicate": "finding is",
-      "ko_type": "insight",
-      "confidence": 0.8,
-      "source_loc": "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"
-    }
-  ],
+  "status": "in_progress",
+  "dispatch_seq": 29,
   "metadata": {
     "session_id": "sess_1795284367_d33b60",
     "agent_type": "general-implementation-agent",
@@ -71,6 +8,5 @@
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
     "phases_completed": 3,
     "phases_total": 5
-  },
-  "next_steps": "Dispatch Phase 4 (document the token's homes and the copy boundary in per-repo-scoping.md, backed by a verified machine-wide token inventory) next."
+  }
 }

@@ -1,0 +1,18 @@
+{
+  "phase": 4,
+  "phase_name": "Document the token's homes and the copy boundary",
+  "started_at": "2026-11-22T00:24:50Z",
+  "last_updated": "2026-11-22T00:45:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read the doc immediately beforehand; stop and report any foreign modification", "status": "done", "files_touched": [], "note": "git status/log clean on both Phase 4 target files before edit; no foreign modification."},
+    {"id": 2, "description": "Re-verify each location's mode and ownership (secrets, config.json + .bak-*, sf1-hub-ben env/token)", "status": "done", "files_touched": [], "note": "/run/secrets/sapience_token -r-------- (sops-nix); ~/.sapience/config.json and its three .bak-* siblings -rw------- ; ~/.config/sf1-hub-ben/env and sapience-token -rw------- . All match the plan's observed modes."},
+    {"id": 3, "description": "Compare by value which files actually hold the Sapience bearer token", "status": "done", "files_touched": [], "note": "Fingerprint-only comparison (length + sha256[:12], never raw value) found a real divergence: the currently-active token (config.json .token, len 16) matches sf1-hub-ben's env and sapience-token files byte-for-byte, but does NOT match /run/secrets/sapience_token (len 43) nor config.json's oldest backup (which matches the sops secret instead) -- recorded as a win/issue pair via issue-record.sh and stated honestly in the new doc subsection rather than assumed in sync."},
+    {"id": 4, "description": "Confirm no plaintext copy is committed anywhere (secrets.yaml sops-encrypted)", "status": "done", "files_touched": [], "note": "~/.dotfiles/secrets/secrets.yaml is git-tracked (git ls-files confirms) and its sapience_token key is ENC[AES256_GCM,...] -- sops-encrypted, not plaintext."},
+    {"id": 5, "description": "Add named subsection to per-repo-scoping.md: homes, owners, resolution path, never-copy boundary, enforcing surfaces, orphaned wrapper note", "status": "done", "files_touched": ["agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"]},
+    {"id": 6, "description": "Bump index-entries.json line_count for the edited doc", "status": "done", "files_touched": ["agent-system/extensions/sapience/index-entries.json"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}
