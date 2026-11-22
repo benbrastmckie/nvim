@@ -1,0 +1,17 @@
+{
+  "phase": 2,
+  "phase_name": "Close the measurement record against its own stated criterion",
+  "started_at": "2026-11-22T22:55:00Z",
+  "last_updated": "2026-11-22T23:05:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add exact-call appendix per measurement", "status": "done", "files_touched": ["specs/decisions/external-worktree-harness-behaviour.md"]},
+    {"id": 2, "description": "Name fixture paths relative, never absolute/real-repo", "status": "done", "files_touched": ["specs/decisions/external-worktree-harness-behaviour.md"]},
+    {"id": 3, "description": "Extend Attribution section to label each measurement agent-measured/user-supplied", "status": "done", "files_touched": ["specs/decisions/external-worktree-harness-behaviour.md"]},
+    {"id": 4, "description": "Add Residuals section with both residuals", "status": "done", "files_touched": ["specs/decisions/external-worktree-harness-behaviour.md"]},
+    {"id": 5, "description": "Handle open permission-mode question conditionally (unanswered -> re-relay)", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Leave Verdict/Provenance substance unchanged", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

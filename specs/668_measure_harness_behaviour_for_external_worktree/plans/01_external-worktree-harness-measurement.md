@@ -192,14 +192,14 @@ row's diff read-through — no suite covers this file and none is claimed.
 
 ---
 
-### Phase 2: Close the measurement record against its own stated criterion [NOT STARTED]
+### Phase 2: Close the measurement record against its own stated criterion [COMPLETED]
 
 **Goal**: `specs/decisions/external-worktree-harness-behaviour.md` states, on its own face, the
 exact command or tool call behind each of the four results, who measured each one, and both
 residuals in one named place.
 
 **Tasks**:
-- [ ] Add an appendix section listing, per measurement, the exact command or tool call that
+- [x] Add an appendix section listing, per measurement, the exact command or tool call that
       produced each result, taking the literal calls from the research report's Appendix: the
       `Read` calls on the worktree's `README.md` and its tracked `lua/existing.lua`; the `Write`
       of a new file under the worktree's `lua/` directory and the `Edit` on its tracked
@@ -207,26 +207,27 @@ residuals in one named place.
       order (external first, in-project second, including the nonexistent in-project path);
       `cd <clean external worktree> && git reset --hard HEAD` as a single Bash call; and the
       three separate Bash calls `pwd`, `cd /tmp && pwd`, `pwd`, run both in the dispatch and in a
-      freshly spawned context-free subagent.
-- [ ] Name every fixture path relative to the worktree root (or as `<external worktree>/...`),
+      freshly spawned context-free subagent. *(completed)*
+- [x] Name every fixture path relative to the worktree root (or as `<external worktree>/...`),
       never as an absolute path and never naming a real repository — the repo-agnostic constraint
-      applies to this deliverable.
-- [ ] Extend the record's "Attribution" section so each of the four measurements is labelled
+      applies to this deliverable. *(completed)*
+- [x] Extend the record's "Attribution" section so each of the four measurements is labelled
       agent-measured or user-supplied explicitly. As of this plan all four are agent-measured and
-      nothing is user-supplied; state that, rather than leaving it inferable.
-- [ ] Add a "Residuals" section collecting both residuals in one place: (i) file-tool behaviour
+      nothing is user-supplied; state that, rather than leaving it inferable. *(completed)*
+- [x] Add a "Residuals" section collecting both residuals in one place: (i) file-tool behaviour
       for an external path under a non-`bypassPermissions` mode (`default`, `plan`,
       `acceptEdits`) — not observable from a dispatched agent, needs the user; (ii) the hook
       subprocess's own raw OS-level `pwd`, as distinct from `$CLAUDE_PROJECT_DIR` — deliberately
       not isolated, because doing so needed temporary diagnostic instrumentation in live personal
-      settings. For each, state in one sentence why the verdict does not turn on it.
-- [ ] Conditional on the open question's state at implementation time: if the user has answered
+      settings. For each, state in one sentence why the verdict does not turn on it. *(completed)*
+- [x] Conditional on the open question's state at implementation time: if the user has answered
       it, record the answer in "Residuals" labelled as user-supplied with its date; if not, leave
       it stated as open and re-relay it as a non-blocking `user_decision` in `.return-meta.json`.
       Never write a mode's behaviour that was not observed, and never infer it from the
-      `bypassPermissions` result.
-- [ ] Leave the "Verdict" and "Provenance" sections' substance unchanged: no result changed, so
-      the verdict does not, and "Amends nothing" stays true.
+      `bypassPermissions` result. *(completed: unanswered as of this dispatch; left open,
+      re-relayed as non-blocking user_decision)*
+- [x] Leave the "Verdict" and "Provenance" sections' substance unchanged: no result changed, so
+      the verdict does not, and "Amends nothing" stays true. *(completed)*
 
 **Timing**: 0.6 hours
 
