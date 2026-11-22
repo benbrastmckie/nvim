@@ -364,7 +364,7 @@ complete covering check for it.
 
 ---
 
-### Phase 3: Correct the stale `plan_goals_preamble.md` fixture comment [NOT STARTED]
+### Phase 3: Correct the stale `plan_goals_preamble.md` fixture comment [COMPLETED]
 
 **Goal**: Remove the fixture prose that tells a future reader the snapshot tool reads every
 backticked token in a Goals block as a Goal — a statement that has been false since the
@@ -372,19 +372,22 @@ leading-run narrowing landed in the very script the fixture serves.
 
 **Tasks**:
 
-- [ ] Re-read
+- [x] Re-read
       `agent-system/extensions/lean/scripts/tests/fixtures/challenge/plan_goals_preamble.md`
       immediately before editing. Confirm no concurrent sibling has modified it (none declares it
-      in `file_scope`).
-- [ ] Correct the preamble paragraph's final sentence, which currently reads "No other identifier
+      in `file_scope`). *(completed: confirmed against the dispatch's own territory JSON — neither
+      task 398 nor 451's file_scope lists this fixture)*
+- [x] Correct the preamble paragraph's final sentence, which currently reads "No other identifier
       is backticked in this block, because the snapshot tool reads every backticked token here as
       a Goal." Replace it with a statement of the current rule: only a bullet's leading identifier
       run contributes goal names, so backticked identifiers in this preamble paragraph (and in any
       bullet's trailing prose) are never harvested. Keep the paragraph's actual purpose — the
       fixture exercises preamble-prose exclusion — intact, and keep every existing backticked
       token in it, since those tokens are precisely what the fixture is testing the exclusion of.
-- [ ] Change nothing else in the fixture: not the `**Goals**` bullets, not the
-      `## Lean Challenge Statements` block, not the plan metadata header.
+      *(completed)*
+- [x] Change nothing else in the fixture: not the `**Goals**` bullets, not the
+      `## Lean Challenge Statements` block, not the plan metadata header. *(completed: confirmed
+      via `git diff` — only the preamble paragraph's final two sentences changed)*
 
 **Timing**: 0.25 hours
 

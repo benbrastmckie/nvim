@@ -13,8 +13,9 @@
 
 (The identifier set equals the two theorem declarations below -- the block's `abbrev`
 definitions, including the admissibility fact `gPast_adm` the probe also proves, are context,
-not goals. No other identifier is backticked in this block, because the snapshot tool reads
-every backticked token here as a Goal.)
+not goals. Only a bullet's leading identifier run contributes goal names, so the backticked
+`abbrev` and `gPast_adm` tokens in this preamble paragraph -- and any backticked identifier in a
+bullet's trailing prose -- are never harvested.)
 
 - `comm` -- commutativity of addition.
 - `assoc` -- associativity of addition.
