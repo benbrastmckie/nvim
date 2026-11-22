@@ -42,6 +42,14 @@
 #        child (the exact-path idempotence decision, not the longest-prefix match).
 #   (61) --capture-set --dry-run records no stub invocation and mutates nothing.
 #
+# --reap-capture writer cases (Phase 2, cross-project capture reap sweep):
+#   (62) A vanished enabled:true capture entry is turned off (stub invoked with
+#        `projects off <vanished-path>`) while a sibling entry whose path exists is left
+#        untouched, proved in the same fixture/invocation.
+#   (63) A vanished entry already enabled:false records no stub invocation.
+#   (64) --reap-capture --dry-run records no stub invocation and mutates nothing.
+#   (65) No `sapience` on PATH exits 0 silently.
+#
 # Hook cases (Phase 3, added once the hook exists):
 #   (10) Active repo (.claude-extensions.json shows extensions.sapience.status == "active")
 #        registers the project-scoped entry and emits an additionalContext notice.
@@ -758,6 +766,93 @@ if [ "$CALLS61" = "0" ] && [ "$BEFORE61" = "$AFTER61" ]; then
   pass "Case 61: --capture-set --dry-run records no stub invocation and mutates nothing"
 else
   fail "Case 61: calls=$CALLS61 before=$BEFORE61 after=$AFTER61"
+fi
+
+# =====================================================================
+# Case 62: a vanished enabled:true capture entry is turned off (stub invoked with
+# `projects off <vanished-path>`) while a sibling entry whose path exists is left untouched,
+# proved in the same fixture/invocation (mirrors case 31's sibling-row idiom).
+# =====================================================================
+HOME62="$WORKDIR/case62/home"
+PRESENT62="$WORKDIR/case62/present-proj"
+mkdir -p "$HOME62/.sapience" "$PRESENT62"
+VANISHED62="$WORKDIR/case62/vanished-proj-never-created"
+jq -n --arg vanished "$VANISHED62" --arg present "$PRESENT62" \
+  '{"capture": {"projects": [
+      {"path_prefix": $vanished, "enabled": true},
+      {"path_prefix": $present, "enabled": true}
+    ]}}' > "$HOME62/.sapience/config.json"
+STUB62="$(build_sapience_stub)"
+
+PATH="$STUB62:$PATH" STUB_DIR="$STUB62" HOME="$HOME62" bash "$WRITER_SRC" --reap-capture --quiet > /dev/null 2>&1
+CALLS62="$(sapience_stub_call_count "$STUB62")"
+ARGS62="$(sapience_stub_last_args "$STUB62")"
+VANISHED_STATE62="$(jq -r --arg p "$VANISHED62" '(.capture.projects // []) | map(select(.path_prefix == $p)) | last.enabled' "$HOME62/.sapience/config.json")"
+PRESENT_STATE62="$(jq -r --arg p "$PRESENT62" '(.capture.projects // []) | map(select(.path_prefix == $p)) | last.enabled' "$HOME62/.sapience/config.json")"
+
+if [ "$CALLS62" = "1" ] && [ "$ARGS62" = "projects off $VANISHED62" ] && [ "$VANISHED_STATE62" = "false" ] && [ "$PRESENT_STATE62" = "true" ]; then
+  pass "Case 62: --reap-capture turns off a vanished enabled:true entry while leaving a present-path sibling entry untouched"
+else
+  fail "Case 62: calls=$CALLS62 args='$ARGS62' vanished=$VANISHED_STATE62 present=$PRESENT_STATE62"
+fi
+
+# =====================================================================
+# Case 63: a vanished entry already enabled:false records no stub invocation.
+# =====================================================================
+HOME63="$WORKDIR/case63/home"
+mkdir -p "$HOME63/.sapience"
+VANISHED63="$WORKDIR/case63/vanished-proj-never-created"
+jq -n --arg vanished "$VANISHED63" \
+  '{"capture": {"projects": [{"path_prefix": $vanished, "enabled": false}]}}' > "$HOME63/.sapience/config.json"
+STUB63="$(build_sapience_stub)"
+
+PATH="$STUB63:$PATH" STUB_DIR="$STUB63" HOME="$HOME63" bash "$WRITER_SRC" --reap-capture --quiet > /dev/null 2>&1
+CALLS63="$(sapience_stub_call_count "$STUB63")"
+
+if [ "$CALLS63" = "0" ]; then
+  pass "Case 63: a vanished entry already enabled:false records no stub invocation"
+else
+  fail "Case 63: calls=$CALLS63"
+fi
+
+# =====================================================================
+# Case 64: --reap-capture --dry-run records no stub invocation and mutates nothing.
+# =====================================================================
+HOME64="$WORKDIR/case64/home"
+mkdir -p "$HOME64/.sapience"
+VANISHED64="$WORKDIR/case64/vanished-proj-never-created"
+jq -n --arg vanished "$VANISHED64" \
+  '{"capture": {"projects": [{"path_prefix": $vanished, "enabled": true}]}}' > "$HOME64/.sapience/config.json"
+STUB64="$(build_sapience_stub)"
+BEFORE64="$(md5sum "$HOME64/.sapience/config.json" | awk '{print $1}')"
+
+PATH="$STUB64:$PATH" STUB_DIR="$STUB64" HOME="$HOME64" bash "$WRITER_SRC" --reap-capture --dry-run > /dev/null 2>&1
+CALLS64="$(sapience_stub_call_count "$STUB64")"
+AFTER64="$(md5sum "$HOME64/.sapience/config.json" | awk '{print $1}')"
+
+if [ "$CALLS64" = "0" ] && [ "$BEFORE64" = "$AFTER64" ]; then
+  pass "Case 64: --reap-capture --dry-run records no stub invocation and mutates nothing"
+else
+  fail "Case 64: calls=$CALLS64 before=$BEFORE64 after=$AFTER64"
+fi
+
+# =====================================================================
+# Case 65: no `sapience` on PATH exits 0 silently for --reap-capture.
+# =====================================================================
+HOME65="$WORKDIR/case65/home"
+mkdir -p "$HOME65/.sapience"
+VANISHED65="$WORKDIR/case65/vanished-proj-never-created"
+jq -n --arg vanished "$VANISHED65" \
+  '{"capture": {"projects": [{"path_prefix": $vanished, "enabled": true}]}}' > "$HOME65/.sapience/config.json"
+NO_SAPIENCE_PATH65="$(build_path_without_sapience)"
+
+RC65=0
+OUT65="$(PATH="$NO_SAPIENCE_PATH65" HOME="$HOME65" bash "$WRITER_SRC" --reap-capture --quiet 2>&1)" || RC65=$?
+
+if [ "$RC65" -eq 0 ] && [ -z "$OUT65" ]; then
+  pass "Case 65: no sapience binary on PATH exits 0 silently for --reap-capture"
+else
+  fail "Case 65: rc=$RC65 out='$OUT65'"
 fi
 
 # =====================================================================

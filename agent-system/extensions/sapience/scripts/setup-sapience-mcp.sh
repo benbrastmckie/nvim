@@ -388,6 +388,61 @@ if [ -n "$CAPTURE_SET" ]; then
     exit 0
 fi
 
+# process_reap_capture -- the --reap-capture action body. Mirrors process_reap above, but for
+# ~/.sapience/config.json's capture.projects[] instead of ~/.claude.json's .projects[]: turns
+# off (via sapience_cli, reused unchanged from Phase 1) every entry whose "enabled" is true and
+# whose "path_prefix" is no longer a directory on disk. set_project() matches by string-equal
+# path_prefix with no `isdir` check on the lookup path, and normalize()/is_project_root() never
+# drop an entry for not existing on disk, so a vanished project would otherwise stay
+# `enabled: true` indefinitely -- the only session that can ever clean that up is some OTHER,
+# still-living session, exactly the rationale process_reap's own header gives for .claude.json.
+# An unreadable/unmounted path reads as absent via `[ ! -d ]` and is turned off as if orphaned --
+# accepted, since the next session start in that repo re-enables it via the register branch.
+process_reap_capture() {
+    if [ ! -r "$SAPIENCE_CONFIG" ] || ! jq -e 'has("capture")' "$SAPIENCE_CONFIG" > /dev/null 2>&1; then
+        log "No readable ~/.sapience/config.json with a \"capture\" key found, nothing to reap."
+        return 0
+    fi
+
+    local candidates path_prefix
+    candidates="$(jq -r '(.capture.projects // []) | map(select(.enabled == true)) | .[].path_prefix // empty' "$SAPIENCE_CONFIG" 2>/dev/null || echo "")"
+
+    local orphans=()
+    while IFS= read -r path_prefix; do
+        [ -z "$path_prefix" ] && continue
+        if [ ! -d "$path_prefix" ]; then
+            orphans+=("$path_prefix")
+        fi
+    done <<< "$candidates"
+
+    if [ "${#orphans[@]}" -eq 0 ]; then
+        log "No orphaned capture registrations found (every enabled path_prefix still exists on disk); nothing to reap."
+        return 0
+    fi
+
+    if $DRY_RUN; then
+        for path_prefix in "${orphans[@]}"; do
+            log "[DRY RUN] Would turn off capture for $path_prefix (project directory no longer exists)"
+        done
+        return 0
+    fi
+
+    for path_prefix in "${orphans[@]}"; do
+        if sapience_cli off "$path_prefix"; then
+            log "Reaped the orphaned capture entry for $path_prefix (project directory no longer exists)"
+            [ "$QUIET" = "true" ] && echo "sapience: reaped orphaned capture entry for $path_prefix"
+        fi
+        # A nonzero sapience_cli exit (absent binary, timeout, or a refused call) degrades
+        # silently -- no log line, no --quiet notice -- matching every other writer action's
+        # silent-degrade contract.
+    done
+}
+
+if $REAP_CAPTURE; then
+    process_reap_capture
+    exit 0
+fi
+
 # Resolve project path if not provided: current working directory. Unlike lean's lakefile
 # detection, there is no file-marker test here -- the caller (the SessionStart hook in Phase 3)
 # is responsible for deciding whether sapience should be active for this project at all; this

@@ -1,0 +1,18 @@
+{
+  "phase": 2,
+  "phase_name": "Writer-Side --reap-capture Sweep",
+  "started_at": "2026-11-22T09:40:00Z",
+  "last_updated": "2026-11-22T09:55:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add process_reap_capture() and wire --reap-capture dispatch", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh"]},
+    {"id": 2, "description": "Document the edge-case note beside --reap's existing one", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Append reap-capture test cases (62)-(65)", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"]},
+    {"id": 4, "description": "Run full suite", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "unconditionally log/notice after calling sapience_cli off in the reap loop", "result": "failed", "reason": "case 65 (missing sapience binary) still reported success even though sapience_cli returned nonzero; fixed by gating the log/notice on sapience_cli's own exit status"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

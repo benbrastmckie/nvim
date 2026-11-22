@@ -265,30 +265,32 @@ invoked, plus the two helpers the next phase reuses -- with its own fixture test
 
 ---
 
-### Phase 2: Writer-Side `--reap-capture` Sweep [NOT STARTED]
+### Phase 2: Writer-Side `--reap-capture` Sweep [COMPLETED]
 
 **Goal**: a vanished project directory whose `capture.projects[]` entry is still `enabled: true`
 is turned off by any living session, mirroring the MCP-registration reap this writer already owns.
 
 **Tasks**:
-- [ ] Re-read `setup-sapience-mcp.sh` immediately before editing.
-- [ ] Add the `--reap-capture` flag and a `process_reap_capture()` function placed beside
+- [x] Re-read `setup-sapience-mcp.sh` immediately before editing. *(completed)*
+- [x] Add the `--reap-capture` flag and a `process_reap_capture()` function placed beside
       `process_reap()`, before `PROJECT_PATH`/`SCOPE` resolution and before `resolve_interpreter`.
-- [ ] Enumerate `capture.projects[]` entries whose `enabled` is `true` and whose `path_prefix` is
+      *(completed)*
+- [x] Enumerate `capture.projects[]` entries whose `enabled` is `true` and whose `path_prefix` is
       not a directory on disk; call `sapience_cli off "$path_prefix"` for each, reusing Phase 1's
-      helper unchanged.
-- [ ] Degrade silently and exit 0 when `~/.sapience/config.json` is unreadable, carries no
+      helper unchanged. *(completed)*
+- [x] Degrade silently and exit 0 when `~/.sapience/config.json` is unreadable, carries no
       `capture` key, or the `sapience` binary is absent; support `--dry-run`; under `--quiet` emit
-      one line per entry actually turned off, matching `process_reap()`'s convention.
-- [ ] Document, in the header beside `--reap`'s existing two-edge-case note, that an unreadable or
+      one line per entry actually turned off, matching `process_reap()`'s convention. *(completed)*
+- [x] Document, in the header beside `--reap`'s existing two-edge-case note, that an unreadable or
       unmounted path reads as absent via `[ ! -d ]` and is turned off as if orphaned -- accepted
       because the next session start in that repo re-enables it via the register branch.
-- [ ] Append writer-level cases: (a) a vanished `enabled: true` entry is turned off (stub invoked
+      *(completed: written during Phase 1's header edit, confirmed still present)*
+- [x] Append writer-level cases: (a) a vanished `enabled: true` entry is turned off (stub invoked
       with `projects off <vanished-path>`) while a sibling entry whose path exists is left
       untouched in the same fixture and invocation; (b) a vanished entry already `enabled: false`
       records no stub invocation; (c) `--reap-capture --dry-run` records no stub invocation;
-      (d) no `sapience` on `PATH` exits 0 silently.
-- [ ] Run the full suite.
+      (d) no `sapience` on `PATH` exits 0 silently. *(completed: cases 62-65)*
+- [x] Run the full suite. *(completed: 68 passed, 0 failed)*
 
 **Timing**: 1.5 hours
 
