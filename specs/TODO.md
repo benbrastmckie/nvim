@@ -9471,6 +9471,7 @@ line_count there is now stale (claims 31, actual 32).
 - **Dependencies**: Task 397
 - **Research**: [398_lean_plan_scope_rw_site_unfolding/reports/01_rw_site_unfolding_reachability.md]
 - **Plan**: [398_lean_plan_scope_rw_site_unfolding/plans/01_rw-site-unfold-reachability.md]
+- **Summary**: [398_lean_plan_scope_rw_site_unfolding/summaries/01_rw-site-unfold-reachability-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No

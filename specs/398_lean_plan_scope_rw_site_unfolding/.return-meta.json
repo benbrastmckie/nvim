@@ -21,14 +21,26 @@
       "category": "PATTERN",
       "source_artifact": "specs/398_lean_plan_scope_rw_site_unfolding/summaries/01_rw-site-unfold-reachability-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["index-entries", "line-count", "edit-anchor", "unique-old-string"]
+      "suggested_keywords": [
+        "index-entries",
+        "line-count",
+        "edit-anchor",
+        "unique-old-string"
+      ]
     },
     {
       "content": "deploy-headless.sh's internal verify-deploy.sh fast-gate sweep can transiently FAIL (e.g. 3 of 41 checks) during a sibling task's in-flight, not-yet-committed edit under a concurrent multi-task /orchestrate batch -- observed as doc-lint content-drift on the sibling's own uncommitted files plus a load-correlated gate6 timeout (explicitly flagged CONTENTION in gate6's own output). Re-running deploy-headless.sh after the sibling's commit lands is the correct recovery, not treating the red as this task's own regression -- check git log/status for the specific failing paths against your own declared file_scope before escalating.",
       "category": "PATTERN",
       "source_artifact": "specs/398_lean_plan_scope_rw_site_unfolding/summaries/01_rw-site-unfold-reachability-summary.md",
       "confidence": 0.8,
-      "suggested_keywords": ["deploy-headless", "verify-deploy", "concurrency", "sibling-contention", "gate6", "transient-failure"]
+      "suggested_keywords": [
+        "deploy-headless",
+        "verify-deploy",
+        "concurrency",
+        "sibling-contention",
+        "gate6",
+        "transient-failure"
+      ]
     }
   ],
   "sapience_notes": [
@@ -85,8 +97,14 @@
     "session_id": "sess_1795360608_7bb5fd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

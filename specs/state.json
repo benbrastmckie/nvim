@@ -4973,6 +4973,11 @@
           "path": "specs/398_lean_plan_scope_rw_site_unfolding/plans/01_rw-site-unfold-reachability.md",
           "type": "plan",
           "summary": "3-phase plan (1.5h): content extension plus coupled line_count resync, plan-authoring keyword reachability remedy, redeploy and end-to-end query verification."
+        },
+        {
+          "path": "specs/398_lean_plan_scope_rw_site_unfolding/summaries/01_rw-site-unfold-reachability-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary covering all three phases: worked example/probe landed, plan-authoring keyword added, redeploy verified end to end."
         }
       ],
       "next_artifact_number": 2,
@@ -4985,7 +4990,8 @@
         "__WHOLE_TREE__",
         "agent-system/extensions/lean/context/project/lean4/patterns/dependency-tracing.md",
         "agent-system/extensions/lean/index-entries.json"
-      ]
+      ],
+      "completion_summary": "Landed the rw-site definitional-unfold worked example and an enumerated, runnable twelve-spelling grep probe in dependency-tracing.md, tagged the file's own index entry with the plan-authoring keyword to make it reachable at plan time, and verified end to end after redeploy that the Stage 4 item 13 query now selects the file for a lean4 plan dispatch."
     },
     {
       "project_number": 399,
