@@ -2,38 +2,54 @@
   "status": "partial",
   "dispatch_seq": 27,
   "partial_progress": {
-    "stage": "territory_contention_blocked",
-    "details": "Phase 4's own pre-edit gate (plan task item 1) requires checking git status for a foreign uncommitted modification to agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md or agent-system/extensions/sapience/index-entries.json, both declared in concurrent sibling task 682's file_scope, and to stop and report rather than proceed on a hit. git status --short showed index-entries.json already carrying an uncommitted line_count correction for two entries (per-repo-scoping.md 410->502 and command-draft-and-picker.md 126->137, both left stale by commit 4304a7e00 / task 681 phase 5); per-repo-scoping.md itself was clean against HEAD. state.json confirms task 682 is status implementing with both files in its declared file_scope and its own plan phase 4 scheduled to add a paragraph to per-repo-scoping.md -- a real two-writer collision risk on the same prose file, not a cosmetic one. Honored the gate literally: no edit was made to either file this dispatch. Phases 1-3 remain completed; phase 4 is unstarted, not partially started, so no mid-phase resume state exists -- the next dispatch simply re-runs this gate once task 682 has committed.",
-    "phases_completed": 3,
+    "stage": "phase_mission_scoped_stop",
+    "details": "The prior dispatch 27 blocker (a foreign uncommitted index-entries.json line_count diff caused by concurrent sibling task 682) was resolved before this dispatch began -- committed as a201372b2, confirmed by this dispatch's own independent re-run of the pre-edit gate (git status --short on both agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md and agent-system/extensions/sapience/index-entries.json was empty). Phase 4 was then implemented in full per its plan task list: the project_cid vs &project= parameter distinction, the vendor mcp.py project-argument discussion paragraph, the sapience-retrieve.sh read-side project_cid behavior, the write-side plain-project-key design and its sf1-engine ruling-7 boundary, and the shared-resolver naming paragraph were all added to per-repo-scoping.md (502 -> 556 lines); index-entries.json's line_count for that one entry was updated to match. All phase verification passed: check-task-references.sh (0 occurrences), check-record-versioning.sh (0 BLOCKING), jq/wc -l consistency, and verify-touched.sh (104/104 suites passed: 6 selected + 98 OWED fallback). Committed as f4c2a0a92 (task 677 phase 4). This dispatch's own Phase Mission explicitly scoped it to 'Implement phase 4 only. Do not continue past this phase' -- stopping here is the mission boundary, not a blocker. Phase 5 ('Close the Round') remains NOT STARTED and is the next dispatch's starting point; no blocker carries forward.",
+    "phases_completed": 4,
     "phases_total": 5
   },
-  "artifacts": [],
+  "artifacts": [
+    {
+      "type": "handoff",
+      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-4-handoff-20261122T000232Z.md",
+      "summary": "Phase 4 completion handoff naming Phase 5 as the immediate next action; no open work or blocker remains from Phase 4."
+    }
+  ],
   "completion_data": {
-    "completion_summary": "No phase 4 edits were made. The phase's own pre-edit gate detected a foreign uncommitted modification to one of its two declared files (index-entries.json), caused by concurrently-active sibling task 682 (file_scope includes both per-repo-scoping.md and index-entries.json), and the gate's literal instruction (stop and report on a foreign modification) was honored rather than worked around."
+    "completion_summary": "Phase 4 implemented and committed: per-repo-scoping.md now documents the project_cid/&project= parameter distinction, the vendor mcp.py project-argument discussion, the read-side project_cid behavior, the write-side plain-project-key design and its governing ruling, and the shared resolver's naming and boundary; index-entries.json's line_count was reconciled to match. The dispatch-27 blocker (concurrent sibling task 682 holding a foreign uncommitted modification on one of these two files) was independently re-verified as resolved before any edit was made."
   },
-  "modified_files": [],
+  "modified_files": [
+    "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
+    "agent-system/extensions/sapience/index-entries.json"
+  ],
   "memory_candidates": [],
   "sapience_notes": [
     {
-      "subject": "Stale index-entries.json line_count drift from commit 4304a7e00",
+      "subject": "Task 677 phase 4 (per-repo-scoping.md documentation) landed cleanly after the prior dispatch's blocker was resolved",
       "predicate": "finding is",
-      "value": "Commit 4304a7e00 (task 681 phase 5) edited both per-repo-scoping.md (to 502 lines) and command-draft-and-picker.md (to 137 lines) without updating their line_count fields in agent-system/extensions/sapience/index-entries.json (left at the stale 410/126). The correction was present uncommitted in a later working tree, not from that commit itself -- a reminder that index-entries.json line_count updates are easy to drop from a doc-editing commit and are not caught by any gate observed so far.",
-      "confidence": 0.75,
-      "source_loc": "agent-system/extensions/sapience/index-entries.json"
-    },
-    {
-      "subject": "Plan-authored pre-edit gates can name a concurrency hazard precisely enough to act on without re-deriving it",
-      "predicate": "finding is",
-      "value": "This task's own Phase 4 plan text named the exact two files and the exact sibling task number (682) likely to collide on them, written at plan-authoring time before either dispatch ran. When the predicted collision materialized (task 682 status implementing, file_scope containing both files, uncommitted index-entries.json diff present), the plan's literal 'stop and report' instruction was followed rather than second-guessed with an ad hoc workaround (e.g. git stash isolation), since the plan author already had full visibility into the shared-scope hazard that a first-time implementer would not.",
+      "value": "A dispatch-27 pre-edit-gate blocker (concurrent sibling task 682 holding a foreign uncommitted line_count correction on agent-system/extensions/sapience/index-entries.json) was resolved by a separate commit (a201372b2) before this dispatch began. Re-running the gate independently rather than trusting the resolution report by name confirmed git status --short was empty for both declared files, and the phase proceeded without incident -- the gate's own 'stop and report, never proceed on trust' instruction is cheap to honor literally even when a prior report already claims resolution.",
       "confidence": 0.8,
       "source_loc": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/plans/01_sapience-project-id-automatic-paths.md"
     },
     {
-      "subject": "Two sibling tasks both scheduled to edit per-repo-scoping.md's same design-doc sections",
+      "subject": "Sapience's read-side and write-side project-scoping parameters are deliberately asymmetric",
       "predicate": "finding is",
-      "value": "Task 677 phase 4 and task 682 phase 4 (per task 682's own plan: 'token-location documentation') are both scheduled to add paragraphs to agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md. Running both in the same batch without serializing on this file risks a genuine content collision, not just an index-metadata one -- worth sequencing (a depends-on edge) rather than relying on each dispatch's own pre-edit gate to catch it every cycle.",
-      "confidence": 0.75,
-      "source_loc": "specs/682_sapience_mcp_entry_carries_no_token/plans/01_remove-token-from-mcp-entry.md"
+      "value": "sapience-retrieve.sh (read) sends project_cid, a server-honored strict pre-filter gated on the REPO_LINK_FOR flag (deployed off for this account, so unexercisable live, stub-verified only). sapience-remember.sh (write) sends a plain project key resolved from the same binding's cid via a GET /v1/people/projects lookup, and never project_cid -- a verified project_cid write is deliberately held shut by a separate governing ruling (sf1-engine ruling 7) regardless of the read-side flag's state, because two named leak surfaces for an unverified autonomous write stay open. The two sides do not converge even though they resolve the same binding file.",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"
+    },
+    {
+      "subject": "The installed vendor mcp.py's sapience_remember project argument is unrelated to per-repo tagging",
+      "predicate": "finding is",
+      "value": "~/.sapience/mcp.py's sapience_remember tool accepts a project argument, but it is company-store ROUTING (project_slug()/route_ko() matched against config.json's routes map, falling back to COMPANY_PROJECT/SAPIENCE_PROJECT) -- it picks which token/store a write posts to, not a per-repository [repo:<slug>] tag. It still cannot produce a tagged write, for the same connector-hardcoded-provenance reason the MCP write tools generally cannot. This had gone undocumented in per-repo-scoping.md prior to this phase despite the tool existing in the installed client all along.",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"
+    },
+    {
+      "subject": "verify-touched.sh's OWED fallback set covered this phase's prose-only file at zero extra cost",
+      "predicate": "finding is",
+      "value": "Running verify-touched.sh on a pure-documentation-plus-index-metadata change (per-repo-scoping.md prose, index-entries.json line_count) triggered both an explicit SELECT set (6 suites, directly mapped) and a 98-suite OWED fallback pass for the untestable prose path, all cost-class free -- 104 total suites passed with no manual suite selection needed and no full run-all.sh invocation.",
+      "confidence": 0.7,
+      "source_loc": "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"
     }
   ],
   "metadata": {
@@ -41,7 +57,7 @@
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 3,
+    "phases_completed": 4,
     "phases_total": 5
   }
 }
