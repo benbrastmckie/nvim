@@ -546,7 +546,7 @@ any subset named here.
 
 ---
 
-### Phase 5: Reconcile the derived index and close [NOT STARTED]
+### Phase 5: Reconcile the derived index and close [COMPLETED]
 
 **Goal**: The `index-entries.json` line count Phase 4 moved is reconciled with the sanctioned
 generator, the deployed tree matches the source store, and the task closes with its scoped
@@ -554,20 +554,20 @@ touched-path evidence plus an explicit deferral of the complete gate set to the 
 close.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh` to derive
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh` to derive
       `line_count` for every indexed lean context file, including the one Phase 4 moved.
-- [ ] Confirm the only `index-entries.json` change is the `line_count` for
+- [x] Confirm the only `index-entries.json` change is the `line_count` for
       `project/lean4/domain/challenge-snapshot.md`; a wider diff means something else moved and
       should be reported, not accepted.
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree from the
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree from the
       source store, so `.claude/**` matches every Phase 1-4 edit.
-- [ ] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm Rules Q,
+- [x] Run `bash agent-system/extensions/core/scripts/check-extension-docs.sh` and confirm Rules Q,
       R and X are all clean for the lean extension, on exit status.
-- [ ] Confirm the acceptance criterion the whole task exists for, end to end: a lean4 task at
+- [x] Confirm the acceptance criterion the whole task exists for, end to end: a lean4 task at
       status `planned` with a populated `## Lean Challenge Statements` section produces a manifest
       under its own `challenge/` directory via the observer, and a later `--check` exits 0 rather
       than 71.
-- [ ] Record this dispatch's issues and wins via `issue-record.sh` as they arise, and attest
+- [x] Record this dispatch's issues and wins via `issue-record.sh` as they arise, and attest
       explicitly in the handoff if there was genuinely nothing to record.
 
 **Timing**: 0.5 hours
@@ -611,31 +611,33 @@ diff rather than committing it silently.
 
 ## Testing & Validation
 
-- [ ] The observer invokes the snapshot WITHOUT `--force` at `planned`, and with `--check` at
+- [x] The observer invokes the snapshot WITHOUT `--force` at `planned`, and with `--check` at
       `implementing`, `partial`, `pr_ready` and `completed`.
-- [ ] The observer is a no-op at `researched`, `planning`, `blocked`, `abandoned` and any
+- [x] The observer is a no-op at `researched`, `planning`, `blocked`, `abandoned` and any
       unrecognized status.
-- [ ] The observer resolves zero matches for `task_type` values other than `lean4` -- inert for a
+- [x] The observer resolves zero matches for `task_type` values other than `lean4` -- inert for a
       non-lean task.
-- [ ] A lean4 plan carrying the `<!-- lean-challenge-statements:none -->` zero-goal marker yields
+- [x] A lean4 plan carrying the `<!-- lean-challenge-statements:none -->` zero-goal marker yields
       the script's side-effect-free exit 72 and no manifest, with no new classification logic in
       the observer.
-- [ ] A non-zero observer exit, and an observer that hangs past its `timeout_seconds`, each leave
+- [x] A non-zero observer exit, and an observer that hangs past its `timeout_seconds`, each leave
       `run-task-observers.sh` exiting 0 -- a plan phase can never fail because a snapshot could not
       be taken.
-- [ ] `PRE_IMPLEMENTATION_STATUSES` still equals its exact original literal, asserted against the
+- [x] `PRE_IMPLEMENTATION_STATUSES` still equals its exact original literal, asserted against the
       whole string rather than a substring.
-- [ ] A snapshot attempted at status `implementing` still exits 73, and `--force` still emits its
+- [x] A snapshot attempted at status `implementing` still exits 73, and `--force` still emits its
       incident-shaped warning.
-- [ ] Re-plan behaviour pinned in both directions: a second plain invocation against an existing
+- [x] Re-plan behaviour pinned in both directions: a second plain invocation against an existing
       manifest exits 73 and leaves the manifest unchanged; the same invocation with `--force`
-      overwrites it and warns.
-- [ ] After a `planned`-status observer run, a subsequent `--check` exits 0 rather than 71 -- the
+      overwrites it and warns. *(completed: the INCIDENT warning text is specific to bypassing the
+      status gate, not this manifest-exists case while status is still `planned` -- pinned on rc
+      0 and an advanced mtime instead; see Phase 3's M5 case and the design record.)*
+- [x] After a `planned`-status observer run, a subsequent `--check` exits 0 rather than 71 -- the
       acceptance criterion the originating symptom names.
-- [ ] The observer resolves `specs/` relative to its inherited working directory and passes the
+- [x] The observer resolves `specs/` relative to its inherited working directory and passes the
       target project root explicitly, pinned in a test rather than only in prose.
-- [ ] `check-extension-docs.sh` Rules Q, R and X all clean for the lean extension.
-- [ ] No file under `agent-system/**` gained a task-number reference or record-versioning
+- [x] `check-extension-docs.sh` Rules Q, R and X all clean for the lean extension.
+- [x] No file under `agent-system/**` gained a task-number reference or record-versioning
       language.
 
 ## Artifacts & Outputs
