@@ -19589,12 +19589,12 @@
   ],
   "completed_projects": [],
   "repository_health": {
-    "last_assessed": "2026-11-18T17:39:12Z",
+    "last_assessed": "2026-11-22T08:31:31Z",
     "todo_count": 44,
     "fixme_count": 2,
     "build_errors": 0,
     "status": "healthy",
-    "phantom_paths": 1
+    "phantom_paths": 0
   },
   "memory_health": {
     "last_distilled": "2026-09-18T22:55:46Z",
