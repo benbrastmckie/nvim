@@ -1,7 +1,7 @@
 # Implementation Plan: Task #451
 
 - **Task**: 451 - Take the Lean Challenge snapshot in the plan phase, where it is still meaningful, instead of leaving it to an implement phase the status gate correctly refuses
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.25 hours
 - **Dependencies**: None blocking (385, 420, 435 all archived; 462 `lean_challenge_check_scope_limit` is `not_started` and is a precondition on PROMOTION only, which this plan declines -- see Decisions)
 - **Research Inputs**: specs/451_snapshot_lean_challenge_at_plan_time/reports/01_hook-registration-and-postflight-bridging.md
@@ -222,7 +222,7 @@ Phases within the same wave can execute in parallel.
 
 ---
 
-### Phase 1: Author the Challenge observer and its regression suite [NOT STARTED]
+### Phase 1: Author the Challenge observer and its regression suite [COMPLETED]
 
 **Goal**: A new `lean-challenge-observe.sh` that discriminates purely on its sixth positional
 argument (`resting_status`) -- producing a snapshot on `planned`, running `--check` on the
@@ -230,36 +230,36 @@ implement-side statuses, and no-op on everything else -- plus a suite that prove
 discrimination by direct invocation, before any manifest or deploy work exists.
 
 **Tasks**:
-- [ ] Create `agent-system/extensions/lean/scripts/lean-challenge-observe.sh`, modelled
+- [x] Create `agent-system/extensions/lean/scripts/lean-challenge-observe.sh`, modelled
       structurally on `agent-system/extensions/books/scripts/books-observe.sh` (the live observer
       precedent). Header must state the six-positional-argument contract verbatim
       (`$1 task_number  $2 task_type  $3 topic  $4 task_dir  $5 session_id  $6 resting_status`)
       and the advisory/non-blocking contract.
-- [ ] Implement the status discrimination as a single `case "$6" in` block:
+- [x] Implement the status discrimination as a single `case "$6" in` block:
       `planned)` -> invoke `lean-challenge-snapshot.sh "$1" "."` with **no** `--force`;
       `implementing|partial|pr_ready|completed)` -> invoke `lean-challenge-snapshot.sh --check "$1" "."`;
       `*)` -> no-op. Resolve the snapshot script by basename against `.claude/scripts/`, the same
       resolution contract `run-task-observers.sh` itself uses for the observer.
-- [ ] Reimplement no plan-content classification in the observer. Let the snapshot script's own
+- [x] Reimplement no plan-content classification in the observer. Let the snapshot script's own
       exit-code vocabulary (0 / 65 / 71 / 72 / 73) carry every outcome; the observer echoes the
       code to stderr for the captured event and nothing more.
-- [ ] Make every live-mode path `exit 0` unconditionally, whatever the snapshot script returned --
+- [x] Make every live-mode path `exit 0` unconditionally, whatever the snapshot script returned --
       matching `books-observe.sh`'s own rule that the only non-zero exit is a usage error in the
       observer's own arguments.
-- [ ] Guard against a missing snapshot script: if `.claude/scripts/lean-challenge-snapshot.sh` is
+- [x] Guard against a missing snapshot script: if `.claude/scripts/lean-challenge-snapshot.sh` is
       absent or not executable, emit one stderr NOTE and exit 0. Never fail.
-- [ ] Create `agent-system/extensions/lean/scripts/tests/test-lean-challenge-observe.sh`, modelled
+- [x] Create `agent-system/extensions/lean/scripts/tests/test-lean-challenge-observe.sh`, modelled
       on `agent-system/extensions/books/scripts/tests/test-books-observe.sh` (pass/fail counters,
       `mktemp -d` workdir with a `trap EXIT` cleanup, a stub snapshot script on the resolution path
       so no real git commit occurs).
-- [ ] Assert in that suite: `planned` invokes the snapshot WITHOUT `--force` (grep the stub's
+- [x] Assert in that suite: `planned` invokes the snapshot WITHOUT `--force` (grep the stub's
       recorded argv for the absence of `--force`); each of `implementing`, `partial`, `pr_ready`,
       `completed` invokes it WITH `--check`; `researched`, `planning`, `blocked`, `abandoned` and
       an unknown value each invoke it zero times; a stub that exits 73 still leaves the observer's
       own exit code 0; a missing stub still leaves it 0.
-- [ ] Assert that the observer passes `.` as `project_root` and relies on its inherited working
+- [x] Assert that the observer passes `.` as `project_root` and relies on its inherited working
       directory, so the single-repo assumption is pinned in a test rather than only in prose.
-- [ ] `chmod +x` both new files.
+- [x] `chmod +x` both new files.
 
 **Timing**: 1.5 hours
 

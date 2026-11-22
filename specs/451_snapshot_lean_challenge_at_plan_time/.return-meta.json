@@ -1,41 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/451_snapshot_lean_challenge_at_plan_time/plans/01_challenge-snapshot-observer-wiring.md",
-      "summary": "Five-phase plan wiring the Lean Challenge snapshot to a post-task OBSERVER declared in the lean manifest (producing at resting_status 'planned', consuming --check on the implement-side statuses), superseding the research report's postflight-lifecycle-hook plus core TASK_TYPE bridging fix and touching zero core files."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795360608_7bb5fd_451",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 5,
-    "estimated_hours": 5.25,
-    "dependency_waves": [[1], [2, 4], [3], [5]]
+    "session_id": "sess_1795360608_7bb5fd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "proposed_file_scope": [
-    "agent-system/extensions/lean/manifest.json",
-    "agent-system/extensions/lean/scripts/lean-challenge-observe.sh",
-    "agent-system/extensions/lean/scripts/tests/test-lean-challenge-observe.sh",
-    "agent-system/extensions/lean/scripts/lean-challenge-snapshot.sh",
-    "agent-system/extensions/lean/scripts/tests/test-lean-challenge-snapshot.sh",
-    "agent-system/extensions/lean/context/project/lean4/domain/challenge-snapshot.md",
-    "agent-system/extensions/lean/rules/plan-compliance.md",
-    "agent-system/extensions/lean/index-entries.json",
-    "__WHOLE_TREE__"
-  ],
-  "memory_candidates": [
-    {
-      "content": "This agent system has TWO distinct extension dispatch seams that are easy to conflate, and the choice between them is usually decided by which one actually receives a usable task_type. (1) LIFECYCLE HOOKS: a manifest's TOP-LEVEL `hooks` object (preflight|context_injection|verification|postflight), invoked by skill-base.sh's skill_run_extension_hook, resolved by STRING EQUALITY on the manifest's single-valued top-level `task_type`. Its `postflight` stage is effectively DEAD on the /orchestrate path: skill_postflight_update passes the ambient `${TASK_TYPE:-}` global, and orchestrate-cycle-postflight.sh sets no TASK_TYPE anywhere (its `task_type` is a lowercase local from --task-type), so the hook resolves to skipped_no_extension for every extension and every task type. Note TASK_DIR *is* set there, so only task_type is missing. core/docs/guides/creating-extensions.md's 'Observers vs. Lifecycle Hooks' section already documents this and explicitly directs authors NOT to repair it by plumbing TASK_TYPE through. (2) POST-TASK OBSERVERS: a manifest's `observers` object, invoked by run-task-observers.sh from orchestrate-cycle-postflight.sh's completion path, which passes the correctly-resolved LOCAL task_type plus a freshly-read persisted_status, is prefix-aware on both topic and task_type, resolve-ALL, timeout-bounded, and advisory/non-blocking by written contract (return code recorded as one task_observer_run event and otherwise ignored). It fires once per dispatch for research/plan/implement alike, gated on is_live only. CONSEQUENCE: for any need shaped as 'run something extension-local after a phase's status lands', reach for the observer seam, not a postflight lifecycle hook. The observer's $6 resting_status is often a BETTER discriminator than the hook's $operation, because it is the value status gates themselves evaluate. Live precedent: books extension's books-observe.sh plus tests/test-books-observe.sh; validated by check-extension-docs.sh Rule X.",
-      "category": "PATTERN",
-      "source_artifact": "specs/451_snapshot_lean_challenge_at_plan_time/plans/01_challenge-snapshot-observer-wiring.md",
-      "confidence": 0.93,
-      "suggested_keywords": ["post-task-observers", "lifecycle-hooks", "run-task-observers", "TASK_TYPE", "resting_status", "extension-dispatch-seam"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 451 to execute the plan",
-  "dispatch_seq": 9
+  "dispatch_seq": 14
 }
