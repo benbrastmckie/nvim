@@ -105,12 +105,12 @@ next_project_number: 684
 
 ### Lean Extension
 
-398 [NOT STARTED] — Record that a grep for dependents misses rw-site definitional...
+398 [RESEARCHED] — Record that a grep for dependents misses rw-site definitional...
   └─ 399 [NOT STARTED] — Record three measured lean4 gotchas: IO-forced timing...
-451 [NOT STARTED] — Take the Lean Challenge snapshot in the plan phase, where it...
+451 [RESEARCHING] — Take the Lean Challenge snapshot in the plan phase, where it...
   └─ 462 [NOT STARTED] — Give lean-challenge-snapshot.sh --check a scope limit so a...
-463 [NOT STARTED] — State that lean\_goal's empty goals\_after is not evidence a...
-504 [NOT STARTED] — Reconcile the Lean Goals-block harvester with its documented...
+463 [RESEARCHING] — State that lean\_goal's empty goals\_after is not evidence a...
+504 [RESEARCHING] — Reconcile the Lean Goals-block harvester with its documented...
   └─ 516 [NOT STARTED] — Stop the Lean plan compliance check failing on...
 
 ### Orchestrator
@@ -145,7 +145,7 @@ next_project_number: 684
 512 [PLANNED] — Exempt built-in commands from the dead-command-recommendation...
 529 [NOT STARTED] — Evaluate whether formal:logic implement routing should...
 530 [NOT STARTED] — Land the three agent-system context extensions recorded by...
-537 [NOT STARTED] — Plan-compliance spot-check misses evidence-probe-scoped Goals
+537 [RESEARCHING] — Plan-compliance spot-check misses evidence-probe-scoped Goals
 539 [NOT STARTED] — State the precedence and snapshot-prerequisite rules for a...
   └─ 540 [NOT STARTED] — Record five measured lean4 facts: the decide-synthesis...
   └─ 544 [NOT STARTED] — Make a fixture-dependent Lean gate statement expressible and...
@@ -160,7 +160,7 @@ next_project_number: 684
 548 [NOT STARTED] — Harvest a plan's declared contingency files into file\_scope,...
   └─ 553 [NOT STARTED] — Name the typst-sync gate as the cause when...
   └─ 598 [NOT STARTED] — Provide a sanctioned in-dispatch remedy for a mechanically...
-549 [NOT STARTED] — Give the Lean unusedArguments remedy a narrow route instead...
+549 [RESEARCHING] — Give the Lean unusedArguments remedy a narrow route instead...
   └─ 576 [NOT STARTED] — Record the Lean verification-tier gate-naming rule, the...
 551 [NOT STARTED] — Close the recurring stale-handoff defect and find out why the...
 556 [NOT STARTED] — Fix validate-handoff.sh crash-as-false-negative and settle...
@@ -196,7 +196,7 @@ next_project_number: 684
 
 ### Decidability
 
-557 [RESEARCHED] — Record the half-line test as a lean4 context pattern note
+557 [PLANNING] — Record the half-line test as a lean4 context pattern note
 
 ## Tasks
 
@@ -3623,7 +3623,7 @@ repository numbering space and is recorded here as provenance.
 
 ### 557. Record the half-line test as a lean4 context pattern note
 - **Effort**: small
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: decidability
 - **Dependencies**: None
@@ -4402,7 +4402,7 @@ twice, independently.
 
 ### 549. Give the Lean unusedArguments remedy a narrow route instead of the wholesale runLinter --update rewrite
 - **Effort**: low
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -5465,7 +5465,7 @@ as a number resolving to an unrelated record here.
 
 ### 537. Plan-compliance spot-check misses evidence-probe-scoped Goals
 - **Effort**: low
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: agent-system
 - **Dependencies**: None
@@ -6938,7 +6938,7 @@ MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_li
 
 ### 504. Reconcile the Lean Goals-block harvester with its documented contract
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
@@ -8236,7 +8236,7 @@ Nothing was lost in the observed run, and that is precisely the risk: the failur
 ---
 
 ### 463. State that lean_goal's empty goals_after is not evidence a declaration elaborates, and point step verification at that statement
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 412
@@ -8898,7 +8898,7 @@ these two existing facilities.
 ---
 
 ### 451. Take the Lean Challenge snapshot in the plan phase, where it is still meaningful, instead of leaving it to an implement phase the status gate correctly refuses
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHING]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 385, Task 420, Task 435
@@ -9455,10 +9455,11 @@ line_count there is now stale (claims 31, actual 32).
 
 ### 398. Record that a grep for dependents misses rw-site definitional unfolding, and make that guidance reachable at plan time
 - **Effort**: medium
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: Task 397
+- **Research**: [398_lean_plan_scope_rw_site_unfolding/reports/01_rw_site_unfolding_reachability.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/lean/** (never a deployed .claude/** tree
 -- see rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via deploy-headless.sh. No

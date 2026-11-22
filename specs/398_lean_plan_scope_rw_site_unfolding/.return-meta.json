@@ -1,0 +1,34 @@
+{
+  "status": "researched",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/398_lean_plan_scope_rw_site_unfolding/reports/01_rw_site_unfolding_reachability.md",
+      "summary": "Settles the plan-time reachability question (planner-agent.md Stage 4 item 13 is the sole project/** read mechanism, gated on task_types AND a plan-authoring keyword, not on load_when.agents) and identifies what remains undone after a prior cross-repo landing of the same issue-log entry's generic substance (the concrete worked example and the twelve-spelling grep recipe)."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1795360608_7bb5fd_398",
+    "agent_type": "general-research-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "research", "general-research-agent"],
+    "findings_count": 3
+  },
+  "memory_candidates": [
+    {
+      "content": "planner-agent.md's ONLY mechanism for reading project/** domain context at plan time is Stage 4 item 13 ('Surface This Domain's Plan-Authoring Gotchas'): it queries .claude/context/index.json for entries whose load_when.task_types[] matches the dispatch's task_type AND whose keywords[]/topics[] contain the literal string 'plan-authoring' -- load_when.agents[] is irrelevant to this query and MUST NOT name planner-agent (explicit MUST NOT in planner-agent.md, reinforced by context-discovery.md's Cross-Domain-Shared-Agent Hazard section). To make an existing domain context file reachable at plan time, the narrowest fix is adding the 'plan-authoring' keyword to its own index entry -- no change to planner-agent.md itself is needed. Confirmed live: plan-authoring-gate-collisions.md is the only entry in the whole agent-system tree currently tagged this way, and its load_when.agents correctly names only the two domain-exclusive lean agents, never planner-agent.",
+      "category": "PATTERN",
+      "source_artifact": "specs/398_lean_plan_scope_rw_site_unfolding/reports/01_rw_site_unfolding_reachability.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["planner-agent", "context-discovery", "plan-authoring", "load_when", "index-entries", "reachability"]
+    },
+    {
+      "content": "A conclusion-stage channel (a) orchestrate dispatch running in one repository (~/Projects/BimodalLogic) can independently harvest and land the SAME issue-log finding that a separate task in a different repository (nvim config) is simultaneously tasked with recording, with zero detectability at dispatch time -- no dependency edge or file_scope overlap gate spans two different repositories. When re-reading a 'provenance' pointer in a dispatch record, always re-check the target file's live current state before planning edits: the generic substance may already be landed, with only the concrete specifics (worked examples, enumerated recipes) and a secondary leg (e.g. an index-entries.json reachability tag) left undone.", "category": "INSIGHT",
+      "source_artifact": "specs/398_lean_plan_scope_rw_site_unfolding/reports/01_rw_site_unfolding_reachability.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["cross-repo", "duplication", "conclusion-stage", "provenance", "territory"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 398 to create implementation plan",
+  "dispatch_seq": 1
+}
