@@ -177,7 +177,7 @@
     },
     {
       "path": "project/lean4/patterns/plan-authoring-gate-collisions.md",
-      "line_count": 228,
+      "line_count": 272,
       "load_when": {
         "agents": [
           "lean-research-agent",
@@ -189,7 +189,7 @@
       },
       "domain": "project",
       "subdomain": "lean",
-      "summary": "Nine gate surfaces a Lean plan author must enumerate before writing a verification criterion: generated-surface collisions, verify-deploy.sh target shape, unsatisfiable sweeps, and baseline-delta lint criteria",
+      "summary": "Ten gate surfaces a Lean plan author must enumerate before writing a verification criterion: generated-surface collisions, verify-deploy.sh target shape, unsatisfiable sweeps, baseline-delta lint criteria, plus the batch env-linter's unusedArguments ledger-row remedy",
       "keywords": [
         "lean4",
         "plan-authoring",
@@ -197,7 +197,10 @@
         "generated-surfaces",
         "verify-deploy",
         "baseline-delta",
-        "verification-criteria"
+        "verification-criteria",
+        "nolints",
+        "runLinter",
+        "unusedArguments"
       ]
     },
     {

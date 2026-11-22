@@ -1,30 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/549_lean_unusedarguments_narrow_remedy_route/plans/01_unusedarguments-narrow-remedy.md",
-      "summary": "2-phase plan appending one new Condition to the lean extension's plan-authoring gate-collision checklist (unusedArguments ledger-row remedy, narrow hand-insert route, ledger-row-vs-set_option decision) with its coupled index-entries.json metadata reconciled in the same phase, followed by a whole-tree redeploy phase."
-    }
-  ],
-  "next_steps": "Run /orchestrate 549 to execute the plan",
-  "phase_count": 2,
-  "estimated_hours": 1.75,
-  "dependency_waves": 2,
-  "memory_candidates": [
-    {
-      "content": "index-entries.json's line_count field has TWO enforcement surfaces with different severities, and reading only one of them misclassifies the obligation. validate-context-index.sh compares declared vs actual with a tolerance and calls log_warning (advisory). But check-extension-docs.sh's Rule R (check_line_count_accuracy) compares with EXACT string equality and no tolerance, reporting through index_truth_report as a FAIL -- and verify-deploy.sh gate 3 runs check-extension-docs.sh --quiet. So any edit that changes a context file's line count is commit-BLOCKING and its index_entries.json line_count must be reconciled in the SAME phase, not deferred. Related hazard: generate-context-line-counts.sh --write rewrites every mismatched entry across all extensions' index-entries.json files, so under concurrency it will silently pull a sibling task's line_count correction into your own commit when both entries live in the same extension's file -- hand-edit the single entry instead. deploy-headless.sh runs --write automatically before every deploy, so the same collateral appears again at deploy time.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/549_lean_unusedarguments_narrow_remedy_route/plans/01_unusedarguments-narrow-remedy.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["line_count", "index-entries", "check-extension-docs", "Rule R", "generate-context-line-counts", "coupled-generated-surface"]
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795360608_7bb5fd_549",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"]
+    "session_id": "sess_1795360608_7bb5fd",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "dispatch_seq": 17
+  "dispatch_seq": 19
 }

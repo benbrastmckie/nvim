@@ -2,7 +2,7 @@
 
 - **Task**: 549 - Give the Lean `unusedArguments` remedy a narrow route instead of the wholesale
   `runLinter --update` rewrite
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.75 hours
 - **Dependencies**: None (`state.json` `dependencies: []`; the BimodalLogic-numbering edge on 785
   was dropped at migration — `migrated_from.dropped_dependencies: [785]`, re-verified at plan time)
@@ -152,7 +152,7 @@ them:
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Append the `unusedArguments` Ledger-Row Condition and Reconcile Its Index Entry [NOT STARTED]
+### Phase 1: Append the `unusedArguments` Ledger-Row Condition and Reconcile Its Index Entry [COMPLETED]
 
 **Goal**: The lean extension's plan-authoring gate-collision checklist carries a new Condition
 stating that `lake exe runLinter --update <lib>` is a wholesale ledger reserialization, naming the
@@ -162,16 +162,17 @@ each is correct — and `index-entries.json`'s derived metadata for that file is
 commit.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md`
+- [x] Re-read `agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md`
       in full immediately before editing (per this dispatch's Territory concurrency note), and
       record the highest existing Condition number. At plan time it is 9, so the new heading is
       `## Condition 10`; if the file has gained Conditions in the interim, use the next free number
-      instead of hard-coding 10.
-- [ ] Append the new Condition at end-of-file, after Condition 9's trailing companion checklist
+      instead of hard-coding 10. *(completed: re-read confirmed 9 was still the highest at
+      implementation time, so the new heading is Condition 10)*
+- [x] Append the new Condition at end-of-file, after Condition 9's trailing companion checklist
       (the C15 / C33 / `FAIL INV` bullets). That checklist is scoped under Condition 9's heading, so
       a new `## Condition` heading closes it cleanly; do not insert ahead of it, which would split
-      Condition 9's own body.
-- [ ] Author the Condition in the file's established style: a descriptive `## Condition N — …`
+      Condition 9's own body. *(completed)*
+- [x] Author the Condition in the file's established style: a descriptive `## Condition N — …`
       heading, the mechanism in prose, bolded lead-ins for the sub-points, and a closing
       `**Plan-authoring consequence**:` bullet. The drafted text below is ready to lift; adjust
       only the heading number and any wording needed to match surrounding voice.
@@ -220,12 +221,14 @@ commit.
   > the ledger file in its own file scope. It does not name `runLinter --update` as a remedy, and
   > does not reach for a `set_option` for this category.
 
-- [ ] Verify the authored hunk carries no task-management metadata and no record-history framing:
+- [x] Verify the authored hunk carries no task-management metadata and no record-history framing:
       no `task N` / `tasks N-M` reference, no `iss_*` identifier, and none of
       `previously|no longer|formerly|used to|superseded|withdrawn|carried forward`. The three
       permitted durable version axes are unaffected — the text pins no toolchain or schema version.
-- [ ] Recompute the file's line count: `wc -l agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md`.
-- [ ] Hand-edit `agent-system/extensions/lean/index-entries.json`'s entry for
+      *(completed: grep over the new hunk returned no matches for either pattern class)*
+- [x] Recompute the file's line count: `wc -l agent-system/extensions/lean/context/project/lean4/patterns/plan-authoring-gate-collisions.md`.
+      *(completed: 272 lines, up from 228)*
+- [x] Hand-edit `agent-system/extensions/lean/index-entries.json`'s entry for
       `project/lean4/patterns/plan-authoring-gate-collisions.md`: set `line_count` to that exact
       measured value (228 at plan time, plus whatever the appended block adds), and broaden
       `summary` from "Nine gate surfaces a Lean plan author must enumerate…" to state the new count
@@ -233,17 +236,20 @@ commit.
       Do **not** run `generate-context-line-counts.sh --write`: it rewrites every mismatched entry
       in the file, and one pre-existing mismatch in this same file belongs to a concurrent sibling
       (see this phase's Scope Hypothesis and the Risks table).
-- [ ] Add retrieval keywords to that entry's `keywords` array so the new Condition is findable:
+- [x] Add retrieval keywords to that entry's `keywords` array so the new Condition is findable:
       `nolints`, `runLinter`, `unusedArguments`. A plan-time `grep -rln` over `agent-system` for
       `runLinter|nolints|unusedArguments` found no existing guidance at all, so these keywords
-      carry the only route to this material.
-- [ ] Confirm the hand-edit changed only this task's own entry:
+      carry the only route to this material. *(completed)*
+- [x] Confirm the hand-edit changed only this task's own entry:
       `git diff -- agent-system/extensions/lean/index-entries.json` shows hunks confined to the
       `plan-authoring-gate-collisions.md` entry, with no change to the `mcp-tools-guide.md` entry's
-      `line_count`.
-- [ ] Commit, staging the two files by explicit path (never a directory or glob pathspec).
-- [ ] Record any issue or win via `issue-record.sh` as it arises; if there is genuinely nothing to
+      `line_count`. *(completed: diff confined to one entry, three-hunk, no mcp-tools-guide.md change)*
+- [x] Commit, staging the two files by explicit path (never a directory or glob pathspec).
+- [x] Record any issue or win via `issue-record.sh` as it arises; if there is genuinely nothing to
       record for this phase, attest that explicitly in the handoff prose.
+      *(completed: win recorded — gate 3,4 and generate-context-line-counts.sh --check both came
+      back fully green rather than the plan-time-measured baseline RED, i.e. the sibling-owned
+      mcp-tools-guide.md mismatch was resolved by another dispatch in the interim)*
 
 **Timing**: 1 hour
 

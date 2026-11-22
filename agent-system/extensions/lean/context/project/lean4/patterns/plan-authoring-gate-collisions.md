@@ -226,3 +226,47 @@ each one a `check-module-invariants.sh` finding observed to surface unannounced 
 - **`FAIL INV`**: the module-inventory blocks (Condition 1's surface (a)) go stale the same way a
   line-count change makes them stale — a file added, removed, or renamed under `FormalSystem/`
   without a matching `--emit-inventory` run reports as a stale generated block.
+
+## Condition 10 — `unusedArguments` From the Batch Env-Linter Is a Ledger-Row Remedy, Not an In-Source `set_option`
+
+`lake exe runLinter --update <lib>` regenerates the whole project lint ledger
+(`scripts/nolints.json`) in its own serialization; it is **not** an additive insert. A phase
+that names it as the remedy for a single `unusedArguments` finding is authorizing a
+repository-wide file rewrite in the middle of that phase — one measured run rewrote 1,119 lines
+to record one intended exemption.
+
+**The narrow route**: hand-insert the one exemption row directly, in the ledger's own existing
+format, placed next to an existing exemption of the same shape. The ledger is a flat
+`[[linterName, declName], …]` array serialized one element per line, so a row is a four-line
+block, and the file carries no canonical sort for an insert to respect — rows sit in append
+order. Adjacency to a sibling exemption is therefore the format-faithful placement, not a
+stylistic preference, and `--update`'s own serialization is what makes it a wholesale rewrite.
+Carry the reason in the in-source `set_option` suppressions already attached to the declaration
+for its other linter categories, not in the ledger row, which has no comment field.
+
+**Why this finding is predictable, not incidental**: a Goal whose signature is PINNED by a
+plan's Lean Challenge Statements block trips `unusedArguments` whenever the pinned hypothesis
+is not read by the proof body — the hypothesis is in the signature because the Challenge pins
+it, not because the proof needs it. Each pinned-but-unread hypothesis produces one finding, and
+a plan pinning several such Goals meets the same collision once per Goal.
+
+**Ledger row vs. in-source `set_option` — match the surface to the linter's category.**
+`unusedArguments` is raised by the batch/environment-linter pass (`lake exe runLinter`, the
+`#lint` family), which walks the declared environment after elaboration and is suppressed by a
+ledger row — or by an in-source nolint *attribute* (`@[nolint unusedArguments]`) where the
+harness is confirmed to support it — never by a `set_option`. A locally scoped
+`set_option linter.<name> false in` immediately above one declaration is the correct mechanism
+only for genuinely elaboration-time linter categories, `unusedVariables` and
+`unusedFintypeInType` among them, which is why those two can sit as `set_option` lines on the
+same Goal while `unusedArguments` cannot. The appeal of the uniform in-source option is real —
+it keeps every exemption beside the declaration that needs it, self-documents, touches no
+shared file, and gives the Goal one suppression style instead of two — but the batch pass does
+not read an option named after a linter it owns, so adopting it risks a silent no-op: the gate
+still reports the finding when it next runs, discovered only at that point. Under `--wfail`
+(Condition 8) that is a hard failure, not a note.
+
+**Plan-authoring consequence**: a plan whose Challenge Statements block pins a hypothesis a
+Goal's proof will not read pre-authorizes the narrow ledger-row remedy at authoring time —
+naming the ledger file, the hand-insert technique, and the adjacent existing row — and carries
+the ledger file in its own file scope. It does not name `runLinter --update` as a remedy, and
+does not reach for a `set_option` for this category.
