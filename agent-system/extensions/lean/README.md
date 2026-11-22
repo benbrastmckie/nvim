@@ -128,6 +128,20 @@ lean/
         └── lean4/             # Lean 4 domain knowledge and references
 ```
 
+## Observer
+
+`lean-challenge-observe` (`scripts/lean-challenge-observe.sh`) is a `task_type`-keyed post-task
+observer, registered in `manifest.json`'s `observers` block (`task_type: lean4`,
+`timeout_seconds: 120`). It discriminates purely on the resting status it is invoked with:
+at `planned` it produces the Challenge snapshot (`scripts/lean-challenge-snapshot.sh`, no
+`--force`); at `implementing`, `partial`, `pr_ready`, or `completed` it runs the same script's
+`--check` drift verdict; every other status is a no-op. Advisory and non-blocking by written
+contract: it can never change task status or fail a dispatch, and every live-mode invocation
+exits 0 regardless of what the underlying snapshot script did. See
+`context/project/lean4/domain/challenge-snapshot.md` for the full design record (registration
+rationale, re-plan behaviour, the `project_root` single-repo limitation, and the declined
+`--check` promotion ruling).
+
 ## Skill-Agent Mapping
 
 | Skill | Agent | Model | Purpose |
