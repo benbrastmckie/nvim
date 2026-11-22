@@ -4955,7 +4955,7 @@
     {
       "project_number": 398,
       "project_name": "lean_plan_scope_rw_site_unfolding",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "topic": "lean-extension",
       "title": "Record that a grep for dependents misses rw-site definitional unfolding, and make that guidance reachable at plan time",
@@ -4982,7 +4982,7 @@
       ],
       "next_artifact_number": 2,
       "created": "2026-10-14T00:15:51Z",
-      "last_updated": "2026-11-22T15:53:30Z",
+      "last_updated": "2026-11-22T17:14:18Z",
       "effort": "medium",
       "priority": null,
       "session_id": "sess_1795360608_7bb5fd",
