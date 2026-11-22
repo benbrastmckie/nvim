@@ -1,77 +1,95 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 30,
   "artifacts": [
     {
-      "type": "handoff",
-      "path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-4-handoff-20261122T003952Z.md",
-      "summary": "Phase 4 complete, phase mission limited this dispatch to phase 4 only; next action is Phase 5 (migrate the live entries and verify end to end)."
+      "type": "summary",
+      "path": "specs/682_sapience_mcp_entry_carries_no_token/summaries/01_remove-token-from-mcp-entry-summary.md",
+      "summary": "Phase 5 closes the plan: all 6 live project entries migrated off the token, authentication re-confirmed with the variable absent, verifier and 58-case regression suite pass, deploy landed clean. Flags a new transcript-exposure security finding for the user's decision."
     }
   ],
-  "partial_progress": {
-    "stage": "phase_mission_single_phase_limit",
-    "details": "Dispatch's Phase Mission directive limited execution to Phase 4 only ('Implement phase 4 only. Do not continue past this phase.'). Phase 4 completed, verified, and committed cleanly (739b8919c); phase 5 remains for a subsequent dispatch.",
-    "handoff_path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-4-handoff-20261122T003952Z.md",
-    "phases_completed": 4,
-    "phases_total": 5
-  },
   "completion_data": {
-    "completion_summary": "Added a new 'The Token's Durable Homes and the Never-Copy Boundary' subsection to per-repo-scoping.md, backed by a verified by-value (not by-filename) re-check of all four candidate token locations, which found that the sf1-hub-ben copies match the currently-active config.json token rather than being a different credential as the plan guessed, while the sops-provisioned secret (/run/secrets/sapience_token) has diverged from that active token -- both findings stated honestly in the doc and recorded via issue-record.sh. Confirmed secrets.yaml remains the sole git-tracked location and is sops-encrypted. Bumped index-entries.json's line_count and keywords for the edited doc."
+    "completion_summary": "Completed Phase 5 (the plan's final phase): reinstalled the edited writer to $HOME/.claude/scripts/setup-sapience-mcp.sh, backed up and migrated all 6 registered ~/.claude.json project entries off the raw Sapience token, re-confirmed authentication with SAPIENCE_TOKEN absent, confirmed verify-sapience-mcp.sh check (b) passes and its 58-case regression suite (including the sentinel-token negative control) passes in full, removed the plaintext backup, and redeployed cleanly. Task 682 is now fully implemented across all 5 phases. Flagged a new security finding during migration: the writer's own divergence diagnostic printed the live token in cleartext to this dispatch's own tool-output transcript -- recorded via issue-record.sh and surfaced via user_decision for token-rotation judgment."
   },
   "modified_files": [
+    "specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md",
+    "agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh",
+    "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh",
     "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
-    "agent-system/extensions/sapience/index-entries.json"
+    "agent-system/extensions/sapience/index-entries.json",
+    "specs/682_sapience_mcp_entry_carries_no_token/plans/01_remove-token-from-mcp-entry.md",
+    "specs/682_sapience_mcp_entry_carries_no_token/progress/phase-5-progress.json",
+    "specs/682_sapience_mcp_entry_carries_no_token/summaries/01_remove-token-from-mcp-entry-summary.md"
   ],
-  "memory_candidates": [],
+  "memory_candidates": [
+    {
+      "content": "`env -i HOME=\"$HOME\" python3 ...` fails with 'python3: No such file or directory' (exit 127): env -i clears PATH along with every other variable, so a bare interpreter name cannot be resolved. Fix: resolve the absolute interpreter path first (`command -v python3`, or inherit a known nix-store-pinned path) and invoke THAT absolute path under env -i. Useful for any 'simulate a stripped environment' probe (e.g. confirming a program falls back to a config file when an env var is unset).",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/682_sapience_mcp_entry_carries_no_token/summaries/01_remove-token-from-mcp-entry-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "env -i",
+        "PATH",
+        "stripped environment",
+        "bash probe",
+        "interpreter resolution"
+      ]
+    }
+  ],
   "sapience_notes": [
     {
-      "subject": "Sapience token: sops secret vs. active config.json token",
-      "value": "On this machine, the token ~/.sapience/config.json's .token field currently holds (the one mcp.py actually authenticates with) does NOT match the value in /run/secrets/sapience_token (the sops-nix provisioned secret) -- they differ in both length and content. config.json's oldest backup (config.json.bak-20261103-175726) matches the sops secret; its two newer backups match the currently-active value. The two credentials have diverged, most likely via a manual token rotation applied to config.json that was never mirrored back into ~/.dotfiles/secrets/secrets.yaml. Reconciling them is a ~/.dotfiles-owned action.",
+      "subject": "Sapience per-project ~/.claude.json entries migrated off the raw bearer token",
+      "value": "All 6 registered project entries on this machine (.dotfiles, the nvim config repo, BimodalLogic, sf1-engine, sapience-app, sapience-pitch) were migrated from env.SAPIENCE_TOKEN-bearing entries to a token-free shape (SAPIENCE_HOST only). Authentication is unaffected: ~/.sapience/mcp.py already resolves the token from ~/.sapience/config.json at import time regardless of the environment variable, confirmed via the --statusline and stdio initialize probes run under env -i post-migration.",
       "predicate": "finding is",
       "ko_type": "finding",
       "confidence": 0.9,
-      "source_loc": "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"
+      "source_loc": "agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh"
     },
     {
-      "subject": "sf1-hub-ben's token files hold the SAME credential as config.json, not a different one",
-      "value": "A by-value fingerprint comparison (length + sha256[:12], never the raw value) showed ~/.config/sf1-hub-ben/env's SAPIENCE_TOKEN and ~/.config/sf1-hub-ben/sapience-token are byte-identical to the token ~/.sapience/config.json currently resolves -- contradicting an earlier guess (based only on differing file sizes against /run/secrets/sapience_token) that sf1-hub-ben's copy was a different credential for a different subsystem. Filename/byte-size similarity to the WRONG reference file produced the wrong inference; comparing against the actually-relevant reference (config.json's active token) settled it correctly.",
+      "subject": "setup-sapience-mcp.sh's own divergence diagnostic prints a live token value in cleartext",
+      "value": "The writer's non-quiet 'diverges from the sanctioned shape' message prints the full current-entry JSON, including env.SAPIENCE_TOKEN's raw value, to stdout whenever an already-registered entry differs from the canonical shape. Driving the writer over a still-token-bearing entry (which a migration necessarily does, once per entry) leaks the live token into whatever captures that stdout, including an agent's own tool-output transcript. Not yet redacted; flagged as a new exposure surface and a candidate token-rotation trigger.",
       "predicate": "finding is",
       "ko_type": "finding",
       "confidence": 0.9,
-      "source_loc": "/home/benjamin/.config/sf1-hub-ben/env"
+      "source_loc": "agent-system/extensions/sapience/scripts/setup-sapience-mcp.sh"
     },
     {
-      "subject": "sf1-hub-ben credential files are manually populated, not nix-declared",
-      "value": "~/.config/sf1-hub-ben/env and ~/.config/sf1-hub-ben/sapience-token are populated by hand via the `sf1-hub-ben token` CLI subcommand, not by home-manager activation -- the sf1-hub-ben.nix module's own documented policy is that nothing granting consent or holding a credential belongs in an activation script. ~/.dotfiles's sf1-hub-ben module owns the directory's packaging/existence, but not the file contents, which the module deliberately never touches.",
+      "subject": "A regression test's fixture-based negative control can discharge a later live-verification step",
+      "value": "A migration phase's 'confirm the verifier fails on a regression' requirement was discharged by re-running an earlier phase's existing fixture-based test cases (a hand-built sentinel token, never the real one) rather than hand-rolling a second throwaway fixture against the live config file -- avoiding any need to transiently reintroduce a real secret into production state just to prove the negative path.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"
+    },
+    {
+      "subject": "Sapience token homes on this machine are consistently owner-only",
+      "value": "Re-confirmed across ~/.sapience/config.json, its 3 timestamped backups, ~/.config/sf1-hub-ben/{env,sapience-token}, ~/.claude.json itself, and /run/secrets/sapience_token: every one is 0600 or 0400, owner-only, none world-readable. ~/.dotfiles/secrets/secrets.yaml is the sole git-tracked location and is sops-encrypted.",
       "predicate": "finding is",
       "ko_type": "finding",
-      "confidence": 0.85,
-      "source_loc": "/home/benjamin/.dotfiles/modules/home/services/sf1-hub-ben.nix"
+      "confidence": 0.9,
+      "source_loc": "/home/benjamin/.sapience/config.json"
     },
     {
-      "subject": "A measurement record's own recorded fingerprint can itself be wrong",
-      "value": "A prior phase's record file stated ~/.sapience/config.json's .token SHA-256[:12] fingerprint as 1ccd05e02475; independently recomputing the same field on the same, unmodified file (confirmed via unchanged mtime) a few hours later yielded a different fingerprint (20a5377da89a) at the same string length. The file was not touched between the two measurements, so the earlier record's fingerprint value was itself mistranscribed -- a reminder that even a 'measured, not assumed' record can carry a transcription error in its own output, and that a later phase re-deriving the same fact independently (rather than trusting the earlier record's stated value) is what caught it.",
-      "predicate": "finding is",
-      "ko_type": "insight",
-      "confidence": 0.85,
-      "source_loc": "specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md"
-    },
-    {
-      "subject": "verify-touched.sh's OWED fallback battery and a known deploy-staleness failure",
-      "value": "Running verify-touched.sh with no arguments against a touched set that includes a specs/** progress/metadata file (alongside a clean extension-scoped edit) triggers BOTH the extension-scoped battery (narrow, selected suites) AND a second, root-scoped 'OWED fallback' battery (98 suites) when some touched path cannot be mapped to a specific extension/suite. The root-scoped fallback ran in ~310s and is cheap to run detached with a bounded kill -0 wait rather than a bare foreground call that a tool-call ceiling could abandon mid-run.",
-      "predicate": "finding is",
-      "ko_type": "finding",
-      "confidence": 0.8,
-      "source_loc": ".claude/scripts/verify-touched.sh"
+      "subject": "env -i strips PATH, not just application-level variables",
+      "value": "A probe built as `env -i HOME=\"$HOME\" python3 <script>` fails with exit 127 ('python3: No such file or directory') because env -i clears PATH along with every other variable; resolving the interpreter to an absolute path first and invoking that under env -i fixes it. Relevant any time a 'does this program still work with env var X unset' probe is built with env -i rather than env -u X."
     }
   ],
   "metadata": {
     "session_id": "sess_1795284367_d33b60",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 4,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
     "phases_total": 5
   },
-  "next_steps": "Dispatch Phase 5 (migrate the live ~/.claude.json entries, verify authentication, run verify-sapience-mcp.sh and its regression fixture, remove the plaintext backup, and redeploy via deploy-headless.sh) next."
+  "user_decision": {
+    "needed": true,
+    "summary": "This phase's live migration run leaked the configured Sapience token in cleartext into this dispatch's own Bash tool-output stream (6 times, once per migrated project entry) -- a transcript-exposure vector the task itself exists to close, surfaced by a diagnostic line in setup-sapience-mcp.sh that was outside this phase's declared file list to fix. The user should decide whether to rotate the Sapience token now given this exposure, and whether to authorize a fast-follow task to redact that diagnostic's printed value. Recorded via issue-record.sh (kind: issue, severity: blocking) without re-printing the token; full detail in the summary's Follow-ups section.",
+    "blocking": false
+  }
 }

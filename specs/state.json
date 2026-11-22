@@ -130,12 +130,12 @@
     {
       "project_number": 682,
       "project_name": "sapience_mcp_entry_carries_no_token",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "description": "Stop writing the Sapience token into the per-project MCP entry in ~/.claude.json. Territory: agent-system/extensions/sapience/ (scripts/setup-sapience-mcp.sh, hooks/sapience-mcp-register-project.sh, scripts/verify-sapience-mcp.sh, scripts/tests/test-sapience-mcp-registration.sh, context/project/sapience/domain/per-repo-scoping.md). setup-sapience-mcp.sh builds each project's entry with env {SAPIENCE_HOST, SAPIENCE_TOKEN} whenever a token is resolvable, so the raw token is copied in plaintext into ~/.claude.json once per registered project, is printed by any `jq .projects[...]` or `claude mcp get` inspection, and from there enters a session transcript that the capture path may extract. The vendor mcp.py falls back to ~/.sapience/config.json (mode 0600) when SAPIENCE_TOKEN is unset, and the script already supports an entry with no token. Build: (1) measure that every code path of the installed mcp.py the entry reaches (the stdio server, --briefing-text, --receipt, --effect-line) resolves the token from config.json with the variable unset, and record any that does not; (2) if all do, write the entry with SAPIENCE_HOST only, and migrate existing entries in place on the next SessionStart registration, idempotently; if one does not, keep the variable only for that case and say which; (3) verify-sapience-mcp.sh check (b) fails on an entry that carries a token, naming the remedy; (4) a test that a registered entry contains no value equal to the configured token, with a negative control on a fixture entry that does; (5) state in per-repo-scoping.md where the token lives and where it must never be copied; (6) list the other places the token is written on this machine (the sops secret, config.json, any wrapper environment) and confirm none is world-readable or committed, naming the dotfiles module as the owner of anything found there. Done when no project entry in ~/.claude.json holds the token, the MCP server still authenticates in a fresh session, and the verifier fails on a regression.",
       "topic": "sapience",
       "created": "2026-11-21T17:28:54Z",
-      "last_updated": "2026-11-21T21:56:57Z",
+      "last_updated": "2026-11-22T00:56:21Z",
       "audit_verdict": {
         "proposal": {
           "id": "sapience_mcp_entry_carries_no_token",
@@ -264,6 +264,11 @@
           "path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-4-handoff-20261122T003952Z.md",
           "type": "handoff",
           "summary": "Phase 4 completion handoff naming Phase 5 as the immediate next action."
+        },
+        {
+          "path": "specs/682_sapience_mcp_entry_carries_no_token/summaries/01_remove-token-from-mcp-entry-summary.md",
+          "type": "summary",
+          "summary": "Full task completion summary covering all 5 phases, with a Follow-ups section detailing the Phase 5 transcript-exposure security finding."
         }
       ],
       "next_artifact_number": 2,
@@ -275,7 +280,8 @@
         "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh",
         "agent-system/extensions/sapience/scripts/verify-sapience-mcp.sh",
         "specs/682_sapience_mcp_entry_carries_no_token/records/01_mcp-token-resolution-measurement.md"
-      ]
+      ],
+      "completion_summary": "Completed Phase 5 (the plan's final phase): reinstalled the edited writer to $HOME/.claude/scripts/setup-sapience-mcp.sh, backed up and migrated all 6 registered ~/.claude.json project entries off the raw Sapience token, re-confirmed authentication with SAPIENCE_TOKEN absent, confirmed verify-sapience-mcp.sh check (b) passes and its 58-case regression suite (including the sentinel-token negative control) passes in full, removed the plaintext backup, and redeployed cleanly. Task 682 is now fully implemented across all 5 phases. Flagged a new security finding during migration: the writer's own divergence diagnostic printed the live token in cleartext to this dispatch's own tool-output transcript -- recorded via issue-record.sh and surfaced via user_decision for token-rotation judgment."
     },
     {
       "project_number": 681,

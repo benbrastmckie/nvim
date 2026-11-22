@@ -1,19 +1,19 @@
 {
-  "status": "partial",
-  "dispatch_seq": 29,
+  "status": "implemented",
+  "dispatch_seq": 30,
   "phase": "implement",
-  "summary": "Completed Phase 4 of 5: added a new subsection to per-repo-scoping.md ('The Token's Durable Homes and the Never-Copy Boundary') documenting each of the token's durable homes and owners, the resolution path, the never-copy boundary, its enforcing surfaces, and the orphaned wrapper hazard. A by-value re-check of all four candidate locations found a real divergence (the active config.json token no longer matches /run/secrets/sapience_token) and corrected the plan's own guess about sf1-hub-ben's files (they match the active token, not a different credential). Confirmed secrets.yaml remains sole, sops-encrypted. Bumped index-entries.json's line_count and keywords. The dispatch's Phase Mission directive limited execution to Phase 4 only; phase 5 remains.",
+  "summary": "Completed Phase 5 of 5, the plan's final phase: reinstalled the edited writer to $HOME/.claude/scripts/setup-sapience-mcp.sh, backed up and migrated all 6 registered ~/.claude.json project entries off the raw Sapience token, re-confirmed authentication with SAPIENCE_TOKEN absent, confirmed verify-sapience-mcp.sh check (b) and the full 58-case regression suite (including the sentinel-token negative control) pass, removed the plaintext backup, and redeployed cleanly (41 checks, 0 failures). Task is fully implemented. A new security finding was surfaced during migration (the writer's own divergence diagnostic printed the live token in cleartext to this dispatch's own tool-output transcript) and flagged via user_decision for the user's judgment on token rotation.",
   "artifacts": [
     {
-      "type": "handoff",
-      "path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-4-handoff-20261122T003952Z.md",
-      "summary": "Phase 4 completion handoff naming Phase 5 as the immediate next action."
+      "type": "summary",
+      "path": "specs/682_sapience_mcp_entry_carries_no_token/summaries/01_remove-token-from-mcp-entry-summary.md",
+      "summary": "Full task completion summary covering all 5 phases, with a Follow-ups section detailing the Phase 5 transcript-exposure security finding."
     }
   ],
-  "phases_completed": 4,
+  "phases_completed": 5,
   "phases_total": 5,
   "blockers": [],
   "plan_markers_verified": true,
-  "continuation_path": "specs/682_sapience_mcp_entry_carries_no_token/handoffs/phase-4-handoff-20261122T003952Z.md",
-  "next_action_hint": "Dispatch Phase 5: migrate the live ~/.claude.json entries, verify authentication, run verify-sapience-mcp.sh and its regression fixture, remove the plaintext backup, and redeploy via deploy-headless.sh."
+  "continuation_path": null,
+  "next_action_hint": "No further implementation work remains on this plan. User decision needed on whether to rotate the Sapience token given the Phase 5 transcript exposure, and whether to open a fast-follow to redact setup-sapience-mcp.sh's divergence diagnostic."
 }

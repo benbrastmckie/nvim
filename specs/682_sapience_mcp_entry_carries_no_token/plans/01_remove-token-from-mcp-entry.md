@@ -1,7 +1,7 @@
 # Implementation Plan: Stop writing the Sapience token into the per-project MCP entry
 
 - **Task**: 682 - Stop writing the Sapience token into the per-project MCP entry in ~/.claude.json
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 4 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/682_sapience_mcp_entry_carries_no_token/reports/01_remove-token-from-mcp-entry.md
