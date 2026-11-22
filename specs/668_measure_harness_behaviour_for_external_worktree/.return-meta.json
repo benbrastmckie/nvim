@@ -1,40 +1,10 @@
 {
-  "status": "planned",
-  "dispatch_seq": 2,
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/668_measure_harness_behaviour_for_external_worktree/plans/01_external-worktree-harness-measurement.md",
-      "summary": "Three-phase closure plan: discharge the amending record's measured precondition, close the measurement record against its own exact-call/attribution criterion, then verify and commit both decision records."
-    }
-  ],
-  "next_steps": "Run /orchestrate 668 to execute the plan",
+  "status": "in_progress",
+  "dispatch_seq": 3,
   "metadata": {
-    "session_id": "sess_1795385635_7a23a6_668",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 3,
-    "estimated_hours": 1.5,
-    "dependency_waves": 2
-  },
-  "memory_candidates": [
-    {
-      "content": "When a decision record names a measured precondition and the measurement comes back NOT refuting the ruling, the record that named the precondition still needs an edit -- but an `**Amended by**` note is the wrong marker, because nothing was amended. Use a distinct dated `**Discharged by** <record>, <date>:` note instead, and leave the record's own conditional rule (\"if a measurement refutes the siting, the ruling is amended ... it is not worked around\") verbatim, since discharge records that the measurement ran, it does not retire the rule for a future re-measurement. Without this, every downstream successor keeps reading \"rests on behaviour that has not been measured\" from the record it actually consults, while the measurement record it never reads holds the answer.",
-      "category": "PATTERN",
-      "source_artifact": "specs/668_measure_harness_behaviour_for_external_worktree/plans/01_external-worktree-harness-measurement.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["decision-record", "measured-precondition", "amended-by", "discharge-note", "successor-visibility"]
-    }
-  ],
-  "user_decision": {
-    "question": "Carried forward unanswered from the research dispatch, because the plan's Phase 2 branches on it: does /orchestrate (or any agent dispatch) in this environment ever run from a session NOT started with --dangerously-skip-permissions? The measurement record's only unmeasured result is what file tools (Read/Edit/Write) do for a path outside the project directory under a non-bypassPermissions mode (default, plan, acceptEdits), which no dispatched agent can observe.",
-    "options": [
-      "Confirm dispatches always run under bypassPermissions here; Phase 2 records that confirmation as user-supplied and the record closes with no residual on this item.",
-      "Report that a non-bypass mode is sometimes used, and (optionally) what you see when a subagent's tool call targets an external path under it; Phase 2 records that as the user-supplied result.",
-      "Leave it open; Phase 2 states it plainly as an unmeasured residual and re-relays this question."
-    ],
-    "recommended": "Confirm dispatches always run under bypassPermissions here; Phase 2 records that confirmation as user-supplied and the record closes with no residual on this item.",
-    "blocking": false
+    "session_id": "sess_1795385635_7a23a6",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   }
 }

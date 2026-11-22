@@ -2325,12 +2325,12 @@
     {
       "project_number": 668,
       "project_name": "measure_harness_behaviour_for_external_worktree",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Measure Claude Code harness behaviour for a worktree outside the project directory",
       "topic": "orchestrator",
       "created": "2026-11-20T20:17:06Z",
-      "last_updated": "2026-11-22T22:38:21Z",
+      "last_updated": "2026-11-22T22:39:04Z",
       "session_id": "sess_1795385635_7a23a6",
       "dependencies": [
         667

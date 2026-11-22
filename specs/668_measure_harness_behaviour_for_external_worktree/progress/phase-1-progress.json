@@ -1,0 +1,24 @@
+{
+  "phase": 1,
+  "phase_name": "Discharge the measured precondition in the amending record",
+  "started_at": "2026-11-22T22:40:06Z",
+  "last_updated": "2026-11-22T22:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Locate both edit sites by text (grep), read surrounding sections", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Replace R2's closing sentence citing the measurement record", "status": "done", "files_touched": ["specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"]},
+    {"id": 3, "description": "Add dated Discharged by note under Measured precondition", "status": "done", "files_touched": ["specs/decisions/batch-worktree-isolation-and-task-squash-landing.md"]},
+    {"id": 4, "description": "Keep conditional sentence verbatim; no Amended by marker used", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [
+    {
+      "task_id": "1.verification",
+      "description": "grep -c \"Discharged by\" on the file was expected by the plan to return 1",
+      "type": "altered",
+      "reason": "The file already carried one pre-existing, unrelated plain-text occurrence of the phrase 'Discharged by' in a coverage table (line ~542, 'Discharged by this record, \"Defects engaged\"'), unconnected to the **Discharged by** marker convention. The actual check -- exactly one new **Discharged by** marker added, and no **Amended by** marker added -- was confirmed via git diff and is satisfied; the raw grep count is 2, not 1, because of the pre-existing unrelated occurrence.",
+      "annotation": "*(deviation: altered -- verification used git diff for marker-count precision instead of the raw grep -c count, which is inflated by a pre-existing unrelated occurrence)*"
+    }
+  ]
+}

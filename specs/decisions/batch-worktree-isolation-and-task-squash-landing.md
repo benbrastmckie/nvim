@@ -231,7 +231,9 @@ One side branch and one worktree per orchestrate invocation. Not per dispatch, n
   worktree path; every consumer reads it from the record.
 - Sparse, excluding `specs/`, wherever `specs/` is tracked.
 
-The siting rests on harness behaviour that has not been measured. See "Measured precondition".
+The siting's precondition was measured live against a scratch repository and a real `git`
+worktree sited outside the repository and its parent, and none of the four results refutes the
+siting. See `specs/decisions/external-worktree-harness-behaviour.md` and "Measured precondition".
 
 ### R3, amended
 
@@ -483,6 +485,14 @@ These are a precondition, not an assumption to build on. The measurement success
 and every two-root successor depends on it. **If a measurement refutes the siting, the siting
 ruling is amended by a dated note on this record. It is not worked around** in a script, by a
 symlink, or by moving the worktree inside the repository.
+
+**Discharged by** external-worktree-harness-behaviour.md, 2026-11-22: all four were measured live
+against a scratch repository and a real `git` worktree sited outside the repository and its
+parent. None refutes the siting. Two residuals were named and judged not to bear on the siting:
+file-tool behaviour for an external path under a non-`bypassPermissions` mode (not observable
+from a dispatched agent; needs the user), and the hook subprocess's own raw OS-level `pwd`
+(deliberately not isolated, since doing so needed temporary diagnostic instrumentation in live
+personal settings).
 
 ## Successor tasks
 

@@ -1,7 +1,7 @@
 # Implementation Plan: Task #668
 
 - **Task**: 668 - Measure Claude Code harness behaviour for a worktree outside the project directory
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 1.5 hours
 - **Dependencies**: 667
 - **Research Inputs**: specs/668_measure_harness_behaviour_for_external_worktree/reports/01_external-worktree-harness-measurement.md
@@ -128,35 +128,37 @@ Phases within the same wave can execute in parallel. Phases 1 and 2 edit two dif
 no content dependency between them (Phase 1 cites the measurement record by path and by a verdict
 Phase 2 does not change).
 
-### Phase 1: Discharge the measured precondition in the amending record [NOT STARTED]
+### Phase 1: Discharge the measured precondition in the amending record [COMPLETED]
 
 **Goal**: `specs/decisions/batch-worktree-isolation-and-task-squash-landing.md` stops telling
 successors the siting rests on unmeasured behaviour, and points at the measurement record
 instead, without claiming anything was amended.
 
 **Tasks**:
-- [ ] Locate both edit sites by text, not by line number: `grep -n "has not been measured"` and
+- [x] Locate both edit sites by text, not by line number: `grep -n "has not been measured"` and
       `grep -n "^## Measured precondition"` in the amending record; read the surrounding sections
-      before editing.
-- [ ] Replace R2's closing sentence ("The siting rests on harness behaviour that has not been
+      before editing. *(completed)*
+- [x] Replace R2's closing sentence ("The siting rests on harness behaviour that has not been
       measured. See \"Measured precondition\".") with a sentence stating that the siting's
       precondition was measured live and is unrefuted, citing
       `specs/decisions/external-worktree-harness-behaviour.md`, and keeping the pointer to the
-      "Measured precondition" section.
-- [ ] In "Measured precondition", immediately below the existing four-item list, add one dated
+      "Measured precondition" section. *(completed)*
+- [x] In "Measured precondition", immediately below the existing four-item list, add one dated
       note of the form `**Discharged by** external-worktree-harness-behaviour.md, <ISO date>:`
       stating that all four were measured live against a scratch repository and a real `git`
       worktree sited outside the repository and its parent, that none refutes the siting, and
       naming the two residuals (file-tool behaviour under a non-`bypassPermissions` mode, needing
       the user; the hook subprocess's raw OS `pwd`, deliberately not isolated) as residuals that
-      do not bear on the siting.
-- [ ] Keep the section's existing conditional sentence ("**If a measurement refutes the siting,
+      do not bear on the siting. *(completed)*
+- [x] Keep the section's existing conditional sentence ("**If a measurement refutes the siting,
       the siting ruling is amended by a dated note on this record. It is not worked around** in a
       script, by a symlink, or by moving the worktree inside the repository.") exactly as written.
-- [ ] Do not use the `**Amended by**` marker anywhere in this file: nothing was refuted, so the
+      *(completed)*
+- [x] Do not use the `**Amended by**` marker anywhere in this file: nothing was refuted, so the
       task description's amendment instruction (conditional on refutation) does not fire.
-- [ ] Make each change with `Edit` on a unique `old_string`; do not rewrite either section as a
-      reconstructed block.
+      *(completed)*
+- [x] Make each change with `Edit` on a unique `old_string`; do not rewrite either section as a
+      reconstructed block. *(completed)*
 
 **Timing**: 0.4 hours
 
