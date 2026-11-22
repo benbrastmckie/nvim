@@ -1000,9 +1000,14 @@
           "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-4-handoff-20261122T000232Z.md",
           "type": "handoff",
           "summary": "Phase 4 completion handoff naming Phase 5 as the immediate next action; no open work or blocker remains from Phase 4."
+        },
+        {
+          "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/summaries/01_sapience-project-id-automatic-paths-summary.md",
+          "type": "summary",
+          "summary": "Round-closing summary: shared link resolver, read-side project_cid in sapience-retrieve.sh, URL-recording negative control, and the stated current design in per-repo-scoping.md, with write-side project_cid explicitly excluded by sf1-engine Ruling 7."
         }
       ],
-      "next_artifact_number": 2,
+      "next_artifact_number": 3,
       "file_scope": [
         "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
         "agent-system/extensions/sapience/index-entries.json",
@@ -1010,7 +1015,8 @@
         "agent-system/extensions/sapience/scripts/sapience-retrieve.sh",
         "agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh",
         "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/summaries/01_sapience-project-id-automatic-paths-summary.md"
-      ]
+      ],
+      "completion_summary": "Closed task 677's round: all eight named Sapience suites and the five-path verify-touched.sh scoped tier passed with zero failures, the write-path invariant (sapience-remember.sh, postflight-sapience-notes.sh, sapience-publish.sh unmodified, no MCP write tool prescribed) was re-confirmed, and the round summary was written. All five plan phases are [COMPLETED]."
     },
     {
       "project_number": 676,

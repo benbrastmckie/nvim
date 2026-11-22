@@ -1,14 +1,19 @@
 {
-  "status": "partial",
-  "dispatch_seq": 27,
-  "summary": "Phase 4 (document the design in per-repo-scoping.md) is complete and committed (f4c2a0a92). The prior dispatch-27 blocker -- a foreign uncommitted index-entries.json modification caused by concurrent sibling task 682 -- was resolved before this dispatch began (committed a201372b2) and was independently re-verified clean by this dispatch's own re-run of the pre-edit gate before any edit was made. per-repo-scoping.md now documents the project_cid/&project= parameter distinction, the vendor mcp.py project-argument discussion, the read-side project_cid behavior, the write-side plain-project-key design and its governing boundary, and the shared resolver's naming and boundary; index-entries.json's line_count was reconciled to match. All phase verification passed (check-task-references.sh, check-record-versioning.sh, jq/wc -l consistency, verify-touched.sh: 104/104 suites). This dispatch's own Phase Mission scoped it to Phase 4 only, so it stops here by design, not due to any blocker; Phase 5 ('Close the Round') remains NOT STARTED for the next dispatch.",
-  "phases_completed": 4,
+  "status": "implemented",
+  "dispatch_seq": 28,
+  "summary": "Phase 5 ('Close the Round') is complete and committed (3748bf45f), closing out task 677. All eight named Sapience suites passed under CORE_TEST_SUBJECT_MODE=source-store with zero failures, including test-sapience-mcp-registration.sh's Case 30 nine-copy worktree-block byte-identity assertion; the write-path invariant was re-confirmed (sapience-remember.sh, postflight-sapience-notes.sh, sapience-publish.sh unmodified; no MCP write tool prescribed as a write path); verify-touched.sh over the five touched paths returned exit 0 (114/114 passed); and the round summary was written. All five plan phases are now [COMPLETED]. The complete verify-deploy.sh gate set is deferred to the once-per-invocation orchestration close per this cycle's multi-task batch directive.",
+  "phases_completed": 5,
   "phases_total": 5,
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/summaries/01_sapience-project-id-automatic-paths-summary.md",
+      "summary": "Round-closing summary: shared link resolver, read-side project_cid in sapience-retrieve.sh, URL-recording negative control, and the stated current design in per-repo-scoping.md, with write-side project_cid explicitly excluded by sf1-engine Ruling 7."
+    },
+    {
       "type": "handoff",
-      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-4-handoff-20261122T000232Z.md",
-      "summary": "Phase 4 completion handoff naming Phase 5 as the immediate next action; no open work or blocker remains from Phase 4."
+      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-5-handoff-20261121T000000Z.md",
+      "summary": "Phase 5 (final) completion handoff: all phases complete, no further implementation work remains."
     }
   ],
   "blockers": []

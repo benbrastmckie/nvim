@@ -1,63 +1,73 @@
 {
-  "status": "partial",
-  "dispatch_seq": 27,
-  "partial_progress": {
-    "stage": "phase_mission_scoped_stop",
-    "details": "The prior dispatch 27 blocker (a foreign uncommitted index-entries.json line_count diff caused by concurrent sibling task 682) was resolved before this dispatch began -- committed as a201372b2, confirmed by this dispatch's own independent re-run of the pre-edit gate (git status --short on both agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md and agent-system/extensions/sapience/index-entries.json was empty). Phase 4 was then implemented in full per its plan task list: the project_cid vs &project= parameter distinction, the vendor mcp.py project-argument discussion paragraph, the sapience-retrieve.sh read-side project_cid behavior, the write-side plain-project-key design and its sf1-engine ruling-7 boundary, and the shared-resolver naming paragraph were all added to per-repo-scoping.md (502 -> 556 lines); index-entries.json's line_count for that one entry was updated to match. All phase verification passed: check-task-references.sh (0 occurrences), check-record-versioning.sh (0 BLOCKING), jq/wc -l consistency, and verify-touched.sh (104/104 suites passed: 6 selected + 98 OWED fallback). Committed as f4c2a0a92 (task 677 phase 4). This dispatch's own Phase Mission explicitly scoped it to 'Implement phase 4 only. Do not continue past this phase' -- stopping here is the mission boundary, not a blocker. Phase 5 ('Close the Round') remains NOT STARTED and is the next dispatch's starting point; no blocker carries forward.",
-    "phases_completed": 4,
-    "phases_total": 5
-  },
+  "status": "implemented",
+  "dispatch_seq": 28,
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/summaries/01_sapience-project-id-automatic-paths-summary.md",
+      "summary": "Round-closing summary: shared link resolver, read-side project_cid in sapience-retrieve.sh, URL-recording negative control, and the stated current design in per-repo-scoping.md, with write-side project_cid explicitly excluded by sf1-engine Ruling 7."
+    },
+    {
       "type": "handoff",
-      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-4-handoff-20261122T000232Z.md",
-      "summary": "Phase 4 completion handoff naming Phase 5 as the immediate next action; no open work or blocker remains from Phase 4."
+      "path": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/handoffs/phase-5-handoff-20261121T000000Z.md",
+      "summary": "Phase 5 (final) completion handoff: all phases complete, no further implementation work remains."
     }
   ],
   "completion_data": {
-    "completion_summary": "Phase 4 implemented and committed: per-repo-scoping.md now documents the project_cid/&project= parameter distinction, the vendor mcp.py project-argument discussion, the read-side project_cid behavior, the write-side plain-project-key design and its governing ruling, and the shared resolver's naming and boundary; index-entries.json's line_count was reconciled to match. The dispatch-27 blocker (concurrent sibling task 682 holding a foreign uncommitted modification on one of these two files) was independently re-verified as resolved before any edit was made."
+    "completion_summary": "Closed task 677's round: all eight named Sapience suites and the five-path verify-touched.sh scoped tier passed with zero failures, the write-path invariant (sapience-remember.sh, postflight-sapience-notes.sh, sapience-publish.sh unmodified, no MCP write tool prescribed) was re-confirmed, and the round summary was written. All five plan phases are [COMPLETED]."
   },
   "modified_files": [
+    "agent-system/extensions/sapience/scripts/lib/sapience-api-lib.sh",
+    "agent-system/extensions/sapience/scripts/sapience-retrieve.sh",
+    "agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh",
     "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md",
-    "agent-system/extensions/sapience/index-entries.json"
+    "agent-system/extensions/sapience/index-entries.json",
+    "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/plans/01_sapience-project-id-automatic-paths.md",
+    "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/summaries/01_sapience-project-id-automatic-paths-summary.md"
   ],
   "memory_candidates": [],
   "sapience_notes": [
     {
-      "subject": "Task 677 phase 4 (per-repo-scoping.md documentation) landed cleanly after the prior dispatch's blocker was resolved",
+      "subject": "Task 677 phase 5 (close the round) found zero regressions across the full Sapience suite roster",
       "predicate": "finding is",
-      "value": "A dispatch-27 pre-edit-gate blocker (concurrent sibling task 682 holding a foreign uncommitted line_count correction on agent-system/extensions/sapience/index-entries.json) was resolved by a separate commit (a201372b2) before this dispatch began. Re-running the gate independently rather than trusting the resolution report by name confirmed git status --short was empty for both declared files, and the phase proceeded without incident -- the gate's own 'stop and report, never proceed on trust' instruction is cheap to honor literally even when a prior report already claims resolution.",
-      "confidence": 0.8,
-      "source_loc": "specs/677_sapience_automatic_writes_and_retrieval_by_project_id/plans/01_sapience-project-id-automatic-paths.md"
-    },
-    {
-      "subject": "Sapience's read-side and write-side project-scoping parameters are deliberately asymmetric",
-      "predicate": "finding is",
-      "value": "sapience-retrieve.sh (read) sends project_cid, a server-honored strict pre-filter gated on the REPO_LINK_FOR flag (deployed off for this account, so unexercisable live, stub-verified only). sapience-remember.sh (write) sends a plain project key resolved from the same binding's cid via a GET /v1/people/projects lookup, and never project_cid -- a verified project_cid write is deliberately held shut by a separate governing ruling (sf1-engine ruling 7) regardless of the read-side flag's state, because two named leak surfaces for an unverified autonomous write stay open. The two sides do not converge even though they resolve the same binding file.",
+      "value": "Re-running all eight suites the plan named (test-sapience-capture.sh, test-sapience-remember.sh, test-postflight-sapience-notes.sh, test-sapience-publish.sh, test-sapience-vault-read.sh, test-sapience-project-bind.sh, test-sapience-context-scoping.sh, test-sapience-mcp-registration.sh) under CORE_TEST_SUBJECT_MODE=source-store after four phases of changes to a shared lib and a consumer script produced zero failures and the Case-30 nine-copy worktree-block byte-identity assertion stayed green, confirming the resolver's deliberate no-tenth-copy design held through to the end of the round.",
       "confidence": 0.85,
-      "source_loc": "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"
+      "source_loc": "agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"
     },
     {
-      "subject": "The installed vendor mcp.py's sapience_remember project argument is unrelated to per-repo tagging",
+      "subject": "A read-side project_cid feature can be fully built and verified with zero live exercise",
       "predicate": "finding is",
-      "value": "~/.sapience/mcp.py's sapience_remember tool accepts a project argument, but it is company-store ROUTING (project_slug()/route_ko() matched against config.json's routes map, falling back to COMPANY_PROJECT/SAPIENCE_PROJECT) -- it picks which token/store a write posts to, not a per-repository [repo:<slug>] tag. It still cannot produce a tagged write, for the same connector-hardcoded-provenance reason the MCP write tools generally cannot. This had gone undocumented in per-repo-scoping.md prior to this phase despite the tool existing in the installed client all along.",
+      "value": "The entire task 677 round (shared resolver, sapience-retrieve.sh's project_cid parameter, the project_rejected benign-degrade, and the documented design) was implemented and verified purely against a curl stub, because the server-side REPO_LINK_FOR flag is deployed empty for this account and no .sapience/project.json binding exists in this repository. This confirms that the url-recording negative-control pattern (pin the pre-change request shape as an assertion, then re-run it unmodified after the change) is sufficient to prove byte-identical no-op behavior for an unlinked repo without needing a live linked account to validate against.",
       "confidence": 0.8,
-      "source_loc": "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"
+      "source_loc": "agent-system/extensions/sapience/scripts/tests/test-sapience-capture.sh"
     },
     {
-      "subject": "verify-touched.sh's OWED fallback set covered this phase's prose-only file at zero extra cost",
+      "subject": "verify-touched.sh's OWED fallback covered a five-path mixed code+doc touch set at zero extra invocation cost",
       "predicate": "finding is",
-      "value": "Running verify-touched.sh on a pure-documentation-plus-index-metadata change (per-repo-scoping.md prose, index-entries.json line_count) triggered both an explicit SELECT set (6 suites, directly mapped) and a 98-suite OWED fallback pass for the untestable prose path, all cost-class free -- 104 total suites passed with no manual suite selection needed and no full run-all.sh invocation.",
-      "confidence": 0.7,
+      "value": "Running verify-touched.sh at phase-5 close over a mix of a lib, a consumer script, a test harness, a domain doc, and an index JSON file (five touched paths spanning code and documentation) produced 16 directly-selected suites plus a 98-suite OWED fallback pass, 114/114 passing, with one single command and no manual suite curation across the heterogeneous path set.",
+      "confidence": 0.75,
+      "source_loc": "agent-system/extensions/sapience/index-entries.json"
+    },
+    {
+      "subject": "Write-side project_cid exclusion held through four phases of write-adjacent documentation work with no accidental re-opening",
+      "predicate": "finding is",
+      "value": "Despite Phase 4 adding substantial new prose discussing the sapience_remember MCP tool and the vendor mcp.py's unrelated project routing argument, a git diff of the three write scripts (sapience-remember.sh, postflight-sapience-notes.sh, sapience-publish.sh) against the pre-plan commit remained empty at round close, and the new prose's four MCP-write-tool mentions were all discussion-only per rules/sapience-write-path.md's sanctioned-site list -- the exclusion named in Decisions survived documentation work that discussed, at length, the very tools it excludes.",
+      "confidence": 0.8,
       "source_loc": "agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md"
     }
   ],
   "metadata": {
-    "session_id": "sess_1795284367_d33b60",
+    "session_id": "sess_1795313680_aa43f7",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
-    "phases_completed": 4,
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
     "phases_total": 5
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
