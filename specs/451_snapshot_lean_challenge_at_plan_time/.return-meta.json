@@ -1,0 +1,42 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795360608_7bb5fd_451",
+  "dispatch_seq": 2,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/451_snapshot_lean_challenge_at_plan_time/reports/01_hook-registration-and-postflight-bridging.md",
+      "summary": "Confirms option (a) (a postflight hook in extensions/lean/manifest.json) is viable but currently non-functional for plan/implement postflight reached via /orchestrate's own cycle, because orchestrate-cycle-postflight.sh never bridges its resolved task_type into the ambient TASK_TYPE global skill_run_extension_hook reads -- a generic core gap, not lean-specific, with a precedented one-line fix (mirroring command-gate-out.sh's verification-stage pattern). Also finds idempotence (manifest-exists refusal) and both inertness constraints (non-lean task type; zero-goal plan) are already satisfied by landed mechanisms requiring no new hook logic, corrects the dispatch's misnamed option-(b) file (orchestrate-cycle-plan.sh is the composer, not the postflight writer), and recommends declining --check promotion pending task 462."
+    }
+  ],
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "skill_preflight_update/skill_postflight_update (skill-base.sh) invoke skill_run_extension_hook with an ambient \"${TASK_TYPE:-}\" global rather than accepting task_type as a parameter. This works only inside a skill's own continuous SKILL.md bash session, where skill_validate_input set TASK_TYPE earlier in the SAME process. Any caller invoked as a fresh bash process (e.g. orchestrate-cycle-postflight.sh, run via `bash .claude/scripts/orchestrate-cycle-postflight.sh ...` once per task) never has TASK_TYPE set, so every postflight hook for every extension silently resolves to skipped_no_extension. The established, already-production fix pattern for this exact shape of problem is command-gate-out.sh's verification-stage call site: resolve task_type locally (e.g. via jq against specs/state.json) and pass it DIRECTLY as skill_run_extension_hook's 3rd positional argument, bypassing the global -- or, more minimally, just set TASK_TYPE=\"$task_type\" once before any skill_postflight_update call in the non-skill-session script.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/451_snapshot_lean_challenge_at_plan_time/reports/01_hook-registration-and-postflight-bridging.md",
+      "confidence": 0.92,
+      "suggested_keywords": ["skill_run_extension_hook", "TASK_TYPE", "postflight hook", "orchestrate-cycle-postflight", "lifecycle-hooks"]
+    },
+    {
+      "content": "When a CLI script already refuses to overwrite its own output artifact without an explicit --force (e.g. lean-challenge-snapshot.sh's exit-73 manifest-exists refusal), a new automated caller (a lifecycle hook, a CI step) that invokes the script plainly, without --force, inherits that refusal as its own idempotence/re-run behaviour for free -- no new idempotence design or code is needed at the call site. Check for this before designing a fresh idempotence mechanism around an existing tool.",
+      "category": "PATTERN",
+      "source_artifact": "specs/451_snapshot_lean_challenge_at_plan_time/reports/01_hook-registration-and-postflight-bridging.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["idempotence", "manifest-exists-refusal", "re-run-safety", "force-flag", "wrapping-existing-tool"]
+    },
+    {
+      "content": "In this agent system, every lean4-toolchain script that takes a project_root (lean-challenge-snapshot.sh, lean-comparator-run.sh --project-root, lean-src-roots.sh) requires it as an explicit, non-defaulted argument and assumes a single-repo layout: the Lean project and the specs/ tree that drives it live in the SAME git repository, with project_root == the repo root. No existing mechanism derives project_root from a task number or task_dir. A new caller (e.g. a lifecycle hook invoked with only task_number/task_type/task_dir/session_id/operation) should default project_root to \".\" (the cwd it runs from, which is always the repo root per skill-base.sh's own ambient convention) rather than trying to invent a new resolution mechanism -- and should record the single-repo assumption explicitly as a stated limitation, not silently.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/451_snapshot_lean_challenge_at_plan_time/reports/01_hook-registration-and-postflight-bridging.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["project_root", "lean4-toolchain", "single-repo-assumption", "cwd-convention", "lifecycle-hook-defaults"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 451 to create implementation plan"
+}
