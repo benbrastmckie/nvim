@@ -6,29 +6,85 @@
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
-| [M2: Sapience linked projects and collaborator access](#milestone-m2) | planned | 4/5 | none |
-| [M1: Current work](#milestone-m1) | active | 8/127 | none |
+| [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 4/6 | none |
+| [M3: Reviewable landing: batch worktrees, squash commits, generated-path collapse](#milestone-m3) | planned | 0/9 | none |
+| [M1: Current work](#milestone-m1) | active | 8/126 | none |
 
 See also: [Rules, conventions and repo context](#roadmap-context)
 
 <a id="milestone-m2"></a>
-## M2: Sapience linked projects and collaborator access
+## M2: Sapience linked projects, capture activation and collaborator access
 
-Make a repository bindable to a shared Sapience project and workable by a second person: bind and register the repo, resolve every automatic write and read through the link, rule the linked-repo write policy, and keep the token out of the per-project MCP entry.
+Make a repository bindable to a shared Sapience project and workable by a second person: bind and register the repo, resolve every automatic write and read through the link, let extension activation alone decide capture, and keep the token out of the MCP entry.
 
-- **Progress**: planned -- 0/1 batches, 4/5 tasks done -- Raised ahead of the legacy backlog on operator request; nothing dispatched yet.
+- **Progress**: active -- 0/2 batches, 4/6 tasks done -- Link, policy and token work landed; capture coupling then collaborator setup remain.
 - **Review**: none
-- **Gate**: A collaborator with their own account and a plain Claude Code install goes from a fresh clone of a linked repo to a verified project note without help; every automatic write and retrieval resolves the linked project rather than a directory-name label; no registered MCP entry carries the Sapience token.
+- **Gate**: A collaborator with their own account and a plain Claude Code install goes from a fresh clone of a linked repo to a verified project note without help; every automatic write and retrieval resolves the linked project rather than a directory-name label; loading or unloading the extension is the only switch over a repo's capture; no registered MCP entry carries the Sapience token.
 
-**Batch 1** -- Make the link decide every Sapience write, read and policy, and keep the token out of the entry (4/5 done)
+**Batch 1** -- Let extension activation alone decide this repo's capture, through the vendor CLI
+
+```
+/orchestrate 683
+683 ready           couple_sapience_capture_to_extension_activation
+```
+
+**Batch 2** -- Make the link decide every Sapience write, read and policy, and keep the token out of the entry (4/5 done)
 
 ```
 /orchestrate 679 --hard
-679 ready           sapience_collaborator_setup_for_plain_claude_code
+679 blocked:683     sapience_collaborator_setup_for_plain_claude_code
 677 done            sapience_automatic_writes_and_retrieval_by_project_id
 678 done            sapience_linked_repo_write_and_capture_policy
 681 done            sapience_bind_existing_project_and_register_repo
 682 done            sapience_mcp_entry_carries_no_token
+```
+
+<a id="milestone-m3"></a>
+## M3: Reviewable landing: batch worktrees, squash commits, generated-path collapse
+
+Make a batch's work land as reviewable git history: run each batch in its own worktree off an admitted integration branch, land one attribution-built squash commit per completed task, and declare machine-written paths so a diff collapses them.
+
+- **Progress**: planned -- 0/5 batches, 0/9 tasks done -- Raised alongside the Sapience work; only the harness measurement is ready, the rest waits on commit-layer prerequisites in M1.
+- **Review**: none
+- **Gate**: A batch run in an isolated worktree leaves one attribution-built squash commit per completed task on its integration branch, verified before the status write; a partial batch retains its worktree and /refresh reports an orphan; the branch-strategy documentation states the implemented contract; declared generated paths render collapsed in review.
+
+**Batch 1** -- Measure the harness against an external worktree before any of the topology is built
+
+```
+/orchestrate 668
+668 ready           Measure Claude Code harness behaviour for a worktree outside the project dire...
+```
+
+**Batch 2** -- Admit the integration branch, stand up the batch worktree, make the hooks two-root aware
+
+```
+/orchestrate 669, 671 --hard
+669 blocked:517,668 Add integration-branch admission, the isolation declaration, and idempotent b...
+671 blocked:668,669 Make the write-time and git-guard hooks two-root aware
+```
+
+**Batch 3** -- Carry the two-root contract into dispatch and the commit scripts, then land the per-task squash
+
+```
+/orchestrate 670, 672, 673 --hard
+670 blocked:513,553,669  Build the two-root contract in the dispatch composer and the commit scripts
+672 blocked:670     Classify every remaining project-root consumer as code-root, state-root or both
+673 blocked:670,671 Land one attribution-built squash commit per completed task and verify it bef...
+```
+
+**Batch 4** -- Close the worktree lifecycle: cleanup, partial retention, orphan reporting, docs parity
+
+```
+/orchestrate 674, 675
+674 blocked:673     Build batch worktree cleanup, retention on partial batches, and orphan report...
+675 blocked:672,673,674  Rewrite the branch-strategy documentation to state the implemented batch...
+```
+
+**Batch 5** -- Declare machine-written paths so a reviewer's diff collapses them by default
+
+```
+/orchestrate 655
+655 blocked:513,517,553  Declare generated paths so they collapse in review   <- its three prereqs sit in M1's commit-containment, generated-surfaces and detector batches; scope is now the declaration only
 ```
 
 <a id="milestone-m1"></a>
@@ -36,7 +92,7 @@ Make a repository bindable to a shared Sapience project and workable by a second
 
 Work already scheduled when this store adopted milestones. Divide it into real milestones on a later /roadmap run.
 
-- **Progress**: active -- 2/30 batches, 8/127 tasks done
+- **Progress**: active -- 2/29 batches, 8/126 tasks done
 - **Review**: none
 
 **Batch 1** (done) -- Support a gitignored specs tree: price the durability exposure, then the predicate and demotion fix
@@ -214,14 +270,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 513 blocked:479     Mechanically detect a plan phase that closed without its own commit
 ```
 
-**Batch 19** -- Branch-aware admission and milestone-ref landing, sited after its commit-layer prerequisites
-
-```
-/orchestrate 655 --hard
-655 blocked:513,517,553  Declare generated paths so they collapse in review   <- prereqs sit in Batches 9/15/18; landing is a milestone ref, not a squash
-```
-
-**Batch 20** -- Three init.lua claimants: make a load trust its project root, then the registry and defaults
+**Batch 19** -- Three init.lua claimants: make a load trust its project root, then the registry and defaults
 
 ```
 /orchestrate 663, 563, 583
@@ -230,7 +279,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 663 ready           Resolve the extension loader's project_dir to the git toplevel and refuse a l...
 ```
 
-**Batch 21** -- Snapshot the Lean Challenge at plan time, then the baseline-relative and redeploy gate rules
+**Batch 20** -- Snapshot the Lean Challenge at plan time, then the baseline-relative and redeploy gate rules
 
 ```
 /orchestrate 451, 462, 452, 566, 509, 588
@@ -242,7 +291,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 451 ready           Take the Lean Challenge snapshot in the plan phase, where it is still meaning...
 ```
 
-**Batch 22** -- The Lean compliance checker and its context strand: harvest contract, trust surfaces, probes
+**Batch 21** -- The Lean compliance checker and its context strand: harvest contract, trust surfaces, probes
 
 ```
 /orchestrate 504, 516, 398, 399, 463, 550, 537
@@ -255,7 +304,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 537 ready           Plan-compliance spot-check misses evidence-probe-scoped Goals
 ```
 
-**Batch 23** -- The narrow unusedArguments remedy, then the gate-naming and replay-window record over it
+**Batch 22** -- The narrow unusedArguments remedy, then the gate-naming and replay-window record over it
 
 ```
 /orchestrate 549, 576
@@ -263,7 +312,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 549 ready           Give the Lean unusedArguments remedy a narrow route instead of the wholesale ...
 ```
 
-**Batch 24** -- Settle the pinned Challenge block's authoring rules, then the five plan records quoting them
+**Batch 23** -- Settle the pinned Challenge block's authoring rules, then the five plan records quoting them
 
 ```
 /orchestrate 539, 540, 544, 593, 594, 595, 596
@@ -276,7 +325,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 539 ready           State the precedence and snapshot-prerequisite rules for a lean plan's pinned...
 ```
 
-**Batch 25** -- Migrate the mis-sited agent-system records, first the seven then the delta accumulated since
+**Batch 24** -- Migrate the mis-sited agent-system records, first the seven then the delta accumulated since
 
 ```
 /orchestrate 390, 481
@@ -284,7 +333,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 390 ready           Migrate seven mis-sited agent-system tasks out of BimodalLogic and retire one...
 ```
 
-**Batch 26** -- Close the lake-build-guard replay hole at both entry points it is reachable from
+**Batch 25** -- Close the lake-build-guard replay hole at both entry points it is reachable from
 
 ```
 /orchestrate 410, 533
@@ -292,7 +341,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 410 ready           Close the result-sharing replay hole in lake-build-guard.sh: gate sharing on ...
 ```
 
-**Batch 27** -- Literature: the degraded-retrieval contract, the zero-result case, and the Zotero export
+**Batch 26** -- Literature: the degraded-retrieval contract, the zero-result case, and the Zotero export
 
 ```
 /orchestrate 453, 546, 437
@@ -301,7 +350,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 453 ready           Carry the degraded-retrieval signal into the zero-result case, where the brie...
 ```
 
-**Batch 28** -- The books extension's reconciliation surface; its corpus refactor stays held on an external pin
+**Batch 27** -- The books extension's reconciliation surface; its corpus refactor stays held on an external pin
 
 ```
 /orchestrate 383, 384, 342
@@ -310,7 +359,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 383 ready           Add a /reconcile command to the books extension: aggregate docs-stage.sh and ...
 ```
 
-**Batch 29** -- Four standalone rulings: /tag's version gate, the telemetry consumer, routing, cslib context
+**Batch 28** -- Four standalone rulings: /tag's version gate, the telemetry consumer, routing, cslib context
 
 ```
 /orchestrate 456, 421, 529, 530
@@ -320,7 +369,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 530 ready           Land the three agent-system context extensions recorded by the cslib omega-au...
 ```
 
-**Batch 30** -- Documentation and standards conformance: boundary docs, skeletons, census method, one note
+**Batch 29** -- Documentation and standards conformance: boundary docs, skeletons, census method, one note
 
 ```
 /orchestrate 473, 522, 640, 557
@@ -371,17 +420,8 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 
 ```
 498 HOLD            Replace the email preference harvest tally substrate
-669 blocked:517,668 Add integration-branch admission, the isolation declaration, and idempotent b...
-670 blocked:513,553,669  Build the two-root contract in the dispatch composer and the commit scripts
-671 blocked:668,669 Make the write-time and git-guard hooks two-root aware
-672 blocked:670     Classify every remaining project-root consumer as code-root, state-root or both
-673 blocked:670,671 Land one attribution-built squash commit per completed task and verify it bef...
-674 blocked:673     Build batch worktree cleanup, retention on partial batches, and orphan report...
-675 blocked:672,673,674  Rewrite the branch-strategy documentation to state the implemented batch...
 664 ready           Add a /tmp sweep pass to /refresh for dead scratchpad sessions and agent-test...
 665 ready           Record the last dispatching orchestration batch in a displaced Previous work ...
 666 ready           re_site_branch_aware_batch_after_prerequisites
-668 ready           Measure Claude Code harness behaviour for a worktree outside the project dire...
 680 ready           gate_cache_key_in_deployed_repos
-683 ready           couple_sapience_capture_to_extension_activation
 ```

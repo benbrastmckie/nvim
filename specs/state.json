@@ -368,7 +368,8 @@
       "dependencies": [
         677,
         678,
-        682
+        682,
+        683
       ],
       "audit_verdict": {
         "proposal": {
@@ -19266,7 +19267,7 @@
         "degradations_count": 43
       },
       "title": "Declare generated paths so they collapse in review",
-      "roadmap_annotation": "prereqs sit in Batches 9/15/18; landing is a milestone ref, not a squash"
+      "roadmap_annotation": "its three prereqs sit in M1's commit-containment, generated-surfaces and detector batches; scope is now the declaration only"
     },
     {
       "project_number": 664,
@@ -19667,17 +19668,24 @@
   "roadmap_milestones": [
     {
       "id": "M2",
-      "title": "Sapience linked projects and collaborator access",
-      "aim": "Make a repository bindable to a shared Sapience project and workable by a second person: bind and register the repo, resolve every automatic write and read through the link, rule the linked-repo write policy, and keep the token out of the per-project MCP entry.",
-      "gate": "A collaborator with their own account and a plain Claude Code install goes from a fresh clone of a linked repo to a verified project note without help; every automatic write and retrieval resolves the linked project rather than a directory-name label; no registered MCP entry carries the Sapience token.",
+      "title": "Sapience linked projects, capture activation and collaborator access",
+      "aim": "Make a repository bindable to a shared Sapience project and workable by a second person: bind and register the repo, resolve every automatic write and read through the link, let extension activation alone decide capture, and keep the token out of the MCP entry.",
+      "gate": "A collaborator with their own account and a plain Claude Code install goes from a fresh clone of a linked repo to a verified project note without help; every automatic write and retrieval resolves the linked project rather than a directory-name label; loading or unloading the extension is the only switch over a repo's capture; no registered MCP entry carries the Sapience token.",
       "progress": {
-        "status": "planned",
-        "note": "Raised ahead of the legacy backlog on operator request; nothing dispatched yet."
+        "status": "active",
+        "note": "Link, policy and token work landed; capture coupling then collaborator setup remain."
       },
       "review": {
         "state": "none"
       },
       "batches": [
+        {
+          "task_ids": [
+            683
+          ],
+          "description": "Let extension activation alone decide this repo's capture, through the vendor CLI",
+          "rationale": "Sited ahead of the collaborator-setup batch because that page must document what loading the extension does -- item (6) of its own description -- and this task changes exactly that. Both claim the sapience extension's per-repo-scoping document and the bidirectional SessionStart registration hook, so they are ordered rather than concurrent; the ordering is recorded as a dependency edge in the graph, not merely implied by batch position. No --hard: research and a plan are already written, and the territory is one hook, one domain document, one verifier and its fixture tests."
+        },
         {
           "task_ids": [
             681,
@@ -19689,6 +19697,62 @@
           "description": "Make the link decide every Sapience write, read and policy, and keep the token out of the entry",
           "flags": "--hard",
           "rationale": "Placed first by instruction (prioritize 677-679, 681-682), and a new milestone rather than a head-insert into M1 because M1's own aim asks for its contents to be divided into real milestones -- this strand is one: a repository that is bound to a shared project and usable by a second person.\n\nOne batch, not two, on the dominance rule in batch-orchestration-guardrails.md: shared file territory outranks width. All five declare agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md in their own territory statements, and 677/678 additionally share injection-site-scoping.md and review-gate-boundary.md. None of the five carries a file_scope field, so the creation-time overlap checker has nothing to compare and the batch itself is the only mechanism that makes the collision visible at all. Splitting 682 out as its own leading batch was considered and rejected for that reason alone -- it is independent in the graph, but it writes the same doc.\n\nGraph shape inside the batch: 681 -> 677 -> 679, 678 -> 679, and (added on this pass) 682 -> 679. 681, 678 and 682 share wave 1; 677 is wave 2; 679 is wave 3. 679 is the milestone's gate task, so the batch drains to it.\n\nThe 682 -> 679 edge is derivable from 679's own requirements, not from co-membership: 679 item (2) asks for an MCP registration that 'names no machine path and no secret', and item (6) asks for the same path for a collaborator who DOES load this extension -- which is exactly the registration 682 changes. Written before 682 lands, that page documents an entry shape 682 then invalidates.\n\nNot added, deliberately: no edge among 681/678/682. They are mutually independent in substance and any ordering between them would be this agent's own preference dressed as a graph fact. The per-repo-scoping.md concurrency hazard among them is real but is an ordering/dispatch concern, to be answered by declaring file_scope on the five or dispatching narrower, not by inventing edges.\n\n--hard because three of the five are rulings or contracts rather than edits: 678 rules five open policy questions and must agree with another repository's write rule, 682 needs a measured per-code-path check of the installed vendor client plus a negative control, and 679 is only done when the path has been run on a clean profile."
+        }
+      ]
+    },
+    {
+      "id": "M3",
+      "title": "Reviewable landing: batch worktrees, squash commits, generated-path collapse",
+      "aim": "Make a batch's work land as reviewable git history: run each batch in its own worktree off an admitted integration branch, land one attribution-built squash commit per completed task, and declare machine-written paths so a diff collapses them.",
+      "gate": "A batch run in an isolated worktree leaves one attribution-built squash commit per completed task on its integration branch, verified before the status write; a partial batch retains its worktree and /refresh reports an orphan; the branch-strategy documentation states the implemented contract; declared generated paths render collapsed in review.",
+      "progress": {
+        "status": "planned",
+        "note": "Raised alongside the Sapience work; only the harness measurement is ready, the rest waits on commit-layer prerequisites in M1."
+      },
+      "review": {
+        "state": "none"
+      },
+      "batches": [
+        {
+          "task_ids": [
+            668
+          ],
+          "description": "Measure the harness against an external worktree before any of the topology is built",
+          "rationale": "The only member of this milestone that is dispatchable today, and the measurement every later batch's design rests on: whether the harness tolerates a working tree outside the project directory. Alone on purpose. A negative answer invalidates the worktree topology itself rather than one task's scope, so nothing downstream should be dispatched in the same run that could still contradict it."
+        },
+        {
+          "task_ids": [
+            669,
+            671
+          ],
+          "description": "Admit the integration branch, stand up the batch worktree, make the hooks two-root aware",
+          "rationale": "The invariants everything after this assumes: admission refuses a run from the wrong starting branch, the isolation declaration exists and defaults off, worktree setup is idempotent, and the write-time and git-guard hooks stop treating one root as both code root and state root. Ordered by the graph, not by this batch: the hooks task declares an edge on the admission task. --hard for the contract breadth, and because every behaviour here must also hold in a repository with isolation undeclared, where no worktree and no batch branch exist.",
+          "flags": "--hard"
+        },
+        {
+          "task_ids": [
+            670,
+            672,
+            673
+          ],
+          "description": "Carry the two-root contract into dispatch and the commit scripts, then land the per-task squash",
+          "rationale": "The heaviest batch in the milestone: a contract every phase commit in every repository flows through, plus the landing mechanic itself. The squash task sits with its own two prerequisites rather than later, because isolating one task's commit range has to be solved from attribution recorded by the commit scripts this batch rewrites, not from assuming contiguity. Blocked on commit-containment and landing-target work that stays in M1; that is an ordering constraint on dispatch, not a reason to site the batch lower than the review goal it serves.",
+          "flags": "--hard"
+        },
+        {
+          "task_ids": [
+            674,
+            675
+          ],
+          "description": "Close the worktree lifecycle: cleanup, partial retention, orphan reporting, docs parity",
+          "rationale": "What makes the topology survivable rather than merely buildable: a partial or failed batch must keep its worktree and its unlanded commits, a vanished one must be reportable, and the branch-strategy documentation must state the contract that actually shipped. Documentation parity sits here, with the behaviour it describes, rather than in a documentation batch far away where it would be written against a design nobody had run yet."
+        },
+        {
+          "task_ids": [
+            655
+          ],
+          "description": "Declare machine-written paths so a reviewer's diff collapses them by default",
+          "rationale": "Re-sited out of the legacy backlog into the milestone whose goal it serves: this is the review-rendering half of reviewable landing. Its scope is now the generated-file declaration alone; every branch-topology element it used to carry is owned by the four batches above, so the --hard flag authored for that superseded breadth is dropped -- what remains is one repo-agnostic declaration mechanism plus the question of where the declaration is written and whether it is generated. Last in the milestone because it changes nothing about what is committed, only how a diff renders, and because its own prerequisites are the deepest of any member here."
         }
       ]
     },
@@ -19895,14 +19959,6 @@
           ],
           "description": "Two detectors over the landing-target contract: stranded research, a commit-less plan phase",
           "rationale": "- **Both depend on `479`, immediately above, and on nothing else that is open.** Splitting them\n  out of that batch keeps it at seven rather than nine and makes the dependency explicit by array\n  position: the contract is stated first, then detected.\n\n- `480` is the advisory detector for research tasks stranded at RESEARCHED with artifacts but no\n  named landing target -- the backlog shape `479`'s gate prevents going forward, applied\n  retroactively to what is already filed. `513` mechanically detects a plan phase that closed\n  without its own commit.\n\n- They share `context/contracts/phase-closure.md` with `518` (batch eight), which runs earlier;\n  that cross-batch overlap is left to array position."
-        },
-        {
-          "task_ids": [
-            655
-          ],
-          "description": "Branch-aware admission and milestone-ref landing, sited after its commit-layer prerequisites",
-          "rationale": "- **Re-sited after its prerequisites, which is the ordering constraint the strand predicted and never applied.** This record's dependency array is `[513, 517, 553, 654, 657]`. `654` and `657` are completed and impose no ordering; the other three are all `not_started` and each is an authored member of a LATER batch under this milestone -- `553` in commit containment, `517` in the generated-surfaces/store-leak batch, `513` in the landing-target detectors batch. Sited at position 3 the batch was therefore authored ahead of all three of its own prerequisites, and since it holds exactly ONE member, nothing in it was dispatchable: a live `/orchestrate 655` returned a `no_eligible_stuck` admission verdict naming `513`, `517` and `553` as non-terminal and out of batch, and dispatched nothing. The rendered command and the member's own blocked row contradicted each other as operator instructions. The batch now sits immediately after the last batch holding one of its prerequisites, so the printed command names a set that is actually dispatchable by the time an operator reaches it.\n\n- **Why the position moved rather than the membership widening.** Absorbing `513`, `517` and `553` into this batch would put each of them in two batches under one milestone. Milestone membership comes only from sitting in a batch and a batch is a dispatch proposal, so double membership double-proposes the same work and corrupts the batch-done and task-done fractions the milestone summary renders. Each of the three also sits in its current batch for a stated topical reason. Position is the field that was wrong; membership was not.\n\n- **Why the prerequisites were not pulled forward instead.** Measured on the live graph, this record's transitive non-terminal prerequisite closure is 20 tasks spread across six batches (handoff/return-meta, evidence integrity, commit containment, generated surfaces, task creation/backlog, landing-target detectors). Lifting them into a new batch ahead of this one would dismantle six topically-authored batches and exceed the batch cap several times over; the claim that only three tasks would move does not survive the closure measurement. The closure's deepest member is `513` itself, which is why siting immediately after `513`'s batch satisfies the whole closure, not merely the three declared edges.\n\n- **Why no narrower, partially-gating subset was used.** The landed branch-topology ruling does shrink this record's SCOPE -- per-invocation branch creation and `git merge --squash` landing are superseded by rulings R1 and R2, leaving the admission-time starting-branch check and the integration-branch declaration key (R4) as what survives. It does not shrink the GATE. Admission reads the declared `dependencies` array, not a judgment about which element each edge gates, so any position short of all three prerequisites still refuses. The scope analysis also does not point at a smaller set: `513` is named in this record's own ordering block as the detector it must pass a resolved ref to rather than duplicate, and both `517` and `553` claim `git-commit-scoped.sh`, which is in this record's `file_scope`. The three edges are correct and stay; only the authored position was at fault.\n\n- **Alone in its own invocation on purpose, not for want of batch-mates.** This record spans two orchestration scripts, two commit scripts, one rule file and two standards documents, and it changes a contract every phase commit in every repository flows through; its own text says to expect systematic refactoring rather than a one-file change. The ruling that held explicit written authority to revise this record's description has now landed, so the earlier reason for isolation -- the risk of building a design the ruling then withdraws -- is discharged. The breadth reason stands on its own.\n\n- **The file-territory contention on this record is the heaviest in the backlog and is deliberately left unedged.** `git-commit-scoped.sh` and `orchestrate-cycle-postflight.sh` each carry the largest open claimant sets in this milestone; `git-commit-phase.sh` and `orchestrate-cycle-plan.sh` follow. This record claims all four. Those overlaps resolve by array position and by the collision deferral, per the direct-edge-only ruling: chaining a dozen unrelated defect strands to one feature record asserts a semantic claim none of them supports. Re-siting this batch below the commit-containment and dispatch-composition batches incidentally resolves most of that contention by position too.\n\n- **`--hard` is authored for the breadth and for one specific hard problem.** The landing mechanic is no longer a squash merge: ruling R2 fixes it as `git commit-tree` plus a compare-and-swap `git update-ref` onto a per-milestone ref, with no checkout of the working tree at all. Isolating one task's own commit range for that tree therefore has to be solved from commit attribution rather than from assuming contiguity, with `git rebase -i` unavailable in this environment and `guard-destructive-git.sh` barring the obvious shortcuts (no bare amend, no HEAD-moving reset while another writer is live). The retention rules are equally unforgiving: a task ending PARTIAL, BLOCKED or failed must leave its commits unlanded while a sibling still lands.",
-          "flags": "--hard"
         },
         {
           "task_ids": [
