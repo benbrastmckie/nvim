@@ -5155,7 +5155,7 @@
     {
       "project_number": 451,
       "project_name": "snapshot_lean_challenge_at_plan_time",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Take the Lean Challenge snapshot in the plan phase, where it is still meaningful, instead of leaving it to an implement phase the status gate correctly refuses",
       "topic": "lean-extension",
@@ -5196,7 +5196,7 @@
         }
       ],
       "created": "2026-10-19T04:37:20Z",
-      "last_updated": "2026-11-22T15:53:46Z",
+      "last_updated": "2026-11-22T17:14:37Z",
       "session_id": "sess_1795360608_7bb5fd",
       "next_artifact_number": 2,
       "completion_summary": "Wired the Lean Challenge snapshot to a new post-task observer (lean-challenge-observe.sh) that produces the snapshot at plan-time (resting_status planned) and consumes --check at the implement-side statuses, replacing the never-invoked plan-format.md expectation with a real, registered call site. Extended both regression suites (29 and 41 passing cases respectively), recorded every ruling the originating change request asked for in the design record and plan-compliance.md, corrected two now-false header comments in lean-challenge-snapshot.sh (comment-only), and reconciled the derived index-entries.json line count."
