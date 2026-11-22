@@ -1,0 +1,25 @@
+{
+  "phase": 4,
+  "phase_name": "Redeploy, Scoped Verification, and Deferral to the Orchestration Close",
+  "started_at": "2026-11-22T00:00:00Z",
+  "last_updated": "2026-11-22T00:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Redeploy with deploy-headless.sh", "status": "done", "files_touched": [".claude-extensions.json"]},
+    {"id": 2, "description": "Confirm note byte-identical in deployed tree", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Confirm deployed merged index carries the entry", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Confirm discoverability via keywords and all three pointer surfaces", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Run validate-context-index.sh", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Run verify-touched.sh over five touched paths", "status": "done", "files_touched": ["specs/557_half_line_test_context_note/baselines/phase4-verify-touched.txt"]},
+    {"id": 7, "description": "Re-run verify-deploy.sh gates 3,4 and diff against Phase 1 baseline", "status": "done", "files_touched": ["specs/557_half_line_test_context_note/baselines/phase4-verify-deploy-gate34.txt"]},
+    {"id": 8, "description": "Confirm no task-ref/record-versioning phrasing in final diff", "status": "done", "files_touched": []},
+    {"id": 9, "description": "Defer complete gate set to orchestration close", "status": "done", "files_touched": []},
+    {"id": 10, "description": "Check for concurrent sibling attribution before blaming this task for any failure", "status": "done", "files_touched": []},
+    {"id": 11, "description": "Record issue-log entries", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 11,
+  "approaches_tried": [
+    {"approach": "verify-touched.sh over the five touched paths (including the new note)", "result": "partial", "reason": "Same pre-registered known-failure (test-gate-cache-equivalence.sh, load-sensitive) as Phase 3; 22/23 selected suites passed plus 98/98 OWED-fallback suites clean. Discharged on 0 NEW failures."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

@@ -430,54 +430,67 @@ should name exactly the two edited indexed files, and the after-run should name 
 
 ---
 
-### Phase 4: Redeploy, Scoped Verification, and Deferral to the Orchestration Close [NOT STARTED]
+### Phase 4: Redeploy, Scoped Verification, and Deferral to the Orchestration Close [COMPLETED]
 
 **Goal**: Prove the note is present, indexed, and reachable in the deployed tree, that the gates
 this task's own paths touch are green, and hand the complete gate set to the orchestration close.
 
 **Tasks**:
-- [ ] Redeploy the tree with the bounded-wait idiom the deploy path requires:
+- [x] Redeploy the tree with the bounded-wait idiom the deploy path requires:
       `timeout 540 bash .claude/scripts/deploy-headless.sh`, invoked with the Bash tool's
       `timeout` parameter raised to 600000 rather than its 120000ms default (see
       `context/patterns/external-process-wait.md` Rule 1). Confirm exit 0. This is whole-tree
-      regeneration, which is why `__WHOLE_TREE__` is declared below.
-- [ ] Confirm the note landed in the deployed tree at
+      regeneration, which is why `__WHOLE_TREE__` is declared below. *(completed: exit 0,
+      `[deploy-headless] RESULT=landed_verify_clean`, 41 checks/0 failures)*
+- [x] Confirm the note landed in the deployed tree at
       `.claude/context/project/lean4/patterns/half-line-test.md`, and that its content is
-      byte-identical to the source-store copy.
-- [ ] Confirm the deployed merged index carries the entry: `jq` the entry out of
+      byte-identical to the source-store copy. *(completed: `diff` rc=0)*
+- [x] Confirm the deployed merged index carries the entry: `jq` the entry out of
       `.claude/context/index.json` by `path`, and confirm that `path` resolves to an existing
       file in both the source store and the deployed tree (no ghost row, no unindexed deployed
-      context file).
-- [ ] Confirm discoverability concretely rather than by assertion: for each of the new entry's
+      context file). *(completed)*
+- [x] Confirm discoverability concretely rather than by assertion: for each of the new entry's
       keywords, search the deployed index and confirm the entry comes back; and walk each pointer
       surface once as a reader would — from `EXTENSION.md`'s `### Context Pointers`, from the
       lean4 context `README.md`'s `## Key Files`, and from the sibling note's cross-pointer — each
-      landing on the note.
-- [ ] Run `bash .claude/scripts/validate-context-index.sh` and confirm it exits 0 with no error
-      against the new entry.
-- [ ] Run the scoped touched-path check that discharges this phase's own in-dispatch obligation:
+      landing on the note. *(completed: all 8 keywords resolve; EXTENSION.md's pointer deploys
+      into `.claude/CLAUDE.md`'s merged "Lean 4 Extension" section, README.md Key Files, and the
+      sibling cross-pointer all confirmed)*
+- [x] Run `bash .claude/scripts/validate-context-index.sh` and confirm it exits 0 with no error
+      against the new entry. *(completed: exit 0, 313 entries checked, 0 errors, 0 warnings)*
+- [x] Run the scoped touched-path check that discharges this phase's own in-dispatch obligation:
       `bash .claude/scripts/verify-touched.sh` over this task's five touched paths (the new note
       plus the four Phase 3 files). Require exit 0, checked as an exit status in its own right
-      rather than inferred from quiet output.
-- [ ] Re-run `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
+      rather than inferred from quiet output. *(completed with a recorded exception: exit 1,
+      solely from the same pre-registered known-failure `test-gate-cache-equivalence.sh` seen in
+      Phase 3 -- 22/23 selected suites passed (1 EXPECTED/0 NEW) plus a 98-suite OWED-fallback
+      run passing 98/98 clean; see issue-log)*
+- [x] Re-run `bash /home/benjamin/.config/nvim/.claude/scripts/verify-deploy.sh --skip-slow --only-gate 3,4 /home/benjamin/.config/nvim`
       with both gates RUNNING, and `diff` it against the Phase 1 baseline. A new finding, a
       removed finding, or a changed count means scope was exceeded and is resolved before
-      proceeding, not explained away.
-- [ ] Confirm the lint classes this task is most exposed to are clean on the final diff: no
+      proceeding, not explained away. *(completed: `diff` rc=0, byte-identical to Phase 1
+      baseline)*
+- [x] Confirm the lint classes this task is most exposed to are clean on the final diff: no
       task-number reference anywhere in the new or edited deliverable files, and no
-      record-versioning phrasing.
-- [ ] **Defer the complete gate set to the orchestration close.** Under `/orchestrate`, the
+      record-versioning phrasing. *(completed: zero hits in new content; pre-existing unrelated
+      `v4.31.0` toolchain-pin lines in files this phase edited are the durable-axis exemption,
+      not this task's own addition)*
+- [x] **Defer the complete gate set to the orchestration close.** Under `/orchestrate`, the
       complete set is discharged once per invocation at the batch gate stage
       (`context/contracts/batch-gate-stage.md`), not independently inside this dispatch; this
       phase does not run an independent full battery. State that deferral explicitly in the
       phase's closing notes and in the handoff. Only on a standalone, non-orchestrated run, with
       no orchestration close to defer to, does this phase instead run
-      `bash .claude/scripts/verify-deploy.sh /home/benjamin/.config/nvim` directly.
-- [ ] Treat a failure in a file outside this task's own `Files to modify` lists as possibly a
+      `bash .claude/scripts/verify-deploy.sh /home/benjamin/.config/nvim` directly. *(completed:
+      this dispatch's delegation context carries `orchestrator_mode: true`, so the complete gate
+      set is deferred to the batch stage, not run independently here -- stated in the handoff)*
+- [x] Treat a failure in a file outside this task's own `Files to modify` lists as possibly a
       concurrent sibling's in-flight edit: check `git log` and the working tree before
-      attributing it to this task.
-- [ ] Record issue-log entries as they arise, including a `win` entry if any plan-time grounding
+      attributing it to this task. *(completed: no foreign file touched by this phase's edits;
+      the only failure observed was the pre-registered known-flaky suite, attributed correctly)*
+- [x] Record issue-log entries as they arise, including a `win` entry if any plan-time grounding
       saved rework, and attest explicitly in the handoff if there is genuinely nothing to record.
+      *(completed: one issue and one win recorded this phase)*
 
 **Timing**: 0.5 hours
 
@@ -511,19 +524,24 @@ this task's own paths touch are green, and hand the complete gate set to the orc
 
 ## Testing & Validation
 
-- [ ] An agent given only the deployed note can state, for a candidate transport or index
+- [x] An agent given only the deployed note can state, for a candidate transport or index
       condition, which half-line the counter is read from and which the formula is read from, and
       reach the correct verdict — decided, or outside the decided region — in one reading.
-- [ ] The note names exactly one mechanism per direction and cites each by a declaration name
-      that resolves in the probe file cited for it.
-- [ ] The note asserts no decidability consequence and no identity between the two
-      six-mechanism sets.
-- [ ] The new index entry is schema-conformant, `line_count`-exact, and reachable by every
+      *(completed)*
+- [x] The note names exactly one mechanism per direction and cites each by a declaration name
+      that resolves in the probe file cited for it. *(completed)*
+- [x] The note asserts no decidability consequence and no identity between the two
+      six-mechanism sets. *(completed)*
+- [x] The new index entry is schema-conformant, `line_count`-exact, and reachable by every
       keyword it declares; `load_when.agents` contains no cross-domain shared agent.
-- [ ] All three pointer surfaces resolve to the note in the deployed tree.
-- [ ] `generate-context-line-counts.sh --check` reports zero drift across all entries.
-- [ ] Gates 3 and 4 produce a finding set matching the Phase 1 baseline.
-- [ ] No task-number reference and no record-versioning phrasing in any deliverable file.
+      *(completed)*
+- [x] All three pointer surfaces resolve to the note in the deployed tree. *(completed)*
+- [x] `generate-context-line-counts.sh --check` reports zero drift across all entries.
+      *(completed)*
+- [x] Gates 3 and 4 produce a finding set matching the Phase 1 baseline. *(completed: diff
+      rc=0)*
+- [x] No task-number reference and no record-versioning phrasing in any deliverable file.
+      *(completed)*
 
 ## Artifacts & Outputs
 

@@ -5,6 +5,13 @@
     "session_id": "sess_1795360608_7bb5fd",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
+  },
+  "proposed_file_scope": [
+    ".claude-extensions.json"
+  ]
 }
