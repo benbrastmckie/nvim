@@ -302,12 +302,21 @@ else
 fi
 
 # ===========================================================================
-# Case C13 (regression): the archived refutation plan's actual Goals shape
+# Case C13 -- SUPERSEDED by this task's leading-identifier-run narrowing of the Goals-prose
+# fallback harvest (recorded explicitly, not silently re-baselined; see the narrowing's own
+# header-comment section, LEADING-IDENTIFIER-RUN GOALS-PROSE HARVEST, in
+# lean-plan-compliance-check.sh). The archived refutation plan's actual Goals shape
 # (specs/archive/805_jointly_derived_cell_index_gate/plans/02_joint-index-gate-closeout.md,
 # re-derived at test-authoring time rather than hand-typed: box, LadderCons,
-# ladderCons_localRun, ladderRealized, sorry, stab) produces `failed` under the pre-fix script
-# (no polarity support -- every name reported [MISSING] against an empty source root) and
-# `passed` under the fixed one once a Goal Polarity: refutation line is present.
+# ladderCons_localRun, ladderRealized, sorry, stab) is prose-leading -- its bullet's first
+# content is "Attest mechanically...", not a backtick -- so under the narrowing it is NON-
+# CONFORMANT with the documented leading-run contract and now contributes zero identifiers from
+# either run. The previously-asserted `failed` (no polarity) / `passed` (with polarity) pair is
+# superseded by `skipped` (exit 0) for BOTH runs, under either polarity, since the harvest now
+# finds nothing to check before polarity semantics are even applied. This is not a weakening of
+# the check: case C20 immediately below preserves C13's actual regression intent (the refutation
+# polarity's failed-without / passed-with asymmetry) on a contract-conformant Goals shape using
+# the identical identifier set, so the asymmetry stays pinned.
 # ===========================================================================
 plan_805="$WORKDIR/plan_805.md"
 cat > "$plan_805" <<'EOF'
@@ -334,12 +343,50 @@ out_nopol=$(bash "$TOOL_SRC" "$plan_805_no_polarity" "$EMPTY_ROOT" 2>&1)
 rc_nopol=$?
 out_withpol=$(bash "$TOOL_SRC" "$plan_805_with_polarity" "$EMPTY_ROOT" 2>&1)
 rc_withpol=$?
-if [ "$rc_nopol" -eq 1 ] && echo "$out_nopol" | grep -q '^COMPLIANCE_CHECK: failed$' \
-   && [ "$rc_withpol" -eq 0 ] && echo "$out_withpol" | grep -q '^COMPLIANCE_CHECK: passed$'; then
-  pass "C13 (regression): the archived refutation plan's real Goals shape -> failed without polarity, passed with it declared"
+if [ "$rc_nopol" -eq 0 ] && echo "$out_nopol" | grep -q '^COMPLIANCE_CHECK: skipped' \
+   && [ "$rc_withpol" -eq 0 ] && echo "$out_withpol" | grep -q '^COMPLIANCE_CHECK: skipped'; then
+  pass "C13 (superseded by the leading-identifier-run narrowing): the archived plan's prose-leading Goals bullet is non-conformant -> skipped, exit 0, under either polarity"
 else
-  fail "C13: expected failed (no polarity, rc=$rc_nopol) then passed (with polarity, rc=$rc_withpol)" "no-polarity: $out_nopol
+  fail "C13: expected skipped/exit 0 for both the no-polarity and with-polarity runs, got rc_nopol=$rc_nopol rc_withpol=$rc_withpol" "no-polarity: $out_nopol
 with-polarity: $out_withpol"
+fi
+
+# ===========================================================================
+# Case C20: companion to C13, preserving its actual regression intent (the refutation polarity's
+# failed-without / passed-with asymmetry) on a CONTRACT-CONFORMANT Goals shape -- the same
+# identifier set (box, LadderCons, ladderCons_localRun, ladderRealized, sorry, stab) with the
+# identifiers moved to lead the bullet, so the leading-run harvest now finds them. Against the
+# same empty source root: without the polarity line, every name is reported [MISSING] and the
+# verdict is failed; with `- **Goal Polarity**: refutation` declared, every name's genuine
+# absence is a pass.
+# ===========================================================================
+plan_805_conformant="$WORKDIR/plan_805_conformant.md"
+cat > "$plan_805_conformant" <<'EOF'
+## Goals & Non-Goals
+
+**Goals**:
+- `ladderRealized`, `LadderCons`, `ladderCons_localRun`, `box`, `stab` -- attest mechanically
+  that no weakened, same-named substitute for any of these was published anywhere, under that
+  name or another, and that the probe compiles `sorry`-free.
+
+**Non-Goals**:
+- None.
+EOF
+plan_805c_no_polarity="$WORKDIR/plan_805c_no_polarity.md"
+cp "$plan_805_conformant" "$plan_805c_no_polarity"
+plan_805c_with_polarity="$WORKDIR/plan_805c_with_polarity.md"
+sed '/^\*\*Goals\*\*:/i - **Goal Polarity**: refutation' "$plan_805_conformant" > "$plan_805c_with_polarity"
+
+out_c20_nopol=$(bash "$TOOL_SRC" "$plan_805c_no_polarity" "$EMPTY_ROOT" 2>&1)
+rc_c20_nopol=$?
+out_c20_withpol=$(bash "$TOOL_SRC" "$plan_805c_with_polarity" "$EMPTY_ROOT" 2>&1)
+rc_c20_withpol=$?
+if [ "$rc_c20_nopol" -eq 1 ] && echo "$out_c20_nopol" | grep -q '^COMPLIANCE_CHECK: failed$' \
+   && [ "$rc_c20_withpol" -eq 0 ] && echo "$out_c20_withpol" | grep -q '^COMPLIANCE_CHECK: passed$'; then
+  pass "C20: C13's regression intent preserved on a contract-conformant Goals shape -> failed without polarity, passed with it declared"
+else
+  fail "C20: expected failed (no polarity, rc=$rc_c20_nopol) then passed (with polarity, rc=$rc_c20_withpol)" "no-polarity: $out_c20_nopol
+with-polarity: $out_c20_withpol"
 fi
 
 # ===========================================================================
@@ -383,7 +430,9 @@ fi
 # Case C14: declaration kinds beyond theorem/def/lemma/instance -- a `structure`, an `abbrev`, an
 # `inductive`, and an attributed `private def` -- are each recognised, so a Goal naming one is
 # [OK] rather than a false [MISSING]. (Observed symptom: `[MISSING] AgencyFrame` for an existing
-# `structure AgencyFrame`.)
+# `structure AgencyFrame`.) Goals bullet brought into conformance with the leading-identifier-run
+# contract (all four identifiers lead the bullet, descriptive prose follows) -- the case's
+# subject, declaration-kind recognition, is unchanged.
 # ===========================================================================
 plan_kinds="$WORKDIR/plan_kinds.md"
 cat > "$plan_kinds" <<'EOF'
@@ -391,8 +440,8 @@ cat > "$plan_kinds" <<'EOF'
 
 **Goals**:
 
-- `Frame` -- a structure; `Short` -- an abbrev; `Tree` -- an inductive; `hidden` -- an
-  attributed private def.
+- `Frame`, `Short`, `Tree`, `hidden` -- a structure, an abbrev, an inductive, and an attributed
+  private def, respectively.
 
 **Non-Goals**:
 
@@ -412,7 +461,9 @@ fi
 # Case C15: a structure FIELD named as a Goal -- bare (`factoring`) and qualified
 # (`Frame.factoring`) -- is not a top-level declaration and is reported [OK] via the field
 # fallback, never [MISSING]. (Observed symptom: `[MISSING] factoring` for a plain field of
-# `GranularityRefinement`.)
+# `GranularityRefinement`.) Goals bullet brought into conformance with the leading-identifier-run
+# contract (all three identifiers lead the bullet) -- the case's subject, the structure-field
+# fallback, is unchanged.
 # ===========================================================================
 plan_field="$WORKDIR/plan_field.md"
 cat > "$plan_field" <<'EOF'
@@ -420,7 +471,7 @@ cat > "$plan_field" <<'EOF'
 
 **Goals**:
 
-- `factoring` -- a field of `Frame`, also spelled `Frame.factoring`; `carrier` likewise.
+- `factoring`, `Frame.factoring`, `carrier` -- fields of `Frame`, bare and qualified.
 
 **Non-Goals**:
 
@@ -442,6 +493,9 @@ fi
 # namespace (declared `theorem Frame.ofParts` inside `namespace Outer.Shapes`), `Frame.ofParts`
 # resolves verbatim, and `Outer.Shapes.fromNamespace` resolves as a bare theorem inside the
 # namespace. (Observed symptom: `GranularityRefinement.ofSharedTaskRel` was never checked at all.)
+# Goals bullet brought into conformance with the leading-identifier-run contract, with
+# `Mods.Deep` moved into the leading run too so the module-path fallback stays exercised -- the
+# case's subject, dotted-name / module-path resolution, is unchanged.
 # ===========================================================================
 plan_dotted="$WORKDIR/plan_dotted.md"
 cat > "$plan_dotted" <<'EOF'
@@ -449,8 +503,8 @@ cat > "$plan_dotted" <<'EOF'
 
 **Goals**:
 
-- `Frame.ofParts`, `Outer.Shapes.Frame.ofParts`, and `Outer.Shapes.fromNamespace`; the module
-  `Mods.Deep` is revised too.
+- `Frame.ofParts`, `Outer.Shapes.Frame.ofParts`, `Outer.Shapes.fromNamespace`, and `Mods.Deep`
+  -- three dotted declarations and a module path, all revised.
 
 **Non-Goals**:
 

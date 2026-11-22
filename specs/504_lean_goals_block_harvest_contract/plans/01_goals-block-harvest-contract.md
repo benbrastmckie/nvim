@@ -1,7 +1,7 @@
 # Implementation Plan: Task #504
 
 - **Task**: 504 - Lean Goals-block harvest contract (MEASURED {871, iss_1793913951568_HzkOMJ})
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/504_lean_goals_block_harvest_contract/reports/01_goals-block-harvest-contract.md
@@ -173,7 +173,7 @@ against the prior report and against live state:
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Narrow the fallback harvest and re-baseline the four affected cases [NOT STARTED]
+### Phase 1: Narrow the fallback harvest and re-baseline the four affected cases [COMPLETED]
 
 **Goal**: Replace `lean-plan-compliance-check.sh`'s whole-range Goals-prose backtick sweep with a
 per-bullet leading-identifier-run extraction, and bring the four existing test cases whose
@@ -182,11 +182,11 @@ change's rationale recorded in the case's own header comment.
 
 **Tasks**:
 
-- [ ] Re-read `agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh` immediately
+- [x] Re-read `agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh` immediately
       before editing (concurrency note), confirming the fallback branch is still the
       `else` arm of the `if [ -n "$challenge_names_raw" ]` conditional at approximately
-      lines 227-230.
-- [ ] Replace the fallback harvest's single whole-range sweep with the two-stage leading-run
+      lines 227-230. *(completed)*
+- [x] Replace the fallback harvest's single whole-range sweep with the two-stage leading-run
       form: stage one matches each line's bullet marker and its maximal leading run of
       backtick-delimited identifiers separated only by whitespace, `,`, `/`, or `and`
       (`grep -oP '^\s*-\s*\K(?:` + backtick + `$IDENT_PCRE` + backtick + `|[\s,/]|and\b)+'`);
@@ -195,51 +195,63 @@ change's rationale recorded in the case's own header comment.
       (preamble prose, interstitial prose, a wrapped continuation line) matches nothing in stage
       one and so is never scanned — the single per-line bullet check is the entire gate, mirroring
       the Python's structural preamble exclusion without a dedicated flag.
-- [ ] Keep this script's own **dotted** `IDENT_PCRE` in both stages. Do NOT substitute
+      *(deviation: altered — the literal `\s*-\s*\K` quantifiers are plain/greedy, and grep -P
+      verifiably backtracks them to donate the bullet's own single separating space to the
+      `(?:...)+` alternation (which itself accepts a bare whitespace character) whenever the
+      bullet's first content is non-backtick prose, producing a spurious one-character match
+      instead of no match at all — reproduced live against the C13 archived-plan shape before
+      editing. Implemented as `^\s*+-\s*+\K(?:...)+` instead, with POSSESSIVE `*+` quantifiers on
+      the two prefix pieces only; the alternation's own quantifier and contents are unchanged from
+      the plan's literal text. Re-verified against all three of the plan's own research-time test
+      shapes (measured-defect prose, four-identifier conformant run, prose-leading bullet) plus
+      the Scope Hypothesis table below, all matching exactly)*
+- [x] Keep this script's own **dotted** `IDENT_PCRE` in both stages. Do NOT substitute
       `lean-challenge-snapshot.sh`'s non-dotted `LEAN_IDENT_PATTERN` (`[^\W\d][\w']*`): the two
       patterns differ deliberately, and this script's dotted form is what the landed
-      `DECLARATION-KIND AND DOTTED-NAME WIDENING` depends on.
-- [ ] Keep `is_excluded_token()` applied to the harvested set unchanged, as a redundant second
+      `DECLARATION-KIND AND DOTTED-NAME WIDENING` depends on. *(completed)*
+- [x] Keep `is_excluded_token()` applied to the harvested set unchanged, as a redundant second
       guard rather than removed, matching `lean-challenge-snapshot.sh`'s own stated precedent for
-      its `LEAN_KEYWORDS` list.
-- [ ] Add a new named section to the script's header comment block — a third entry alongside
+      its `LEAN_KEYWORDS` list. *(completed)*
+- [x] Add a new named section to the script's header comment block — a third entry alongside
       `RESERVED-KEYWORD DENYLIST` and `COLON-OPTIONAL GOALS RANGE` — stating that the Goals-prose
       fallback now harvests only each bullet's leading identifier run, that this is the behaviour
       `plan-format.md`'s `## Lean Challenge Statements` section already documents, and that it
       mirrors (independently, not as shared code) `lean-challenge-snapshot.sh`'s
       `extract_goal_names()`. Include the `SHARED FRAGILITY` cross-reference in the same shape the
-      sibling script uses.
-- [ ] Add a one-line comment at the Goals-range `sed` call recording the deferred header-shape
+      sibling script uses. *(completed: LEADING-IDENTIFIER-RUN GOALS-PROSE HARVEST section added)*
+- [x] Add a one-line comment at the Goals-range `sed` call recording the deferred header-shape
       gap: this script's range anchor (`^\*\*Goals\*\*`) does not accept the list-item
       `- **Goals**:` form that `lean-challenge-snapshot.sh`'s `START_RE` (`^-?\s?\*\*Goals\*\*`)
       accepts, and that divergence is deliberately out of this change's scope — pointing at
       `specs/504_lean_goals_block_harvest_contract/reports/01_goals-block-harvest-contract.md`.
-      Do not fix it here.
-- [ ] Run the suite and confirm the failing set is exactly C13, C14, C15, C16 (this is the
+      Do not fix it here. *(completed)*
+- [x] Run the suite and confirm the failing set is exactly C13, C14, C15, C16 (this is the
       Scope Hypothesis's confirmation step — if a fifth case fails, or one of these four passes,
-      STOP and reconcile before editing any test case).
-- [ ] Rewrite C14's Goals bullet into the already-documented contract-conformant leading-run
+      STOP and reconcile before editing any test case). *(completed: confirmed exactly C13, C14,
+      C15, C16 failed, 15 passed — matches the Scope Hypothesis exactly)*
+- [x] Rewrite C14's Goals bullet into the already-documented contract-conformant leading-run
       shape (the four identifiers as one leading backtick list separated by `,`/`and`, with the
       descriptive prose following), preserving the case's subject — declaration-kind recognition —
       exactly. Add a one-line note in its header comment that the bullet was brought into
-      conformance with the leading-run contract, not that its subject changed.
-- [ ] Rewrite C15's Goals bullet the same way (`factoring`, `Frame.factoring` and `carrier` as a
+      conformance with the leading-run contract, not that its subject changed. *(completed)*
+- [x] Rewrite C15's Goals bullet the same way (`factoring`, `Frame.factoring` and `carrier` as a
       leading run), preserving the structure-field-fallback subject and the same header note.
-- [ ] Rewrite C16's Goals bullet the same way, with `Mods.Deep` moved into the leading run so the
-      module-path fallback stays exercised, and the same header note.
-- [ ] Re-baseline C13 WITHOUT altering its fixture text. Its Goals bullet is the archived
+      *(completed)*
+- [x] Rewrite C16's Goals bullet the same way, with `Mods.Deep` moved into the leading run so the
+      module-path fallback stays exercised, and the same header note. *(completed)*
+- [x] Re-baseline C13 WITHOUT altering its fixture text. Its Goals bullet is the archived
       refutation plan's real shape — prose-leading, with the identifiers cited mid-sentence — and
       preserving it verbatim is the whole point of the case. Its new honest outcome is
       `COMPLIANCE_CHECK: skipped` (exit 0) for both the no-polarity and the with-polarity run,
       because a non-conformant Goals block now contributes zero identifiers. Record this in a
       `SUPERSEDED` header comment in the same explicit shape C5 and C6 already use, naming the
       narrowing that superseded it and stating that the archived plan's Goals block is
-      non-conformant under the documented contract.
-- [ ] Add companion case C20 preserving C13's actual regression intent on a contract-conformant
+      non-conformant under the documented contract. *(completed)*
+- [x] Add companion case C20 preserving C13's actual regression intent on a contract-conformant
       Goals shape: the same refutation scenario with the identifiers leading the bullet, asserting
       `failed` without the `- **Goal Polarity**: refutation` line and `passed` with it. This keeps
-      the polarity asymmetry pinned now that C13 itself skips.
-- [ ] Re-run the full suite and confirm 20 passed, 0 failed.
+      the polarity asymmetry pinned now that C13 itself skips. *(completed)*
+- [x] Re-run the full suite and confirm 20 passed, 0 failed. *(completed: 20 passed, 0 failed)*
 
 **Timing**: 1.5 hours
 

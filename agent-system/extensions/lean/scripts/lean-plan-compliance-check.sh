@@ -70,6 +70,24 @@
 #   polarity (see GOAL POLARITY above): a refutation plan's named identifiers must be ABSENT, so
 #   there is no Challenge Statements code demonstrating them to harvest from.
 #
+#   LEADING-IDENTIFIER-RUN GOALS-PROSE HARVEST (third narrowing of this one harvest, after the
+#   RESERVED-KEYWORD DENYLIST and COLON-OPTIONAL GOALS RANGE above): the legacy **Goals**-prose
+#   fallback no longer sweeps every backticked token in the whole Goals range. It now harvests
+#   only each bullet's own MAXIMAL LEADING RUN of backtick-delimited identifiers (separated only
+#   by whitespace, `,`, `/`, or the word `and`) -- the same per-bullet leading-run rule
+#   `plan-format.md`'s `## Lean Challenge Statements` section already documents as the contract,
+#   and the rule `lean-challenge-snapshot.sh`'s own `extract_goal_names()` independently
+#   implements (see SHARED FRAGILITY at IDENT_PCRE below for the cross-reference). A binder name
+#   or a cross-referenced pre-existing identifier cited in a bullet's TRAILING descriptive prose
+#   (`` `foo_bar` -- ... for binder `P` with hypothesis `hP` ``) is no longer harvested as a Goal
+#   to find: only `foo_bar`, the bullet's leading identifier, is. A non-bulleted line --
+#   preamble prose before the first bullet, prose between bullets, or a wrapped continuation
+#   line of a bullet that spans more than one physical line -- never carries a leading `-`
+#   marker and so is never scanned at all; the per-line bullet-marker match is the entire gate,
+#   mirroring the Python sibling's structural preamble exclusion without a dedicated flag.
+#   `is_excluded_token()` below still applies to the harvested set afterward, as a redundant
+#   second guard, not because the leading-run narrowing alone is insufficient today.
+#
 # See test-lean-plan-compliance-check.sh's characterization cases (which this phase's new cases
 # sit alongside) for the pre-existing quirks this extraction otherwise still preserves.
 #
@@ -224,9 +242,27 @@ if [ -n "$challenge_names_raw" ]; then
   goal_names_raw="$challenge_names_raw"
   harvest_source="the '## Lean Challenge Statements' section's declaration lines"
 else
+  # DEFERRED (out of scope -- see LEADING-IDENTIFIER-RUN GOALS-PROSE HARVEST in the header
+  # comment, and specs/504_lean_goals_block_harvest_contract/reports/01_goals-block-harvest-
+  # contract.md): this range anchor (`^\*\*Goals\*\*`) does not accept the list-item
+  # `- **Goals**:` form that lean-challenge-snapshot.sh's own START_RE (`^-?\s?\*\*Goals\*\*`)
+  # accepts. That header-shape gap is deliberately not fixed here.
+  #
+  # LEADING-IDENTIFIER-RUN HARVEST: stage one ("^\s*+-\s*+\K(?:...)+") captures each bullet's own
+  # maximal leading run of backtick-delimited identifiers (separated only by whitespace, `,`,
+  # `/`, or `and`); a non-bulleted line (no leading `-` marker -- preamble prose, interstitial
+  # prose, or a wrapped continuation line) matches nothing and so contributes no names. The
+  # leading `\s*+`/`\s*+` quantifiers before `\K` are POSSESSIVE, not greedy: a plain greedy
+  # `\s*` here lets PCRE backtrack into donating the single space after the bullet marker to the
+  # `(?:...)+` alternation (which itself accepts a bare whitespace character), so a prose-leading
+  # bullet with no leading backtick would otherwise still report a one-character match instead of
+  # no match at all -- verified mechanically against the C13 archived-plan shape during planning.
+  # Stage two re-extracts the individual backticked tokens from that captured run with the
+  # existing grep -oP + tr -d + sort -u pipeline below.
   goal_names_raw=$(sed -n '/^\*\*Goals\*\*/,/^\*\*/p' "$plan_file" \
+    | grep -oP '^\s*+-\s*+\K(?:`'"$IDENT_PCRE"'`|[\s,/]|and\b)+' \
     | grep -oP '`'"$IDENT_PCRE"'`' | tr -d '`' | sort -u)
-  harvest_source="backticked tokens under **Goals**"
+  harvest_source="each Goals bullet's leading identifier run"
 fi
 
 goal_names=""

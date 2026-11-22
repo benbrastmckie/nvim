@@ -1,0 +1,44 @@
+{
+  "phase": 1,
+  "phase_name": "Narrow the fallback harvest and re-baseline the four affected cases",
+  "started_at": "2026-11-22T00:00:00Z",
+  "last_updated": "2026-11-22T00:20:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Narrow fallback harvest to leading-identifier-run two-stage form; add header comment section; deferred header-shape-gap comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Run suite, confirm failing set is exactly C13,C14,C15,C16",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Rewrite C14/C15/C16 bullets into conformant shape; re-baseline C13 as skipped with SUPERSEDED note; add C20",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Re-run full suite, confirm 20 passed 0 failed",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/lean/scripts/lean-plan-compliance-check.sh",
+        "agent-system/extensions/lean/scripts/tests/test-lean-plan-compliance-check.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0
+}
