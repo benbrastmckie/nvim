@@ -226,58 +226,62 @@ carried forward.
 
 ---
 
-### Phase 2: Author the Half-Line Test Note [NOT STARTED]
+### Phase 2: Author the Half-Line Test Note [COMPLETED]
 
 **Goal**: Write the note so that an agent holding a proposed transport or index condition can
 read it once, answer two questions, and know whether the proposal is already decided.
 
 **Tasks**:
-- [ ] Create
+- [x] Create
       `agent-system/extensions/lean/context/project/lean4/patterns/half-line-test.md`. Author in
       the source store only; never hand-author the deployed `.claude/**` mirror
-      (`rules/source-store-deploy-boundary.md`).
-- [ ] Open with one short paragraph stating what the note is for and when to reach for it: before
+      (`rules/source-store-deploy-boundary.md`). *(completed)*
+- [x] Open with one short paragraph stating what the note is for and when to reach for it: before
       attempting a proof or commissioning a probe for a proposed transport or index condition.
-- [ ] State **the test** as its own section: the two questions — which half-line is the COUNTER
+      *(completed)*
+- [x] State **the test** as its own section: the two questions — which half-line is the COUNTER
       read from, and which half-line is the FORMULA read from — followed by the decision rule:
       both answers "forward" means the proposal is already decided and needs no fresh probe.
-- [ ] State **why both-forward is decided**, naming one mechanism per direction and nothing more:
+      *(completed)*
+- [x] State **why both-forward is decided**, naming one mechanism per direction and nothing more:
       the frozen-future (`◁`) direction dies to `Probe855O.cntAt_eq_of_pend_eq_fwd` (the countdown
       at a position is determined by the pend profile at or above it, so freeing the entire past
       buys nothing — the headline `Probe855O.futAtomPreservingCountMove_refutedO` carries no
       hypotheses); the freed-future (`▷`) direction dies to
       `Probe761S.splice_type_invariance_refuted` (the `▷`-shaped count move already exists as the
       landed splice, and it does not preserve the realized stab-free type, because a nested
-      counting formula counts occurrences at unbounded forward distance).
-- [ ] State, in one sentence, why there is no third option: the two projections are the only two,
-      and `⊡φ ↔ ▷◁φ ↔ ◁▷φ` composes them without introducing anything else.
-- [ ] Carry the pincer in the probe's own one-sentence form: the counter and the closure's
+      counting formula counts occurrences at unbounded forward distance). *(completed)*
+- [x] State, in one sentence, why there is no third option: the two projections are the only two,
+      and `⊡φ ↔ ▷◁φ ↔ ◁▷φ` composes them without introducing anything else. *(completed)*
+- [x] Carry the pincer in the probe's own one-sentence form: the counter and the closure's
       eventualities are read from the same forward half-line, so freezing the future leaves
-      nothing to transport and freeing it loses the type.
-- [ ] State **how to answer the two questions** as a short procedure an agent can execute: name
+      nothing to transport and freeing it loses the type. *(completed)*
+- [x] State **how to answer the two questions** as a short procedure an agent can execute: name
       the quantity the condition's freedom is read over; decide whether the counter is
       forward-determined; decide whether the formula's eventuality reach is forward and unbounded.
       Include the strengthening fact that makes the test sharp: the one-sided forms are genuine
       RELAXATIONS of the refuted two-sided schema, so refuting a one-sided form is strictly
-      stronger than the recorded two-sided refutation.
-- [ ] State **the boundary** explicitly, so the note is a test and not a blanket refusal: a
+      stronger than the recorded two-sided refutation. *(completed)*
+- [x] State **the boundary** explicitly, so the note is a test and not a blanket refusal: a
       genuinely past-read counter or a `snce`-bearing formula falls outside the decided region,
       where the honest answer is "not decided here" rather than "refuted" — the past-looking twin
-      is paper-level and not machine-checked.
-- [ ] State **what the test does not decide**, from the probe's own disclaimer: no decidability
+      is paper-level and not machine-checked. *(completed)*
+- [x] State **what the test does not decide**, from the probe's own disclaimer: no decidability
       consequence in either direction, no finite-fibre and no finite-width assumption,
       `not_finite_width_fmp` untouched, no recorded Challenge statement weakened, and the tight
-      (doubling) chain gap in the ladder-chain route is NOT a one-sidedness gap.
-- [ ] Close with a short pointer section: the probe paths that carry the evidence, and the
+      (doubling) chain gap in the ladder-chain route is NOT a one-sidedness gap. *(completed)*
+- [x] Close with a short pointer section: the probe paths that carry the evidence, and the
       sibling note, with the one clause distinguishing the two "six" sets as established in
-      Phase 1.
-- [ ] Keep the note one-reading short: target 70-110 lines. Prefer a flat section list over
-      nesting, and state each mechanism once.
-- [ ] Carry no task-number reference of any kind, and no record-versioning language (no "v2", no
+      Phase 1. *(completed)*
+- [x] Keep the note one-reading short: target 70-110 lines. Prefer a flat section list over
+      nesting, and state each mechanism once. *(completed: 84 lines, flat section list)*
+- [x] Carry no task-number reference of any kind, and no record-versioning language (no "v2", no
       "previously", no "supersedes") — the note states the current test only
       (`rules/no-task-references-in-deliverables.md`,
-      `rules/no-record-versioning-in-deliverables.md`).
-- [ ] Record issue-log entries as they arise.
+      `rules/no-record-versioning-in-deliverables.md`). *(completed: verified via grep, zero
+      hits)*
+- [x] Record issue-log entries as they arise. *(completed: nothing further to record this
+      phase)*
 
 **Timing**: 1.25 hours
 

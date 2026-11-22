@@ -1,0 +1,14 @@
+[verify-deploy] Target: /home/benjamin/.config/nvim
+
+3. Doc-lint (check-extension-docs.sh --quiet)
+  [PASS] doc-lint reports no failures
+  [PASS] STRICT_CORE_DEPLOY reports no undeployed event files
+
+4. Task-reference lint (check-task-references.sh --quiet)
+  [PASS] task-reference lint reports no findings
+[verify-deploy] PASS -- 3 check(s), 0 failure(s)
+
+NOTE: this verifies DEPLOYMENT only. Confirming that events actually flow requires real
+command invocations afterwards -- inspect specs/events.jsonl for artifact_write,
+subagent_stop, and session_stop lines postdating the deploy.
+exit: 0

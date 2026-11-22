@@ -40,6 +40,9 @@ All in `one-sided-count-move-refutation.lean` unless noted, namespace `Probe855O
   not independently re-resolved against the library in this task.
 - `exists_spliced_ladderPath_of_pend_past` -- named verbatim in the probe's own docstring (line
   56) as the landed `▷`-shaped count move the `▷` side attributes.
+- `not_finite_width_fmp` -- named verbatim in the probe's own disclaimer (line 79), "What this
+  probe does NOT settle" paragraph, as the fact the note's disclaimer section carries forward
+  unaltered.
 
 Six-mechanism-table check: `grep -i -c "six" one-sided-count-move-refutation.lean` = 0. Confirms
 the plan's citation decision: the probe file itself carries no six-mechanism table; that table
