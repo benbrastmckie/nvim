@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 8,
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Wrote a 3-phase plan for task 398. Phase 1 extends dependency-tracing.md's existing '## Grep-Based Blast Radius' section with the concrete rw-site worked example and an enumerated runnable multi-spelling grep probe (labelled a reconstruction, since the originating issue log is unreachable here), and resyncs the coupled line_count in the same phase. Phase 2 adds the 'plan-authoring' keyword to that file's own index entry -- the narrowest remedy the measured Stage 4 item 13 mechanism admits, with remedies (a), (b) and (d) rejected or deferred on recorded grounds. Phase 3 redeploys, declares the whole-tree claim via the reserved sentinel, and verifies the plan-time query end to end.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/398_lean_plan_scope_rw_site_unfolding/plans/01_rw-site-unfold-reachability.md",
+      "summary": "3-phase plan (1.5h): content extension plus coupled line_count resync, plan-authoring keyword reachability remedy, redeploy and end-to-end query verification."
+    }
+  ]
+}
