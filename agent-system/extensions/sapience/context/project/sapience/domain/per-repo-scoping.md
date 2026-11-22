@@ -458,18 +458,33 @@ repository performs this confirmation on the operator's behalf.
 
 ### Capture/Activation Reconciliation
 
-This source store stops at `verify-sapience-mcp.sh`'s check (i) and does NOT write
-`capture.projects[].enabled` from either the `SessionStart` registration hook or the installer.
-Two reasons: (1) no script in this extension reads or writes the `capture` key today, so adding
-a writer here would be new, unreviewed surface rather than a fix to an existing one; (2)
-`~/.dotfiles` already owns a capture-map writer, so a second independent writer in this source
-store would create the two-writers-disagreeing hazard the Hazards census above already warns
-about for the MCP-registration entry -- where byte-identical convergence across writers is
-deliberately maintained and no equivalent guarantee would exist here. If active reconciliation
-between extension activation and capture enablement is built at all, it belongs in
-`~/.dotfiles`, per `rules/source-store-deploy-boundary.md`'s task-siting rule. The capture-map
-`enabled` list and the extraction-scheduling lever below share this same `~/.dotfiles` owner --
-see the "Capture Scheduling and the Manual-Only Trigger" subsection for the second lever.
+The `SessionStart` registration hook (`hooks/sapience-mcp-register-project.sh`) couples
+`capture.projects[].enabled` to `.extensions.sapience.status` bidirectionally, in both of its
+existing register/remove branches and in its ungated reap pass. The write goes exclusively
+through the vendor's own `sapience projects on|off <path>` CLI, invoked from
+`scripts/setup-sapience-mcp.sh`'s `--capture-set` and `--reap-capture` actions -- never by
+hand-editing `~/.sapience/config.json`. The vendor client therefore remains the SOLE writer of
+that file's `capture` key, under its own lock, surviving vendor auto-update exactly the way
+`setup-sapience-mcp.sh` is already the sole writer of `~/.claude.json`: this extension is a
+well-behaved CALLER of that one writer, never a second independent one. Routing every write
+through the vendor CLI is what removes the two-writers-disagreeing hazard a direct edit of
+`config.json` would have created: there is only ever one process (the vendor client, under its
+own lock) that ever touches the `capture` key's bytes, so no second writer exists to disagree
+with it.
+
+Caveats, carried from the MCP-registration half and documented identically in the hook's own
+header comment:
+- **One-session-start lag.** Unloading the extension does not retroactively disable capture
+  until the next session start in that repository, mirroring the existing MCP-registration lag.
+- **Sync backfill, not full history.** The first `sapience sync` after an enable backfills only
+  the configured `days` window, not the complete transcript history predating the enable.
+- **`off` is not retroactive.** Disabling capture never retracts a knowledge object the vendor
+  client already extracted and posted; see "There is no delete API" above for why that is a
+  vault-wide constraint this coupling could not change even if it tried.
+
+This coupling closes only the activation/enablement gate. A second, upstream gate on what
+`extract_local.py` actually reads still exists independently of it -- see "The `folders`
+Double-Gate" subsection immediately below.
 
 **The primary-session hook path has no scoping mechanism at all, independent of tagging
 state.** `SessionStart`, `UserPromptSubmit`, and `PreToolUse` never read `provenance` and never
@@ -498,11 +513,34 @@ calling agent's own turn. The only available remedy is agent self-report: when a
 `--what-happened` -- but this is explicitly best-effort, not a substitute for mechanical capture,
 and an agent that does not notice or does not record it leaves no trace, exactly as today.
 
+### The `folders` Double-Gate
+
+`~/.sapience/config.json`'s legacy top-level `folders` list is a SECOND gate on what
+`extract_local.py` actually reads, evaluated BEFORE `capture.projects[]` is ever consulted:
+`_session_candidates()` filters candidate transcripts by `f.parent.name in chosen` (`chosen`
+being `folders`), and `sync()` bails outright when `folders == []`. `sapience projects on`
+never touches this list -- it is the vendor CLI's project-ENABLEMENT surface, not its
+folder-SCAN surface -- and growing `folders` has no safe, non-interactive, single-writer path
+today: the vendor's own onboarding chooser refuses without a TTY, and running it under
+`SAPIENCE_ALLOW_ONBOARD=1` overwrites the entire saved selection rather than adding to it.
+
+**An `enabled: true` `capture.projects[]` entry is therefore not by itself evidence that a
+repository's transcripts are being read.** A project the coupling above enables but whose
+checkout's folder name is not in `folders` has capture "on" in the sense this extension can
+observe and verify (`verify-sapience-mcp.sh` check (i) passes), while `extract_local.py`
+silently skips every one of its transcripts at the folder-filter stage, before
+`capture.projects[]` is ever consulted. The operator remedy is one interactive run of the
+vendor's own onboarding chooser from a real terminal, adding the new folder to the saved
+selection; this source store does not automate it and does not hand-edit `folders`.
+
 ### Capture Scheduling and the Manual-Only Trigger
 
 Transcript capture extraction -- turning a captured transcript into the knowledge objects that
 land in `~/.sapience/extracted.json` and `~/.sapience/pending_kos.jsonl` -- is driven entirely by
-manual invocation of the nix-provided `sapience` launcher. Its `review`, `pending`, `sync`,
+manual invocation of the nix-provided `sapience` launcher. This is a separate gate again from
+the "Capture/Activation Reconciliation" and "The `folders` Double-Gate" subsections above: those
+govern WHICH projects' transcripts are even eligible to be scanned, while the scheduling lever
+below governs WHETHER a scan runs at all. Its `review`, `pending`, `sync`,
 `coverage`, and `backfill` subcommands each `exec` straight into
 `~/.sapience/extract_local.py --<verb>`; no script in this repository, and no script anywhere in
 this source store, calls `extract_local.py` or schedules a call to it.

@@ -434,17 +434,19 @@ instead of a bare informational line.
 
 ---
 
-### Phase 5: Documentation -- Reconciliation Rewrite and the `folders` Double-Gate [NOT STARTED]
+### Phase 5: Documentation -- Reconciliation Rewrite and the `folders` Double-Gate [COMPLETED]
 
 **Goal**: `per-repo-scoping.md` states the new design, why routing through the vendor CLI removes
 the two-writers hazard, and the `folders` double-gate that the new design does not resolve.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`
+- [x] Re-read `agent-system/extensions/sapience/context/project/sapience/domain/per-repo-scoping.md`
       immediately before editing. Its "Capture/Activation Reconciliation" subsection was confirmed
       present this dispatch; if it is absent at implementation time (a sibling edit), stop and
-      report rather than inventing a replacement target.
-- [ ] Rewrite that subsection to state: the `SessionStart` hook now couples
+      report rather than inventing a replacement target. *(completed: present, confirmed by live
+      re-read; the file was 618 lines at this phase's start, not the 410 the plan's premise
+      carried -- a prior premise-drift, not a sibling edit at implementation time)*
+- [x] Rewrite that subsection to state: the `SessionStart` hook now couples
       `capture.projects[].enabled` to `.extensions.sapience.status` in both directions; the write
       goes exclusively through `sapience projects on|off`, invoked from
       `setup-sapience-mcp.sh`'s `--capture-set` and `--reap-capture` actions; the vendor client
@@ -452,26 +454,30 @@ the two-writers hazard, and the `folders` double-gate that the new design does n
       lock, so this extension is a well-behaved **caller** of that single writer rather than a
       second independent one -- exactly mirroring how `setup-sapience-mcp.sh` is already the sole
       writer of `~/.claude.json`. State that this removes the two-writers hazard the prior ruling
-      rested on, rather than overriding that reasoning by fiat.
-- [ ] In the same subsection, record the three caveats: the one-session-start lag; that the first
+      rested on, rather than overriding that reasoning by fiat. *(completed)*
+- [x] In the same subsection, record the three caveats: the one-session-start lag; that the first
       `sapience sync` after an enable backfills the configured `days` window; and that `off` is not
-      retroactive for knowledge objects already posted.
-- [ ] Add a short new subsection documenting the double-gate: `folders` gates which transcript
+      retroactive for knowledge objects already posted. *(completed)*
+- [x] Add a short new subsection documenting the double-gate: `folders` gates which transcript
       directories are scanned at all (`_session_candidates()`'s `f.parent.name in chosen` filter,
       and `sync()`'s bail when `folders == []`), evaluated **before** `capture.projects[]` is
       consulted; `sapience projects on` never touches it; there is no safe non-interactive
       single-writer path to grow it; and the operator remedy is one interactive run of the vendor's
       own onboarding chooser from a terminal. State plainly that an `enabled: true` capture entry
-      is therefore not by itself evidence that transcripts are being read.
-- [ ] Cross-reference the new subsection from "Capture Scheduling and the Manual-Only Trigger",
-      which already names `~/.dotfiles` as the scheduling owner.
-- [ ] Update `agent-system/extensions/sapience/index-entries.json`'s `line_count` for
+      is therefore not by itself evidence that transcripts are being read. *(completed: "The
+      `folders` Double-Gate" subsection)*
+- [x] Cross-reference the new subsection from "Capture Scheduling and the Manual-Only Trigger",
+      which already names `~/.dotfiles` as the scheduling owner. *(completed)*
+- [x] Update `agent-system/extensions/sapience/index-entries.json`'s `line_count` for
       `project/sapience/domain/per-repo-scoping.md` (currently `410`, matching the file's live
-      length) to the file's new length, since this phase moves that derived quantity.
-- [ ] Observe the deliverable-file rules while writing: no task-number references
+      length) to the file's new length, since this phase moves that derived quantity. *(completed:
+      the pre-edit live value was actually 618 (index-entries.json already matched the file, not
+      410); updated to 656 after this phase's edits, confirmed via wc -l)*
+- [x] Observe the deliverable-file rules while writing: no task-number references
       (`rules/no-task-references-in-deliverables.md`) and no record-versioning language
       (`rules/no-record-versioning-in-deliverables.md`) -- state the current design directly rather
-      than narrating that a prior ruling was superseded.
+      than narrating that a prior ruling was superseded. *(completed: check-task-references.sh 0
+      occurrences; check-record-versioning.sh 0 BLOCKING, 2 pre-existing unrelated ADVISORY hits)*
 
 **Timing**: 1 hour
 
