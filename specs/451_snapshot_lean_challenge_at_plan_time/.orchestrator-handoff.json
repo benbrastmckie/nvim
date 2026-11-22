@@ -1,19 +1,18 @@
 {
-  "status": "planned",
+  "status": "implemented",
   "task_number": 451,
-  "phase": "plan",
-  "session_id": "sess_1795360608_7bb5fd_451",
-  "dispatch_seq": 9,
-  "phases_completed": 0,
+  "phase": "implement",
+  "session_id": "sess_1795360608_7bb5fd",
+  "dispatch_seq": 14,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a five-phase plan giving the Lean Challenge snapshot a real producing call site at the moment the exit-73 status gate still admits it. Plan-time re-derivation found a landed seam the research report never considered -- the post-task OBSERVER (manifest 'observers' object -> run-task-observers.sh), invoked from orchestrate-cycle-postflight.sh's completion path with the correctly-resolved local task_type and a fresh persisted_status -- which supersedes both of the dispatch's registration options and the report's recommended core TASK_TYPE bridging fix. The plan therefore touches ZERO core files, narrowing the task's file_scope to the lean extension alone and mooting the core/scripts/ serialization edge. All four rulings the change request asked for are recorded: observer registration with rationale, re-plan REFUSE (inherited from the existing manifest-exists refusal), --check promotion DECLINED on two independent grounds, and the project_root single-repo limitation.",
+  "summary": "Implemented all five plan phases: a new lean-challenge-observe.sh post-task observer produces the Lean Challenge snapshot at plan-time (resting_status planned, no --force) and consumes --check at the implement-side resting statuses, registered in manifest.json's observers block and documented in README.md. Extended both regression suites (29 and 41 passing cases). The design record (challenge-snapshot.md) and plan-compliance.md now record every ruling the originating change request asked for: registration rationale, re-plan REFUSE behavior, the declined --check promotion, the timeout/project_root limitations, and the structural commit-volume side effect. Two now-false header comments in lean-challenge-snapshot.sh were corrected, comment-only. The derived index-entries.json line_count was reconciled and the deployed tree matches the source store.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/451_snapshot_lean_challenge_at_plan_time/plans/01_challenge-snapshot-observer-wiring.md",
-      "summary": "Five-phase plan: author the observer and its suite; register it and derive provides.scripts; deploy and pin end-to-end firing plus the untouched exit-73 gate; record every ruling and correct two now-false header claims; reconcile the derived index and close."
+      "type": "summary",
+      "path": "specs/451_snapshot_lean_challenge_at_plan_time/summaries/01_challenge-snapshot-observer-wiring-summary.md",
+      "summary": "Implementation summary covering all five phases: observer authoring and suite, manifest registration, end-to-end deployment/firing verification, design-record/rule updates with header corrections, and index reconciliation."
     }
-  ],
-  "next_steps": "Run /orchestrate 451 to execute the plan"
+  ]
 }
