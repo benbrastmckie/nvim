@@ -1,33 +1,31 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1795360608_7bb5fd_537",
-  "dispatch_seq": 5,
-  "task_number": 537,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/537_plan_compliance_spotcheck_probe_scope/reports/01_plan-compliance-probe-scope.md",
-      "summary": "Confirms the plan-compliance spot-check's grep scope (find_decl_files/find_field_files, and the replacement_targets sweep that reuses them) must union lean-src-roots.sh's resolved roots with the plan's own harvested Files-to-modify list and the Challenge snapshot manifest's challenge_path, entirely within lean-plan-compliance-check.sh; no change needed to lean-implementation-agent.md's step 5 call site, step 0, or steps 1-4. Recommends reusing the existing core-extension plan-file-scope-harvest.sh rather than a new parser, flags a territory overlap with concurrent sibling task #504 on the same two files, and flags an adjacent but out-of-scope blind spot in step 6's comparator-gate Preflight 4."
+      "type": "plan",
+      "path": "specs/537_plan_compliance_spotcheck_probe_scope/plans/01_probe-scoped-compliance-grep.md",
+      "summary": "3-phase plan widening lean-plan-compliance-check.sh's per-name lookup scope to union the resolved Lean source roots with the plan's own harvested Files-to-modify paths and Challenge manifest join, under must-exist polarity only, plus six regression cases and a deploy-tree regeneration."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1795360608_7bb5fd_537",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "task_number": 537,
+    "phase_count": 3,
+    "estimated_hours": 2.5,
+    "dependency_waves": [[1], [2], [3]]
+  },
   "memory_candidates": [
     {
-      "content": "lean-plan-compliance-check.sh's per-name declaration/field lookup (find_decl_files, find_field_files) greps only the lean-src-roots.sh-resolved roots passed in as CLI args, which misses this repo's evidence-probe convention (Goals pinned in specs/evidence/**/*.lean). The fix is to widen only those two functions (not find_module_files, which is directory-rooted) to also search the plan's own harvested Files-to-modify list (reuse agent-system/extensions/core/scripts/plan-file-scope-harvest.sh, already deployed at .claude/scripts/plan-file-scope-harvest.sh, rather than re-parsing) plus the Challenge snapshot manifest's project_root+challenge_path join, derivable entirely from the plan_file argument the script already receives -- no caller-side change needed.",
+      "content": "A bash script's scope-widening change that must work in BOTH the agent-system source store and the deployed .claude/ tree needs a cross-script resolution ladder, not a single sibling-directory default: in the deployed tree two extensions' scripts sit side by side in .claude/scripts/, but in the source store they live in different extension directories (agent-system/extensions/<a>/scripts vs .../<b>/scripts). The precedent shape is lean-comparator-run.sh's env-override-with-sibling-default (${VAR:-$(dirname \"${BASH_SOURCE[0]:-$0}\")/other.sh}), extended with a repo-relative .claude/scripts/ rung and a ../../<other-ext>/scripts/ rung. Without the source-store rung, a test suite that runs the script straight out of the source store silently exercises the fail-soft fallback instead of the new code path, and passes for the wrong reason.",
       "category": "PATTERN",
-      "source_artifact": "specs/537_plan_compliance_spotcheck_probe_scope/reports/01_plan-compliance-probe-scope.md",
+      "source_artifact": "specs/537_plan_compliance_spotcheck_probe_scope/plans/01_probe-scoped-compliance-grep.md",
       "confidence": 0.85,
-      "suggested_keywords": ["lean-plan-compliance-check", "evidence-probe", "lean-src-roots", "Files to modify", "plan-file-scope-harvest", "Challenge manifest"]
-    },
-    {
-      "content": "The lean extension already declares a dependency on the core extension (manifest.json) and already calls core-extension scripts directly from lean agent/script files (e.g. .claude/scripts/git-commit-scoped.sh from lean agent files). A new cross-extension call from a lean-extension script into another core-extension script (e.g. plan-file-scope-harvest.sh) is therefore precedented and architecturally unremarkable, not a new seam requiring manifest changes.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/537_plan_compliance_spotcheck_probe_scope/reports/01_plan-compliance-probe-scope.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["extension dependencies", "cross-extension call", "lean extension", "core extension", "manifest.json"]
+      "suggested_keywords": ["cross-extension script call", "source store", "deployed tree", "BASH_SOURCE resolution", "fail-soft fallback", "shell test fixture"]
     }
   ],
-  "next_steps": "Run /orchestrate 537 to create implementation plan"
+  "next_steps": "Run /orchestrate 537 to execute the plan",
+  "dispatch_seq": 12
 }

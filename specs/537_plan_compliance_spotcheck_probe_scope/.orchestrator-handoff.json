@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 537,
+  "phase": "plan",
+  "session_id": "sess_1795360608_7bb5fd_537",
+  "dispatch_seq": 12,
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Wrote a 3-phase plan widening lean-plan-compliance-check.sh's per-name lookup scope (find_decl_files, find_field_files) from the lean-src-roots.sh-resolved roots alone to those roots unioned with paths the plan under check declares itself: its harvested Files-to-modify .lean entries plus the Challenge manifest's project_root+challenge_path join, both derived from the existing plan_file argument and both fail-soft. The defect was reproduced synthetically at plan time and the suite baseline measured clean at 19/19, so no figure in the plan is carried unverified. Two decisions go beyond the research report: the union applies under must-exist polarity only (widening refutation polarity would manufacture the mirror false failure, since a refutation plan's probe deliberately pins the body that must be absent), and a four-rung harvester-resolution ladder is required because the two scripts are siblings only in the deployed tree, not in the source store where the suite runs.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/537_plan_compliance_spotcheck_probe_scope/plans/01_probe-scoped-compliance-grep.md",
+      "summary": "3-phase plan: widen the two per-name lookup functions' grep scope (Phase 1), pin the widened/preserved scopes and the fail-soft fallback with six regression cases (Phase 2), regenerate the deployed tree and defer the complete gate set to the orchestration close (Phase 3)."
+    }
+  ],
+  "blockers": []
+}
