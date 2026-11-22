@@ -311,45 +311,48 @@ is turned off by any living session, mirroring the MCP-registration reap this wr
 
 ---
 
-### Phase 3: Hook Wiring and Caveat Documentation [NOT STARTED]
+### Phase 3: Hook Wiring and Caveat Documentation [COMPLETED]
 
 **Goal**: the `SessionStart` hook couples capture in both of its existing branches and in its
 ungated reap pass, keying on the parent checkout, with its contract and its documented caveats
 intact.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh`
-      immediately before editing.
-- [ ] Confirm the parent-checkout hypothesis below before wiring: inside a linked worktree that
+- [x] Re-read `agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh`
+      immediately before editing. *(completed)*
+- [x] Confirm the parent-checkout hypothesis below before wiring: inside a linked worktree that
       carries its own tracked `.claude-extensions.json`, check whether the hook's existing
       `PROJECT_PATH` resolves to the worktree or the checkout, and record the observed result in
       the commit message. Wire the capture call to `GIT_ROOT` when non-empty, falling back to
       `PROJECT_PATH` only when the directory is not inside a git repository, regardless of that
       result. Do **not** change how the MCP-registration half keys its own entry.
-- [ ] In the ungated reap section, after the existing `--reap` invocation, add a second
+      *(completed: confirmed live -- PROJECT_PATH resolves to the WORKTREE, matching the Scope
+      Hypothesis below; see commit message)*
+- [x] In the ungated reap section, after the existing `--reap` invocation, add a second
       `bash "$WRITER" --reap-capture --quiet` invocation, capturing output and rc the same way,
-      and contributing its own distinct notice string on a nonzero-output success.
-- [ ] In the `HAVE_PROJECT` half, add one `bash "$WRITER" --capture-set on|off --project
+      and contributing its own distinct notice string on a nonzero-output success. *(completed)*
+- [x] In the `HAVE_PROJECT` half, add one `bash "$WRITER" --capture-set on|off --project
       "$CAPTURE_PATH" --quiet` invocation, choosing the verb from the already-computed `IS_ACTIVE`,
       capturing output and rc, and contributing a notice only on a nonzero-output success.
-- [ ] Keep every existing contract intact: the `NOTICES` array still joins into exactly one JSON
+      *(completed)*
+- [x] Keep every existing contract intact: the `NOTICES` array still joins into exactly one JSON
       line, every path still `exit 0`, and a nonzero writer rc or empty output still degrades
-      silently with no notice.
-- [ ] Extend the header comment block with: the capture-coupling mechanism and why it routes
+      silently with no notice. *(completed)*
+- [x] Extend the header comment block with: the capture-coupling mechanism and why it routes
       through the vendor CLI; the one-session-start lag (now applying to capture as well as MCP
       registration); that the first `sapience sync` after an enable backfills the configured `days`
       window; that `off` is not retroactive for already-posted knowledge objects; and the
       `folders` double-gate, naming it as the reason an `enabled` entry is not by itself working
-      capture.
-- [ ] Append hook-level cases: (a) active repo emits a capture notice and the stub records
+      capture. *(completed)*
+- [x] Append hook-level cases: (a) active repo emits a capture notice and the stub records
       `projects on <checkout>`; (b) inactive repo with an `enabled: true` entry records
       `projects off <checkout>` and emits a notice; (c) steady state records no stub invocation and
       the hook prints `{}`; (d) no `sapience` on `PATH` prints `{}` and exits 0 with the
       MCP-registration half still working; (e) invoked from inside a linked worktree, the stub
       receives the **parent checkout** path and no worktree-keyed capture entry appears;
       (f) a session with both an orphaned capture entry and an active current repo emits exactly
-      one parseable JSON line mentioning both actions.
-- [ ] Run the full suite.
+      one parseable JSON line mentioning both actions. *(completed: cases 66-71)*
+- [x] Run the full suite. *(completed: 74 passed, 0 failed)*
 
 **Timing**: 2 hours
 

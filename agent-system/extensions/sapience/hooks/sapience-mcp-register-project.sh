@@ -48,6 +48,27 @@
 # same reason: the reap pass depends on both and must still run when no manifest is reachable at
 # all.
 #
+# Capture/activation coupling: the same two branches that register/remove the per-project MCP
+# entry above also couple ~/.sapience/config.json's capture.projects[].enabled for this
+# project's PARENT CHECKOUT (never the per-repo half's own PROJECT_PATH, which can resolve to a
+# linked worktree -- see the CAPTURE_PATH assignment below), exclusively by shelling out to the
+# vendor's own `sapience projects on|off <path>` CLI via setup-sapience-mcp.sh's --capture-set
+# action, so the vendor client remains the sole writer of config.json's "capture" key under its
+# own lock and the coupling survives vendor auto-update. The ungated reap pass above also turns
+# off capture for any vanished project directory via --reap-capture, mirroring the MCP-
+# registration reap. Caveats:
+#   - One-session-start lag applies to capture exactly like MCP registration: unloading the
+#     extension does not retroactively disable capture until the next session start here.
+#   - The first `sapience sync` after an enable backfills the configured `days` window, not the
+#     full transcript history.
+#   - An `off` is NOT retroactive for knowledge objects already extracted and posted.
+#   - The legacy top-level `folders` list in ~/.sapience/config.json is a SECOND, upstream gate
+#     `sapience projects on` does NOT touch: `_session_candidates()` filters candidate
+#     transcripts by folder name before `capture.projects[]` is ever consulted, and `sync()`
+#     bails outright when `folders == []`. An `enabled: true` capture entry is therefore NOT by
+#     itself evidence that this project's transcripts are being read -- see
+#     per-repo-scoping.md's "folders double-gate" subsection for the operator remedy.
+#
 # Contract: always exits 0; always emits exactly one line of valid JSON ({} or
 # {"additionalContext": "..."}) on stdout; never fails the session even if $HOME/.claude.json is
 # unwritable, jq is missing, or the writer errors -- every failure path below degrades to a
@@ -122,6 +143,15 @@ if [ "$REAP_RC" -eq 0 ] && [ -n "$REAP_OUTPUT" ]; then
     NOTICES+=("sapience: reaped one or more orphaned per-project entries whose project directory no longer exists on disk.")
 fi
 
+# Capture reap pass: same ungated, cross-project rationale as the MCP-registration reap above,
+# turning off any enabled:true capture.projects[] entry whose path_prefix is no longer a
+# directory on disk (see setup-sapience-mcp.sh's --reap-capture header for the full mechanism).
+REAP_CAPTURE_OUTPUT="$(bash "$WRITER" --reap-capture --quiet 2>&1)"
+REAP_CAPTURE_RC=$?
+if [ "$REAP_CAPTURE_RC" -eq 0 ] && [ -n "$REAP_CAPTURE_OUTPUT" ]; then
+    NOTICES+=("sapience: turned off capture for one or more orphaned entries whose project directory no longer exists on disk.")
+fi
+
 # Project-root / activation detection for the per-repo half. The git root resolved below is the
 # PARENT CHECKOUT for a linked worktree (never the worktree itself); registration is keyed on
 # the checkout exclusively. Keep in lockstep with verify-sapience-mcp.sh's own copy (see the
@@ -151,6 +181,13 @@ if $HAVE_PROJECT; then
     if [ "$SAPIENCE_STATUS" = "active" ]; then
         IS_ACTIVE=true
     fi
+
+    # Capture coupling keys on the PARENT CHECKOUT (GIT_ROOT), never on PROJECT_PATH: inside a
+    # linked worktree, PROJECT_PATH above can resolve to the worktree itself (its own tracked
+    # .claude-extensions.json satisfies the `[ -f ".claude-extensions.json" ]` branch), but
+    # resolve_checkout_toplevel()'s GIT_ROOT always resolves to the checkout. Falls back to
+    # PROJECT_PATH only when GIT_ROOT is empty (not inside a git repository at all).
+    CAPTURE_PATH="${GIT_ROOT:-$PROJECT_PATH}"
 
     HAS_EXISTING_ENTRY=false
     if [ -f "$CLAUDE_CONFIG" ]; then
@@ -187,6 +224,21 @@ if $HAVE_PROJECT; then
     # A nonzero WRITER_RC (writer failed) or empty WRITE_OUTPUT (no-op: entry already
     # correct/already absent) degrades silently -- a SessionStart hook must never surface a
     # scary error on every session start for a transient jq/disk issue.
+
+    # Capture coupling: the same IS_ACTIVE decision that drives MCP registration above also
+    # drives capture.projects[].enabled for CAPTURE_PATH, exclusively via the vendor's own
+    # `sapience projects on|off` CLI (setup-sapience-mcp.sh's --capture-set action). Idempotent
+    # and silent in steady state -- a nonzero writer rc or empty output (no change) degrades
+    # silently, same as the MCP-registration half above.
+    CAPTURE_VERB="off"
+    if $IS_ACTIVE; then
+        CAPTURE_VERB="on"
+    fi
+    CAPTURE_OUTPUT="$(bash "$WRITER" --capture-set "$CAPTURE_VERB" --project "$CAPTURE_PATH" --quiet 2>&1)"
+    CAPTURE_RC=$?
+    if [ "$CAPTURE_RC" -eq 0 ] && [ -n "$CAPTURE_OUTPUT" ]; then
+        NOTICES+=("${CAPTURE_OUTPUT}. One-session-start lag applies here too: the first 'sapience sync' after an enable backfills the configured 'days' window, and an 'off' is not retroactive for knowledge objects already posted.")
+    fi
 fi
 
 # Notice assembly: emit {} when neither half had anything to report, or exactly one

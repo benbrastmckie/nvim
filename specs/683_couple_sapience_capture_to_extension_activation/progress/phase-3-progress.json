@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Hook Wiring and Caveat Documentation",
+  "started_at": "2026-11-22T10:00:00Z",
+  "last_updated": "2026-11-22T10:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Confirm parent-checkout hypothesis from a fixture worktree", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Wire --reap-capture into the ungated reap pass", "status": "done", "files_touched": ["agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh"]},
+    {"id": 3, "description": "Wire --capture-set on|off into HAVE_PROJECT half keyed on GIT_ROOT", "status": "done", "files_touched": ["agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh"]},
+    {"id": 4, "description": "Extend header comment with caveats", "status": "done", "files_touched": ["agent-system/extensions/sapience/hooks/sapience-mcp-register-project.sh"]},
+    {"id": 5, "description": "Append hook-level capture cases (66)-(71)", "status": "done", "files_touched": ["agent-system/extensions/sapience/scripts/tests/test-sapience-mcp-registration.sh"]},
+    {"id": 6, "description": "Run full suite", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Case 69 (no sapience binary): use two separately-built build_path_without_sapience() scratch dirs for the before/after hook invocations", "result": "failed", "reason": "each call to build_path_without_sapience() creates a NEW scratch dir, so python3's resolved absolute path (a symlink inside that scratch dir) differed between the two runs; setup-sapience-mcp.sh's resolve_interpreter() always re-resolves via 'command -v python3' (it only inherits from the TOP-LEVEL global .mcpServers.sapience.command, never from the project-scoped entry this writer actually writes), so the differing python3 path made the writer judge the existing project entry 'diverged' and rewrite it, spuriously firing the MCP-registration notice on the second run. Fixed by using ONE shared scratch directory for both runs and only adding/removing the 'sapience' file from it between them (install_sapience_stub_into helper), so python3's resolved path is byte-identical across both invocations and only the presence of 'sapience' differs."}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

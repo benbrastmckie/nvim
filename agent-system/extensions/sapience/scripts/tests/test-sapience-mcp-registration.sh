@@ -50,6 +50,18 @@
 #   (64) --reap-capture --dry-run records no stub invocation and mutates nothing.
 #   (65) No `sapience` on PATH exits 0 silently.
 #
+# Hook-level capture-coupling cases (Phase 3):
+#   (66) An active repo emits a capture notice and the stub records 'projects on <checkout>'.
+#   (67) An inactive repo with an existing enabled:true entry records 'projects off
+#        <checkout>' and emits a notice.
+#   (68) Steady state records no additional stub invocation and the hook prints {}.
+#   (69) No sapience binary on PATH prints {}; the MCP-registration half's existing entry is
+#        unaffected.
+#   (70) Invoked from inside a linked worktree, the stub receives the PARENT CHECKOUT path and
+#        no worktree-keyed capture.projects[] entry appears.
+#   (71) A session with both an orphaned capture entry and an active current repo emits exactly
+#        one parseable JSON line mentioning both actions.
+#
 # Hook cases (Phase 3, added once the hook exists):
 #   (10) Active repo (.claude-extensions.json shows extensions.sapience.status == "active")
 #        registers the project-scoped entry and emits an additionalContext notice.
@@ -561,6 +573,17 @@ fi
 build_sapience_stub() {
   local stub_dir
   stub_dir="$(mktemp -d -p "$WORKDIR")"
+  install_sapience_stub_into "$stub_dir"
+  echo "$stub_dir"
+}
+
+# install_sapience_stub_into <dir> -- writes the recording `sapience` stub (same body
+# build_sapience_stub uses) into an EXISTING directory, so a case needing byte-identical
+# interpreter resolution across two invocations (sapience present vs. absent) can add/remove
+# just the `sapience` file from ONE shared scratch PATH directory rather than using two
+# different directories whose OTHER resolved binaries (python3, in particular) could differ.
+install_sapience_stub_into() {
+  local stub_dir="$1"
   : > "$stub_dir/.calls"
   cat > "$stub_dir/sapience" <<'STUB'
 #!/usr/bin/env bash
@@ -593,7 +616,6 @@ fi
 exit 0
 STUB
   chmod +x "$stub_dir/sapience"
-  echo "$stub_dir"
 }
 
 # sapience_stub_call_count <stub_dir> -- number of recorded invocations. `grep -c` on a
@@ -988,6 +1010,128 @@ else
     pass "Case 36: an orphan and an active current repo in one invocation both land, mentioned in a single JSON line"
   else
     fail "Case 36: orphan_entry=$ORPHAN_ENTRY36 repo_entry=$REPO_ENTRY36 lines=$LINES36 output=$OUT36"
+  fi
+
+  # =====================================================================
+  # Hook-level capture-coupling cases (Phase 3). Each fixture needs its OWN copy of the (now
+  # capture-aware) writer at $HOME/.claude/scripts/setup-sapience-mcp.sh plus a PATH-shadowed
+  # recording `sapience` stub so the writer's internal sapience_cli call actually mutates
+  # $HOME/.sapience/config.json the way the real vendor CLI would.
+  # =====================================================================
+
+  # Case 66: an active repo emits a capture notice and the stub records 'projects on <checkout>'.
+  HOME66="$WORKDIR/case66/home"
+  REPO66="$WORKDIR/case66/repo"
+  mkdir -p "$HOME66/.sapience" "$HOME66/.claude/scripts" "$REPO66"
+  echo '{}' > "$HOME66/.sapience/config.json"
+  cp "$WRITER_SRC" "$HOME66/.claude/scripts/setup-sapience-mcp.sh"
+  chmod +x "$HOME66/.claude/scripts/setup-sapience-mcp.sh"
+  jq -n '{"extensions": {"sapience": {"status": "active"}}}' > "$REPO66/.claude-extensions.json"
+  (cd "$REPO66" && git init -q 2>/dev/null || true)
+  STUB66="$(build_sapience_stub)"
+
+  OUT66=$(cd "$REPO66" && PATH="$STUB66:$PATH" STUB_DIR="$STUB66" HOME="$HOME66" bash "$HOOK_SRC" 2>&1)
+  ARGS66="$(sapience_stub_last_args "$STUB66")"
+  CAPTURE66="$(jq -r --arg p "$REPO66" '(.capture.projects // []) | map(select(.path_prefix == $p)) | last.enabled // "ABSENT"' "$HOME66/.sapience/config.json")"
+
+  if [ "$ARGS66" = "projects on $REPO66" ] && [ "$CAPTURE66" = "true" ] \
+     && printf '%s' "$OUT66" | jq -e '.additionalContext | contains("capture")' > /dev/null 2>&1; then
+    pass "Case 66: an active repo emits a capture notice and the stub records 'projects on <checkout>'"
+  else
+    fail "Case 66: args='$ARGS66' capture=$CAPTURE66 output=$OUT66"
+  fi
+
+  # Case 67: an inactive repo with an existing enabled:true entry records 'projects off
+  # <checkout>' and emits a notice.
+  HOME67="$WORKDIR/case67/home"
+  REPO67="$WORKDIR/case67/repo"
+  mkdir -p "$HOME67/.sapience" "$HOME67/.claude/scripts" "$REPO67"
+  cp "$WRITER_SRC" "$HOME67/.claude/scripts/setup-sapience-mcp.sh"
+  chmod +x "$HOME67/.claude/scripts/setup-sapience-mcp.sh"
+  jq -n --arg p "$REPO67" '{"capture": {"projects": [{"path_prefix": $p, "enabled": true}]}}' > "$HOME67/.sapience/config.json"
+  jq -n '{"extensions": {"sapience": {"status": "inactive"}}}' > "$REPO67/.claude-extensions.json"
+  (cd "$REPO67" && git init -q 2>/dev/null || true)
+  STUB67="$(build_sapience_stub)"
+
+  OUT67=$(cd "$REPO67" && PATH="$STUB67:$PATH" STUB_DIR="$STUB67" HOME="$HOME67" bash "$HOOK_SRC" 2>&1)
+  ARGS67="$(sapience_stub_last_args "$STUB67")"
+  CAPTURE67="$(jq -r --arg p "$REPO67" '(.capture.projects // []) | map(select(.path_prefix == $p)) | last.enabled' "$HOME67/.sapience/config.json")"
+
+  if [ "$ARGS67" = "projects off $REPO67" ] && [ "$CAPTURE67" = "false" ] \
+     && printf '%s' "$OUT67" | jq -e '.additionalContext | contains("capture")' > /dev/null 2>&1; then
+    pass "Case 67: an inactive repo with an existing enabled:true entry records 'projects off <checkout>' and emits a notice"
+  else
+    fail "Case 67: args='$ARGS67' capture=$CAPTURE67 output=$OUT67"
+  fi
+
+  # Case 68: steady state -- a second invocation against case 66's already-settled fixture
+  # records no additional stub invocation and the hook prints {}.
+  CALLS66_BEFORE68="$(sapience_stub_call_count "$STUB66")"
+  OUT68=$(cd "$REPO66" && PATH="$STUB66:$PATH" STUB_DIR="$STUB66" HOME="$HOME66" bash "$HOOK_SRC" 2>&1)
+  CALLS66_AFTER68="$(sapience_stub_call_count "$STUB66")"
+
+  if [ "$OUT68" = '{}' ] && [ "$CALLS66_BEFORE68" = "$CALLS66_AFTER68" ]; then
+    pass "Case 68: steady state records no additional stub invocation and the hook prints {}"
+  else
+    fail "Case 68: out='$OUT68' calls_before=$CALLS66_BEFORE68 calls_after=$CALLS66_AFTER68"
+  fi
+
+  # Case 69: no sapience binary on PATH -- capture degrades silently, and the MCP-registration
+  # half still works (demonstrated here as "unaffected": a fixture already settled for BOTH
+  # halves stays at exactly {} when re-run with no sapience binary reachable).
+  HOME69="$WORKDIR/case69/home"
+  REPO69="$WORKDIR/case69/repo"
+  mkdir -p "$HOME69/.sapience" "$HOME69/.claude/scripts" "$REPO69"
+  echo '{}' > "$HOME69/.sapience/config.json"
+  cp "$WRITER_SRC" "$HOME69/.claude/scripts/setup-sapience-mcp.sh"
+  chmod +x "$HOME69/.claude/scripts/setup-sapience-mcp.sh"
+  jq -n '{"extensions": {"sapience": {"status": "active"}}}' > "$REPO69/.claude-extensions.json"
+  (cd "$REPO69" && git init -q 2>/dev/null || true)
+  # ONE shared scratch PATH directory (no real sapience binary, everything else symlinked from
+  # the ambient PATH) used for BOTH runs below, so python3's resolved absolute path is
+  # byte-identical across them and the only variable is whether `sapience` itself is present --
+  # using two DIFFERENT scratch directories here would make resolve_interpreter() see a
+  # different `command -v python3` result each time and spuriously judge the entry "diverged".
+  SHARED69="$(build_path_without_sapience)"
+  install_sapience_stub_into "$SHARED69"
+  # First run (sapience present) settles both the MCP entry and the capture entry.
+  (cd "$REPO69" && PATH="$SHARED69" STUB_DIR="$SHARED69" HOME="$HOME69" bash "$HOOK_SRC" > /dev/null 2>&1)
+  rm -f "$SHARED69/sapience"
+
+  RC69=0
+  OUT69=$(cd "$REPO69" && PATH="$SHARED69" HOME="$HOME69" bash "$HOOK_SRC" 2>&1) || RC69=$?
+  ENTRY69="$(jq -c --arg p "$REPO69" '.projects[$p].mcpServers.sapience // "ABSENT"' "$HOME69/.claude.json")"
+
+  if [ "$RC69" -eq 0 ] && [ "$OUT69" = '{}' ] && [ "$ENTRY69" != '"ABSENT"' ]; then
+    pass "Case 69: no sapience binary on PATH prints {} and the MCP-registration half's existing entry is unaffected"
+  else
+    fail "Case 69: rc=$RC69 out='$OUT69' mcp_entry=$ENTRY69"
+  fi
+
+  # Case 71: a session with BOTH an orphaned capture entry (vanished project dir) and an active
+  # current repo emits exactly one parseable JSON line mentioning both actions.
+  HOME71="$WORKDIR/case71/home"
+  REPO71="$WORKDIR/case71/repo"
+  mkdir -p "$HOME71/.sapience" "$HOME71/.claude/scripts" "$REPO71"
+  cp "$WRITER_SRC" "$HOME71/.claude/scripts/setup-sapience-mcp.sh"
+  chmod +x "$HOME71/.claude/scripts/setup-sapience-mcp.sh"
+  VANISHED71="$WORKDIR/case71/vanished-proj-never-created"
+  jq -n --arg v "$VANISHED71" '{"capture": {"projects": [{"path_prefix": $v, "enabled": true}]}}' > "$HOME71/.sapience/config.json"
+  jq -n '{"extensions": {"sapience": {"status": "active"}}}' > "$REPO71/.claude-extensions.json"
+  (cd "$REPO71" && git init -q 2>/dev/null || true)
+  STUB71="$(build_sapience_stub)"
+
+  OUT71=$(cd "$REPO71" && PATH="$STUB71:$PATH" STUB_DIR="$STUB71" HOME="$HOME71" bash "$HOOK_SRC" 2>&1)
+  LINES71=$(printf '%s' "$OUT71" | wc -l)
+  CTX71=$(printf '%s' "$OUT71" | jq -r '.additionalContext // ""' 2>/dev/null)
+  VANISHED_STATE71="$(jq -r --arg p "$VANISHED71" '(.capture.projects // []) | map(select(.path_prefix == $p)) | last.enabled' "$HOME71/.sapience/config.json")"
+  REPO_STATE71="$(jq -r --arg p "$REPO71" '(.capture.projects // []) | map(select(.path_prefix == $p)) | last.enabled // "ABSENT"' "$HOME71/.sapience/config.json")"
+
+  if [ "$LINES71" -eq 0 ] && printf '%s' "$CTX71" | grep -qi "turned off capture" && printf '%s' "$CTX71" | grep -q "capture on" \
+     && [ "$VANISHED_STATE71" = "false" ] && [ "$REPO_STATE71" = "true" ]; then
+    pass "Case 71: an orphaned capture entry and an active current repo in one invocation both land, mentioned in a single JSON line"
+  else
+    fail "Case 71: lines=$LINES71 vanished=$VANISHED_STATE71 repo=$REPO_STATE71 output=$OUT71"
   fi
 fi
 
@@ -1597,6 +1741,33 @@ else
     pass "Case 28: a worktree-shaped path that is not a git worktree, and a plain non-git directory, are each a silent, error-free no-op"
   else
     fail "Case 28: broken-worktree-shaped rc=$RC28A out=$OUT28A; non-git rc=$RC28B out=$OUT28B"
+  fi
+
+  # Case 70: invoked from inside a linked worktree, the capture coupling call keys on the
+  # PARENT CHECKOUT (never the worktree): the stub receives the checkout path and no
+  # worktree-keyed capture.projects[] entry appears.
+  HOMEWT3="$WORKDIR/casewt3/home"
+  CHECKOUTWT3="$WORKDIR/casewt3/checkout"
+  mkdir -p "$HOMEWT3/.sapience" "$CHECKOUTWT3" "$HOMEWT3/.claude/scripts"
+  echo '{}' > "$HOMEWT3/.claude.json"
+  echo '{}' > "$HOMEWT3/.sapience/config.json"
+  cp "$WRITER_SRC" "$HOMEWT3/.claude/scripts/setup-sapience-mcp.sh"
+  chmod +x "$HOMEWT3/.claude/scripts/setup-sapience-mcp.sh"
+  (cd "$CHECKOUTWT3" && git init -q && git -c user.email="t@t.t" -c user.name="t" commit --allow-empty -q -m init) >/dev/null 2>&1
+  jq -n '{"extensions": {"sapience": {"status": "active"}}}' > "$CHECKOUTWT3/.claude-extensions.json"
+  WORKTREEWT3="$WORKDIR/casewt3/wt1"
+  (cd "$CHECKOUTWT3" && git worktree add -q --detach "$WORKTREEWT3") >/dev/null 2>&1
+  STUB70="$(build_sapience_stub)"
+
+  OUT70=$(cd "$WORKTREEWT3" && PATH="$STUB70:$PATH" STUB_DIR="$STUB70" HOME="$HOMEWT3" bash "$HOOK_SRC" 2>&1)
+  ARGS70="$(sapience_stub_last_args "$STUB70")"
+  CAPTURE_CHECKOUT70="$(jq -r --arg p "$CHECKOUTWT3" '(.capture.projects // []) | map(select(.path_prefix == $p)) | last.enabled // "ABSENT"' "$HOMEWT3/.sapience/config.json")"
+  CAPTURE_WT70="$(jq -r --arg p "$WORKTREEWT3" '(.capture.projects // []) | map(select(.path_prefix == $p)) | last.enabled // "ABSENT"' "$HOMEWT3/.sapience/config.json")"
+
+  if [ "$ARGS70" = "projects on $CHECKOUTWT3" ] && [ "$CAPTURE_CHECKOUT70" = "true" ] && [ "$CAPTURE_WT70" = "ABSENT" ]; then
+    pass "Case 70: a worktree invocation keys the capture call on the parent checkout, never the worktree"
+  else
+    fail "Case 70: args='$ARGS70' checkout=$CAPTURE_CHECKOUT70 (want true) worktree=$CAPTURE_WT70 (want ABSENT)"
   fi
 
   # Case 29: after cases 25-28, the fixture ~/.claude.json carries EXACTLY the checkout key and
