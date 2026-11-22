@@ -110,7 +110,7 @@ next_project_number: 684
 451 [PLANNED] — Take the Lean Challenge snapshot in the plan phase, where it...
   └─ 462 [NOT STARTED] — Give lean-challenge-snapshot.sh --check a scope limit so a...
 463 [PLANNED] — State that lean\_goal's empty goals\_after is not evidence a...
-504 [PLANNING] — Reconcile the Lean Goals-block harvester with its documented...
+504 [PLANNED] — Reconcile the Lean Goals-block harvester with its documented...
   └─ 516 [NOT STARTED] — Stop the Lean plan compliance check failing on...
 
 ### Orchestrator
@@ -6941,11 +6941,12 @@ MECHANICAL OVERLAP FROM BROAD-PREFIX DECLARATIONS, no edge filed: reword_dead_li
 
 ### 504. Reconcile the Lean Goals-block harvester with its documented contract
 - **Effort**: medium
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: lean-extension
 - **Dependencies**: None
 - **Research**: [504_lean_goals_block_harvest_contract/reports/01_goals-block-harvest-contract.md]
+- **Plan**: [504_lean_goals_block_harvest_contract/plans/01_goals-block-harvest-contract.md]
 
 **Description**: MIGRATED FROM BimodalLogic 2026-11-05. This record was filed into ~/Projects/BimodalLogic/specs/
 by an /orchestrate conclusion-stage channel-(b) dispatch, which files into the repository it runs

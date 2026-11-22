@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 504,
+  "phase": "plan",
+  "session_id": "sess_1795360608_7bb5fd_504",
+  "dispatch_seq": 11,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a four-phase implementation plan adopting the research's settled decision (a): narrow lean-plan-compliance-check.sh's Goals-prose fallback harvest to the per-bullet leading-identifier-run algorithm its sibling reader already implements and plan-format.md already documents, leaving the document untouched. Planning established one consequence the research missed and verified it empirically: a drop-in port changes the harvested name set for four of the suite's nineteen existing cases (C13 harvests zero and flips to skipped; C14/C15/C16 lose trailing-prose identifiers), with a 19/19 green baseline confirmed first, so Phase 1 pre-declares that fallout as an atomic batch instead of leaving an implementer to meet four red cases mid-phase. The recommended two-stage bash/grep port was also validated against three Goals shapes at planning time, discharging the research's top risk. Plan validates clean against validate-artifact.sh.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/504_lean_goals_block_harvest_contract/plans/01_goals-block-harvest-contract.md",
+      "summary": "Four-phase plan: narrow the fallback harvest and re-baseline the four affected cases (atomic-batch), add the required regression coverage plus first Challenge-preferred-harvest coverage, correct the stale plan_goals_preamble.md fixture comment, and verify."
+    }
+  ],
+  "blockers": []
+}
