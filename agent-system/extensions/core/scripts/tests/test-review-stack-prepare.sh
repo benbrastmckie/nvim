@@ -131,7 +131,10 @@ assert_refusal "PD1: an empty --review-base override refuses with review_base_in
 rm -rf "$repo"
 
 repo="$(make_fixture_repo)"
-run_rsp "$repo" cut --dry-run --review-base basepoint
+# show, not cut: Phase 2 made cut's own body need a selection (--milestone/--batch/--tasks), so
+# this assertion -- about the review_base resolver shared by every subcommand, not about cut's
+# selection/ordering body -- now exercises show, whose body is still the Phase 1 placeholder.
+run_rsp "$repo" show --dry-run --review-base basepoint
 if [ "$LAST_CODE" -eq 0 ] && printf '%s' "$LAST_OUT" | grep -q "review_base='basepoint'"; then
   common_test_pass "PD1: a valid --review-base override resolves and is not refused"
 else
@@ -163,7 +166,8 @@ assert_refusal "PD9: a push URL differing from the fetch URL refuses with platfo
 rm -rf "$repo"
 
 repo="$(make_fixture_repo '{"review_base": "basepoint"}')"
-run_rsp "$repo" cut --dry-run
+# show, not cut: see the note above the PD1 override case for why.
+run_rsp "$repo" show --dry-run
 if [ "$LAST_CODE" -eq 0 ] && printf '%s' "$LAST_OUT" | grep -q "platform='github'"; then
   common_test_pass "PD9: a github.com remote with matching fetch/push URLs resolves to platform=github"
 else
@@ -183,7 +187,8 @@ bare2_dir="$(mktemp -d -p "$WORKDIR")/github.com/fixture/other.git"
 mkdir -p "$(dirname "$bare2_dir")"
 git init -q --bare "$bare2_dir"
 git -C "$repo" remote add "$REMOTE_NAME" "file://${bare2_dir}"
-run_rsp "$repo" cut --dry-run --remote "$REMOTE_NAME"
+# show, not cut: see the note above the PD1 override case for why.
+run_rsp "$repo" show --dry-run --remote "$REMOTE_NAME"
 if [ "$LAST_CODE" -eq 0 ] && printf '%s' "$LAST_OUT" | grep -q "remote='${REMOTE_NAME}'"; then
   common_test_pass "remote resolution: --remote NAME is used even with another remote present"
 else
@@ -200,7 +205,8 @@ mkdir -p "$(dirname "$bare3_dir")"
 git init -q --bare "$bare3_dir"
 git -C "$repo" remote add "$REMOTE_NAME" "file://${bare3_dir}"
 git -C "$repo" config "branch.${BRANCH}.remote" "$REMOTE_NAME"
-run_rsp "$repo" cut --dry-run
+# show, not cut: see the note above the PD1 override case for why.
+run_rsp "$repo" show --dry-run
 if [ "$LAST_CODE" -eq 0 ] && printf '%s' "$LAST_OUT" | grep -q "remote='${REMOTE_NAME}'"; then
   common_test_pass "remote resolution: the integration branch's configured remote wins over an unconfigured second remote"
 else
@@ -210,7 +216,8 @@ rm -rf "$repo"
 
 # Branch: with no --remote and no branch config, the repository's single remote is used.
 repo="$(make_fixture_repo '{"review_base": "basepoint"}')"
-run_rsp "$repo" cut --dry-run
+# show, not cut: see the note above the PD1 override case for why.
+run_rsp "$repo" show --dry-run
 if [ "$LAST_CODE" -eq 0 ] && printf '%s' "$LAST_OUT" | grep -q "remote='${REMOTE_NAME}'"; then
   common_test_pass "remote resolution: the repository's only remote is used with no --remote and no branch config"
 else
@@ -234,6 +241,247 @@ git -C "$repo" remote remove "$REMOTE_NAME"
 run_rsp "$repo" cut --dry-run
 assert_refusal "remote resolution: zero remotes with no override refuses with remote_unresolvable, exit 20" 20 remote_unresolvable
 rm -rf "$repo"
+
+# =====================================================================
+# Phase 2: selection, units and order fixtures
+# =====================================================================
+# Every fixture below declares review_base at "basepoint" (via make_fixture_repo) and adds its
+# own specs/state.json entries, specs/.orchestration/batch/<session>.json landing proofs, and
+# commits on $BRANCH, then selects with --tasks/--stack-id and reads the printed "UNIT NN:
+# tasks=... branch=... base=... end=..." lines cut's Phase 2 body prints.
+
+# task-ref-ok:begin category 6-adjacent: the 9xx fixture task numbers and the "task N: ..."
+# commit subjects from here to the matching end marker are synthetic fixture data. The script
+# under test reads landing proofs by task number and, absent one, the literal "task N:" commit-
+# subject convention, so the fixtures must carry concrete digits.
+
+STACK_SESSION="sess_test_stack"
+
+_csv_to_json_array_numbers() {
+  local csv="$1"
+  [ -n "$csv" ] || { echo '[]'; return 0; }
+  printf '%s' "$csv" | tr ',' '\n' | jq -R 'tonumber' | jq -s -c '.'
+}
+
+_csv_to_json_array_strings() {
+  local csv="$1"
+  [ -n "$csv" ] || { echo '[]'; return 0; }
+  printf '%s' "$csv" | tr ',' '\n' | jq -R . | jq -s -c '.'
+}
+
+# stack_fixture_repo -- a fresh fixture repo with review_base declared ("basepoint"), plus an
+# empty specs/state.json and an empty specs/.orchestration/batch/ directory.
+stack_fixture_repo() {
+  local d
+  d="$(make_fixture_repo '{"review_base": "basepoint"}')"
+  mkdir -p "$d/specs/.orchestration/batch"
+  echo '{"active_projects": []}' > "$d/specs/state.json"
+  printf '%s' "$d"
+}
+
+# stack_add_task_entry <repo> <task> <slug> <deps_csv> <created_iso> -- appends an
+# active_projects entry to specs/state.json.
+stack_add_task_entry() {
+  local repo="$1" task="$2" slug="$3" deps_csv="$4" created="$5" deps_json tmp
+  deps_json="$(_csv_to_json_array_numbers "$deps_csv")"
+  tmp="$(mktemp)"
+  jq --argjson n "$task" --arg slug "$slug" --argjson deps "$deps_json" --arg created "$created" \
+    '.active_projects += [{"project_number": $n, "project_name": $slug, "dependencies": $deps, "created": $created, "status": "completed"}]' \
+    "$repo/specs/state.json" > "$tmp" && mv "$tmp" "$repo/specs/state.json"
+}
+
+# stack_commit <repo> <task> <file> <subject_suffix> -- writes and commits <file> on $BRANCH
+# with subject "task <task>: <subject_suffix>"; sets LAST_SHA to the new commit.
+stack_commit() {
+  local repo="$1" task="$2" file="$3" suffix="$4"
+  echo "content-${RANDOM}-${file}" > "$repo/$file"
+  git -C "$repo" add "$file" >/dev/null 2>&1
+  git -C "$repo" commit -q -m "task ${task}: ${suffix}" >/dev/null 2>&1
+  LAST_SHA="$(git -C "$repo" rev-parse HEAD)"
+}
+
+# stack_write_batch <repo> <task_numbers_csv> -- creates/overwrites the one batch record this
+# fixture's proofs are appended to, naming <task_numbers_csv> in its `task_numbers`.
+stack_write_batch() {
+  local repo="$1" tasks_csv="$2" tasks_json
+  tasks_json="$(_csv_to_json_array_numbers "$tasks_csv")"
+  jq -n --argjson tasks "$tasks_json" \
+    '{schema: 1, session_id: "sess_test_stack", task_numbers: $tasks, admitted_at: "2026-01-01T00:00:00Z", integration_branch: null, landing_proofs: []}' \
+    > "$repo/specs/.orchestration/batch/${STACK_SESSION}.json"
+}
+
+# stack_add_proof <repo> <task> <end_commit> <paths_csv> [shared_csv] -- appends one landing
+# proof to the batch record stack_write_batch created.
+stack_add_proof() {
+  local repo="$1" task="$2" end="$3" paths_csv="$4" shared_csv="${5:-}" paths_json shared_json tmp
+  paths_json="$(_csv_to_json_array_strings "$paths_csv")"
+  shared_json="$(_csv_to_json_array_strings "$shared_csv")"
+  tmp="$(mktemp)"
+  jq --argjson n "$task" --arg end "$end" --argjson paths "$paths_json" --argjson shared "$shared_json" \
+    '.landing_proofs += [{"task_number": $n, "end_commit": $end, "commits": [$end], "paths": $paths, "shared_paths": $shared}]' \
+    "$repo/specs/.orchestration/batch/${STACK_SESSION}.json" > "$tmp" \
+    && mv "$tmp" "$repo/specs/.orchestration/batch/${STACK_SESSION}.json"
+}
+
+# unit_field <nn> <field> -- stdout: the value of <field> ("tasks"|"branch"|"base"|"end") on the
+# "UNIT <nn>: ..." line of $LAST_OUT, or nothing.
+unit_field() {
+  local nn="$1" field="$2"
+  printf '%s\n' "$LAST_OUT" | grep -E "^UNIT ${nn}: " | grep -oE "${field}=[^ ]*" | head -n 1 | cut -d= -f2-
+}
+
+# unit_count -- stdout: the number of "UNIT NN: ..." lines in $LAST_OUT.
+unit_count() {
+  printf '%s\n' "$LAST_OUT" | grep -cE "^UNIT [0-9]+: " || true
+}
+
+# --- three dependent tasks order bottom-up (bottom <- mid <- top), disjoint paths -----------
+repo="$(stack_fixture_repo)"
+stack_write_batch "$repo" "901,902,903"
+stack_add_task_entry "$repo" 901 "task-901-base" "" "2020-01-01T00:00:00Z"
+stack_commit "$repo" 901 "f901.txt" "base work"
+stack_add_proof "$repo" 901 "$LAST_SHA" "f901.txt"
+stack_add_task_entry "$repo" 902 "task-902-mid" "901" "2020-01-02T00:00:00Z"
+stack_commit "$repo" 902 "f902.txt" "mid work"
+stack_add_proof "$repo" 902 "$LAST_SHA" "f902.txt"
+stack_add_task_entry "$repo" 903 "task-903-top" "902" "2020-01-03T00:00:00Z"
+stack_commit "$repo" 903 "f903.txt" "top work"
+stack_add_proof "$repo" 903 "$LAST_SHA" "f903.txt"
+before_head="$(git -C "$repo" rev-parse HEAD)"
+before_status="$(git -C "$repo" status --porcelain)"
+run_rsp "$repo" cut --dry-run --tasks 901,902,903 --stack-id stackA
+after_head="$(git -C "$repo" rev-parse HEAD)"
+after_status="$(git -C "$repo" status --porcelain)"
+if [ "$LAST_CODE" -eq 0 ] && [ "$(unit_count)" -eq 3 ] \
+   && [ "$(unit_field 01 tasks)" = "901" ] && [ "$(unit_field 01 base)" = "basepoint" ] \
+   && [ "$(unit_field 02 tasks)" = "902" ] && [ "$(unit_field 02 base)" = "$(unit_field 01 branch)" ] \
+   && [ "$(unit_field 03 tasks)" = "903" ] && [ "$(unit_field 03 base)" = "$(unit_field 02 branch)" ] \
+   && [ "$before_head" = "$after_head" ] && [ "$before_status" = "$after_status" ]; then
+  common_test_pass "cut: three dependent tasks order bottom-up with chained bases, creating no ref and no file"
+else
+  common_test_fail "cut: three dependent tasks order bottom-up" "exit=${LAST_CODE} out=${LAST_OUT} before_head=${before_head} after_head=${after_head}"
+fi
+rm -rf "$repo"
+
+# --- two path-disjoint dependent tasks follow the edge even against landing order ----------
+repo="$(stack_fixture_repo)"
+stack_write_batch "$repo" "910,911"
+stack_add_task_entry "$repo" 910 "task-910-base" "" "2020-01-01T00:00:00Z"
+stack_add_task_entry "$repo" 911 "task-911-top" "910" "2020-01-02T00:00:00Z"
+# Commit 911's work before 910's, so the landed commit order contradicts the dependency order;
+# the two files are disjoint so this must not refuse.
+stack_commit "$repo" 911 "f911.txt" "top work landed first"
+stack_add_proof "$repo" 911 "$LAST_SHA" "f911.txt"
+stack_commit "$repo" 910 "f910.txt" "base work landed second"
+stack_add_proof "$repo" 910 "$LAST_SHA" "f910.txt"
+run_rsp "$repo" cut --dry-run --tasks 910,911 --stack-id stackB
+if [ "$LAST_CODE" -eq 0 ] && [ "$(unit_count)" -eq 2 ] \
+   && [ "$(unit_field 01 tasks)" = "910" ] && [ "$(unit_field 01 base)" = "basepoint" ] \
+   && [ "$(unit_field 02 tasks)" = "911" ] && [ "$(unit_field 02 base)" = "$(unit_field 01 branch)" ]; then
+  common_test_pass "cut: two path-disjoint tasks follow the dependency edge even against landing order"
+else
+  common_test_fail "cut: path-disjoint tasks vs landing order" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- two path-overlapping tasks ordered against landing order are refused ------------------
+repo="$(stack_fixture_repo)"
+stack_write_batch "$repo" "920,921"
+stack_add_task_entry "$repo" 920 "task-920-base" "" "2020-01-01T00:00:00Z"
+stack_add_task_entry "$repo" 921 "task-921-top" "920" "2020-01-02T00:00:00Z"
+# Same path-overlap setup as above, but the two tasks share a path, so the dependency edge now
+# disagrees with the landed order on an overlapping file: a refusal, not a silent reorder.
+stack_commit "$repo" 921 "f_shared.txt" "top work landed first"
+stack_add_proof "$repo" 921 "$LAST_SHA" "f_shared.txt"
+stack_commit "$repo" 920 "f_shared.txt" "base work landed second"
+stack_add_proof "$repo" 920 "$LAST_SHA" "f_shared.txt"
+run_rsp "$repo" cut --dry-run --tasks 920,921 --stack-id stackC
+assert_refusal "cut: two path-overlapping tasks ordered against landing order refuse with order_contradiction, exit 45" 45 order_contradiction
+rm -rf "$repo"
+
+# --- a shared_paths pair becomes one unit ---------------------------------------------------
+repo="$(stack_fixture_repo)"
+stack_write_batch "$repo" "930,931"
+stack_add_task_entry "$repo" 930 "task-930" "" "2020-01-01T00:00:00Z"
+stack_add_task_entry "$repo" 931 "task-931" "" "2020-01-02T00:00:00Z"
+stack_commit "$repo" 930 "f_coland.txt" "first half"
+stack_add_proof "$repo" 930 "$LAST_SHA" "f_coland.txt" "f_coland.txt"
+stack_commit "$repo" 931 "f_coland.txt" "second half"
+stack_add_proof "$repo" 931 "$LAST_SHA" "f_coland.txt"
+run_rsp "$repo" cut --dry-run --tasks 930,931 --stack-id stackD
+if [ "$LAST_CODE" -eq 0 ] && [ "$(unit_count)" -eq 1 ] \
+   && { [ "$(unit_field 01 tasks)" = "930,931" ] || [ "$(unit_field 01 tasks)" = "931,930" ]; }; then
+  common_test_pass "cut: a shared_paths pair becomes one unit"
+else
+  common_test_fail "cut: shared_paths pair becomes one unit" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- a no-proof task is attributed by commit subject and marked ----------------------------
+repo="$(stack_fixture_repo)"
+stack_add_task_entry "$repo" 940 "task-940" "" "2020-01-01T00:00:00Z"
+stack_commit "$repo" 940 "f940.txt" "no-proof work"
+run_rsp "$repo" cut --dry-run --tasks 940 --stack-id stackE
+if [ "$LAST_CODE" -eq 0 ] && [ "$(unit_count)" -eq 1 ] \
+   && [ "$(unit_field 01 tasks)" = "940" ] \
+   && printf '%s' "$LAST_OUT" | grep -q "no_proof=true"; then
+  common_test_pass "cut: a no-proof task is attributed by commit subject and marked no_proof=true"
+else
+  common_test_fail "cut: no-proof task attribution" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- two components yield two stacks, each bottomed on the review base ---------------------
+repo="$(stack_fixture_repo)"
+stack_write_batch "$repo" "950,960"
+stack_add_task_entry "$repo" 950 "task-950" "" "2020-01-01T00:00:00Z"
+stack_commit "$repo" 950 "f950.txt" "standalone one"
+stack_add_proof "$repo" 950 "$LAST_SHA" "f950.txt"
+stack_add_task_entry "$repo" 960 "task-960" "" "2020-01-02T00:00:00Z"
+stack_commit "$repo" 960 "f960.txt" "standalone two"
+stack_add_proof "$repo" 960 "$LAST_SHA" "f960.txt"
+run_rsp "$repo" cut --dry-run --tasks 950,960 --stack-id stackF
+if [ "$LAST_CODE" -eq 0 ] && [ "$(unit_count)" -eq 2 ] \
+   && [ "$(unit_field 01 base)" = "basepoint" ] && [ "$(unit_field 02 base)" = "basepoint" ]; then
+  common_test_pass "cut: two components yield two stacks, each bottomed on the review base"
+else
+  common_test_fail "cut: two components, two stacks" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- an earlier unmerged task sharing a path with the selection is pulled in ---------------
+repo="$(stack_fixture_repo)"
+stack_write_batch "$repo" "970,971"
+stack_add_task_entry "$repo" 970 "task-970" "" "2020-01-02T00:00:00Z"
+stack_add_task_entry "$repo" 971 "task-971" "" "2020-01-01T00:00:00Z"
+# 971 lands first and is NOT in the --tasks selection below; it shares f_pullin.txt with 970
+# and its end commit is not yet an ancestor of the review base, so it must be pulled in.
+stack_commit "$repo" 971 "f_pullin.txt" "earlier unmerged work"
+stack_add_proof "$repo" 971 "$LAST_SHA" "f_pullin.txt"
+stack_commit "$repo" 970 "f_pullin.txt" "later selected work"
+stack_add_proof "$repo" 970 "$LAST_SHA" "f_pullin.txt"
+run_rsp "$repo" cut --dry-run --tasks 970 --stack-id stackG
+if [ "$LAST_CODE" -eq 0 ] && [ "$(unit_count)" -eq 2 ] \
+   && printf '%s' "$LAST_OUT" | grep -q "pulled in task 971" \
+   && { [ "$(unit_field 01 tasks)" = "971" ] || [ "$(unit_field 02 tasks)" = "971" ]; } \
+   && { [ "$(unit_field 01 tasks)" = "970" ] || [ "$(unit_field 02 tasks)" = "970" ]; }; then
+  common_test_pass "cut: an earlier unmerged task sharing a path with the selection is pulled in"
+else
+  common_test_fail "cut: earlier-unmerged-task pull-in" "exit=${LAST_CODE} out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- selection refusals: no selection flag, and a batch/tasks selection with no --stack-id -
+repo="$(stack_fixture_repo)"
+run_rsp "$repo" cut --dry-run
+assert_refusal "cut: no selection flag refuses with selection_missing, exit 40" 40 selection_missing
+rm -rf "$repo"
+
+repo="$(stack_fixture_repo)"
+run_rsp "$repo" cut --dry-run --tasks 901
+assert_refusal "cut: --tasks with no --stack-id refuses with stack_id_required, exit 41" 41 stack_id_required
+rm -rf "$repo"
+# task-ref-ok:end
 
 # =====================================================================
 # Writes-nothing check: a refusing invocation leaves the fixture's git state byte-identical.

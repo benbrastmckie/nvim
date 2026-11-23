@@ -276,32 +276,44 @@ the selector maps to several dozen suites across the corpus and no single-module
 
 ---
 
-### Phase 2: Unit selection and stack ordering [NOT STARTED]
+### Phase 2: Unit selection and stack ordering [COMPLETED]
 
 **Goal**: `cut --dry-run` prints the units, their order and their bases for any selection, or
 refuses with a reason.
 
 **Tasks**:
-- [ ] Selection: `--milestone ID`, `--batch SESSION`, or `--tasks N,N,...`. The stack id is the
-      milestone id, or `--stack-id NAME`, which is required for the other two forms.
-- [ ] Read each task's landing proof through `batch_admission_record_for_task` (PD10): commit
-      list, `end_commit`, path set, `shared_paths`.
-- [ ] Fallback for a task with no proof: the commit-subject convention bounded below by the
+- [x] Selection: `--milestone ID`, `--batch SESSION`, or `--tasks N,N,...`. The stack id is the
+      milestone id, or `--stack-id NAME`, which is required for the other two forms. *(completed:
+      selection is gathered before review_base/remote/platform resolution, so those stay
+      reachable with no selection at all, and validated -- 40/41/42 -- inside cut's own body)*
+- [x] Read each task's landing proof through `batch_admission_record_for_task` (PD10): commit
+      list, `end_commit`, path set, `shared_paths`. *(completed)*
+- [x] Fallback for a task with no proof: the commit-subject convention bounded below by the
       task's `created` time, as the handoff's `task_review_line` does. The path set is the union
       of paths its attributed commits changed outside the state territory; the end commit is the
       last attributed commit. Mark the unit as attributed without a proof. A task with neither is
-      refused by name.
-- [ ] Build units per PD3, including the `shared_paths` merge and `--merge N+M`.
-- [ ] Detect an earlier unmerged task whose commits touch a selected unit's paths and are not on
-      the review base; pull it in when it is selectable, else refuse naming both.
-- [ ] Order per PD5: components, topological order over `dependencies` from `specs/state.json`
+      refused by name. *(completed: exit 43 task_unattributable)*
+- [x] Build units per PD3, including the `shared_paths` merge and `--merge N+M`. *(completed:
+      union-find over task numbers)*
+- [x] Detect an earlier unmerged task whose commits touch a selected unit's paths and are not on
+      the review base; pull it in when it is selectable, else refuse naming both. *(completed:
+      scans every batch record's landing proofs and pulls in a matching unselected task,
+      repeating until no more are found; the refusal branch for an unselectable match is wired
+      but not independently exercised by a suite case, since every proof the scan finds is by
+      construction resolvable -- recorded as a follow-up, not a gap in the pull-in behaviour
+      itself)*
+- [x] Order per PD5: components, topological order over `dependencies` from `specs/state.json`
       and its archive, end-commit ancestry for ties, the contradiction refusal, and `--order`.
-- [ ] Assign each unit its branch name and its base: the parent unit's branch, or the review base
-      for the bottom of each component.
-- [ ] Suite cases: three dependent tasks order bottom-up; two path-disjoint tasks follow the
+      *(completed: `dependencies` is read via `task_lookup_entry`, which already covers the
+      archive; the contradiction refusal was observed failing -- exit 0 instead of 45 -- before
+      `rsp_check_order_contradictions` was wired into `rsp_cut_build_and_print`)*
+- [x] Assign each unit its branch name and its base: the parent unit's branch, or the review base
+      for the bottom of each component. *(completed)*
+- [x] Suite cases: three dependent tasks order bottom-up; two path-disjoint tasks follow the
       edge even against landing order; two path-overlapping tasks ordered against landing order
       are refused; a `shared_paths` pair becomes one unit; a no-proof task is attributed and
-      marked; two components yield two stacks, each bottomed on the review base.
+      marked; two components yield two stacks, each bottomed on the review base. *(completed: all
+      six cases added, plus a pull-in case and two selection-refusal cases; 28/28 passing)*
 
 **Timing**: 1.5 hours
 
@@ -325,8 +337,17 @@ because neither file exists yet, so the phase's own suite is also run directly.
 
 **Verification**:
 - The suite exits 0; the contradiction refusal was observed failing before it was implemented.
+  *(confirmed: 28/28 passing; the order_contradiction case was re-run with
+  `rsp_check_order_contradictions` disabled and failed -- exit 0 instead of 45 -- then passed
+  again once restored)*
 - `cut --dry-run` on the three-task fixture prints three units in dependency order with bases
-  review base, unit 1's branch, unit 2's branch, and creates no ref and no file.
+  review base, unit 1's branch, unit 2's branch, and creates no ref and no file. *(confirmed:
+  the "three dependent tasks order bottom-up" case asserts the chained bases and additionally
+  asserts `HEAD` and `git status --porcelain` are byte-identical before and after)*
+- `verify-touched.sh` scoped to this phase's two paths. *(confirmed: 0 suites selected, 2 owed
+  across 2 touched paths -- both this phase's files remain unmapped by `suite_selection_select`,
+  so the OWED-NOT-PAID fallback battery ran instead, same shape Phase 1 observed; 98 passed, 0
+  failed)*
 
 ---
 

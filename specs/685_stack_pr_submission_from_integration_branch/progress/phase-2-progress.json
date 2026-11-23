@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Unit selection and stack ordering",
+  "started_at": "2026-11-23T18:20:00Z",
+  "last_updated": "2026-11-23T18:32:00Z",
+  "objectives": [
+    {"id": 1, "description": "Selection flags --milestone/--batch/--tasks, --stack-id (required for batch/tasks, defaulted from milestone)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 2, "description": "Read each task's landing proof via batch_admission_record_for_task (PD10): commits, end_commit, paths, shared_paths", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 3, "description": "Fallback attribution for a task with no proof: commit-subject convention bounded by created time; refuse by name when neither", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 4, "description": "Build units per PD3 (shared_paths merge, --merge N+M)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 5, "description": "Detect an earlier unmerged task touching a selected unit's paths; pull in or refuse", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 6, "description": "Order per PD5: components (dependency edges + path overlap), topological order, ancestry tie-break, contradiction refusal, --order override", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 7, "description": "Assign each unit its branch name and base (parent unit's branch, or review base for the bottom of each component)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/review-stack-prepare.sh"]},
+    {"id": 8, "description": "Suite cases: three dependent tasks order bottom-up; path-disjoint tasks follow the edge against landing order; path-overlapping tasks against landing order refused; shared_paths pair becomes one unit; no-proof task attributed and marked; two components yield two stacks each bottomed on the review base", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh"]}
+  ],
+  "current_objective": 8,
+  "approaches_tried": [
+    {"approach": "resolve cut's selection (--milestone/--batch/--tasks) before review_base/remote/platform, refusing immediately when none is given", "result": "failed", "reason": "broke every Phase 1 success-path assertion that calls `cut --dry-run` with no selection at all to exercise the shared resolver chain; split into a non-refusing rsp_gather_selection (runs first, so integration-branch resolution can use the selected tasks) and a separate rsp_validate_selection (runs after review_base/remote/platform, inside cut's own body), and repointed the 5 Phase-1 success-path assertions that were really testing the shared resolvers at `show` instead of `cut`, since `show`'s body is still the Phase 1 placeholder"}
+  ],
+  "handoff_count": 0
+}
