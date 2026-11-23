@@ -264,14 +264,18 @@ bounded inner timeout, never an unbounded foreground wait.
 ## Containment and the Derived-Output Exemption
 
 Independently of the blocking probe, every declared `derived_output_dirs` prefix is spliced into
-`orchestrate-cycle-postflight.sh`'s `file_scope`-excursion containment comparison (WORK (h)) at
-implement-phase postflight. A regenerated file under one of these prefixes is no longer dropped
-as an advisory excursion — it is treated as in-scope derived output and staged with the change
-that caused it. This closes the half of the originating incident where a component's gate DID
-run and its regenerated certificate WAS reported, but the containment filter dropped it anyway
-because it fell outside the task's own declared `file_scope`, leaving `HEAD` internally
-inconsistent (a changed `check.sh` committed alongside a stale `digests.txt`). The blocking probe
-above closes the OTHER half: a component whose gate never ran at all.
+the Containment predicate at all three sites `context/standards/git-staging-scope.md`'s "Three
+Containment sites, not one" section documents: `orchestrate-cycle-postflight.sh`'s
+`file_scope`-excursion containment comparison (Site 1, WORK (h)) at implement-phase postflight,
+`git-commit-phase.sh`'s Phase-Commit Containment Self-Check (Site 2) at a mid-dispatch phase
+commit, and `git-commit-scoped.sh`'s own V10 gate (Site 3). A regenerated file under one of
+these prefixes is no longer dropped as an advisory excursion at any of the three — it is treated
+as in-scope derived output and staged with the change that caused it. This closes the half of
+the originating incident where a component's gate DID run and its regenerated certificate WAS
+reported, but the containment filter dropped it anyway because it fell outside the task's own
+declared `file_scope`, leaving `HEAD` internally inconsistent (a changed `check.sh` committed
+alongside a stale `digests.txt`). The blocking probe above closes the OTHER half: a component
+whose gate never ran at all.
 
 ## This Is the System's First *Blocking* Staleness Gate
 

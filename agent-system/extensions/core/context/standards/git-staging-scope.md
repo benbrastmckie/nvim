@@ -457,6 +457,23 @@ not a redundant pair the way sites 2 and 3 are for the phase-commit surface's en
 allowlist gap. See "Phase Commit (mid-dispatch)" below for the full asymmetry this landing
 closes.
 
+**A third per-site widening, now at all three sites: the derived-output-prefix member.**
+Independently of the shared engine-written-state allowlist and the own-task-directory member
+above, all three Containment sites also admit every repo-DECLARED
+`derived_artifact_probes.derived_output_dirs` prefix via the shared
+`scripts/lib/derived-artifact-probe-lib.sh`'s `derived_probe_output_prefixes()` (see
+`context/standards/repo-level-declarations.md`'s "Containment and the Derived-Output Exemption"
+section for the schema and the fail-open posture). Sites 1
+(`orchestrate-cycle-postflight.sh`'s WORK (h)) and 3 (`git-commit-scoped.sh`'s V10) carried this
+widening from their own original landing; site 2's Phase-Commit Containment Self-Check did not,
+until the splice landed alongside the engine-written-state one. **Site 3's identical widening
+does NOT rescue site 2**, for the EXACT SAME reason already recorded above for the
+own-task-directory member: site 2 removes an uncontained path from its own `files_touched` array
+— and therefore from its own `stage_paths` pathspec — before `git-commit-scoped.sh` is ever
+invoked, so V10 can neither see nor restore a derived-output path site 2 has already dropped
+upstream of that call. A regenerated declared derived-output surface therefore needed this
+splice at site 2 specifically; being already widened at sites 1 and 3 was never sufficient.
+
 **A third asymmetry, deliberately left open: the deployed-tree strip and the within-dispatch
 `proposed_file_scope` lookup are site-2-only.** Site 2's `file_scope_arr` has every entry equal
 to `.claude`/`.claude/` or prefixed `.claude/` stripped before the own-task-directory and

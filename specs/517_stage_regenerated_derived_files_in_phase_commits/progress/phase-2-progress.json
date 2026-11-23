@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Make a Regenerated Declared Surface Stageable at Site 2",
+  "started_at": "2026-11-22T17:36:00Z",
+  "last_updated": "2026-11-22T18:10:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm the gap before editing", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add third file_scope_arr splice (derived-output-prefix widening) to git-commit-phase.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]},
+    {"id": 3, "description": "Update git-commit-phase.sh header documentation for the new member", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]},
+    {"id": 4, "description": "Record derived-output member and Site-2/Site-3 subsumption asymmetry in git-staging-scope.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md"]},
+    {"id": 5, "description": "Extend repo-level-declarations.md's Containment and the Derived-Output Exemption section to name all three sites", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/repo-level-declarations.md"]},
+    {"id": 6, "description": "Add admit case and inert case to test-git-commit-phase.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "Admit-case fixture installs derived-artifact-probe-lib.sh ad hoc into one test repo's sandbox rather than adding it to REQUIRED_SCRIPTS/build_repo globally", "result": "used", "reason": "Phase 3's own task list explicitly assigns the formal REQUIRED_SCRIPTS/build_repo declaration and the lint-fixture-dependency-declaration.sh verification to itself, not Phase 2; Phase 2's verification criteria deliberately omit that lint. An ad hoc per-case copy demonstrates the admit/inert behavior now without pre-empting Phase 3's own declared task."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "test-git-commit-phase.sh: 89 passed, 0 failed (includes new Case 35 admit, Case 36 inert). test-git-commit-scoped.sh: 87 passed, 0 failed (Site 3 unchanged, Z8 derived-output case still green). lint-shellcheck.sh on git-commit-phase.sh: 0 findings. lint-scoped-commit-boundary.sh: 0 violations across 1513 files. Inert case explicitly observed in Case 36 (no .claude-extensions.json declaration -> path still dropped/warned/issue-recorded/proposed, byte-for-byte as before this phase). lint-fixture-dependency-declaration.sh deliberately NOT run this phase per the plan's own verification scoping (owed to Phase 3). Full gate set deferred to the batch-level stage per this dispatch's Batch Gate Deferral section."
+}

@@ -102,16 +102,16 @@
 #      call site fire unconditionally regardless of this refusal -- it changes only what, if
 #      anything, gets deposited.
 #   2. The Containment Self-Check's own `file_scope_arr`, once populated from `state.json` and
-#      BEFORE the own-task-directory and engine-written-state splices immediately below it, has
-#      every deployed-tree entry stripped, each with its own `warn()`. This is the predicate's
-#      input -- `file_scope_arr` is NEVER widened by `proposed_file_scope` (see the
-#      "Within-dispatch proposed_file_scope lookup" comment at the strip's call site for why a
-#      true union was rejected), so a deployed-tree path can reach `file_scope_arr` only through
-#      `state.json`'s own declared `file_scope`, exactly where this strip removes it.
+#      BEFORE the own-task-directory, engine-written-state, and derived-output-prefix splices
+#      immediately below it, has every deployed-tree entry stripped, each with its own `warn()`.
+#      This is the predicate's input -- `file_scope_arr` is NEVER widened by `proposed_file_scope`
+#      (see the "Within-dispatch proposed_file_scope lookup" comment at the strip's call site for
+#      why a true union was rejected), so a deployed-tree path can reach `file_scope_arr` only
+#      through `state.json`'s own declared `file_scope`, exactly where this strip removes it.
 #      Non-emptiness is re-tested immediately after the strip: if nothing survives, the existing
 #      fail-open path (skip the whole check) fires exactly as it does for a missing/empty
 #      `file_scope` today -- this is
-#      why neither splice is relocated out of the non-empty guard.
+#      why none of the three splices is relocated out of the non-empty guard.
 # Refusing a deployed-tree path never changes the drop-and-warn guard's behavior for a genuine
 # out-of-territory SOURCE path, and never touches the fail-open posture for an absent, empty,
 # unreadable, or malformed `file_scope` -- both stay exactly as documented above.
@@ -564,8 +564,8 @@ if [ "${#files_touched[@]}" -gt 0 ]; then
 
     # Deployed-tree strip (see "Deployed-tree refusal" subsection below): drop every entry
     # equal to `.claude`/`.claude/` or prefixed `.claude/` from the task's own declared
-    # file_scope BEFORE the own-task-directory and engine-written-state splices below -- a
-    # deployed-tree path is never a legitimate file_scope member (Hard Constraint:
+    # file_scope BEFORE the own-task-directory, engine-written-state, and derived-output-prefix
+    # splices below -- a deployed-tree path is never a legitimate file_scope member (Hard Constraint:
     # rules/source-store-deploy-boundary.md), and residue from an older, un-refused declaration
     # must not re-admit a deployed-tree path into this Containment check. A pure structural
     # prefix test on the string, never a filesystem/existence check. Non-emptiness is re-tested
@@ -622,6 +622,30 @@ if [ "${#files_touched[@]}" -gt 0 ]; then
         done < <(echo "$engine_written_paths_json" | jq -r '.[]?' 2>/dev/null)
       else
         file_scope_arr+=("specs/TODO.md" "specs/state.json")
+      fi
+
+      # Derived-output-prefix widening (the third Containment site to carry it -- see
+      # git-staging-scope.md's "Three Containment sites, not one"): widen file_scope_arr from
+      # every repo-DECLARED derived_artifact_probes.derived_output_dirs prefix, via the same
+      # shared scripts/lib/derived-artifact-probe-lib.sh Site 1
+      # (orchestrate-cycle-postflight.sh's WORK (h)) and Site 3 (git-commit-scoped.sh's V10)
+      # already consult. A regenerated declared surface then survives this Self-Check instead
+      # of being dropped before the commit ever sees it. Placed INSIDE this non-empty guard, so
+      # a task with no declared file_scope still skips the whole check and never acquires a
+      # scope member it never declared. Fails open on every failure mode (missing library,
+      # missing `jq`, malformed output) by adding nothing -- never by widening and never by
+      # refusing: a source/resolution/validation failure leaves file_scope_arr exactly as the
+      # splices above already left it.
+      derived_output_prefixes_json=""
+      # shellcheck disable=SC1091
+      if source "${SCRIPT_DIR}/lib/derived-artifact-probe-lib.sh" 2>/dev/null; then
+        derived_output_prefixes_json="$(derived_probe_output_prefixes "$PROJECT_ROOT" 2>/dev/null)" || derived_output_prefixes_json=""
+      fi
+      if [ -n "$derived_output_prefixes_json" ] \
+         && echo "$derived_output_prefixes_json" | jq -e 'type == "array" and (all(.[]; type == "string"))' >/dev/null 2>&1; then
+        while IFS= read -r dop; do
+          [ -n "$dop" ] && file_scope_arr+=("$dop")
+        done < <(echo "$derived_output_prefixes_json" | jq -r '.[]?' 2>/dev/null)
       fi
 
       # is_contained <path> -- exact match, directory/glob ancestor in either direction, or a

@@ -220,7 +220,7 @@ second paragraph.
 
 ---
 
-### Phase 2: Make a Regenerated Declared Surface Stageable at Site 2 [NOT STARTED]
+### Phase 2: Make a Regenerated Declared Surface Stageable at Site 2 [COMPLETED]
 
 **Goal**: A declared derived-output path, regenerated inside a phase, survives
 `git-commit-phase.sh`'s Phase-Commit Containment Self-Check instead of being dropped before the
@@ -228,39 +228,43 @@ commit sees it — mirroring the widening Containment Site 3 already carries, an
 repository declares nothing.
 
 **Tasks**:
-- [ ] Re-confirm the gap before editing: `grep -n "derived_probe" scripts/git-commit-phase.sh`
+- [x] Re-confirm the gap before editing: `grep -n "derived_probe" scripts/git-commit-phase.sh`
       returns nothing, while `grep -n "derived_probe_output_prefixes" scripts/git-commit-scoped.sh`
-      returns its V10 widening. If this has changed, stop and re-scope.
-- [ ] In `scripts/git-commit-phase.sh`, inside the Containment Self-Check's existing non-empty
+      returns its V10 widening. If this has changed, stop and re-scope. *(completed: confirmed
+      unchanged)*
+- [x] In `scripts/git-commit-phase.sh`, inside the Containment Self-Check's existing non-empty
       `file_scope_arr` guard and immediately after the engine-written-state splice, add a third
       splice: guardedly `source` `lib/derived-artifact-probe-lib.sh`, call
       `derived_probe_output_prefixes "$PROJECT_ROOT"`, validate the returned JSON is an array of
       strings exactly as the engine-written-state splice validates its own, and append each
       prefix to `file_scope_arr`. Fail open on every failure mode (missing library, missing `jq`,
       malformed output) by adding nothing — never by widening and never by refusing.
-- [ ] Place the splice **after** the deployed-tree strip, so the strip's invariant (a `.claude/**`
+- [x] Place the splice **after** the deployed-tree strip, so the strip's invariant (a `.claude/**`
       path is never a legitimate scope member) is unaffected, and inside the non-empty guard, so a
       task with no declared `file_scope` still skips the whole check rather than acquiring a scope
       it never declared.
-- [ ] Update `scripts/git-commit-phase.sh`'s own header section describing the Containment
+- [x] Update `scripts/git-commit-phase.sh`'s own header section describing the Containment
       Self-Check to name the new member alongside the two it already documents.
-- [ ] In `context/standards/git-staging-scope.md`'s "Three Containment sites, not one" area,
+- [x] In `context/standards/git-staging-scope.md`'s "Three Containment sites, not one" area,
       record the derived-output member as a per-site widening and state the subsumption asymmetry
       explicitly: Site 3's identical widening does **not** rescue Site 2, for the same reason
       already recorded there for the own-task-directory member (Site 2 drops the path from its own
       `files_touched`, and therefore from the pathspec, before `git-commit-scoped.sh` is ever
       invoked).
-- [ ] In `context/standards/repo-level-declarations.md`'s "Containment and the Derived-Output
+- [x] In `context/standards/repo-level-declarations.md`'s "Containment and the Derived-Output
       Exemption" section, extend the single-site statement to name all three Containment sites
       that now splice `derived_output_dirs`.
-- [ ] Add two cases to `scripts/tests/test-git-commit-phase.sh`, following its existing
+- [x] Add two cases to `scripts/tests/test-git-commit-phase.sh`, following its existing
       `build_repo`/`write_progress`/`run_phase_commit` fixture style: (i) a fixture repo declaring
       a `derived_artifact_probes` entry whose `derived_output_dirs` covers a regenerated path that
       is **not** in the declared `file_scope` — the path is KEPT, staged, lands in the commit, and
       produces no `scope excursion` row; (ii) the identical fixture with the declaration removed —
       the same path is still dropped, warned about, issue-recorded and deposited into
       `proposed_file_scope`, byte-for-byte as before this phase (the inert case).
-- [ ] Confirm no task-number reference and no record-versioning language entered any edited file.
+- [x] Confirm no task-number reference and no record-versioning language entered any edited file.
+      *(completed: grep confirmed zero new task-number references; the one pre-existing "no
+      longer" phrase retained verbatim from the file's existing text is a functional description,
+      not new draft-history narration)*
 
 **Timing**: 1.5 hours
 

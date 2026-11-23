@@ -1470,6 +1470,93 @@ else
   common_test_fail "Case 34: expected a source-store-excursion issue record for the failed second-repository commit; got $(cat "$repo34/specs/999_probe/issues.jsonl" 2>/dev/null)"
 fi
 
+# =====================================================================
+# Case 35 (derived-output-prefix admit case): a files_touched path under a DECLARED
+# derived_artifact_probes.derived_output_dirs prefix survives the Containment Self-Check and
+# lands in the commit even though it is NOT in the task's own declared file_scope -- mirroring
+# the identical widening Containment Site 3 (git-commit-scoped.sh's V10) already carries. The
+# library is installed into this one fixture's sandbox ad hoc (REQUIRED_SCRIPTS/build_repo do
+# not yet carry it -- that formal declaration is this plan's next phase).
+# =====================================================================
+common_test_info "=== Case 35: a declared derived-output-prefix path is admitted, not dropped ==="
+
+repo35="$(build_repo)"
+mkdir -p "$repo35/.claude/scripts/lib"
+cp "$SRC_SCRIPTS_DIR/lib/derived-artifact-probe-lib.sh" "$repo35/.claude/scripts/lib/derived-artifact-probe-lib.sh"
+cat > "$repo35/.claude-extensions.json" <<'EXT_EOF'
+{"derived_artifact_probes":[{"component":"probe-inventory","check_command":"true","derived_output_dirs":["derived/"]}]}
+EXT_EOF
+mkdir -p "$repo35/derived"
+echo "stale inventory" > "$repo35/derived/inventory.md"
+git -C "$repo35" add .claude-extensions.json derived/inventory.md
+git -C "$repo35" commit -q -m "seed declared derived surface"
+write_progress "$repo35" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt","derived/inventory.md"]}]'
+echo "mod a" > "$repo35/src/a.txt"
+echo "regenerated inventory" > "$repo35/derived/inventory.md"
+
+out35="$(run_phase_commit "$repo35" --task 999 --project probe --phase 1 --message "case35" --session sess_35 2>&1)"
+rc35=$?
+show35="$(git -C "$repo35" show --name-only --format= HEAD)"
+
+if [ "$rc35" -eq 0 ] && echo "$show35" | grep -qF "src/a.txt" && echo "$show35" | grep -qF "derived/inventory.md" \
+  && ! echo "$out35" | grep -q "dropping out-of-scope path 'derived/inventory.md'"; then
+  common_test_pass "Case 35: the declared derived-output path is committed, not dropped, with no scope-excursion warning"
+else
+  common_test_fail "Case 35: expected rc=0, both src/a.txt and derived/inventory.md committed, no drop warning for derived/inventory.md; got rc=$rc35 show='$show35' out=$out35"
+fi
+
+if [ -f "$repo35/specs/999_probe/issues.jsonl" ] && grep -q "scope excursion" "$repo35/specs/999_probe/issues.jsonl" 2>/dev/null \
+  && grep -q "derived/inventory.md" "$repo35/specs/999_probe/issues.jsonl" 2>/dev/null; then
+  common_test_fail "Case 35: expected no scope-excursion issue record for derived/inventory.md; got $(cat "$repo35/specs/999_probe/issues.jsonl" 2>/dev/null)"
+else
+  common_test_pass "Case 35: no scope-excursion issue row was written for the declared derived-output path"
+fi
+
+# =====================================================================
+# Case 36 (inert case): the IDENTICAL fixture as Case 35 -- library installed, same regenerated
+# path -- with the derived_artifact_probes DECLARATION removed (no .claude-extensions.json at
+# all, one of the library's own documented fail-open conditions). The same path is still
+# dropped, warned, issue-recorded, and deposited into proposed_file_scope, byte-for-byte as
+# before this phase's splice.
+# =====================================================================
+common_test_info "=== Case 36: with no declaration, the identical path is still dropped (inert case) ==="
+
+repo36="$(build_repo)"
+mkdir -p "$repo36/.claude/scripts/lib"
+cp "$SRC_SCRIPTS_DIR/lib/derived-artifact-probe-lib.sh" "$repo36/.claude/scripts/lib/derived-artifact-probe-lib.sh"
+mkdir -p "$repo36/derived"
+echo "stale inventory" > "$repo36/derived/inventory.md"
+git -C "$repo36" add derived/inventory.md
+git -C "$repo36" commit -q -m "seed undeclared derived surface"
+write_progress "$repo36" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt","derived/inventory.md"]}]'
+echo "mod a" > "$repo36/src/a.txt"
+echo "regenerated inventory" > "$repo36/derived/inventory.md"
+
+out36="$(run_phase_commit "$repo36" --task 999 --project probe --phase 1 --message "case36" --session sess_36 2>&1)"
+rc36=$?
+show36="$(git -C "$repo36" show --name-only --format= HEAD)"
+proposed36="$(jq -c '.proposed_file_scope // []' "$repo36/specs/999_probe/.return-meta.json" 2>/dev/null)"
+
+if [ "$rc36" -eq 0 ] && echo "$show36" | grep -qF "src/a.txt" && ! echo "$show36" | grep -qF "derived/inventory.md" \
+  && echo "$out36" | grep -q "WARNING.*dropping out-of-scope path 'derived/inventory.md'"; then
+  common_test_pass "Case 36: with no declaration, derived/inventory.md is still dropped with a warning"
+else
+  common_test_fail "Case 36: expected rc=0, src/a.txt committed, derived/inventory.md dropped with a warning; got rc=$rc36 show='$show36' out=$out36"
+fi
+
+if [ -f "$repo36/specs/999_probe/issues.jsonl" ] && grep -q "scope excursion" "$repo36/specs/999_probe/issues.jsonl" \
+  && grep -q "derived/inventory.md" "$repo36/specs/999_probe/issues.jsonl"; then
+  common_test_pass "Case 36: the existing issue-record.sh scope-excursion row still fires"
+else
+  common_test_fail "Case 36: expected a scope-excursion issue record naming derived/inventory.md; got $(cat "$repo36/specs/999_probe/issues.jsonl" 2>/dev/null)"
+fi
+
+if echo "$proposed36" | jq -e 'index("derived/inventory.md") != null' >/dev/null 2>&1; then
+  common_test_pass "Case 36: derived/inventory.md was still deposited into proposed_file_scope"
+else
+  common_test_fail "Case 36: expected derived/inventory.md in proposed_file_scope; got $proposed36"
+fi
+
 # task-ref-ok:end
 
 # =====================================================================

@@ -3,7 +3,11 @@
   "dispatch_seq": 6,
   "modified_files": [
     "agent-system/extensions/core/context/checkpoints/checkpoint-commit.md",
-    "agent-system/extensions/core/agents/general-implementation-agent.md"
+    "agent-system/extensions/core/agents/general-implementation-agent.md",
+    "agent-system/extensions/core/scripts/git-commit-phase.sh",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/context/standards/repo-level-declarations.md",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"
   ],
   "metadata": {
     "session_id": "sess_1795391913_f9e5cc",
@@ -11,7 +15,7 @@
     "delegation_depth": 2,
     "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
     "task_number": 517,
-    "phases_completed": 1,
+    "phases_completed": 2,
     "phases_total": 4
   }
 }
