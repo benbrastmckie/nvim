@@ -513,29 +513,29 @@ the landing proofs.
 
 ---
 
-### Phase 7: Redeploy and close [NOT STARTED]
+### Phase 7: Redeploy and close [COMPLETED]
 
 **Goal**: The deployed tree carries the gate, and the four owned criteria are each tied to
 suite evidence.
 
 **Tasks**:
-- [ ] Redeploy with `bash agent-system/extensions/core/scripts/deploy-headless.sh`; check its
+- [x] Redeploy with `bash agent-system/extensions/core/scripts/deploy-headless.sh`; check its
       exit status. If its `line_count` auto-repair changes `index-entries.json` for the two
-      documents edited in Phases 2 and 6, stage that file in this phase's commit.
-- [ ] Confirm the deployed copies exist: `.claude/scripts/task-landing-verify.sh`,
+      documents edited in Phases 2 and 6, stage that file in this phase's commit. *(completed)*
+- [x] Confirm the deployed copies exist: `.claude/scripts/task-landing-verify.sh`,
       `.claude/scripts/tests/test-task-landing-verify.sh`,
-      `.claude/scripts/tests/test-postflight-landing-gate.sh`.
-- [ ] Run the deployed predicate once in this repository with `--check` against an already
-      completed task and report its result; a refusal is a finding to record, not to fix here.
-- [ ] Tie each owned criterion to its evidence in the summary: the ruling record (criterion 1);
+      `.claude/scripts/tests/test-postflight-landing-gate.sh`. *(completed)*
+- [x] Run the deployed predicate once in this repository with `--check` against an already
+      completed task and report its result; a refusal is a finding to record, not to fix here. *(completed)*
+- [x] Tie each owned criterion to its evidence in the summary: the ruling record (criterion 1);
       the two-task interleave and proof cases (criterion 2); the sibling-still-lands case
-      (criterion 3); the gate suite's observed-failing negative fixture (criterion 4).
-- [ ] Confirm `skills/skill-orchestrate/SKILL.md` and `commands/orchestrate.md` are
-      byte-identical to their state before the task (`git diff --stat` over the task's commits).
-- [ ] Run the task-reference lint and the record-versioning lint over every file this task
-      edited under `agent-system/**`.
-- [ ] State in the summary that this task's own completion passes through the new gate, what
-      proof is expected, and that V5's false-refusal rate remains unmeasured.
+      (criterion 3); the gate suite's observed-failing negative fixture (criterion 4). *(completed)*
+- [x] Confirm `skills/skill-orchestrate/SKILL.md` and `commands/orchestrate.md` are
+      byte-identical to their state before the task (`git diff --stat` over the task's commits). *(completed)*
+- [x] Run the task-reference lint and the record-versioning lint over every file this task
+      edited under `agent-system/**`. *(completed)*
+- [x] State in the summary that this task's own completion passes through the new gate, what
+      proof is expected, and that V5's false-refusal rate remains unmeasured. *(completed)*
 
 **Timing**: 1 hour
 

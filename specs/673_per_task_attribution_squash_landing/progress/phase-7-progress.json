@@ -1,0 +1,51 @@
+{
+  "phase": 7,
+  "phase_name": "Redeploy and close",
+  "started_at": "2026-11-23T14:51:47Z",
+  "last_updated": "2026-11-23T14:51:47Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Redeploy; stage the line_count auto-repair",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/index-entries.json"
+      ],
+      "note": "deploy-headless.sh RESULT=landed_verify_clean; 2 line_count entries corrected."
+    },
+    {
+      "id": 2,
+      "description": "Deployed copies exist; deployed predicate run read-only",
+      "status": "done",
+      "files_touched": [],
+      "note": "Task 673: LANDING-VERIFIED. Task 669: V4 refused (a dependent edited its files; no proof on record). Recorded as a finding, not fixed."
+    },
+    {
+      "id": 3,
+      "description": "Scoped verification against the redeployed tree, lints, ceiling files",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Summary ties each owned criterion to evidence",
+      "status": "done",
+      "files_touched": []
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "deviations": [
+    {
+      "task_id": "7.x",
+      "description": "Files to modify: index-entries.json only",
+      "type": "altered",
+      "reason": "verify-touched.sh against the redeployed tree exposed test-orchestrate-conclusion-roadmap.sh Case H asserting the milestone ref as review.ref; the case was repaired and its sandbox given lib/batch-admission-lib.sh. The path is outside the declared file list.",
+      "annotation": "*(deviation: altered — test-orchestrate-conclusion-roadmap.sh Case H repaired for the re-pointed review ref)*"
+    }
+  ],
+  "verification": "SCOPED DISCHARGE of a full-tier phase under the Batch Gate Deferral; the complete gate set is deferred to the batch-level stage and was not run here. verify-touched.sh over the task touched set against the redeployed tree: 80 selected, 76 passed, 1 skipped, 3 failed (1 expected; Case H repaired, suite 35/35 after; test-lint-unit-integration-boundary.sh red on 4 unclassified suites that predate this task); owed fallback set 98/98. sync-manifest-scripts --check passed; check-task-references PASS; SKILL.md and commands/orchestrate.md byte-identical.",
+  "handoff_count": 0
+}

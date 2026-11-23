@@ -3248,7 +3248,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Runtime file inventory and cleanup contract for orchestrator-managed processes",
-      "line_count": 703,
+      "line_count": 729,
       "keywords": [
         "runtime-files",
         "cleanup",
@@ -4128,7 +4128,7 @@
       "domain": "core",
       "subdomain": "patterns",
       "summary": "The git commit-tree + git update-ref idiom for landing work onto a ref without touching the working tree, index, or HEAD, and its compare-and-swap and no-checkout obligations",
-      "line_count": 77,
+      "line_count": 98,
       "keywords": [
         "ref-plumbing",
         "commit-tree",
