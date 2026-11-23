@@ -7268,6 +7268,11 @@
           "path": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/plans/01_collapse-scope-excursion-rows.md",
           "type": "plan",
           "summary": "Five-phase emitter-side collapse plan with multi-path regression coverage at both emitters and a repo-wide single-emitter guard."
+        },
+        {
+          "path": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/summaries/01_collapse-scope-excursion-rows-summary.md",
+          "type": "summary",
+          "summary": "Emitter-side collapse of per-path scope-excursion issue rows into one record per drop event via a new shared batched-record library, with multi-path regression coverage at both emitters, a repo-wide single-emitter guard, corpus re-verification, and a corrected doc disposition."
         }
       ],
       "audit_verdict": {
@@ -7518,7 +7523,8 @@
       },
       "last_updated": "2026-11-23T06:35:17Z",
       "session_id": "sess_1795400947_bb64cf",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Added scripts/lib/scope-excursion-record-lib.sh so both Containment emitters (git-commit-phase.sh, git-commit-scoped.sh) fire one collapsed issue-record.sh call per drop event instead of one call per dropped path, with full regression coverage, a repo-wide single-emitter guard, corpus-compatibility re-verification, and corrected git-staging-scope.md/issue-log.md documentation; redeployed clean."
     },
     {
       "project_number": 486,

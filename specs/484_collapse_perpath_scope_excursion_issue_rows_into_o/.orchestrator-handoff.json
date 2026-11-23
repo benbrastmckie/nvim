@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "dispatch_seq": 14,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 15,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a five-phase implementation plan for collapsing per-path scope-excursion issue rows into one record per drop event. The plan adopts the research report's emitter-side verdict: a new shared library (scope-excursion-record-lib.sh) builds the collapsed --tags-json payload (full dropped_paths array plus occurrence.count/first_seen/last_seen) and fires one non-fatal issue-record.sh call, sourced by both git-commit-phase.sh and git-commit-scoped.sh, with zero change to issue-record.sh or orchestrate-conclusion-aggregate.sh. Phases: library plus its suite and manifest registration; the two emitter conversions in parallel; a repo-wide single-emitter guard plus the git-staging-scope.md doc correction; then redeploy and close. Premise re-validation found the description's line citations stale (live sites are 779 and 888, matching the research report) while severity minor and drop-and-warn are confirmed unchanged.",
+  "summary": "Converted both Containment emitters (git-commit-phase.sh, git-commit-scoped.sh) to fire one collapsed issue-record.sh call per drop event instead of one call per dropped path, via a new shared library (scripts/lib/scope-excursion-record-lib.sh) carrying the full dropped-path set through --tags-json. Added 8 new unit cases plus a repo-wide single-emitter guard, 2 new multi-path regression cases at each emitter (112/112 and 93/93 total respectively), and re-verified the pre-existing issues.jsonl corpus still groups correctly alongside new collapsed rows with no backfill. Corrected git-staging-scope.md's three-site parity claim and cross-referenced the library from issue-log.md's Occurrence Collapse section. Redeployed clean after fixing a missing shebang and a subject-resolution declaration lint gap surfaced by the first deploy attempt; verify-touched.sh is green across the full touched set (60 mapped suites + 10-path OWED fallback battery, 0 failures).",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/plans/01_collapse-scope-excursion-rows.md",
-      "summary": "Five-phase emitter-side collapse plan with multi-path regression coverage at both emitters and a repo-wide single-emitter guard."
+      "type": "summary",
+      "path": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/summaries/01_collapse-scope-excursion-rows-summary.md",
+      "summary": "Emitter-side collapse of per-path scope-excursion issue rows into one record per drop event via a new shared batched-record library, with multi-path regression coverage at both emitters, a repo-wide single-emitter guard, corpus re-verification, and a corrected doc disposition."
     }
   ]
 }

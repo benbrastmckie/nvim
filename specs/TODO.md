@@ -7611,6 +7611,7 @@ TERRITORY EDGES -- git-commit-phase.sh is SHARED FILE TERRITORY with three open 
 - **Dependencies**: Task 430, Task 446, Task 469, Task 477, Task 541
 - **Research**: [484_collapse_perpath_scope_excursion_issue_rows_into_o/reports/01_collapse-scope-excursion-rows.md]
 - **Plan**: [484_collapse_perpath_scope_excursion_issue_rows_into_o/plans/01_collapse-scope-excursion-rows.md]
+- **Summary**: [484_collapse_perpath_scope_excursion_issue_rows_into_o/summaries/01_collapse-scope-excursion-rows-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

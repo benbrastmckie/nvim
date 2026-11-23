@@ -1,10 +1,125 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 15,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/summaries/01_collapse-scope-excursion-rows-summary.md",
+      "summary": "Emitter-side collapse of per-path scope-excursion issue rows into one record per drop event via a new shared batched-record library, with multi-path regression coverage at both emitters, a repo-wide single-emitter guard, corpus re-verification, and a corrected doc disposition."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Added scripts/lib/scope-excursion-record-lib.sh so both Containment emitters (git-commit-phase.sh, git-commit-scoped.sh) fire one collapsed issue-record.sh call per drop event instead of one call per dropped path, with full regression coverage, a repo-wide single-emitter guard, corpus-compatibility re-verification, and corrected git-staging-scope.md/issue-log.md documentation; redeployed clean."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/context/formats/issue-log.md",
+    "agent-system/extensions/core/context/standards/git-staging-scope.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/lib/scope-excursion-record-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+    "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
+    "agent-system/extensions/core/scripts/tests/test-scope-excursion-record-lib.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "When a new sourced-never-executed library adds a single call site intended to be the ONE place a class literal (or any similarly-guarded token) appears in a scripts tree, watch for the same literal appearing twice within that one library file itself (e.g. once per jq-present/jq-absent branch of a fallback). A repo-wide 'exactly one occurrence' guard test will catch this immediately (it will find 2 occurrences inside the library's own file), and the fix is to refactor to one shared call site where only the auxiliary arguments (not the literal) vary by branch.",
+      "category": "PATTERN",
+      "source_artifact": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/summaries/01_collapse-scope-excursion-rows-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "single-emitter-guard",
+        "class-literal",
+        "shared-library",
+        "jq-fallback",
+        "repo-wide-grep"
+      ]
+    },
+    {
+      "content": "deploy-root-guard.sh refuses several core scripts (orchestrate-conclusion-aggregate.sh, issue-record.sh, generate-context-line-counts.sh) when run directly from the agent-system source store, since their own SCRIPT_DIR/../.. resolves to a bogus root there. generate-context-line-counts.sh and check-extension-docs.sh both support an explicit REPO_ROOT=<repo root> environment override that bypasses the guard entirely (the guard only fires when REPO_ROOT is unset); orchestrate-conclusion-aggregate.sh has no such bypass, so verifying it pre-redeploy requires building a scratch .claude/scripts/ mirror (copy the script plus deploy-root-guard.sh, lib/common.sh, lib/task-lookup-lib.sh) exactly as its own test suite's build_scratch helper already does.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/summaries/01_collapse-scope-excursion-rows-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "REPO_ROOT",
+        "source-store",
+        "scratch-mirror",
+        "generate-context-line-counts.sh"
+      ]
+    },
+    {
+      "content": "git-commit-phase.sh's and git-commit-scoped.sh's REQUIRED_SCRIPTS test fixtures deliberately omit issue-record.sh in test-git-commit-scoped.sh (every case relies on its absence to exercise the library's non-fatal 'script absent' no-op tolerance), while test-git-commit-phase.sh's REQUIRED_SCRIPTS array includes it. A new test case in test-git-commit-scoped.sh that needs to observe an actual issues.jsonl row must copy issue-record.sh into its own scratch repo locally rather than widening the shared REQUIRED_SCRIPTS array, which would silently change every other existing case's tested behavior.",
+      "category": "PATTERN",
+      "source_artifact": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/summaries/01_collapse-scope-excursion-rows-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "test-git-commit-scoped.sh",
+        "REQUIRED_SCRIPTS",
+        "issue-record.sh",
+        "scratch-fixture",
+        "non-fatal-tolerance"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "git-commit-phase.sh and git-commit-scoped.sh scope-excursion recording",
+      "predicate": "finding is",
+      "value": "Both Containment emitters previously called issue-record.sh once per dropped path from inside a per-path loop; converted both to accumulate drops and fire one collapsed issue-record.sh call per drop event via a new shared library (scripts/lib/scope-excursion-record-lib.sh), carrying the full dropped-path set through --tags-json as tags.dropped_paths plus tags.occurrence.",
+      "ko_type": "decision",
+      "confidence": 0.9
+    },
+    {
+      "subject": "issue-record.sh --tags-json validation",
+      "predicate": "finding is",
+      "value": "issue-record.sh validates --tags-json only as `type == object`, with no schema beyond that. A new tags shape (dropped_paths array plus occurrence object) required zero changes to issue-record.sh itself, and orchestrate-conclusion-aggregate.sh groups purely by the class field, so old single-path rows and new collapsed rows group together with no corpus migration.",
+      "ko_type": "fact",
+      "confidence": 0.9
+    },
+    {
+      "subject": "deploy-root-guard.sh source-store refusal",
+      "predicate": "finding is",
+      "value": "Several core scripts (orchestrate-conclusion-aggregate.sh, issue-record.sh, generate-context-line-counts.sh, git-commit-phase.sh, git-commit-scoped.sh) refuse to run directly from the agent-system source store via deploy-root-guard.sh, because their own SCRIPT_DIR-relative repo-root resolution assumes a deployed .claude/scripts/ depth. generate-context-line-counts.sh and check-extension-docs.sh accept an explicit REPO_ROOT environment override to bypass this; most others do not, so verifying a source-store edit before redeploy requires either the deployed (pre-edit) copy or a scratch .claude/scripts/ mirror.",
+      "ko_type": "fact",
+      "confidence": 0.85
+    },
+    {
+      "subject": "test-scope-excursion-record-lib.sh repo-wide single-emitter guard",
+      "predicate": "finding is",
+      "value": "A repo-wide grep-based guard asserting a class literal has exactly one non-test occurrence in a scripts tree must also hold within the one library file meant to be that occurrence's sole home -- a library with two call-site branches (e.g. a jq-present path and a jq-absent fallback) that each independently hardcode the literal will itself trip the guard. The fix is one shared call site where only auxiliary arguments vary by branch.",
+      "ko_type": "insight",
+      "confidence": 0.85
+    },
+    {
+      "subject": "deploy-headless.sh verification outcome vocabulary",
+      "predicate": "finding is",
+      "value": "deploy-headless.sh can report RESULT=landed_verify_red: the deploy itself succeeds (files land in .claude/) but the tree then fails its own fast-gate verification battery (shellcheck, subject-resolution declaration lint, etc.), distinct from a deploy failure. The correct response is to fix the flagged source-store issues and redeploy, not to treat a landed-but-red deploy as acceptable.",
+      "ko_type": "fact",
+      "confidence": 0.85
+    },
+    {
+      "subject": "verify-touched.sh OWED fallback",
+      "predicate": "finding is",
+      "value": "verify-touched.sh's OWED fallback set (--cost-class free) runs for touched paths with no suite-by-class mapping, and without --task-dir it reports the owed-path count but does not durably record it to records/full-sweep-owed.jsonl -- a warning only, not a failure, and the fallback battery's own pass/fail result is unaffected.",
+      "ko_type": "fact",
+      "confidence": 0.75
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795400947_bb64cf",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 5,
+    "phases_total": 5
   },
-  "dispatch_seq": 15
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
