@@ -1,39 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1795400947_bb64cf_484",
-  "dispatch_seq": 13,
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/reports/01_collapse-scope-excursion-rows.md",
-      "summary": "Confirms exactly two scope-excursion emitters (git-commit-phase.sh, git-commit-scoped.sh); recommends emitter-side collapse via a shared library function reusing issue-log.md's already-documented but never-consumed tags.occurrence convention, extended with a full tags.dropped_paths array for no-suppression; finds zero changes needed to issue-record.sh or orchestrate-conclusion-aggregate.sh; corrects the dispatch's Verification reference from issue-grouping.sh (unrelated /review tooling) to orchestrate-conclusion-aggregate.sh's own group_by pipeline; flags a doc/code asymmetry in git-staging-scope.md regarding a third, non-recording site."
+      "type": "plan",
+      "path": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/plans/01_collapse-scope-excursion-rows.md",
+      "summary": "Five-phase emitter-side collapse of per-path scope-excursion rows into one record per drop event via a new shared batched-record library, with multi-path regression coverage at both emitters, a repo-wide single-emitter guard, and a doc disposition for the three-site parity claim."
     }
   ],
   "memory_candidates": [
     {
-      "content": "issue-log.md's Occurrence Collapse convention (tags.occurrence = {count, first_seen, last_seen} via --tags-json) was fully documented, with scope-excursion named as its intended use case, but had zero real callers anywhere in the codebase until this task. tags is validated by issue-record.sh only as type==object (no interior-shape checks), so adding a sibling key like tags.dropped_paths is never a schema change -- a write-side collapse of N per-path issue rows into one record needs no change to issue-record.sh or to orchestrate-conclusion-aggregate.sh's group_by(.class) pipeline, which already groups by JSONL line regardless of path count. When a caller already knows its full repeat count before its first issue-record.sh call, prefer this existing seam over inventing a new one.",
+      "content": "validate-artifact.sh's Tier Justification measurement extracts EVERY test-*.sh token anywhere in a phase's justification block as a claimed suite name, and requires the claim to name the selector's entire output for that phase's harvested paths -- not a representative subset. Two consequences for plan authoring: (1) never write the covering check in fully-qualified form (verify-touched.sh followed by the phase's declared paths) when any declared path is a tests/test-*.sh file, because that path is parsed as a fabricated suite claim; name the command alone and enumerate the suite list separately. (2) A phase whose touched set includes a broad registry file (manifest.json, index-entries.json) maps to dozens of suites, making an enumerated list unwritable -- declare such a phase at the full tier with a cross-cutting-surface justification instead, which carries no suite tokens and is skipped by the measurement entirely.",
       "category": "PATTERN",
-      "source_artifact": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/reports/01_collapse-scope-excursion-rows.md",
+      "source_artifact": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/plans/01_collapse-scope-excursion-rows.md",
       "confidence": 0.85,
-      "suggested_keywords": ["issue-record.sh", "tags.occurrence", "issue-log.md", "write-side collapse", "scope excursion"]
-    },
-    {
-      "content": "issue-grouping.sh and tier-selection.sh implement the /review command's own issue-triage pipeline (schema: source/file_path/severity critical-high-medium-low) and are NOT consumers of issues.jsonl (issue-record.sh's schema: kind/class/severity blocking-costly-minor-none). A task description or dispatch naming issue-grouping.sh as a consumer of issues.jsonl rows is factually wrong -- the actual read-time consumer to check against is orchestrate-conclusion-aggregate.sh's own group_by(.class) pipeline.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/reports/01_collapse-scope-excursion-rows.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["issue-grouping.sh", "issues.jsonl", "orchestrate-conclusion-aggregate.sh", "review command", "misattribution"]
-    },
-    {
-      "content": "git-commit-phase.sh and git-commit-scoped.sh already share small per-concern library files (lib/engine-written-state-paths-lib.sh, lib/derived-artifact-probe-lib.sh) sourced independently by both scripts rather than duplicating logic. This is the established precedent to reuse whenever a new piece of shared call-construction logic (e.g. a batched issue-record.sh wrapper) needs to live beside these two scripts' per-script loop/accumulation code without duplicating the shared part twice.",
-      "category": "PATTERN",
-      "source_artifact": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/reports/01_collapse-scope-excursion-rows.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["git-commit-phase.sh", "git-commit-scoped.sh", "shared library", "containment", "code reuse"]
+      "suggested_keywords": ["validate-artifact.sh", "Tier Justification", "suite_selection_select", "plan-format", "verify-touched.sh"]
     }
   ],
-  "next_steps": "Run /orchestrate 484 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1795400947_bb64cf_484",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 5,
+    "estimated_hours": 3.75,
+    "dependency_waves": 4
+  },
+  "dispatch_seq": 14,
+  "next_steps": "Run /orchestrate 484 to execute the plan"
 }

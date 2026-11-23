@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "dispatch_seq": 14,
+  "phases_completed": 0,
+  "phases_total": 5,
+  "summary": "Wrote a five-phase implementation plan for collapsing per-path scope-excursion issue rows into one record per drop event. The plan adopts the research report's emitter-side verdict: a new shared library (scope-excursion-record-lib.sh) builds the collapsed --tags-json payload (full dropped_paths array plus occurrence.count/first_seen/last_seen) and fires one non-fatal issue-record.sh call, sourced by both git-commit-phase.sh and git-commit-scoped.sh, with zero change to issue-record.sh or orchestrate-conclusion-aggregate.sh. Phases: library plus its suite and manifest registration; the two emitter conversions in parallel; a repo-wide single-emitter guard plus the git-staging-scope.md doc correction; then redeploy and close. Premise re-validation found the description's line citations stale (live sites are 779 and 888, matching the research report) while severity minor and drop-and-warn are confirmed unchanged.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/484_collapse_perpath_scope_excursion_issue_rows_into_o/plans/01_collapse-scope-excursion-rows.md",
+      "summary": "Five-phase emitter-side collapse plan with multi-path regression coverage at both emitters and a repo-wide single-emitter guard."
+    }
+  ]
+}
