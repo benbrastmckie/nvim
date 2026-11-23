@@ -1,0 +1,19 @@
+{
+  "status": "planned",
+  "task_number": 455,
+  "phase": "plan",
+  "dispatch_seq": 2,
+  "session_id": "sess_1795391913_f9e5cc_455",
+  "agent_type": "planner-agent",
+  "phases_completed": 0,
+  "phases_total": 3,
+  "summary": "Wrote a 3-phase plan (2.25h) from the research finding that the generated-surface appending stage is correct and the dispatch's premise is falsified. Phase 1 re-validates the reproduction as a go/no-go; Phase 2 records the part-(1) finding and the part-(2) NO ruling in plan-file-scope-harvest.sh's own header (comments only, correcting its overclaimed prevention rationale) and adds one suite case pinning the cited wiring shape, the inert case, and append-only behaviour; Phase 3 deploys and discharges the gate. No behaviour change, no widening of the append list, no consumer-repository edit. Plan-time premise re-validation reproduced the research figure byte-identically and refined the residual to the dispatch-prompt channel alone, since plan-format.md's coupled-generated-surface obligation already covers the plan-prose channel.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/455_preflag_module_wiring_invariant_failures/plans/01_preflag-module-wiring-invariants.md",
+      "summary": "3-phase plan: re-validate the reproduction, record the part-(1) finding and part-(2) ruling in the harvester header plus one new suite case, then deploy and discharge the gate."
+    }
+  ]
+}

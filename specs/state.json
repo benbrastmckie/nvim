@@ -5296,7 +5296,7 @@
     {
       "project_number": 455,
       "project_name": "preflag_module_wiring_invariant_failures",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "title": "Pre-flag the predictable first-run module-invariant failures that wiring a new module forces, where the generated-surface knowledge already lives",
       "topic": "file-scope-lifecycle",
@@ -5308,6 +5308,7 @@
         448
       ],
       "file_scope": [
+        "__WHOLE_TREE__",
         "agent-system/extensions/core/scripts/plan-file-scope-harvest.sh",
         "agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh"
       ],
@@ -5316,10 +5317,15 @@
           "path": "specs/455_preflag_module_wiring_invariant_failures/reports/01_preflag-module-wiring-invariants.md",
           "type": "report",
           "summary": "Mechanically reproduces the cited BimodalLogic #833 incident against the real, read-only checkout and falsifies the dispatch's premise: plan-file-scope-harvest.sh's generated-surface appending already correctly computes and persists both missing surfaces (status.typ, root README.md) into file_scope before implementation begins. The real gap is a pipeline-visibility blind spot outside this task's two declared files -- the appended knowledge never reaches the plan's own per-phase prose or the implement dispatch prompt. Rules NO on widening the stage for the three original lint-class exemplars plus a fourth (C15 Paper-line) exemplar, argued both ways, with a type-mismatch argument and a self-service coupled_generated_surfaces alternative for C16. Recommends a follow-up task against orchestrate-build-dispatch.sh rather than any change to this task's declared files."
+        },
+        {
+          "path": "specs/455_preflag_module_wiring_invariant_failures/plans/01_preflag-module-wiring-invariants.md",
+          "type": "plan",
+          "summary": "3-phase plan: re-validate the reproduction, record the part-(1) finding and part-(2) ruling in the harvester header plus one new suite case, then deploy and discharge the gate."
         }
       ],
       "created": "2026-10-19T04:37:20Z",
-      "last_updated": "2026-11-23T00:12:03Z",
+      "last_updated": "2026-11-23T00:21:40Z",
       "session_id": "sess_1795391913_f9e5cc",
       "next_artifact_number": 2
     },

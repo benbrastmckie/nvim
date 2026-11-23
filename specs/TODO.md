@@ -97,7 +97,7 @@ next_project_number: 684
 
 ### File Scope Lifecycle
 
-455 [RESEARCHED] — Pre-flag the predictable first-run module-invariant failures...
+455 [PLANNED] — Pre-flag the predictable first-run module-invariant failures...
 567 [NOT STARTED] — Port the deployed-tree containment strip into...
 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
   └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
@@ -8564,11 +8564,12 @@ a permanent override), plus a latent correctness bug in Step 3.6 for any repo wi
 ---
 
 ### 455. Pre-flag the predictable first-run module-invariant failures that wiring a new module forces, where the generated-surface knowledge already lives
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 328, Task 435, Task 446, Task 448
 - **Research**: [455_preflag_module_wiring_invariant_failures/reports/01_preflag-module-wiring-invariants.md]
+- **Plan**: [455_preflag_module_wiring_invariant_failures/plans/01_preflag-module-wiring-invariants.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
