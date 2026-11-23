@@ -1,0 +1,23 @@
+{
+  "phase": 4,
+  "phase_name": "Deploy, Verify, and Record the Companion Recommendation",
+  "started_at": "2026-11-23T01:30:00Z",
+  "last_updated": "2026-11-23T01:50:00Z",
+  "objectives": [
+    {"id": 1, "description": "Run deploy-headless.sh to regenerate deployed tree", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"]},
+    {"id": 2, "description": "Confirm index-entries.json line_count reconciliation and check-extension-docs.sh Rule R", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]},
+    {"id": 3, "description": "Run verify-touched.sh over all task-touched paths, record batch-gate deferral", "status": "done", "files_touched": []},
+    {"id": 4, "description": "Re-read landed deployed-tree prose and pointer resolution", "status": "done", "files_touched": []},
+    {"id": 5, "description": "Record companion-record recommendation in summary and issue log", "status": "done", "files_touched": []},
+    {"id": 6, "description": "Confirm whole-task diff carries no task-ref/version-language violations", "status": "done", "files_touched": []}
+  ],
+  "current_objective": 6,
+  "approaches_tried": [
+    {"approach": "First deploy-headless.sh attempt", "result": "failed", "reason": "lint-scoped-commit-boundary.sh PIPE-VIOLATION in Phase 3's test-git-commit-phase.sh Case 37 line (literal 'git-commit-phase.sh:' substring inside a piped grep pattern tripped the naive line-level heuristic); fixed by loosening the grep pattern, re-verified the suite and the lint, then re-ran deploy-headless.sh successfully"}
+  ],
+  "handoff_count": 0,
+  "deviations": [
+    {"task_id": "4.1", "description": "Run deploy-headless.sh", "type": "altered", "reason": "Required a one-line fix to test-git-commit-phase.sh (Case 37's grep pattern) discovered by the full deploy-time gate before the deploy could succeed; this was a pre-existing Phase 3 oversight fixed within Phase 4, not a change to Phase 4's own declared scope.", "annotation": "*(deviation: altered -- fixed a Phase 3 lint collision discovered during this phase's own deploy step)*"}
+  ],
+  "verification_notes": "deploy-headless.sh: RESULT=landed_verify_clean, 41 checks 0 failures (second attempt, after fixing the Case 37 pipe-boundary lint collision). index-entries.json line_count: checkpoint-commit.md=130 (pinned 130), git-staging-scope.md=1207 (pinned 1207), repo-level-declarations.md=315 (pinned 315) -- all reconciled. check-extension-docs.sh: PASS for all 25 extensions. verify-touched.sh over all 9 task-touched paths: 98 passed, 0 failed, 24 suites selected, 2 owed (markdown-only files, non-blocking OWED-NOT-PAID). Full gate set deferred to the batch-level /orchestrate close per this dispatch's Batch Gate Deferral section -- not independently re-run here beyond the one deploy-headless.sh fast-gate pass (which is itself scoped, not the full tests/run-all.sh --cost-class slow battery)."
+}

@@ -89,7 +89,7 @@
       "domain": "core",
       "subdomain": "checkpoints",
       "summary": "Git commit checkpoint pattern for commands",
-      "line_count": 119,
+      "line_count": 130,
       "keywords": [
         "checkpoint",
         "commit",
@@ -3200,7 +3200,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 1190,
+      "line_count": 1207,
       "keywords": [
         "git-staging",
         "commit-scope",
@@ -3945,7 +3945,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Repo-level hand-authored sibling keys in .claude-extensions.json: the derived_artifact_probes declaration, its fail-open guarantee, bounded execution, and why this is the first blocking staleness gate",
-      "line_count": 311,
+      "line_count": 315,
       "keywords": [
         "derived-artifact-probes",
         "staleness",

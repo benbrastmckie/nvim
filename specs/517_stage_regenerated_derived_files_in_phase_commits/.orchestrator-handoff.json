@@ -1,20 +1,25 @@
 {
-  "status": "planned",
-  "dispatch_seq": 5,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 6,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Wrote a 4-phase plan adopting the research report's (c) ruling: a generic, declaration-only obligation in checkpoints/checkpoint-commit.md with a one-line pointer (not a copy) from general-implementation-agent.md, plus a non-blocking derived_probe_run_all call at git-commit-phase.sh's phase-commit site. Plan-time re-derivation added one component the ruling did not reach: git-commit-scoped.sh's V10 already widens scope with derived_probe_output_prefixes while git-commit-phase.sh's Site-2 Containment Self-Check does not, so a regenerated declared surface is dropped before the commit sees it and the new rule would be undone by the script meant to carry it out. All four cited issue-log ids and every carried figure re-derived and confirmed. Plan validates clean with zero warnings.",
+  "summary": "Landed all 4 phases of the plan's decision (c) ruling: a declaration-only phase-commit obligation in checkpoint-commit.md with a pointer from general-implementation-agent.md, a Site-2 derived-output-prefix splice in git-commit-phase.sh's Containment Self-Check so a regenerated declared surface actually survives staging, and a non-blocking derived_probe_run_all staleness backstop at the same site. 97/97 and 15/15 test cases pass; deploy-headless.sh landed clean (41/41 checks) after fixing one lint-scoped-commit-boundary.sh false-positive discovered mid-deploy in freshly-written test code. The companion recommendation -- that ~/Projects/BimodalLogic must declare its own derived_artifact_probes/coupled_generated_surfaces for this record to actually change the originating incident's outcome -- is recorded in the summary and issue log, out of this repository's boundary to act on further.",
   "blockers": [],
   "artifacts": [
     {
+      "type": "summary",
+      "path": "specs/517_stage_regenerated_derived_files_in_phase_commits/summaries/01_stage-regenerated-derived-files-summary.md",
+      "summary": "Full implementation summary covering all 4 phases, verification results, and the companion-record recommendation."
+    },
+    {
       "type": "plan",
       "path": "specs/517_stage_regenerated_derived_files_in_phase_commits/plans/01_stage-regenerated-derived-files.md",
-      "summary": "4-phase plan: prose obligation, Site-2 derived-output-prefix splice, non-blocking probe backstop, deploy and verify."
+      "summary": "4-phase plan, all phases [COMPLETED]."
     }
   ],
   "metadata": {
-    "session_id": "sess_1795391913_f9e5cc_517",
-    "agent_type": "planner-agent",
+    "session_id": "sess_1795391913_f9e5cc",
+    "agent_type": "general-implementation-agent",
     "task_number": 517,
     "estimated_hours": 4.5,
     "dependency_waves": 4

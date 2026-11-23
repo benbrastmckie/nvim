@@ -1584,7 +1584,7 @@ else
   common_test_fail "Case 37: expected a DERIVED-STALENESS line naming 'flaky-check'; got out=$out37a"
 fi
 
-if echo "$out37a" | grep -q "WARNING: git-commit-phase.sh: a declared derived-artifact probe is stale"; then
+if echo "$out37a" | grep -q "WARNING:.*a declared derived-artifact probe is stale"; then
   common_test_pass "Case 37: the named warning fires for the stale declared probe"
 else
   common_test_fail "Case 37: expected the named stale-probe warning; got out=$out37a"

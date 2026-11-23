@@ -409,7 +409,7 @@ adjusting a fixture to fit.
 
 ---
 
-### Phase 4: Deploy, Verify, and Record the Companion Recommendation [NOT STARTED]
+### Phase 4: Deploy, Verify, and Record the Companion Recommendation [COMPLETED]
 
 **Goal**: The source-store changes are deployed and verified, the coupled `index-entries.json`
 line counts are reconciled, and the one fact that keeps this record from being a complete fix on
@@ -417,30 +417,38 @@ its own — the originating repository declares neither key — is recorded wher
 it.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree from the
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree from the
       finished source store. This is whole-tree regeneration, declared below with the reserved
-      sentinel.
-- [ ] Confirm the deploy's own side-effect repair of `index-entries.json`'s `line_count` fields
+      sentinel. *(completed: first attempt caught a lint-scoped-commit-boundary.sh
+      PIPE-VIOLATION in Phase 3's Case 37 fixture -- fixed the grep pattern and re-deployed
+      clean; see the issue log)*
+- [x] Confirm the deploy's own side-effect repair of `index-entries.json`'s `line_count` fields
       landed for `checkpoints/checkpoint-commit.md`, `standards/git-staging-scope.md` and
       `standards/repo-level-declarations.md`, and that `check-extension-docs.sh` Rule R is clean.
-- [ ] Run the scoped touched-path check over every path this task touched:
+      *(completed: 130/1207/315 all pinned correctly; check-extension-docs.sh reports PASS for
+      all 25 extensions)*
+- [x] Run the scoped touched-path check over every path this task touched:
       `bash agent-system/extensions/core/scripts/verify-touched.sh <the declared paths from
       Phases 1-3>`. Under `/orchestrate` this is this phase's own in-dispatch obligation; the
       complete gate set is owed once per orchestration invocation and is **deferred to the
       orchestration close**, not independently re-run here. Record that deferral in the phase's
-      verification notes.
-- [ ] Re-read the landed prose in the deployed tree to confirm the obligation reads as one generic
+      verification notes. *(completed: 98 passed, 0 failed, 24 suites selected, 2 owed
+      (markdown-only files with no mapped suite); full gate deferred to the orchestration close)*
+- [x] Re-read the landed prose in the deployed tree to confirm the obligation reads as one generic
       rule about declared surfaces, naming no consumer repository's generator script, and that the
       pointer in `general-implementation-agent.md` resolves to the section that actually owns it.
-- [ ] Record in the implementation summary, and via a non-fatal `issue-record.sh` entry, the
+      *(completed: confirmed in the deployed .claude/ tree)*
+- [x] Record in the implementation summary, and via a non-fatal `issue-record.sh` entry, the
       companion-record recommendation: `~/Projects/BimodalLogic`'s own
       `.claude-extensions.json` declares neither `derived_artifact_probes` nor
       `coupled_generated_surfaces` (re-derived live, confirmed at planning time), so none of this
       record's work changes the outcome of the four cited recurrences until that repository
       declares its own coupled pairs. State that the correct next action is a record created
       **in that repository**, and that creating or editing it from here is out of bounds.
-- [ ] Confirm the whole task's diff carries no task-number reference and no record-versioning
-      language under `agent-system/**`.
+      *(completed: issue-record.sh entry iss_1795398220168_QgrK2I)*
+- [x] Confirm the whole task's diff carries no task-number reference and no record-versioning
+      language under `agent-system/**`. *(completed: full-task diff grep confirmed zero new
+      violations)*
 
 **Timing**: 0.75 hours
 
