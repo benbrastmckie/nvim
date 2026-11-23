@@ -95,7 +95,7 @@ next_project_number: 685
 
 ### File Scope Lifecycle
 
-486 [RESEARCHED] — Stop a required extension manifest.json registration being...
+486 [PLANNED] — Stop a required extension manifest.json registration being...
   └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
   └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
@@ -7558,11 +7558,12 @@ SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, neve
 ---
 
 ### 486. Stop a required extension manifest.json registration being dropped from a phase commit as a scope excursion
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 430, Task 446, Task 484, Task 494, Task 541
 - **Research**: [486_manifest_registration_dropped_from_phase_commit/reports/01_manifest-registration-containment-rule.md]
+- **Plan**: [486_manifest_registration_dropped_from_phase_commit/plans/01_manifest-containment-splice.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
