@@ -277,26 +277,26 @@ file importing it, and is covered by
 
 ---
 
-### Phase 3: Exclude both snapshot artifacts from the phase-commit fixed scope [NOT STARTED]
+### Phase 3: Exclude both snapshot artifacts from the phase-commit fixed scope [COMPLETED]
 
 **Goal**: Stop the phase-commit wrapper's directory pathspec from reaching either snapshot
 artifact, using the conditional-injection posture already proven one layer down.
 
 **Tasks**:
-- [ ] Read the conditional `:(exclude)` injection block in `scripts/git-commit-scoped.sh` as
+- [x] Read the conditional `:(exclude)` injection block in `scripts/git-commit-scoped.sh` as
       reference, including its reasoning for why injection is conditional and its deliberate
-      fall-through direction. Do not edit that file.
-- [ ] In `scripts/git-commit-phase.sh`'s fixed `stage_paths` construction, expand two candidate
+      fall-through direction. Do not edit that file. *(completed)*
+- [x] In `scripts/git-commit-phase.sh`'s fixed `stage_paths` construction, expand two candidate
       globs against the task directory on disk (`working-progress-*.patch` and
       `untracked-backup-*`). For each concrete hit, probe it with `git check-ignore -q` and add a
       `:(exclude)` entry only when the probe does NOT report it as already covered. Preserve the
-      safe fall-through direction: only a definitive "already ignored" result skips injection.
-- [ ] Keep at least one positive entry in the resulting pathspec list, so the wrapper never hands
-      down an exclude-only list.
-- [ ] Update the fixed-scope header comment to state that the seed now subtracts the two snapshot
-      artifact classes, and that the subtraction is conditional and why. Durable anchors only.
-- [ ] Re-run the phase-commit suite and confirm Phase 1's new case flips from RED to green with
-      no other case regressing.
+      safe fall-through direction: only a definitive "already ignored" result skips injection. *(completed)*
+- [x] Keep at least one positive entry in the resulting pathspec list, so the wrapper never hands
+      down an exclude-only list. *(completed)*
+- [x] Update the fixed-scope header comment to state that the seed now subtracts the two snapshot
+      artifact classes, and that the subtraction is conditional and why. Durable anchors only. *(completed)*
+- [x] Re-run the phase-commit suite and confirm Phase 1's new case flips from RED to green with
+      no other case regressing. *(completed)*
 
 **Timing**: 1 hour
 

@@ -1,0 +1,19 @@
+{
+  "phase": 3,
+  "phase_name": "Exclude both snapshot artifacts from the phase-commit fixed scope",
+  "started_at": "2026-11-23T04:55:00Z",
+  "last_updated": "2026-11-23T05:05:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add conditional :(exclude) injection for working-progress-*.patch and untracked-backup-* to git-commit-phase.sh's fixed stage_paths seed, mirroring git-commit-scoped.sh's candidate_excludes idiom, and update the header comment",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/git-commit-phase.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

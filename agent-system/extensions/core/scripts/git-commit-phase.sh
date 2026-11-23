@@ -61,6 +61,16 @@
 # outside the Containment Self-Check below, exactly as context/standards/git-staging-scope.md's
 # Phase-Commit Containment Self-Check prose already specifies.
 #
+# The task-directory entry of that seed is then CONDITIONALLY NARROWED: both of
+# git-snapshot.sh's own --no-revert recovery-artifact classes (a working-progress-{ts}.patch
+# file and an untracked-backup-{ts}/ tree, which can itself hold a path belonging to an
+# unrelated task) are subtracted via an explicit `:(exclude)` pathspec entry whenever a
+# concrete on-disk hit for either glob is NOT already covered by `.gitignore`
+# (`git check-ignore -q`) -- mirroring the identical conditional-injection idiom in
+# git-commit-scoped.sh's own candidate_excludes splice rather than reinventing it. This keeps
+# the fixed scope's own bare directory pathspec from silently sweeping either artifact into a
+# phase commit the moment one happens to be sitting in the task directory.
+#
 # The `files_touched` set is then derived from the progress file with jq, deduplicated, and
 # appended. Each surviving path is also the exact set the post-commit completeness check verifies
 # against HEAD below -- derivation and verification share one source of truth.
@@ -453,6 +463,34 @@ progress_file="${task_dir}/progress/phase-${phase_number}-progress.json"
 # ADMITS when testing files_touched; the two are not duplicates of each other. ---
 stage_paths=("${task_dir}/" "specs/TODO.md" "specs/state.json")
 [ -n "$plan_path" ] && stage_paths+=("$plan_path")
+
+# --- Conditional exclusion: git-snapshot.sh's --no-revert snapshot artifact classes ---
+# The fixed scope above is a bare task-directory pathspec, so without this subtraction it
+# unconditionally sweeps up BOTH of git-snapshot.sh's own --no-revert recovery artifacts
+# (PATCH_PATH -- a working-progress-{ts}.patch file -- and UNTRACKED_BACKUP -- an
+# untracked-backup-{ts}/ tree, which can itself hold a path belonging to an unrelated task) if
+# either happens to be sitting in the task directory at commit time. Subtraction mirrors the
+# conditional :(exclude) injection idiom already proven in git-commit-scoped.sh's own
+# candidate_excludes splice (see that script's header) rather than reinventing it: naming an
+# ALREADY-gitignored path in an explicit :(exclude) pathspec entry makes `git add` treat it as
+# an explicitly-named ignored path and refuse the WHOLE add, so injection is conditional on
+# `git check-ignore -q` NOT already reporting the concrete on-disk hit as covered. Candidate
+# globs are expanded against the task directory ON DISK first (nullglob), so a glob with no
+# on-disk hit needs no exclusion entry at all -- this subtraction never widens the pathspec
+# with an entry naming a path that does not exist. Fall-through is deliberately SAFE: only a
+# definitive exit 0 (already ignored) skips injection; exit 1 (not ignored) and exit 128
+# (error, e.g. malformed pathspec) both fall through to injecting the entry, exactly as the
+# idiom this mirrors documents.
+shopt -s nullglob
+for snapshot_artifact_hit in "${task_dir}"/working-progress-*.patch "${task_dir}"/untracked-backup-*; do
+  [ -d "$snapshot_artifact_hit" ] && snapshot_artifact_hit="${snapshot_artifact_hit}/"
+  if git check-ignore -q -- "$snapshot_artifact_hit"; then
+    : # already covered by .gitignore -- injecting would only add an abort hazard, skip
+  else
+    stage_paths+=(":(exclude)${snapshot_artifact_hit}")
+  fi
+done
+shopt -u nullglob
 
 # --- Derivation: fail-open on a missing/malformed progress file or an empty derived set. ---
 run_completeness_check=true
