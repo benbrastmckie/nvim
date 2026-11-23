@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795391913_f9e5cc_455",
+  "dispatch_seq": 1,
+  "findings_count": 2,
+  "next_steps": "Run /orchestrate 455 to create implementation plan",
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/455_preflag_module_wiring_invariant_failures/reports/01_preflag-module-wiring-invariants.md",
+      "summary": "Mechanically reproduces the cited BimodalLogic #833 incident against the real, read-only checkout and falsifies the dispatch's premise: plan-file-scope-harvest.sh's generated-surface appending already correctly computes and persists both missing surfaces (status.typ, root README.md) into file_scope before implementation begins. The real gap is a pipeline-visibility blind spot outside this task's two declared files -- the appended knowledge never reaches the plan's own per-phase prose or the implement dispatch prompt. Rules NO on widening the stage for the three original lint-class exemplars plus a fourth (C15 Paper-line) exemplar, argued both ways, with a type-mismatch argument and a self-service coupled_generated_surfaces alternative for C16. Recommends a follow-up task against orchestrate-build-dispatch.sh rather than any change to this task's declared files."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "plan-file-scope-harvest.sh's generated-surface appending stage (status.typ, ancestor-chain READMEs) writes only to the task's file_scope bookkeeping array in state.json, via skill-base.sh's plan-postflight --file-scope-add path. It never writes back into the plan document's own per-phase 'Files to modify' prose, and orchestrate-build-dispatch.sh never reads the dispatching task's own file_scope when building an implement dispatch (only a sibling-batch-overlap comment mentions file_scope at all). So a correctly-computed generated-surface append is invisible to the implementing agent at the only point it matters (mid-phase, before committing) -- any future audit of 'why didn't a pre-flag mechanism prevent a gate collision' should check this visibility seam before assuming a parsing/coverage bug in the computing stage itself.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/455_preflag_module_wiring_invariant_failures/reports/01_preflag-module-wiring-invariants.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["file_scope", "plan-file-scope-harvest", "generated-surface", "visibility-gap", "orchestrate-build-dispatch"]
+    },
+    {
+      "content": "When a consumer repository needs 'editing path X forces staleness of path Y' behavior without touching core, check context/standards/repo-level-declarations.md's coupled_generated_surfaces schema first: a repo-declared {trigger_glob, generated_paths} list in its own .claude-extensions.json, read advisory-only by validate-artifact.sh at plan-acceptance time, fail-open on absence. It is a better fit than widening a core script's hardcoded per-repo knowledge for any case where the coupling is genuinely just 'this path needs attention', as opposed to a case requiring core to compute WHICH specific content change is needed.",
+      "category": "PATTERN",
+      "source_artifact": "specs/455_preflag_module_wiring_invariant_failures/reports/01_preflag-module-wiring-invariants.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["coupled_generated_surfaces", "repo-level-declarations", "validate-artifact", "self-service", "advisory-check"]
+    }
+  ]
+}
