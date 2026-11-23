@@ -1,31 +1,11 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/486_manifest_registration_dropped_from_phase_commit/plans/01_manifest-containment-splice.md",
-      "summary": "3-phase plan implementing the research ruling (Option 1): a fourth local, non-declared file_scope_arr splice in git-commit-phase.sh admitting a touched extension's own manifest.json, pinned by six new fixtures and documented in git-staging-scope.md."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795400947_bb64cf_486",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "task_number": 486,
-    "phase_count": 3,
-    "estimated_hours": 3.5,
-    "dependency_waves": 3
+    "session_id": "sess_1795400947_bb64cf",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "task_number": 486
   },
-  "memory_candidates": [
-    {
-      "content": "A plan phase whose Tier Justification claims a narrowed verification pass must name the suites that `suite_selection_select` actually returns for that phase's whole Files-to-modify set, run as ONE multi-path invocation. The selector is sourceable directly at authoring time (`source agent-system/extensions/core/scripts/lib/suite-selection-lib.sh; suite_selection_select PATH...`), which is cheaper and more honest than running verify-touched.sh (which has no dry-run/print-suites flag and would execute the whole narrowed battery just to learn the suite names).",
-      "category": "PATTERN",
-      "source_artifact": "specs/486_manifest_registration_dropped_from_phase_commit/plans/01_manifest-containment-splice.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["suite_selection_select", "Tier Justification", "verify-touched.sh", "plan authoring", "narrowed verification"]
-    }
-  ],
-  "next_steps": "Run /orchestrate 486 to execute the plan",
-  "dispatch_seq": 17
+  "dispatch_seq": 18
 }

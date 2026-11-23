@@ -95,7 +95,7 @@ next_project_number: 685
 
 ### File Scope Lifecycle
 
-486 [PLANNED] — Stop a required extension manifest.json registration being...
+486 [IMPLEMENTING] — Stop a required extension manifest.json registration being...
   └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
   └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
@@ -7558,7 +7558,7 @@ SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, neve
 ---
 
 ### 486. Stop a required extension manifest.json registration being dropped from a phase commit as a scope excursion
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 430, Task 446, Task 484, Task 494, Task 541

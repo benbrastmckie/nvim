@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "Add the extension-manifest splice to the Containment Self-Check",
+  "started_at": "2026-11-22T00:00:00Z",
+  "last_updated": "2026-11-22T00:20:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-derive current line numbers; confirm existing splices and is_contained() location", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Insert fourth splice after derived-output-prefix splice, before is_contained(), inside non-empty guard", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]},
+    {"id": 3, "description": "Derive trigger via pure string operation over files_touched (no fs/git/jq)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]},
+    {"id": 4, "description": "No filesystem/git/jq call in the splice itself", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]},
+    {"id": 5, "description": "Write inline header comment documenting rationale and Option (2)/(3) rejection", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/git-commit-phase.sh"]}
+  ],
+  "current_objective": null,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": []
+}

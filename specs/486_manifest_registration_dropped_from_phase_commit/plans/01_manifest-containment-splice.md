@@ -1,7 +1,7 @@
 # Implementation Plan: Task #486
 
 - **Task**: 486 - Stop a required extension manifest.json registration being dropped from a phase commit as a scope excursion
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 3.5 hours
 - **Dependencies**: None open (430, 446, 484, 494, 541 all confirmed completed/archived by the research round)
 - **Research Inputs**: specs/486_manifest_registration_dropped_from_phase_commit/reports/01_manifest-registration-containment-rule.md
@@ -147,41 +147,41 @@ assert the splice's behaviour, and the documentation paragraph describes the spl
 
 ---
 
-### Phase 1: Add the extension-manifest splice to the Containment Self-Check [NOT STARTED]
+### Phase 1: Add the extension-manifest splice to the Containment Self-Check [COMPLETED]
 
 **Goal**: `git-commit-phase.sh`'s Containment Self-Check admits the touched extension's own
 `manifest.json` into its local `file_scope_arr` whenever that same extension's `scripts/` tree
 (excluding `scripts/deprecated/`) is also present in this phase's `files_touched`.
 
 **Tasks**:
-- [ ] Re-derive the current line numbers before editing (they move; the dispatch's own citation
+- [x] Re-derive the current line numbers before editing (they move; the dispatch's own citation
       was already stale). Confirm the three existing splices and the `is_contained()` definition
       are where this plan says: own-task-directory splice at ~line 667, engine-written-state
       splice at ~lines 679-691, derived-output-prefix splice at ~lines 705-715, `is_contained()`
-      at ~line 720, all inside the `[ "${#file_scope_arr[@]}" -gt 0 ]` guard at ~line 655.
-- [ ] Insert the fourth splice immediately AFTER the derived-output-prefix splice and BEFORE the
+      at ~line 720, all inside the `[ "${#file_scope_arr[@]}" -gt 0 ]` guard at ~line 655. *(completed: confirmed verbatim at those lines)*
+- [x] Insert the fourth splice immediately AFTER the derived-output-prefix splice and BEFORE the
       `is_contained()` definition, inside that same non-empty guard — so the fail-open posture
       (a task with no declared `file_scope` skips the whole check and never acquires a scope
-      member it never declared) is structurally unchanged.
-- [ ] Derive the trigger purely by string operation over the post-classification `files_touched`
+      member it never declared) is structurally unchanged. *(completed)*
+- [x] Derive the trigger purely by string operation over the post-classification `files_touched`
       array: an entry matching `*extensions/*/scripts/*` and NOT matching
       `*extensions/*/scripts/deprecated/*` yields a prefix ending at the segment immediately
       after `extensions/`; the admitted path is that prefix plus `/manifest.json`. Take the
       prefix verbatim from the entry rather than hardcoding `agent-system/`, so a source store
       rooted elsewhere is handled identically. Deduplicate so each extension contributes at most
-      one entry.
-- [ ] Perform no filesystem check, no `git` call, and no `jq` call in the splice — nothing that
+      one entry. *(completed)*
+- [x] Perform no filesystem check, no `git` call, and no `jq` call in the splice — nothing that
       can introduce a new failure mode at this site. An entry that matches nothing contributes
-      nothing; this is fail-open by construction, not by a guard.
-- [ ] Write the inline header comment above the splice in the same voice as the three existing
+      nothing; this is fail-open by construction, not by a guard. *(completed)*
+- [x] Write the inline header comment above the splice in the same voice as the three existing
       ones: why it exists (`sync-manifest-scripts.sh` / Rule Q enforce the pairing mechanically,
       so the registration is structurally derivable, not an unforeseeable discovery), that the
       matching rule mirrors `sync-manifest-scripts.sh`'s own MATCHING header verbatim, that it
       mutates `file_scope_arr` only and is never written back to `specs/state.json`, and that
       Options (2) and (3) were considered and rejected (one sentence each) so the next reader
-      does not re-litigate them.
-- [ ] Record any deviation, blocker, or unusually smooth result via `issue-record.sh` as it
-      arises.
+      does not re-litigate them. *(completed)*
+- [x] Record any deviation, blocker, or unusually smooth result via `issue-record.sh` as it
+      arises. *(completed: none to record for this phase)*
 
 **Timing**: 1 hour
 

@@ -714,6 +714,44 @@ if [ "${#files_touched[@]}" -gt 0 ]; then
         done < <(echo "$derived_output_prefixes_json" | jq -r '.[]?' 2>/dev/null)
       fi
 
+      # Extension-manifest widening (the fourth Containment site -- see
+      # git-staging-scope.md's "Three Containment sites, not one"): widen file_scope_arr, for
+      # THIS check only, with a touched extension's own manifest.json whenever this phase's
+      # files_touched also names a path under that same extension's scripts/ tree (deprecated/
+      # excluded). Mirrors sync-manifest-scripts.sh's own MATCHING rule verbatim ("full relative
+      # path under scripts/ (not basename), deprecated/* excluded"): that script and Rule Q
+      # (check_undeclared_scripts in check-extension-docs.sh) enforce the scripts/<->manifest.json
+      # pairing mechanically, so a phase that adds or removes a script under an extension owes
+      # that extension's manifest.json registration as a STRUCTURALLY DERIVABLE obligation, not
+      # an unforeseeable newly-discovered path. Local-only, exactly like the three splices above:
+      # mutates file_scope_arr for this check alone and is NEVER written back to
+      # specs/state.json's declared file_scope, so the batch-admission gate's conflict-detection
+      # input is untouched. A pre-commit nag surfacing a MISSING registration before the commit
+      # fires, and relying solely on the general declaration-staleness follow-up-commit
+      # mechanism, were both considered and rejected: the former duplicates
+      # sync-manifest-scripts.sh/Rule Q's own post-redeploy enforcement of the same pairing, and
+      # the latter only mechanizes recovery after a drop rather than preventing the first one.
+      # Derivation is a pure string operation over files_touched entries already in hand -- no
+      # filesystem, git, or jq lookup -- so fail-open here is structural, not conditional: an
+      # entry that matches nothing contributes nothing, and nothing in this loop can introduce a
+      # new failure mode. The extension prefix is taken verbatim from the matching entry (never
+      # a hardcoded "agent-system/" literal), so a source store rooted elsewhere is handled
+      # identically.
+      for _fsa_ext_entry in "${files_touched[@]}"; do
+        case "$_fsa_ext_entry" in
+          */extensions/*/scripts/deprecated/* | extensions/*/scripts/deprecated/*)
+            ;;
+          */extensions/*/scripts/* | extensions/*/scripts/*)
+            _fsa_ext_prefix="${_fsa_ext_entry%%/scripts/*}"
+            _fsa_ext_manifest="${_fsa_ext_prefix}/manifest.json"
+            case " ${file_scope_arr[*]} " in
+              *" ${_fsa_ext_manifest} "*) ;;
+              *) file_scope_arr+=("$_fsa_ext_manifest") ;;
+            esac
+            ;;
+        esac
+      done
+
       # is_contained <path> -- exact match, directory/glob ancestor in either direction, or a
       # literal trailing-/** entry's deep-glob prefix (the base directory itself, its direct
       # children, and every deeper descendant -- nothing outside it).
