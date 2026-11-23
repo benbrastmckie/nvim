@@ -1,32 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1795400947_bb64cf_535",
-  "dispatch_seq": 7,
-  "findings_count": 7,
-  "next_steps": "Run /orchestrate 535 to create implementation plan",
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/535_phase_commit_drops_own_plan_artifact/reports/01_containment-filter-carve-out.md",
-      "summary": "Confirms the code defect (own-task-directory containment carve-out in git-commit-phase.sh) is already closed by completed task 567, with 98/98 tests passing; narrows remaining work to correcting a false mechanism sentence in git-staging-scope.md and adding dotfile-at-task-dir-root test fixtures plus a completeness-check-runs assertion."
+      "type": "plan",
+      "path": "specs/535_phase_commit_drops_own_plan_artifact/plans/01_containment-carve-out-reconciliation.md",
+      "summary": "3-phase plan (2.5h) narrowing the record to a mechanism-sentence correction in git-staging-scope.md plus two additive regression cases in test-git-commit-phase.sh, after re-verifying the code carve-out is already landed."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1795400947_bb64cf_535",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 2.5,
+    "dependency_waves": 2
+  },
   "memory_candidates": [
     {
-      "content": "git-commit-phase.sh's is_contained() containment predicate uses plain bash case-pattern string matching (case \"$path\" in \"$entry\"/*), not filesystem glob expansion -- so a dotfile directly under an admitted directory entry (e.g. specs/NNN_slug/.return-meta.json against a specs/NNN_slug/ scope member) is already matched correctly with no special-casing needed. Useful when auditing or extending any bash containment/scope predicate for dotfile edge cases.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/535_phase_commit_drops_own_plan_artifact/reports/01_containment-filter-carve-out.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["is_contained", "case-pattern-matching", "dotfiles", "containment-filter", "bash-glob"]
-    },
-    {
-      "content": "When a task description's own re-measurement/ruling paragraph (e.g. citing a decisions/ record) claims a prior task already closed the code defect, verify by running the live test suite rather than trusting the claim -- in this case 98/98 tests passed confirming closure, narrowing the task to a documentation correction plus two additive test fixtures. This pattern (re-verify a stated closure before planning) is reusable whenever a task description carries its own superseding ruling paragraph.",
-      "category": "WORKFLOW",
-      "source_artifact": "specs/535_phase_commit_drops_own_plan_artifact/reports/01_containment-filter-carve-out.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["re-measurement", "ruling-paragraph", "test-verification", "task-closure-check"]
+      "content": "To prove a post-commit completeness check RAN (rather than being silently skipped by an upstream filter that emptied its input list), do not assert the absence of skip-family warning strings -- that is via-negativa and weak. Instead plant a .git/hooks/pre-commit that reverts one target path inside the temporary partial index (git update-index --cacheinfo <pre-commit-blob-sha> <path>), so the path is dirty against HEAD after the commit. The check then exits non-zero naming that path if and only if it ran, giving a positive observable. This generalizes to any post-action verification gate whose clean path is silent.",
+      "category": "PATTERN",
+      "source_artifact": "specs/535_phase_commit_drops_own_plan_artifact/plans/01_containment-carve-out-reconciliation.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["completeness-check", "pre-commit-hook", "update-index", "positive-observable", "silent-gate", "regression-fixture"]
     }
-  ]
+  ],
+  "next_steps": "Run /orchestrate 535 to execute the plan",
+  "dispatch_seq": 8
 }

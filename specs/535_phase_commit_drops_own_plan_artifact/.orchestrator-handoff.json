@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Created a 3-phase plan narrowing this record to its two genuinely-remaining items after re-verifying live that the code carve-out is already landed (file_scope_arr+=(\"${task_dir}/\") present; suite green at 98 passed / 0 failed across 39 cases). Phase 1 adds two regression cases to test-git-commit-phase.sh (dotfiles at the task-directory root, and a planted-pre-commit-hook fixture forcing exit 6 as the positive observable that the post-commit completeness check runs), with a fails-first demonstration against a scratch reverted copy. Phase 2 corrects the false \"structurally outside its reach\" mechanism sentence in git-staging-scope.md. Phase 3 deploys and verifies. The validator passes with 0 warnings.",
+  "phases_completed": 0,
+  "phases_total": 3,
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/535_phase_commit_drops_own_plan_artifact/plans/01_containment-carve-out-reconciliation.md",
+      "summary": "3-phase plan: two new regression cases in test-git-commit-phase.sh, one mechanism-sentence correction in git-staging-scope.md, then deploy-and-verify."
+    }
+  ],
+  "dispatch_seq": 8
+}
