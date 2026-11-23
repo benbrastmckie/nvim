@@ -1,40 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1795400947_bb64cf_477",
-  "dispatch_seq": 2,
-  "task_number": 477,
-  "findings_count": 12,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/477_normalize_issue_log_class_vocabulary/reports/01_issue_log_class_vocabulary.md",
-      "summary": "Confirms both defects (unnormalized class grouping; silent last-wins repeated --tasks flag) against the live script, grounds the canonical 'scope excursion' spelling in two already-hardcoded call sites, surveys 859 distinct raw class strings across the full issues.jsonl corpus, enumerates the 8 files a seed-enum promotion must touch, and recommends a mechanical-fold-now / alias-table-mechanism-but-empty / length-based-1d-warning design with rejected alternatives recorded."
+      "type": "plan",
+      "path": "specs/477_normalize_issue_log_class_vocabulary/plans/01_class-vocabulary-normalization.md",
+      "summary": "6-phase, 7-hour plan: promote `scope excursion` into the seed enum and reconcile the count across 10 files, add grouping-time case/separator folding plus an empty alias table to the aggregator's jq pipeline, reject repeated `--tasks` with the flag audit recorded, give `class` a shape convention and append-time warnings, add 10 regression cases, then redeploy and re-verify against the deployed copies."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1795400947_bb64cf_477",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 6,
+    "estimated_hours": 7,
+    "dependency_waves": 5
+  },
   "memory_candidates": [
     {
-      "content": "orchestrate-conclusion-aggregate.sh's issue-log class vocabulary: 'scope excursion' (lowercase, single space) is already the literal --class string hardcoded at two mechanical call sites (git-commit-phase.sh:741, git-commit-scoped.sh:866), accounting for 443 of ~3800 corpus-wide issues.jsonl lines -- the most frequent class by far. Promoting a seed class touches 8 files total (3 hold the actual list: issue-log.md, issue-record.sh, orchestrate-conclusion-aggregate.sh; 5 more restate the '17-class' count in prose, including the literal text orchestrate-build-dispatch.sh injects into every generated dispatch file).",
+      "content": "Core's shell regression suites resolve their subject script deploy-tree-first, so a source-store edit under agent-system/extensions/core/ is INVISIBLE to them until a redeploy -- a suite run before the deploy is a vacuous pass on the stale deployed copy. lib/common.sh's common_test_resolve_subject honors a CORE_TEST_SUBJECT_MODE=source-store environment override for exactly that case (it overrides only the deploy-tree-first PREFERENCE, never a hard `deployed`/`source-store` caller), and the suites copy the resolved script into a scratch .claude/scripts/ tree so deploy-root-guard.sh still passes. Verified live: test-orchestrate-conclusion-aggregate.sh runs 15/15 green against the source store with no deploy. Planning consequence: source-store script edits do NOT need a deploy per phase to be verifiable -- export the override in each pre-deploy phase and re-run the suites once in default mode after the final deploy, which is also what distinguishes a real green from the vacuous one.",
       "category": "PATTERN",
-      "source_artifact": "specs/477_normalize_issue_log_class_vocabulary/reports/01_issue_log_class_vocabulary.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["issue-log", "class enum", "seed enum promotion", "scope excursion", "issue-record.sh"]
-    },
-    {
-      "content": "When designing a near-duplicate-class normalizer: mechanical case+separator folding (ascii_downcase + hyphen/underscore/space fold) is safe to apply unconditionally because it only ever merges strings built from the SAME words; a curated semantic-alias table for different-word near-synonyms (e.g. 'design-gap' vs 'design-ambiguity') should ship as an empty, documented mechanism rather than pre-populated, since thin evidence (1 corpus occurrence each) and opposite-direction false near-duplicates (a 'scope omission' class is the opposite of a 'scope excursion' class despite sharing the word 'scope') make silent semantic merging risky.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/477_normalize_issue_log_class_vocabulary/reports/01_issue_log_class_vocabulary.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["normalization", "alias table", "class grouping", "jq ascii_downcase", "semantic merge caution"]
-    },
-    {
-      "content": "A length/verb-keyword heuristic for detecting a free-text 'sentence' masquerading as a short enum value should prefer token-count-after-fold over a verb/keyword blocklist: this repo's own issue-log corpus already uses many short, legitimate, verb-bearing class names ('hypothesis confirmed', 'fix confirmed working', 'mechanism confirmed', 'blocker-cleared', 'tooling worked first try'), so a keyword blocklist on words like 'confirmed'/'found'/'discovered' would false-positive heavily against live, idiomatic usage.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/477_normalize_issue_log_class_vocabulary/reports/01_issue_log_class_vocabulary.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["free-text validation", "enum field lint", "issue-record.sh", "heuristic design"]
+      "source_artifact": "specs/477_normalize_issue_log_class_vocabulary/plans/01_class-vocabulary-normalization.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["CORE_TEST_SUBJECT_MODE", "source-store", "deploy-tree-first", "vacuous pass", "common_test_resolve_subject", "verification tier"]
     }
   ],
-  "next_steps": "Run /orchestrate 477 to create implementation plan"
+  "next_steps": "Run /orchestrate 477 to execute the plan",
+  "dispatch_seq": 4
 }

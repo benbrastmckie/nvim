@@ -111,7 +111,7 @@ next_project_number: 684
 
 ### Orchestrator
 
-477 [PLANNING] — Normalize issue-log class vocabulary and reject the...
+477 [PLANNED] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 665 [NOT STARTED] — Record the last dispatching orchestration batch in a...
 666 [NOT STARTED] — Re-site the branch-aware orchestration batch in the authored...
@@ -7942,11 +7942,12 @@ An edge on validate_carried_unverified_names_a_source is declared because that t
 
 ### 477. Normalize issue-log class vocabulary and reject the aggregate's malformed repeated-flag call
 - **Effort**: medium
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [477_normalize_issue_log_class_vocabulary/reports/01_issue_log_class_vocabulary.md]
+- **Plan**: [477_normalize_issue_log_class_vocabulary/plans/01_class-vocabulary-normalization.md]
 
 **Description**: The issue-log `class` vocabulary is fragmenting, which defeats the cross-task grouping that is the entire purpose of conclusion-stage aggregation. Separately, orchestrate-conclusion-aggregate.sh accepts a malformed call shape and answers it with a confident, plausible-looking empty result. Fix both.
 
