@@ -1,0 +1,9 @@
+[
+  {
+    "question": "What does the bottom PR of a stack merge into? With isolation off the work is already on the integration branch, and in a fixture a review branch cut from the batch's cut point conflicted when merged into it.",
+    "answer": "A. A declared review base distinct from the integration branch (a new review_base key); PRs are mergeable, and a repository whose integration branch is its default branch gets a refusal and no PRs",
+    "cycle": 9,
+    "timestamp": "2026-11-23T15:07:01Z",
+    "description_fingerprint": "f558a19802dfbd5f54abe2c6c3a25b9b3f35907160999655f579117a42d29ea6"
+  }
+]

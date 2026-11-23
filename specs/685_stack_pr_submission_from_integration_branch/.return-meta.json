@@ -1,53 +1,22 @@
 {
-  "status": "researched",
-  "started_at": "2026-11-23T14:58:22Z",
-  "completed_at": "2026-11-23T15:06:00Z",
-  "dispatch_seq": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/685_stack_pr_submission_from_integration_branch/reports/01_stack-pr-submission.md",
-      "summary": "Rules the review unit, base resolution, ordering, restack disposition, handoff shape and platform support for cutting a PR stack from landing proofs by plumbing; fixture experiments E1 to E5; one user decision on what the bottom PR merges into."
+      "type": "plan",
+      "path": "specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md",
+      "summary": "Seven sequential phases: a review_base declaration with refusals, unit selection and dependency ordering, a plumbing-only stack cut with a machine-local manifest, restack on a merged parent, handoff output, a user-invoked /merge stack mode, and a redeploy with a second-repository demonstration."
     }
   ],
-  "next_steps": "Run /orchestrate 685 to create implementation plan",
-  "user_decision": {
-    "question": "What does the bottom PR of a stack merge into? With isolation off the work is already on the integration branch, and in a fixture a review branch cut from the batch's cut point conflicted when merged into it.",
-    "options": [
-      "A. A declared review base distinct from the integration branch (a new review_base key); PRs are mergeable, and a repository whose integration branch is its default branch gets a refusal and no PRs",
-      "B. The integration branch, as the task description says; PRs can be read and approved and are then closed, never merged"
-    ],
-    "recommended": "A. A declared review base distinct from the integration branch (a new review_base key); PRs are mergeable, and a repository whose integration branch is its default branch gets a refusal and no PRs",
-    "blocking": false
-  },
-  "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/review-stack-prepare.sh",
-    "agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh",
-    "agent-system/extensions/core/scripts/tests/suite-classification.data",
-    "agent-system/extensions/core/context/standards/repo-level-declarations.md",
-    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
-  ],
-  "memory_candidates": [
-    {
-      "content": "Two plumbing primitives build and maintain review branches without touching HEAD, the index or the working tree (git 2.54). Blob overlay (temporary GIT_INDEX_FILE, read-tree of the parent, update-index --cacheinfo per path from the task's end commit, write-tree, commit-tree, update-ref) is exact only when the parent is an ancestor of the branch the blobs come from: on a base that moved independently it silently replaces foreign edits to the same file. git merge-tree --write-tree --merge-base=<old parent> <new parent> <commit> is a true three-way transplant, keeps foreign edits, exits 1 on conflict, and gave a tree equal to a full overlay rebuild after a squash-merged parent. git replay --onto also works but is marked EXPERIMENTAL and in 2.54 updates refs directly by default.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/685_stack_pr_submission_from_integration_branch/reports/01_stack-pr-submission.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["merge-tree", "commit-tree", "blob overlay", "restack", "review branch", "plumbing"]
-    },
-    {
-      "content": "The push grant minted by hooks/please-grant.sh is bound to the SHA of HEAD at mint time, not to the pushed ref. Pushing a branch that is not checked out works as long as HEAD does not move within the 600 second window; a concurrent session committing to the checked-out branch invalidates the grant. /merge mints its grant for remote origin and the checked-out branch with no argument parsing, so /merge cannot push any other branch. PR creation (gh pr create, glab mr create) has no mechanical guard in hooks/ or scripts/; only the push is hook-enforced.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/685_stack_pr_submission_from_integration_branch/reports/01_stack-pr-submission.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["push grant", "please", "merge", "HEAD_SHA", "guard-git-push", "consent"]
-    }
-  ],
+  "next_steps": "Run /orchestrate 685 to execute the plan",
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1795425897_6a25f2_685",
-    "agent_type": "general-research-agent",
+    "agent_type": "planner-agent",
     "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "research", "general-research-agent"],
-    "findings_count": 9
-  }
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 7,
+    "estimated_hours": 10.5,
+    "dependency_waves": [[1], [2], [3], [4], [5], [6], [7]]
+  },
+  "dispatch_seq": 8
 }

@@ -1,0 +1,15 @@
+{
+  "status": "planned",
+  "summary": "Wrote a seven-phase, fully sequential plan (10.5 hours) for cutting a PR stack from landing proofs by git plumbing, with a review_base declaration per the relayed user answer, a restack disposition, handoff output and a user-invoked /merge stack mode. All three flagged description premises were re-validated against live state; the landing contract is present, so no blocker. The on-forge criterion is recorded as operator-owed because no agent may push or call a forge. Two issue-log entries were recorded this dispatch (one issue, one win).",
+  "blockers": [],
+  "phases_completed": 0,
+  "phases_total": 7,
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md",
+      "summary": "Seven-phase plan for review-stack preparation, restack, handoff and /merge stack mode."
+    }
+  ],
+  "dispatch_seq": 8
+}
