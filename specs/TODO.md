@@ -96,7 +96,7 @@ next_project_number: 684
 
 ### File Scope Lifecycle
 
-567 [RESEARCHED] — Port the deployed-tree containment strip into...
+567 [PLANNED] — Port the deployed-tree containment strip into...
 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
   └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
     └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
@@ -111,7 +111,7 @@ next_project_number: 684
 
 ### Orchestrator
 
-477 [RESEARCHED] — Normalize issue-log class vocabulary and reject the...
+477 [PLANNING] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 665 [NOT STARTED] — Record the last dispatching orchestration batch in a...
 666 [NOT STARTED] — Re-site the branch-aware orchestration batch in the authored...
@@ -3055,12 +3055,13 @@ RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-lay
 
 ### 567. Port the deployed-tree containment strip into git-commit-scoped.sh
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
 - **Parent**: Task 446
 - **Research**: [567_port_containment_strip_to_git_commit_scoped/reports/01_port-containment-strip.md]
+- **Plan**: [567_port_containment_strip_to_git_commit_scoped/plans/01_port-containment-strip.md]
 
 **Description**: Port git-commit-phase.sh's deployed-tree containment strip into git-commit-scoped.sh's V10 resolution block (around its containment_scope_arr assembly), closing Site 3 of the three documented containment sites. Site 2 (git-commit-phase.sh's own Containment Self-Check) now strips .claude/** entries before use, but git-commit-scoped.sh carries a separate, unpatched V10 guard that re-reads the unstripped file_scope directly from specs/state.json with no override once --task is passed. Consequence: a path admitted at Site 2 still does not land, because Site 3 vetoes it independently. This is the documented reason the planned proposed_file_scope union design was abandoned in favour of a read-only annotation; see the Site-3 parity note in context/standards/git-staging-scope.md. Scope: git-commit-scoped.sh and its test suite. Verify by restoring the full end-to-end assertion in test-git-commit-phase.sh Case 26 (currently narrowed to Site 2 behaviour only) and by re-checking the Case 20 idempotence fixture that the abandoned union design regressed.
 
@@ -7941,7 +7942,7 @@ An edge on validate_carried_unverified_names_a_source is declared because that t
 
 ### 477. Normalize issue-log class vocabulary and reject the aggregate's malformed repeated-flag call
 - **Effort**: medium
-- **Status**: [RESEARCHED]
+- **Status**: [PLANNING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None

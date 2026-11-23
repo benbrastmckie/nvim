@@ -6276,7 +6276,7 @@
     {
       "project_number": 477,
       "project_name": "normalize_issue_log_class_vocabulary",
-      "status": "researched",
+      "status": "planning",
       "task_type": "meta",
       "title": "Normalize issue-log class vocabulary and reject the aggregate's malformed repeated-flag call",
       "description": "The issue-log `class` vocabulary is fragmenting, which defeats the cross-task grouping that is the entire purpose of conclusion-stage aggregation. Separately, orchestrate-conclusion-aggregate.sh accepts a malformed call shape and answers it with a confident, plausible-looking empty result. Fix both.\n\nCHANNEL: /orchestrate conclusion channel (b), agent-system change request, session sess_1793802705_e3f98a.\n\nCONSOLIDATION NOTE (Multi-Task Creation Standard, Component 0): these arrived as two separate change requests but share a single narrow edit target, scripts/orchestrate-conclusion-aggregate.sh, and a single acceptance gate. Under Component 0's default they are therefore ONE task. Split into two, each would have declared that script in file_scope, Component 4a's overlap check would have added a serializing dependency edge between them, and the pair could never have been dispatched independently -- the split would have been self-defeating rather than merely cosmetic.\n\n=== PART 1: CLASS VOCABULARY FRAGMENTATION ===\n\nEVIDENCE, from the aggregate over tasks 275, 274, 378, 387 and 407 in session sess_1793802705_e3f98a: 22 distinct classes appear OUTSIDE the 15-class seed enum documented in context/formats/issue-log.md. Among them are near-duplicate pairs and triples that did NOT group and should have:\n\n  `COVERAGE_GAP` vs `coverage-gap`\n      -- a pure case-and-separator difference; these are the same class by any reading.\n  `design-gap` vs `design-ambiguity`\n      -- a semantic near-duplicate.\n  `scope` vs `scope deviation` vs `scope excursion` vs `scope-correction`\n      vs `scope/file_scope omission discovered pre-emptively`\n      -- FIVE spellings of one concept, which between them hold 13 of the invocation's entries\n         while grouping as five separate proposals.\n\nThree further entries put a free-text SENTENCE in the class field rather than a class at all:\n  `research-confirmed-hypothesis`\n  `reuse-not-reimplement confirmed by direct source read`\n  `reuse_of_existing_machinery`\n\n1a. PROMOTE `scope excursion` INTO THE SEED ENUM in context/formats/issue-log.md. At 8 occurrences across five tasks in a single invocation it is the highest-frequency class in the evidence base and the strongest promotion candidate. Choose ONE canonical spelling and state it explicitly -- the five-way variant spread above exists precisely because no canonical spelling was ever written down.\n\n1b. NORMALIZE AT GROUPING TIME in scripts/orchestrate-conclusion-aggregate.sh so that `COVERAGE_GAP` and `coverage-gap` group together. Case folding plus separator folding (hyphen, underscore, space) is the minimum.\n\n    HARD CONSTRAINT: normalization applies at GROUPING time only. Do NOT rewrite the stored `class` value in any issues.jsonl, ever. Those files are append-only evidence, and a retroactive rewrite would destroy the provenance that makes a citation checkable by a future reader -- which is the property the whole conclusion-stage mechanism rests on.\n\n1c. Decide, and record with reasons, how far normalization should go. Case and separator folding is mechanical and safe. Merging `design-gap` with `design-ambiguity`, or collapsing the five scope variants into one, is a SEMANTIC judgment that a grouping function probably should not make silently: an over-eager normalizer that merges two genuinely distinct classes destroys signal exactly as thoroughly as a fragmented vocabulary does, and does it invisibly. State where the line falls and why. One shape worth evaluating explicitly: mechanical folding applied automatically, PLUS a curated alias table for semantic merges, PLUS a report of unrecognized classes so the seed enum grows deliberately rather than by drift. Record the rejected alternatives on their own merits.\n\n1d. Address the free-text-sentence entries. Whatever the remedy -- validation at append time, a warning, or a documented convention with a lint -- the three examples above must be caught by it. A class field that accepts an arbitrary sentence cannot group, and never will.\n\n=== PART 2: A MALFORMED CALL SHAPE ANSWERED WITH A CONFIDENT EMPTY RESULT ===\n\nThis defect was observed DIRECTLY during the conclusion stage of the cited session, not harvested from any issue log, so it carries no citation. It is reproducible on demand.\n\n`orchestrate-conclusion-aggregate.sh --aggregate` accepts REPEATED `--tasks N` flags without any error and silently honours only the LAST one. The correct call shape is a single space-separated string:\n\n  CORRECT:   --tasks \"275 274 378 387 407\"\n  ACCEPTED, WRONG, AND SILENT:   --tasks 275 --tasks 274 --tasks 378 ...\n\nThe repeated-flag form returns `proposals: []`, `wins: []`, and the single last task listed under `no_contribution_tasks`. Nothing in that output signals that the caller's request was misunderstood. It reads exactly like a legitimate \"these tasks logged nothing\" answer.\n\nWHY THIS IS WORSE THAN A CRASH: a wrong-but-accepted call shape that yields a confident empty answer gives the caller no error to notice. The caller draws a false conclusion about the invocation it just ran and may skip channels (b) and (c) entirely on the strength of it -- discarding the whole evidence base of a multi-task run. A rejected call costs one retry; this costs the entire conclusion stage, silently.\n\n2a. Either REJECT repeated `--tasks` flags with a usage error that names the correct single-string form, or ACCEPT them as a UNION of all occurrences. Pick one, implement it, and document it in the script's usage header. Rejection is the safer default; union is defensible if it matches the convention other flags in the same script already follow. What is NOT acceptable is the current silent last-wins behaviour.\n\n2b. While in the flag parser, audit the script's OTHER list-valued flags for the same last-wins hazard. The defect is a flag-parsing idiom, and an idiom used once is usually used more than once. Report what was found even if nothing else needs changing.\n\n=== VERIFICATION ===\n\nscripts/tests/test-orchestrate-conclusion-aggregate.sh already exists and is the regression home for all of this. Required cases:\n  (a) `COVERAGE_GAP` in one task's log and `coverage-gap` in another's group into ONE proposal.\n  (b) A repeated-`--tasks` call produces the chosen behaviour -- a non-zero usage exit, or a union result covering every named task -- and NEVER a silent empty result.\n  (c) The canonical `scope excursion` spelling validates against the seed enum.\n  (d) Stored `class` values in fixture issues.jsonl files are BYTE-IDENTICAL before and after an aggregate run, proving no retroactive rewrite (the 1b constraint).\n  (e) If 1c produced an alias table, an unrecognized class still appears in the output rather than being dropped -- the aggregate must never silently discard an entry it cannot classify.\n\nCONCURRENT TERRITORY NOTES, verified against the open backlog at creation time; none warrants a dependency edge, but a batch must serialize:\n  - Record 402 (\"Conclusion stage Step 4c allocates no task number and creates no task directories\") claims scripts/tests/test-orchestrate-conclusion-aggregate.sh. Different defect, same regression home.\n  - Record 448 (\"contain_deliberate_break_source_mutations\") also claims that test file.\n  - Record 435 (\"reword_dead_lifecycle_command_prose_per_class\") nominally claims all three of this task's files as part of a broad prose sweep.\n  - Record 459 (\"Design cross-record traceability; verdict on CHANGE_LOG retirement\") is adjacent doctrine on how records cite each other; worth reading at plan time but not an edge.\n  - The issue-log contract itself was established by a now-closed record (\"per_task_issue_log_contract_writer_and_threading\"); this task extends that contract's enum rather than redefining it, and should not re-litigate its threading design.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/. Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. NEVER hand-author under .claude/**, which is a gitignored, disposable deploy artifact regenerated from the source store -- an edit there appears to succeed and is silently wiped by the next regeneration (rules/source-store-deploy-boundary.md). REDEPLOY AFTERWARDS via agent-system/extensions/core/scripts/deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout raised to 600000) to RESULT=landed_verify_clean. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.",
@@ -6297,7 +6297,7 @@
         }
       ],
       "created": "2026-11-04T22:42:30Z",
-      "last_updated": "2026-11-23T02:38:58Z",
+      "last_updated": "2026-11-23T02:39:38Z",
       "audit_verdict": {
         "proposal": {
           "id": "normalize_issue_log_class_vocabulary",
@@ -6513,7 +6513,7 @@
         },
         "degradations_count": 0
       },
-      "session_id": "sess_1795400947_bb64cf",
+      "session_id": "sess_1795400947_bb64cf_477",
       "next_artifact_number": 2
     },
     {
@@ -13828,7 +13828,7 @@
     {
       "project_number": 567,
       "project_name": "port_containment_strip_to_git_commit_scoped",
-      "status": "researched",
+      "status": "planned",
       "task_type": "meta",
       "description": "Port git-commit-phase.sh's deployed-tree containment strip into git-commit-scoped.sh's V10 resolution block (around its containment_scope_arr assembly), closing Site 3 of the three documented containment sites. Site 2 (git-commit-phase.sh's own Containment Self-Check) now strips .claude/** entries before use, but git-commit-scoped.sh carries a separate, unpatched V10 guard that re-reads the unstripped file_scope directly from specs/state.json with no override once --task is passed. Consequence: a path admitted at Site 2 still does not land, because Site 3 vetoes it independently. This is the documented reason the planned proposed_file_scope union design was abandoned in favour of a read-only annotation; see the Site-3 parity note in context/standards/git-staging-scope.md. Scope: git-commit-scoped.sh and its test suite. Verify by restoring the full end-to-end assertion in test-git-commit-phase.sh Case 26 (currently narrowed to Site 2 behaviour only) and by re-checking the Case 20 idempotence fixture that the abandoned union design regressed.",
       "effort": "medium",
@@ -13836,12 +13836,17 @@
       "topic": "file-scope-lifecycle",
       "dependencies": [],
       "created": "2026-11-09T15:56:24Z",
-      "last_updated": "2026-11-23T02:38:38Z",
+      "last_updated": "2026-11-23T02:50:21Z",
       "artifacts": [
         {
           "path": "specs/567_port_containment_strip_to_git_commit_scoped/reports/01_port-containment-strip.md",
           "type": "report",
           "summary": "Pinpoints the exact Site-2 strip block in git-commit-phase.sh and the exact insertion point inside git-commit-scoped.sh's V10 containment_scope_arr assembly, the variable-rename and warn()-convention pitfalls, and the test-suite changes needed (restore Case 26's full assertion, add a new Z19 case, re-run Case 20 as a non-regression check)."
+        },
+        {
+          "path": "specs/567_port_containment_strip_to_git_commit_scoped/plans/01_port-containment-strip.md",
+          "type": "plan",
+          "summary": "4-phase plan: port the Site-3 strip, pin it with Z19 + restored Case 26, record the closure in git-staging-scope.md, close out with a scoped multi-path verify-touched.sh run."
         }
       ],
       "audit_verdict": {
@@ -14065,9 +14070,10 @@
       },
       "title": "Port the deployed-tree containment strip into git-commit-scoped.sh",
       "file_scope": [
+        "agent-system/extensions/core/context/standards/git-staging-scope.md",
         "agent-system/extensions/core/scripts/git-commit-scoped.sh",
-        "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh",
-        "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"
+        "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh",
+        "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"
       ],
       "session_id": "sess_1795400947_bb64cf",
       "next_artifact_number": 2

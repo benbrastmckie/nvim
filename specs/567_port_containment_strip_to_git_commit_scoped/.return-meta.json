@@ -1,39 +1,30 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1795400947_bb64cf_567",
-  "dispatch_seq": 1,
-  "findings_count": 7,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/567_port_containment_strip_to_git_commit_scoped/reports/01_port-containment-strip.md",
-      "summary": "Pinpoints the exact Site-2 strip block in git-commit-phase.sh and the exact insertion point inside git-commit-scoped.sh's V10 containment_scope_arr assembly, the variable-rename and warn()-convention pitfalls, and the test-suite changes needed (restore Case 26's full assertion, add a new Z19 case, re-run Case 20 as a non-regression check)."
+      "type": "plan",
+      "path": "specs/567_port_containment_strip_to_git_commit_scoped/plans/01_port-containment-strip.md",
+      "summary": "4-phase plan porting git-commit-phase.sh's deployed-tree containment strip into git-commit-scoped.sh's V10 resolution block (Site 3), with a new Z19 regression case, Case 26's restored end-to-end assertion, and the git-staging-scope.md residual closure."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1795400947_bb64cf_567",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 2,
+    "dependency_waves": 3
+  },
   "memory_candidates": [
     {
-      "content": "git-commit-scoped.sh's V10 containment_scope_arr is populated from the task's raw file_scope (a `while IFS= read -r s; do containment_scope_arr+=(\"$s\"); done` loop reading jq '.[]' output) immediately followed by `if [ \"${#containment_scope_arr[@]}\" -gt 0 ]; then` which gates the own-task-directory/engine-written-state/derived-output widening splices. Any scope-definition filter (e.g. a deployed-tree strip) must be inserted strictly between the raw-population loop and that length guard, never inside it after the splices -- otherwise the guard evaluates against the unstripped array and a scope that should strip to empty incorrectly survives into the widening block.",
+      "content": "A plan phase whose only deliverable is a markdown doc under the agent-system source store (e.g. context/standards/*.md) is NOT automatically a `prose` tier phase: suite_selection_select can map such a doc to real shell suites (git-staging-scope.md maps to test-git-commit-phase.sh and test-todo-move-pair-staging.sh), because suites assert against the standard's own content. Run the selector before declaring `prose`; when it returns real suite basenames rather than __FULL_SWEEP__, `local` with a verify-touched.sh justification is the honest cheapest tier, since `prose`'s diff read-through does not exercise those assertions.",
       "category": "PATTERN",
-      "source_artifact": "specs/567_port_containment_strip_to_git_commit_scoped/reports/01_port-containment-strip.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["git-commit-scoped.sh", "V10", "containment_scope_arr", "file_scope", "containment-sites"]
-    },
-    {
-      "content": "git-commit-scoped.sh has no warn() helper function -- every V9/V10/V13 warning in that script is an inline `echo \"WARN: git-commit-scoped.sh ...\" >&2`. git-commit-phase.sh, by contrast, defines and uses a warn() helper. Porting a Site-2 (git-commit-phase.sh) mechanism into Site-3 (git-commit-scoped.sh) must translate warn() calls to this script's own inline-echo convention, not copy warn() verbatim.",
-      "category": "CONFIG",
-      "source_artifact": "specs/567_port_containment_strip_to_git_commit_scoped/reports/01_port-containment-strip.md",
+      "source_artifact": "specs/567_port_containment_strip_to_git_commit_scoped/plans/01_port-containment-strip.md",
       "confidence": 0.8,
-      "suggested_keywords": ["git-commit-scoped.sh", "git-commit-phase.sh", "warn-convention", "shell-scripts"]
-    },
-    {
-      "content": "test-git-commit-phase.sh's build_repo() fixture copies the REAL git-commit-scoped.sh (not a stub) into <repo>/.claude/scripts/git-commit-scoped.sh for every case in that suite. This means any fix landed in git-commit-scoped.sh's own source-store copy is automatically exercised end-to-end by test-git-commit-phase.sh's existing cases without needing a separate stub-update step -- a case whose own comment says it 'deliberately does not assert the end-to-end outcome because Site 3 is unpatched' can have that narrowing lifted once Site 3 is patched, no fixture change required.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/567_port_containment_strip_to_git_commit_scoped/reports/01_port-containment-strip.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["test-git-commit-phase.sh", "fixture", "git-commit-scoped.sh", "end-to-end-testing"]
+      "suggested_keywords": ["verification-tier", "suite_selection_select", "verify-touched.sh", "plan-authoring", "prose-tier"]
     }
   ],
-  "next_steps": "Run /orchestrate 567 to create implementation plan"
+  "next_steps": "Run /orchestrate 567 to execute the plan",
+  "dispatch_seq": 3
 }

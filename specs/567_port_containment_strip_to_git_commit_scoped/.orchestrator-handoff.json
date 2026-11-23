@@ -1,0 +1,18 @@
+{
+  "status": "planned",
+  "task_number": 567,
+  "phase": "plan",
+  "session_id": "sess_1795400947_bb64cf_567",
+  "dispatch_seq": 3,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Authored a 4-phase implementation plan porting git-commit-phase.sh's deployed-tree containment strip into git-commit-scoped.sh's V10 resolution block (Site 3), spliced strictly between the raw containment_scope_arr population loop and the non-emptiness guard. Phase 2 adds a Z19 regression case to test-git-commit-scoped.sh and restores test-git-commit-phase.sh Case 26's end-to-end assertion while re-running Case 20 unmodified; Phase 3 revises the now-stale third-asymmetry paragraph in context/standards/git-staging-scope.md, keeping the still-true proposed_file_scope_lookup half. The doc path is outside the task's originally declared file_scope and is admitted via plan-file-scope-harvest.sh at this plan's postflight. Plan validates clean with 0 warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/567_port_containment_strip_to_git_commit_scoped/plans/01_port-containment-strip.md",
+      "summary": "4-phase plan: port the Site-3 strip, pin it with Z19 + restored Case 26, record the closure in git-staging-scope.md, close out with a scoped multi-path verify-touched.sh run."
+    }
+  ]
+}
