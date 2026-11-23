@@ -913,10 +913,11 @@
         {
           "path": "specs/691_restack_review_stack_when_parent_merges/plans/01_restack-on-parent-merge.md",
           "type": "plan",
-          "summary": "Three-phase plan for the restack subcommand, 2 hours estimated, strict dependency chain across three waves."
+          "summary": "Three-phase plan for the restack subcommand, all three phases now [COMPLETED]."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Implemented the restack subcommand of review-stack-prepare.sh across all three plan phases (ref resolution/refusals, bottom-up merge detection and off-tree recompute, ref moves/manifest rewrite/redeploy), growing the suite from 38 to 61 passing cases with no pre-existing case edited, and fixed a latent command-substitution/exit bug in the rsp_move_commit_onto_new_parent primitive shared with cut."
     },
     {
       "project_number": 689,

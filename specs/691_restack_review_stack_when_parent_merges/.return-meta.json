@@ -1,18 +1,118 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
+  "dispatch_seq": 7,
   "artifacts": [
     {
       "type": "plan",
       "path": "specs/691_restack_review_stack_when_parent_merges/plans/01_restack-on-parent-merge.md",
       "summary": "Three-phase plan for the restack subcommand of review-stack-prepare.sh, split along the file's own plan/print/execute seam, with PD7's three ambiguities resolved as plan decisions."
+    },
+    {
+      "type": "summary",
+      "path": "specs/691_restack_review_stack_when_parent_merges/summaries/01_restack-on-parent-merge-summary.md",
+      "summary": "Implemented restack's full detection/recompute/execute pipeline across three phases in one dispatch; suite grew from 38 to 61 passing cases with no pre-existing case edited; fixed a latent $(...)-subshell bug in a primitive shared with cut."
     }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented the restack subcommand of review-stack-prepare.sh across all three plan phases (ref resolution/refusals, bottom-up merge detection and off-tree recompute, ref moves/manifest rewrite/redeploy), growing the suite from 38 to 61 passing cases with no pre-existing case edited, and fixed a latent command-substitution/exit bug in the rsp_move_commit_onto_new_parent primitive shared with cut."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/review-stack-prepare.sh",
+    "agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh"
   ],
   "metadata": {
     "session_id": "sess_1795472390_63c292",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
   },
-  "memory_candidates": [],
-  "dispatch_seq": 7
+  "memory_candidates": [
+    {
+      "content": "A bash function implementing a 'refuse on error' pattern (calling `exit N` directly on failure, as review-stack-prepare.sh's rsp_refuse does) must never be invoked inside `\"$(...)\"` command substitution to capture its stdout -- the `exit` only terminates the command-substitution subshell, silently swallowing the refusal and letting the caller proceed with stale or empty output. The fix is to have the function set a global variable instead of (or in addition to) printing to stdout, and call it as a plain statement, reading the global afterward. This bug can stay latent indefinitely if the failure path is never exercised by existing tests.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/691_restack_review_stack_when_parent_merges/summaries/01_restack-on-parent-merge-summary.md",
+      "confidence": 0.9,
+      "suggested_keywords": [
+        "bash",
+        "command-substitution",
+        "exit-code",
+        "subshell",
+        "refusal-pattern"
+      ]
+    },
+    {
+      "content": "To detect whether a commit's diff is already reflected (e.g. squash-merged) in a target tip, compute the three-way merge-tree of the commit onto the target (merge-base = the commit's old parent, new parent = the target) and compare the resulting tree sha to the target's own tree sha. If equal, the commit's changes are already fully present. Reusing the SAME refusing merge primitive used for the real rebuild (rather than a separate non-refusing probe) is a deliberate simplification when a conflict during detection is itself a legitimate reason to refuse the whole operation.",
+      "category": "PATTERN",
+      "source_artifact": "specs/691_restack_review_stack_when_parent_merges/summaries/01_restack-on-parent-merge-summary.md",
+      "confidence": 0.75,
+      "suggested_keywords": [
+        "git",
+        "merge-tree",
+        "squash-merge-detection",
+        "three-way-merge"
+      ]
+    },
+    {
+      "content": "When a tool flattens a dependency DAG into per-component linear chains for output (e.g. a stacked-PR cutter that always assigns each unit's base as either a fixed root or the immediately-preceding unit, in topological order), a downstream consumer reading that same ordered output can rely on 'parent always precedes child' and do single forward-pass propagation instead of a fixpoint loop -- but this guarantee must be verified by reading the producer's own construction code, not assumed from the DAG's general shape.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/691_restack_review_stack_when_parent_merges/summaries/01_restack-on-parent-merge-summary.md",
+      "confidence": 0.7,
+      "suggested_keywords": [
+        "topological-order",
+        "linear-chain",
+        "single-pass",
+        "dependency-graph"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "rsp_move_commit_onto_new_parent subshell-exit bug",
+      "predicate": "finding is",
+      "value": "A bash function that calls exit N on failure (the rsp_refuse pattern) must never be invoked inside \"$(...)\" command substitution; the exit only terminates the subshell, silently swallowing the refusal. Found in review-stack-prepare.sh's shared rsp_move_commit_onto_new_parent (used by both cut and restack); the existing cut test suite never exercised the conflict path, so the bug was latent until restack's required conflict-refusal case triggered it immediately. Fixed by returning via a global variable (RSP_MOVE_RESULT_TREE) instead.",
+      "ko_type": "insight",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh"
+    },
+    {
+      "subject": "review-stack-prepare.sh restack merge detection design",
+      "predicate": "decision is",
+      "value": "restack's squash-merge detection test intentionally reuses the SAME refusing merge-tree primitive used for real descendant recompute (one primitive, two call sites, per the parent design record's decision PD6), rather than a separate quiet probe -- a conflict during detection is treated as a genuine, refusal-worthy problem, not silently ignored.",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh"
+    },
+    {
+      "subject": "review-stack-prepare.sh restack review_base constraint",
+      "predicate": "finding is",
+      "value": "restack resolves the review base's remote-tracking ref at refs/remotes/<remote>/<review_base>, the same naming convention used for stack branches; this requires review_base to be a branch-shaped ref (not a tag) when restack is used, even though the shared PD1 resolver accepts any ref type for cut/show/record-request.",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh"
+    },
+    {
+      "subject": "review-stack-prepare.sh manifest chain structure",
+      "predicate": "finding is",
+      "value": "cut always flattens a component's units into one linear chain (each entry's base is either the review_base string or the immediately-preceding entry's branch name), confirmed by reading rsp_cut_plan's prev_branch construction; this guarantees a parent entry always precedes its children in manifest (ordinal) order, so restack's change-propagation and recompute passes are single forward scans, never a fixpoint loop.",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh"
+    },
+    {
+      "subject": "review-stack-prepare.sh conflict-path extraction idiom",
+      "predicate": "finding is",
+      "value": "review-stack-prepare.sh extracts conflicting path names from a failed git merge-tree --write-tree by re-running it with --name-only and taking only the lines before the first blank line (the trailing informational-messages section follows the blank line); this pre-existing idiom was reused unchanged for restack's own conflict refusals rather than re-derived.",
+      "ko_type": "insight",
+      "confidence": 0.75,
+      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh"
+    }
+  ],
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
