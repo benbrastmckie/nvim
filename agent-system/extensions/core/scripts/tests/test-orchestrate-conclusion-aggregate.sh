@@ -584,6 +584,126 @@ SID="sess_test_$$_aggregate"
   fi
 }
 
+# =====================================================================================
+# Case (o): grouping-time normalization -- COVERAGE_GAP in one task's log and
+# coverage-gap in another's fold to the same canonical key and group into ONE proposal
+# carrying both citations, with class_variants listing both raw spellings.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  write_entry "$scratch/specs/001_task_a/issues.jsonl" issue "COVERAGE_GAP" minor open null fix_now "task 1 coverage gap"
+  write_entry "$scratch/specs/002_task_b/issues.jsonl" issue "coverage-gap" minor open null fix_now "task 2 coverage gap"
+  out="$(run_agg "$scratch" --aggregate --session "$SID" --tasks "1 2")"
+  prop_count=$(echo "$out" | jq '[.proposals[] | select((.class_variants // []) | any(. == "COVERAGE_GAP"))] | length')
+  cite_count=$(echo "$out" | jq '[.proposals[] | select((.class_variants // []) | any(. == "COVERAGE_GAP")) | .citations[]] | length')
+  variants=$(echo "$out" | jq -c '[.proposals[] | select((.class_variants // []) | any(. == "COVERAGE_GAP")) | .class_variants][0] | sort')
+  if [ "$prop_count" = "1" ] && [ "$cite_count" = "2" ] && [ "$variants" = '["COVERAGE_GAP","coverage-gap"]' ]; then
+    common_test_pass "(o) grouping-time-normalization: COVERAGE_GAP and coverage-gap fold into ONE proposal with two citations and both raw spellings in class_variants"
+  else
+    common_test_fail "(o) grouping-time-normalization: prop_count=$prop_count cite_count=$cite_count variants=$variants -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (p): a repeated --tasks flag is REJECTED -- non-zero exit, stderr names the
+# single-string form, and stdout carries no JSON document at all (specifically never a
+# `proposals: []` document).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  write_entry "$scratch/specs/001_task_a/issues.jsonl" issue "environment" minor open null fix_now "env"
+  err_file="$(mktemp -p "$TOP_WORKDIR")"
+  out="$(run_agg "$scratch" --aggregate --session "$SID" --tasks "1" --tasks "2" 2>"$err_file")"
+  rc=$?
+  err="$(cat "$err_file" 2>/dev/null)"
+  stdout_is_json=false
+  if [ -n "$out" ] && echo "$out" | jq -e . >/dev/null 2>&1; then stdout_is_json=true; fi
+  if [ "$rc" -ne 0 ] && echo "$err" | grep -q -- '--tasks "N N N"' && [ "$stdout_is_json" = "false" ]; then
+    common_test_pass "(p) repeated-tasks-rejection: non-zero exit, stderr names the single-string form, stdout carries no JSON document"
+  else
+    common_test_fail "(p) repeated-tasks-rejection: rc=$rc stdout_is_json=$stdout_is_json err=[$err] out=[$out]"
+  fi
+}
+
+# =====================================================================================
+# Case (q): a canonical scope excursion entry produces NO row in unknown_classes[] --
+# the 18th seed class validates against the seed enum.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  write_entry "$scratch/specs/001_task_a/issues.jsonl" issue "scope excursion" minor open null fix_now "a scope excursion"
+  out="$(run_agg "$scratch" --aggregate --session "$SID" --tasks "1")"
+  count=$(echo "$out" | jq '[.unknown_classes[] | select(.class=="scope excursion")] | length')
+  if [ "$count" = "0" ]; then
+    common_test_pass "(q) seed-validation: scope excursion produces no row in unknown_classes[]"
+  else
+    common_test_fail "(q) seed-validation: $out"
+  fi
+}
+
+# =====================================================================================
+# Case (r) [HARD CONSTRAINT]: stored class values in fixture issues.jsonl files are
+# BYTE-IDENTICAL before and after an aggregate run -- grouping-time normalization is a
+# read-time transformation only and never rewrites a stored line.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  f1="$scratch/specs/001_task_a/issues.jsonl"
+  f2="$scratch/specs/002_task_b/issues.jsonl"
+  write_entry "$f1" issue "COVERAGE_GAP" minor open null fix_now "task 1"
+  write_entry "$f2" issue "coverage-gap" minor open null fix_now "task 2"
+  sum_before_1=$(md5sum "$f1" | awk '{print $1}')
+  sum_before_2=$(md5sum "$f2" | awk '{print $1}')
+  run_agg "$scratch" --aggregate --session "$SID" --tasks "1 2" >/dev/null 2>&1
+  sum_after_1=$(md5sum "$f1" | awk '{print $1}')
+  sum_after_2=$(md5sum "$f2" | awk '{print $1}')
+  if [ "$sum_before_1" = "$sum_after_1" ] && [ "$sum_before_2" = "$sum_after_2" ]; then
+    common_test_pass "(r) [HARD CONSTRAINT] byte-identity: stored issues.jsonl class values unchanged before/after an aggregate run"
+  else
+    common_test_fail "(r) byte-identity: f1 before=$sum_before_1 after=$sum_after_1; f2 before=$sum_before_2 after=$sum_after_2"
+  fi
+}
+
+# =====================================================================================
+# Case (s): an entry whose class is outside the seed enum under any folding still
+# appears in BOTH proposals[] and unknown_classes[] (never dropped); two folding-
+# equivalent spellings of that same unrecognized class produce exactly ONE
+# unknown_classes[] row, not two (never double-counted).
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  write_entry "$scratch/specs/001_task_a/issues.jsonl" issue "NOVEL_UNSEEDED_CLASS" minor open null fix_now "task 1 novel"
+  write_entry "$scratch/specs/002_task_b/issues.jsonl" issue "novel-unseeded-class" minor open null fix_now "task 2 novel"
+  out="$(run_agg "$scratch" --aggregate --session "$SID" --tasks "1 2")"
+  prop_count=$(echo "$out" | jq '[.proposals[] | select((.class_variants // []) | any(. == "NOVEL_UNSEEDED_CLASS"))] | length')
+  unk_rows=$(echo "$out" | jq '[.unknown_classes[] | select((.variants // []) | any(. == "NOVEL_UNSEEDED_CLASS"))] | length')
+  unk_count=$(echo "$out" | jq '[.unknown_classes[] | select((.variants // []) | any(. == "NOVEL_UNSEEDED_CLASS"))][0].count')
+  if [ "$prop_count" = "1" ] && [ "$unk_rows" = "1" ] && [ "$unk_count" = "2" ]; then
+    common_test_pass "(s) unknown-class-never-dropped-never-double-counted: folding-equivalent unrecognized spellings appear in proposals[] and exactly ONE unknown_classes[] row with count=2"
+  else
+    common_test_fail "(s) unknown-class: prop_count=$prop_count unk_rows=$unk_rows unk_count=$unk_count -- $out"
+  fi
+}
+
+# =====================================================================================
+# Case (t): scope excursion and scope omission do NOT collapse -- pins D1's line against
+# a future over-eager normalizer merging two genuinely distinct scope concepts.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  write_entry "$scratch/specs/001_task_a/issues.jsonl" issue "scope excursion" minor open null fix_now "an excursion"
+  write_entry "$scratch/specs/001_task_a/issues.jsonl" issue "scope omission" minor open null fix_now "an omission"
+  out="$(run_agg "$scratch" --aggregate --session "$SID" --tasks "1")"
+  excursion_count=$(echo "$out" | jq '[.proposals[] | select(.class=="scope excursion")] | length')
+  omission_count=$(echo "$out" | jq '[.proposals[] | select(.class=="scope omission")] | length')
+  total_count=$(echo "$out" | jq '[.proposals[] | select(.class=="scope excursion" or .class=="scope omission")] | length')
+  if [ "$excursion_count" = "1" ] && [ "$omission_count" = "1" ] && [ "$total_count" = "2" ]; then
+    common_test_pass "(t) no-over-merge: scope excursion and scope omission remain two separate proposals"
+  else
+    common_test_fail "(t) no-over-merge: excursion_count=$excursion_count omission_count=$omission_count total_count=$total_count -- $out"
+  fi
+}
+
 echo ""
 echo "=== Results: $PASSED passed, $FAILED failed ==="
 if [ "$FAILED" -gt 0 ]; then

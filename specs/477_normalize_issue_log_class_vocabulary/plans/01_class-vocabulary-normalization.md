@@ -459,36 +459,36 @@ is told so at append time; the convention and the promotion procedure are writte
 
 ---
 
-### Phase 5: Regression cases [NOT STARTED]
+### Phase 5: Regression cases [COMPLETED]
 
 **Goal**: Every case the dispatch's VERIFICATION section names has a mechanical home, and each one
 fails if its behavior regresses.
 
 **Tasks**:
 
-- [ ] `test-orchestrate-conclusion-aggregate.sh`, case (o): one task's log records `COVERAGE_GAP`
+- [x] `test-orchestrate-conclusion-aggregate.sh`, case (o): one task's log records `COVERAGE_GAP`
       and another's records `coverage-gap`; assert exactly **one** proposal results, carrying two
-      citations, with `class_variants` listing both raw spellings. (Dispatch requirement a.)
-- [ ] Case (p): a repeated-`--tasks` invocation exits non-zero, its stderr names the single-string
+      citations, with `class_variants` listing both raw spellings. (Dispatch requirement a.) *(completed)*
+- [x] Case (p): a repeated-`--tasks` invocation exits non-zero, its stderr names the single-string
       form, and its stdout contains no JSON — specifically never a `proposals: []` document.
-      (Dispatch requirement b.)
-- [ ] Case (q): an entry classed `scope excursion` produces no row in `unknown_classes[]`.
-      (Dispatch requirement c.)
-- [ ] Case (r): capture a checksum of every fixture `issues.jsonl` before an aggregate run and
-      again after; assert byte-identity. (Dispatch requirement d, the HARD CONSTRAINT.)
-- [ ] Case (s): an entry whose class is outside the seed enum under any folding still appears in
+      (Dispatch requirement b.) *(completed)*
+- [x] Case (q): an entry classed `scope excursion` produces no row in `unknown_classes[]`.
+      (Dispatch requirement c.) *(completed)*
+- [x] Case (r): capture a checksum of every fixture `issues.jsonl` before an aggregate run and
+      again after; assert byte-identity. (Dispatch requirement d, the HARD CONSTRAINT.) *(completed)*
+- [x] Case (s): an entry whose class is outside the seed enum under any folding still appears in
       both `proposals[]` and `unknown_classes[]`; and two folding-equivalent spellings of that same
       unrecognized class produce exactly one `unknown_classes[]` row, not two. (Dispatch
-      requirement e, in both directions — never dropped, never double-counted.)
-- [ ] Case (t): the five scope spellings from the dispatch's evidence do **not** all collapse —
+      requirement e, in both directions — never dropped, never double-counted.) *(completed)*
+- [x] Case (t): the five scope spellings from the dispatch's evidence do **not** all collapse —
       assert that `scope excursion` and `scope omission` remain separate proposals, pinning D1's
-      line against a future over-eager normalizer.
-- [ ] `test-issue-record.sh`: add cases asserting (i) each of the three free-text examples warns
+      line against a future over-eager normalizer. *(completed)*
+- [x] `test-issue-record.sh`: add cases asserting (i) each of the three free-text examples warns
       and still appends; (ii) `Scope_Excursion` warns naming the canonical spelling and still
       appends; (iii) a >6-token class emits the style warning and still appends; (iv) a canonical
-      `scope excursion` warns not at all.
-- [ ] Follow each suite's existing structural conventions (`common_test_pass`/`common_test_fail`,
-      `build_scratch`, `write_entry`, sequential case letters) rather than introducing new helpers.
+      `scope excursion` warns not at all. *(completed)*
+- [x] Follow each suite's existing structural conventions (`common_test_pass`/`common_test_fail`,
+      `build_scratch`, `write_entry`, sequential case letters) rather than introducing new helpers. *(completed)*
 
 **Timing**: 1.5 hours
 

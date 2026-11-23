@@ -496,6 +496,101 @@ EOF
   fi
 }
 
+# =====================================================================================
+# Case (s): each of the three dispatch's free-text-sentence examples warns (the outside-
+# the-seed-enum warning, extended to cite the class-shape convention) and still appends
+# its line, class value unchanged, verbatim.
+# =====================================================================================
+{
+  for sentence_class in "research-confirmed-hypothesis" "reuse_of_existing_machinery" \
+    "reuse-not-reimplement confirmed by direct source read"; do
+    scratch="$(build_scratch)"
+    doc="$scratch/$ISSUES_REL"
+    stderr_file="$TOP_WORKDIR/ir_stderr_s_$$_$RANDOM.txt"
+    exit_code=0
+    run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
+      --kind issue --class "$sentence_class" --severity minor \
+      --what-happened "free-text class shape test" >/dev/null 2>"$stderr_file" || exit_code=$?
+    stderr_out="$(cat "$stderr_file" 2>/dev/null)"
+    if [ "$exit_code" -eq 0 ] \
+      && jq -e --arg c "$sentence_class" '.class == $c' <<<"$(tail -1 "$doc")" >/dev/null 2>&1 \
+      && printf '%s' "$stderr_out" | grep -qi "class value shape"; then
+      common_test_pass "(s) free-text-class-shape-warning: '$sentence_class' warns naming the class-shape convention and still appends verbatim"
+    else
+      common_test_fail "(s) free-text-class-shape-warning: '$sentence_class' exit_code=$exit_code stderr=[$stderr_out]"
+    fi
+  done
+}
+
+# =====================================================================================
+# Case (t): a non-canonical spelling of a known seed class (Scope_Excursion) warns
+# naming the canonical spelling (scope excursion) and still appends the raw value
+# verbatim.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  doc="$scratch/$ISSUES_REL"
+  stderr_file="$TOP_WORKDIR/ir_stderr_t.txt"
+  exit_code=0
+  run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
+    --kind issue --class "Scope_Excursion" --severity minor \
+    --what-happened "non-canonical spelling test" >/dev/null 2>"$stderr_file" || exit_code=$?
+  stderr_out="$(cat "$stderr_file" 2>/dev/null)"
+  if [ "$exit_code" -eq 0 ] \
+    && jq -e '.class == "Scope_Excursion"' <<<"$(tail -1 "$doc")" >/dev/null 2>&1 \
+    && printf '%s' "$stderr_out" | grep -qi "canonical" \
+    && printf '%s' "$stderr_out" | grep -q "scope excursion"; then
+    common_test_pass "(t) canonical-spelling-warning: 'Scope_Excursion' warns naming 'scope excursion' and still appends verbatim"
+  else
+    common_test_fail "(t) canonical-spelling-warning: exit_code=$exit_code stderr=[$stderr_out]"
+  fi
+}
+
+# =====================================================================================
+# Case (u): a folded class above 6 whitespace-separated tokens emits the additional
+# style warning (on top of the outside-the-seed-enum warning) and still appends.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  doc="$scratch/$ISSUES_REL"
+  stderr_file="$TOP_WORKDIR/ir_stderr_u.txt"
+  long_class="reuse-not-reimplement confirmed by direct source read"
+  exit_code=0
+  run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
+    --kind issue --class "$long_class" --severity minor \
+    --what-happened "token-count style warning test" >/dev/null 2>"$stderr_file" || exit_code=$?
+  stderr_out="$(cat "$stderr_file" 2>/dev/null)"
+  if [ "$exit_code" -eq 0 ] \
+    && jq -e --arg c "$long_class" '.class == $c' <<<"$(tail -1 "$doc")" >/dev/null 2>&1 \
+    && printf '%s' "$stderr_out" | grep -qi "tokens long"; then
+    common_test_pass "(u) token-count-style-warning: an 8-token class emits the style warning and still appends"
+  else
+    common_test_fail "(u) token-count-style-warning: exit_code=$exit_code stderr=[$stderr_out]"
+  fi
+}
+
+# =====================================================================================
+# Case (v): a canonical seed-class spelling (scope excursion) produces NO warning at
+# all -- the clean, expected-usage control case for (s)/(t)/(u) above.
+# =====================================================================================
+{
+  scratch="$(build_scratch)"
+  doc="$scratch/$ISSUES_REL"
+  stderr_file="$TOP_WORKDIR/ir_stderr_v.txt"
+  exit_code=0
+  run_ir "$scratch" --task-dir "$scratch/specs/001_demo_task" \
+    --kind issue --class "scope excursion" --severity minor \
+    --what-happened "canonical spelling, no warning expected" >/dev/null 2>"$stderr_file" || exit_code=$?
+  stderr_out="$(cat "$stderr_file" 2>/dev/null)"
+  if [ "$exit_code" -eq 0 ] \
+    && jq -e '.class == "scope excursion"' <<<"$(tail -1 "$doc")" >/dev/null 2>&1 \
+    && [ -z "$stderr_out" ]; then
+    common_test_pass "(v) canonical-no-warning: 'scope excursion' produces no warning at all"
+  else
+    common_test_fail "(v) canonical-no-warning: exit_code=$exit_code stderr=[$stderr_out]"
+  fi
+}
+
 echo ""
 echo "=== Results: $PASSED passed, $FAILED failed ==="
 if [ "$FAILED" -gt 0 ]; then

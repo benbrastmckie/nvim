@@ -1,0 +1,22 @@
+{
+  "phase": 5,
+  "phase_name": "Regression cases",
+  "started_at": "2026-11-23T00:00:00Z",
+  "last_updated": "2026-11-23T02:00:00Z",
+  "objectives": [
+    {"id": 1, "description": "Case (o): COVERAGE_GAP + coverage-gap group into one proposal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"]},
+    {"id": 2, "description": "Case (p): repeated --tasks exits nonzero, no JSON on stdout", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"]},
+    {"id": 3, "description": "Case (q): scope excursion produces no unknown_classes row", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"]},
+    {"id": 4, "description": "Case (r): fixture issues.jsonl byte-identical before/after aggregate run", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"]},
+    {"id": 5, "description": "Case (s): unrecognized class still appears, no double-count", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"]},
+    {"id": 6, "description": "Case (t): scope excursion and scope omission remain separate", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-aggregate.sh"]},
+    {"id": 7, "description": "test-issue-record.sh: 4 class-validation cases (s/t/u/v)", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-issue-record.sh"]}
+  ],
+  "current_objective": 7,
+  "approaches_tried": [
+    {"approach": "Case (s) in test-issue-record.sh initially grepped stderr for the literal substring 'class shape' (case-insensitive) to detect the new convention-citing warning.", "result": "failed", "reason": "the actual warning text says 'Class Value Shape' convention, with 'Value' in between -- 'class shape' is not a substring of 'Class Value Shape', so the grep never matched despite the warning firing correctly. Fixed by grepping for 'class value shape' instead; re-ran and confirmed all three sub-cases pass."}
+  ],
+  "handoff_count": 0,
+  "deviations": [],
+  "non_vacuous_proof": "Every one of the 10 new cases (o,p,q,r,s,t in the aggregate suite; s,t,u in the issue-record suite via sub-assertions, v as a legitimate always-passing control) was independently confirmed to fail against either the pre-fix commit (c8bcc510b/d9326d9c8/4d3b286a3, extracted via git show into a disposable scratch harness) or, for case (r) and (t)'s over-merge direction where no historical commit exhibits the bug, a deliberately bug-injected scratch copy (a rewrite-on-read defect for (r); a populated CLASS_ALIASES_JSON entry collapsing scope omission into scope excursion for (t)). All scratch directories were created under the session scratchpad and removed afterward; none touched the live repo tree."
+}
