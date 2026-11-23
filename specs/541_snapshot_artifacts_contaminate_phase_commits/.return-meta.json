@@ -4,7 +4,14 @@
     "session_id": "sess_1795400947_bb64cf",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
   },
-  "dispatch_seq": 12
+  "dispatch_seq": 12,
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/tests/test-runtime-file-tracking.sh"
+  ]
 }

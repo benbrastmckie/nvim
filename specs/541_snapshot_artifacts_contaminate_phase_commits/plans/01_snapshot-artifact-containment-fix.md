@@ -395,22 +395,22 @@ covering check must reach those dependents, which
 
 ---
 
-### Phase 5: Deploy, confirm acceptance, and close [NOT STARTED]
+### Phase 5: Deploy, confirm acceptance, and close [COMPLETED]
 
 **Goal**: Regenerate the deployed tree, confirm the deploy lands clean, and demonstrate both
 regression cases now pass against the fixed scripts.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` and confirm it reports
-      `RESULT=landed_verify_clean`. A different result is a stop condition, not a note.
-- [ ] Stage every derived file the deploy regenerated as part of this phase's commit, so no
-      generated surface is left dirty behind the commit.
-- [ ] Re-run both extended suites against the deployed copies and confirm the two new cases pass
-      and no pre-existing case regressed.
-- [ ] Re-read every file this task edited for deliverable hygiene: no record-number citations and
-      no draft-history or supersession language anywhere outside `specs/**`.
-- [ ] Record the final issue-log entries, including an explicit attestation if nothing further
-      arose.
+- [x] Run `bash .claude/scripts/deploy-headless.sh` and confirm it reports
+      `RESULT=landed_verify_clean`. A different result is a stop condition, not a note. *(completed: two deploy passes, the second after fixing test-runtime-file-tracking.sh's own now-stale hardcoded count -- both reported RESULT=landed_verify_clean)*
+- [x] Stage every derived file the deploy regenerated as part of this phase's commit, so no
+      generated surface is left dirty behind the commit. *(completed: confirmed via git status --short that the only source-tracked derived file, index-entries.json, was already clean post-Phase-4; the deployed .claude/ tree itself is gitignored and not committable; shared repo-root files already dirty from concurrent sessions before this task began (.claude-extensions.json, specs/events.jsonl, specs/central-errors.jsonl) were deliberately left untouched -- not this task's own file_scope and not caused by this task's edits)*
+- [x] Re-run both extended suites against the deployed copies and confirm the two new cases pass
+      and no pre-existing case regressed. *(completed: 8/8 and 106/106 against the deployed copies, both runs)*
+- [x] Re-read every file this task edited for deliverable hygiene: no record-number citations and
+      no draft-history or supersession language anywhere outside `specs/**`. *(completed: re-checked every newly-added line across all edited files via git diff; zero violations outside the pre-existing, already-approved task-ref-ok-wrapped fixture literals)*
+- [x] Record the final issue-log entries, including an explicit attestation if nothing further
+      arose. *(completed)*
 
 **Timing**: 1 hour
 
@@ -440,15 +440,15 @@ deploy produced, rather than assuming the edited set and the dirty set coincide.
 
 ## Testing & Validation
 
-- [ ] The new snapshot-suite case fails against the unmodified script and passes after Phase 2.
-- [ ] The new phase-commit-suite case fails against the unmodified script and passes after
-      Phase 3.
-- [ ] Every pre-existing case in both suites still passes.
-- [ ] The runtime-file-tracking suite's doc-sync pin case passes after Phase 4.
-- [ ] The runtime-file-tracking lint's ignore-coverage and tracked-file checks pass.
-- [ ] A fixture whose task directory holds an already-ignored backup directory commits without an
-      ignored-path abort.
-- [ ] `deploy-headless.sh` reports `RESULT=landed_verify_clean`.
+- [x] The new snapshot-suite case fails against the unmodified script and passes after Phase 2. *(completed)*
+- [x] The new phase-commit-suite case fails against the unmodified script and passes after
+      Phase 3. *(completed)*
+- [x] Every pre-existing case in both suites still passes. *(completed)*
+- [x] The runtime-file-tracking suite's doc-sync pin case passes after Phase 4. *(completed)*
+- [x] The runtime-file-tracking lint's ignore-coverage and tracked-file checks pass. *(completed)*
+- [x] A fixture whose task directory holds an already-ignored backup directory commits without an
+      ignored-path abort. *(completed)*
+- [x] `deploy-headless.sh` reports `RESULT=landed_verify_clean`. *(completed)*
 
 ## Artifacts & Outputs
 
