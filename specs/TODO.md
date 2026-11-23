@@ -95,7 +95,7 @@ next_project_number: 691
 ### File Scope Lifecycle
 
 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
-687 [PLANNING] — SOURCE STORE IS THE EDIT TARGET:...
+687 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
@@ -251,11 +251,12 @@ CITATIONS -- issue-log entries this record is built from:
 ---
 
 ### 687. Whole tree sentinel self collision
-- **Status**: [PLANNING]
+- **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
 - **Research**: [687_whole_tree_sentinel_self_collision/reports/01_sentinel-self-collision-fix.md]
+- **Plan**: [687_whole_tree_sentinel_self_collision/plans/01_concrete-path-precedence-sentinel.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 

@@ -1,32 +1,40 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1795463295_b6ad0f_687",
-  "dispatch_seq": 25,
-  "findings_count": 6,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/687_whole_tree_sentinel_self_collision/reports/01_sentinel-self-collision-fix.md",
-      "summary": "Root-causes the whole-tree sentinel self-collision to scopes_overlap_first()'s exact-match clause in scripts/lib/file-scope-overlap.sh, confirms a single library fix reaches both orchestrate-batch-admit.sh and lint-roadmap-batch-proposals.sh, identifies orchestrate-cycle-plan.sh's whole_tree_claim case arm as the actual width-1-serialization mechanism, and enumerates the fixture (test-orchestrate-batch-admit.sh's WHOLE-TREE-CODISPATCH) and doc updates (file-footprint-overlap.md, batch-orchestration-guardrails.md, batch-admit-schema.md) this deliberate design reversal requires."
+      "type": "plan",
+      "path": "specs/687_whole_tree_sentinel_self_collision/plans/01_concrete-path-precedence-sentinel.md",
+      "summary": "3-phase plan (1.75h) giving a concrete-path overlap precedence over the reserved __WHOLE_TREE__ sentinel when the same task pair overlaps on both, pinned by a new order-independence fixture; re-scoped after the dispatch's stated deliverable was measured already met."
     }
   ],
+  "metadata": {
+    "session_id": "sess_1795463295_b6ad0f_687",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 1.75,
+    "dependency_waves": 3
+  },
+  "user_decision": {
+    "question": "This record's stated deliverable (making WHOLE-TREE-CODISPATCH go green) is already satisfied in live code -- the fixture passes today and the whole_tree_claim branch already emits all asserted fields. The only measurably-unmet requirement is the description's own REGRESSION clause (a concrete-path collision between two sentinel-declaring tasks is masked as a bare whole-tree claim, order-dependently). Proceed against that clause, or close the record as already-satisfied?",
+    "options": [
+      "Proceed with the plan as written -- close the order-dependent concrete-path masking, the one requirement in the description that live state does not already meet",
+      "Close the record as already-satisfied with no code change, and file the masking as its own record"
+    ],
+    "recommended": "Proceed with the plan as written -- close the order-dependent concrete-path masking, the one requirement in the description that live state does not already meet",
+    "blocking": false,
+    "obligation": "The description's REGRESSION clause: two sentinel-declaring tasks whose concrete paths genuinely intersect must still report the concrete overlapping path rather than being relabelled as a bare whole-tree claim. Checkable against the plan's Phase 2 verification: both declaration orderings of a sentinel-plus-shared-concrete-path pair must yield defer_reason file_scope_collision with overlapping_path naming the concrete path and no claim_sentinel field, while WHOLE-TREE-CODISPATCH stays green with its assertions byte-identical."
+  },
   "memory_candidates": [
     {
-      "content": "In agent-system/extensions/core, orchestrate-batch-admit.sh's defer_reason values only actually block dispatch if orchestrate-cycle-plan.sh's per-reason case arm (around line 2034) has no --allow-X bypass. A reason string claiming 'ORDERING CONSTRAINT, not an exclusion' in the admit script's own output is not itself evidence the cycle-plan consumer treats it that way -- check the case arm's bypass logic independently before trusting the reason prose.",
+      "content": "A comparator that RELABELS one already-selected hit into a different, more specific verdict shape (orchestrate-batch-admit.sh relabeling a scopes_overlap_first hit on the reserved __WHOLE_TREE__ sentinel into defer_reason whole_tree_claim) inherits a masking hazard from the underlying predicate's first-match-wins return: when a task pair overlaps on BOTH the special token and a real path, which label fires depends on the ARRAY DECLARATION ORDER of the declared file_scope entries, not on which finding is stronger. The general fix is a precedence wrapper composed from the existing predicate (compare with the special token filtered out first; fall back to the unfiltered call only when that yields nothing), never a change to the predicate itself -- which keeps every other consumer of the shared comparator byte-identical. The masking is not merely cosmetic: in this case file_scope_collision carries a consumer-side --allow-scope-collision override (orchestrate-cycle-plan.sh, cross_batch only) that whole_tree_claim does not, so the relabel silently removes an operator remedy.",
       "category": "PATTERN",
-      "source_artifact": "specs/687_whole_tree_sentinel_self_collision/reports/01_sentinel-self-collision-fix.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["orchestrate-batch-admit", "orchestrate-cycle-plan", "defer_reason", "file_scope", "dispatch-serialization"]
-    },
-    {
-      "content": "scripts/lib/file-scope-overlap.sh is the single source of truth for the file_scope Overlap predicate (scopes_overlap_first), spliced via $FILE_SCOPE_OVERLAP_JQ_DEFS into any consumer's own jq -n program. A fix to the predicate's match clause reaches every splicing consumer (confirmed: orchestrate-batch-admit.sh and lint/lint-roadmap-batch-proposals.sh) with zero parallel edit -- always check this file first before assuming a file-scope-comparison bug needs fixing in each consumer separately.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/687_whole_tree_sentinel_self_collision/reports/01_sentinel-self-collision-fix.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["file-scope-overlap", "shared-comparator", "jq-splice", "single-source-of-truth"]
+      "source_artifact": "specs/687_whole_tree_sentinel_self_collision/plans/01_concrete-path-precedence-sentinel.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["file-scope-overlap", "relabeling-comparator", "first-match-wins", "declaration-order-dependence", "defer_reason", "precedence-wrapper"]
     }
   ],
-  "next_steps": "Run /orchestrate 687 to create implementation plan"
+  "next_steps": "Run /orchestrate 687 to execute the plan",
+  "dispatch_seq": 26
 }
