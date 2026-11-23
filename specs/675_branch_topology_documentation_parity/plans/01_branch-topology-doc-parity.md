@@ -1,7 +1,7 @@
 # Implementation Plan: Task #675
 
 - **Task**: 675 - Rewrite the branch-strategy documentation to state the implemented integration-branch contract
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4 hours
 - **Dependencies**: None blocking. `per_task_attribution_squash_landing` (completed) supplies the third ruling record this task documents; `two_root_classification_of_remaining_consumers` and `batch_worktree_cleanup_retention_orphan_report` are held and are deliberately NOT waited on — this task documents the implemented contract, not the deferred one.
 - **Research Inputs**: `specs/675_branch_topology_documentation_parity/reports/01_branch-topology-doc-parity.md`
@@ -121,26 +121,26 @@ redeploy regenerates.
 
 ---
 
-### Phase 1: Rewrite the Branch Strategy section of the narrative [NOT STARTED]
+### Phase 1: Rewrite the Branch Strategy section of the narrative [COMPLETED]
 
 **Goal**: `context/standards/git-workflow-narrative.md`'s Branch Strategy section states the
 implemented integration-branch contract — admission, landing-as-verification, review handoff, and
 the declared-but-unimplemented worktree mode — with nothing described as live that is not built.
 
 **Tasks**:
-- [ ] Read all three ruling records before writing:
+- [x] Read all three ruling records before writing: *(completed)*
       `specs/decisions/branch-topology-and-landing-strategy.md`,
       `specs/decisions/batch-worktree-isolation-and-task-squash-landing.md`, and
       `specs/decisions/isolation-off-landing-verification-and-review-time-squash.md` (the
       load-bearing third record: it settles what a reviewable unit is).
-- [ ] Re-read the live scripts the rewrite will describe, so every claim is script-derived:
+- [x] Re-read the live scripts the rewrite will describe, so every claim is script-derived: *(completed)*
       `scripts/lib/batch-admission-lib.sh` (the stop reasons and the exact state-territory list —
       transcribe the list from the script, do not copy a list from this plan),
       `scripts/orchestrate-cycle-plan.sh` (the `batch_admission_evaluate` call site),
       `scripts/update-task-status.sh` (the PHASE 0.6 landing gate and its exit code),
       `scripts/task-landing-verify.sh`, `scripts/milestone-ref-land.sh` (header), and
       `scripts/milestone-review-handoff.sh`.
-- [ ] Rewrite `### The Hot-Path Branch`: the primary tree stays on the declared
+- [x] Rewrite `### The Hot-Path Branch`: the primary tree stays on the declared *(completed)*
       `integration_branch` and is never switched during dispatch work; no branch is created at any
       granularity, verified rather than asserted — `grep -rn "git checkout -b\|git switch -c"
       scripts/ hooks/` returns exactly one hit, `git-snapshot.sh`'s `--branch` recovery path.
@@ -148,7 +148,7 @@ the declared-but-unimplemented worktree mode — with nothing described as live 
       their exact arming condition: both arm ONLY when `integration_branch` is declared in
       `.claude-extensions.json`; an undeclaring repository gets one advisory per session and no
       refusal. Delete the stale "a separate, consumer-owned concern" clause — the check is built.
-- [ ] Rewrite `### Milestone Review History: Ref Plumbing, Never checkout Or git merge --squash`:
+- [x] Rewrite `### Milestone Review History: Ref Plumbing, Never checkout Or git merge --squash`: *(completed: retitled "Landing Is a Verification, Never checkout Or git merge --squash")*
       phase commits land on the integration branch as made and stay there — nothing is picked,
       squashed, or rewritten there. Landing is a VERIFICATION, not an operation:
       `scripts/task-landing-verify.sh`, run inside `update-task-status.sh` at its postflight
@@ -158,19 +158,19 @@ the declared-but-unimplemented worktree mode — with nothing described as live 
       Point at `context/patterns/ref-plumbing-landing.md`'s "The Landing Mechanism" section for
       where the plumbing idiom is actually used today, and keep that page's concurrency-safety
       argument referenced rather than duplicated.
-- [ ] Rewrite `### Merge Strategy`: replace "Squash per task, landed onto the milestone ref" with
+- [x] Rewrite `### Merge Strategy`: replace "Squash per task, landed onto the milestone ref" with *(completed)*
       the reviewable-unit ruling from
       `specs/decisions/isolation-off-landing-verification-and-review-time-squash.md` — state what
       a reviewable unit is under the isolation-off mechanism and that any squash is a review-time
       act of human judgment, not an automated landing step.
-- [ ] Rewrite `### Milestone Completion: Prepare, Never Push` to match the live handoff script:
+- [x] Rewrite `### Milestone Completion: Prepare, Never Push` to match the live handoff script: *(completed)*
       `milestone-review-handoff.sh` resolves the integration branch (from the newest landing
       proof, else the declared `integration_branch`, else the branch HEAD names), records
       `review.state: "prepared"` plus `review.ref` as `refs/heads/<integration branch>` — not a
       `refs/heads/milestone/<id>` ref — attributes each task by its landing proof's commit list,
       drafts the review summary, and prints the literal `/please`/`/merge` commands. Keep the
       never-pushes/never-mints-a-grant paragraph intact.
-- [ ] Rewrite `### Worktree Isolation: Not Reinstated` so it distinguishes the two granularities:
+- [x] Rewrite `### Worktree Isolation: Not Reinstated` so it distinguishes the two granularities: *(completed: retitled "Worktree Isolation: Declared But Not Yet Built at Batch Granularity")*
       per-dispatch/per-agent isolation stays a settled non-goal; batch-granularity isolation is
       a DECLARED-BUT-UNIMPLEMENTED mode — `worktree_isolation` is `off` unless declared `batch`,
       and `batch` is refused loudly (`isolation_unimplemented`) rather than silently honored,
@@ -179,14 +179,14 @@ the declared-but-unimplemented worktree mode — with nothing described as live 
       `two_root_contract_dispatch_and_commit_scripts`, `two_root_contract_in_hooks`,
       `two_root_classification_of_remaining_consumers`,
       `batch_worktree_cleanup_retention_orphan_report`.
-- [ ] Delete the record-versioning sentence in the existing Worktree Isolation subsection ("The
+- [x] Delete the record-versioning sentence in the existing Worktree Isolation subsection ("The *(completed)*
       unenforced, optional per-task branch-naming convention this section previously offered is
       removed along with it...") rather than revising it; state the current design only.
-- [ ] Verify no task-number reference and no record-versioning phrasing entered the file:
+- [x] Verify no task-number reference and no record-versioning phrasing entered the file: *(completed: two hits, both pre-existing/unrelated — "no longer recoverable in place" at line 110 about stash entries, predates this edit; "used to" at line 270 is a false-positive substring match inside "used today")*
       `grep -nEi "task [0-9]+|previously|formerly|no longer|supersedes|used to" agent-system/extensions/core/context/standards/git-workflow-narrative.md`
       and inspect every hit (a hit inside an unrelated, pre-existing sentence is acceptable only
       if it was already there and is not about this section's own history).
-- [ ] Regenerate line counts:
+- [x] Regenerate line counts: *(completed: 297 -> 324, confirmed matching wc -l)*
       `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --write`, then
       confirm `index-entries.json`'s `standards/git-workflow-narrative.md` row matches
       `wc -l` on the rewritten file.

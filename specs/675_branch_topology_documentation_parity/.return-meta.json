@@ -1,22 +1,10 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/675_branch_topology_documentation_parity/plans/01_branch-topology-doc-parity.md",
-      "summary": "Four-phase plan rewriting the Branch Strategy narrative to the implemented integration-branch contract, adding the point-of-use branch rule, fixing the two confirmed-stale sweep targets, and closing with script-parity verification plus redeploy."
-    }
-  ],
+  "status": "in_progress",
   "metadata": {
-    "session_id": "sess_1795451386_ec8465_675",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
-    "phase_count": 4,
-    "estimated_hours": 4,
-    "dependency_waves": 3
+    "session_id": "sess_1795451386_ec8465",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
   },
-  "memory_candidates": [],
-  "next_steps": "Run /orchestrate 675 to execute the plan",
-  "dispatch_seq": 20
+  "dispatch_seq": 21
 }

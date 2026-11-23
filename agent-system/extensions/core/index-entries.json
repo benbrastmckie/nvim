@@ -3385,7 +3385,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Reactive git-workflow elaboration: commit-per-green-substep mechanism detail, snapshot-mode narrative, session ID lifecycle, branch strategy, and commit-failure error handling",
-      "line_count": 297,
+      "line_count": 324,
       "keywords": [
         "git-workflow",
         "commit-per-green-substep",

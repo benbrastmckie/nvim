@@ -234,54 +234,81 @@ transcript. It exists solely for a human operator working the branch interactive
 
 ## Branch Strategy
 
-See `specs/decisions/branch-topology-and-landing-strategy.md` for the full ruling (R1-R8) this
-section summarizes.
+See `specs/decisions/branch-topology-and-landing-strategy.md` for the original ruling (R1-R8),
+`specs/decisions/batch-worktree-isolation-and-task-squash-landing.md` for the amendment that
+reopened worktree isolation at batch granularity, and
+`specs/decisions/isolation-off-landing-verification-and-review-time-squash.md` for how landing
+and review work in an isolation-off repository — the only path built today. This section states
+that implemented contract; the batch-worktree design the second record describes is named below
+as declared but not yet built.
 
 ### The Hot-Path Branch
 
-Every dispatch runs in the repository's single shared working tree, checked out on whatever
-branch the operator left it on. No branch is created during dispatch work at any granularity —
-not per invocation, per task, or per milestone. Phase commits land on the already-checked-out
-branch; the admission-time check that this branch matches a declared integration branch (a
-`.claude-extensions.json` `integration_branch` string key, with a loud advisory fallback to the
-checked-out branch when undeclared) is a separate, consumer-owned concern.
+The primary working tree stays on the declared integration branch and is never switched during
+dispatch work. No branch is created at any granularity — not per invocation, per task, or per
+milestone: `grep -rn "git checkout -b\|git switch -c" scripts/ hooks/` returns exactly one hit,
+`git-snapshot.sh`'s `--branch` recovery path, a rollback feature rather than a workflow step.
 
-### Milestone Review History: Ref Plumbing, Never `checkout` Or `git merge --squash`
+Admission (`batch_admission_evaluate` in `scripts/lib/batch-admission-lib.sh`, called from
+`scripts/orchestrate-cycle-plan.sh` before any dispatch is composed) can refuse an invocation two
+ways: `off_integration_branch` when the checked-out branch differs from the declared
+`integration_branch` key (a `.claude-extensions.json` top-level string) or `HEAD` is detached;
+`dirty_primary_tree` when, on the invocation's first cycle, a tracked path outside the state
+territory (`specs/`, `.claude-extensions.json`, `.memory`) differs from `HEAD`. Both refusals arm
+ONLY when `integration_branch` is declared — an undeclaring repository gets one advisory per
+session and no refusal, the same fail-open default this system applies to every repo-level
+declaration left unset.
 
-A milestone's review-ready history is built from `git commit-tree` plus compare-and-swap
-`git update-ref`, never from `git checkout`/`git switch`/`git merge`. One squash commit is
-appended to `refs/heads/milestone/<id>` per completed task
-(`agent-system/extensions/core/scripts/milestone-ref-land.sh`), with `<id>` resolved from
-`roadmap_milestones[].id`. Neither primitive touches the working tree, the index, or `HEAD`, so
-a concurrent sibling dispatch in the same shared tree is structurally unaffected — see
-`context/patterns/ref-plumbing-landing.md` for the full idiom and its concurrency-safety
-property. Landing is verified (`milestone-ref-land.sh --verify`) strictly before a task's
-completion status is written, never after.
+### Landing Is a Verification, Never `checkout` Or `git merge --squash`
+
+Phase commits land on the integration branch as they are made and stay there — nothing is
+picked, squashed, or rewritten there. "Landing" is `scripts/task-landing-verify.sh`'s
+verification plus the proof it records, run from inside `scripts/update-task-status.sh`'s
+postflight landing gate strictly before the completion status write; a refusal exits 7 and
+writes no state, rather than skipping the check. See `context/patterns/ref-plumbing-landing.md`'s
+"The Landing Mechanism" section for where the `git commit-tree`/compare-and-swap `git update-ref`
+idiom is actually used today — building a review ref on demand from recorded landing proofs, not
+the integration branch itself — and for the concurrency-safety property that idiom rests on, kept
+there rather than repeated here. `scripts/milestone-ref-land.sh` is retired as a landing
+mechanism, confirmed by its own header, and stays on disk as a hand-run snapshot utility whose
+ref is a parallel history.
 
 ### Merge Strategy
 
-Squash per task, landed onto the milestone ref. Whether the milestone ref is itself squashed
-again when it ultimately merges into the long-lived integration branch is left to the human
-reviewer's judgment at review time — no automatic rebase onto a moved integration-branch tip is
-built.
+The reviewable unit of a completed task is its attributed commit set — the non-merge commits on
+the integration branch that the task's own landing verification found and recorded, not a range
+and not a single commit — carried in the task's landing proof together with its phase list, and
+named in the body of the task's `task {N}: complete implementation` commit. Any squash that turns
+a task's commit set into one review commit is a review-time act of human judgment, built on
+demand from the recorded proofs; it is never an automated step performed against the integration
+branch itself.
 
 ### Milestone Completion: Prepare, Never Push
 
 When a milestone's batches are all done, `agent-system/extensions/core/scripts/milestone-review-handoff.sh`
-PREPARES the push and review request — it drafts `specs/milestones/<id>-review-handoff.md`,
-records `review.state: "prepared"` plus `review.ref`, and prints the literal `/please`/`/merge`
-commands for the user to run. It never mints a push grant, never infers permission from
-completion, and never calls `git push`, `git-push-granted.sh`, `gh`, or `glab` itself.
-`rules/pr-prohibition.md`'s prohibition and `hooks/guard-git-push.sh`'s mechanical refusal apply
-unconditionally regardless.
+resolves the integration branch (from the newest batch record listing one of the milestone's
+tasks, else the declared `integration_branch`, else the branch `HEAD` names), lists each done
+task by its landing proof's attributed commit count and end commit, and PREPARES the push and
+review request — it drafts `specs/milestones/<id>-review-handoff.md`, records
+`review.state: "prepared"` plus `review.ref` as `refs/heads/<integration branch>` (never a
+`refs/heads/milestone/<id>` ref), and prints the literal `/please`/`/merge` commands for the user
+to run. It never mints a push grant, never infers permission from completion, and never calls
+`git push`, `git-push-granted.sh`, `gh`, or `glab` itself. `rules/pr-prohibition.md`'s prohibition
+and `hooks/guard-git-push.sh`'s mechanical refusal apply unconditionally regardless.
 
-### Worktree Isolation: Not Reinstated
+### Worktree Isolation: Declared But Not Yet Built at Batch Granularity
 
-Per-dispatch `git worktree` isolation stays removed
+Per-dispatch/per-agent `git worktree` isolation stays a settled non-goal
 (`specs/decisions/worktree-isolation-removal-verdict.md`,
-`specs/decisions/worktree-isolation-removal-reaffirmation.md`). The unenforced, optional
-per-task branch-naming convention this section previously offered is removed along with it — it
-had no mechanical backing anywhere in this system.
+`specs/decisions/worktree-isolation-removal-reaffirmation.md`), unaffected by anything below. A
+separate mode at batch granularity — one worktree and one side branch per orchestrate invocation
+— is ruled but not yet built: `worktree_isolation` (a `.claude-extensions.json` top-level string
+key, `batch` or `off`) is `off` unless declared, and a declared `batch` is refused loudly
+(`isolation_unimplemented`) rather than silently honored, because nothing builds it yet. Five
+tasks carry that unbuilt design, on hold by operator direction and named here by slug rather than
+number: `batch_worktree_creation_when_isolation_on`, `two_root_contract_dispatch_and_commit_scripts`,
+`two_root_contract_in_hooks`, `two_root_classification_of_remaining_consumers`,
+`batch_worktree_cleanup_retention_orphan_report`.
 
 ## Error Handling (Commit Failures)
 
