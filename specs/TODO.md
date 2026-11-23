@@ -97,7 +97,7 @@ next_project_number: 684
 
 ### File Scope Lifecycle
 
-455 [PLANNED] — Pre-flag the predictable first-run module-invariant failures...
+455 [IMPLEMENTING] — Pre-flag the predictable first-run module-invariant failures...
 567 [NOT STARTED] — Port the deployed-tree containment strip into...
 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
   └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
@@ -8564,7 +8564,7 @@ a permanent override), plus a latent correctness bug in Step 3.6 for any repo wi
 ---
 
 ### 455. Pre-flag the predictable first-run module-invariant failures that wiring a new module forces, where the generated-surface knowledge already lives
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 328, Task 435, Task 446, Task 448

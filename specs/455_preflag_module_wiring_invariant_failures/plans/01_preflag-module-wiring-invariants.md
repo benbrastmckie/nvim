@@ -1,7 +1,7 @@
 # Implementation Plan: Task #455
 
 - **Task**: 455 - Preflag module-wiring invariant failures in generated-surface appending
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2.25 hours
 - **Dependencies**: 446 (landed, confirmed `completed`); 435, 448, 328 (serialization-only, operator-liftable)
 - **Research Inputs**: specs/455_preflag_module_wiring_invariant_failures/reports/01_preflag-module-wiring-invariants.md
@@ -128,7 +128,7 @@ consultation applies.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Re-validate the Reproduction and the Visibility Seam [NOT STARTED]
+### Phase 1: Re-validate the Reproduction and the Visibility Seam [COMPLETED]
 
 **Goal**: Confirm, against live state rather than carried figures, that the generated-surface
 stage still computes both claimed-missed surfaces and that the dispatch-prompt channel is still
@@ -136,24 +136,30 @@ blind — the two facts the part-(1) record and the part-(2) ruling both rest on
 here stops the plan before any edit.
 
 **Tasks**:
-- [ ] Re-run the real-incident reproduction read-only:
+- [x] Re-run the real-incident reproduction read-only:
       `PLAN_FILE_SCOPE_HARVEST_ROOT=/home/benjamin/Projects/BimodalLogic bash agent-system/extensions/core/scripts/plan-file-scope-harvest.sh /home/benjamin/Projects/BimodalLogic/specs/archive/833_stab_definable_from_open_modals/plans/01_stab-definable-from-open-modals.md`
       and confirm the output contains both `typst/generated/status.typ` and the bare `README.md`.
-- [ ] Confirm the root marker the walk matches is still the plain `dir=` form:
+      *(completed: byte-identical 7-entry array, matches plan-time figure exactly)*
+- [x] Confirm the root marker the walk matches is still the plain `dir=` form:
       `grep -n "BEGIN GENERATED: inventory" /home/benjamin/Projects/BimodalLogic/README.md`.
-- [ ] If the consumer checkout is absent or the archived plan has moved, fall back to a synthetic
+      *(completed: `dir=FormalSystem rows=totals desc=no`)*
+- [x] If the consumer checkout is absent or the archived plan has moved, fall back to a synthetic
       capable fixture whose root README carries the same marker spelling, and record in the issue
       log that the real-tree leg was unavailable — never silently substitute the synthetic result
-      for the real one.
-- [ ] Re-confirm the dispatch-prompt channel: `grep -c file_scope agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh`
+      for the real one. *(completed: checkout and archived plan were both available; fallback not
+      needed)*
+- [x] Re-confirm the dispatch-prompt channel: `grep -c file_scope agent-system/extensions/core/scripts/orchestrate-build-dispatch.sh`
       returns 1, and that one hit is a sibling-batch comment, not a read of the dispatching task's
-      own `file_scope`.
-- [ ] Re-derive the edit sites before Phase 2 touches them: `grep -n "happened twice" agent-system/extensions/core/scripts/plan-file-scope-harvest.sh`
+      own `file_scope`. *(completed: count is 1, confirmed sibling-batch comment)*
+- [x] Re-derive the edit sites before Phase 2 touches them: `grep -n "happened twice" agent-system/extensions/core/scripts/plan-file-scope-harvest.sh`
       and `grep -on "Case [0-9]\+" agent-system/extensions/core/scripts/tests/test-plan-file-scope-harvest.sh | sed 's/.*Case //' | sort -n | tail -1`.
-- [ ] Record the outcome (agreement or disagreement, and the unavailable-leg case if it fires) via
+      *(completed: sentence at line 81; highest existing case is 29, so new case is 30)*
+- [x] Record the outcome (agreement or disagreement, and the unavailable-leg case if it fires) via
       `bash .claude/scripts/issue-record.sh --task-dir ... --kind win|issue --class architecture --severity minor --phase implement --dispatch-seq <seq>`.
-- [ ] On disagreement with the plan-time figures: stop, record, and return `blocked` rather than
-      proceeding to Phase 2 with a record the reproduction no longer supports.
+      *(completed: win recorded, full agreement, no disagreement)*
+- [x] On disagreement with the plan-time figures: stop, record, and return `blocked` rather than
+      proceeding to Phase 2 with a record the reproduction no longer supports. *(completed: no
+      disagreement found; proceeding to Phase 2)*
 
 **Timing**: 0.5 hours
 

@@ -5296,7 +5296,7 @@
     {
       "project_number": 455,
       "project_name": "preflag_module_wiring_invariant_failures",
-      "status": "planned",
+      "status": "implementing",
       "task_type": "meta",
       "title": "Pre-flag the predictable first-run module-invariant failures that wiring a new module forces, where the generated-surface knowledge already lives",
       "topic": "file-scope-lifecycle",
@@ -5325,7 +5325,7 @@
         }
       ],
       "created": "2026-10-19T04:37:20Z",
-      "last_updated": "2026-11-23T00:21:40Z",
+      "last_updated": "2026-11-23T00:22:13Z",
       "session_id": "sess_1795391913_f9e5cc",
       "next_artifact_number": 2
     },
