@@ -13,10 +13,10 @@ next_project_number: 687
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,486,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,671,674,675,679,680,684,685,686 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,439,474,479,481,508,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630 | 383,390,410,431,438,452,453,486,511,519,539,542,563,577,586,599,629 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,671,674,675,679,680,684,685,686 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,472,480,492,513,561,588,594 | 439,479,491,509,552,556,570,593 | core-agent-system, orchestrator, agent-system |
-| 4 | 473,501,518,581,595,641 | 454,472,486,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 4 | 473,501,518,581,595,641 | 454,472,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 524,571,596,642 | 501,518,595,641 | core-agent-system, agent-system |
 | 6 | 536 | 524 | agent-system |
 | 7 | 548 | 536 | agent-system |
@@ -93,9 +93,8 @@ next_project_number: 687
 
 ### File Scope Lifecycle
 
-486 [IMPLEMENTING] — Stop a required extension manifest.json registration being...
-  └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
-  └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
+508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
+501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
 ### Lean Extension
@@ -7653,7 +7652,7 @@ SOURCE STORE: all edits land in agent-system/extensions/core/ in this repo, neve
 ---
 
 ### 486. Stop a required extension manifest.json registration being dropped from a phase commit as a scope excursion
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 430, Task 446, Task 484, Task 494, Task 541
