@@ -1,15 +1,15 @@
 {
   "status": "partial",
-  "dispatch_seq": 24,
-  "summary": "Implemented and fully verified Phase 2 of 7 of the stack-PR-submission plan: review-stack-prepare.sh's cut now selects tasks (--milestone/--batch/--tasks, --stack-id), attributes each to a landing proof or a fallback commit-subject convention, merges shared_paths/--merge pairs and pulls in an unmerged path-overlapping earlier task, groups units into components over dependency edges and path overlap, orders each component topologically with an ancestry tie-break and a landed-order contradiction refusal, and assigns each unit a branch and a base -- printing the result and writing nothing. Suite grew from 19 to 28 cases, all passing; the order_contradiction refusal was empirically confirmed load-bearing by disabling and restoring its guard. Committed cleanly as one phase commit on top of Phase 1. Phases 3-7 (the actual cut/manifest ref-writing, restack, handoff integration, /merge stack mode, redeploy + second-repository demonstration) remain, each substantial git-plumbing and fixture work.",
+  "dispatch_seq": 28,
+  "summary": "This was a stall re-prompt: two prior dispatch_seq-28 attempts died mid-flight without writing wrap-up artifacts, though their code work was already committed (275599cff). This dispatch re-ran every verification in the foreground, confirmed Phase 3 (cut the stack and write the manifest) is correct and complete -- 38/0 test suite including the HEAD/index/status-unchanged invariants, and a green scoped verify-touched.sh battery apart from two explained non-blocking findings -- then closed Phase 3 properly: plan checklist checked off, heading marked [COMPLETED], progress file and handoff written, committed as its own scoped phase commit (26f668adf). Phases 4-7 (restack on merge, handoff/show integration, /merge stack mode, redeploy + second-repository demonstration) remain.",
   "blockers": [],
-  "phases_completed": 2,
+  "phases_completed": 3,
   "phases_total": 7,
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md",
-      "summary": "Phase 2 completion state, key decisions (selection gather-vs-validate split, the 5 Phase-1 assertions repointed to show, the untested --order chain simplification, the untested pull-in refusal branch), and the Phase 3 starting point."
+      "path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-3-handoff-20261123T212251Z.md",
+      "summary": "Phase 3 completion state: all code already committed by a prior stalled attempt, re-verified in the foreground this dispatch; notes the EXPECTED source/deploy drift owed to Phase 7 and an unrelated flaky test observed once under batch load."
     }
   ]
 }

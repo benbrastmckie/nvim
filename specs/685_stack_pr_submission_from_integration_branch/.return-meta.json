@@ -1,93 +1,64 @@
 {
   "status": "partial",
-  "dispatch_seq": 24,
+  "dispatch_seq": 28,
   "partial_progress": {
-    "stage": "phase_2_of_7_complete",
-    "details": "Phase 2 (unit selection and stack ordering) is [COMPLETED] and committed with full scoped verification, on top of the already-completed Phase 1. Phases 3-7 (the cut/manifest ref-writing, restack, handoff integration, /merge stack mode, redeploy + second-repository demonstration) remain -- each is substantial git-plumbing and test-fixture work. Closing here depth-first after one fully-verified phase rather than rushing the remaining five in the same dispatch.",
-    "handoff_path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md",
-    "phases_completed": 2,
+    "stage": "phase_3_of_7_complete",
+    "details": "This was a stall re-prompt: two prior dispatch_seq-28 attempts died mid-flight without writing wrap-up artifacts, though their code work was already committed (275599cff, 545 insertions) -- Phase 3's cut/show/record-request machinery, the runtime-files doc entry, and the 38-case test suite were all complete and correct. This dispatch re-ran every verification in the foreground (never a background wait), confirmed Phase 3's suite (38 passed, 0 failed, including the HEAD/index/status-unchanged invariants) and its scoped verify-touched.sh battery (green apart from two explained, non-blocking findings: EXPECTED source/deploy drift that Phase 7's redeploy reconciles, and a load-induced mtime-window flake in an unrelated test that passed 7/7 in three standalone re-runs), then closed Phase 3 properly: plan checklist checked off, phase heading marked [COMPLETED], progress file and phase-end handoff written, and committed as its own scoped phase commit (26f668adf). Phases 4-7 (restack on merge, handoff/show integration, /merge stack mode, redeploy + second-repository demonstration) remain, each substantial. Closing here at a real phase boundary rather than attempting further phases in a dispatch already carrying two prior stalls.",
+    "handoff_path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-3-handoff-20261123T212251Z.md",
+    "phases_completed": 3,
     "phases_total": 7
   },
   "artifacts": [
     {
       "type": "handoff",
-      "path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md",
-      "summary": "Phase 2 completion state, key decisions (selection gather-vs-validate split, the 5 Phase-1 assertions repointed to show, the untested --order chain simplification, the untested pull-in refusal branch), and the Phase 3 starting point."
+      "path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-3-handoff-20261123T212251Z.md",
+      "summary": "Phase 3 completion state: all code was already committed by a prior stalled attempt; this dispatch re-verified it in the foreground and performed the closure artifacts (plan markers, progress file, commit) the prior attempts never reached. Notes the EXPECTED source/deploy drift owed to Phase 7 and the unrelated flaky test."
     }
   ],
   "completion_data": {
-    "completion_summary": "Implemented and fully verified Phase 2 of 7: review-stack-prepare.sh's cut now selects tasks (--milestone/--batch/--tasks), attributes each to a landing proof or a fallback commit-subject convention, merges shared_paths/--merge pairs into units, pulls in an unmerged path-overlapping earlier task, groups units into components over dependency edges and path overlap, orders each component topologically with an ancestry tie-break and a contradiction refusal, and assigns each unit a branch and a base -- printing the result, writing nothing. Suite grew from 19 to 28 cases, all passing; committed cleanly. Phases 3-7 remain for a follow-up dispatch."
+    "completion_summary": "Re-verified and closed Phase 3 of 7 (cut the stack and write the manifest) of the stack-PR-submission plan: all of review-stack-prepare.sh's cut/show/record-request machinery was already implemented and committed by a prior stalled dispatch attempt. Confirmed the 38-case test suite passes clean (including byte-identical HEAD/index/status invariants) and the phase's scoped verify-touched.sh battery is green apart from two explained, non-blocking findings. Checked off the plan's Phase 3 tasks, marked the heading [COMPLETED], and committed as its own scoped phase commit."
   },
   "modified_files": [
-    "agent-system/extensions/core/scripts/review-stack-prepare.sh",
-    "agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/context/standards/repo-level-declarations.md",
     "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/review-stack-prepare.sh",
     "agent-system/extensions/core/scripts/tests/suite-classification.data",
-    "agent-system/extensions/core/context/standards/repo-level-declarations.md"
+    "agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh"
   ],
-  "memory_candidates": [
-    {
-      "content": "When a plan phase adds a new mandatory input (e.g. a required selection flag) to a subcommand whose earlier resolution stages an existing test suite already exercises with that input absent, split the new requirement into a non-refusing 'gather' step (runs early, so later resolvers that want the new input's value can use it when present) and a separate 'validate' step (refuses on absence, called only from the new feature's own body, after the pre-existing resolvers run). This keeps every pre-existing success/refusal assertion reachable unchanged instead of needing to retrofit a selection onto fixtures that were never about selection.",
-      "category": "PATTERN",
-      "source_artifact": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["cli-design", "backward-compatibility", "refusal-ordering", "test-suite-stability", "bash"]
-    },
-    {
-      "content": "A simple bash union-find for grouping a small set of string/number keys (e.g. task numbers merging into review units): two associative-array functions, uf_find (recursive, path-compressing, lazily initializing UF_PARENT[x]=x on first touch) and uf_union (union the two roots), called as plain statements since bash functions return values via stdout capture, which this pattern avoids on the hot path by using a parent-pointer array instead.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md",
-      "confidence": 0.7,
-      "suggested_keywords": ["bash", "union-find", "associative-array", "grouping", "disjoint-set"]
-    },
-    {
-      "content": "To generate genuine 'observed failing before passing' evidence for a verification criterion after a feature was authored in one complete draft (rather than incrementally red-green), temporarily neutralize the specific guard function with a one-line sed substitution (e.g. replacing a call with ':' plus a comment), re-run the suite to confirm the targeted case fails for the expected reason, then restore the backup and re-run to confirm it passes again. Cheap, and keeps the verification claim honest rather than asserting a TDD sequence that did not actually happen.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["tdd-evidence", "verification", "shell-testing", "regression-check"]
-    }
-  ],
+  "memory_candidates": [],
   "sapience_notes": [
     {
-      "subject": "cut subcommand selection resolution ordering for the stack-PR-submission task",
-      "value": "review-stack-prepare.sh's cut subcommand gathers its selection (--milestone/--batch/--tasks) before resolving the integration branch, review base, remote and platform, but only VALIDATES that selection (refusing when absent or empty) after those four resolvers run and inside cut's own body. The first draft validated immediately on gathering and broke every one of the prior phase's success/refusal assertions that call cut with no selection at all to exercise those shared resolvers.",
-      "predicate": "decision is",
-      "ko_type": "decision",
-      "confidence": 0.85,
-      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh, rsp_gather_selection/rsp_validate_selection"
-    },
-    {
-      "subject": "git merge-base --is-ancestor as the landing-order comparator",
-      "value": "Two commits' chronological landing order on a linear branch is correctly compared with `git merge-base --is-ancestor A B` (true iff A happened before B on that branch), independent of commit timestamps; a test fixture that wants to control 'landing order' must control which stack_commit call runs first, not timestamp fields, since both commits can be made within the same second.",
-      "predicate": "measured fact is",
-      "ko_type": "finding",
-      "confidence": 0.85,
-      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh, rsp_check_order_contradictions and rsp_topo_sort_component"
-    },
-    {
-      "subject": "verify-touched.sh OWED-NOT-PAID fallback recurring across two phases of the same task",
-      "value": "review-stack-prepare.sh and its suite remain unmapped by suite_selection_select even after a second phase of edits (0 suites selected, 2 owed, across 2 touched paths); the OWED-NOT-PAID fallback battery (98 suites) ran instead of a targeted set, and passed cleanly, matching the same shape the prior phase of this same task observed with a different fallback battery size (237 suites, when manifest.json/suite-classification.data were also touched).",
-      "predicate": "measured fact is",
-      "ko_type": "finding",
-      "confidence": 0.75,
-      "source_loc": "specs/685_stack_pr_submission_from_integration_branch dispatch 24 transcript"
-    },
-    {
-      "subject": "branch slug for a merged review unit",
-      "value": "When two or more tasks merge into one review unit (via shared_paths or --merge), the unit's branch slug is taken from the lowest-numbered member task only, not a concatenation of every member's slug. Chosen to keep branch names bounded in length and because the plan's own wording names a single 'task slug', not a joined one.",
-      "predicate": "decision is",
-      "ko_type": "decision",
-      "confidence": 0.7,
-      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh, rsp_build_units"
-    },
-    {
-      "subject": "untested paths in the stack-PR-submission task's unit-selection phase",
-      "value": "Two code paths in review-stack-prepare.sh's cut selection/ordering body have no suite case yet: the --order flag's single-chain override across multiple components, and the earlier-unmerged-task pull-in's refusal branch for an unselectable match (every landing-proof entry the scan finds is, by construction, resolvable, so only the pull-in path -- not the refusal path -- is currently reachable). Both are candidates for a case before a later phase relies on them.",
+      "subject": "stall re-prompt recovery for the stack-PR-submission task's Phase 3",
+      "value": "Two consecutive dispatch_seq-28 attempts at the same phase died mid-flight without writing .return-meta.json/.orchestrator-handoff.json, but their code (review-stack-prepare.sh's cut/show/record-request machinery plus a 38-case test suite) had already been committed cleanly. The recovery dispatch needed zero new implementation -- only foreground re-verification and the plan/progress/handoff/commit closure sequence the prior attempts never reached. This confirms that a stalled-dispatch re-prompt should start by reading committed git state before assuming any work is missing.",
       "predicate": "finding is",
       "ko_type": "insight",
-      "confidence": 0.75,
-      "source_loc": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-2-handoff-20261123T183358Z.md"
+      "confidence": 0.85,
+      "source_loc": "specs/685_stack_pr_submission_from_integration_branch dispatch 28 transcript, commit 275599cff"
+    },
+    {
+      "subject": "verify-touched.sh scoped battery finding classification for review-stack-prepare.sh",
+      "value": "Phase 3's scoped verify-touched.sh run surfaced two findings that both turned out non-blocking: (1) test-verify-deploy-context-budget.sh correctly reports source/deployed-tree content drift for review-stack-prepare.sh, its test, and orchestrator-runtime-files.md, plus an index-entries.json line_count mismatch (729 vs 730 for the orchestrator-runtime-files.md entry) -- this is EXPECTED because the plan's own Phase 3 'Files to modify' note and Phase 7's task list both state the index-entries.json line_count is reconciled by Phase 7's deploy-headless.sh redeploy, not before; (2) test-orchestrate-recover-outcome.sh case 3 failed once under the full 74-suite parallel run but passed 7/7 in three standalone re-runs, indicating an mtime-window timing flake under heavy concurrent batch load rather than a real regression.",
+      "predicate": "finding is",
+      "ko_type": "finding",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh; .claude/scripts/tests/test-verify-deploy-context-budget.sh; .claude/scripts/tests/test-orchestrate-recover-outcome.sh"
+    },
+    {
+      "subject": "review-stack-prepare.sh cut subcommand's commit-tree construction never touches the shared working tree",
+      "value": "rsp_cut_execute builds each unit's review commit entirely via a private GIT_INDEX_FILE overlay (rsp_overlay_tree) and git commit-tree/git update-ref compare-and-swap, with the moved-base case additionally using git merge-tree --write-tree --merge-base for a non-interactive three-way move -- never git checkout, git merge, or git rebase. Verified empirically: a suite case asserts byte-identical HEAD, .git/index, and git status before and after a cut.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.8,
+      "source_loc": "agent-system/extensions/core/scripts/review-stack-prepare.sh, rsp_cut_execute/rsp_overlay_tree/rsp_move_commit_onto_new_parent"
     }
-  ]
+  ],
+  "metadata": {
+    "session_id": "sess_1795463295_b6ad0f",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "phases_completed": 3,
+    "phases_total": 7
+  }
 }
