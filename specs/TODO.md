@@ -13,17 +13,17 @@ next_project_number: 684
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,477,491,498,502,506,510,511,512,514,516,517,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,567,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,679,680 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,477,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,567,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,679,680 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,439,474,479,481,509,523,533,535,540,544,546,552,566,570,583,592,593,605,609,630 | 383,390,410,431,438,452,453,511,519,539,542,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,472,480,492,513,541,561,588,594 | 439,479,491,509,535,552,556,570,593 | core-agent-system, orchestrator, agent-system |
-| 4 | 473,484,518,581,595,641,669 | 454,472,477,492,517,539,541,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
+| 4 | 473,484,518,581,595,641,669 | 454,472,477,492,539,541,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 486,571,596,642,671 | 484,518,595,641,669 | file-scope-lifecycle, orchestrator, agent-system |
 | 6 | 501,508 | 472,486 | file-scope-lifecycle |
 | 7 | 524 | 501 | core-agent-system |
 | 8 | 536 | 524 | agent-system |
 | 9 | 548 | 536 | agent-system |
 | 10 | 553,598 | 548 | agent-system |
-| 11 | 655,670 | 513,517,553,669 | orchestrator |
+| 11 | 655,670 | 513,553,669 | orchestrator |
 | 12 | 672,673 | 670,671 | orchestrator |
 | 13 | 674 | 673 | orchestrator |
 | 14 | 675 | 672,674 | orchestrator |
@@ -48,7 +48,6 @@ next_project_number: 684
     └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt...
 502 [NOT STARTED] — Require research reports to enumerate generated doc-sync surfaces
 506 [PLANNED] — Stop the bounded-waiter hook refusing a write whose prose...
-517 [IMPLEMENTING] — Require a phase commit to regenerate and stage the derived...
 519 [NOT STARTED] — Infra exempt transport error dispatch deaths
 520 [NOT STARTED] — Emit deploy ordering in implement dispatch body
 521 [NOT STARTED] — Fix the agent glob to match the -implement-agent.md variant
@@ -6321,7 +6320,7 @@ The observed run lost nothing recoverable -- phases 1-3 were committed and green
 ---
 
 ### 517. Require a phase commit to regenerate and stage the derived surfaces it stales
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 455, Task 515
