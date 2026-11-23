@@ -349,28 +349,33 @@ approach needs re-examination before committing.
 
 ---
 
-### Phase 3: Redeploy and close the gate [NOT STARTED]
+### Phase 3: Redeploy and close the gate [COMPLETED]
 
 **Goal**: Regenerate the deployed tree from the source store so the `core` staleness the dispatch
 reported is cleared, and discharge this task's verification obligation.
 
 **Tasks**:
-- [ ] Run the redeploy with the bounded-wait idiom required by
+- [x] Run the redeploy with the bounded-wait idiom required by
       `context/patterns/external-process-wait.md` Rule 1: `timeout 540 bash
       .claude/scripts/deploy-headless.sh`, with the Bash tool's own `timeout` parameter raised to
-      600000 (not its 120000 default).
-- [ ] Confirm the deploy reports success and that `core` is no longer stale.
-- [ ] Confirm the deployed copies of the two changed production files match their source-store
+      600000 (not its 120000 default). *(completed: RESULT=landed_verify_clean)*
+- [x] Confirm the deploy reports success and that `core` is no longer stale. *(completed)*
+- [x] Confirm the deployed copies of the two changed production files match their source-store
       originals (`diff` each pair) -- the deploy is the only sanctioned way they get there; never
-      hand-patch under `.claude/**`.
-- [ ] Inspect `git status --short` for the tracked files the regeneration rewrote, `.claude-extensions.json`
+      hand-patch under `.claude/**`. *(completed: diff reported no differences for both files,
+      plus the test file)*
+- [x] Inspect `git status --short` for the tracked files the regeneration rewrote, `.claude-extensions.json`
       among them, and stage deliberately per `context/standards/git-staging-scope.md`. If the
       phase commit drops `.claude-extensions.json` as out-of-scope, recover it through the designed
       route -- the dropped path lands in `.return-meta.json`'s `proposed_file_scope`, followed by a
       scoped `git-commit-scoped.sh` follow-up -- never a second `git-commit-phase.sh` call, which
-      re-runs the same check and drops it again.
-- [ ] Re-run the two suites from Phase 2 against the deployed tree as well as the source store, so
-      the green result is attested on the artifact that actually executes.
+      re-runs the same check and drops it again. *(completed: `.claude-extensions.json` was the
+      only tracked file outside the deployed tree the regeneration rewrote, matching the Scope
+      Hypothesis; it is declared in this phase's Files to modify, so no drop was expected)*
+- [x] Re-run the two suites from Phase 2 against the deployed tree as well as the source store, so
+      the green result is attested on the artifact that actually executes. *(completed: both
+      green against `.claude/scripts/tests/...` post-deploy, in addition to the source-store runs
+      already captured in the Phase 2 handoff)*
 
 **Timing**: 0.5 hours
 
