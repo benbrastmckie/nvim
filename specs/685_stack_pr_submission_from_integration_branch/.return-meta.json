@@ -1,10 +1,86 @@
 {
-  "status": "in_progress",
-  "metadata": {
-    "session_id": "sess_1795451386_ec8465",
-    "agent_type": "general-implementation-agent",
-    "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+  "status": "partial",
+  "dispatch_seq": 22,
+  "partial_progress": {
+    "stage": "phase_1_of_7_complete",
+    "details": "Phase 1 (review-base declaration, resolution and refusals) is [COMPLETED] and committed with full scoped verification. Phases 2-7 (unit selection/ordering, the cut/manifest, restack, handoff integration, /merge stack mode, redeploy + second-repository demonstration) remain -- each is substantial git-plumbing and test-fixture work the plan itself estimates at roughly 9 of its 10.5 hours. Closing here depth-first after one fully-verified phase rather than rushing the remaining six in the same dispatch.",
+    "handoff_path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-1-handoff-20261123T180841Z.md",
+    "phases_completed": 1,
+    "phases_total": 7
   },
-  "dispatch_seq": 22
+  "artifacts": [
+    {
+      "type": "handoff",
+      "path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-1-handoff-20261123T180841Z.md",
+      "summary": "Phase 1 completion state, key decisions (exit-inside-subshell bug and fix, upstream-remote resolution avoiding the literal word, manual deploy-copy for live testing), and the Phase 2 starting point."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Implemented and fully verified Phase 1 of 7: review-stack-prepare.sh now resolves the integration branch, review base (PD1, 5 refusals), remote, and platform (PD9, 3 refusals) for its four subcommands, backed by a 19-case fixture suite, repo-level-declarations.md documentation, and manifest/suite-classification registration. Committed cleanly; phases 2-7 remain for a follow-up dispatch."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/review-stack-prepare.sh",
+    "agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/context/standards/repo-level-declarations.md"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In bash, a resolver function that must be able to refuse via `exit N` should never be called inside `$(...)` command substitution: `exit` inside a command-substitution subshell only terminates that subshell, so the refusal's exit code never reaches the calling script's own exit status (it silently continues with exit 0). Fix: have the resolver set a global variable and call it as a plain statement, never captured via `$(...)`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-1-handoff-20261123T180841Z.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["bash", "command-substitution", "subshell", "exit-code", "refusal-pattern"]
+    },
+    {
+      "content": "To resolve a git branch's configured remote without ever typing the literal word 'upstream' (useful when a static-assertion suite forbids hardcoded remote/branch-name literals including that word), use `git config --get branch.<name>.remote` instead of `<branch>@{upstream}` ref syntax -- same information, no literal keyword in the source.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-1-handoff-20261123T180841Z.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["git", "remote-resolution", "upstream", "static-assertion", "hardcoded-name"]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "Claude Code harness Bash tool auto-backgrounding threshold",
+      "value": "A foreground Bash tool call that produces no stdout/stderr for roughly 180 seconds gets auto-converted to a backgrounded task by the harness, regardless of the `timeout` parameter's value (observed at timeout=290000ms and again at timeout=540000ms, both converted at ~180s). Raising the `timeout` parameter alone does not prevent this; the trigger is output silence, not elapsed time against the timeout ceiling.",
+      "predicate": "measured fact is",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "specs/685_stack_pr_submission_from_integration_branch dispatch 22 transcript"
+    },
+    {
+      "subject": "verify-touched.sh scoped check duration under a busy multi-task session",
+      "value": "A Batch Gate Deferral scoped verify-touched.sh invocation (no arguments) for a registration-surface-touching phase (manifest.json, suite-classification.data) selected 139+98=237 suites across two internal run-all.sh invocations and took roughly 15 minutes wall-clock in a session with ~20 concurrent sibling dispatches, dominated by a handful of load-sensitive serialized suites (test-state-write-concurrency.sh, test-state-write-regen-timing.sh, test-four-tier-conflict.sh, test-run-all-parallel.sh, test-gate-lock.sh) that it explicitly runs outside the parallel pool.",
+      "predicate": "measured fact is",
+      "ko_type": "finding",
+      "confidence": 0.8,
+      "source_loc": "specs/685_stack_pr_submission_from_integration_branch dispatch 22 transcript"
+    },
+    {
+      "subject": "review_base declaration decision for the stack-PR-submission task",
+      "value": "The bottom PR of a review-branch stack merges into a declared review_base distinct from the integration branch (a new top-level .claude-extensions.json key, beside integration_branch), per a relayed user answer in cycle 9. A repository whose integration branch would also be its review base gets a refusal and no PRs prepared, rather than silently substituting the integration branch.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md, decision PD1"
+    },
+    {
+      "subject": "run-all.sh output buffering under a detached background invocation",
+      "value": "run-all.sh's own stdout appears to buffer heavily when invoked via nohup with stdout/stderr redirected to a file: a log file can sit static for 10+ minutes mid-run with no new [RUN]/[PASS] lines even though many suites are completing internally, then emit a large burst of buffered lines once the whole invocation finishes. Liveness must be checked via the process's own PID (kill -0), never inferred from log-file growth.",
+      "predicate": "measured fact is",
+      "ko_type": "finding",
+      "confidence": 0.7,
+      "source_loc": "specs/685_stack_pr_submission_from_integration_branch dispatch 22 transcript"
+    },
+    {
+      "subject": "cslib /pr command's portability for the stack-PR-submission task",
+      "value": "The cslib extension's /pr command (the only existing PR-stacking machinery in this repository) was ruled not portable to core: it is prose run by a model, creates branches by checkout (forbidden by the ref-plumbing-landing concurrency-safety property in a shared working tree), and resolves bases via a forge read rather than a local manifest. core's review-stack-prepare.sh is therefore its own small implementation (decision PD2), reusing only two ideas from /pr: a chained base as the stacking primitive, and a 'Relationship to other PRs' body section.",
+      "predicate": "decision is",
+      "ko_type": "decision",
+      "confidence": 0.85,
+      "source_loc": "specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md, decision PD2"
+    }
+  ]
 }

@@ -20367,6 +20367,11 @@
           "path": "specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md",
           "type": "plan",
           "summary": "Seven-phase plan for review-stack preparation, restack, handoff and /merge stack mode."
+        },
+        {
+          "path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-1-handoff-20261123T180841Z.md",
+          "type": "handoff",
+          "summary": "Phase 1 completion state, key decisions, and the Phase 2 starting point."
         }
       ],
       "next_artifact_number": 2

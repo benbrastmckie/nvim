@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "summary": "Wrote a seven-phase, fully sequential plan (10.5 hours) for cutting a PR stack from landing proofs by git plumbing, with a review_base declaration per the relayed user answer, a restack disposition, handoff output and a user-invoked /merge stack mode. All three flagged description premises were re-validated against live state; the landing contract is present, so no blocker. The on-forge criterion is recorded as operator-owed because no agent may push or call a forge. Two issue-log entries were recorded this dispatch (one issue, one win).",
+  "status": "partial",
+  "dispatch_seq": 22,
+  "summary": "Implemented and fully verified Phase 1 of 7 of the stack-PR-submission plan: review-stack-prepare.sh resolves the integration branch, review base (PD1, 5 refusals via distinct exit codes), remote, and platform (PD9, 3 refusals) for its cut/restack/show/record-request subcommands, backed by a 19-case fixture suite, repo-level-declarations.md documentation, and manifest/suite-classification registration. The phase's own scoped Batch Gate Deferral check (verify-touched.sh, 237 suites) reported only pre-existing/unrelated failures. Committed cleanly as one phase commit. Phases 2-7 (unit selection/ordering, the actual cut + manifest, restack, handoff integration, /merge stack mode, redeploy + second-repository demonstration) remain, each substantial git-plumbing and fixture work.",
   "blockers": [],
-  "phases_completed": 0,
+  "phases_completed": 1,
   "phases_total": 7,
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md",
-      "summary": "Seven-phase plan for review-stack preparation, restack, handoff and /merge stack mode."
+      "type": "handoff",
+      "path": "specs/685_stack_pr_submission_from_integration_branch/handoffs/phase-1-handoff-20261123T180841Z.md",
+      "summary": "Phase 1 completion state, key decisions, and the Phase 2 starting point."
     }
-  ],
-  "dispatch_seq": 8
+  ]
 }
