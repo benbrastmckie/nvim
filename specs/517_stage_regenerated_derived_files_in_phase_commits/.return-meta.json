@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795391913_f9e5cc_517",
+  "task_number": 517,
+  "dispatch_seq": 4,
+  "findings_count": 9,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/517_stage_regenerated_derived_files_in_phase_commits/reports/01_stage-regenerated-derived-files.md",
+      "summary": "Rules on the execution-half gap: adopts (c) -- a short generic obligation in checkpoint-commit.md (pointer, not copy, into general-implementation-agent.md) plus a minimal non-blocking backstop call to the already-built derived_probe_run_all from git-commit-phase.sh -- and flags, re-derived live, that neither half has any effect on the real BimodalLogic incident without a companion consumer-repo task declaring coupled_generated_surfaces there."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "agent-system's checkpoint-commit.md/git-commit-phase.sh staging pipeline stages only what the agent self-reports in files_touched/modified_files; nothing re-runs a generator before staging. The Phase-Commit Containment Self-Check additionally DROPS any staged path not already inside the task's declared file_scope -- so even a dutiful, un-prompted regeneration by an implementing agent is silently undone at commit time unless the regenerated path is already declared in file_scope. The execution half (re-run+stage) and the declaration half (file_scope membership) are coupled at this exact site.",
+      "category": "PATTERN",
+      "source_artifact": "specs/517_stage_regenerated_derived_files_in_phase_commits/reports/01_stage-regenerated-derived-files.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["checkpoint-commit", "git-commit-phase", "file_scope", "containment-self-check", "derived-artifact"]
+    },
+    {
+      "content": "Two distinct repo-level declaration schemas exist in .claude-extensions.json for generated-artifact staleness: derived_artifact_probes (a build-free check_command + derived_output_dirs, read at implement-postflight, blocking) and coupled_generated_surfaces (trigger_glob + generated_paths + commit_blocking, read only at plan-acceptance time by an inline helper in validate-artifact.sh, purely advisory). coupled_generated_surfaces is pure glob/string matching with zero command execution -- cheaper and more precisely source-correlated than derived_artifact_probes' check_command. Its documentation already names a second consumer as the trigger to promote the inline helper to scripts/lib/; wiring it into git-commit-phase.sh against actual files_touched (rather than only the plan's declared prose) would be that second consumer, and would also be the first place commit_blocking could become a real refusal rather than inert warning-text metadata.",
+      "category": "PATTERN",
+      "source_artifact": "specs/517_stage_regenerated_derived_files_in_phase_commits/reports/01_stage-regenerated-derived-files.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["coupled_generated_surfaces", "derived_artifact_probes", "repo-level-declarations", "validate-artifact", "commit_blocking"]
+    },
+    {
+      "content": "anchor-pointer-convention.md (agent-system core, created 2026-11-05) requires a block restated across files to collapse to a one-line pointer naming the anchor's path+heading rather than a verbatim copy; lint-anchor-pointer-collapse.sh only polices files already registered in lint/collapsed-blocks/registry.tsv as collapsed-FROM, so it does not catch a freshly hand-duplicated paragraph added to two files at once -- that regression has to be avoided by authoring discipline (write the pointer form from the start), not caught by this lint after the fact.",
+      "category": "CONFIG",
+      "source_artifact": "specs/517_stage_regenerated_derived_files_in_phase_commits/reports/01_stage-regenerated-derived-files.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["anchor-pointer-convention", "lint-anchor-pointer-collapse", "verbatim-duplication", "markdown-collapse"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 517 to create implementation plan"
+}

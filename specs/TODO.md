@@ -48,7 +48,7 @@ next_project_number: 684
     └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt...
 502 [NOT STARTED] — Require research reports to enumerate generated doc-sync surfaces
 506 [PLANNED] — Stop the bounded-waiter hook refusing a write whose prose...
-517 [NOT STARTED] — Require a phase commit to regenerate and stage the derived...
+517 [RESEARCHED] — Require a phase commit to regenerate and stage the derived...
 519 [NOT STARTED] — Infra exempt transport error dispatch deaths
 520 [NOT STARTED] — Emit deploy ordering in implement dispatch body
 521 [NOT STARTED] — Fix the agent glob to match the -implement-agent.md variant
@@ -6321,10 +6321,11 @@ The observed run lost nothing recoverable -- phases 1-3 were committed and green
 ---
 
 ### 517. Require a phase commit to regenerate and stage the derived surfaces it stales
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 455, Task 515
+- **Research**: [517_stage_regenerated_derived_files_in_phase_commits/reports/01_stage-regenerated-derived-files.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/**` in THIS repository (never a deployed `.claude/**` tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see `rules/source-store-deploy-boundary.md`). Re-derive the store rather than trusting this note: `source_dir` lives PER-EXTENSION at `.extensions.<name>.source_dir` in a consumer repo's `<project-root>/.claude-extensions.json`, NOT as a top-level key. Edit at the path mirroring the deployed one, then REDEPLOY via `deploy-headless.sh`. No task-number references and no record-versioning language in any file landing under `agent-system/**`; both are permitted in this description and elsewhere in `specs/**`.
 
