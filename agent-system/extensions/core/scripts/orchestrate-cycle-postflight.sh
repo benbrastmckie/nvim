@@ -44,6 +44,12 @@
 #       a report-file gate first (report_missing/ARTIFACTS_MISSING_ON_SUCCESS, D3): a missing or
 #       empty report file or .return-meta.json refuses the transition (research_gate_failed=true,
 #       verdict="failed") instead of trusting the claimed success.
+#       For an "implemented" dispatch whose phase-accounting gate passed, the order is: commit
+#       leftover work (commit_leftover_work: reported modified_files outside the state territory
+#       that still differ from HEAD), landing check, status write; the per-cycle commit at (i)
+#       follows the write and carries the state files it changed. A leftover commit that did not
+#       land (git-commit-scoped.sh exit 2 to 5) refuses the status write and leaves the task in
+#       flight.
 #   (g) Artifact link (same-type supersession) and the artifact-round advance (unconditional on
 #       researched; additionally on a forced planned/implemented) — closing the multi-task gap.
 #       Both skipped when the research report gate in (f) refused the transition.
@@ -284,6 +290,10 @@ source "${SCRIPT_DIR}/lib/derived-artifact-probe-lib.sh"
 # engine-written-state-file splice, below; a call-site fallback there (not here) implements
 # Decision 2 so a source/resolution failure never narrows today's admitted scope.
 source "${SCRIPT_DIR}/lib/engine-written-state-paths-lib.sh"
+# The state territory (BATCH_ADMISSION_STATE_TERRITORY), read by commit_leftover_work below.
+# Guarded: with the library absent the territory degrades to the state directory alone.
+# shellcheck source=lib/batch-admission-lib.sh disable=SC1091
+[ -f "${SCRIPT_DIR}/lib/batch-admission-lib.sh" ] && source "${SCRIPT_DIR}/lib/batch-admission-lib.sh"
 
 # ── Structural output-channel discipline (emit direction) ──────────────────────────────────────
 # Same fd-3 discipline as orchestrate-cycle-plan.sh (see that script's own header for the full
@@ -1208,6 +1218,165 @@ else
   fi
 fi
 
+# compute_scope_excursions [quiet] -- WORK (h)'s comparison, as a function so it can also run
+# ahead of WORK (f)'s completion write (commit_leftover_work below). Sets, as GLOBALS (no
+# `local` on any of them, deliberately): meta_file, modified_files_json, file_scope_json,
+# task_dir_rel and excursions_json. WORK (i) reads $modified_files_json and $excursions_json
+# with no default fallback, so the unconditional top-level call at WORK (h) must stay ahead of
+# WORK (i). Detection only: no exit code and no verdict effect. With `quiet`, the three
+# diagnostic lines are suppressed so a second call in one run does not print them twice; the
+# values set are identical either way.
+compute_scope_excursions() {
+  local excursion_quiet="${1:-}"
+  meta_file="${TASK_DIR}/.return-meta.json"
+  modified_files_json=$(jq -c '.modified_files // []' "$meta_file" 2>/dev/null) || modified_files_json='[]'
+  file_scope_json=$(jq -c --argjson num "$task_number" \
+    '.active_projects[] | select(.project_number == $num) | .file_scope // []' "$STATE_FILE" 2>/dev/null) || file_scope_json='[]'
+  # Implicit own-task-directory file_scope member (comparison-only — never written back to
+  # state.json's declared file_scope): the lifecycle REQUIRES every task to write into its own
+  # resolved task directory (reports/, plans/, summaries/, .return-meta.json, etc.), so that
+  # directory is treated as an unconditional in-scope prefix for THIS comparison, for every task
+  # that already declares a non-empty file_scope (the length>0 guard below is left untouched and
+  # still decides whether the check runs at all — a task with no declared file_scope still gets no
+  # advisory, exactly as before). $TASK_DIR is already archive-aware (resolved upstream by
+  # task_lookup_dir(), landing under specs/archive/{NNN}_{name}/ for a forced round dispatched
+  # against an archived task), so no separate active-vs-archive branch is needed here. See this
+  # script's own header, WORK (h), for the whole-directory and stay-advisory rulings plus the
+  # two-part promotion criterion.
+  task_dir_rel="${TASK_DIR#"$PROJECT_ROOT"/}"
+  excursions_json='[]'
+  if [ "$(echo "$file_scope_json" | jq 'length')" -gt 0 ] 2>/dev/null; then
+    effective_file_scope_json="$file_scope_json"
+    if [ -n "$task_dir_rel" ] && [ "$task_dir_rel" != "$TASK_DIR" ]; then
+      spliced_fsj=$(echo "$file_scope_json" | jq -c --arg d "${task_dir_rel}/" '. + [$d]' 2>/dev/null) && effective_file_scope_json="$spliced_fsj"
+    else
+      [ "$excursion_quiet" = "quiet" ] || echo "${notice_prefix} WARNING: TASK_DIR ('${TASK_DIR}') is not PROJECT_ROOT-relative as expected — skipping the implicit own-task-directory file_scope member for this advisory only (declared file_scope is still compared as-is)." >&2
+    fi
+    # Derived-output exemption splice (GOAL (2) half): a regenerated file under a repo-declared
+    # derived-output prefix (scripts/lib/derived-artifact-probe-lib.sh's
+    # derived_probe_output_prefixes) is never classified as a file_scope excursion below, so it is
+    # staged with the change that caused it at WORK (i) instead of being silently dropped. Second,
+    # symmetrical splice alongside the implicit own-task-directory member above -- no source-to-
+    # output cross-referencing, exactly as the research found unnecessary for this half. A repo
+    # declaring nothing (derived_probe_output_prefixes returns "[]") leaves effective_file_scope_json
+    # untouched, so this is a strict no-op for every repo that declares no probes, this repo
+    # included.
+    derived_output_prefixes_json="$(derived_probe_output_prefixes "$PROJECT_ROOT")"
+    derived_output_prefix_count=$(echo "$derived_output_prefixes_json" | jq 'length' 2>/dev/null) || derived_output_prefix_count=0
+    if [ "$derived_output_prefix_count" -gt 0 ] 2>/dev/null; then
+      spliced_derived_fsj=$(echo "$effective_file_scope_json" | jq -c --argjson d "$derived_output_prefixes_json" '. + $d' 2>/dev/null) && effective_file_scope_json="$spliced_derived_fsj"
+      [ "$excursion_quiet" = "quiet" ] || echo "${notice_prefix} DERIVED-OUTPUT EXEMPTION: widening task ${task_number}'s file_scope excursion comparison with ${derived_output_prefix_count} repo-declared derived-output prefix(es): $(echo "$derived_output_prefixes_json" | jq -c '.')." >&2
+    fi
+    # Engine-written state-file allowlist (one of three Containment sites — see
+    # git-staging-scope.md's "Three Containment sites, not one"): the shared source
+    # scripts/lib/engine-written-state-paths-lib.sh defines the fixed set of paths written by the
+    # engine on behalf of EVERY task (currently specs/TODO.md, specs/state.json,
+    # specs/events.jsonl), never declarable in any one task's own file_scope,
+    # so none of them is ever a genuine excursion no matter which task reports it in
+    # modified_files. All three Containment sites now consult this same shared source rather than
+    # each hand-copying the list. Decision 2's fallback: a source/resolution failure splices the
+    # hardcoded two-literal pair instead, so a library failure reproduces today's admitted scope
+    # exactly and never narrows it. Deliberately not derived from $STATE_FILE itself: if
+    # $STATE_FILE is ever relocated, review this splice together with WORK (i)'s independent
+    # stage_paths seed below, which this allowlist does not replace.
+    engine_written_paths_json="$(engine_written_state_paths 2>/dev/null)" || engine_written_paths_json=""
+    if [ -n "$engine_written_paths_json" ] \
+       && echo "$engine_written_paths_json" | jq -e 'type == "array" and (all(.[]; type == "string"))' >/dev/null 2>&1; then
+      spliced_state_fsj=$(echo "$effective_file_scope_json" | jq -c --argjson d "$engine_written_paths_json" '. + $d' 2>/dev/null) && effective_file_scope_json="$spliced_state_fsj"
+    else
+      spliced_state_fsj=$(echo "$effective_file_scope_json" | jq -c '. + ["specs/TODO.md", "specs/state.json"]' 2>/dev/null) && effective_file_scope_json="$spliced_state_fsj"
+    fi
+    # NOTE: the `any($fs[]; . as $f | ...)` re-binding is load-bearing, not stylistic — piping `$p`
+    # into `startswith(.)` directly (`$p | startswith(.)`) rebinds `.` to `$p` itself for the
+    # argument's own evaluation (jq evaluates a builtin's argument against ITS OWN input, i.e. the
+    # value just piped in), making `startswith(.)` degenerate to `startswith($p)` — always true.
+    # Capturing the generator's value into `$f` before touching `.` sidesteps this entirely.
+    excursions_json=$(jq -c -n --argjson mf "$modified_files_json" --argjson fs "$effective_file_scope_json" \
+      '[$mf[] | select(. as $p | any($fs[]; . as $f | $p == $f or ($p | startswith($f))) | not)]' 2>/dev/null) || excursions_json='[]'
+    excursion_count=$(echo "$excursions_json" | jq 'length' 2>/dev/null) || excursion_count=0
+    if [ "$excursion_count" -gt 0 ]; then
+      [ "$excursion_quiet" = "quiet" ] || echo "${notice_prefix} ADVISORY: task ${task_number} reported modified_files outside its declared file_scope: $(echo "$excursions_json" | jq -c '.')  (detection only — no gate, no exit-code, no verdict effect)." >&2
+    fi
+  fi
+}
+
+# commit_leftover_work -- for a just-implemented task whose phase-accounting gate passed:
+# commit the reported modified_files that still differ from HEAD, BEFORE the landing check and
+# the completion status write. The landing verification refuses a completion while work sits in
+# the working tree that no commit carries, so this commit has to come first; the per-cycle
+# commit at WORK (i) then carries the state files the status write changed.
+#   - Scope first: `proposed_file_scope` from the return metadata is union-merged into the
+#     task's file_scope here, the same additive merge the completion write performs, so a path
+#     an in-dispatch phase commit dropped as an excursion and proposed can be staged now.
+#   - Excursions: compute_scope_excursions decides them; a flagged path is dropped
+#     (drop-and-warn, never refuse) and WORK (i) prints its EXCURSION DROPPED line.
+#   - Paths under the state territory (BATCH_ADMISSION_STATE_TERRITORY: the task directory, the
+#     state files) are left to the per-cycle commit at WORK (i), which stages them with the
+#     status the completion write produces. The landing verification does not read them.
+#   - Only a path with a pending change is passed on, so a dispatch that committed all of its own
+#     work makes no commit call at all.
+#   - The subject follows the task's commit convention and never reads "complete implementation".
+# Exit handling, per context/standards/git-staging-scope.md's exit-code table: 0 a commit
+# landed; 1 nothing to commit; 2, 3, 4 and 5 mean the leftover work did not land, so
+# landing_refusal is set and the caller skips the status write, leaving the task in flight;
+# every other code (6, 7, 8, 9, or an unrecognized one) proceeds, and the landing verification
+# decides.
+commit_leftover_work() {
+  local proposed f rel member in_territory rc=0 note
+  local -a leftover=()
+  proposed=$(jq -c '(.proposed_file_scope // []) | if type == "array" then map(select(type == "string")) else [] end' \
+    "${TASK_DIR}/.return-meta.json" 2>/dev/null) || proposed='[]'
+  if [ -n "$proposed" ] && [ "$proposed" != "[]" ]; then
+    bash "${SCRIPT_DIR}/state-write.sh" \
+      '(.active_projects[] | select(.project_number == $num)).file_scope =
+        ((((.active_projects[] | select(.project_number == $num)).file_scope // []) + $add) | unique)' \
+      --session-id "$session_id" \
+      --argjson num "$task_number" --argjson add "$proposed" \
+      || echo "${notice_prefix} WARNING: Failed to merge proposed_file_scope ahead of the leftover commit (non-blocking)" >&2
+  fi
+  compute_scope_excursions quiet
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    # An excursion is dropped here without a line of its own: WORK (i) reports the same path
+    # with its EXCURSION DROPPED line later in this run.
+    jq -e --arg p "$f" 'any(.[]; . == $p)' <<<"$excursions_json" >/dev/null 2>&1 && continue
+    rel="${f#"$PROJECT_ROOT"/}"
+    rel="${rel#./}"
+    in_territory=false
+    for member in "${BATCH_ADMISSION_STATE_TERRITORY[@]:-specs}"; do
+      case "$rel" in "$member"|"$member"/*) in_territory=true ;; esac
+    done
+    [ "$in_territory" = "true" ] && continue
+    [ -n "$(git -C "$PROJECT_ROOT" status --porcelain --untracked-files=all -- "$f" 2>/dev/null)" ] || continue
+    leftover+=("$f")
+  done < <(jq -r '.[]? // empty' <<<"$modified_files_json")
+  [ "${#leftover[@]}" -gt 0 ] || return 0
+
+  bash "${SCRIPT_DIR}/git-commit-scoped.sh" \
+    --message "task ${task_number}: land leftover implementation work" \
+    --session "$session_id" \
+    --task "$task_number" \
+    -- "${leftover[@]}" || rc=$?
+  case "$rc" in
+    0) echo "${notice_prefix} LEFTOVER COMMITTED: ${#leftover[@]} reported path(s) of task ${task_number} that no commit carried were committed ahead of the completion write." >&2 ;;
+    2|3|4|5)
+      # shellcheck disable=SC2034  # read by the caller and by every completion-gating site
+      landing_refusal=true
+      note="git-commit-scoped.sh exited ${rc} for task ${task_number}'s leftover-work commit (see context/standards/git-staging-scope.md's exit-code table for this code's meaning). The work is on disk, UNCOMMITTED, so the completion status write is refused this cycle and the task is left at its current in-flight status. Commit the named path(s) under the task's subject convention, then re-run."
+      echo "${notice_prefix} ERROR: ${note}" >&2
+      bash "${SCRIPT_DIR}/issue-record.sh" --task-dir "$TASK_DIR" \
+        --kind issue --class "landing verification" --severity costly \
+        --phase implement --resolution open --suggested-channel fix_now \
+        --what-happened "$note" \
+        ${handoff_dispatch_seq:+--dispatch-seq "$handoff_dispatch_seq"} \
+        --session "$session_id" \
+        >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
+      ;;
+    *) : ;;
+  esac
+  return 0
+}
+
 # ─── WORK (f): status transition, completion-claim gate, completion propagation ────────────────
 offschema_dispatch_status=false
 implemented_gate_passed="null"
@@ -1222,8 +1391,9 @@ inferred_phase=""
 #                                context/standards/repo-level-declarations.md for the declaration
 #                                point and context/standards/postflight-tool-restrictions.md for
 #                                why this Bash invocation is a sanctioned exception.
-#   milestone_landing_refusal -- "did milestone-ref-land.sh's landing or its --verify check fail
-#                                for this implement-phase dispatch's completion transition". Set
+#   landing_refusal -- "did the task's work fail to land: the leftover-work commit ahead of the
+#                                completion write, or milestone-ref-land.sh's landing or its
+#                                --verify check, for this implement-phase dispatch". Set
 #                                only inside the `implemented)` case below (the one place a
 #                                completion status write is attempted); initialized false here so
 #                                every downstream read sees a bound value regardless of which
@@ -1233,7 +1403,7 @@ inferred_phase=""
 # state.json. See the postflight_rc capture and the pre-case probe call below.
 deploy_pending_refusal="false"
 derived_staleness_refusal="false"
-milestone_landing_refusal="false"
+landing_refusal="false"
 
 if [ "$force_invoked" = "true" ]; then
   clamp_mode="monotonic-max"
@@ -1360,6 +1530,12 @@ if [ "$have_outcome" = "true" ]; then
         fi
 
         if is_live; then
+          # ─── Leftover work, committed ahead of the landing check and the status write ──────────
+          # See commit_leftover_work's own header. A failure there (exit 2 to 5) sets
+          # landing_refusal, which every completion-gating site below reads.
+          landing_refusal="false"
+          commit_leftover_work
+          leftover_commit_refusal="$landing_refusal"
           # ─── Milestone-ref landing + verification ──────────────────────────────────────────────
           # Closes the non-landing-under-"completed" defect
           # specs/decisions/worktree-isolation-removal-reaffirmation.md records (postflight
@@ -1374,13 +1550,14 @@ if [ "$have_outcome" = "true" ]; then
           # pass-through — the completion write proceeds exactly as it did before this check
           # existed — because milestone-ref-land.sh itself exits 0 as a no-op for a task in no
           # batch.
-          milestone_landing_refusal="false"
-          if ! bash "${SCRIPT_DIR}/milestone-ref-land.sh" "$task_number" "$session_id" >&2; then
-            milestone_landing_refusal=true
+          if [ "$leftover_commit_refusal" = "true" ]; then
+            : # reported and recorded by commit_leftover_work; the status write below is skipped
+          elif ! bash "${SCRIPT_DIR}/milestone-ref-land.sh" "$task_number" "$session_id" >&2; then
+            landing_refusal=true
           elif ! bash "${SCRIPT_DIR}/milestone-ref-land.sh" "$task_number" "$session_id" --verify >&2; then
-            milestone_landing_refusal=true
+            landing_refusal=true
           fi
-          if [ "$milestone_landing_refusal" = "true" ]; then
+          if [ "$landing_refusal" = "true" ] && [ "$leftover_commit_refusal" != "true" ]; then
             echo "${notice_prefix} MILESTONE-LANDING: task ${task_number}'s work did not land onto its milestone ref (see milestone-ref-land.sh failure line(s) above) — the completion status write is refused this cycle and the task is left at its current in-flight status. A re-run lands the current tree, which is what repairs a --verify mismatch. If a re-run reports this same refusal again while HEAD has not moved, stop and report it; do not retry further." >&2
             issue_args=(--task-dir "$TASK_DIR" --kind issue --class "milestone ref landing" \
               --severity costly --phase implement \
@@ -1408,7 +1585,7 @@ if [ "$have_outcome" = "true" ]; then
             [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
             bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
               >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
-          elif [ "$milestone_landing_refusal" = "true" ]; then
+          elif [ "$landing_refusal" = "true" ]; then
             : # Already reported and recorded above; nothing further to do here but skip the write.
           else
           # No per-call-site >&2 on either call below: the entry-point exec 3>&1 1>&2 redirect
@@ -1767,76 +1944,10 @@ if [ "$do_artifact_round_advance" = "true" ]; then
 fi
 
 # ─── WORK (h): modified_files vs file_scope excursion advisory (detection only) ────────────────
-meta_file="${TASK_DIR}/.return-meta.json"
-modified_files_json=$(jq -c '.modified_files // []' "$meta_file" 2>/dev/null) || modified_files_json='[]'
-file_scope_json=$(jq -c --argjson num "$task_number" \
-  '.active_projects[] | select(.project_number == $num) | .file_scope // []' "$STATE_FILE" 2>/dev/null) || file_scope_json='[]'
-# Implicit own-task-directory file_scope member (comparison-only — never written back to
-# state.json's declared file_scope): the lifecycle REQUIRES every task to write into its own
-# resolved task directory (reports/, plans/, summaries/, .return-meta.json, etc.), so that
-# directory is treated as an unconditional in-scope prefix for THIS comparison, for every task
-# that already declares a non-empty file_scope (the length>0 guard below is left untouched and
-# still decides whether the check runs at all — a task with no declared file_scope still gets no
-# advisory, exactly as before). $TASK_DIR is already archive-aware (resolved upstream by
-# task_lookup_dir(), landing under specs/archive/{NNN}_{name}/ for a forced round dispatched
-# against an archived task), so no separate active-vs-archive branch is needed here. See this
-# script's own header, WORK (h), for the whole-directory and stay-advisory rulings plus the
-# two-part promotion criterion.
-task_dir_rel="${TASK_DIR#"$PROJECT_ROOT"/}"
-excursions_json='[]'
-if [ "$(echo "$file_scope_json" | jq 'length')" -gt 0 ] 2>/dev/null; then
-  effective_file_scope_json="$file_scope_json"
-  if [ -n "$task_dir_rel" ] && [ "$task_dir_rel" != "$TASK_DIR" ]; then
-    spliced_fsj=$(echo "$file_scope_json" | jq -c --arg d "${task_dir_rel}/" '. + [$d]' 2>/dev/null) && effective_file_scope_json="$spliced_fsj"
-  else
-    echo "${notice_prefix} WARNING: TASK_DIR ('${TASK_DIR}') is not PROJECT_ROOT-relative as expected — skipping the implicit own-task-directory file_scope member for this advisory only (declared file_scope is still compared as-is)." >&2
-  fi
-  # Derived-output exemption splice (GOAL (2) half): a regenerated file under a repo-declared
-  # derived-output prefix (scripts/lib/derived-artifact-probe-lib.sh's
-  # derived_probe_output_prefixes) is never classified as a file_scope excursion below, so it is
-  # staged with the change that caused it at WORK (i) instead of being silently dropped. Second,
-  # symmetrical splice alongside the implicit own-task-directory member above -- no source-to-
-  # output cross-referencing, exactly as the research found unnecessary for this half. A repo
-  # declaring nothing (derived_probe_output_prefixes returns "[]") leaves effective_file_scope_json
-  # untouched, so this is a strict no-op for every repo that declares no probes, this repo
-  # included.
-  derived_output_prefixes_json="$(derived_probe_output_prefixes "$PROJECT_ROOT")"
-  derived_output_prefix_count=$(echo "$derived_output_prefixes_json" | jq 'length' 2>/dev/null) || derived_output_prefix_count=0
-  if [ "$derived_output_prefix_count" -gt 0 ] 2>/dev/null; then
-    spliced_derived_fsj=$(echo "$effective_file_scope_json" | jq -c --argjson d "$derived_output_prefixes_json" '. + $d' 2>/dev/null) && effective_file_scope_json="$spliced_derived_fsj"
-    echo "${notice_prefix} DERIVED-OUTPUT EXEMPTION: widening task ${task_number}'s file_scope excursion comparison with ${derived_output_prefix_count} repo-declared derived-output prefix(es): $(echo "$derived_output_prefixes_json" | jq -c '.')." >&2
-  fi
-  # Engine-written state-file allowlist (one of three Containment sites — see
-  # git-staging-scope.md's "Three Containment sites, not one"): the shared source
-  # scripts/lib/engine-written-state-paths-lib.sh defines the fixed set of paths written by the
-  # engine on behalf of EVERY task (currently specs/TODO.md, specs/state.json,
-  # specs/events.jsonl), never declarable in any one task's own file_scope,
-  # so none of them is ever a genuine excursion no matter which task reports it in
-  # modified_files. All three Containment sites now consult this same shared source rather than
-  # each hand-copying the list. Decision 2's fallback: a source/resolution failure splices the
-  # hardcoded two-literal pair instead, so a library failure reproduces today's admitted scope
-  # exactly and never narrows it. Deliberately not derived from $STATE_FILE itself: if
-  # $STATE_FILE is ever relocated, review this splice together with WORK (i)'s independent
-  # stage_paths seed below, which this allowlist does not replace.
-  engine_written_paths_json="$(engine_written_state_paths 2>/dev/null)" || engine_written_paths_json=""
-  if [ -n "$engine_written_paths_json" ] \
-     && echo "$engine_written_paths_json" | jq -e 'type == "array" and (all(.[]; type == "string"))' >/dev/null 2>&1; then
-    spliced_state_fsj=$(echo "$effective_file_scope_json" | jq -c --argjson d "$engine_written_paths_json" '. + $d' 2>/dev/null) && effective_file_scope_json="$spliced_state_fsj"
-  else
-    spliced_state_fsj=$(echo "$effective_file_scope_json" | jq -c '. + ["specs/TODO.md", "specs/state.json"]' 2>/dev/null) && effective_file_scope_json="$spliced_state_fsj"
-  fi
-  # NOTE: the `any($fs[]; . as $f | ...)` re-binding is load-bearing, not stylistic — piping `$p`
-  # into `startswith(.)` directly (`$p | startswith(.)`) rebinds `.` to `$p` itself for the
-  # argument's own evaluation (jq evaluates a builtin's argument against ITS OWN input, i.e. the
-  # value just piped in), making `startswith(.)` degenerate to `startswith($p)` — always true.
-  # Capturing the generator's value into `$f` before touching `.` sidesteps this entirely.
-  excursions_json=$(jq -c -n --argjson mf "$modified_files_json" --argjson fs "$effective_file_scope_json" \
-    '[$mf[] | select(. as $p | any($fs[]; . as $f | $p == $f or ($p | startswith($f))) | not)]' 2>/dev/null) || excursions_json='[]'
-  excursion_count=$(echo "$excursions_json" | jq 'length' 2>/dev/null) || excursion_count=0
-  if [ "$excursion_count" -gt 0 ]; then
-    echo "${notice_prefix} ADVISORY: task ${task_number} reported modified_files outside its declared file_scope: $(echo "$excursions_json" | jq -c '.')  (detection only — no gate, no exit-code, no verdict effect)." >&2
-  fi
-fi
+# The comparison itself lives in compute_scope_excursions, defined above WORK (f), because the
+# leftover-work commit ahead of the completion write needs its verdict too. This unconditional
+# top-level call is the one WORK (i) depends on.
+compute_scope_excursions
 
 # ─── WORK (e): user_decision relay ──────────────────────────────────────────────────────────────
 # Relayed VERBATIM from whichever source carries it, never re-derived or rephrased. Checked here
@@ -1880,7 +1991,7 @@ elif [ "$have_outcome" = "true" ]; then
       # exactly the "in-flight, retry the same phase next cycle" case "defer" already means
       # everywhere else in this script -- reusing that vocabulary rather than inventing a new
       # verdict value.
-      if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ] && [ "$milestone_landing_refusal" != "true" ]; then
+      if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ] && [ "$landing_refusal" != "true" ]; then
         verdict="ok"
       else
         verdict="defer"
@@ -2116,7 +2227,7 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
       # Mirrors the verdict computation above: a deploy-pending refusal OR a derived-staleness
       # refusal must not produce a "complete implementation" commit message for a task that is
       # still, in fact, implementing.
-      if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ] && [ "$milestone_landing_refusal" != "true" ]; then
+      if [ "$implemented_gate_passed" = "true" ] && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ] && [ "$landing_refusal" != "true" ]; then
         commit_message="task ${task_number}: complete implementation"
       else
         commit_message="task ${task_number}: orchestration paused (cycle ${cycle_count})"
@@ -2252,7 +2363,7 @@ if is_live && [ "$research_gate_failed" != "true" ]; then
   case "$commit_rc" in
     2|3|4|5)
       if [ "$dispatch_status" = "implemented" ] && [ "$implemented_gate_passed" = "true" ] \
-         && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ] && [ "$milestone_landing_refusal" != "true" ]; then
+         && [ "$deploy_pending_refusal" != "true" ] && [ "$derived_staleness_refusal" != "true" ] && [ "$landing_refusal" != "true" ]; then
         # This same dispatch window's per-cycle commit for a just-completed implement dispatch
         # demonstrably did not land — the honest outcome is `partial` with a named blocker, never
         # `completed`. Call shape mirrors the `partial)` status-write arm above verbatim; empty
@@ -2614,7 +2725,7 @@ if [ "$user_decision_json" != "null" ]; then
     --argjson stranded_suspected "$stranded_suspected" \
     --arg note "$commit_attribution_note" \
     --argjson derived_staleness "$derived_staleness_refusal" \
-    --argjson milestone_landing "$milestone_landing_refusal" \
+    --argjson milestone_landing "$landing_refusal" \
     '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
       phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
       user_decision: $user_decision, halt: $halt, infra_exempt_cycle: $infra_exempt_cycle,
@@ -2638,7 +2749,7 @@ else
     --argjson stranded_suspected "$stranded_suspected" \
     --arg note "$commit_attribution_note" \
     --argjson derived_staleness "$derived_staleness_refusal" \
-    --argjson milestone_landing "$milestone_landing_refusal" \
+    --argjson milestone_landing "$landing_refusal" \
     '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
       phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
       halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal,

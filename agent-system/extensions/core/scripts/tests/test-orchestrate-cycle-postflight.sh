@@ -105,7 +105,7 @@ setup_sandbox() {
            phase-heading-patterns.sh status-vocabulary.sh task-lookup-lib.sh deploy-freshness-lib.sh \
            derived-artifact-probe-lib.sh engine-written-state-paths-lib.sh \
            return-meta-status-vocabulary.sh runtime-file-patterns.sh return-meta-artifacts-lib.sh \
-           project-number-inuse.sh specs-ignore-lib.sh; do
+           project-number-inuse.sh specs-ignore-lib.sh batch-admission-lib.sh; do
     cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
   done
   cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
@@ -1699,7 +1699,9 @@ if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.verdict')" = "ok" ]; then
 else
   common_test_fail "fail-open: expected exit 0 / verdict=ok, got exit=$LAST_EXIT verdict=$(jqf '.verdict')"
 fi
-committed_712=$(cd "$WORKDIR" && git show --name-only --format= HEAD)
+# The reported source file is carried by the leftover-work commit, which precedes the
+# completion commit.
+committed_712=$(cd "$WORKDIR" && git log -1 --name-only --format= --grep='land leftover implementation work')
 if echo "$committed_712" | grep -qx "some/source/path/file.sh"; then
   common_test_pass "fail-open: the reported modified_files entry was committed unfiltered (empty file_scope means no excursion filtering runs at all)"
 else
@@ -4591,7 +4593,7 @@ if grep -q "EXCURSION DROPPED.*compA/certs/digest.txt" <<< "$LAST_STDERR"; then
 else
   common_test_pass "case 990 (evidence-shaped): compA's regenerated certificate was NOT dropped as an excursion"
 fi
-if git -C "$WORKDIR" show --stat -1 2>/dev/null | grep -q "components/compA/certs/digest.txt"; then
+if git -C "$WORKDIR" log -1 --stat --grep='land leftover implementation work' 2>/dev/null | grep -q "components/compA/certs/digest.txt"; then
   common_test_pass "case 990 (evidence-shaped): compA's regenerated certificate IS present in the resulting commit"
 else
   common_test_fail "case 990 (evidence-shaped): expected components/compA/certs/digest.txt in the resulting commit"
@@ -4628,7 +4630,7 @@ if [ "$(jqf '.persisted_status')" = "completed" ]; then
 else
   common_test_fail "case 991 (all pass): expected persisted_status='completed', got: $LAST_STDOUT"
 fi
-if git -C "$WORKDIR" show --stat -1 2>/dev/null | grep -q "components/compA/certs/digest.txt"; then
+if git -C "$WORKDIR" log -1 --stat --grep='land leftover implementation work' 2>/dev/null | grep -q "components/compA/certs/digest.txt"; then
   common_test_pass "case 991 (all pass): compA's regenerated certificate IS present in the resulting commit"
 else
   common_test_fail "case 991 (all pass): expected components/compA/certs/digest.txt in the resulting commit"
@@ -4932,6 +4934,144 @@ if git -C "$WORKDIR" for-each-ref "refs/heads/milestone/" | grep -q .; then
 else
   common_test_pass "milestone landing (C): no refs/heads/milestone/* ref was created"
 fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Leftover work is committed ahead of the completion status write
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# task-ref-ok:begin category 6-adjacent: the "993"/"994"/"995" fixture numbers below, and the
+# literal commit subjects asserted against, are synthetic fixture data, not real task references.
+LEFTOVER_SUBJECT='land leftover implementation work'
+
+# write_leftover_fixture <num> <return_meta_status>: one tracked source file edited and left
+# uncommitted, reported in modified_files beside the task's own summary; empty file_scope so no
+# excursion filtering runs. Requires setup_sandbox to have already run.
+write_leftover_fixture() {
+  local num="$1" meta_status="$2"
+  mkdir -p "$WORKDIR/specs/${num}_candidate/summaries" "$WORKDIR/src"
+  echo v1 > "$WORKDIR/src/work.sh"
+  ( cd "$WORKDIR" && git add src/work.sh )
+  write_state <<EOF
+{"next_project_number": 2, "active_projects": [{"project_number": ${num}, "project_name": "candidate", "task_type": "general", "status": "implementing", "description": "candidate #${num}", "dependencies": [], "file_scope": []}]}
+EOF
+  echo "## Tasks" > "$WORKDIR/specs/TODO.md"
+  commit_fixture
+  echo v2 > "$WORKDIR/src/work.sh"
+  echo x > "$WORKDIR/specs/${num}_candidate/summaries/01_x-summary.md"
+  cat > "$WORKDIR/specs/${num}_candidate/.orchestrator-loop-guard" <<'EOF'
+{"dispatch_seq_counter": 1, "detected_defects": [], "infra_failures": 0}
+EOF
+  cat > "$WORKDIR/specs/${num}_candidate/.return-meta.json" <<EOF
+{"status":"${meta_status}","dispatch_seq":1,"artifacts":[{"type":"summary","path":"specs/${num}_candidate/summaries/01_x-summary.md","summary":"y"}],"metadata":{"phases_completed":1,"phases_total":1},"modified_files":["specs/${num}_candidate/summaries/01_x-summary.md","src/work.sh"]}
+EOF
+}
+run_leftover_sut() {
+  local num="$1"
+  run_sut "specs/${num}_candidate" --session "sess_${num}" --phase implement --task-type general \
+    --agent general-implementation-agent --loop-guard-file "specs/${num}_candidate/.orchestrator-loop-guard" \
+    --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" "$num"
+}
+
+common_test_info "Case 993: the leftover-work commit precedes the status write; the completion commit follows it"
+setup_sandbox
+write_leftover_fixture 993 implemented
+base_993=$(git -C "$WORKDIR" rev-parse HEAD)
+run_leftover_sut 993
+subjects_993=$(git -C "$WORKDIR" log --reverse --format=%s "${base_993}..HEAD")
+if [ "$subjects_993" = "task 993: ${LEFTOVER_SUBJECT}"$'\n'"task 993: complete implementation" ]; then
+  common_test_pass "case 993: exactly two commits, the leftover-work commit first and the completion commit second"
+else
+  common_test_fail "case 993: expected the leftover-work commit then the completion commit, got: $subjects_993 ($LAST_STDERR)"
+fi
+leftover_993=$(git -C "$WORKDIR" log -1 --format=%H --grep="$LEFTOVER_SUBJECT")
+if [ "$(git -C "$WORKDIR" show --name-only --format= "$leftover_993")" = "src/work.sh" ]; then
+  common_test_pass "case 993: the leftover-work commit carries the reported source file and nothing under the state directory"
+else
+  common_test_fail "case 993: unexpected leftover-work commit contents: $(git -C "$WORKDIR" show --name-only --format= "$leftover_993")"
+fi
+if [ "$(git -C "$WORKDIR" show "${leftover_993}:specs/state.json" | jq -r '.active_projects[0].status')" = "implementing" ] \
+   && [ "$(git -C "$WORKDIR" show "HEAD:specs/state.json" | jq -r '.active_projects[0].status')" = "completed" ]; then
+  common_test_pass "case 993: the state file reads implementing at the leftover-work commit and completed at the completion commit"
+else
+  common_test_fail "case 993: the status write did not fall between the two commits"
+fi
+if git -C "$WORKDIR" show --name-only --format= HEAD | grep -qx "specs/993_candidate/summaries/01_x-summary.md"; then
+  common_test_pass "case 993: the task's own summary stays in the completion commit"
+else
+  common_test_fail "case 993: expected the summary in the completion commit, got: $(git -C "$WORKDIR" show --name-only --format= HEAD)"
+fi
+if [ "$(jqf '.verdict')" = "ok" ] && [ "$(jqf '.persisted_status')" = "completed" ] \
+   && [ -z "$(git -C "$WORKDIR" status --porcelain -- src/work.sh)" ]; then
+  common_test_pass "case 993: verdict ok, persisted_status completed, and the source file is clean against HEAD"
+else
+  common_test_fail "case 993: expected verdict=ok/persisted_status=completed with a clean source file, got: $LAST_STDOUT"
+fi
+if [ "$(echo "$LAST_STDOUT" | grep -c .)" = "1" ] && echo "$LAST_STDOUT" | jq -e . >/dev/null 2>&1; then
+  common_test_pass "case 993: stdout is still exactly one JSON line"
+else
+  common_test_fail "case 993: stdout is not one JSON line: $LAST_STDOUT"
+fi
+
+common_test_info "Case 994: a leftover-work commit that does not land refuses the status write"
+setup_sandbox
+write_leftover_fixture 994 implemented
+mv "$WORKDIR/.claude/scripts/git-commit-scoped.sh" "$WORKDIR/.claude/scripts/git-commit-scoped.real.sh"
+cat > "$WORKDIR/.claude/scripts/git-commit-scoped.sh" <<'EOF'
+#!/usr/bin/env bash
+# Refuses the leftover-work commit as a contended path (exit 3); every other commit is real.
+case "$*" in
+  *"land leftover implementation work"*) exit 3 ;;
+esac
+exec bash "$(dirname "${BASH_SOURCE[0]}")/git-commit-scoped.real.sh" "$@"
+EOF
+chmod +x "$WORKDIR/.claude/scripts/git-commit-scoped.sh"
+run_leftover_sut 994
+if [ "$(jqf '.verdict')" = "defer" ] && [ "$(jqf '.persisted_status')" = "implementing" ] \
+   && [ "$(jq -r '.active_projects[0].status' "$STATE_FILE")" = "implementing" ]; then
+  common_test_pass "case 994: verdict defer and the task is left implementing -- the completion write never happened"
+else
+  common_test_fail "case 994: expected verdict=defer/persisted_status=implementing, got: $LAST_STDOUT ($LAST_STDERR)"
+fi
+if git -C "$WORKDIR" log --format=%s | grep -q "complete implementation"; then
+  common_test_fail "case 994: a 'complete implementation' commit was made for a task whose work did not land"
+else
+  common_test_pass "case 994: no commit claims completion"
+fi
+if grep -q "ERROR: git-commit-scoped.sh exited 3 for task 994's leftover-work commit" <<< "$LAST_STDERR"; then
+  common_test_pass "case 994: the refusal names the task, the exit code and the leftover-work commit"
+else
+  common_test_fail "case 994: expected a named leftover-work ERROR on stderr; got: $LAST_STDERR"
+fi
+if git -C "$WORKDIR" log -1 --format=%s | grep -q "^task 994: orchestration paused"; then
+  common_test_pass "case 994: the per-cycle commit that follows reads 'orchestration paused', not completion"
+else
+  common_test_fail "case 994: expected an 'orchestration paused' per-cycle commit, got: $(git -C "$WORKDIR" log -1 --format=%s)"
+fi
+if jq -e 'select(.class == "landing verification")' "$WORKDIR/specs/994_candidate/issues.jsonl" >/dev/null 2>&1; then
+  common_test_pass "case 994: one issue-log entry of class 'landing verification' records the refusal"
+else
+  common_test_fail "case 994: expected a 'landing verification' issue-log entry"
+fi
+
+common_test_info "Case 995: a dispatch that is not 'implemented' makes the one per-cycle commit it always made"
+setup_sandbox
+write_leftover_fixture 995 partial
+cat > "$WORKDIR/specs/995_candidate/.orchestrator-handoff.json" <<'EOF'
+{"status": "partial", "dispatch_seq": 1, "summary": "in progress", "artifacts": [], "phases_completed": 0, "phases_total": 1, "blockers": []}
+EOF
+base_995=$(git -C "$WORKDIR" rev-parse HEAD)
+run_leftover_sut 995
+subjects_995=$(git -C "$WORKDIR" log --format=%s "${base_995}..HEAD")
+if [ "$(echo "$subjects_995" | grep -c .)" = "1" ] && ! echo "$subjects_995" | grep -q "$LEFTOVER_SUBJECT"; then
+  common_test_pass "case 995: exactly one commit and no leftover-work commit for a partial dispatch"
+else
+  common_test_fail "case 995: expected one per-cycle commit and no leftover-work commit, got: $subjects_995 ($LAST_STDERR)"
+fi
+if git -C "$WORKDIR" show --name-only --format= HEAD | grep -qx "src/work.sh"; then
+  common_test_pass "case 995: the per-cycle commit still carries the reported source file"
+else
+  common_test_fail "case 995: expected src/work.sh in the per-cycle commit, got: $(git -C "$WORKDIR" show --name-only --format= HEAD)"
+fi
+# task-ref-ok:end
 
 # ─── Source-store invariants: unconditional, never skipped -- the whole point of each check is
 # that it must run every time, so a check that could silently no-op would provide no guarantee.

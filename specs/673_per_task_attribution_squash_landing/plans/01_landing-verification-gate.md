@@ -291,32 +291,32 @@ calls the script yet.
 
 ---
 
-### Phase 3: Commit leftovers before the completion write [NOT STARTED]
+### Phase 3: Commit leftovers before the completion write [COMPLETED]
 
 **Goal**: In the cycle postflight, a just-implemented task's leftover work is committed before
 the landing check and the status write, and the completion commit follows the write. The
 milestone calls stay where they are.
 
 **Tasks**:
-- [ ] Read WORK (f) through WORK (j) of `scripts/orchestrate-cycle-postflight.sh` and its header
+- [x] Read WORK (f) through WORK (j) of `scripts/orchestrate-cycle-postflight.sh` and its header
       before editing; the header documents an order dependence between WORK (h) and WORK (i)
-      that must survive.
-- [ ] For an `implemented` dispatch whose phase-accounting gate passed, move the staging and
+      that must survive. *(completed)*
+- [x] For an `implemented` dispatch whose phase-accounting gate passed, move the staging and
       commit of leftover `modified_files` (excursion drop-and-warn unchanged) ahead of the
       milestone landing block and the status write. Its subject follows the task's
-      `task {N}:` convention so V2 attributes it; it never reads "complete implementation".
-- [ ] Keep the existing per-cycle commit after the status write as the completion commit. It now
+      `task {N}:` convention so V2 attributes it; it never reads "complete implementation". *(deviation: altered — leftover commit carries only non-state-territory paths with a pending change; proposed_file_scope is merged first; the refusal variable is renamed landing_refusal in this phase, the verdict key stays)*
+- [x] Keep the existing per-cycle commit after the status write as the completion commit. It now
       carries the state files the write changed, with the subject
-      `task {N}: complete implementation` only under the same conjunction as today.
-- [ ] Re-derive the exit-code handling for both commits against
+      `task {N}: complete implementation` only under the same conjunction as today. *(completed)*
+- [x] Re-derive the exit-code handling for both commits against
       `context/standards/git-staging-scope.md`'s table. A failure of the leftover commit with
       exit 2, 3, 4 or 5 now happens before the write: the write is skipped and the task stays
       in flight, where today it is written and then demoted. Exit 1, 6, 8 and 9 keep their
-      current meaning. Every other dispatch status keeps today's single commit, byte for byte.
-- [ ] Extend `test-orchestrate-cycle-postflight.sh`: the leftover commit precedes the status
+      current meaning. Every other dispatch status keeps today's single commit, byte for byte. *(completed)*
+- [x] Extend `test-orchestrate-cycle-postflight.sh`: the leftover commit precedes the status
       write (assert by commit order and by the state file's content at the leftover commit); a
       leftover-commit failure leaves the status un-completed; a non-`implemented` dispatch
-      produces the same commits as before.
+      produces the same commits as before. *(completed)*
 
 **Timing**: 2 hours
 

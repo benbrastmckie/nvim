@@ -1,0 +1,57 @@
+{
+  "phase": 3,
+  "phase_name": "Commit leftovers before the completion write",
+  "started_at": "2026-11-23T12:09:22Z",
+  "last_updated": "2026-11-23T12:09:22Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Read WORK (f) through (j) and the header; preserve the (h)/(i) order dependence",
+      "status": "done",
+      "files_touched": []
+    },
+    {
+      "id": 2,
+      "description": "Leftover-work commit ahead of the landing check and the status write; completion commit after the write",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Exit-code handling for both commits",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Suite: ordering, failure, and non-implemented cases",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+      ]
+    }
+  ],
+  "current_objective": null,
+  "approaches_tried": [
+    {
+      "approach": "Pass reported modified_files to git-commit-scoped.sh and rely on its own containment drop",
+      "result": "failed",
+      "reason": "An all-excursion leftover set would exit 4 there and refuse a completion that today proceeds; the upstream excursion filter has to run first."
+    }
+  ],
+  "deviations": [
+    {
+      "task_id": "3.2",
+      "description": "Move the staging and commit of leftover modified_files ahead of the milestone landing block and the status write",
+      "type": "altered",
+      "reason": "The leftover commit carries only reported paths outside the state territory that still differ from HEAD; task-directory and state files stay in the per-cycle commit. proposed_file_scope is merged into file_scope before the leftover commit, because the completion write that used to merge it now comes later. WORK (h) became the function compute_scope_excursions, called at its old site and by the leftover commit. The refusal variable was renamed to landing_refusal here rather than in Phase 6; the verdict key milestone_landing is unchanged.",
+      "annotation": "*(deviation: altered — leftover commit carries only non-state-territory paths with a pending change; proposed_file_scope is merged first; the refusal variable is renamed landing_refusal in this phase, the verdict key stays)*"
+    }
+  ],
+  "verification": "test-orchestrate-cycle-postflight.sh 364/364 (cases 993-995 new); the 16 suites referencing the script, run from the source store: 16 passed, 0 failed; grep -c milestone-ref-land.sh unchanged at 6; stdout single-JSON-line asserted in case 993. verify-touched.sh was not used: it runs deployed copies, which do not carry this phase until the redeploy.",
+  "handoff_count": 0
+}
