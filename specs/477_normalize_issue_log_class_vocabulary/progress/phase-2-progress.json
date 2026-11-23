@@ -1,0 +1,24 @@
+{
+  "phase": 2,
+  "phase_name": "Grouping-time normalization and the alias-table mechanism",
+  "started_at": "2026-11-23T00:00:00Z",
+  "last_updated": "2026-11-23T00:40:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-read aggregator script before editing (sibling territory check)", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add fold_class/canon_class jq defs", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 3, "description": "Add CLASS_ALIASES_JSON empty literal with comment", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 4, "description": "Change group_by(.class) to canonical grouping", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 5, "description": "Most-frequent-raw representative with lexicographic tie-break", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 6, "description": "Add class_variants to each proposal", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 7, "description": "Re-key unknown_classes post-fold, no drop path", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 8, "description": "HARD CONSTRAINT comment at fold definition", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 9, "description": "Reciprocal SHARED FRAGILITY comment naming issue-record.sh twin", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]},
+    {"id": 10, "description": "Update usage header + sed range for usage()", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-conclusion-aggregate.sh"]}
+  ],
+  "current_objective": 10,
+  "approaches_tried": [
+    {"approach": "Original comment wording used an apostrophe (issue-record.sh's) inside the single-quoted bash jq script, which closed the bash string early and caused a syntax error.", "result": "failed", "reason": "apostrophe inside single-quoted bash heredoc-less literal terminates the quote"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

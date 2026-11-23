@@ -18,6 +18,19 @@
 #       `"open"`, so it enters classification rather than being silently dropped; the output's
 #       `implicit_open_count` field reports how many candidates arrived that way, informational
 #       only. Emits one JSON document on stdout.
+#
+#       Grouping is CASE- AND SEPARATOR-FOLDED, never a rewrite: `COVERAGE_GAP` and `coverage-gap`
+#       fold to the same key and group into one proposal, but the stored `class` value in any
+#       issues.jsonl is never modified -- the fold is a read-time transformation inside this one
+#       jq filter. Each proposal's `class` is the group's most-frequent raw spelling
+#       (lexicographically-smallest-wins tie-break), and `class_variants` lists every distinct raw
+#       spelling seen in that group, so a merge is auditable from the output alone. A curated,
+#       hand-maintained alias table (shipped empty; see `CLASS_ALIASES_JSON` below) additionally
+#       maps one folded spelling to another folded spelling for a semantic merge a human has
+#       separately decided is correct -- adding an entry there is a one-line data edit, never a
+#       structural change. `unknown_classes` is tallied post-fold, keyed the same way, so spelling
+#       noise never inflates it and a canonicalize-to-unrecognized entry is never dropped from
+#       either `proposals` or `unknown_classes`.
 #   orchestrate-conclusion-aggregate.sh --record-approval --session SID --channel a|b|c|edges --answer yes|no
 #       Writes one independent record for that key into this invocation's approval ledger.
 #   orchestrate-conclusion-aggregate.sh --check-approval --session SID --channel a|b|c|edges
@@ -61,7 +74,7 @@
 set -euo pipefail
 
 usage() {
-  sed -n '2,46p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,59p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 # --- Paths (sourced BEFORE argument parsing, including --help, so the deploy-root-guard refusal
@@ -205,6 +218,15 @@ if [ "$MODE" = "aggregate" ]; then
     "scope excursion"
   ]'
 
+  # Semantic alias table (shipped empty; context/formats/issue-log.md's "Promoting a Class"
+  # subsection documents the promotion path). Shape: {"<folded-variant>": "<folded-canonical>"},
+  # consulted by canon_class() below, AFTER the mechanical case/separator fold and BEFORE
+  # grouping. Adding an entry here is the one-line data edit a future, better-evidenced semantic
+  # merge requires -- see the plan's Decision D1 for why no automatic semantic merge (e.g.
+  # collapsing the five "scope" variants, or "design-gap" into "design-ambiguity") is applied
+  # here today. Zero entries, deliberately.
+  CLASS_ALIASES_JSON='{}'
+
   entries_tmp="$(mktemp)"
   no_contrib_tmp="$(mktemp)"
   trap 'rm -f "$entries_tmp" "$no_contrib_tmp"' EXIT
@@ -259,7 +281,20 @@ if [ "$MODE" = "aggregate" ]; then
   jq -s \
     --argjson no_contribution_tasks "$no_contrib_json" \
     --argjson seed_classes "$SEED_CLASSES_JSON" \
+    --argjson class_aliases "$CLASS_ALIASES_JSON" \
     '
+    # fold_class/canon_class are the grouping-time-only normalization twin of the bash
+    # issue_fold_class() helper inside issue-record.sh. SHARED FRAGILITY: a change to either
+    # requires a matching change to the other. HARD CONSTRAINT: this is a read-time
+    # transformation inside this one jq filter -- no issues.jsonl line is ever rewritten by it;
+    # the stored class value in any fixture or real issues.jsonl is byte-identical before and
+    # after this script runs.
+    def fold_class: ascii_downcase | gsub("[-_\\s]+"; " ") | gsub("^ +| +$"; "");
+    def canon_class($aliases): fold_class as $f | ($aliases[$f] // $f);
+    # Deterministic representative selection for a folded group: the most frequent raw spelling,
+    # tie-broken by the lexicographically smallest spelling (stable double sort_by).
+    def most_frequent_raw($raws): $raws | group_by(.) | map({v: .[0], c: length}) | sort_by(.v) | sort_by(-.c) | .[0].v;
+
     def sev_rank: if . == "blocking" then 3 elif . == "costly" then 2 elif . == "minor" then 1 else 0 end;
     def sev_label: if . == 3 then "blocking" elif . == 2 then "costly" elif . == 1 then "minor" else "none" end;
 
@@ -269,14 +304,17 @@ if [ "$MODE" = "aggregate" ]; then
         | map(select(.kind != "win" and ((.resolution // "open") as $r | $r == "open" or $r == "worked_around")))
       ) as $candidates
     | ($candidates | map(select(.resolution == null)) | length) as $implicit_open_count
+    | ($seed_classes | map(canon_class($class_aliases))) as $canon_seeds
     | (
         $candidates
-        | group_by(.class)
+        | group_by(.class | canon_class($class_aliases))
         | map(
             . as $group
             | ($group | map({task: .task, entry_id: .entry_id})) as $all_citations
+            | ($group | map(.class)) as $raw_classes
             | {
-                class: $group[0].class,
+                class: most_frequent_raw($raw_classes),
+                class_variants: ($raw_classes | unique),
                 citations: ($all_citations[0:10]),
                 citations_remainder: (if ($all_citations | length) > 10 then (($all_citations | length) - 10) else 0 end),
                 severity_max: ($group | map(.severity | sev_rank) | max | sev_label),
@@ -286,9 +324,13 @@ if [ "$MODE" = "aggregate" ]; then
       ) as $proposals
     | (
         $entries
-        | map(select(([.class] - $seed_classes) | length > 0))
-        | group_by(.class)
-        | map({class: .[0].class, count: length})
+        | map(select( ((.class | canon_class($class_aliases)) as $c | ($canon_seeds | index($c))) == null ))
+        | group_by(.class | canon_class($class_aliases))
+        | map(
+            . as $group
+            | ($group | map(.class)) as $raw_classes
+            | {class: most_frequent_raw($raw_classes), count: ($group | length), variants: ($raw_classes | unique)}
+          )
       ) as $unknown_classes
     | {
         proposals: $proposals,

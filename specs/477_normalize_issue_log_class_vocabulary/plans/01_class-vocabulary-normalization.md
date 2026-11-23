@@ -301,37 +301,37 @@ site must be handled explicitly rather than silently skipped.
 
 ---
 
-### Phase 2: Grouping-time normalization and the alias-table mechanism [NOT STARTED]
+### Phase 2: Grouping-time normalization and the alias-table mechanism [COMPLETED]
 
 **Goal**: `COVERAGE_GAP` and `coverage-gap` group into one proposal, the merge is visible in the
 output, the unknown-class tally reads post-fold, and no write path is touched.
 
 **Tasks**:
 
-- [ ] Re-read `scripts/orchestrate-conclusion-aggregate.sh` immediately before editing (sibling
+- [x] Re-read `scripts/orchestrate-conclusion-aggregate.sh` immediately before editing (sibling
       task 567 is live in this tree, with a disjoint scope, but the re-read is the territory
-      contract's requirement regardless).
-- [ ] Add, inside the existing `jq -s` filter: `def fold_class: ascii_downcase | gsub("[-_\\s]+"; " ") | gsub("^ +| +$"; "");`
-      and `def canon_class($aliases): fold_class as $f | ($aliases[$f] // $f);`
-- [ ] Add a bash `CLASS_ALIASES_JSON='{}'` literal with a comment giving its shape
+      contract's requirement regardless). *(completed)*
+- [x] Add, inside the existing `jq -s` filter: `def fold_class: ascii_downcase | gsub("[-_\\s]+"; " ") | gsub("^ +| +$"; "");`
+      and `def canon_class($aliases): fold_class as $f | ($aliases[$f] // $f);` *(completed)*
+- [x] Add a bash `CLASS_ALIASES_JSON='{}'` literal with a comment giving its shape
       (`{"<folded-variant>": "<folded-canonical>"}`), stating that it is deliberately empty, and
-      naming what adding an entry means; pass it in with `--argjson class_aliases`.
-- [ ] Change `group_by(.class)` to group on the canonical value.
-- [ ] Set each proposal's `class` to the **most frequent raw spelling** within its group, with the
+      naming what adding an entry means; pass it in with `--argjson class_aliases`. *(completed)*
+- [x] Change `group_by(.class)` to group on the canonical value. *(completed)*
+- [x] Set each proposal's `class` to the **most frequent raw spelling** within its group, with the
       lexicographically smallest raw spelling as the deterministic tie-break. Never a synthesized
-      or folded string.
-- [ ] Add `class_variants` to each proposal: the sorted unique set of raw spellings in the group,
-      so a merge is auditable from the output alone.
-- [ ] Re-key `unknown_classes`: compare each entry's canonical value against the canonical values
+      or folded string. *(completed)*
+- [x] Add `class_variants` to each proposal: the sorted unique set of raw spellings in the group,
+      so a merge is auditable from the output alone. *(completed)*
+- [x] Re-key `unknown_classes`: compare each entry's canonical value against the canonical values
       of the seed list, group by canonical value, keep `class` as a raw representative chosen the
       same way, and add the same `variants` set. Add no drop path of any kind — an entry that
-      canonicalizes to something unrecognized must still produce a row.
-- [ ] Add an explicit comment at the fold definition recording the HARD CONSTRAINT: this is a
-      read-time transformation inside one jq filter; no `issues.jsonl` is ever rewritten.
-- [ ] Add the reciprocal SHARED FRAGILITY comment naming `issue-record.sh`'s bash twin (Phase 4).
-- [ ] Update the script's usage header to document the grouping-time normalization and the alias
+      canonicalizes to something unrecognized must still produce a row. *(completed)*
+- [x] Add an explicit comment at the fold definition recording the HARD CONSTRAINT: this is a
+      read-time transformation inside one jq filter; no `issues.jsonl` is ever rewritten. *(completed)*
+- [x] Add the reciprocal SHARED FRAGILITY comment naming `issue-record.sh`'s bash twin (Phase 4). *(completed)*
+- [x] Update the script's usage header to document the grouping-time normalization and the alias
       table, then re-check and update `usage()`'s `sed -n '2,46p'` line range to match the header's
-      new extent.
+      new extent. *(completed)*
 
 **Timing**: 1.5 hours
 
