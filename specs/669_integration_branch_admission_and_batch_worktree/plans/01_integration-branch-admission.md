@@ -1,7 +1,7 @@
 # Implementation Plan: Task #669
 
 - **Task**: 669 - Add integration-branch admission and the isolation declaration
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 6.5 hours
 - **Dependencies**: 517, 541, 667, 668 (all completed)
 - **Research Inputs**: specs/669_integration_branch_admission_and_batch_worktree/reports/01_integration-branch-admission.md
