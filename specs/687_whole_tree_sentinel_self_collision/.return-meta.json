@@ -1,10 +1,103 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 27,
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/687_whole_tree_sentinel_self_collision/summaries/01_concrete-path-precedence-sentinel-summary.md",
+      "summary": "All 3 plan phases completed: pinned the declaration-order-dependent concrete-path masking with a new fixture, fixed it via an additive scopes_overlap_first_preferring_concrete precedence wrapper, and redeployed the core extension to clear its reported staleness."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "Closed the order-dependent masking where a real-path collision between two __WHOLE_TREE__-sentinel-declaring tasks was relabeled as a bare whole-tree claim: added an additive scopes_overlap_first_preferring_concrete def to file-scope-overlap.sh, switched orchestrate-batch-admit.sh's one per-peer overlap call to it, pinned both declaration orderings with a new WHOLE-TREE-REAL-PATH-PRECEDENCE fixture (16/16 passing), and redeployed the core extension so the deployed tree matches the source store byte-for-byte."
+  },
+  "modified_files": [
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-batch-admit.sh",
+    "agent-system/extensions/core/scripts/lib/file-scope-overlap.sh",
+    "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh",
+    ".claude-extensions.json"
+  ],
+  "memory_candidates": [
+    {
+      "content": "In jq, `EXPR as $x | BODY` produces ZERO outputs entirely (BODY never runs) when EXPR is a generator that yields zero values (`empty`), not `null`. To implement a fallback-on-no-match composed from a predicate that returns `empty` on no hit (e.g. scopes_overlap_first), convert its result to `null` first via `[EXPR] | first`, then branch on `!= null` before falling back to a second call. This is the same idiom self_mod_match already uses in file-scope-overlap.sh for the identical reason, and is the correct general pattern whenever one jq def must compose a fallback around another def whose convention is `first // empty`.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/687_whole_tree_sentinel_self_collision/summaries/01_concrete-path-precedence-sentinel-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "jq",
+        "as-binding",
+        "empty-vs-null",
+        "fallback-composition",
+        "scopes_overlap_first",
+        "file-scope-overlap"
+      ]
+    },
+    {
+      "content": "orchestrate-batch-admit.sh (and other scripts guarded by deploy-root-guard.sh) refuses to run directly from the agent-system source-store path with a loud ERROR demanding a deployed .claude/scripts/ or .opencode/scripts/ tree (two levels under root). To probe such a script ad hoc outside its existing test suite, copy the production script plus its lib/ dependencies (file-scope-overlap.sh, common.sh, task-lookup-lib.sh, deploy-root-guard.sh, task-lock.sh) into a throwaway temp root shaped like a deployed tree, mirroring the pattern test-orchestrate-batch-admit.sh itself already uses, rather than trying to invoke the source-store copy directly.",
+      "category": "PATTERN",
+      "source_artifact": "specs/687_whole_tree_sentinel_self_collision/summaries/01_concrete-path-precedence-sentinel-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "deploy-root-guard",
+        "orchestrate-batch-admit",
+        "isolated-temp-root",
+        "ad-hoc-probe",
+        "deployed-tree"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "jq as-binding over an empty-producing generator",
+      "value": "EXPR as $x | BODY in jq produces zero outputs entirely (never runs BODY) when EXPR is a generator yielding zero values (empty), not null. To compose a fallback around a predicate that returns empty on no-hit, convert its result to null first via [EXPR] | first, then branch on != null -- the idiom self_mod_match already uses in file-scope-overlap.sh for the same reason.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/lib/file-scope-overlap.sh"
+    },
+    {
+      "subject": "orchestrate-batch-admit.sh deploy-root-guard refusal",
+      "value": "orchestrate-batch-admit.sh refuses to run directly from the agent-system source-store path, erroring via deploy-root-guard.sh's requirement for a deployed .claude/scripts/ or .opencode/scripts/ tree two levels under root. Ad hoc probing requires copying the production script plus its lib dependencies into an isolated temp root shaped like a deployed tree.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/deploy-root-guard.sh"
+    },
+    {
+      "subject": "sentinel-vs-sentinel masking fix locus in orchestrate-batch-admit.sh",
+      "value": "In orchestrate-batch-admit.sh's $overlaps comprehension, the SAME per-peer scopes_overlap_first call site decides both which peer collides ($hit) and which defer_reason label fires downstream (file_scope_collision vs whole_tree_claim, decided purely by testing $hit.ov_path == whole_tree_claim_sentinel). Giving a concrete-path overlap precedence over the reserved sentinel therefore required swapping only that one call site to a precedence-wrapper def; the downstream branching logic needed zero changes.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/orchestrate-batch-admit.sh:1019"
+    },
+    {
+      "subject": "deploy-headless.sh .claude-extensions.json diff size",
+      "value": "Running deploy-headless.sh regenerates .claude-extensions.json's per-extension merged_sections/data_skeleton_files bookkeeping in full even when only two scripts under one extension changed, producing a large line-level diff (~1800 changed lines in one observed run) that is expected and not evidence anything else was touched. Verify a redeploy by diffing the actual deployed scripts against the source store, not by eyeballing the registry diff.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.8,
+      "source_loc": ".claude-extensions.json"
+    },
+    {
+      "subject": "shared .claude-extensions.json regeneration target under concurrent dispatch",
+      "value": "In a multi-agent /orchestrate batch, .claude-extensions.json is a shared regeneration target: it can already show as modified in git status before a given dispatch's own deploy runs, from a sibling dispatch's concurrent deploy. git-commit-phase.sh's Containment Self-Check (scoped to the task's own declared file_scope) is what keeps a phase commit from either silently dropping a legitimately-declared shared file or sweeping in unrelated foreign changes to files outside file_scope.",
+      "predicate": "finding is",
+      "ko_type": "insight",
+      "confidence": 0.75,
+      "source_loc": "specs/687_whole_tree_sentinel_self_collision"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795463295_b6ad0f",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
+    "phases_completed": 3,
+    "phases_total": 3
   }
 }

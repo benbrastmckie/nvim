@@ -1,25 +1,15 @@
 {
-  "status": "planned",
-  "dispatch_seq": 26,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 27,
+  "phases_completed": 3,
   "phases_total": 3,
-  "summary": "Premise re-validation contradicted the dispatch's central claim: WHOLE-TREE-CODISPATCH is GREEN today (suite reports 15 passed, 0 failed) and orchestrate-batch-admit.sh's whole_tree_claim relabeling branch already emits every field the fixture asserts, so the named deliverable is already met. A direct probe found the one measurably-unmet requirement to be the dispatch's own REGRESSION clause: when two sentinel-declaring tasks also collide on a concrete path, the concrete collision is masked as a bare whole_tree_claim whenever the sentinel precedes the shared path in the declared file_scope array, which also silently removes the --allow-scope-collision override that file_scope_collision carries. The plan closes exactly that order-dependent masking in 3 phases (RED fixture, additive concrete-preferring def plus a one-line call-site swap, redeploy) with no decision, direction, posture, or forbidden document touched.",
+  "summary": "Closed the order-dependent masking where a real-path collision between two __WHOLE_TREE__-sentinel-declaring tasks was relabeled as a bare whole-tree claim. Phase 1 pinned both declaration orderings with a new WHOLE-TREE-REAL-PATH-PRECEDENCE fixture (RED on sub-case B as predicted). Phase 2 added scopes_overlap_first_preferring_concrete to file-scope-overlap.sh and switched orchestrate-batch-admit.sh's one per-peer overlap call to it, taking the fixture green (16/16) with every pre-existing assertion untouched, the roadmap lint suite green (15/15), and the touched-path-narrowed battery green (24/24). Phase 3 redeployed the core extension (deploy-headless.sh, RESULT=landed_verify_clean), confirmed the deployed scripts are byte-identical to the source store, and re-ran both suites green against the deployed tree.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/687_whole_tree_sentinel_self_collision/plans/01_concrete-path-precedence-sentinel.md",
-      "summary": "3-phase plan giving a concrete-path overlap precedence over the reserved __WHOLE_TREE__ sentinel when the same task pair overlaps on both, pinned by a new order-independence fixture; re-scoped after the dispatch's stated deliverable was measured already met."
+      "type": "summary",
+      "path": "specs/687_whole_tree_sentinel_self_collision/summaries/01_concrete-path-precedence-sentinel-summary.md",
+      "summary": "All 3 plan phases completed: pinned the declaration-order-dependent concrete-path masking with a new fixture, fixed it via an additive scopes_overlap_first_preferring_concrete precedence wrapper, and redeployed the core extension to clear its reported staleness."
     }
-  ],
-  "user_decision": {
-    "question": "This record's stated deliverable (making WHOLE-TREE-CODISPATCH go green) is already satisfied in live code -- the fixture passes today and the whole_tree_claim branch already emits all asserted fields. The only measurably-unmet requirement is the description's own REGRESSION clause (a concrete-path collision between two sentinel-declaring tasks is masked as a bare whole-tree claim, order-dependently). Proceed against that clause, or close the record as already-satisfied?",
-    "options": [
-      "Proceed with the plan as written -- close the order-dependent concrete-path masking, the one requirement in the description that live state does not already meet",
-      "Close the record as already-satisfied with no code change, and file the masking as its own record"
-    ],
-    "recommended": "Proceed with the plan as written -- close the order-dependent concrete-path masking, the one requirement in the description that live state does not already meet",
-    "blocking": false,
-    "obligation": "The description's REGRESSION clause: two sentinel-declaring tasks whose concrete paths genuinely intersect must still report the concrete overlapping path rather than being relabelled as a bare whole-tree claim. Checkable against the plan's Phase 2 verification: both declaration orderings of a sentinel-plus-shared-concrete-path pair must yield defer_reason file_scope_collision with overlapping_path naming the concrete path and no claim_sentinel field, while WHOLE-TREE-CODISPATCH stays green with its assertions byte-identical."
-  }
+  ]
 }

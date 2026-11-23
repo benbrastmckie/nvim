@@ -1,7 +1,7 @@
 # Implementation Plan: Task #687
 
 - **Task**: 687 - Whole-tree sentinel self-collision
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 1.75 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/687_whole_tree_sentinel_self_collision/reports/01_sentinel-self-collision-fix.md
