@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # batch-admission-lib.sh - Single home of orchestration admission: the readers for the two
 # repo-level declarations `integration_branch` and `worktree_isolation`, the admission predicate
-# that decides whether an /orchestrate invocation may proceed, and the writer of the one batch
-# record an admitted invocation leaves under the primary tree's state directory. See
+# that decides whether an /orchestrate invocation may proceed, the writer of the one batch
+# record an admitted invocation leaves under the primary tree's state directory, and the two
+# record accessors the landing mechanism uses (lookup by member task, proof append). See
 # context/standards/repo-level-declarations.md's "The integration_branch Declaration" and "The
 # worktree_isolation Declaration" sections for the schema, and
 # context/standards/orchestrator-runtime-files.md's "The batch record" section for the record.
@@ -48,6 +49,19 @@
 #       On `admit` it writes the batch record when none exists for the session and <dry_run> is
 #       not `true`. One named advisory goes to standard error when `integration_branch` is
 #       undeclared, on the first cycle only. Nothing is ever written to standard output.
+#
+#   batch_admission_record_for_task <specs_dir> <task_number> [all]
+#       Prints the path of the batch record whose `task_numbers` lists <task_number>, the one
+#       with the newest `admitted_at` when several do; with a third argument `all`, every such
+#       record, newest first, one per line. Prints nothing when no record lists the task, the
+#       batch directory is absent, or `jq` is missing. Unparseable records are passed over.
+#
+#   batch_admission_append_landing_proof <record_path> <proof_json>
+#       Appends one element to the record's `landing_proofs` array, tmp-file-then-rename, and
+#       prints `appended`. Prints nothing, with one named warning on standard error, when the
+#       record is missing or unparseable, <proof_json> is not a JSON object, or the write
+#       fails; the record is then byte-identical. Serialization is the caller's: the landing
+#       mechanism calls this under the specs/.commit-lock mutex.
 #
 # Predicate order (each step only reached when the one before it did not decide):
 #   1. `worktree_isolation` is neither absent nor `off`          -> refuse, isolation_unimplemented
@@ -141,6 +155,55 @@ batch_admission_record_path() {
   else
     echo "${specs_dir}/.orchestration/batch/${session_id}.json"
   fi
+  return 0
+}
+
+batch_admission_record_for_task() {
+  local specs_dir="${1:-}" task_number="${2:-}" mode="${3:-}" dir file listing
+  [ -n "$specs_dir" ] || return 0
+  case "$task_number" in ''|*[!0-9]*) return 0 ;; esac
+  command -v jq >/dev/null 2>&1 || return 0
+  dir="$(dirname "$(batch_admission_record_path "$specs_dir" "x")")"
+  [ -d "$dir" ] || return 0
+  listing="$(
+    for file in "$dir"/*.json; do
+      [ -f "$file" ] || continue
+      jq -r --argjson n "$task_number" --arg f "$file" '
+        if (type == "object") and ((.task_numbers // []) | type == "array")
+           and ((.task_numbers // []) | index($n) != null)
+        then "\(.admitted_at // "")\t\($f)" else empty end' "$file" 2>/dev/null || true
+    done | LC_ALL=C sort -r | cut -f2-
+  )"
+  [ -n "$listing" ] || return 0
+  if [ "$mode" = "all" ]; then
+    printf '%s\n' "$listing"
+  else
+    printf '%s\n' "$listing" | head -n 1
+  fi
+  return 0
+}
+
+batch_admission_append_landing_proof() {
+  local record="${1:-}" proof="${2:-}" tmp
+  command -v jq >/dev/null 2>&1 || return 0
+  if [ -z "$record" ] || [ ! -f "$record" ]; then
+    echo "WARNING: batch-admission-lib.sh: no batch record at '${record}'; no landing proof appended." >&2
+    return 0
+  fi
+  if ! printf '%s' "$proof" | jq -e 'type == "object"' >/dev/null 2>&1; then
+    echo "WARNING: batch-admission-lib.sh: landing proof is not a JSON object; nothing appended to ${record}." >&2
+    return 0
+  fi
+  tmp="${record}.tmp.$$"
+  if jq --argjson proof "$proof" \
+      'if type == "object" then .landing_proofs = ((.landing_proofs // []) + [$proof])
+       else error("not an object") end' "$record" > "$tmp" 2>/dev/null \
+     && mv -f "$tmp" "$record" 2>/dev/null; then
+    echo "appended"
+    return 0
+  fi
+  rm -f "$tmp" 2>/dev/null || true
+  echo "WARNING: batch-admission-lib.sh: could not append a landing proof to ${record}." >&2
   return 0
 }
 

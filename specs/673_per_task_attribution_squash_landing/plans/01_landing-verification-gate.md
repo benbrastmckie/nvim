@@ -204,17 +204,17 @@ the three clarifications this plan makes.
 
 ---
 
-### Phase 2: The landing predicate, the proof writer and their suite [NOT STARTED]
+### Phase 2: The landing predicate, the proof writer and their suite [IN PROGRESS]
 
 **Goal**: `task-landing-verify.sh` implements V1 to V5 and the proof, exercised by a suite whose
 negative fixtures were each observed failing before the check that catches them existed. Nothing
 calls the script yet.
 
 **Tasks**:
-- [ ] Add to `scripts/lib/batch-admission-lib.sh`, without changing any existing function's
+- [x] Add to `scripts/lib/batch-admission-lib.sh`, without changing any existing function's
       signature: a lookup returning the batch record that lists a task (by `task_numbers`
       membership, newest `admitted_at`), and an appender that adds one element to
-      `landing_proofs` by tmp-file-then-rename. Extend `test-batch-admission-lib.sh` for both.
+      `landing_proofs` by tmp-file-then-rename. Extend `test-batch-admission-lib.sh` for both. *(completed)*
 - [ ] Write `scripts/task-landing-verify.sh`. Arguments: task number, `--session SID`,
       `--check` (read-only, never writes a proof), optional `--modified-files-from FILE`
       (a `.return-meta.json`), and `--print-body` (emit the commit-body block from an existing

@@ -1,0 +1,16 @@
+{
+  "phase": 2,
+  "phase_name": "The landing predicate, the proof writer and their suite",
+  "started_at": "2026-11-23T11:20:06Z",
+  "last_updated": "2026-11-23T11:20:06Z",
+  "objectives": [
+    {"id": 1, "description": "Record lookup by task and proof appender in batch-admission-lib.sh, with suite cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/batch-admission-lib.sh", "agent-system/extensions/core/scripts/tests/test-batch-admission-lib.sh"]},
+    {"id": 2, "description": "task-landing-verify.sh (V1-V5, proof, idempotence, inconclusive cases) and its suite with observed-failing negatives", "status": "in_progress", "files_touched": []},
+    {"id": 3, "description": "Register script and suite in manifest.json and suite-classification.data", "status": "not_started", "files_touched": []},
+    {"id": 4, "description": "Document landing_proofs element shape in orchestrator-runtime-files.md", "status": "not_started", "files_touched": []}
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

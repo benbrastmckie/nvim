@@ -438,6 +438,72 @@ else
 fi
 
 # =====================================================================
+# Record lookup by member task, and the landing-proof appender
+# =====================================================================
+echo ""
+echo "--- record lookup by member task, landing-proof append ---"
+root="$(mkrepo)"
+specs="$root/specs"
+[ -z "$(batch_admission_record_for_task "$specs" 7)" ] \
+  && common_test_pass "lookup prints nothing when no batch directory exists" \
+  || common_test_fail "lookup prints nothing when no batch directory exists"
+mkdir -p "$specs/.orchestration/batch"
+write_rec() { # <session> <admitted_at> <task_numbers_json>
+  jq -n --arg s "$1" --arg a "$2" --argjson t "$3" \
+    '{schema:1,session_id:$s,task_numbers:$t,admitted_at:$a,landing_proofs:[]}' \
+    > "$(record_of "$root" "$1")"
+}
+write_rec sess_old "2026-01-01T00:00:00Z" '[7,8]'
+write_rec sess_new "2026-02-01T00:00:00Z" '[7]'
+write_rec sess_other "2026-03-01T00:00:00Z" '[70,17]'
+echo 'not json' > "$specs/.orchestration/batch/sess_broken.json"
+[ "$(batch_admission_record_for_task "$specs" 7)" = "$(record_of "$root" sess_new)" ] \
+  && common_test_pass "lookup returns the newest record listing the task" \
+  || common_test_fail "lookup returns the newest record listing the task" "  got $(batch_admission_record_for_task "$specs" 7)"
+[ "$(batch_admission_record_for_task "$specs" 8)" = "$(record_of "$root" sess_old)" ] \
+  && common_test_pass "lookup matches by membership, not by position" \
+  || common_test_fail "lookup matches by membership, not by position"
+want_all="$(record_of "$root" sess_new)"$'\n'"$(record_of "$root" sess_old)"
+[ "$(batch_admission_record_for_task "$specs" 7 all)" = "$want_all" ] \
+  && common_test_pass "lookup 'all' lists every record for the task, newest first" \
+  || common_test_fail "lookup 'all' lists every record for the task, newest first"
+[ -z "$(batch_admission_record_for_task "$specs" 9)" ] \
+  && common_test_pass "lookup prints nothing for a task no record lists (7 does not match 70 or 17)" \
+  || common_test_fail "lookup prints nothing for a task no record lists"
+[ -z "$(batch_admission_record_for_task "$specs" "7x")" ] \
+  && common_test_pass "lookup prints nothing for a non-numeric task" \
+  || common_test_fail "lookup prints nothing for a non-numeric task"
+
+rec="$(record_of "$root" sess_new)"
+out="$(batch_admission_append_landing_proof "$rec" '{"task_number":7,"end_commit":"abc"}' 2>"$ERR")"
+if [ "$out" = "appended" ] && [ "$(jq -c '.landing_proofs' "$rec")" = '[{"task_number":7,"end_commit":"abc"}]' ] \
+   && [ "$(jq -r '.session_id' "$rec")" = "sess_new" ]; then
+  common_test_pass "append adds one proof and keeps the record's other fields"
+else
+  common_test_fail "append adds one proof and keeps the record's other fields" "  out='$out' $(cat "$rec")"
+fi
+batch_admission_append_landing_proof "$rec" '{"task_number":7,"end_commit":"def"}' >/dev/null 2>&1
+[ "$(jq -r '[.landing_proofs[].end_commit] | join(",")' "$rec")" = "abc,def" ] \
+  && common_test_pass "append is append-only and ordered" \
+  || common_test_fail "append is append-only and ordered"
+before="$(cksum < "$rec")"
+out="$(batch_admission_append_landing_proof "$rec" '[1,2]' 2>"$ERR")"
+if [ -z "$out" ] && [ "$(cksum < "$rec")" = "$before" ] && grep -q 'not a JSON object' "$ERR"; then
+  common_test_pass "append refuses a non-object proof with a named warning, record byte-identical"
+else
+  common_test_fail "append refuses a non-object proof with a named warning, record byte-identical"
+fi
+out="$(batch_admission_append_landing_proof "$specs/.orchestration/batch/absent.json" '{}' 2>"$ERR")"
+if [ -z "$out" ] && grep -q 'no batch record' "$ERR"; then
+  common_test_pass "append to a missing record warns and writes nothing"
+else
+  common_test_fail "append to a missing record warns and writes nothing"
+fi
+[ -z "$(find "$specs/.orchestration/batch" -name '*.tmp.*')" ] \
+  && common_test_pass "append leaves no temporary file behind" \
+  || common_test_fail "append leaves no temporary file behind"
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""
