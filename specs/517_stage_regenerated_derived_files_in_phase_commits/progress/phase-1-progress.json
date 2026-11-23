@@ -1,0 +1,17 @@
+{
+  "phase": 1,
+  "phase_name": "State the Obligation in the Commit Protocol",
+  "started_at": "2026-11-22T17:10:00Z",
+  "last_updated": "2026-11-22T17:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Re-confirm checkpoint-commit.md Step 1 shape", "status": "done", "files_touched": []},
+    {"id": 2, "description": "Add obligation paragraph to checkpoint-commit.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/checkpoints/checkpoint-commit.md"]},
+    {"id": 3, "description": "Add pointer line to general-implementation-agent.md Phase Checkpoint Protocol step 5", "status": "done", "files_touched": ["agent-system/extensions/core/agents/general-implementation-agent.md"]},
+    {"id": 4, "description": "index-entries.json line_count reconciliation for checkpoint-commit.md", "status": "done", "files_touched": [], "note": "No edit in this phase; checkpoint-commit.md line count moved from 119 to 130, deferred to Phase 4's deploy-headless.sh auto-repair per plan. index-entries.json not touched by this phase's edit."}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "handoff_count": 0,
+  "deviations": [],
+  "verification_notes": "verify-touched.sh over the three declared paths: 98 passed, 0 failed, 10 suites selected, 1 owed (index-entries.json, a data file with no mapped suite -- OWED-NOT-PAID, non-blocking per Batch Gate Deferral directive). lint-agent-contracts.sh: 394 passed, 12 pre-existing warnings, 0 failed. lint-anchor-pointer-collapse.sh: 0 violations. grep for check-module-invariants/typst-sync-check in both edited files: zero hits. Diff read-through confirms both edits are pure markdown prose. Full gate set deferred to the batch-level stage per this dispatch's Batch Gate Deferral section."
+}

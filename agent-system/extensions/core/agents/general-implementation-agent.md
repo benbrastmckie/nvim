@@ -1026,7 +1026,10 @@ For each phase in the implementation plan:
 5. **Git commit** with message: `task {N} phase {P}: {phase_name}`, using targeted, work-scoped
    staging — never stage the entire working tree — via `.claude/scripts/git-commit-phase.sh`,
    the mechanized phase-commit wrapper. See `@.claude/context/standards/git-staging-scope.md` for
-   the full commit-scope contract. The wrapper derives the stage list from the union of every
+   the full commit-scope contract. Before this step, see
+   `@.claude/context/checkpoints/checkpoint-commit.md`'s `### 1. Determine Targeted Scope` for
+   the obligation to re-run and stage a declared derived-output surface this phase staled. The
+   wrapper derives the stage list from the union of every
    objective's `files_touched` in this phase's progress file (the same paths summed into
    `modified_files` at Stage 6-modified-files) plus the fixed task-directory scope, and performs
    the Phase-Commit Containment Self-Check (Stage 4B-iii above) mechanically — there is no

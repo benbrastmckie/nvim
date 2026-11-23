@@ -48,7 +48,7 @@ next_project_number: 684
     └─ 581 [NOT STARTED] — Extract one shared AskUserQuestion option renderer and adopt...
 502 [NOT STARTED] — Require research reports to enumerate generated doc-sync surfaces
 506 [PLANNED] — Stop the bounded-waiter hook refusing a write whose prose...
-517 [PLANNED] — Require a phase commit to regenerate and stage the derived...
+517 [IMPLEMENTING] — Require a phase commit to regenerate and stage the derived...
 519 [NOT STARTED] — Infra exempt transport error dispatch deaths
 520 [NOT STARTED] — Emit deploy ordering in implement dispatch body
 521 [NOT STARTED] — Fix the agent glob to match the -implement-agent.md variant
@@ -6321,7 +6321,7 @@ The observed run lost nothing recoverable -- phases 1-3 were committed and green
 ---
 
 ### 517. Require a phase commit to regenerate and stage the derived surfaces it stales
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: core-agent-system
 - **Dependencies**: Task 455, Task 515

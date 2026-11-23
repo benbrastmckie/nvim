@@ -1,7 +1,7 @@
 # Implementation Plan: Task #517
 
 - **Task**: 517 - Stage regenerated derived files in phase commits
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 4.5 hours
 - **Dependencies**: #455 (`preflag_module_wiring_invariant_failures`) — semantic predecessor,
   completed; its landed finding is incorporated, not re-litigated. #513 — no edge (confirmed: no
@@ -138,15 +138,16 @@ Phases within the same wave can execute in parallel. This plan is a strict seque
 are deliberately not parallel, and Phase 4 regenerates the deployed tree from the finished source
 store.
 
-### Phase 1: State the Obligation in the Commit Protocol [NOT STARTED]
+### Phase 1: State the Obligation in the Commit Protocol [COMPLETED]
 
 **Goal**: The standing rule exists, once, generically, at the site where the staging decision is
 made, with a pointer (never a copy) from the implementing agent's own phase-commit prose.
 
 **Tasks**:
-- [ ] Re-read `context/checkpoints/checkpoint-commit.md`'s `### 1. Determine Targeted Scope` to
+- [x] Re-read `context/checkpoints/checkpoint-commit.md`'s `### 1. Determine Targeted Scope` to
       confirm the Step-1 shape named in the Premise Re-Validation above is still what is on disk.
-- [ ] Add a short paragraph (3-5 sentences, no more) to that section stating the obligation:
+      *(completed: confirmed unchanged)*
+- [x] Add a short paragraph (3-5 sentences, no more) to that section stating the obligation:
       before this phase's scope is computed, check whether any path this phase touched is, or
       stales, a surface this repository has **declared** — a `derived_artifact_probes` entry's
       `derived_output_dirs` prefix, or a `coupled_generated_surfaces` entry whose `trigger_glob`
@@ -155,19 +156,21 @@ made, with a pointer (never a copy) from the implementing agent's own phase-comm
       Name only the two `.claude-extensions.json` keys and point at
       `context/standards/repo-level-declarations.md` for their schema. Say explicitly that a
       declaration-free repository owes nothing here.
-- [ ] State, in the same paragraph, the one asymmetry a reader needs: the staging-admission
+- [x] State, in the same paragraph, the one asymmetry a reader needs: the staging-admission
       widening in Phase 2 covers `derived_artifact_probes.derived_output_dirs` only, so a surface
       declared **solely** through `coupled_generated_surfaces` still needs its generated path
       inside the task's own declared `file_scope` to be stageable.
-- [ ] Read `scripts/lint/lint-agent-contracts.sh`'s live `*_FRAGMENT` variables before touching
+- [x] Read `scripts/lint/lint-agent-contracts.sh`'s live `*_FRAGMENT` variables before touching
       `agents/general-implementation-agent.md`, per the gate-required-restatement exclusion class
-      in `context/standards/anchor-pointer-convention.md`.
-- [ ] Add exactly one line to `agents/general-implementation-agent.md`'s Phase Checkpoint
+      in `context/standards/anchor-pointer-convention.md`. *(completed: confirmed the pointer
+      edit site, step 5, is not among the four `*_FRAGMENT` enforcers)*
+- [x] Add exactly one line to `agents/general-implementation-agent.md`'s Phase Checkpoint
       Protocol step 5, pointing at `checkpoints/checkpoint-commit.md` by path and by the exact new
       heading/section text that owns the obligation. A pointer, never a restatement — this is the
       collapsed-block shape `anchor-pointer-convention.md` requires. Nothing is removed.
-- [ ] Confirm no task-number reference and no record-versioning language ("previously", "no
-      longer", "v2", a supersession note) entered either file.
+- [x] Confirm no task-number reference and no record-versioning language ("previously", "no
+      longer", "v2", a supersession note) entered either file. *(completed: grep confirmed zero
+      hits)*
 
 **Timing**: 0.75 hours
 

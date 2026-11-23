@@ -1,31 +1,17 @@
 {
-  "status": "planned",
-  "artifacts": [
-    {
-      "type": "plan",
-      "path": "specs/517_stage_regenerated_derived_files_in_phase_commits/plans/01_stage-regenerated-derived-files.md",
-      "summary": "4-phase plan (4.5h) landing the (c) ruling -- a declaration-only obligation in checkpoint-commit.md with a pointer from general-implementation-agent.md, a Site-2 derived-output-prefix splice so a regenerated declared surface is actually stageable, a non-blocking derived_probe_run_all backstop at the phase-commit site, and a deploy/verify close."
-    }
-  ],
-  "memory_candidates": [
-    {
-      "content": "The derived-output-prefix widening (derived_probe_output_prefixes from scripts/lib/derived-artifact-probe-lib.sh) is spliced at Containment Site 1 (orchestrate-cycle-postflight.sh WORK h) and Site 3 (git-commit-scoped.sh's V10), but NOT at Site 2 (git-commit-phase.sh's Phase-Commit Containment Self-Check). git-staging-scope.md's own 'Three Containment sites, not one' section already records why Site 3 cannot compensate: Site 2 removes an uncontained path from its own files_touched array, and therefore from the pathspec, before git-commit-scoped.sh is ever invoked, and V10 tests only the pathspec entries it is handed. The same asymmetry is already documented there for the own-task-directory member. Consequence: a declared derived-output path regenerated mid-phase is dropped at Site 2 with a 'scope excursion' row unless it is independently inside the task's declared file_scope -- so any prose obligation to re-run a generator and stage its output within the phase is undone at the commit unless Site 2 gains the same splice.",
-      "category": "PATTERN",
-      "source_artifact": "specs/517_stage_regenerated_derived_files_in_phase_commits/plans/01_stage-regenerated-derived-files.md",
-      "confidence": 0.9,
-      "suggested_keywords": ["containment-sites", "git-commit-phase", "derived_probe_output_prefixes", "file_scope", "phase-commit-staging"]
-    }
+  "status": "in_progress",
+  "dispatch_seq": 6,
+  "modified_files": [
+    "agent-system/extensions/core/context/checkpoints/checkpoint-commit.md",
+    "agent-system/extensions/core/agents/general-implementation-agent.md"
   ],
   "metadata": {
-    "session_id": "sess_1795391913_f9e5cc_517",
-    "agent_type": "planner-agent",
-    "delegation_depth": 1,
-    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "session_id": "sess_1795391913_f9e5cc",
+    "agent_type": "general-implementation-agent",
+    "delegation_depth": 2,
+    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
     "task_number": 517,
-    "phase_count": 4,
-    "estimated_hours": 4.5,
-    "dependency_waves": 4
-  },
-  "next_steps": "Run /orchestrate 517 to execute the plan",
-  "dispatch_seq": 5
+    "phases_completed": 1,
+    "phases_total": 4
+  }
 }

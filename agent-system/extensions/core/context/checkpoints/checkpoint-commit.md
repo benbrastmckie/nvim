@@ -28,6 +28,17 @@ fi
 
 Staging itself happens as part of Step 3's scoped-commit call — do not run a separate `git add`.
 
+Before this phase's scope is computed, check whether any path this phase touched is, or stales, a
+surface this repository has **declared**: a `derived_artifact_probes` entry's
+`derived_output_dirs` prefix, or a `coupled_generated_surfaces` entry whose `trigger_glob` the
+touched path matches (schemas in `context/standards/repo-level-declarations.md`). If so, re-run
+that surface's own sanctioned, build-free regeneration entry point now and let its output be
+among the paths this same commit stages. A surface declared solely through
+`coupled_generated_surfaces` still needs its generated path inside the task's own declared
+`file_scope` to be stageable, since the derived-output-prefix widening covers only
+`derived_artifact_probes.derived_output_dirs`. A repository declaring neither key owes nothing
+here.
+
 ### 2. Compose Commit Message Body
 
 Format depends on operation. `git-commit-scoped.sh` appends the trailing `Session: {session_id}`
