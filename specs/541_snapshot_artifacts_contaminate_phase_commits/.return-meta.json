@@ -1,0 +1,32 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795400947_bb64cf_541",
+  "dispatch_seq": 10,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/541_snapshot_artifacts_contaminate_phase_commits/reports/01_snapshot-artifact-containment-fix.md",
+      "summary": "Confirms both halves of the snapshot-artifact containment defect, settles the dispatch's mode-sharing question (the --no-revert untracked-backup enumeration is not shared with default/--branch modes), answers the three ordered questions (scope the enumeration to file_scope with a TASK_DIR-only non-silent fallback; relocate untracked-backup-* to the ephemeral/gitignored class while keeping working-progress-*.patch tracked-eligible; add :(exclude) entries to git-commit-phase.sh's fixed stage_paths seed as belt-and-suspenders, load-bearing for the patch specifically), and flags an out-of-file_scope sibling hazard in orchestrate-cycle-postflight.sh."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "git-snapshot.sh's --no-revert mode's untracked-file backup-to-directory step (UNTRACKED_BACKUP) is NOT shared with default/--branch mode's untracked-file handling: those two modes capture untracked files via `git stash push -u` instead, never writing a directory copy under the task directory. Any future change to the --no-revert untracked enumeration is therefore safely isolated from the other two modes' behavior -- worth checking directly in the script rather than assuming shared code paths in a script with three mode branches.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/541_snapshot_artifacts_contaminate_phase_commits/reports/01_snapshot-artifact-containment-fix.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-snapshot.sh", "no-revert", "untracked-backup", "mode-sharing", "git stash push -u"]
+    },
+    {
+      "content": "git-commit-phase.sh and orchestrate-cycle-postflight.sh both independently construct an identical fixed stage_paths=(\"${task_dir}/\" ...) directory-pathspec seed for their respective commit surfaces (mid-dispatch phase commit vs. whole-task completion commit). A fix landed in one is not automatically present in the other -- confirmed by direct grep of both files during task 541 research. A future containment-related fix to one of these two seeds should check the other for the same gap before assuming it is isolated.",
+      "category": "PATTERN",
+      "source_artifact": "specs/541_snapshot_artifacts_contaminate_phase_commits/reports/01_snapshot-artifact-containment-fix.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["stage_paths", "git-commit-phase.sh", "orchestrate-cycle-postflight.sh", "containment", "directory pathspec"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 541 to create implementation plan"
+}
