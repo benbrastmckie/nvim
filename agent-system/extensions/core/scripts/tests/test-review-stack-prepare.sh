@@ -481,6 +481,190 @@ repo="$(stack_fixture_repo)"
 run_rsp "$repo" cut --dry-run --tasks 901
 assert_refusal "cut: --tasks with no --stack-id refuses with stack_id_required, exit 41" 41 stack_id_required
 rm -rf "$repo"
+
+# =====================================================================
+# Phase 3: cut builds the review commits and the manifest; show prints them.
+# =====================================================================
+
+# manifest_entry_field <repo> <stack_id> <ordinal> <field> -- stdout.
+manifest_entry_field() {
+  local repo="$1" sid="$2" ord="$3" field="$4"
+  jq -r --argjson n "$ord" --arg f "$field" \
+    "(.entries[] | select(.ordinal == \$n) | .[\$f])" \
+    "$repo/specs/.orchestration/reviews/${sid}/manifest.json" 2>/dev/null
+}
+
+# --- cut builds three branches, each parented on the one below, each diff disjoint ---------
+repo="$(stack_fixture_repo)"
+stack_write_batch "$repo" "981,982,983"
+stack_add_task_entry "$repo" 981 "task-981-base" "" "2020-01-01T00:00:00Z"
+stack_commit "$repo" 981 "f981.txt" "base work"
+stack_add_proof "$repo" 981 "$LAST_SHA" "f981.txt"
+stack_add_task_entry "$repo" 982 "task-982-mid" "981" "2020-01-02T00:00:00Z"
+stack_commit "$repo" 982 "f982.txt" "mid work"
+stack_add_proof "$repo" 982 "$LAST_SHA" "f982.txt"
+stack_add_task_entry "$repo" 983 "task-983-top" "982" "2020-01-03T00:00:00Z"
+stack_commit "$repo" 983 "f983.txt" "top work"
+stack_add_proof "$repo" 983 "$LAST_SHA" "f983.txt"
+before_head="$(git -C "$repo" rev-parse HEAD)"
+before_status="$(git -C "$repo" status --porcelain)"
+run_rsp "$repo" cut --tasks 981,982,983 --stack-id stackP3A
+after_head="$(git -C "$repo" rev-parse HEAD)"
+after_status="$(git -C "$repo" status --porcelain)"
+b1="$(unit_field 01 branch)"
+b2="$(unit_field 02 branch)"
+b3="$(unit_field 03 branch)"
+if [ "$LAST_CODE" -eq 0 ] \
+   && [ "$(git -C "$repo" rev-parse --verify -q "refs/heads/${b1}")" = "$(git -C "$repo" rev-parse "$b1")" ] \
+   && [ "$(git -C "$repo" rev-parse "${b1}^1")" = "$(git -C "$repo" rev-parse basepoint)" ] \
+   && [ "$(git -C "$repo" rev-parse "${b2}^1")" = "$(git -C "$repo" rev-parse "$b1")" ] \
+   && [ "$(git -C "$repo" rev-parse "${b3}^1")" = "$(git -C "$repo" rev-parse "$b2")" ] \
+   && [ "$(git -C "$repo" diff --name-only basepoint.."$b1")" = "f981.txt" ] \
+   && [ "$(git -C "$repo" diff --name-only "$b1".."$b2")" = "f982.txt" ] \
+   && [ "$(git -C "$repo" diff --name-only "$b2".."$b3")" = "f983.txt" ] \
+   && [ "$before_head" = "$after_head" ] && [ "$before_status" = "$after_status" ]; then
+  common_test_pass "cut: three branches, each parented on the one below, each diff holding only its own unit's paths"
+else
+  common_test_fail "cut: three branches real build" "exit=${LAST_CODE} out=${LAST_OUT} before_head=${before_head} after_head=${after_head}"
+fi
+
+# --- the top commit differs from the integration tip only outside every unit's path set -----
+top_diff="$(git -C "$repo" diff --name-only "$b3" "$BRANCH")"
+leak="false"
+while IFS= read -r p; do
+  [ -n "$p" ] || continue
+  case "$p" in f981.txt | f982.txt | f983.txt) leak="true" ;; esac
+done <<< "$top_diff"
+if [ "$leak" = "false" ] && [ -n "$top_diff" ]; then
+  common_test_pass "cut: the top-of-stack commit differs from the integration tip only in paths outside every unit's set"
+else
+  common_test_fail "cut: top-of-stack vs integration tip diff" "top_diff=[${top_diff}] leak=${leak}"
+fi
+
+# --- the manifest and the PR bodies were written with the expected shape -------------------
+manifest_file="$repo/specs/.orchestration/reviews/stackP3A/manifest.json"
+if [ -f "$manifest_file" ] \
+   && [ "$(manifest_entry_field "$repo" stackP3A 1 branch)" = "$b1" ] \
+   && [ "$(manifest_entry_field "$repo" stackP3A 1 base)" = "basepoint" ] \
+   && [ "$(manifest_entry_field "$repo" stackP3A 1 title)" = "base work" ] \
+   && [ "$(manifest_entry_field "$repo" stackP3A 2 base)" = "$b1" ] \
+   && [ "$(manifest_entry_field "$repo" stackP3A 3 base)" = "$b2" ] \
+   && [ -f "$(manifest_entry_field "$repo" stackP3A 1 body_path)" ] \
+   && grep -q '## Relationship to other PRs' "$(manifest_entry_field "$repo" stackP3A 1 body_path)" \
+   && grep -qF "$b2" "$(manifest_entry_field "$repo" stackP3A 1 body_path)"; then
+  common_test_pass "cut: writes a manifest with chained bases/titles and a PR body per entry naming its child"
+else
+  common_test_fail "cut: manifest and body shape" "manifest=$(cat "$manifest_file" 2>/dev/null)"
+fi
+
+# --- idempotent re-cut: unchanged inputs move no ref and change no commit sha --------------
+before_refs="$(git -C "$repo" for-each-ref refs/heads | LC_ALL=C sort)"
+run_rsp "$repo" cut --tasks 981,982,983 --stack-id stackP3A
+after_refs="$(git -C "$repo" for-each-ref refs/heads | LC_ALL=C sort)"
+if [ "$LAST_CODE" -eq 0 ] && [ "$before_refs" = "$after_refs" ]; then
+  common_test_pass "cut: a re-cut with unchanged inputs is a no-op (no ref moves, no new commit)"
+else
+  common_test_fail "cut: idempotent re-cut" "before=[${before_refs}] after=[${after_refs}]"
+fi
+
+# --- show prints the manifest's branch/base/title/body_path and the literal commands -------
+run_rsp "$repo" show --stack-id stackP3A
+if [ "$LAST_CODE" -eq 0 ] \
+   && printf '%s' "$LAST_OUT" | grep -qF "branch=${b1} base=basepoint title=base work" \
+   && printf '%s' "$LAST_OUT" | grep -qF "/please push ${REMOTE_NAME} ${b1}" \
+   && printf '%s' "$LAST_OUT" | grep -qF "/merge --stack stackP3A" \
+   && printf '%s' "$LAST_OUT" | grep -qF "3 entrie(s)"; then
+  common_test_pass "show: prints each entry's branch/base/title/body_path and the literal push/merge commands"
+else
+  common_test_fail "show: printed stack" "out=${LAST_OUT}"
+fi
+rm -rf "$repo"
+
+# --- show --json emits the manifest verbatim; show with no stack id is unaffected ----------
+repo="$(stack_fixture_repo)"
+stack_write_batch "$repo" "984"
+stack_add_task_entry "$repo" 984 "task-984" "" "2020-01-01T00:00:00Z"
+stack_commit "$repo" 984 "f984.txt" "solo work"
+stack_add_proof "$repo" 984 "$LAST_SHA" "f984.txt"
+run_rsp "$repo" cut --tasks 984 --stack-id stackP3B
+run_rsp "$repo" show --stack-id stackP3B --json
+if [ "$LAST_CODE" -eq 0 ] && printf '%s' "$LAST_OUT" | jq -e '.stack_id == "stackP3B" and (.entries | length) == 1' >/dev/null 2>&1; then
+  common_test_pass "show --json: emits the manifest verbatim"
+else
+  common_test_fail "show --json" "out=${LAST_OUT}"
+fi
+run_rsp "$repo" show --dry-run --stack-id missing-stack
+assert_refusal "show: an unknown stack id refuses with manifest_missing, exit 50" 50 manifest_missing
+rm -rf "$repo"
+
+# --- record-request fills the request field, surviving an unchanged re-cut -----------------
+repo="$(stack_fixture_repo)"
+stack_write_batch "$repo" "985"
+stack_add_task_entry "$repo" 985 "task-985" "" "2020-01-01T00:00:00Z"
+stack_commit "$repo" 985 "f985.txt" "solo work"
+stack_add_proof "$repo" 985 "$LAST_SHA" "f985.txt"
+run_rsp "$repo" cut --tasks 985 --stack-id stackP3C
+run_rsp "$repo" record-request 1 https://example.invalid/pr/1 --stack-id stackP3C
+run_rsp "$repo" cut --tasks 985 --stack-id stackP3C
+if [ "$(manifest_entry_field "$repo" stackP3C 1 request)" = "https://example.invalid/pr/1" ]; then
+  common_test_pass "record-request: fills the request field, and a re-cut with an unchanged commit preserves it"
+else
+  common_test_fail "record-request" "request=$(manifest_entry_field "$repo" stackP3C 1 request)"
+fi
+rm -rf "$repo"
+
+# --- a review base past the merge base: the first cut moves the overlay and keeps a foreign
+#     line that is outside every unit's path set -------------------------------------------
+repo="$(stack_fixture_repo)"
+git -C "$repo" branch review-base-branch basepoint
+git -C "$repo" checkout -q review-base-branch
+echo foreign > "$repo/foreign.txt"
+git -C "$repo" add foreign.txt >/dev/null 2>&1
+git -C "$repo" commit -q -m "foreign work, not part of any unit"
+git -C "$repo" checkout -q "$BRANCH"
+printf '%s' '{"review_base": "review-base-branch"}' > "$repo/.claude-extensions.json"
+stack_write_batch "$repo" "986"
+stack_add_task_entry "$repo" 986 "task-986" "" "2020-01-01T00:00:00Z"
+stack_commit "$repo" 986 "f986.txt" "solo work"
+stack_add_proof "$repo" 986 "$LAST_SHA" "f986.txt"
+before_head="$(git -C "$repo" rev-parse HEAD)"
+before_status="$(git -C "$repo" status --porcelain)"
+run_rsp "$repo" cut --tasks 986 --stack-id stackMoved
+after_head="$(git -C "$repo" rev-parse HEAD)"
+after_status="$(git -C "$repo" status --porcelain)"
+moved_branch="$(unit_field 01 branch)"
+if [ "$LAST_CODE" -eq 0 ] \
+   && [ "$(git -C "$repo" rev-parse "${moved_branch}^1")" = "$(git -C "$repo" rev-parse review-base-branch)" ] \
+   && git -C "$repo" ls-tree -r "$moved_branch" --name-only | grep -qx "foreign.txt" \
+   && [ "$before_head" = "$after_head" ] && [ "$before_status" = "$after_status" ]; then
+  common_test_pass "cut: a review base past the merge base moves the overlay and keeps a foreign line"
+else
+  common_test_fail "cut: moved-base foreign line" "exit=${LAST_CODE} head_eq=$([ "$before_head" = "$after_head" ] && echo y || echo n)"
+fi
+
+# --- a branch's remote-tracking ref holding a commit the manifest does not record refuses --
+foreign_sha="$(git -C "$repo" commit-tree "$(git -C "$repo" rev-parse "${moved_branch}^{tree}")" -p "$(git -C "$repo" rev-parse "$moved_branch")" <<< "an independent push, not recorded by the manifest")"
+mkdir -p "$repo/.git/refs/remotes/${REMOTE_NAME}/$(dirname "$moved_branch")" 2>/dev/null
+git -C "$repo" update-ref "refs/remotes/${REMOTE_NAME}/${moved_branch}" "$foreign_sha"
+echo c987 > "$repo/f987.txt"
+git -C "$repo" add f987.txt >/dev/null 2>&1
+git -C "$repo" commit -q -m "task 987: more work"
+SHA987="$(git -C "$repo" rev-parse HEAD)"
+stack_write_batch "$repo" "986,987"
+stack_add_proof "$repo" 986 "$LAST_SHA" "f986.txt"
+stack_add_task_entry "$repo" 987 "task-987" "" "2020-01-02T00:00:00Z"
+stack_add_proof "$repo" 987 "$SHA987" "f987.txt"
+before_head="$(git -C "$repo" rev-parse HEAD)"
+before_status="$(git -C "$repo" status --porcelain)"
+run_rsp "$repo" cut --tasks 986,987 --stack-id stackMoved
+after_head="$(git -C "$repo" rev-parse HEAD)"
+after_status="$(git -C "$repo" status --porcelain)"
+if [ "$before_head" = "$after_head" ] && [ "$before_status" = "$after_status" ]; then
+  assert_refusal "cut: a remote-tracking ref holding a commit the manifest does not record refuses with unknown_remote_commit, exit 49" 49 unknown_remote_commit
+else
+  common_test_fail "cut: unknown-remote-commit refusal left HEAD/status changed" "head_eq=$([ "$before_head" = "$after_head" ] && echo y || echo n) status_eq=$([ "$before_status" = "$after_status" ] && echo y || echo n)"
+fi
+rm -rf "$repo"
 # task-ref-ok:end
 
 # =====================================================================
