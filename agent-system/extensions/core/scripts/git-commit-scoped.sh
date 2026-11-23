@@ -572,6 +572,28 @@ if [ -n "$contention_task_number" ] && [ -f "specs/state.json" ]; then
         [ -n "$s" ] && containment_scope_arr+=("$s")
       done < <(echo "$file_scope_json" | jq -r '.[]' 2>/dev/null)
 
+      # Deployed-tree strip (ported from git-commit-phase.sh's own Containment Self-Check, Site
+      # 2): drop every entry equal to `.claude`/`.claude/` or prefixed `.claude/` from the raw
+      # containment_scope_arr BEFORE the non-emptiness guard immediately below -- a deployed-tree
+      # path is never a legitimate file_scope member (rules/source-store-deploy-boundary.md).
+      # Strip first, then test for emptiness: this ordering is why the strip is placed outside
+      # (above) the guard rather than inside it -- a scope that strips to empty must fail open
+      # (disable this V10 check entirely) exactly like a missing/empty file_scope does today,
+      # rather than surviving into the own-task-directory / engine-written-state / derived-output
+      # widening splices below.
+      v10_scope_stripped=()
+      for v10_scope_entry in "${containment_scope_arr[@]}"; do
+        case "$v10_scope_entry" in
+          .claude|.claude/|.claude/*)
+            echo "WARN: git-commit-scoped.sh: stripped deployed-tree file_scope entry '${v10_scope_entry}': never a legitimate file_scope member (see rules/source-store-deploy-boundary.md); declare a whole-deployed-tree claim with the \`__WHOLE_TREE__\` sentinel instead" >&2
+            ;;
+          *)
+            v10_scope_stripped+=("$v10_scope_entry")
+            ;;
+        esac
+      done
+      containment_scope_arr=("${v10_scope_stripped[@]}")
+
       if [ "${#containment_scope_arr[@]}" -gt 0 ]; then
         # Widen with the task's own resolved directory. The plan path itself needs no separate
         # carve-out: it lives under the task's own directory, which this implicit member already

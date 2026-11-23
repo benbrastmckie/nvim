@@ -96,7 +96,7 @@ next_project_number: 684
 
 ### File Scope Lifecycle
 
-567 [PLANNED] — Port the deployed-tree containment strip into...
+567 [IMPLEMENTING] — Port the deployed-tree containment strip into...
 484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
   └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
     └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
@@ -111,7 +111,7 @@ next_project_number: 684
 
 ### Orchestrator
 
-477 [PLANNED] — Normalize issue-log class vocabulary and reject the...
+477 [IMPLEMENTING] — Normalize issue-log class vocabulary and reject the...
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 665 [NOT STARTED] — Record the last dispatching orchestration batch in a...
 666 [NOT STARTED] — Re-site the branch-aware orchestration batch in the authored...
@@ -3055,7 +3055,7 @@ RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-lay
 
 ### 567. Port the deployed-tree containment strip into git-commit-scoped.sh
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: None
@@ -7942,7 +7942,7 @@ An edge on validate_carried_unverified_names_a_source is declared because that t
 
 ### 477. Normalize issue-log class vocabulary and reject the aggregate's malformed repeated-flag call
 - **Effort**: medium
-- **Status**: [PLANNED]
+- **Status**: [IMPLEMENTING]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None

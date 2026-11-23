@@ -1,7 +1,7 @@
 # Implementation Plan: Task #567
 
 - **Task**: 567 - Port git-commit-phase.sh's deployed-tree containment strip into git-commit-scoped.sh's V10 resolution block
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 2 hours
 - **Dependencies**: None
 - **Research Inputs**: specs/567_port_containment_strip_to_git_commit_scoped/reports/01_port-containment-strip.md
@@ -109,31 +109,31 @@ set; no roadmap was consulted and no roadmap phases are added.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Port the deployed-tree strip into Site 3's V10 resolution [NOT STARTED]
+### Phase 1: Port the deployed-tree strip into Site 3's V10 resolution [COMPLETED]
 
 **Goal**: `git-commit-scoped.sh`'s V10 effective-scope resolution strips every deployed-tree
 `file_scope` entry before its non-emptiness guard runs, so a `.claude`-only declared scope
 resolves to an empty `containment_scope_arr` and disables the V10 check entirely.
 
 **Tasks**:
-- [ ] Re-read `agent-system/extensions/core/scripts/git-commit-scoped.sh` lines 555-580 immediately
-      before editing (a sibling task is dispatched this same cycle; see the Territory block).
-- [ ] Insert the strip between the `done < <(echo "$file_scope_json" | jq -r '.[]' 2>/dev/null)`
+- [x] Re-read `agent-system/extensions/core/scripts/git-commit-scoped.sh` lines 555-580 immediately
+      before editing (a sibling task is dispatched this same cycle; see the Territory block). *(completed)*
+- [x] Insert the strip between the `done < <(echo "$file_scope_json" | jq -r '.[]' 2>/dev/null)`
       line and the `if [ "${#containment_scope_arr[@]}" -gt 0 ]; then` guard — a `for` loop over
       `containment_scope_arr` with a `case "$entry" in .claude|.claude/|.claude/*)` arm that drops
       the entry, an `*)` arm that keeps it, and a final reassignment of `containment_scope_arr` to
-      the kept set.
-- [ ] Emit one warning per stripped entry using this script's own convention —
+      the kept set. *(completed)*
+- [x] Emit one warning per stripped entry using this script's own convention —
       `echo "WARN: git-commit-scoped.sh: stripped deployed-tree file_scope entry '<entry>': ..." >&2`
       — naming `rules/source-store-deploy-boundary.md` and the `__WHOLE_TREE__` sentinel as Site 2's
-      message does. Do **not** call `warn`; this script defines no such helper.
-- [ ] Use loop variables that do not collide with the surrounding block's names (`s`, `ewp`, `dp`,
+      message does. Do **not** call `warn`; this script defines no such helper. *(completed)*
+- [x] Use loop variables that do not collide with the surrounding block's names (`s`, `ewp`, `dp`,
       `task_dir_entry`, `entry`); `entry` is already used by the later containment loop at line 632,
-      so pick distinct, locally-scoped names.
-- [ ] Add no `issue-record.sh` call — warn only, for parity with Site 2.
-- [ ] Add a short comment above the strip stating the ordering invariant (strip, then test for
-      emptiness) and naming Site 2 as the source of the ported mechanism.
-- [ ] Run `bash -n agent-system/extensions/core/scripts/git-commit-scoped.sh`.
+      so pick distinct, locally-scoped names. *(completed)*
+- [x] Add no `issue-record.sh` call — warn only, for parity with Site 2. *(completed)*
+- [x] Add a short comment above the strip stating the ordering invariant (strip, then test for
+      emptiness) and naming Site 2 as the source of the ported mechanism. *(completed)*
+- [x] Run `bash -n agent-system/extensions/core/scripts/git-commit-scoped.sh`. *(completed)*
 
 **Timing**: 0.5 hours
 
