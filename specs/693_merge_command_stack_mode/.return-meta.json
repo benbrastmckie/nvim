@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795472390_63c292_693",
+  "dispatch_seq": 3,
+  "task_number": 693,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/693_merge_command_stack_mode/reports/01_merge-command-stack-mode.md",
+      "summary": "Research for commands/merge.md --stack/--only/--retarget mode: confirms file_scope excludes the duplicated Phase 4 (restack) paragraph, documents the manifest JSON schema, shows the platform refusal and push-grant revocation are already discharged by existing calls, and flags that skill-git-workflow/SKILL.md needs no edit for this deliverable."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "agent-system/extensions/core/commands/merge.md's existing STEP 4 Cancel handler already revokes the prompt-minted push grant via 'bash .claude/scripts/git-push-granted.sh --revoke' (not by sourcing scripts/lib/push-grant-lib.sh directly). Any new mode of /merge that needs to revoke a grant without pushing should reuse this exact call rather than re-deriving a lower-level path.",
+      "category": "PATTERN",
+      "source_artifact": "specs/693_merge_command_stack_mode/reports/01_merge-command-stack-mode.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["merge.md", "push-grant", "git-push-granted.sh", "revoke", "pr-prohibition"]
+    },
+    {
+      "content": "review-stack-prepare.sh's documented RESOLUTION phase (integration branch -> review base PD1 -> remote -> platform PD9) runs before EVERY subcommand body, including 'show'. A single 'show --stack-id NAME --json' call therefore discharges both manifest-reading and platform-refusal in one step for any caller -- no separate platform check needs to be hand-rolled by a caller.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/693_merge_command_stack_mode/reports/01_merge-command-stack-mode.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["review-stack-prepare.sh", "manifest", "platform-resolution", "PD9", "show --json"]
+    },
+    {
+      "content": "review-stack-prepare.sh's manifest entries[] array is already written in final bottom-up stack order by rsp_cut_plan (ordinal increments per unit in final order); a consumer need not re-sort it. The manifest's 'ordinal' field is a bare JSON integer, while the zero-padded 'NN' a user types (e.g. for a --only NN flag) appears only in branch/body_path strings (%02d-formatted) -- comparing user input to ordinal requires stripping leading zeros first, not a literal string match.",
+      "category": "PATTERN",
+      "source_artifact": "specs/693_merge_command_stack_mode/reports/01_merge-command-stack-mode.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["manifest.json", "ordinal", "zero-padding", "stack-mode", "review-stack-prepare.sh"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 693 to create implementation plan"
+}

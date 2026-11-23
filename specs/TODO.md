@@ -117,7 +117,7 @@ next_project_number: 695
   └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 692 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
-693 [RESEARCHING] — SOURCE STORE IS THE EDIT TARGET:...
+693 [RESEARCHED] — SOURCE STORE IS THE EDIT TARGET:...
   └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
@@ -210,10 +210,11 @@ VERIFY BY: the three doc surfaces naming stack mode consistently, `deploy-headle
 ---
 
 ### 693. Merge command stack mode
-- **Status**: [RESEARCHING]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
+- **Research**: [693_merge_command_stack_mode/reports/01_merge-command-stack-mode.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
