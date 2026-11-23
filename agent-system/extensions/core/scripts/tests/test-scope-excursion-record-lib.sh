@@ -34,15 +34,19 @@ common_test_declare_subject "$ISSUE_RECORD_SCRIPT"
 GUARD_SCRIPT="$(common_test_resolve_subject "deploy-root-guard.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/deploy-root-guard.sh" \
   "$SCRIPT_DIR/../deploy-root-guard.sh")" || exit 2
+common_test_declare_subject "$GUARD_SCRIPT"
 COMMON_SCRIPT="$(common_test_resolve_subject "lib/common.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lib/common.sh" \
   "$SCRIPT_DIR/../lib/common.sh")" || exit 2
+common_test_declare_subject "$COMMON_SCRIPT"
 TASK_LOOKUP_SCRIPT="$(common_test_resolve_subject "lib/task-lookup-lib.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lib/task-lookup-lib.sh" \
   "$SCRIPT_DIR/../lib/task-lookup-lib.sh")" || exit 2
+common_test_declare_subject "$TASK_LOOKUP_SCRIPT"
 CENTRAL_LOG_SCRIPT="$(common_test_resolve_subject "lib/central-log-lib.sh" "deploy-tree-first" \
   "$REPO_ROOT/.claude/scripts/lib/central-log-lib.sh" \
   "$SCRIPT_DIR/../lib/central-log-lib.sh")" || exit 2
+common_test_declare_subject "$CENTRAL_LOG_SCRIPT"
 
 if ! command -v jq >/dev/null 2>&1; then
   echo "ERROR: jq not found on PATH" >&2

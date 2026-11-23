@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # scope-excursion-record-lib.sh - Single home of the batched "scope excursion" issue-record
 # call shape: one non-fatal issue-record.sh call per DROP EVENT, carrying every dropped path
 # through the --tags-json seam, rather than one call per dropped path. Modelled structurally on
