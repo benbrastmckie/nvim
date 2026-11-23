@@ -51,6 +51,7 @@ test-askuserquestion-rehome.sh	unit	-
 test-assess-repo-health.sh	unit	-
 test-audit-task-proposals.sh	unit	-
 test-backfill-file-scope.sh	integration	invokes:deploy-headless.sh
+test-batch-admission-lib.sh	unit	-
 test-batch-gate-pending-marker.sh	integration	invokes:verify-deploy.sh,run-all.sh
 test-census-count.sh	unit	-
 test-central-log-lib.sh	unit	-
@@ -218,6 +219,7 @@ test-subagent-postflight-marker.sh	unit	-
 test-suite-resolver-lib.sh	unit	-
 test-sweep-invalidated-claims.sh	unit	-
 test-system-defect-record-signal-b.sh	unit	-
+test-task-landing-verify.sh	unit	-
 test-task-lock-liveness.sh	unit	-
 test-task-lock-queue.sh	unit	-
 test-task-reference-patterns-lib.sh	unit	-

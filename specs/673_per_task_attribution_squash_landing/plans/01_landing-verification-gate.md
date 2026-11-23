@@ -204,7 +204,7 @@ the three clarifications this plan makes.
 
 ---
 
-### Phase 2: The landing predicate, the proof writer and their suite [IN PROGRESS]
+### Phase 2: The landing predicate, the proof writer and their suite [COMPLETED]
 
 **Goal**: `task-landing-verify.sh` implements V1 to V5 and the proof, exercised by a suite whose
 negative fixtures were each observed failing before the check that catches them existed. Nothing
@@ -215,12 +215,12 @@ calls the script yet.
       signature: a lookup returning the batch record that lists a task (by `task_numbers`
       membership, newest `admitted_at`), and an appender that adds one element to
       `landing_proofs` by tmp-file-then-rename. Extend `test-batch-admission-lib.sh` for both. *(completed)*
-- [ ] Write `scripts/task-landing-verify.sh`. Arguments: task number, `--session SID`,
+- [x] Write `scripts/task-landing-verify.sh`. Arguments: task number, `--session SID`,
       `--check` (read-only, never writes a proof), optional `--modified-files-from FILE`
       (a `.return-meta.json`), and `--print-body` (emit the commit-body block from an existing
       proof). Port the `verify` function from
-      `specs/673_per_task_attribution_squash_landing/reports/01_fixtures/options-abc.sh`.
-- [ ] Implement, in order: V1 (`HEAD` symbolic and equal to the resolved integration branch,
+      `specs/673_per_task_attribution_squash_landing/reports/01_fixtures/options-abc.sh`. *(completed)*
+- [x] Implement, in order: V1 (`HEAD` symbolic and equal to the resolved integration branch,
       D6); V2 (non-merge commits on that branch whose subject matches the task's `task {N}:` or
       `task {N} phase` convention, committed at or after the task's `created` timestamp read
       from `specs/state.json`, falling back to `specs/archive/state.json`); V3 (union of touched
@@ -228,20 +228,20 @@ calls the script yet.
       commit, D4, for each path; on mismatch print `git log <end>..<tip> -- <path>`); V5 (no
       path of the set, and no reported modified path inside the repository and outside the state
       territory, differs between the working tree and the tip, untracked reported files
-      included).
-- [ ] Refusals print one line naming the check, the offending path or commit, and the remedy,
-      and exit with D3's codes. A refusal writes nothing.
-- [ ] Verify-and-record mode: under `specs/.commit-lock` (guest when `COMMIT_MUTEX_HELD=1`,
+      included). *(deviation: altered — a task entry with no created timestamp is bounded by its oldest batch admission; inconclusive only when no record lists it)*
+- [x] Refusals print one line naming the check, the offending path or commit, and the remedy,
+      and exit with D3's codes. A refusal writes nothing. *(completed)*
+- [x] Verify-and-record mode: under `specs/.commit-lock` (guest when `COMMIT_MUTEX_HELD=1`,
       fail-open with a named warning, as `milestone-ref-land.sh` does), append the proof with
       the ruling's fields: `task_number`, `session_id`, `landed_at`, `integration_branch`,
       `commits`, `end_commit`, `tip_at_verification`, `paths`, `shared_paths`, `phases`,
       `source_store_commits`. `phases` comes from the task's plan file's completed phase
-      headings; `source_store_commits` from the return metadata where reported, else empty.
-- [ ] Idempotence: an existing proof for the task whose `end_commit` equals the current end
-      commit makes the run a passing no-op that appends nothing.
-- [ ] Inconclusive cases per D5 exit 0 with one named line. No record per D7: verify, print the
-      notice, append nothing.
-- [ ] Write `scripts/tests/test-task-landing-verify.sh` on scratch repositories. For each
+      headings; `source_store_commits` from the return metadata where reported, else empty. *(completed)*
+- [x] Idempotence: an existing proof for the task whose `end_commit` equals the current end
+      commit makes the run a passing no-op that appends nothing. *(completed)*
+- [x] Inconclusive cases per D5 exit 0 with one named line. No record per D7: verify, print the
+      notice, append nothing. *(completed)*
+- [x] Write `scripts/tests/test-task-landing-verify.sh` on scratch repositories. For each
       negative fixture, first run it against a deliberately weakened predicate (the one check
       under test disabled by a test-only seam in the fixture copy, never in the shipped script)
       or against the pre-check commit, observe the fixture failing to refuse, and record that
@@ -254,12 +254,12 @@ calls the script yet.
       proof is a no-op; re-run after a later state-only attributed commit is still a no-op (D4);
       a dependent task editing the same file later does not fail the earlier task; no batch
       record verifies without recording; non-`git` root passes through; `--check` writes
-      nothing; a refusal leaves every ref and the batch record byte-identical.
-- [ ] Register both new files in `manifest.json` and add the suite's row to
-      `scripts/tests/suite-classification.data` (class `unit`), in this phase.
-- [ ] Document the `landing_proofs` element shape in
+      nothing; a refusal leaves every ref and the batch record byte-identical. *(completed)*
+- [x] Register both new files in `manifest.json` and add the suite's row to
+      `scripts/tests/suite-classification.data` (class `unit`), in this phase. *(deviation: altered — also added the missing row for test-batch-admission-lib.sh)*
+- [x] Document the `landing_proofs` element shape in
       `context/standards/orchestrator-runtime-files.md`, beside the existing batch-record
-      description, stating the current shape only.
+      description, stating the current shape only. *(completed)*
 
 **Timing**: 2 hours
 

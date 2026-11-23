@@ -2,15 +2,62 @@
   "phase": 2,
   "phase_name": "The landing predicate, the proof writer and their suite",
   "started_at": "2026-11-23T11:20:06Z",
-  "last_updated": "2026-11-23T11:20:06Z",
+  "last_updated": "2026-11-23T11:48:50Z",
   "objectives": [
-    {"id": 1, "description": "Record lookup by task and proof appender in batch-admission-lib.sh, with suite cases", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/batch-admission-lib.sh", "agent-system/extensions/core/scripts/tests/test-batch-admission-lib.sh"]},
-    {"id": 2, "description": "task-landing-verify.sh (V1-V5, proof, idempotence, inconclusive cases) and its suite with observed-failing negatives", "status": "in_progress", "files_touched": []},
-    {"id": 3, "description": "Register script and suite in manifest.json and suite-classification.data", "status": "not_started", "files_touched": []},
-    {"id": 4, "description": "Document landing_proofs element shape in orchestrator-runtime-files.md", "status": "not_started", "files_touched": []}
+    {
+      "id": 1,
+      "description": "Record lookup by task and proof appender in batch-admission-lib.sh, with suite cases",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/lib/batch-admission-lib.sh",
+        "agent-system/extensions/core/scripts/tests/test-batch-admission-lib.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "task-landing-verify.sh (V1-V5, proof, idempotence, inconclusive cases) and its suite with observed-failing negatives",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/task-landing-verify.sh",
+        "agent-system/extensions/core/scripts/tests/test-task-landing-verify.sh"
+      ]
+    },
+    {
+      "id": 3,
+      "description": "Register script and suite in manifest.json and suite-classification.data",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/manifest.json",
+        "agent-system/extensions/core/scripts/tests/suite-classification.data"
+      ]
+    },
+    {
+      "id": 4,
+      "description": "Document landing_proofs element shape in orchestrator-runtime-files.md",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"
+      ]
+    }
   ],
-  "current_objective": 2,
+  "current_objective": null,
   "approaches_tried": [],
-  "deviations": [],
-  "handoff_count": 0
+  "deviations": [
+    {
+      "task_id": "2.3",
+      "description": "V2 bound read from the task created timestamp",
+      "type": "altered",
+      "reason": "30 of 137 active tasks carry no created field; a task with none is bounded by the oldest admitted_at among batch records listing it, and passes through as inconclusive only when no record lists it either.",
+      "annotation": "*(deviation: altered — a task entry with no created timestamp is bounded by its oldest batch admission; inconclusive only when no record lists it)*"
+    },
+    {
+      "task_id": "2.9",
+      "description": "Add the suite row to suite-classification.data",
+      "type": "altered",
+      "reason": "Also added the missing row for test-batch-admission-lib.sh, a suite this phase edits, which the boundary lint flagged as unclassified.",
+      "annotation": "*(deviation: altered — also added the missing row for test-batch-admission-lib.sh)*"
+    }
+  ],
+  "handoff_count": 0,
+  "verification": "test-task-landing-verify.sh 88/88; test-batch-admission-lib.sh 92/92; sync-manifest-scripts --check passed; shellcheck clean on script and suite. verify-touched.sh could not run (deployed runner does not know the undeployed new suite); its resolved 47-suite --only list was run through the source-store run-all.sh: 45 passed, 1 expected failure (test-gate-cache-equivalence.sh), 1 failure unrelated to this phase (test-lint-unit-integration-boundary.sh live-corpus case: 5 unclassified suites that predate this dispatch, read against the deployed tree)."
 }

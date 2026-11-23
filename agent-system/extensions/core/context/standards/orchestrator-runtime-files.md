@@ -173,9 +173,35 @@ created on demand by the writer, and the file is written tmp-file-then-rename.
 | `worktree_isolation` | string | the isolation mode admitted under (`off`) |
 | `landing_proofs` | array | created empty; append-only, one element per landed task |
 
-`landing_proofs` is written only by the landing mechanism, under the existing
-`specs/.commit-lock/` mutex, and only by appending; its element shape belongs to that mechanism.
-Admission creates the array and never appends to it.
+`landing_proofs` is written only by the landing mechanism, `scripts/task-landing-verify.sh`,
+under the existing `specs/.commit-lock/` mutex, and only by appending, through
+`batch_admission_append_landing_proof` in `scripts/lib/batch-admission-lib.sh`. Admission creates
+the array and never appends to it. A task's proof is found through the newest record whose
+`task_numbers` lists the task (`batch_admission_record_for_task`), so a resumed batch reads the
+proof an earlier invocation recorded. A task completed outside an admitted batch is verified the
+same way and has no proof.
+
+Each element is one landing proof: the record that a task's work was verified to be on the
+integration branch, with nothing of it left in the working tree, before its completion status
+was written.
+
+| Field | Type | Content |
+|-------|------|---------|
+| `task_number` | integer | the landed task |
+| `session_id` | string | the session identity of the invocation that verified the landing |
+| `landed_at` | string | ISO-8601 UTC time of the verification |
+| `integration_branch` | string | the branch the verification read |
+| `commits` | array of strings | the task's attributed commits, oldest first: 40-hex non-merge commits on the integration branch whose subject follows the task's commit convention, made at or after the task's `created` time |
+| `end_commit` | string | the last attributed commit that touches a path outside the state territory; the last attributed commit when none does |
+| `tip_at_verification` | string | the 40-hex commit the integration branch pointed at when the predicate passed |
+| `paths` | array of strings | every path the attributed commits touched, less the state territory, sorted; empty for a task whose commits touch only the state territory |
+| `shared_paths` | array of strings | the members of `paths` that a commit outside the task also touched between the task's first attributed commit and its end commit. A non-empty value means the task's work in those files cannot be separated from another writer's by path |
+| `phases` | array of objects | `{phase, name}` for each completed phase heading of the task's plan, `phase` a string |
+| `source_store_commits` | array of objects | `{repository, commit}` for each commit the dispatch reported in a second repository; recorded, never verified here |
+
+A re-run for a task whose recorded `end_commit` is still its end commit appends nothing. The
+reviewable unit of a task is its `commits` list, not a range: the integration branch interleaves
+tasks, bookkeeping commits and other sessions' commits.
 
 The batch-branch name and the absolute worktree path are not fields of this record. They belong
 to the isolation-on path, built by `batch_worktree_creation_when_isolation_on`, and arrive as
