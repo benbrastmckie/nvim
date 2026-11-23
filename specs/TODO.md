@@ -95,7 +95,7 @@ next_project_number: 685
 
 ### File Scope Lifecycle
 
-484 [NOT STARTED] — Collapse per-path scope excursion issue rows into one record...
+484 [RESEARCHED] — Collapse per-path scope excursion issue rows into one record...
   └─ 486 [NOT STARTED] — Stop a required extension manifest.json registration being...
     └─ 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
     └─ 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
@@ -7605,10 +7605,11 @@ TERRITORY EDGES -- git-commit-phase.sh is SHARED FILE TERRITORY with three open 
 ---
 
 ### 484. Collapse per-path scope excursion issue rows into one record per drop event
-- **Status**: [NOT STARTED]
+- **Status**: [RESEARCHED]
 - **Task Type**: meta
 - **Topic**: file-scope-lifecycle
 - **Dependencies**: Task 430, Task 446, Task 469, Task 477, Task 541
+- **Research**: [484_collapse_perpath_scope_excursion_issue_rows_into_o/reports/01_collapse-scope-excursion-rows.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one. REDEPLOY AFTERWARDS via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
