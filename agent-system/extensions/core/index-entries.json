@@ -3200,7 +3200,7 @@
       "domain": "core",
       "subdomain": "standards",
       "summary": "Path-scoped git commit staging contract for research/plan/implement operations",
-      "line_count": 1219,
+      "line_count": 1222,
       "keywords": [
         "git-staging",
         "commit-scope",
@@ -3810,7 +3810,7 @@
       "domain": "core",
       "subdomain": "formats",
       "summary": "Per-task issues.jsonl schema: entry field table, 18-class seed taxonomy, severity scale, CAPTURE-ONLY boundary, and the six relation verdicts against existing issue-bearing surfaces",
-      "line_count": 326,
+      "line_count": 334,
       "keywords": [
         "issues",
         "jsonl",

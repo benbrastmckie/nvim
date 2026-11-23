@@ -1,0 +1,18 @@
+{
+  "phase": 4,
+  "phase_name": "Single-emitter guard, corpus re-verification, and doc disposition",
+  "started_at": "2026-11-23T08:00:00Z",
+  "last_updated": "2026-11-23T08:30:00Z",
+  "objectives": [
+    {"id": 1, "description": "Add repo-wide single-emitter guard case (Case 8) to test-scope-excursion-record-lib.sh", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-scope-excursion-record-lib.sh", "agent-system/extensions/core/scripts/lib/scope-excursion-record-lib.sh"]},
+    {"id": 2, "description": "Re-verify the pre-existing corpus groups correctly through orchestrate-conclusion-aggregate.sh with a mixed old/new fixture", "status": "done", "files_touched": []},
+    {"id": 3, "description": "Disposition the git-staging-scope.md three-site parity sentence and cross-reference the library from issue-log.md", "status": "done", "files_touched": ["agent-system/extensions/core/context/standards/git-staging-scope.md", "agent-system/extensions/core/context/formats/issue-log.md"]},
+    {"id": 4, "description": "Regenerate index-entries.json line_count for the two touched doc entries", "status": "done", "files_touched": ["agent-system/extensions/core/index-entries.json"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "Case 8 guard added before the library had a single call site (two --class literals, one per jq-present/jq-absent branch)", "result": "failed", "reason": "the library originally had two call sites each with their own --class literal, so the guard found 2 occurrences in its own file; fixed by refactoring the library to one shared call site with a single literal"}
+  ],
+  "handoff_count": 0,
+  "deviations": []
+}

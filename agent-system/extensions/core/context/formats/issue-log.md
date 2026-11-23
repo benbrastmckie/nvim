@@ -199,6 +199,14 @@ Sapience 503 bodies into one entry also collapses a single dispatch's scores of 
 "scope excursion" rows into one entry, as long as the caller itself already knows the count
 before its first call.
 
+`scripts/lib/scope-excursion-record-lib.sh` is this convention's concrete implementation for the
+"scope excursion" class specifically: it extends the shape above with a full
+`tags.dropped_paths` array (never a bounded sample, per this document's own no-suppression
+posture) alongside `tags.occurrence`, and gives both Containment emitters
+(`git-commit-phase.sh`, `git-commit-scoped.sh`) one shared call site for it. A future caller
+with the same precondition (N occurrences already known before the first `issue-record.sh`
+call for them) has a call site to copy, not only this section's prose.
+
 This is a **write-side** collapse: it reduces how many lines a caller writes for one known-repeated
 event. It is distinct from, and does not duplicate, the **read-side** cross-entry collapse that
 `scripts/orchestrate-conclusion-aggregate.sh`'s `group_by(.class)` pipeline already performs when

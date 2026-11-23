@@ -411,8 +411,11 @@ sites, each reaching a different commit surface:
    "Why a task reported as carrying no `file_scope` can still see a drop at a later phase
    commit" below for the full producer/consumer narrative). This changes nothing about the
    predicate or the drop-and-warn posture at this or either of the other two sites — the
-   deposit is additive to, and never a substitute for, the warning and the issue row every site
-   already fires on a drop.
+   deposit is additive to, and never a substitute for, the warning every site already fires on
+   a drop, and the issue row the two commit-wrapper sites (2 and 3) fire. Site 1 prints its own
+   per-path "EXCURSION DROPPED" notice to stderr but does not call `issue-record.sh`; see
+   `context/formats/issue-log.md`'s "Occurrence Collapse" section for the batched-record shape
+   sites 2 and 3 share through one library function.
 3. **V10, inside `git-commit-scoped.sh` itself** (gated on `--task`) — reaches EVERY caller that
    already supplies `--task` for the V5 contended-path lease, which includes both sites above
    (both already pass `--task`) plus every other caller of `git-commit-scoped.sh` that does the

@@ -206,11 +206,29 @@ else
   common_test_fail "Case 7: expected 1 line naming both fallback paths, got lines=${line_count7}: $(cat "$doc7" 2>/dev/null)"
 fi
 
-# NOTE: the repo-wide single-emitter guard case (asserting this library is the ONLY non-test
-# site emitting the "scope excursion" class literal) is added once both Containment emitters
-# have been converted to call this library instead of recording per-path -- see this suite's
-# own later guard-case addition rather than duplicating the search here before that conversion
-# exists to search for.
+# =====================================================================
+# Case 8 (repo-wide single-emitter guard): scanning the extension's whole scripts/ tree
+# (excluding tests/) for the "scope excursion" class literal in a --class position must find
+# exactly this library's own occurrence -- a future per-path emitter is caught here at suite
+# time, never silently reintroduced. Both Containment emitters (git-commit-phase.sh,
+# git-commit-scoped.sh) were converted to call this library instead of recording per-path
+# before this case was added.
+# =====================================================================
+EXT_SCRIPTS_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# grep -R over scripts/, excluding the tests/ directory, for a non-comment --class "scope
+# excursion" occurrence. -n for line numbers (diagnostic only); filter out lines whose first
+# non-whitespace character is '#' (a comment line) before counting.
+guard_hits="$(grep -RnF --include='*.sh' -- '--class "scope excursion"' "$EXT_SCRIPTS_ROOT" \
+  | grep -v '/tests/' \
+  | grep -vE '^[^:]+:[0-9]+:[[:space:]]*#' \
+  || true)"
+guard_hit_count="$(echo "$guard_hits" | grep -c . || true)"
+guard_hit_files="$(echo "$guard_hits" | cut -d: -f1 | sort -u)"
+if [ "$guard_hit_count" -eq 1 ] && echo "$guard_hit_files" | grep -qF "lib/scope-excursion-record-lib.sh"; then
+  common_test_pass "Case 8: the only non-comment, non-test --class \"scope excursion\" occurrence is this library's own"
+else
+  common_test_fail "Case 8: expected exactly one occurrence, in lib/scope-excursion-record-lib.sh; got ${guard_hit_count} occurrence(s) in: ${guard_hit_files}"
+fi
 
 echo ""
 echo "Results: ${PASSED} passed, ${FAILED} failed"

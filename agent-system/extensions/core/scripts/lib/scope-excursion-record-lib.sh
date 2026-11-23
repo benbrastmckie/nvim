@@ -106,27 +106,27 @@ scope_excursion_record_emit() {
       "${_ser_dropped_paths[@]}" 2>/dev/null)"
   fi
 
+  # Single call site, single class literal: whichever branch below ran, exactly one
+  # `--class "scope excursion"` token exists in this file -- the repo-wide single-emitter guard
+  # (test-scope-excursion-record-lib.sh's own repo-wide case) is a one-line assertion against
+  # this file specifically because the literal is never duplicated across branches here.
+  local _ser_tags_args=()
   if [ -n "$_ser_tags_json" ]; then
-    bash "${_ser_script_dir}/issue-record.sh" --task "$_ser_task_number" --kind issue \
-      --class "scope excursion" --severity minor \
-      --what-happened "$_ser_what_happened" \
-      --tags-json "$_ser_tags_json" \
-      "${_ser_extra_args[@]}" \
-      >/dev/null 2>&1 || true
+    _ser_tags_args=(--tags-json "$_ser_tags_json")
   else
-    # jq-absent (or jq-failed) fallback: a single call, no --tags-json, every dropped path
-    # listed inline in what_happened instead -- fewer rows, never fewer paths. The
-    # no-suppression posture is preserved by inlining the full list, never a bounded sample.
-    local _ser_inline_paths="${_ser_dropped_paths[*]}"
-    bash "${_ser_script_dir}/issue-record.sh" --task "$_ser_task_number" --kind issue \
-      --class "scope excursion" --severity minor \
-      --what-happened "${_ser_what_happened} Dropped paths: ${_ser_inline_paths}" \
-      "${_ser_extra_args[@]}" \
-      >/dev/null 2>&1 || true
-    unset _ser_inline_paths
+    # jq-absent (or jq-failed) fallback: no --tags-json, every dropped path listed inline in
+    # what_happened instead -- fewer rows, never fewer paths. The no-suppression posture is
+    # preserved by inlining the full list, never a bounded sample.
+    _ser_what_happened="${_ser_what_happened} Dropped paths: ${_ser_dropped_paths[*]}"
   fi
+  bash "${_ser_script_dir}/issue-record.sh" --task "$_ser_task_number" --kind issue \
+    --class "scope excursion" --severity minor \
+    --what-happened "$_ser_what_happened" \
+    "${_ser_tags_args[@]}" \
+    "${_ser_extra_args[@]}" \
+    >/dev/null 2>&1 || true
 
   unset _ser_script_dir _ser_task_number _ser_what_happened _ser_first_seen _ser_last_seen \
-    _ser_extra_args _ser_dropped_paths _ser_tags_json
+    _ser_extra_args _ser_dropped_paths _ser_tags_json _ser_tags_args
   return 0
 }

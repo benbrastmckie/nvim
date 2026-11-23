@@ -350,24 +350,24 @@ drop-only accumulator here exactly as Phase 2 does rather than widening this pha
 
 ---
 
-### Phase 4: Single-emitter guard, corpus re-verification, and doc disposition [NOT STARTED]
+### Phase 4: Single-emitter guard, corpus re-verification, and doc disposition [COMPLETED]
 
 **Goal**: A standing guard that the class literal has exactly one non-test home; proof the
 pre-existing corpus still groups; and an explicit, truthful disposition of the three-site parity
 sentence the research surfaced.
 
 **Tasks**:
-- [ ] Add a repo-wide guard case to
+- [x] Add a repo-wide guard case to *(completed)*
       `agent-system/extensions/core/scripts/tests/test-scope-excursion-record-lib.sh`: scan the
       extension's `scripts/` tree excluding `tests/` for the `scope excursion` class literal in a
       `--class` position and assert the only occurrence is the library's own, so a future per-path
       emitter is caught at suite time. Exclude comment lines explicitly rather than by accident.
-- [ ] Re-verify the pre-existing corpus is unstranded: run
+- [x] Re-verify the pre-existing corpus is unstranded: run *(completed)*
       `bash .claude/scripts/orchestrate-conclusion-aggregate.sh` (or its own suite,
       `test-orchestrate-conclusion-aggregate.sh`) over a fixture mixing old single-path rows with
       a new collapsed row, and confirm both group under one class with correct citations. The
       change is additive — a new `tags` key — so no backfill of the existing rows is performed.
-- [ ] Disposition the `git-staging-scope.md` asymmetry by correcting the doc, not by adding a
+- [x] Disposition the `git-staging-scope.md` asymmetry by correcting the doc, not by adding a *(completed)*
       third emitter: the postflight-sited Containment filter prints its per-path notice to stderr
       and does not write an issue row, and nothing in this task's required outcomes asks for
       three-site parity. Rewrite the "Three Containment sites, not one" passage's affected
@@ -375,12 +375,12 @@ sentence the research surfaced.
       substitute for, the warning this site fires and the issue row the two commit-wrapper sites
       fire — the disposition this plan's Decisions section records, with the alternative of giving
       the postflight site its own batched call left to a separately-scoped follow-up.
-- [ ] Add a cross-reference from `issue-log.md`'s "Occurrence Collapse" section to the new library
+- [x] Add a cross-reference from `issue-log.md`'s "Occurrence Collapse" section to the new library *(completed)*
       function as the convention's concrete implementation, so the next caller with the same
       precondition has a call site to copy rather than only prose.
-- [ ] Phrase both doc edits with durable anchors only: no task numbers, and no "previously / no
+- [x] Phrase both doc edits with durable anchors only: no task numbers, and no "previously / no *(completed)*
       longer / used to" framing — state what the sites do, not what they stopped doing.
-- [ ] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` and,
+- [x] Run `bash agent-system/extensions/core/scripts/generate-context-line-counts.sh --check` and, *(completed)*
       if either touched entry drifts beyond tolerance, `--write` to regenerate `index-entries.json`
       in the same phase.
 
