@@ -1,7 +1,878 @@
 {
   "version": "1.1.0",
-  "next_project_number": 691,
+  "next_project_number": 695,
   "active_projects": [
+    {
+      "project_number": 694,
+      "project_name": "stack_pr_redeploy_and_second_repo_demo",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.\n\nORIGIN: expansion of the stack-PR-submission record, whose plan ran to seven phases and closed three (review-base declaration/resolution/refusals; unit selection and stack ordering; cut the stack and write the manifest) across three dispatches at roughly one phase per dispatch. The parent's own plan at specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md remains the authoritative design record for every phase named below -- READ THE NAMED PHASE SECTION THERE FIRST; this description does not restate its task list, its design decisions (PD1-PD12) or its verification tiers.\n\nLANDED AND NOT TO BE REDONE: scripts/review-stack-prepare.sh already carries `cut`, `show`, `record-request` and the shared resolvers for review_base (PD1, exit codes 10-13), remote and platform (PD9, exit codes 30-32), plus selection/attribution/union-find unit merging/topological ordering (exit codes 40-47) and the manifest writer with exit codes 49-52. Its suite scripts/tests/test-review-stack-prepare.sh stands at 38 passing cases. Verify against the live file before writing anything.\n\nTHIS RECORD OWNS PHASE 4 ONLY -- \"Restack when a parent merges\". Deliverable, per that phase section: `restack --stack-id NAME [--merged NN]` reads the manifest and the review base's remote-tracking ref (never fetching -- an absent ref refuses and prints the fetch the operator runs); detects a merged entry per PD7 bottom-up, moving that entry to state `merged` and the next entry's base to the review base; recomputes each descendant with a three-way `merge-tree` onto its new parent, writes it with `git commit-tree`, and moves its ref by compare-and-swap, so a conflict refuses naming the path and moves nothing; and refuses when a local review ref and its remote-tracking ref disagree in a way the manifest does not explain.\n\nTHIS RECORD OWNS PHASE 7 ONLY -- \"Redeploy, second-repository demonstration and close\". It is the terminal integration proof for the whole stack-PR feature and therefore runs LAST, after the restack, handoff-printing and `/merge`-stack-mode records have landed; a dependencies[] edge on each is declared for exactly that reason.\n\nDeliverable, per that phase section: update the `/merge` row and usage in README.md, merge-sources/claudemd.md and the `/merge` section of docs/guides/user-guide.md to name the stack mode. Redeploy with deploy-headless.sh, checking its exit status and that index-entries.json line counts were reconciled (`generate-context-line-counts.sh --check`). Then the demonstration, in a scratch repository created OUTSIDE this repository: its own remote name, a bare repository as the remote, a feature integration branch, a distinct review base, a batch record with three dependent tasks' proofs, and the deployed scripts copied from .claude/scripts/. Run `cut`, `show`, simulate the three pushes by fetching from the bare side (PD12), simulate the bottom entry's squash-merge on the bare side, fetch, and run the restack. Finish with the operator runbook for the steps no agent may take.\n\nWHY A SECOND REPOSITORY: the feature must be shown to work somewhere other than the repository that developed it, with a remote that is not named origin and a review base that is not the integration branch -- the two assumptions most likely to be accidentally baked in. A demonstration inside this repository does not discharge this phase.\n\nTHE RUNBOOK IS PART OF THE DELIVERABLE, not a nicety: the flow deliberately stops short of pushing and of opening PRs (rules/pr-prohibition.md), so the operator needs the exact sequence of `/please push` and `/merge --stack` invocations only a human may type.\n\nVERIFY BY: the three doc surfaces naming stack mode consistently, `deploy-headless.sh` reporting a clean verify, `generate-context-line-counts.sh --check` clean, and the scratch-repository transcript showing cut -> simulated pushes -> simulated squash-merge -> restack end to end.",
+      "topic": "orchestrator",
+      "dependencies": [
+        691,
+        692,
+        693
+      ],
+      "file_scope": [
+        "agent-system/extensions/core/README.md",
+        "agent-system/extensions/core/merge-sources/claudemd.md",
+        "agent-system/extensions/core/docs/guides/user-guide.md",
+        "agent-system/extensions/core/index-entries.json",
+        "__WHOLE_TREE__"
+      ],
+      "created": "2026-11-23T22:15:32Z",
+      "last_updated": "2026-11-23T22:15:32Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "stack_pr_redeploy_and_second_repo_demo",
+          "project_number": null,
+          "title": "Redeploy, demonstrate the PR stack in a second repository, and write the operator runbook"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 44,
+          "duplicate-of-open": 19,
+          "scope-blind": 47
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5096525096525096
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.416988416988417
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41312741312741313
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4594594594594595
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40540540540540543
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4362934362934363
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42857142857142855
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44787644787644787
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42084942084942084
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42857142857142855
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4092664092664093
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.49034749034749037
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4555984555984556
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4671814671814672
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 548,
+            "project_name": "plan_contingency_file_scope_and_containment_drop",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4594594594594595
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 553,
+            "project_name": "git_commit_scoped_gate_refusal_diagnostic",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43243243243243246
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 561,
+            "project_name": "bounded_waiter_load_sizing_and_output_capture",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44787644787644787
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 575,
+            "project_name": "fix_ceiling_check_stopword_unit_false_positive",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41312741312741313
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 665,
+            "project_name": "previous_work_section_in_generated_roadmap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.416988416988417
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 47
+      }
+    },
+    {
+      "project_number": 693,
+      "project_name": "merge_command_stack_mode",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.\n\nORIGIN: expansion of the stack-PR-submission record, whose plan ran to seven phases and closed three (review-base declaration/resolution/refusals; unit selection and stack ordering; cut the stack and write the manifest) across three dispatches at roughly one phase per dispatch. The parent's own plan at specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md remains the authoritative design record for every phase named below -- READ THE NAMED PHASE SECTION THERE FIRST; this description does not restate its task list, its design decisions (PD1-PD12) or its verification tiers.\n\nLANDED AND NOT TO BE REDONE: scripts/review-stack-prepare.sh already carries `cut`, `show`, `record-request` and the shared resolvers for review_base (PD1, exit codes 10-13), remote and platform (PD9, exit codes 30-32), plus selection/attribution/union-find unit merging/topological ordering (exit codes 40-47) and the manifest writer with exit codes 49-52. Its suite scripts/tests/test-review-stack-prepare.sh stands at 38 passing cases. Verify against the live file before writing anything.\n\nTHIS RECORD OWNS PHASE 4 ONLY -- \"Restack when a parent merges\". Deliverable, per that phase section: `restack --stack-id NAME [--merged NN]` reads the manifest and the review base's remote-tracking ref (never fetching -- an absent ref refuses and prints the fetch the operator runs); detects a merged entry per PD7 bottom-up, moving that entry to state `merged` and the next entry's base to the review base; recomputes each descendant with a three-way `merge-tree` onto its new parent, writes it with `git commit-tree`, and moves its ref by compare-and-swap, so a conflict refuses naming the path and moves nothing; and refuses when a local review ref and its remote-tracking ref disagree in a way the manifest does not explain.\n\nTHIS RECORD OWNS PHASE 6 ONLY -- \"`/merge` stack mode\". Deliverable, per that phase section: add `--stack <stack id>`, `--only NN` and `--retarget` (alongside the existing `--draft`) to commands/merge.md, updating the frontmatter argument hint and the options table while leaving the single-branch mode exactly as it is. Stack mode's steps, in order: revoke the prompt-minted grant, since this mode pushes nothing; read the manifest via `review-stack-prepare.sh show --json`; refuse a platform PD9 does not support; show ONE approval prompt listing every PR with its head and base. Then per entry, bottom-up: confirm the remote branch tip equals the manifest commit with `git ls-remote <remote> refs/heads/<branch>`, stopping and naming the `/please push` to type when it does not; look for an open PR on that head; create one with the manifest's head, base, title and body file when there is none; and record the URL.\n\nUSER-ONLY, AND THE PROHIBITION STILL BINDS: `/merge` may only be invoked by the user, never by an agent (rules/pr-prohibition.md). This record ADDS A MODE to the command's documented behaviour; implementing it must not cause any agent-reachable path to push or to open a PR. The grant revocation in step one is load-bearing precisely because stack mode pushes nothing.\n\nVERIFY BY: the command file's own documented contract being internally consistent (argument hint, options table and step list agreeing), the single-branch mode's text unchanged, and whatever suite covers commands/merge.md staying green. If skills/skill-git-workflow/SKILL.md carries merge-mode wiring that this mode must reach, declare it before editing it rather than widening scope mid-dispatch.",
+      "topic": "orchestrator",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/commands/merge.md",
+        "agent-system/extensions/core/skills/skill-git-workflow/SKILL.md"
+      ],
+      "created": "2026-11-23T22:15:32Z",
+      "last_updated": "2026-11-23T22:15:32Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "merge_command_stack_mode",
+          "project_number": null,
+          "title": "Add stack mode to the /merge command"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 44,
+          "duplicate-of-open": 22,
+          "scope-blind": 47
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 631,
+            "project_name": "gate29_typescript_test_fixed_depth_walk",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40384615384615385
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.47560975609756095
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43902439024390244
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43902439024390244
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.483739837398374
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4105691056910569
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42276422764227645
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4186991869918699
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44308943089430897
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4024390243902439
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4105691056910569
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4268292682926829
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4349593495934959
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 533,
+            "project_name": "lake_build_guard_stale_replay_env_lean_file",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4186991869918699
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.491869918699187
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44715447154471544
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4959349593495935
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 548,
+            "project_name": "plan_contingency_file_scope_and_containment_drop",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4349593495934959
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 553,
+            "project_name": "git_commit_scoped_gate_refusal_diagnostic",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.42276422764227645
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 561,
+            "project_name": "bounded_waiter_load_sizing_and_output_capture",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.45121951219512196
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 575,
+            "project_name": "fix_ceiling_check_stopword_unit_false_positive",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4024390243902439
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 665,
+            "project_name": "previous_work_section_in_generated_roadmap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4268292682926829
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 47
+      }
+    },
+    {
+      "project_number": 692,
+      "project_name": "handoff_prints_review_stack",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.\n\nORIGIN: expansion of the stack-PR-submission record, whose plan ran to seven phases and closed three (review-base declaration/resolution/refusals; unit selection and stack ordering; cut the stack and write the manifest) across three dispatches at roughly one phase per dispatch. The parent's own plan at specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md remains the authoritative design record for every phase named below -- READ THE NAMED PHASE SECTION THERE FIRST; this description does not restate its task list, its design decisions (PD1-PD12) or its verification tiers.\n\nLANDED AND NOT TO BE REDONE: scripts/review-stack-prepare.sh already carries `cut`, `show`, `record-request` and the shared resolvers for review_base (PD1, exit codes 10-13), remote and platform (PD9, exit codes 30-32), plus selection/attribution/union-find unit merging/topological ordering (exit codes 40-47) and the manifest writer with exit codes 49-52. Its suite scripts/tests/test-review-stack-prepare.sh stands at 38 passing cases. Verify against the live file before writing anything.\n\nTHIS RECORD OWNS PHASE 5 ONLY -- \"Handoff prints the stack\". Deliverable, per that phase section: in scripts/milestone-review-handoff.sh, after the per-task listing, call `review-stack-prepare.sh cut --milestone <id>` non-fatally and then `show`; on success write that `show` output into specs/milestones/<id>-review-handoff.md and print it as the final output in place of the two lines printed today; on refusal print the refusal reason, keep the per-task listing, print `/please push <integration branch>` alone, and do NOT print `/merge`; and add one printed line stating that a grant is bound to HEAD at the time it is typed, so a commit by another session in between means typing the grant again.\n\nWHY THE `/merge` SUPPRESSION MATTERS: the handoff currently prints a `/merge` that cannot work, because `/merge` acts on the checked-out branch, refuses outright on main or master, and hardcodes the remote name origin and the target main. Not printing it on the refusal arm is the point of this phase, not an incidental detail.\n\nHARD CONSTRAINT: the handoff script itself still contains no ref-writing git call. It only PREPARES and prints; it never pushes, never opens a PR, and never mints a push grant.\n\nVERIFY BY: scripts/tests/test-milestone-review-handoff.sh green, with new cases covering the cut-succeeds arm (show output written and printed), the cut-refuses arm (reason printed, per-task listing kept, `/please` alone, no `/merge`), and the HEAD-binding line's presence.",
+      "topic": "orchestrator",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/milestone-review-handoff.sh",
+        "agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh"
+      ],
+      "created": "2026-11-23T22:15:32Z",
+      "last_updated": "2026-11-23T22:15:32Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "handoff_prints_review_stack",
+          "project_number": null,
+          "title": "Print the review stack from the milestone review handoff"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 73,
+          "duplicate-of-open": 35,
+          "scope-blind": 45
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 684,
+            "project_name": "sweep_stale_command_and_submode_references",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.41116751269035534
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.40609137055837563
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5329949238578681
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4720812182741117
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4517766497461929
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5329949238578681
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4467005076142132
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 457,
+            "project_name": "repo_specific_content_in_shared_source_store",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4213197969543147
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 462,
+            "project_name": "lean_challenge_check_scope_limit",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40609137055837563
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.48223350253807107
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4213197969543147
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5076142131979695
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43147208121827413
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 509,
+            "project_name": "redeploy_phase_declaration_and_gate_criterion",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4213197969543147
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4619289340101523
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 516,
+            "project_name": "lean_compliance_check_end_state_goal_polarity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4213197969543147
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.48223350253807107
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 523,
+            "project_name": "gate27_missing_declaration_call_site_counting",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4416243654822335
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.467005076142132
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 533,
+            "project_name": "lake_build_guard_stale_replay_env_lean_file",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41116751269035534
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.467005076142132
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.41624365482233505
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5177664974619289
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 544,
+            "project_name": "fixture_dependent_challenge_statement_pinning",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4010152284263959
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 548,
+            "project_name": "plan_contingency_file_scope_and_containment_drop",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.47715736040609136
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 45
+      }
+    },
+    {
+      "project_number": 691,
+      "project_name": "restack_review_stack_when_parent_merges",
+      "status": "not_started",
+      "task_type": "meta",
+      "description": "SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.\n\nORIGIN: expansion of the stack-PR-submission record, whose plan ran to seven phases and closed three (review-base declaration/resolution/refusals; unit selection and stack ordering; cut the stack and write the manifest) across three dispatches at roughly one phase per dispatch. The parent's own plan at specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md remains the authoritative design record for every phase named below -- READ THE NAMED PHASE SECTION THERE FIRST; this description does not restate its task list, its design decisions (PD1-PD12) or its verification tiers.\n\nLANDED AND NOT TO BE REDONE: scripts/review-stack-prepare.sh already carries `cut`, `show`, `record-request` and the shared resolvers for review_base (PD1, exit codes 10-13), remote and platform (PD9, exit codes 30-32), plus selection/attribution/union-find unit merging/topological ordering (exit codes 40-47) and the manifest writer with exit codes 49-52. Its suite scripts/tests/test-review-stack-prepare.sh stands at 38 passing cases. Verify against the live file before writing anything.\n\nTHIS RECORD OWNS PHASE 4 ONLY -- \"Restack when a parent merges\". Deliverable, per that phase section: `restack --stack-id NAME [--merged NN]` reads the manifest and the review base's remote-tracking ref (never fetching -- an absent ref refuses and prints the fetch the operator runs); detects a merged entry per PD7 bottom-up, moving that entry to state `merged` and the next entry's base to the review base; recomputes each descendant with a three-way `merge-tree` onto its new parent, writes it with `git commit-tree`, and moves its ref by compare-and-swap, so a conflict refuses naming the path and moves nothing; and refuses when a local review ref and its remote-tracking ref disagree in a way the manifest does not explain.\n\nHARD CONSTRAINT, inherited from the parent plan and already statically asserted by the existing suite: this script contains no push, checkout, switch, merge, rebase, replay, gh or glab invocation, and no literal origin/main/master/upstream word outside comments. Two static assertions in scripts/tests/test-review-stack-prepare.sh enforce both; they must keep passing unmodified.\n\nVERIFY BY: scripts/tests/test-review-stack-prepare.sh green with its existing 38 cases unmodified, plus new cases for the restack paths -- a clean bottom-up restack, a conflicting descendant that refuses and moves nothing, an absent remote-tracking ref, and an unexplained local/remote disagreement. Treat an existing assertion you had to edit to pass as evidence the change is wrong.",
+      "topic": "orchestrator",
+      "dependencies": [],
+      "file_scope": [
+        "agent-system/extensions/core/scripts/review-stack-prepare.sh",
+        "agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh"
+      ],
+      "created": "2026-11-23T22:15:32Z",
+      "last_updated": "2026-11-23T22:15:32Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "restack_review_stack_when_parent_merges",
+          "project_number": null,
+          "title": "Restack the review stack when a parent PR merges"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 56,
+          "duplicate-of-open": 31,
+          "scope-blind": 46
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 684,
+            "project_name": "sweep_stale_command_and_submode_references",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.42786069651741293
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5024875621890548
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4427860696517413
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 431,
+            "project_name": "durable_record_for_gate_enforced_verbatim_fragments",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.46766169154228854
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5074626865671642
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43283582089552236
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4577114427860697
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4079601990049751
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4975124378109453
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 506,
+            "project_name": "bounded_waiter_hook_fires_on_documenting_prose",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.40298507462686567
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4129353233830846
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 509,
+            "project_name": "redeploy_phase_declaration_and_gate_criterion",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4427860696517413
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44776119402985076
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 516,
+            "project_name": "lean_compliance_check_end_state_goal_polarity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4079601990049751
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.46766169154228854
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 523,
+            "project_name": "gate27_missing_declaration_call_site_counting",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4228855721393035
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 524,
+            "project_name": "scoped_commit_staged_vs_worktree_divergence",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4427860696517413
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 533,
+            "project_name": "lake_build_guard_stale_replay_env_lean_file",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43283582089552236
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.472636815920398
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 540,
+            "project_name": "lean_decide_authoring_and_probe_guard_facts",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.43283582089552236
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4975124378109453
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 548,
+            "project_name": "plan_contingency_file_scope_and_containment_drop",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4626865671641791
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 553,
+            "project_name": "git_commit_scoped_gate_refusal_diagnostic",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4577114427860697
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 556,
+            "project_name": "validate_handoff_crash_and_blockers_shape",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.417910447761194
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 561,
+            "project_name": "bounded_waiter_load_sizing_and_output_capture",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.44776119402985076
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 46
+      }
+    },
     {
       "project_number": 689,
       "project_name": "oversized_plan_phase_count_advisory",
@@ -21004,7 +21875,7 @@
     {
       "project_number": 685,
       "project_name": "stack_pr_submission_from_integration_branch",
-      "status": "implementing",
+      "status": "expanded",
       "task_type": "meta",
       "title": "Cut review branches and submit a stack of PRs from landed integration-branch work",
       "description": "Cut review branches and submit a stack of PRs from landed integration-branch work\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.\n\nWHY THIS EXISTS. The branch-topology work ends at \"work is landed on the integration branch\" plus a review handoff that prints the commands a human types. Nothing in it cuts a review branch, opens a pull request, chooses a PR's base, or maintains a stack of dependent PRs. That gap is this task. The aim stated by the operator is a workflow that runs off a long-lived feature branch and submits reviewable PRs from it, stacking them where the work is dependent.\n\nTHE CONSENT BOUNDARY IS NOT RE-OPENED. rules/pr-prohibition.md and ruling R8 of specs/decisions/branch-topology-and-landing-strategy.md both stand unchanged: an agent never pushes and never creates a PR or MR. This task PREPARES -- it computes branches, bases, ordering and descriptions, and hands the operator the literal commands. Every outward call stays behind the user-invoked /please grant and /merge. hooks/guard-git-push.sh enforces this mechanically regardless of what is built here, so a design that tried to bypass it would simply fail.\n\nPRIOR ART TO READ, NOT REINVENT. The cslib extension's /pr command already implements the three workflows this needs -- a new PR, a PR stacked on another (`--stacked [PR]`: branch from the parent PR's head, `gh pr create --base <pr-head>`), and updating or amending an existing PR. It is the only stacking machinery in the repository. It is also welded to its own repository: a Lean CI pipeline, `lake` invocations throughout, and a hardcoded upstream remote and branch. ASSESS AND RULE whether the portable part -- workflow selection, base resolution, branch naming, PR body composition -- can be extracted into core with the CI pipeline left as an extension-supplied hook, or whether core needs its own smaller implementation. State the reasoning; do not assume either answer.\n\nDEPENDS ON A CONTRACT THE LANDING TASK OWES. The landing task is required to state what a downstream PR-cutting step receives: the ref to branch from, the commit range covered, and whether that range is already one commit per task. Read that contract rather than re-deriving it. If it is absent or ambiguous when this task is planned, that is a blocker to raise, not a gap to fill by guessing.\n\n1. REVIEW UNIT. Rule what one PR contains -- one task, one batch, or an operator-chosen range -- and how its branch is named. The unit must be stated in terms of the landing contract above, not invented here.\n2. BASE RESOLUTION. A PR's base is the integration branch for the bottom of a stack, and the parent PR's head branch for every PR above it. Build the resolution, including detecting an existing parent PR rather than requiring the operator to supply its number every time.\n3. STACK ORDERING FROM DEPENDENCY EDGES. Tasks already declare `dependencies` in specs/state.json. Rule whether the stack order is derived from those edges, supplied by the operator, or both, and what happens when the edges imply an order the landed commit order contradicts.\n4. RE-TARGETING WHEN A PARENT MERGES. This is the part no existing machinery has. When the bottom PR merges, every PR above it needs its base moved and may need rebasing. Rule what is automated, what is prepared-for-the-operator, and what is explicitly out of scope. `git rebase -i` is unavailable; a non-interactive rebase or a plumbing-built equivalent is the only candidate.\n5. PREPARED COMMANDS, NEVER EXECUTED. Extend or replace milestone-review-handoff.sh so the handoff names each PR in the stack, in order, with its base, its title, its body, and the literal /please and /merge invocations. One grant per push is the existing contract; if a stack of N PRs means N grants, say so plainly rather than designing around it.\n6. PLATFORM. /merge already detects GitHub versus GitLab from the remote. Stacking semantics differ between them. Rule which platforms are supported and refuse loudly on an unsupported one rather than producing a malformed request.\n7. SECOND-REPOSITORY USE. The operator's stated purpose is submitting stacks in a repository other than the one owning the source store. Nothing built here may hardcode a repository, a remote name, a branch name or a path. Verify against a second repository, not only the source-store repository.\n\nNON-GOALS: changing the consent boundary; implementing worktree isolation, which is held; re-ruling the landing mechanism, which belongs to the landing task.\n\nVERIFICATION CRITERIA THIS TASK OWNS:\n- A stack of at least three dependent PRs is prepared from landed work, each with the correct base, in dependency order, with no agent having pushed or called a forge API.\n- The prepared commands, run by the operator, produce the stack on the forge.\n- A parent merging produces a stated, tested disposition for its descendants rather than a silently stale base.\n- Every deliverable is repo-agnostic, demonstrated in a repository other than the source-store repository.",
@@ -21032,7 +21903,7 @@
         "agent-system/extensions/core/scripts/tests/test-review-stack-prepare.sh"
       ],
       "created": "2026-11-23T08:57:10Z",
-      "last_updated": "2026-11-23T17:39:09Z",
+      "last_updated": "2026-11-23T22:16:21Z",
       "audit_verdict": {
         "proposal": {
           "id": "stack_pr_submission_from_integration_branch",
@@ -21102,7 +21973,13 @@
           "summary": "Phase 3 completion state: all code already committed by a prior stalled attempt, re-verified in the foreground this dispatch; notes the EXPECTED source/deploy drift owed to Phase 7 and an unrelated flaky test observed once under batch load."
         }
       ],
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "subtasks": [
+        691,
+        692,
+        693,
+        694
+      ]
     },
     {
       "project_number": 686,
