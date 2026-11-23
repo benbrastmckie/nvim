@@ -14,6 +14,12 @@ Tasks are named by slug with the number alongside.
 This record rules. It builds nothing. Until the implementing plan lands, `milestone-ref-land.sh`
 and its tree-equality `--verify` stay wired exactly as they are.
 
+**Amended by** `specs/decisions/review-slices-are-declared-tasks.md`, 2026-11-23: L3 and L4, and
+the "Interface to review submission" section, are amended for repositories that adopt declared
+review slices. The reviewable unit becomes a slice declared before the work rather than a unit
+reconstructed from landing proofs at review time. L1, L2, the verification predicate V1 to V5,
+the landing proof and the retirement order are unaffected.
+
 ## The contradiction
 
 R3-amended builds the per-task squash by reading a batch branch: it selects the task's commits

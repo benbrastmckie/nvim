@@ -13,8 +13,8 @@ next_project_number: 695
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,671,674,679,680,684,686,689,690,691,692,693 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,694 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629,691,692,693 | core-agent-system, extensions, neovim, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,671,674,679,680,684,686,689,692,693 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,690,694 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629,692,693 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,472,480,492,513,561,588,594 | 439,479,491,509,552,556,570,593 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,501,518,581,595,641 | 454,472,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 524,571,596,642,688 | 501,518,595,641 | core-agent-system, orchestrator, agent-system |
@@ -63,7 +63,6 @@ next_project_number: 695
 664 [NOT STARTED] — Add a /tmp sweep pass to /refresh for dead scratchpad...
 680 [NOT STARTED] — Fix gate-cache-lib.sh so verify-deploy.sh --skip-unchanged...
 684 [NOT STARTED] — Sweep and fix stale command and sub-mode references across...
-690 [NOT STARTED] — milestone-ref-land.sh re-creates a deliberately retired...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
   └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
@@ -71,6 +70,7 @@ next_project_number: 695
 523 [NOT STARTED] — Make Gate 27 MISSING\_DECLARATION count call sites, not...
 524 [NOT STARTED] — Rule on a staged-vs-working-tree divergence signal for a...
 588 [NOT STARTED] — Bar a pre-redeploy plan step from naming a...
+690 [NOT STARTED] — milestone-ref-land.sh re-creates a deliberately retired...
 
 ### Extensions
 
@@ -108,16 +108,13 @@ next_project_number: 695
 
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 665 [NOT STARTED] — Record the last dispatching orchestration batch in a...
-666 [NOT STARTED] — Re-site the branch-aware orchestration batch in the authored...
 671 [HOLD] — Make the write-time and git-guard hooks two-root aware
 674 [HOLD] — Build batch worktree cleanup, retention on partial batches,...
 686 [HOLD] — Create the per-batch worktree and batch branch when isolation...
 689 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-691 [IMPLEMENTING] — SOURCE STORE IS THE EDIT TARGET:...
+692 [PLANNED] — RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE...
   └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-692 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
-  └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
-693 [PLANNED] — SOURCE STORE IS THE EDIT TARGET:...
+693 [PLANNED] — RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE...
   └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
@@ -191,21 +188,37 @@ next_project_number: 695
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
-ORIGIN: expansion of the stack-PR-submission record, whose plan ran to seven phases and closed three (review-base declaration/resolution/refusals; unit selection and stack ordering; cut the stack and write the manifest) across three dispatches at roughly one phase per dispatch. The parent's own plan at specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md remains the authoritative design record for every phase named below -- READ THE NAMED PHASE SECTION THERE FIRST; this description does not restate its task list, its design decisions (PD1-PD12) or its verification tiers.
+=== SCOPE NARROWED BY RULING ===
 
-LANDED AND NOT TO BE REDONE: scripts/review-stack-prepare.sh already carries `cut`, `show`, `record-request` and the shared resolvers for review_base (PD1, exit codes 10-13), remote and platform (PD9, exit codes 30-32), plus selection/attribution/union-find unit merging/topological ordering (exit codes 40-47) and the manifest writer with exit codes 49-52. Its suite scripts/tests/test-review-stack-prepare.sh stands at 38 passing cases. Verify against the live file before writing anything.
+specs/decisions/review-slices-are-declared-tasks.md rules that a review slice is declared before the work rather than inferred from landing proofs after it (S1, S2), and that a slice lands by an ordinary scoped commit rather than a blob overlay (S4). Read that record's "What is retained from the inference route, and what is not" section before planning.
 
-THIS RECORD OWNS PHASE 4 ONLY -- "Restack when a parent merges". Deliverable, per that phase section: `restack --stack-id NAME [--merged NN]` reads the manifest and the review base's remote-tracking ref (never fetching -- an absent ref refuses and prints the fetch the operator runs); detects a merged entry per PD7 bottom-up, moving that entry to state `merged` and the next entry's base to the review base; recomputes each descendant with a three-way `merge-tree` onto its new parent, writes it with `git commit-tree`, and moves its ref by compare-and-swap, so a conflict refuses naming the path and moves nothing; and refuses when a local review ref and its remote-tracking ref disagree in a way the manifest does not explain.
+The consequence for this record: the second-repository demonstration it used to own existed to prove that the INFERENCE machinery -- union-find over dependency edges and landing-proof path overlap, topological reordering, the merge-base overlay and the moved-base three-way recompute -- generalizes beyond the repository that developed it. That machinery is no longer the route by which a review unit is first produced, so a proof of its generality buys no capability the operator gains. It is NOT part of this record any more.
 
-THIS RECORD OWNS PHASE 7 ONLY -- "Redeploy, second-repository demonstration and close". It is the terminal integration proof for the whole stack-PR feature and therefore runs LAST, after the restack, handoff-printing and `/merge`-stack-mode records have landed; a dependencies[] edge on each is declared for exactly that reason.
+=== WHAT THIS RECORD NOW OWNS ===
 
-Deliverable, per that phase section: update the `/merge` row and usage in README.md, merge-sources/claudemd.md and the `/merge` section of docs/guides/user-guide.md to name the stack mode. Redeploy with deploy-headless.sh, checking its exit status and that index-entries.json line counts were reconciled (`generate-context-line-counts.sh --check`). Then the demonstration, in a scratch repository created OUTSIDE this repository: its own remote name, a bare repository as the remote, a feature integration branch, a distinct review base, a batch record with three dependent tasks' proofs, and the deployed scripts copied from .claude/scripts/. Run `cut`, `show`, simulate the three pushes by fetching from the bare side (PD12), simulate the bottom entry's squash-merge on the bare side, fetch, and run the restack. Finish with the operator runbook for the steps no agent may take.
+Two elements only.
 
-WHY A SECOND REPOSITORY: the feature must be shown to work somewhere other than the repository that developed it, with a remote that is not named origin and a review base that is not the integration branch -- the two assumptions most likely to be accidentally baked in. A demonstration inside this repository does not discharge this phase.
+ELEMENT 1 -- DOC PARITY FOR /merge STACK MODE. Update the /merge row and usage in README.md, merge-sources/claudemd.md and the /merge section of docs/guides/user-guide.md so all three name the stack mode consistently. The mode's own documented contract is authored by the record that owns commands/merge.md; this record only brings the three surfaces that ADVERTISE /merge into agreement with it. Do not re-author the mode here, and do not widen into commands/merge.md itself.
 
-THE RUNBOOK IS PART OF THE DELIVERABLE, not a nicety: the flow deliberately stops short of pushing and of opening PRs (rules/pr-prohibition.md), so the operator needs the exact sequence of `/please push` and `/merge --stack` invocations only a human may type.
+ELEMENT 2 -- REDEPLOY AND LINE-COUNT RECONCILIATION. Redeploy with deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1), checking its exit status, and reconcile index-entries.json line counts via generate-context-line-counts.sh --check.
 
-VERIFY BY: the three doc surfaces naming stack mode consistently, `deploy-headless.sh` reporting a clean verify, `generate-context-line-counts.sh --check` clean, and the scratch-repository transcript showing cut -> simulated pushes -> simulated squash-merge -> restack end to end.
+=== THE OPERATOR RUNBOOK IS STILL OWED, AND IS STILL PART OF THE DELIVERABLE ===
+
+The flow deliberately stops short of pushing and of opening pull requests (rules/pr-prohibition.md), so a human needs the exact sequence only they may type. Write it for the SLICE route, not the inference route: the declared slice sequence, one `/please push` per slice branch, then `/merge --stack`. State the grant count and that each grant binds to HEAD when typed inside a 600-second window, so a commit by another session in between means typing it again.
+
+Site the runbook in a durable location outside specs/ -- docs/guides/user-guide.md is the candidate, since this record already edits it for Element 1. A runbook under specs/ is lost to archival (see the landing-target reasoning in task_landing_target_requirement).
+
+=== WHAT WAS DROPPED AND MUST NOT BE REINTRODUCED ===
+
+- The scratch repository created outside this repository, its own non-origin remote name, its bare remote, its feature integration branch and distinct review base.
+- The batch record with three dependent tasks' proofs and the copied deployed scripts.
+- The cut -> simulated-push-by-fetch (PD12) -> simulated-squash-merge -> restack transcript.
+
+If a future ruling reinstates inference as a primary path, that demonstration becomes owed again and should be a record of its own rather than reattached here.
+
+=== VERIFY BY ===
+
+The three doc surfaces naming stack mode consistently; deploy-headless.sh reporting a clean verify; generate-context-line-counts.sh --check clean; the runbook present in its durable location, naming the slice route and the grant count. No scratch repository is created and no transcript is produced.
 
 ---
 
@@ -217,7 +230,11 @@ VERIFY BY: the three doc surfaces naming stack mode consistently, `deploy-headle
 - **Research**: [693_merge_command_stack_mode/reports/01_merge-command-stack-mode.md]
 - **Plan**: [693_merge_command_stack_mode/plans/01_merge-stack-mode.md]
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+**Description**: RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE IMPLEMENTING. specs/decisions/review-slices-are-declared-tasks.md amends the landing record's L3/L4 and its "Interface to review submission": a review slice is declared before the work (S1/S2) and lands by an ordinary scoped commit (S4), rather than being reconstructed from landing proofs by plumbing at review time. This record's own deliverable SURVIVES the amendment intact -- see that record's "What is retained from the inference route" section, which keeps the resolvers, the manifest, show, record-request and restack wired. Do NOT widen scope to implement slices here. The one thing to check at implementation time: any prose this record adds must not assert that a review unit is INFERRED from path overlap or dependency topology, because that is no longer the primary route.
+
+=== ORIGINAL DESCRIPTION BELOW, UNCHANGED ===
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
 ORIGIN: expansion of the stack-PR-submission record, whose plan ran to seven phases and closed three (review-base declaration/resolution/refusals; unit selection and stack ordering; cut the stack and write the manifest) across three dispatches at roughly one phase per dispatch. The parent's own plan at specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md remains the authoritative design record for every phase named below -- READ THE NAMED PHASE SECTION THERE FIRST; this description does not restate its task list, its design decisions (PD1-PD12) or its verification tiers.
 
@@ -241,7 +258,11 @@ VERIFY BY: the command file's own documented contract being internally consisten
 - **Research**: [692_handoff_prints_review_stack/reports/01_handoff-prints-review-stack.md]
 - **Plan**: [692_handoff_prints_review_stack/plans/01_handoff-prints-review-stack.md]
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+**Description**: RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE IMPLEMENTING. specs/decisions/review-slices-are-declared-tasks.md amends the landing record's L3/L4 and its "Interface to review submission": a review slice is declared before the work (S1/S2) and lands by an ordinary scoped commit (S4), rather than being reconstructed from landing proofs by plumbing at review time. This record's own deliverable SURVIVES the amendment intact -- see that record's "What is retained from the inference route" section, which keeps the resolvers, the manifest, show, record-request and restack wired. Do NOT widen scope to implement slices here. The one thing to check at implementation time: any prose this record adds must not assert that a review unit is INFERRED from path overlap or dependency topology, because that is no longer the primary route.
+
+=== ORIGINAL DESCRIPTION BELOW, UNCHANGED ===
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
 ORIGIN: expansion of the stack-PR-submission record, whose plan ran to seven phases and closed three (review-base declaration/resolution/refusals; unit selection and stack ordering; cut the stack and write the manifest) across three dispatches at roughly one phase per dispatch. The parent's own plan at specs/685_stack_pr_submission_from_integration_branch/plans/01_stack-pr-submission.md remains the authoritative design record for every phase named below -- READ THE NAMED PHASE SECTION THERE FIRST; this description does not restate its task list, its design decisions (PD1-PD12) or its verification tiers.
 
@@ -258,12 +279,13 @@ VERIFY BY: scripts/tests/test-milestone-review-handoff.sh green, with new cases 
 ---
 
 ### 691. Restack review stack when parent merges
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: None
 - **Research**: [691_restack_review_stack_when_parent_merges/reports/01_restack-on-parent-merge.md]
 - **Plan**: [691_restack_review_stack_when_parent_merges/plans/01_restack-on-parent-merge.md]
+- **Summary**: [691_restack_review_stack_when_parent_merges/summaries/01_restack-on-parent-merge-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -283,19 +305,42 @@ VERIFY BY: scripts/tests/test-review-stack-prepare.sh green with its existing 38
 - **Status**: [NOT STARTED]
 - **Task Type**: general
 - **Topic**: core-agent-system
-- **Dependencies**: None
+- **Dependencies**: Task 692
 
-**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in this repository, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in this repository, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000). No task-number references and no record-versioning language under agent-system/**.
 
-THE DEFECT. milestone-ref-land.sh treats a MISSING refs/heads/milestone/<id> as a first landing: it asserts non-existence with an empty-oldvalue three-argument update-ref and creates the ref. So a milestone ref that was deliberately retired -- deleted after its content was superseded by stacked parts, with the pre-delete tip preserved under refs/backup/ -- comes back the next time ANY member task of that milestone completes, rebuilt commit by commit on top of the release-line base.
+=== PREMISE CORRECTED BEFORE PLANNING; RE-VERIFY, DO NOT TRUST THIS PARAGRAPH BLIND ===
 
-MEASURED, in the consumer repository where it happened: a milestone ref was retired to a refs/backup/ ref, and three subsequent member-task landings re-created the branch with one commit each. The re-created branch is NOT an ancestor of either stacked part, so it has diverged from what the pull-request queue actually sends, and nothing may be pushed from it. Retiring it again only defers the problem: the next member landing re-creates it.
+This record was written as a defect in milestone-ref-land.sh's first-landing logic: a missing refs/heads/milestone/<id> is treated as a first landing, so an empty-oldvalue three-argument update-ref re-creates a ref that was deliberately retired.
 
-OBJECTIVE: make a retirement durable. The landing script must distinguish '\''this milestone has never landed'\'' from '\''this milestone'\''s ref was deliberately retired'\'', and refuse to re-create in the second case rather than silently rebuilding a divergent branch. Decide and record the retirement marker'\''s representation (a refs/backup/ ref'\''s existence is one candidate; an explicit retired-state field in the milestone'\''s own entry is another) -- the choice is part of the work, not given here.
+Measured in the source store on 2026-11-23, the script has NO lifecycle caller left. grep over scripts/ and hooks/ finds references only in the file itself, its own suite (tests/test-milestone-ref-land.sh), tests/test-milestone-review-handoff.sh, two manifest rows, and two documents (context/patterns/ref-plumbing-landing.md, context/standards/git-workflow-narrative.md). In particular orchestrate-cycle-postflight.sh, orchestrator-postflight.sh, update-task-status.sh and reconcile-task-status.sh do not call it.
 
-REQUIRED NEGATIVE CONTROL: a test proving that a member task completing AFTER a retirement does not re-create the ref, alongside the existing first-landing case still creating it. Preserve the compare-and-swap discipline throughout: the script'\''s own header forbids any forced or non-compare-and-swap update-ref form, and that constraint is not relaxed by this fix.
+specs/decisions/isolation-off-landing-verification-and-review-time-squash.md's L5 retired it as a landing mechanism and its retirement order steps 3 and 4 removed the postflight calls. That retirement is COMPLETE at the wiring level in this repository. The same record's "The script file stays" clarification left the file on disk and assigned the delete-or-reuse decision to two records that have both since finished, so nobody owns it now.
 
-Keep the fix inside the landing path. A caller that deletes a ref is not the defect; re-creating one that was deliberately removed is.
+CONSEQUENCE FOR THE REMEDY: if the ref is still being re-created by member-task landings in a consumer repository, that repository is running a STALE deployed .claude/ tree that still wires the script. The first thing the research round must establish is which it is -- a stale deploy, or a caller this grep missed. Re-run the grep; do not take the paragraph above as settled.
+
+- If stale deploy: the remedy is a redeploy in that repository plus a mechanism that makes the staleness visible, NOT a code change here. dispatch_redeploy_clears_staleness_verdict (688) is the open record in that territory; say so rather than duplicating it.
+- If a live caller exists: unwire it per the retirement order, then proceed to the deletion below.
+
+=== WHAT THIS RECORD NOW OWNS: DELETION, NOT REPAIR ===
+
+Fixing retirement-marker representation inside a script nothing calls buys nothing. Remove it instead:
+
+1. Delete scripts/milestone-ref-land.sh and scripts/tests/test-milestone-ref-land.sh.
+2. Remove both manifest.json rows (the script row and the test row).
+3. Re-point or remove the references in context/patterns/ref-plumbing-landing.md and context/standards/git-workflow-narrative.md. The ref-plumbing pattern document may retain the TECHNIQUE (compare-and-swap update-ref, commit-tree) while ceasing to cite this script as its implementation; decide which, and say which in the plan.
+4. Audit tests/test-milestone-review-handoff.sh's reference and remove or retarget it. That suite is also edited by the record that owns handoff printing of the review stack; declare the shared territory and order behind it rather than racing it.
+5. Reconcile index-entries.json line counts via generate-context-line-counts.sh --check.
+
+=== WHY DELETION IS SAFE TO PROPOSE, AND WHAT WOULD MAKE IT UNSAFE ===
+
+specs/decisions/review-slices-are-declared-tasks.md rules that a review slice lands by an ordinary scoped commit from a working tree (S4), so no future route reinstates ref-plumbing landing as a lifecycle mechanism. That removes the standing reason to keep the file as a utility.
+
+It would be UNSAFE if a consumer repository calls the script directly from its own non-core extension or an operator script. Check before deleting; a consumer-repo caller means unwiring there first, which is that repository's work and not this record's.
+
+=== VERIFY BY ===
+
+grep over scripts/, hooks/ and the manifest finding no remaining reference to the script or its suite; the two documents no longer citing it as an implementation; the handoff suite green; generate-context-line-counts.sh --check clean; deploy-headless.sh reporting a clean verify. If the research round instead finds a live caller, the verification is that caller unwired and the suite covering its absence.
 
 ---
 
@@ -849,76 +894,6 @@ VERIFICATION CRITERIA THIS TASK OWNS: none of the originating task's running-beh
 
 ---
 
-### 666. Re site branch aware batch after prerequisites
-- **Status**: [NOT STARTED]
-- **Task Type**: meta
-- **Topic**: orchestrator
-- **Dependencies**: None
-
-**Description**: Re-site the branch-aware orchestration batch in the authored roadmap so it no longer precedes its own prerequisites
-
-=== FINDING, 2026-11-20 (written by amend_branch_topology_per_batch_worktree_squash; checked against live specs/state.json, not inferred from a commit subject) ===
-
-THE NAMED INSTANCE IS ALREADY APPLIED. Commit 7231ccbe2 ("roadmap: maintenance pass (re-site the branch-aware batch after its prerequisites)") moved the branch-aware batch from position 3 to position 19 under milestone M1. Its member's three non-terminal prerequisites sit at positions 9 (git_commit_scoped_gate_refusal_diagnostic), 15 (stage_regenerated_derived_files_in_phase_commits) and 18 (phase_commit_boundary_mechanical_check), all earlier; its other two dependencies are completed. Checked against the required outcome:
-- The batch sits after the last batch holding one of its prerequisites: YES (19 after 18).
-- No task is a member of two batches: YES (no task_id repeats across roadmap_milestones[].batches[]).
-- No batch lost a member without re-homing: YES (the sorted list of all batch members is identical before and after the commit, 127 entries).
-- The batch kept its --hard flag: YES.
-
-THE PRECISE REMAINDER IS THE SWEEP. This record also requires a sweep for the same inversion elsewhere under the milestone. Run now, the sweep finds exactly one: manifest_registration_dropped_from_phase_commit sits in the batch at position 8 and depends on snapshot_artifacts_contaminate_phase_commits, which sits in the batch at position 9. That edge is Edge 2 of specs/decisions/commit-layer-cluster-ordering.md. Whether to re-site, and which side moves, is the roadmap-authoring judgment this record describes; nothing was changed here.
-
-ONE FURTHER CHANGE SINCE THIS RECORD WAS WRITTEN. The branch-aware batch's single member has been narrowed to its generated-file-declaration element; its branch-topology elements moved to eight new tasks (specs/decisions/batch-worktree-isolation-and-task-squash-landing.md, "Successor tasks"), none of which is sited in any batch yet. The batch's --hard flag, its position and its rationale were authored for the superseded scope and should be re-judged in the same /roadmap pass that sites the new tasks.
-
-RECOMMENDED DISPOSITION: either narrow this record to the one-inversion remainder above, or abandon it and let the next /roadmap pass absorb both points. It was NOT abandoned by the task that wrote this finding; abandonment is the user's /task --abandon.
-
-=== ORIGINAL DESCRIPTION (unchanged below) ===
-
-The authored milestone batch that proposes the branch-aware orchestration and squash-landing work is sited at a position that runs BEFORE every batch holding its prerequisites. Its rendered dispatch command is therefore undispatchable from its authored position, and an operator who runs it as printed gets an admission refusal rather than work.
-
-THE EDIT TARGET IS THE AUTHORED BATCH ENTRY in specs/state.json's roadmap_milestones[].batches[] -- not the roadmap generator, and not the rendered specs/ROADMAP.md, which is a generated artifact that correctly renders whatever the entry says. The generator is working as designed; the authored data is stale. Do not change generator code to paper over an authoring defect.
-
-=== MEASURED EVIDENCE -- RE-DERIVABLE, DO NOT RE-DERIVE FROM SCRATCH ===
-
-M1. THE ORDERING INVERSION. Under the active milestone, the branch-aware orchestration batch sits at batch position 3 with a single member and the --hard flag. That member declares five dependencies. Two are already terminal and need no ordering. The remaining three are each an authored member of a LATER batch under the same milestone:
-
-  - the commit-containment batch, at position 10, holds one of them
-  - the generated-surfaces-and-store-leak batch, at position 16, holds another
-  - the landing-target-contract detectors batch, at position 19, holds the third
-
-So the batch is authored 7, 13 and 16 positions ahead of its own three prerequisites. The earliest position from which its command could dispatch is after the latest of those three.
-
-M2. WHAT THE RENDERED FILE SHOWS. The generated roadmap renders the batch's command line from the entry's task_ids and flags, then renders one row per member carrying that member's live blocker list. The result is a printed command naming one task, immediately followed by a row stating that same task is blocked on three others. The two lines contradict each other as operator instructions: the command says "run this", the row says "this cannot run". Contrast the batch at position 4 under the same milestone, which lists all six of its members including a blocked one, so running its printed command advances the batch even though one member defers.
-
-M3. THE ENTRY'S OWN RATIONALE ALREADY PREDICTED THIS, AND NAMED THE RESOLUTION. The authored rationale states that the member's "true prerequisite set is not knowable yet", that a pending ruling was being asked whether certain work constitutes hard prerequisites, and that if it ruled yes the member "acquires predecessors that currently sit in the commit-containment and dispatch-composition batches further down, and it cannot land in the run its position here implies." It then states the resolution principle verbatim: "That is an ordering constraint for the ruling to discover, never grounds for moving this record out of the strand -- an unmet predecessor orders work, it does not disqualify it from a batch." The ruling has since landed and did add the dependency edges. The predicted ordering constraint was never applied to the entry.
-
-M4. WHY THE OBVIOUS FIX IS WRONG. Widening the batch's task_ids to absorb its three prerequisites would place each of those three in two batches at once, under the same milestone. Milestone membership comes only from sitting in a batch and a batch is a dispatch proposal, so double membership would double-propose the same work and corrupt the per-milestone batch-done and task-done fractions the milestone summary table renders. Each prerequisite also sits in its current batch for a stated topical reason. Absorption is therefore not the fix.
-
-=== WHAT TO DECIDE AND APPLY ===
-
-This is a roadmap-authoring judgment call over batch position and membership, which is roadmap-agent's declared remit. Rule between at least these, and state the reasoning in the entry's rationale:
-
-A. RE-SITE THE BATCH LATER: move it to a position after the last batch holding one of its prerequisites. Cheapest change, preserves every existing batch's membership and the standalone-dispatch intent the rationale argues for at length. Costs: the batch moves a long way down the authored order, and the milestone's narrative ordering may no longer read as intended.
-
-B. PULL THE PREREQUISITES FORWARD: lift the three prerequisite tasks out of their current batches into a new batch sited immediately before the branch-aware batch. Preserves the branch-aware work's early position. Costs: breaks up three topically-authored batches, and each prerequisite may itself carry predecessors that would need the same treatment -- check before choosing this.
-
-C. SPLIT THE DIFFERENCE: re-site the branch-aware batch only as late as strictly necessary, after establishing which of the three prerequisites genuinely gates which element of the member's own scope. The member's description distinguishes elements that survive the landed topology ruling from elements that ruling superseded, so the real gating set may be smaller than the declared dependency array.
-
-Whichever is chosen, the outcome must satisfy: the batch's rendered command is dispatchable from its authored position at the time an operator reaches it, no task is a member of two batches under one milestone, and no existing batch loses a member without that member being re-homed.
-
-=== CONSTRAINTS ===
-
-- Edit the authored entry only, through the sanctioned state writer. Never hand-edit specs/ROADMAP.md, which is regenerated from this data and whose first line declares it generated.
-- Do not add a dependency edge to express the ordering. The dependency edges already exist and are correct; this record is about the authored batch POSITION disagreeing with them, not about a missing edge.
-- Do not weaken or re-open the standalone-dispatch intent the entry's rationale argues for, unless option B is chosen on its own merits and the rationale is updated to say so.
-- Preserve the entry's --hard flag and its description text unless the chosen option requires changing them.
-- The same inversion may exist for other batches under the same milestone. Sweep for it rather than fixing only this one instance, and report what the sweep found.
-
-=== VERIFICATION ===
-
-The authored batch's rendered command, read from its position in the generated roadmap, names a set an operator can actually dispatch. No task appears in two batches under one milestone. Every batch that lost a member has that member re-homed. The milestone summary table's batch-done and task-done fractions still reconcile against the authored membership. A regenerate produces the corrected file and a second regenerate is byte-identical.
-
----
-
 ### 665. Record the last dispatching orchestration batch in a displaced Previous work section of the generated roadmap
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
@@ -1069,7 +1044,11 @@ DONE WHEN. No load, unload, reload or resync path can write .claude-extensions.j
 - **Topic**: orchestrator
 - **Dependencies**: Task 513, Task 517, Task 553, Task 654, Task 657
 
-**Description**: Declare generated paths so they collapse in review
+**Description**: PRIORITY RAISED 2026-11-23. specs/decisions/review-slices-are-declared-tasks.md rules that a review slice is declared before the work and lands by an ordinary scoped commit (S1/S2/S4). The landing record's V3 already records why this element matters more under that ruling than it did before: "The generated state files ride in every task's commits and are not separable by path; including them refused one correct landing in fourteen." A slice's reviewable diff carries those same generated files. Declaring them so they collapse by default in review is therefore no longer a cosmetic nicety -- it is what makes a slice's diff readable by the human who has to approve it. Site this earlier in the next /roadmap pass than its current position implies.
+
+=== ORIGINAL DESCRIPTION BELOW, UNCHANGED ===
+
+Declare generated paths so they collapse in review
 
 SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (rules/source-store-deploy-boundary.md). Edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.
 
