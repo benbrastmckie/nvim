@@ -1,18 +1,15 @@
 {
-  "status": "planned",
-  "task_number": 567,
-  "phase": "plan",
-  "session_id": "sess_1795400947_bb64cf_567",
-  "dispatch_seq": 3,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 5,
+  "phases_completed": 4,
   "phases_total": 4,
-  "summary": "Authored a 4-phase implementation plan porting git-commit-phase.sh's deployed-tree containment strip into git-commit-scoped.sh's V10 resolution block (Site 3), spliced strictly between the raw containment_scope_arr population loop and the non-emptiness guard. Phase 2 adds a Z19 regression case to test-git-commit-scoped.sh and restores test-git-commit-phase.sh Case 26's end-to-end assertion while re-running Case 20 unmodified; Phase 3 revises the now-stale third-asymmetry paragraph in context/standards/git-staging-scope.md, keeping the still-true proposed_file_scope_lookup half. The doc path is outside the task's originally declared file_scope and is admitted via plan-file-scope-harvest.sh at this plan's postflight. Plan validates clean with 0 warnings.",
+  "summary": "Closed Site 3 of the three documented Containment-predicate sites by porting git-commit-phase.sh's deployed-tree file_scope strip into git-commit-scoped.sh's V10 resolution block, exactly as the plan specified. Added a new Z19 regression case, restored test-git-commit-phase.sh's Case 26 to its full end-to-end assertion, confirmed the Case 20 idempotence fixture is unaffected, and updated git-staging-scope.md to record that only the read-only proposed_file_scope_lookup annotation remains site-2-only. All 4 phases are [COMPLETED] with each phase's own scoped verify-touched.sh run green, plus a final 4-path multi-touched run (22 suites, 22 passed) at close-out.",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/567_port_containment_strip_to_git_commit_scoped/plans/01_port-containment-strip.md",
-      "summary": "4-phase plan: port the Site-3 strip, pin it with Z19 + restored Case 26, record the closure in git-staging-scope.md, close out with a scoped multi-path verify-touched.sh run."
+      "type": "summary",
+      "path": "specs/567_port_containment_strip_to_git_commit_scoped/summaries/01_port-containment-strip-summary.md",
+      "summary": "Implementation summary recording the Site-3 closure, the Z19 case, Case 26's restoration, and the standards doc update."
     }
   ]
 }

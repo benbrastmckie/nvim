@@ -14098,6 +14098,11 @@
           "path": "specs/567_port_containment_strip_to_git_commit_scoped/plans/01_port-containment-strip.md",
           "type": "plan",
           "summary": "4-phase plan: port the Site-3 strip, pin it with Z19 + restored Case 26, record the closure in git-staging-scope.md, close out with a scoped multi-path verify-touched.sh run."
+        },
+        {
+          "path": "specs/567_port_containment_strip_to_git_commit_scoped/summaries/01_port-containment-strip-summary.md",
+          "type": "summary",
+          "summary": "Implementation summary recording the Site-3 closure, the Z19 case, Case 26's restoration, and the standards doc update."
         }
       ],
       "audit_verdict": {
@@ -14327,7 +14332,8 @@
         "agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh"
       ],
       "session_id": "sess_1795400947_bb64cf",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Ported git-commit-phase.sh's Site-2 deployed-tree file_scope strip into git-commit-scoped.sh's V10 resolution block (Site 3), closing the gap where a .claude-prefixed file_scope entry admitted at Site 2 was still independently vetoed at Site 3. Added regression case Z19, restored test-git-commit-phase.sh's Case 26 to its full end-to-end assertion, confirmed Case 20 unaffected, and updated git-staging-scope.md to record that only the read-only proposed_file_scope_lookup annotation remains site-2-only."
     },
     {
       "project_number": 570,

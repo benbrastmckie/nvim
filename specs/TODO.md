@@ -3149,6 +3149,7 @@ RE-MEASURED AND RULED (commit-layer cluster ordering, specs/decisions/commit-lay
 - **Parent**: Task 446
 - **Research**: [567_port_containment_strip_to_git_commit_scoped/reports/01_port-containment-strip.md]
 - **Plan**: [567_port_containment_strip_to_git_commit_scoped/plans/01_port-containment-strip.md]
+- **Summary**: [567_port_containment_strip_to_git_commit_scoped/summaries/01_port-containment-strip-summary.md]
 
 **Description**: Port git-commit-phase.sh's deployed-tree containment strip into git-commit-scoped.sh's V10 resolution block (around its containment_scope_arr assembly), closing Site 3 of the three documented containment sites. Site 2 (git-commit-phase.sh's own Containment Self-Check) now strips .claude/** entries before use, but git-commit-scoped.sh carries a separate, unpatched V10 guard that re-reads the unstripped file_scope directly from specs/state.json with no override once --task is passed. Consequence: a path admitted at Site 2 still does not land, because Site 3 vetoes it independently. This is the documented reason the planned proposed_file_scope union design was abandoned in favour of a read-only annotation; see the Site-3 parity note in context/standards/git-staging-scope.md. Scope: git-commit-scoped.sh and its test suite. Verify by restoring the full end-to-end assertion in test-git-commit-phase.sh Case 26 (currently narrowed to Site 2 behaviour only) and by re-checking the Case 20 idempotence fixture that the abandoned union design regressed.
 
