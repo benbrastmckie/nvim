@@ -31,21 +31,39 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/477_normalize_issue_log_class_vocabulary/summaries/01_class-vocabulary-normalization-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["non-vacuous", "regression-proof", "git show", "scratch harness", "bug injection"]
+      "suggested_keywords": [
+        "non-vacuous",
+        "regression-proof",
+        "git show",
+        "scratch harness",
+        "bug injection"
+      ]
     },
     {
       "content": "An apostrophe inside a comment or prose string written INSIDE a single-quoted bash heredoc-less jq script literal (e.g. `jq -s '... # issue-record.sh's own helper ...'`) silently closes the enclosing bash single-quote early, producing a confusing bash -n syntax error pointing at an unrelated later line. Caught immediately by `bash -n` before any test run. Avoid apostrophes in any comment text written inside a single-quoted jq/awk/sed script embedded in a bash script -- rephrase to avoid the possessive form entirely.",
       "category": "TECHNIQUE",
       "source_artifact": "specs/477_normalize_issue_log_class_vocabulary/summaries/01_class-vocabulary-normalization-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["bash", "single-quote", "apostrophe", "jq", "syntax error"]
+      "suggested_keywords": [
+        "bash",
+        "single-quote",
+        "apostrophe",
+        "jq",
+        "syntax error"
+      ]
     },
     {
       "content": "scripts/tests/test-common-lib.sh has a pre-existing, reproducible environment-leak defect: its 'mode=deploy-tree-first (both exist)' case fails whenever CORE_TEST_SUBJECT_MODE=source-store is exported in the ambient environment before running it directly (3/3 reproductions), while it passes cleanly (3/3) with the variable unset. This surfaces as a false-looking NEW failure whenever a broad verify-touched.sh narrowed battery happens to select test-common-lib.sh under that override (e.g. for an unrelated task's source-store-mode phase verification). Not caused by editing lib/common.sh or test-common-lib.sh itself; confirmed by reproducing with zero other files touched.",
       "category": "INSIGHT",
       "source_artifact": "specs/477_normalize_issue_log_class_vocabulary/summaries/01_class-vocabulary-normalization-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["test-common-lib.sh", "CORE_TEST_SUBJECT_MODE", "environment leak", "flaky test", "pre-existing defect"]
+      "suggested_keywords": [
+        "test-common-lib.sh",
+        "CORE_TEST_SUBJECT_MODE",
+        "environment leak",
+        "flaky test",
+        "pre-existing defect"
+      ]
     }
   ],
   "sapience_notes": [
@@ -96,8 +114,14 @@
     "session_id": "sess_1795400947_bb64cf",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 6,
     "phases_total": 6
-  }
+  },
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }

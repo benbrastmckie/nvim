@@ -8036,6 +8036,7 @@ An edge on validate_carried_unverified_names_a_source is declared because that t
 - **Dependencies**: None
 - **Research**: [477_normalize_issue_log_class_vocabulary/reports/01_issue_log_class_vocabulary.md]
 - **Plan**: [477_normalize_issue_log_class_vocabulary/plans/01_class-vocabulary-normalization.md]
+- **Summary**: [477_normalize_issue_log_class_vocabulary/summaries/01_class-vocabulary-normalization-summary.md]
 
 **Description**: The issue-log `class` vocabulary is fragmenting, which defeats the cross-task grouping that is the entire purpose of conclusion-stage aggregation. Separately, orchestrate-conclusion-aggregate.sh accepts a malformed call shape and answers it with a confident, plausible-looking empty result. Fix both.
 

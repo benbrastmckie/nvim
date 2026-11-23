@@ -6545,6 +6545,11 @@
           "path": "specs/477_normalize_issue_log_class_vocabulary/plans/01_class-vocabulary-normalization.md",
           "type": "plan",
           "summary": "6-phase plan: seed-enum promotion and 10-file count sweep, grouping-time normalization with an empty alias table, repeated-`--tasks` rejection plus flag audit, `class` shape convention and append-time warnings, 10 regression cases, redeploy and close."
+        },
+        {
+          "path": "specs/477_normalize_issue_log_class_vocabulary/summaries/01_class-vocabulary-normalization-summary.md",
+          "type": "summary",
+          "summary": "Six-phase implementation summary covering the seed-enum promotion, grouping-time normalization and alias-table mechanism, the --tasks/mode-flag rejection, the class shape convention and warnings, 10 new regression cases, and the redeploy/close verification."
         }
       ],
       "created": "2026-11-04T22:42:30Z",
@@ -6765,7 +6770,8 @@
         "degradations_count": 0
       },
       "session_id": "sess_1795400947_bb64cf",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Promoted scope excursion into an 18-class issue-log seed enum (10 files reconciled), added grouping-time case/separator folding with an empty alias-table mechanism and class_variants/variants auditability to orchestrate-conclusion-aggregate.sh, rejected a repeated --tasks (and mode) flag with a usage error, added a class shape convention plus append-time warnings to issue-record.sh, and added 10 new regression cases -- all verified against the deployed tree after redeploy."
     },
     {
       "project_number": 479,
