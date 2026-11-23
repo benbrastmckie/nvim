@@ -1,0 +1,40 @@
+{
+  "status": "researched",
+  "agent_type": "general-research-agent",
+  "delegation_path": ["orchestrator", "research", "general-research-agent"],
+  "session_id": "sess_1795400947_bb64cf_486",
+  "task_number": 486,
+  "dispatch_seq": 16,
+  "findings_count": 3,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/486_manifest_registration_dropped_from_phase_commit/reports/01_manifest-registration-containment-rule.md",
+      "summary": "Rules Option (1) -- a fourth local, non-declared file_scope_arr splice admitting a touched extension's own manifest.json whenever that extension's scripts/ tree is also touched in the same phase, following the exact precedent shape of the three splices already present in git-commit-phase.sh. Rejects Option (3) with evidence (tasks 430/446 landed a mechanical recovery trigger, not first-drop prevention) and Option (2) (duplicates the already-existing, already-wired sync-manifest-scripts.sh / check-extension-docs.sh Rule Q post-redeploy lint, which targets a different failure mode)."
+    }
+  ],
+  "next_steps": "Run /orchestrate 486 to create implementation plan",
+  "memory_candidates": [
+    {
+      "content": "git-commit-phase.sh's Containment Self-Check already widens its local file_scope_arr (never specs/state.json's declared file_scope) via three precedent splices: own-task-directory, engine-written-state allowlist (lib/engine-written-state-paths-lib.sh), and derived-output-prefix allowlist (lib/derived-artifact-probe-lib.sh). Any future 'should this path be implicitly in scope' question at this site should be answered by extending this local-splice pattern, not by widening the declared file_scope the batch-admission gate reads.",
+      "category": "PATTERN",
+      "source_artifact": "specs/486_manifest_registration_dropped_from_phase_commit/reports/01_manifest-registration-containment-rule.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["git-commit-phase.sh", "file_scope_arr", "containment splice", "is_contained", "local widening"]
+    },
+    {
+      "content": "The proposed_file_scope deposit channel (tasks 430 + 446) mechanizes RECOVERY from a containment drop (deposits the dropped path, triggers a mechanical before/after follow-up-commit check) but does not PREVENT the first drop or eliminate the extra-commit cost -- task 446's own summary states the follow-up commit is 'never automatic on a later phase's ordinary commit.' Do not cite this mechanism as subsuming a first-drop-prevention request without verifying this distinction.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/486_manifest_registration_dropped_from_phase_commit/reports/01_manifest-registration-containment-rule.md",
+      "confidence": 0.85,
+      "suggested_keywords": ["proposed_file_scope", "declaration staleness", "follow-up commit", "task 430", "task 446"]
+    },
+    {
+      "content": "sync-manifest-scripts.sh (--check/--write) and check-extension-docs.sh's Rule Q (check_undeclared_scripts) already enforce the manifest.json provides.scripts <-> on-disk scripts/ pairing, matching on full relative path under scripts/ with deprecated/* excluded. Rule Q runs via verify-deploy.sh gate 3 (Doc-lint), which fires post-redeploy -- after any mid-dispatch phase commit. It cannot prevent or repair a same-phase Containment-Self-Check drop of an already-correct manifest.json edit; it only catches the case where the edit was never made at all.",
+      "category": "CONFIG",
+      "source_artifact": "specs/486_manifest_registration_dropped_from_phase_commit/reports/01_manifest-registration-containment-rule.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["sync-manifest-scripts.sh", "check-extension-docs.sh", "Rule Q", "verify-deploy.sh", "manifest.json provides.scripts"]
+    }
+  ]
+}
