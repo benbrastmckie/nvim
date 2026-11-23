@@ -1,5 +1,5 @@
 ---
-next_project_number: 684
+next_project_number: 685
 ---
 
 # TODO
@@ -13,7 +13,7 @@ next_project_number: 684
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,477,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,567,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,679,680 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,477,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,567,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,679,680,684 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,439,474,479,481,509,523,533,535,540,544,546,552,566,570,583,592,593,605,609,630 | 383,390,410,431,438,452,453,511,519,539,542,563,567,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,472,480,492,513,541,561,588,594 | 439,479,491,509,535,552,556,570,593 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,484,518,581,595,641,669 | 454,472,477,492,539,541,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
@@ -66,6 +66,7 @@ next_project_number: 684
 646 [NOT STARTED] — Decide and implement how .return-meta.json's status...
 664 [NOT STARTED] — Add a /tmp sweep pass to /refresh for dead scratchpad...
 680 [NOT STARTED] — Fix gate-cache-lib.sh so verify-deploy.sh --skip-unchanged...
+684 [NOT STARTED] — Sweep and fix stale command and sub-mode references across...
 473 [RESEARCHED] — Strip record-versioning language from the boundary-owned...
 479 [NOT STARTED] — Require every task to name a landing target: a creation-time...
   └─ 480 [NOT STARTED] — Advisory detector for research tasks stranded at RESEARCHED...
@@ -187,6 +188,92 @@ next_project_number: 684
 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
 
 ## Tasks
+
+### 684. Sweep and fix stale command and sub-mode references across the source store
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: core-agent-system
+- **Dependencies**: None
+
+**Description**: Sweep the source store for slash-command references that name a command or sub-mode that does not exist or does not accept what is named, fix every one, and extend the existing lint so the class cannot silently return.
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** in /home/benjamin/.config/nvim (resolve via .claude-extensions.json's .extensions.<name>.source_dir). Never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (rules/source-store-deploy-boundary.md). REDEPLOY afterwards via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.
+
+== THE MOTIVATING DEFECT ==
+
+An operator asked what `/distill --meta` does, after an orchestration conclusion report named it as the consumer of recorded channel (b)/(c) proposals. There is no such sub-mode. extensions/memory/commands/distill.md states plainly, at its own lines 13, 74, 160 and 174, that `--meta`, `--review` and `--dream` MOVED to `/telemetry`; `/distill` accepts only `--auto`, `--revise`, `--learn`. The conclusion stage, the batch-results template and the events format all still tell the reader to run a command that will be rejected as an unknown flag.
+
+This is not one typo. It is the residue of a sub-mode migration that updated the owning command file and left every downstream citation behind.
+
+== WHY THE EXISTING LINT DID NOT CATCH IT ==
+
+scripts/lint/lint-dead-command-recommendations.sh already guards a neighbouring class, and its design is sound: it enumerates valid commands at run time from every */commands/*.md reachable from the extensions root, hardcodes no allowlist, and scans the full corpus including context/ and docs/ prose and embedded JSON example strings. Read its header before touching it -- it already records why it is a separate file rather than an extension of lint-routing-wiring.sh or lint-contract-compliance.sh.
+
+It misses this defect on two independent axes, and BOTH must be closed:
+
+(1) IT VALIDATES THE COMMAND NAME ONLY, NEVER THE FLAG. `/distill` exists, so `/distill --meta` passes. Command existence and sub-mode acceptance are different predicates.
+
+(2) IT MATCHES A RECOMMENDATION SHAPE ONLY (a literal `Next: /X` or `Run /X` line). Every `/distill --meta` occurrence found is ordinary inline prose -- "awaiting the batched, dedup-aware consumer, `/distill --meta`" -- which that shape does not reach.
+
+A NAIVE FLAG CHECK IS NOT SUFFICIENT, AND THIS IS THE CENTRAL DESIGN PROBLEM. Grepping the owning command file for the flag string returns a FALSE PASS here: distill.md contains the literal text `--meta` precisely because it documents that the flag moved away. The validator must distinguish a flag the command ACCEPTS from a flag it merely MENTIONS as moved, removed or unavailable. Decide and document how that discrimination is made (an explicit accepted-flag declaration the command files carry, a parse of the documented argument-dispatch block, or a negative-context exclusion), and pin the discrimination with a fixture whose command file mentions a flag only in a moved/removed sentence.
+
+== MEASURED EVIDENCE -- RE-DERIVE, DO NOT TRUST THESE COUNTS ==
+
+Probed 2026-11-22 over agent-system/extensions/ (*.md, *.sh, *.json), matching backticked `/cmd --flag` and bare `/cmd` references. Re-derive every figure before acting; they fix the SHAPE of the work, not its exact contents.
+
+M1. `/distill --meta` -- 7 occurrences, 4 files:
+  - core/context/contracts/conclusion-stage.md (3: Step 4b, Step 4c, Step 6's report instruction)
+  - core/context/patterns/orchestrate-batch-results-template.md (2: the channel (b) and channel (c) render lines)
+  - core/context/formats/events-format.md (1: the conclusion_proposal_recorded row's "Consumed later, in batches, by" clause)
+  - books/context/project/books/patterns/books-revise-submode.md (1: "it governs this sub-mode identically")
+The correct target in all seven is `/telemetry --meta`. Confirm against distill.md and telemetry.md rather than against this list.
+
+M2. REFERENCES TO A COMMAND WITH NO DEFINITION FILE ANYWHERE. `/zotero --setup` appears in literature/scripts/zotero-chunk.sh:133 and zotero-attach-chunks.sh:100,106 -- inside RUNTIME ERROR MESSAGES printed to the user, which is strictly worse than prose: the operator is told at the moment of failure to run something that does not exist. `/errors --fix N` appears in nvim/context/project/neovim/hooks/wezterm-integration.md:90 and core/hooks/wezterm-task-number.sh:12,65. Determine for each whether the command was removed (fix the reference) or lives outside the scanned extensions root (fix the scan, not the reference) -- do not assume the first.
+
+M3. FLAG NOT FOUND ON THE NAMED COMMAND: `/literature --scan`, `/literature --search`, `/sheet --quick`. These are UNCONFIRMED and at least one is a probe artifact: two different extensions ship a `commands/sheet.md`, and a crude first-match lookup resolved `/sheet` to the wrong one. Treat M3 as a list to adjudicate, not a list to fix. The duplicate-basename case is itself a finding about the validator: a command name resolving to more than one file must be handled deliberately, not by first match.
+
+M4. BARE REFERENCES TO THE REMOVED LIFECYCLE TRIAD: `/implement` (14), `/plan` (13), `/research` (11). The existing lint's own header names these three as the removal that motivated it, so a live RECOMMENDATION of them is already guarded; these 38 survive because they are not in the recommendation shape. Most are expected to be legitimate historical prose. THE SWEEP MUST NOT MECHANICALLY REWRITE THEM. Distinguishing a live instruction to run a dead command from a historical account of its removal is a judgment call, and a validator that cannot make it must report the occurrence rather than rewrite it.
+
+M5. CONFIRMED FALSE POSITIVES, for the fixture set: `/tmp`, `/proc`, `/dev` (filesystem paths); `/ide`, `/help` (Claude Code built-ins, not agent-system commands). The validator must not flag these.
+
+== WHAT TO BUILD ==
+
+A. FLAG-LEVEL VALIDATION, extending lint-dead-command-recommendations.sh rather than adding a second lint, unless reading it in full shows the hosts are genuinely incompatible -- in which case state why, in the same register its own NET-SIZE RATIONALE section uses. The run-time enumeration of valid commands is already there and must be reused, never forked. Preserve its no-hardcoded-allowlist property at the flag level too: the accepted-flag set must be derived from the command files themselves, so adding or removing a sub-mode changes the verdict with no edit to the lint.
+
+B. WIDEN THE MATCHED SHAPE from the recommendation line to any backticked command reference, while keeping the false positives in M5 out. The existing lint deliberately scans the full corpus including context/ and docs/; that scope stays.
+
+C. FIX EVERY CONFIRMED OCCURRENCE, M1 first (unambiguous and highest-traffic), then M2 and M3 as adjudicated. Each fix names the command that actually owns the capability.
+
+D. RETIRE THE LINT'S OWN FINDINGS TO ZERO within this landing event, matching the zero-tolerance, no-allowlist posture the existing lint already declares for itself. If a residual occurrence cannot be retired, that is a finding to report, not an allowlist entry to add.
+
+== DESIGN QUESTIONS TO RULE ON DURING PLANNING (do not silently default) ==
+
+Q1. How is "a flag this command accepts" determined, given the false-pass trap above? Argue the options; a solution that requires every command file to gain a new declaration block is a corpus-wide change and must be costed as one.
+
+Q2. What is the verdict on a command name that resolves to more than one commands/*.md file across extensions (the /sheet case in M3)? Both-must-accept, any-may-accept, or report-the-ambiguity-as-its-own-finding.
+
+Q3. Does a reference inside a runtime error message (M2) warrant a stronger verdict than the same reference in prose? It reaches the operator at their least recoverable moment, which is an argument for treating it as a higher severity; against, a second severity tier is machinery this lint does not currently have.
+
+Q4. How does the validator treat a historical mention (M4) without either rewriting it or drowning the report in it? Fix the rule before touching any of the 38.
+
+== CONSTRAINTS ==
+
+- Repo-agnostic: no consumer-repo-specific path or literal in any deliverable.
+- The lint's existing verdicts must not regress: whatever it catches today it still catches after.
+- An adjacent open task covers the BEHAVIOR of the --meta evidence consumer (its dedup, cap and consolidation channel). This task is reference hygiene only and must not change what --meta does. Their declared file_scopes do not intersect; keep it that way.
+- The working tree of the source-store repository carried uncommitted edits to core/context/contracts/conclusion-stage.md and core/context/patterns/orchestrate-batch-results-template.md when this task was filed. Rebase onto whatever those edits became; do not assume the probed line numbers still hold.
+- git push and pull-request creation stay prohibited for agents (rules/pr-prohibition.md).
+
+== VERIFICATION ==
+
+- The lint, run over the full extensions corpus, reports zero findings at landing.
+- A fixture whose command file mentions a flag ONLY in a moved/removed sentence is flagged, not passed -- the false-pass trap is closed by test, not by assertion.
+- A fixture adding a synthetic command with a synthetic flag changes the verdict with no edit to the lint, preserving the existing run-time-enumeration property at the flag level.
+- Every M5 false positive is unflagged.
+- No occurrence of `/distill --meta` remains anywhere under agent-system/**; the capability is cited as `/telemetry --meta` and that command accepts it.
+- The deployed tree is regenerated and the repository that surfaced this defect reads the corrected text.
+
+---
 
 ### 683. Couple sapience capture to extension activation
 - **Status**: [COMPLETED]

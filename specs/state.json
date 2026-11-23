@@ -1,7 +1,243 @@
 {
   "version": "1.1.0",
-  "next_project_number": 684,
+  "next_project_number": 685,
   "active_projects": [
+    {
+      "project_number": 684,
+      "project_name": "sweep_stale_command_and_submode_references",
+      "status": "not_started",
+      "task_type": "meta",
+      "title": "Sweep and fix stale command and sub-mode references across the source store",
+      "description": "Sweep the source store for slash-command references that name a command or sub-mode that does not exist or does not accept what is named, fix every one, and extend the existing lint so the class cannot silently return.\n\nSOURCE STORE IS THE EDIT TARGET: agent-system/extensions/** in /home/benjamin/.config/nvim (resolve via .claude-extensions.json's .extensions.<name>.source_dir). Never hand-author under a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store (rules/source-store-deploy-boundary.md). REDEPLOY afterwards via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description.\n\n== THE MOTIVATING DEFECT ==\n\nAn operator asked what `/distill --meta` does, after an orchestration conclusion report named it as the consumer of recorded channel (b)/(c) proposals. There is no such sub-mode. extensions/memory/commands/distill.md states plainly, at its own lines 13, 74, 160 and 174, that `--meta`, `--review` and `--dream` MOVED to `/telemetry`; `/distill` accepts only `--auto`, `--revise`, `--learn`. The conclusion stage, the batch-results template and the events format all still tell the reader to run a command that will be rejected as an unknown flag.\n\nThis is not one typo. It is the residue of a sub-mode migration that updated the owning command file and left every downstream citation behind.\n\n== WHY THE EXISTING LINT DID NOT CATCH IT ==\n\nscripts/lint/lint-dead-command-recommendations.sh already guards a neighbouring class, and its design is sound: it enumerates valid commands at run time from every */commands/*.md reachable from the extensions root, hardcodes no allowlist, and scans the full corpus including context/ and docs/ prose and embedded JSON example strings. Read its header before touching it -- it already records why it is a separate file rather than an extension of lint-routing-wiring.sh or lint-contract-compliance.sh.\n\nIt misses this defect on two independent axes, and BOTH must be closed:\n\n(1) IT VALIDATES THE COMMAND NAME ONLY, NEVER THE FLAG. `/distill` exists, so `/distill --meta` passes. Command existence and sub-mode acceptance are different predicates.\n\n(2) IT MATCHES A RECOMMENDATION SHAPE ONLY (a literal `Next: /X` or `Run /X` line). Every `/distill --meta` occurrence found is ordinary inline prose -- \"awaiting the batched, dedup-aware consumer, `/distill --meta`\" -- which that shape does not reach.\n\nA NAIVE FLAG CHECK IS NOT SUFFICIENT, AND THIS IS THE CENTRAL DESIGN PROBLEM. Grepping the owning command file for the flag string returns a FALSE PASS here: distill.md contains the literal text `--meta` precisely because it documents that the flag moved away. The validator must distinguish a flag the command ACCEPTS from a flag it merely MENTIONS as moved, removed or unavailable. Decide and document how that discrimination is made (an explicit accepted-flag declaration the command files carry, a parse of the documented argument-dispatch block, or a negative-context exclusion), and pin the discrimination with a fixture whose command file mentions a flag only in a moved/removed sentence.\n\n== MEASURED EVIDENCE -- RE-DERIVE, DO NOT TRUST THESE COUNTS ==\n\nProbed 2026-11-22 over agent-system/extensions/ (*.md, *.sh, *.json), matching backticked `/cmd --flag` and bare `/cmd` references. Re-derive every figure before acting; they fix the SHAPE of the work, not its exact contents.\n\nM1. `/distill --meta` -- 7 occurrences, 4 files:\n  - core/context/contracts/conclusion-stage.md (3: Step 4b, Step 4c, Step 6's report instruction)\n  - core/context/patterns/orchestrate-batch-results-template.md (2: the channel (b) and channel (c) render lines)\n  - core/context/formats/events-format.md (1: the conclusion_proposal_recorded row's \"Consumed later, in batches, by\" clause)\n  - books/context/project/books/patterns/books-revise-submode.md (1: \"it governs this sub-mode identically\")\nThe correct target in all seven is `/telemetry --meta`. Confirm against distill.md and telemetry.md rather than against this list.\n\nM2. REFERENCES TO A COMMAND WITH NO DEFINITION FILE ANYWHERE. `/zotero --setup` appears in literature/scripts/zotero-chunk.sh:133 and zotero-attach-chunks.sh:100,106 -- inside RUNTIME ERROR MESSAGES printed to the user, which is strictly worse than prose: the operator is told at the moment of failure to run something that does not exist. `/errors --fix N` appears in nvim/context/project/neovim/hooks/wezterm-integration.md:90 and core/hooks/wezterm-task-number.sh:12,65. Determine for each whether the command was removed (fix the reference) or lives outside the scanned extensions root (fix the scan, not the reference) -- do not assume the first.\n\nM3. FLAG NOT FOUND ON THE NAMED COMMAND: `/literature --scan`, `/literature --search`, `/sheet --quick`. These are UNCONFIRMED and at least one is a probe artifact: two different extensions ship a `commands/sheet.md`, and a crude first-match lookup resolved `/sheet` to the wrong one. Treat M3 as a list to adjudicate, not a list to fix. The duplicate-basename case is itself a finding about the validator: a command name resolving to more than one file must be handled deliberately, not by first match.\n\nM4. BARE REFERENCES TO THE REMOVED LIFECYCLE TRIAD: `/implement` (14), `/plan` (13), `/research` (11). The existing lint's own header names these three as the removal that motivated it, so a live RECOMMENDATION of them is already guarded; these 38 survive because they are not in the recommendation shape. Most are expected to be legitimate historical prose. THE SWEEP MUST NOT MECHANICALLY REWRITE THEM. Distinguishing a live instruction to run a dead command from a historical account of its removal is a judgment call, and a validator that cannot make it must report the occurrence rather than rewrite it.\n\nM5. CONFIRMED FALSE POSITIVES, for the fixture set: `/tmp`, `/proc`, `/dev` (filesystem paths); `/ide`, `/help` (Claude Code built-ins, not agent-system commands). The validator must not flag these.\n\n== WHAT TO BUILD ==\n\nA. FLAG-LEVEL VALIDATION, extending lint-dead-command-recommendations.sh rather than adding a second lint, unless reading it in full shows the hosts are genuinely incompatible -- in which case state why, in the same register its own NET-SIZE RATIONALE section uses. The run-time enumeration of valid commands is already there and must be reused, never forked. Preserve its no-hardcoded-allowlist property at the flag level too: the accepted-flag set must be derived from the command files themselves, so adding or removing a sub-mode changes the verdict with no edit to the lint.\n\nB. WIDEN THE MATCHED SHAPE from the recommendation line to any backticked command reference, while keeping the false positives in M5 out. The existing lint deliberately scans the full corpus including context/ and docs/; that scope stays.\n\nC. FIX EVERY CONFIRMED OCCURRENCE, M1 first (unambiguous and highest-traffic), then M2 and M3 as adjudicated. Each fix names the command that actually owns the capability.\n\nD. RETIRE THE LINT'S OWN FINDINGS TO ZERO within this landing event, matching the zero-tolerance, no-allowlist posture the existing lint already declares for itself. If a residual occurrence cannot be retired, that is a finding to report, not an allowlist entry to add.\n\n== DESIGN QUESTIONS TO RULE ON DURING PLANNING (do not silently default) ==\n\nQ1. How is \"a flag this command accepts\" determined, given the false-pass trap above? Argue the options; a solution that requires every command file to gain a new declaration block is a corpus-wide change and must be costed as one.\n\nQ2. What is the verdict on a command name that resolves to more than one commands/*.md file across extensions (the /sheet case in M3)? Both-must-accept, any-may-accept, or report-the-ambiguity-as-its-own-finding.\n\nQ3. Does a reference inside a runtime error message (M2) warrant a stronger verdict than the same reference in prose? It reaches the operator at their least recoverable moment, which is an argument for treating it as a higher severity; against, a second severity tier is machinery this lint does not currently have.\n\nQ4. How does the validator treat a historical mention (M4) without either rewriting it or drowning the report in it? Fix the rule before touching any of the 38.\n\n== CONSTRAINTS ==\n\n- Repo-agnostic: no consumer-repo-specific path or literal in any deliverable.\n- The lint's existing verdicts must not regress: whatever it catches today it still catches after.\n- An adjacent open task covers the BEHAVIOR of the --meta evidence consumer (its dedup, cap and consolidation channel). This task is reference hygiene only and must not change what --meta does. Their declared file_scopes do not intersect; keep it that way.\n- The working tree of the source-store repository carried uncommitted edits to core/context/contracts/conclusion-stage.md and core/context/patterns/orchestrate-batch-results-template.md when this task was filed. Rebase onto whatever those edits became; do not assume the probed line numbers still hold.\n- git push and pull-request creation stay prohibited for agents (rules/pr-prohibition.md).\n\n== VERIFICATION ==\n\n- The lint, run over the full extensions corpus, reports zero findings at landing.\n- A fixture whose command file mentions a flag ONLY in a moved/removed sentence is flagged, not passed -- the false-pass trap is closed by test, not by assertion.\n- A fixture adding a synthetic command with a synthetic flag changes the verdict with no edit to the lint, preserving the existing run-time-enumeration property at the flag level.\n- Every M5 false positive is unflagged.\n- No occurrence of `/distill --meta` remains anywhere under agent-system/**; the capability is cited as `/telemetry --meta` and that command accepts it.\n- The deployed tree is regenerated and the repository that surfaced this defect reads the corrected text.",
+      "topic": "core-agent-system",
+      "created": "2026-11-23T03:02:13Z",
+      "last_updated": "2026-11-23T03:02:13Z",
+      "audit_verdict": {
+        "proposal": {
+          "id": "sweep_stale_command_and_submode_references",
+          "project_number": null,
+          "title": "Sweep and fix stale command and sub-mode references across the source store"
+        },
+        "verdict_counts": {
+          "covered-by-closed": 133,
+          "duplicate-of-open": 38,
+          "overlaps-open": 2,
+          "scope-blind": 44
+        },
+        "verdicts_detail": [
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 642,
+            "project_name": "repropagate_bounded_wait_agent_bullets",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 641,
+            "project_name": "reground_foreground_wait_cap_and_idiom",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 618,
+            "project_name": "working_tree_residue_disposition_policy",
+            "shared_paths": null,
+            "mechanical_class": "scope-blind",
+            "semantic_score": 0.4166666666666667
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 390,
+            "project_name": "migrate_mis_sited_agent_system_tasks",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5833333333333334
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 421,
+            "project_name": "retarget_distill_meta_as_evidence_consumer",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.625
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 452,
+            "project_name": "baseline_relative_gate_criteria",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5833333333333334
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 454,
+            "project_name": "same_turn_gate_runs_foreground",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4583333333333333
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 472,
+            "project_name": "handoff_validator_crash_and_defect_record_gap",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.625
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 477,
+            "project_name": "normalize_issue_log_class_vocabulary",
+            "shared_paths": [
+              "agent-system/extensions/core/context/contracts/conclusion-stage.md",
+              "agent-system/extensions/core/context/patterns/orchestrate-batch-results-template.md"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.375
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 481,
+            "project_name": "migrate_mis_sited_agent_system_task_delta",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5833333333333334
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 501,
+            "project_name": "cycle_postflight_containment_parity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4166666666666667
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 508,
+            "project_name": "shared_extension_metadata_commit_containment",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 509,
+            "project_name": "redeploy_phase_declaration_and_gate_criterion",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4583333333333333
+          },
+          {
+            "verdict": "overlaps-open",
+            "project_number": 512,
+            "project_name": "builtin_command_exemption_for_dead_command_lint",
+            "shared_paths": [
+              "agent-system/extensions/core/scripts/lint/lint-dead-command-recommendations.sh"
+            ],
+            "mechanical_class": "overlap",
+            "semantic_score": 0.25
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 513,
+            "project_name": "phase_commit_boundary_mechanical_check",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 518,
+            "project_name": "handoff_blockers_admission_contract_at_authoring_sites",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5833333333333334
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 523,
+            "project_name": "gate27_missing_declaration_call_site_counting",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4583333333333333
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 533,
+            "project_name": "lake_build_guard_stale_replay_env_lean_file",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5416666666666666
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 535,
+            "project_name": "phase_commit_drops_own_plan_artifact",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.625
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 539,
+            "project_name": "lean_plan_challenge_block_authoring_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4583333333333333
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 541,
+            "project_name": "snapshot_artifacts_contaminate_phase_commits",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 542,
+            "project_name": "bounded_waiter_detach_form_pid_fidelity",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5833333333333334
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 544,
+            "project_name": "fixture_dependent_challenge_statement_pinning",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 545,
+            "project_name": "validate_artifact_argument_order_fault",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.4166666666666667
+          },
+          {
+            "verdict": "duplicate-of-open",
+            "project_number": 546,
+            "project_name": "literature_search_zero_result_degraded_contract",
+            "shared_paths": null,
+            "mechanical_class": "none",
+            "semantic_score": 0.5
+          }
+        ],
+        "passes": {
+          "mechanical": true,
+          "semantic": true
+        },
+        "degradations_count": 44
+      }
+    },
     {
       "project_number": 683,
       "project_name": "couple_sapience_capture_to_extension_activation",
