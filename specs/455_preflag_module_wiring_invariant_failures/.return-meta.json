@@ -21,14 +21,26 @@
       "category": "TECHNIQUE",
       "source_artifact": "specs/455_preflag_module_wiring_invariant_failures/summaries/01_preflag-module-wiring-invariants-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["bash timeout", "auto-background", "verify-touched.sh", "bounded wait", "harness timeout"]
+      "suggested_keywords": [
+        "bash timeout",
+        "auto-background",
+        "verify-touched.sh",
+        "bounded wait",
+        "harness timeout"
+      ]
     },
     {
       "content": "Decision pattern for a generated-surface-appending stage (plan-file-scope-harvest.sh): append PATHS a mechanical regeneration overwrites, and deliberately exclude CONTENT obligations (a lint-suppression allowlist entry, an identifier rename, a suppression-reason comment, a per-ledger-row doc-comment requirement) even when they are forced by the same triggering edit, because the required content cannot be computed from a plan's declared paths alone -- it would require running the actual lint/naming/ledger check. Reusable test when deciding whether to widen any similar append-only mechanical stage: can the exact content be derived from the declared paths alone, or does deriving it require running the check itself?",
       "category": "PATTERN",
       "source_artifact": "specs/455_preflag_module_wiring_invariant_failures/summaries/01_preflag-module-wiring-invariants-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["generated-surface", "append-only", "content vs path", "plan-file-scope-harvest", "scope discipline"]
+      "suggested_keywords": [
+        "generated-surface",
+        "append-only",
+        "content vs path",
+        "plan-file-scope-harvest",
+        "scope discipline"
+      ]
     }
   ],
   "sapience_notes": [
@@ -77,7 +89,11 @@
     "session_id": "sess_1795391913_f9e5cc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 3,
     "phases_total": 3
   }

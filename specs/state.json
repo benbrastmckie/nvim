@@ -5296,7 +5296,7 @@
     {
       "project_number": 455,
       "project_name": "preflag_module_wiring_invariant_failures",
-      "status": "implementing",
+      "status": "completed",
       "task_type": "meta",
       "title": "Pre-flag the predictable first-run module-invariant failures that wiring a new module forces, where the generated-surface knowledge already lives",
       "topic": "file-scope-lifecycle",
@@ -5322,12 +5322,18 @@
           "path": "specs/455_preflag_module_wiring_invariant_failures/plans/01_preflag-module-wiring-invariants.md",
           "type": "plan",
           "summary": "3-phase plan: re-validate the reproduction, record the part-(1) finding and part-(2) ruling in the harvester header plus one new suite case, then deploy and discharge the gate."
+        },
+        {
+          "path": "specs/455_preflag_module_wiring_invariant_failures/summaries/01_preflag-module-wiring-invariants-summary.md",
+          "type": "summary",
+          "summary": "Part-(1) finding and part-(2) NO ruling recorded in plan-file-scope-harvest.sh's header; Case 30 added to the suite; no behaviour change; deployed and verified."
         }
       ],
       "created": "2026-10-19T04:37:20Z",
-      "last_updated": "2026-11-23T00:22:13Z",
+      "last_updated": "2026-11-23T00:40:28Z",
       "session_id": "sess_1795391913_f9e5cc",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Recorded the part-(1) finding and the part-(2) NO ruling in plan-file-scope-harvest.sh's header comment (comment-only, no behaviour change) and added Case 30 to test-plan-file-scope-harvest.sh pinning the cited module-wiring shape, append-only behaviour, and the capability-gate-closed inert case. Deployed via deploy-headless.sh and discharged the full verification tier per the Batch Gate Deferral directive."
     },
     {
       "project_number": 457,

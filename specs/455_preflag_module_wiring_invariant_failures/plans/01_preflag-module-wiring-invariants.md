@@ -1,7 +1,7 @@
 # Implementation Plan: Task #455
 
 - **Task**: 455 - Preflag module-wiring invariant failures in generated-surface appending
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 2.25 hours
 - **Dependencies**: 446 (landed, confirmed `completed`); 435, 448, 328 (serialization-only, operator-liftable)
 - **Research Inputs**: specs/455_preflag_module_wiring_invariant_failures/reports/01_preflag-module-wiring-invariants.md
