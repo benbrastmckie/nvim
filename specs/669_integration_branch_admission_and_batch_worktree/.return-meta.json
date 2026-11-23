@@ -1,75 +1,25 @@
 {
-  "status": "researched",
-  "started_at": "2026-11-23T09:26:03Z",
-  "completed_at": "2026-11-23T09:33:18Z",
-  "dispatch_seq": 1,
-  "summary": "Admission fits orchestrate-cycle-plan.sh through its generic stop object with no prose edit to the two byte-ceiling files. Measured state territory is specs/, .claude-extensions.json and .memory/; both refusals arm only when integration_branch is declared, per the amending record. Batch record sited at specs/.orchestration/batch/{session_id}.json with deferred fields under an absent isolation object.",
+  "status": "planned",
+  "started_at": "2026-11-23T09:37:37Z",
+  "completed_at": "2026-11-23T09:52:00Z",
+  "summary": "Four-phase plan: schema rows and runtime-file registration, an admission library with its own suite, wiring into orchestrate-cycle-plan.sh through the generic stop object, then redeploy and close. Verified against isolation off only; no edit to the two byte-ceiling files.",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/669_integration_branch_admission_and_batch_worktree/reports/01_integration-branch-admission.md",
-      "summary": "Insertion site, admission predicate order, measured state-territory path set, undeclared-key behaviour, batch record shape and registration, file_scope corrections, and risks for integration-branch admission with isolation off."
+      "type": "plan",
+      "path": "specs/669_integration_branch_admission_and_batch_worktree/plans/01_integration-branch-admission.md",
+      "summary": "Four-phase plan for integration-branch admission, the worktree_isolation declaration and the per-invocation batch record, verified with isolation off."
     }
   ],
-  "proposed_file_scope": [
-    "agent-system/extensions/core/scripts/lib/batch-admission-lib.sh",
-    "agent-system/extensions/core/scripts/tests/test-batch-admission-lib.sh",
-    "agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh",
-    "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh",
-    "agent-system/extensions/core/index-entries.json"
-  ],
-  "memory_candidates": [
-    {
-      "content": "orchestrate-cycle-plan.sh stop object is a generic channel: skill-orchestrate routes ANY non-null stop {reason,message} to its conclusion moves (session release, queue archive), and emit_and_exit caches a plan only when a real dispatch row exists. A new blocking invocation-level gate can therefore be added as a new stop reason in the script alone, with no prose in SKILL.md or commands/orchestrate.md. The blocking queue-check gate, by contrast, lives in commands/orchestrate.md, not in the cycle-plan script.",
-      "category": "PATTERN",
-      "source_artifact": "specs/669_integration_branch_admission_and_batch_worktree/reports/01_integration-branch-admission.md",
-      "confidence": 0.85,
-      "suggested_keywords": [
-        "orchestrate-cycle-plan",
-        "stop-reason",
-        "admission-gate",
-        "byte-ceiling",
-        "queue-check"
-      ]
-    },
-    {
-      "content": "Tracked paths ordinary agent-system operation dirties outside specs/ without any task editing them: .claude-extensions.json (deploy state) and .memory/memory-index.json (retrieval counters), both present in 4 of the last 4 sync/deploy commits. In a repository that owns its source store, <source_dir>/index-entries.json line counts also move, but only as a consequence of a real context-document edit. Any clean-tree predicate must exclude specs/, .claude-extensions.json and .memory/ or it refuses routinely.",
-      "category": "INSIGHT",
-      "source_artifact": "specs/669_integration_branch_admission_and_batch_worktree/reports/01_integration-branch-admission.md",
-      "confidence": 0.8,
-      "suggested_keywords": [
-        "state-territory",
-        "dirty-tree",
-        "memory-index",
-        "clean-tree-predicate",
-        "admission"
-      ]
-    },
-    {
-      "content": "guard-destructive-git.sh judges the primary working tree, not the tree a command targets: git checkout -- <path> inside a scratch repository is refused whenever the primary repo is dirty. Build git test fixtures without discard forms; git show HEAD:path > path restores a file without tripping the hook. Also: git rev-parse --abbrev-ref HEAD prints the literal HEAD when detached, so branch-equality checks should use git symbolic-ref -q --short HEAD.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/669_integration_branch_admission_and_batch_worktree/reports/01_integration-branch-admission.md",
-      "confidence": 0.8,
-      "suggested_keywords": [
-        "guard-destructive-git",
-        "test-fixture",
-        "detached-head",
-        "symbolic-ref",
-        "scratch-repo"
-      ]
-    }
-  ],
-  "next_steps": "Run /orchestrate 669 to create implementation plan",
+  "next_steps": "Run /orchestrate 669 to execute the plan",
+  "memory_candidates": [],
   "metadata": {
     "session_id": "sess_1795425897_6a25f2_669",
-    "agent_type": "general-research-agent",
-    "duration_seconds": 0,
-    "delegation_depth": 2,
-    "delegation_path": [
-      "orchestrator",
-      "research",
-      "general-research-agent"
-    ],
-    "findings_count": 15
-  }
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 4,
+    "estimated_hours": 6.5,
+    "dependency_waves": [[1], [2], [3], [4]]
+  },
+  "dispatch_seq": 2
 }

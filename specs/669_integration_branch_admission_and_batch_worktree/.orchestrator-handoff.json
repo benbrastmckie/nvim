@@ -1,0 +1,16 @@
+{
+  "status": "planned",
+  "summary": "Wrote a four-phase, 6.5-hour plan: schema rows and batch-record registration, a shared admission library with its own suite, wiring into orchestrate-cycle-plan.sh via the existing stop object, then redeploy. Branch and dirty refusals arm only when integration_branch is declared, as the amending record rules. The stored file_scope still names two batch-worktree paths that belong to held task 686 and are absent from the plan.",
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/669_integration_branch_admission_and_batch_worktree/plans/01_integration-branch-admission.md",
+      "summary": "Four-phase plan for integration-branch admission, the worktree_isolation declaration and the per-invocation batch record, verified with isolation off."
+    }
+  ],
+  "phases_completed": 0,
+  "phases_total": 4,
+  "blockers": [],
+  "next_action_hint": "Dispatch implement for task 669, phase 1.",
+  "dispatch_seq": 2
+}
