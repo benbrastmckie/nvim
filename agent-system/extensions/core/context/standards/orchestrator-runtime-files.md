@@ -167,9 +167,9 @@ created on demand by the writer, and the file is written tmp-file-then-rename.
 | `orchestration_id` | string or null | the orchestration-queue identity, when the caller holds one |
 | `task_numbers` | array of integers | the invocation's member tasks, so a resumed batch (which carries a new session identity) can find an earlier record by membership |
 | `admitted_at` | string | ISO-8601 UTC time of admission |
-| `integration_branch` | string | the declared `integration_branch`, or the checked-out branch when undeclared |
+| `integration_branch` | string or null | the declared `integration_branch`, or the checked-out branch when undeclared; null only when undeclared with `HEAD` detached |
 | `integration_branch_declared` | boolean | whether the name above came from the declaration |
-| `integration_tip_at_cut` | string or null | the 40-hex commit the integration branch pointed at on admission; null on an unborn branch |
+| `integration_tip_at_cut` | string or null | the 40-hex commit the integration branch pointed at on admission (the commit at `HEAD` when undeclared); null on an unborn branch |
 | `worktree_isolation` | string | the isolation mode admitted under (`off`) |
 | `landing_proofs` | array | created empty; append-only, one element per landed task |
 

@@ -485,3 +485,19 @@ runtime_recap_path() {
   local specs_dir="$1" session_id="$2"
   echo "${specs_dir}/.orchestration/.recap-${session_id}.json"
 }
+
+# runtime_batch_record_path <specs_dir> <session_id>
+# Fifth per-session resolver: the batch record orchestration admission writes once per
+# invocation (scripts/lib/batch-admission-lib.sh, called from scripts/orchestrate-cycle-plan.sh)
+# and the landing and cleanup mechanisms read. Unlike the four resolvers above it lives in its
+# own `batch/` subdirectory, which keeps it out of scripts/reap-session-runtime-files.sh's
+# literal, non-recursive candidate globs: the record is durable per-invocation provenance, never
+# reaped. Same compute-only contract as the resolvers above: caller supplies its own resolved
+# `specs/` directory and creates `.orchestration/batch/` before writing; this function only
+# computes the path. No new runtime-file-pattern class member is needed -- `specs/.orchestration/`
+# is already covered, directory-class, by this file's own class membership. See
+# context/standards/orchestrator-runtime-files.md's "The batch record" section for the fields.
+runtime_batch_record_path() {
+  local specs_dir="$1" session_id="$2"
+  echo "${specs_dir}/.orchestration/batch/${session_id}.json"
+}

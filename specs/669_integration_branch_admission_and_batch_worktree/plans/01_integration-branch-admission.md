@@ -232,19 +232,19 @@ selector's output at authoring; re-run it if the phase's file set changes.
 
 ---
 
-### Phase 2: Admission library, path resolver and library suite [NOT STARTED]
+### Phase 2: Admission library, path resolver and library suite [COMPLETED]
 
 **Goal**: A sourced library that reads both declarations, evaluates the admission predicate and
 writes the batch record, with a suite covering every verdict.
 
 **Tasks**:
-- [ ] Add `runtime_batch_record_path <specs_dir> <session_id>` to
+- [x] Add `runtime_batch_record_path <specs_dir> <session_id>` to
       `scripts/lib/runtime-file-patterns.sh` beside the four existing per-session resolvers,
       returning `<specs_dir>/.orchestration/batch/<session_id>.json`, with the same
-      compute-only contract comment. Additive; no existing function changes.
-- [ ] Create `scripts/lib/batch-admission-lib.sh` with a double-source guard and these
+      compute-only contract comment. Additive; no existing function changes. *(completed)*
+- [x] Create `scripts/lib/batch-admission-lib.sh` with a double-source guard and these
       functions (names may be adjusted, but must avoid the strings `dispatch-worktree.sh` and
-      `task_selected_for_worktree_isolation`):
+      `task_selected_for_worktree_isolation`): *(completed)*
   - a reader for `worktree_isolation` returning `off`, `batch`, or the raw unrecognised value;
     absent key or missing `jq`/declarations file reads as `off`;
   - a reader for `integration_branch` returning the declared name or empty for undeclared,
@@ -256,32 +256,32 @@ writes the batch record, with a suite covering every verdict.
     a verdict (`admit`, `skip`, or `refuse`), a reason and a message through named output
     variables or a single JSON line, never by exiting;
   - the record writer, tmp-file-then-rename, creating `batch/` on demand.
-- [ ] Implement the predicate order exactly: (1) `worktree_isolation` not absent/`off` refuses
+- [x] Implement the predicate order exactly: (1) `worktree_isolation` not absent/`off` refuses
       with `isolation_unimplemented`, the message naming the declared value and the slug
       `batch_worktree_creation_when_isolation_on`; (2) not a `git` work tree: `skip`;
       (3) `integration_branch` undeclared: advisory on standard error on the first cycle only,
       no refusal; (4) declared and `git symbolic-ref -q --short HEAD` differs or fails: refuse
       with `off_integration_branch`, naming both; (5) declared, no batch record for this
       session, dirty paths outside state territory: refuse with `dirty_primary_tree`, listing
-      every path; (6) admit, writing the record when none exists and not under dry-run.
-- [ ] Record shape: `schema` (1), `session_id`, `orchestration_id` (or null), `task_numbers`,
+      every path; (6) admit, writing the record when none exists and not under dry-run. *(completed)*
+- [x] Record shape: `schema` (1), `session_id`, `orchestration_id` (or null), `task_numbers`,
       `admitted_at`, `integration_branch` (the declared name, or the checked-out branch when
       undeclared), `integration_branch_declared`, `integration_tip_at_cut` (40-hex, or null on
       an unborn branch), `worktree_isolation` (`off`), `landing_proofs` (`[]`). No `isolation`
-      key.
-- [ ] Create `scripts/tests/test-batch-admission-lib.sh`, building scratch `git` repositories
+      key. *(completed)*
+- [x] Create `scripts/tests/test-batch-admission-lib.sh`, building scratch `git` repositories
       under a temporary directory without discard-form commands. Cover the report's fourteen
       fixtures (clean admit; dirt only inside state territory; untracked file outside it; staged
       new file; staged rename; working-tree deletion; other branch; detached `HEAD`; `batch`;
       unknown value; explicit `off`; undeclared key; unborn branch; non-`git` root), plus:
       record shape and absence of an `isolation` key; second call in the same session skips the
       dirty test and does not rewrite the record; dry-run writes nothing; refusal writes nothing;
-      the `isolation_unimplemented` message contains the slug and no task number.
-- [ ] Add doc-sync assertions to the same suite: each state-territory member and the slug
-      appear in `context/standards/repo-level-declarations.md`.
-- [ ] Register both new files with
+      the `isolation_unimplemented` message contains the slug and no task number. *(completed)*
+- [x] Add doc-sync assertions to the same suite: each state-territory member and the slug
+      appear in `context/standards/repo-level-declarations.md`. *(completed)*
+- [x] Register both new files with
       `bash agent-system/extensions/core/scripts/sync-manifest-scripts.sh --write`, then confirm
-      `--check` is clean.
+      `--check` is clean. *(completed)*
 
 **Timing**: 2 hours
 

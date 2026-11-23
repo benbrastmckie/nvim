@@ -1,0 +1,21 @@
+{
+  "phase": 2,
+  "phase_name": "Admission library, path resolver and library suite",
+  "started_at": "2026-11-23T10:00:00Z",
+  "last_updated": "2026-11-23T10:01:26Z",
+  "objectives": [
+    {"id": 1, "description": "runtime_batch_record_path resolver", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/runtime-file-patterns.sh"]},
+    {"id": 2, "description": "batch-admission-lib.sh: readers, state territory, predicate, record writer", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/lib/batch-admission-lib.sh", "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md"], "note": "Two record-table cells in the runtime-files document were tightened to match the writer: integration_branch is null when undeclared with HEAD detached; the tip is the commit at HEAD when undeclared. Line count unchanged (703)."},
+    {"id": 3, "description": "test-batch-admission-lib.sh with doc-sync assertions", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-batch-admission-lib.sh"]},
+    {"id": 4, "description": "Manifest registration", "status": "done", "files_touched": ["agent-system/extensions/core/manifest.json"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [
+    {"approach": "sync-manifest-scripts.sh --write on untracked new files", "result": "failed", "reason": "The helper enumerates with git ls-files, so an untracked file is invisible; git add -N on the two new files made them visible and --write then inserted both."}
+  ],
+  "deviations": [
+    {"task_id": "2.V", "description": "The narrowed pass named in Tier Justification is green", "type": "altered", "reason": "The deployed tree does not carry this phase's edits until the Phase 4 redeploy, so verify-touched.sh there would exercise stale copies. The new suite (81 passed) and the source-store copies of test-runtime-file-tracking.sh, test-manifest-scripts-sync.sh, test-script-inventory.sh and test-session-runtime-files.sh were run directly instead; the verify-touched.sh pass over the full touched set runs in Phase 4 against the redeployed tree.", "annotation": "*(deviation: altered — narrowed pass moved to Phase 4, after the redeploy; source-store suites run directly here)*"}
+  ],
+  "verification_notes": "test-batch-admission-lib.sh: 81 passed, 0 failed. Non-vacuity: removing .memory from the state-territory constant fails 3 assertions; restored by re-applying the edit, 81 passed again. sync-manifest-scripts.sh --check: rc 0. bash -n clean on both new files and runtime-file-patterns.sh. Source-store suites: runtime-file-tracking 15/0, script-inventory 32/0, session-runtime-files 9/0, manifest-scripts-sync rc 0.",
+  "handoff_count": 0
+}
