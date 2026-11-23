@@ -637,6 +637,39 @@ if [ -n "$contention_task_number" ] && [ -f "specs/state.json" ]; then
             done < <(echo "$derived_prefixes_json" | jq -r '.[]?' 2>/dev/null)
           fi
         fi
+
+        # Extension-manifest widening (mirrors git-commit-phase.sh's own Containment Self-Check
+        # splice of the same name, Site 2 -- see git-staging-scope.md's "Three Containment sites,
+        # not one"): widens containment_scope_arr, for THIS check only, with a touched
+        # extension's own manifest.json whenever this commit's own positive pathspecs also name
+        # a path under that same extension's scripts/ tree (deprecated/ excluded). This mirror is
+        # load-bearing, not cosmetic: Site 2's identical splice admits the manifest path into its
+        # own kept_files_touched/stage_paths and hands it to THIS script as a positive pathspec;
+        # without this widening here too, THIS script's own V10 guard would still drop it,
+        # turning Site 2's silent, recoverable drop-and-warn into a loud post-commit
+        # completeness-check failure at Site 2 -- a regression, not a fix. Pure string match over
+        # `pathspecs` (not yet classified into filtered/add/dropped below) -- no filesystem, git,
+        # or jq call -- so fail-open here is structural, exactly like the three widenings above.
+        # A `:(exclude)`-magic pathspec entry is skipped (never a manifest.json candidate). The
+        # extension prefix is taken verbatim from the matching entry, never a hardcoded
+        # "agent-system/" literal, so a source store rooted elsewhere is handled identically.
+        for v10_ext_entry in "${pathspecs[@]}"; do
+          case "$v10_ext_entry" in
+            :\(exclude\)*) continue ;;
+          esac
+          case "$v10_ext_entry" in
+            */extensions/*/scripts/deprecated/* | extensions/*/scripts/deprecated/*)
+              ;;
+            */extensions/*/scripts/* | extensions/*/scripts/*)
+              v10_ext_prefix="${v10_ext_entry%%/scripts/*}"
+              v10_ext_manifest="${v10_ext_prefix}/manifest.json"
+              case " ${containment_scope_arr[*]} " in
+                *" ${v10_ext_manifest} "*) ;;
+                *) containment_scope_arr+=("$v10_ext_manifest") ;;
+              esac
+              ;;
+          esac
+        done
       fi
     fi
   fi
