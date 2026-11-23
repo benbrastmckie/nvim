@@ -6,8 +6,8 @@
 
 | Milestone | Status | Tasks done | Review |
 |---|---|---|---|
-| [M5: Integration-branch landing and the PR stack](#milestone-m5) | active | 2/4 | none |
-| [M4: Clear the path to isolated batch landing: measurement, commit layer, detectors](#milestone-m4) | planned | 8/21 | none |
+| [M5: Integration-branch landing and the PR stack](#milestone-m5) | active | 3/4 | none |
+| [M4: Clear the path to isolated batch landing: measurement, commit layer, detectors](#milestone-m4) | planned | 9/21 | none |
 | [M3: Batch worktree isolation and generated-path collapse](#milestone-m3) | planned | 0/1 | none |
 | [M2: Sapience linked projects, capture activation and collaborator access](#milestone-m2) | active | 5/6 | none |
 | [M1: Current work](#milestone-m1) | active | 15/106 | none |
@@ -19,18 +19,18 @@ See also: [Rules, conventions and repo context](#roadmap-context)
 
 Make a completed task land as one reviewable commit on an admitted integration branch, verified before its status write, then cut review branches so that landed work reaches review as a stack of pull requests the branch-strategy docs describe.
 
-- **Progress**: active -- 0/1 batches, 2/4 tasks done -- Ready to dispatch; the worktree-isolation half is held by operator direction and sited in no batch.
+- **Progress**: active -- 0/1 batches, 3/4 tasks done -- Ready to dispatch; the worktree-isolation half is held by operator direction and sited in no batch.
 - **Review**: none
 - **Gate**: Integration-branch admission and the isolation declaration are in place; every completed task leaves one reviewable commit on the integration branch, verified before the status write; a stack of pull requests is cut from that landed work; and the branch-strategy documentation states the contract as implemented.
 
-**Batch 1** -- Admit the integration branch, land one reviewable commit per task, then stack the PRs (2/4 done)
+**Batch 1** -- Admit the integration branch, land one reviewable commit per task, then stack the PRs (3/4 done)
 
 ```
-/orchestrate 685, 675 --hard
-675 ready           Rewrite the branch-strategy documentation to state the implemented integratio...
-685 ready           Cut review branches and submit a stack of PRs from landed integration-branch ...
+/orchestrate 685 --hard
+685 IN FLIGHT       Cut review branches and submit a stack of PRs from landed integration-branch ...
 669 done            Add integration-branch admission and the isolation declaration
 673 done            Land one reviewable commit per completed task on the integration branch and v...
+675 done            Rewrite the branch-strategy documentation to state the implemented integratio...
 ```
 
 <a id="milestone-m4"></a>
@@ -38,7 +38,7 @@ Make a completed task land as one reviewable commit on an admitted integration b
 
 Close everything standing in front of the batch-worktree landing work: measure the harness against an external worktree, settle which paths a commit drops and from which root, and land the phase-commit boundary detector whose expected ref the two-root contract makes per tree.
 
-- **Progress**: planned -- 2/6 batches, 8/21 tasks done -- Not the landing work itself -- only the measurement and the commit-layer and detector fixes it waits on.
+- **Progress**: planned -- 3/6 batches, 9/21 tasks done -- Not the landing work itself -- only the measurement and the commit-layer and detector fixes it waits on.
 - **Review**: none
 - **Gate**: The four harness behaviours are measured and recorded, or R2's worktree siting is amended by what they show; the containment, parity, divergence and source-store chain through git-commit-scoped.sh is closed to its refusal diagnostic; the phase-commit boundary detector takes an expected-ref parameter; and integration-branch admission and the two-root tasks have no open dependency left.
 
@@ -46,24 +46,14 @@ Close everything standing in front of the batch-worktree landing work: measure t
 
 **Batch 2** (done) -- Make a phase commit own the surfaces it stales, so the isolation declaration has a schema row
 
-**Batch 3** -- Settle which paths a phase commit may drop, and how one drop event is recorded (5/6 done)
-
-```
-/orchestrate 486
-486 IN FLIGHT       Stop a required extension manifest.json registration being dropped from a pha...
-477 done            Normalize issue-log class vocabulary and reject the aggregate's malformed rep...
-484 done            Collapse per-path scope excursion issue rows into one record per drop event
-535 done            Carve a task's own specs/ artifacts out of git-commit-phase.sh's containment ...
-541 done            Stop git-snapshot.sh --no-revert artifacts from contaminating phase commits w...
-567 done            Port the deployed-tree containment strip into git-commit-scoped.sh
-```
+**Batch 3** (done) -- Settle which paths a phase commit may drop, and how one drop event is recorded
 
 **Batch 4** -- Make every containment and commit site agree before the two-root split lands on them
 
 ```
 /orchestrate 556, 519, 570, 472, 501, 524, 536
 472 blocked:556,570 Stop validate-handoff.sh aborting on a string-shaped blockers array, and stop...
-501 blocked:472,486,570  Give the cycle-postflight containment site predicate parity and a guarde...   <- the ignored-specs postflight narrowing it must not co-admit with has closed, so that bar can no longer bind
+501 blocked:472,570 Give the cycle-postflight containment site predicate parity and a guarded rec...   <- the ignored-specs postflight narrowing it must not co-admit with has closed, so that bar can no longer bind
 524 blocked:501     Rule on a staged-vs-working-tree divergence signal for a pathspec commit, and...
 536 blocked:524     Source-store-aware commit path and plan-time registration-description review
 570 blocked:519     Stop the stall signal firing on commits it cannot attribute to the dispatch u...
@@ -191,7 +181,7 @@ Work already scheduled when this store adopted milestones. Divide it into real m
 
 ```
 /orchestrate 639, 508
-508 blocked:486     Rule on where shared extension metadata belongs in the containment allowlist,...
+508 ready           Rule on where shared extension metadata belongs in the containment allowlist,...
 639 ready           Make issue-record.sh failures visible instead of silently losing the evidence...
 ```
 
