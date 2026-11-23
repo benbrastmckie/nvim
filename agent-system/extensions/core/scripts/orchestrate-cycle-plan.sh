@@ -357,6 +357,10 @@ if ! . "${SCRIPT_DIR}/lib/redeploy-checkpoint-lib.sh" 2>/dev/null; then
   echo "ERROR: orchestrate-cycle-plan.sh: could not source ${SCRIPT_DIR}/lib/redeploy-checkpoint-lib.sh." >&2
   exit 2
 fi
+if ! . "${SCRIPT_DIR}/lib/batch-admission-lib.sh" 2>/dev/null; then
+  echo "ERROR: orchestrate-cycle-plan.sh: could not source ${SCRIPT_DIR}/lib/batch-admission-lib.sh." >&2
+  exit 2
+fi
 
 MAX_INFRA_FAILURES=3
 # Decision 2 (Phase 5) — aux_dispatch[] escalation caps, ported verbatim from single-task Stage
@@ -838,6 +842,35 @@ emit_and_exit() {
   fi
   exit 0
 }
+
+# ─── Admission: integration branch, primary-tree dirt, isolation mode ──────────────────────────
+# Runs once per composition, after the plan-cache replay above (a replay re-emits a plan that
+# was itself admitted) and BEFORE orchestrate_cycle_plan_main below, whose first act is the
+# inter-cycle redeploy checkpoint -- so a refused invocation never reaches deploy-headless.sh, a
+# lock acquisition, or a dispatch composition. The predicate, both declaration readers and the
+# batch-record writer live in lib/batch-admission-lib.sh; see
+# context/standards/repo-level-declarations.md's `integration_branch` and `worktree_isolation`
+# sections for what is refused and why. A refusal leaves through the ordinary `stop` object: no
+# dispatch row is built, so emit_and_exit writes no plan cache and a re-run re-evaluates. On
+# admit the library writes the one batch record this invocation gets (its existence is what
+# makes every later cycle skip the dirty-tree test); under --dry-run the verdict is still
+# evaluated and reported but nothing is written. A project root that is not a git work tree
+# skips silently. Diagnostics go to stderr only -- the library writes nothing to stdout, and the
+# JSON channel on fd 3 is reached only through emit_and_exit.
+cycle_plan_admission() {
+  local tasks_json
+  tasks_json="$(printf '%s\n' "${task_args[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0) | tonumber)' 2>/dev/null)" || tasks_json="[]"
+  batch_admission_evaluate "$PROJECT_ROOT" "$(dirname "$STATE_FILE")" "$session_id" "$dry_run" \
+    "$tasks_json" ""
+  if [ "$BATCH_ADMISSION_VERDICT" = "refuse" ]; then
+    echo "[orchestrate] ADMISSION REFUSED (${BATCH_ADMISSION_REASON}): ${BATCH_ADMISSION_MESSAGE}" >&2
+    stop_reason="$BATCH_ADMISSION_REASON"
+    stop_message="$BATCH_ADMISSION_MESSAGE"
+    emit_and_exit "$cycle_count"
+  fi
+  return 0
+}
+cycle_plan_admission
 
 # SELF-OVERWRITE HAZARD wrap starts here (see the file header's own "SELF-OVERWRITE HAZARD"
 # paragraph): everything from this point through true EOF is inside orchestrate_cycle_plan_main,

@@ -7,6 +7,13 @@
     "session_id": "sess_1795425897_6a25f2",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"]
-  }
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ]
+  },
+  "proposed_file_scope": [
+    "agent-system/extensions/core/scripts/tests/test-force-phases.sh"
+  ]
 }

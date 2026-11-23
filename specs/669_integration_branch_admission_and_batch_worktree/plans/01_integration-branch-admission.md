@@ -321,32 +321,32 @@ last); once
 
 ---
 
-### Phase 3: Wire admission into the cycle-plan script [NOT STARTED]
+### Phase 3: Wire admission into the cycle-plan script [COMPLETED]
 
 **Goal**: Every `/orchestrate` invocation passes through the predicate once before any mutation,
 and a refusal reaches the operator through the existing `stop` channel.
 
 **Tasks**:
-- [ ] Read the real-`git` arm of `scripts/tests/test-orchestrate-cycle-plan.sh` (near line 4882)
-      and note any assertion on exact standard-error content that an advisory line could break.
-- [ ] In `scripts/orchestrate-cycle-plan.sh`, source `lib/batch-admission-lib.sh` in the
+- [x] Read the real-`git` arm of `scripts/tests/test-orchestrate-cycle-plan.sh` (near line 4882)
+      and note any assertion on exact standard-error content that an advisory line could break. *(completed)*
+- [x] In `scripts/orchestrate-cycle-plan.sh`, source `lib/batch-admission-lib.sh` in the
       existing hard-sourced library block, following the neighbouring libraries' failure
-      handling.
-- [ ] Add one admission function and call it after the plan-cache replay block and before
+      handling. *(completed)*
+- [x] Add one admission function and call it after the plan-cache replay block and before
       `orchestrate_cycle_plan_main`'s redeploy checkpoint (so before `deploy-headless.sh` can
       run). On `refuse` it sets `stop_reason` and `stop_message` and calls `emit_and_exit`; on
       `admit` or `skip` it returns. It passes `dry_run` through so `--dry-run` evaluates and
       reports the verdict but writes no record. Advisory and diagnostic text goes to standard
-      error only; nothing is written to the JSON channel except through `emit_and_exit`.
-- [ ] Confirm a refusal builds no dispatch row, so `emit_and_exit` writes no plan cache and a
-      re-run re-evaluates.
-- [ ] Pass the invocation's task numbers and orchestration id (where the script already holds
+      error only; nothing is written to the JSON channel except through `emit_and_exit`. *(completed)*
+- [x] Confirm a refusal builds no dispatch row, so `emit_and_exit` writes no plan cache and a
+      re-run re-evaluates. *(completed)*
+- [x] Pass the invocation's task numbers and orchestration id (where the script already holds
       them) into the record writer; pass null for an id the script does not hold. Do not add a
-      new command-line flag to obtain one.
-- [ ] Add `batch-admission-lib.sh` to the inline library list in
+      new command-line flag to obtain one. *(completed)*
+- [x] Add `batch-admission-lib.sh` to the inline library list in
       `scripts/tests/test-orchestrate-cycle-plan.sh` and to `REQUIRED_LIB_SCRIPTS` in
-      `scripts/tests/test-orchestrate-unwind-dispatch.sh`.
-- [ ] Add one group to `test-orchestrate-cycle-plan.sh` that makes the sandbox a real `git`
+      `scripts/tests/test-orchestrate-unwind-dispatch.sh`. *(deviation: altered — a third suite, test-force-phases.sh, also needed the library staged)*
+- [x] Add one group to `test-orchestrate-cycle-plan.sh` that makes the sandbox a real `git`
       repository for that group only, following the existing arm's setup and teardown, and
       asserts through the real script: declared and off-branch gives `stop.reason`
       `off_integration_branch`; declared and dirty outside state territory gives
@@ -355,9 +355,9 @@ and a refusal reaches the operator through the existing `stop` channel.
       rows, no plan cache and no batch record; a clean declared run admits and writes exactly
       one record; a second cycle in the same session leaves the record unchanged and does not
       re-run the dirty test; `--dry-run` reports a refusal and writes nothing; undeclared keys
-      leave the pre-existing output unchanged apart from one advisory line on standard error.
-- [ ] Make no edit to `skills/skill-orchestrate/SKILL.md` or `commands/orchestrate.md`; confirm
-      both byte counts are unchanged (27,494 and 21,496 at authoring).
+      leave the pre-existing output unchanged apart from one advisory line on standard error. *(completed)*
+- [x] Make no edit to `skills/skill-orchestrate/SKILL.md` or `commands/orchestrate.md`; confirm
+      both byte counts are unchanged (27,494 and 21,496 at authoring). *(completed)*
 
 **Timing**: 2 hours
 

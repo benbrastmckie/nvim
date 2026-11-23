@@ -1,0 +1,20 @@
+{
+  "phase": 3,
+  "phase_name": "Wire admission into the cycle-plan script",
+  "started_at": "2026-11-23T10:15:00Z",
+  "last_updated": "2026-11-23T10:14:56Z",
+  "objectives": [
+    {"id": 1, "description": "Read the real-git arm's stderr assertions", "status": "done", "files_touched": [], "note": "Group 29 Arm F/G assert stderr by substring only; an added advisory line cannot break them."},
+    {"id": 2, "description": "Source the library and add the admission call before orchestrate_cycle_plan_main", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/orchestrate-cycle-plan.sh"]},
+    {"id": 3, "description": "Library list entries in sandboxing suites", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh", "agent-system/extensions/core/scripts/tests/test-orchestrate-unwind-dispatch.sh", "agent-system/extensions/core/scripts/tests/test-force-phases.sh"]},
+    {"id": 4, "description": "Real-git admission group in the cycle-plan suite", "status": "done", "files_touched": ["agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-plan.sh"]}
+  ],
+  "current_objective": 4,
+  "approaches_tried": [],
+  "deviations": [
+    {"task_id": "3.6", "description": "Add batch-admission-lib.sh to the two explicit library lists", "type": "altered", "reason": "A third suite, test-force-phases.sh, stages the cycle-plan script's newer libraries one by one from the source store on top of a wholesale copy of the DEPLOYED lib directory; before a redeploy it failed 7 assertions with a sourcing error. It received the same source-store-first block as its four neighbours. The file is outside the task's declared file_scope.", "annotation": "*(deviation: altered — a third suite, test-force-phases.sh, also needed the library staged)*"},
+    {"task_id": "3.V", "description": "The narrowed pass named in Tier Justification is green", "type": "altered", "reason": "Same as Phase 2: run after the redeploy in Phase 4. Every suite that copies or sandboxes the cycle-plan script was run directly from the source store here.", "annotation": "*(deviation: altered — narrowed pass moved to Phase 4, after the redeploy)*"}
+  ],
+  "verification_notes": "Source-store runs: test-orchestrate-cycle-plan.sh 472 passed / 0 failed (28 of them the new Group 39; every non-git group unchanged, proving the silent skip); non-vacuity run with the admission call disabled: 459 passed / 13 failed, all 13 in Group 39, call then restored by re-applying the edit; test-orchestrate-unwind-dispatch.sh 21/0; test-force-phases.sh 36/0 (29/7 before its library staging); test-orchestrate-batch-gate.sh 0 failed; test-batch-gate-pending-marker.sh 25/0; test-lint-deploy-caller-wrap.sh rc 0; test-lint-json-channel-discipline.sh 12/0; test-redeploy-checkpoint-promotion.sh 17/0; test-askuserquestion-rehome.sh rc 0. SKILL.md 27,494 bytes and commands/orchestrate.md 21,496 bytes, both unchanged.",
+  "handoff_count": 0
+}

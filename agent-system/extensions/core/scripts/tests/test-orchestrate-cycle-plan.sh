@@ -56,7 +56,8 @@ for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh task-lock.sh 
          lib/manifest-routing-lib.sh lib/phase-heading-patterns.sh lib/deploy-baseline-lib.sh \
          lib/task-lookup-lib.sh lib/deploy-ledger-lib.sh lib/return-meta-status-vocabulary.sh \
          lib/territory-contention-lib.sh lib/task-classification-lib.sh \
-         lib/redeploy-checkpoint-lib.sh lib/batch-gate-marker-lib.sh; do
+         lib/redeploy-checkpoint-lib.sh lib/batch-gate-marker-lib.sh \
+         lib/batch-admission-lib.sh; do
   require_file "$CORE_DIR/$f"
 done
 require_file "$CORE_DIR/../context/reference/orchestrator-critical-paths.json"
@@ -78,7 +79,8 @@ done
 for f in common.sh file-scope-overlap.sh continuation-pointer-lib.sh manifest-routing-lib.sh \
          phase-heading-patterns.sh deploy-baseline-lib.sh task-lookup-lib.sh deploy-ledger-lib.sh \
          runtime-file-patterns.sh return-meta-status-vocabulary.sh territory-contention-lib.sh \
-         task-classification-lib.sh redeploy-checkpoint-lib.sh batch-gate-marker-lib.sh; do
+         task-classification-lib.sh redeploy-checkpoint-lib.sh batch-gate-marker-lib.sh \
+         batch-admission-lib.sh; do
   cp "$CORE_DIR/lib/$f" "$WORKDIR/.claude/scripts/lib/$f"
 done
 cp "$CORE_DIR/../context/reference/orchestrator-critical-paths.json" \
@@ -6622,6 +6624,201 @@ if [[ "$LAST_STDERR" == *"WARNING"* ]] && [[ "$LAST_STDERR" == *"blocker-researc
   common_test_pass "Group 38 (forcing-flag override): a stderr warning names the bypassed blocker-research obligation"
 else
   common_test_fail "Group 38 (forcing-flag override): no stderr warning named the bypassed obligation (stderr: $LAST_STDERR)"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Group 39: admission -- integration branch, primary-tree dirt, isolation mode. Drives the REAL
+# script (never the library directly; tests/test-batch-admission-lib.sh owns the predicate's own
+# fixture matrix) to pin the contract skill-orchestrate consumes: a refusal is a non-null `stop`
+# carrying `reason` and `message`, with zero dispatch rows, no plan cache and no batch record;
+# an admit writes exactly one batch record per session.
+#
+# $WORKDIR is made a REAL git repository SCOPED TO THIS GROUP ONLY (git init here, `rm -rf
+# "$WORKDIR/.git"` at the group's end), following Group 29 Arm F's own precedent. Only three
+# explicit paths are ever tracked, so "tracked dirt outside the state territory" can only mean
+# src/g39.txt. No fixture step uses a command that discards working-tree changes: the one file
+# that is dirtied is restored with `git show HEAD:path > path`.
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+common_test_info "Group 39: admission (integration branch, primary-tree dirt, isolation mode)"
+
+G39_BRANCH="g39-trunk"
+G39_WORK="batch_worktree_creation_when_isolation_on"
+G39_DECL="$WORKDIR/.claude-extensions.json"
+G39_DECL_BACKUP=""
+if [ -f "$G39_DECL" ]; then
+  G39_DECL_BACKUP="$(mktemp)"
+  cp "$G39_DECL" "$G39_DECL_BACKUP"
+fi
+g39_batch_dir="$WORKDIR/specs/.orchestration/batch"
+rm -rf "$g39_batch_dir" "$WORKDIR/.git"
+
+g39_write_state() {
+  write_state <<'EOF'
+{
+  "active_projects": [
+    {"project_number": 9501, "project_name": "g39_admission", "task_type": "general", "status": "not_started", "description": "admission fixture candidate", "dependencies": [], "file_scope": []}
+  ]
+}
+EOF
+  reset_lock_dirs
+  rm -rf "$WORKDIR/specs/9501_g39_admission"
+  mkdir -p "$WORKDIR/specs/9501_g39_admission"
+}
+g39_declare() { printf '%s\n' "$1" > "$G39_DECL"; }
+g39_mt() { echo "$WORKDIR/specs/.orchestration/.orchestrator-multi-state-$1.json"; }
+g39_record() { echo "$g39_batch_dir/$1.json"; }
+g39_record_count() { find "$g39_batch_dir" -type f 2>/dev/null | wc -l | tr -d ' '; }
+# g39_expect_refusal <label> <session> <reason> -- the whole refusal contract in one place.
+g39_expect_refusal() {
+  local label="$1" session="$2" reason="$3"
+  if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.stop.reason')" = "$reason" ] && [ -n "$(jqf '.stop.message // ""')" ]; then
+    common_test_pass "Group 39 ($label): stop.reason is '$reason' with a non-empty message"
+  else
+    common_test_fail "Group 39 ($label): expected stop.reason '$reason' (exit $LAST_EXIT, stdout: $LAST_STDOUT, stderr: $LAST_STDERR)"
+  fi
+  if [ "$(jqf '(.dispatch | length) + (.aux_dispatch | length)')" = "0" ]; then
+    common_test_pass "Group 39 ($label): a refusal builds zero dispatch rows"
+  else
+    common_test_fail "Group 39 ($label): a refusal built dispatch rows (stdout: $LAST_STDOUT)"
+  fi
+  if [ ! -e "$(g39_record "$session")" ]; then
+    common_test_pass "Group 39 ($label): a refusal writes no batch record"
+  else
+    common_test_fail "Group 39 ($label): a refusal wrote $(g39_record "$session")"
+  fi
+  if [ ! -f "$(g39_mt "$session")" ] || [ "$(jq -r '.plan_cache == null' "$(g39_mt "$session")" 2>/dev/null)" = "true" ]; then
+    common_test_pass "Group 39 ($label): a refusal writes no plan cache"
+  else
+    common_test_fail "Group 39 ($label): a refusal left a plan cache in $(g39_mt "$session")"
+  fi
+}
+
+g39_write_state
+g39_declare "{\"extensions\":{},\"version\":1,\"integration_branch\":\"$G39_BRANCH\"}"
+mkdir -p "$WORKDIR/src"
+echo "tracked content" > "$WORKDIR/src/g39.txt"
+( cd "$WORKDIR" && git init -q -b "$G39_BRANCH" && git config user.email "test@example.com" \
+    && git config user.name "Test" \
+    && git add -- src/g39.txt .claude-extensions.json specs/state.json >/dev/null 2>&1 \
+    && git commit -q -m "g39 fixture" >/dev/null 2>&1 )
+
+if [ "$(cd "$WORKDIR" && git symbolic-ref -q --short HEAD 2>/dev/null)" != "$G39_BRANCH" ]; then
+  common_test_fail "Group 39: fixture repository could not be built on branch $G39_BRANCH"
+else
+
+# (a) Declared, on the branch, clean outside the state territory: admitted, one record.
+run_sut --session g39_a --no-plan-cache -- 9501
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.stop')" = "null" ] && [ "$(jqf '.dispatch | length')" = "1" ]; then
+  common_test_pass "Group 39 (admit): a clean declared tree is admitted and dispatches"
+else
+  common_test_fail "Group 39 (admit): expected an admitted dispatch (exit $LAST_EXIT, stdout: $LAST_STDOUT, stderr: $LAST_STDERR)"
+fi
+g39_tip="$(cd "$WORKDIR" && git rev-parse HEAD)"
+if [ "$(g39_record_count)" = "1" ] && jq -e --arg b "$G39_BRANCH" --arg tip "$g39_tip" '
+    .schema == 1 and .session_id == "g39_a" and .task_numbers == [9501]
+    and .integration_branch == $b and .integration_branch_declared == true
+    and .integration_tip_at_cut == $tip and .worktree_isolation == "off"
+    and .landing_proofs == [] and (has("isolation") | not)' "$(g39_record g39_a)" >/dev/null 2>&1; then
+  common_test_pass "Group 39 (admit): exactly one batch record, carrying the session, tasks, branch and tip"
+else
+  common_test_fail "Group 39 (admit): batch record missing or malformed ($(cat "$(g39_record g39_a)" 2>/dev/null || echo '<none>'))"
+fi
+if [[ "$LAST_STDERR" != *"ADVISORY: integration_branch"* ]]; then
+  common_test_pass "Group 39 (admit): a declared repository gets no undeclared-key advisory"
+else
+  common_test_fail "Group 39 (admit): unexpected advisory on a declared repository"
+fi
+
+# (b) A later cycle of the SAME session: this invocation's own dispatches may have left dirt, so
+# the dirty-tree test is not re-run, and the record is not rewritten.
+g39_before="$(cat "$(g39_record g39_a)" 2>/dev/null)"
+echo "dirtied by a dispatch" >> "$WORKDIR/src/g39.txt"
+run_sut --session g39_a --no-plan-cache -- 9501
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.stop.reason // ""')" != "dirty_primary_tree" ]; then
+  common_test_pass "Group 39 (later cycle): the dirty-tree test is not re-run once the session has a record"
+else
+  common_test_fail "Group 39 (later cycle): a later cycle was refused for dirt (stdout: $LAST_STDOUT)"
+fi
+if [ "$(cat "$(g39_record g39_a)" 2>/dev/null)" = "$g39_before" ] && [ "$(g39_record_count)" = "1" ]; then
+  common_test_pass "Group 39 (later cycle): the record is byte-identical and still the only one"
+else
+  common_test_fail "Group 39 (later cycle): the record changed or a second one appeared"
+fi
+
+# (c) The same dirt, seen by a FRESH session's first cycle: refused, naming the path.
+g39_write_state
+run_sut --session g39_c --no-plan-cache -- 9501
+g39_expect_refusal "dirty tree" g39_c dirty_primary_tree
+if [[ "$(jqf '.stop.message')" == *"src/g39.txt"* ]]; then
+  common_test_pass "Group 39 (dirty tree): the message lists the dirty path"
+else
+  common_test_fail "Group 39 (dirty tree): the message does not list src/g39.txt ($(jqf '.stop.message'))"
+fi
+
+# (d) --dry-run reports the same refusal and writes nothing.
+run_sut --session g39_d --dry-run -- 9501
+g39_expect_refusal "dry-run" g39_d dirty_primary_tree
+( cd "$WORKDIR" && git show HEAD:src/g39.txt > src/g39.txt )
+
+# (e) Off the declared branch: refused, naming both; and still refused on a later cycle of a
+# session that was admitted earlier (the branch test runs every cycle).
+( cd "$WORKDIR" && git checkout -q -b g39-side >/dev/null 2>&1 )
+run_sut --session g39_e --no-plan-cache -- 9501
+g39_expect_refusal "off branch" g39_e off_integration_branch
+if [[ "$(jqf '.stop.message')" == *"g39-side"* ]] && [[ "$(jqf '.stop.message')" == *"$G39_BRANCH"* ]]; then
+  common_test_pass "Group 39 (off branch): the message names the checked-out and the declared branch"
+else
+  common_test_fail "Group 39 (off branch): the message does not name both branches ($(jqf '.stop.message'))"
+fi
+run_sut --session g39_a --no-plan-cache -- 9501
+if [ "$(jqf '.stop.reason')" = "off_integration_branch" ] && [ "$(jqf '.dispatch | length')" = "0" ]; then
+  common_test_pass "Group 39 (off branch): the branch test still refuses on a later cycle of an admitted session"
+else
+  common_test_fail "Group 39 (off branch): a later cycle off the branch was not refused (stdout: $LAST_STDOUT)"
+fi
+( cd "$WORKDIR" && git checkout -q "$G39_BRANCH" >/dev/null 2>&1 )
+
+# (f) worktree_isolation: batch is refused loudly, naming the work that implements it.
+g39_declare "{\"integration_branch\":\"$G39_BRANCH\",\"worktree_isolation\":\"batch\"}"
+run_sut --session g39_f --no-plan-cache -- 9501
+g39_expect_refusal "isolation batch" g39_f isolation_unimplemented
+if [[ "$(jqf '.stop.message')" == *"$G39_WORK"* ]] && [[ "$LAST_STDERR" == *"ADMISSION REFUSED (isolation_unimplemented)"* ]]; then
+  common_test_pass "Group 39 (isolation batch): the message names the implementing work and the refusal is echoed on stderr"
+else
+  common_test_fail "Group 39 (isolation batch): message or stderr echo missing ($(jqf '.stop.message'))"
+fi
+
+# (g) Neither key declared: no refusal even with dirt outside the state territory, one advisory
+# on stderr, and the record carries the checked-out branch with declared false.
+g39_declare '{"extensions":{},"version":1}'
+g39_write_state
+echo "dirt in an undeclaring repository" >> "$WORKDIR/src/g39.txt"
+run_sut --session g39_g --no-plan-cache -- 9501
+if [ "$LAST_EXIT" -eq 0 ] && [ "$(jqf '.stop')" = "null" ] && [ "$(jqf '.dispatch | length')" = "1" ]; then
+  common_test_pass "Group 39 (undeclared): an undeclaring repository is never refused"
+else
+  common_test_fail "Group 39 (undeclared): expected an admitted dispatch (stdout: $LAST_STDOUT, stderr: $LAST_STDERR)"
+fi
+if [ "$(printf '%s\n' "$LAST_STDERR" | grep -c '^ADVISORY: integration_branch')" = "1" ]; then
+  common_test_pass "Group 39 (undeclared): exactly one advisory line names integration_branch"
+else
+  common_test_fail "Group 39 (undeclared): expected exactly one advisory line (stderr: $LAST_STDERR)"
+fi
+if jq -e --arg b "$G39_BRANCH" '.integration_branch == $b and .integration_branch_declared == false' "$(g39_record g39_g)" >/dev/null 2>&1; then
+  common_test_pass "Group 39 (undeclared): the record carries the checked-out branch, declared false"
+else
+  common_test_fail "Group 39 (undeclared): record missing or wrong ($(cat "$(g39_record g39_g)" 2>/dev/null || echo '<none>'))"
+fi
+
+fi
+
+# Group-scoped teardown: later groups (and a re-run in the same sandbox) must see the non-git
+# $WORKDIR and the declarations file every earlier group saw.
+rm -rf "$WORKDIR/.git" "$WORKDIR/src" "$g39_batch_dir"
+if [ -n "$G39_DECL_BACKUP" ]; then
+  mv -f "$G39_DECL_BACKUP" "$G39_DECL"
+else
+  rm -f "$G39_DECL"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════

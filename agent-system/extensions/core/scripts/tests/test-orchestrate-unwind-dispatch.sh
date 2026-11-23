@@ -40,7 +40,7 @@ REQUIRED_LIB_SCRIPTS=(
   phase-heading-patterns.sh deploy-baseline-lib.sh task-lookup-lib.sh status-vocabulary.sh
   deploy-ledger-lib.sh runtime-file-patterns.sh territory-contention-lib.sh
   task-classification-lib.sh redeploy-checkpoint-lib.sh project-number-inuse.sh
-  batch-gate-marker-lib.sh
+  batch-gate-marker-lib.sh batch-admission-lib.sh
 )
 
 missing=()
