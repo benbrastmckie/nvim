@@ -393,6 +393,13 @@ BATCH_GATE_MARKER_LIB="$(common_test_resolve_subject "lib/batch-gate-marker-lib.
   "$DEPLOY_SCRIPTS_SRC/lib/batch-gate-marker-lib.sh" "$SOURCE_STORE_SCRIPTS/lib/batch-gate-marker-lib.sh")" || exit 2
 common_test_declare_subject "$BATCH_GATE_MARKER_LIB"
 cp "$BATCH_GATE_MARKER_LIB" "$WORKDIR/.claude/scripts/lib/batch-gate-marker-lib.sh"
+# batch-admission-lib.sh: orchestrate-cycle-plan.sh hard-sources this one too (orchestration
+# admission), so it gets the same source-store-first inversion as the four libs above -- a
+# deploy tree that does not carry the file yet would otherwise leave the fixture without it.
+BATCH_ADMISSION_LIB="$(common_test_resolve_subject "lib/batch-admission-lib.sh" "source-store" \
+  "$DEPLOY_SCRIPTS_SRC/lib/batch-admission-lib.sh" "$SOURCE_STORE_SCRIPTS/lib/batch-admission-lib.sh")" || exit 2
+common_test_declare_subject "$BATCH_ADMISSION_LIB"
+cp "$BATCH_ADMISSION_LIB" "$WORKDIR/.claude/scripts/lib/batch-admission-lib.sh"
 # Non-task-edited batch-engine collaborators: existing deploy-tree provenance, unchanged.
 for f in orchestrate-batch-admit.sh orchestrate-triage-classify.sh orchestrate-build-dispatch.sh \
          orchestrate-loop-guard-init.sh orchestrate-build-aux-dispatch.sh command-route-agent.sh; do
