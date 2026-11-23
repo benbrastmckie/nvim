@@ -6327,6 +6327,7 @@ The observed run lost nothing recoverable -- phases 1-3 were committed and green
 - **Dependencies**: Task 455, Task 515
 - **Research**: [517_stage_regenerated_derived_files_in_phase_commits/reports/01_stage-regenerated-derived-files.md]
 - **Plan**: [517_stage_regenerated_derived_files_in_phase_commits/plans/01_stage-regenerated-derived-files.md]
+- **Summary**: [517_stage_regenerated_derived_files_in_phase_commits/summaries/01_stage-regenerated-derived-files-summary.md]
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: `agent-system/extensions/core/**` in THIS repository (never a deployed `.claude/**` tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see `rules/source-store-deploy-boundary.md`). Re-derive the store rather than trusting this note: `source_dir` lives PER-EXTENSION at `.extensions.<name>.source_dir` in a consumer repo's `<project-root>/.claude-extensions.json`, NOT as a top-level key. Edit at the path mirroring the deployed one, then REDEPLOY via `deploy-headless.sh`. No task-number references and no record-versioning language in any file landing under `agent-system/**`; both are permitted in this description and elsewhere in `specs/**`.
 

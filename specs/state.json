@@ -10282,6 +10282,11 @@
           "path": "specs/517_stage_regenerated_derived_files_in_phase_commits/plans/01_stage-regenerated-derived-files.md",
           "type": "plan",
           "summary": "4-phase plan: prose obligation, Site-2 derived-output-prefix splice, non-blocking probe backstop, deploy and verify."
+        },
+        {
+          "path": "specs/517_stage_regenerated_derived_files_in_phase_commits/summaries/01_stage-regenerated-derived-files-summary.md",
+          "type": "summary",
+          "summary": "Full implementation summary covering all 4 phases, verification results, and the companion-record recommendation."
         }
       ],
       "audit_verdict": {
@@ -10490,7 +10495,8 @@
       },
       "last_updated": "2026-11-23T01:03:10Z",
       "session_id": "sess_1795391913_f9e5cc",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Landed decision (c) of the research ruling in full: a declaration-only phase-commit obligation in checkpoint-commit.md with a pointer from general-implementation-agent.md, a Site-2 derived-output-prefix splice in git-commit-phase.sh's Containment Self-Check so a regenerated declared surface is actually stageable, and a non-blocking derived_probe_run_all staleness backstop at the same phase-commit site. Deployed, verified clean (41/41 checks after fixing one lint collision discovered mid-deploy), and the companion consumer-repo recommendation recorded in the summary and issue log."
     },
     {
       "project_number": 518,

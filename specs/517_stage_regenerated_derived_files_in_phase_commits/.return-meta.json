@@ -28,21 +28,37 @@
       "category": "PATTERN",
       "source_artifact": "specs/517_stage_regenerated_derived_files_in_phase_commits/summaries/01_stage-regenerated-derived-files-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["git-commit-phase", "containment-self-check", "idempotent-source", "fail-open", "non-empty-guard"]
+      "suggested_keywords": [
+        "git-commit-phase",
+        "containment-self-check",
+        "idempotent-source",
+        "fail-open",
+        "non-empty-guard"
+      ]
     },
     {
       "content": "lint-scoped-commit-boundary.sh's piped-invocation detector (Rule 2) is a naive line-level heuristic: ANY line containing the literal substring 'git-commit-scoped.sh' or 'git-commit-phase.sh' AND an unescaped pipe character (not part of ||) is flagged as a hidden-exit-code violation, with no awareness of quoted-string context. A test assertion like `echo \"$out\" | grep -q \"...git-commit-phase.sh:...\"` trips this even though no real invocation is piped -- the script name just happens to appear inside the string being matched. Fix: avoid repeating the literal script-name substring in a piped grep pattern inside such a file; a wildcard or a distinguishing message-only substring (without the script name) sidesteps the false positive without weakening the assertion.",
       "category": "INSIGHT",
       "source_artifact": "specs/517_stage_regenerated_derived_files_in_phase_commits/summaries/01_stage-regenerated-derived-files-summary.md",
       "confidence": 0.9,
-      "suggested_keywords": ["lint-scoped-commit-boundary", "false-positive", "piped-invocation", "shellcheck-adjacent-lint"]
+      "suggested_keywords": [
+        "lint-scoped-commit-boundary",
+        "false-positive",
+        "piped-invocation",
+        "shellcheck-adjacent-lint"
+      ]
     },
     {
       "content": "Three independent Containment sites in this codebase (orchestrate-cycle-postflight.sh WORK (h), git-commit-phase.sh's Self-Check, git-commit-scoped.sh's V10) each apply the SAME predicate against a task's declared file_scope, and a per-site widening (engine-written-state allowlist, own-task-directory, derived-output-prefix) must be independently spliced at ALL THREE to take effect everywhere -- a later site's identical widening never rescues an earlier site's drop, because a dropped path is removed from its own pathspec BEFORE being handed to a downstream site. This subsumption-asymmetry pattern (documented in git-staging-scope.md's 'Three Containment sites, not one' section) generalizes to any future per-site widening added to this corpus.",
       "category": "PATTERN",
       "source_artifact": "specs/517_stage_regenerated_derived_files_in_phase_commits/summaries/01_stage-regenerated-derived-files-summary.md",
       "confidence": 0.85,
-      "suggested_keywords": ["containment-sites", "subsumption-asymmetry", "file_scope", "pathspec-drop"]
+      "suggested_keywords": [
+        "containment-sites",
+        "subsumption-asymmetry",
+        "file_scope",
+        "pathspec-drop"
+      ]
     }
   ],
   "sapience_notes": [
@@ -91,9 +107,15 @@
     "session_id": "sess_1795391913_f9e5cc",
     "agent_type": "general-implementation-agent",
     "delegation_depth": 2,
-    "delegation_path": ["orchestrator", "implement", "general-implementation-agent"],
+    "delegation_path": [
+      "orchestrator",
+      "implement",
+      "general-implementation-agent"
+    ],
     "phases_completed": 4,
     "phases_total": 4
   },
-  "next_steps": "Task complete. A companion record declaring derived_artifact_probes/coupled_generated_surfaces should be created in ~/Projects/BimodalLogic to actually close the originating incident."
+  "next_steps": "Task complete. A companion record declaring derived_artifact_probes/coupled_generated_surfaces should be created in ~/Projects/BimodalLogic to actually close the originating incident.",
+  "deploy_pending": true,
+  "deploy_pending_reason": "postflight completion-deploy gate refused (exit 6): modified_files overlap agent-system/extensions/** and the deploy is stale"
 }
