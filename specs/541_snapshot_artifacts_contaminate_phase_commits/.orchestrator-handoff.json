@@ -1,15 +1,15 @@
 {
-  "status": "planned",
-  "dispatch_seq": 11,
-  "phases_completed": 0,
+  "status": "implemented",
+  "dispatch_seq": 12,
+  "phases_completed": 5,
   "phases_total": 5,
-  "summary": "Wrote a 5-phase implementation plan closing both halves of the snapshot-artifact containment defect. Phase 1 lands demonstrated-RED regression cases in both existing suites; phases 2-4 run in parallel (scope the --no-revert untracked enumeration, add conditional :(exclude) entries to git-commit-phase.sh's fixed seed, register untracked-backup-*/ in the ephemeral runtime-file class with its three coupled generated surfaces); phase 5 deploys and confirms acceptance. Plan-time premise re-validation found this repository already ignores **/untracked-backup-*/ at the root while the incident repository does not, which reframes the class registration as a propagation fix.",
+  "summary": "Closed both halves of the snapshot-artifact containment defect: git-snapshot.sh's --no-revert untracked-file backup is now narrowed to the dispatching task's file_scope, and git-commit-phase.sh's fixed staging seed conditionally excludes both snapshot artifact classes. Registered untracked-backup-*/ as the 28th ephemeral runtime-file class member and reconciled every coupled surface. Two regression cases were demonstrated failing against the unmodified scripts and now pass; deploy-headless.sh reported RESULT=landed_verify_clean twice (the second after fixing a stale pre-existing test count the new class member exposed).",
   "blockers": [],
   "artifacts": [
     {
-      "type": "plan",
-      "path": "specs/541_snapshot_artifacts_contaminate_phase_commits/plans/01_snapshot-artifact-containment-fix.md",
-      "summary": "Five-phase plan: demonstrated-RED regression cases, --no-revert enumeration scoping, phase-commit exclusion entries, ephemeral-class registration with coupled-surface reconciliation, deploy and acceptance."
+      "type": "summary",
+      "path": "specs/541_snapshot_artifacts_contaminate_phase_commits/summaries/01_snapshot-artifact-containment-fix-summary.md",
+      "summary": "Closed both halves of the snapshot-artifact containment defect with a demonstrated-RED-to-green regression pair, new ephemeral class member, and clean redeploy."
     }
   ]
 }

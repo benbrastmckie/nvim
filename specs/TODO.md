@@ -5205,6 +5205,7 @@ as a number resolving to an unrelated record here.
 - **Dependencies**: Task 535
 - **Research**: [541_snapshot_artifacts_contaminate_phase_commits/reports/01_snapshot-artifact-containment-fix.md]
 - **Plan**: [541_snapshot_artifacts_contaminate_phase_commits/plans/01_snapshot-artifact-containment-fix.md]
+- **Summary**: [541_snapshot_artifacts_contaminate_phase_commits/summaries/01_snapshot-artifact-containment-fix-summary.md]
 
 **Description**: Stop git-snapshot.sh's --no-revert artifacts from contaminating phase commits with OTHER tasks' files. Two cooperating defects, one in each script; fix the pair, because fixing either alone leaves the contamination reachable.
 

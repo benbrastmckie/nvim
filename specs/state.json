@@ -12931,6 +12931,11 @@
           "path": "specs/541_snapshot_artifacts_contaminate_phase_commits/plans/01_snapshot-artifact-containment-fix.md",
           "type": "plan",
           "summary": "Five-phase plan: demonstrated-RED regression cases, --no-revert enumeration scoping, phase-commit exclusion entries, ephemeral-class registration with coupled-surface reconciliation, deploy and acceptance."
+        },
+        {
+          "path": "specs/541_snapshot_artifacts_contaminate_phase_commits/summaries/01_snapshot-artifact-containment-fix-summary.md",
+          "type": "summary",
+          "summary": "Closed both halves of the snapshot-artifact containment defect with a demonstrated-RED-to-green regression pair, new ephemeral class member, and clean redeploy."
         }
       ],
       "title": "Stop git-snapshot.sh --no-revert artifacts from contaminating phase commits with other tasks files",
@@ -12947,7 +12952,8 @@
       },
       "audit_override": "cross-repo relocation of 34 already-created, already-audited meta records out of BimodalLogic, under the user ruling that all meta records live in this repository; these are not new proposals. audit-task-proposals.sh cannot run over this corpus: jq argv overflow at 24 and at 3-per-chunk, the defect closed task 858 did not fix.",
       "session_id": "sess_1795400947_bb64cf",
-      "next_artifact_number": 2
+      "next_artifact_number": 2,
+      "completion_summary": "Fixed both cooperating defects that let git-snapshot.sh's --no-revert artifacts contaminate phase commits with other tasks' files: narrowed the untracked-file backup to the dispatching task's file_scope, added conditional exclusion entries to git-commit-phase.sh's fixed staging seed, and registered the backup directory as the 28th ephemeral runtime-file class member. Two regression cases were demonstrated failing against the unmodified scripts before the fix landed and pass after; deploy-headless.sh reported RESULT=landed_verify_clean."
     },
     {
       "project_number": 542,
