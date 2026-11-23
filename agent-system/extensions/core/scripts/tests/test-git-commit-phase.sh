@@ -31,7 +31,7 @@ FAILED=0
 
 
 # --- Loud-skip discipline: verify every required script exists before running anything. ---
-REQUIRED_SCRIPTS=(git-commit-phase.sh git-commit-scoped.sh deploy-root-guard.sh task-lock.sh issue-record.sh commit-source-store-path.sh lib/common.sh lib/task-lookup-lib.sh lib/engine-written-state-paths-lib.sh lib/source-store-path-lib.sh lib/derived-artifact-probe-lib.sh)
+REQUIRED_SCRIPTS=(git-commit-phase.sh git-commit-scoped.sh deploy-root-guard.sh task-lock.sh issue-record.sh commit-source-store-path.sh lib/common.sh lib/task-lookup-lib.sh lib/engine-written-state-paths-lib.sh lib/source-store-path-lib.sh lib/derived-artifact-probe-lib.sh lib/scope-excursion-record-lib.sh)
 missing=()
 for f in "${REQUIRED_SCRIPTS[@]}"; do
   [ -f "$SRC_SCRIPTS_DIR/$f" ] || missing+=("$f")
@@ -62,7 +62,7 @@ build_repo() {
   for f in "${REQUIRED_SCRIPTS[@]}"; do
     mkdir -p "$repo/.claude/scripts/$(dirname "$f")"
     cp "$SRC_SCRIPTS_DIR/$f" "$repo/.claude/scripts/$f"
-    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/source-store-path-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
+    [ "$f" = "lib/common.sh" ] || [ "$f" = "lib/task-lookup-lib.sh" ] || [ "$f" = "lib/engine-written-state-paths-lib.sh" ] || [ "$f" = "lib/source-store-path-lib.sh" ] || [ "$f" = "lib/derived-artifact-probe-lib.sh" ] || [ "$f" = "lib/scope-excursion-record-lib.sh" ] || chmod +x "$repo/.claude/scripts/$f"
   done
 
   cat > "$repo/.gitignore" <<'GITIGNORE_EOF'
@@ -1829,6 +1829,102 @@ if [ -f "$repo42/specs/999_probe/working-progress-1700000000.patch" ] \
 else
   common_test_fail "Case 42: expected both artifacts to remain present on disk after the commit attempt"
 fi
+
+# =====================================================================
+# Case 43: a single commit attempt dropping three uncontained paths writes exactly one
+# "scope excursion" issues.jsonl line naming all three, rather than three near-identical lines.
+# =====================================================================
+common_test_info "=== Case 43: multi-path drop collapses into one issues.jsonl record ==="
+
+repo43="$(build_repo)"
+write_progress "$repo43" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt","other/x1.txt","other/x2.txt","other/x3.txt"]}]'
+echo "modified a" > "$repo43/src/a.txt"
+mkdir -p "$repo43/other"
+echo "x1" > "$repo43/other/x1.txt"
+echo "x2" > "$repo43/other/x2.txt"
+echo "x3" > "$repo43/other/x3.txt"
+
+out43="$(run_phase_commit "$repo43" --task 999 --project probe --phase 1 --message "case43" --session sess_43 2>&1)"
+rc43=$?
+issues43="$repo43/specs/999_probe/issues.jsonl"
+
+if [ "$rc43" -eq 0 ]; then
+  common_test_pass "Case 43: commit still succeeds (src/a.txt lands) despite the three-path drop"
+else
+  common_test_fail "Case 43: expected exit 0, got $rc43. Output:
+$out43"
+fi
+
+scope_excursion_lines43="$(grep -c '"class":"scope excursion"' "$issues43" 2>/dev/null || true)"
+if [ "$scope_excursion_lines43" = "1" ]; then
+  common_test_pass "Case 43: exactly one 'scope excursion' issues.jsonl line was written for the three-path drop"
+else
+  common_test_fail "Case 43: expected exactly 1 scope-excursion line, got $scope_excursion_lines43: $(cat "$issues43" 2>/dev/null)"
+fi
+
+if grep -q "other/x1.txt" "$issues43" 2>/dev/null \
+  && grep -q "other/x2.txt" "$issues43" 2>/dev/null \
+  && grep -q "other/x3.txt" "$issues43" 2>/dev/null; then
+  common_test_pass "Case 43: the single record names all three dropped paths"
+else
+  common_test_fail "Case 43: expected all three dropped paths named in the record, got $(cat "$issues43" 2>/dev/null)"
+fi
+
+if command -v jq >/dev/null 2>&1; then
+  dropped_paths43="$(jq -r 'select(.class == "scope excursion") | .tags.dropped_paths | @json' "$issues43" 2>/dev/null)"
+  if [ "$dropped_paths43" = '["other/x1.txt","other/x2.txt","other/x3.txt"]' ]; then
+    common_test_pass "Case 43: tags.dropped_paths holds exactly the three dropped paths, in drop order"
+  else
+    common_test_fail "Case 43: expected tags.dropped_paths=[\"other/x1.txt\",\"other/x2.txt\",\"other/x3.txt\"], got $dropped_paths43"
+  fi
+fi
+
+# =====================================================================
+# Case 44: the collapsed record is still written when the drop is followed by a commit that
+# itself fails (an unconditionally-refusing pre-commit hook) -- pinning that the record's
+# firing order relative to the commit attempt is unchanged from before this phase (both
+# post-loop emission points already sat before any git add/git commit attempt).
+# =====================================================================
+common_test_info "=== Case 44: collapsed record still fires when the commit itself then fails ==="
+
+repo44="$(build_repo)"
+write_progress "$repo44" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt","other/y1.txt","other/y2.txt"]}]'
+echo "modified a" > "$repo44/src/a.txt"
+mkdir -p "$repo44/other"
+echo "y1" > "$repo44/other/y1.txt"
+echo "y2" > "$repo44/other/y2.txt"
+
+mkdir -p "$repo44/.git/hooks"
+cat > "$repo44/.git/hooks/pre-commit" <<'HOOK_EOF'
+#!/usr/bin/env bash
+echo "simulated pre-commit refusal" >&2
+exit 1
+HOOK_EOF
+chmod +x "$repo44/.git/hooks/pre-commit"
+
+before44=$(git -C "$repo44" rev-list --count HEAD)
+out44="$(run_phase_commit "$repo44" --task 999 --project probe --phase 1 --message "case44" --session sess_44 2>&1)"
+rc44=$?
+after44=$(git -C "$repo44" rev-list --count HEAD)
+issues44="$repo44/specs/999_probe/issues.jsonl"
+
+if [ "$rc44" -ne 0 ] && [ "$after44" -eq "$before44" ]; then
+  common_test_pass "Case 44: the commit itself genuinely failed (HEAD did not advance, nonzero exit)"
+else
+  common_test_fail "Case 44: expected the commit to fail with HEAD unchanged; got rc=$rc44 before=$before44 after=$after44. Output:
+$out44"
+fi
+
+scope_excursion_lines44="$(grep -c '"class":"scope excursion"' "$issues44" 2>/dev/null || true)"
+if [ "$scope_excursion_lines44" = "1" ] \
+  && grep -q "other/y1.txt" "$issues44" 2>/dev/null \
+  && grep -q "other/y2.txt" "$issues44" 2>/dev/null; then
+  common_test_pass "Case 44: the collapsed scope-excursion record naming both dropped paths is still written despite the failed commit"
+else
+  common_test_fail "Case 44: expected exactly 1 scope-excursion line naming both dropped paths even on commit failure; got $scope_excursion_lines44 lines: $(cat "$issues44" 2>/dev/null)"
+fi
+
+rm -f "$repo44/.git/hooks/pre-commit"
 
 # task-ref-ok:end
 

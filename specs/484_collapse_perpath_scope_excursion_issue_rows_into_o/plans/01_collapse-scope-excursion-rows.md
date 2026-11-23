@@ -226,7 +226,7 @@ anything else, hand-add the two entries instead and record why.
 
 ---
 
-### Phase 2: Convert git-commit-phase.sh to one record per drop event [NOT STARTED]
+### Phase 2: Convert git-commit-phase.sh to one record per drop event [COMPLETED]
 
 **Goal**: The Phase-Commit Containment Self-Check accumulates its drops and emits a single
 collapsed record after its loop, with the per-path `warn()` and

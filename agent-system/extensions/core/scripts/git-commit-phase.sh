@@ -305,6 +305,15 @@ PROJECT_ROOT="$(common_repo_root "$SCRIPT_DIR" 2)"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/lib/source-store-path-lib.sh" 2>/dev/null || true
 
+# Batched scope-excursion record library (see scripts/lib/scope-excursion-record-lib.sh): one
+# non-fatal issue-record.sh call per drop event, carrying every dropped path through
+# --tags-json, rather than one call per dropped path. Sourced early, fail-soft, matching
+# source-store-path-lib.sh's own posture immediately above -- an unavailable library leaves the
+# Containment Self-Check below guarding on `declare -F scope_excursion_record_emit` before
+# calling it.
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/scope-excursion-record-lib.sh" 2>/dev/null || true
+
 usage() {
   echo "Usage: $0 --task N --project SLUG --phase P --message MSG --session SID [--objective ID] [--plan-path PATH]" >&2
   exit 2
@@ -754,13 +763,23 @@ if [ "${#files_touched[@]}" -gt 0 ]; then
         return 1
       }
 
+      # scope_excursion_dropped accumulates every path this loop drops, so one collapsed
+      # issue-record.sh call can fire AFTER the loop closes (via scope_excursion_record_emit)
+      # instead of one call per dropped path. first_seen/last_seen are measured from the actual
+      # drop timestamps, never invented: first_seen is stamped on the FIRST append, last_seen is
+      # re-stamped on every append (so it always holds the most recent drop's timestamp once the
+      # loop closes). The per-path warn() and propose_file_scope_addition() calls are untouched
+      # below -- this phase changes recording only.
       kept_files_touched=()
+      scope_excursion_dropped=()
+      scope_excursion_first_seen=""
+      scope_excursion_last_seen=""
       for f in "${files_touched[@]}"; do
         if is_contained "$f"; then
           kept_files_touched+=("$f")
         else
           # already_proposed() never changes this drop's outcome or suppresses the warn()/
-          # issue-record.sh/propose_file_scope_addition() calls below -- all three still fire
+          # collapsed-record/propose_file_scope_addition() calls -- all three still fire
           # unconditionally, exactly as before this phase, so every pre-existing fixture's
           # assumption that a repeated drop keeps producing a fresh, git-visible issues.jsonl
           # row stays intact. It ONLY annotates the warning text with a pointer to the
@@ -775,14 +794,20 @@ if [ "${#files_touched[@]}" -gt 0 ]; then
           else
             warn "dropping out-of-scope path '${f}' from phase commit — not in task ${task_number}'s declared file_scope"
           fi
-          bash "${SCRIPT_DIR}/issue-record.sh" --task "$task_number" --kind issue \
-            --class "scope excursion" --severity minor \
-            --what-happened "git-commit-phase.sh dropped '${f}' from a phase commit pathspec: not contained in this task's declared file_scope." \
-            --phase implement \
-            >/dev/null 2>&1 || warn "issue-record.sh call failed (non-fatal)"
+          scope_excursion_dropped+=("$f")
+          _ser_now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          [ -z "$scope_excursion_first_seen" ] && scope_excursion_first_seen="$_ser_now"
+          scope_excursion_last_seen="$_ser_now"
+          unset _ser_now
           propose_file_scope_addition "$f"
         fi
       done
+      if [ "${#scope_excursion_dropped[@]}" -gt 0 ] && declare -F scope_excursion_record_emit >/dev/null 2>&1; then
+        scope_excursion_record_emit "$SCRIPT_DIR" "$task_number" \
+          "git-commit-phase.sh dropped ${#scope_excursion_dropped[@]} path(s) from a phase commit pathspec: not contained in this task's declared file_scope. See tags.dropped_paths for the full list." \
+          "$scope_excursion_first_seen" "$scope_excursion_last_seen" \
+          --phase implement -- "${scope_excursion_dropped[@]}"
+      fi
       files_touched=("${kept_files_touched[@]}")
       if [ "${#files_touched[@]}" -eq 0 ]; then
         run_completeness_check=false
