@@ -1,0 +1,20 @@
+{
+  "phase": 1,
+  "phase_name": "Demonstrated-RED regression cases in both suites",
+  "started_at": "2026-11-23T04:32:00Z",
+  "last_updated": "2026-11-23T04:32:00Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Add Half 1 containment-scoping case to test-git-snapshot.sh and Half 2 exclusion case to test-git-commit-phase.sh, demonstrate RED against unmodified scripts",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/tests/test-git-snapshot.sh",
+        "agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh"
+      ]
+    }
+  ],
+  "current_objective": 1,
+  "approaches_tried": [],
+  "handoff_count": 0
+}

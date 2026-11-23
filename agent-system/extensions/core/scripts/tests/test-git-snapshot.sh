@@ -284,6 +284,75 @@ else
 fi
 
 # =====================================================================
+# Containment-scoping case (snapshot-artifact containment defect, half 1): --no-revert mode's
+# untracked-file enumeration is today a bare, repository-wide `git ls-files --others
+# --exclude-standard` with no file_scope filter at all, so a FOREIGN, untracked specs/ task
+# directory sitting alongside the fixture's own gets copied into the backup verbatim -- the
+# exact shape measured in the originating incident (four unrelated tasks' untracked directories
+# copied under a fifth task's untracked-backup-*/ tree). The dispatching task's own untracked
+# content must still survive the narrowing. EXPECTED TO FAIL against the unmodified script --
+# that demonstrated RED is this phase's own deliverable.
+# =====================================================================
+make_foreign_backup_repo() {
+  local d
+  d="$(mktemp -d -p "$WORKDIR")"
+  git -C "$d" init -q
+  git -C "$d" config user.email "test@example.com"
+  git -C "$d" config user.name "Test Suite"
+
+  mkdir -p "$d/specs/${FIXTURE_DIR_NAME}" "$d/in-scope"
+  echo "in scope, line one" > "$d/in-scope/tracked.txt"
+  cat > "$d/specs/state.json" << STATEEOF
+{
+  "version": "1.0",
+  "next_project_number": $((FIXTURE_NUM + 1)),
+  "active_projects": [
+    {
+      "project_number": ${FIXTURE_NUM},
+      "project_name": "fixture",
+      "status": "implementing",
+      "task_type": "meta",
+      "file_scope": ["in-scope/"]
+    }
+  ]
+}
+STATEEOF
+  git -C "$d" add -A >/dev/null 2>&1
+  git -C "$d" commit -q -m "initial fixture commit"
+
+  # The dispatching task's own untracked content -- must survive the narrowing (the task's own
+  # directory is always admitted, per the plan's own-directory-admission decision).
+  echo "own untracked content" > "$d/specs/${FIXTURE_DIR_NAME}/own-untracked.txt"
+
+  # A SECOND, foreign, untracked specs/ task directory -- a different task's own
+  # deliberately-untracked work-in-progress, present at snapshot time but unrelated to the
+  # fixture task. Mirrors the measured b7bba072e incident shape exactly.
+  mkdir -p "$d/specs/901_foreign_task"
+  echo "foreign content" > "$d/specs/901_foreign_task/foreign-file.txt"
+
+  echo "$d"
+}
+
+foreign_repo="$(make_foreign_backup_repo)"
+run_snapshot "$foreign_repo" "$FIXTURE_NUM" --no-revert
+foreign_code="$LAST_CODE"
+foreign_output="$LAST_OUTPUT"
+foreign_backup_dir="$(find "$foreign_repo/specs/${FIXTURE_DIR_NAME}" -maxdepth 1 -type d -name 'untracked-backup-*' 2>/dev/null | head -1)"
+foreign_backup_has_foreign="no"
+foreign_backup_has_own="no"
+if [ -n "$foreign_backup_dir" ]; then
+  [ -n "$(find "$foreign_backup_dir" -path '*901_foreign_task*' 2>/dev/null)" ] && foreign_backup_has_foreign="yes"
+  [ -n "$(find "$foreign_backup_dir" -name 'own-untracked.txt' 2>/dev/null)" ] && foreign_backup_has_own="yes"
+fi
+rm -rf "$foreign_repo"
+
+if [ "$foreign_code" -eq 0 ] && [ "$foreign_backup_has_foreign" = "no" ] && [ "$foreign_backup_has_own" = "yes" ]; then
+  common_test_pass "containment scoping: --no-revert backup excludes the foreign task directory and keeps the dispatching task's own untracked content"
+else
+  common_test_fail "containment scoping: expected the backup to omit specs/901_foreign_task and keep own-untracked.txt -- got exit=$foreign_code backup_dir='$foreign_backup_dir' has_foreign=$foreign_backup_has_foreign has_own=$foreign_backup_has_own output='$foreign_output'"
+fi
+
+# =====================================================================
 # Summary
 # =====================================================================
 echo ""

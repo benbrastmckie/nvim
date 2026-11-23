@@ -1,7 +1,7 @@
 # Implementation Plan: Task #541
 
 - **Task**: 541 - Stop git-snapshot.sh's --no-revert artifacts from contaminating phase commits with OTHER tasks' files
-- **Status**: [NOT STARTED]
+- **Status**: [IMPLEMENTING]
 - **Effort**: 5.5 hours
 - **Dependencies**: `specs/535_phase_commit_drops_own_plan_artifact` (status `completed` in `specs/state.json` as read at plan time -- the shared-file dependency is already discharged, so this task is unblocked)
 - **Research Inputs**: specs/541_snapshot_artifacts_contaminate_phase_commits/reports/01_snapshot-artifact-containment-fix.md
@@ -168,34 +168,34 @@ consultation applies.
 
 Phases within the same wave can execute in parallel.
 
-### Phase 1: Demonstrated-RED regression cases in both suites [NOT STARTED]
+### Phase 1: Demonstrated-RED regression cases in both suites [COMPLETED]
 
 **Goal**: Land one new case in each suite that reproduces a half of the defect against the
 unmodified scripts, and capture the observed failure as this phase's evidence.
 
 **Tasks**:
-- [ ] Read `scripts/tests/test-git-snapshot.sh` in full, including its header's statement that a
+- [x] Read `scripts/tests/test-git-snapshot.sh` in full, including its header's statement that a
       demonstrated RED is itself a phase deliverable, and its `make_scoped_repo` /
       `run_snapshot` / `common_test_pass` / `common_test_fail` helpers and `FIXTURE_NUM`
-      convention. Extend; do not replace or renumber existing cases.
-- [ ] Add a case to `scripts/tests/test-git-snapshot.sh`: build a fresh fixture repository
+      convention. Extend; do not replace or renumber existing cases. *(completed)*
+- [x] Add a case to `scripts/tests/test-git-snapshot.sh`: build a fresh fixture repository
       containing the fixture task's own directory plus a SECOND, foreign `specs/{NNN}_{slug}/`
       directory holding untracked files, with `specs/state.json` declaring a `file_scope` that
       covers the fixture task only. Run a `--no-revert` snapshot for the fixture task. Assert the
       resulting backup directory contains NO path belonging to the foreign directory, and that
-      the fixture task's own in-scope untracked content IS present.
-- [ ] Read `scripts/tests/test-git-commit-phase.sh`'s `build_repo` / `write_progress` /
-      `run_phase_commit` helpers and follow their fixture shape exactly.
-- [ ] Add a case to `scripts/tests/test-git-commit-phase.sh`: build a fixture repository whose
+      the fixture task's own in-scope untracked content IS present. *(completed)*
+- [x] Read `scripts/tests/test-git-commit-phase.sh`'s `build_repo` / `write_progress` /
+      `run_phase_commit` helpers and follow their fixture shape exactly. *(completed)*
+- [x] Add a case to `scripts/tests/test-git-commit-phase.sh`: build a fixture repository whose
       task directory contains both a `working-progress-{ts}.patch` and an
       `untracked-backup-{ts}/` tree holding a foreign path, with the ephemeral ignore block
       deliberately NOT seeded into the fixture's `.gitignore`. Run the phase commit and assert
-      neither artifact appears in the staged index or in the resulting commit's file list.
-- [ ] Run both suites and record the new cases' FAILING output verbatim in the phase's progress
+      neither artifact appears in the staged index or in the resulting commit's file list. *(completed)*
+- [x] Run both suites and record the new cases' FAILING output verbatim in the phase's progress
       notes. A case that passes before the fix proves nothing and must be strengthened until it
-      fails for the right reason.
-- [ ] Record a non-fatal issue-log entry noting the demonstrated-RED evidence, and a `win` entry
-      if the existing fixture helpers covered the new cases without new scaffolding.
+      fails for the right reason. *(completed)*
+- [x] Record a non-fatal issue-log entry noting the demonstrated-RED evidence, and a `win` entry
+      if the existing fixture helpers covered the new cases without new scaffolding. *(completed)*
 
 **Timing**: 1.5 hours
 

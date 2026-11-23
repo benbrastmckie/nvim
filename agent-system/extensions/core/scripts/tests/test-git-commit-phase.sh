@@ -1788,6 +1788,48 @@ else
   common_test_fail "Case 41 (sibling, unhooked): expected rc=0 and no skip-family warning text; got rc=$rc41b out=$out41b"
 fi
 
+# =====================================================================
+# Case 42 (Half 2 regression -- snapshot-artifact containment): a --no-revert snapshot's own
+# recovery artifacts (a `working-progress-{ts}.patch` file and an `untracked-backup-{ts}/`
+# directory holding a FOREIGN path) sitting inside the task directory at commit time must never
+# be swept into the phase commit by the wrapper's fixed `stage_paths` directory pathspec. The
+# fixture's own .gitignore (set up in build_repo) deliberately does NOT cover either artifact
+# name -- the condition under which the sweep reproduces. EXPECTED TO FAIL against the
+# unmodified script: the fixed scope is staged unconditionally and is "never tested by the
+# Containment Self-Check" per this script's own header.
+# =====================================================================
+common_test_info "=== Case 42: Half 2 -- snapshot artifacts excluded from the fixed stage_paths scope ==="
+
+repo42="$(build_repo)"
+write_progress "$repo42" 1 '[{"id":1,"status":"done","files_touched":["src/a.txt"]}]'
+echo "modified a" > "$repo42/src/a.txt"
+
+# Plant the two snapshot artifacts directly, mirroring git-snapshot.sh's --no-revert output
+# shape without invoking the script itself (this suite has no dependency on git-snapshot.sh).
+echo "diff --git a/x b/x" > "$repo42/specs/999_probe/working-progress-1700000000.patch"
+mkdir -p "$repo42/specs/999_probe/untracked-backup-1700000000/specs/901_foreign_task"
+echo "foreign content" > "$repo42/specs/999_probe/untracked-backup-1700000000/specs/901_foreign_task/foreign-file.txt"
+
+out42="$(run_phase_commit "$repo42" --task 999 --project probe --phase 1 --message "case42" --session sess_42 2>&1)"
+rc42=$?
+
+patch_tracked42="$(git -C "$repo42" ls-files -- 'specs/999_probe/working-progress-*.patch')"
+backup_tracked42="$(git -C "$repo42" ls-files -- 'specs/999_probe/untracked-backup-*')"
+
+if [ "$rc42" -eq 0 ] && [ -z "$patch_tracked42" ] && [ -z "$backup_tracked42" ]; then
+  common_test_pass "Case 42: neither the working-progress patch nor the untracked-backup directory was committed"
+else
+  common_test_fail "Case 42: expected both snapshot artifacts to stay uncommitted -- got rc=$rc42 patch_tracked='$patch_tracked42' backup_tracked='$backup_tracked42' output=$out42"
+fi
+
+if [ -f "$repo42/specs/999_probe/working-progress-1700000000.patch" ] \
+  && [ -d "$repo42/specs/999_probe/untracked-backup-1700000000" ] \
+  && [ -f "$repo42/specs/999_probe/untracked-backup-1700000000/specs/901_foreign_task/foreign-file.txt" ]; then
+  common_test_pass "Case 42: both artifacts remain present on disk, untouched (dropped from the commit, not deleted)"
+else
+  common_test_fail "Case 42: expected both artifacts to remain present on disk after the commit attempt"
+fi
+
 # task-ref-ok:end
 
 # =====================================================================
