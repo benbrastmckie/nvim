@@ -1392,10 +1392,9 @@ inferred_phase=""
 #                                point and context/standards/postflight-tool-restrictions.md for
 #                                why this Bash invocation is a sanctioned exception.
 #   landing_refusal -- "did the task's work fail to land: the leftover-work commit ahead of the
-#                                completion write, milestone-ref-land.sh's landing or its
-#                                --verify check, or the landing verification refusing the
-#                                status write itself (update-task-status.sh's exit 7), for this
-#                                implement-phase dispatch". Set
+#                                completion write did not land, or the landing verification
+#                                refused the status write itself (update-task-status.sh's exit
+#                                7), for this implement-phase dispatch". Set
 #                                only inside the `implemented)` case below (the one place a
 #                                completion status write is attempted); initialized false here so
 #                                every downstream read sees a bound value regardless of which
@@ -1537,47 +1536,19 @@ if [ "$have_outcome" = "true" ]; then
           # landing_refusal, which every completion-gating site below reads.
           landing_refusal="false"
           commit_leftover_work
-          leftover_commit_refusal="$landing_refusal"
-          # ─── Milestone-ref landing + verification ──────────────────────────────────────────────
-          # Closes the non-landing-under-"completed" defect
-          # specs/decisions/worktree-isolation-removal-reaffirmation.md records (postflight
-          # writing a "completed" status while the work never actually landed): lands this task's
-          # commits onto its milestone's review ref via ref plumbing (milestone-ref-land.sh,
-          # ruling R2 of specs/decisions/branch-topology-and-landing-strategy.md), then verifies
-          # the landing with the same script's --verify mode, strictly BEFORE the completion
-          # status write below. On either failure, the completion write is refused (not skipped
-          # silently) and the task is left at its current in-flight status, following the same
-          # refuse-and-defer shape the derived-artifact-staleness and exit-6 deploy-pending
-          # refusals already use at this site. A task with no milestone membership is a clean
-          # pass-through — the completion write proceeds exactly as it did before this check
-          # existed — because milestone-ref-land.sh itself exits 0 as a no-op for a task in no
-          # batch.
-          if [ "$leftover_commit_refusal" = "true" ]; then
-            : # reported and recorded by commit_leftover_work; the status write below is skipped
-          elif ! bash "${SCRIPT_DIR}/milestone-ref-land.sh" "$task_number" "$session_id" >&2; then
-            landing_refusal=true
-          elif ! bash "${SCRIPT_DIR}/milestone-ref-land.sh" "$task_number" "$session_id" --verify >&2; then
-            landing_refusal=true
-          fi
-          if [ "$landing_refusal" = "true" ] && [ "$leftover_commit_refusal" != "true" ]; then
-            echo "${notice_prefix} MILESTONE-LANDING: task ${task_number}'s work did not land onto its milestone ref (see milestone-ref-land.sh failure line(s) above) — the completion status write is refused this cycle and the task is left at its current in-flight status. A re-run lands the current tree, which is what repairs a --verify mismatch. If a re-run reports this same refusal again while HEAD has not moved, stop and report it; do not retry further." >&2
-            issue_args=(--task-dir "$TASK_DIR" --kind issue --class "milestone ref landing" \
-              --severity costly --phase implement \
-              --what-happened "Task ${task_number}'s milestone-ref landing or its --verify check failed at implement postflight; the completion status write was refused and the task was left at its current in-flight status." \
-              --resolution worked_around --suggested-channel fix_now --session "$session_id")
-            [ -n "${handoff_dispatch_seq:-}" ] && issue_args+=(--dispatch-seq "$handoff_dispatch_seq")
-            bash "${SCRIPT_DIR}/issue-record.sh" "${issue_args[@]}" \
-              >/dev/null 2>&1 || echo "Note: issue recording failed (non-fatal)" >&2
-          fi
+          # The landing verification itself runs inside the status write below:
+          # update-task-status.sh calls task-landing-verify.sh ahead of its state write and
+          # exits 7, writing nothing, when the task's work is not verifiably on the integration
+          # branch. The exit-7 arm after the write turns that into landing_refusal.
 
           # ─── Derived-artifact staleness gate (GOAL (1) half) ──────────────────────────────────
           # A refusal computed above, before this case statement, overrides this otherwise-
           # passing phase-accounting gate exactly the way deploy_pending_refusal overrides it
           # below (postflight_rc==6): skip the status write entirely, leaving state.json at its
           # current in-flight status, rather than claiming completion the repo's own declared
-          # probe says is not yet earned. The milestone-landing refusal computed immediately
-          # above joins this same gating condition, so either refusal alone is sufficient to
-          # skip the write.
+          # probe says is not yet earned. A leftover-commit refusal computed immediately above
+          # joins this same gating condition, so either refusal alone is sufficient to skip the
+          # write.
           if [ "$derived_staleness_refusal" = "true" ]; then
             echo "${notice_prefix} DERIVED-STALENESS: skipping task ${task_number}'s completion status write — the task remains at its current in-flight status (see DERIVED-STALENESS failure line(s) above). Fix the declared probe's underlying cause and re-run." >&2
             issue_args=(--task-dir "$TASK_DIR" --kind issue --class "derived artifact staleness" \
@@ -2753,13 +2724,13 @@ if [ "$user_decision_json" != "null" ]; then
     --argjson stranded_suspected "$stranded_suspected" \
     --arg note "$commit_attribution_note" \
     --argjson derived_staleness "$derived_staleness_refusal" \
-    --argjson milestone_landing "$landing_refusal" \
+    --argjson landing "$landing_refusal" \
     '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
       phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
       user_decision: $user_decision, halt: $halt, infra_exempt_cycle: $infra_exempt_cycle,
       aux_signal: $aux_signal, report_missing: $report_missing,
       stall_suspected: $stall_suspected, stranded_suspected: $stranded_suspected, note: $note,
-      derived_staleness: $derived_staleness, milestone_landing: $milestone_landing}' >&3
+      derived_staleness: $derived_staleness, landing: $landing}' >&3
 else
   jq -n -c \
     --argjson task "$task_number" \
@@ -2777,13 +2748,13 @@ else
     --argjson stranded_suspected "$stranded_suspected" \
     --arg note "$commit_attribution_note" \
     --argjson derived_staleness "$derived_staleness_refusal" \
-    --argjson milestone_landing "$landing_refusal" \
+    --argjson landing "$landing_refusal" \
     '{task: $task, phase: $phase, status: $status, persisted_status: $persisted_status,
       phases_completed: $phases_completed, phases_total: $phases_total, verdict: $verdict,
       halt: $halt, infra_exempt_cycle: $infra_exempt_cycle, aux_signal: $aux_signal,
       report_missing: $report_missing, stall_suspected: $stall_suspected,
       stranded_suspected: $stranded_suspected, note: $note,
-      derived_staleness: $derived_staleness, milestone_landing: $milestone_landing}' >&3
+      derived_staleness: $derived_staleness, landing: $landing}' >&3
 fi
 
 exit 0

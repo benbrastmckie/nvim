@@ -1,0 +1,33 @@
+{
+  "phase": 6,
+  "phase_name": "Unwire the milestone landing and re-point the review handoff",
+  "started_at": "2026-11-23T12:36:54Z",
+  "last_updated": "2026-11-23T12:36:54Z",
+  "objectives": [
+    {
+      "id": 1,
+      "description": "Remove the milestone-ref-land.sh calls from the cycle postflight; rename the verdict key to landing; convert the suite milestone groups to the gate",
+      "status": "done",
+      "files_touched": [
+        "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+        "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh"
+      ]
+    },
+    {
+      "id": 2,
+      "description": "Rewrite milestone-review-handoff.sh steps 3 to 6 and its suite",
+      "status": "in_progress",
+      "files_touched": []
+    },
+    {
+      "id": 3,
+      "description": "milestone-ref-land.sh header; ref-plumbing-landing.md; lints",
+      "status": "not_started",
+      "files_touched": []
+    }
+  ],
+  "current_objective": 2,
+  "approaches_tried": [],
+  "deviations": [],
+  "handoff_count": 0
+}

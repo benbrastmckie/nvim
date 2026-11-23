@@ -449,18 +449,18 @@ by side in the cycle postflight.
 
 ---
 
-### Phase 6: Unwire the milestone landing and re-point the review handoff [NOT STARTED]
+### Phase 6: Unwire the milestone landing and re-point the review handoff [IN PROGRESS]
 
 **Goal**: Postflight no longer calls `milestone-ref-land.sh`; the gate from Phase 5 is the
 pre-completion landing check. `milestone-review-handoff.sh` reads the integration branch and
 the landing proofs.
 
 **Tasks**:
-- [ ] Confirm Phase 5's gate is committed and its suite green before removing anything.
-- [ ] In `orchestrate-cycle-postflight.sh`, remove the two `milestone-ref-land.sh` calls and
+- [x] Confirm Phase 5's gate is committed and its suite green before removing anything. *(completed)*
+- [x] In `orchestrate-cycle-postflight.sh`, remove the two `milestone-ref-land.sh` calls and
       their comment block, and rename the refusal variable and the verdict key per D9 at every
-      site. State the current mechanism in the replacing comment; no history narration.
-- [ ] Update the postflight suite's milestone groups to the renamed key and to the gate.
+      site. State the current mechanism in the replacing comment; no history narration. *(completed)*
+- [x] Update the postflight suite's milestone groups to the renamed key and to the gate. *(completed)*
 - [ ] Rewrite `milestone-review-handoff.sh` steps 3 to 6: no milestone-ref existence or
       commit-count check; per done task, list the completion subject, the attributed commit
       count and the end commit from the task's landing proof, falling back to V2 attribution

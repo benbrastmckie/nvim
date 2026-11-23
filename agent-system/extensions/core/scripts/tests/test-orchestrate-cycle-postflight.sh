@@ -45,7 +45,7 @@ for f in orchestrate-cycle-postflight.sh orchestrate-recover-outcome.sh task-loc
          orchestrate-churn.sh orchestrate-loop-guard-init.sh \
          deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
          state-write.sh generate-todo.sh generate-task-order.sh update-task-status.sh \
-         git-commit-scoped.sh issue-record.sh milestone-ref-land.sh task-landing-verify.sh \
+         git-commit-scoped.sh issue-record.sh task-landing-verify.sh \
          events-append.sh validate-return-meta.sh run-task-observers.sh \
          validate-handoff.sh; do
   require_file "$CORE_DIR/$f"
@@ -76,7 +76,7 @@ setup_sandbox() {
            orchestrate-churn.sh orchestrate-loop-guard-init.sh \
            deploy-root-guard.sh command-route-agent.sh skill-base.sh system-defect-record.sh \
            state-write.sh generate-todo.sh generate-task-order.sh update-task-status.sh \
-           git-commit-scoped.sh issue-record.sh milestone-ref-land.sh task-landing-verify.sh \
+           git-commit-scoped.sh issue-record.sh task-landing-verify.sh \
            events-append.sh validate-return-meta.sh run-task-observers.sh \
            validate-handoff.sh; do
     cp "$CORE_DIR/$f" "$WORKDIR/.claude/scripts/$f"
@@ -4810,11 +4810,10 @@ else
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
-# Milestone-ref landing + verification (ruling R2/Phase 4): the completion status write is
-# refused when landing or its --verify check fails, proceeds when it succeeds, and a task in no
-# roadmap_milestones batch is a clean pass-through -- modelled on case 990's derived-staleness
-# fixture technique (write_state / write_derived_extensions_decl-shaped .claude-extensions.json /
-# write_derived_return_meta), reusing jqf's .derived_staleness-sibling .milestone_landing field.
+# Landing verification at the completion write: the write is refused when the landing gate
+# inside update-task-status.sh refuses, proceeds when it passes, and a task the gate cannot bound
+# is a clean pass-through. No milestone ref is created on any path: postflight lands nothing
+# onto one. Read through jqf's .derived_staleness-sibling .landing field.
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
 
 write_milestone_fixture_base() {
@@ -4835,7 +4834,7 @@ EOF
 EOF
 }
 
-common_test_info "Milestone landing (A): a landing failure (integration_branch declares a branch that does not exist) refuses the completion write and leaves the task at its in-flight status -- proves ordering: the gate's own phase accounting passed, yet the status write never fires"
+common_test_info "Landing (A): a landing refusal (the batch record names an integration branch HEAD is not on) refuses the completion write and leaves the task at its in-flight status -- proves ordering: the gate runs before the write"
 
 setup_sandbox
 write_milestone_fixture_base 920
@@ -4845,41 +4844,49 @@ EOF
 cat > "$WORKDIR/.claude-extensions.json" <<'EOF'
 {"version":"1.0.0","extensions":{},"integration_branch":"no-such-branch"}
 EOF
+mkdir -p "$WORKDIR/specs/.orchestration/batch"
+cat > "$WORKDIR/specs/.orchestration/batch/sess_920.json" <<'EOF'
+{"schema": 1, "session_id": "sess_920", "task_numbers": [920], "admitted_at": "2026-01-01T00:00:00Z", "integration_branch": "no-such-branch", "integration_branch_declared": true, "landing_proofs": []}
+EOF
 ( cd "$WORKDIR" && git add specs/ .claude/ .claude-extensions.json >/dev/null 2>&1 && git commit -q -m "fixture" >/dev/null 2>&1 )
 run_sut specs/920_candidate --session sess_920 --phase implement --task-type general \
   --agent general-implementation-agent --loop-guard-file specs/920_candidate/.orchestrator-loop-guard \
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 920
 
 if [ "$(jqf '.verdict')" = "defer" ]; then
-  common_test_pass "milestone landing (A): verdict is 'defer' when the landing step fails"
+  common_test_pass "landing (A): verdict is 'defer' when the landing gate refuses"
 else
-  common_test_fail "milestone landing (A): expected verdict='defer', got: $LAST_STDOUT"
+  common_test_fail "landing (A): expected verdict='defer', got: $LAST_STDOUT"
 fi
-if [ "$(jqf '.milestone_landing')" = "true" ]; then
-  common_test_pass "milestone landing (A): milestone_landing is true"
+if [ "$(jqf '.landing')" = "true" ]; then
+  common_test_pass "landing (A): landing is true"
 else
-  common_test_fail "milestone landing (A): expected milestone_landing=true, got: $LAST_STDOUT"
+  common_test_fail "landing (A): expected landing=true, got: $LAST_STDOUT"
 fi
 if [ "$(jqf '.persisted_status')" = "implementing" ]; then
-  common_test_pass "milestone landing (A): persisted_status stays 'implementing' -- the completion write never fired despite implemented_gate_passed being true (ordering proof)"
+  common_test_pass "landing (A): persisted_status stays 'implementing' -- the completion write never fired despite implemented_gate_passed being true (ordering proof)"
 else
-  common_test_fail "milestone landing (A): expected persisted_status='implementing', got: $LAST_STDOUT"
+  common_test_fail "landing (A): expected persisted_status='implementing', got: $LAST_STDOUT"
 fi
-if grep -q "MILESTONE-LANDING:" <<< "$LAST_STDERR"; then
-  common_test_pass "milestone landing (A): a named MILESTONE-LANDING notice is emitted"
+if grep -q "LANDING-REFUSED: task 920's completion status write was refused by the landing verification (exit 7)" <<< "$LAST_STDERR"; then
+  common_test_pass "landing (A): a named LANDING-REFUSED notice is emitted"
 else
-  common_test_fail "milestone landing (A): expected a MILESTONE-LANDING notice. stderr: $LAST_STDERR"
+  common_test_fail "landing (A): expected a LANDING-REFUSED notice. stderr: $LAST_STDERR"
 fi
-# The notice must bound the retry it advises: a re-run lands the current tree, and a repeated
-# refusal with an unmoved HEAD is a stop-and-report, never an open-ended "retry".
-if grep "MILESTONE-LANDING:" <<< "$LAST_STDERR" | grep -q "A re-run lands the current tree" \
-   && grep "MILESTONE-LANDING:" <<< "$LAST_STDERR" | grep -q "do not retry further"; then
-  common_test_pass "milestone landing (A): the notice says what a re-run does and bounds the retry"
+# The predicate's own line names the check and the remedy; the notice above points at it.
+if grep -q "LANDING-REFUSED task 920 \[V1 branch\]" <<< "$LAST_STDERR" \
+   && grep "LANDING-REFUSED task 920" <<< "$LAST_STDERR" | grep -q "Remedy:"; then
+  common_test_pass "landing (A): the predicate's own line names the check and a remedy"
 else
-  common_test_fail "milestone landing (A): expected the notice to name the re-run's effect and bound the retry. stderr: $LAST_STDERR"
+  common_test_fail "landing (A): expected the predicate's V1 line with a remedy. stderr: $LAST_STDERR"
+fi
+if [ "$(git -C "$WORKDIR" for-each-ref | grep -c 'refs/heads/milestone/')" = "0" ]; then
+  common_test_pass "landing (A): the refusal created no milestone ref"
+else
+  common_test_fail "landing (A): a refs/heads/milestone/* ref exists after a refusal"
 fi
 
-common_test_info "Milestone landing (B): landing succeeds (no integration_branch declared -- advisory fallback to the checked-out branch) -- the completion write proceeds and the milestone ref advances by one commit"
+common_test_info "Landing (B): a task that is a member of a roadmap milestone batch completes, and no milestone ref is created -- postflight lands nothing onto one"
 
 setup_sandbox
 write_milestone_fixture_base 921
@@ -4892,27 +4899,27 @@ run_sut specs/921_candidate --session sess_921 --phase implement --task-type gen
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 921
 
 if [ "$(jqf '.verdict')" = "ok" ]; then
-  common_test_pass "milestone landing (B): verdict is 'ok' when landing succeeds"
+  common_test_pass "landing (B): verdict is 'ok' when landing succeeds"
 else
-  common_test_fail "milestone landing (B): expected verdict='ok', got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "landing (B): expected verdict='ok', got: $LAST_STDOUT ($LAST_STDERR)"
 fi
-if [ "$(jqf '.milestone_landing')" = "false" ]; then
-  common_test_pass "milestone landing (B): milestone_landing is false"
+if [ "$(jqf '.landing')" = "false" ]; then
+  common_test_pass "landing (B): landing is false"
 else
-  common_test_fail "milestone landing (B): expected milestone_landing=false, got: $LAST_STDOUT"
+  common_test_fail "landing (B): expected landing=false, got: $LAST_STDOUT"
 fi
 if [ "$(jqf '.persisted_status')" = "completed" ]; then
-  common_test_pass "milestone landing (B): persisted_status advances to 'completed'"
+  common_test_pass "landing (B): persisted_status advances to 'completed'"
 else
-  common_test_fail "milestone landing (B): expected persisted_status='completed', got: $LAST_STDOUT"
+  common_test_fail "landing (B): expected persisted_status='completed', got: $LAST_STDOUT"
 fi
-if git -C "$WORKDIR" rev-parse --verify --quiet refs/heads/milestone/M1 >/dev/null 2>&1; then
-  common_test_pass "milestone landing (B): refs/heads/milestone/M1 was created"
+if git -C "$WORKDIR" for-each-ref "refs/heads/milestone/" | grep -q .; then
+  common_test_fail "landing (B): a refs/heads/milestone/* ref was created for a milestone-batch member"
 else
-  common_test_fail "milestone landing (B): expected refs/heads/milestone/M1 to exist after a successful landing"
+  common_test_pass "landing (B): no refs/heads/milestone/* ref was created for a milestone-batch member"
 fi
 
-common_test_info "Milestone landing (C): a task absent from every roadmap_milestones batch is a clean pass-through -- the completion write proceeds exactly as before this check existed, and no milestone ref is created"
+common_test_info "Landing (C): a task absent from every roadmap_milestones batch and from every batch record is a clean pass-through -- the completion write proceeds and no milestone ref is created"
 
 setup_sandbox
 write_milestone_fixture_base 922
@@ -4924,15 +4931,15 @@ run_sut specs/922_candidate --session sess_922 --phase implement --task-type gen
   --agent general-implementation-agent --loop-guard-file specs/922_candidate/.orchestrator-loop-guard \
   --dispatch-seq 1 --dispatch-start-ts "$(( $(now_ts) - 5 ))" 922
 
-if [ "$(jqf '.verdict')" = "ok" ] && [ "$(jqf '.milestone_landing')" = "false" ] && [ "$(jqf '.persisted_status')" = "completed" ]; then
-  common_test_pass "milestone landing (C): no-milestone pass-through -- verdict ok, milestone_landing false, persisted_status completed"
+if [ "$(jqf '.verdict')" = "ok" ] && [ "$(jqf '.landing')" = "false" ] && [ "$(jqf '.persisted_status')" = "completed" ]; then
+  common_test_pass "landing (C): no-milestone pass-through -- verdict ok, landing false, persisted_status completed"
 else
-  common_test_fail "milestone landing (C): expected verdict=ok/milestone_landing=false/persisted_status=completed, got: $LAST_STDOUT ($LAST_STDERR)"
+  common_test_fail "landing (C): expected verdict=ok/landing=false/persisted_status=completed, got: $LAST_STDOUT ($LAST_STDERR)"
 fi
 if git -C "$WORKDIR" for-each-ref "refs/heads/milestone/" | grep -q .; then
-  common_test_fail "milestone landing (C): no refs/heads/milestone/* ref should exist for a task in no batch"
+  common_test_fail "landing (C): no refs/heads/milestone/* ref should exist for a task in no batch"
 else
-  common_test_pass "milestone landing (C): no refs/heads/milestone/* ref was created"
+  common_test_pass "landing (C): no refs/heads/milestone/* ref was created"
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════════════════════
@@ -5089,7 +5096,7 @@ STUBEOF
 chmod +x "$WORKDIR/.claude/scripts/update-task-status.sh"
 run_leftover_sut 996
 if [ "$(jqf '.verdict')" = "defer" ] && [ "$(jqf '.persisted_status')" = "implementing" ] \
-   && [ "$(jqf '.milestone_landing')" = "true" ]; then
+   && [ "$(jqf '.landing')" = "true" ]; then
   common_test_pass "case 996: verdict defer, persisted_status implementing, and the landing refusal is reported in the verdict"
 else
   common_test_fail "case 996: expected verdict=defer/persisted_status=implementing/landing refusal true, got: $LAST_STDOUT ($LAST_STDERR)"
