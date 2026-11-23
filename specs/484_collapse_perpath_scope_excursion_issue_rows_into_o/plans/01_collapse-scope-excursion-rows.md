@@ -425,24 +425,24 @@ not name, stop and record it rather than silently folding the extra site into th
 
 ---
 
-### Phase 5: Redeploy and close [NOT STARTED]
+### Phase 5: Redeploy and close [COMPLETED]
 
 **Goal**: The source-store changes reach the deployed tree, and the orchestration's complete gate
 obligation is discharged at its own close.
 
 **Tasks**:
-- [ ] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree from the
+- [x] Run `bash .claude/scripts/deploy-headless.sh` to regenerate the deployed tree from the *(completed)*
       source store.
-- [ ] Confirm the deployed tree carries the new library and the new suite
+- [x] Confirm the deployed tree carries the new library and the new suite *(completed)*
       (`.claude/scripts/lib/scope-excursion-record-lib.sh`,
       `.claude/scripts/tests/test-scope-excursion-record-lib.sh`), which is the end-to-end proof
       that the `provides.scripts` registration from Phase 1 took.
-- [ ] Run the three affected suites against the deployed tree
+- [x] Run the three affected suites against the deployed tree *(completed)*
       (`test-scope-excursion-record-lib.sh`, `test-git-commit-phase.sh`,
       `test-git-commit-scoped.sh`) and confirm each exits 0.
-- [ ] Run the scoped touched-path check over every path this task touched:
+- [x] Run the scoped touched-path check over every path this task touched: *(completed)*
       `bash .claude/scripts/verify-touched.sh <the full touched set>`.
-- [ ] Record explicitly in the phase's verification notes that the complete gate set is deferred
+- [x] Record explicitly in the phase's verification notes that the complete gate set is deferred *(completed)*
       to the orchestration close (the once-per-invocation batch gate stage) rather than invoked
       independently here. Under a standalone, non-orchestrated run with no such close, run
       `bash .claude/scripts/verify-deploy.sh` directly instead.
@@ -470,17 +470,17 @@ a suite this plan did not, run that one too rather than treating the plan's list
 
 ## Testing & Validation
 
-- [ ] A multi-path drop at `git-commit-phase.sh` writes exactly one `scope excursion` row naming
+- [x] A multi-path drop at `git-commit-phase.sh` writes exactly one `scope excursion` row naming *(verified)*
       every dropped path (dispatch Verification item 1).
-- [ ] A multi-pathspec drop at `git-commit-scoped.sh` writes exactly one such row naming every
+- [x] A multi-pathspec drop at `git-commit-scoped.sh` writes exactly one such row naming every *(verified)*
       dropped path (dispatch Verification item 1).
-- [ ] A repo-wide scan finds no non-test site emitting the class per path (dispatch Verification
+- [x] A repo-wide scan finds no non-test site emitting the class per path (dispatch Verification *(verified)*
       item 2).
-- [ ] Pre-existing single-path rows and new collapsed rows group together correctly through
+- [x] Pre-existing single-path rows and new collapsed rows group together correctly through *(verified)*
       `orchestrate-conclusion-aggregate.sh`'s `group_by` pipeline with no backfill (dispatch
       Verification item 3, with the research report's correction of the named consumer).
-- [ ] `--severity minor` and the drop-and-warn posture are byte-identical to today at both sites.
-- [ ] Every pre-existing drop case in both suites passes unmodified.
+- [x] `--severity minor` and the drop-and-warn posture are byte-identical to today at both sites. *(verified)*
+- [x] Every pre-existing drop case in both suites passes unmodified. *(verified)*
 
 ## Artifacts & Outputs
 
