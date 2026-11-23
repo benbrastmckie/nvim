@@ -277,26 +277,26 @@ strip.
 
 ---
 
-### Phase 4: Close out — scoped verification over the whole touched set [NOT STARTED]
+### Phase 4: Close out — scoped verification over the whole touched set [COMPLETED]
 
 **Goal**: Every path this task touched is verified together in one narrowed pass, and the complete
 gate set is explicitly handed to the orchestration close rather than re-run per phase.
 
 **Tasks**:
-- [ ] Run `bash agent-system/extensions/core/scripts/verify-touched.sh` once over the full touched
+- [x] Run `bash agent-system/extensions/core/scripts/verify-touched.sh` once over the full touched
       set: `agent-system/extensions/core/scripts/git-commit-scoped.sh`,
       `agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh`,
       `agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh`,
       `agent-system/extensions/core/context/standards/git-staging-scope.md` — one multi-path
-      invocation, never four single-path runs unioned by hand.
-- [ ] Confirm the run is green and that Case 20 and Case 26 both appear as passes in the
-      `test-git-commit-phase.sh` output.
-- [ ] Confirm `git status --short` shows no stray modifications outside this task's `file_scope`
-      (a sibling task is live on this same working tree).
-- [ ] Record the Site-3 closure, and the fact that only the `proposed_file_scope` lookup asymmetry
-      remains, in the task's completion summary.
-- [ ] Defer the complete gate set (`bash agent-system/extensions/core/scripts/verify-deploy.sh`) to
-      the orchestration close; do not invoke the full battery as this phase's own criterion.
+      invocation, never four single-path runs unioned by hand. *(completed)*
+- [x] Confirm the run is green and that Case 20 and Case 26 both appear as passes in the
+      `test-git-commit-phase.sh` output. *(completed)*
+- [x] Confirm `git status --short` shows no stray modifications outside this task's `file_scope`
+      (a sibling task is live on this same working tree). *(completed)*
+- [x] Record the Site-3 closure, and the fact that only the `proposed_file_scope` lookup asymmetry
+      remains, in the task's completion summary. *(completed)*
+- [x] Defer the complete gate set (`bash agent-system/extensions/core/scripts/verify-deploy.sh`) to
+      the orchestration close; do not invoke the full battery as this phase's own criterion. *(completed)*
 
 **Timing**: 0.4 hours
 
@@ -316,13 +316,13 @@ gate set is explicitly handed to the orchestration close rather than re-run per 
 
 ## Testing & Validation
 
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` passes, including
-      new case Z19.
-- [ ] `bash agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh` passes, including
-      the widened Case 26 and the unmodified Case 20.
-- [ ] Z19 fails when the Phase 1 strip is temporarily reverted (proves it pins Site 3).
-- [ ] One multi-path `verify-touched.sh` run over all four touched paths is green.
-- [ ] No `.claude/**` path was edited at any point.
+- [x] `bash agent-system/extensions/core/scripts/tests/test-git-commit-scoped.sh` passes, including
+      new case Z19. *(verified)*
+- [x] `bash agent-system/extensions/core/scripts/tests/test-git-commit-phase.sh` passes, including
+      the widened Case 26 and the unmodified Case 20. *(verified)*
+- [x] Z19 fails when the Phase 1 strip is temporarily reverted (proves it pins Site 3). *(verified)*
+- [x] One multi-path `verify-touched.sh` run over all four touched paths is green. *(verified)*
+- [x] No `.claude/**` path was edited at any point. *(verified)*
 
 ## Artifacts & Outputs
 
