@@ -1,16 +1,128 @@
 {
-  "status": "in_progress",
+  "status": "implemented",
   "dispatch_seq": 6,
-  "artifacts": [],
-  "partial_progress": {
-    "stage": "initializing",
-    "details": "Implementation dispatch started; no phase executed yet.",
-    "phases_completed": 0,
-    "phases_total": 7
+  "artifacts": [
+    {
+      "type": "summary",
+      "path": "specs/673_per_task_attribution_squash_landing/summaries/01_landing-verification-gate-summary.md",
+      "summary": "Seven phases complete: landing predicate and proof, exit-7 gate in update-task-status.sh, leftover commit ahead of the status write, milestone landing unwired, review handoff re-pointed, redeployed."
+    }
+  ],
+  "completion_data": {
+    "completion_summary": "A completion status write now requires task-landing-verify.sh (V1 to V5) to pass inside update-task-status.sh, which exits 7 and writes nothing otherwise, and records one landing proof per task in the batch record. The cycle postflight commits leftover work before the write and no longer calls milestone-ref-land.sh; milestone-review-handoff.sh reads the integration branch and the proofs."
   },
-  "modified_files": [],
-  "memory_candidates": [],
-  "sapience_notes": [],
+  "modified_files": [
+    "specs/decisions/batch-worktree-isolation-and-task-squash-landing.md",
+    "specs/decisions/isolation-off-landing-verification-and-review-time-squash.md",
+    "agent-system/extensions/core/scripts/lib/batch-admission-lib.sh",
+    "agent-system/extensions/core/scripts/tests/test-batch-admission-lib.sh",
+    "agent-system/extensions/core/scripts/task-landing-verify.sh",
+    "agent-system/extensions/core/scripts/tests/test-task-landing-verify.sh",
+    "agent-system/extensions/core/manifest.json",
+    "agent-system/extensions/core/scripts/tests/suite-classification.data",
+    "agent-system/extensions/core/context/standards/orchestrator-runtime-files.md",
+    "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-cycle-postflight.sh",
+    "agent-system/extensions/core/scripts/update-task-status.sh",
+    "agent-system/extensions/core/scripts/tests/test-postflight-landing-gate.sh",
+    "agent-system/extensions/core/scripts/milestone-review-handoff.sh",
+    "agent-system/extensions/core/scripts/tests/test-milestone-review-handoff.sh",
+    "agent-system/extensions/core/scripts/milestone-ref-land.sh",
+    "agent-system/extensions/core/context/patterns/ref-plumbing-landing.md",
+    "agent-system/extensions/core/index-entries.json",
+    "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"
+  ],
+  "memory_candidates": [
+    {
+      "content": "A suite that resolves its subject deployed-first (common_test_resolve_subject / a resolve() helper) passes against the OLD deployed copy until the next redeploy, so a source-store run-all.sh pass does not prove the edited script is compatible with that suite. After changing a script's interface, grep the tests directory for the script name and re-run those suites after the redeploy, or check which copy each suite declares as its subject.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/673_per_task_attribution_squash_landing/summaries/01_landing-verification-gate-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "deployed-first",
+        "suite subject",
+        "redeploy",
+        "run-all",
+        "source store"
+      ]
+    },
+    {
+      "content": "Mutation-seam negative fixtures: copy the script under test into the fixture, disable exactly one check with sed, assert the weakened copy FAILS to refuse, then assert the shipped copy refuses with the check's own exit code. Also assert the sed changed the file (cmp against the source), so a refactor cannot leave the seam matching nothing. This gives a permanent 'observed failing' proof without a test-only branch in the shipped script.",
+      "category": "TECHNIQUE",
+      "source_artifact": "specs/673_per_task_attribution_squash_landing/summaries/01_landing-verification-gate-summary.md",
+      "confidence": 0.85,
+      "suggested_keywords": [
+        "negative fixture",
+        "mutation",
+        "sed seam",
+        "observed failing",
+        "shell test"
+      ]
+    },
+    {
+      "content": "In this harness a foreground Bash call is moved to the background at about 180 seconds regardless of the timeout parameter. For anything longer, launch detached (setsid nohup bash -c '...; echo $? > rc' & echo $! > pid) and wait in separate calls of under 170 seconds each with 'while kill -0 $pid' loops, reading the rc file when liveness ends.",
+      "category": "WORKFLOW",
+      "source_artifact": "specs/673_per_task_attribution_squash_landing/summaries/01_landing-verification-gate-summary.md",
+      "confidence": 0.8,
+      "suggested_keywords": [
+        "bash timeout",
+        "background",
+        "kill -0",
+        "detached",
+        "waiter"
+      ]
+    }
+  ],
+  "sapience_notes": [
+    {
+      "subject": "Landing gate placement in the agent system",
+      "predicate": "decision is",
+      "value": "The pre-completion landing verification lives inside update-task-status.sh (PHASE 0.6, exit 7), not at any caller, because that script is the one site every completion path reaches (cycle postflight, reconcile promotion, gate-out, post-deploy checkpoint) and the caller list cannot be proved complete.",
+      "ko_type": "decision",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/update-task-status.sh"
+    },
+    {
+      "subject": "task entries without a created timestamp",
+      "predicate": "measured fact is",
+      "value": "30 of 137 active task entries in this repository carry no created field (numbers between 484 and 609, mostly not_started), so not every task-creation path writes it. The landing predicate bounds such a task by its oldest batch admission and passes it through as inconclusive when no batch record lists it.",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "specs/state.json"
+    },
+    {
+      "subject": "verify-touched.sh before a redeploy",
+      "predicate": "constraint is",
+      "value": "verify-touched.sh runs the deployed tree's run-all.sh. It rejects a suite that exists only in the source store ('unknown suite basename') and tests deployed copies that lack the phase's edits, so it cannot discharge an interface-tier phase before the redeploy; the same --only list must be run through the source-store run-all.sh.",
+      "ko_type": "constraint",
+      "confidence": 0.9,
+      "source_loc": "agent-system/extensions/core/scripts/verify-touched.sh"
+    },
+    {
+      "subject": "proposed_file_scope merge ordering in the cycle postflight",
+      "predicate": "constraint is",
+      "value": "proposed_file_scope is merged into a task's file_scope inside the completion status write (skill_postflight_update). Any commit that must precede that write and should stage a proposed path has to merge the proposal itself first, or both the excursion filter and git-commit-scoped.sh's own containment guard will drop the path.",
+      "ko_type": "constraint",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/orchestrate-cycle-postflight.sh"
+    },
+    {
+      "subject": "re-verifying a task completed before landing proofs existed",
+      "predicate": "finding is",
+      "value": "A completed task with no landing proof fails V4 as soon as a dependent task edits one of its files (observed: task 669 refused, naming task 673's commits). The idempotence short-circuit needs a recorded proof; without one the task cannot be re-verified after a dependent lands. Harmless for a task already at completed, whose status write is a no-op.",
+      "ko_type": "finding",
+      "confidence": 0.85,
+      "source_loc": "agent-system/extensions/core/scripts/task-landing-verify.sh"
+    },
+    {
+      "subject": "existing postflight fixtures and the landing gate",
+      "predicate": "finding is",
+      "value": "No pre-existing suite fixture was refused by the new gate: their task entries have no created timestamp and no batch record, so the predicate reports them inconclusive. The 32 suites that drive an implement postflight passed unchanged; only fixtures written for the gate exercise it.",
+      "ko_type": "finding",
+      "confidence": 0.8,
+      "source_loc": "specs/673_per_task_attribution_squash_landing/progress/phase-5-progress.json"
+    }
+  ],
   "metadata": {
     "session_id": "sess_1795425897_6a25f2",
     "agent_type": "general-implementation-agent",
@@ -19,7 +131,9 @@
       "orchestrator",
       "implement",
       "general-implementation-agent"
-    ]
+    ],
+    "phases_completed": 7,
+    "phases_total": 7
   },
   "proposed_file_scope": [
     "agent-system/extensions/core/scripts/tests/test-orchestrate-conclusion-roadmap.sh"

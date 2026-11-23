@@ -1,7 +1,7 @@
 # Implementation Plan: Task #673
 
 - **Task**: 673 - Land one reviewable commit per completed task on the integration branch and verify it before the status write
-- **Status**: [IMPLEMENTING]
+- **Status**: [COMPLETED]
 - **Effort**: 11 hours
 - **Dependencies**: 669 (completed)
 - **Research Inputs**: specs/673_per_task_attribution_squash_landing/reports/01_isolation-off-landing-ruling.md
