@@ -1,0 +1,22 @@
+{
+  "status": "planned",
+  "dispatch_seq": 5,
+  "phases_completed": 0,
+  "phases_total": 4,
+  "summary": "Wrote a 4-phase plan adopting the research report's (c) ruling: a generic, declaration-only obligation in checkpoints/checkpoint-commit.md with a one-line pointer (not a copy) from general-implementation-agent.md, plus a non-blocking derived_probe_run_all call at git-commit-phase.sh's phase-commit site. Plan-time re-derivation added one component the ruling did not reach: git-commit-scoped.sh's V10 already widens scope with derived_probe_output_prefixes while git-commit-phase.sh's Site-2 Containment Self-Check does not, so a regenerated declared surface is dropped before the commit sees it and the new rule would be undone by the script meant to carry it out. All four cited issue-log ids and every carried figure re-derived and confirmed. Plan validates clean with zero warnings.",
+  "blockers": [],
+  "artifacts": [
+    {
+      "type": "plan",
+      "path": "specs/517_stage_regenerated_derived_files_in_phase_commits/plans/01_stage-regenerated-derived-files.md",
+      "summary": "4-phase plan: prose obligation, Site-2 derived-output-prefix splice, non-blocking probe backstop, deploy and verify."
+    }
+  ],
+  "metadata": {
+    "session_id": "sess_1795391913_f9e5cc_517",
+    "agent_type": "planner-agent",
+    "task_number": 517,
+    "estimated_hours": 4.5,
+    "dependency_waves": 4
+  }
+}

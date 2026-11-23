@@ -1,40 +1,31 @@
 {
-  "status": "researched",
-  "agent_type": "general-research-agent",
-  "delegation_path": ["orchestrator", "research", "general-research-agent"],
-  "session_id": "sess_1795391913_f9e5cc_517",
-  "task_number": 517,
-  "dispatch_seq": 4,
-  "findings_count": 9,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/517_stage_regenerated_derived_files_in_phase_commits/reports/01_stage-regenerated-derived-files.md",
-      "summary": "Rules on the execution-half gap: adopts (c) -- a short generic obligation in checkpoint-commit.md (pointer, not copy, into general-implementation-agent.md) plus a minimal non-blocking backstop call to the already-built derived_probe_run_all from git-commit-phase.sh -- and flags, re-derived live, that neither half has any effect on the real BimodalLogic incident without a companion consumer-repo task declaring coupled_generated_surfaces there."
+      "type": "plan",
+      "path": "specs/517_stage_regenerated_derived_files_in_phase_commits/plans/01_stage-regenerated-derived-files.md",
+      "summary": "4-phase plan (4.5h) landing the (c) ruling -- a declaration-only obligation in checkpoint-commit.md with a pointer from general-implementation-agent.md, a Site-2 derived-output-prefix splice so a regenerated declared surface is actually stageable, a non-blocking derived_probe_run_all backstop at the phase-commit site, and a deploy/verify close."
     }
   ],
   "memory_candidates": [
     {
-      "content": "agent-system's checkpoint-commit.md/git-commit-phase.sh staging pipeline stages only what the agent self-reports in files_touched/modified_files; nothing re-runs a generator before staging. The Phase-Commit Containment Self-Check additionally DROPS any staged path not already inside the task's declared file_scope -- so even a dutiful, un-prompted regeneration by an implementing agent is silently undone at commit time unless the regenerated path is already declared in file_scope. The execution half (re-run+stage) and the declaration half (file_scope membership) are coupled at this exact site.",
+      "content": "The derived-output-prefix widening (derived_probe_output_prefixes from scripts/lib/derived-artifact-probe-lib.sh) is spliced at Containment Site 1 (orchestrate-cycle-postflight.sh WORK h) and Site 3 (git-commit-scoped.sh's V10), but NOT at Site 2 (git-commit-phase.sh's Phase-Commit Containment Self-Check). git-staging-scope.md's own 'Three Containment sites, not one' section already records why Site 3 cannot compensate: Site 2 removes an uncontained path from its own files_touched array, and therefore from the pathspec, before git-commit-scoped.sh is ever invoked, and V10 tests only the pathspec entries it is handed. The same asymmetry is already documented there for the own-task-directory member. Consequence: a declared derived-output path regenerated mid-phase is dropped at Site 2 with a 'scope excursion' row unless it is independently inside the task's declared file_scope -- so any prose obligation to re-run a generator and stage its output within the phase is undone at the commit unless Site 2 gains the same splice.",
       "category": "PATTERN",
-      "source_artifact": "specs/517_stage_regenerated_derived_files_in_phase_commits/reports/01_stage-regenerated-derived-files.md",
-      "confidence": 0.85,
-      "suggested_keywords": ["checkpoint-commit", "git-commit-phase", "file_scope", "containment-self-check", "derived-artifact"]
-    },
-    {
-      "content": "Two distinct repo-level declaration schemas exist in .claude-extensions.json for generated-artifact staleness: derived_artifact_probes (a build-free check_command + derived_output_dirs, read at implement-postflight, blocking) and coupled_generated_surfaces (trigger_glob + generated_paths + commit_blocking, read only at plan-acceptance time by an inline helper in validate-artifact.sh, purely advisory). coupled_generated_surfaces is pure glob/string matching with zero command execution -- cheaper and more precisely source-correlated than derived_artifact_probes' check_command. Its documentation already names a second consumer as the trigger to promote the inline helper to scripts/lib/; wiring it into git-commit-phase.sh against actual files_touched (rather than only the plan's declared prose) would be that second consumer, and would also be the first place commit_blocking could become a real refusal rather than inert warning-text metadata.",
-      "category": "PATTERN",
-      "source_artifact": "specs/517_stage_regenerated_derived_files_in_phase_commits/reports/01_stage-regenerated-derived-files.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["coupled_generated_surfaces", "derived_artifact_probes", "repo-level-declarations", "validate-artifact", "commit_blocking"]
-    },
-    {
-      "content": "anchor-pointer-convention.md (agent-system core, created 2026-11-05) requires a block restated across files to collapse to a one-line pointer naming the anchor's path+heading rather than a verbatim copy; lint-anchor-pointer-collapse.sh only polices files already registered in lint/collapsed-blocks/registry.tsv as collapsed-FROM, so it does not catch a freshly hand-duplicated paragraph added to two files at once -- that regression has to be avoided by authoring discipline (write the pointer form from the start), not caught by this lint after the fact.",
-      "category": "CONFIG",
-      "source_artifact": "specs/517_stage_regenerated_derived_files_in_phase_commits/reports/01_stage-regenerated-derived-files.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["anchor-pointer-convention", "lint-anchor-pointer-collapse", "verbatim-duplication", "markdown-collapse"]
+      "source_artifact": "specs/517_stage_regenerated_derived_files_in_phase_commits/plans/01_stage-regenerated-derived-files.md",
+      "confidence": 0.9,
+      "suggested_keywords": ["containment-sites", "git-commit-phase", "derived_probe_output_prefixes", "file_scope", "phase-commit-staging"]
     }
   ],
-  "next_steps": "Run /orchestrate 517 to create implementation plan"
+  "metadata": {
+    "session_id": "sess_1795391913_f9e5cc_517",
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "task_number": 517,
+    "phase_count": 4,
+    "estimated_hours": 4.5,
+    "dependency_waves": 4
+  },
+  "next_steps": "Run /orchestrate 517 to execute the plan",
+  "dispatch_seq": 5
 }
