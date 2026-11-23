@@ -1,5 +1,5 @@
 ---
-next_project_number: 685
+next_project_number: 687
 ---
 
 # TODO
@@ -14,17 +14,15 @@ next_project_number: 685
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
 | 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,486,491,498,502,506,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,669,679,680,684 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,439,474,479,481,508,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,671 | 383,390,410,431,438,452,453,486,511,519,539,542,563,577,586,599,629,669 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,472,480,492,513,561,588,594 | 439,479,491,509,552,556,570,593 | core-agent-system, orchestrator, agent-system |
+| 2 | 384,439,474,479,481,508,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,671,673,686 | 383,390,410,431,438,452,453,486,511,519,539,542,563,577,586,599,629,669 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,472,480,492,513,561,588,594,674,675,685 | 439,479,491,509,552,556,570,593,673 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,501,518,581,595,641 | 454,472,486,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 524,571,596,642 | 501,518,595,641 | core-agent-system, agent-system |
 | 6 | 536 | 524 | agent-system |
 | 7 | 548 | 536 | agent-system |
 | 8 | 553,598 | 548 | agent-system |
 | 9 | 655,670 | 513,553,669 | orchestrator |
-| 10 | 672,673 | 670,671 | orchestrator |
-| 11 | 674 | 673 | orchestrator |
-| 12 | 675 | 672,674 | orchestrator |
+| 10 | 672 | 670 | orchestrator |
 
 **Grouped by Topic** (indented = depends on parent):
 
@@ -111,20 +109,20 @@ next_project_number: 685
 514 [NOT STARTED] — Convergence guard blind to zero-dispatch cycles
 665 [NOT STARTED] — Record the last dispatching orchestration batch in a...
 666 [NOT STARTED] — Re-site the branch-aware orchestration batch in the authored...
-669 [NOT STARTED] — Add integration-branch admission, the isolation declaration,...
-  └─ 670 [NOT STARTED] — Build the two-root contract in the dispatch composer and the...
-    └─ 672 [NOT STARTED] — Classify every remaining project-root consumer as code-root,...
-      └─ 675 [NOT STARTED] — Rewrite the branch-strategy documentation to state the...
-    └─ 673 [NOT STARTED] — Land one attribution-built squash commit per completed task...
-      └─ 674 [NOT STARTED] — Build batch worktree cleanup, retention on partial batches,...
-        └─ 675 [NOT STARTED] — Rewrite the branch-strategy documentation to state the... (see above)
-  └─ 671 [NOT STARTED] — Make the write-time and git-guard hooks two-root aware
-    └─ 673 [NOT STARTED] — Land one attribution-built squash commit per completed task... (see above)
+669 [NOT STARTED] — Add integration-branch admission and the isolation declaration
+  └─ 670 [HOLD] — Build the two-root contract in the dispatch composer and the...
+    └─ 672 [HOLD] — Classify every remaining project-root consumer as code-root,...
+  └─ 671 [HOLD] — Make the write-time and git-guard hooks two-root aware
+  └─ 673 [NOT STARTED] — Land one reviewable commit per completed task on the...
+    └─ 674 [HOLD] — Build batch worktree cleanup, retention on partial batches,...
+    └─ 675 [NOT STARTED] — Rewrite the branch-strategy documentation to state the...
+    └─ 685 [NOT STARTED] — Cut review branches and submit a stack of PRs from landed...
+  └─ 686 [HOLD] — Create the per-batch worktree and batch branch when isolation...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
   └─ 655 [NOT STARTED] — Declare generated paths so they collapse in review
-  └─ 670 [NOT STARTED] — Build the two-root contract in the dispatch composer and the... (see above)
+  └─ 670 [HOLD] — Build the two-root contract in the dispatch composer and the... (see above)
 
 ### Agent System
 
@@ -181,6 +179,71 @@ next_project_number: 685
 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
 
 ## Tasks
+
+### 686. Create the per-batch worktree and batch branch when isolation is declared on
+- **Status**: [HOLD]
+- **Held**: 2026-11-23
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 669
+
+**Description**: Create the per-batch worktree and batch branch when isolation is declared on
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.
+
+ON HOLD AT CREATION, 2026-11-23, by operator direction: worktree isolation is deferred while the branch-and-PR workflow is built isolation-off first. This task exists so the deferred element is recorded rather than lost, and so the admission task has a named target to point its refusal message at. Do not dispatch it until the hold is lifted.
+
+ORIGIN: this is the worktree-creation element carved out of the integration-branch admission task when that task was narrowed. The ruling it builds is specs/decisions/batch-worktree-isolation-and-task-squash-landing.md, sections "R2, amended" and "R5, amended", and built-mechanism verdict D3. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md, whose finding 4 gives the measured sparse-checkout recipe, and specs/decisions/external-worktree-harness-behaviour.md, the measurement of how the harness behaves with a worktree outside the project directory.
+
+1. WORKTREE CREATION, only when `worktree_isolation` is `batch`: `git worktree add <dir> -b <batch-branch> <integration-branch>`, sited per R2, idempotent on resume (keyed on the batch record), sparse and excluding `specs/` wherever `specs/` is tracked. Nothing is cloned, hardlinked or symlinked in -- the hardlink-clone hazard class is what the two removal verdicts record, and this design must not reintroduce it.
+2. BATCH RECORD FIELDS: add the batch-branch name and the absolute worktree path to the batch record the admission task registers. No script derives the worktree path; every consumer reads it from the record. The admission task is required to have made this an additive field write.
+3. ADMISSION REFUSAL REMOVED: the admission task refuses loudly when `worktree_isolation` is declared `batch` while this machinery is absent. Removing that refusal is part of this task, not a separate cleanup, and the refusal's test must be replaced rather than deleted.
+4. COMPOSITION: one worktree per invocation, never per dispatch or per task. Must compose with task-lock, the session registry, the orchestration queue and MAX_TASKS, and preserve the batching-by-default doctrine.
+5. THE LANDING MECHANISM MAY HAVE MOVED. The landing task is required to rule how a reviewable unit is produced with no batch branch, and to record that ruling. Read it before planning: if it chose a plumbing-built per-batch ref, the batch branch this task creates may be redundant or may need to become that ref rather than a checkout. Reconcile rather than assume.
+
+PREREQUISITES BEYOND THE EDGES: the two-root contract tasks and the batch-worktree cleanup task are held alongside this one and are its real companions. Lifting this hold without them produces a worktree no script is root-aware about.
+
+VERIFICATION CRITERIA THIS TASK OWNS:
+- A multi-task batch produces one worktree and one batch branch.
+- A repository with isolation off is unaffected: no worktree, no batch branch, no behaviour change.
+
+---
+
+### 685. Cut review branches and submit a stack of PRs from landed integration-branch work
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 673
+
+**Description**: Cut review branches and submit a stack of PRs from landed integration-branch work
+
+SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.
+
+WHY THIS EXISTS. The branch-topology work ends at "work is landed on the integration branch" plus a review handoff that prints the commands a human types. Nothing in it cuts a review branch, opens a pull request, chooses a PR's base, or maintains a stack of dependent PRs. That gap is this task. The aim stated by the operator is a workflow that runs off a long-lived feature branch and submits reviewable PRs from it, stacking them where the work is dependent.
+
+THE CONSENT BOUNDARY IS NOT RE-OPENED. rules/pr-prohibition.md and ruling R8 of specs/decisions/branch-topology-and-landing-strategy.md both stand unchanged: an agent never pushes and never creates a PR or MR. This task PREPARES -- it computes branches, bases, ordering and descriptions, and hands the operator the literal commands. Every outward call stays behind the user-invoked /please grant and /merge. hooks/guard-git-push.sh enforces this mechanically regardless of what is built here, so a design that tried to bypass it would simply fail.
+
+PRIOR ART TO READ, NOT REINVENT. The cslib extension's /pr command already implements the three workflows this needs -- a new PR, a PR stacked on another (`--stacked [PR]`: branch from the parent PR's head, `gh pr create --base <pr-head>`), and updating or amending an existing PR. It is the only stacking machinery in the repository. It is also welded to its own repository: a Lean CI pipeline, `lake` invocations throughout, and a hardcoded upstream remote and branch. ASSESS AND RULE whether the portable part -- workflow selection, base resolution, branch naming, PR body composition -- can be extracted into core with the CI pipeline left as an extension-supplied hook, or whether core needs its own smaller implementation. State the reasoning; do not assume either answer.
+
+DEPENDS ON A CONTRACT THE LANDING TASK OWES. The landing task is required to state what a downstream PR-cutting step receives: the ref to branch from, the commit range covered, and whether that range is already one commit per task. Read that contract rather than re-deriving it. If it is absent or ambiguous when this task is planned, that is a blocker to raise, not a gap to fill by guessing.
+
+1. REVIEW UNIT. Rule what one PR contains -- one task, one batch, or an operator-chosen range -- and how its branch is named. The unit must be stated in terms of the landing contract above, not invented here.
+2. BASE RESOLUTION. A PR's base is the integration branch for the bottom of a stack, and the parent PR's head branch for every PR above it. Build the resolution, including detecting an existing parent PR rather than requiring the operator to supply its number every time.
+3. STACK ORDERING FROM DEPENDENCY EDGES. Tasks already declare `dependencies` in specs/state.json. Rule whether the stack order is derived from those edges, supplied by the operator, or both, and what happens when the edges imply an order the landed commit order contradicts.
+4. RE-TARGETING WHEN A PARENT MERGES. This is the part no existing machinery has. When the bottom PR merges, every PR above it needs its base moved and may need rebasing. Rule what is automated, what is prepared-for-the-operator, and what is explicitly out of scope. `git rebase -i` is unavailable; a non-interactive rebase or a plumbing-built equivalent is the only candidate.
+5. PREPARED COMMANDS, NEVER EXECUTED. Extend or replace milestone-review-handoff.sh so the handoff names each PR in the stack, in order, with its base, its title, its body, and the literal /please and /merge invocations. One grant per push is the existing contract; if a stack of N PRs means N grants, say so plainly rather than designing around it.
+6. PLATFORM. /merge already detects GitHub versus GitLab from the remote. Stacking semantics differ between them. Rule which platforms are supported and refuse loudly on an unsupported one rather than producing a malformed request.
+7. SECOND-REPOSITORY USE. The operator's stated purpose is submitting stacks in a repository other than the one owning the source store. Nothing built here may hardcode a repository, a remote name, a branch name or a path. Verify against a second repository, not only the source-store repository.
+
+NON-GOALS: changing the consent boundary; implementing worktree isolation, which is held; re-ruling the landing mechanism, which belongs to the landing task.
+
+VERIFICATION CRITERIA THIS TASK OWNS:
+- A stack of at least three dependent PRs is prepared from landed work, each with the correct base, in dependency order, with no agent having pushed or called a forge API.
+- The prepared commands, run by the operator, produce the stack on the forge.
+- A parent merging produces a stated, tested disposition for its descendants rather than a silently stale base.
+- Every deliverable is repo-agnostic, demonstrated in a repository other than the source-store repository.
+
+---
 
 ### 684. Sweep and fix stale command and sub-mode references across the source store
 - **Status**: [NOT STARTED]
@@ -301,39 +364,37 @@ Q4. How does the validator treat a historical mention (M4) without either rewrit
 
 ---
 
-### 675. Rewrite the branch-strategy documentation to state the implemented batch-worktree contract
+### 675. Rewrite the branch-strategy documentation to state the implemented integration-branch contract
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 672, Task 673, Task 674
+- **Dependencies**: Task 673
 
-**Description**: Rewrite the branch-strategy documentation to state the implemented batch-worktree contract
+**Description**: Rewrite the branch-strategy documentation to state the implemented integration-branch contract
 
 SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.
 
-RULING THIS TASK BUILDS: specs/decisions/batch-worktree-isolation-and-task-squash-landing.md (the amending record). Read the sections named below before planning; they are cited, not restated, and the record wins over this description wherever the two differ. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md (the research report; if its task directory has been archived, find it by filename under specs/archive/).
+SCOPE RE-POINTED BY OPERATOR DIRECTION, 2026-11-23. Worktree isolation is deferred and its tasks are on hold. This task documents the contract that is ACTUALLY IMPLEMENTED when it runs -- integration-branch admission, per-task landing on that branch, and review handoff, all in one primary tree -- not the batch-worktree contract the amending record describes in full. The worktree half is documented as declared-but-unimplemented, naming the held tasks, so a reader can tell a deferred design from a live one. It is a documentation-parity task: it states what the scripts do, and it is wrong if it describes machinery that does not exist.
 
-STANDING CONSTRAINTS: (1) every behaviour built here must hold in a repository with isolation declared off (worktree_isolation undeclared or `off`), where no worktree and no batch branch exist; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both of which sit at their byte ceilings -- mechanics go in scripts and the dispatch composer; (3) repo-agnostic: no literal branch name and no consumer-repo path in any deliverable; (4) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.
+RULING THIS DOCUMENTS: specs/decisions/branch-topology-and-landing-strategy.md and specs/decisions/batch-worktree-isolation-and-task-squash-landing.md, PLUS the decision record the landing task is required to write ruling the isolation-off landing mechanism. That third record is load-bearing here: it settles what a reviewable unit is, and this task cannot state the contract before it exists. Read all three.
 
-BUILDS: documentation parity for everything the amending record rules, AFTER the mechanics exist.
+1. BRANCH STRATEGY section of context/standards/git-workflow-narrative.md: replace the account of which branch work lands on. State that the primary tree stays on the declared integration branch, that admission refuses an invocation started elsewhere or on a dirty state territory, and what happens when `integration_branch` is undeclared. Do not describe a batch branch or a worktree as live.
+2. context/patterns/ref-plumbing-landing.md: reconcile with the landing mechanism as ruled. The page currently documents the commit-tree/update-ref idiom as serving milestone-ref-land.sh; if that script is retired as a landing mechanism, the page must say what now uses the idiom, or be retired with it. Its concurrency-safety argument is the durable content and should survive in whatever page remains.
+3. rules/git-workflow.md: state the branch rule at the point of use -- which branch a commit lands on, and that no script creates or switches branches during dispatch work.
+4. context/standards/repo-level-declarations.md: the prose around both declaration rows, matching the schema the admission task writes, including which values are live.
+5. index-entries.json line counts for every file this task edits.
+6. SWEEP for the same staleness elsewhere rather than fixing only the files listed: context/standards/git-staging-scope.md and context/standards/shared-worktree-discipline.md both make claims about branch and tree topology. shared-worktree-discipline.md's opening sentence calls per-agent worktree isolation "a settled non-goal", which the amending record re-opened at batch granularity -- it is now neither settled-removed nor implemented, and the page must say which. Report what the sweep found.
 
-1. Rewrite context/standards/git-workflow-narrative.md's Branch Strategy section to the implemented contract.
-2. Rewrite context/patterns/ref-plumbing-landing.md to match what the landing task left in service (the milestone ref's remaining role, if any, and the attribution landing).
-3. Add the branch-target rule to rules/git-workflow.md.
-4. Complete the prose around the `integration_branch` and `worktree_isolation` schema rows in context/standards/repo-level-declarations.md (the rows themselves are added by the admission task).
-5. Update index-entries.json line counts for every file touched.
-
-CURRENT DESIGN ONLY: state what the system does. No draft history, no "no longer", no attribution of a rejected alternative to an earlier design. Rejected alternatives may be stated on their own merits. Describe what was actually built by reading the scripts, not by copying the record: where a script and the record differ, report the difference instead of documenting the record.
-
-Also check the header of milestone-ref-land.sh and any other script header that still describes every dispatch as running in one shared working tree, and bring each into line with what the landing task left.
-
-VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION block; each is owned by exactly one task):
-- The rules, the narrative and the scripts state the same contract.
+VERIFICATION CRITERIA THIS TASK OWNS:
+- The rules, the narrative and the scripts state the same contract, checked by reading the scripts rather than the records.
+- No page describes worktree isolation or a batch branch as live machinery; every mention names it as declared-but-unimplemented and points at the held work.
+- A reader following the documentation can tell which branch their work lands on and what refuses them if they start elsewhere.
 
 ---
 
 ### 674. Build batch worktree cleanup, retention on partial batches, and orphan reporting in /refresh
-- **Status**: [NOT STARTED]
+- **Status**: [HOLD]
+- **Held**: 2026-11-23
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 673
@@ -362,39 +423,60 @@ VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION b
 
 ---
 
-### 673. Land one attribution-built squash commit per completed task and verify it before the status write
+### 673. Land one reviewable commit per completed task on the integration branch and verify it before the status write
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 670, Task 671
+- **Dependencies**: Task 669
 
-**Description**: Land one attribution-built squash commit per completed task and verify it before the status write
+**Description**: Land one reviewable commit per completed task on the integration branch and verify it before the status write
 
 SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.
 
-RULING THIS TASK BUILDS: specs/decisions/batch-worktree-isolation-and-task-squash-landing.md (the amending record). Read the sections named below before planning; they are cited, not restated, and the record wins over this description wherever the two differ. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md (the research report; if its task directory has been archived, find it by filename under specs/archive/).
+RULING THIS TASK BUILDS: specs/decisions/batch-worktree-isolation-and-task-squash-landing.md (the amending record), sections "R3, amended", "Defects engaged" entry 4, and "Built-mechanism verdicts" (the retirement). Read them before planning; they are cited, not restated, and the record wins over this description wherever the two differ. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md.
 
-STANDING CONSTRAINTS: (1) every behaviour built here must hold in a repository with isolation declared off (worktree_isolation undeclared or `off`), where no worktree and no batch branch exist; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both of which sit at their byte ceilings -- mechanics go in scripts and the dispatch composer; (3) repo-agnostic: no literal branch name and no consumer-repo path in any deliverable; (4) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.
+SCOPE RE-POINTED BY OPERATOR DIRECTION, 2026-11-23. Worktree isolation is deferred and its tasks are on hold. The isolation-off path, which the amending record treated as a constraint the design must also satisfy, is now the ONLY path this task builds and verifies. The two-root prerequisites are held and this task no longer waits on them: it runs in the one primary tree, where there is exactly one root.
 
-BUILDS: record sections "R3, amended", "Defects engaged" entry 4, and "Built-mechanism verdicts" (the retirement).
+=== THE CONTRADICTION THIS TASK MUST RULE BEFORE IT BUILDS ===
 
-1. LANDING, at a task's [IMPLEMENTING] -> [COMPLETED] transition in orchestrate-cycle-postflight.sh, under the existing specs/.commit-lock mutex, in the PRIMARY tree, which never changes branch: select the task's own commits on the batch branch between the merge base and the batch tip by the `task {N}` subject convention, merge commits excluded; apply with `git cherry-pick -n`; make ONE commit, subject `task {N}: {title}`, body carrying the session identity and the phase list. `git merge --squash` of an end commit is rejected by the record: it co-lands a sibling's unfinished commits when tasks interleave. Do not rely on `modified_files` to find the work; read the branch.
-2. REFUSAL, never a skip: an unlanded-range commit attributable to no task, or a pick conflict, refuses the landing, leaves the task un-completed and the branch intact, and names the offending commit.
-3. VERIFICATION strictly BEFORE the completion status write: blob equality over the task's own path set, between the new integration tip and the task's end commit. Full-tree equality is the wrong predicate here. Ship a deliberate NEGATIVE fixture proving the check fails when work did not land, and record that it was observed failing.
-4. Idempotent: a re-run after a recorded landing proof is a no-op. Record the proof (landed commit, proven batch tip) in the batch record; cleanup depends on it.
-5. BACK-MERGE the integration branch into the batch branch after each landing, so the next task's range has the correct merge base.
-6. TWO CONCURRENT BATCHES on one integration branch: the second landing is a real three-way pick that can conflict. Build the conflict fixture; the response is refusal with the branch intact; resume is a back-merge then a re-run.
-7. SOURCE-STORE COMMITS made by commit-source-store-path.sh in a second repository are outside the batch branch and outside the squash. State them in the squash body or rule otherwise, with reasons.
-8. RETIRE milestone-ref-land.sh as a landing mechanism and point milestone-review-handoff.sh's review range at the integration branch. RULE what an isolation-off repository uses in its place, since that script is its only landing check today; do not leave such a repository with no pre-completion landing verification.
+The amending record's landing mechanism reads a batch branch: "select the task's own commits on the batch branch between the merge base and the batch tip by the `task {N}` subject convention". Its own standing constraint says every behaviour must hold where "no worktree and no batch branch exist". With isolation off there is no batch branch to read, and the primary tree is already on the integration branch, so a task's phase commits land there directly as they are made. There is therefore nothing to cherry-pick FROM, and one-commit-per-task cannot be produced by picking.
 
-VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION block; each is owned by exactly one task):
-- A multi-task batch produces one squash commit per completed task on the integration branch with its phase list in the body, the primary tree never having changed branch.
-- A task failing mid-batch leaves its commits, branch and worktree intact while its sibling lands.
+This was survivable while isolation-on was the primary path. It is now the blocking design question, and the research round must rule it rather than inherit it. RULE between at least these, state the reasoning, and record it as a decision record under specs/decisions/:
+
+A. SIDE BRANCH WITHOUT A WORKTREE. Phase commits are built onto a per-batch ref by plumbing (`git commit-tree` plus compare-and-swap `git update-ref`, the idiom context/patterns/ref-plumbing-landing.md already documents and milestone-ref-land.sh already implements), never by checkout, so the primary tree never changes branch and R1-amended holds. The task's own range is then readable and the squash is a real pick. Cost: every phase commit goes through plumbing rather than ordinary commit, which touches the commit scripts the held two-root tasks also touch.
+
+B. NO SQUASH; LANDING DEGRADES TO VERIFICATION. Phase commits stay on the integration branch as made. "Landing" becomes the pre-completion check that the task's work is present at the tip, plus the review handoff. The reviewable unit is the phase sequence, not one commit. Cost: gives up one-commit-per-task, which R3-amended asserts; the record must be amended, not quietly departed from.
+
+C. SQUASH AT REVIEW TIME, NOT LANDING TIME. Phase commits stay as made; the squash happens when the review branch is cut or when the forge merges. Cost: pushes the unit-of-review decision into the PR task that depends on this one; state the interface explicitly if chosen.
+
+A history rewrite of the integration branch is NOT a candidate: guard-destructive-git.sh refuses a HEAD-moving reset while another writer is live, and `git rebase -i` is unavailable.
+
+=== WHAT THE TASK BUILDS ONCE RULED ===
+
+1. LANDING at a task's [IMPLEMENTING] -> [COMPLETED] transition in orchestrate-cycle-postflight.sh, under the existing specs/.commit-lock mutex, in the PRIMARY tree, which never changes branch. Subject `task {N}: {title}`, body carrying the session identity and the phase list. `git merge --squash` of an end commit is rejected by the record: it co-lands a sibling's unfinished commits when tasks interleave. Do not rely on `modified_files` to find the work; read the refs.
+2. REFUSAL, never a skip: a commit in the range attributable to no task, or a pick conflict, refuses the landing, leaves the task un-completed and the refs intact, and names the offending commit.
+3. VERIFICATION strictly BEFORE the completion status write: blob equality over the task's own path set, between the new integration tip and the task's end commit. Full-tree equality is the wrong predicate here. Ship a deliberate NEGATIVE fixture proving the check fails when work did not land, and record that it was observed failing. This item is the one that closes defect 4 (silent non-landing under a completed status) and it survives every option above -- build it whichever way the ruling goes.
+4. IDEMPOTENT: a re-run after a recorded landing proof is a no-op. Record the proof in the batch record that the admission task registers; cleanup depends on it.
+5. TWO CONCURRENT BATCHES on one integration branch: the second landing can conflict. Build the conflict fixture; the response is refusal with the refs intact.
+6. SOURCE-STORE COMMITS made by commit-source-store-path.sh in a second repository are outside the range and outside the squash. State them in the body or rule otherwise, with reasons.
+7. RETIRE milestone-ref-land.sh as a landing mechanism and point milestone-review-handoff.sh's review range at the integration branch. Its `--verify` tree-equality predicate is weaker than item 3's blob equality; do not leave the repository with no pre-completion landing verification at any point in the transition.
+8. INTERFACE TO PR SUBMISSION: whatever the ruling, state in the decision record what a downstream PR-cutting step receives -- the ref it branches from, the commit range it covers, and whether that range is already one commit per task. The PR and stacking task depends on this contract and must not have to re-derive it.
+
+DEFERRED WITH THE WORKTREE TASKS: the back-merge of the integration branch into a batch branch after each landing, which exists only to fix a batch branch's merge base. Reinstate it when isolation returns.
+
+STANDING CONSTRAINTS: (1) repo-agnostic -- no literal branch name and no consumer-repo path in any deliverable; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both at their byte ceilings; (3) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.
+
+VERIFICATION CRITERIA THIS TASK OWNS:
+- The contradiction above is ruled in a decision record under specs/decisions/ before any code lands, and the ruling names which of the record's assertions it amends.
+- A multi-task batch produces one reviewable unit per completed task on the integration branch, with its phase list recorded, the primary tree never having changed branch.
+- A task failing mid-batch leaves its commits and refs intact while its sibling lands.
+- A completion status write cannot occur without the landing verification having passed, demonstrated by a negative fixture observed failing.
 
 ---
 
 ### 672. Classify every remaining project-root consumer as code-root, state-root or both
-- **Status**: [NOT STARTED]
+- **Status**: [HOLD]
+- **Held**: 2026-11-23
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 670
@@ -424,7 +506,8 @@ VERIFICATION CRITERIA THIS TASK OWNS: none of the originating task's running-beh
 ---
 
 ### 671. Make the write-time and git-guard hooks two-root aware
-- **Status**: [NOT STARTED]
+- **Status**: [HOLD]
+- **Held**: 2026-11-23
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 668, Task 669
@@ -451,7 +534,8 @@ VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION b
 ---
 
 ### 670. Build the two-root contract in the dispatch composer and the commit scripts
-- **Status**: [NOT STARTED]
+- **Status**: [HOLD]
+- **Held**: 2026-11-23
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 513, Task 536, Task 553, Task 567, Task 669
@@ -480,33 +564,39 @@ VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION b
 
 ---
 
-### 669. Add integration-branch admission, the isolation declaration, and idempotent batch worktree setup
+### 669. Add integration-branch admission and the isolation declaration
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
 - **Dependencies**: Task 517, Task 541, Task 667, Task 668
 
-**Description**: Add integration-branch admission, the isolation declaration, and idempotent batch worktree setup
+**Description**: Add integration-branch admission and the isolation declaration
 
 SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** in the repository that owns the source store, never a deployed .claude/** tree. Edit the mirrored path, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language under agent-system/**.
 
 RULING THIS TASK BUILDS: specs/decisions/batch-worktree-isolation-and-task-squash-landing.md (the amending record). Read the sections named below before planning; they are cited, not restated, and the record wins over this description wherever the two differ. Evidence: specs/667_amend_branch_topology_per_batch_worktree_squash/reports/01_batch-worktree-squash-amendment.md (the research report; if its task directory has been archived, find it by filename under specs/archive/).
 
-STANDING CONSTRAINTS: (1) every behaviour built here must hold in a repository with isolation declared off (worktree_isolation undeclared or `off`), where no worktree and no batch branch exist; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both of which sit at their byte ceilings -- mechanics go in scripts and the dispatch composer; (3) repo-agnostic: no literal branch name and no consumer-repo path in any deliverable; (4) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.
+SCOPE NARROWED BY OPERATOR DIRECTION, 2026-11-23. Worktree isolation is deferred. The worktree-creation element that this record originally carried has moved to its own task, which is on hold; see "Worktree element moved out" below. Every other element stays here and is unblocked by the deferral, because the amending record already requires each of them to hold in a repository with isolation declared off. The `worktree_isolation` declaration itself STAYS in this task: the schema row is what lets a repository say "off", and a repository cannot be isolation-off against a key that does not exist.
 
-BUILDS: record sections "R1, amended", "R2, amended", "R5, amended" (the declaration), and built-mechanism verdict D3.
+STANDING CONSTRAINTS: (1) every behaviour built here must hold in a repository with isolation declared off (worktree_isolation undeclared or `off`), where no worktree and no batch branch exist -- and under the narrowing above that is now the ONLY path this task is verified against, not a fallback; (2) add NO prose to skill-orchestrate/SKILL.md or commands/orchestrate.md, both of which sit at their byte ceilings -- mechanics go in scripts and the dispatch composer; (3) repo-agnostic: no literal branch name and no consumer-repo path in any deliverable; (4) git push and PR/MR creation stay prohibited for agents, guard-destructive-git.sh is respected, and git rebase -i is unavailable.
 
-1. DECLARATIONS. Add the schema rows for `integration_branch` (key name and shape fixed by ruling R4 of specs/decisions/branch-topology-and-landing-strategy.md) and `worktree_isolation` (values `batch` and `off`, undeclared means `off`) to context/standards/repo-level-declarations.md. Do not declare either key in any repository's .claude-extensions.json as part of this task.
-2. ADMISSION, in orchestrate-cycle-plan.sh's preflight, beside the existing lock probe and queue-check gates: resolve `integration_branch`; refuse the invocation when the primary tree is on another branch, or when tracked paths outside the state territory are dirty. A blanket clean-tree test is refused by the record (R1) -- fix the exact state-territory path set here and state it in the schema doc. The branch check applies with isolation on or off. Rule and state what admission does when `integration_branch` is undeclared (the existing consumers fall back to the checked-out branch with a named advisory).
-3. BATCH RECORD under the primary tree's state directory: session identity, integration branch and its tip at cut, batch branch name, absolute worktree path, and the per-task landing proofs later tasks append. Register it in context/standards/orchestrator-runtime-files.md. No script derives the worktree path; every consumer reads it from this record.
-4. WORKTREE CREATION, only when isolation is `batch`: `git worktree add <dir> -b <batch-branch> <integration-branch>`, sited per R2, idempotent on resume (keyed on the batch record), sparse and excluding `specs/` wherever `specs/` is tracked (the report's finding 4 gives the measured recipe). Nothing is cloned, hardlinked or symlinked in.
-5. COMPOSITION: must compose with task-lock, the session registry, the orchestration queue and MAX_TASKS, and preserve the batching-by-default doctrine. One worktree per invocation, never per dispatch or per task.
+BUILDS: record sections "R1, amended", "R5, amended" (the declaration), and the non-worktree half of built-mechanism verdict D3.
+
+1. DECLARATIONS. Add the schema rows for `integration_branch` (key name and shape fixed by ruling R4 of specs/decisions/branch-topology-and-landing-strategy.md) and `worktree_isolation` (values `batch` and `off`, undeclared means `off`) to context/standards/repo-level-declarations.md. Document `batch` as declared-but-not-yet-implemented, naming the held task that implements it, so a reader cannot conclude the value is live. Do not declare either key in any repository's .claude-extensions.json as part of this task.
+2. ADMISSION, in orchestrate-cycle-plan.sh's preflight, beside the existing lock probe and queue-check gates: resolve `integration_branch`; refuse the invocation when the primary tree is on another branch, or when tracked paths outside the state territory are dirty. A blanket clean-tree test is refused by the record (R1) -- fix the exact state-territory path set here and state it in the schema doc. Rule and state what admission does when `integration_branch` is undeclared (the existing consumers fall back to the checked-out branch with a named advisory). REFUSE LOUDLY, with a named message pointing at the held task, if `worktree_isolation` is declared `batch` while no worktree machinery exists -- a repository must not be able to ask for an unimplemented mode and get silence.
+3. BATCH RECORD under the primary tree's state directory: session identity, integration branch and its tip at cut, and the per-task landing proofs later tasks append. Register it in context/standards/orchestrator-runtime-files.md. The batch-branch-name and absolute-worktree-path fields are deferred with the worktree element; design the record so adding them later is an additive field write, not a reshape, and say so in the registration.
+4. COMPOSITION: must compose with task-lock, the session registry, the orchestration queue and MAX_TASKS, and preserve the batching-by-default doctrine. One batch record per invocation, never per dispatch or per task.
+
+WORKTREE ELEMENT MOVED OUT. `git worktree add <dir> -b <batch-branch> <integration-branch>`, its siting per R2, its idempotence-on-resume keyed on the batch record, and its sparse-checkout exclusion of `specs/` are NOT built here. They are held in their own task alongside the two-root contract work and the batch-worktree cleanup. Do not build them, and do not design against their absence in a way that would have to be undone when they return -- item 3's additive-field requirement is the mechanism for that.
 
 This absorbs the admission element of `branch_aware_orchestration_and_squash_landing`.
 
-VERIFICATION CRITERIA THIS TASK OWNS (from the originating task's VERIFICATION block; each is owned by exactly one task):
+VERIFICATION CRITERIA THIS TASK OWNS:
 - An invocation started off the integration branch or on a dirty primary tree is refused at admission.
-- A multi-task batch produces one worktree and one batch branch.
+- A repository declaring `worktree_isolation: batch` is refused loudly at admission, naming the held task, rather than silently proceeding as if isolation were off.
+- Both schema rows are present and state which values are live and which are declared-but-unimplemented.
+
+CRITERION RELEASED TO THE HELD WORKTREE TASK: "A multi-task batch produces one worktree and one batch branch."
 
 ---
 
