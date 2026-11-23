@@ -1,5 +1,5 @@
 ---
-next_project_number: 695
+next_project_number: 696
 ---
 
 # TODO
@@ -13,9 +13,9 @@ next_project_number: 695
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,671,674,679,680,684,686,689,692,693 | -- | core-agent-system, extensions, literature, ... |
-| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,690,694 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629,692,693 | core-agent-system, extensions, neovim, ... |
-| 3 | 454,472,480,492,513,561,588,594 | 439,479,491,509,552,556,570,593 | core-agent-system, orchestrator, agent-system |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,671,674,679,680,684,686,689,695 | -- | core-agent-system, extensions, literature, ... |
+| 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630,692,693 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629,695 | core-agent-system, extensions, neovim, ... |
+| 3 | 454,472,480,492,513,561,588,594,690,694 | 439,479,491,509,552,556,570,593,692,693 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,501,518,581,595,641 | 454,472,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
 | 5 | 524,571,596,642,688 | 501,518,595,641 | core-agent-system, orchestrator, agent-system |
 | 6 | 536 | 524 | agent-system |
@@ -112,10 +112,11 @@ next_project_number: 695
 674 [HOLD] — Build batch worktree cleanup, retention on partial batches,...
 686 [HOLD] — Create the per-batch worktree and batch branch when isolation...
 689 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-692 [PLANNED] — RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE...
-  └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
-693 [PLANNED] — RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE...
-  └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
+695 [NOT STARTED] — Design the /slice command: one clean path from work branch to...
+  └─ 692 [PLANNED] — RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE...
+    └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
+  └─ 693 [PLANNED] — RULING LANDED AFTER THIS RECORD WAS PLANNED -- READ BEFORE...
+    └─ 694 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:... (see above)
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
@@ -180,11 +181,101 @@ next_project_number: 695
 
 ## Tasks
 
+### 695. Design the /slice command: one clean path from work branch to a stack of review pull requests
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh using the bounded-wait idiom (timeout 540, Bash tool timeout 600000 -- context/patterns/external-process-wait.md Rule 1). No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+=== THIS IS A RESEARCH-AND-RULE RECORD, AND ITS MANDATE IS EXPLICITLY REVISIONARY ===
+
+Operator direction, 2026-11-23, verbatim in substance: "I don't want to assume that what is built is already right or worth keeping, or that what is planned is the best way to go." Treat NOTHING below as settled, INCLUDING the two decision records this repository has already accepted. The deliverable is the simplest design that actually works, not a reconciliation that preserves existing investment.
+
+The target is ONE clean and clear method for moving changes from a work branch into a stack of pull requests on an integration branch or branches as appropriate, driven by a `/slice` command. Removing capability is an expected and welcome outcome, not a cost to be minimised.
+
+=== THE COMMAND SURFACE THE OPERATOR ASKED FOR ===
+
+`/slice [description]`. The description is OPTIONAL. When it is absent the command asks the user to select the integration branch the pull request is to be submitted to for review. That selection prompt is part of the design: decide whether the branch set is read from declarations, from remotes, from open pull requests, or offered as a free choice, and whether "or branches as appropriate" means one invocation can target more than one.
+
+Design the command, not just the plumbing. State what `/slice` shows, what it asks, in what order, and what a user who types it with no argument and no prior setup sees. The approval prompt is the product.
+
+=== THE DECISIVE FINDING THIS RESEARCH MUST START FROM ===
+
+TWO INDEPENDENT IMPLEMENTATIONS OF SUBSTANTIALLY THE SAME THING EXIST. One is in the agent system and has never opened a pull request. The other is in a consumer repository and has opened 22, of which 18 merged.
+
+  A. `agent-system/extensions/core/scripts/review-stack-prepare.sh`, 1,572 lines, suite `scripts/tests/test-review-stack-prepare.sh` at 61 passing cases. Subcommands `cut`, `show`, `record-request`, `restack`. Derives review units RETROACTIVELY from landing proofs: union-find over dependency edges and proof path overlap, topological order with ancestry tie-breaks, overlay on `merge-base(review_base, integration_branch)`, moved-base three-way `merge-tree` recompute, compare-and-swap ref moves. Zero pull requests opened with it.
+
+  B. `/home/benjamin/Projects/Sapience/sf1-engine/integration/tools/build-pr-slices.sh`, 2,165 lines, with the path-cut slice table at `vision/pr-series.md` (418 lines) and the ruling at `vision/decisions/pr-release-pipeline.md` (518 lines). Slices are PATH-CUT from a hand-maintained table with a measured size ceiling. 22 pull requests opened, 18 merged, per `gh api` evidence recorded in that record under RP3.
+
+READ B BEFORE DESIGNING ANYTHING. It is prior art the operator already owns, it is the only one of the two with production evidence, and its own section 8 ("Successors") already files "Upstream requirements ... in the agent-system source-store repository, not here" -- meaning it expects this repository to receive requirements from it. Its section 4 table states precisely which agent-system mechanisms it waits on and which it does not use.
+
+THE OBVIOUS HYPOTHESIS, TO BE TESTED AND NOT ASSUMED: B should be promoted upstream into the agent system as the basis for `/slice`, and A's inference machinery should be deleted rather than finished. Test it. B is 2,165 lines in a consumer repo with repo-specific assumptions baked in, and promoting it may cost more than it saves. Reach a verdict with reasons either way.
+
+=== THE CONTRADICTION THAT MUST BE SETTLED ===
+
+The two accepted records disagree on whether a review base exists.
+
+  - `specs/decisions/review-slices-are-declared-tasks.md` (this repository), S3: affirms `review_base` as a branch distinct from `integration_branch`, and keeps the existing refusal when they are equal.
+  - sf1-engine's RP1: "The declared branch is the integration branch, and there is no review base." An independent slice is based on `origin/main`; a dependent slice on the slices it depends on. Its rejected-alternative paragraph says a review base "protects against nothing here: `main` already contains everything a slice is based on."
+
+RP1 carries measured evidence; S3 does not. S3 was written in the same session that created this record and is the weaker of the two. If the research concludes RP1 is right, SAY SO and amend S3 -- do not preserve it out of deference. The whole of `review-slices-are-declared-tasks.md` is in scope for amendment, including its retention list.
+
+=== THE MEASURED BAR THE AGENT SYSTEM LACKS ENTIRELY ===
+
+sf1-engine RP3 sets a slice ceiling from what has actually merged: at most 1,500 hand-written changed lines and 30 files for backlog slices; 3,000 lines or 30 files before a milestone divides into stacked parts; generated and mechanical files excluded from the count and verified by a command. Median over 18 merged pull requests: 10 files, 1,258 added lines.
+
+The agent system has NO size bar. A slice nobody can review is the failure mode the whole pipeline exists to prevent, so this is the single clearest piece of value to promote upstream. Decide whether the bar is a declaration, a default with a per-repository override, or a refusal, and whether the numbers are portable or must be re-measured per repository.
+
+=== REMOVAL IS PART OF THE DELIVERABLE: FOUR OVERLAPPING MECHANISMS, ONE SURVIVOR ===
+
+Enumerate every path that currently moves work toward review, rule which single one survives, and state what happens to each of the others. Known today:
+
+  1. `scripts/milestone-ref-land.sh` -- retired as a landing mechanism and fully unwired in the source store; its deletion is owned by the record named `milestone_ref_land_recreates_retired_ref`.
+  2. `scripts/review-stack-prepare.sh` -- mechanism A above.
+  3. `scripts/milestone-review-handoff.sh` -- prints per-task listings and the operator commands.
+  4. `commands/merge.md` single-branch mode, plus the stack mode authored by `merge_command_stack_mode`.
+  5. sf1-engine's `build-pr-slices.sh` -- mechanism B, currently outside the agent system.
+
+Also rule on the `/merge` single-branch mode itself. Every record so far has declared its defects a non-goal: it acts on the checked-out branch, refuses outright on main or master, and hardcodes the remote `origin` and the target `main`. That is why the handoff record must SUPPRESS a printed `/merge` rather than print a working one. "One clean and clear method" means fixing it or removing it, not routing around it indefinitely.
+
+=== CONSTRAINTS THAT DO NOT BEND ===
+
+- `rules/pr-prohibition.md`: no agent-reachable path pushes or opens a pull request. Every push stays behind a typed `/please`; every forge call stays inside a user-invoked command. A design that needs an agent to push is out of bounds, not a trade-off.
+- Repo-agnostic: no literal branch name, remote name or consumer-repo path in any deliverable landing under `agent-system/**`. sf1-engine is EVIDENCE, never a hardcoded assumption.
+- The grant cost is real and must be stated, not designed around: an N-slice stack costs N typed `/please push` grants, each bound to HEAD when typed inside a 600-second window, dying when any session commits in between. If the design implies a batch grant, say so and name it as separate work rather than assuming it.
+
+=== OPEN RECORDS THIS MUST REACH A VERDICT ON, NOT SILENTLY ORPHAN ===
+
+For each, state: survives unchanged, survives revised, or should be abandoned.
+
+  - `handoff_prints_review_stack` [planned] -- handoff printing the stack.
+  - `merge_command_stack_mode` [planned] -- `/merge --stack`.
+  - `stack_pr_redeploy_and_second_repo_demo` [not_started] -- now doc parity, redeploy and the operator runbook.
+  - `milestone_ref_land_recreates_retired_ref` [not_started] -- deletion of the retired script.
+  - `branch_aware_orchestration_and_squash_landing` [not_started] -- the generated-file collapse declaration, which makes a slice diff readable.
+  - The five HELD worktree and two-root records (`two_root_contract_dispatch_and_commit_scripts`, `two_root_contract_in_hooks`, `two_root_classification_of_remaining_consumers`, `batch_worktree_cleanup_retention_orphan_report`, `batch_worktree_creation_when_isolation_on`). sf1-engine RP7 rules isolation off and lists an isolation spike as a successor. Say whether declared slices make isolation attractive, irrelevant, or abandonable.
+
+OUT OF SCOPE, AND DELIBERATELY SO: the commit-containment cluster on `scripts/git-commit-scoped.sh` and `context/standards/git-staging-scope.md` (six open records plus two more). It is the substrate slicing sits on, it is heavily contended territory, and widening into it would make this record undispatchable. Name any dependency on it as an edge; do not edit it.
+
+=== DELIVERABLE ===
+
+A research report, then a decision record under `specs/decisions/` that rules the `/slice` design and supersedes or amends `review-slices-are-declared-tasks.md` as the findings require. The record states: the command surface; which of the two implementations is the basis and what happens to the other; whether a review base exists; the slice size bar and its portability; which of the four existing mechanisms survive and what is deleted; and a verdict row for every open record listed above.
+
+No implementation in this record. It researches and rules; successors build.
+
+=== VERIFY BY ===
+
+Every claim about either implementation re-derived from the live files, with line numbers, not carried from this description. A reader can tell from the decision record alone which single mechanism survives and which files are to be deleted. Every record in the verdict list has a stated disposition. The report names at least one thing that was built or planned and is now to be discarded -- if it names none, the revisionary mandate above was not exercised.
+
+---
+
 ### 694. Stack pr redeploy and second repo demo
 - **Status**: [NOT STARTED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: Task 691, Task 692, Task 693
+- **Dependencies**: Task 691, Task 692, Task 693, Task 695
 
 **Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
 
@@ -226,7 +317,7 @@ The three doc surfaces naming stack mode consistently; deploy-headless.sh report
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 695
 - **Research**: [693_merge_command_stack_mode/reports/01_merge-command-stack-mode.md]
 - **Plan**: [693_merge_command_stack_mode/plans/01_merge-stack-mode.md]
 
@@ -254,7 +345,7 @@ VERIFY BY: the command file's own documented contract being internally consisten
 - **Status**: [PLANNED]
 - **Task Type**: meta
 - **Topic**: orchestrator
-- **Dependencies**: None
+- **Dependencies**: Task 695
 - **Research**: [692_handoff_prints_review_stack/reports/01_handoff-prints-review-stack.md]
 - **Plan**: [692_handoff_prints_review_stack/plans/01_handoff-prints-review-stack.md]
 
