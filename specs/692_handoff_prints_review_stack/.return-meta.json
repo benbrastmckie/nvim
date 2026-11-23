@@ -1,0 +1,37 @@
+{
+  "status": "researched",
+  "session_id": "sess_1795472390_63c292_692",
+  "dispatch_seq": 2,
+  "findings_count": 7,
+  "artifacts": [
+    {
+      "type": "report",
+      "path": "specs/692_handoff_prints_review_stack/reports/01_handoff-prints-review-stack.md",
+      "summary": "Research on wiring milestone-review-handoff.sh to review-stack-prepare.sh's landed cut/show subcommands: exact interface, exit-code/refusal mechanics, fixture reuse pattern for a successful cut, and two out-of-file_scope findings (narrower file_scope than the parent plan's Phase 5 file list; a test-orchestrate-conclusion-roadmap.sh assertion that will break)."
+    }
+  ],
+  "memory_candidates": [
+    {
+      "content": "review-stack-prepare.sh's refusal mechanism (rsp_refuse -> exit \"$code\" called from a plain statement, never inside \"$(...)\") lets a caller safely capture combined stdout+stderr and branch on $? -- every resolver that can refuse must be invoked unwrapped for this to hold, since exit inside a command-substitution subshell would only kill the subshell.",
+      "category": "PATTERN",
+      "source_artifact": "specs/692_handoff_prints_review_stack/reports/01_handoff-prints-review-stack.md",
+      "confidence": 0.75,
+      "suggested_keywords": ["review-stack-prepare", "exit-code", "subshell", "refusal", "bash"]
+    },
+    {
+      "content": "A push grant's HEAD_SHA is fixed at mint time (push-grant-lib.sh pg_grant_write/pg_grant_mint) and must equal current HEAD to be consumed, so any commit between typing /please and using the grant invalidates it silently -- worth stating explicitly in any UI that prints a /please command to the user.",
+      "category": "INSIGHT",
+      "source_artifact": "specs/692_handoff_prints_review_stack/reports/01_handoff-prints-review-stack.md",
+      "confidence": 0.8,
+      "suggested_keywords": ["push-grant", "HEAD", "please", "push-grant-lib"]
+    },
+    {
+      "content": "An expansion record's declared file_scope can be narrower than the section of the parent plan it expands (e.g. a phase's own 'Files to modify' list naming doc files an expansion task's file_scope omits). Check the task's actual file_scope against the parent plan's phase file list before assuming the phase's full file list is in scope; treat any delta as a separate follow-up record rather than silently widening edits.",
+      "category": "PATTERN",
+      "source_artifact": "specs/692_handoff_prints_review_stack/reports/01_handoff-prints-review-stack.md",
+      "confidence": 0.7,
+      "suggested_keywords": ["file_scope", "expansion", "parent-plan", "task-siting"]
+    }
+  ],
+  "next_steps": "Run /orchestrate 692 to create implementation plan"
+}
