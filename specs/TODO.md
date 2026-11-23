@@ -1,5 +1,5 @@
 ---
-next_project_number: 687
+next_project_number: 690
 ---
 
 # TODO
@@ -13,11 +13,11 @@ next_project_number: 687
 **Dependency Waves**:
 | Wave | Tasks | Blocked by | Topics |
 |------|-------|------------|--------|
-| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,671,674,679,680,684,685,686 | -- | core-agent-system, extensions, literature, ... |
+| 1 | 338,342,383,390,399,410,421,431,437,438,452,453,456,457,462,475,491,498,502,506,508,510,511,512,514,516,519,520,521,522,525,529,530,539,542,545,550,551,556,559,560,563,565,574,575,576,577,579,580,586,590,599,613,618,629,631,632,639,640,645,646,663,664,665,666,671,674,679,680,684,685,686,687,689 | -- | core-agent-system, extensions, literature, ... |
 | 2 | 384,439,474,479,481,509,523,533,540,544,546,552,566,570,583,592,593,605,609,630 | 383,390,410,431,438,452,453,511,519,539,542,563,577,586,599,629 | core-agent-system, extensions, neovim, ... |
 | 3 | 454,472,480,492,513,561,588,594 | 439,479,491,509,552,556,570,593 | core-agent-system, orchestrator, agent-system |
 | 4 | 473,501,518,581,595,641 | 454,472,492,539,561,580,594 | core-agent-system, file-scope-lifecycle, orchestrator, ... |
-| 5 | 524,571,596,642 | 501,518,595,641 | core-agent-system, agent-system |
+| 5 | 524,571,596,642,688 | 501,518,595,641 | core-agent-system, orchestrator, agent-system |
 | 6 | 536 | 524 | agent-system |
 | 7 | 548 | 536 | agent-system |
 | 8 | 553,598 | 548 | agent-system |
@@ -94,6 +94,7 @@ next_project_number: 687
 ### File Scope Lifecycle
 
 508 [NOT STARTED] — Rule on where shared extension metadata belongs in the...
+687 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 501 [NOT STARTED] — Give the cycle-postflight containment site predicate parity...
 509 [NOT STARTED] — Make a redeploy phase declarable without polluting...
 
@@ -112,12 +113,14 @@ next_project_number: 687
 674 [HOLD] — Build batch worktree cleanup, retention on partial batches,...
 685 [IMPLEMENTING] — Cut review branches and submit a stack of PRs from landed...
 686 [HOLD] — Create the per-batch worktree and batch branch when isolation...
+689 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 472 [NOT STARTED] — Stop validate-handoff.sh aborting on a string-shaped blockers...
   └─ 518 [NOT STARTED] — State the blockers] admission contract and...
 513 [NOT STARTED] — Mechanically detect a plan phase that closed without its own...
   └─ 655 [NOT STARTED] — Declare generated paths so they collapse in review
   └─ 670 [HOLD] — Build the two-root contract in the dispatch composer and the...
     └─ 672 [HOLD] — Classify every remaining project-root consumer as code-root,...
+688 [NOT STARTED] — SOURCE STORE IS THE EDIT TARGET:...
 
 ### Agent System
 
@@ -174,6 +177,86 @@ next_project_number: 687
 679 [NOT STARTED] — Give a collaborator who does not use this extension picker a...
 
 ## Tasks
+
+### 689. Oversized plan phase count advisory
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: conclusion stage (channel c, follow-up task) of an /orchestrate invocation over three tasks, session sess_1795451386_ec8465. User-approved at the lead level.
+
+THE GAP: nothing in admission or pre-dispatch review observes that a plan's phase count exceeds what one implement dispatch can plausibly close. A plan is admitted on artifact existence alone, so an under-decomposed task is discovered only after the run is underway -- by which point the operator has already paid for the dispatches that revealed it.
+
+MEASURED IMPACT: in the originating invocation a seven-phase plan was admitted as a single task. Its first implement dispatch ran roughly 30 minutes and 127 tool calls to close phase 1 alone and returned status=partial at 1/7; a second continuation dispatch ran roughly 26 minutes and 91 tool calls to close phase 2 and returned partial at 2/7. The remaining five phases are each comparable in size, so the task as filed represented several hours of dispatch time across at least five more cycles. The run was closed deliberately at 2/7 rather than continuing, and that judgment had to be made by the operator mid-run with no prior signal.
+
+WHY PRE-DISPATCH REVIEW IS THE SITE: scripts/orchestrate-predispatch-review.sh already runs once per invocation before any dispatch, already carries nine advisory defect classes (dependency-edge classification, metadata defects, self-modification, missing serializing edges, session contention, absent-scope, cross-session hazard, dirty worktree, file_scope shape), and is already advisory-loud rather than blocking. A phase-count signal is the same shape as what it already emits and needs no new invocation site.
+
+DELIVERABLE: add an advisory class that reads each admitted candidate's newest plan artifact, counts its phase headings, and warns when that count exceeds a declared threshold -- naming the task, the count, and that a split is the remedy. ADVISORY ONLY: it must never block a dispatch, never fail one, never alter a status, and never gate admission. Prefer deriving the threshold from observed close rates where that is cheap; otherwise a single declared constant with its rationale stated at the declaration site is acceptable. Fixture coverage must pin both a plan over the threshold (warns) and one under it (silent), and must assert that the warning changes no exit code.
+
+SEPARATE, NOT INCLUDED HERE: dividing the specific seven-phase task that motivated this record is a task-management operation (/task --expand on that record, which retires it and files its remainder as children) and is the operator's call, not a deliverable of this one. This record owns only the detection signal.
+
+CITATIONS -- issue-log entries this record is built from:
+  {task 685, iss_1795458112170_xGgcKs} -- class "task sizing", severity costly, implement phase. The 1-of-7 first dispatch and the under-decomposition it exposed.
+
+---
+
+### 688. Dispatch redeploy clears staleness verdict
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: orchestrator
+- **Dependencies**: Task 501
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: conclusion stage (channel b, agent-system change request) of an /orchestrate invocation over three tasks, session sess_1795451386_ec8465. User-approved at the lead level.
+
+THE DEFECT: the completion-deploy gate in postflight refuses an implement dispatch's completion write (exit 6, "extension 'core' is stale relative to its source store") even when the dispatch being completed has ALREADY run deploy-headless.sh itself to a clean result. The staleness signal the gate reads is not refreshed by a deploy performed inside the dispatch, so the redeploy is effectively performed twice and an entire additional orchestration cycle is consumed doing nothing but re-deploying and reconciling.
+
+MEASURED IMPACT: in the originating invocation two of six cycles were spent on this class alone. One task's dispatch closed all three of its phases and passed its scoped verification, then had its completion write refused and waited a full cycle for the Inter-Cycle Redeploy Checkpoint to promote it. The second occurrence is the sharper one: that dispatch ran deploy-headless.sh as its own terminal phase, landing clean at 41 checks and 0 failures, and postflight STILL refused on a stale-core verdict -- so the work was complete, the deploy was current, and a cycle was burned anyway.
+
+WHAT IS NOT WRONG: the recovery path itself is correct and automatic -- the checkpoint deploys, reconciles, and promotes without operator action, and both affected tasks reached completed status with their plan stamps and state writes intact. The gate is also right to exist: refusing a completion write against a stale deployed tree is the behaviour that keeps a deploy artifact from being trusted when it diverges from its source. The defect is narrowly that the gate cannot observe a deploy that happened inside the dispatch it is gating.
+
+DELIVERABLE: make a dispatch-performed deploy observable to the postflight completion-deploy gate, so a dispatch that leaves the tree current is not refused. Either re-probe freshness at gate time rather than reading a verdict computed earlier in the cycle, or have deploy-headless.sh record a landing the gate can read and compare against the dispatch window. The gate MUST still refuse when the tree is genuinely stale; this is a freshness-observation fix, never a relaxation of the gate's criterion. Fixture coverage must pin both directions explicitly: a dispatch that deployed is admitted, and a dispatch that did not deploy against a stale tree is still refused with exit 6.
+
+TERRITORY: file_scope overlaps the open record cycle_postflight_containment_parity at scripts/orchestrate-cycle-postflight.sh. That record owns a different defect in the same file (containment parity in what a cycle commit stages) and the two must not be worked concurrently; a dependencies[] edge is declared so they serialise rather than collide.
+
+CITATIONS -- issue-log entries this record is built from:
+  {task 486, iss_1795458111817_E2ou8C} -- class "stale deploy or source-store boundary", severity costly, implement phase. First occurrence.
+  {task 675, iss_1795458111998_VgGZ4g} -- class "stale deploy or source-store boundary", severity costly, implement phase. Second occurrence, the dispatch that had already deployed.
+
+---
+
+### 687. Whole tree sentinel self collision
+- **Status**: [NOT STARTED]
+- **Task Type**: meta
+- **Topic**: file-scope-lifecycle
+- **Dependencies**: None
+
+**Description**: SOURCE STORE IS THE EDIT TARGET: agent-system/extensions/core/** (never a deployed .claude/** tree, which is a gitignored, disposable deploy artifact regenerated from the source store -- see rules/source-store-deploy-boundary.md). Resolve the extension's own source_dir from <project-root>/.claude-extensions.json and edit at the path mirroring the deployed one, then REDEPLOY via deploy-headless.sh. No task-number references and no record-versioning language in any file landing under agent-system/** (rules/no-task-references-in-deliverables.md, rules/no-record-versioning-in-deliverables.md); both are permitted in this description and elsewhere in specs/**.
+
+ORIGIN: conclusion stage (channel b, agent-system change request) of an /orchestrate invocation over three tasks, session sess_1795451386_ec8465. User-approved at the lead level.
+
+THE DEFECT: the reserved __WHOLE_TREE__ file_scope sentinel is treated as overlapping ITSELF, so any two tasks that each declare it are held to be in file-scope conflict. Because every task carrying a redeploy phase declares the sentinel (plan-file-scope-harvest.sh emits it for any plan invoking deploy-headless.sh), the sentinel collides with every other such task regardless of whether their real edit footprints intersect at all. The sentinel is a claim about regenerating derived output, not a claim to exclusive authorship of every path, and deploy-headless.sh already serialises itself under its own deploy-lock -- so two sentinel claims are orderable but not mutually exclusive.
+
+MEASURED IMPACT (two independent surfaces, one shared comparator):
+  (i) In-batch admission. In the originating invocation a three-task batch was serialised to width 1: one task was deferred on the sentinel in cycle 1 and another in cycles 1 through 4, so implement work on the last did not begin until cycle 5 of 6. The batch achieved no parallelism whatever; three separate /orchestrate invocations would have finished in the same wall time with less coordination overhead.
+  (ii) Roadmap batch formation. The same invocation's conclusion-stage roadmap scan emitted 403 findings across 39 batches, of which 110 are sentinel collisions between a batch member and an excluded task. This is the dominant single cause of unformable batches across the whole backlog.
+
+THE SHARED COMPARATOR: scripts/lib/file-scope-overlap.sh defines the sentinel once (whole_tree_claim_sentinel, around line 45) and both consumers read it through that library -- scripts/orchestrate-batch-admit.sh emits the in-batch "each declare a whole-tree regeneration phase" deferral, and scripts/lint/lint-roadmap-batch-proposals.sh emits the roadmap "Rule 1 (shared file territory)" finding. One change at the library therefore reaches both surfaces; the fix is NOT two parallel edits.
+
+DELIVERABLE: make a sentinel-versus-sentinel comparison yield an ORDERING relation rather than a blocking overlap, while leaving sentinel-versus-concrete-path and concrete-path-versus-concrete-path semantics exactly as they are today. Both consumers must keep refusing on a genuine footprint intersection; only the self-collision case changes. Fixture coverage must pin all three comparison shapes explicitly, and must include a regression asserting that two sentinel-declaring tasks whose concrete paths DO intersect are still held in conflict.
+
+SCOPE BOUNDARY: this record owns the sentinel self-collision only. It does not touch the general in-dispatch file_scope extension channel, and it does not change what the roadmap renders or what the roadmap commit stages.
+
+CITATIONS -- issue-log entries this record is built from:
+  {task 675, iss_1795458096861_BsbT6z} -- class "cross-task ownership/territory", severity costly, implement phase. Surface (i), the serialised batch.
+  {task 685, iss_1795458097017_QOQ2cS} -- class "cross-task ownership/territory", severity costly, implement phase. Surface (i), four consecutive deferrals.
+  {task 675, iss_1795461393007_m1uwUQ} -- class "cross-task ownership/territory", severity costly, conclusion phase. Surface (ii), the 110-of-403 repo-wide measurement.
+
+---
 
 ### 686. Create the per-batch worktree and batch branch when isolation is declared on
 - **Status**: [HOLD]
