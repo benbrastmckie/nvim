@@ -1,40 +1,22 @@
 {
-  "status": "researched",
-  "dispatch_seq": 1,
+  "status": "planned",
   "artifacts": [
     {
-      "type": "report",
-      "path": "specs/691_restack_review_stack_when_parent_merges/reports/01_restack-on-parent-merge.md",
-      "summary": "Maps the parent plan's Phase 4 (restack-on-merge) design onto the live review-stack-prepare.sh code: reusable primitives, manifest schema, dispatcher/flag gaps, three PD7 ambiguities with recommended readings, exit-code allocation, and reusable test-fixture scaffolding."
+      "type": "plan",
+      "path": "specs/691_restack_review_stack_when_parent_merges/plans/01_restack-on-parent-merge.md",
+      "summary": "Three-phase plan for the restack subcommand of review-stack-prepare.sh, split along the file's own plan/print/execute seam, with PD7's three ambiguities resolved as plan decisions."
     }
   ],
-  "next_steps": "Run /orchestrate 691 to create implementation plan",
   "metadata": {
     "session_id": "sess_1795472390_63c292_691",
-    "agent_type": "general-research-agent",
-    "delegation_path": ["orchestrator", "research", "general-research-agent"]
+    "agent_type": "planner-agent",
+    "delegation_depth": 1,
+    "delegation_path": ["orchestrator", "plan", "planner-agent"],
+    "phase_count": 3,
+    "estimated_hours": 2,
+    "dependency_waves": 3
   },
-  "memory_candidates": [
-    {
-      "content": "In review-stack-prepare.sh, rsp_move_commit_onto_new_parent (three-way git merge-tree with --merge-base, refusing with a named-path conflict) is designed as the one primitive serving both cut's base-move step and any future restack recompute step (PD6's explicit intent). When extending a script built this way, check whether a 'new' operation is actually a second call site for an existing primitive before writing a new wrapper.",
-      "category": "PATTERN",
-      "source_artifact": "specs/691_restack_review_stack_when_parent_merges/reports/01_restack-on-parent-merge.md",
-      "confidence": 0.75,
-      "suggested_keywords": ["merge-tree", "ref-plumbing", "review-stack-prepare", "primitive-reuse"]
-    },
-    {
-      "content": "Simulating 'the remote already received this' in review-stack-prepare.sh's test suite never uses a real git push or fetch: it writes directly to refs/remotes/<remote>/<ref> via git update-ref (and git commit-tree for synthetic foreign/merge commits), consistent with the script's own no-push/no-fetch static assertions. This is the established technique for any future subcommand's remote-tracking-ref fixtures in this suite.",
-      "category": "TECHNIQUE",
-      "source_artifact": "specs/691_restack_review_stack_when_parent_merges/reports/01_restack-on-parent-merge.md",
-      "confidence": 0.8,
-      "suggested_keywords": ["test-fixture", "remote-tracking-ref", "update-ref", "no-fetch-simulation"]
-    },
-    {
-      "content": "The git[[:space:]]+merge([[:space:]]|$) static-assertion regex style (used in test-review-stack-prepare.sh to forbid bare 'git merge' without blocking 'git merge-tree'/'git merge-base') is a reusable pattern for any suite that needs to forbid one git subcommand while explicitly permitting its plumbing cousins with the same prefix.",
-      "category": "PATTERN",
-      "source_artifact": "specs/691_restack_review_stack_when_parent_merges/reports/01_restack-on-parent-merge.md",
-      "confidence": 0.6,
-      "suggested_keywords": ["static-assertion", "regex", "forbidden-invocation", "shell-script-safety"]
-    }
-  ]
+  "memory_candidates": [],
+  "next_steps": "Run /orchestrate 691 to execute the plan",
+  "dispatch_seq": 4
 }
